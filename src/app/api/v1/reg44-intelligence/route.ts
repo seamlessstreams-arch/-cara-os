@@ -34,9 +34,9 @@ export async function GET() {
       id: r.id,
       recommendation: r.recommendation,
       priority: r.priority as RecommendationInput["priority"],
+      // r.status has no "rejected" — that branch could never fire (TS2367).
       status: r.status === "completed" ? "completed" :
-              r.status === "in_progress" ? "in_progress" :
-              r.status === "rejected" ? "rejected" : "pending",
+              r.status === "in_progress" ? "in_progress" : "pending",
       rm_response: r.rm_response ?? null,
       completed_at: r.completed_at ?? null,
     }));

@@ -17,7 +17,7 @@ import type { NeuroRecordingContext, UnifyNeuroInput } from "@/lib/neurodiversit
 export const dynamic = "force-dynamic";
 
 const arr = (v: unknown): string[] => (Array.isArray(v) ? v.map((x) => String(x)) : []);
-const nameOf = (yp: { preferred_name?: string; first_name?: string; name?: string }): string =>
+const nameOf = (yp: { id?: string; preferred_name?: string | null; first_name?: string | null; name?: string | null }): string =>
   yp.preferred_name || yp.first_name || yp.name || "Child";
 
 const VALID_CONTEXTS: NeuroRecordingContext[] = ["incident", "behaviour", "restraint", "daily_log", "key_work", "care_plan", "overview"];
@@ -28,7 +28,7 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
     childId,
     childName,
     asOf,
-    autismPlans: (store.autismPlans ?? []).filter(byChild).map((a: Record<string, unknown>) => ({
+    autismPlans: (store.autismPlans ?? []).filter(byChild).map((a) => ({
       id: String(a.id),
       child_id: String(a.child_id),
       plan_date: String(a.plan_date ?? ""),
@@ -38,7 +38,7 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
       special_interests: arr(a.special_interests),
       communication_preferences: arr(a.communication_preferences),
       sensory_profile: Array.isArray(a.sensory_profile)
-        ? (a.sensory_profile as Array<Record<string, unknown>>).map((s) => ({ sense: String(s.sense ?? ""), seeking_or_avoiding: String(s.seeking_or_avoiding ?? ""), specific_notes: String(s.specific_notes ?? "") }))
+        ? (a.sensory_profile as unknown as Array<Record<string, unknown>>).map((s) => ({ sense: String(s.sense ?? ""), seeking_or_avoiding: String(s.seeking_or_avoiding ?? ""), specific_notes: String(s.specific_notes ?? "") }))
         : [],
       predictability_needs: arr(a.predictability_needs),
       meltdown_triggers: arr(a.meltdown_triggers),
@@ -52,7 +52,7 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
       review_date: String(a.review_date ?? ""),
       key_worker: String(a.key_worker ?? ""),
     })),
-    adhdPlans: (store.adhdPlans ?? []).filter(byChild).map((a: Record<string, unknown>) => ({
+    adhdPlans: (store.adhdPlans ?? []).filter(byChild).map((a) => ({
       id: String(a.id),
       child_id: String(a.child_id),
       plan_date: String(a.plan_date ?? ""),
@@ -70,20 +70,20 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
       review_date: String(a.review_date ?? ""),
       key_worker: String(a.key_worker ?? ""),
     })),
-    sensoryProfiles: (store.sensoryProfileRecords ?? []).filter(byChild).map((s: Record<string, unknown>) => ({
+    sensoryProfiles: (store.sensoryProfileRecords ?? []).filter(byChild).map((s) => ({
       id: String(s.id),
       child_id: String(s.child_id),
       status: String(s.status ?? ""),
       diagnosis: arr(s.diagnosis),
       entries: Array.isArray(s.entries)
-        ? (s.entries as Array<Record<string, unknown>>).map((e) => ({ domain: String(e.domain ?? ""), response_pattern: String(e.response_pattern ?? ""), triggers: arr(e.triggers), calming: arr(e.calming), notes: String(e.notes ?? "") }))
+        ? (s.entries as unknown as Array<Record<string, unknown>>).map((e) => ({ domain: String(e.domain ?? ""), response_pattern: String(e.response_pattern ?? ""), triggers: arr(e.triggers), calming: arr(e.calming), notes: String(e.notes ?? "") }))
         : [],
       environmental_adaptations: arr(s.environmental_adaptations),
       communication_preferences: arr(s.communication_preferences),
       child_views: String(s.child_views ?? ""),
       review_date: String(s.review_date ?? ""),
     })),
-    ehcps: (store.ehcpRecords ?? []).filter(byChild).map((e: Record<string, unknown>) => ({
+    ehcps: (store.ehcpRecords ?? []).filter(byChild).map((e) => ({
       id: String(e.id),
       child_id: String(e.child_id),
       plan_status: String(e.plan_status ?? ""),

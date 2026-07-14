@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     .map((s) => ({
       id: s.staff_id,
       name: staffName(s.staff_id),
-      role: (s as Record<string, unknown>).role as string ?? "Residential Care Worker",
+      role: (s as unknown as Record<string, unknown>).role as string ?? "Residential Care Worker",
       start: s.start_time ?? "",
       end: s.end_time ?? "",
     }));
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
 
   const youngPeople = yps.map((yp) => {
     const logs = todayLogs.filter((l) => l.child_id === yp.id);
-    const latestLog = logs[logs.length - 1] as Record<string, unknown> | undefined;
+    const latestLog = logs[logs.length - 1] as unknown as Record<string, unknown> | undefined;
     return {
       id: yp.id,
       name: childName(yp.id),
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
       severity: inc.severity,
       child_id: inc.child_id ?? undefined,
       child_name: inc.child_id ? childName(inc.child_id) : undefined,
-      staff_name: (inc as Record<string, unknown>).reported_by ? staffName((inc as Record<string, unknown>).reported_by as string) : undefined,
+      staff_name: (inc as unknown as Record<string, unknown>).reported_by ? staffName((inc as unknown as Record<string, unknown>).reported_by as string) : undefined,
     });
   }
 
@@ -118,7 +118,7 @@ export async function GET(req: NextRequest) {
       type: "daily_log",
       time: log.created_at ?? log.date,
       title: `Daily log — ${childName(log.child_id)}`,
-      description: ((log as Record<string, unknown>).summary as string ?? (log as Record<string, unknown>).notes as string ?? "").slice(0, 150),
+      description: ((log as unknown as Record<string, unknown>).summary as string ?? (log as unknown as Record<string, unknown>).notes as string ?? "").slice(0, 150),
       severity: "info",
       child_id: log.child_id ?? undefined,
       child_name: log.child_id ? childName(log.child_id) : undefined,
@@ -140,7 +140,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Missing from care
-  const missingEpisodes = ((store as Record<string, unknown[]>).missingFromCareEpisodes ?? []) as Record<string, unknown>[];
+  const missingEpisodes = ((store as unknown as Record<string, unknown[]>).missingFromCareEpisodes ?? []) as unknown as Record<string, unknown>[];
   const dayMissing = missingEpisodes.filter((e) =>
     (e.date as string)?.startsWith(date) || (e.created_at as string)?.startsWith(date)
   );

@@ -19,7 +19,7 @@ import type { ChildVoiceDimensionInput } from "@/lib/child-voice-dimensions/type
 export const dynamic = "force-dynamic";
 
 const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : "");
-const nameOf = (yp: { preferred_name?: string; first_name?: string; name?: string; id: string }): string =>
+const nameOf = (yp: { id?: string; preferred_name?: string | null; first_name?: string | null; name?: string | null }): string =>
   yp.preferred_name || yp.first_name || yp.name || "Child";
 
 /** Build the pure-engine input for one child from live store snapshots. */
@@ -31,7 +31,7 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
     windowDays: 90,
     feedback: (store.ypFeedback ?? [])
       .filter((f: { child_id?: string }) => f.child_id === childId)
-      .map((f: Record<string, unknown>) => ({
+      .map((f) => ({
         id: String(f.id),
         child_id: String(f.child_id),
         date: day(f.date),
@@ -42,7 +42,7 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
       })),
     keyWork: (store.keyWorkingSessions ?? [])
       .filter((k: { child_id?: string }) => k.child_id === childId)
-      .map((k: Record<string, unknown>) => ({
+      .map((k) => ({
         id: String(k.id),
         child_id: String(k.child_id),
         date: day(k.date),
@@ -50,7 +50,7 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
       })),
     lacReviews: (store.lacReviews ?? [])
       .filter((l: { child_id?: string }) => l.child_id === childId)
-      .map((l: Record<string, unknown>) => ({
+      .map((l) => ({
         id: String(l.id),
         child_id: String(l.child_id),
         date: day(l.date),
@@ -59,7 +59,7 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
       })),
     feedbackLoops: (store.childFeedbackLoops ?? [])
       .filter((f: { child_id?: string }) => f.child_id === childId)
-      .map((f: Record<string, unknown>) => ({
+      .map((f) => ({
         id: String(f.id),
         child_id: String(f.child_id),
         feedback_date: day(f.feedback_date),
@@ -69,7 +69,7 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
       })),
     advocacy: (store.advocacyRecords ?? [])
       .filter((a: { child_id?: string }) => a.child_id === childId)
-      .map((a: Record<string, unknown>) => ({
+      .map((a) => ({
         id: String(a.id),
         child_id: String(a.child_id),
         status: String(a.status ?? ""),
@@ -77,7 +77,7 @@ function buildInput(store: ReturnType<typeof getStore>, childId: string, childNa
         visits: Array.isArray(a.visits) ? (a.visits as Array<{ date?: string }>).map((v) => ({ date: day(v?.date) })) : [],
         home_response: String(a.home_response ?? ""),
       })),
-    houseMeetings: (store.houseMeetings ?? []).map((h: Record<string, unknown>) => ({
+    houseMeetings: (store.houseMeetings ?? []).map((h) => ({
       id: String(h.id),
       date: day(h.date),
       child_feedback: Array.isArray(h.child_feedback) ? (h.child_feedback as string[]) : [],

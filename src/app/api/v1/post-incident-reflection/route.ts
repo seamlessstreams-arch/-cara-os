@@ -21,7 +21,7 @@ function childrenList() {
   const store = getStore();
   return (store.youngPeople ?? [])
     .filter((yp: { status?: string }) => yp.status === "current")
-    .map((yp: { id: string; preferred_name?: string; first_name?: string }) => ({
+    .map((yp: { id: string; preferred_name?: string | null; first_name?: string | null }) => ({
       id: yp.id,
       name: yp.preferred_name || yp.first_name || "Child",
     }));
@@ -167,22 +167,22 @@ export async function POST(req: NextRequest) {
       const cutoffIso = cutoff.toISOString().slice(0, 10);
       const incAny = incident as Record<string, string>;
 
-      const previousIncidents = (store.incidents as Array<Record<string, string>>)
+      const previousIncidents = (store.incidents as unknown as Array<Record<string, string>>)
         .filter((i) => i.child_id === childId && i.id !== String(body.incident_id) && (i.date ?? "") >= cutoffIso)
         .map((i) => ({ id: i.id, date: i.date, time: i.time, type: i.type, severity: i.severity, location: i.location ?? undefined, description: i.description }));
 
-      const behaviourEntries = (store.behaviourLog as Array<Record<string, string>>)
+      const behaviourEntries = (store.behaviourLog as unknown as Array<Record<string, string>>)
         .filter((b) => b.child_id === childId && (b.date ?? "") >= cutoffIso)
         .map((b) => ({ id: b.id, date: b.date, time: b.time, direction: b.direction ?? "", intensity: b.intensity ?? "", trigger: b.trigger ?? "", behaviour: b.behaviour ?? "", strategy_used: b.strategy_used, outcome: b.outcome }));
 
-      const rst = (store.restraints as Array<Record<string, unknown>>).find(
+      const rst = (store.restraints as unknown as Array<Record<string, unknown>>).find(
         (r) => String((r as { linked_incident_id?: string }).linked_incident_id ?? "") === String(body.incident_id) || String(r.id).replace("rst_", "inc_") === String(body.incident_id),
       );
       const linkedRestraint = rst
         ? { id: String(rst.id), duration: Number(rst.duration ?? 0), restraint_type: String(rst.restraint_type ?? ""), child_debriefed: !!rst.child_debriefed, de_escalation_attempts: Array.isArray(rst.de_escalation_attempts) ? (rst.de_escalation_attempts as string[]) : [], injuries: Array.isArray(rst.injuries) ? rst.injuries : [] }
         : undefined;
 
-      const dbf = (store.debriefRecords as Array<Record<string, string>>).find((d) => d.linked_incident_id === String(body.incident_id));
+      const dbf = (store.debriefRecords as unknown as Array<Record<string, string>>).find((d) => d.linked_incident_id === String(body.incident_id));
       const linkedDebrief = dbf ? { id: dbf.id, child_perspective: dbf.child_perspective, lessons_learned: Array.isArray((dbf as { lessons_learned?: string[] }).lessons_learned) ? (dbf as { lessons_learned?: string[] }).lessons_learned : [] } : undefined;
 
       const escalationDecisions = store.escalationDecisions
