@@ -2660,9 +2660,20 @@ const store = {
   riskAppetiteDomains: [] as RiskAppetiteDomain[],
   strategicRiskRecords: [] as StrategicRiskRecord[],
   riskManagementPlanRecords: [] as RiskManagementPlanRecord[],
-  // Generic document-version spine (Doc-Version-Workflow M2) — append-only;
-  // empty until a doc type adopts it (M3+).
-  documentVersions: [] as DocVersionRecord[],
+  // Generic document-version spine (Doc-Version-Workflow M2) — append-only.
+  // Seeded (M5) with backfilled chains for the multi-version file documents,
+  // replacing their previously DANGLING previous_version_id pointers with a
+  // real, navigable history. content_snapshot null = binary file, metadata-only.
+  documentVersions: [
+    { id: "dv_seed_d1_a", doc_type: "file_document", doc_id: "doc_1", version_label: "2", content_snapshot: null, change_summary: "Backfilled — version on file before the current upload", changed_by: "staff_edward", changed_at: "2026-05-20T09:00:00.000Z", previous_version_id: null, is_current: false },
+    { id: "dv_seed_d1_b", doc_type: "file_document", doc_id: "doc_1", version_label: "3", content_snapshot: null, change_summary: "Updated after strategy meeting — new de-escalation plan", changed_by: "staff_edward", changed_at: "2026-07-08T09:00:00.000Z", previous_version_id: "dv_seed_d1_a", is_current: true },
+    { id: "dv_seed_d2_a", doc_type: "file_document", doc_id: "doc_2", version_label: "1", content_snapshot: null, change_summary: "Backfilled — original protocol", changed_by: "staff_darren", changed_at: "2026-04-01T09:00:00.000Z", previous_version_id: null, is_current: false },
+    { id: "dv_seed_d2_b", doc_type: "file_document", doc_id: "doc_2", version_label: "2", content_snapshot: null, change_summary: "Police contact numbers and Philomena Protocol section updated", changed_by: "staff_darren", changed_at: "2026-06-13T09:00:00.000Z", previous_version_id: "dv_seed_d2_a", is_current: true },
+    { id: "dv_seed_d3_a", doc_type: "file_document", doc_id: "doc_3", version_label: "3", content_snapshot: null, change_summary: "Backfilled — version on file before the current upload", changed_by: "staff_darren", changed_at: "2026-03-10T09:00:00.000Z", previous_version_id: null, is_current: false },
+    { id: "dv_seed_d3_b", doc_type: "file_document", doc_id: "doc_3", version_label: "4", content_snapshot: null, change_summary: "Annual review — DSL contacts and escalation flowchart refreshed", changed_by: "staff_darren", changed_at: "2026-07-03T09:00:00.000Z", previous_version_id: "dv_seed_d3_a", is_current: true },
+    { id: "dv_seed_d5_a", doc_type: "file_document", doc_id: "doc_5", version_label: "1", content_snapshot: null, change_summary: "Backfilled — original policy", changed_by: "staff_ryan", changed_at: "2026-02-15T09:00:00.000Z", previous_version_id: null, is_current: false },
+    { id: "dv_seed_d5_b", doc_type: "file_document", doc_id: "doc_5", version_label: "2", content_snapshot: null, change_summary: "Homely remedies appendix added after pharmacist audit", changed_by: "staff_ryan", changed_at: "2026-06-28T09:00:00.000Z", previous_version_id: "dv_seed_d5_a", is_current: true },
+  ] as DocVersionRecord[],
   // Individual monitoring plans (Phase 5 M3) — one demo seed so the board shows.
   monitoringPlans: [
     {
@@ -4647,7 +4658,7 @@ store.documents = [
     id: "doc_1", title: "Behaviour Support Plan — Tyler",
     category: "behaviour_support", description: "Updated following MDT review on 10 April 2026",
     file_url: "#", file_name: "Tyler_BSP_v3.pdf", file_size: 245000, mime_type: "application/pdf",
-    version: 3, previous_version_id: "doc_1_v2", requires_read_sign: true,
+    version: 3, previous_version_id: null, requires_read_sign: true,
     linked_child_id: "yp_tyler", linked_staff_id: null, linked_incident_id: null,
     expiry_date: daysFromNow(180), tags: ["behaviour", "mandatory", "mdt"],
     home_id: "home_oak", created_at: daysFromNow(-5), updated_at: daysFromNow(-5),
@@ -4657,7 +4668,7 @@ store.documents = [
     id: "doc_2", title: "Missing from Care Protocol",
     category: "missing_protocol", description: "Procedure to follow when a young person goes missing from the home",
     file_url: "#", file_name: "MFC_Protocol_2026.pdf", file_size: 180000, mime_type: "application/pdf",
-    version: 2, previous_version_id: "doc_2_v1", requires_read_sign: true,
+    version: 2, previous_version_id: null, requires_read_sign: true,
     linked_child_id: null, linked_staff_id: null, linked_incident_id: null,
     expiry_date: daysFromNow(365), tags: ["safeguarding", "mandatory"],
     home_id: "home_oak", created_at: daysFromNow(-30), updated_at: daysFromNow(-30),
@@ -4667,7 +4678,7 @@ store.documents = [
     id: "doc_3", title: "Chamberlain House — Child Protection Policy",
     category: "policy", description: "Whole-home child protection and safeguarding policy",
     file_url: "#", file_name: "CP_Policy_2026.pdf", file_size: 320000, mime_type: "application/pdf",
-    version: 4, previous_version_id: "doc_3_v3", requires_read_sign: true,
+    version: 4, previous_version_id: null, requires_read_sign: true,
     linked_child_id: null, linked_staff_id: null, linked_incident_id: null,
     expiry_date: daysFromNow(90), tags: ["policy", "safeguarding", "mandatory"],
     home_id: "home_oak", created_at: daysFromNow(-60), updated_at: daysFromNow(-10),
@@ -4687,7 +4698,7 @@ store.documents = [
     id: "doc_5", title: "Medication Administration Policy",
     category: "procedure", description: "Full procedure for MAR, controlled drugs, and PRN",
     file_url: "#", file_name: "Medication_Policy_v2.pdf", file_size: 210000, mime_type: "application/pdf",
-    version: 2, previous_version_id: "doc_5_v1", requires_read_sign: true,
+    version: 2, previous_version_id: null, requires_read_sign: true,
     linked_child_id: null, linked_staff_id: null, linked_incident_id: null,
     expiry_date: daysFromNow(270), tags: ["medication", "mandatory"],
     home_id: "home_oak", created_at: daysFromNow(-90), updated_at: daysFromNow(-15),
