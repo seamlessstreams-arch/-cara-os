@@ -303,7 +303,7 @@ export const PRACTICE_OS_RESTRAINTS: RestraintRecord[] = [
     medical_check_completed: true,
     recorded_by: "staff_anna",
     created_at: iso(35, "22:30"),
-  } as RestraintRecord,
+  },
   {
     id: "rst_006",
     date: daysAgo(22),
@@ -333,7 +333,7 @@ export const PRACTICE_OS_RESTRAINTS: RestraintRecord[] = [
     medical_check_completed: true,
     recorded_by: "staff_edward",
     created_at: iso(22, "16:00"),
-  } as RestraintRecord,
+  },
   {
     id: "rst_007",
     date: daysAgo(10),
@@ -360,8 +360,17 @@ export const PRACTICE_OS_RESTRAINTS: RestraintRecord[] = [
     review_status: "pending_rm",
     review_notes: "",
     reviewed_by: "",
+    linked_incident_id: "",
+    notifications_sent: [
+      { party: "Registered Manager", date: daysAgo(10) },
+      { party: "Social Worker", date: daysAgo(10) },
+      { party: "Ambulance", date: daysAgo(10) },
+    ],
+    body_map_completed: true,
+    medical_check_completed: true,
+    recorded_by: "staff_ryan",
     created_at: iso(10, "20:00"),
-  } as RestraintRecord,
+  },
 ];
 
 // ── C. Debriefs (complete repair for inc_005; inc_007 deliberately absent) ────
@@ -390,7 +399,7 @@ export const PRACTICE_OS_DEBRIEFS: DebriefRecord[] = [
     support_offered: true,
     support_details: "1:1 with key worker next morning; Alex chose a walk-and-talk format.",
     created_at: iso(34, "11:00"),
-  } as DebriefRecord,
+  },
 ];
 
 // ── D. Ethical Intelligence cycles (one complete, one open) ───────────────────
