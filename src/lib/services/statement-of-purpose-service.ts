@@ -647,6 +647,23 @@ export async function updateStatement(
     .single();
 
   if (error) return { ok: false, error: error.message };
+
+  // Auto-supersession (Doc-Version-Workflow M4): activating a statement marks
+  // every OTHER active statement for the home superseded — one active statement
+  // at a time, no longer left to a manual second update. Best-effort: a failure
+  // here never fails the activation itself.
+  if (updates.status === "active" && data?.home_id) {
+    try {
+      await (s.from("cs_statements_of_purpose") as SB)
+        .update({ status: "superseded", updated_at: new Date().toISOString() })
+        .eq("home_id", data.home_id)
+        .eq("status", "active")
+        .neq("id", id);
+    } catch {
+      /* activation stands; supersession is retried on the next activate */
+    }
+  }
+
   return { ok: true, data };
 }
 

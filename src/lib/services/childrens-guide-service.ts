@@ -534,6 +534,22 @@ export async function updateGuide(
     .single();
 
   if (error) return { ok: false, error: error.message };
+
+  // Auto-supersession (Doc-Version-Workflow M4): activating a guide marks every
+  // OTHER active guide for the home superseded — mirrors updateStatement.
+  // Best-effort: a failure here never fails the activation itself.
+  if (updates.status === "active" && data?.home_id) {
+    try {
+      await (s.from("cs_childrens_guides") as SB)
+        .update({ status: "superseded", updated_at: new Date().toISOString() })
+        .eq("home_id", data.home_id)
+        .eq("status", "active")
+        .neq("id", id);
+    } catch {
+      /* activation stands; supersession is retried on the next activate */
+    }
+  }
+
   return { ok: true, data };
 }
 
