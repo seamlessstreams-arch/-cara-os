@@ -103,6 +103,13 @@ export async function GET(_req: NextRequest) {
       compliance: complianceScore,
       risk_level: riskLevel,
       action_plan: actionPlan,
+      // Which build answered — settles "is the alias current?" during
+      // prod-verify without guessing from behaviour. Vercel injects the
+      // commit for git deploys; CLI/local deploys read "unknown".
+      build: {
+        commit: (process.env.VERCEL_GIT_COMMIT_SHA ?? "unknown").slice(0, 9),
+        ref: process.env.VERCEL_GIT_COMMIT_REF ?? null,
+      },
       last_updated: new Date().toISOString(),
     },
   });
