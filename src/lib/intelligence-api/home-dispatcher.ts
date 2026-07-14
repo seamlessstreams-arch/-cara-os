@@ -617,6 +617,10 @@ import type { ChildWellbeingSnapshot } from "@/lib/engines/home-child-wellbeing-
 import type { NightLogSummary } from "@/lib/engines/home-night-safety-intelligence-engine";
 import type { HomeLevelWorkforce, StaffResilienceSnapshot } from "@/lib/engines/home-workforce-resilience-composite-engine";
 // Ambiguous Input names — aliased per consuming engine (batch B2).
+import type { Reg44VisitInput as Reg44VisitInput__regulatory_compliance } from "@/lib/engines/home-regulatory-compliance-intelligence-engine";
+import type { ChildRef as ChildRef__night_safety } from "@/lib/engines/home-night-safety-intelligence-engine";
+import type { ChildRef as ChildRef__wellbeing } from "@/lib/engines/home-wellbeing-intelligence-engine";
+import type { AdvocacyRecordInput as AdvocacyRecordInput__complaint_advocacy_responsiveness } from "@/lib/engines/home-complaint-advocacy-responsiveness-intelligence-engine";
 import type { ActivityEntryInput as ActivityEntryInput__activity_enrichment, ChildRef as ChildRef__activity_enrichment } from "@/lib/engines/home-activity-enrichment-intelligence-engine";
 import type { ChildSatisfactionRecordInput as ChildSatisfactionRecordInput__advocacy_independent_visitor } from "@/lib/engines/home-advocacy-independent-visitor-intelligence-engine";
 import type { AgencyInductionInput as AgencyInductionInput__agency_staff_management } from "@/lib/engines/home-agency-staff-management-intelligence-engine";
@@ -4326,51 +4330,50 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // Children's meeting records → ChildrensMeetingInput[]
     const rawMeetings = (store.childrensMeetingRecords as any[] ?? []);
+    // Mapped to the engine's REAL ChildrensMeetingInput fields (was silent
+    // drift: emitted total_children_* / child_minute_taker, which the engine
+    // never reads, while yp_present_count / complaints_raised arrived undefined).
     const meetings: ChildrensMeetingInput[] = rawMeetings.map((m: any) => {
       const present = (m.yp_present ?? []) as any[];
       const absent = (m.yp_absent ?? []) as any[];
       return {
         id: m.id ?? "",
         date: (m.date ?? "").toString().slice(0, 10),
-        total_children_invited: present.length + absent.length,
-        total_children_attended: present.length,
+        yp_present_count: present.length,
+        yp_total: present.length + absent.length,
         child_chaired: !!(m.child_chair),
-        child_minute_taker: !!(m.child_minute_taker),
         actions_count: ((m.actions ?? []) as any[]).length,
+        complaints_raised: !!(m.complaints_raised) || ((m.complaints ?? []) as any[]).length > 0,
       };
     });
-  
+
     // Child staff feedback → ChildFeedbackInput[]
     const rawFeedback = (store.childStaffFeedback as any[] ?? []);
     const feedback: ChildFeedbackInput[] = rawFeedback.map((f: any) => ({
       id: f.id ?? "",
       child_id: f.child_id ?? "",
+      date: (f.date ?? "").toString().slice(0, 10),
       sentiment: f.feedback_sentiment ?? "neutral",
-      responded_to: !!(f.staff_response),
-      response_timely: !!(f.staff_response && f.staff_member_informed),
+      staff_informed: !!(f.staff_member_informed),
+      action_taken: !!(f.action_taken ?? f.staff_response),
     }));
-  
+
     // Child-friendly policies → ChildFriendlyPolicyInput[]
     const rawPolicies = (store.childFriendlyPolicies as any[] ?? []);
     const policies: ChildFriendlyPolicyInput[] = rawPolicies.map((p: any) => ({
       id: p.id ?? "",
-      title: p.title ?? "",
-      format: p.format ?? "text",
-      audience_age: p.audience_age ?? "all",
-      has_plain_english_summary: !!(p.plain_english_summary),
-      has_what_this_means: ((p.what_this_means ?? []) as any[]).length > 0,
-      has_your_rights: ((p.your_rights ?? []) as any[]).length > 0,
+      shared_with_children: !!(p.shared_with_children ?? p.shared),
+      child_accessible_format: !!(p.child_accessible_format ?? p.plain_english_summary),
     }));
-  
+
     // Child expert entries → ChildExpertInput[]
     const rawExperts = (store.childExpertEntries as any[] ?? []);
     const experts: ChildExpertInput[] = rawExperts.map((e: any) => ({
       id: e.id ?? "",
       child_id: e.child_id ?? "",
       date: (e.date ?? "").toString().slice(0, 10),
-      expertise: e.expertise ?? "",
-      contribution: e.contribution ?? "",
       impact_recorded: !!(e.impact_recorded),
+      child_chose_to_participate: !!(e.child_chose_to_participate ?? e.child_initiated),
     }));
   
     const result = computeChildrensVoiceParticipation({
@@ -5206,7 +5209,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       }));
   
       const rawAdvocacy = (store.advocacyRecords ?? []) as any[];
-      const advocacy_records: AdvocacyRecordInput[] = rawAdvocacy.map((a: any) => {
+      const advocacy_records: AdvocacyRecordInput__complaint_advocacy_responsiveness[] = rawAdvocacy.map((a: any) => {
         // Seed/canonical AdvocacyRecord uses `provider`, `status`, and a `visits[]` array.
         // The previous mapping read provider_name/active/meetings_held/child_voice_captured,
         // none of which exist — so `active` defaulted to true for EVERY record (overstating
@@ -5515,20 +5518,26 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const children = store.youngPeople ?? [];
     const today = new Date().toISOString().slice(0, 10);
   
-    // Contextual safeguarding risks → ContextualRiskInput[]
+    // Contextual safeguarding risks — mapped to the engine's REAL
+    // ContextualSafeguardingRecordInput (was silent drift: plural *_counts and
+    // a needs_review flag the engine never reads; its singular counts + review
+    // dates arrived undefined).
     const rawRisks = (store.contextualSafeguardingRisks as any[] ?? []);
-    const risks: ContextualRiskInput[] = rawRisks.map((r: any) => ({
+    const risks: ContextualSafeguardingRecordInput[] = rawRisks.map((r: any) => ({
       id: r.id ?? "",
+      date_identified: (r.date_identified ?? r.created_at ?? today).toString().slice(0, 10),
+      last_reviewed: (r.last_reviewed ?? r.date_identified ?? today).toString().slice(0, 10),
       context_type: r.context_type ?? "location",
       risk_level: r.risk_level ?? "low",
       status: r.status ?? "active",
       children_affected_count: (r.children_affected ?? []).length,
-      risk_factors_count: (r.risk_factors ?? []).length,
-      protective_actions_count: (r.protective_actions ?? []).length,
-      multi_agency_actions_count: (r.multi_agency_actions ?? []).length,
+      risk_factor_count: (r.risk_factors ?? []).length,
+      protective_action_count: (r.protective_actions ?? []).length,
+      multi_agency_action_count: (r.multi_agency_actions ?? []).length,
       has_police_intelligence: !!(r.police_intelligence && r.police_intelligence.trim().length > 0),
       has_community_mapping: !!(r.community_mapping && r.community_mapping.trim().length > 0),
-      needs_review: !!(r.review_date && r.review_date.toString().slice(0, 10) < today),
+      has_review_date: !!r.review_date,
+      review_date: (r.review_date ?? "").toString().slice(0, 10),
     }));
   
     const result = computeContextualSafeguarding({
@@ -7227,46 +7236,51 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const skills: DigitalSkillInput[] = rawSkills.map((s: any) => {
       const specificSkills = (s.specific_skills ?? []) as any[];
       const achieved = specificSkills.filter((sk: any) => sk.achieved).length;
+      // Mapped to the engine's REAL field names (was silent drift: the engine
+      // reads *_count, received undefined).
       return {
         id: s.id ?? "",
         child_id: s.child_id ?? "",
         domain: s.domain ?? "",
         competency: s.competency ?? "none",
-        skills_achieved: achieved,
-        skills_total: specificSkills.length,
+        skills_achieved_count: achieved,
+        skills_total_count: specificSkills.length,
       };
     });
-  
-    // Digital plans → DigitalPlanInput[]
+
+    // Digital plans → the engine's DigitalPlanInput booleans, derived from the
+    // raw DigitalPlan record's real arrays/level.
     const rawPlans = (store.digitalPlans as any[] ?? []);
     const plans: DigitalPlanInput[] = rawPlans.map((p: any) => ({
       id: p.id ?? "",
       child_id: p.child_id ?? "",
-      has_parental_controls: p.parental_controls_level !== "none" && p.parental_controls_level !== undefined,
-      exploitation_risk_factors_count: ((p.exploitation_risk_factors ?? []) as any[]).length,
-      exploitation_protections_count: ((p.exploitation_protections ?? []) as any[]).length,
-      cyberbullying_response_count: ((p.cyberbullying_response ?? []) as any[]).length,
-      pornography_protections_count: ((p.pornography_and_exposure_protections ?? []) as any[]).length,
-      online_safety_knowledge_count: ((p.child_online_safety_knowledge ?? []) as any[]).length,
+      has_screen_time_limits: ((p.agreed_screen_time_limits ?? []) as any[]).length > 0,
+      parental_controls_active: p.parental_controls_level !== "none" && p.parental_controls_level !== undefined,
+      has_exploitation_risk_assessment:
+        ((p.exploitation_risk_factors ?? []) as any[]).length > 0 ||
+        ((p.exploitation_protections ?? []) as any[]).length > 0,
+      has_cyberbullying_response: ((p.cyberbullying_response ?? []) as any[]).length > 0,
     }));
-  
-    // Child phone records → PhoneRecordInput[]
+
+    // Child phone records → PhoneRecordInput[]. The raw record has no explicit
+    // agreement flag — a recorded agreed screen-time limit is the signed-
+    // agreement signal (conservatively false when absent).
     const rawPhones = (store.childPhoneRecords as any[] ?? []);
     const phones: PhoneRecordInput[] = rawPhones.map((ph: any) => ({
       id: ph.id ?? "",
       child_id: ph.child_id ?? "",
       parental_controls_active: !!(ph.parental_controls_active),
-      screen_time_weekly_avg: ph.screen_time_weekly_avg ?? 0,
+      online_safety_agreement_signed: ph.screen_time_agreed_limit != null,
     }));
-  
+
     // RSE tracker records (digital topics) → RseDigitalInput[]
     const rawRse = (store.rseTrackerRecords as any[] ?? []);
     const rse_records: RseDigitalInput[] = rawRse.map((r: any) => ({
       id: r.id ?? "",
       child_id: r.child_id ?? "",
-      topic: r.topic ?? "",
-      child_initiated: !!(r.child_initiation_of_topic),
-      concepts_covered_count: ((r.key_concepts_covered ?? []) as any[]).length,
+      date: (r.date ?? today).toString().slice(0, 10),
+      topic_is_digital_safety: /online|digital|internet|social media|cyber/i.test((r.topic ?? "").toString()),
+      child_engaged: !!(r.child_engagement ?? r.child_initiation_of_topic),
     }));
   
     const result = computeDigitalLiteracyOnlineSafety({
@@ -15577,7 +15591,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const today = new Date().toISOString().slice(0, 10);
   
     // ── Children ────────────────────────────────────────────────────────────
-    const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+    const children: ChildRef__night_safety[] = (store.youngPeople ?? []).map((yp: any) => ({
       id: yp.id,
       name: (yp.name ?? `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim()) || yp.id,
     }));
@@ -19599,7 +19613,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
   
-      const rawReg44 = (store.reg44ReportRecords ?? []) as any[];
+      const rawReg44 = optionalCollection(store, "reg44ReportRecords");
       const reg44_report_records: Reg44ReportInput[] = rawReg44.map((r: any) => ({
         id: r.id ?? "",
         visit_date: (r.visit_date ?? today).toString(),
@@ -19631,7 +19645,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         created_at: (r.created_at ?? today).toString(),
       }));
   
-      const rawReg45 = (store.reg45ReviewRecords ?? []) as any[];
+      const rawReg45 = optionalCollection(store, "reg45ReviewRecords");
       const reg45_review_records: Reg45ReviewInput[] = rawReg45.map((r: any) => ({
         id: r.id ?? "",
         review_period_start: (r.review_period_start ?? today).toString(),
@@ -19707,7 +19721,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       }));
   
       const rawNotifications = optionalCollection(store, "notificationRecords");
-      const notification_records: NotificationInput[] = rawNotifications.map((n: any) => ({
+      const notification_records = rawNotifications.map((n: any) => ({
         id: n.id ?? "",
         notification_type: n.notification_type ?? "other",
         event_date: (n.event_date ?? today).toString(),
@@ -19758,7 +19772,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const totalChildren = youngPeople.length;
   
     // ── Reg 44 Visit Reports ──────────────────────────────────────────────
-    const visits: Reg44VisitInput[] = ((store.reg44VisitReports ?? []) as any[])
+    const visits = ((store.reg44VisitReports ?? []) as any[])
       .map((v: any) => {
         // Parse "children_spoken" field like "3/3" or "2/3 (Casey absent)"
         let childrenSpokenCount = 0;
@@ -19977,7 +19991,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const today = new Date().toISOString().slice(0, 10);
   
     // ── Reg 44 Visit Reports ──────────────────────────────────────────────
-    const reg44_visits: Reg44VisitInput[] = ((store.reg44VisitReports ?? []) as any[])
+    const reg44_visits: Reg44VisitInput__regulatory_compliance[] = ((store.reg44VisitReports ?? []) as any[])
       .map((v: any) => ({
         id: v.id,
         visit_date: (v.visit_date ?? today).toString().slice(0, 10),
@@ -22518,81 +22532,102 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
   
+      // These five mappings previously emitted fields the engine never reads
+      // (silent drift). Rewritten to the engine's REAL interfaces; the source
+      // collections are phantoms (always []), so old guessed raw names are kept
+      // as fallbacks behind the canonical ones.
       const rawRoutines = optionalCollection(store, "sleepRoutineRecords");
       const sleep_routine_records: SleepRoutineRecordInput[] = rawRoutines.map((r: any) => ({
         id: r.id ?? "",
         child_id: r.child_id ?? "",
         date: (r.date ?? today).toString(),
-        bedtime_target: r.bedtime_target ?? "21:00",
-        actual_bedtime: r.actual_bedtime ?? "",
-        wake_time_target: r.wake_time_target ?? "07:00",
-        actual_wake_time: r.actual_wake_time ?? "",
-        routine_followed: r.routine_followed ?? false,
-        wind_down_completed: r.wind_down_completed ?? false,
-        screen_free_period: r.screen_free_period ?? false,
-        notes: r.notes ?? "",
+        planned_bedtime: r.planned_bedtime ?? r.bedtime_target ?? "21:00",
+        actual_bedtime: r.actual_bedtime ?? null,
+        planned_wake_time: r.planned_wake_time ?? r.wake_time_target ?? "07:00",
+        actual_wake_time: r.actual_wake_time ?? null,
+        wind_down_activity_completed: !!(r.wind_down_activity_completed ?? r.wind_down_completed),
+        routine_followed: !!(r.routine_followed),
+        routine_deviation_reason: r.routine_deviation_reason ?? null,
+        staff_member: r.staff_member ?? r.staff_id ?? "",
+        child_settled_within_30_min: !!(r.child_settled_within_30_min ?? r.child_settled),
+        sleep_quality_rating: r.sleep_quality_rating ?? 3,
+        notes: r.notes ?? null,
         created_at: (r.created_at ?? today).toString(),
       }));
-  
+
       const rawEnvironments = optionalCollection(store, "sleepEnvironmentRecords");
       const sleep_environment_records: SleepEnvironmentRecordInput[] = rawEnvironments.map((r: any) => ({
         id: r.id ?? "",
         child_id: r.child_id ?? "",
         assessment_date: (r.assessment_date ?? today).toString(),
-        room_temperature_ok: r.room_temperature_ok ?? false,
-        noise_level_ok: r.noise_level_ok ?? false,
-        lighting_ok: r.lighting_ok ?? false,
-        bedding_appropriate: r.bedding_appropriate ?? false,
-        comfort_items_available: r.comfort_items_available ?? false,
+        room_temperature_ok: !!(r.room_temperature_ok),
+        lighting_appropriate: !!(r.lighting_appropriate ?? r.lighting_ok),
+        noise_level_acceptable: !!(r.noise_level_acceptable ?? r.noise_level_ok),
+        bedding_clean_adequate: !!(r.bedding_clean_adequate ?? r.bedding_appropriate),
+        room_personalised: !!(r.room_personalised ?? r.comfort_items_available),
+        electronic_devices_managed: !!(r.electronic_devices_managed),
+        ventilation_adequate: !!(r.ventilation_adequate),
         overall_environment_score: r.overall_environment_score ?? 3,
-        issues_identified: r.issues_identified ?? "",
-        actions_taken: r.actions_taken ?? "",
+        issues_identified: Array.isArray(r.issues_identified)
+          ? r.issues_identified
+          : r.issues_identified
+            ? [String(r.issues_identified)]
+            : [],
+        issues_resolved: !!(r.issues_resolved),
+        resolution_date: r.resolution_date ?? null,
+        assessed_by: r.assessed_by ?? r.staff_id ?? "",
         created_at: (r.created_at ?? today).toString(),
       }));
-  
+
       const rawDisturbances = optionalCollection(store, "sleepDisturbanceRecords");
       const sleep_disturbance_records: SleepDisturbanceRecordInput[] = rawDisturbances.map((r: any) => ({
         id: r.id ?? "",
         child_id: r.child_id ?? "",
         date: (r.date ?? today).toString(),
-        time: r.time ?? "",
-        disturbance_type: r.disturbance_type ?? "nightmare",
+        time_of_disturbance: r.time_of_disturbance ?? r.time ?? "",
+        disturbance_type: r.disturbance_type ?? "other",
         duration_minutes: r.duration_minutes ?? 0,
-        intervention_provided: r.intervention_provided ?? "",
-        resolution_achieved: r.resolution_achieved ?? false,
-        staff_id: r.staff_id ?? "",
-        follow_up_needed: r.follow_up_needed ?? false,
-        follow_up_completed: r.follow_up_completed ?? false,
+        staff_response_time_minutes: r.staff_response_time_minutes ?? null,
+        intervention_type: r.intervention_type ?? r.intervention_provided ?? "",
+        child_resettled: !!(r.child_resettled ?? r.resolution_achieved),
+        resettled_time_minutes: r.resettled_time_minutes ?? null,
+        follow_up_actions: r.follow_up_actions ?? null,
+        follow_up_completed: !!(r.follow_up_completed),
+        impact_on_next_day: r.impact_on_next_day ?? "none",
+        staff_member: r.staff_member ?? r.staff_id ?? "",
         created_at: (r.created_at ?? today).toString(),
       }));
-  
+
       const rawBedtime = optionalCollection(store, "bedtimeSupportRecords");
       const bedtime_support_records: BedtimeSupportRecordInput[] = rawBedtime.map((r: any) => ({
         id: r.id ?? "",
         child_id: r.child_id ?? "",
         date: (r.date ?? today).toString(),
-        support_type: r.support_type ?? "routine",
-        staff_id: r.staff_id ?? "",
-        child_settled: r.child_settled ?? false,
-        anxiety_level: r.anxiety_level ?? 1,
-        techniques_used: r.techniques_used ?? "",
-        effectiveness_rating: r.effectiveness_rating ?? 3,
-        child_feedback: r.child_feedback ?? "",
+        support_type: r.support_type ?? "other",
+        support_provided: !!(r.support_provided ?? r.techniques_used),
+        duration_minutes: r.duration_minutes ?? 0,
+        child_engaged: !!(r.child_engaged ?? r.child_settled),
+        child_feedback_positive: !!(r.child_feedback_positive ?? (typeof r.effectiveness_rating === "number" && r.effectiveness_rating >= 4)),
+        staff_member: r.staff_member ?? r.staff_id ?? "",
+        consistency_with_plan: !!(r.consistency_with_plan),
+        notes: r.notes ?? r.child_feedback ?? null,
         created_at: (r.created_at ?? today).toString(),
       }));
-  
+
       const rawImprovement = optionalCollection(store, "sleepImprovementRecords");
       const sleep_improvement_records: SleepImprovementRecordInput[] = rawImprovement.map((r: any) => ({
         id: r.id ?? "",
         child_id: r.child_id ?? "",
-        plan_date: (r.plan_date ?? today).toString(),
-        goals: r.goals ?? "",
-        strategies: r.strategies ?? "",
-        review_date: r.review_date ?? "",
+        plan_created_date: (r.plan_created_date ?? r.plan_date ?? today).toString(),
+        plan_type: r.plan_type ?? "other",
+        target_outcome: r.target_outcome ?? r.goals ?? "",
+        review_date: r.review_date ?? null,
+        reviewed: !!(r.reviewed),
         progress_rating: r.progress_rating ?? 3,
-        active: r.active ?? true,
-        professional_input: r.professional_input ?? false,
-        child_involved: r.child_involved ?? false,
+        child_involved_in_planning: !!(r.child_involved_in_planning ?? r.child_involved),
+        professional_input_received: !!(r.professional_input_received ?? r.professional_input),
+        plan_active: !!(r.plan_active ?? r.active),
+        outcomes_documented: !!(r.outcomes_documented),
         created_at: (r.created_at ?? today).toString(),
       }));
   
@@ -24754,6 +24789,15 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     }));
   
     // Parent partnership records
+    // Restored verbatim from the original route (c3963b57d) — the consolidation
+    // dropped this const, leaving a dormant ReferenceError for when data exists.
+    const ENGAGEMENT_MAP: Record<string, string> = {
+      positive: "strong",
+      neutral: "developing",
+      difficult: "limited",
+      disengaged: "none",
+      hostile: "none",
+    };
     const rawParent = (store.parentPartnershipRecords as any[] ?? []);
     const parent_partnerships: ParentPartnershipInput__stakeholder_engagement_feedback[] = rawParent.map((p: any) => ({
       id: p.id ?? "",
@@ -26151,15 +26195,16 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // Therapeutic child impact → TherapeuticImpactInput[]
     const rawImpact = (store.therapeuticChildImpact as any[] ?? []);
+    // Mapped to the engine's REAL interfaces (was silent drift: emitted counts
+    // and dates the engine never reads; its booleans arrived undefined).
     const impacts: TherapeuticImpactInput[] = rawImpact.map((t: any) => ({
       id: t.id ?? "",
       child_id: t.child_id ?? "",
-      key_outcomes_count: ((t.keyOutcomes ?? []) as any[]).length,
+      has_key_outcomes: ((t.keyOutcomes ?? []) as any[]).length > 0,
       has_evidence_of_progress: !!(t.evidenceOfProgress),
-      model_application_count: ((t.modelApplication ?? []) as any[]).length,
-      review_date: (t.reviewDate ?? "").toString().slice(0, 10),
+      model_applications_count: ((t.modelApplication ?? []) as any[]).length,
     }));
-  
+
     // Wellbeing pulse survey records → WellbeingPulseInput[]
     const rawPulse = (store.wellbeingPulseSurveyRecords as any[] ?? []);
     const pulses: WellbeingPulseInput[] = rawPulse.map((w: any) => ({
@@ -26167,11 +26212,11 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       child_id: w.child_id ?? "",
       date: (w.date ?? "").toString().slice(0, 10),
       overall_score: w.overall_score ?? 0,
-      trend_vs_last: w.trend_vs_last ?? "stable",
-      actions_arising_count: ((w.actions_arising ?? []) as any[]).length,
+      trend: w.trend ?? w.trend_vs_last ?? "stable",
       follow_up_needed: !!(w.follow_up_needed),
+      follow_up_actioned: !!(w.follow_up_actioned ?? ((w.actions_arising ?? []) as any[]).length > 0),
     }));
-  
+
     // Self-soothing toolkits → SelfSoothingInput[]
     const rawSoothing = (store.selfSoothingToolkits as any[] ?? []);
     const toolkits: SelfSoothingInput[] = rawSoothing.map((s: any) => {
@@ -26181,29 +26226,31 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         ((s.movement_strategies ?? []) as any[]).length +
         ((s.distraction_strategies ?? []) as any[]).length +
         ((s.co_regulation_strategies ?? []) as any[]).length;
+      const reviewedRecently = (() => {
+        const d = (s.last_updated ?? s.review_date ?? "").toString().slice(0, 10);
+        if (!d) return false;
+        const ms = Date.parse(`${d}T00:00:00Z`);
+        return Number.isFinite(ms) && Date.now() - ms <= 90 * 86_400_000;
+      })();
       return {
         id: s.id ?? "",
         child_id: s.child_id ?? "",
-        total_strategies: totalStrategies,
-        child_chose_all: !!(s.child_chose_all),
-        effectiveness_rating: s.effectiveness_rating ?? "unknown",
-        last_updated: (s.last_updated ?? "").toString().slice(0, 10),
-        review_date: (s.review_date ?? "").toString().slice(0, 10),
+        strategies_count: totalStrategies,
+        child_contributed: !!(s.child_contributed ?? s.child_chose_all),
+        recently_reviewed: reviewedRecently,
       };
     });
-  
+
     // Grief records → GriefSupportInput[]
     const rawGrief = (store.griefRecords as any[] ?? []);
     const grief_records: GriefSupportInput[] = rawGrief.map((g: any) => ({
       id: g.id ?? "",
       child_id: g.child_id ?? "",
-      loss_type: g.loss_type ?? "",
-      external_support_count: ((g.external_support_in_place ?? []) as any[]).length,
-      home_support_count: ((g.home_based_support ?? []) as any[]).length,
-      has_key_worker_involvement: !!(g.key_worker_involvement),
-      traditions_count: ((g.traditions_and_rituals ?? []) as any[]).length,
-      has_anniversary_acknowledgement: !!(g.anniversary_acknowledgement),
-      creative_outlets_count: ((g.creative_outlets ?? []) as any[]).length,
+      has_external_support: ((g.external_support_in_place ?? []) as any[]).length > 0,
+      has_home_support: ((g.home_based_support ?? []) as any[]).length > 0,
+      has_commemoration_activities:
+        ((g.traditions_and_rituals ?? []) as any[]).length > 0 || !!(g.anniversary_acknowledgement),
+      key_worker_involved: !!(g.key_worker_involvement),
     }));
   
     const result = computeTherapeuticWellbeingImpact({
@@ -27544,7 +27591,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const today = new Date().toISOString().slice(0, 10);
   
     // ── Children ────────────────────────────────────────────────────────────
-    const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+    const children: ChildRef__wellbeing[] = (store.youngPeople ?? []).map((yp: any) => ({
       id: yp.id,
       name: (yp.name ?? `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim()) || yp.id,
     }));
