@@ -57,6 +57,9 @@ jobs:
       - name: Seed-cast guard (no member casts hiding incomplete seeds)
         run: node scripts/check-seed-casts.js
 
+      - name: JSON-body guard (no raw req.json in API routes)
+        run: node scripts/check-json-body.js
+
   test:
     name: Test suite
     runs-on: ubuntu-latest
