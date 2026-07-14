@@ -172,7 +172,7 @@ export function createDailyLog(input: CreateDailyLogInput): DailyLogOrchestratio
   return {
     log,
     audit_entry: auditEntry,
-    timeline_event: timelineEvent,
+    timeline_event: timelineEvent as unknown as Record<string, unknown>,
     linked_updates: linkedUpdates,
     alerts,
     canonical_event_id: canonicalEventId,

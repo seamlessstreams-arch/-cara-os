@@ -28,34 +28,26 @@ export async function GET(req: NextRequest) {
   let list = db.audits.findAll();
 
   if (filterStatus) {
-    list = list.filter((a) => (a as Record<string, unknown>).status === filterStatus);
+    list = list.filter((a) => a.status === filterStatus);
   }
   if (filterCategory) {
-    list = list.filter((a) => (a as Record<string, unknown>).category === filterCategory);
+    list = list.filter((a) => a.category === filterCategory);
   }
 
   // Sort: scheduled first (upcoming), then completed by date desc
   list.sort((a, b) => {
-    const ar = a as Record<string, unknown>;
-    const br = b as Record<string, unknown>;
-    if (ar.status === "scheduled" && br.status !== "scheduled") return -1;
-    if (ar.status !== "scheduled" && br.status === "scheduled") return 1;
-    return ((br.date as string) ?? "").localeCompare((ar.date as string) ?? "");
+    if (a.status === "scheduled" && b.status !== "scheduled") return -1;
+    if (a.status !== "scheduled" && b.status === "scheduled") return 1;
+    return (b.date ?? "").localeCompare(a.date ?? "");
   });
 
   // ── Compute meta over ALL audits ────────────────────────────────────────
   const all = db.audits.findAll();
 
-  const completed = all.filter((a) => (a as Record<string, unknown>).status === "completed").length;
-  const scheduled = all.filter((a) => {
-    const r = a as Record<string, unknown>;
-    return r.status === "scheduled" && (r.date as string) >= today;
-  }).length;
-  const inProgress = all.filter((a) => (a as Record<string, unknown>).status === "in_progress").length;
-  const overdue = all.filter((a) => {
-    const r = a as Record<string, unknown>;
-    return r.status === "scheduled" && (r.date as string) < today;
-  }).length;
+  const completed = all.filter((a) => a.status === "completed").length;
+  const scheduled = all.filter((a) => a.status === "scheduled" && a.date >= today).length;
+  const inProgress = all.filter((a) => a.status === "in_progress").length;
+  const overdue = all.filter((a) => a.status === "scheduled" && a.date < today).length;
 
   return NextResponse.json({
     data: list,
