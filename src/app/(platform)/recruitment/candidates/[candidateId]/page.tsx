@@ -15,8 +15,9 @@ import {
   FileCheck, User, Users, Globe, GraduationCap, Briefcase, Heart,
   ChevronRight, Star, Mail, Phone, Calendar, Sparkles, Activity,
   FileText, Eye, Flag, Fingerprint, Building2, Zap, Copy,
-  ExternalLink, MoreHorizontal, RefreshCw, ClipboardCheck,
+  ExternalLink, MoreHorizontal, RefreshCw, ClipboardCheck, UserPlus,
 } from "lucide-react";
+import { toastSuccess, toastError, toastInfo } from "@/lib/toast";
 import { Input } from "@/components/ui/input";
 import { cn, formatDate } from "@/lib/utils";
 import {
@@ -29,6 +30,45 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+
+// The candidate->staff bridge (Phase 4 M3) shipped API-only; this is the
+// deferred human trigger. Server re-checks everything (flag, MANAGE_STAFF,
+// safeguarding gate) — the button just reports the outcome honestly.
+function AppointToStaffButton({ candidateId, onAppointed }: { candidateId: string; onAppointed: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const appoint = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/v1/recruitment/${candidateId}/appoint-to-staff`, { method: "POST" });
+      const body = await res.json().catch(() => null);
+      const d = body?.data;
+      if (d && d.enabled === false) {
+        toastInfo(
+          "Staff bridge is switched off",
+          "Enable the candidate_to_staff_bridge flag (CARA_CANDIDATE_TO_STAFF_BRIDGE) to create staff records from appointed candidates.",
+        );
+      } else if (res.status === 409 && d) {
+        toastError("Not appointable yet", (d.blockers ?? []).join("; ") || "The safeguarding gate refused the appointment.");
+      } else if (res.ok && d?.appointed) {
+        toastSuccess("Staff record created", `${d.staff?.full_name ?? "New staff member"} is now on the team — the candidate is bridged.`);
+        onAppointed();
+      } else {
+        toastError("Appointment failed", body?.error ?? `Unexpected response (${res.status}).`);
+      }
+    } catch {
+      toastError("Appointment failed", "Network error — nothing was written.");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Button variant="outline" size="sm" className="rounded-xl" onClick={appoint} disabled={busy}>
+      <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+      {busy ? "Appointing…" : "Appoint to staff"}
+    </Button>
+  );
+}
 
 const STAGE_ORDER = [
   "enquiry", "application_received", "sift", "interview_scheduled",
@@ -127,7 +167,7 @@ export default function CandidateDetailPage() {
   const { currentUser } = useAuthContext();
   const params = useParams();
   const candidateId = params?.candidateId as string;
-  const { data, isLoading, error } = useCandidate(candidateId);
+  const { data, isLoading, error, refetch } = useCandidate(candidateId);
   const updateCheck = useUpdateCheck();
   const updateReference = useUpdateReference();
   const createReference = useCreateReference();
@@ -316,6 +356,9 @@ export default function CandidateDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {candidate.stage === "appointed" && (
+              <AppointToStaffButton candidateId={candidate.id} onAppointed={() => refetch()} />
+            )}
             <PrintButton title={`${candidate.first_name} ${candidate.last_name}`} subtitle="Chamberlain House — Candidate Profile" targetId="candidate-detail-content" />
             <ComplianceRing score={candidate.compliance_score} />
             <SmartUploadButton
