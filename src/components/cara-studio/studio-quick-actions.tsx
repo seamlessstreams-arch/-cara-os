@@ -45,15 +45,15 @@ function getActions(sourceType: string, childName?: string): StudioAction[] {
         { label: "Visual Formulation", artifactType: "visual_formulation", framework: "psychologically_informed" },
         { label: "Risk Review", artifactType: "risk_review", framework: "trauma_informed" },
         { label: "Care Plan Update", artifactType: "care_plan_update" },
-        { label: "Social Worker Update", artifactType: "social_worker_update", tone: "professional_legal" },
+        { label: "Social Worker Update", artifactType: "social_worker_update", tone: "legal_careful" },
       ];
     case "incident":
       return [
         { label: "Incident Learning Review", artifactType: "incident_learning_review", framework: "trauma_informed" },
         { label: "Safeguarding Review", artifactType: "safeguarding_review", framework: "safeguarding_led" },
-        { label: "Staff Training from Incident", artifactType: "staff_training", tone: "training_focused" },
+        { label: "Staff Training from Incident", artifactType: "staff_training", tone: "plain_english" },
         { label: "Action Plan", artifactType: "action_plan" },
-        { label: "Scenario Simulation", artifactType: "scenario_simulation", tone: "training_focused" },
+        { label: "Scenario Simulation", artifactType: "scenario_simulation", tone: "plain_english" },
       ];
     case "daily_log":
       return [
@@ -69,22 +69,22 @@ function getActions(sourceType: string, childName?: string): StudioAction[] {
       ];
     case "staff":
       return [
-        { label: "Staff Training Session", artifactType: "staff_training", tone: "training_focused" },
-        { label: "Supervision Prompts", artifactType: "supervision_prompt", tone: "reflective" },
-        { label: "Scenario Simulation", artifactType: "scenario_simulation", tone: "training_focused" },
-        { label: "Reflective Workbook", artifactType: "reflective_workbook", tone: "reflective" },
+        { label: "Staff Training Session", artifactType: "staff_training", tone: "plain_english" },
+        { label: "Supervision Prompts", artifactType: "supervision_prompt", tone: "therapeutic" },
+        { label: "Scenario Simulation", artifactType: "scenario_simulation", tone: "plain_english" },
+        { label: "Reflective Workbook", artifactType: "reflective_workbook", tone: "therapeutic" },
       ];
     case "supervision":
       return [
-        { label: "Supervision Prompts", artifactType: "supervision_prompt", tone: "reflective" },
-        { label: "Reflective Workbook", artifactType: "reflective_workbook", tone: "reflective" },
-        { label: "Staff Training", artifactType: "staff_training", tone: "training_focused" },
+        { label: "Supervision Prompts", artifactType: "supervision_prompt", tone: "therapeutic" },
+        { label: "Reflective Workbook", artifactType: "reflective_workbook", tone: "therapeutic" },
+        { label: "Staff Training", artifactType: "staff_training", tone: "plain_english" },
       ];
     case "dashboard":
       return [
-        { label: "Management Oversight", artifactType: "management_oversight", tone: "inspection_ready" },
+        { label: "Management Oversight", artifactType: "management_oversight", tone: "formal" },
         { label: "Team Meeting Discussion", artifactType: "team_meeting_discussion" },
-        { label: "Reg 45 Summary", artifactType: "reg45_summary", tone: "inspection_ready" },
+        { label: "Reg 45 Summary", artifactType: "reg45_summary", tone: "formal" },
         { label: "RI Briefing", artifactType: "ri_briefing" },
       ];
     default:
