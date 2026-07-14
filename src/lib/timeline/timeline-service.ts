@@ -10,6 +10,14 @@
 
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
+
+/** Defensive dynamic read over drift-prone record shapes — the timeline
+ *  aggregates 12+ collections whose fields vary; same object, typed for
+ *  key access (identical runtime to the previous inline casts). */
+function dyn(r: object): Record<string, unknown> {
+  return r as unknown as Record<string, unknown>;
+}
+
 import type {
   TimelineEvent,
   TimelineEventType,
@@ -159,19 +167,19 @@ function aggregateMedicationErrors(): TimelineEvent[] {
   return (store.medicationErrors ?? []).map((err) => ({
     id: `tl_mederr_${err.id}`,
     event_type: "medication_error_reported" as TimelineEventType,
-    child_id: (err as Record<string, unknown>).child_id as string | undefined,
-    staff_id: (err as Record<string, unknown>).reported_by as string | undefined,
+    child_id: dyn(err).child_id as string | undefined,
+    staff_id: dyn(err).reported_by as string | undefined,
     home_id: "home_oak",
     title: "Medication error reported",
-    summary: ((err as Record<string, unknown>).description as string ?? "Medication error recorded").slice(0, 120),
+    summary: (dyn(err).description as string ?? "Medication error recorded").slice(0, 120),
     linked_record_type: "medication_error",
     linked_record_id: err.id,
     tags: ["medication", "error", "safety"],
     risk_level: "high" as TimelineRiskLevel,
     visibility_level: "sensitive" as TimelineVisibility,
     metadata: {},
-    created_at: (err as Record<string, unknown>).created_at as string ?? new Date().toISOString(),
-    created_by: (err as Record<string, unknown>).reported_by as string ?? "system",
+    created_at: dyn(err).created_at as string ?? new Date().toISOString(),
+    created_by: dyn(err).reported_by as string ?? "system",
   }));
 }
 
@@ -204,19 +212,19 @@ function aggregateRestraints(): TimelineEvent[] {
   return (store.restraints ?? []).map((r) => ({
     id: `tl_rest_${r.id}`,
     event_type: "restraint_recorded" as TimelineEventType,
-    child_id: (r as Record<string, unknown>).child_id as string | undefined,
-    staff_id: (r as Record<string, unknown>).staff_id as string | undefined,
+    child_id: dyn(r).child_id as string | undefined,
+    staff_id: dyn(r).staff_id as string | undefined,
     home_id: "home_oak",
     title: "Physical intervention recorded",
-    summary: ((r as Record<string, unknown>).description as string ?? "Physical intervention recorded").slice(0, 120),
+    summary: (dyn(r).description as string ?? "Physical intervention recorded").slice(0, 120),
     linked_record_type: "restraint",
     linked_record_id: r.id,
     tags: ["restraint", "safety", "physical_intervention"],
     risk_level: "high" as TimelineRiskLevel,
     visibility_level: "sensitive" as TimelineVisibility,
     metadata: {},
-    created_at: (r as Record<string, unknown>).created_at as string ?? new Date().toISOString(),
-    created_by: (r as Record<string, unknown>).staff_id as string ?? "system",
+    created_at: dyn(r).created_at as string ?? new Date().toISOString(),
+    created_by: dyn(r).staff_id as string ?? "system",
   }));
 }
 
@@ -225,19 +233,19 @@ function aggregateBodyMaps(): TimelineEvent[] {
   return (store.bodyMap ?? []).map((bm) => ({
     id: `tl_bmap_${bm.id}`,
     event_type: "body_map_completed" as TimelineEventType,
-    child_id: (bm as Record<string, unknown>).child_id as string | undefined,
-    staff_id: (bm as Record<string, unknown>).completed_by as string | undefined,
+    child_id: dyn(bm).child_id as string | undefined,
+    staff_id: dyn(bm).completed_by as string | undefined,
     home_id: "home_oak",
     title: "Body map completed",
-    summary: ((bm as Record<string, unknown>).notes as string ?? "Body map assessment completed").slice(0, 120),
+    summary: (dyn(bm).notes as string ?? "Body map assessment completed").slice(0, 120),
     linked_record_type: "body_map",
     linked_record_id: bm.id,
     tags: ["body_map", "safeguarding"],
     risk_level: "medium" as TimelineRiskLevel,
     visibility_level: "sensitive" as TimelineVisibility,
     metadata: {},
-    created_at: (bm as Record<string, unknown>).created_at as string ?? new Date().toISOString(),
-    created_by: (bm as Record<string, unknown>).completed_by as string ?? "system",
+    created_at: dyn(bm).created_at as string ?? new Date().toISOString(),
+    created_by: dyn(bm).completed_by as string ?? "system",
   }));
 }
 
@@ -270,8 +278,8 @@ function aggregateKeyWorkingSessions(): TimelineEvent[] {
     child_id: kw.child_id,
     staff_id: kw.staff_id,
     home_id: "home_oak",
-    title: `Key work session: ${(kw as Record<string, unknown>).topic ?? "session"}`,
-    summary: ((kw as Record<string, unknown>).notes as string ?? "Key working session completed").slice(0, 120),
+    title: `Key work session: ${dyn(kw).topic ?? "session"}`,
+    summary: (dyn(kw).notes as string ?? "Key working session completed").slice(0, 120),
     linked_record_type: "key_working_session",
     linked_record_id: kw.id,
     tags: ["key_working"],
@@ -289,18 +297,18 @@ function aggregateRiskAssessments(): TimelineEvent[] {
     id: `tl_risk_${ra.id}`,
     event_type: "risk_assessment_created" as TimelineEventType,
     child_id: ra.child_id,
-    staff_id: (ra as Record<string, unknown>).assessed_by as string | undefined,
+    staff_id: dyn(ra).assessed_by as string | undefined,
     home_id: "home_oak",
-    title: `Risk assessment: ${(ra as Record<string, unknown>).title ?? "assessment"}`,
-    summary: ((ra as Record<string, unknown>).summary as string ?? "Risk assessment completed").slice(0, 120),
+    title: `Risk assessment: ${dyn(ra).title ?? "assessment"}`,
+    summary: (dyn(ra).summary as string ?? "Risk assessment completed").slice(0, 120),
     linked_record_type: "risk_assessment",
     linked_record_id: ra.id,
-    tags: ["risk_assessment", (ra as Record<string, unknown>).risk_level as string ?? "unknown"],
-    risk_level: ((ra as Record<string, unknown>).risk_level as TimelineRiskLevel) ?? "medium",
+    tags: ["risk_assessment", dyn(ra).risk_level as string ?? "unknown"],
+    risk_level: (dyn(ra).risk_level as TimelineRiskLevel) ?? "medium",
     visibility_level: "sensitive" as TimelineVisibility,
-    metadata: { risk_level: (ra as Record<string, unknown>).risk_level },
+    metadata: { risk_level: dyn(ra).risk_level },
     created_at: ra.created_at ?? new Date().toISOString(),
-    created_by: (ra as Record<string, unknown>).assessed_by as string ?? "system",
+    created_by: dyn(ra).assessed_by as string ?? "system",
   }));
 }
 
@@ -310,16 +318,16 @@ function aggregateVisitors(): TimelineEvent[] {
     id: `tl_vis_${v.id}`,
     event_type: "visitor_logged" as TimelineEventType,
     home_id: "home_oak",
-    title: `Visitor: ${(v as Record<string, unknown>).name ?? "visitor"}`,
-    summary: `${(v as Record<string, unknown>).name ?? "Visitor"} — ${(v as Record<string, unknown>).purpose ?? "visit"}`,
+    title: `Visitor: ${dyn(v).name ?? "visitor"}`,
+    summary: `${dyn(v).name ?? "Visitor"} — ${dyn(v).purpose ?? "visit"}`,
     linked_record_type: "visitor",
     linked_record_id: v.id,
     tags: ["visitor"],
     risk_level: "none" as TimelineRiskLevel,
     visibility_level: "standard" as TimelineVisibility,
     metadata: {},
-    created_at: (v as Record<string, unknown>).created_at as string ?? new Date().toISOString(),
-    created_by: (v as Record<string, unknown>).logged_by as string ?? "system",
+    created_at: dyn(v).created_at as string ?? new Date().toISOString(),
+    created_by: dyn(v).logged_by as string ?? "system",
   }));
 }
 
@@ -330,15 +338,15 @@ function aggregateFireDrills(): TimelineEvent[] {
     event_type: "fire_drill_completed" as TimelineEventType,
     home_id: "home_oak",
     title: "Fire drill completed",
-    summary: `Fire drill — evacuation time: ${(fd as Record<string, unknown>).evacuation_time ?? "not recorded"}`,
+    summary: `Fire drill — evacuation time: ${dyn(fd).evacuation_time ?? "not recorded"}`,
     linked_record_type: "fire_drill",
     linked_record_id: fd.id,
     tags: ["fire_drill", "safety", "compliance"],
     risk_level: "none" as TimelineRiskLevel,
     visibility_level: "standard" as TimelineVisibility,
     metadata: {},
-    created_at: (fd as Record<string, unknown>).created_at as string ?? new Date().toISOString(),
-    created_by: (fd as Record<string, unknown>).conducted_by as string ?? "system",
+    created_at: dyn(fd).created_at as string ?? new Date().toISOString(),
+    created_by: dyn(fd).conducted_by as string ?? "system",
   }));
 }
 
@@ -347,19 +355,19 @@ function aggregateSignificantEvents(): TimelineEvent[] {
   return (store.significantEvents ?? []).map((se) => ({
     id: `tl_sig_${se.id}`,
     event_type: "custom_event" as TimelineEventType,
-    child_id: (se as Record<string, unknown>).child_id as string | undefined,
-    staff_id: (se as Record<string, unknown>).staff_id as string | undefined,
+    child_id: dyn(se).child_id as string | undefined,
+    staff_id: dyn(se).staff_id as string | undefined,
     home_id: "home_oak",
-    title: (se as Record<string, unknown>).title as string ?? "Significant event",
-    summary: ((se as Record<string, unknown>).description as string ?? "Significant event recorded").slice(0, 120),
+    title: dyn(se).title as string ?? "Significant event",
+    summary: (dyn(se).description as string ?? "Significant event recorded").slice(0, 120),
     linked_record_type: "significant_event",
     linked_record_id: se.id,
     tags: ["significant_event"],
     risk_level: "medium" as TimelineRiskLevel,
     visibility_level: "standard" as TimelineVisibility,
     metadata: {},
-    created_at: (se as Record<string, unknown>).created_at as string ?? new Date().toISOString(),
-    created_by: (se as Record<string, unknown>).staff_id as string ?? "system",
+    created_at: dyn(se).created_at as string ?? new Date().toISOString(),
+    created_by: dyn(se).staff_id as string ?? "system",
   }));
 }
 
@@ -379,7 +387,7 @@ function aggregateSupervisions(): TimelineEvent[] {
     visibility_level: "standard" as TimelineVisibility,
     metadata: {},
     created_at: sup.created_at ?? new Date().toISOString(),
-    created_by: (sup as Record<string, unknown>).supervisor_id as string ?? "system",
+    created_by: dyn(sup).supervisor_id as string ?? "system",
   }));
 }
 
@@ -408,19 +416,19 @@ function aggregateCompliments(): TimelineEvent[] {
   return (store.compliments ?? []).map((c) => ({
     id: `tl_comp_${c.id}`,
     event_type: "achievement_recorded" as TimelineEventType,
-    child_id: (c as Record<string, unknown>).child_id as string | undefined,
-    staff_id: (c as Record<string, unknown>).staff_id as string | undefined,
+    child_id: dyn(c).child_id as string | undefined,
+    staff_id: dyn(c).staff_id as string | undefined,
     home_id: "home_oak",
     title: "Compliment recorded",
-    summary: ((c as Record<string, unknown>).content as string ?? "Compliment received").slice(0, 120),
+    summary: (dyn(c).content as string ?? "Compliment received").slice(0, 120),
     linked_record_type: "compliment",
     linked_record_id: c.id,
     tags: ["compliment", "positive"],
     risk_level: "none" as TimelineRiskLevel,
     visibility_level: "standard" as TimelineVisibility,
     metadata: {},
-    created_at: (c as Record<string, unknown>).created_at as string ?? new Date().toISOString(),
-    created_by: (c as Record<string, unknown>).created_by as string ?? "system",
+    created_at: dyn(c).created_at as string ?? new Date().toISOString(),
+    created_by: dyn(c).created_by as string ?? "system",
   }));
 }
 
@@ -431,8 +439,8 @@ function aggregateEducationRecords(): TimelineEvent[] {
     event_type: "education_update_recorded" as TimelineEventType,
     child_id: ed.child_id,
     home_id: "home_oak",
-    title: `Education update: ${(ed as Record<string, unknown>).title ?? "record"}`,
-    summary: ((ed as Record<string, unknown>).notes as string ?? "Education record updated").slice(0, 120),
+    title: `Education update: ${dyn(ed).title ?? "record"}`,
+    summary: (dyn(ed).notes as string ?? "Education record updated").slice(0, 120),
     linked_record_type: "education",
     linked_record_id: ed.id,
     tags: ["education"],
@@ -440,7 +448,7 @@ function aggregateEducationRecords(): TimelineEvent[] {
     visibility_level: "standard" as TimelineVisibility,
     metadata: {},
     created_at: ed.created_at ?? new Date().toISOString(),
-    created_by: (ed as Record<string, unknown>).created_by as string ?? "system",
+    created_by: dyn(ed).created_by as string ?? "system",
   }));
 }
 
