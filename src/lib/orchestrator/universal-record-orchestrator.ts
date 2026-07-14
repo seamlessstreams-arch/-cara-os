@@ -157,7 +157,7 @@ function generateReference(recordType: string): string {
   const prefix = RECORD_PREFIX_MAP[recordType] ?? "REC";
   const year = new Date().getFullYear();
   const collectionKey = STORE_COLLECTION_MAP[recordType];
-  const collection = collectionKey ? (store as Record<string, unknown[]>)[collectionKey] : undefined;
+  const collection = collectionKey ? (store as unknown as Record<string, unknown[]>)[collectionKey] : undefined;
   const existingCount = Array.isArray(collection) ? collection.length : 0;
   const seq = String(existingCount + 1).padStart(4, "0");
   return `${prefix}-${year}-${seq}`;
@@ -572,9 +572,9 @@ function delegateToDailyLog(input: CreateRecordInput): OrchestrationResult {
   });
 
   return {
-    record: result.log as Record<string, unknown>,
-    audit_entry: result.audit_entry as Record<string, unknown>,
-    timeline_event: result.timeline_event as Record<string, unknown>,
+    record: result.log as unknown as Record<string, unknown>,
+    audit_entry: result.audit_entry as unknown as Record<string, unknown>,
+    timeline_event: result.timeline_event as unknown as Record<string, unknown>,
     tasks_created: [],
     linked_updates: result.linked_updates,
     alerts: result.alerts,
@@ -622,14 +622,14 @@ export function createRecord(input: CreateRecordInput): OrchestrationResult {
   // Push to the appropriate store collection or a generic records array
   const store = getStore();
   const collectionKey = STORE_COLLECTION_MAP[input.record_type];
-  if (collectionKey && Array.isArray((store as Record<string, unknown[]>)[collectionKey])) {
-    (store as Record<string, unknown[]>)[collectionKey].push(record);
+  if (collectionKey && Array.isArray((store as unknown as Record<string, unknown[]>)[collectionKey])) {
+    (store as unknown as Record<string, unknown[]>)[collectionKey].push(record);
   } else {
     // Generic fallback collection
-    if (!Array.isArray((store as Record<string, unknown[]>).records)) {
-      (store as Record<string, unknown[]>).records = [];
+    if (!Array.isArray((store as unknown as Record<string, unknown[]>).records)) {
+      (store as unknown as Record<string, unknown[]>).records = [];
     }
-    (store as Record<string, unknown[]>).records.push(record);
+    (store as unknown as Record<string, unknown[]>).records.push(record);
   }
 
   linkedUpdates.push(`${input.record_type.replace(/_/g, " ")} ${reference} saved`);

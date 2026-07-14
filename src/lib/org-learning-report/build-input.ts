@@ -25,10 +25,10 @@ export function buildOrgLearningInputFromStore(store: Store, asOf: string, perio
     homeId: "home_oak",
     asOf,
     period,
-    incidents: (store.incidents ?? []).map((i: Record<string, unknown>) => ({ id: String(i.id), date: day(i.date), type: String(i.type ?? "other"), severity: String(i.severity ?? ""), childId: i.child_id ? String(i.child_id) : undefined })),
-    behaviour: (store.behaviourLog ?? []).map((b: Record<string, unknown>) => ({ id: String(b.id), date: day(b.date), direction: String(b.direction ?? ""), trigger: String(b.trigger ?? "") })),
-    escalations: (store.escalationDecisions ?? []).map((e: Record<string, unknown>) => ({ id: String(e.id), createdAt: day(e.createdAt), status: String(e.status ?? ""), confirmedLevel: e.confirmedLevel ? String(e.confirmedLevel) : undefined })),
-    ethical: (store.ethicalIntelligenceEvents ?? []).map((e: Record<string, unknown>) => {
+    incidents: (store.incidents ?? []).map((i) => ({ id: String(i.id), date: day(i.date), type: String(i.type ?? "other"), severity: String(i.severity ?? ""), childId: i.child_id ? String(i.child_id) : undefined })),
+    behaviour: (store.behaviourLog ?? []).map((b) => ({ id: String(b.id), date: day(b.date), direction: String(b.direction ?? ""), trigger: String(b.trigger ?? "") })),
+    escalations: (store.escalationDecisions ?? []).map((e) => ({ id: String(e.id), createdAt: day(e.createdAt), status: String(e.status ?? ""), confirmedLevel: e.confirmedLevel ? String(e.confirmedLevel) : undefined })),
+    ethical: (store.ethicalIntelligenceEvents ?? []).map((e) => {
       let cycleComplete = false;
       try {
         cycleComplete = computeEthicalCycleStatus(e as never).cycleComplete;
@@ -37,8 +37,8 @@ export function buildOrgLearningInputFromStore(store: Store, asOf: string, perio
       }
       return { id: String(e.id), createdAt: day(e.createdAt), cycleComplete, hasLearning: Array.isArray(e.learning) && (e.learning as unknown[]).length > 0, summary: String(e.triggerSummary ?? e.whatHappened ?? "") };
     }),
-    feedbackLoops: (store.childFeedbackLoops ?? []).map((f: Record<string, unknown>) => ({ id: String(f.id), feedbackDate: day(f.feedback_date), decisionMade: String(f.decision_made ?? "pending_consideration") })),
-    voice: (store.ypFeedback ?? []).map((v: Record<string, unknown>) => ({ id: String(v.id), date: day(v.date), category: String(v.category ?? ""), sentiment: String(v.sentiment ?? "") })),
-    restraints: (store.restraints ?? []).map((r: Record<string, unknown>) => ({ id: String(r.id), date: day(r.date ?? r.created_at), childDebriefed: !!r.child_debriefed, hasDebriefRecord: hasDebrief(r as { id?: string; linked_incident_id?: string }) })),
+    feedbackLoops: (store.childFeedbackLoops ?? []).map((f) => ({ id: String(f.id), feedbackDate: day(f.feedback_date), decisionMade: String(f.decision_made ?? "pending_consideration") })),
+    voice: (store.ypFeedback ?? []).map((v) => ({ id: String(v.id), date: day(v.date), category: String(v.category ?? ""), sentiment: String(v.sentiment ?? "") })),
+    restraints: (store.restraints ?? []).map((r) => ({ id: String(r.id), date: day(r.date ?? r.created_at), childDebriefed: !!r.child_debriefed, hasDebriefRecord: hasDebrief(r as { id?: string; linked_incident_id?: string }) })),
   };
 }

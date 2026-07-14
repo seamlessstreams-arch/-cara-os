@@ -122,6 +122,10 @@ export interface Task extends AuditFields {
   linked_child_id: string | null;
   linked_incident_id: string | null;
   linked_document_id: string | null;
+  /** Generic record linkage — the incident/record orchestrators persist these
+   *  on tasks they create; the type previously omitted them. */
+  linked_record_type?: string | null;
+  linked_record_id?: string | null;
   parent_task_id: string | null;
   home_id: string;
   tags: string[];

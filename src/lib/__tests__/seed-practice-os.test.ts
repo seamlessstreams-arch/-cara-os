@@ -33,7 +33,6 @@ import type { UnifyNeuroInput } from "../neurodiversity-profile/types";
 import { synthesiseStaffPracticeSkills } from "../staff-practice-skills/skills-engine";
 import type { StaffPracticeSkillsInput } from "../staff-practice-skills/types";
 import { buildOrgLearningReport } from "../org-learning-report/report-engine";
-import { computeEthicalCycleStatus } from "../ethical-intelligence/ethical-intelligence-engine";
 import type { OrgLearningReportInput } from "../org-learning-report/types";
 
 // ── Referential integrity: every trace points at a record that exists ─────────
@@ -156,7 +155,7 @@ describe("repair-cycle gap (rst_007)", () => {
 // so this gate fails if the merge (or either seed) stops telling the story.
 
 describe("behaviour-trigger-patterns engine fires on the arc (merged store)", () => {
-  const mergedEntries = (getStore().behaviourLog as Array<Record<string, unknown>>).map((b) => ({
+  const mergedEntries = (getStore().behaviourLog as unknown as Array<Record<string, unknown>>).map((b) => ({
     child_id: String(b.child_id ?? ""),
     date: String(b.date ?? b.created_at ?? "").slice(0, 10),
     direction: String(b.direction ?? "concern"),
@@ -222,19 +221,19 @@ describe("child voice dimensions fire on the arc (merged store)", () => {
       childName,
       asOf,
       windowDays: 90,
-      feedback: (s.ypFeedback as Array<Record<string, unknown>>)
+      feedback: (s.ypFeedback as unknown as Array<Record<string, unknown>>)
         .filter((f) => f.child_id === childId)
         .map((f) => ({ id: String(f.id), child_id: String(f.child_id), date: day(f.date), category: String(f.category ?? ""), sentiment: String(f.sentiment ?? ""), response_given_to_child: !!f.response_given_to_child, child_satisfied: (f.child_satisfied ?? null) as boolean | null })),
-      keyWork: (s.keyWorkingSessions as Array<Record<string, unknown>>)
+      keyWork: (s.keyWorkingSessions as unknown as Array<Record<string, unknown>>)
         .filter((k) => k.child_id === childId)
         .map((k) => ({ id: String(k.id), child_id: String(k.child_id), date: day(k.date), child_voice: String(k.child_voice ?? "") })),
-      lacReviews: (s.lacReviews as Array<Record<string, unknown>>)
+      lacReviews: (s.lacReviews as unknown as Array<Record<string, unknown>>)
         .filter((l) => l.child_id === childId)
         .map((l) => ({ id: String(l.id), child_id: String(l.child_id), date: day(l.date), child_participation: String(l.child_participation ?? "did_not_participate"), child_views: String(l.child_views ?? "") })),
-      feedbackLoops: (s.childFeedbackLoops as Array<Record<string, unknown>>)
+      feedbackLoops: (s.childFeedbackLoops as unknown as Array<Record<string, unknown>>)
         .filter((f) => f.child_id === childId)
         .map((f) => ({ id: String(f.id), child_id: String(f.child_id), feedback_date: day(f.feedback_date), child_words: String(f.child_words ?? ""), decision_made: String(f.decision_made ?? "pending_consideration"), child_accepts: !!f.child_accepts })),
-      advocacy: (s.advocacyRecords as Array<Record<string, unknown>>)
+      advocacy: (s.advocacyRecords as unknown as Array<Record<string, unknown>>)
         .filter((a) => a.child_id === childId)
         .map((a) => ({ id: String(a.id), child_id: String(a.child_id), status: String(a.status ?? ""), referral_date: day(a.referral_date), visits: Array.isArray(a.visits) ? (a.visits as Array<{ date?: string }>).map((v) => ({ date: day(v?.date) })) : [], home_response: String(a.home_response ?? "") })),
       houseMeetings: [],
@@ -285,10 +284,10 @@ describe("neurodiversity profile fires on the arc (merged store)", () => {
       childId,
       childName,
       asOf,
-      autismPlans: (s.autismPlans as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["autismPlans"],
-      adhdPlans: (s.adhdPlans as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["adhdPlans"],
-      sensoryProfiles: (s.sensoryProfileRecords as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["sensoryProfiles"],
-      ehcps: (s.ehcpRecords as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["ehcps"],
+      autismPlans: (s.autismPlans as unknown as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["autismPlans"],
+      adhdPlans: (s.adhdPlans as unknown as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["adhdPlans"],
+      sensoryProfiles: (s.sensoryProfileRecords as unknown as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["sensoryProfiles"],
+      ehcps: (s.ehcpRecords as unknown as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["ehcps"],
     };
   };
 
@@ -333,11 +332,11 @@ describe("staff practice skills fire on the arc (merged store)", () => {
       staffName,
       asOf,
       windowDays: 180,
-      competencyScores: (s.competencyScores as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["competencyScores"],
-      observations: (s.practiceObservations as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["observations"],
-      supervisions: (s.reflectiveSupervisions as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["supervisions"],
-      recordingAudits: (s.writingAssistantAuditEvents as Array<Record<string, unknown>>).filter((a) => (a.user_id ?? a.staff_id) === staffId).map((a) => ({ id: String(a.id), staff_id: staffId, action: String(a.action ?? ""), created_at: String(a.created_at ?? "") })),
-      keyWork: (s.keyWorkingSessions as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["keyWork"],
+      competencyScores: (s.competencyScores as unknown as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["competencyScores"],
+      observations: (s.practiceObservations as unknown as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["observations"],
+      supervisions: (s.reflectiveSupervisions as unknown as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["supervisions"],
+      recordingAudits: (s.writingAssistantAuditEvents as unknown as Array<Record<string, unknown>>).filter((a) => (a.user_id ?? a.staff_id) === staffId).map((a) => ({ id: String(a.id), staff_id: staffId, action: String(a.action ?? ""), created_at: String(a.created_at ?? "") })),
+      keyWork: (s.keyWorkingSessions as unknown as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["keyWork"],
     };
   };
 
@@ -375,13 +374,13 @@ describe("org learning report fires on the arc (merged store)", () => {
       homeId: "home_oak",
       asOf,
       period: "quarter",
-      incidents: (s.incidents as Array<Record<string, unknown>>).map((i) => ({ id: String(i.id), date: day(i.date), type: String(i.type ?? "other"), severity: String(i.severity ?? "") })),
-      behaviour: (s.behaviourLog as Array<Record<string, unknown>>).map((b) => ({ id: String(b.id), date: day(b.date), direction: String(b.direction ?? ""), trigger: String(b.trigger ?? "") })),
-      escalations: (s.escalationDecisions as Array<Record<string, unknown>>).map((e) => ({ id: String(e.id), createdAt: day(e.createdAt), status: String(e.status ?? ""), confirmedLevel: e.confirmedLevel ? String(e.confirmedLevel) : undefined })),
-      ethical: (s.ethicalIntelligenceEvents as Array<Record<string, unknown>>).map((e) => ({ id: String(e.id), createdAt: day(e.createdAt), cycleComplete: computeEthicalCycleStatus(e as never).cycleComplete, hasLearning: Array.isArray(e.learning) && (e.learning as unknown[]).length > 0, summary: "" })),
-      feedbackLoops: (s.childFeedbackLoops as Array<Record<string, unknown>>).map((f) => ({ id: String(f.id), feedbackDate: day(f.feedback_date), decisionMade: String(f.decision_made ?? "pending_consideration") })),
-      voice: (s.ypFeedback as Array<Record<string, unknown>>).map((v) => ({ id: String(v.id), date: day(v.date), category: String(v.category ?? ""), sentiment: String(v.sentiment ?? "") })),
-      restraints: (s.restraints as Array<Record<string, unknown>>).map((r) => {
+      incidents: (s.incidents as unknown as Array<Record<string, unknown>>).map((i) => ({ id: String(i.id), date: day(i.date), type: String(i.type ?? "other"), severity: String(i.severity ?? "") })),
+      behaviour: (s.behaviourLog as unknown as Array<Record<string, unknown>>).map((b) => ({ id: String(b.id), date: day(b.date), direction: String(b.direction ?? ""), trigger: String(b.trigger ?? "") })),
+      escalations: (s.escalationDecisions as unknown as Array<Record<string, unknown>>).map((e) => ({ id: String(e.id), createdAt: day(e.createdAt), status: String(e.status ?? ""), confirmedLevel: e.confirmedLevel ? String(e.confirmedLevel) : undefined })),
+      ethical: (s.ethicalIntelligenceEvents as unknown as Array<Record<string, unknown>>).map((e) => ({ id: String(e.id), createdAt: day(e.createdAt), cycleComplete: computeEthicalCycleStatus(e as never).cycleComplete, hasLearning: Array.isArray(e.learning) && (e.learning as unknown[]).length > 0, summary: "" })),
+      feedbackLoops: (s.childFeedbackLoops as unknown as Array<Record<string, unknown>>).map((f) => ({ id: String(f.id), feedbackDate: day(f.feedback_date), decisionMade: String(f.decision_made ?? "pending_consideration") })),
+      voice: (s.ypFeedback as unknown as Array<Record<string, unknown>>).map((v) => ({ id: String(v.id), date: day(v.date), category: String(v.category ?? ""), sentiment: String(v.sentiment ?? "") })),
+      restraints: (s.restraints as unknown as Array<Record<string, unknown>>).map((r) => {
         const incId = String(r.linked_incident_id ?? "") || String(r.id ?? "").replace("rst_", "inc_");
         return { id: String(r.id), date: day(r.date ?? r.created_at), childDebriefed: !!r.child_debriefed, hasDebriefRecord: debriefs.some((d) => d.linked_incident_id === incId) };
       }),

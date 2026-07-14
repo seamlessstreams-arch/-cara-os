@@ -49,26 +49,26 @@ export async function GET(req: NextRequest) {
 
     // Restraint → debrief linkage.
     const debriefs = (store.debriefRecords ?? []) as Array<{ linked_incident_id?: string }>;
-    const restraints = (pack.restraints ?? []).map((r: Record<string, unknown>) => {
+    const restraints = (pack.restraints ?? []).map((r) => {
       const incId = String(r.linked_incident_id ?? "") || String(r.id ?? "").replace("rst_", "inc_");
       return { id: String(r.id), childDebriefed: !!r.child_debriefed, hasDebriefRecord: debriefs.some((d) => d.linked_incident_id === incId), date: day(r.date ?? r.created_at) };
     });
 
-    const missingEpisodes = (pack.missing_episodes ?? []).map((m: Record<string, unknown>) => ({
+    const missingEpisodes = (pack.missing_episodes ?? []).map((m) => ({
       id: String(m.id),
-      hasReturnInterview: !!(m.return_interview_completed ?? m.return_interview ?? m.rhi_completed),
-      date: day(m.date ?? m.reported_at),
+      hasReturnInterview: !!m.return_interview_completed,
+      date: day(m.date_missing),
     }));
 
-    const keywork = (pack.keywork_sessions ?? []).map((k: Record<string, unknown>) => ({ id: String(k.id), childVoice: String(k.child_voice ?? ""), date: day(k.date) }));
+    const keywork = (pack.keywork_sessions ?? []).map((k) => ({ id: String(k.id), childVoice: String(k.child_voice ?? ""), date: day(k.date) }));
 
     // Child voice for the month (feedback expressing wishes/feelings).
     const inMonth = (d: string) => d >= win.start && d <= win.end;
     const childVoice = (store.ypFeedback ?? [])
       .filter((f: { date?: string }) => inMonth(day(f.date)))
-      .map((f: Record<string, unknown>) => ({ id: String(f.id), category: String(f.category ?? ""), sentiment: String(f.sentiment ?? ""), date: day(f.date) }));
+      .map((f) => ({ id: String(f.id), category: String(f.category ?? ""), sentiment: String(f.sentiment ?? ""), date: day(f.date) }));
 
-    const complaints = (pack.complaints ?? []).map((c: Record<string, unknown>) => ({ id: String(c.id), resolved: !!(c.resolved ?? c.outcome), date: day(c.date) }));
+    const complaints = (pack.complaints ?? []).map((c) => ({ id: String(c.id), resolved: !!c.date_resolved, date: day(c.complaint_date) }));
 
     const countInMonth = (coll: unknown): number =>
       Array.isArray(coll) ? (coll as Array<{ child_id?: string; date?: string; home_id?: string }>).filter((r) => inMonth(day(r.date))).length : 0;
@@ -100,18 +100,18 @@ export async function GET(req: NextRequest) {
       return parts.map((p) => p[0]!.toUpperCase()).join(".") + ".";
     };
     const childName = new Map<string, string>();
-    (pack.children ?? []).forEach((c: Record<string, unknown>, i: number) => childName.set(String(c.child_id ?? c.id), initialsOf(String(c.preferred_name ?? c.name ?? ""), i)));
+    (pack.children ?? []).forEach((c, i) => childName.set(String(c.child_id), initialsOf(String(c.preferred_name ?? ""), i)));
     const childVoiceEntries = keywork
       .filter((k) => k.childVoice.trim().length > 0)
       .slice(0, 8)
       .map((k) => {
-        const cid = (pack.keywork_sessions ?? []).find((s: Record<string, unknown>) => String(s.id) === k.id) as { child_id?: string } | undefined;
+        const cid = (pack.keywork_sessions ?? []).find((s) => String(s.id) === k.id);
         return { ref: (cid && childName.get(String(cid.child_id))) || "Child", summary: k.childVoice.trim().slice(0, 160) };
       });
-    const previousRecommendations = ((pack.previous_visit?.outstanding_recommendations ?? []) as Array<Record<string, unknown>>).map((r) => ({ text: String(r.recommendation ?? ""), status: String(r.status ?? "outstanding"), priority: r.priority ? String(r.priority) : undefined }));
+    const previousRecommendations = ((pack.previous_visit?.outstanding_recommendations ?? []) as unknown as Array<Record<string, unknown>>).map((r) => ({ text: String(r.recommendation ?? ""), status: String(r.status ?? "outstanding"), priority: r.priority ? String(r.priority) : undefined }));
 
     // Section H — project the home's building checks into the Reg 44 checklist.
-    const buildingChecksInput: Reg44BuildingCheckInput[] = ((store.buildingChecks ?? []) as Array<Record<string, unknown>>)
+    const buildingChecksInput: Reg44BuildingCheckInput[] = ((store.buildingChecks ?? []) as unknown as Array<Record<string, unknown>>)
       .filter((c) => c.home_id === homeId || !c.home_id)
       .map((c) => ({ id: String(c.id), check_type: String(c.check_type ?? ""), check_date: day(c.check_date), due_date: day(c.due_date), status: String(c.status ?? ""), result: (c.result ?? null) as string | null, risk_level: (c.risk_level ?? null) as string | null }));
     const buildingSafety = buildReg44BuildingSafety(buildingChecksInput, asOf);
