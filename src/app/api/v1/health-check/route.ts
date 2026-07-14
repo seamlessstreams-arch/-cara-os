@@ -15,8 +15,10 @@ export async function GET(_req: NextRequest) {
 
   // ── Safeguarding Score ─────────────────────────────────────────────────────
   const incidents = store.incidents ?? [];
-  const openCritical = incidents.filter((i) => (i.status === "open" || i.status === "investigating") && i.severity === "critical");
-  const openHigh = incidents.filter((i) => (i.status === "open" || i.status === "investigating") && i.severity === "high");
+  // Incident status is open/under_review/closed — "investigating" never
+  // existed, so under-review incidents were invisible to this score.
+  const openCritical = incidents.filter((i) => (i.status === "open" || i.status === "under_review") && i.severity === "critical");
+  const openHigh = incidents.filter((i) => (i.status === "open" || i.status === "under_review") && i.severity === "high");
   const safeguardingScore = clamp(100 - (openCritical.length * 20) - (openHigh.length * 10));
 
   // ── Medication Score ───────────────────────────────────────────────────────
@@ -30,7 +32,9 @@ export async function GET(_req: NextRequest) {
   // ── Staffing Score ─────────────────────────────────────────────────────────
   const shifts = store.shifts ?? [];
   const todayShifts = shifts.filter((s) => s.date === today || s.start_time?.startsWith(today));
-  const filledShifts = todayShifts.filter((s) => s.staff_id && s.status !== "open" && s.status !== "unfilled");
+  // Shift has no "open"/"unfilled" statuses — those comparisons were always
+  // true. The recorded open-shift signal is the is_open_shift flag.
+  const filledShifts = todayShifts.filter((s) => s.staff_id && !s.is_open_shift);
   const staffingScore = todayShifts.length > 0
     ? clamp(Math.round((filledShifts.length / todayShifts.length) * 100))
     : 85;

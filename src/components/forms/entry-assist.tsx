@@ -99,7 +99,7 @@ export function EntryAssist({
       commandId,
       inputText: value.trim(),
       sourceModule,
-      sourceField,
+      inputMetadata: sourceField ? { field: sourceField } : undefined,
       sourceRecordType,
       childId,
     });

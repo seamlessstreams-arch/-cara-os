@@ -436,7 +436,6 @@ describe("Home Restorative Practice & Conflict Resolution Intelligence Engine", 
             resolved: i < 5, // 50% -> no bonus, no penalty
             restorative_approach_used: i < 5,
             child_voice_captured: i < 5,
-            child_satisfaction: 3,
           }),
         ),
         relationship_repair_records: repeat(10, (i) =>
@@ -2946,7 +2945,7 @@ describe("Home Restorative Practice & Conflict Resolution Intelligence Engine", 
           makeConference({ completed: i < 5, child_satisfaction: 2 }),
         ),
         conflict_resolution_records: repeat(10, (i) =>
-          makeConflict({ resolved: i < 5, child_satisfaction: 2 }),
+          makeConflict({ resolved: i < 5 }),
         ),
         relationship_repair_records: repeat(10, (i) =>
           makeRepair({ relationship_restored: i < 5, child_satisfaction: 2 }),

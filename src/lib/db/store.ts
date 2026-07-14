@@ -246,6 +246,7 @@ import type {
   HealthMonitoringEntry,
   HealthPassport,
   HealthcarePlan,
+  CarePlan,
   TripPlan,
   ImprovementObjective,
   PetRecord,
@@ -1802,6 +1803,11 @@ const store = {
   healthMonitoring: [] as HealthMonitoringEntry[],
   healthPassports: [] as HealthPassport[],
   healthcarePlans: [] as HealthcarePlan[],
+  // Statutory child care plans. Several readers (inspection-intelligence,
+  // knowledge-evolution, cara context) expected this collection; it never
+  // existed, so their reads were silently empty. Unseeded until a care-plan
+  // write path exists.
+  carePlans: [] as CarePlan[],
   tripPlans: [] as TripPlan[],
   improvementObjectives: [] as ImprovementObjective[],
   petRecords: [] as PetRecord[],
@@ -2729,10 +2735,10 @@ const store = {
       outcome: "Verbal warning issued. Staff member acknowledged and apologised.",
       sanction_expiry_date: daysFromNow(308), appeal_lodged: false, appeal_date: null, appeal_outcome: "",
       timeline: [
-        { date: daysFromNow(-57), action: "Concern raised by colleague", by: "staff_anna" },
-        { date: daysFromNow(-55), action: "Investigation commenced", by: "staff_darren" },
-        { date: daysFromNow(-50), action: "Statements gathered", by: "staff_darren" },
-        { date: daysFromNow(-45), action: "Outcome — verbal warning issued", by: "staff_darren" },
+        { date: daysFromNow(-57), action: "Concern raised by colleague", by: "staff_anna", notes: "" },
+        { date: daysFromNow(-55), action: "Investigation commenced", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-50), action: "Statements gathered", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-45), action: "Outcome — verbal warning issued", by: "staff_darren", notes: "" },
       ],
       support_offered: ["Reflective supervision session", "Communication skills refresher"],
       lado_notified: false, dbs_referral: false, ofsted_notified: false,
@@ -2751,12 +2757,12 @@ const store = {
       outcome: "Dismissed. Agency worker removed from approved list. LADO informed.",
       sanction_expiry_date: null, appeal_lodged: false, appeal_date: null, appeal_outcome: "",
       timeline: [
-        { date: daysFromNow(-160), action: "Concern raised via whistleblowing", by: "staff_chervelle" },
-        { date: daysFromNow(-159), action: "CCTV reviewed — confirmed sleeping on duty", by: "staff_darren" },
-        { date: daysFromNow(-159), action: "Immediate suspension from duties", by: "staff_darren" },
-        { date: daysFromNow(-158), action: "LADO referral made", by: "staff_darren" },
-        { date: daysFromNow(-153), action: "Hearing held — dismissed for gross misconduct", by: "staff_darren" },
-        { date: daysFromNow(-152), action: "Agency formally notified", by: "staff_darren" },
+        { date: daysFromNow(-160), action: "Concern raised via whistleblowing", by: "staff_chervelle", notes: "" },
+        { date: daysFromNow(-159), action: "CCTV reviewed — confirmed sleeping on duty", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-159), action: "Immediate suspension from duties", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-158), action: "LADO referral made", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-153), action: "Hearing held — dismissed for gross misconduct", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-152), action: "Agency formally notified", by: "staff_darren", notes: "" },
       ],
       support_offered: [],
       lado_notified: true, dbs_referral: false, ofsted_notified: true,
@@ -2774,9 +2780,9 @@ const store = {
       outcome: "Management advice issued. Personal circumstances identified and supported.",
       sanction_expiry_date: null, appeal_lodged: false, appeal_date: null, appeal_outcome: "",
       timeline: [
-        { date: daysFromNow(-35), action: "Pattern of lateness identified through rota records", by: "staff_darren" },
-        { date: daysFromNow(-34), action: "Informal meeting with staff member", by: "staff_darren" },
-        { date: daysFromNow(-30), action: "Management advice — personal circumstances identified, flexible start agreed temporarily", by: "staff_darren" },
+        { date: daysFromNow(-35), action: "Pattern of lateness identified through rota records", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-34), action: "Informal meeting with staff member", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-30), action: "Management advice — personal circumstances identified, flexible start agreed temporarily", by: "staff_darren", notes: "" },
       ],
       support_offered: ["Flexible start time (temporary)", "Wellbeing check-in"],
       lado_notified: false, dbs_referral: false, ofsted_notified: false,
@@ -2792,9 +2798,9 @@ const store = {
       suspension_review_dates: [], hearing_date: null, hearing_panel: [],
       outcome: "", sanction_expiry_date: null, appeal_lodged: false, appeal_date: null, appeal_outcome: "",
       timeline: [
-        { date: daysFromNow(-14), action: "MAR audit identified two missing entries", by: "staff_anna" },
-        { date: daysFromNow(-13), action: "Investigation commenced — staff member informed", by: "staff_darren" },
-        { date: daysFromNow(-10), action: "Statements being gathered from shift colleagues", by: "staff_darren" },
+        { date: daysFromNow(-14), action: "MAR audit identified two missing entries", by: "staff_anna", notes: "" },
+        { date: daysFromNow(-13), action: "Investigation commenced — staff member informed", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-10), action: "Statements being gathered from shift colleagues", by: "staff_darren", notes: "" },
       ],
       support_offered: ["Supervision meeting scheduled", "Medication policy refresher training"],
       lado_notified: false, dbs_referral: false, ofsted_notified: false,
@@ -2810,9 +2816,9 @@ const store = {
       suspension_review_dates: [], hearing_date: null, hearing_panel: [],
       outcome: "", sanction_expiry_date: null, appeal_lodged: false, appeal_date: null, appeal_outcome: "",
       timeline: [
-        { date: daysFromNow(-8), action: "Recording quality audit flagged consistent shortfall", by: "staff_darren" },
-        { date: daysFromNow(-7), action: "Informal capability conversation held", by: "staff_darren" },
-        { date: daysFromNow(-5), action: "Support plan agreed — mentor assigned", by: "staff_darren" },
+        { date: daysFromNow(-8), action: "Recording quality audit flagged consistent shortfall", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-7), action: "Informal capability conversation held", by: "staff_darren", notes: "" },
+        { date: daysFromNow(-5), action: "Support plan agreed — mentor assigned", by: "staff_darren", notes: "" },
       ],
       support_offered: ["Additional recording training", "Mentor assigned (Priya)", "Weekly check-ins"],
       lado_notified: false, dbs_referral: false, ofsted_notified: false,
@@ -6077,9 +6083,9 @@ store.restraints = [
   {
     id: "rst_001", date: daysFromNow(-35), start_time: "21:15", end_time: "21:18", duration: 3,
     child_id: "yp_alex",
-    staff_involved: [{ staff_id: "staff_edward", role: "lead" as const, team_teach_trained: true }, { staff_id: "staff_anna", role: "support" as const, team_teach_trained: true }],
-    reason: "imminent_harm_to_others" as const,
-    restraint_type: "planned_hold" as const,
+    staff_involved: [{ staff_id: "staff_edward", role: "lead" as const, technique: "Team Teach standing hold", team_teach_trained: true }, { staff_id: "staff_anna", role: "support" as const, technique: "Guide away", team_teach_trained: true }],
+    reason: "harm_to_others" as const,
+    restraint_type: "standing" as const,
     antecedent: "Alex became extremely agitated following a phone call with a family member. Began throwing items and directed verbal threats at staff.",
     behaviour: "Struck out at staff member who attempted to guide Alex away from area.",
     de_escalation_attempts: ["Verbal reassurance", "Offered quiet space", "Attempted redirect to room"],
@@ -6098,9 +6104,9 @@ store.restraints = [
   {
     id: "rst_002", date: daysFromNow(-22), start_time: "14:50", end_time: "14:52", duration: 2,
     child_id: "yp_alex",
-    staff_involved: [{ staff_id: "staff_chervelle", role: "lead" as const, team_teach_trained: true }, { staff_id: "staff_ryan", role: "support" as const, team_teach_trained: true }],
-    reason: "imminent_harm_to_others" as const,
-    restraint_type: "standing_hold" as const,
+    staff_involved: [{ staff_id: "staff_chervelle", role: "lead" as const, technique: "Team Teach standing hold", team_teach_trained: true }, { staff_id: "staff_ryan", role: "support" as const, technique: "Support during hold", team_teach_trained: true }],
+    reason: "harm_to_others" as const,
+    restraint_type: "standing" as const,
     antecedent: "Community trip refused due to incomplete homework. Alex ran towards front door.",
     behaviour: "Became physically threatening towards staff member in corridor.",
     de_escalation_attempts: ["Verbal de-escalation", "Offered alternative activity", "Calm voice"],
@@ -6110,7 +6116,7 @@ store.restraints = [
     child_debriefed: true, child_debrief_notes: "Alex agreed refusal wasn't right response. Discussed how to handle disappointment.",
     staff_debriefed: true,
     witnessed_by: ["staff_ryan"],
-    review_status: "pending" as const, review_notes: "", reviewed_by: "",
+    review_status: "pending_rm" as const, review_notes: "", reviewed_by: "",
     linked_incident_id: "inc_006",
     notifications_sent: [{ party: "Registered Manager", date: daysFromNow(-22) }, { party: "Social Worker", date: daysFromNow(-22) }],
     body_map_completed: true, medical_check_completed: false,
@@ -6119,19 +6125,19 @@ store.restraints = [
   {
     id: "rst_003", date: daysFromNow(-10), start_time: "18:30", end_time: "18:37", duration: 7,
     child_id: "yp_alex",
-    staff_involved: [{ staff_id: "staff_ryan", role: "lead" as const, team_teach_trained: true }, { staff_id: "staff_edward", role: "support" as const, team_teach_trained: true }],
-    reason: "imminent_harm_to_self" as const,
-    restraint_type: "wrap_hold" as const,
+    staff_involved: [{ staff_id: "staff_ryan", role: "lead" as const, technique: "Team Teach wrap hold", team_teach_trained: true }, { staff_id: "staff_edward", role: "support" as const, technique: "Object retrieval and support", team_teach_trained: true }],
+    reason: "harm_to_self" as const,
+    restraint_type: "seated" as const,
     antecedent: "Difficult conversation about upcoming court proceedings. Alex became extremely distressed.",
     behaviour: "Attempted to self-harm with a sharp object. Violent resistance when staff intervened.",
     de_escalation_attempts: ["Verbal de-escalation", "Attempt to remove object verbally", "Offered alternative coping"],
     justification: "Imminent risk of serious self-harm. Sharp object needed to be secured immediately.",
     description: "Team Teach wrap hold maintained for 7 minutes. Sharp object secured by second staff member. Alex sustained minor bruise to left forearm during struggle (not caused by hold). Ambulance called as precaution.",
-    injuries: [{ person: "yp_alex", description: "Minor bruise to left forearm — not caused by hold, sustained during struggle" }],
+    injuries: [{ person: "yp_alex", injury: "Minor bruise to left forearm — not caused by hold, sustained during struggle", treatment: "Checked by paramedics as a precaution — no treatment required" }],
     child_debriefed: false, child_debrief_notes: "Planned for following day — Alex too distressed on evening of incident.",
     staff_debriefed: true,
     witnessed_by: ["staff_edward"],
-    review_status: "pending" as const, review_notes: "", reviewed_by: "",
+    review_status: "pending_rm" as const, review_notes: "", reviewed_by: "",
     linked_incident_id: "inc_007",
     notifications_sent: [{ party: "Registered Manager", date: daysFromNow(-10) }, { party: "Social Worker", date: daysFromNow(-10) }, { party: "Parent", date: daysFromNow(-10) }, { party: "Ambulance", date: daysFromNow(-10) }],
     body_map_completed: true, medical_check_completed: true,
@@ -6596,7 +6602,9 @@ store.qaAuditRecords = [
 
 // ── Home Policies (Policies Intelligence) ─────────────────────────────────────
 
-const policyAcks = (staffIds: string[]) => staffIds.map(id => ({ staff_id: id, acknowledged_at: daysFromNow(-30) }));
+// HomePolicyReadAck is { staff_id, read_at, acknowledged } — the old shape
+// ({ staff_id, acknowledged_at }) meant acknowledgement counts read undefined.
+const policyAcks = (staffIds: string[]) => staffIds.map(id => ({ staff_id: id, read_at: daysFromNow(-30), acknowledged: true }));
 const allStaffAck = policyAcks(["staff_darren", "staff_ryan", "staff_anna", "staff_edward", "staff_lackson", "staff_chervelle", "staff_diane", "staff_mirela"]);
 const partialAck = policyAcks(["staff_darren", "staff_ryan", "staff_anna", "staff_edward", "staff_lackson", "staff_chervelle"]);
 
@@ -11208,7 +11216,7 @@ store.mealPlans = (() => {
         child_preferences: [
           { child_id: "yp_alex", rating: "liked" as const },
           { child_id: "yp_jordan", rating: "liked" as const },
-          { child_id: "yp_casey", rating: (i === 1 ? "liked" : "not_eaten") as const },
+          { child_id: "yp_casey", rating: i === 1 ? ("liked" as const) : ("not_eaten" as const) },
         ],
         special_notes: "Casey portion prepared nut-free and separately.",
         budget: 14,

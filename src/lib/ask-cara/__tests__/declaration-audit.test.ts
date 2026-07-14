@@ -52,8 +52,8 @@ describe("audit trail", () => {
     expect(e.inputHash).toMatch(/^sha256:/);
     expect(e.outputHash).toMatch(/^sha256:/);
     // No raw-text keys leak onto the event.
-    expect((e as Record<string, unknown>).inputText).toBeUndefined();
-    expect((e as Record<string, unknown>).outputText).toBeUndefined();
+    expect((e as unknown as Record<string, unknown>).inputText).toBeUndefined();
+    expect((e as unknown as Record<string, unknown>).outputText).toBeUndefined();
   });
   it("carries the prohibited + deterministic flags", () => {
     const e = buildAuditEvent({ mode: "ask", intent: "prohibited", prohibitedTriggered: true, managerReviewRequired: true, deterministicOnly: true }, META);

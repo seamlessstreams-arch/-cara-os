@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
     const scope: ExportScope = VALID_SCOPES.includes(scopeParam) ? scopeParam : "all";
 
     const children = (store.youngPeople ?? [])
-      .filter((yp: { status?: string }) => yp.status === "current")
-      .map((yp: { id: string; preferred_name?: string; first_name?: string }) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
+      .filter((yp) => yp.status === "current")
+      .map((yp) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
 
     const readiness = buildInspectionReadiness({
       now: new Date().toISOString(),

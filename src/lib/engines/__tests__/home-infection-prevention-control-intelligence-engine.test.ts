@@ -684,7 +684,7 @@ describe("computeInfectionPreventionControl", () => {
         // containment: 10/10 = 100% => +3
         // outbreakManagement: (6+6+10+6)/(10*4) = 28/40 = 70% => +2
         // lessonsLearned: 6/10 = 60% => no bonus
-        expect(r.containment_effective_rate ?? r.infection_score).toBeDefined();
+        expect(r.infection_score).toBeDefined();
         // outbreakManagement = (6*4 + 4*1) / (10*4) = 28/40 = 70% => +2
         expect(r.outbreak_management_rate).toBe(70);
         expect(r.infection_score).toBe(52 + 2 + 3);

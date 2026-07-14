@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
 import { useCreatePracticeBankEntry } from "@/hooks/use-intelligence";
 import { cn } from "@/lib/utils";
+import { EntryAssist } from "@/components/forms/entry-assist";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

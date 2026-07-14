@@ -95,7 +95,7 @@ export function TransitionPlanningIntelligenceWidget() {
               <span>Goals: {c.goalAchievementRate as number}%</span>
               <span>Stability: {(c.placementStability as string).replace(/_/g, " ")}</span>
             </div>
-            {c.primaryConcern && <p className="text-xs text-orange-700 mt-1">{c.primaryConcern as string}</p>}
+            {Boolean(c.primaryConcern) && <p className="text-xs text-orange-700 mt-1">{c.primaryConcern as string}</p>}
           </div>
         ))}</div>
       </Section>}

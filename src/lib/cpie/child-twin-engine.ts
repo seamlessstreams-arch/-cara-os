@@ -245,7 +245,7 @@ export function buildChildTwin(input: ChildTwinInput): ChildTwin {
       lacReviews: input.lacReviews,
       trustedAdults: arr(pace?.trustedAdults),
       staffName: input.staffName,
-    } as RelationalTimelineInput);
+    } as unknown as RelationalTimelineInput);
   } catch {
     /* dimension stays gap-flagged */
   }
@@ -279,7 +279,7 @@ export function buildChildTwin(input: ChildTwinInput): ChildTwin {
       keyWorkingSessions: input.keyWorkingSessions,
       knownTriggers: arr(pace?.knownTriggers),
       calmingApproaches: arr(pace?.calmingApproaches),
-    } as EmotionalSafetyInput);
+    } as unknown as EmotionalSafetyInput);
   } catch {
     /* gap-flagged below */
   }
@@ -313,7 +313,7 @@ export function buildChildTwin(input: ChildTwinInput): ChildTwin {
       returnInterviews: input.returnInterviews,
       lacReviews: input.lacReviews,
       trustedAdults: arr(pace?.trustedAdults),
-    } as OutcomeIntelligenceInput);
+    } as unknown as OutcomeIntelligenceInput);
   } catch {
     /* gap-flagged below */
   }

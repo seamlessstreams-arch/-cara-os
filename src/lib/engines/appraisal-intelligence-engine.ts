@@ -206,7 +206,7 @@ export function computeAppraisalIntelligence(
   // ── Competency scores ──────────────────────────────────────────────────
   const allScores: number[] = [];
   for (const a of completed) {
-    const scores = Object.values(a.competency_scores).filter((v): v is number => typeof v === "number" && v > 0);
+    const scores = Object.values(a.competency_scores).filter((v) => typeof v === "number" && v > 0);
     allScores.push(...scores);
   }
   const avgCompetencyScore = allScores.length > 0 ? round1(average(allScores)) : 0;

@@ -142,7 +142,7 @@ function buildActionItems(
   const currentChildren = d.young_people?.current ?? [];
   for (const yp of currentChildren) {
     // Check if last_log_date is not today
-    const ypAny = yp as Record<string, unknown>;
+    const ypAny = yp as unknown as Record<string, unknown>;
     const lastLog = ypAny.last_log_date as string | null | undefined;
     if (!lastLog || lastLog < today) {
       items.push({
@@ -252,7 +252,7 @@ function buildActionItems(
   // Active missing episodes
   if (d.safeguarding.missing_active > 0) {
     for (const ep of d.safeguarding.missing_episodes ?? []) {
-      const epAny = ep as Record<string, unknown>;
+      const epAny = ep as unknown as Record<string, unknown>;
       if (epAny.status === "active") {
         const yp = currentChildren.find((c) => c.id === epAny.child_id);
         items.push({

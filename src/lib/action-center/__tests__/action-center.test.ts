@@ -13,7 +13,7 @@ const criticalStaffing: SafeStaffingAssessment = {
 };
 const emergency = (id: string): EmergencyAlert => ({
   id, home_id: "home_oak", type: "fire", raised_by: "s", raised_by_name: "S", location: "kitchen",
-  status: "active", responders: [], broadcast_message_id: null, created_at: "2026-09-22T12:00:00Z",
+  status: "active", note: null, responders: [], broadcast_message_id: null, created_at: "2026-09-22T12:00:00Z",
   resolved_at: null, resolved_by: null,
 });
 const base: ActionCenterInput = { emergencies: [], staffing: okStaffing, unacknowledgedComms: 0, tasksAwaitingSignOff: 0 };

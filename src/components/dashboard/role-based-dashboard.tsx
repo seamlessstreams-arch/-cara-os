@@ -230,7 +230,7 @@ function useRoleDashboardData(): {
 
     // Missing logs count
     const missingLogsCount = currentChildren.filter((yp) => {
-      const ypAny = yp as Record<string, unknown>;
+      const ypAny = yp as unknown as Record<string, unknown>;
       const lastLog = ypAny.last_log_date as string | null | undefined;
       return !lastLog || lastLog < today;
     }).length;

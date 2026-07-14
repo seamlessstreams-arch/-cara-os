@@ -131,7 +131,7 @@ export function HomeLanding() {
     // Care Plans — check if drafts exist
     const carePlanLevel: ComplianceLevel =
       store.careForms.some(
-        (f) => f.form_type === "care_plan" && f.status === "draft",
+        (f) => f.form_type === "placement_review" && f.status === "draft",
       )
         ? "amber"
         : "green";

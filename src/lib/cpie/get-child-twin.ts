@@ -42,24 +42,24 @@ const cache = new Map<string, { sig: string; twin: ChildTwin }>();
 
 function buildInput(store: Store, childId: string, nowIso: string): ChildTwinInput | null {
   const st = store as unknown as Record<string, unknown[]>;
-  const child = (store.youngPeople ?? []).find((yp: { id: string }) => yp.id === childId) as Record<string, unknown> | undefined;
+  const child = (store.youngPeople ?? []).find((yp: { id: string }) => yp.id === childId) as unknown as Record<string, unknown> | undefined;
   if (!child) return null;
 
   const staffById = new Map(
-    ((store.staff ?? []) as Array<Record<string, unknown>>).map((x) => [
+    ((store.staff ?? []) as unknown as Array<Record<string, unknown>>).map((x) => [
       String(x.id),
       s(x.full_name) || [x.first_name, x.last_name].filter(Boolean).join(" ") || String(x.id),
     ]),
   );
 
-  const rows = (k: string) => (Array.isArray(st[k]) ? (st[k] as Record<string, unknown>[]) : []);
+  const rows = (k: string) => (Array.isArray(st[k]) ? (st[k] as unknown as Record<string, unknown>[]) : []);
 
   return {
     childId,
     childName: s(child.preferred_name) || s(child.first_name) || childId,
     now: nowIso,
     child,
-    paceProfile: (store.childPaceProfiles ?? []).find((p) => p.childId === childId) as Record<string, unknown> | undefined,
+    paceProfile: (store.childPaceProfiles ?? []).find((p) => p.childId === childId) as unknown as Record<string, unknown> | undefined,
     personalPassports: rows("personalPassports"),
     aspirationRecords: rows("aspirationRecords"),
     lifeStoryEntries: rows("lifeStoryEntries"),

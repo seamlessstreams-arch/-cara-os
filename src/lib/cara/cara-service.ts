@@ -1428,13 +1428,22 @@ export interface CaraInvokeArgs extends CaraInvocationInput {
   actor: CaraActor;
 }
 
-export interface CaraInvokeOutcome {
-  ok: boolean;
-  result?: CaraGenerationResult;
-  errorReason?: string;
-  status: number;
-  providerConfig: CaraProviderConfig;
-}
+// Discriminated on `ok` — success always carries a result, failure always
+// carries a reason. (Was `ok: boolean` with both optional, which meant
+// checking `ok` never narrowed `result` for callers.)
+export type CaraInvokeOutcome =
+  | {
+      ok: true;
+      result: CaraGenerationResult;
+      status: number;
+      providerConfig: CaraProviderConfig;
+    }
+  | {
+      ok: false;
+      errorReason: string;
+      status: number;
+      providerConfig: CaraProviderConfig;
+    };
 
 export async function invokeCaraCommand(
   args: CaraInvokeArgs,
@@ -1521,7 +1530,7 @@ export async function invokeCaraCommand(
   });
 
   let cleanedText: string;
-  let confidence: string;
+  let confidence: CaraConfidence;
   let generation: { text: string; llmUsed: boolean; providerId: string; modelId: string };
   // Deterministic-rule explanations (which rules were applied) — surfaced in the UI
   // so a rewrite is transparent, and never presented as AI.
@@ -1560,7 +1569,7 @@ export async function invokeCaraCommand(
         modelId: "learned",
       };
       cleanedText = cached.output;
-      confidence = command.riskLevel === "high" ? "low" : cached.confidence;
+      confidence = command.riskLevel === "high" ? "low" : ((["low", "medium", "high"] as const).find((c) => c === cached.confidence) ?? "low");
     } else {
       // ── Tier 3: Claude — the last resort ──
       generation = await generateText({

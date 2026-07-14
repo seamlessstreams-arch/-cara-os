@@ -10,7 +10,7 @@ function deps(genText = "AI OUTPUT", llmUsed = true): { d: AiGatewayDeps; gen: R
     isCacheable: vi.fn(() => false),
     cacheLookup: vi.fn(() => null),
     cacheStore: vi.fn(),
-    classify: vi.fn(() => "internal"),
+    classify: vi.fn(() => "internal" as const),
     redact: vi.fn((t: string) => ({ redactedText: t, sensitiveItemsDetected: 0 })),
     providerConfigured: vi.fn(() => true),
     aiKillSwitchOn: vi.fn(() => false),
@@ -84,7 +84,7 @@ describe("AI Gateway — deterministic-first ladder (must NOT call AI)", () => {
 
   it("safeguarding-sensitive data is never sent → refused", async () => {
     const { d, gen } = deps();
-    d.classify = vi.fn(() => "safeguarding_sensitive");
+    d.classify = vi.fn(() => "safeguarding_sensitive" as const);
     const r = await invokeAiGateway(req(), d);
     expect(r.method).toBe("refused");
     expect(r.identifiableDataSent).toBe(false);

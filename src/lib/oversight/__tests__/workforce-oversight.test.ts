@@ -82,7 +82,7 @@ describe("buildWorkforceOversight", () => {
     // An alert raised outside the 7-day window but still active today.
     i.emergencies = [
       ...i.emergencies,
-      { id: "e_old", home_id: "home_oak", status: "active", responders: [], created_at: OLD } as EmergencyAlert,
+      { id: "e_old", home_id: "home_oak", status: "active", responders: [], created_at: OLD } as unknown as EmergencyAlert,
     ];
     const o2 = buildWorkforceOversight(i);
     expect(o2.emergencies.raised).toBe(2); // OLD one is outside the period → not "raised this period"

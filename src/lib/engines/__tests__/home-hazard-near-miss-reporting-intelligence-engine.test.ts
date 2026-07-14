@@ -678,7 +678,6 @@ describe("computeHazardNearMissReporting", () => {
         makeNearMiss({
           id: `nm_${i}`,
           investigated: true,
-          reported_within_24h: true,
           preventive_actions_identified: i < 3,
           preventive_actions_completed: i < 3,
           shared_with_team: i < 3,
@@ -870,7 +869,6 @@ describe("computeHazardNearMissReporting", () => {
           improvement_action_completed: true,
           child_debrief_completed: true,
           recurrence_occurred: false,
-          escalated_to_manager: false,
         }),
       );
       const r = computeHazardNearMissReporting(baseInput({

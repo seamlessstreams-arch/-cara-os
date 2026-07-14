@@ -252,7 +252,6 @@ describe("buildChildLeavingCareProfiles", () => {
   });
 
   it("freq < 5 → 0", () => {
-    expect(buildChildLeavingCareProfiles([rec()]).overallScore).toBeUndefined; // 1 record
     const p = buildChildLeavingCareProfiles([rec()]);
     expect(p[0].overallScore).toBe(6); // freq=0 + rate1=3 + rate2=3 + div=0
   });

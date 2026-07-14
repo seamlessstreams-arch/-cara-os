@@ -41,11 +41,11 @@ describe("FRAMEWORK_PROMPTS", () => {
 
 describe("TONE_PROMPTS", () => {
   it("has entries for key tones", () => {
-    expect(TONE_PROMPTS).toHaveProperty("conservative");
-    expect(TONE_PROMPTS).toHaveProperty("balanced");
-    expect(TONE_PROMPTS).toHaveProperty("creative");
+    expect(TONE_PROMPTS).toHaveProperty("professional");
+    expect(TONE_PROMPTS).toHaveProperty("warm");
     expect(TONE_PROMPTS).toHaveProperty("child_friendly");
-    expect(TONE_PROMPTS).toHaveProperty("inspection_ready");
+    expect(TONE_PROMPTS).toHaveProperty("formal");
+    expect(TONE_PROMPTS).toHaveProperty("plain_english");
   });
 });
 
@@ -90,7 +90,7 @@ describe("buildGenerationPrompt", () => {
   it("includes tone when specified", () => {
     const result = buildGenerationPrompt({
       artifactType: "management_oversight",
-      tone: "inspection_ready",
+      tone: "formal",
     });
     expect(result.systemPrompt.toLowerCase()).toContain("inspection");
   });

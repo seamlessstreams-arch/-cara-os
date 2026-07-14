@@ -160,7 +160,7 @@ export function RoutineConsistencyIntelligenceWidget() {
                   <span>Evening: {cp.eveningQualityRate as number}%</span>
                   <span>Disruptions: {cp.disruptionCount as number}</span>
                 </div>
-                {cp.primaryConcern && (
+                {Boolean(cp.primaryConcern) && (
                   <p className="text-xs text-orange-600 mt-1">{cp.primaryConcern as string}</p>
                 )}
               </div>

@@ -21,7 +21,9 @@ function homeId(): string {
 }
 
 /** Best-effort write-through of a daily-log entry created by a sync service. */
-export async function persistDailyLog(entry: Record<string, unknown>): Promise<void> {
+// Accepts any record shape — callers pass typed DailyLogEntry objects and the
+// body immediately widens; Record<string, unknown> rejected typed interfaces.
+export async function persistDailyLog(entry: object): Promise<void> {
   if (!isSupabaseEnabled()) return;
   const c = createServerClient();
   if (!c) return;

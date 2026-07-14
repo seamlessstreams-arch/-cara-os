@@ -326,7 +326,7 @@ describe("modifier 3: current absence rate", () => {
     }));
     // noAbsent: mod3 +4, absent: 50% = -3 => diff 7
     // mod8 also changes: noAbsent 0 unique absent = +3, absent 2 unique absent / 4 staff = 50% => -3 => diff 6
-    expect(noAbsent.shift_score || noAbsent.leave_score).toBeDefined();
+    expect(noAbsent.leave_score).toBeDefined();
     expect(noAbsent.leave_score).toBeGreaterThan(absent.leave_score);
   });
 });

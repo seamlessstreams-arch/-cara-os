@@ -23,8 +23,8 @@ export async function GET() {
     const store = getStore();
     const now = new Date().toISOString();
     const children = (store.youngPeople ?? [])
-      .filter((yp: { status?: string }) => yp.status === "current")
-      .map((yp: { id: string; preferred_name?: string; first_name?: string }) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
+      .filter((yp) => yp.status === "current")
+      .map((yp) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Child" }));
 
     const incidents = store.incidents ?? [];
     const reflections = store.postIncidentReflections ?? [];

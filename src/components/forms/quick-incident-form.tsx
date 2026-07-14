@@ -652,7 +652,7 @@ export function QuickIncidentForm({
 
           {/* ── Enter Once indicator (final step only) ────────────────── */}
           {currentStep === STEPS.length - 1 && (
-            <EnterOnceIndicator recordType="incident" severity={form.severity} compact />
+            <EnterOnceIndicator recordType="incident" severity={(["low", "medium", "high", "critical"] as const).find((v) => v === form.severity)} compact />
           )}
 
           {/* ── Step navigation ───────────────────────────────────────── */}

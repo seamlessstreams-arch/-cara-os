@@ -2591,6 +2591,10 @@ export interface RestraintStaffEntry {
   staff_id: string;
   role: string;
   technique: string;
+  /** Whether this staff member held current Team-Teach training at the time —
+   *  consumed by the restraint/restrictive-practice engines. Optional because
+   *  historical records predate its capture. */
+  team_teach_trained?: boolean;
 }
 
 export interface RestraintInjury {

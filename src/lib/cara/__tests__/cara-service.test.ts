@@ -293,10 +293,11 @@ describe("invokeCaraCommand", () => {
   it("returns ok=true for valid invocation (no Supabase, demo mode)", async () => {
     const result = await invokeCaraCommand(baseArgs);
     expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected ok outcome");
     expect(result.result).toBeDefined();
-    expect(result.result!.caraLabel).toBe("Cara suggested draft");
-    expect(result.result!.generatedText).toBeTruthy();
-    expect(result.result!.approvalRequired).toBe(true);
+    expect(result.result.caraLabel).toBe("Cara suggested draft");
+    expect(result.result.generatedText).toBeTruthy();
+    expect(result.result.approvalRequired).toBe(true);
   });
 
   it("returns error for unknown command", async () => {
@@ -319,7 +320,8 @@ describe("invokeCaraCommand", () => {
 
   it("includes confidence level in result", async () => {
     const result = await invokeCaraCommand(baseArgs);
-    expect(["low", "medium", "high"]).toContain(result.result!.confidence);
+    if (!result.ok) throw new Error("expected ok outcome");
+    expect(["low", "medium", "high"]).toContain(result.result.confidence);
   });
 
   it("high-risk commands get low confidence", async () => {
@@ -328,12 +330,14 @@ describe("invokeCaraCommand", () => {
       commandId: "incident_risk_analysis",
     });
     expect(result.ok).toBe(true);
-    expect(result.result!.confidence).toBe("low");
+    if (!result.ok) throw new Error("expected ok outcome");
+    expect(result.result.confidence).toBe("low");
   });
 
   it("persisted=false when Supabase is off", async () => {
     const result = await invokeCaraCommand(baseArgs);
-    expect(result.result!.persisted).toBe(false);
+    if (!result.ok) throw new Error("expected ok outcome");
+    expect(result.result.persisted).toBe(false);
   });
 });
 

@@ -21,11 +21,11 @@ export async function GET(req: NextRequest) {
     const store = getStore();
     const asOf = new Date().toISOString().slice(0, 10);
 
-    const children = ((store.youngPeople ?? []) as Array<Record<string, unknown>>)
+    const children = ((store.youngPeople ?? []) as unknown as Array<Record<string, unknown>>)
       .filter((yp) => (yp.status ?? "current") === "current")
       .map((yp) => ({ id: String(yp.id), name: String(yp.preferred_name || yp.first_name || yp.full_name || yp.id) }));
 
-    const entries: ABCEntryInput[] = ((store.behaviourLog ?? []) as Array<Record<string, unknown>>)
+    const entries: ABCEntryInput[] = ((store.behaviourLog ?? []) as unknown as Array<Record<string, unknown>>)
       .filter((b) => b.child_id)
       .map((b) => ({
         childId: String(b.child_id),

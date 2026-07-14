@@ -26,12 +26,12 @@ function buildInput(store: ReturnType<typeof getStore>): SelfHealingInput {
     homeId: "home_oak",
     asOf: new Date().toISOString().slice(0, 10),
     childIds: ((store.youngPeople ?? []) as Array<{ id: string }>).map((c) => String(c.id)),
-    incidents: ((store.incidents ?? []) as Array<Record<string, unknown>>).map((i) => ({
+    incidents: ((store.incidents ?? []) as unknown as Array<Record<string, unknown>>).map((i) => ({
       id: String(i.id),
       linked_task_ids: Array.isArray(i.linked_task_ids) ? (i.linked_task_ids as unknown[]).map(String) : [],
       child_id: i.child_id ? String(i.child_id) : undefined,
     })),
-    tasks: ((store.tasks ?? []) as Array<Record<string, unknown>>).map((t) => ({
+    tasks: ((store.tasks ?? []) as unknown as Array<Record<string, unknown>>).map((t) => ({
       id: String(t.id),
       linked_incident_id: t.linked_incident_id ? String(t.linked_incident_id) : undefined,
       child_id: t.linked_child_id ? String(t.linked_child_id) : undefined,
@@ -45,7 +45,7 @@ function buildInput(store: ReturnType<typeof getStore>): SelfHealingInput {
  *  null if the target isn't found / the mirror is already present. */
 function applyRepair(store: ReturnType<typeof getStore>, repair: IntegrityRepair, appliedBy: string): HealEvent | null {
   if (repair.kind !== "missing_back_link" || !repair.relatedRecordId) return null;
-  const inc = ((store.incidents ?? []) as Array<Record<string, unknown>>).find((i) => String(i.id) === repair.recordId);
+  const inc = ((store.incidents ?? []) as unknown as Array<Record<string, unknown>>).find((i) => String(i.id) === repair.recordId);
   if (!inc) return null;
   const list = Array.isArray(inc.linked_task_ids) ? (inc.linked_task_ids as unknown[]).map(String) : [];
   if (list.includes(repair.relatedRecordId)) return null; // already mirrored — nothing to do

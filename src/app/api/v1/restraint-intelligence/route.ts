@@ -35,15 +35,15 @@ export async function GET() {
     child_id: r.child_id,
     staff_involved: r.staff_involved.map((s) => ({
       staff_id: s.staff_id,
-      role: (s.role ?? "support") as "lead" | "support" | "witness",
-      team_teach_trained: (s as Record<string, unknown>).team_teach_trained !== false,
+      role: (s.role || "support") as "lead" | "support" | "witness",
+      team_teach_trained: s.team_teach_trained !== false,
     })),
     reason: r.reason as RestraintInput["reason"],
     restraint_type: r.restraint_type as RestraintInput["restraint_type"],
     de_escalation_attempts: r.de_escalation_attempts,
     injuries: r.injuries.map((inj) => ({
       person: inj.person,
-      description: (inj as Record<string, unknown>).description as string ?? (inj as Record<string, unknown>).injury as string ?? "",
+      description: inj.injury,
     })),
     child_debriefed: r.child_debriefed,
     staff_debriefed: r.staff_debriefed,

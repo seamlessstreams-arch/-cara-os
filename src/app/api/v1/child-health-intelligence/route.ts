@@ -47,7 +47,9 @@ export async function GET(request: NextRequest) {
       type: m.type ?? m.medication_type ?? "regular",
       dosage: m.dosage ?? "",
       frequency: m.frequency ?? "daily",
-      is_active: m.is_active ?? m.status === "active" ?? true,
+      // `?? true` after a boolean comparison is unreachable — the intended
+      // default only applies when neither field is recorded.
+      is_active: m.is_active ?? (m.status ? m.status === "active" : true),
       start_date: (m.start_date ?? m.date ?? "").slice(0, 10),
       end_date: m.end_date ? m.end_date.slice(0, 10) : null,
     }));
@@ -60,7 +62,7 @@ export async function GET(request: NextRequest) {
       medication_id: a.medication_id ?? "",
       date: (a.date ?? a.scheduled_time ?? a.actual_time ?? "").slice(0, 10),
       status: a.status ?? "given",
-      witnessed: a.witnessed ?? a.witness_id != null ?? false,
+      witnessed: a.witnessed ?? a.witness_id != null,
     }));
 
   // ── Health Assessments ────────────────────────────────────────────────
@@ -144,8 +146,8 @@ export async function GET(request: NextRequest) {
       id: a.id,
       date: (a.date ?? a.appointment_date ?? "").slice(0, 10),
       type: a.type ?? a.appointment_type ?? "gp",
-      attended: a.attended ?? a.status === "attended" ?? true,
-      rescheduled: a.rescheduled ?? a.status === "rescheduled" ?? false,
+      attended: a.attended ?? (a.status ? a.status === "attended" : true),
+      rescheduled: a.rescheduled ?? a.status === "rescheduled",
     }));
 
   const engineInput: ChildHealthIntelligenceInput = {

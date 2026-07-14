@@ -112,8 +112,8 @@ describe("Home Locality Safeguarding Intelligence Engine", () => {
 
     it("recommendations have rank, recommendation, urgency, regulatory_ref", () => {
       const r = computeLocalitySafeguarding(baseInput({
-        risks: [makeRisk({ mitigations_count: 10, effective_mitigations: 2, review_currency_rate: 0 as never, last_reviewed: "2025-01-01" })],
-        screenings: [makeScreening({ has_safety_plan: false, screening_coverage: 0 as never })],
+        risks: [makeRisk({ mitigations_count: 10, effective_mitigations: 2, last_reviewed: "2025-01-01" })],
+        screenings: [makeScreening({ has_safety_plan: false })],
       }));
       if (r.recommendations.length > 0) {
         const rec = r.recommendations[0];

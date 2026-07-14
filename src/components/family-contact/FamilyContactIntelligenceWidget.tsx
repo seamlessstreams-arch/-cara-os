@@ -120,7 +120,7 @@ export function FamilyContactIntelligenceWidget() {
             <div key={c.childId as string} className="mb-2 p-2 bg-gray-50 rounded">
               <div className="flex justify-between text-sm font-medium"><span>{c.childName as string}</span><span>{c.completionRate as number}% completion</span></div>
               <p className="text-xs text-gray-500 mt-1">{c.arrangementsCount as number} arrangements · {c.sessionsCount as number} sessions · {c.positiveRate as number}% positive</p>
-              {c.primaryConcern && <p className="text-xs text-red-600 mt-1">{c.primaryConcern as string}</p>}
+              {Boolean(c.primaryConcern) && <p className="text-xs text-red-600 mt-1">{c.primaryConcern as string}</p>}
             </div>
           ))}
         </Section>
