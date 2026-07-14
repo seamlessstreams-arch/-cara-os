@@ -140,7 +140,7 @@ function CaraStudioContent() {
   // ── State ──────────────────────────────────────────────────────────────────
   const [selectedArtifactType, setSelectedArtifactType] = useState<CaraStudioArtifactType | null>(null);
   const [selectedFramework, setSelectedFramework] = useState<CaraStudioFramework | undefined>();
-  const [selectedTone, setSelectedTone] = useState<CaraStudioTone>("balanced");
+  const [selectedTone, setSelectedTone] = useState<CaraStudioTone>("professional");
   const [selectedChildId, setSelectedChildId] = useState<string>("");
   const [additionalContext, setAdditionalContext] = useState("");
 
@@ -158,7 +158,9 @@ function CaraStudioContent() {
     }
     if (childId) setSelectedChildId(childId);
     if (framework) setSelectedFramework(framework);
-    if (tone) setSelectedTone(tone);
+    // Validate like the artifact-type check above — an unknown ?tone= used to
+    // be blind-cast into state, where the prompt lookup silently failed.
+    if (tone && CARA_STUDIO_TONES.includes(tone)) setSelectedTone(tone);
     if (context) setAdditionalContext(context);
   }, [searchParams]);
   const [dateFrom, setDateFrom] = useState("");

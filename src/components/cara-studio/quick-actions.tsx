@@ -34,7 +34,7 @@ export function getChildProfileActions(childId: string, childName: string): Quic
     { label: "Direct Work Session", artifactType: "direct_work_session", childId, framework: "therapeutic_parenting" },
     { label: "Child-Friendly Explanation", artifactType: "child_friendly_explanation", childId, tone: "child_friendly" },
     { label: "Risk Review", artifactType: "risk_review", childId, framework: "trauma_informed" },
-    { label: "Social Worker Update", artifactType: "social_worker_update", childId, tone: "professional_legal" },
+    { label: "Social Worker Update", artifactType: "social_worker_update", childId, tone: "legal_careful" },
     { label: "Visual Formulation", artifactType: "visual_formulation", childId, framework: "psychologically_informed" },
     { label: "Care Plan Update", artifactType: "care_plan_update", childId },
   ];
@@ -44,36 +44,36 @@ export function getIncidentActions(childId?: string): QuickAction[] {
   return [
     { label: "Incident Learning Review", artifactType: "incident_learning_review", childId, framework: "trauma_informed" },
     { label: "Safeguarding Review", artifactType: "safeguarding_review", childId, framework: "safeguarding_led" },
-    { label: "Staff Training from Incident", artifactType: "staff_training", tone: "training_focused" },
+    { label: "Staff Training from Incident", artifactType: "staff_training", tone: "plain_english" },
     { label: "Action Plan", artifactType: "action_plan", childId },
   ];
 }
 
 export function getDashboardActions(): QuickAction[] {
   return [
-    { label: "Management Oversight", artifactType: "management_oversight", tone: "inspection_ready" },
+    { label: "Management Oversight", artifactType: "management_oversight", tone: "formal" },
     { label: "Team Meeting Discussion", artifactType: "team_meeting_discussion" },
-    { label: "Supervision Prompts", artifactType: "supervision_prompt", tone: "reflective" },
-    { label: "Reg 45 Summary", artifactType: "reg45_summary", tone: "inspection_ready" },
-    { label: "RI Briefing", artifactType: "ri_briefing", tone: "inspection_ready" },
+    { label: "Supervision Prompts", artifactType: "supervision_prompt", tone: "therapeutic" },
+    { label: "Reg 45 Summary", artifactType: "reg45_summary", tone: "formal" },
+    { label: "RI Briefing", artifactType: "ri_briefing", tone: "formal" },
   ];
 }
 
 export function getStaffActions(): QuickAction[] {
   return [
-    { label: "Staff Training Session", artifactType: "staff_training", tone: "training_focused" },
-    { label: "Scenario Simulation", artifactType: "scenario_simulation", tone: "training_focused" },
-    { label: "Reflective Workbook", artifactType: "reflective_workbook", tone: "reflective" },
-    { label: "Quiz", artifactType: "quiz", tone: "training_focused" },
+    { label: "Staff Training Session", artifactType: "staff_training", tone: "plain_english" },
+    { label: "Scenario Simulation", artifactType: "scenario_simulation", tone: "plain_english" },
+    { label: "Reflective Workbook", artifactType: "reflective_workbook", tone: "therapeutic" },
+    { label: "Quiz", artifactType: "quiz", tone: "plain_english" },
     { label: "Flashcards", artifactType: "flashcards" },
   ];
 }
 
 export function getComplianceActions(): QuickAction[] {
   return [
-    { label: "Ofsted Readiness Summary", artifactType: "ofsted_readiness_summary", tone: "inspection_ready" },
-    { label: "Reg 45 Summary", artifactType: "reg45_summary", tone: "inspection_ready" },
-    { label: "Annex A Update", artifactType: "annex_a_update", tone: "inspection_ready" },
+    { label: "Ofsted Readiness Summary", artifactType: "ofsted_readiness_summary", tone: "formal" },
+    { label: "Reg 45 Summary", artifactType: "reg45_summary", tone: "formal" },
+    { label: "Annex A Update", artifactType: "annex_a_update", tone: "formal" },
     { label: "RI Briefing", artifactType: "ri_briefing" },
   ];
 }
