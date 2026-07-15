@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Fraunces } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
@@ -15,6 +15,16 @@ const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-jakarta",
+  display: "swap",
+});
+
+// Marketing display face — warm, confident serif used only by the public
+// pages' mk-display classes. Self-hosted at build like Jakarta.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-fraunces",
   display: "swap",
 });
 
@@ -52,7 +62,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`h-full antialiased ${jakarta.variable}`} style={{ fontFamily: "var(--font-sans)" }}>
+    <html lang="en" className={`h-full antialiased ${jakarta.variable} ${fraunces.variable}`} style={{ fontFamily: "var(--font-sans)" }}>
       <body className="min-h-full bg-[var(--cs-bg)] text-[var(--cs-text)] selection:bg-[var(--cs-cara-gold-soft)] selection:text-[var(--cs-navy)]">
         <OfflineBanner />
         <QueryProvider>{children}</QueryProvider>
