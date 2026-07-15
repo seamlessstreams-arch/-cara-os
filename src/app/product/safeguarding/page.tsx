@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { MarketingPageHero, HeroGoldCta, HeroGlassCta } from "@/components/marketing/page-hero";
+import { ScrollProgress } from "@/components/marketing/fx";
 import { ShadowAiCallout } from "@/components/marketing/shadow-ai-callout";
 import { SectionEyebrow, FeatureCard } from "@/components/marketing/ui";
 
@@ -26,24 +28,24 @@ export const metadata: Metadata = {
 export default function SafeguardingPage() {
   return (
     <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)]">
+      <ScrollProgress />
       <MarketingHeader />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-[var(--cs-navy)] text-white">
-        <div className="pointer-events-none absolute inset-0 opacity-50" style={{ background: "radial-gradient(50% 60% at 15% 0%, var(--cs-cara-glow) 0%, transparent 55%), radial-gradient(45% 55% at 100% 100%, var(--cs-teal-glow) 0%, transparent 50%)" }} />
-        <div className="relative mx-auto max-w-4xl px-5 py-20 text-center lg:py-28">
-          <span className="inline-block rounded-full border border-[var(--cs-cara-gold)]/30 bg-[var(--cs-cara-gold)]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--cs-cara-gold-soft)]">Safeguarding Intelligence</span>
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl">See the pattern before it becomes the incident.</h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-white/75">
+      <MarketingPageHero
+        eyebrow="Safeguarding Intelligence"
+        title={<>See the pattern</>}
+        titleAccent={<>before it becomes the incident.</>}
+        lede={
+          <>
             Missing episodes, exploitation indicators, peer dynamics, places, times and online pressure — Cara connects
             what your team records into a live safeguarding picture, and puts it in front of the people who decide.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/contact" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[var(--cs-navy)] transition-transform hover:-translate-y-0.5">Book a Demo <ArrowRight className="h-4 w-4" /></Link>
-            <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/5 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10">Explore the platform</Link>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+        field
+      >
+        <HeroGoldCta href="/contact">Book a Demo</HeroGoldCta>
+        <HeroGlassCta href="/dashboard">Explore the platform</HeroGlassCta>
+      </MarketingPageHero>
 
       {/* Capabilities */}
       <section className="mx-auto max-w-7xl px-5 py-20">

@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { MarketingPageHero, HeroGoldCta, HeroGlassCta } from "@/components/marketing/page-hero";
+import { ScrollProgress } from "@/components/marketing/fx";
 import { ShadowAiCallout } from "@/components/marketing/shadow-ai-callout";
 import { SectionEyebrow, FeatureCard } from "@/components/marketing/ui";
 
@@ -26,26 +28,23 @@ export const metadata: Metadata = {
 export default function WorkforcePage() {
   return (
     <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)]">
+      <ScrollProgress />
       <MarketingHeader />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(55% 50% at 80% 0%, var(--cs-teal-glow) 0%, transparent 60%), radial-gradient(45% 45% at 0% 30%, var(--cs-cara-glow) 0%, transparent 55%)" }} />
-        <div className="relative mx-auto max-w-4xl px-5 py-16 text-center lg:py-24">
-          <SectionEyebrow>Workforce &amp; safe access</SectionEyebrow>
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-[var(--cs-navy)] sm:text-5xl">
-            The right people, on shift, with the right access.
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[var(--cs-text-secondary)]">
+      <MarketingPageHero
+        eyebrow="Workforce &amp; safe access"
+        title={<>The right people, on shift,</>}
+        titleAccent={<>with the right access.</>}
+        lede={
+          <>
             Cara runs the whole staffing picture — from the rota to the doorway — and turns supervision, training and
             recruitment into evidence you can show an inspector. One workforce, one source of truth.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/contact" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--cs-navy-soft)] hover:shadow-md">Book a demo <ArrowRight className="h-4 w-4" /></Link>
-            <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--cs-border)] bg-white/70 px-5 py-3 text-sm font-semibold text-[var(--cs-navy)] transition-colors hover:bg-white">Explore the platform</Link>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      >
+        <HeroGoldCta href="/contact">Book a demo</HeroGoldCta>
+        <HeroGlassCta href="/dashboard">Explore the platform</HeroGlassCta>
+      </MarketingPageHero>
 
       {/* Three jobs */}
       <section className="border-y border-[var(--cs-border)] bg-white">

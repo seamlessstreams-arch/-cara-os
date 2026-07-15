@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { MarketingPageHero, HeroGoldCta, HeroGlassCta } from "@/components/marketing/page-hero";
+import { ScrollProgress } from "@/components/marketing/fx";
 import { SectionEyebrow, FeatureCard } from "@/components/marketing/ui";
 
 export const metadata: Metadata = {
@@ -26,26 +28,23 @@ export const metadata: Metadata = {
 export default function SecurityPage() {
   return (
     <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)]">
+      <ScrollProgress />
       <MarketingHeader />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(55% 50% at 80% 0%, var(--cs-teal-glow) 0%, transparent 60%)" }} />
-        <div className="relative mx-auto max-w-4xl px-5 py-16 text-center lg:py-24">
-          <SectionEyebrow>Security &amp; trust</SectionEyebrow>
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-[var(--cs-navy)] sm:text-5xl">
-            Built for the most sensitive data in care.
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[var(--cs-text-secondary)]">
+      <MarketingPageHero
+        eyebrow="Security &amp; trust"
+        title={<>Built for the most sensitive</>}
+        titleAccent={<>data in care.</>}
+        lede={
+          <>
             A children&rsquo;s home holds some of the most sensitive personal data there is. Cara treats it that way —
             with access control, audit trails and AI safeguards built into the core, not bolted on.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/contact" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--cs-navy-soft)] hover:shadow-md">Talk to us about your data <ArrowRight className="h-4 w-4" /></Link>
-            <Link href="/#layers" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--cs-border)] bg-white/70 px-5 py-3 text-sm font-semibold text-[var(--cs-navy)] transition-colors hover:bg-white">How Cara thinks</Link>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      >
+        <HeroGoldCta href="/contact">Talk to us about your data</HeroGoldCta>
+        <HeroGlassCta href="/#layers">How Cara thinks</HeroGlassCta>
+      </MarketingPageHero>
 
       {/* Pillars */}
       <section className="border-y border-[var(--cs-border)] bg-white">

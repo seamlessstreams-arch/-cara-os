@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { MarketingPageHero } from "@/components/marketing/page-hero";
+import { ScrollProgress } from "@/components/marketing/fx";
 import { SectionEyebrow } from "@/components/marketing/ui";
 
 export const metadata: Metadata = {
@@ -24,22 +26,21 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)]">
+      <ScrollProgress />
       <MarketingHeader />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(55% 50% at 20% 0%, var(--cs-cara-glow) 0%, transparent 60%)" }} />
-        <div className="relative mx-auto max-w-4xl px-5 py-16 text-center lg:py-24">
-          <SectionEyebrow>Our story</SectionEyebrow>
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-[var(--cs-navy)] sm:text-5xl">
-            Built in a real children&rsquo;s home.
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[var(--cs-text-secondary)]">
+      <MarketingPageHero
+        eyebrow="Our story"
+        title={<>Built in a real</>}
+        titleAccent={<>children&rsquo;s home.</>}
+        lede={
+          <>
             Not in a boardroom, and not by people who&rsquo;ve never run a shift. Cara was built by a Registered Manager
             who was tired of watching brilliant care get let down by paperwork.
-          </p>
-        </div>
-      </section>
+          </>
+        }
+        field
+      />
 
       {/* The story */}
       <section className="border-y border-[var(--cs-border)] bg-white">
