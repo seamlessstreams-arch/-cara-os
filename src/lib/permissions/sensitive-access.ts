@@ -29,6 +29,7 @@ import type { AppRole, Permission } from "@/lib/permissions";
 import { recordEntityAudit, extractRequestAuditContext } from "@/lib/audit/audit-recorder";
 import type { AuditAction } from "@/types/operations";
 import { evaluateSensitiveAbac } from "./abac-shadow";
+import { recordAbacDivergence } from "./abac-divergence";
 
 /** Env kill-switch (rollback) — enforcement is ON unless explicitly disabled. */
 const ENFORCED = process.env.SENSITIVE_ACCESS_ENFORCED !== "false";
@@ -66,12 +67,19 @@ function runAbacShadow(userId: string, role: AppRole, audit: SensitiveAuditConte
     // Flat check already allowed (we only reach here on grant). If ABAC would
     // have denied, surface the divergence for the future enforcing flip.
     if (!r.allowed) {
-      // contextReal marks a decision made on the actor's REAL attributes
-      // (shift/employment/key-worker) — only those are evidence for the flip.
-      console.warn(
-        `[sensitive-access] ABAC advisory would DENY ${role} → ${audit.entityType}: ${r.reason}` +
-          ` (context: ${r.contextReal ? "real" : "fallback"})`,
-      );
+      // This is exactly the access an enforcing flip would take away, so record
+      // it on the durable audit spine rather than warn into a log that scrolls
+      // away. contextReal separates evidence (the actor's real shift/employment/
+      // key-worker attributes) from unknown-actor noise.
+      recordAbacDivergence({
+        userId,
+        role,
+        resource: audit.entityType,
+        action: audit.action ?? "view",
+        homeId: audit.homeId,
+        reason: r.reason,
+        contextReal: r.contextReal,
+      });
     }
   } catch {
     // Advisory only — must never affect the route.
