@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isPublicPath } from '@/lib/auth/public-paths'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -38,14 +39,14 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims()
   const user = data?.claims
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  if (!user && !isPublicPath(request.nextUrl.pathname)) {
+    // No session on a platform page: send to the login door, remembering where
+    // the visitor was heading so sign-in returns them there. The marketing
+    // site (isPublicPath) stays public even in activated mode.
     const url = request.nextUrl.clone()
+    const next = request.nextUrl.pathname + request.nextUrl.search
     url.pathname = '/auth/login'
+    url.search = next && next !== '/' ? `?next=${encodeURIComponent(next)}` : ''
     return NextResponse.redirect(url)
   }
 
