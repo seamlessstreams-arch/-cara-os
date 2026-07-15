@@ -18,10 +18,39 @@ export interface HqOrganisation {
   status: HqOrgStatus;
   primary_contact_name: string | null;
   primary_contact_email: string | null;
-  /** Metadata only — real multi-tenant home provisioning lands with auth. */
+  /**
+   * The name given for the customer's first home at provisioning.
+   *
+   * Kept as the org's own label for its first site. The home itself is now a
+   * real record — see HqHome — rather than the metadata placeholder this field
+   * used to be on its own.
+   */
   first_home_name: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * A home provisioned for a customer.
+ *
+ * This is the HQ view of a home — the row that has to exist in `homes` before a
+ * tenant deployment can point SUPABASE_HOME_ID at it. It is not the same thing
+ * as `store.home`, which is the ONE home the current deployment serves.
+ *
+ * `id` is a uuid, minted here rather than by Postgres: `homes.id` is a uuid
+ * column, so the app's usual generateId() ("home_…") would be rejected, and
+ * letting the database default it would leave the in-memory copy and the row
+ * carrying different ids.
+ */
+export interface HqHome {
+  id: string;
+  org_id: string;
+  name: string;
+  /** `homes.address` is NOT NULL — a home cannot be provisioned without one. */
+  address: string;
+  ofsted_urn: string | null;
+  max_beds: number;
+  created_at: string;
 }
 
 export interface HqUsageEvent {

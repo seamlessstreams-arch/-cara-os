@@ -18,25 +18,28 @@ const labelCls = "mb-1 block text-xs font-semibold text-[var(--cs-text-secondary
 export default function HqCustomersPage() {
   const { data, isLoading } = useHqCustomers();
   const provision = useProvisionCustomer();
-  const [form, setForm] = useState({
+  const EMPTY = {
     org_name: "",
     first_home_name: "",
+    first_home_address: "",
+    first_home_ofsted_urn: "",
+    first_home_max_beds: "3",
     plan: "pilot",
     manager_name: "",
     manager_email: "",
-  });
+  };
+  const [form, setForm] = useState(EMPTY);
 
   const set = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    provision.mutate(form, {
-      onSuccess: () =>
-        setForm({ org_name: "", first_home_name: "", plan: "pilot", manager_name: "", manager_email: "" }),
-    });
+    provision.mutate(form, { onSuccess: () => setForm(EMPTY) });
   };
 
   const customers = data?.customers ?? [];
+  const homes = data?.homes ?? [];
+  const homeForOrg = (orgId: string) => homes.find((h) => h.org_id === orgId) ?? null;
 
   return (
     <PageShell
@@ -58,10 +61,23 @@ export default function HqCustomersPage() {
                   {provision.data.customer.name} created
                 </p>
                 <p className="mt-1 text-xs text-[var(--cs-text-secondary)]">
-                  Manager contact recorded: {provision.data.customer.primary_contact_name} (
-                  {provision.data.customer.primary_contact_email}). Manager sign-in provisioning
-                  activates with Supabase Auth — no credentials are generated until a real login
-                  flow exists.
+                  {provision.data.home.name} is provisioned at {provision.data.home.address}
+                  {provision.data.home.ofsted_urn ? ` (URN ${provision.data.home.ofsted_urn})` : ""},
+                  with {provision.data.home.max_beds} bed
+                  {provision.data.home.max_beds === 1 ? "" : "s"}. Manager contact recorded:{" "}
+                  {provision.data.customer.primary_contact_name} (
+                  {provision.data.customer.primary_contact_email}).
+                </p>
+                {/* The home id is what a tenant deployment is pointed at, so it is the one
+                    thing here worth copying out. */}
+                <p className="mt-2 font-mono text-[11px] text-[var(--cs-text-muted)] break-all">
+                  SUPABASE_HOME_ID={provision.data.home.id}
+                </p>
+                <p className="mt-2 text-xs text-[var(--cs-text-secondary)]">
+                  Set that on the home&rsquo;s deployment, along with
+                  <span className="font-mono"> NEXT_PUBLIC_CARA_MODE=live</span>, and it starts
+                  empty rather than seeded. Manager sign-in still needs an auth user — no
+                  credentials are generated here.
                 </p>
                 <button
                   onClick={() => provision.reset()}
@@ -88,6 +104,38 @@ export default function HqCustomersPage() {
                       required
                       value={form.first_home_name}
                       onChange={(e) => set("first_home_name")(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className={labelCls}>Home address</label>
+                    <input
+                      required
+                      value={form.first_home_address}
+                      onChange={(e) => set("first_home_address")(e.target.value)}
+                      className={inputCls}
+                      placeholder="Building, street, town, postcode"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>
+                      Ofsted URN <span className="font-normal opacity-60">— optional</span>
+                    </label>
+                    <input
+                      value={form.first_home_ofsted_urn}
+                      onChange={(e) => set("first_home_ofsted_urn")(e.target.value)}
+                      className={inputCls}
+                      placeholder="SC123456"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Beds</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={60}
+                      value={form.first_home_max_beds}
+                      onChange={(e) => set("first_home_max_beds")(e.target.value)}
                       className={inputCls}
                     />
                   </div>
@@ -171,7 +219,35 @@ export default function HqCustomersPage() {
                       <td className="px-5 py-3">
                         <HqStatusBadge status={c.status} />
                       </td>
-                      <td className="px-5 py-3 text-[var(--cs-text-secondary)]">{c.first_home_name ?? "—"}</td>
+                      <td className="px-5 py-3 text-[var(--cs-text-secondary)]">
+                        {(() => {
+                          const h = homeForOrg(c.id);
+                          // A customer provisioned before homes were real records has a
+                          // name but no row. Say which it is rather than render both the
+                          // same — one of them a deployment can actually be pointed at.
+                          if (!h) {
+                            return c.first_home_name ? (
+                              <>
+                                {c.first_home_name}
+                                <span className="block text-xs text-[var(--cs-text-muted)]">
+                                  name only — no home record
+                                </span>
+                              </>
+                            ) : (
+                              "—"
+                            );
+                          }
+                          return (
+                            <>
+                              {h.name}
+                              <span className="block text-xs text-[var(--cs-text-gentle)]">{h.address}</span>
+                              <span className="block font-mono text-[10px] text-[var(--cs-text-muted)] break-all">
+                                {h.id}
+                              </span>
+                            </>
+                          );
+                        })()}
+                      </td>
                       <td className="px-5 py-3 text-[var(--cs-text-secondary)]">
                         {c.primary_contact_name ?? "—"}
                         {c.primary_contact_email && (

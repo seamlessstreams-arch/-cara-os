@@ -10,6 +10,7 @@ import { isSupabaseEnabled, createServerClient } from "./server";
 import type {
   HqAiUsageRow,
   HqBreakGlassGrant,
+  HqHome,
   HqOrganisation,
   HqUsageEvent,
 } from "@/lib/hq/hq-types";
@@ -38,6 +39,80 @@ export async function persistHqOrganisation(o: HqOrganisation): Promise<void> {
     });
   } catch {
     /* best-effort */
+  }
+}
+
+/**
+ * Write the provisioned home to `homes` and link it to its customer.
+ *
+ * Unlike the persist* helpers around it, this one REPORTS failure. Everything
+ * else here is telemetry, where losing a row costs a metric. This row is the
+ * home itself: if it silently fails, HQ shows a home that does not exist and
+ * the tenant deployment it was created for has nothing to point at. The caller
+ * decides what to tell the person who pressed the button.
+ */
+export async function persistHqHome(h: HqHome): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!isSupabaseEnabled()) return { ok: true }; // demo: the store IS the record
+  const c = createServerClient();
+  if (!c) return { ok: false, error: "No database connection configured." };
+  try {
+    const { error } = await raw(c).from("homes").insert({
+      id: h.id,
+      org_id: h.org_id,
+      name: h.name,
+      address: h.address,
+      ofsted_urn: h.ofsted_urn,
+      max_beds: h.max_beds,
+    });
+    if (error) return { ok: false, error: error.message ?? "Insert failed." };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Insert failed." };
+  }
+}
+
+/**
+ * Read customers back from the database.
+ *
+ * The gap this closes: provisioning wrote to `organisations` AND to the
+ * in-memory store, but every read came from the store alone. The store is
+ * per-serverless-instance and re-seeds on a cold start, so a real customer was
+ * written to Postgres and then never seen again.
+ *
+ * Returns null on failure rather than [] — an empty list and a broken read must
+ * not look identical to the caller.
+ */
+export async function loadHqOrganisations(): Promise<HqOrganisation[] | null> {
+  if (!isSupabaseEnabled()) return null;
+  const c = createServerClient();
+  if (!c) return null;
+  try {
+    const { data, error } = await raw(c)
+      .from("organisations")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error || !data) return null;
+    return data as HqOrganisation[];
+  } catch {
+    return null;
+  }
+}
+
+/** Read provisioned homes back, newest first. Null on failure — see above. */
+export async function loadHqHomes(): Promise<HqHome[] | null> {
+  if (!isSupabaseEnabled()) return null;
+  const c = createServerClient();
+  if (!c) return null;
+  try {
+    const { data, error } = await raw(c)
+      .from("homes")
+      .select("id, org_id, name, address, ofsted_urn, max_beds, created_at")
+      .not("org_id", "is", null)
+      .order("created_at", { ascending: false });
+    if (error || !data) return null;
+    return data as HqHome[];
+  } catch {
+    return null;
   }
 }
 
