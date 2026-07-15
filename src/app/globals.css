@@ -262,8 +262,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  font-family: var(--font-sans);
+/* Layered (the @layer gotcha): unlayered, this universal rule beat every
+   layered font-family — including Tailwind font utilities and the marketing
+   display face. In @layer base it still supplies the default everywhere but
+   loses, correctly, to any explicit font rule. */
+@layer base {
+  * {
+    font-family: var(--font-sans);
+  }
 }
 
 /* ── Scrollbar — single source of truth lives in "CARA BESPOKE IDENTITY" below
@@ -1115,5 +1121,127 @@ button, a, [role="button"] {
   .cs-lift:hover,
   [data-slot="card"]:hover {
     transform: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MARKETING FX SYSTEM (mk-*) — the public site's cinematic layer.
+   Everything lives in @layer components so Tailwind utilities still win,
+   and every animation collapses under prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  /* Midnight canvas — the brand's night world (matches the app's dark skin). */
+  .mk-midnight {
+    background:
+      radial-gradient(90% 60% at 80% -10%, rgba(96, 165, 250, 0.13) 0%, transparent 55%),
+      radial-gradient(70% 50% at 8% 8%, rgba(45, 212, 191, 0.10) 0%, transparent 55%),
+      radial-gradient(60% 70% at 50% 110%, rgba(167, 139, 250, 0.10) 0%, transparent 60%),
+      linear-gradient(180deg, #070d1e 0%, #0b1226 55%, #0e1730 100%);
+  }
+  .mk-midnight-flat {
+    background: linear-gradient(180deg, #0e1730 0%, #0b1226 60%, #070d1e 100%);
+  }
+
+  /* Display type — Fraunces carries the marketing voice. */
+  .mk-display {
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.04;
+  }
+  .mk-display-it {
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  /* The CARA aurora — the intelligence signature. */
+  .mk-aurora-text {
+    background: linear-gradient(92deg, #2dd4bf 0%, #60a5fa 45%, #a78bfa 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .mk-aurora-line {
+    background: linear-gradient(90deg, transparent, #2dd4bf 20%, #60a5fa 50%, #a78bfa 80%, transparent);
+  }
+  .mk-gold-text { color: var(--cs-cara-gold); }
+
+  /* Glass chip on midnight. */
+  .mk-glass {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(12px);
+  }
+
+  /* Reveal choreography — driven by the Reveal component adding .mk-in. */
+  .mk-reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    filter: blur(6px);
+    transition:
+      opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--mk-delay, 0ms);
+    will-change: opacity, transform, filter;
+  }
+  .mk-reveal.mk-in { opacity: 1; transform: none; filter: none; }
+  .mk-reveal-scale { transform: translateY(18px) scale(0.97); }
+
+  /* Hero load sequence (no scroll needed — plays on mount). */
+  .mk-enter {
+    opacity: 0;
+    transform: translateY(22px);
+    animation: mk-enter 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--mk-delay, 0ms);
+  }
+  @keyframes mk-enter { to { opacity: 1; transform: none; } }
+
+  /* 3D tilt cards (transform set by pointer JS; this supplies depth + sheen). */
+  .mk-tilt {
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease;
+    will-change: transform;
+  }
+  .mk-tilt-glare {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(420px circle at var(--mk-gx, 50%) var(--mk-gy, 50%), rgba(255, 255, 255, 0.14), transparent 55%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .mk-tilt:hover .mk-tilt-glare { opacity: 1; }
+
+  /* Framework marquee. */
+  .mk-marquee { display: flex; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+  .mk-marquee-track { display: flex; flex-shrink: 0; align-items: center; gap: 3.5rem; padding-right: 3.5rem; animation: mk-marquee 46s linear infinite; }
+  @keyframes mk-marquee { to { transform: translateX(-100%); } }
+
+  /* Aurora scroll-progress hairline. */
+  .mk-progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 60; transform-origin: 0 50%; transform: scaleX(var(--mk-progress, 0)); }
+
+  /* Soft float for ambient elements. */
+  .mk-float { animation: mk-float 7s ease-in-out infinite; }
+  @keyframes mk-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+  /* Underline-draw nav links (dark header). */
+  .mk-navlink { position: relative; }
+  .mk-navlink::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 100%; bottom: -4px; height: 1.5px;
+    background: linear-gradient(90deg, #2dd4bf, #60a5fa, #a78bfa);
+    transition: right 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .mk-navlink:hover::after { right: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mk-reveal, .mk-enter { opacity: 1 !important; transform: none !important; filter: none !important; animation: none !important; transition: none !important; }
+    .mk-marquee-track { animation: none; }
+    .mk-float { animation: none; }
+    .mk-tilt { transition: none; }
   }
 }

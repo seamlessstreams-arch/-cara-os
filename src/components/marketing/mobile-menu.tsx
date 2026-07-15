@@ -27,24 +27,24 @@ export function MobileMenu() {
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--cs-border)] bg-white/70 text-[var(--cs-navy)]"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/[0.06] text-white"
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-[var(--cs-bg)]">
-          <div className="flex items-center justify-between border-b border-[var(--cs-border)] px-5 py-3.5">
+        <div className="fixed inset-0 z-50 flex flex-col mk-midnight-flat">
+          <div className="flex items-center justify-between border-b border-white/10 px-5 py-3.5">
             <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/icon-192.png" alt="Cara" className="h-9 w-9 rounded-xl" />
-              <span className="text-lg font-extrabold tracking-tight text-[var(--cs-navy)]">Cara <span className="text-[var(--cs-teal-strong)]">Care Intelligence OS</span></span>
+              <span className="text-lg font-extrabold tracking-tight text-white">Cara <span className="text-teal-300">Care Intelligence OS</span></span>
             </Link>
             <button
               type="button"
               aria-label="Close menu"
               onClick={() => setOpen(false)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--cs-border)] bg-white/70 text-[var(--cs-navy)]"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/[0.06] text-white"
             >
               <X className="h-5 w-5" />
             </button>
@@ -56,7 +56,7 @@ export function MobileMenu() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-xl px-3 py-3 text-base font-semibold text-[var(--cs-navy)] hover:bg-white"
+                className="rounded-xl px-3 py-3 text-base font-semibold text-slate-200 hover:bg-white/[0.06] hover:text-white"
               >
                 {l.label}
               </a>
