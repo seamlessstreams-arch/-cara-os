@@ -7,10 +7,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { currentUserId } from "@/lib/auth/current-user";
 
 function userId(): string {
   if (typeof window === "undefined") return "staff_darren";
-  try { return localStorage.getItem("cs_user_id") ?? "staff_darren"; } catch { return "staff_darren"; }
+  return currentUserId();
 }
 
 const OPTS = { refetchInterval: 60_000, staleTime: 30_000 };

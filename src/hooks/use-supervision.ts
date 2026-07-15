@@ -5,13 +5,9 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Supervision } from "@/types";
+import { currentUserId } from "@/lib/auth/current-user";
 
 const API = "/api/v1/supervision";
-
-function currentUserId(): string {
-  if (typeof window === "undefined") return "staff_darren";
-  try { return localStorage.getItem("cs_user_id") ?? "staff_darren"; } catch { return "staff_darren"; }
-}
 
 function authHeaders() {
   return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
