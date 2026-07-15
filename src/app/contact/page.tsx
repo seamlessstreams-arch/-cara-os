@@ -6,7 +6,8 @@ import type { Metadata } from "next";
 import { Mail, Clock, ShieldCheck } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
-import { SectionEyebrow } from "@/components/marketing/ui";
+import { MarketingPageHero } from "@/components/marketing/page-hero";
+import { ScrollProgress } from "@/components/marketing/fx";
 import { EarlyAccessForm } from "@/components/marketing/early-access-form";
 
 export const metadata: Metadata = {
@@ -18,20 +19,25 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)]">
+      <ScrollProgress />
       <MarketingHeader />
 
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(55% 50% at 50% 0%, var(--cs-teal-glow) 0%, transparent 60%)" }} />
-        <div className="relative mx-auto max-w-5xl px-5 py-14 lg:py-16">
-          <div className="mx-auto max-w-2xl text-center">
-            <SectionEyebrow>Book a Demo</SectionEyebrow>
-            <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-[var(--cs-navy)] sm:text-5xl">Ready to turn recording into intelligence?</h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[var(--cs-text-secondary)]">
-              Tell us a little about your service and we&rsquo;ll arrange a demo on a realistic home&rsquo;s rhythm — recording, safeguarding intelligence, oversight and evidence, live. Or just start a conversation.
-            </p>
-          </div>
+      <MarketingPageHero
+        eyebrow="Book a Demo"
+        title={<>Ready to turn recording</>}
+        titleAccent={<>into intelligence?</>}
+        lede={
+          <>
+            Tell us a little about your service and we&rsquo;ll arrange a demo on a realistic home&rsquo;s rhythm —
+            recording, safeguarding intelligence, oversight and evidence, live. Or just start a conversation.
+          </>
+        }
+        field
+      />
 
-          <div className="mt-10 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
+      <section className="relative overflow-hidden">
+        <div className="relative mx-auto max-w-5xl px-5 py-14 lg:py-16">
+          <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
             <EarlyAccessForm />
 
             <div className="space-y-4">

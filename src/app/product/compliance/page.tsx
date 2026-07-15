@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { MarketingPageHero, HeroGoldCta, HeroGlassCta } from "@/components/marketing/page-hero";
+import { ScrollProgress } from "@/components/marketing/fx";
 import { ShadowAiCallout } from "@/components/marketing/shadow-ai-callout";
 import { SectionEyebrow, FeatureCard } from "@/components/marketing/ui";
 
@@ -35,23 +37,23 @@ const STACK = [
 export default function CompliancePage() {
   return (
     <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)]">
+      <ScrollProgress />
       <MarketingHeader />
 
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(55% 50% at 50% 0%, var(--cs-teal-glow) 0%, transparent 60%)" }} />
-        <div className="relative mx-auto max-w-4xl px-5 py-16 text-center lg:py-24">
-          <SectionEyebrow>Compliance Intelligence</SectionEyebrow>
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-[var(--cs-navy)] sm:text-5xl">The evidence trail builds itself as you work.</h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[var(--cs-text-secondary)]">
+      <MarketingPageHero
+        eyebrow="Compliance Intelligence"
+        title={<>The evidence trail</>}
+        titleAccent={<>builds itself as you work.</>}
+        lede={
+          <>
             Reg 40 prompts, Annex A readiness, supervision, training, safer recruitment, medication and premises checks —
             Cara keeps the compliance picture live all year, with leadership oversight and a full audit trail underneath it.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/contact" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--cs-navy-soft)] hover:shadow-md">Book a Demo <ArrowRight className="h-4 w-4" /></Link>
-            <Link href="/product/tour" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--cs-border)] bg-white/70 px-5 py-3 text-sm font-semibold text-[var(--cs-navy)] transition-colors hover:bg-white">See it in the tour</Link>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      >
+        <HeroGoldCta href="/contact">Book a Demo</HeroGoldCta>
+        <HeroGlassCta href="/product/tour">See it in the tour</HeroGlassCta>
+      </MarketingPageHero>
 
       <section className="border-y border-[var(--cs-border)] bg-white">
         <div className="mx-auto max-w-7xl px-5 py-20">
