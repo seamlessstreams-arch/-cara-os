@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
-import { SectionEyebrow } from "@/components/marketing/ui";
+import { MarketingPageHero, HeroGoldCta, HeroGlassCta } from "@/components/marketing/page-hero";
+import { Reveal, TiltCard, ScrollProgress } from "@/components/marketing/fx";
+import { HeroField } from "@/components/marketing/hero-field";
 
 export const metadata: Metadata = {
   title: "Product tour | Cara OS",
@@ -640,45 +642,29 @@ const STEPS = [
 export default function TourPage() {
   return (
     <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)]">
+      <ScrollProgress />
       <MarketingHeader />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-70"
-          style={{ background: "radial-gradient(55% 50% at 50% 0%, var(--cs-teal-glow) 0%, transparent 60%)" }}
-        />
-        <div className="relative mx-auto max-w-3xl px-5 py-16 text-center lg:py-20">
-          <SectionEyebrow>Product tour</SectionEyebrow>
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-[var(--cs-navy)] sm:text-5xl">
-            See Cara in action.
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[var(--cs-text-secondary)]">
-            Live screens from the demo platform — running on a fictional home&rsquo;s data. Every mockup is a real page; click any one to step straight into it.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/dashboard/manager-control-centre"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--cs-navy-soft)] hover:shadow-md"
-            >
-              Open the live demo <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--cs-border)] bg-white/70 px-5 py-3 text-sm font-semibold text-[var(--cs-navy)] transition-colors hover:bg-white"
-            >
-              Book a walkthrough
-            </Link>
-          </div>
-          <p className="mt-4 text-xs text-[var(--cs-text-muted)]">
-            Demo data — a fictional home, fictional people. No real child or staff information.
-          </p>
-        </div>
-      </section>
+      <MarketingPageHero
+        eyebrow="Product tour"
+        title={<>See Cara</>}
+        titleAccent={<>think.</>}
+        lede={
+          <>
+            Live screens from the demo platform — running on a fictional home&rsquo;s data. Every mockup is a
+            real page; click any one to step straight into it.
+          </>
+        }
+        footnote={<>Demo data — a fictional home, fictional people. No real child or staff information.</>}
+        field
+      >
+        <HeroGoldCta href="/dashboard/manager-control-centre">Open the live demo <ArrowRight className="h-4 w-4" /></HeroGoldCta>
+        <HeroGlassCta href="/contact">Book a walkthrough</HeroGlassCta>
+      </MarketingPageHero>
 
       {/* Feature strip */}
       <div className="mx-auto max-w-5xl px-5 pb-10">
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-[var(--cs-border)] bg-white px-6 py-4">
+        <div className="-mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-[var(--cs-border)] bg-white px-6 py-4 shadow-[var(--cs-shadow-card)]">
           {[
             { Icon: Sparkles, label: "Ask CARA" },
             { Icon: Brain, label: "Practice Intelligence" },
@@ -703,14 +689,15 @@ export default function TourPage() {
             const flip = i % 2 === 1;
             return (
               <div key={s.href} className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
-                <div className={flip ? "lg:order-2" : ""}>
-                  <div className="flex items-center gap-2.5">
+                <Reveal className={flip ? "lg:order-2" : ""}>
+                  <div className="flex items-center gap-3">
+                    <span className="mk-display text-4xl leading-none text-[var(--cs-cara-gold)]/60">{String(i + 1).padStart(2, "0")}</span>
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]">
                       <s.Icon className="h-5 w-5" />
                     </span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-[var(--cs-teal-strong)]">{s.eyebrow}</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--cs-teal-strong)]">{s.eyebrow}</span>
                   </div>
-                  <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-3xl">{s.title}</h2>
+                  <h2 className="mk-display mt-4 text-3xl text-[var(--cs-navy)] sm:text-4xl">{s.title}</h2>
                   <p className="mt-3 text-base leading-relaxed text-[var(--cs-text-secondary)]">{s.body}</p>
                   <ul className="mt-5 space-y-2">
                     {s.points.map((p, j) => (
@@ -721,51 +708,38 @@ export default function TourPage() {
                   </ul>
                   <Link
                     href={s.href}
-                    className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--cs-navy)] hover:text-[var(--cs-teal-strong)]"
+                    className="mt-6 inline-flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)] transition-colors hover:text-[var(--cs-cara-gold)]"
                   >
                     Open {s.eyebrow} in the platform <ArrowUpRight className="h-4 w-4" />
                   </Link>
-                </div>
-                <div className={flip ? "lg:order-1" : ""}>
-                  <MockupFrame href={s.href} url={s.href}>
-                    <s.Mockup />
-                  </MockupFrame>
-                </div>
+                </Reveal>
+                <Reveal delay={140} scale className={flip ? "lg:order-1" : ""}>
+                  <TiltCard max={5} className="rounded-2xl">
+                    <MockupFrame href={s.href} url={s.href}>
+                      <s.Mockup />
+                    </MockupFrame>
+                  </TiltCard>
+                </Reveal>
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="mx-auto max-w-7xl px-5 py-20">
-        <div className="relative overflow-hidden rounded-3xl bg-[var(--cs-navy)] px-6 py-16 text-center text-white shadow-[var(--cs-shadow-card)]">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-50"
-            style={{ background: "radial-gradient(50% 80% at 50% 0%, var(--cs-teal-glow) 0%, transparent 60%)" }}
-          />
-          <div className="relative">
-            <h2 className="mx-auto max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              That&rsquo;s the tour. Now try it yourself.
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-lg text-white/75">
+      {/* Finale — back into the night */}
+      <section className="mk-midnight relative mt-8 overflow-hidden">
+        <HeroField className="pointer-events-none absolute inset-0 h-full w-full opacity-35" />
+        <div className="relative mx-auto max-w-4xl px-5 py-24 text-center">
+          <Reveal>
+            <h2 className="mk-display text-4xl text-white sm:text-5xl">That&rsquo;s the tour. <span className="mk-display-it mk-aurora-text">Now try it yourself.</span></h2>
+            <p className="mx-auto mt-5 max-w-xl text-lg text-slate-300/90">
               Step into the live demo and click around, or book a walkthrough on your own home&rsquo;s data.
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/dashboard/manager-control-centre"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-[var(--cs-navy)] transition-transform hover:-translate-y-0.5"
-              >
-                Open the live demo <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-white/10"
-              >
-                Book a walkthrough
-              </Link>
-            </div>
-          </div>
+          </Reveal>
+          <Reveal delay={130} className="mt-9 flex flex-wrap items-center justify-center gap-4">
+            <HeroGoldCta href="/dashboard/manager-control-centre">Open the live demo <ArrowRight className="h-4 w-4" /></HeroGoldCta>
+            <HeroGlassCta href="/contact">Book a walkthrough</HeroGlassCta>
+          </Reveal>
         </div>
       </section>
 
