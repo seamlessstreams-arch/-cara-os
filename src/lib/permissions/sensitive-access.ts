@@ -66,7 +66,12 @@ function runAbacShadow(userId: string, role: AppRole, audit: SensitiveAuditConte
     // Flat check already allowed (we only reach here on grant). If ABAC would
     // have denied, surface the divergence for the future enforcing flip.
     if (!r.allowed) {
-      console.warn(`[sensitive-access] ABAC advisory would DENY ${role} → ${audit.entityType}: ${r.reason}`);
+      // contextReal marks a decision made on the actor's REAL attributes
+      // (shift/employment/key-worker) — only those are evidence for the flip.
+      console.warn(
+        `[sensitive-access] ABAC advisory would DENY ${role} → ${audit.entityType}: ${r.reason}` +
+          ` (context: ${r.contextReal ? "real" : "fallback"})`,
+      );
     }
   } catch {
     // Advisory only — must never affect the route.
