@@ -32,13 +32,13 @@ function MockupFrame({ children, href, url }: { children: React.ReactNode; href:
   return (
     <Link
       href={href}
-      className="group block overflow-hidden rounded-2xl border border-[var(--cs-border)] bg-white shadow-[var(--cs-shadow-card)] transition-transform hover:-translate-y-0.5"
+      className="cara-dark group block overflow-hidden rounded-2xl border border-white/10 bg-[var(--cs-surface)] shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition-transform hover:-translate-y-0.5"
     >
-      <div className="flex items-center gap-1.5 border-b border-[var(--cs-border)] bg-[var(--cs-bg)] px-3 py-2.5">
+      <div className="flex items-center gap-1.5 border-b border-white/10 bg-black/25 px-3 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-red-300" />
         <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
         <span className="h-2.5 w-2.5 rounded-full bg-green-300" />
-        <span className="ml-2 hidden truncate rounded-md bg-white px-2.5 py-1 text-[11px] font-medium text-[var(--cs-text-muted)] sm:inline-block">
+        <span className="ml-2 hidden truncate rounded-md bg-[var(--cs-surface-elevated)]/[0.06] px-2.5 py-1 text-[11px] font-medium text-[var(--cs-text-muted)] sm:inline-block">
           cara-os.app{url}
         </span>
         <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--cs-teal-strong)] opacity-0 transition-opacity group-hover:opacity-100">
@@ -53,11 +53,11 @@ function MockupFrame({ children, href, url }: { children: React.ReactNode; href:
 // ── Shared mini-UI primitives ─────────────────────────────────────────────────
 
 function SevDot({ sev }: { sev: "critical" | "high" | "medium" | "low" }) {
-  const c = { critical: "bg-red-500", high: "bg-orange-400", medium: "bg-amber-400", low: "bg-slate-300" }[sev];
+  const c = { critical: "bg-red-500", high: "bg-orange-400", medium: "bg-amber-400", low: "bg-slate-500" }[sev];
   return <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${c}`} />;
 }
 function SevBadge({ sev }: { sev: "critical" | "high" | "medium" | "low" }) {
-  const c = { critical: "bg-red-100 text-red-700", high: "bg-orange-100 text-orange-700", medium: "bg-amber-100 text-amber-700", low: "bg-slate-100 text-slate-600" }[sev];
+  const c = { critical: "bg-red-500/15 text-red-300", high: "bg-orange-500/15 text-orange-300", medium: "bg-amber-500/15 text-amber-200", low: "bg-white/10 text-slate-300" }[sev];
   return <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${c}`}>{sev}</span>;
 }
 
@@ -65,21 +65,21 @@ function SevBadge({ sev }: { sev: "critical" | "high" | "medium" | "low" }) {
 
 function MockupManagerControl() {
   return (
-    <div className="bg-[#f8f6f2] p-3 text-[var(--cs-navy)] select-none">
+    <div className="bg-[var(--cs-bg)] p-3 text-[var(--cs-navy)] select-none">
       {/* Page header */}
       <div className="mb-2.5 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--cs-teal-strong)]">Manager Control Centre</p>
           <p className="text-sm font-bold text-[var(--cs-navy)]">Oak House · Tuesday</p>
         </div>
-        <span className="rounded-lg bg-[var(--cs-navy)] px-2.5 py-1 text-[10px] font-bold text-white">Cara intelligence active</span>
+        <span className="rounded-lg bg-[var(--cs-cara-gold)] px-2.5 py-1 text-[10px] font-bold text-[#0a1020]">Cara intelligence active</span>
       </div>
 
       {/* Attention banner */}
-      <div className="mb-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2">
+      <div className="mb-2 rounded-xl border border-red-400/25 bg-red-500/10 px-3 py-2">
         <div className="flex items-center gap-1.5">
-          <Bell className="h-3 w-3 text-red-600 shrink-0" />
-          <span className="text-[11px] font-bold text-red-700">3 items need your attention now</span>
+          <Bell className="h-3 w-3 text-red-300 shrink-0" />
+          <span className="text-[11px] font-bold text-red-300">3 items need your attention now</span>
         </div>
         <div className="mt-1.5 space-y-1">
           {[
@@ -89,7 +89,7 @@ function MockupManagerControl() {
           ].map((a) => (
             <div key={a.txt} className="flex items-start gap-1.5">
               <SevDot sev={a.sev} />
-              <span className="text-[10px] text-red-700 leading-tight">{a.txt}</span>
+              <span className="text-[10px] text-red-300 leading-tight">{a.txt}</span>
             </div>
           ))}
         </div>
@@ -98,12 +98,12 @@ function MockupManagerControl() {
       {/* Metric strip */}
       <div className="mb-2 grid grid-cols-4 gap-1.5">
         {[
-          { label: "30d incidents", value: "14", colour: "text-red-600" },
-          { label: "PI rate", value: "21%", colour: "text-amber-600" },
-          { label: "Oversight %", value: "79%", colour: "text-amber-600" },
+          { label: "30d incidents", value: "14", colour: "text-red-300" },
+          { label: "PI rate", value: "21%", colour: "text-amber-300" },
+          { label: "Oversight %", value: "79%", colour: "text-amber-300" },
           { label: "Children", value: "4", colour: "text-[var(--cs-navy)]" },
         ].map((m) => (
-          <div key={m.label} className="rounded-lg border border-[var(--cs-border)] bg-white p-2 text-center">
+          <div key={m.label} className="rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-2 text-center">
             <p className={`text-base font-extrabold tabular-nums ${m.colour}`}>{m.value}</p>
             <p className="text-[8px] leading-tight text-[var(--cs-text-muted)]">{m.label}</p>
           </div>
@@ -112,7 +112,7 @@ function MockupManagerControl() {
 
       {/* Two-col bottom */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-xl border border-[var(--cs-border)] bg-white p-2.5">
+        <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-2.5">
           <p className="mb-1.5 text-[10px] font-bold text-[var(--cs-navy)] flex items-center gap-1"><Users className="h-3 w-3 text-[var(--cs-teal)]" /> Staff compliance</p>
           <div className="space-y-1">
             {[
@@ -126,7 +126,7 @@ function MockupManagerControl() {
             ))}
           </div>
         </div>
-        <div className="rounded-xl border border-[var(--cs-border)] bg-white p-2.5">
+        <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-2.5">
           <p className="mb-1.5 text-[10px] font-bold text-[var(--cs-navy)] flex items-center gap-1"><ClipboardCheck className="h-3 w-3 text-[var(--cs-teal)]" /> Oversight queue</p>
           <div className="space-y-1">
             {[
@@ -158,7 +158,7 @@ function MockupPriorityBriefing() {
     { sev: "medium" as const, src: "Reg 44", title: "Visit due in 4 days — schedule now", age: "4 d" },
   ];
   return (
-    <div className="bg-[#f8f6f2] p-3 select-none">
+    <div className="bg-[var(--cs-bg)] p-3 select-none">
       <div className="mb-2.5 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--cs-teal-strong)]">Priority Briefing</p>
@@ -168,7 +168,7 @@ function MockupPriorityBriefing() {
       </div>
       <div className="space-y-1.5">
         {items.map((it, i) => (
-          <div key={i} className="flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-white px-2.5 py-2">
+          <div key={i} className="flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-2.5 py-2">
             <SevDot sev={it.sev} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-[11px] font-semibold text-[var(--cs-navy)]">{it.title}</p>
@@ -199,9 +199,9 @@ function MockupShiftPlan() {
     { sev: "medium" as const, title: "Due: Risk assessment review — Jordan", detail: "Due today." },
   ];
   return (
-    <div className="bg-[#f8f6f2] p-3 select-none">
+    <div className="bg-[var(--cs-bg)] p-3 select-none">
       {/* Staffing banner */}
-      <div className="mb-2 flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-2 text-emerald-800 border border-emerald-200">
+      <div className="mb-2 flex items-center justify-between rounded-xl bg-emerald-500/10 px-3 py-2 text-emerald-200 border border-emerald-400/25">
         <div className="flex items-center gap-1.5">
           <Users className="h-3.5 w-3.5 shrink-0" />
           <div>
@@ -209,11 +209,11 @@ function MockupShiftPlan() {
             <p className="text-[9px] opacity-75">On shift: Olivia Hayes, Marcus Bell</p>
           </div>
         </div>
-        <span className="text-[9px] font-bold bg-emerald-100 rounded-full px-2 py-0.5">Day · 08:00–20:00</span>
+        <span className="text-[9px] font-bold bg-emerald-500/15 rounded-full px-2 py-0.5">Day · 08:00–20:00</span>
       </div>
       <div className="grid grid-cols-2 gap-2">
         {/* Running order */}
-        <div className="rounded-xl border border-[var(--cs-border)] bg-white p-2">
+        <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-2">
           <p className="mb-1.5 flex items-center gap-1 text-[10px] font-bold text-[var(--cs-navy)]"><Clock className="h-3 w-3 text-[var(--cs-teal)]" /> Running order</p>
           <div className="space-y-1.5">
             {running.map((r) => (
@@ -229,7 +229,7 @@ function MockupShiftPlan() {
         </div>
         {/* Must-do */}
         <div className="space-y-1.5">
-          <div className="rounded-xl border border-[var(--cs-border)] bg-white p-2">
+          <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-2">
             <p className="mb-1.5 flex items-center gap-1 text-[10px] font-bold text-[var(--cs-navy)]"><CheckCircle2 className="h-3 w-3 text-[var(--cs-navy)]" /> To complete</p>
             <div className="space-y-1">
               {mustDo.map((m) => (
@@ -240,7 +240,7 @@ function MockupShiftPlan() {
               ))}
             </div>
           </div>
-          <div className="rounded-xl border border-[var(--cs-border)] bg-white p-2">
+          <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-2">
             <p className="mb-1 flex items-center gap-1 text-[10px] font-bold text-[var(--cs-navy)]"><Eye className="h-3 w-3 text-[var(--cs-teal)]" /> Medication</p>
             <p className="text-[9px] text-[var(--cs-text-secondary)]">3 regular medications to administer, 1 PRN available.</p>
           </div>
@@ -254,19 +254,19 @@ function MockupShiftPlan() {
 
 function MockupIncidentMode() {
   return (
-    <div className="bg-[#f8f6f2] p-3 select-none">
+    <div className="bg-[var(--cs-bg)] p-3 select-none">
       <div className="mb-2 flex items-center gap-2">
         <div className="rounded-lg bg-red-600 p-1.5"><Siren className="h-3.5 w-3.5 text-white" /></div>
         <div>
           <p className="text-xs font-bold text-[var(--cs-navy)]">Incident Mode — live session</p>
           <p className="text-[9px] text-[var(--cs-text-muted)]">Alex W · Peer conflict · Risk: HIGH</p>
         </div>
-        <span className="ml-auto animate-pulse rounded-full bg-red-100 px-2 py-0.5 text-[9px] font-bold text-red-600">● LIVE</span>
+        <span className="ml-auto animate-pulse rounded-full bg-red-500/15 px-2 py-0.5 text-[9px] font-bold text-red-300">● LIVE</span>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         {/* Timeline */}
-        <div className="rounded-xl border border-[var(--cs-border)] bg-white p-2">
+        <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-2">
           <p className="mb-1.5 text-[10px] font-bold text-[var(--cs-navy)]">Timeline</p>
           <div className="space-y-1.5">
             {[
@@ -284,22 +284,22 @@ function MockupIncidentMode() {
         </div>
 
         {/* PACE panel */}
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-2">
+        <div className="rounded-xl border border-amber-400/25 bg-amber-500/10 p-2">
           <div className="mb-1.5 flex items-center gap-1">
-            <Sparkles className="h-3 w-3 text-amber-600" />
-            <span className="text-[10px] font-bold text-amber-800">PACE — practice intelligence</span>
+            <Sparkles className="h-3 w-3 text-amber-300" />
+            <span className="text-[10px] font-bold text-amber-200">PACE — practice intelligence</span>
           </div>
           <div className="space-y-1.5">
             <div>
-              <p className="text-[9px] font-semibold text-amber-800">Curiosity</p>
-              <p className="text-[9px] text-amber-700 leading-tight">What was Alex communicating? Peer conflict after family contact often signals unprocessed anxiety.</p>
+              <p className="text-[9px] font-semibold text-amber-200">Curiosity</p>
+              <p className="text-[9px] text-amber-200 leading-tight">What was Alex communicating? Peer conflict after family contact often signals unprocessed anxiety.</p>
             </div>
             <div>
-              <p className="text-[9px] font-semibold text-amber-800">Acceptance</p>
-              <p className="text-[9px] text-amber-700 leading-tight">Validate the feeling before addressing the behaviour.</p>
+              <p className="text-[9px] font-semibold text-amber-200">Acceptance</p>
+              <p className="text-[9px] text-amber-200 leading-tight">Validate the feeling before addressing the behaviour.</p>
             </div>
-            <div className="mt-2 rounded-lg bg-amber-100 border border-amber-200 px-2 py-1">
-              <p className="text-[9px] font-bold text-amber-800">Cara advises · Staff decide · Manager reviews</p>
+            <div className="mt-2 rounded-lg bg-amber-500/15 border border-amber-400/25 px-2 py-1">
+              <p className="text-[9px] font-bold text-amber-200">Cara advises · Staff decide · Manager reviews</p>
             </div>
           </div>
         </div>
@@ -320,22 +320,22 @@ function MockupOversightEngine() {
     { label: "Professional language", val: 91, colour: "bg-emerald-500" },
   ];
   return (
-    <div className="bg-[#f8f6f2] p-3 select-none">
+    <div className="bg-[var(--cs-bg)] p-3 select-none">
       <div className="mb-2 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--cs-teal-strong)]">Management Oversight Engine</p>
           <p className="text-sm font-bold text-[var(--cs-navy)]">INC-042 · Alex W · Physical intervention</p>
         </div>
-        <span className="rounded-lg bg-amber-100 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">Awaiting sign-off</span>
+        <span className="rounded-lg bg-amber-500/15 border border-amber-400/25 px-2 py-0.5 text-[10px] font-bold text-amber-200">Awaiting sign-off</span>
       </div>
 
       {/* 6-score grid */}
       <div className="mb-2 grid grid-cols-3 gap-1.5">
         {scores.map((s) => (
-          <div key={s.label} className="rounded-lg border border-[var(--cs-border)] bg-white p-1.5">
+          <div key={s.label} className="rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-1.5">
             <p className="text-[8px] text-[var(--cs-text-muted)] leading-tight">{s.label}</p>
             <div className="mt-1 flex items-center gap-1">
-              <div className="h-1 flex-1 rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-1 flex-1 rounded-full bg-white/10 overflow-hidden">
                 <div className={`h-full ${s.colour} rounded-full`} style={{ width: `${s.val}%` }} />
               </div>
               <span className="text-[9px] font-bold tabular-nums text-[var(--cs-navy)]">{s.val}</span>
@@ -353,7 +353,7 @@ function MockupOversightEngine() {
         <p className="text-[9px] text-[var(--cs-text-secondary)] leading-tight">Evidence shows 3 peer conflicts in 10 days, 2 involving physical intervention. Pattern suggests the trigger is not the peer dynamic but transition from family contact. Recommendation: schedule strategy discussion before next contact session.</p>
         <div className="mt-1.5 flex items-center justify-between">
           <span className="text-[9px] font-medium text-[var(--cs-teal-strong)]">Confidence: Possible · Human review required</span>
-          <button className="rounded-lg bg-[var(--cs-navy)] px-2 py-0.5 text-[9px] font-bold text-white">Sign off RM</button>
+          <button className="rounded-lg bg-[var(--cs-cara-gold)] px-2 py-0.5 text-[9px] font-bold text-[#0a1020]">Sign off RM</button>
         </div>
       </div>
     </div>
@@ -364,7 +364,7 @@ function MockupOversightEngine() {
 
 function MockupWritingAssistant() {
   return (
-    <div className="bg-[#f8f6f2] p-3 select-none">
+    <div className="bg-[var(--cs-bg)] p-3 select-none">
       <div className="mb-2 flex items-center gap-1.5">
         <PenLine className="h-3.5 w-3.5 text-[var(--cs-teal-strong)]" />
         <p className="text-[10px] font-bold text-[var(--cs-navy)]">Cara Writing Assistant — Daily log · Alex W</p>
@@ -372,39 +372,39 @@ function MockupWritingAssistant() {
 
       <div className="grid grid-cols-2 gap-2">
         {/* Text field */}
-        <div className="rounded-xl border border-[var(--cs-border)] bg-white p-2.5">
+        <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-2.5">
           <p className="mb-2 text-[9px] font-bold text-[var(--cs-text-muted)] uppercase tracking-wide">Daily log</p>
           <p className="text-[10px] leading-relaxed text-[var(--cs-navy)]">
             Alex{" "}
-            <span className="rounded bg-amber-100 px-0.5 border-b border-amber-400 text-amber-800">refused to engage</span>
+            <span className="rounded bg-amber-500/15 px-0.5 border-b border-amber-400 text-amber-200">refused to engage</span>
             {" "}with the planned activity this afternoon. He was{" "}
-            <span className="rounded bg-amber-100 px-0.5 border-b border-amber-400 text-amber-800">challenging</span>
+            <span className="rounded bg-amber-500/15 px-0.5 border-b border-amber-400 text-amber-200">challenging</span>
             {" "}and staff found it{" "}
-            <span className="rounded bg-blue-100 px-0.5 border-b border-blue-400 text-blue-800">difficult to manage</span>
+            <span className="rounded bg-blue-500/15 px-0.5 border-b border-blue-400 text-blue-200">difficult to manage</span>
             . He later{" "}
-            <span className="rounded bg-amber-100 px-0.5 border-b border-amber-400 text-amber-800">returned safe and well</span>
+            <span className="rounded bg-amber-500/15 px-0.5 border-b border-amber-400 text-amber-200">returned safe and well</span>
             {" "}at 19:30 and settled well.
           </p>
         </div>
 
         {/* Issues panel */}
-        <div className="rounded-xl border border-[var(--cs-border)] bg-white p-2">
+        <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-2">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-[10px] font-bold text-[var(--cs-navy)]">Cara has noticed</p>
-            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">3 issues</span>
+            <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold text-amber-200">3 issues</span>
           </div>
           <div className="space-y-1.5">
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-1.5">
-              <p className="text-[9px] font-bold text-amber-800">Blame language</p>
-              <p className="text-[9px] text-amber-700">"refused to engage" places fault — try "Alex found it hard to join the activity today"</p>
+            <div className="rounded-lg border border-amber-400/25 bg-amber-500/10 p-1.5">
+              <p className="text-[9px] font-bold text-amber-200">Blame language</p>
+              <p className="text-[9px] text-amber-200">"refused to engage" places fault — try "Alex found it hard to join the activity today"</p>
             </div>
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-1.5">
-              <p className="text-[9px] font-bold text-amber-800">Institutional phrase</p>
-              <p className="text-[9px] text-amber-700">"returned safe and well" — if Alex went missing, use MFC language; otherwise describe what actually happened</p>
+            <div className="rounded-lg border border-amber-400/25 bg-amber-500/10 p-1.5">
+              <p className="text-[9px] font-bold text-amber-200">Institutional phrase</p>
+              <p className="text-[9px] text-amber-200">"returned safe and well" — if Alex went missing, use MFC language; otherwise describe what actually happened</p>
             </div>
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-1.5">
-              <p className="text-[9px] font-bold text-blue-700">Missing child voice</p>
-              <p className="text-[9px] text-blue-700">Record what Alex said or expressed about the afternoon</p>
+            <div className="rounded-lg border border-blue-400/25 bg-blue-500/10 p-1.5">
+              <p className="text-[9px] font-bold text-blue-300">Missing child voice</p>
+              <p className="text-[9px] text-blue-300">Record what Alex said or expressed about the afternoon</p>
             </div>
           </div>
         </div>
@@ -417,7 +417,7 @@ function MockupWritingAssistant() {
 
 function MockupSafeguarding() {
   return (
-    <div className="bg-[#f8f6f2] p-3 select-none">
+    <div className="bg-[var(--cs-bg)] p-3 select-none">
       <div className="mb-2 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--cs-teal-strong)]">Safeguarding</p>
@@ -434,7 +434,7 @@ function MockupSafeguarding() {
           { ref: "SAF-003", yp: "Casey T", type: "Exploitation concern", sev: "high" as const, action: "NRM screen complete" },
           { ref: "SAF-002", yp: "Jordan M", type: "Online safety", sev: "medium" as const, action: "Safety plan in place" },
         ].map((c) => (
-          <div key={c.ref} className="flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-white px-2.5 py-1.5">
+          <div key={c.ref} className="flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-2.5 py-1.5">
             <SevDot sev={c.sev} />
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-semibold text-[var(--cs-navy)]">{c.ref} · {c.yp} — {c.type}</p>
@@ -446,13 +446,13 @@ function MockupSafeguarding() {
       </div>
 
       {/* Scan result strip */}
-      <div className="rounded-xl border border-violet-200 bg-violet-50 p-2.5">
+      <div className="rounded-xl border border-violet-200 bg-violet-500/10 p-2.5">
         <div className="flex items-center gap-1.5 mb-1.5">
-          <Brain className="h-3 w-3 text-violet-700 shrink-0" />
-          <span className="text-[10px] font-bold text-violet-800">Cara Safeguarding Scan — Overall risk: HIGH</span>
+          <Brain className="h-3 w-3 text-violet-300 shrink-0" />
+          <span className="text-[10px] font-bold text-violet-200">Cara Safeguarding Scan — Overall risk: HIGH</span>
         </div>
-        <p className="text-[9px] text-violet-700 leading-tight">CSE concern is affecting 2 young people — whole-home response indicated. Review strategy discussion outcomes. Consider NRM referral timeline.</p>
-        <div className="mt-1.5 text-[9px] font-bold text-violet-700">Cara advises · humans decide</div>
+        <p className="text-[9px] text-violet-300 leading-tight">CSE concern is affecting 2 young people — whole-home response indicated. Review strategy discussion outcomes. Consider NRM referral timeline.</p>
+        <div className="mt-1.5 text-[9px] font-bold text-violet-300">Cara advises · humans decide</div>
       </div>
     </div>
   );
@@ -468,7 +468,7 @@ function MockupDirectionOfTravel() {
     { label: "Supervision complete", weeks: [70, 75, 80, 80, 85, 90, 88, 92], dir: "improving", icon: <TrendingUp className="h-3 w-3 text-emerald-500" /> },
   ];
   return (
-    <div className="bg-[#f8f6f2] p-3 select-none">
+    <div className="bg-[var(--cs-bg)] p-3 select-none">
       <div className="mb-2.5 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--cs-teal-strong)]">Direction of Travel</p>
@@ -480,7 +480,7 @@ function MockupDirectionOfTravel() {
         {metrics.map((m) => {
           const peak = Math.max(...m.weeks);
           return (
-            <div key={m.label} className="rounded-xl border border-[var(--cs-border)] bg-white px-2.5 py-2">
+            <div key={m.label} className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-2.5 py-2">
               <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-[10px] font-semibold text-[var(--cs-navy)]">{m.label}</span>
                 <div className="flex items-center gap-1">
@@ -492,7 +492,7 @@ function MockupDirectionOfTravel() {
                 {m.weeks.map((v, i) => (
                   <div
                     key={i}
-                    className={`flex-1 rounded-t-sm ${m.dir === "decreasing" ? "bg-emerald-400" : m.dir === "improving" ? "bg-teal-400" : "bg-slate-300"}`}
+                    className={`flex-1 rounded-t-sm ${m.dir === "decreasing" ? "bg-emerald-400" : m.dir === "improving" ? "bg-teal-400" : "bg-slate-500"}`}
                     style={{ height: `${Math.round((v / peak) * 100)}%` }}
                   />
                 ))}
@@ -520,7 +520,7 @@ function MockupAskCara() {
           <p className="text-[11px] font-light text-slate-100">Hi Darren — ready when you are</p>
           <p className="text-[8px] text-slate-400">Answers from this home&rsquo;s records — never a guess</p>
         </div>
-        <span className="ml-auto rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[7.5px] font-semibold text-slate-300">Deterministic</span>
+        <span className="ml-auto rounded-full bg-[var(--cs-surface-elevated)]/[0.06] px-1.5 py-0.5 text-[7.5px] font-semibold text-slate-300">Deterministic</span>
       </div>
 
       <div className="mt-2.5 space-y-2">
@@ -536,7 +536,7 @@ function MockupAskCara() {
             <p className="text-[9px] leading-relaxed text-slate-200">Three things need you today: <b className="text-white">Alex&rsquo;s restraint (5 Jul) has no debrief</b>, a <b className="text-white">return interview is missing</b> for Jordan, and <b className="text-white">Ellie&rsquo;s LAC review</b> is due in 6 days. Two daily logs await your oversight.</p>
             <div className="mt-1 flex flex-wrap gap-1">
               {["Incidents · 1", "Missing · 1", "Reviews · 1", "Oversight · 2"].map((s) => (
-                <span key={s} className="rounded-full bg-white/[0.08] px-1.5 py-0.5 text-[7.5px] text-slate-300">{s}</span>
+                <span key={s} className="rounded-full bg-[var(--cs-surface-elevated)]/[0.08] px-1.5 py-0.5 text-[7.5px] text-slate-300">{s}</span>
               ))}
             </div>
           </div>
