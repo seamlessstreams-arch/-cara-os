@@ -23,6 +23,20 @@
 --         stored home_id values are the uuid strings of staff_members.home_id
 --         (not slugs like 'home_oak'); if the schema standardises home_id types,
 --         drop the cast.
+--
+--         ANSWERED by static review (still unexecuted). The cast is correct:
+--           - 003_rls_policies.sql:28  get_my_home_id() returns uuid, selecting
+--             staff_members.home_id, which 001 declares `uuid not null`;
+--           - 010:25 / 011:25 declare `home_id text` (and nullable);
+--           - the writer sends a uuid STRING: homeId() in src/lib/supabase/
+--             care-records.ts returns SUPABASE_HOME_ID ?? the seeded home uuid
+--             'a0000000-0000-0000-0000-000000000001' (004_seed_data.sql:15).
+--         So text = uuid::text matches. Two live landmines remain, both silent:
+--           - if SUPABASE_HOME_ID is ever set to a slug, every policy here
+--             matches zero rows and the home locks itself out — it fails closed,
+--             but as "no data", not as an error;
+--           - home_id is nullable, so any row written without one is invisible
+--             to every authenticated reader for the same reason.
 --       • Run in a staging project and confirm a same-home user still reads their
 --         own rows while a cross-home user reads none.
 --
@@ -30,6 +44,12 @@
 -- names): the dynamic `execute format(... using (true) ...)` policies in
 -- 013_aria_universal_layer.sql and 014_aria_suggestions.sql, and the tables
 -- created without RLS enabled in 019, 020, 024, 025, 026, 027.
+--
+-- SUPERSEDED by 423_rls_close_public_exposure.sql, which closes both by dynamic
+-- predicate over pg_class/pg_policies instead of per-table review — and found
+-- the list above was an undercount: 102 tables across 17 migrations had no RLS,
+-- and ~44 more carried an unrestricted policy misleadingly named
+-- "service_role_full_access". 423 leaves the scoped policies below untouched.
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- ── Parent tables (home_id is a direct column) ──────────────────────────────

@@ -60,6 +60,9 @@ jobs:
       - name: JSON-body guard (no raw req.json in API routes)
         run: node scripts/check-json-body.js
 
+      - name: RLS guard (no anon-reachable tables or open policies)
+        run: node scripts/check-rls.js
+
   test:
     name: Test suite
     runs-on: ubuntu-latest
