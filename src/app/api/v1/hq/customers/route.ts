@@ -1,11 +1,12 @@
 // CARA HQ — /api/v1/hq/customers (list + provision)
 import { NextResponse, type NextRequest } from "next/server";
-import { getStore } from "@/lib/db/store";
 import {
   resolveHqActor,
   isPlatformAdmin,
   ProvisionCustomerSchema,
   provisionCustomer,
+  listCustomers,
+  listHomes,
 } from "@/lib/hq/hq-service";
 import { readJsonBody } from "@/lib/http/read-json";
 
@@ -16,11 +17,24 @@ export async function GET(req: NextRequest) {
   if (!isPlatformAdmin(actor)) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
-  const store = getStore();
-  const customers = [...store.hqOrganisations].sort((a, b) =>
-    b.created_at.localeCompare(a.created_at),
-  );
-  return NextResponse.json({ data: { customers } });
+
+  // Reads came from the in-memory store alone until now. The store is
+  // per-serverless-instance and re-seeds on a cold start, so a provisioned
+  // customer was written to Postgres and then disappeared from this list while
+  // still sitting in the table.
+  const [customers, homes] = await Promise.all([listCustomers(), listHomes()]);
+
+  // null means the database is connected but did not answer. Returning an empty
+  // list here would render as "no customers yet" — a broken read and a genuinely
+  // empty platform must not look the same.
+  if (customers === null || homes === null) {
+    return NextResponse.json(
+      { error: "Couldn't read the customer list from the database. Nothing has been changed." },
+      { status: 503 },
+    );
+  }
+
+  return NextResponse.json({ data: { customers, homes } });
 }
 
 export async function POST(req: NextRequest) {
@@ -38,6 +52,16 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const org = provisionCustomer(parsed.data, actor);
-  return NextResponse.json({ data: { customer: org } }, { status: 201 });
+
+  const result = await provisionCustomer(parsed.data, actor);
+  if (!result.ok) {
+    // The home is the part that can genuinely fail to write. Say so plainly
+    // rather than return a 201 for a home that exists only in this instance.
+    return NextResponse.json({ error: result.error }, { status: 502 });
+  }
+
+  return NextResponse.json(
+    { data: { customer: result.org, home: result.home } },
+    { status: 201 },
+  );
 }

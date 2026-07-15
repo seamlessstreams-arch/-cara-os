@@ -66,8 +66,8 @@ import type { IncidentSession, IncidentTimelineEntry, CaraRecordingReview, Promp
 import { defaultPromptBank } from "@/lib/cara-incident/cara-incident-engine";
 import type { RestorativeConversationRecord, PostIncidentReflectionRecord } from "@/lib/cara-incident/post-incident-engine";
 import type { AlertStateRecord } from "@/lib/cara-incident/manager-oversight-engine";
-import type { HqOrganisation, HqUsageEvent, HqAiUsageRow, HqBreakGlassGrant, HqApiCallRow, HqDecisionRow } from "@/lib/hq/hq-types";
-import { seedHqOrganisations, seedHqUsageEvents, seedHqApiCalls, seedHqDecisions } from "@/lib/hq/hq-seeds";
+import type { HqHome, HqOrganisation, HqUsageEvent, HqAiUsageRow, HqBreakGlassGrant, HqApiCallRow, HqDecisionRow } from "@/lib/hq/hq-types";
+import { seedHqOrganisations, seedHqHomes, seedHqUsageEvents, seedHqApiCalls, seedHqDecisions } from "@/lib/hq/hq-seeds";
 import type { PaceAnalysisRecord, WritingReviewRecord } from "@/lib/practice-history/types";
 import { seedPaceAnalyses, seedWritingReviews } from "@/lib/practice-history/seeds";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
@@ -1040,6 +1040,7 @@ const store = {
   caraGuardrailEvents: [] as CaraGuardrailEvent[],
   // Cara HQ (platform owner) — metadata only, never children's records
   hqOrganisations: seedHqOrganisations() as HqOrganisation[],
+  hqHomes: seedHqHomes() as HqHome[],
   hqUsageEvents: seedHqUsageEvents() as HqUsageEvent[],
   hqAiUsage: [] as HqAiUsageRow[],
   hqApiCalls: seedHqApiCalls() as HqApiCallRow[],

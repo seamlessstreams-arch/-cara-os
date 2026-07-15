@@ -12,6 +12,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   HqAiUsageRow,
   HqBreakGlassGrant,
+  HqHome,
   HqOrganisation,
 } from "@/lib/hq/hq-types";
 import type {
@@ -57,7 +58,7 @@ export function useHqOverview() {
 export function useHqCustomers() {
   return useQuery({
     queryKey: ["hq-customers"],
-    queryFn: () => hqFetch<{ customers: HqOrganisation[] }>("/api/v1/hq/customers"),
+    queryFn: () => hqFetch<{ customers: HqOrganisation[]; homes: HqHome[] }>("/api/v1/hq/customers"),
   });
 }
 
@@ -129,11 +130,14 @@ export function useProvisionCustomer() {
     mutationFn: (input: {
       org_name: string;
       first_home_name: string;
+      first_home_address: string;
+      first_home_ofsted_urn?: string;
+      first_home_max_beds?: string | number;
       plan: string;
       manager_name: string;
       manager_email: string;
     }) =>
-      hqFetch<{ customer: HqOrganisation }>("/api/v1/hq/customers", {
+      hqFetch<{ customer: HqOrganisation; home: HqHome }>("/api/v1/hq/customers", {
         method: "POST",
         body: JSON.stringify(input),
       }),

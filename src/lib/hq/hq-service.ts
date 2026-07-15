@@ -17,10 +17,14 @@ import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
-import type { HqBreakGlassGrant, HqOrganisation, HqUsageEvent } from "./hq-types";
+import type { HqBreakGlassGrant, HqHome, HqOrganisation, HqUsageEvent } from "./hq-types";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
+  loadHqHomes,
+  loadHqOrganisations,
   persistHqBreakGlass,
   persistHqBreakGlassRevoke,
+  persistHqHome,
   persistHqOrganisation,
   persistHqOrgStatus,
   persistHqUsageEvent,
@@ -97,19 +101,40 @@ export function logUsageEvent(
 export const ProvisionCustomerSchema = z.object({
   org_name: z.string().trim().min(2, "Customer name required."),
   first_home_name: z.string().trim().min(2, "First home/site name required."),
+  // `homes.address` is NOT NULL — a home cannot be provisioned without one, so
+  // this is required rather than politely optional.
+  first_home_address: z.string().trim().min(5, "Home address required."),
+  first_home_ofsted_urn: z.string().trim().optional(),
+  first_home_max_beds: z.coerce.number().int().min(1).max(60).default(3),
   plan: z.enum(["pilot", "essentials", "professional", "group"]),
   manager_name: z.string().trim().min(2, "Manager name required."),
   manager_email: z.string().trim().email("Valid manager email required."),
 });
 export type ProvisionCustomerInput = z.infer<typeof ProvisionCustomerSchema>;
 
+export type ProvisionResult =
+  | { ok: true; org: HqOrganisation; home: HqHome }
+  | { ok: false; error: string };
+
 /**
- * Creates the customer organisation record (store + write-through).
- * Manager SIGN-IN provisioning (auth user + temp password) deliberately does
- * not exist yet — there is no login flow in the product, so generating
- * credentials would be theatre. It activates with Supabase Auth.
+ * Provision a customer: the organisation AND its first home.
+ *
+ * `first_home_name` used to be a text note on the org — the type said so:
+ * "real multi-tenant home provisioning lands with auth". Auth has landed, so
+ * the home is now an actual `homes` row that a tenant deployment can point
+ * SUPABASE_HOME_ID at. Before this, nothing in the app ever wrote to `homes`.
+ *
+ * The org is best-effort write-through (as before); the HOME is not. If the
+ * home cannot be written, this reports failure rather than returning a success
+ * that leaves HQ showing a home which exists nowhere but one server's memory.
+ *
+ * Manager SIGN-IN provisioning (auth user + temp password) is still deliberately
+ * absent — see the login door. Creating credentials here would be theatre.
  */
-export function provisionCustomer(input: ProvisionCustomerInput, actor: HqActor): HqOrganisation {
+export async function provisionCustomer(
+  input: ProvisionCustomerInput,
+  actor: HqActor,
+): Promise<ProvisionResult> {
   const store = getStore();
   const now = new Date().toISOString();
   const org: HqOrganisation = {
@@ -123,14 +148,55 @@ export function provisionCustomer(input: ProvisionCustomerInput, actor: HqActor)
     created_at: now,
     updated_at: now,
   };
+  const home: HqHome = {
+    // uuid, not generateId("home"): `homes.id` is a uuid column, and minting it
+    // here keeps the in-memory copy and the row on the same id.
+    id: crypto.randomUUID(),
+    org_id: org.id,
+    name: input.first_home_name,
+    address: input.first_home_address,
+    ofsted_urn: input.first_home_ofsted_urn?.trim() || null,
+    max_beds: input.first_home_max_beds,
+    created_at: now,
+  };
+
+  // Write the home first: it is the part that can genuinely fail, and failing
+  // before the org exists leaves nothing half-created to explain.
+  const written = await persistHqHome(home);
+  if (!written.ok) {
+    return { ok: false, error: `Home could not be created: ${written.error}` };
+  }
+
   store.hqOrganisations.push(org);
+  store.hqHomes.push(home);
   void persistHqOrganisation(org);
   logUsageEvent("customer_provisioned", {
     orgId: org.id,
     userLabel: actor.id,
-    meta: { plan: org.plan },
+    meta: { plan: org.plan, home_id: home.id },
   });
-  return org;
+  return { ok: true, org, home };
+}
+
+/**
+ * The customer list, read from the database when there is one.
+ *
+ * Reads used to come from the store alone, which is per-serverless-instance and
+ * re-seeds on a cold start — so a provisioned customer was written to Postgres
+ * and then vanished from the UI while still sitting in the table.
+ *
+ * Returns null when the database is connected but unreadable. An empty list and
+ * a failed read must not render identically.
+ */
+export async function listCustomers(): Promise<HqOrganisation[] | null> {
+  if (isSupabaseEnabled()) return await loadHqOrganisations();
+  return [...getStore().hqOrganisations].sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+/** Provisioned homes, from the database when there is one. Null = unreadable. */
+export async function listHomes(): Promise<HqHome[] | null> {
+  if (isSupabaseEnabled()) return await loadHqHomes();
+  return [...getStore().hqHomes].sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
 
 // ── Status ────────────────────────────────────────────────────────────────────

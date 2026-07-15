@@ -8,7 +8,7 @@
 // empty break-glass ledger is the honest healthy state.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { HqOrganisation, HqUsageEvent, HqApiCallRow, HqDecisionRow } from "./hq-types";
+import type { HqHome, HqOrganisation, HqUsageEvent, HqApiCallRow, HqDecisionRow } from "./hq-types";
 
 const HOURS = 3600e3;
 
@@ -25,6 +25,26 @@ export function seedHqOrganisations(): HqOrganisation[] {
       first_home_name: "Chamberlain House",
       created_at: created,
       updated_at: created,
+    },
+  ];
+}
+
+/**
+ * The home behind the seeded customer, so the demo shows a provisioned home
+ * rather than a customer with none. A real tenant has neither — the live-mode
+ * gate empties this, and provisioning fills it from the database.
+ */
+export function seedHqHomes(): HqHome[] {
+  const created = new Date(Date.now() - 45 * 24 * HOURS).toISOString();
+  return [
+    {
+      id: "a0000000-0000-0000-0000-000000000001",
+      org_id: "org_chamberlain",
+      name: "Chamberlain House",
+      address: "Chamberlain House, Derby, DE1 3AA",
+      ofsted_urn: "SC123456",
+      max_beds: 3,
+      created_at: created,
     },
   ];
 }
