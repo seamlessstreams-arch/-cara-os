@@ -1,9 +1,10 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — PRICING PAGE  (route: /pricing)
 //
-// Standalone pricing page: tiers, a full feature-comparison table, and a pricing
-// FAQ. Static server component. Honest copy — pricing is "Custom / book a quote"
-// (no fabricated numbers), and every listed capability is real.
+// "Midnight & gold" treatment: midnight hero, tilting tier cards (the featured
+// Group tier wears the night), warm comparison + FAQ chapters, midnight finale.
+// Honest copy — pricing is "Custom / book a quote" (no fabricated numbers), and
+// every listed capability is real.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { Metadata } from "next";
@@ -14,7 +15,9 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
-import { SectionEyebrow } from "@/components/marketing/ui";
+import { MarketingPageHero, HeroGoldCta, HeroGlassCta } from "@/components/marketing/page-hero";
+import { Reveal, TiltCard, ScrollProgress } from "@/components/marketing/fx";
+import { HeroField } from "@/components/marketing/hero-field";
 
 export const metadata: Metadata = {
   title: "Pricing | Cara OS",
@@ -97,76 +100,101 @@ function ValueCell({ v }: { v: boolean | string }) {
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)]">
+      <ScrollProgress />
       <MarketingHeader />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(55% 50% at 50% 0%, var(--cs-teal-glow) 0%, transparent 60%)" }} />
-        <div className="relative mx-auto max-w-3xl px-5 py-16 text-center lg:py-20">
-          <SectionEyebrow>Pricing</SectionEyebrow>
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-[var(--cs-navy)] sm:text-5xl">Pricing that scales with your homes.</h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[var(--cs-text-secondary)]">
-            Every plan includes the <span className="font-semibold text-[var(--cs-navy)]">full platform</span>, onboarding and support — no feature paywall. Book a walkthrough for a quote tailored to your service.
-          </p>
-        </div>
-      </section>
+      <MarketingPageHero
+        eyebrow="Pricing"
+        title={<>Every plan is</>}
+        titleAccent={<>the whole platform.</>}
+        lede={
+          <>
+            Tiers add scale and oversight — never core capability. Every plan includes the full platform,
+            onboarding and support, with no feature paywall. Book a walkthrough for a quote tailored to your service.
+          </>
+        }
+      >
+        <HeroGoldCta href="/contact">Book a walkthrough <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" /></HeroGoldCta>
+        <HeroGlassCta href="/product/tour">See the product tour <Sparkles className="h-4 w-4 text-teal-300" /></HeroGlassCta>
+      </MarketingPageHero>
 
-      {/* Tiers */}
-      <section className="mx-auto max-w-7xl px-5 pb-4">
+      {/* Tiers — the featured Group tier wears the night */}
+      <section className="mx-auto max-w-7xl px-5 pt-16 pb-4">
         <div className="grid gap-6 lg:grid-cols-3">
           {TIERS.map((t, i) => (
-            <div key={i} className={`relative flex flex-col rounded-3xl border p-7 shadow-[var(--cs-shadow-card)] ${t.featured ? "border-[var(--cs-teal)] bg-[var(--cs-teal-bg)]/40 ring-1 ring-[var(--cs-teal)]" : "border-[var(--cs-border)] bg-white"}`}>
-              {t.featured && <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--cs-teal)] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">Most popular</span>}
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--cs-navy)] text-white"><t.Icon className="h-6 w-6" /></div>
-              <h2 className="mt-4 text-xl font-bold text-[var(--cs-navy)]">{t.name}</h2>
-              <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">{t.who}</p>
-              <p className="mt-4 text-3xl font-extrabold text-[var(--cs-navy)]">Custom <span className="text-sm font-semibold text-[var(--cs-text-muted)]">/ book a quote</span></p>
-              <ul className="mt-5 flex-1 space-y-2.5">
-                {t.points.map((p, j) => (
-                  <li key={j} className="flex items-start gap-2.5 text-sm text-[var(--cs-text-secondary)]"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-teal)]" /> {p}</li>
-                ))}
-              </ul>
-              <Link href="/contact" className={`mt-7 inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors ${t.featured ? "bg-[var(--cs-navy)] text-white hover:bg-[var(--cs-navy-soft)]" : "border border-[var(--cs-border)] bg-white text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]"}`}>
-                {t.cta} <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
+            <Reveal key={i} delay={i * 110}>
+              <TiltCard className="h-full rounded-3xl">
+                <div className={`relative flex h-full flex-col rounded-3xl p-8 shadow-[var(--cs-shadow-card)] ${t.featured ? "mk-midnight-flat text-white ring-1 ring-[var(--cs-cara-gold)]/50" : "border border-[var(--cs-border)] bg-white"}`}>
+                  {t.featured && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--cs-cara-gold)] px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0a1020] shadow-[0_0_20px_rgba(200,155,60,0.45)]">
+                      Most popular
+                    </span>
+                  )}
+                  <div className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl ${t.featured ? "bg-white/10 text-[var(--cs-cara-gold)]" : "bg-[var(--cs-navy)] text-[var(--cs-cara-gold)]"}`}>
+                    <t.Icon className="h-6 w-6" />
+                  </div>
+                  <h2 className={`mt-4 text-xl font-bold ${t.featured ? "text-white" : "text-[var(--cs-navy)]"}`}>{t.name}</h2>
+                  <p className={`mt-1 text-sm ${t.featured ? "text-slate-300" : "text-[var(--cs-text-secondary)]"}`}>{t.who}</p>
+                  <p className={`mk-display mt-5 text-3xl ${t.featured ? "text-white" : "text-[var(--cs-navy)]"}`}>
+                    Custom <span className={`text-sm font-semibold ${t.featured ? "text-slate-400" : "text-[var(--cs-text-muted)]"}`} style={{ fontFamily: "var(--font-sans)" }}>/ book a quote</span>
+                  </p>
+                  <ul className="mt-5 flex-1 space-y-2.5">
+                    {t.points.map((p, j) => (
+                      <li key={j} className={`flex items-start gap-2.5 text-sm ${t.featured ? "text-slate-200" : "text-[var(--cs-text-secondary)]"}`}>
+                        <CheckCircle2 className={`mt-0.5 h-4 w-4 shrink-0 ${t.featured ? "text-teal-300" : "text-[var(--cs-teal)]"}`} /> {p}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href="/contact"
+                    className={`mt-7 inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 ${t.featured ? "bg-[var(--cs-cara-gold)] text-[#0a1020] shadow-[0_0_24px_rgba(200,155,60,0.3)]" : "border border-[var(--cs-border)] bg-white text-[var(--cs-navy)] hover:shadow-[var(--cs-shadow-card)]"}`}
+                  >
+                    {t.cta} <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </TiltCard>
+            </Reveal>
           ))}
         </div>
-        <p className="mt-6 text-center text-sm text-[var(--cs-text-muted)]">All plans include data security, audit trails and role-based access as standard.</p>
+        <Reveal delay={200}>
+          <p className="mt-6 text-center text-sm text-[var(--cs-text-muted)]">All plans include data security, audit trails and role-based access as standard.</p>
+        </Reveal>
       </section>
 
       {/* Everything includes band */}
-      <section className="mx-auto max-w-7xl px-5 py-12">
-        <div className="grid gap-4 sm:grid-cols-3">
+      <section className="mx-auto max-w-7xl px-5 py-14">
+        <div className="grid gap-5 sm:grid-cols-3">
           {[
             { Icon: ShieldCheck, t: "The full platform, every plan", d: "No feature is locked behind a higher tier — tiers add scale and oversight, not core capability." },
             { Icon: HeartHandshake, t: "Onboarding & support included", d: "We help you get set up and keep your team confident — included on every plan." },
             { Icon: Smartphone, t: "Mobile, installable & offline", d: "Works on phones and tablets, installs to the home screen, and keeps working when the connection drops." },
           ].map((c, i) => (
-            <div key={i} className="rounded-2xl border border-[var(--cs-border)] bg-white p-6 shadow-[var(--cs-shadow-card)]">
-              <c.Icon className="h-6 w-6 text-[var(--cs-teal-strong)]" />
-              <h3 className="mt-3 text-base font-bold text-[var(--cs-navy)]">{c.t}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-[var(--cs-text-secondary)]">{c.d}</p>
-            </div>
+            <Reveal key={i} delay={i * 100}>
+              <div className="h-full rounded-2xl border border-[var(--cs-border)] bg-white p-7 shadow-[var(--cs-shadow-card)] transition-transform duration-300 hover:-translate-y-1">
+                <c.Icon className="h-6 w-6 text-[var(--cs-teal-strong)]" />
+                <h3 className="mt-3 text-base font-bold text-[var(--cs-navy)]">{c.t}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-[var(--cs-text-secondary)]">{c.d}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* Comparison table */}
       <section className="border-y border-[var(--cs-border)] bg-white">
-        <div className="mx-auto max-w-5xl px-5 py-20">
-          <div className="mx-auto max-w-2xl text-center">
-            <SectionEyebrow>Compare plans</SectionEyebrow>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">Exactly what&rsquo;s in each plan.</h2>
-          </div>
-          <div className="mt-10 overflow-x-auto rounded-2xl border border-[var(--cs-border)]">
+        <div className="mx-auto max-w-5xl px-5 py-24">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--cs-teal-strong)]">Compare plans</span>
+            <h2 className="mk-display mt-4 text-4xl text-[var(--cs-navy)] sm:text-5xl">Exactly what&rsquo;s <span className="mk-display-it">in each plan.</span></h2>
+          </Reveal>
+          <Reveal delay={120} className="mt-12 overflow-x-auto rounded-2xl border border-[var(--cs-border)] shadow-[var(--cs-shadow-card)]">
             <table className="w-full min-w-[640px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-[var(--cs-border)] bg-[var(--cs-bg)]">
-                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">Capability</th>
+                  <th className="px-4 py-3.5 text-left text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">Capability</th>
                   {TIERS.map((t) => (
-                    <th key={t.name} className={`px-4 py-3 text-center text-xs font-bold ${t.featured ? "text-[var(--cs-teal-strong)]" : "text-[var(--cs-navy)]"}`}>
-                      {t.name}{t.featured && <span className="ml-1 align-middle text-[9px] font-bold uppercase text-[var(--cs-teal)]">★</span>}
+                    <th key={t.name} className={`px-4 py-3.5 text-center text-xs font-bold ${t.featured ? "text-[var(--cs-cara-gold)]" : "text-[var(--cs-navy)]"}`}>
+                      {t.name}{t.featured && <span className="ml-1 align-middle text-[9px] font-bold uppercase text-[var(--cs-cara-gold)]">★</span>}
                     </th>
                   ))}
                 </tr>
@@ -187,42 +215,46 @@ export default function PricingPage() {
                 </tbody>
               ))}
             </table>
-          </div>
-          <p className="mt-4 text-center text-xs text-[var(--cs-text-muted)]">Tiers add scale and oversight — never core capability. Pricing is tailored to your service.</p>
+          </Reveal>
+          <Reveal delay={160}>
+            <p className="mt-4 text-center text-xs text-[var(--cs-text-muted)]">Tiers add scale and oversight — never core capability. Pricing is tailored to your service.</p>
+          </Reveal>
         </div>
       </section>
 
       {/* Pricing FAQ */}
-      <section className="mx-auto max-w-3xl px-5 py-20">
-        <div className="text-center">
-          <SectionEyebrow>Pricing FAQ</SectionEyebrow>
-          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">The questions buyers ask us.</h2>
-        </div>
-        <div className="mt-10 space-y-3">
+      <section className="mx-auto max-w-3xl px-5 py-24">
+        <Reveal className="text-center">
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--cs-teal-strong)]">Pricing FAQ</span>
+          <h2 className="mk-display mt-4 text-4xl text-[var(--cs-navy)] sm:text-5xl">The questions <span className="mk-display-it">buyers ask us.</span></h2>
+        </Reveal>
+        <div className="mt-12 space-y-3">
           {FAQ.map((f, i) => (
-            <details key={i} className="group rounded-2xl border border-[var(--cs-border)] bg-white px-5 py-4 shadow-[var(--cs-shadow-card)] [&_summary::-webkit-details-marker]:hidden">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-[var(--cs-navy)]">
-                {f.q}
-                <ChevronDown className="h-5 w-5 shrink-0 text-[var(--cs-teal)] transition-transform group-open:rotate-180" />
-              </summary>
-              <p className="mt-3 text-sm leading-relaxed text-[var(--cs-text-secondary)]">{f.a}</p>
-            </details>
+            <Reveal key={i} delay={i * 60}>
+              <details className="group rounded-2xl border border-[var(--cs-border)] bg-white px-5 py-4 shadow-[var(--cs-shadow-card)] transition-shadow hover:shadow-[var(--cs-shadow-elevated)] [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-[var(--cs-navy)]">
+                  {f.q}
+                  <ChevronDown className="h-5 w-5 shrink-0 text-[var(--cs-cara-gold)] transition-transform duration-300 group-open:rotate-180" />
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--cs-text-secondary)]">{f.a}</p>
+              </details>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="mx-auto max-w-7xl px-5 pb-20">
-        <div className="relative overflow-hidden rounded-3xl bg-[var(--cs-navy)] px-6 py-16 text-center text-white shadow-[var(--cs-shadow-card)]">
-          <div className="pointer-events-none absolute inset-0 opacity-50" style={{ background: "radial-gradient(50% 80% at 50% 0%, var(--cs-teal-glow) 0%, transparent 60%)" }} />
-          <div className="relative">
-            <h2 className="mx-auto max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Let&rsquo;s build a quote that fits.</h2>
-            <p className="mx-auto mt-4 max-w-xl text-lg text-white/75">Tell us about your service and we&rsquo;ll tailor a plan and price — or step into the live demo first.</p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link href="/contact" className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-[var(--cs-navy)] transition-transform hover:-translate-y-0.5">Book a walkthrough <ArrowRight className="h-4 w-4" /></Link>
-              <Link href="/product/tour" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-white/10">See the product tour</Link>
-            </div>
-          </div>
+      {/* Finale — back into the night */}
+      <section className="mk-midnight relative overflow-hidden">
+        <HeroField className="pointer-events-none absolute inset-0 h-full w-full opacity-35" />
+        <div className="relative mx-auto max-w-4xl px-5 py-24 text-center">
+          <Reveal>
+            <h2 className="mk-display text-4xl text-white sm:text-5xl">Let&rsquo;s build a quote <span className="mk-display-it mk-aurora-text">that fits.</span></h2>
+            <p className="mx-auto mt-5 max-w-xl text-lg text-slate-300/90">Tell us about your service and we&rsquo;ll tailor a plan and price — or step into the live demo first.</p>
+          </Reveal>
+          <Reveal delay={130} className="mt-9 flex flex-wrap items-center justify-center gap-4">
+            <HeroGoldCta href="/contact">Book a walkthrough <ArrowRight className="h-4 w-4" /></HeroGoldCta>
+            <HeroGlassCta href="/product/tour">See the product tour</HeroGlassCta>
+          </Reveal>
         </div>
       </section>
 
