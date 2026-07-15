@@ -602,7 +602,7 @@ const STEPS = [
   {
     Icon: ClipboardCheck,
     eyebrow: "Management Oversight Engine",
-    href: "/workforce/oversight-workflow",
+    href: "/oversight-workflow",
     title: "Oversight that reasons with you.",
     body: "Cara doesn't just prompt for oversight — it brings the reasoning to you. Six quality scores, a DefensibleDecision summary of patterns and risk, and a structured sign-off flow. Evidence-grade oversight at the point of practice.",
     points: ["6 quality scores: recording, child voice, risk, safeguarding, PACE, language", "Reasoning engine surfaces patterns and escalation signals", "Role-gated sign-off persisted back to the record"],
