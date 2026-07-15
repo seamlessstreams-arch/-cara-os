@@ -24,6 +24,7 @@
 import { checkAccess } from "./access-decision-service";
 import type { Action, ResourceType, Sensitivity, UserContext } from "./types";
 import { toAbacRole } from "./role-reconciliation";
+import { buildUserContext } from "./build-user-context";
 import type { AppRole } from "@/lib/permissions";
 
 /** Confidential entityType (from the sensitive-record guard) → ABAC ResourceType. */
@@ -43,10 +44,9 @@ export function entityToResourceType(entityType: string): ResourceType {
   return ENTITY_TO_RESOURCE[entityType] ?? "hr_file";
 }
 
-/** A minimal, safe UserContext for an authenticated caller. Per-request signals
- *  the identity layer doesn't yet produce default to the permissive-but-safe
- *  value (active employment, on shift, no restrictions) so the ADVISORY check
- *  never denies a legitimately-permitted caller. */
+/** Fallback for an actor with no staff record (system/platform ids). Permissive
+ *  by design: the ADVISORY check must never denounce a caller we can't describe.
+ *  Real staff get the REAL context from buildUserContext — see resolveContext. */
 function minimalContext(userId: string, appRole: AppRole, homeId?: string | null): UserContext {
   return {
     userId,
@@ -67,11 +67,30 @@ function minimalContext(userId: string, appRole: AppRole, homeId?: string | null
   };
 }
 
+/** The real context for a staff member; the permissive fallback otherwise.
+ *  Never throws — the shadow is advisory and must not affect the route. */
+function resolveContext(userId: string, appRole: AppRole, homeId?: string | null): {
+  ctx: UserContext;
+  real: boolean;
+} {
+  try {
+    const real = buildUserContext(userId);
+    if (real) return { ctx: real, real: true };
+  } catch {
+    // Store unavailable — fall through to the permissive fallback.
+  }
+  return { ctx: minimalContext(userId, appRole, homeId), real: false };
+}
+
 export interface SensitiveAbacResult {
   allowed: boolean;
   auditEventRequired: boolean;
   reason: string;
   grantSource?: string;
+  /** True when the decision used the staff member's REAL attributes (shift,
+   *  employment, key-worker) rather than the unknown-actor fallback. Only a
+   *  real-context decision is evidence for the enforcing flip. */
+  contextReal: boolean;
 }
 
 /**
@@ -86,8 +105,9 @@ export function evaluateSensitiveAbac(args: {
   homeId?: string | null;
   sensitivity?: Sensitivity;
 }): SensitiveAbacResult {
+  const { ctx, real } = resolveContext(args.userId, args.appRole, args.homeId);
   const decision = checkAccess({
-    user: minimalContext(args.userId, args.appRole, args.homeId),
+    user: ctx,
     resourceType: entityToResourceType(args.entityType),
     action: args.action,
     resourceHomeId: args.homeId ?? undefined,
@@ -98,5 +118,6 @@ export function evaluateSensitiveAbac(args: {
     auditEventRequired: decision.auditEventRequired,
     reason: decision.reason,
     grantSource: decision.grantSource,
+    contextReal: real,
   };
 }
