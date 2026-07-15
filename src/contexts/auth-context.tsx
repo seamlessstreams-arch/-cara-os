@@ -10,9 +10,10 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useStaff } from "@/hooks/use-staff";
 import { toAppRole, type AppRole } from "@/lib/permissions";
 import type { StaffMember } from "@/types";
+import { DEMO_DEFAULT_USER_ID } from "@/lib/auth/current-user";
 
 const SESSION_KEY = "cs_user_id";
-const DEFAULT_USER_ID = "staff_darren";
+const DEFAULT_USER_ID = DEMO_DEFAULT_USER_ID;
 
 export interface AuthContextValue {
   /** The currently logged-in staff member. Null only during initial hydration. */

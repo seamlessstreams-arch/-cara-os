@@ -1,4 +1,5 @@
 "use client";
+import { currentUserId } from "@/lib/auth/current-user";
 
 // Base API client — all hooks use this
 const BASE = "/api/v1";
@@ -7,8 +8,7 @@ const BASE = "/api/v1";
  *  the acting user (e.g. Comms Centre access control) read `x-user-id`. */
 function userHeader(): Record<string, string> {
   if (typeof window === "undefined") return {};
-  const id = localStorage.getItem("cs_user_id");
-  return id ? { "x-user-id": id } : {};
+  return { "x-user-id": currentUserId() };
 }
 
 export async function apiFetch<T = unknown>(

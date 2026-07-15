@@ -15,6 +15,7 @@
 import { useState, useCallback } from "react";
 import type { CaraCommandId } from "@/lib/cara/cara-types";
 import type { CaraRole } from "@/lib/cara/cara-permissions";
+import { currentUserId } from "@/lib/auth/current-user";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -95,7 +96,7 @@ function getDefaultActor(): { userId: string; role: CaraRole } {
   if (typeof window === "undefined") {
     return { userId: "unknown", role: "none" as CaraRole };
   }
-  const userId = localStorage.getItem("cs_user_id") || "staff_darren";
+  const userId = currentUserId();
   return { userId, role: "registered_manager" as CaraRole };
 }
 

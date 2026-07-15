@@ -16,14 +16,14 @@ import {
   type WritingIssue,
   type WritingMode,
 } from "@/lib/writing-assistant/types";
+import { currentUserId } from "@/lib/auth/current-user";
 
 const ENDPOINT = "/api/writing-assistant/check";
 
 function userHeaders(): Record<string, string> {
   const h: Record<string, string> = { "Content-Type": "application/json" };
   if (typeof window !== "undefined") {
-    const id = localStorage.getItem("cs_user_id");
-    if (id) h["x-user-id"] = id;
+    h["x-user-id"] = currentUserId();
   }
   return h;
 }
