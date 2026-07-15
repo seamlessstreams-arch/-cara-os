@@ -15,6 +15,36 @@ function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+// Scroll-scan fallback shared by every Reveal: one passive listener that
+// reveals anything in view. IntersectionObserver is the efficient primary,
+// but some embedded renderers never drive IO callbacks — content must not
+// depend on it. Elements deregister once revealed.
+const pendingReveals = new Set<HTMLElement>();
+let scanBound = false;
+let scanRaf = 0;
+function scanReveals() {
+  cancelAnimationFrame(scanRaf);
+  scanRaf = requestAnimationFrame(() => {
+    const vh = window.innerHeight;
+    for (const el of pendingReveals) {
+      const r = el.getBoundingClientRect();
+      if (r.top < vh * 0.92 && r.bottom > 0) {
+        el.classList.add("mk-in");
+        pendingReveals.delete(el);
+      }
+    }
+  });
+}
+function watchReveal(el: HTMLElement) {
+  pendingReveals.add(el);
+  if (!scanBound) {
+    scanBound = true;
+    window.addEventListener("scroll", scanReveals, { passive: true });
+    window.addEventListener("resize", scanReveals, { passive: true });
+  }
+  scanReveals();
+}
+
 // ── Reveal — adds .mk-in when the element scrolls into view ──────────────────
 export function Reveal({
   children,
@@ -43,14 +73,15 @@ export function Reveal({
       { threshold: 0.15, rootMargin: "0px 0px -8% 0px" },
     );
     io.observe(el);
-    // Fail-open: if the observer never fires (capture contexts, odd engines),
-    // content must still appear — hidden marketing copy is worse than a
-    // missed entrance.
+    // Fail-open twice over: the shared scroll-scan reveals in-view content
+    // even in renderers that never drive IO callbacks, and the timeout covers
+    // the initial viewport before any scroll happens.
+    watchReveal(el);
     const failsafe = window.setTimeout(() => {
       const r = el.getBoundingClientRect();
       if (r.top < window.innerHeight && r.bottom > 0) el.classList.add("mk-in");
     }, 1400);
-    return () => { io.disconnect(); window.clearTimeout(failsafe); };
+    return () => { io.disconnect(); pendingReveals.delete(el); window.clearTimeout(failsafe); };
   }, []);
   return (
     <Tag
@@ -146,7 +177,10 @@ export function CountUp({
       { threshold: 0.4 },
     );
     io.observe(el);
-    return () => { io.disconnect(); cancelAnimationFrame(raf); };
+    // If IO never fires (some embedded renderers), the number must still be
+    // right — a stuck "0" is worse than a missed count-up.
+    const failsafe = window.setTimeout(() => setVal(to), 2200);
+    return () => { io.disconnect(); cancelAnimationFrame(raf); window.clearTimeout(failsafe); };
   }, [to, duration]);
   return (
     <span ref={ref} className={`tabular-nums ${className}`}>
