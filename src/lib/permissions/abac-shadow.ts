@@ -121,3 +121,39 @@ export function evaluateSensitiveAbac(args: {
     contextReal: real,
   };
 }
+
+/**
+ * Run the ABAC engine for a CHILD RECORD access (ADVISORY).
+ *
+ * This is the access that matters: the flat check asks only "does your role
+ * hold the permission?", while ABAC asks the questions a Registered Manager
+ * would — are you on shift, are you still employed, is this a child you
+ * key-work? An RSW reading a child they don't key-work diverges here, and
+ * whether that SHOULD be refused is a practice decision that deserves
+ * evidence rather than a guess.
+ *
+ * Pure + never throws. Advisory only — the caller must not block on it.
+ */
+export function evaluateChildRecordAbac(args: {
+  userId: string;
+  appRole: AppRole;
+  action: Action;
+  childHomeId?: string | null;
+  sensitivity?: Sensitivity;
+}): SensitiveAbacResult {
+  const { ctx, real } = resolveContext(args.userId, args.appRole, args.childHomeId);
+  const decision = checkAccess({
+    user: ctx,
+    resourceType: "child_record",
+    action: args.action,
+    resourceHomeId: args.childHomeId ?? undefined,
+    resourceSensitivity: args.sensitivity ?? "internal",
+  });
+  return {
+    allowed: decision.allowed,
+    auditEventRequired: decision.auditEventRequired,
+    reason: decision.reason,
+    grantSource: decision.grantSource,
+    contextReal: real,
+  };
+}

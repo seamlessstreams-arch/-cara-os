@@ -20,6 +20,8 @@ import {
 // Canonical role normaliser — maps ANY vocabulary (flat / ABAC / x-user-role
 // variants) to the enforced AppRole, so an identity is never mis-read (Module 4).
 import { toCanonicalRole } from "@/lib/permissions/role-reconciliation";
+import { evaluateChildRecordAbac } from "@/lib/permissions/abac-shadow";
+import { recordAbacDivergence } from "@/lib/permissions/abac-divergence";
 
 const DEFAULT_USER_ID = "staff_darren";
 
@@ -140,6 +142,9 @@ const CROSS_HOME_ROLES: ReadonlySet<AppRole> = new Set([
   "responsible_individual",
 ]);
 
+/** Advisory child-record ABAC shadow — ON unless disabled. Never blocks. */
+const ABAC_CHILD_SHADOW = process.env.CARA_ABAC_CHILD_SHADOW !== "false";
+
 export interface RequestIdentity {
   userId: string;
   role: AppRole;
@@ -221,9 +226,50 @@ export function assertHomeAccess(
  */
 export function assertChildHomeAccess(
   identity: RequestIdentity,
-  childId: string | null | undefined
+  childId: string | null | undefined,
+  /** The action being attempted — only affects the ADVISORY ABAC evaluation. */
+  action: "view" | "edit" | "create" = "view"
 ): NextResponse | null {
-  if (identity.homeId == null || !childId) return null;
+  if (!childId) return null;
   const child = db.youngPeople?.findById?.(childId) as { home_id?: string } | undefined;
+
+  // ADVISORY: give the ABAC engine its first sight of child-record access.
+  // The flat check below stays the enforced gate; this only records where the
+  // two would disagree, so the enforcing decision can be made on evidence.
+  runChildRecordAbacShadow(identity, childId, child?.home_id, action);
+
+  if (identity.homeId == null) return null; // demo mode: no session tenancy
   return assertHomeAccess(identity, child?.home_id);
+}
+
+/** Evaluate child-record access under ABAC and record any divergence from the
+ *  enforced flat decision. Never blocks, never throws — the route is unaffected. */
+function runChildRecordAbacShadow(
+  identity: RequestIdentity,
+  childId: string,
+  childHomeId: string | undefined,
+  action: "view" | "edit" | "create",
+): void {
+  if (!ABAC_CHILD_SHADOW) return;
+  try {
+    const r = evaluateChildRecordAbac({
+      userId: identity.userId,
+      appRole: identity.role,
+      action,
+      childHomeId: childHomeId ?? null,
+    });
+    if (!r.allowed) {
+      recordAbacDivergence({
+        userId: identity.userId,
+        role: identity.role,
+        resource: "child_record",
+        action,
+        homeId: childHomeId ?? null,
+        reason: r.reason,
+        contextReal: r.contextReal,
+      });
+    }
+  } catch {
+    // Advisory only — must never affect the route.
+  }
 }
