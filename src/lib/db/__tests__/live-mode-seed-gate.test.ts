@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
+// Each case re-imports the store (20,537 lines) because the gate runs at module
+// load and vi.resetModules() must clear it between modes. That is genuinely slow
+// under a loaded CI runner — the default 5s budget times out on the first case,
+// which is a false red, not a real failure.
+vi.setConfig({ testTimeout: 30_000 });
+
 // The seed gate is the line between the demo and a real children's home.
 //
 // Getting it wrong in the safe direction costs a blank demo. Getting it wrong in

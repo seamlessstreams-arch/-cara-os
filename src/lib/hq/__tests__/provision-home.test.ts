@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
+// hq-service pulls in the store (20,537 lines); the first case pays that import
+// cost and times out against the default 5s budget on a loaded runner.
+vi.setConfig({ testTimeout: 30_000 });
+
 // Provisioning is the master-admin path for standing up a real customer. The
 // properties that matter are the ones that were broken:
 //
