@@ -11,6 +11,7 @@
 
 import type { PersistedReg44Report } from "@/lib/reg44-report-intelligence/report-lifecycle";
 import type { HealEvent as IntegrityHealEvent } from "@/lib/self-healing/types";
+import { isLiveTenant } from "./live-mode";
 import {
   STAFF, YOUNG_PEOPLE, TASKS, INCIDENTS, SHIFTS, MEDICATIONS,
   DAILY_LOG, LEAVE_REQUESTS, TRAINING_RECORDS, HOME,
@@ -830,6 +831,27 @@ const RELATIONSHIP_ENTRIES_SEED: RelationshipEntry[] = [
 ];
 
 // ── Mutable collections ───────────────────────────────────────────────────────
+
+/**
+ * The home a live tenant has before anyone provisions it: shaped like a Home so
+ * the ~8 routes that read `store.home` keep working, but carrying no identity.
+ * `id: ""` is the tell a caller can check — a real home always has one.
+ * Provisioning fills this in; until then there is genuinely nothing to show.
+ */
+const UNPROVISIONED_HOME: Home = {
+  id: "",
+  name: "",
+  address: "",
+  phone: "",
+  ofsted_urn: null,
+  registered_manager_id: "",
+  responsible_individual_id: null,
+  max_beds: 0,
+  current_occupancy: 0,
+  last_inspection_date: null,
+  last_inspection_grade: null,
+  created_at: new Date().toISOString(),
+};
 
 const store = {
   home: { ...HOME } as Home,
@@ -11475,6 +11497,38 @@ store.medicationAuditRecords = [
     follow_up_required: false, follow_up_date: null, signed_off_by: "staff_darren", created_at: daysFromNow(-3),
   },
 ];
+
+// ── Live tenant: a real home starts empty ────────────────────────────────────
+//
+// Everything above this line is seed data. It exists for demo realism, and on a
+// live tenant it is a liability: a seeded child is indistinguishable from a real
+// one once rendered, and staff cannot be asked to tell them apart.
+//
+// This is the single chokepoint. It runs at module load, before getStore() can
+// hand `store` to anything, so no caller can observe the seeded state first.
+// Collections are emptied in place rather than reassigned — several modules
+// capture a reference to `store.x` at import time, and rebinding would leave
+// them pointing at the seeded array.
+//
+// See live-mode.ts for why the signal is NEXT_PUBLIC_CARA_MODE and not
+// isSupabaseEnabled(): the store is evaluated in the browser too, and a
+// server-only key would empty it on the server while the browser stayed seeded.
+//
+// SCOPE — what this does and does not clear:
+//   • every top-level array on the store (the ~500 seeded collections);
+//   • `home`, which is a single object rather than a collection, and would
+//     otherwise leave a live tenant branded "Chamberlain House" with no
+//     children in it. A live home has no identity until it is provisioned.
+// It does NOT clear nested arrays inside non-array fields, or seeded config
+// objects such as `systemBranding`. Those are defaults a tenant overrides, not
+// records about a child — but they are unaudited, so treat this as covering
+// records, not settings. The test asserts no seeded ARRAY survives.
+if (isLiveTenant()) {
+  for (const value of Object.values(store)) {
+    if (Array.isArray(value)) value.length = 0;
+  }
+  Object.assign(store.home, UNPROVISIONED_HOME);
+}
 
 // ── CRUD helpers ──────────────────────────────────────────────────────────────
 
