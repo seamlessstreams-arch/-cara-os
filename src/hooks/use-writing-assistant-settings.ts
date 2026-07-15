@@ -8,6 +8,7 @@ import {
   type WritingAuditEvent,
   type IssueType,
 } from "@/lib/writing-assistant/types";
+import { currentUserId } from "@/lib/auth/current-user";
 
 const SETTINGS_ENDPOINT = "/api/writing-assistant/settings";
 const AUDIT_ENDPOINT    = "/api/writing-assistant/audit";
@@ -15,8 +16,7 @@ const AUDIT_ENDPOINT    = "/api/writing-assistant/audit";
 function userHeaders(): Record<string, string> {
   const h: Record<string, string> = { "Content-Type": "application/json" };
   if (typeof window !== "undefined") {
-    const id = localStorage.getItem("cs_user_id");
-    if (id) h["x-user-id"] = id;
+    h["x-user-id"] = currentUserId();
   }
   return h;
 }

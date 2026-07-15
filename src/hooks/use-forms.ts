@@ -6,18 +6,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-auth";
 import type { CareForm } from "@/types";
+import { currentUserId } from "@/lib/auth/current-user";
 
 const API = "/api/v1/forms";
-
-function currentUserId(): string {
-  if (typeof window === "undefined") return "staff_darren";
-  try {
-    const raw = localStorage.getItem("cs_user_id");
-    return raw ?? "staff_darren";
-  } catch {
-    return "staff_darren";
-  }
-}
 
 function authHeaders() {
   return { "Content-Type": "application/json", "X-User-Id": currentUserId() };

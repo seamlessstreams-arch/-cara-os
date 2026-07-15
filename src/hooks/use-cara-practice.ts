@@ -8,13 +8,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type { CaraPracticeOutput, PracticeSourceType, CaraAssessmentType } from "@/lib/cara-practice/types";
 import type { CaraDraftType, CaraDraftResult } from "@/lib/cara-practice/cara-draft";
 import type { PracticeDashboard } from "@/lib/cara-practice/cara-dashboard";
+import { currentUserId } from "@/lib/auth/current-user";
 
 const ROOT = "/api/cara/practice-intelligence";
 
 function userHeader(): Record<string, string> {
   if (typeof window === "undefined") return {};
-  const id = localStorage.getItem("cs_user_id");
-  return id ? { "x-user-id": id } : {};
+  return { "x-user-id": currentUserId() };
 }
 
 async function practiceFetch<T>(path: string, options?: RequestInit): Promise<T> {

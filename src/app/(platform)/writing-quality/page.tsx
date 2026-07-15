@@ -16,6 +16,7 @@ import { Sparkles, Check, X, TrendingUp, Users, FileText, Clock } from "lucide-r
 import { useQuery } from "@tanstack/react-query";
 import { cn, formatDate } from "@/lib/utils";
 import type { IssueType } from "@/lib/writing-assistant/types";
+import { currentUserId } from "@/lib/auth/current-user";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -55,8 +56,9 @@ function useAuditData(days: number) {
     queryFn: async () => {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (typeof window !== "undefined") {
-        const id = localStorage.getItem("cs_user_id");
-        if (id) { headers["x-user-id"] = id; headers["x-cs-user-id"] = id; }
+        const id = currentUserId();
+        headers["x-user-id"] = id;
+        headers["x-cs-user-id"] = id;
       }
       const res = await fetch(`/api/writing-assistant/audit?days=${days}`, { headers });
       if (!res.ok) throw new Error("Failed to load audit data");

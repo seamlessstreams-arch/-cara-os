@@ -10,10 +10,11 @@
 import { useEffect, useState } from "react";
 import { Bell, BellOff, BellRing, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { currentUserId } from "@/lib/auth/current-user";
 
 function userId(): string {
   if (typeof window === "undefined") return "staff_darren";
-  try { return localStorage.getItem("cs_user_id") ?? "staff_darren"; } catch { return "staff_darren"; }
+  return currentUserId();
 }
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
