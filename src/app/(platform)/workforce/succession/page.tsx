@@ -217,7 +217,7 @@ export default function SuccessionBoardPage() {
             data={succExportData}
             label="Export"
           />
-          <PrintButton title="Succession Planning Report" subtitle="Chamberlain House Workforce" targetId="succession-content" />
+          <PrintButton title="Succession Planning Report" subtitle="Workforce" targetId="succession-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Workforce Intelligence — succession plan or leadership evidence document upload" />
           <Button
             size="sm"

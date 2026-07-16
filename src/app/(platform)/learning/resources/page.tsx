@@ -316,7 +316,7 @@ export default function ResourceGeneratorPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Resource Generator" subtitle="Chamberlain House — Learning Resources" targetId="resources-content" />
+          <PrintButton title="Resource Generator" subtitle="Learning Resources" targetId="resources-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Resource Generator upload" />
           <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

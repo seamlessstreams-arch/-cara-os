@@ -923,7 +923,7 @@ export default function OutcomesPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={OUTCOME_EXPORT_COLS} filename="outcomes" />
-          <PrintButton title="Outcomes Tracker" subtitle="Chamberlain House" targetId="outcomes-content" />
+          <PrintButton title="Outcomes Tracker" targetId="outcomes-content" />
           <Button size="sm" className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white h-8 text-xs" onClick={() => setShowNewTarget(true)}>
             <Plus className="h-3.5 w-3.5" />
             New Target

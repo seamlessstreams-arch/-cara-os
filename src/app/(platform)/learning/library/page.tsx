@@ -257,7 +257,7 @@ export default function ResourceLibraryPage() {
             data={filtered}
             label="Export"
           />
-          <PrintButton title="Resource Library" subtitle="Chamberlain House — Learning Resources" targetId="library-content" />
+          <PrintButton title="Resource Library" subtitle="Learning Resources" targetId="library-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Resource Library upload" />
           <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

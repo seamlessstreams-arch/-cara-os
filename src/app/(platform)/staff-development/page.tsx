@@ -337,7 +337,7 @@ export default function StaffDevelopmentPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={STAFF_DEV_EXPORT_COLS} filename="staff-development" />
-          <PrintButton title="Staff Development" subtitle="Chamberlain House — Development & CPD" targetId="staff-dev-content" />
+          <PrintButton title="Staff Development" subtitle="Development & CPD" targetId="staff-dev-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Staff Development — training certificate or appraisal upload" />
           <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

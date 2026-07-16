@@ -286,7 +286,7 @@ export default function RotaPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={shifts} columns={SHIFT_EXPORT_COLS} filename={`rota-${weekStart}`} />
-          <PrintButton title="Rota" subtitle="Chamberlain House — Staff Rota & Scheduling" targetId="rota-content" />
+          <PrintButton title="Rota" subtitle="Staff Rota & Scheduling" targetId="rota-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Rota — rota or schedule upload" />
           <Button variant="outline" size="sm" disabled title="Shifts are added through your scheduling system.">
             <Plus className="h-3.5 w-3.5" /> Add Shift

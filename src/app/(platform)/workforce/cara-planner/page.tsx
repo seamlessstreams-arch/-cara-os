@@ -53,7 +53,7 @@ export default function CaraDevPlannerPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Cara Development Planner" subtitle="Chamberlain House — Staff Development Plans" targetId="cara-planner-content" />
+          <PrintButton title="Cara Development Planner" subtitle="Staff Development Plans" targetId="cara-planner-content" />
           <SmartUploadButton variant="inline" label="Upload Development Plan" uploadContext="Workforce Intelligence — staff development plan or evidence document upload" />
           <Button
             size="sm"

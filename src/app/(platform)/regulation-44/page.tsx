@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -431,6 +432,7 @@ function CreateVisitModal({ onClose }: { onClose: () => void }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Regulation44Page() {
+  const homeName = useHomeName();
   const visitsQ = useReg44Visits();
   const updateRec = useUpdateRecommendation();
   const [showCreate, setShowCreate] = useState(false);
@@ -454,7 +456,7 @@ export default function Regulation44Page() {
   return (
     <PageShell
       title="Regulation 44 Visits"
-      subtitle="Independent visitor reports — Chamberlain House"
+      subtitle={`Independent visitor reports — ${homeName}`}
       caraContext={{ pageTitle: "Regulation 44 — Independent Visiting", sourceType: "reg45" }}
       actions={
         <div className="flex items-center gap-2">

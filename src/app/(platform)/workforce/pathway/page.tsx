@@ -372,7 +372,7 @@ export default function CareerPathwayPage() {
             data={filteredProfiles}
             label="Export"
           />
-          <PrintButton title="Career Pathway Report" subtitle="Chamberlain House Workforce" targetId="pathway-content" />
+          <PrintButton title="Career Pathway Report" subtitle="Workforce" targetId="pathway-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Workforce Intelligence — career pathway evidence or portfolio document upload" />
           <Link href="/workforce">
             <button className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors">

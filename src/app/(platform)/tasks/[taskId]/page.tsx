@@ -298,7 +298,7 @@ export default function TaskDetailPage() {
       recordChildId={task.linked_child_id ?? undefined}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Task Detail" subtitle={`Chamberlain House — ${task.title}`} targetId="task-detail-content" />
+          <PrintButton title="Task Detail" subtitle={`${task.title}`} targetId="task-detail-content" />
           <SmartUploadButton variant="icon" uploadContext="Task — supporting document upload" />
           <Link href="/tasks">
             <Button variant="outline" size="sm">

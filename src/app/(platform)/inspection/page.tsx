@@ -823,7 +823,7 @@ export default function InspectionPage() {
       quickCreateContext={{ module: "inspection", defaultTaskCategory: "inspection", defaultFormType: "review_meeting_notes" }}
       actions={
         <div className="flex gap-2">
-          <PrintButton title="Inspection Readiness" subtitle="Chamberlain House — Ofsted Preparation Report" targetId="inspection-content" />
+          <PrintButton title="Inspection Readiness" subtitle="Ofsted Preparation Report" targetId="inspection-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Inspection — inspection evidence upload" />
           <Button
             variant="outline"

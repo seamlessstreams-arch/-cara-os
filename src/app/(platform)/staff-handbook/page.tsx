@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -178,12 +179,13 @@ const SECTIONS: HandbookSection[] = [
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function StaffHandbookPage() {
+  const homeName = useHomeName();
   const [expandedId, setExpandedId] = useState<string | null>("welcome");
 
   return (
     <PageShell
       title="Staff Handbook"
-      subtitle="Chamberlain House · Essential Information for All Staff"
+      subtitle={`${homeName} · Essential Information for All Staff`}
       caraContext={{ pageTitle: "Staff Handbook", sourceType: "staff" }}
       actions={<div className="flex items-center gap-2"><PrintButton title="Staff Handbook" /><CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} /></div>}
     >

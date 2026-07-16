@@ -182,7 +182,7 @@ export default function TasksPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={TASK_EXPORT_COLS} filename="tasks" />
-          <PrintButton title="Tasks" subtitle="Chamberlain House — Task Management" targetId="tasks-content" />
+          <PrintButton title="Tasks" subtitle="Task Management" targetId="tasks-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Tasks — supporting document upload" />
           <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

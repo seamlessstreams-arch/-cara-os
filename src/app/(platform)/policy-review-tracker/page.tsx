@@ -139,7 +139,7 @@ export default function PolicyReviewTrackerPage() {
       caraContext={{ pageTitle: "Policy Review Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Policy Review Tracker" subtitle="Chamberlain House — Policy Management" />
+          <PrintButton title="Policy Review Tracker" subtitle="Policy Management" />
           <ExportButton data={filtered} columns={exportCols} filename="policy-review-tracker" />
           <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

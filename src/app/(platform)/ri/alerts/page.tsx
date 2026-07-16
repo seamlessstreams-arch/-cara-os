@@ -499,7 +499,7 @@ export default function RiAlertsPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={displayed} columns={ALERT_EXPORT_COLS} filename="ri-alerts" />
-          <PrintButton title="RI Alerts Report" subtitle="Chamberlain House Compliance" targetId="ri-alerts-content" />
+          <PrintButton title="RI Alerts Report" subtitle="Compliance" targetId="ri-alerts-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI Alerts — evidence upload" />
           <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

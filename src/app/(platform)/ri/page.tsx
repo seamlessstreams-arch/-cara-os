@@ -157,7 +157,7 @@ export default function RiHubPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Responsible Individual" subtitle="Chamberlain House — RI Oversight Dashboard" targetId="ri-content" />
+          <PrintButton title="Responsible Individual" subtitle="RI Oversight Dashboard" targetId="ri-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="RI — governance document upload" />
           <Link href="/ri/scorecard">
             <Button variant="outline" size="sm" className="gap-1.5">

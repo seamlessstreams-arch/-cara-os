@@ -534,7 +534,7 @@ export default function GovernanceReportsPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={REPORT_EXPORT_COLS} filename="governance-reports" />
-          <PrintButton title="Governance Reports" subtitle="Chamberlain House — RI Oversight" />
+          <PrintButton title="Governance Reports" subtitle="RI Oversight" />
           <Button
             size="sm"
             className="h-8 text-xs gap-1.5"

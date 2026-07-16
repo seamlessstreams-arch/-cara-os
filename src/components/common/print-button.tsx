@@ -11,6 +11,7 @@ import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Printer } from "lucide-react";
+import { useHomeName } from "@/hooks/use-home-profile";
 
 interface PrintButtonProps {
   title: string;
@@ -30,6 +31,10 @@ export function PrintButton({
   size = "sm",
   targetId,
 }: PrintButtonProps) {
+  // The home's real name — one source for every printout. In a live tenant
+  // before provisioning this is the neutral fallback, never the demo name.
+  const homeName = useHomeName();
+
   const handlePrint = useCallback(() => {
     const now = new Date();
     const dateStr = now.toLocaleDateString("en-GB", {
@@ -123,7 +128,7 @@ export function PrintButton({
             ${subtitle ? `<p style="font-size:10pt;color:#666;margin:4px 0 0;">${subtitle}</p>` : ""}
           </div>
           <div style="text-align:right;font-size:9pt;color:#666;">
-            <div>Chamberlain House — Cara</div>
+            <div>${homeName} — Cara</div>
             <div>${dateStr}</div>
             <div>Printed at ${timeStr}</div>
           </div>
@@ -138,7 +143,7 @@ export function PrintButton({
       const footer = document.createElement("div");
       footer.className = "print-footer";
       footer.style.cssText = "position:fixed;bottom:0;left:0;right:0;border-top:1px solid #ccc;padding-top:4px;font-size:8pt;color:#999;display:flex;justify-content:space-between;";
-      footer.innerHTML = `<span>Cara — Chamberlain House</span><span>Printed ${dateStr} ${timeStr}</span>`;
+      footer.innerHTML = `<span>Cara — ${homeName}</span><span>Printed ${dateStr} ${timeStr}</span>`;
       wrapper.appendChild(footer);
 
       // Add to DOM
@@ -158,7 +163,10 @@ export function PrintButton({
     } else {
       window.print();
     }
-  }, [title, subtitle, targetId]);
+    // homeName in the deps matters: the profile query resolves AFTER first
+    // render, and without it handlePrint would close over the pre-fetch
+    // fallback and print "This home" forever.
+  }, [title, subtitle, targetId, homeName]);
 
   return (
     <Button

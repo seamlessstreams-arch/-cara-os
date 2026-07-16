@@ -450,7 +450,7 @@ export default function TrainingPage() {
       actions={
         <div className="flex gap-2">
           <ExportButton<TrainingRecord> filename="training-export" data={filtered} columns={TRAINING_EXPORT_COLS} label="Export" />
-          <PrintButton title="Training Records" subtitle="Chamberlain House — Staff Training & Compliance" targetId="training-content" />
+          <PrintButton title="Training Records" subtitle="Staff Training & Compliance" targetId="training-content" />
           <SmartUploadButton variant="inline" label="Upload Certificate" uploadContext="Training — certificate upload" />
           <Button size="sm" className="gap-1.5" onClick={() => setShowAdd(true)}>
             <Plus className="h-3.5 w-3.5" />

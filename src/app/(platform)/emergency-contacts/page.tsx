@@ -10,6 +10,7 @@
 // All contacts reviewed monthly — Reg 44 visitor should check accuracy.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -113,6 +114,7 @@ const NEXT_REVIEW   = d(18);
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function EmergencyContactsPage() {
+  const homeName = useHomeName();
   // ── React Query ────────────────────────────────────────────────────────────
   const query = useEmergencyChildContacts();
   const createMutation = useCreateEmergencyChildContact();
@@ -262,7 +264,7 @@ export default function EmergencyContactsPage() {
     return (
       <PageShell
         title="Emergency Contacts Board"
-        subtitle="Key contacts for Chamberlain House — print and display in office"
+        subtitle={`Key contacts for ${homeName} — print and display in office`}
         showQuickCreate={false}
       >
         <div className="flex items-center justify-center py-24">
@@ -275,11 +277,11 @@ export default function EmergencyContactsPage() {
   return (
     <PageShell
       title="Emergency Contacts Board"
-      subtitle="Key contacts for Chamberlain House — print and display in office"
+      subtitle={`Key contacts for ${homeName} — print and display in office`}
       caraContext={{ pageTitle: "Emergency Contacts Board", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Emergency Contacts Board" subtitle="Chamberlain House" targetId="emergency-board" />
+          <PrintButton title="Emergency Contacts Board" targetId="emergency-board" />
           <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -111,6 +112,7 @@ const ALL_METRICS = METRIC_GROUPS.flatMap((g) => g.metrics);
 function clamp(v: number, min: number, max: number) { return Math.min(max, Math.max(min, Math.round(v))); }
 
 export default function ScorecardPage() {
+  const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const [cara, setCara] = useState<StrategicResult | null>(null);
@@ -179,12 +181,12 @@ export default function ScorecardPage() {
   return (
     <PageShell
       title="Governance Scorecard"
-      subtitle="15 live governance metrics — Chamberlain House"
+      subtitle={`15 live governance metrics — ${homeName}`}
       caraContext={{ pageTitle: "RI Governance Scorecard", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Governance Scorecard" subtitle="Chamberlain House — RI Report" targetId="scorecard-content" />
+          <PrintButton title="Governance Scorecard" subtitle="RI Report" targetId="scorecard-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI Scorecard — governance evidence upload" />
           <Button size="sm" className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white" onClick={generateStrategic} disabled={loading}>
             <Sparkles className="h-3.5 w-3.5" />

@@ -359,7 +359,7 @@ export default function CandidateDetailPage() {
             {candidate.stage === "appointed" && (
               <AppointToStaffButton candidateId={candidate.id} onAppointed={() => refetch()} />
             )}
-            <PrintButton title={`${candidate.first_name} ${candidate.last_name}`} subtitle="Chamberlain House — Candidate Profile" targetId="candidate-detail-content" />
+            <PrintButton title={`${candidate.first_name} ${candidate.last_name}`} subtitle="Candidate Profile" targetId="candidate-detail-content" />
             <ComplianceRing score={candidate.compliance_score} />
             <SmartUploadButton
               variant="icon"

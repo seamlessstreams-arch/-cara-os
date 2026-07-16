@@ -199,7 +199,7 @@ export default function CandidatesPage() {
       caraContext={{ pageTitle: "Recruitment Candidates", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="All Candidates" subtitle="Chamberlain House — Recruitment Pipeline" targetId="candidates-content" />
+          <PrintButton title="All Candidates" subtitle="Recruitment Pipeline" targetId="candidates-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Recruitment Candidates — CV or application upload" />
           <Button className="bg-slate-900 text-white hover:bg-slate-700 rounded-xl" size="sm" disabled title="New candidates are added when they apply via your recruitment portal or are entered by HR.">
             <Plus className="h-4 w-4 mr-1.5" /> Add Candidate

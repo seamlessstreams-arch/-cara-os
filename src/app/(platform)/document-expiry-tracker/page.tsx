@@ -159,7 +159,7 @@ export default function DocumentExpiryTrackerPage() {
       caraContext={{ pageTitle: "Document Expiry Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Document Expiry Tracker" subtitle="Chamberlain House — Compliance Management" />
+          <PrintButton title="Document Expiry Tracker" subtitle="Compliance Management" />
           <ExportButton data={filtered} columns={exportCols} filename="document-expiry-tracker" />
           <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

@@ -220,7 +220,7 @@ export default function AuditDetailPage({
       subtitle={`${CATEGORY_LABELS[audit.category] ?? audit.category} audit — ${formatDate(audit.date)}`}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title={audit.title || "Audit Report"} subtitle="Chamberlain House — Audit Record" targetId="audit-detail-content" />
+          <PrintButton title={audit.title || "Audit Report"} subtitle="Audit Record" targetId="audit-detail-content" />
           <SmartUploadButton variant="icon" uploadContext={`Audit: ${audit.title} — supporting evidence or action plan upload`} />
           <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => router.push("/audits")}>
             <ChevronLeft className="h-3.5 w-3.5" />All audits

@@ -275,7 +275,7 @@ export default function SupervisionDetailPage({
       caraContext={{ pageTitle: "Recent Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Supervision Record" subtitle="Chamberlain House — Supervision Session" targetId="supervision-detail-content" />
+          <PrintButton title="Supervision Record" subtitle="Supervision Session" targetId="supervision-detail-content" />
           <SmartUploadButton variant="icon" linkedStaffId={sup.staff_id} uploadContext={`Supervision — ${staffName} supporting evidence or certificate upload`} />
           <Button
             variant="outline"

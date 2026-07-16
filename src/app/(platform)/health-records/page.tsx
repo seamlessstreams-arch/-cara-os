@@ -199,7 +199,7 @@ export default function HealthRecordsPage() {
       caraContext={{ pageTitle: "Health Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Health Records" subtitle="Chamberlain House — Health & Welfare" />
+          <PrintButton title="Health Records" subtitle="Health & Welfare" />
           <ExportButton data={filtered} columns={exportCols} filename="health-records" />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Record

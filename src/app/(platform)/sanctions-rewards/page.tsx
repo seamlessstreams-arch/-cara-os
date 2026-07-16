@@ -189,7 +189,7 @@ export default function SanctionsRewardsPage() {
       caraContext={{ pageTitle: "Sanctions & Rewards", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Sanctions & Rewards" subtitle="Chamberlain House — Behaviour Management" />
+          <PrintButton title="Sanctions & Rewards" subtitle="Behaviour Management" />
           <ExportButton data={filtered} columns={exportCols} filename="sanctions-rewards" />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Entry

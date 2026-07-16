@@ -780,7 +780,7 @@ export default function RecruitmentPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={candidates} columns={CANDIDATE_EXPORT_COLS} filename="recruitment" />
-          <PrintButton title="Recruitment" subtitle="Chamberlain House — Safer Recruitment Pipeline" targetId="recruitment-content" />
+          <PrintButton title="Recruitment" subtitle="Safer Recruitment Pipeline" targetId="recruitment-content" />
           <Button variant="outline" size="sm" onClick={() => setActiveTab("candidates")}>
             <Filter className="h-3.5 w-3.5 mr-1" />Filter
           </Button>

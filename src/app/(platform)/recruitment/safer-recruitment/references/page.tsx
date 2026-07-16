@@ -242,7 +242,7 @@ export default function ReferencesPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="References" subtitle="Chamberlain House — Candidate Reference Tracker" targetId="references-content" />
+          <PrintButton title="References" subtitle="Candidate Reference Tracker" targetId="references-content" />
           <SmartUploadButton variant="inline" label="Upload Reference" uploadContext="Safer Recruitment — candidate reference document upload" />
         </div>
       }
