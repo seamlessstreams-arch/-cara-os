@@ -817,7 +817,7 @@ export default function TrainingNeedsPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={TRAINING_NEED_EXPORT_COLS} filename="training-needs" />
-          <PrintButton title="Training Needs" subtitle="Chamberlain House — Training Needs Analysis" targetId="training-needs-content" />
+          <PrintButton title="Training Needs" subtitle="Training Needs Analysis" targetId="training-needs-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Learning — Training Needs evidence upload" />
           <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5" />

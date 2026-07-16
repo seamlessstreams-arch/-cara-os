@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -36,12 +37,13 @@ const CAT_META: Record<LocalOfferCategory, { label: string; color: string; icon:
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function LocalOfferPage() {
+  const homeName = useHomeName();
   const { data: records = [], isLoading } = useLocalOfferSections();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
-      <PageShell title="Local Offer" subtitle="What Chamberlain House Offers · Our Strengths · Our Commitments">
+      <PageShell title="Local Offer" subtitle={`What ${homeName} Offers · Our Strengths · Our Commitments`}>
         <div className="flex items-center justify-center py-24">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -52,7 +54,7 @@ export default function LocalOfferPage() {
   return (
     <PageShell
       title="Local Offer"
-      subtitle="What Chamberlain House Offers · Our Strengths · Our Commitments"
+      subtitle={`What ${homeName} Offers · Our Strengths · Our Commitments`}
       caraContext={{ pageTitle: "Local Offer", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">

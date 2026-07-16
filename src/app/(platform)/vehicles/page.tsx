@@ -938,7 +938,7 @@ export default function VehiclesPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={raw?.data?.vehicles ?? []} columns={VEHICLE_EXPORT_COLS} filename="vehicles" />
-          <PrintButton title="Vehicles" subtitle="Chamberlain House — Vehicle Fleet Management" targetId="vehicles-content" />
+          <PrintButton title="Vehicles" subtitle="Vehicle Fleet Management" targetId="vehicles-content" />
           <SmartUploadButton variant="inline" label="Upload Certificate" uploadContext="Vehicles — MOT/service/insurance certificate upload" />
           <Button size="sm" onClick={() => setShowCheckForm(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Log Check

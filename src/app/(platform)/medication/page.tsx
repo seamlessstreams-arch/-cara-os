@@ -1470,7 +1470,7 @@ export default function MedicationPage() {
             data={medications}
             label="Export"
           />
-          <PrintButton title="Medication Administration Record" subtitle="Chamberlain House — MAR Chart" />
+          <PrintButton title="Medication Administration Record" subtitle="MAR Chart" />
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-3.5 w-3.5" />Refresh
           </Button>

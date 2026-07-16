@@ -150,7 +150,7 @@ export default function ChecksPage() {
       caraContext={{ pageTitle: "Single Central Record — Compliance Checks", sourceType: "staff" }}
       actions={
         <div className="flex gap-2">
-          <PrintButton title="Compliance Checks" subtitle="Chamberlain House — Single Central Record" targetId="sr-checks-content" />
+          <PrintButton title="Compliance Checks" subtitle="Single Central Record" targetId="sr-checks-content" />
           <SmartUploadButton variant="inline" label="Upload Check Document" uploadContext="Safer Recruitment — compliance check document or certificate upload" />
           <Button variant="outline" size="sm" className="rounded-xl text-xs" disabled title="SCR grid export is available from the Audit page.">
             <Download className="h-3.5 w-3.5 mr-1.5" /> Export Grid

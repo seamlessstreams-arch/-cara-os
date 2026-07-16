@@ -99,7 +99,7 @@ export default function StaffPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton<StaffEnriched> filename="staff-export" data={filtered} columns={STAFF_EXPORT_COLS} label="Export" />
-          <PrintButton title="Staff" subtitle="Chamberlain House — Staff Directory" targetId="staff-content" />
+          <PrintButton title="Staff" subtitle="Staff Directory" targetId="staff-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Staff — HR document upload" />
           <Button size="sm" disabled title="Staff records are managed in your HR system.">
             <Plus className="h-3.5 w-3.5" /> Add Staff Member

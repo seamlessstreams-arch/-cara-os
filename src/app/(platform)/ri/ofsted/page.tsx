@@ -127,7 +127,7 @@ export default function OfstedReadinessPage() {
         <div className="flex items-center gap-2">
           <PrintButton
             title="Ofsted Readiness"
-            subtitle="Chamberlain House — Inspection Preparation"
+            subtitle="Inspection Preparation"
             targetId="ofsted-content"
           />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Ofsted readiness — inspection evidence upload" />

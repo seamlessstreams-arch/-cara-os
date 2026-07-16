@@ -698,7 +698,7 @@ export default function SupervisionPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton<Supervision> filename="supervision-export" data={filteredRecords} columns={SUPERVISION_EXPORT_COLS} label="Export" />
-          <PrintButton title="Supervision Records" subtitle="Chamberlain House — Staff Supervision Log" targetId="supervision-content" />
+          <PrintButton title="Supervision Records" subtitle="Staff Supervision Log" targetId="supervision-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Supervision — evidence/notes upload" />
           <Button size="sm" onClick={() => setScheduleOpen(true)}>
             <Plus className="h-3.5 w-3.5" />Schedule Supervision

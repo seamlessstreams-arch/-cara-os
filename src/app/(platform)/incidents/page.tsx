@@ -1312,7 +1312,7 @@ export default function IncidentsPage() {
       quickCreateContext={{ module: "incidents", defaultTaskCategory: "safeguarding", defaultFormType: "safeguarding_referral" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Incident Report" subtitle="Chamberlain House — Incident Records" targetId="incidents-content" />
+          <PrintButton title="Incident Report" subtitle="Incident Records" targetId="incidents-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Incidents — evidence upload" />
           <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
           <Button

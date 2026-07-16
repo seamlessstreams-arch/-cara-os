@@ -161,7 +161,7 @@ export default function StaffHandbookAcknowledgementsPage() {
       caraContext={{ pageTitle: "Staff Handbook Acknowledgements", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Staff Handbook Acknowledgements" subtitle="Chamberlain House — Document Acknowledgement Records" />
+          <PrintButton title="Staff Handbook Acknowledgements" subtitle="Document Acknowledgement Records" />
           <ExportButton data={filtered} columns={exportCols} filename="staff-handbook-acknowledgements" />
           <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

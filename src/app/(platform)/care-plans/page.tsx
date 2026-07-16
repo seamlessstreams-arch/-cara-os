@@ -689,7 +689,7 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredPlans} columns={CARE_PLAN_EXPORT_COLS} filename="care-plans" />
-          <PrintButton title="Care Plans" subtitle="Chamberlain House — Statutory Care Plan Overview" targetId="care-plans-content" />
+          <PrintButton title="Care Plans" subtitle="Statutory Care Plan Overview" targetId="care-plans-content" />
           <SmartUploadButton
             variant="inline"
             label="Upload Care Plan"

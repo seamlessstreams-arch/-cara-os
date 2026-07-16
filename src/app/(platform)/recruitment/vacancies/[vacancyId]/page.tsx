@@ -191,7 +191,7 @@ export default function VacancyDetailPage({
       caraContext={{ pageTitle: "Chamberlain House — Vacancy Detail", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title={vacancy.title} subtitle="Chamberlain House — Vacancy Detail" targetId="vacancy-detail-content" />
+          <PrintButton title={vacancy.title} subtitle="Vacancy Detail" targetId="vacancy-detail-content" />
           <SmartUploadButton variant="icon" uploadContext={`Vacancy: ${vacancy.title} — job description, application or supporting document upload`} />
           <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => router.push("/recruitment")}>
             <ChevronLeft className="h-3.5 w-3.5" />All vacancies

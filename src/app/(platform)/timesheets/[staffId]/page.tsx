@@ -238,7 +238,7 @@ export default function TimesheetDetailPage({
       subtitle={`${staff.job_title} · ${staff.contracted_hours}h/wk contracted · Last 14 days`}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title={`${staff.full_name} — Timesheet`} subtitle="Chamberlain House — Staff Timesheet" targetId="timesheet-detail-content" />
+          <PrintButton title={`${staff.full_name} — Timesheet`} subtitle="Staff Timesheet" targetId="timesheet-detail-content" />
           <SmartUploadButton variant="icon" linkedStaffId={staff.id} uploadContext={`Timesheets — ${staff.full_name} timesheet or payroll document upload`} />
           <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => router.push("/timesheets")}>
             <ChevronLeft className="h-3.5 w-3.5" />All timesheets

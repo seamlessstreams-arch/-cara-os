@@ -897,7 +897,7 @@ export default function MissingFromCarePage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Missing from Care Log" subtitle="Chamberlain House — Missing Episodes & Return Interviews" targetId="mfc-content" />
+          <PrintButton title="Missing from Care Log" subtitle="Missing Episodes & Return Interviews" targetId="mfc-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Missing From Care — return interview or episode upload" />
           <CaraStudioQuickActionButton context={{ record_type: "missing_from_care", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

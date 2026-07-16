@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -1190,6 +1191,7 @@ function getDashboardConfig(role: AppRole): DashboardConfig {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const { role }        = usePermissions();
   const config          = getDashboardConfig(role);
@@ -1273,7 +1275,7 @@ export default function DashboardPage() {
   return (
     <PageShell
       title={`${getGreeting()}, ${currentUser?.first_name ?? "Darren"}`}
-      subtitle={`${formatLiveDate()} · Chamberlain House · ${d ? d.young_people.current.length : 3} young people in placement`}
+      subtitle={`${formatLiveDate()} · ${homeName} · ${d ? d.young_people.current.length : 3} young people in placement`}
       quickCreateContext={{ module: "dashboard" }}
       actions={pageActions}
       caraContext={{ sourceType: "general", pageTitle: "Command Centre" }}

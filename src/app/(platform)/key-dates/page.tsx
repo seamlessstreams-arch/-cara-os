@@ -312,7 +312,7 @@ export default function KeyDatesPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={KEY_DATE_EXPORT_COLS} filename="key-dates" />
-          <PrintButton title="Key Dates" subtitle="Chamberlain House — Key Dates & Deadlines" targetId="key-dates-content" />
+          <PrintButton title="Key Dates" subtitle="Key Dates & Deadlines" targetId="key-dates-content" />
           <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }

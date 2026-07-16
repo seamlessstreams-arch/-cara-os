@@ -612,7 +612,7 @@ export default function Reg45Page() {
         <div className="flex items-center gap-2">
           <PrintButton
             title="Reg 45 Reports"
-            subtitle="Chamberlain House — Independent Person Reports"
+            subtitle="Independent Person Reports"
             targetId="reg45-content"
           />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI — Regulation 45 evidence upload" />

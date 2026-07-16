@@ -335,7 +335,7 @@ export default function PocketMoneyPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={PM_EXPORT_COLS} filename="pocket-money" />
-          <PrintButton title="Pocket Money" subtitle="Chamberlain House — Financial Records" />
+          <PrintButton title="Pocket Money" subtitle="Financial Records" />
           <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5" />
             Record Transaction

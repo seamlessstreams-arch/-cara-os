@@ -1129,11 +1129,11 @@ export default function WeeklyOverviewPage() {
   return (
     <PageShell
       title="Weekly Intelligence Overview"
-      subtitle="Chamberlain House — management snapshot for the week"
+      subtitle="management snapshot for the week"
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Weekly Intelligence Overview" subtitle="Chamberlain House — Weekly Management Snapshot" targetId="weekly-overview-content" />
+          <PrintButton title="Weekly Intelligence Overview" subtitle="Weekly Management Snapshot" targetId="weekly-overview-content" />
           <SmartUploadButton variant="inline" label="Upload Weekly Summary" uploadContext="Intelligence — weekly overview supporting document upload" />
         </div>
       }

@@ -119,7 +119,7 @@ export default function WorkforceSupervisionPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredStaff} columns={SUPERVISION_HUB_EXPORT_COLS} filename="supervision-hub" />
-          <PrintButton title="Supervision Hub" subtitle="Chamberlain House — Reg 34 Compliance" targetId="supervision-hub-content" />
+          <PrintButton title="Supervision Hub" subtitle="Reg 34 Compliance" targetId="supervision-hub-content" />
           <SmartUploadButton variant="inline" label="Upload Notes" uploadContext="Workforce Supervision — supervision notes or agenda upload" />
           <Link href="/supervision">
             <Button size="sm" className="gap-1.5">

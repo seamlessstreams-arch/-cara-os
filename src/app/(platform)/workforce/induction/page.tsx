@@ -406,7 +406,7 @@ export default function InductionTrackerPage() {
           <ExportButton data={filtered} columns={INDUCTION_EXPORT_COLS} filename="induction-records" />
           <PrintButton
             title="Induction Records"
-            subtitle="Chamberlain House — Staff Induction Tracker"
+            subtitle="Staff Induction Tracker"
             targetId="induction-content"
           />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Induction — staff induction evidence or certificate upload" />

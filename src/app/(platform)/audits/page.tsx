@@ -309,7 +309,7 @@ export default function AuditsPage() {
         actions={
           <div className="flex gap-2">
             <ExportButton<Audit> filename="audits-export" data={filtered} columns={AUDIT_EXPORT_COLS} label="Export" />
-            <PrintButton title="Audits & Quality Assurance" subtitle="Chamberlain House — Audit Schedule & Compliance" targetId="audits-content" />
+            <PrintButton title="Audits & Quality Assurance" subtitle="Audit Schedule & Compliance" targetId="audits-content" />
             <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
             <SmartUploadButton variant="inline" label="Upload" uploadContext="Audits — evidence upload" />
             <Button size="sm" onClick={() => setShowNew(true)}>
