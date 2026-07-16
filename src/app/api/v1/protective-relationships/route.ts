@@ -8,7 +8,8 @@ import {
   analyseChildRelationships,
   buildRelationshipsOverview,
 } from "@/lib/protective-relationships/protective-relationships-engine";
-import type { RelationshipEntry } from "@/lib/protective-relationships/types";
+import type { ContactFrequency, ConvoyCircle, EmotionalCloseness, RelationshipEntry } from "@/lib/protective-relationships/types";
+import { computeSocialConvoy } from "@/lib/protective-relationships/social-convoy-engine";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,13 @@ function childrenList() {
 }
 
 const str = (v: unknown): string => (typeof v === "string" ? v : "");
+
+// Convoy union fields: accept only known values; anything else means "not set".
+const CIRCLES: ConvoyCircle[] = ["inner", "middle", "outer"];
+const CLOSENESS: EmotionalCloseness[] = ["high", "medium", "low"];
+const FREQUENCY: ContactFrequency[] = ["daily", "weekly", "monthly", "rare", "none"];
+const oneOf = <T extends string>(v: unknown, allowed: T[]): T | null =>
+  typeof v === "string" && (allowed as string[]).includes(v) ? (v as T) : null;
 
 /**
  * GET /api/v1/protective-relationships            → whole-home overview + alerts
@@ -47,7 +55,9 @@ export async function GET(req: NextRequest) {
         (store.missingEpisodes ?? []).filter((m: { child_id: string }) => m.child_id === childId),
         now,
       );
-      return NextResponse.json({ data: { childId, childName: getYPName(childId), entries, analysis } });
+      // Convoy view over the same records: circles + network-shape detections.
+      const convoy = computeSocialConvoy(childId, entries, new Date(now));
+      return NextResponse.json({ data: { childId, childName: getYPName(childId), entries, analysis, convoy } });
     }
 
     const overview = buildRelationshipsOverview({
@@ -92,6 +102,12 @@ export async function POST(req: NextRequest) {
       restrictions: str(body.restrictions),
       linked_record_ids: Array.isArray(body.linked_record_ids) ? body.linked_record_ids.map(String) : [],
       review_date: body.review_date ? String(body.review_date) : null,
+      circle: oneOf(body.circle, CIRCLES),
+      emotional_closeness: oneOf(body.emotional_closeness, CLOSENESS),
+      contact_frequency: oneOf(body.contact_frequency, FREQUENCY),
+      last_meaningful_contact: body.last_meaningful_contact ? String(body.last_meaningful_contact) : null,
+      desired_future: str(body.desired_future),
+      uncertainty: str(body.uncertainty),
       status: "active",
       created_at: now,
       updated_at: now,
@@ -114,6 +130,9 @@ export async function PATCH(req: NextRequest) {
     const actor = String(req.headers.get("x-user-id") ?? body.updated_by ?? "staff_unknown");
     const patch: Partial<RelationshipEntry> = { ...body, updated_by: actor };
     delete (patch as { id?: string }).id;
+    if ("circle" in body) patch.circle = oneOf(body.circle, CIRCLES);
+    if ("emotional_closeness" in body) patch.emotional_closeness = oneOf(body.emotional_closeness, CLOSENESS);
+    if ("contact_frequency" in body) patch.contact_frequency = oneOf(body.contact_frequency, FREQUENCY);
     const updated = db.relationshipEntries.update(String(body.id), patch);
     if (!updated) return NextResponse.json({ error: "Relationship not found" }, { status: 404 });
     return NextResponse.json({ data: updated });
