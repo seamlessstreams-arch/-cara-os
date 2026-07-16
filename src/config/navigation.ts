@@ -687,6 +687,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Eye Health & Vision", href: "/intelligence/cara/eye-health-vision-care-intelligence", icon: "Eye", module: "young-people" },
       { label: "Infection Prevention & Control", href: "/intelligence/cara/infection-prevention-control-intelligence", icon: "ShieldCheck", module: "young-people" },
       { label: "Knowledge Base",    href: "/cara-knowledge-base",       icon: "BookOpen",       module: "safeguarding"  },
+      { label: "Knowledge Governance", href: "/intelligence/cara/knowledge-governance", icon: "BookMarked", module: "compliance" },
       { label: "Cara Toolkit",          href: "/cara-toolkit",                          icon: "LayoutGrid",  module: "dashboard"    },
       { label: "Admission Intelligence", href: "/intelligence/cara/admission-intelligence", icon: "UserPlus", module: "young-people" },
       { label: "Admission & Referrals",       href: "/intelligence/cara/admission-referral-intelligence",    icon: "UserPlus",      module: "young-people" },

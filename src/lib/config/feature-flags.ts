@@ -190,6 +190,15 @@ const FLAGS = {
     description:
       "Enable logging and progressing professional-challenge records (challenging an external agency's decision up the escalation ladder). Off = the challenge board is read-only over seeded/existing records; detections still compute.",
   },
+  knowledge_governance_write: {
+    key: "knowledge_governance_write",
+    env: "CARA_KNOWLEDGE_GOVERNANCE_WRITE",
+    polarity: "opt_in",
+    default: false,
+    stability: "experimental",
+    description:
+      "Enable recording knowledge-governance metadata (evidence status, reviewer, limitations, next review) over practice-KB entries. Off = the governance board is read-only over the seeded overlay; detections still compute.",
+  },
 } as const satisfies Record<string, FeatureFlag>;
 
 export type FlagKey = keyof typeof FLAGS;
