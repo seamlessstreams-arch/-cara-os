@@ -4,6 +4,7 @@
 // CARA — RI COMMAND CENTRE HUB
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -104,6 +105,7 @@ function FeatureCard({
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function RiHubPage() {
+  const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const { data: challengeData } = useRiChallengeLogs({ homeId: homeId });
@@ -152,7 +154,7 @@ export default function RiHubPage() {
   return (
     <PageShell
       title="RI Command Centre"
-      subtitle="Responsible Individual governance dashboard — Chamberlain House"
+      subtitle={`Responsible Individual governance dashboard — ${homeName}`}
       caraContext={{ pageTitle: "RI Oversight Dashboard", sourceType: "general" }}
       showQuickCreate={false}
       actions={
@@ -195,7 +197,7 @@ export default function RiHubPage() {
               </div>
               <div>
                 <h2 className="text-lg font-bold">RI Command Centre</h2>
-                <p className="text-sm text-[var(--cs-text-gentle)]">Strategic governance for Chamberlain House</p>
+                <p className="text-sm text-[var(--cs-text-gentle)]">{`Strategic governance for ${homeName}`}</p>
               </div>
             </div>
             <div className="text-right shrink-0">
@@ -221,7 +223,7 @@ export default function RiHubPage() {
             <MetricBar label="Child Voice" score={scores.child_voice_score} />
           </div>
           <div className="flex flex-wrap gap-2 pt-1 border-t border-white/10">
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-[var(--cs-text-gentle)]">Chamberlain House</span>
+            <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-[var(--cs-text-gentle)]">{`${homeName}`}</span>
             <span className="rounded-full bg-[var(--cs-navy)]/40 px-3 py-1 text-xs text-indigo-200">Reg 17 / Reg 44 / Reg 45</span>
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-[var(--cs-text-gentle)]">ILACS Framework</span>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -62,6 +63,7 @@ const STATUS_LABEL: Record<AdoptionStatus, string> = {
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function AdoptionSupportRecordsPage() {
+  const homeName = useHomeName();
   const { data: result, isLoading } = useAdoptionRecords();
   const records = result?.data ?? [];
 
@@ -152,7 +154,7 @@ export default function AdoptionSupportRecordsPage() {
           <Heart className="h-5 w-5 text-pink-600 mt-0.5" />
           <div>
             <p className="font-semibold">A positive permanence outcome</p>
-            <p className="text-xs mt-1">Adoption is one of several routes to permanence and, when it is the right plan, can offer a child a lifelong family. Chamberlain House&apos;s role is to prepare each child carefully — emotionally, practically and through life story work — so they arrive at their adoptive family with their history understood, their attachments honoured, and their voice heard. We hold transitions with care and continue to support the child where adopters welcome our involvement.</p>
+            <p className="text-xs mt-1">{`Adoption is one of several routes to permanence and, when it is the right plan, can offer a child a lifelong family. ${homeName}&apos;s role is to prepare each child carefully — emotionally, practically and through life story work — so they arrive at their adoptive family with their history understood, their attachments honoured, and their voice heard. We hold transitions with care and continue to support the child where adopters welcome our involvement.`}</p>
           </div>
         </div>
 
@@ -243,7 +245,7 @@ export default function AdoptionSupportRecordsPage() {
                       <div>
                         <p className="text-xs font-semibold mb-1 flex items-center gap-1"><Calendar className="h-3 w-3" />Key dates</p>
                         <ul className="text-xs space-y-0.5">
-                          <li><span className="text-muted-foreground">Arrived at Chamberlain House:</span> <strong>{r.arrival_date}</strong></li>
+                          <li><span className="text-muted-foreground">{`Arrived at ${homeName}:`}</span> <strong>{r.arrival_date}</strong></li>
                           <li><span className="text-muted-foreground">Placement order:</span> <strong>{r.placement_order_date || "—"}</strong></li>
                           <li><span className="text-muted-foreground">Matching panel:</span> <strong>{r.matching_panel_date || "—"}</strong></li>
                           <li><span className="text-muted-foreground">Local authority:</span> <strong>{r.local_authority}</strong></li>

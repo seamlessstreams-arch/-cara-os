@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -86,6 +87,7 @@ function CategoryBlock({ data, category }: { data: PremisesComplianceResult; cat
 }
 
 export default function PremisesCompliancePage() {
+  const homeName = useHomeName();
   const { data, isLoading, isFetching, refetch } = usePremisesCompliance();
   const s = data?.summary;
   const categories = data ? Array.from(new Set(data.items.map((i) => i.category))) : [];
@@ -111,7 +113,7 @@ export default function PremisesCompliancePage() {
           <>
             <Card>
               <CardContent className="py-4">
-                <div className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy)]"><Building2 className="h-4 w-4 text-[var(--cs-teal-strong)]" /> Chamberlain House — premises compliance</div>
+                <div className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy)]"><Building2 className="h-4 w-4 text-[var(--cs-teal-strong)]" />{` ${homeName} — premises compliance`}</div>
                 <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">{data.headline}</p>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                   <Stat value={s.compliance_rate != null ? `${s.compliance_rate}%` : "—"} label="In date" tone="bg-[var(--cs-success-bg)] border-[var(--cs-success-soft)] text-[var(--cs-success)]" Icon={ShieldCheck} />

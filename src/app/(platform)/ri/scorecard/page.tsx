@@ -163,7 +163,7 @@ export default function ScorecardPage() {
         {
           mode: "ri_strategic_analysis",
           style: "provider_summary",
-          source_content: `Chamberlain House governance scorecard (live data). Overall: ${overallScore}/100. Risk level: ${riskLevel}. ${urgentNeeds} urgent training needs. Metrics: ${ALL_METRICS.map((m) => `${m.label}: ${(scores as unknown as Record<string, number>)[m.key]}`).join(", ")}.`,
+          source_content: `${homeName} governance scorecard (live data). Overall: ${overallScore}/100. Risk level: ${riskLevel}. ${urgentNeeds} urgent training needs. Metrics: ${ALL_METRICS.map((m) => `${m.label}: ${(scores as unknown as Record<string, number>)[m.key]}`).join(", ")}.`,
           page_context: "RI Governance Scorecard",
           record_type: "governance_analysis",
           user_role: "responsible_individual",
@@ -206,7 +206,7 @@ export default function ScorecardPage() {
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-indigo-400 shrink-0" />
-              <span className="text-sm font-semibold text-white">Chamberlain House Governance</span>
+              <span className="text-sm font-semibold text-white">{`${homeName} Governance`}</span>
               <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold ml-auto", riskColour)}>
                 {riskLevel.toUpperCase()} RISK
               </span>

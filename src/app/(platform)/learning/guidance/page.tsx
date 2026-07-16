@@ -4,6 +4,7 @@
 // CARA — GUIDANCE NOTES GENERATOR
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -137,6 +138,7 @@ function GuidanceCard({ resource }: { resource: { id: string; title: string; sta
 }
 
 export default function GuidanceNotesPage() {
+  const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const [topic, setTopic] = useState("");
@@ -163,7 +165,7 @@ export default function GuidanceNotesPage() {
         {
           mode: "learning_guidance_note",
           style: "professional_formal",
-          source_content: `Topic: ${topic}. Pathway: ${pathway}. Additional context: ${context || "Standard residential children's home context. Chamberlain House."}`,
+          source_content: `Topic: ${topic}. Pathway: ${pathway}. Additional context: ${context || "Standard residential children's home context. ${homeName}."}`,
           page_context: "Guidance Notes Generator",
           record_type: "guidance_note",
           user_role: "registered_manager",

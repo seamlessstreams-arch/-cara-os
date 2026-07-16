@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -256,6 +257,7 @@ function StaffCard({
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function StaffDevelopmentPage() {
+  const homeName = useHomeName();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "at_risk" | "attention" | "on_track">("all");
@@ -309,7 +311,7 @@ export default function StaffDevelopmentPage() {
     const atRisk = profiles.filter((p) => p.status === "at_risk");
     const attention = profiles.filter((p) => p.status === "attention");
     const lines = [
-      `Staff development overview for Chamberlain House — ${profiles.length} active staff.`,
+      `Staff development overview for ${homeName} — ${profiles.length} active staff.`,
       `On track: ${summary?.on_track ?? 0} | Needs attention: ${summary?.needs_attention ?? 0} | At risk: ${summary?.at_risk ?? 0}`,
       `Average training compliance: ${summary?.avg_training_compliance ?? 0}%`,
       summary?.supervision_overdue

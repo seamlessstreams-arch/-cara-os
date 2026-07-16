@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -69,6 +70,7 @@ const PRINCIPLES = [
 /* ── page ──────────────────────────────────────────────────────────── */
 
 export default function RiskAppetiteStatementPage() {
+  const homeName = useHomeName();
   const { data: records = [], isLoading } = useRiskAppetiteDomains();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -99,7 +101,7 @@ export default function RiskAppetiteStatementPage() {
 
   if (isLoading) {
     return (
-      <PageShell title="Risk Appetite Statement" subtitle="Framework for balancing proportionate risk-taking with safeguarding at Chamberlain House">
+      <PageShell title="Risk Appetite Statement" subtitle={`Framework for balancing proportionate risk-taking with safeguarding at ${homeName}`}>
         <div className="flex items-center justify-center py-24">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -110,7 +112,7 @@ export default function RiskAppetiteStatementPage() {
   return (
     <PageShell
       title="Risk Appetite Statement"
-      subtitle="Framework for balancing proportionate risk-taking with safeguarding at Chamberlain House"
+      subtitle={`Framework for balancing proportionate risk-taking with safeguarding at ${homeName}`}
       caraContext={{ pageTitle: "Risk Appetite Statement", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">

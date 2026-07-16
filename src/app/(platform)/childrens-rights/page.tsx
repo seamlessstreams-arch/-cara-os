@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -36,6 +37,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function ChildrensRightsPage() {
+  const homeName = useHomeName();
   const { data: records = [], isLoading } = useChildrensRights();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -45,7 +47,7 @@ export default function ChildrensRightsPage() {
 
   if (isLoading) {
     return (
-      <PageShell title="Children's Rights" subtitle="UNCRC · Rights-Based Practice · How We Uphold Children's Rights at Chamberlain House">
+      <PageShell title="Children's Rights" subtitle={`UNCRC · Rights-Based Practice · How We Uphold Children's Rights at ${homeName}`}>
         <div className="flex items-center justify-center py-24">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -56,7 +58,7 @@ export default function ChildrensRightsPage() {
   return (
     <PageShell
       title="Children's Rights"
-      subtitle="UNCRC · Rights-Based Practice · How We Uphold Children's Rights at Chamberlain House"
+      subtitle={`UNCRC · Rights-Based Practice · How We Uphold Children's Rights at ${homeName}`}
       caraContext={{ pageTitle: "Children's Rights", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
@@ -72,7 +74,7 @@ export default function ChildrensRightsPage() {
             <Shield className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
             <div className="text-sm">
               <p className="font-semibold text-blue-800">United Nations Convention on the Rights of the Child (UNCRC)</p>
-              <p className="text-blue-700">Chamberlain House is committed to upholding the rights of every child in our care. This charter sets out how we meet the key UNCRC articles relevant to residential care, with evidence, children&apos;s own feedback, and identified actions. This document is reviewed quarterly by the Registered Manager and shared with the Reg 44 Visitor and Ofsted upon request.</p>
+              <p className="text-blue-700">{`${homeName} is committed to upholding the rights of every child in our care. This charter sets out how we meet the key UNCRC articles relevant to residential care, with evidence, children&apos;s own feedback, and identified actions. This document is reviewed quarterly by the Registered Manager and shared with the Reg 44 Visitor and Ofsted upon request.`}</p>
             </div>
           </div>
         </div>
