@@ -50,6 +50,7 @@ import type { DocVersionRecord } from "@/lib/doc-versioning/doc-versioning-engin
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
 import type { RelationshipEntry } from "@/lib/protective-relationships/types";
+import type { VoiceConcernLoop } from "@/lib/voice-of-child/voice-follow-through-engine";
 import type {
   CommsChannel,
   CommsChannelMember,
@@ -800,6 +801,38 @@ const STAYING_SAFE_PLANS_SEED: StayingSafePlan[] = [
 ];
 
 // ── Protective Relationships (seed) ──────────────────────────────────────────
+// Child-voice concern loops (§5.2 follow-through). One mid-loop with repeat
+// raises (the Scenario J shape), one closed end-to-end so the positive shows.
+const VOICE_CONCERN_LOOPS_SEED: VoiceConcernLoop[] = [
+  {
+    id: "vloop_alex_room", child_id: "yp_alex", home_id: "home_oak",
+    concern: "People come into my room without knocking",
+    raised_via: "Key work session",
+    raised_dates: [daysFromNow(-24), daysFromNow(-6)],
+    stage: "considered", stage_changed_at: daysFromNow(-20),
+    owner_id: null, agreed_action: "", task_id: null,
+    explain_back_note: "", explained_at: null,
+    review_with_child_note: "", reviewed_at: null,
+    created_at: daysFromNow(-24), updated_at: daysFromNow(-6),
+    created_by: "staff_priya", updated_by: "staff_priya",
+  },
+  {
+    id: "vloop_casey_food", child_id: "yp_casey", home_id: "home_oak",
+    concern: "I want to help plan the food shop",
+    raised_via: "House meeting",
+    raised_dates: [daysFromNow(-40)],
+    stage: "closed", stage_changed_at: daysFromNow(-12),
+    owner_id: "staff_diane", agreed_action: "Casey joins the weekly shop planning on Mondays",
+    task_id: null,
+    explain_back_note: "Told Casey the Monday planning slot is theirs, starting next week",
+    explained_at: daysFromNow(-19),
+    review_with_child_note: "Casey said it feels good choosing meals; wants to keep it",
+    reviewed_at: daysFromNow(-12),
+    created_at: daysFromNow(-40), updated_at: daysFromNow(-12),
+    created_by: "staff_diane", updated_by: "staff_diane",
+  },
+];
+
 const RELATIONSHIP_ENTRIES_SEED: RelationshipEntry[] = [
   {
     id: "rel_alex_mirela", child_id: "yp_alex", home_id: "home_oak",
@@ -878,6 +911,7 @@ const store = {
   stayingSafePlans: [...STAYING_SAFE_PLANS_SEED] as StayingSafePlan[],
   // Protective Relationships Map entries.
   relationshipEntries: [...RELATIONSHIP_ENTRIES_SEED] as RelationshipEntry[],
+  voiceConcernLoops: [...VOICE_CONCERN_LOOPS_SEED] as VoiceConcernLoop[],
   // Canonical persisted event spine (forms-as-views write path). Empty by default —
   // the read-only projection of domain collections is unchanged until events are captured here.
   cornerstoneEvents: [] as CornerstoneEvent[],
