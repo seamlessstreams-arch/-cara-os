@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState } from "react";
 import {
   FileText, Edit, CheckCircle2,
@@ -125,6 +126,7 @@ const SECTIONS: SoPSection[] = [
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function StatementOfPurposePage() {
+  const homeName = useHomeName();
   const [expanded, setExpanded] = useState<string | null>("range");
 
   const lastFullReview = "2026-01-15";
@@ -139,7 +141,7 @@ export default function StatementOfPurposePage() {
       caraContext={{ pageTitle: "Statement of Purpose", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Statement of Purpose — Chamberlain House" />
+          <PrintButton title={`Statement of Purpose — ${homeName}`} />
           <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
@@ -150,7 +152,7 @@ export default function StatementOfPurposePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground text-xs">Home Name</p>
-              <p className="font-bold text-lg">Chamberlain House</p>
+              <p className="font-bold text-lg">{`${homeName}`}</p>
             </div>
             <div>
               <p className="text-muted-foreground text-xs">Registered Manager</p>

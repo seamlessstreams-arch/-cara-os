@@ -4,6 +4,7 @@
 // CARA — Cara OVERSIGHT RADAR
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo, useEffect } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -158,6 +159,7 @@ function RadarItemCard({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function OversightRadarPage() {
+  const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const createTask = useCreateTask();
@@ -222,7 +224,7 @@ export default function OversightRadarPage() {
 
       const childLabel = youngPeople.find((y) => y.id === selectedChild)?.name ?? "Whole Home";
       const lines: string[] = [
-        `## Chamberlain House Oversight Radar Scan`,
+        `## ${homeName} Oversight Radar Scan`,
         `Scope: ${childLabel}`,
         `Date: ${new Date().toISOString()}`,
         "",

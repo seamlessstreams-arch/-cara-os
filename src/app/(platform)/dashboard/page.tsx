@@ -1473,7 +1473,7 @@ export default function DashboardPage() {
               <CheckCircle2 className="h-6 w-6 text-[--cs-success] shrink-0" />
               <div>
                 <p className="text-sm font-semibold text-[--cs-success]">All clear — no immediate attention items</p>
-                <p className="text-xs text-[--cs-success] mt-0.5">Chamberlain House is running smoothly. Keep it up.</p>
+                <p className="text-xs text-[--cs-success] mt-0.5">{`${homeName} is running smoothly. Keep it up.`}</p>
               </div>
             </div>
           )}

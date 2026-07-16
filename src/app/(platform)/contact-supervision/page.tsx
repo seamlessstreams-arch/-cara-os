@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState } from "react";
 import {
   ChevronDown,
@@ -92,6 +93,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function ContactSupervisionPage() {
+  const homeName = useHomeName();
   const { data, isLoading } = useContactSupervisionSessions();
   const sessions = data?.data ?? [];
   const createSession = useCreateContactSupervisionSession();
@@ -438,7 +440,7 @@ export default function ContactSupervisionPage() {
             </div>
             <div>
               <label className="text-sm font-medium">Venue</label>
-              <input value={formVenue} onChange={(e) => setFormVenue(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Contact Centre, Chamberlain House" />
+              <input value={formVenue} onChange={(e) => setFormVenue(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder={`e.g. Contact Centre, ${homeName}`} />
             </div>
             <div>
               <label className="text-sm font-medium">Outcome</label>

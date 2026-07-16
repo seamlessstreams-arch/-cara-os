@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -57,6 +58,7 @@ const SKILL_CLR: Record<PathwaySkillLevel, string> = {
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function PathwayPlan16PlusPage() {
+  const homeName = useHomeName();
   const { data: res, isLoading } = usePathwayPlans();
   const plans: PathwayPlan[] = res?.data ?? [];
 
@@ -516,7 +518,7 @@ export default function PathwayPlan16PlusPage() {
           <form onSubmit={handleSavePlan} className="space-y-3 py-2">
             <div><Label>Young Person *</Label><Select value={ppForm.child_id} onValueChange={(v) => setPP("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
             <div><Label>Personal Advisor</Label><Select value={ppForm.personal_advisor} onValueChange={(v) => setPP("personal_advisor", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="">TBC</SelectItem>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Current Accommodation</Label><Input className="mt-1" placeholder="e.g. Chamberlain House" value={ppForm.accommodation} onChange={(e) => setPP("accommodation", e.target.value)} /></div>
+            <div><Label>Current Accommodation</Label><Input className="mt-1" placeholder={`e.g. ${homeName}`} value={ppForm.accommodation} onChange={(e) => setPP("accommodation", e.target.value)} /></div>
             <div><Label>Aspirations (one per line)</Label><Textarea className="mt-1" rows={3} placeholder="Young person's goals and aspirations…" value={ppForm.aspirations} onChange={(e) => setPP("aspirations", e.target.value)} /></div>
             <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createPlan.isPending}>{createPlan.isPending ? "Saving…" : "Create Plan"}</Button></DialogFooter>
           </form>

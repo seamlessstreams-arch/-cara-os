@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useEffect, useMemo } from "react";
 import {
   useProviderSummaries,
@@ -99,6 +100,7 @@ const ENTRY_TYPE_META: Record<string, { label: string; color: string }> = {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function ProviderOversightPage() {
+  const homeName = useHomeName();
   const [selectedHome, setSelectedHome] = useState<string>("all");
   const [oversightComment, setOversightComment] = useState("");
   const [homes, setHomes] = useState<HomeData[]>([]);
@@ -224,7 +226,7 @@ export default function ProviderOversightPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Homes</SelectItem>
-              <SelectItem value="oak-house">Chamberlain House</SelectItem>
+              <SelectItem value="oak-house">{`${homeName}`}</SelectItem>
               <SelectItem value="birch-lodge">Birch Lodge</SelectItem>
               <SelectItem value="willow-place">Willow Place</SelectItem>
             </SelectContent>

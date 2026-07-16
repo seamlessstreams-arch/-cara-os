@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -871,6 +872,7 @@ function CertificatesTab({ data }: { data: BuildingsData }) {
 // ── Tab: Hazards & Maintenance ────────────────────────────────────────────────
 
 function HazardsTab({ data }: { data: BuildingsData }) {
+  const homeName = useHomeName();
   const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set());
 
   const openHazards = [...(data.failed ?? []), ...(data.overdue ?? [])].filter((c) =>
@@ -979,7 +981,7 @@ function HazardsTab({ data }: { data: BuildingsData }) {
         pageContext="Buildings & Premises — property maintenance, hazards, COSHH, asbestos, pest control, fire safety, Reg 44 evidence, health and safety compliance"
         recordType="contractor_communication"
         sourceContent={caraSrc || "No open hazards to communicate."}
-        linkedRecords={`${hazards.length} open hazard(s) — Chamberlain House`}
+        linkedRecords={`${hazards.length} open hazard(s) — ${homeName}`}
         defaultStyle="professional_formal"
       />
     </div>

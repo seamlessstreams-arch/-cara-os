@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState } from "react";
 import {
   AlertOctagon, CheckCircle2, AlertTriangle,
@@ -29,6 +30,7 @@ const PLAN_TYPE_ICON: Record<EmergencyPlanType, React.ElementType> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function EmergencyPlanningPage() {
+  const homeName = useHomeName();
   const [expanded, setExpanded] = useState<string | null>(null);
   const { data: queryData, isLoading } = useEmergencyPlans();
   const plans = queryData?.data ?? [];
@@ -56,7 +58,7 @@ export default function EmergencyPlanningPage() {
       caraContext={{ pageTitle: "Emergency Planning", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Emergency Planning — Chamberlain House" />
+          <PrintButton title={`Emergency Planning — ${homeName}`} />
           <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }

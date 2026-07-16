@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo, useEffect } from "react";
 import { useEvidenceItems, useCreateEvidence, useEvidenceGaps } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/layout/page-shell";
@@ -248,6 +249,7 @@ const PERIOD_OPTIONS = [
    ══════════════════════════════════════════════════════════════════════════════ */
 
 export default function OfstedEvidenceRoomPage() {
+  const homeName = useHomeName();
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useEvidenceItems();
   const { data: gapsData } = useEvidenceGaps();
@@ -340,7 +342,7 @@ export default function OfstedEvidenceRoomPage() {
 
     return {
       generatedAt: new Date().toISOString(),
-      homeName: "Chamberlain House",
+      homeName: `${homeName}`,
       totalItems: selected.length,
       totalConfidence,
       categoryCoverage,

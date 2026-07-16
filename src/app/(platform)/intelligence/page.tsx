@@ -6,6 +6,7 @@
 // active interventions, children's voice coverage.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -130,6 +131,7 @@ function ClimateScoreCard({
 // ─── Home Climate Section ─────────────────────────────────────────────────────
 
 function HomeClimateSection() {
+  const homeName = useHomeName();
   const { data, isLoading, isError } = useHomeClimate();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
@@ -162,7 +164,7 @@ function HomeClimateSection() {
 
       const now        = new Date();
       const lines: string[] = [
-        `## Chamberlain House Home Climate Context`,
+        `## ${homeName} Home Climate Context`,
         `Assessment date: ${now.toISOString()}`,
         `Children: Casey (yp_casey), Alex (yp_alex), Jordan (yp_jordan)`,
         "",
@@ -218,7 +220,7 @@ function HomeClimateSection() {
           mode: "compute_home_climate",
           stream: false,
           source_content: context,
-          prompt: "Compute the current home climate scores for Chamberlain House based on the provided intelligence data.",
+          prompt: `Compute the current home climate scores for ${homeName} based on the provided intelligence data.`,
         }),
       });
 
@@ -923,6 +925,7 @@ interface ScannedPattern {
 }
 
 function CaraPatternScanSection() {
+  const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const [scanning, setScanning]           = useState(false);
@@ -959,9 +962,9 @@ function CaraPatternScanSection() {
 
       const now = new Date();
       const lines: string[] = [
-        `## Chamberlain House Intelligence Context`,
+        `## ${homeName} Intelligence Context`,
         `Scan date: ${now.toISOString()}`,
-        `Home: Chamberlain House (home_oak)`,
+        `Home: ${homeName} (home_oak)`,
         `Children: Casey (yp_casey), Alex (yp_alex), Jordan (yp_jordan)`,
         "",
       ];

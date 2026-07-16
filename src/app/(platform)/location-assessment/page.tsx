@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState } from "react";
 import {
   MapPin, CheckCircle2, AlertTriangle,
@@ -48,6 +49,7 @@ const COLOUR_MAP: Record<string, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function LocationAssessmentPage() {
+  const homeName = useHomeName();
   const { data: records = [], isLoading } = useLocationAssessmentAreas();
   const [expanded, setExpanded] = useState<string | null>("neighbourhood");
 
@@ -72,7 +74,7 @@ export default function LocationAssessmentPage() {
       caraContext={{ pageTitle: "Location Assessment", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Location Assessment — Chamberlain House" />
+          <PrintButton title={`Location Assessment — ${homeName}`} />
           <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }

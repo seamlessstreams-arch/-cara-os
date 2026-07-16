@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import {
   ChevronDown,
@@ -79,6 +80,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function TherapeuticCareModelPage() {
+  const homeName = useHomeName();
   const { data: staffResult } = useTherapeuticStaffTraining("home_oak");
   const staffData = staffResult?.data ?? [];
   const { data: impactResult } = useTherapeuticChildImpact(undefined, "home_oak");
@@ -115,7 +117,7 @@ export default function TherapeuticCareModelPage() {
   return (
     <PageShell
       title="Therapeutic Care Model"
-      subtitle="The Trauma-Informed, Attachment-Aware, Relational (TIAR) model underpinning practice at Chamberlain House"
+      subtitle={`The Trauma-Informed, Attachment-Aware, Relational (TIAR) model underpinning practice at ${homeName}`}
       caraContext={{ pageTitle: "Therapeutic Care Model", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">

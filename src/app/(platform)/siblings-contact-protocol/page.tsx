@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -56,6 +57,7 @@ const TYPE_ICON: Record<string, typeof Phone> = {
 /* ── component ────────────────────────────────────────────────────────────── */
 
 export default function SiblingsContactProtocolPage() {
+  const homeName = useHomeName();
   const { data: records = [], isLoading } = useSiblingContactProtocolRecords();
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");
@@ -117,7 +119,7 @@ export default function SiblingsContactProtocolPage() {
     { header: "Sibling", accessor: (r) => r.sibling_name },
     { header: "Sibling Placement", accessor: (r) => r.sibling_placement },
     { header: "Location", accessor: (r) => r.sibling_location },
-    { header: "Pre-Chamberlain House Relationship", accessor: (r) => r.relationship_pre_oak_house },
+    { header: `Pre-${homeName} Relationship`, accessor: (r) => r.relationship_pre_oak_house },
     { header: "Current Quality", accessor: (r) => r.current_relationship_quality },
     { header: "Frequency", accessor: (r) => r.contact_frequency },
     { header: "Contact Types", accessor: (r) => r.contact_types.join("; ") },
@@ -294,7 +296,7 @@ export default function SiblingsContactProtocolPage() {
                   <CardContent className="pt-0 space-y-5 text-sm">
                     {/* Pre-Chamberlain House */}
                     <section>
-                      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Relationship before Chamberlain House</h4>
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{`Relationship before ${homeName}`}</h4>
                       <p className="text-[var(--cs-text-secondary)] leading-relaxed">{r.relationship_pre_oak_house}</p>
                     </section>
 

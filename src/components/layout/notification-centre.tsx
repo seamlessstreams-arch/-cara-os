@@ -6,6 +6,7 @@
 // incidents needing oversight, medication alerts, and compliance warnings.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { cn, formatRelative } from "@/lib/utils";
@@ -57,6 +58,7 @@ const TYPE_DOT: Record<string, string> = {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function NotificationCentre() {
+  const homeName = useHomeName();
   const [open, setOpen] = useState(false);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const panelRef = useRef<HTMLDivElement>(null);
@@ -277,7 +279,7 @@ export function NotificationCentre() {
         type: "success",
         icon: CheckCircle2,
         title: "All clear",
-        description: "No outstanding alerts. Chamberlain House is running smoothly.",
+        description: `No outstanding alerts. ${homeName} is running smoothly.`,
         href: "/dashboard",
         category: "intelligence",
       });

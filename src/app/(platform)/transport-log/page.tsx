@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -75,6 +76,7 @@ const VEHICLES = [
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function TransportLogPage() {
+  const homeName = useHomeName();
   const { data: records = [], isLoading } = useTransportLogRecords();
   const createMutation = useCreateTransportLogRecord();
   const [search, setSearch] = useState("");
@@ -643,7 +645,7 @@ export default function TransportLogPage() {
             </div>
             <div>
               <Label className="text-sm font-medium mb-1 block">Route Taken</Label>
-              <Input placeholder="e.g. Chamberlain House > A52 > School" value={nRoute} onChange={e => setNRoute(e.target.value)} />
+              <Input placeholder={`e.g. ${homeName} > A52 > School`} value={nRoute} onChange={e => setNRoute(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
