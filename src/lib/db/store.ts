@@ -50,6 +50,7 @@ import type { DocVersionRecord } from "@/lib/doc-versioning/doc-versioning-engin
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
 import type { RelationshipEntry } from "@/lib/protective-relationships/types";
+import type { ProfessionalChallenge } from "@/lib/professional-challenge/professional-challenge-engine";
 import type { VoiceConcernLoop } from "@/lib/voice-of-child/voice-follow-through-engine";
 import type { RegulationProfile, AdultRegulationReflection } from "@/lib/emotional-safety/regulation-profile-engine";
 import type {
@@ -862,6 +863,54 @@ const VOICE_CONCERN_LOOPS_SEED: VoiceConcernLoop[] = [
   },
 ];
 
+// Professional challenges (§5.15). One live challenge mid-ladder with a written
+// trail; one closed "no change" — the doctrine's core case, where the challenge
+// ran its course but the child was no better off.
+const PROFESSIONAL_CHALLENGES_SEED: ProfessionalChallenge[] = [
+  {
+    id: "chal_alex_s47", child_id: "yp_alex", home_id: "home_oak",
+    decision_challenged: "Social care declined to progress the S47 enquiry",
+    decision_maker_name: "J. Okonkwo", decision_maker_role: "Team Manager",
+    agency: "Children's Social Care", decision_date: daysFromNow(-18),
+    reason: "The decision does not appear to protect Alex from the identified exploitation risk.",
+    evidence: "Three linked missing episodes in six weeks; a recurring association flagged by police.",
+    threshold_basis: "LA thresholds document — significant harm (contextual safeguarding).",
+    current_risk: "Ongoing peer-exploitation concern; missing episodes continuing.",
+    desired_resolution: "A strategy discussion convened and a contextual safeguarding assessment.",
+    current_rung: "their_manager",
+    communications: [
+      { id: "cc1", at: daysFromNow(-16), rung: "professional", person_name: "R. Patel", person_role: "Allocated SW", agency: "Children's Social Care", method: "call", summary: "Raised the concern directly; SW maintained the threshold decision.", written_followup: true },
+      { id: "cc2", at: daysFromNow(-12), rung: "their_manager", person_name: "J. Okonkwo", person_role: "Team Manager", agency: "Children's Social Care", method: "email", summary: "Escalated in writing with the evidence and threshold basis. Awaiting response.", written_followup: true },
+    ],
+    next_action_due: daysFromNow(-2),
+    status: "open", child_situation_outcome: "", closed_at: null,
+    management_review: "RM aware; will take to IRO if no strategy meeting is offered this week.",
+    created_at: daysFromNow(-18), updated_at: daysFromNow(-12), created_by: "staff_darren", updated_by: "staff_darren",
+  },
+  {
+    id: "chal_casey_pep", child_id: "yp_casey", home_id: "home_oak",
+    decision_challenged: "School declined an interim PEP review after the suspension",
+    decision_maker_name: "M. Hughes", decision_maker_role: "Deputy Head",
+    agency: "Riverside Academy", decision_date: daysFromNow(-50),
+    reason: "Casey's education is being disrupted and the plan was not reviewed.",
+    evidence: "Two fixed-term suspensions; attendance falling.",
+    threshold_basis: "Statutory guidance — interim PEP where a looked-after child is at risk of exclusion.",
+    current_risk: "Education instability affecting placement stability.",
+    desired_resolution: "An interim PEP review convened with the Virtual School.",
+    current_rung: "iro",
+    communications: [
+      { id: "cc3", at: daysFromNow(-44), rung: "professional", person_name: "M. Hughes", person_role: "Deputy Head", agency: "Riverside Academy", method: "meeting", summary: "Requested the review; declined.", written_followup: true },
+      { id: "cc4", at: daysFromNow(-30), rung: "iro", person_name: "S. Ali", person_role: "IRO", agency: "Local Authority", method: "email", summary: "IRO raised it; a review was held but no change to provision resulted.", written_followup: true },
+    ],
+    next_action_due: null,
+    status: "resolved_no_change",
+    child_situation_outcome: "A review was held but Casey's timetable and provision are unchanged.",
+    closed_at: daysFromNow(-10),
+    management_review: "Closed on paper; RM not satisfied the child's situation improved.",
+    created_at: daysFromNow(-50), updated_at: daysFromNow(-10), created_by: "staff_darren", updated_by: "staff_darren",
+  },
+];
+
 const RELATIONSHIP_ENTRIES_SEED: RelationshipEntry[] = [
   {
     id: "rel_alex_mirela", child_id: "yp_alex", home_id: "home_oak",
@@ -940,6 +989,7 @@ const store = {
   stayingSafePlans: [...STAYING_SAFE_PLANS_SEED] as StayingSafePlan[],
   // Protective Relationships Map entries.
   relationshipEntries: [...RELATIONSHIP_ENTRIES_SEED] as RelationshipEntry[],
+  professionalChallenges: [...PROFESSIONAL_CHALLENGES_SEED] as ProfessionalChallenge[],
   voiceConcernLoops: [...VOICE_CONCERN_LOOPS_SEED] as VoiceConcernLoop[],
   regulationProfiles: [...REGULATION_PROFILES_SEED] as RegulationProfile[],
   adultRegulationReflections: [...ADULT_REFLECTIONS_SEED] as AdultRegulationReflection[],
