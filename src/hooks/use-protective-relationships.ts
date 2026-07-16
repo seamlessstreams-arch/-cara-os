@@ -7,6 +7,7 @@ import type {
   ChildRelationshipAnalysis,
 } from "@/lib/protective-relationships/protective-relationships-engine";
 import type { RelationshipEntry } from "@/lib/protective-relationships/types";
+import type { SocialConvoy } from "@/lib/protective-relationships/social-convoy-engine";
 
 /** Whole-home relationship overview + alerts. */
 export function useRelationshipsOverview() {
@@ -21,6 +22,8 @@ export interface ChildRelationships {
   childName: string;
   entries: RelationshipEntry[];
   analysis: ChildRelationshipAnalysis;
+  /** Convoy circles + network-shape detections over the same entries. */
+  convoy: SocialConvoy;
 }
 
 /** A single child's relationship map + analysis. */

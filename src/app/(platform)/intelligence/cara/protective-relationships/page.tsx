@@ -130,6 +130,7 @@ export default function ProtectiveRelationshipsPage() {
   const status = o ? HOME_STATUS[o.homeStatus] : null;
   const entries = child.data?.entries ?? [];
   const analysis = child.data?.analysis;
+  const convoy = child.data?.convoy;
   const cs = analysis ? STATUS_META[analysis.status] : null;
 
   const protective = entries.filter((e) => e.rating === "protective" && e.status !== "archived");
@@ -185,6 +186,80 @@ export default function ProtectiveRelationshipsPage() {
             <ul className="space-y-1.5">
               {analysis.flags.map((f) => { const t = FLAG_TONE[f.severity]; const Icon = t.icon; return <li key={f.key} className={cn("flex items-start gap-2 rounded-lg border px-2.5 py-1.5 text-xs", t.cls)}><Icon className="mt-0.5 h-3.5 w-3.5 shrink-0" /><span><span className="font-semibold">{f.message}</span> <span className="opacity-80">{f.why}</span></span></li>; })}
             </ul>
+          </CardContent></Card>
+        )}
+
+        {convoy && entries.length > 0 && (
+          <Card><CardContent className="p-5">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-[var(--cs-cara-gold,#b45309)]" />
+              <h2 className="text-base font-bold text-[var(--cs-navy,#1e293b)]">
+                {childFriendly ? "My circles" : "Social convoy"}
+              </h2>
+              {!childFriendly && (
+                <span className="text-xs text-[var(--cs-text-muted,#64748b)]">
+                  who is emotionally close, who supports, who is professional
+                </span>
+              )}
+            </div>
+
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              {([
+                ["inner", childFriendly ? "Closest to me" : "Inner circle", convoy.inner],
+                ["middle", childFriendly ? "Important to me" : "Middle circle", convoy.middle],
+                ["outer", childFriendly ? "People who help" : "Outer circle", convoy.outer],
+              ] as const).map(([key, label, members]) => (
+                <div key={key} className="rounded-xl border border-[var(--cs-border,#e2e8f0)] bg-[var(--cs-surface,#fff)] p-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-[var(--cs-text-secondary,#475569)]">
+                    {label} <span className="font-normal opacity-70">({members.length})</span>
+                  </p>
+                  <ul className="mt-2 space-y-1.5">
+                    {members.map((m) => (
+                      <li key={m.entryId} className="text-sm text-[var(--cs-text,#0f172a)]">
+                        <span className="font-medium">{m.name}</span>
+                        <span className="ml-1 text-xs text-[var(--cs-text-muted,#64748b)]">{m.relationship}</span>
+                        {!childFriendly && m.basis === "derived" && (
+                          <span className="mt-0.5 block text-[11px] text-[var(--cs-text-muted,#64748b)]" title={m.derivedBecause}>
+                            derived — {m.derivedBecause}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                    {members.length === 0 && <li className="text-xs text-[var(--cs-text-muted,#64748b)]">Nobody mapped here yet.</li>}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            {!childFriendly && convoy.detections.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {convoy.detections.map((d) => (
+                  <div
+                    key={d.key}
+                    className={cn(
+                      "rounded-lg border px-3 py-2 text-sm",
+                      d.tone === "positive" ? "border-emerald-100 bg-emerald-50" : "border-amber-100 bg-amber-50",
+                    )}
+                  >
+                    <p className={cn("font-semibold", d.tone === "positive" ? "text-emerald-900" : "text-amber-900")}>{d.headline}</p>
+                    <p className={cn("mt-0.5 text-xs", d.tone === "positive" ? "text-emerald-800" : "text-amber-800")}>
+                      <span className="font-semibold">Why Cara is showing this:</span> {d.whyShown}
+                    </p>
+                    {d.suggestedQuestions.length > 0 && (
+                      <ul className={cn("mt-1 list-disc pl-4 text-xs", d.tone === "positive" ? "text-emerald-800" : "text-amber-800")}>
+                        {d.suggestedQuestions.map((q) => <li key={q}>{q}</li>)}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!childFriendly && convoy.insufficientInformation && (
+              <p className="mt-3 text-xs text-[var(--cs-text-muted,#64748b)]">
+                Too little of the network is mapped to reason about its shape — that is a recording gap, not a finding about the child.
+              </p>
+            )}
           </CardContent></Card>
         )}
 

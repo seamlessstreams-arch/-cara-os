@@ -26,6 +26,26 @@ export type RelationshipCategory =
 
 export type RelationshipStatus = "active" | "archived";
 
+// ── Social convoy (§ practice model: Kahn & Antonucci) ───────────────────────
+// The convoy model structures a child's network as three circles of emotional
+// closeness. These fields are OPTIONAL extensions to RelationshipEntry — every
+// existing record remains valid — and where they are absent the convoy engine
+// derives a circle deterministically and says so.
+
+/** Inner: deeply trusted, emotionally significant. Middle: important support
+ *  with less closeness. Outer: professionals, services, community. */
+export type ConvoyCircle = "inner" | "middle" | "outer";
+
+export type EmotionalCloseness = "high" | "medium" | "low";
+
+export type ContactFrequency = "daily" | "weekly" | "monthly" | "rare" | "none";
+
+export const CONVOY_CIRCLE_META: Record<ConvoyCircle, { label: string; description: string }> = {
+  inner: { label: "Inner circle", description: "Deeply trusted and emotionally significant" },
+  middle: { label: "Middle circle", description: "Important support with less emotional closeness" },
+  outer: { label: "Outer circle", description: "Professionals, services and community connections" },
+};
+
 export interface RelationshipEntry {
   id: string;
   child_id: string;
@@ -49,6 +69,18 @@ export interface RelationshipEntry {
 
   review_date: string | null;
   status: RelationshipStatus;
+
+  // ── Social convoy fields (all optional — see ConvoyCircle above) ──────────
+  /** Recorded circle. When absent the engine derives one and labels it so. */
+  circle?: ConvoyCircle | null;
+  emotional_closeness?: EmotionalCloseness | null;
+  contact_frequency?: ContactFrequency | null;
+  /** ISO date of the last contact that MEANT something, not the last log row. */
+  last_meaningful_contact?: string | null;
+  /** The relationship the child wants this to become, in their words where possible. */
+  desired_future?: string;
+  /** What we genuinely don't know — uncertainty is data, not a blank. */
+  uncertainty?: string;
 
   created_at: string;
   updated_at: string;
