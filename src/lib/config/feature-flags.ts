@@ -172,6 +172,15 @@ const FLAGS = {
     description:
       "Enable creating and progressing child-voice concern loops (listen → act → explain back → review with child). Off = the follow-through board is read-only over seeded/existing loops; no stage transitions or new loops can be written.",
   },
+  regulation_profile_write: {
+    key: "regulation_profile_write",
+    env: "CARA_REGULATION_PROFILE_WRITE",
+    polarity: "opt_in",
+    default: false,
+    stability: "experimental",
+    description:
+      "Enable editing a child's regulation profile and recording adult co-regulation reflections after incidents. Off = both are read-only over seeded/existing records; evidence-based suggestions still compute.",
+  },
 } as const satisfies Record<string, FeatureFlag>;
 
 export type FlagKey = keyof typeof FLAGS;

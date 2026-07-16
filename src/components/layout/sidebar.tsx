@@ -28,7 +28,7 @@ import {
   // Primary nav icons
   LayoutDashboard, Heart, Users, Building2, ShieldCheck, BarChart3, Sparkles, Settings,
   // Child icons
-  HeartHandshake, ClipboardList, BookOpen, AlertTriangle, ShieldAlert, MessageCircle,
+  HeartHandshake, HeartPulse, ClipboardList, BookOpen, AlertTriangle, ShieldAlert, MessageCircle,
   MapPin, Shield, Pill, PhoneCall, ScrollText, FileText, FileCheck, FileSignature,
   // Team icons
   Calendar, MessageSquare, GraduationCap, UserCheck, Fingerprint, TrendingUp,
@@ -52,7 +52,7 @@ import {
 
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard, Heart, Users, Building2, ShieldCheck, BarChart3, Sparkles, Settings,
-  HeartHandshake, ClipboardList, BookOpen, AlertTriangle, ShieldAlert, MessageCircle,
+  HeartHandshake, HeartPulse, ClipboardList, BookOpen, AlertTriangle, ShieldAlert, MessageCircle,
   MapPin, Shield, Pill, PhoneCall, ScrollText, FileText, FileCheck, FileSignature,
   Calendar, MessageSquare, GraduationCap, UserCheck, Fingerprint, TrendingUp,
   Network, Milestone, CalendarDays, CalendarClock, CalendarRange, Clock,
