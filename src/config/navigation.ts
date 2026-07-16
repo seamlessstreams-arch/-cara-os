@@ -729,6 +729,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Child Voice", href: "/intelligence/cara/child-voice-intelligence", icon: "MessageCircle", module: "young-people" },
       { label: "Child Voice & Participation", href: "/intelligence/cara/child-voice-participation-intelligence", icon: "Mic", module: "young-people" },
       { label: "Child Voice Presence", href: "/intelligence/cara/child-voice-presence", icon: "Quote",    module: "young-people" },
+      { label: "Voice Follow-Through",  href: "/intelligence/cara/voice-follow-through",  icon: "Ear",      module: "young-people" },
       { label: "Wellbeing Index",      href: "/intelligence/cara/child-wellbeing-index",icon: "Heart",       module: "young-people" },
       { label: "Child Wellbeing Trajectory", href: "/intelligence/cara/child-wellbeing-trajectory", icon: "TrendingUp", module: "young-people" },
       { label: "Children's Rights & Participation", href: "/intelligence/cara/childrens-rights-participation-intelligence", icon: "Scale", module: "young-people" },

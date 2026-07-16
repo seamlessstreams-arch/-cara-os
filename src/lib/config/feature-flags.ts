@@ -163,6 +163,15 @@ const FLAGS = {
     description:
       "Let a manager appoint a fully-cleared, appointed candidate into a real StaffMember record (creating an official record). Off = the appoint endpoint is a no-op. Gated by MANAGE_STAFF + the safer-recruitment 'cleared' gate; never automatic.",
   },
+  voice_follow_through_write: {
+    key: "voice_follow_through_write",
+    env: "CARA_VOICE_FOLLOW_THROUGH_WRITE",
+    polarity: "opt_in",
+    default: false,
+    stability: "experimental",
+    description:
+      "Enable creating and progressing child-voice concern loops (listen → act → explain back → review with child). Off = the follow-through board is read-only over seeded/existing loops; no stage transitions or new loops can be written.",
+  },
 } as const satisfies Record<string, FeatureFlag>;
 
 export type FlagKey = keyof typeof FLAGS;
