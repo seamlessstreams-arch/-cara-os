@@ -51,6 +51,7 @@ import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-re
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
 import type { RelationshipEntry } from "@/lib/protective-relationships/types";
 import type { VoiceConcernLoop } from "@/lib/voice-of-child/voice-follow-through-engine";
+import type { RegulationProfile, AdultRegulationReflection } from "@/lib/emotional-safety/regulation-profile-engine";
 import type {
   CommsChannel,
   CommsChannelMember,
@@ -803,6 +804,34 @@ const STAYING_SAFE_PLANS_SEED: StayingSafePlan[] = [
 // ── Protective Relationships (seed) ──────────────────────────────────────────
 // Child-voice concern loops (§5.2 follow-through). One mid-loop with repeat
 // raises (the Scenario J shape), one closed end-to-end so the positive shows.
+// One regulation profile in the child's own terms (§5.7). Recovery is framed as
+// RETURN, not constant calm.
+const REGULATION_PROFILES_SEED: RegulationProfile[] = [
+  {
+    id: "regprof_alex", child_id: "yp_alex", home_id: "home_oak",
+    baseline: "Chatty, likes routine, teases staff he trusts, hums when relaxed.",
+    early_signs: "Goes quiet, one-word answers, jiggles his leg, stops making eye contact.",
+    escalation_signs: "Voice gets loud and fast, paces, slams doors, swears at whoever is nearest.",
+    shutdown_signs: "Hood up, headphones in, turns to face the wall, will not respond — this is overwhelm, not defiance.",
+    body_cues: "Clenched jaw, red in the face when escalating; goes very still and pale when shutting down.",
+    sensory_preferences: "Weighted blanket, dim lighting, prefers his own playlist over quiet.",
+    environment_needs: "His room or the quiet lounge — NOT the kitchen when it's busy. Fewer people, lower voices.",
+    helpful_adults: "Mirela first; Priya if she's off. Someone he already trusts, not a new face mid-escalation.",
+    helpful_approaches: "Give space then offer, don't demand. Short sentences. Name that you can see it's hard. Sit alongside, not opposite.",
+    unhelpful_approaches: "Standing over him, ultimatums, 'calm down', talking about consequences while he's still up.",
+    helpful_language: "\"I'm not going anywhere.\" \"We can sort this when you're ready.\" \"Do you want me here or nearby?\"",
+    safe_places: "His bedroom; the beanbag corner in the quiet lounge.",
+    grounding_activities: "Music, drawing, walking the dog in the garden, cold drink.",
+    recovery_signs: "Takes his hood down, comes to find someone, asks for food or a drink, jokes again.",
+    time_needed: "Usually 30–45 minutes if left space; longer if pushed to talk too early.",
+    readiness_for_reflection: "When he initiates conversation again — not before. If you go too soon he re-escalates.",
+    child_own_words: "\"When I kick off I'm not being bad, my head's just full. I need everyone to back off and then I come find someone.\"",
+    review_date: daysFromNow(75), updated_at: daysFromNow(-14), updated_by: "staff_mirela",
+  },
+];
+
+const ADULT_REFLECTIONS_SEED: AdultRegulationReflection[] = [];
+
 const VOICE_CONCERN_LOOPS_SEED: VoiceConcernLoop[] = [
   {
     id: "vloop_alex_room", child_id: "yp_alex", home_id: "home_oak",
@@ -912,6 +941,8 @@ const store = {
   // Protective Relationships Map entries.
   relationshipEntries: [...RELATIONSHIP_ENTRIES_SEED] as RelationshipEntry[],
   voiceConcernLoops: [...VOICE_CONCERN_LOOPS_SEED] as VoiceConcernLoop[],
+  regulationProfiles: [...REGULATION_PROFILES_SEED] as RegulationProfile[],
+  adultRegulationReflections: [...ADULT_REFLECTIONS_SEED] as AdultRegulationReflection[],
   // Canonical persisted event spine (forms-as-views write path). Empty by default —
   // the read-only projection of domain collections is unchanged until events are captured here.
   cornerstoneEvents: [] as CornerstoneEvent[],
