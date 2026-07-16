@@ -181,6 +181,15 @@ const FLAGS = {
     description:
       "Enable editing a child's regulation profile and recording adult co-regulation reflections after incidents. Off = both are read-only over seeded/existing records; evidence-based suggestions still compute.",
   },
+  professional_challenge_write: {
+    key: "professional_challenge_write",
+    env: "CARA_PROFESSIONAL_CHALLENGE_WRITE",
+    polarity: "opt_in",
+    default: false,
+    stability: "experimental",
+    description:
+      "Enable logging and progressing professional-challenge records (challenging an external agency's decision up the escalation ladder). Off = the challenge board is read-only over seeded/existing records; detections still compute.",
+  },
 } as const satisfies Record<string, FeatureFlag>;
 
 export type FlagKey = keyof typeof FLAGS;
