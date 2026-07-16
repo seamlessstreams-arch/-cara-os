@@ -37,6 +37,18 @@ function sb() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const dal = {
+  // ── Home ──────────────────────────────────────────────────────────────────
+  // The one home this deployment serves. In demo mode this is the seeded home
+  // (blanked to an empty identity under NEXT_PUBLIC_CARA_MODE=live); when
+  // Supabase is connected it is the row SUPABASE_HOME_ID points at.
+  home: {
+    async get() {
+      const c = sb();
+      if (c) return sq.getHome(c, homeId());
+      return db.home.get();
+    },
+  },
+
   // ── Staff ─────────────────────────────────────────────────────────────────
   staff: {
     async findAll(filters?: { role?: string; employment_type?: string; status?: string }) {
