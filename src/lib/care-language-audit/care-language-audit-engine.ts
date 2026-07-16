@@ -31,7 +31,8 @@ export interface LanguagePattern {
   kbFramework: "model_pace" | "skills_21_residential";
 }
 
-const PATTERNS: LanguagePattern[] = [
+/** The deficit-language vocabulary, shared with the language covenant. */
+export const PATTERNS: LanguagePattern[] = [
   // Criminalising
   { phrase: "assaulted staff",        category: "criminalising",      therapeuticAlternative: "hurt a member of staff",                kbFramework: "model_pace" },
   { phrase: "assaulted",              category: "criminalising",      therapeuticAlternative: "hurt / struck",                          kbFramework: "model_pace" },
@@ -49,6 +50,7 @@ const PATTERNS: LanguagePattern[] = [
   { phrase: "bad behaviour",          category: "moralising",         therapeuticAlternative: "distressed behaviour",                   kbFramework: "model_pace" },
   { phrase: "challenging behaviour",  category: "moralising",         therapeuticAlternative: "distressed or communicative behaviour",  kbFramework: "model_pace" },
   { phrase: "being difficult",        category: "character_labelling", therapeuticAlternative: "communicating unmet need",              kbFramework: "model_pace" },
+  { phrase: "kicked off",            category: "moralising",         therapeuticAlternative: "became distressed / dysregulated",       kbFramework: "model_pace" },
   { phrase: "tantrum",                category: "moralising",         therapeuticAlternative: "became very distressed",                 kbFramework: "model_pace" },
   { phrase: "meltdown",               category: "moralising",         therapeuticAlternative: "became very distressed",                 kbFramework: "model_pace" },
   // Power / control framing
