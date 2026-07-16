@@ -11536,6 +11536,13 @@ if (isLiveTenant()) {
 export function getStore() { return store; }
 
 export const db = {
+  // ── Home ──────────────────────────────────────────────────────────────────
+  home: {
+    // The blanked home in live mode carries id "" — a caller can treat that as
+    // "not provisioned yet" rather than showing an empty name as if it were real.
+    get: () => store.home,
+  },
+
   // ── Staff ─────────────────────────────────────────────────────────────────
   staff: {
     findAll: () => store.staff,

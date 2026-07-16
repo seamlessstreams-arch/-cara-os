@@ -59,6 +59,15 @@ export async function getStaffById(sb: SB, id: string) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// HOME (the one home this deployment serves — selected by SUPABASE_HOME_ID)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The deployment's own home row, or null if the id matches nothing. */
+export async function getHome(sb: SB, homeId: string) {
+  return unwrap(await sb.from("homes").select("*").eq("id", homeId).maybeSingle());
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // YOUNG PEOPLE
 // ─────────────────────────────────────────────────────────────────────────────
 

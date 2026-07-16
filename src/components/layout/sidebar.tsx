@@ -17,6 +17,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { APP_ROLE_LABELS, type AppRole } from "@/lib/permissions";
 import { useStaff } from "@/hooks/use-staff";
+import { useHomeName } from "@/hooks/use-home-profile";
 import type { StaffEnriched } from "@/hooks/use-staff";
 import { Badge } from "@/components/ui/badge";
 import { CaraStatusBadge } from "@/components/cara/cara-health-panel";
@@ -187,6 +188,7 @@ export function Sidebar() {
   const { canAccess } = usePermissions();
   const counts = useSidebarCounts();
   const { currentRole, currentUser } = useAuthContext();
+  const homeName = useHomeName();
 
   // Determine active top-level group from pathname (uses DOMAIN_NAV)
   function getActiveGroup(): string | null {
@@ -228,7 +230,7 @@ export function Sidebar() {
               <p className="text-sm font-bold text-[var(--cs-navy)] leading-tight tracking-tight">
                 Cara
               </p>
-              <p className="text-[11px] text-[var(--cs-text-secondary)] truncate">Chamberlain House</p>
+              <p className="text-[11px] text-[var(--cs-text-secondary)] truncate">{homeName}</p>
             </div>
           )}
         </Link>
