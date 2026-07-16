@@ -4,6 +4,7 @@
 // CARA — TRAINING & COMPLIANCE
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -212,6 +213,7 @@ function ComplianceReportPanel({
 }: {
   rate: number; expired: number; expiring: number; total: number;
 }) {
+  const homeName = useHomeName();
   const [report, setReport] = useState<ComplianceReport | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -224,7 +226,7 @@ function ComplianceReportPanel({
           mode: "training_needs_analysis",
           style: "provider_summary",
           source_content: [
-            `Training compliance report for Chamberlain House.`,
+            `Training compliance report for ${homeName}.`,
             `Overall compliance rate: ${rate}%.`,
             `Total records: ${total}. Expired: ${expired}. Expiring soon: ${expiring}.`,
             `${expired > 0 ? `${expired} mandatory training records have expired — staff should not work unsupervised until recertified.` : "No expired records."}`,

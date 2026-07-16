@@ -437,7 +437,7 @@ function ReportMissingDialog({
           </div>
           <div>
             <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Last seen location</label>
-            <Input className="mt-1" placeholder="e.g. Outside Chamberlain House — said going to shop" value={locationLastSeen} onChange={(e) => setLocationLastSeen(e.target.value)} />
+            <Input className="mt-1" placeholder="e.g. Outside the home — said going to shop" value={locationLastSeen} onChange={(e) => setLocationLastSeen(e.target.value)} />
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">

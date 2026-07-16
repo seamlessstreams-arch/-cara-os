@@ -419,7 +419,7 @@ function NewTripDialog({
     end_date: "",
     departure_time: "09:00",
     return_time: "17:00",
-    transport: "Chamberlain House minibus",
+    transport: "",
     staff_ratio: "1:2",
     notes: "",
     children_views: "",
@@ -493,7 +493,7 @@ function NewTripDialog({
             </div>
             <div>
               <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Transport</label>
-              <Input value={form.transport} onChange={(e) => setForm((p) => ({ ...p, transport: e.target.value }))} placeholder="e.g. Chamberlain House minibus" className="h-8 text-xs" />
+              <Input value={form.transport} onChange={(e) => setForm((p) => ({ ...p, transport: e.target.value }))} placeholder="e.g. home minibus" className="h-8 text-xs" />
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { use } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
@@ -118,6 +119,7 @@ export default function VacancyDetailPage({
 }: {
   params: Promise<{ vacancyId: string }>;
 }) {
+  const homeName = useHomeName();
   const { vacancyId } = use(params);
   const router = useRouter();
   const { data, isLoading } = useVacancy(vacancyId);
@@ -188,7 +190,7 @@ export default function VacancyDetailPage({
     <PageShell
       title={vacancy.title}
       subtitle={`${typeLabels[vacancy.employment_type] ?? vacancy.employment_type} · ${salaryStr} · ${vacancy.days_open} days open`}
-      caraContext={{ pageTitle: "Chamberlain House — Vacancy Detail", sourceType: "child_record" }}
+      caraContext={{ pageTitle: `${homeName} — Vacancy Detail`, sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title={vacancy.title} subtitle="Vacancy Detail" targetId="vacancy-detail-content" />

@@ -218,7 +218,7 @@ export default function PathwayPlan16PlusPage() {
           <div>
             <p className="font-semibold text-blue-900">Continuity-of-care record</p>
             <p className="text-sm text-blue-800 mt-0.5">
-              This page tracks former Chamberlain House residents now in pathway services. All currently
+              This page tracks former {homeName} residents now in pathway services. All currently
               resident young people (Alex, Jordan, Casey) are below 16 and remain on Care Plans
               (not yet Pathway Plans). Records below relate to former residents under continuing
               Staying Close arrangements — anonymised where appropriate.
@@ -444,7 +444,7 @@ export default function PathwayPlan16PlusPage() {
                         Plan Version: <strong>{r.plan_version}</strong>
                       </span>
                       <span className="flex items-center gap-1">
-                        Maintained by Chamberlain House continuity record (RM:{" "}
+                        Maintained by {homeName} continuity record (RM:{" "}
                         <strong>{getStaffName("staff_darren")}</strong>, Senior:{" "}
                         <strong>{getStaffName("staff_ryan")}</strong>)
                       </span>

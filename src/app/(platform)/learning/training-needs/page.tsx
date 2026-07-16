@@ -4,6 +4,7 @@
 // CARA — TRAINING NEEDS INTELLIGENCE (Core Loop Page)
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -560,6 +561,7 @@ function CaraAutoDetect({
   existingNeeds: TrainingNeed[];
   onAdded: () => void;
 }) {
+  const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const [scanning, setScanning] = useState(false);
@@ -589,7 +591,7 @@ function CaraAutoDetect({
           mode: "training_needs_analysis",
           style: "professional_formal",
           source_content: [
-            "Analyse this residential children's home (Chamberlain House) for training needs.",
+            `Analyse this residential children's home (${homeName}) for training needs.`,
             "Context: recent operational data includes incidents, supervision records, medication events, safeguarding activity, and RI challenge log entries.",
             openNeedsSummary
               ? `Existing open training needs (avoid duplicating): ${openNeedsSummary}.`

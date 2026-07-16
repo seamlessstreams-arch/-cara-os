@@ -14,6 +14,7 @@ import React, {
   type ReactNode,
 } from "react";
 import { useParams } from "next/navigation";
+import { getStore } from "@/lib/db/store";
 import { useYoungPerson, type YPEnriched } from "@/hooks/use-young-people";
 import { useStaffMember, type StaffEnriched } from "@/hooks/use-staff";
 import { useCarePlanByChild } from "@/hooks/use-care-plans";
@@ -103,10 +104,11 @@ const RecordOnceContext = createContext<RecordOnceData>({
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Home name is hard-coded to match seed data until a homes API exists. */
+/** The one home this deployment serves lives on the store — demo-seeded or
+ *  provisioned. Falls back to the raw id rather than inventing a name. */
 function resolveHomeName(homeId: string): string {
-  const MAP: Record<string, string> = { home_oak: "Chamberlain House" };
-  return MAP[homeId] ?? homeId;
+  const home = getStore().home;
+  return home.id && home.id === homeId ? home.name : homeId;
 }
 
 function computeAge(dob: string): number {

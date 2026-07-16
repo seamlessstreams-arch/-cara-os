@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -51,6 +52,7 @@ const exportCols: ExportColumn<WarmWelcomePack>[] = [
 
 /* ─── component ─── */
 export default function WarmWelcomePacksPage() {
+  const homeName = useHomeName();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -165,7 +167,7 @@ export default function WarmWelcomePacksPage() {
           <div>
             <p className="text-sm font-medium text-pink-800">Our Welcome Philosophy</p>
             <p className="text-xs text-pink-700 mt-1">
-              Every child arriving at Chamberlain House should feel expected, wanted, and thought about.
+              Every child arriving at {homeName} should feel expected, wanted, and thought about.
               Welcome packs are personalised using advance information — never generic.
               First impressions matter: a child who feels welcomed is more likely to settle,
               attach, and thrive. We ask: &quot;Would a good parent do this for their child?&quot;

@@ -4,6 +4,7 @@
 // CARA — Cara INTELLIGENCE HUB
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -161,6 +162,7 @@ function StatCard({
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function CaraHubPage() {
+  const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const ypQuery = useYoungPeople("current");
@@ -233,7 +235,7 @@ export default function CaraHubPage() {
               </span>
             ))}
             <span className="rounded-full bg-[var(--cs-navy)]/40 px-3 py-1 text-xs font-medium text-[var(--cs-cara-gold-soft)]">
-              Chamberlain House
+              {homeName}
             </span>
           </div>
         </div>

@@ -8,6 +8,7 @@
 // Classified and routed automatically. Completes the three-domain model.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { classifyHomeRecord, type HomeClassificationResult } from "@/lib/record-classifier/home-record-classifier";
@@ -39,7 +40,11 @@ const TYPE_META: Record<string, { icon: React.ElementType; color: string; bg: st
   observation: { icon: FileText, color: "text-slate-600", bg: "bg-slate-50", label: "Home Note" },
 };
 
-export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Chamberlain House", staffId = "staff_darren", onSuccess, onCancel, onDirtyChange, className }: UniversalHomeEntryProps) {
+export function UniversalHomeEntry({ homeId = "home_oak", homeName: homeNameProp, staffId = "staff_darren", onSuccess, onCancel, onDirtyChange, className }: UniversalHomeEntryProps) {
+  // Default to the deployment's real home rather than a hardcoded demo name —
+  // an explicit prop still wins for callers that know better.
+  const liveHomeName = useHomeName();
+  const homeName = homeNameProp ?? liveHomeName;
   const [text, setText] = useState("");
   const [classification, setClassification] = useState<HomeClassificationResult | null>(null);
   const [overrideType, setOverrideType] = useState<string | null>(null);

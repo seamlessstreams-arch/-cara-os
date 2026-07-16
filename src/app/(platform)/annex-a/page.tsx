@@ -5,6 +5,7 @@
 // Continuously inspection-ready, evidence-backed, live-updating
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -444,6 +445,7 @@ function ReviewDialog({
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AnnexAReadinessPage() {
+  const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
 
@@ -876,7 +878,7 @@ export default function AnnexAReadinessPage() {
             </div>
 
             <p className="text-[10px] text-slate-400 border-t pt-3">
-              Cara · Annex A Snapshot · Generated {new Date(snapshotDate).toLocaleString("en-GB")} · Home: Chamberlain House
+              Cara · Annex A Snapshot · Generated {new Date(snapshotDate).toLocaleString("en-GB")} · Home: {homeName}
             </p>
           </div>
 

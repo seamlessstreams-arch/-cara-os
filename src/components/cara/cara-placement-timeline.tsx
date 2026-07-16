@@ -88,7 +88,7 @@ function getDemoPlacementTimeline(): PlacementTimelineData {
     events: [
       {
         id: "pe_001", type: "placement_start", date: "2025-09-15",
-        title: "Placement commenced at Chamberlain House",
+        title: "Placement commenced at the home",
         detail: "Admitted following placement breakdown. Initial risk assessment completed.",
         significance: "high",
       },

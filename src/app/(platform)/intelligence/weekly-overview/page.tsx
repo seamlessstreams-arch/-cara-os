@@ -3,9 +3,10 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — WEEKLY INTELLIGENCE OVERVIEW
 // Comprehensive management report: aggregated intelligence snapshot for the week.
-// For Registered Managers — Chamberlain House.
+// For Registered Managers — the home.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useMemo, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -572,6 +573,7 @@ function ActionsTrackerSection() {
 // ── Section E: Cara Weekly Report Generator ───────────────────────────────────
 
 function CaraWeeklyReportSection() {
+  const homeName = useHomeName();
   const [isGenerating, setIsGenerating] = useState(false);
   const [rawOutput, setRawOutput]       = useState("");
   const [isDone, setIsDone]             = useState(false);
@@ -595,7 +597,7 @@ function CaraWeeklyReportSection() {
           page_context: "weekly-overview",
           user_role: "registered_manager",
           question:
-            "Generate a weekly management overview narrative for Chamberlain House. Cover: home climate this week, patterns identified, children's wellbeing scores, outstanding actions, children's voice coverage, and key priorities for next week. Write in management oversight style.",
+            `Generate a weekly management overview narrative for ${homeName}. Cover: home climate this week, patterns identified, children's wellbeing scores, outstanding actions, children's voice coverage, and key priorities for next week. Write in management oversight style.`,
           period_days: 7,
         }),
       });

@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME DOMAIN LANDING PAGE
-// The heartbeat of Chamberlain House. Shows what matters today: priorities, young
+// The heartbeat of the home. Shows what matters today: priorities, young
 // people, staff, actions, compliance, and positive progress — all at a glance.
 // ══════════════════════════════════════════════════════════════════════════════
 

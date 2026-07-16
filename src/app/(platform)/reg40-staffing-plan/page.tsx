@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import {
   ChevronDown,
@@ -75,6 +76,7 @@ const RECENT_CHANGES = [
 /* ── page ─────────────────────────────────────────────────────────────── */
 
 export default function Reg40StaffingPlanPage() {
+  const homeName = useHomeName();
   const { data: records = [], isLoading } = useReg40StaffEntries();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -236,7 +238,7 @@ export default function Reg40StaffingPlanPage() {
           <CardHeader className="py-3 px-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <Users className="h-4 w-4 text-brand" />
-              Establishment — Chamberlain House
+              Establishment — {homeName}
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">

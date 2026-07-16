@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -52,6 +53,7 @@ const exportCols: ExportColumn<PlacementStabilityMeeting>[] = [
 
 /* ─── component ─── */
 export default function PlacementStabilityMeetingsPage() {
+  const homeName = useHomeName();
   const { data: res, isLoading } = usePlacementStabilityMeetings();
   const entries = res?.data ?? [];
 
@@ -166,7 +168,7 @@ export default function PlacementStabilityMeetingsPage() {
           <div>
             <p className="text-sm font-medium text-green-800">100% Placement Stability</p>
             <p className="text-xs text-green-700 mt-1">
-              All placements at Chamberlain House have been maintained. Where stability was at risk,
+              All placements at {homeName} have been maintained. Where stability was at risk,
               proactive multi-agency intervention and genuine listening to children&apos;s voices
               resolved concerns. Zero unplanned endings in 12 months.
             </p>

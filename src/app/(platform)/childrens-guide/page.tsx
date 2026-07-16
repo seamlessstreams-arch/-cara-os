@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState } from "react";
 import {
   BookOpen, Heart, Shield, Users, MessageSquare,
@@ -25,12 +26,12 @@ interface GuideSection {
 }
 
 /* ── sections ────────────────────────────────────────────────────────── */
-const SECTIONS: GuideSection[] = [
+const buildSections = (homeName: string): GuideSection[] => [
   {
-    id: "welcome", title: "Welcome to Chamberlain House", icon: Home, colour: "text-blue-600",
+    id: "welcome", title: `Welcome to ${homeName}`, icon: Home, colour: "text-blue-600",
     lastUpdated: "2026-01-15",
     content: [
-      "Welcome to Chamberlain House! This is your home and we want you to feel safe, happy, and comfortable here.",
+      `Welcome to ${homeName}! This is your home and we want you to feel safe, happy, and comfortable here.`,
       "This guide tells you everything you need to know about living here, your rights, and who can help you.",
       "We wrote this guide with the help of young people who live here. If anything is unclear, just ask a member of staff.",
     ],
@@ -55,7 +56,7 @@ const SECTIONS: GuideSection[] = [
     content: [
       "Darren (Registered Manager) — Darren is in charge of the home and makes sure everything runs well. You can talk to Darren about anything.",
       "Your Key Worker — Your key worker is a special member of staff assigned to you. They'll spend one-to-one time with you regularly and help with things you want to work on.",
-      "The Staff Team — All the staff at Chamberlain House are here to support you. You can talk to any of them at any time.",
+      `The Staff Team — All the staff at ${homeName} are here to support you. You can talk to any of them at any time.`,
       "Your Social Worker — Your social worker visits regularly and makes sure your care plan is right for you.",
       "Independent Visitor — An independent person visits the home every month to check everything is okay. You can talk to them privately.",
       "Advocate — If you want someone independent to help you have your say, you can ask for an advocate.",
@@ -114,7 +115,7 @@ const SECTIONS: GuideSection[] = [
     id: "contacts", title: "Important Phone Numbers", icon: Phone, colour: "text-teal-600",
     lastUpdated: "2026-01-15",
     content: [
-      "Chamberlain House: 0121 XXX XXXX",
+      `${homeName}: 0121 XXX XXXX`,
       "Darren (Registered Manager): Available through staff on shift",
       "Childline: 0800 1111 — Free, confidential, available 24/7",
       "Ofsted: 0300 123 1231 — You can call Ofsted if you have concerns about the home",
@@ -129,16 +130,18 @@ const SECTIONS: GuideSection[] = [
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function ChildrensGuidePage() {
+  const homeName = useHomeName();
+  const SECTIONS = buildSections(homeName);
   const [expanded, setExpanded] = useState<string | null>("welcome");
 
   return (
     <PageShell
       title="Children's Guide"
-      subtitle="Everything young people need to know about living at Chamberlain House"
+      subtitle={`Everything young people need to know about living at ${homeName}`}
       caraContext={{ pageTitle: "Children's Guide", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Children's Guide — Chamberlain House" />
+          <PrintButton title={`Children's Guide — ${homeName}`} />
           <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
@@ -149,12 +152,12 @@ export default function ChildrensGuidePage() {
           <div className="flex items-center gap-3 mb-3">
             <BookOpen className="h-8 w-8 text-blue-600" />
             <div>
-              <h2 className="text-xl font-bold text-blue-900">Your Guide to Chamberlain House</h2>
+              <h2 className="text-xl font-bold text-blue-900">{`Your Guide to ${homeName}`}</h2>
               <p className="text-sm text-blue-700">A guide for young people, by young people</p>
             </div>
           </div>
           <p className="text-sm text-blue-800">
-            This guide has been written to help you understand what it&apos;s like to live at Chamberlain House,
+            This guide has been written to help you understand what it&apos;s like to live at {homeName},
             what your rights are, and who you can talk to if you need help. It&apos;s <strong>your</strong> guide —
             if you think we should add anything or change something, tell us!
           </p>
@@ -221,7 +224,7 @@ export default function ChildrensGuidePage() {
       />
       <CaraPanel
         mode="assist"
-        pageContext="Children's Guide — what to expect at Chamberlain House, who's who, house rules, bedroom, rights, compliments & complaints, emergency contacts"
+        pageContext={`Children's Guide — what to expect at ${homeName}, who's who, house rules, bedroom, rights, compliments & complaints, emergency contacts`}
         recordType="ofsted_evidence"
         className="mt-6"
       />
