@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useEffect, useCallback } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -154,13 +155,13 @@ const PREBUILT_QUERIES = [
 
 // ── Demo Data (fallback when API unavailable) ────────────────────────────────
 
-const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
+const buildDemoSnapshots = (homeName: string): CrossHomeSnapshot[] => [
   {
     id: "snap-oak-1",
     organisation_id: DEMO_ORG_ID,
     snapshot_date: "2026-05-16",
     home_id: "home-oak",
-    home_name: "Chamberlain House",
+    home_name: `${homeName}`,
     total_children: 3,
     total_incidents_7d: 1,
     total_incidents_30d: 4,
@@ -180,7 +181,7 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
       { factor: "Night staff supervision gap", severity: "low", trend: "improving" },
     ],
     cara_recommendations: [
-      { recommendation: "Complete night worker supervision by end of week", priority: "this_week", home_id: "home-oak", home_name: "Chamberlain House" },
+      { recommendation: "Complete night worker supervision by end of week", priority: "this_week", home_id: "home-oak", home_name: `${homeName}` },
     ],
     created_at: "2026-05-16T08:00:00Z",
   },
@@ -263,11 +264,11 @@ const DEMO_OVERVIEW: OrganisationOverview = {
   key_work_overdue_total: 3,
 };
 
-const DEMO_COMPARISON: ComparisonRow[] = [
+const buildDemoComparison = (homeName: string): ComparisonRow[] => [
   {
     metric: "Incidents (7 days)",
     values: [
-      { home_id: "home-oak", home_name: "Chamberlain House", value: 1, status: "green" },
+      { home_id: "home-oak", home_name: `${homeName}`, value: 1, status: "green" },
       { home_id: "home-willow", home_name: "Willow Lodge", value: 5, status: "red" },
       { home_id: "home-birch", home_name: "Birch Cottage", value: 0, status: "green" },
     ],
@@ -275,7 +276,7 @@ const DEMO_COMPARISON: ComparisonRow[] = [
   {
     metric: "Incidents (30 days)",
     values: [
-      { home_id: "home-oak", home_name: "Chamberlain House", value: 4, status: "amber" },
+      { home_id: "home-oak", home_name: `${homeName}`, value: 4, status: "amber" },
       { home_id: "home-willow", home_name: "Willow Lodge", value: 14, status: "red" },
       { home_id: "home-birch", home_name: "Birch Cottage", value: 2, status: "green" },
     ],
@@ -283,7 +284,7 @@ const DEMO_COMPARISON: ComparisonRow[] = [
   {
     metric: "Open Safeguarding Concerns",
     values: [
-      { home_id: "home-oak", home_name: "Chamberlain House", value: 0, status: "green" },
+      { home_id: "home-oak", home_name: `${homeName}`, value: 0, status: "green" },
       { home_id: "home-willow", home_name: "Willow Lodge", value: 2, status: "red" },
       { home_id: "home-birch", home_name: "Birch Cottage", value: 0, status: "green" },
     ],
@@ -291,7 +292,7 @@ const DEMO_COMPARISON: ComparisonRow[] = [
   {
     metric: "Recording Compliance %",
     values: [
-      { home_id: "home-oak", home_name: "Chamberlain House", value: 92, status: "green" },
+      { home_id: "home-oak", home_name: `${homeName}`, value: 92, status: "green" },
       { home_id: "home-willow", home_name: "Willow Lodge", value: 61, status: "red" },
       { home_id: "home-birch", home_name: "Birch Cottage", value: 97, status: "green" },
     ],
@@ -299,7 +300,7 @@ const DEMO_COMPARISON: ComparisonRow[] = [
   {
     metric: "Supervision Compliance %",
     values: [
-      { home_id: "home-oak", home_name: "Chamberlain House", value: 95, status: "green" },
+      { home_id: "home-oak", home_name: `${homeName}`, value: 95, status: "green" },
       { home_id: "home-willow", home_name: "Willow Lodge", value: 58, status: "red" },
       { home_id: "home-birch", home_name: "Birch Cottage", value: 100, status: "green" },
     ],
@@ -307,7 +308,7 @@ const DEMO_COMPARISON: ComparisonRow[] = [
   {
     metric: "Ofsted Readiness Score",
     values: [
-      { home_id: "home-oak", home_name: "Chamberlain House", value: 88, status: "green" },
+      { home_id: "home-oak", home_name: `${homeName}`, value: 88, status: "green" },
       { home_id: "home-willow", home_name: "Willow Lodge", value: 52, status: "red" },
       { home_id: "home-birch", home_name: "Birch Cottage", value: 94, status: "green" },
     ],
@@ -315,7 +316,7 @@ const DEMO_COMPARISON: ComparisonRow[] = [
   {
     metric: "Key Work Sessions Overdue",
     values: [
-      { home_id: "home-oak", home_name: "Chamberlain House", value: 0, status: "green" },
+      { home_id: "home-oak", home_name: `${homeName}`, value: 0, status: "green" },
       { home_id: "home-willow", home_name: "Willow Lodge", value: 3, status: "amber" },
       { home_id: "home-birch", home_name: "Birch Cottage", value: 0, status: "green" },
     ],
@@ -374,10 +375,11 @@ function regStatus(dateStr: string | null): { label: string; style: string } {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function CrossHomeIntelligencePage() {
+  const homeName = useHomeName();
   const [activeTab, setActiveTab] = useState<TabId>("overview");
-  const [snapshots, setSnapshots] = useState<CrossHomeSnapshot[]>(DEMO_SNAPSHOTS);
+  const [snapshots, setSnapshots] = useState<CrossHomeSnapshot[]>(() => buildDemoSnapshots(homeName));
   const [overview, setOverview] = useState<OrganisationOverview>(DEMO_OVERVIEW);
-  const [comparison, setComparison] = useState<ComparisonRow[]>(DEMO_COMPARISON);
+  const [comparison, setComparison] = useState<ComparisonRow[]>(() => buildDemoComparison(homeName));
   const [alerts, setAlerts] = useState<CrossHomeAlert[]>(DEMO_ALERTS);
   const [loading, setLoading] = useState(false);
   const [caraQuery, setCaraQuery] = useState("");

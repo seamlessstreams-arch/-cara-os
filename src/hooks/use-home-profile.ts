@@ -25,7 +25,13 @@ export interface HomeProfileResult {
 export function useHomeProfile() {
   return useQuery({
     queryKey: ["home-profile"],
-    queryFn: () => api.get<HomeProfileResult>("/home-profile"),
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
     staleTime: 30 * 60_000,
     gcTime: 60 * 60_000,
   });

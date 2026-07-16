@@ -33,12 +33,12 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 
 /* ── handbook sections ─────────────────────────────────────────────────────── */
 
-const SECTIONS: HandbookSection[] = [
+const buildSections = (homeName: string): HandbookSection[] => [
   {
     id: "welcome", title: "Welcome & Introduction", icon: BookOpen, iconColor: "text-blue-600",
     lastUpdated: d(-30),
     content: [
-      { heading: "Welcome to Chamberlain House", body: "Welcome to the Chamberlain House team. This handbook provides essential information about your role, responsibilities, and the standards we uphold. Chamberlain House is a 3-bed children's home for young people aged 11-17, registered with Ofsted under the Children's Homes (England) Regulations 2015. Our ethos is built on therapeutic care, relational practice, and ensuring every child feels safe, valued, and heard." },
+      { heading: `Welcome to ${homeName}`, body: `Welcome to the ${homeName} team. This handbook provides essential information about your role, responsibilities, and the standards we uphold. ${homeName} is a 3-bed children's home for young people aged 11-17, registered with Ofsted under the Children's Homes (England) Regulations 2015. Our ethos is built on therapeutic care, relational practice, and ensuring every child feels safe, valued, and heard.` },
       { heading: "Our Values", body: "Respect — we treat every child and colleague with dignity. Safety — physical and emotional safety is our first priority. Empowerment — we help young people develop independence and self-belief. Honesty — we are transparent, accountable, and reflective. Collaboration — we work as a team and in partnership with families and professionals." },
       { heading: "Registered Manager", body: "Darren Laville is the Registered Manager (RM). The RM is responsible for the day-to-day running of the home, regulatory compliance, staff supervision, and safeguarding. Ryan serves as Deputy Manager. In Darren's absence, Ryan assumes RM responsibilities." },
     ],
@@ -167,7 +167,7 @@ const SECTIONS: HandbookSection[] = [
     ],
   },
   {
-    id: "leaving", title: "Leaving Chamberlain House", icon: Home, iconColor: "text-[var(--cs-text-secondary)]",
+    id: "leaving", title: `Leaving ${homeName}`, icon: Home, iconColor: "text-[var(--cs-text-secondary)]",
     lastUpdated: d(-60),
     content: [
       { heading: "Notice Period", body: "Your contractual notice period is 4 weeks (or as stated in your contract). Please submit your resignation in writing to the RM. During your notice period, you are expected to maintain the same professional standards. A thorough handover of your key working responsibilities must be completed." },
@@ -180,6 +180,7 @@ const SECTIONS: HandbookSection[] = [
 
 export default function StaffHandbookPage() {
   const homeName = useHomeName();
+  const SECTIONS = buildSections(homeName);
   const [expandedId, setExpandedId] = useState<string | null>("welcome");
 
   return (

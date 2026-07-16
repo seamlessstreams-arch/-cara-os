@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -55,6 +56,7 @@ const categoryColor = (cat: string) => {
 };
 
 export default function ChildParticipationLogPage() {
+  const homeName = useHomeName();
   const { data: res, isLoading } = useParticipationEntries();
   const entries = useMemo(() => res?.data ?? [], [res]);
 
@@ -148,7 +150,7 @@ export default function ChildParticipationLogPage() {
           <div>
             <p className="text-sm font-medium text-emerald-800">Genuine Participation</p>
             <p className="text-xs text-emerald-700 mt-1">
-              This log evidences that children&apos;s voices genuinely influence decisions at Chamberlain House.
+              This log evidences that children&apos;s voices genuinely influence decisions at {homeName}.
               Participation goes beyond &apos;being asked&apos; — children are shown how their views
               shaped outcomes. Where requests can&apos;t be met, honest explanations are given.
             </p>

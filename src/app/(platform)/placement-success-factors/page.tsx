@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -86,6 +87,7 @@ const exportCols: ExportColumn<SuccessFactor>[] = [
 
 /* ─── component ─── */
 export default function PlacementSuccessFactorsPage() {
+  const homeName = useHomeName();
   const { data = [], isLoading } = useSuccessFactors();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterDomain, setFilterDomain] = useState<string>("all");
@@ -187,7 +189,7 @@ export default function PlacementSuccessFactorsPage() {
               Systematic learning across all placements
             </p>
             <p className="mt-1 text-xs text-[var(--cs-navy)]">
-              This analysis brings together what we have learned from every placement Chamberlain House has
+              This analysis brings together what we have learned from every placement {homeName} has
               held — those that thrived, those that disrupted, and those still in progress. Each
               factor is triangulated against supporting cases, counter-cases, child voice, staff
               reflection, and external evidence. The aim is not to produce a list of good ideas, but

@@ -4,6 +4,7 @@
 // CARA — OFSTED READINESS REVIEW
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -86,6 +87,7 @@ function MockQuestion({ question, index }: { question: string; index: number }) 
 }
 
 export default function OfstedReadinessPage() {
+  const homeName = useHomeName();
   const [context, setContext] = useState("");
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<ReadinessResult | null>(null);
@@ -100,7 +102,7 @@ export default function OfstedReadinessPage() {
         {
           mode: "ri_ofsted_readiness",
           style: "inspection_ready",
-          source_content: context || "Chamberlain House children's home. 3 young people aged 13-17. Registered Manager in post 18 months. Last Ofsted inspection 14 months ago — Good with Outstanding features. Seeking current readiness assessment.",
+          source_content: context || `${homeName} children's home. 3 young people aged 13-17. Registered Manager in post 18 months. Last Ofsted inspection 14 months ago — Good with Outstanding features. Seeking current readiness assessment.`,
           page_context: "Ofsted Readiness Review",
           record_type: "ofsted_readiness",
           user_role: "responsible_individual",

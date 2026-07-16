@@ -1,11 +1,13 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React from "react";
 import { getStore } from "@/lib/db/store";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, CheckCircle2, Clock, Users, Shield, FileText, CheckSquare, Sparkles } from "lucide-react";
 
 function useIntelligenceSummary() {
+  const homeName = useHomeName();
   const store = getStore();
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
@@ -55,7 +57,7 @@ function useIntelligenceSummary() {
 
   return {
     date: now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
-    homeName: "Chamberlain House",
+    homeName,
     stats: { children: children.length, staff: staff.length, incidents: incidents.length, tasks: tasks.length },
     needsAttention,
     goingWell,

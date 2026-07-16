@@ -294,7 +294,7 @@ export default function SiblingsContactProtocolPage() {
 
                 {open && (
                   <CardContent className="pt-0 space-y-5 text-sm">
-                    {/* Pre-Chamberlain House */}
+                    {/* Pre-the home */}
                     <section>
                       <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{`Relationship before ${homeName}`}</h4>
                       <p className="text-[var(--cs-text-secondary)] leading-relaxed">{r.relationship_pre_oak_house}</p>

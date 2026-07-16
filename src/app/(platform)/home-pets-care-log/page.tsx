@@ -1,5 +1,6 @@
 "use client";
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import {
   PawPrint,
@@ -81,6 +82,7 @@ const exportCols: ExportColumn<FlatRow>[] = [
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function HomePetsCareLogPage() {
+  const homeName = useHomeName();
   const { data: raw, isLoading } = usePetRecords();
   const data = useMemo(() => raw?.data ?? [], [raw]);
 
@@ -201,7 +203,7 @@ export default function HomePetsCareLogPage() {
         <div className="flex items-start gap-2">
           <PawPrint className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
-            <strong>Pets are part of the family.</strong> The animals who live at Chamberlain House aren&apos;t a programme or an intervention — they are part of the home&apos;s daily fabric. This log records welfare, vet care, allergy clearance, and how the children are involved. Pet care is a shared responsibility, with rotas that build routine, pride, and gentle accountability into ordinary days.
+            <strong>Pets are part of the family.</strong> The animals who live at {homeName} aren&apos;t a programme or an intervention — they are part of the home&apos;s daily fabric. This log records welfare, vet care, allergy clearance, and how the children are involved. Pet care is a shared responsibility, with rotas that build routine, pride, and gentle accountability into ordinary days.
           </div>
         </div>
       </div>

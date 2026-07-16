@@ -4,6 +4,7 @@
 // CARA — REGULATION 45 ENGINE
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -449,6 +450,7 @@ function GenerateForm({
   evidenceNotes: string;
   setEvidenceNotes: (v: string) => void;
 }) {
+  const homeName = useHomeName();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const [period, setPeriod] = useState("");
@@ -467,7 +469,7 @@ function GenerateForm({
         {
           mode: "ri_reg45_generate",
           style: "reg_45_narrative",
-          source_content: evidenceNotes || `Regulation 45 report for ${period}. Period: ${periodStart} to ${periodEnd}. Home: Chamberlain House.`,
+          source_content: evidenceNotes || `Regulation 45 report for ${period}. Period: ${periodStart} to ${periodEnd}. Home: ${homeName}.`,
           page_context: "Regulation 45 Engine",
           record_type: "reg_45",
           user_role: "responsible_individual",

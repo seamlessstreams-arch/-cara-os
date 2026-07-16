@@ -6,6 +6,7 @@
 // and an inline Morning Brief powered by Cara streaming.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useRef } from "react";
 import {
   Brain, Sparkles, X, Loader2, AlertTriangle, TrendingDown, CheckCircle2,
@@ -54,6 +55,7 @@ function StatPill({ label, value, pillClass, icon }: StatPillProps) {
 // ── Main Widget ───────────────────────────────────────────────────────────────
 
 export function IntelligenceBriefWidget() {
+  const homeName = useHomeName();
   const [isOpen, setIsOpen] = useState(false);
   const [output, setOutput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -130,7 +132,7 @@ export function IntelligenceBriefWidget() {
           page_context: "dashboard",
           user_role: "registered_manager",
           question:
-            "Give me a concise morning intelligence brief for Chamberlain House. Cover: active pattern alerts, home climate, overdue actions, and what I should prioritise today. Be specific and actionable.",
+            `Give me a concise morning intelligence brief for ${homeName}. Cover: active pattern alerts, home climate, overdue actions, and what I should prioritise today. Be specific and actionable.`,
         }),
       });
 
