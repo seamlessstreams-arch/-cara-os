@@ -89,6 +89,10 @@ export interface AskCaraAnswer {
   answered: boolean;
   /** Markdown-ish plain text (newlines + "- " bullets rendered by the UI). */
   text: string;
+  /** §4 epistemic labelling of each line — FACT / ACCOUNT / ANALYSIS /
+   *  HYPOTHESIS / ACTION, with "context" (no badge) for non-claims. Computed
+   *  centrally in answer(); every skill gets it for free. */
+  labelled: { text: string; label: "fact" | "account" | "analysis" | "hypothesis" | "action" | "context" }[];
   sources: AskCaraSource[];
   suggestions: AskCaraSuggestion[];
   disclaimer?: string;

@@ -27,6 +27,7 @@
 // what this orchestrator has already established.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { classifyEpistemics } from "./epistemics";
 import { mentionsAny } from "@/lib/text/keyword-match";
 import { searchCatalogue } from "./record-catalogue";
 import { classifyProhibited } from "./prohibited-request-classifier";
@@ -123,8 +124,10 @@ const staffName = (snap: AskCaraSnapshot, id?: string): string => (id ? snap.sta
 
 const childNameById = (snap: AskCaraSnapshot, id: string): string => childLabel(snap.children.find((c) => c.id === id) ?? ({ id } as AskCaraChild));
 
-function answer(partial: Omit<AskCaraAnswer, "engineVersion" | "disclaimer"> & { disclaimer?: string }): AskCaraAnswer {
-  return { disclaimer: DISCLAIMER, engineVersion: ASK_CARA_VERSION, ...partial };
+function answer(partial: Omit<AskCaraAnswer, "engineVersion" | "disclaimer" | "labelled"> & { disclaimer?: string }): AskCaraAnswer {
+  // §4: label every line of the composed text — fact / account / analysis /
+  // hypothesis / action — at the ONE place all skills flow through.
+  return { disclaimer: DISCLAIMER, engineVersion: ASK_CARA_VERSION, labelled: classifyEpistemics(partial.text), ...partial };
 }
 
 const sug = (labels: string[]): AskCaraSuggestion[] => labels.map((label) => ({ label }));
