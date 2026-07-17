@@ -5650,6 +5650,35 @@ store.reg44VisitReports = [
 
 // Seed education records
 store.educationRecords = [
+  // ── Casey's disruption arc (§5.18) — continues her challenge + silent-struggle
+  // story: suspended, school declined the interim PEP (the seeded professional
+  // challenge), a managed move floated "on a trial basis", and an informal
+  // send-home. No PEP is dated after any of it ⇒ the interim-PEP, managed-move
+  // scrutiny, informal-exclusion and care-planning triggers all fire.
+  {
+    id: "edu_cs_01", child_id: "yp_casey", record_type: "suspension", title: "Fixed-term suspension — 2 days",
+    date: daysFromNow(-48), school: "Riverside Academy",
+    details: "Suspended following an incident in the dining hall. Second suspension this term.",
+    attendance_status: "excluded", linked_pep: false,
+    outcome: undefined, follow_up_date: undefined, staff_id: "staff_darren", status: "open",
+    home_id: "home_oak", created_at: daysFromNow(-48) + "T16:00:00Z",
+  },
+  {
+    id: "edu_cs_02", child_id: "yp_casey", record_type: "managed_move", title: "Managed move proposed to Northgate",
+    date: daysFromNow(-20), school: "Riverside Academy",
+    details: "School proposes a move to Northgate on a trial basis — review after 6 weeks to see how it goes.",
+    attendance_status: null, linked_pep: false,
+    outcome: undefined, follow_up_date: undefined, staff_id: "staff_darren", status: "open",
+    home_id: "home_oak", created_at: daysFromNow(-20) + "T11:00:00Z",
+  },
+  {
+    id: "edu_cs_03", child_id: "yp_casey", record_type: "informal_send_home", title: "Asked to collect Casey at 1:30pm",
+    date: daysFromNow(-9), school: "Riverside Academy",
+    details: "School called asking for Casey to be collected early — 'having a difficult day'. No formal suspension issued.",
+    attendance_status: "part_day", linked_pep: false,
+    outcome: undefined, follow_up_date: undefined, staff_id: "staff_chervelle", status: "open",
+    home_id: "home_oak", created_at: daysFromNow(-9) + "T13:30:00Z",
+  },
   {
     id: "edu_001", child_id: "yp_alex", record_type: "attendance", title: "Full day attendance",
     date: daysFromNow(-1), school: "Derby Alternative Provision",

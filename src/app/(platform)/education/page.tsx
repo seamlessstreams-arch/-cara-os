@@ -50,6 +50,11 @@ const TYPE_CONFIG: Record<EducationRecordType, { label: string; colour: string; 
   provision_change: { label: "Provision Change",  colour: "bg-orange-100 text-orange-700", icon: School     },
   achievement:      { label: "Achievement",       colour: "bg-emerald-100 text-emerald-700", icon: TrendingUp },
   concern:          { label: "Concern",           colour: "bg-amber-100 text-amber-700", icon: AlertTriangle },
+  // §5.18 disruption events — school instability is a care-planning event.
+  suspension:         { label: "Suspension",          colour: "bg-red-100 text-red-700",     icon: XCircle },
+  managed_move:       { label: "Managed Move",        colour: "bg-orange-100 text-orange-700", icon: School },
+  reduced_timetable:  { label: "Reduced Timetable",   colour: "bg-amber-100 text-amber-700", icon: AlertTriangle },
+  informal_send_home: { label: "Informal Send-Home",  colour: "bg-red-100 text-red-700",     icon: AlertTriangle },
 };
 
 const ATTENDANCE_LABELS: Record<EducationAttendanceStatus, string> = {
