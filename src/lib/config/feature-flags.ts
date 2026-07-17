@@ -171,6 +171,15 @@ const FLAGS = {
     description:
       "Let staff capture what came out of a circle (themes, gratitude, things that came up) and configure the home's rhythm. Off = the rhythm and its themes are visible, read-only. Circles are never compliance: nothing here ever produces an attendance figure or a missed-circle alert, flag on or off.",
   },
+  help_reflection_write: {
+    key: "help_reflection_write",
+    env: "CARA_HELP_REFLECTION_WRITE",
+    polarity: "opt_in",
+    default: false,
+    stability: "beta",
+    description:
+      "Let a team record how a child says our help feels (door/wall/gate/trap) and the one change agreed. Off = the prompts and the system-side barriers are visible, read-only. Cara never authors a reflection either way — the lens is always a person's answer, and whose view it is is always recorded.",
+  },
   // ── Phase-4 Workforce ──────────────────────────────────────────────────────
   candidate_to_staff_bridge: {
     key: "candidate_to_staff_bridge",
