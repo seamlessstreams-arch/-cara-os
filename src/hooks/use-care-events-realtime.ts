@@ -15,7 +15,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+// Publishable-or-anon, same fallback as client.ts — with only the legacy anon
+// key set, realtime silently disabled itself while the rest of the app worked.
+const supabasePublishableKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 const isRealtimeEnabled =
   typeof supabaseUrl === "string" &&
