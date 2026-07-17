@@ -593,13 +593,13 @@ export const PRACTICE_OS_ESCALATION_DECISIONS: EscalationDecision[] = [
   },
   {
     id: "escd_seed_2",
-    createdAt: iso(0, "08:30"),
+    createdAt: iso(2, "16:00"),
     createdBy: "staff_ryan",
     childId: ALEX,
     childName: "Alex",
     concernSummary: "Evening escalation pattern is tightening around the court date — third court-linked entry this month.",
     suggestedLevel: "emerging_concern",
-    suggestedAt: iso(0, "08:30"),
+    suggestedAt: iso(2, "16:00"),
     suggestionEvidence: [
       { rule: "pattern_developing", because: "A pattern is developing across recent records." },
       { rule: "incident_frequency", because: "Three or more incidents in the last 30 days suggest a developing pattern." },
