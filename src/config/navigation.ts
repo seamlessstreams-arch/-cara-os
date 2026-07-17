@@ -548,6 +548,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Shift Lifecycle", href: "/intelligence/cara/shift-lifecycle", icon: "ClipboardCheck", module: "team" },
       { label: "Relational Rhythm", href: "/intelligence/cara/relational-rhythm", icon: "Users", module: "team" },
       { label: "How We Respond", href: "/intelligence/cara/institutional-self-check", icon: "ScanEye", module: "team" },
+      { label: "Times & Places", href: "/intelligence/cara/routine-activity", icon: "MapPin", module: "team" },
       { label: "Notification Log",href: "/notification-log",           icon: "Bell",          module: "ri"         },
       { label: "Risk Appetite",   href: "/risk-appetite-statement",    icon: "Shield",        module: "ri"         },
       { label: "Ofsted Self-Eval",href: "/ofsted-self-evaluation",     icon: "Award",         module: "ri"         },
