@@ -2333,7 +2333,12 @@ export interface KeyWorkingSession {
 
 // ── Education Records ────────────────────────────────────────────────────────
 
-export type EducationRecordType = "attendance" | "exclusion" | "pep_meeting" | "attainment" | "provision_change" | "achievement" | "concern";
+// Extended for §5.18 education-disruption triggers: suspensions, managed moves,
+// reduced timetables and informal send-homes are first-class events — school
+// instability is a care-planning event, not an education footnote.
+export type EducationRecordType =
+  | "attendance" | "exclusion" | "pep_meeting" | "attainment" | "provision_change" | "achievement" | "concern"
+  | "suspension" | "managed_move" | "reduced_timetable" | "informal_send_home";
 export type EducationAttendanceStatus = "present" | "absent_authorised" | "absent_unauthorised" | "late" | "excluded" | "part_day";
 
 export interface EducationRecord {
