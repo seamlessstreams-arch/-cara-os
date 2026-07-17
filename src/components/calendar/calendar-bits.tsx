@@ -18,6 +18,7 @@ export const SOURCE_COLOR: Record<CalendarSource, string> = {
   training: "#b58a2e",
   key_working: "#4a8ca0",
   shift: "#9a9488",
+  circle: "#8c7bb0",
 };
 
 export function formatTime(iso: string): string {

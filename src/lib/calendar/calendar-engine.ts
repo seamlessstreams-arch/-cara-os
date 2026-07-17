@@ -73,6 +73,16 @@ interface TrainingLike {
   expiry_date: string | null;
   status: string;
 }
+/** A configured circle in the home's rhythm. Structural, not compliance: it
+ *  appears on the feed as an invitation, never as a task with a due date. */
+interface CircleLike {
+  id: string;
+  kind: string;
+  label: string;
+  start: string;
+  purpose: string;
+}
+
 interface KeyWorkingLike {
   id: string;
   child_id: string;
@@ -101,6 +111,8 @@ export interface CalendarProjectionInput {
   training: TrainingLike[];
   keyWorking: KeyWorkingLike[];
   shifts: ShiftLike[];
+  /** Configured relational circles (doctrine 2.1.3). */
+  circles: CircleLike[];
   /** id → display name, or null when unknown. */
   resolveChild: (id: string | null) => string | null;
   resolveStaff: (id: string | null) => string | null;
@@ -432,6 +444,29 @@ function projectShifts(rows: ShiftLike[], input: CalendarProjectionInput): Calen
 
 // ── Feed assembly ──────────────────────────────────────────────────────────────
 
+function projectCircles(rows: CircleLike[]): CalendarItem[] {
+  return rows.map((c) => ({
+    id: `circle_${c.id}_${c.start.slice(0, 10)}`,
+    source: "circle" as const,
+    title: c.label,
+    start: c.start,
+    end: null,
+    all_day: false,
+    date: dayKey(c.start),
+    event_type: "meeting" as const,
+    child_id: null,
+    child_name: null,
+    staff_id: null,
+    staff_name: null,
+    location: null,
+    // Deliberately no status: a circle is never "overdue" or "missed".
+    status: null,
+    editable: false,
+    href: "/intelligence/cara/relational-rhythm",
+    source_id: c.id,
+  }));
+}
+
 const PROJECTORS: Record<CalendarSource, (input: CalendarProjectionInput) => CalendarItem[]> = {
   calendar: (i) => projectEvents(i.events, i),
   task: (i) => projectTasks(i.tasks, i),
@@ -443,6 +478,7 @@ const PROJECTORS: Record<CalendarSource, (input: CalendarProjectionInput) => Cal
   training: (i) => projectTraining(i.training, i),
   key_working: (i) => projectKeyWorking(i.keyWorking, i),
   shift: (i) => projectShifts(i.shifts, i),
+  circle: (i) => projectCircles(i.circles),
 };
 
 export function buildCalendarFeed(input: CalendarProjectionInput): CalendarFeed {

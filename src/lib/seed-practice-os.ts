@@ -42,6 +42,7 @@ import type {
 import type { EthicalIntelligenceEvent } from "@/lib/ethical-intelligence/types";
 import type { EscalationDecision } from "@/lib/risk-escalation/types";
 import type { TapSession } from "@/lib/tap-thinking/types";
+import type { CircleRhythm, CircleNote } from "@/lib/relational-rhythm/rhythm-engine";
 
 // ── Relative dates (deterministic per boot, mirrors seed-data.ts) ─────────────
 
@@ -57,6 +58,7 @@ function iso(n: number, time = "12:00"): string {
 const ALEX = "yp_alex";
 const CASEY = "yp_casey";
 const JORDAN = "yp_jordan";
+const HOME = "home_oak";
 
 // ── A. Behaviour log (powers trigger patterns, trajectory, ABC, de-escalation) ─
 
@@ -1025,5 +1027,95 @@ export const PRACTICE_OS_PRACTICE_OBSERVATIONS: PracticeObservation[] = [
     signed_off_at: iso(29),
     created_at: iso(30),
     updated_at: iso(30),
+  },
+];
+
+// ── N. Relational rhythm (doctrine 2.1.3) ─────────────────────────────────────
+// A home that actually runs circles. Note what is NOT here: no attendance, no
+// "circle completed" flags. The story the themes tell is deliberate — the team
+// has named thin evening cover three times in a fortnight, which is exactly the
+// kind of thing that gets absorbed silently and should instead be negotiated.
+
+export const PRACTICE_OS_CIRCLE_RHYTHMS: CircleRhythm[] = [
+  {
+    id: "crh_checkin",
+    home_id: HOME,
+    kind: "check_in",
+    starts_at: `${daysAgo(30)}T08:30:00Z`,
+    recurrence: { freq: "daily", interval: 1, until: null, count: null },
+    enabled: true,
+    created_at: iso(30),
+    updated_at: iso(30),
+  },
+  {
+    id: "crh_checkup",
+    home_id: HOME,
+    kind: "check_up",
+    starts_at: `${daysAgo(31)}T14:00:00Z`,
+    recurrence: { freq: "weekly", interval: 1, until: null, count: null },
+    enabled: true,
+    created_at: iso(31),
+    updated_at: iso(31),
+  },
+  {
+    id: "crh_checkout",
+    home_id: HOME,
+    kind: "check_out",
+    starts_at: `${daysAgo(30)}T21:15:00Z`,
+    recurrence: { freq: "daily", interval: 1, until: null, count: null },
+    enabled: true,
+    created_at: iso(30),
+    updated_at: iso(30),
+  },
+];
+
+export const PRACTICE_OS_CIRCLE_NOTES: CircleNote[] = [
+  {
+    id: "cno_001",
+    home_id: HOME,
+    kind: "check_out",
+    date: daysAgo(2),
+    facilitated_by: "staff_ryan",
+    themes: ["Evening cover feels thin", "Casey settled after tea"],
+    gratitude: ["Priya sat with Casey through the whole film"],
+    emerging_concerns: [],
+    created_at: iso(2, "21:40"),
+    created_by: "staff_ryan",
+  },
+  {
+    id: "cno_002",
+    home_id: HOME,
+    kind: "check_up",
+    date: daysAgo(4),
+    facilitated_by: "staff_darren",
+    themes: ["Evening cover feels thin", "Mornings are running calmly"],
+    gratitude: ["Anna's handover notes have been really clear"],
+    emerging_concerns: ["Casey asked again about seeing her brother and nobody has come back to her"],
+    created_at: iso(4, "14:30"),
+    created_by: "staff_darren",
+  },
+  {
+    id: "cno_003",
+    home_id: HOME,
+    kind: "check_in",
+    date: daysAgo(6),
+    facilitated_by: "staff_anna",
+    themes: ["Everyone arrived tired", "Evening cover feels thin"],
+    gratitude: ["Lackson swapped a shift so Mirela could go to her graduation"],
+    emerging_concerns: [],
+    created_at: iso(6, "08:35"),
+    created_by: "staff_anna",
+  },
+  {
+    id: "cno_004",
+    home_id: HOME,
+    kind: "check_out",
+    date: daysAgo(9),
+    facilitated_by: "staff_chervelle",
+    themes: ["Mornings are running calmly"],
+    gratitude: ["Jordan made everyone laugh at tea"],
+    emerging_concerns: [],
+    created_at: iso(9, "21:20"),
+    created_by: "staff_chervelle",
   },
 ];

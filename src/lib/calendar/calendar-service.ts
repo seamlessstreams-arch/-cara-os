@@ -25,6 +25,18 @@ import {
 } from "./calendar-engine";
 import { persistCalendarEvent } from "@/lib/supabase/calendar-persist";
 
+import { expandOccurrences } from "@/lib/calendar/recurrence";
+import { circleDefinition } from "@/lib/relational-rhythm/rhythm-engine";
+
+/** Circles are a rhythm, not a dated record: with no explicit range, show the
+ *  coming fortnight rather than expanding a daily circle to the hard cap. */
+function defaultCircleWindow(): { from: string; to: string } {
+  const now = new Date();
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  return { from: iso(now), to: iso(new Date(now.getTime() + 14 * 86_400_000)) };
+}
+
+
 const HOME_ID = "home_oak";
 
 // ── Name resolvers from the LIVE store (stays correct as the store grows) ──────
@@ -126,6 +138,20 @@ export function getCalendarFeed(opts: {
       shift_type: s.shift_type,
       status: s.status,
     })),
+    // Relational circles (doctrine 2.1.3). Expanded through the SAME recurrence
+    // maths as everything else — one scheduler, not two. Only enabled rhythms
+    // appear: a circle a home has switched off should vanish, not nag.
+    circles: (store.circleRhythms ?? [])
+      .filter((r) => r.enabled)
+      .flatMap((r) =>
+        expandOccurrences(r.starts_at, r.recurrence, range ?? defaultCircleWindow(), 120).map((start) => ({
+          id: r.id,
+          kind: r.kind,
+          label: circleDefinition(r.kind).label,
+          purpose: circleDefinition(r.kind).purpose,
+          start,
+        })),
+      ),
     ...resolvers,
     range,
     sources: opts.sources,
