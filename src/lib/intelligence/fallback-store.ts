@@ -11,6 +11,8 @@
  * end-to-end without Supabase.
  */
 
+import { isLiveTenant } from "@/lib/db/live-mode";
+
 export interface IntelligenceReg44VisitRow {
   id: string;
   home_id: string;
@@ -1505,3 +1507,33 @@ export function nextFallbackId(prefix: string): string {
   idCounter += 1;
   return `${prefix}_${idCounter}`;
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LIVE-TENANT SEED GATE — same contract as src/lib/db/store.ts.
+//
+// The /api/intelligence/* routes read Supabase when configured and fall back to
+// these arrays when it is not. On a MISCONFIGURED live tenant (mode=live but
+// keys absent or wrong) that fallback previously served this seeded fiction as
+// the home's own records — the worst possible degrade. With this gate it
+// degrades to EMPTY instead. Emptied IN PLACE at module load: imports are live
+// bindings to these consts, and runtime pushes still work afterwards. The one
+// seeded OBJECT export (hrInspectionWorkforce — summary counts for the demo HR
+// inspection cockpit) is deliberately left: hollowing an object breaks its
+// consumer's shape, and that route's array sections all empty correctly. Treat
+// its live output as headers-over-empty until the HR domain gets real tables.
+// ══════════════════════════════════════════════════════════════════════════════
+if (isLiveTenant()) {
+  for (const rows of [
+    reg44Visits, reg44Actions, reg45Reviews, reg45Evidence,
+    incidentLearningReviews, voiceEntries, progressGoals, progressEntries,
+    outcomeSnapshots, evidenceItems, staffPassportRecords,
+    providerHomeSummaries, providerOversightLog, attentionItems,
+    caraSuggestions, hrCases, hrOverdueTasks, hrRecruitment,
+    hrInspectionRecruitment, hrInspectionCases, hrInspectionChronology,
+    hrInspectionSuspensions, hrInspectionLado, hrInspectionCompliance,
+    hrInspectionOversight,
+  ]) {
+    rows.length = 0;
+  }
+}
+
