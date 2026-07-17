@@ -1,0 +1,15 @@
+-- 424: 'super_admin' as a real system_role value
+--
+-- The HQ gate (src/lib/hq/hq-service.ts) grants platform-owner access only to
+-- a staff session whose role is 'super_admin', and the app's role model
+-- (auth-guard's AppRole, CROSS_HOME_ROLES) already includes it — but the
+-- system_role enum created in migration 001 never did. On a live database that
+-- makes the master-admin seat impossible to create: the staff_members insert is
+-- rejected by the enum, so /hq (customer + home provisioning) is unreachable
+-- for everyone, in every activated deployment.
+--
+-- ADD VALUE IF NOT EXISTS is idempotent and safe to re-run. Deliberately the
+-- ONLY statement here: Postgres forbids USING a new enum value inside the same
+-- transaction that added it, so the bootstrap SQL that creates the actual
+-- super_admin staff row lives in docs/ACTIVATION.md and runs afterwards.
+alter type system_role add value if not exists 'super_admin';

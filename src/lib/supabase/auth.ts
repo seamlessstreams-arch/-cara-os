@@ -45,7 +45,13 @@ export async function resolveStaffSession(
   if (!isSupabaseEnabled()) return null;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  // Support both the new "publishable key" and legacy "anon key" naming — the
+  // SAME fallback client.ts uses. Without it, a deployment configured with only
+  // the anon key signs in fine in the browser and then fails session resolution
+  // on every API call: a 401 loop that looks like broken auth.
+  const publishableKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !publishableKey) return null;
 
