@@ -58,6 +58,7 @@ import type { VoiceConcernLoop } from "@/lib/voice-of-child/voice-follow-through
 import type { RegulationProfile, AdultRegulationReflection } from "@/lib/emotional-safety/regulation-profile-engine";
 import type { ShiftLifecycleRecord } from "@/lib/shift-lifecycle/shift-lifecycle-engine";
 import type { CircleRhythm, CircleNote } from "@/lib/relational-rhythm/rhythm-engine";
+import type { HelpReflection } from "@/lib/experience-of-help/experience-of-help-engine";
 import type {
   CommsChannel,
   CommsChannelMember,
@@ -1055,6 +1056,9 @@ const store = {
   circleRhythms: [...PRACTICE_OS_CIRCLE_RHYTHMS] as CircleRhythm[],
   /** What came out of each circle. No attendance, by design. */
   circleNotes: [...PRACTICE_OS_CIRCLE_NOTES] as CircleNote[],
+  /** How each child says our help feels — door, wall, gate, trap (2.2.5).
+   *  Only ever written by a human; Cara never fills one in. */
+  helpReflections: [] as HelpReflection[],
   // ── Comms Centre (Phase 1) ────────────────────────────────────────────────
   commsChannels: [] as CommsChannel[],
   commsChannelMembers: [] as CommsChannelMember[],
