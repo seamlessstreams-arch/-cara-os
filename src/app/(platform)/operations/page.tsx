@@ -19,6 +19,7 @@ import {
   CaraPatternAlert,
   CaraDailyIntelligence,
 } from "@/components/cara";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -241,7 +242,7 @@ function TasksTab() {
           </div>
         </div>
         <div className="divide-y divide-[var(--cs-border-subtle)]">
-          {DEMO_TASKS.map((task) => (
+          {demoSeed(DEMO_TASKS).map((task) => (
             <div key={task.ref} className="px-4 py-3 hover:bg-slate-50/50 transition-colors">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -329,7 +330,7 @@ function WorkflowsTab() {
           <h3 className="text-sm font-semibold text-[var(--cs-navy)]">Active Workflows</h3>
         </div>
         <div className="divide-y divide-[var(--cs-border-subtle)]">
-          {DEMO_ACTIVE.map((w) => (
+          {demoSeed(DEMO_ACTIVE).map((w) => (
             <div key={w.id} className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
@@ -702,9 +703,9 @@ function IntelligenceTab() {
 
   const filtered = severityFilter === "all"
     ? DEMO_RECOMMENDATIONS
-    : DEMO_RECOMMENDATIONS.filter((r) => r.severity === severityFilter);
+    : demoSeed(DEMO_RECOMMENDATIONS).filter((r) => r.severity === severityFilter);
 
-  const active = DEMO_RECOMMENDATIONS.filter((r) => r.status === "active");
+  const active = demoSeed(DEMO_RECOMMENDATIONS).filter((r) => r.status === "active");
   const bySeverity = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
   for (const r of active) bySeverity[r.severity] = (bySeverity[r.severity] ?? 0) + 1;
 
@@ -827,10 +828,10 @@ const ACTION_STYLES: Record<string, string> = {
 function AuditTab() {
   const [entityFilter, setEntityFilter] = useState<string>("all");
 
-  const entityTypes = [...new Set(DEMO_AUDIT_ENTRIES.map((e) => e.entity_type))];
+  const entityTypes = [...new Set(demoSeed(DEMO_AUDIT_ENTRIES).map((e) => e.entity_type))];
   const filtered = entityFilter === "all"
     ? DEMO_AUDIT_ENTRIES
-    : DEMO_AUDIT_ENTRIES.filter((e) => e.entity_type === entityFilter);
+    : demoSeed(DEMO_AUDIT_ENTRIES).filter((e) => e.entity_type === entityFilter);
 
   return (
     <div className="space-y-4">
@@ -859,7 +860,7 @@ function AuditTab() {
             className={cn("px-3 py-1.5 rounded-full text-xs font-medium transition-colors capitalize",
               entityFilter === et ? "bg-[var(--cs-primary)] text-white" : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200")}
           >
-            {et.replace(/_/g, " ")} ({DEMO_AUDIT_ENTRIES.filter((e) => e.entity_type === et).length})
+            {et.replace(/_/g, " ")} ({demoSeed(DEMO_AUDIT_ENTRIES).filter((e) => e.entity_type === et).length})
           </button>
         ))}
       </div>

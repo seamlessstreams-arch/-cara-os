@@ -15,6 +15,7 @@ import {
   Scale, CheckCircle2, AlertTriangle, Shield, Eye,
   BookOpen, TrendingUp, BarChart3, FileText,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -96,8 +97,8 @@ const READINESS_STYLES: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function RegulationIntelligencePage() {
-  const [coverage] = useState(DEMO_COVERAGE);
-  const [sccif] = useState(DEMO_SCCIF);
+  const [coverage] = useState(demoSeed(DEMO_COVERAGE));
+  const [sccif] = useState(demoSeed(DEMO_SCCIF));
   const [view, setView] = useState<"sccif" | "regulations">("sccif");
 
   const strongCount = coverage.filter((r) => r.coverage === "strong").length;

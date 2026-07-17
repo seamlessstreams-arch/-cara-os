@@ -17,6 +17,7 @@ import {
   Sparkles, Eye, Target, ThumbsUp, ThumbsDown,
   Clock, ArrowRight,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -116,7 +117,7 @@ const RISK_STYLES: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function DecisionSupportPage() {
-  const [decisions] = useState<DecisionRecord[]>(DEMO_DECISIONS);
+  const [decisions] = useState<DecisionRecord[]>(demoSeed(DEMO_DECISIONS));
   const [selectedId, setSelectedId] = useState<string>(DEMO_DECISIONS[0].id);
 
   const current = decisions.find((d) => d.id === selectedId);

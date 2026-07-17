@@ -63,6 +63,9 @@ jobs:
       - name: RLS guard (no anon-reachable tables or open policies)
         run: node scripts/check-rls.js
 
+      - name: Demo-seed guard (no ungated client-side demo fiction on live tenants)
+        run: node scripts/check-demo-seed.js
+
   test:
     name: Test suite
     runs-on: ubuntu-latest

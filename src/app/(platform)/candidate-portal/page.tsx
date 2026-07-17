@@ -15,6 +15,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -125,7 +126,7 @@ export default function CandidatePortalPage() {
         <div className="bg-white rounded-lg border border-[var(--cs-border)] p-3">
           <p className="text-xs text-[var(--cs-text-muted)] mb-2 font-medium">Demo — view as candidate:</p>
           <div className="flex gap-2 flex-wrap">
-            {DEMO_CANDIDATES.map((c) => (
+            {demoSeed(DEMO_CANDIDATES).map((c) => (
               <button
                 key={c.id}
                 onClick={() => setSelectedCandidate(c.id)}

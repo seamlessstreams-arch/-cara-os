@@ -17,6 +17,7 @@ import {
   Heading, Info, Layers, Repeat,
   Sparkles, Shield, AlertTriangle,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Field type config ──────────────────────────────────────────────────────
 
@@ -176,7 +177,7 @@ const DEMO_FIELDS: FormFieldDefinition[] = [
 type ViewMode = "build" | "preview";
 
 export default function FormBuilderPage() {
-  const [fields, setFields] = useState<FormFieldDefinition[]>(DEMO_FIELDS);
+  const [fields, setFields] = useState<FormFieldDefinition[]>(demoSeed(DEMO_FIELDS));
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("build");
   const [formTitle, setFormTitle] = useState("Incident Report Form");

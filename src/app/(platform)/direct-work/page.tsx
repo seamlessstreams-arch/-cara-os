@@ -11,6 +11,7 @@ import {
   HandHeart, Plus, Calendar, Clock, User, Target,
   FileText, ChevronRight, Sparkles,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Static reference data ────────────────────────────────────────────────────
 
@@ -99,7 +100,7 @@ const DEMO_SESSIONS: DirectWorkSession[] = [
 export default function DirectWorkPage() {
   const [filter, setFilter] = useState<"all" | "completed" | "planned">("all");
 
-  const filtered = DEMO_SESSIONS.filter((s) => filter === "all" || s.status === filter);
+  const filtered = demoSeed(DEMO_SESSIONS).filter((s) => filter === "all" || s.status === filter);
 
   return (
     <PageShell
@@ -125,10 +126,10 @@ export default function DirectWorkPage() {
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "This Month", value: DEMO_SESSIONS.filter((s) => s.status === "completed").length, colour: "border-emerald-200 bg-emerald-50/40 text-emerald-600" },
-          { label: "Planned", value: DEMO_SESSIONS.filter((s) => s.status === "planned").length, colour: "border-blue-200 bg-blue-50/40 text-blue-600" },
-          { label: "Young People", value: new Set(DEMO_SESSIONS.map((s) => s.youngPerson)).size, colour: "border-violet-200 bg-violet-50/40 text-violet-600" },
-          { label: "Session Types", value: new Set(DEMO_SESSIONS.map((s) => s.type)).size, colour: "border-amber-200 bg-amber-50/40 text-amber-600" },
+          { label: "This Month", value: demoSeed(DEMO_SESSIONS).filter((s) => s.status === "completed").length, colour: "border-emerald-200 bg-emerald-50/40 text-emerald-600" },
+          { label: "Planned", value: demoSeed(DEMO_SESSIONS).filter((s) => s.status === "planned").length, colour: "border-blue-200 bg-blue-50/40 text-blue-600" },
+          { label: "Young People", value: new Set(demoSeed(DEMO_SESSIONS).map((s) => s.youngPerson)).size, colour: "border-violet-200 bg-violet-50/40 text-violet-600" },
+          { label: "Session Types", value: new Set(demoSeed(DEMO_SESSIONS).map((s) => s.type)).size, colour: "border-amber-200 bg-amber-50/40 text-amber-600" },
         ].map((stat) => (
           <div key={stat.label} className={cn("rounded-2xl border p-4", stat.colour)}>
             <p className="text-2xl font-bold">{stat.value}</p>

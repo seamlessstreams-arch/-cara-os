@@ -18,6 +18,7 @@ import {
   CheckCircle2, XCircle, Sparkles, Target, BookOpen,
   Lightbulb, Music, Activity, Clock, Star,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -157,7 +158,7 @@ const DIRECTION_ICONS: Record<string, { icon: string; color: string }> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function TherapeuticProfilePage() {
-  const [profiles] = useState(DEMO_PROFILES);
+  const [profiles] = useState(demoSeed(DEMO_PROFILES));
   const [selectedChild, setSelectedChild] = useState(DEMO_PROFILES[0].child_id);
 
   const profile = profiles.find((p) => p.child_id === selectedChild);

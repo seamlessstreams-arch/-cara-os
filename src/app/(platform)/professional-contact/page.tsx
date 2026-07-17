@@ -12,6 +12,7 @@ import {
   GraduationCap, Briefcase, UserCheck, Plus,
   ChevronRight,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Static reference data ────────────────────────────────────────────────────
 
@@ -113,7 +114,7 @@ export default function ProfessionalContactPage() {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState<ProfessionalContact["category"] | "all">("all");
 
-  const filtered = DEMO_CONTACTS.filter((c) => {
+  const filtered = demoSeed(DEMO_CONTACTS).filter((c) => {
     const matchesSearch =
       search === "" ||
       c.name.toLowerCase().includes(search.toLowerCase()) ||

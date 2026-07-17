@@ -17,6 +17,7 @@ import {
   COMMUNICATION_TEMPLATES,
   type CommunicationType, type CommunicationStatus,
 } from "@/lib/services/communication-intelligence";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Config ─────────────────────────────────────────────────────────────────
 
@@ -151,18 +152,18 @@ export default function CommunicationsPage() {
 
   const filtered = useMemo(() => {
     if (filter === "all") return DEMO_DRAFTS;
-    return DEMO_DRAFTS.filter((d) => d.status === filter);
+    return demoSeed(DEMO_DRAFTS).filter((d) => d.status === filter);
   }, [filter]);
 
-  const selected = selectedId ? DEMO_DRAFTS.find((d) => d.id === selectedId) : null;
+  const selected = selectedId ? demoSeed(DEMO_DRAFTS).find((d) => d.id === selectedId) : null;
 
   // Stats
   const stats = {
     total: DEMO_DRAFTS.length,
-    drafts: DEMO_DRAFTS.filter((d) => d.status === "draft").length,
-    inReview: DEMO_DRAFTS.filter((d) => d.status === "review").length,
-    sent: DEMO_DRAFTS.filter((d) => d.status === "sent").length,
-    caraGenerated: DEMO_DRAFTS.filter((d) => d.cara_generated).length,
+    drafts: demoSeed(DEMO_DRAFTS).filter((d) => d.status === "draft").length,
+    inReview: demoSeed(DEMO_DRAFTS).filter((d) => d.status === "review").length,
+    sent: demoSeed(DEMO_DRAFTS).filter((d) => d.status === "sent").length,
+    caraGenerated: demoSeed(DEMO_DRAFTS).filter((d) => d.cara_generated).length,
   };
 
   return (

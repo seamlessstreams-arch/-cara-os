@@ -46,6 +46,7 @@ import {
   Link as LinkIcon,
   ChevronRight,
 } from "lucide-react";
+import { demoSeedOne } from "@/lib/demo/demo-seed";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -250,10 +251,12 @@ export default function CaraSuggestionDetailPage({
   const router = useRouter();
   const { data: apiData } = useCaraSuggestion(id);
   const updateMutation = useUpdateCaraSuggestion();
-  const suggestion = ((apiData?.item as SuggestionDetail | null) ?? DEMO_SUGGESTION_FALLBACK);
+  // Live tenant: no demo fallback — a real home with no such suggestion sees a
+  // not-found state (below), never a fabricated one. Demo: the fallback stands.
+  const suggestion = ((apiData?.item as SuggestionDetail | null) ?? demoSeedOne(DEMO_SUGGESTION_FALLBACK));
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editedText, setEditedText] = useState(suggestion.draft_text);
+  const [editedText, setEditedText] = useState(suggestion?.draft_text ?? "");
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [actionTaken, setActionTaken] = useState<string | null>(null);
@@ -264,11 +267,23 @@ export default function CaraSuggestionDetailPage({
     }
   }, [apiData]);
 
+  // Hooks are all above this line, so the early return is safe. On a live tenant
+  // with no matching suggestion, `suggestion` is null (no demo fallback).
+  if (!suggestion) {
+    return (
+      <PageShell title="Suggestion not found" subtitle="This suggestion isn't available.">
+        <p className="text-sm text-[var(--cs-text-muted)]">
+          No suggestion with this reference. It may have been actioned already, or the link is out of date.
+        </p>
+      </PageShell>
+    );
+  }
+
   const risk = RISK_CONFIG[suggestion.risk_level] ?? RISK_CONFIG.medium;
   const confidence = CONFIDENCE_CONFIG[suggestion.confidence_level] ?? CONFIDENCE_CONFIG.medium;
 
   function handleApprove() {
-    const isAmended = editedText !== suggestion.draft_text;
+    const isAmended = editedText !== suggestion?.draft_text;
     const status = isAmended ? "amended_and_approved" : "approved";
     setActionTaken(status);
     updateMutation.mutate({ id, status, finalText: isAmended ? editedText : undefined });

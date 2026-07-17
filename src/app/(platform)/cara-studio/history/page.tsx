@@ -23,6 +23,7 @@ import {
   type CaraStudioArtifact,
   type CaraStudioArtifactType,
 } from "@/types/cara-studio";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Status config ───────────────────────────────────────────────────────────
 
@@ -116,7 +117,7 @@ const DEMO_CHILDREN = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function HistoryPage() {
-  const [artifacts, setArtifacts] = useState<CaraStudioArtifact[]>(DEMO_ARTIFACTS);
+  const [artifacts, setArtifacts] = useState<CaraStudioArtifact[]>(demoSeed(DEMO_ARTIFACTS));
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
@@ -212,7 +213,7 @@ export default function HistoryPage() {
             className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
           >
             <option value="">All children</option>
-            {DEMO_CHILDREN.map((c) => (
+            {demoSeed(DEMO_CHILDREN).map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
@@ -229,7 +230,7 @@ export default function HistoryPage() {
             filtered.map((artifact) => {
               const StatusIcon = STATUS_ICON[artifact.status] ?? FileText;
               const confidence = (artifact as any).evidence_confidence_score ?? 0;
-              const childName = DEMO_CHILDREN.find((c) => c.id === artifact.child_id)?.name;
+              const childName = demoSeed(DEMO_CHILDREN).find((c) => c.id === artifact.child_id)?.name;
               return (
                 <div
                   key={artifact.id}

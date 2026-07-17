@@ -16,6 +16,7 @@ import {
   Users, Eye, Shield, AlertTriangle, Heart, BookOpen,
   Sparkles, GraduationCap, Home, UserCheck, FileSearch,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -94,7 +95,7 @@ export default function RoleVersionsPage() {
     });
   };
 
-  const selectedVersions = DEMO_VERSIONS.filter((v) => selectedRoles.includes(v.role));
+  const selectedVersions = demoSeed(DEMO_VERSIONS).filter((v) => selectedRoles.includes(v.role));
 
   return (
     <PageShell title="Role Versions" subtitle="Same content, different readers">

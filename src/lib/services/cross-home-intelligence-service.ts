@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -231,7 +232,11 @@ export async function getLatestSnapshots(
   organisationId: string,
 ): Promise<ServiceResult<CrossHomeSnapshot[]>> {
   const s = sb();
-  if (!s) return { ok: true, data: DEMO_SNAPSHOTS };
+  // No Supabase source (demo, or a MISCONFIGURED live tenant). A live tenant
+  // must never be shown fictional peer homes — it degrades to empty, and the
+  // page's own empty state renders. Overview/comparison/alerts all derive from
+  // this, so gating here cascades to every cross-home view.
+  if (!s) return { ok: true, data: isLiveTenant() ? [] : DEMO_SNAPSHOTS };
 
   const { data, error } = await (s.from("cs_cross_home_snapshots") as SB)
     .select("*")
@@ -293,7 +298,7 @@ export async function getHomeTrends(
   days: number = 30,
 ): Promise<ServiceResult<HomeTrendPoint[]>> {
   const s = sb();
-  if (!s) return { ok: true, data: DEMO_TRENDS };
+  if (!s) return { ok: true, data: isLiveTenant() ? [] : DEMO_TRENDS };
 
   const startDate = new Date(Date.now() - days * 86400000).toISOString().split("T")[0];
 

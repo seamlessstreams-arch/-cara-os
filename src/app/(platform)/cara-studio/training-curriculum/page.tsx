@@ -17,6 +17,7 @@ import {
   CheckCircle2, Clock, Target, BookOpen, Award,
   ChevronDown, ChevronRight,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -102,8 +103,8 @@ const PRIORITY_STYLES: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function TrainingCurriculumPage() {
-  const [staff] = useState(DEMO_STAFF);
-  const [gaps] = useState(DEMO_GAPS);
+  const [staff] = useState(demoSeed(DEMO_STAFF));
+  const [gaps] = useState(demoSeed(DEMO_GAPS));
   const [expandedStaff, setExpandedStaff] = useState<Set<string>>(new Set<string>());
 
   const toggleStaff = (id: string) => {

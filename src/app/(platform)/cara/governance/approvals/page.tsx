@@ -8,6 +8,7 @@ import { useState } from "react";
 import { CaraApprovalQueue } from "@/components/cara/CaraApprovalQueue";
 import { CaraHumanApprovalBanner } from "@/components/cara/CaraHumanApprovalBanner";
 import type { CaraApprovalRecord } from "@/lib/cara/core/types";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // Demo data
 const DEMO_APPROVALS: CaraApprovalRecord[] = [
@@ -62,7 +63,7 @@ const DEMO_APPROVALS: CaraApprovalRecord[] = [
 ];
 
 export default function CaraApprovalsPage() {
-  const [items, setItems] = useState(DEMO_APPROVALS);
+  const [items, setItems] = useState(demoSeed(DEMO_APPROVALS));
   const [selected, setSelected] = useState<CaraApprovalRecord | null>(null);
 
   const handleApprove = (id: string, notes: string) => {

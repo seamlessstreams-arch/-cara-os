@@ -16,6 +16,7 @@ import {
   CheckCircle2, AlertTriangle, Clock, Sparkles, Filter,
   Eye, Shield, Heart, Users, BookOpen, Pill,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -75,7 +76,7 @@ const DEMO_CHILDREN = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function EvidencePage() {
-  const [sources, setSources] = useState<EvidenceSource[]>(DEMO_SOURCES);
+  const [sources, setSources] = useState<EvidenceSource[]>(demoSeed(DEMO_SOURCES));
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [childFilter, setChildFilter] = useState<string | null>(null);
@@ -165,7 +166,7 @@ export default function EvidencePage() {
           <select value={childFilter ?? ""} onChange={(e) => setChildFilter(e.target.value || null)}
             className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]">
             <option value="">All children</option>
-            {DEMO_CHILDREN.map((c) => (
+            {demoSeed(DEMO_CHILDREN).map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
