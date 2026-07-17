@@ -162,6 +162,15 @@ const FLAGS = {
     description:
       "Let a team leader tick the shift checks only they can answer, and sign a shift off. Off = the lifecycle is visible and derived from records, but the pen is dark. Sign-off is never refused even when enabled: handover/records outstanding asks for a reason and records it.",
   },
+  relational_rhythm_write: {
+    key: "relational_rhythm_write",
+    env: "CARA_RELATIONAL_RHYTHM_WRITE",
+    polarity: "opt_in",
+    default: false,
+    stability: "beta",
+    description:
+      "Let staff capture what came out of a circle (themes, gratitude, things that came up) and configure the home's rhythm. Off = the rhythm and its themes are visible, read-only. Circles are never compliance: nothing here ever produces an attendance figure or a missed-circle alert, flag on or off.",
+  },
   // ── Phase-4 Workforce ──────────────────────────────────────────────────────
   candidate_to_staff_bridge: {
     key: "candidate_to_staff_bridge",

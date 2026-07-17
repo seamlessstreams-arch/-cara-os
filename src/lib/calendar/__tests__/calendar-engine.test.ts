@@ -46,6 +46,7 @@ function emptyInput(over: Partial<CalendarProjectionInput> = {}): CalendarProjec
     interviews: [],
     training: [],
     keyWorking: [],
+    circles: [],
     shifts: [],
     resolveChild: (id) => (id ? `Child ${id}` : null),
     resolveStaff: (id) => (id ? `Staff ${id}` : null),
@@ -288,5 +289,42 @@ describe("attendee helpers", () => {
       { id: "4", kind: "external", name: "D", email: null, staff_id: null, response: "tentative" },
     ]);
     expect(s).toEqual({ total: 4, accepted: 1, declined: 1, pending: 2 });
+  });
+});
+
+describe("relational circles on the feed (doctrine 2.1.3)", () => {
+  const circle = {
+    id: "crh_checkin",
+    kind: "check_in",
+    label: "Check In",
+    purpose: "How is everyone arriving?",
+    start: "2026-07-17T08:30:00Z",
+  };
+
+  it("projects a circle onto the unified feed like any other dated thing", () => {
+    const feed = buildCalendarFeed(emptyInput({ circles: [circle] }));
+    const item = feed.items.find((i) => i.source === "circle");
+    expect(item?.title).toBe("Check In");
+    expect(item?.href).toBe("/intelligence/cara/relational-rhythm");
+  });
+
+  it("never carries a status — a circle is not overdue, missed, or late", () => {
+    const feed = buildCalendarFeed(emptyInput({ circles: [circle] }));
+    const item = feed.items.find((i) => i.source === "circle")!;
+    expect(item.status).toBeNull();
+    expect(item.editable).toBe(false);
+  });
+
+  it("gives each occurrence a stable, distinct id so repeats never collide", () => {
+    const feed = buildCalendarFeed(
+      emptyInput({ circles: [circle, { ...circle, start: "2026-07-18T08:30:00Z" }] }),
+    );
+    const ids = feed.items.filter((i) => i.source === "circle").map((i) => i.id);
+    expect(new Set(ids).size).toBe(2);
+  });
+
+  it("honours the source filter so a home can hide circles from the calendar", () => {
+    const feed = buildCalendarFeed(emptyInput({ circles: [circle], sources: ["task"] }));
+    expect(feed.items.some((i) => i.source === "circle")).toBe(false);
   });
 });

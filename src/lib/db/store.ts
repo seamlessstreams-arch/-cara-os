@@ -31,6 +31,8 @@ import {
   PRACTICE_OS_ADVOCACY,
   PRACTICE_OS_AUTISM_PLANS,
   PRACTICE_OS_BEHAVIOUR_LOG,
+  PRACTICE_OS_CIRCLE_NOTES,
+  PRACTICE_OS_CIRCLE_RHYTHMS,
   PRACTICE_OS_COMPETENCY_SCORES,
   PRACTICE_OS_DEBRIEFS,
   PRACTICE_OS_EHCP_RECORDS,
@@ -55,6 +57,7 @@ import type { ProfessionalChallenge } from "@/lib/professional-challenge/profess
 import type { VoiceConcernLoop } from "@/lib/voice-of-child/voice-follow-through-engine";
 import type { RegulationProfile, AdultRegulationReflection } from "@/lib/emotional-safety/regulation-profile-engine";
 import type { ShiftLifecycleRecord } from "@/lib/shift-lifecycle/shift-lifecycle-engine";
+import type { CircleRhythm, CircleNote } from "@/lib/relational-rhythm/rhythm-engine";
 import type {
   CommsChannel,
   CommsChannelMember,
@@ -1048,6 +1051,10 @@ const store = {
   handovers: [] as HandoverEntry[],
   /** Team-leader shift lifecycle: attestations + sign-off (doctrine 2.1.1). */
   shiftLifecycleRecords: [] as ShiftLifecycleRecord[],
+  /** The home's relational rhythm — configured circles (doctrine 2.1.3). */
+  circleRhythms: [...PRACTICE_OS_CIRCLE_RHYTHMS] as CircleRhythm[],
+  /** What came out of each circle. No attendance, by design. */
+  circleNotes: [...PRACTICE_OS_CIRCLE_NOTES] as CircleNote[],
   // ── Comms Centre (Phase 1) ────────────────────────────────────────────────
   commsChannels: [] as CommsChannel[],
   commsChannelMembers: [] as CommsChannelMember[],

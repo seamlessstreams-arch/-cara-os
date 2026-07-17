@@ -80,7 +80,8 @@ export type CalendarSource =
   | "interview"
   | "training"
   | "key_working"
-  | "shift";
+  | "shift"
+  | "circle";
 
 /** A single row on the unified calendar feed (planned event OR projection). */
 export interface CalendarItem {
@@ -129,6 +130,7 @@ export const ALL_CALENDAR_SOURCES: CalendarSource[] = [
   "training",
   "key_working",
   "shift",
+  "circle",
 ];
 
 /** Human labels for the source filter chips. */
@@ -143,4 +145,5 @@ export const CALENDAR_SOURCE_LABELS: Record<CalendarSource, string> = {
   training: "Training expiry",
   key_working: "Key-working",
   shift: "Shifts",
+  circle: "Circles",
 };
