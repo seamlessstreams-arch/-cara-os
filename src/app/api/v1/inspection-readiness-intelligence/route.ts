@@ -121,7 +121,7 @@ export async function GET() {
 
   const input: InspectionReadinessInput = {
     today,
-    home_name: store.home?.name ?? "Chamberlain House",
+    home_name: store.home?.name?.trim() || "This home",
     total_children: children.length,
     total_staff: staff.length,
     domain_metrics: domainMetrics,

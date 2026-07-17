@@ -25438,7 +25438,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const youngPeople = (store.youngPeople ?? []) as any[];
       const total_children = youngPeople.filter((c) => c.status === "current").length || youngPeople.length;
       const total_staff = ((store.staff ?? []) as any[]).length;
-      const home_name = (store.home as any)?.name ?? "Chamberlain House";
+      const home_name = (store.home as any)?.name?.trim() || "This home";
 
       const results = await Promise.allSettled(SECTION_ENGINES.map(([route, section]) => fetchSignal(route, section)));
       const signals = results
