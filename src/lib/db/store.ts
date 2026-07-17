@@ -50,6 +50,7 @@ import type { DocVersionRecord } from "@/lib/doc-versioning/doc-versioning-engin
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
 import type { RelationshipEntry } from "@/lib/protective-relationships/types";
+import type { KnowledgeGovernanceRecord } from "@/lib/knowledge-governance/knowledge-governance-engine";
 import type { ProfessionalChallenge } from "@/lib/professional-challenge/professional-challenge-engine";
 import type { VoiceConcernLoop } from "@/lib/voice-of-child/voice-follow-through-engine";
 import type { RegulationProfile, AdultRegulationReflection } from "@/lib/emotional-safety/regulation-profile-engine";
@@ -911,6 +912,34 @@ const PROFESSIONAL_CHALLENGES_SEED: ProfessionalChallenge[] = [
   },
 ];
 
+// Knowledge-governance overlay (§6) over the static practice KB. A realistic
+// first-run picture: two entries properly governed, an approved source
+// classified informal WITHOUT review (fires the §6 core rule), and everything
+// else left unassessed (one aggregate prompt). The two pending sources are
+// correctly held out of the engines until reviewed.
+const KNOWLEDGE_GOVERNANCE_SEED: KnowledgeGovernanceRecord[] = [
+  {
+    entry_id: "reg_childrens_homes_2015", evidence_status: "statutory",
+    permitted_use: "Cite as the governing regulatory standard for all care practice.",
+    limitations: "", reviewer: "staff_darren", reviewed_at: daysFromNow(-40),
+    next_review: daysFromNow(320), version: 1, updated_at: daysFromNow(-40), updated_by: "staff_darren",
+  },
+  {
+    entry_id: "model_pace", evidence_status: "professional_body",
+    permitted_use: "Frame relational responses (Playfulness, Acceptance, Curiosity, Empathy).",
+    limitations: "A stance, not a protocol — not evidence for a safeguarding decision.",
+    reviewer: "staff_alicia", reviewed_at: daysFromNow(-25),
+    next_review: daysFromNow(160), version: 1, updated_at: daysFromNow(-25), updated_by: "staff_alicia",
+  },
+  {
+    // Approved and fed to the engines, but a curated practitioner compilation
+    // never formally reviewed for what it may / may not authorise → §6 core rule.
+    entry_id: "source_reading_list", evidence_status: "practitioner_summary",
+    permitted_use: "", limitations: "", reviewer: "", reviewed_at: null,
+    next_review: null, version: 0, updated_at: daysFromNow(-5), updated_by: "system",
+  },
+];
+
 const RELATIONSHIP_ENTRIES_SEED: RelationshipEntry[] = [
   {
     id: "rel_alex_mirela", child_id: "yp_alex", home_id: "home_oak",
@@ -989,6 +1018,7 @@ const store = {
   stayingSafePlans: [...STAYING_SAFE_PLANS_SEED] as StayingSafePlan[],
   // Protective Relationships Map entries.
   relationshipEntries: [...RELATIONSHIP_ENTRIES_SEED] as RelationshipEntry[],
+  knowledgeGovernance: [...KNOWLEDGE_GOVERNANCE_SEED] as KnowledgeGovernanceRecord[],
   professionalChallenges: [...PROFESSIONAL_CHALLENGES_SEED] as ProfessionalChallenge[],
   voiceConcernLoops: [...VOICE_CONCERN_LOOPS_SEED] as VoiceConcernLoop[],
   regulationProfiles: [...REGULATION_PROFILES_SEED] as RegulationProfile[],
