@@ -544,6 +544,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Reg 44 Reports",href: "/reg44-visitor-reports",        icon: "Eye",           module: "ri"         },
       { label: "Escalation Tracker",href: "/escalation-tracker",       icon: "ArrowUp",       module: "ri"         },
       { label: "Escalation Quality",    href: "/intelligence/cara/escalation-quality",    icon: "Gauge",      module: "compliance" },
+      { label: "Notification Boundaries", href: "/intelligence/cara/notification-boundaries", icon: "BellOff",   module: "team" },
       { label: "Notification Log",href: "/notification-log",           icon: "Bell",          module: "ri"         },
       { label: "Risk Appetite",   href: "/risk-appetite-statement",    icon: "Shield",        module: "ri"         },
       { label: "Ofsted Self-Eval",href: "/ofsted-self-evaluation",     icon: "Award",         module: "ri"         },
