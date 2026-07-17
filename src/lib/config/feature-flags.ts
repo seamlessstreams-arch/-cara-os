@@ -153,6 +153,15 @@ const FLAGS = {
     description:
       "Allow recording document versions into the generic versioning spine (append-only snapshots + supersession chain). Off = the record endpoint is a no-op; reads always work. No doc type consumes the spine until its own adoption module lands.",
   },
+  shift_lifecycle_write: {
+    key: "shift_lifecycle_write",
+    env: "CARA_SHIFT_LIFECYCLE_WRITE",
+    polarity: "opt_in",
+    default: false,
+    stability: "beta",
+    description:
+      "Let a team leader tick the shift checks only they can answer, and sign a shift off. Off = the lifecycle is visible and derived from records, but the pen is dark. Sign-off is never refused even when enabled: handover/records outstanding asks for a reason and records it.",
+  },
   // ── Phase-4 Workforce ──────────────────────────────────────────────────────
   candidate_to_staff_bridge: {
     key: "candidate_to_staff_bridge",

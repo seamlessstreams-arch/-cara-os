@@ -54,6 +54,7 @@ import type { KnowledgeGovernanceRecord } from "@/lib/knowledge-governance/knowl
 import type { ProfessionalChallenge } from "@/lib/professional-challenge/professional-challenge-engine";
 import type { VoiceConcernLoop } from "@/lib/voice-of-child/voice-follow-through-engine";
 import type { RegulationProfile, AdultRegulationReflection } from "@/lib/emotional-safety/regulation-profile-engine";
+import type { ShiftLifecycleRecord } from "@/lib/shift-lifecycle/shift-lifecycle-engine";
 import type {
   CommsChannel,
   CommsChannelMember,
@@ -1045,6 +1046,8 @@ const store = {
   writingAssistantAuditEvents: [...WA_AUDIT_SEED] as WritingAuditEvent[],
   chronology: [] as ChronologyEntry[],
   handovers: [] as HandoverEntry[],
+  /** Team-leader shift lifecycle: attestations + sign-off (doctrine 2.1.1). */
+  shiftLifecycleRecords: [] as ShiftLifecycleRecord[],
   // ── Comms Centre (Phase 1) ────────────────────────────────────────────────
   commsChannels: [] as CommsChannel[],
   commsChannelMembers: [] as CommsChannelMember[],
