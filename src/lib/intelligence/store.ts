@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { generateId } from "@/lib/utils";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import type {
   ChildExperienceSnapshot,
   PatternAlert,
@@ -2989,6 +2990,23 @@ intelligenceStore.trainingNeeds = [
 ];
 
 // ── Collection API ─────────────────────────────────────────────────────────────
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LIVE-TENANT SEED GATE — same contract as src/lib/db/store.ts.
+//
+// This is a PARALLEL store: the main store's gate never touches it, so without
+// this block a live tenant's complaints, contact-persons, interventions, voice
+// records and RI governance screens served the seeded demo fiction as if it
+// were their own home's records. A live tenant starts EMPTY; anything other
+// than exactly "live" keeps the demo (the safe default). Empties IN PLACE —
+// consumers read fields off the store object at call time, and the runtime
+// create() paths push into these same arrays afterwards.
+// ══════════════════════════════════════════════════════════════════════════════
+if (isLiveTenant()) {
+  for (const value of Object.values(intelligenceStore)) {
+    if (Array.isArray(value)) value.length = 0;
+  }
+}
 
 export const intelligenceDb = {
   // ── Child Experience ────────────────────────────────────────────────────────
