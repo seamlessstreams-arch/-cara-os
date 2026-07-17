@@ -16,6 +16,7 @@ import {
   Sparkles, Search, ChevronRight, Activity,
   User, Calendar, BookOpen, Target,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -95,8 +96,8 @@ const DEMO_CHILDREN = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function CareGraphPage() {
-  const [nodes] = useState<GraphNode[]>(DEMO_NODES);
-  const [edges] = useState<GraphEdge[]>(DEMO_EDGES);
+  const [nodes] = useState<GraphNode[]>(demoSeed(DEMO_NODES));
+  const [edges] = useState<GraphEdge[]>(demoSeed(DEMO_EDGES));
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");

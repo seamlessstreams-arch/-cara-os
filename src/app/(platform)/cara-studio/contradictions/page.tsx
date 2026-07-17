@@ -16,6 +16,7 @@ import {
   AlertOctagon, Search, CheckCircle2, AlertTriangle,
   Sparkles, Eye, Clock, XCircle,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -77,7 +78,7 @@ const STATUS_STYLES: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function ContradictionsPage() {
-  const [items] = useState<Contradiction[]>(DEMO_CONTRADICTIONS);
+  const [items] = useState<Contradiction[]>(demoSeed(DEMO_CONTRADICTIONS));
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const filtered = items.filter((c) => !statusFilter || c.status === statusFilter);

@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { CaraAuditViewer } from "@/components/cara/CaraAuditViewer";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // Demo data — in production this fetches from /api/cara/audit
 const DEMO_ENTRIES = [
@@ -93,7 +94,7 @@ const DEMO_ENTRIES = [
 ];
 
 export default function CaraAuditPage() {
-  const [entries] = useState(DEMO_ENTRIES);
+  const [entries] = useState(demoSeed(DEMO_ENTRIES));
 
   return (
     <div className="space-y-6">

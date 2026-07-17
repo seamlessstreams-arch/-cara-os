@@ -36,6 +36,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
@@ -160,7 +161,7 @@ export default function CaraReportNewPage() {
                     <SelectValue placeholder="Select a child..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {DEMO_CHILDREN.map((child) => (
+                    {demoSeed(DEMO_CHILDREN).map((child) => (
                       <SelectItem key={child.id} value={child.id}>
                         {child.name}
                       </SelectItem>

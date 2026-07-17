@@ -16,6 +16,7 @@ import {
   Brain, Heart, AlertTriangle, Shield, Target,
   Sparkles, CheckCircle2, Users, Clock, Activity,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -93,7 +94,7 @@ const SECTION_CONFIG: { key: keyof Formulation["data"]; label: string; icon: Rea
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function FormulationsPage() {
-  const [formulations] = useState<Formulation[]>(DEMO_FORMULATIONS);
+  const [formulations] = useState<Formulation[]>(demoSeed(DEMO_FORMULATIONS));
   const [selectedChild, setSelectedChild] = useState<string>(DEMO_FORMULATIONS[0].childId);
 
   const current = formulations.find((f) => f.childId === selectedChild);

@@ -17,6 +17,7 @@ import {
   ClipboardCheck, Users, Brain, Eye, Mic, Video, Layout,
   Lightbulb, Search,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Demo resources ─────────────────────────────────────────────────────────
 
@@ -64,7 +65,7 @@ const STATUS_STYLES: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function LearningStudioPage() {
-  const [resources] = useState(DEMO_RESOURCES);
+  const [resources] = useState(demoSeed(DEMO_RESOURCES));
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [audienceFilter, setAudienceFilter] = useState<string | null>(null);

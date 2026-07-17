@@ -17,6 +17,7 @@ import {
   Heart, Shield, BookOpen, GraduationCap, Palette,
   MessageCircle, ChevronDown, ChevronRight,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Session type groups ────────────────────────────────────────────────────
 
@@ -108,7 +109,7 @@ const STATUS_STYLES: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function SessionBuilderPage() {
-  const [sessions] = useState(DEMO_SESSIONS);
+  const [sessions] = useState(demoSeed(DEMO_SESSIONS));
   const [selectedSession, setSelectedSession] = useState<string | null>(DEMO_SESSIONS[0].id);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set<string>(["Therapeutic Work"]));
   const [view, setView] = useState<"sessions" | "builder">("sessions");

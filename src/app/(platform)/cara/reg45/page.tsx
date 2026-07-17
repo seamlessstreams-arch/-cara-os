@@ -28,6 +28,7 @@ import {
   BarChart3,
   Filter,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Demo Data ───────────────────────────────────────────────────────────────
 
@@ -157,7 +158,7 @@ export default function CaraReg45Page() {
   const [status, setStatus] = useState("All");
 
   const filtered = useMemo(() => {
-    return DEMO_EVIDENCE.filter((item) => {
+    return demoSeed(DEMO_EVIDENCE).filter((item) => {
       if (category !== "All Categories" && item.category !== category) return false;
       if (status !== "All" && item.status !== status) return false;
       if (search) {
@@ -174,11 +175,11 @@ export default function CaraReg45Page() {
 
   const stats = useMemo(() => {
     const total = DEMO_EVIDENCE.length;
-    const accepted = DEMO_EVIDENCE.filter((e) => e.status === "accepted" || e.status === "included_in_report").length;
+    const accepted = demoSeed(DEMO_EVIDENCE).filter((e) => e.status === "accepted" || e.status === "included_in_report").length;
     const avgQuality = Math.round(
-      DEMO_EVIDENCE.reduce((sum, e) => sum + (e.quality_score ?? 0), 0) / total,
+      demoSeed(DEMO_EVIDENCE).reduce((sum, e) => sum + (e.quality_score ?? 0), 0) / total,
     );
-    const categories = new Set(DEMO_EVIDENCE.map((e) => e.category));
+    const categories = new Set(demoSeed(DEMO_EVIDENCE).map((e) => e.category));
     return { total, accepted, avgQuality, categoryCount: categories.size };
   }, []);
 

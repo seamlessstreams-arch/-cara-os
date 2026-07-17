@@ -17,6 +17,7 @@ import {
   CheckCircle2, Send, Eye, AlertTriangle, Archive,
   Edit3, Trash2, Plus,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -124,7 +125,7 @@ const DEMO_AUDIT: AuditEntry[] = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function AuditTrailPage() {
-  const [entries, setEntries] = useState<AuditEntry[]>(DEMO_AUDIT);
+  const [entries, setEntries] = useState<AuditEntry[]>(demoSeed(DEMO_AUDIT));
   const [searchQuery, setSearchQuery] = useState("");
   const [actionFilter, setActionFilter] = useState<string | null>(null);
 

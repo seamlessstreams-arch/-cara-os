@@ -30,6 +30,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
+import { demoSeed, demoSeedOne } from "@/lib/demo/demo-seed";
+import { isLiveTenant } from "@/lib/db/live-mode";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -377,10 +379,13 @@ function regStatus(dateStr: string | null): { label: string; style: string } {
 export default function CrossHomeIntelligencePage() {
   const homeName = useHomeName();
   const [activeTab, setActiveTab] = useState<TabId>("overview");
-  const [snapshots, setSnapshots] = useState<CrossHomeSnapshot[]>(() => buildDemoSnapshots(homeName));
-  const [overview, setOverview] = useState<OrganisationOverview>(DEMO_OVERVIEW);
-  const [comparison, setComparison] = useState<ComparisonRow[]>(() => buildDemoComparison(homeName));
-  const [alerts, setAlerts] = useState<CrossHomeAlert[]>(DEMO_ALERTS);
+  // Every source on this cross-home dashboard is demo-generated. On a live
+  // tenant they all start empty (the builders are gated too, not just the DEMO_
+  // arrays), and the empty-state guard below renders instead of fictional homes.
+  const [snapshots, setSnapshots] = useState<CrossHomeSnapshot[]>(() => (isLiveTenant() ? [] : buildDemoSnapshots(homeName)));
+  const [overview, setOverview] = useState<OrganisationOverview | null>(demoSeedOne(DEMO_OVERVIEW));
+  const [comparison, setComparison] = useState<ComparisonRow[]>(() => (isLiveTenant() ? [] : buildDemoComparison(homeName)));
+  const [alerts, setAlerts] = useState<CrossHomeAlert[]>(demoSeed(DEMO_ALERTS));
   const [loading, setLoading] = useState(false);
   const [caraQuery, setCaraQuery] = useState("");
   const [caraResponse, setCaraResponse] = useState<CaraAnalysisResponse | null>(null);
@@ -468,6 +473,18 @@ export default function CrossHomeIntelligencePage() {
   // ── Render Helpers ─────────────────────────────────────────────────────────
 
   const criticalAlerts = alerts.filter((a) => a.severity === "critical" || a.severity === "high");
+
+  // Live tenant: no cross-home fixture. A single home has no cross-home view to
+  // show, so this renders an empty state rather than fabricated peer homes.
+  if (!overview) {
+    return (
+      <PageShell title="Cross-home intelligence" subtitle="Organisation-wide view across your homes">
+        <p className="text-sm text-[var(--cs-text-muted)]">
+          No cross-home data yet. This view fills in once more than one home is reporting into your organisation.
+        </p>
+      </PageShell>
+    );
+  }
 
   // ── Render ─────────────────────────────────────────────────────────────────
 

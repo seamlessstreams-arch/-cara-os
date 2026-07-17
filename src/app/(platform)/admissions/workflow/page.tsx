@@ -19,6 +19,7 @@ import {
   DEFAULT_CHECKLIST_ITEMS,
   type AdmissionPhase, type ChecklistCategory,
 } from "@/lib/services/yp-admission-service";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Phase icons ────────────────────────────────────────────────────────────
 
@@ -176,14 +177,14 @@ export default function AdmissionWorkflowPage() {
 
   const filtered = useMemo(() => {
     if (phaseFilter === "all") return DEMO_WORKFLOWS;
-    if (phaseFilter === "active") return DEMO_WORKFLOWS.filter((w) => !["completed", "withdrawn"].includes(w.current_phase));
-    return DEMO_WORKFLOWS.filter((w) => ["completed", "withdrawn"].includes(w.current_phase));
+    if (phaseFilter === "active") return demoSeed(DEMO_WORKFLOWS).filter((w) => !["completed", "withdrawn"].includes(w.current_phase));
+    return demoSeed(DEMO_WORKFLOWS).filter((w) => ["completed", "withdrawn"].includes(w.current_phase));
   }, [phaseFilter]);
 
-  const selected = selectedId ? DEMO_WORKFLOWS.find((w) => w.id === selectedId) : null;
+  const selected = selectedId ? demoSeed(DEMO_WORKFLOWS).find((w) => w.id === selectedId) : null;
 
   // Count active
-  const activeCount = DEMO_WORKFLOWS.filter((w) => !["completed", "withdrawn"].includes(w.current_phase)).length;
+  const activeCount = demoSeed(DEMO_WORKFLOWS).filter((w) => !["completed", "withdrawn"].includes(w.current_phase)).length;
 
   return (
     <PageShell title="Admission Workflow" subtitle="Full referral-to-placement journey with Cara intelligence">
@@ -192,9 +193,9 @@ export default function AdmissionWorkflowPage() {
           {/* Summary strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <SummaryCard label="Active Workflows" value={activeCount} icon={Clock} color="text-blue-600 bg-blue-50" />
-            <SummaryCard label="In Assessment" value={DEMO_WORKFLOWS.filter((w) => ["initial_screening", "impact_assessment"].includes(w.current_phase)).length} icon={Target} color="text-purple-600 bg-purple-50" />
-            <SummaryCard label="Pre-Admission" value={DEMO_WORKFLOWS.filter((w) => ["pre_admission", "admission_planning"].includes(w.current_phase)).length} icon={ClipboardList} color="text-teal-600 bg-teal-50" />
-            <SummaryCard label="Placed This Year" value={DEMO_WORKFLOWS.filter((w) => w.current_phase === "completed").length} icon={CheckCircle2} color="text-emerald-600 bg-emerald-50" />
+            <SummaryCard label="In Assessment" value={demoSeed(DEMO_WORKFLOWS).filter((w) => ["initial_screening", "impact_assessment"].includes(w.current_phase)).length} icon={Target} color="text-purple-600 bg-purple-50" />
+            <SummaryCard label="Pre-Admission" value={demoSeed(DEMO_WORKFLOWS).filter((w) => ["pre_admission", "admission_planning"].includes(w.current_phase)).length} icon={ClipboardList} color="text-teal-600 bg-teal-50" />
+            <SummaryCard label="Placed This Year" value={demoSeed(DEMO_WORKFLOWS).filter((w) => w.current_phase === "completed").length} icon={CheckCircle2} color="text-emerald-600 bg-emerald-50" />
           </div>
 
           {/* Phase filter */}

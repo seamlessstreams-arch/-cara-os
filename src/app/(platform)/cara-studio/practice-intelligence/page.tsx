@@ -18,6 +18,7 @@ import {
   RefreshCw, ChevronDown, ChevronRight, AlertOctagon,
   CheckCircle2, Clock, Zap, Eye,
 } from "lucide-react";
+import { demoSeedOne } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -166,7 +167,7 @@ const PRIORITY_STYLES: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function PracticeIntelligencePage() {
-  const [scan] = useState<ScanData>(DEMO_SCAN);
+  const [scan] = useState<ScanData | null>(demoSeedOne(DEMO_SCAN));
   const [expandedChildren, setExpandedChildren] = useState<Set<string>>(new Set<string>(["child_2"]));
 
   const toggleChild = (id: string) => {
@@ -176,6 +177,18 @@ export default function PracticeIntelligencePage() {
       return next;
     });
   };
+
+  // Live tenant: no demo scan to show. A real home's scanner is driven by its
+  // own records, not this fixture, so it shows an empty state rather than fiction.
+  if (!scan) {
+    return (
+      <PageShell title="Practice Intelligence" subtitle="AI-powered home dynamics scanner">
+        <p className="text-sm text-[var(--cs-text-muted)]">
+          No scan yet. Cara builds this from your home&rsquo;s own incidents, logs and key work as they&rsquo;re recorded.
+        </p>
+      </PageShell>
+    );
+  }
 
   const hd = scan.home_dynamics_summary;
   const climate = CLIMATE_STYLES[hd.emotional_climate] ?? CLIMATE_STYLES.unsettled;

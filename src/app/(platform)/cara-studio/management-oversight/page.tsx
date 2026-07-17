@@ -16,6 +16,7 @@ import {
   ClipboardCheck, Eye, CheckCircle2, AlertTriangle,
   Shield, Clock, Target, Sparkles, Search, FileText,
 } from "lucide-react";
+import { demoSeed } from "@/lib/demo/demo-seed";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -115,7 +116,7 @@ const PRIORITY_STYLES: Record<string, string> = {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function ManagementOversightPage() {
-  const [drafts] = useState(DEMO_DRAFTS);
+  const [drafts] = useState(demoSeed(DEMO_DRAFTS));
   const [selectedId, setSelectedId] = useState<string>(DEMO_DRAFTS[0].id);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
