@@ -25,7 +25,20 @@ interface ChatMessage {
   sources?: AskCaraSource[];
   suggestions?: AskCaraSuggestion[];
   answered?: boolean;
+  /** §4 line labels — fact / account / analysis / hypothesis / action. */
+  labelled?: AskCaraAnswer["labelled"];
 }
+
+// Badge styling per epistemic label. "context" renders no badge — headers and
+// connective text are not claims, and forcing a label would over-claim.
+const EPISTEMIC_BADGE: Record<string, { label: string; cls: string } | null> = {
+  fact: { label: "Fact", cls: "bg-sky-500/15 text-sky-300 border-sky-500/30" },
+  account: { label: "Account", cls: "bg-violet-500/15 text-violet-300 border-violet-500/30" },
+  analysis: { label: "Analysis", cls: "bg-teal-500/15 text-teal-300 border-teal-500/30" },
+  hypothesis: { label: "Possibility", cls: "bg-amber-500/15 text-amber-300 border-amber-500/30" },
+  action: { label: "Action", cls: "bg-rose-500/15 text-rose-300 border-rose-500/30" },
+  context: null,
+};
 
 let counter = 0;
 const nextId = () => `m${++counter}`;
@@ -94,7 +107,7 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
       setMessages((m) => [
         ...m,
         a
-          ? { id: nextId(), role: "cara", text: a.text, sources: a.sources, suggestions: a.suggestions, answered: a.answered }
+          ? { id: nextId(), role: "cara", text: a.text, sources: a.sources, suggestions: a.suggestions, answered: a.answered, labelled: a.labelled }
           : { id: nextId(), role: "cara", text: "I couldn't reach the records just now — please try again in a moment.", answered: false },
       ]);
     } catch {
@@ -151,7 +164,25 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
               <div key={m.id} className="flex gap-2.5">
                 <CaraStar size={18} className="mt-1 shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200">{m.text}</p>
+                  {m.labelled && m.labelled.some((l) => l.label !== "context") ? (
+                    <div className="space-y-0.5 text-sm leading-relaxed text-slate-200">
+                      {m.labelled.map((l, i) => {
+                        const b = EPISTEMIC_BADGE[l.label];
+                        return (
+                          <p key={i} className="whitespace-pre-wrap">
+                            {b && l.text.trim() && (
+                              <span className={"mr-1.5 inline-block rounded border px-1 py-px align-middle text-[9px] font-bold uppercase tracking-wide " + b.cls} title={l.label === "hypothesis" ? "A possibility that requires further exploration" : undefined}>
+                                {b.label}
+                              </span>
+                            )}
+                            {l.text}
+                          </p>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200">{m.text}</p>
+                  )}
                   {m.sources && m.sources.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {m.sources.map((sce, i) => (
