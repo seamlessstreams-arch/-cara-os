@@ -43,7 +43,7 @@ import {
   Brain, Radar, ListChecks, Layers, Puzzle, PlayCircle, Lightbulb, Activity, BookMarked,
   Wand2,
   // Other
-  Ear, EarOff, Target, ArrowRightLeft, CheckSquare, User, Moon, Share2, FolderArchive, GitCompare, LineChart,
+  Ear, EarOff, BellOff, Target, ArrowRightLeft, CheckSquare, User, Moon, Share2, FolderArchive, GitCompare, LineChart,
   // Domain nav icons
   Zap, CalendarCheck, Sunrise,
 } from "lucide-react";
@@ -61,7 +61,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   BarChart2,
   Brain, Radar, ListChecks, Layers, Puzzle, PlayCircle, Lightbulb, Activity, BookMarked,
   Wand2,
-  Ear, EarOff, Target, ArrowRightLeft, CheckSquare, User, Moon, Share2, FolderArchive, GitCompare, LineChart,
+  Ear, EarOff, BellOff, Target, ArrowRightLeft, CheckSquare, User, Moon, Share2, FolderArchive, GitCompare, LineChart,
   Zap, CalendarCheck, Sunrise,
 };
 
