@@ -131,13 +131,15 @@ begin
   ]) loop
     execute format('alter table %I enable row level security', t);
 
+    execute format('drop policy if exists %I on %I', t || '_service_all', t);
     execute format(
-      'create policy if not exists %I on %I for all to service_role using (true) with check (true)',
+      'create policy %I on %I for all to service_role using (true) with check (true)',
       t || '_service_all', t
     );
 
+    execute format('drop policy if exists %I on %I', t || '_auth_read', t);
     execute format(
-      'create policy if not exists %I on %I for select to authenticated using (true)',
+      'create policy %I on %I for select to authenticated using (true)',
       t || '_auth_read', t
     );
   end loop;

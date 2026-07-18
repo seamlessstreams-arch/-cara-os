@@ -223,8 +223,9 @@ begin
     'learning_projects','generated_resources','training_needs','knowledge_gaps','resource_library'
   ]
   loop
+    execute format('drop policy if exists "%s_service_role_all" on %s', t, t);
     execute format(
-      'create policy if not exists "%s_service_role_all" on %s for all to service_role using (true) with check (true)',
+      'create policy "%s_service_role_all" on %s for all to service_role using (true) with check (true)',
       t, t
     );
   end loop;

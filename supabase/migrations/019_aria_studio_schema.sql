@@ -211,10 +211,10 @@ COMMENT ON TABLE aria_studio_audit_log IS
   'Immutable audit trail for every ARIA Studio action. Append-only — no updates or deletes.';
 
 CREATE INDEX idx_aria_audit_home      ON aria_studio_audit_log (home_id);
-CREATE INDEX idx_aria_audit_actor     ON aria_studio_audit_log (actor_id);
+CREATE INDEX IF NOT EXISTS idx_aria_audit_actor     ON aria_studio_audit_log (actor_id);
 CREATE INDEX idx_aria_audit_artifact  ON aria_studio_audit_log (artifact_id);
 CREATE INDEX idx_aria_audit_action    ON aria_studio_audit_log (action_type);
-CREATE INDEX idx_aria_audit_created   ON aria_studio_audit_log (created_at);
+CREATE INDEX IF NOT EXISTS idx_aria_audit_created   ON aria_studio_audit_log (created_at);
 
 -- ── 8. aria_studio_care_graph_nodes ───────────────────────────────────────────
 
