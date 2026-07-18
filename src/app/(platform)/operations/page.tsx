@@ -20,6 +20,7 @@ import {
   CaraDailyIntelligence,
 } from "@/components/cara";
 import { demoSeed } from "@/lib/demo/demo-seed";
+import { isLiveTenant } from "@/lib/db/live-mode";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -581,6 +582,19 @@ function ReadinessTab() {
 
 export default function OperationsPage() {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
+
+  // Live tenant: the whole Operations Centre is demo fixtures (stats, readiness
+  // grades, audit entries) with no data source. It shows an empty state rather
+  // than fabricated figures for a real home.
+  if (isLiveTenant()) {
+    return (
+      <PageShell title="Operations Centre" subtitle="Manager+ governance, compliance, and operational intelligence">
+        <p className="text-sm text-[var(--cs-text-muted)]">
+          Nothing to show yet — the Operations Centre fills in from your home&rsquo;s own tasks, workflows and oversight as they&rsquo;re recorded.
+        </p>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell

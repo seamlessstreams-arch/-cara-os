@@ -2,33 +2,34 @@
 /*
  * check-demo-seed.js — go-live guard for client-side demo fiction.
  *
- * Some platform pages render a hardcoded DEMO_ array directly as their data
- * (useState initialiser, or an array they .map/.filter/.reduce over) with no
- * API behind it. On a live tenant (NEXT_PUBLIC_CARA_MODE=live) that fiction —
- * fictional children, professionals, drafts — renders as if it were the home's
- * own records. The store gates never reach it because the data never leaves the
- * component.
+ * Some platform pages hardcode demo data as `const DEMO_… = [ … ]` (or `{ … }`)
+ * and render it directly, with no API behind it. On a live tenant
+ * (NEXT_PUBLIC_CARA_MODE=live) that fiction — fictional children, professionals,
+ * drafts, stats — renders as if it were the home's own records. The store gates
+ * never reach it because the data never leaves the component.
  *
- * The fix is to route the seed through demoSeed()/demoSeedOne() from
- * @/lib/demo/demo-seed, which returns empty on a live tenant. This guard fails
- * if a page uses a DEMO_ array as data without importing that helper, so the
- * class cannot silently return.
+ * The fix is to route every USE through demoSeed()/demoSeedOne() from
+ * @/lib/demo/demo-seed, which returns empty/null on a live tenant.
  *
- * Heuristic, deliberately matched to the audit that found the class:
- *   OFFENCE  = a page that (useState(DEMO_…) | DEMO_….map/filter/reduce/slice
- *              /find/sort | = DEMO_…) — i.e. renders a DEMO_ array as data
- *   CLEARED  = that page imports from "@/lib/demo/demo-seed"
- * A page that references DEMO_ only as a type or a label never trips the data
- * patterns, so it is not required to import the helper.
+ * This guard fails on any RAW use of a DEMO_ data structure — a reference that
+ * is not wrapped in demoSeed(/demoSeedOne(. An earlier, weaker version only
+ * checked that the helper was imported somewhere in the file; that let a page
+ * wrap its list render and still leak through a bare `return DEMO_X`, a
+ * `DEMO_X[0]`, a `DEMO_X.length` count, or an object-property read. A live-mode
+ * crawl caught two such leaks, so the guard now checks every use.
+ *
+ * SCOPE:
+ *   - Only DEMO_ tokens declared as a data structure: `const DEMO_X = [` or `{`.
+ *     Scalar config consts (e.g. DEMO_ORG_ID = "org-demo-1", a fetch param, not
+ *     rendered fiction) are ignored.
+ *   - A use is CLEARED when the token is immediately wrapped: `demoSeed(DEMO_X`
+ *     or `demoSeedOne(DEMO_X`.
+ *   - The declaration line itself is not a use.
  */
 const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.join(__dirname, "..", "src", "app", "(platform)");
-const HELPER = "@/lib/demo/demo-seed";
-
-// Renders a DEMO_ array AS DATA (not merely as a type or a label).
-const DATA_USE = /useState[^)]*\bDEMO_[A-Z0-9_]+|\bDEMO_[A-Z0-9_]+\.(filter|map|reduce|slice|find|sort|length)\b|=\s*DEMO_[A-Z0-9_]+\b/;
 
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -42,20 +43,51 @@ function walk(dir, out = []) {
 const offenders = [];
 for (const file of walk(ROOT)) {
   const src = fs.readFileSync(file, "utf8");
-  if (!DATA_USE.test(src)) continue; // does not render a DEMO_ array as data
-  // Routed through the gate anywhere in the file → cleared. demoSeed() wraps the
-  // seed at the data source, so the raw DEMO_… tokens can remain.
-  if (src.includes(HELPER)) continue;
-  offenders.push(path.relative(path.join(__dirname, ".."), file));
+
+  // Data-structure DEMO_ tokens only (arrays/objects), never scalar config.
+  const dataTokens = new Set();
+  for (const m of src.matchAll(/\b(const|let)\s+(DEMO_[A-Z0-9_]+)\s*(?::[^=]*)?=\s*[[{]/g)) {
+    dataTokens.add(m[2]);
+  }
+  if (dataTokens.size === 0) continue;
+
+  // A page-level gate — `if (isLiveTenant()) return …` — makes every demo read
+  // below it unreachable in live mode. A wholly-demo page (e.g. an all-fixture
+  // dashboard) is cleaner gated once at the top than wrapped read-by-read, so a
+  // file that carries an explicit page-level gate is trusted. The live-mode
+  // crawl is the backstop that this gate actually dominates.
+  if (/\bif\s*\(\s*isLiveTenant\(\)\s*\)\s*(\{|return)/.test(src)) continue;
+
+  const lines = src.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    for (const tok of dataTokens) {
+      // Every occurrence of the token on this line…
+      const re = new RegExp(`\\b${tok}\\b`, "g");
+      let m;
+      while ((m = re.exec(line)) !== null) {
+        const before = line.slice(0, m.index);
+        // …skip its own declaration…
+        if (new RegExp(`\\b(const|let)\\s+${tok}\\s*(?::|=)`).test(line)) continue;
+        // …skip a TYPE position (`typeof DEMO_X`, `: typeof DEMO_X`) — a type
+        // annotation renders nothing…
+        if (/\btypeof\s*$/.test(before)) continue;
+        // …skip when immediately wrapped by the gate…
+        if (/demoSeedO?n?e?\(\s*$/.test(before)) continue;
+        offenders.push(`${path.relative(path.join(__dirname, ".."), file)}:${i + 1}  ${line.trim().slice(0, 70)}`);
+        break;
+      }
+    }
+  }
 }
 
 if (offenders.length > 0) {
   console.error(
-    `check-demo-seed: ${offenders.length} page(s) render a DEMO_ array as data without the live-tenant gate.\n` +
-      `Route the seed through demoSeed()/demoSeedOne() from "${HELPER}" so a live tenant renders empty, not fiction:\n`,
+    `check-demo-seed: ${offenders.length} raw (ungated) use(s) of DEMO_ data on a page.\n` +
+      `Wrap every use in demoSeed()/demoSeedOne() from "@/lib/demo/demo-seed" so a live tenant renders empty, not fiction:\n`,
   );
   for (const o of offenders) console.error(`  ✖ ${o}`);
   process.exit(1);
 }
 
-console.log("check-demo-seed: no ungated client-side demo fiction ✓");
+console.log("check-demo-seed: no ungated client-side demo data ✓");

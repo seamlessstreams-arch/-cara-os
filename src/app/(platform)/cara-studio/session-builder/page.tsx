@@ -110,7 +110,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function SessionBuilderPage() {
   const [sessions] = useState(demoSeed(DEMO_SESSIONS));
-  const [selectedSession, setSelectedSession] = useState<string | null>(DEMO_SESSIONS[0].id);
+  const [selectedSession, setSelectedSession] = useState<string | null>(demoSeed(DEMO_SESSIONS)[0]?.id ?? null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set<string>(["Therapeutic Work"]));
   const [view, setView] = useState<"sessions" | "builder">("sessions");
 

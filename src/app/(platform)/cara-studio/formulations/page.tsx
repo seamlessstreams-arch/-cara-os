@@ -95,7 +95,7 @@ const SECTION_CONFIG: { key: keyof Formulation["data"]; label: string; icon: Rea
 
 export default function FormulationsPage() {
   const [formulations] = useState<Formulation[]>(demoSeed(DEMO_FORMULATIONS));
-  const [selectedChild, setSelectedChild] = useState<string>(DEMO_FORMULATIONS[0].childId);
+  const [selectedChild, setSelectedChild] = useState<string>(demoSeed(DEMO_FORMULATIONS)[0]?.childId ?? "");
 
   const current = formulations.find((f) => f.childId === selectedChild);
 

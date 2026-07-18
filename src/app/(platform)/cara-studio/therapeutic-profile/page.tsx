@@ -159,7 +159,7 @@ const DIRECTION_ICONS: Record<string, { icon: string; color: string }> = {
 
 export default function TherapeuticProfilePage() {
   const [profiles] = useState(demoSeed(DEMO_PROFILES));
-  const [selectedChild, setSelectedChild] = useState(DEMO_PROFILES[0].child_id);
+  const [selectedChild, setSelectedChild] = useState(demoSeed(DEMO_PROFILES)[0]?.child_id ?? "");
 
   const profile = profiles.find((p) => p.child_id === selectedChild);
 

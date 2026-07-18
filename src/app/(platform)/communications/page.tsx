@@ -151,7 +151,7 @@ export default function CommunicationsPage() {
   const [showTemplates, setShowTemplates] = useState(false);
 
   const filtered = useMemo(() => {
-    if (filter === "all") return DEMO_DRAFTS;
+    if (filter === "all") return demoSeed(DEMO_DRAFTS);
     return demoSeed(DEMO_DRAFTS).filter((d) => d.status === filter);
   }, [filter]);
 
@@ -159,7 +159,7 @@ export default function CommunicationsPage() {
 
   // Stats
   const stats = {
-    total: DEMO_DRAFTS.length,
+    total: demoSeed(DEMO_DRAFTS).length,
     drafts: demoSeed(DEMO_DRAFTS).filter((d) => d.status === "draft").length,
     inReview: demoSeed(DEMO_DRAFTS).filter((d) => d.status === "review").length,
     sent: demoSeed(DEMO_DRAFTS).filter((d) => d.status === "sent").length,
