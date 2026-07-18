@@ -18,7 +18,8 @@
     "check:ai-gateway": "node scripts/check-ai-gateway.js",
     "check:seed-casts": "node scripts/check-seed-casts.js",
     "check:json-body": "node scripts/check-json-body.js",
-    "check:demo-seed": "node scripts/check-demo-seed.js"
+    "check:demo-seed": "node scripts/check-demo-seed.js",
+    "check:seed-refs": "node scripts/check-seed-refs.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.89.0",
