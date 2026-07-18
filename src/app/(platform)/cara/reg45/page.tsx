@@ -174,7 +174,7 @@ export default function CaraReg45Page() {
   }, [search, category, status]);
 
   const stats = useMemo(() => {
-    const total = DEMO_EVIDENCE.length;
+    const total = demoSeed(DEMO_EVIDENCE).length;
     const accepted = demoSeed(DEMO_EVIDENCE).filter((e) => e.status === "accepted" || e.status === "included_in_report").length;
     const avgQuality = Math.round(
       demoSeed(DEMO_EVIDENCE).reduce((sum, e) => sum + (e.quality_score ?? 0), 0) / total,

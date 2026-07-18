@@ -117,7 +117,7 @@ const PRIORITY_STYLES: Record<string, string> = {
 
 export default function ManagementOversightPage() {
   const [drafts] = useState(demoSeed(DEMO_DRAFTS));
-  const [selectedId, setSelectedId] = useState<string>(DEMO_DRAFTS[0].id);
+  const [selectedId, setSelectedId] = useState<string>(demoSeed(DEMO_DRAFTS)[0]?.id ?? "");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const filtered = drafts.filter((d) => !statusFilter || d.status === statusFilter);

@@ -76,7 +76,7 @@ const DEMO_CHILDREN = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function ChildVoicePage() {
-  const [selectedChild, setSelectedChild] = useState(DEMO_CHILDREN[0].id);
+  const [selectedChild, setSelectedChild] = useState(demoSeed(DEMO_CHILDREN)[0]?.id ?? "");
   const [summary, setSummary] = useState<VoiceSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [sentimentFilter, setSentimentFilter] = useState<string | null>(null);

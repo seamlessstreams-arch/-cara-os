@@ -176,7 +176,7 @@ export default function AdmissionWorkflowPage() {
   const [expandedChecklist, setExpandedChecklist] = useState<Set<string>>(new Set(["documentation", "safeguarding"]));
 
   const filtered = useMemo(() => {
-    if (phaseFilter === "all") return DEMO_WORKFLOWS;
+    if (phaseFilter === "all") return demoSeed(DEMO_WORKFLOWS);
     if (phaseFilter === "active") return demoSeed(DEMO_WORKFLOWS).filter((w) => !["completed", "withdrawn"].includes(w.current_phase));
     return demoSeed(DEMO_WORKFLOWS).filter((w) => ["completed", "withdrawn"].includes(w.current_phase));
   }, [phaseFilter]);
@@ -314,7 +314,7 @@ export default function AdmissionWorkflowPage() {
       ) : selected ? (
         <WorkflowDetail
           workflow={selected}
-          matchingFactors={DEMO_MATCHING}
+          matchingFactors={demoSeed(DEMO_MATCHING)}
           expandedChecklist={expandedChecklist}
           setExpandedChecklist={setExpandedChecklist}
           onBack={() => { setViewMode("list"); setSelectedId(null); }}

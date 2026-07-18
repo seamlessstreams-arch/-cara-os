@@ -118,7 +118,7 @@ const RISK_STYLES: Record<string, string> = {
 
 export default function DecisionSupportPage() {
   const [decisions] = useState<DecisionRecord[]>(demoSeed(DEMO_DECISIONS));
-  const [selectedId, setSelectedId] = useState<string>(DEMO_DECISIONS[0].id);
+  const [selectedId, setSelectedId] = useState<string>(demoSeed(DEMO_DECISIONS)[0]?.id ?? "");
 
   const current = decisions.find((d) => d.id === selectedId);
 
