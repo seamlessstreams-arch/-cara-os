@@ -66,6 +66,9 @@ jobs:
       - name: Demo-seed guard (no ungated client-side demo fiction on live tenants)
         run: node scripts/check-demo-seed.js
 
+      - name: Seed-refs guard (every seeded person reference resolves to a roster id)
+        run: node scripts/check-seed-refs.js
+
   test:
     name: Test suite
     runs-on: ubuntu-latest

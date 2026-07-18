@@ -103,7 +103,7 @@ export function seedCalendarEvents(): CalendarEvent[] {
       recurrence: { freq: "weekly", interval: 1, until: null, count: null },
       attendees: [
         { id: "a1", kind: "staff", name: "Olivia Hayes", email: null, staff_id: "staff_olivia", response: "accepted" },
-        { id: "a2", kind: "staff", name: "Marcus Bell", email: null, staff_id: "staff_marcus", response: "pending" },
+        { id: "a2", kind: "staff", name: "Marcus Bell", email: null, staff_id: "staff_ryan", response: "pending" },
       ],
     }),
     make("cal_seed_mdt", "MDT planning — placement", 4, "14:00", 90, {
