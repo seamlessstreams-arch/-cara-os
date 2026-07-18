@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
+import { buildChildTwin } from "@/lib/cpie/child-twin-engine";
 import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { getStore } from "@/lib/db/store";
@@ -24,8 +25,32 @@ describe("CPIE — Good Parenting / Lived Experience dimension", () => {
     expect(t.goodParenting.data.signalsThin.join(" ").toLowerCase()).toContain("warmth");
   });
 
-  it("flags a sparse child honestly (Casey — care delivered more than childhood lived)", () => {
-    const t = getChildTwin("yp_casey")!;
+  it("flags a sparse child honestly (recent records are care tasks, not a childhood)", () => {
+    // Built directly, not from a seed child. Seed children accrue life-arcs as
+    // other features grow (e.g. Casey gained a silent-struggle arc that put
+    // ordinary-life logs — table-laying, tutoring — inside the 30-day window),
+    // which would quietly turn a "sparse" fixture rich and rot this assertion.
+    // A synthetic child whose only recent records are procedural care pins the
+    // honest-flagging behaviour permanently: zero good-parenting signals.
+    const now = "2026-01-20T12:00:00.000Z";
+    const log = (id: string, date: string, content: string) => ({ id, child_id: "yp_sparse_fixture", date, content, entry_type: "general" });
+    const t = buildChildTwin({
+      childId: "yp_sparse_fixture",
+      childName: "Sparse",
+      now,
+      child: { id: "yp_sparse_fixture", first_name: "Sparse" },
+      personalPassports: [], aspirationRecords: [], lifeStoryEntries: [],
+      positiveAchievements: [], friendshipMaps: [],
+      dailyLogs: [
+        log("l1", "2026-01-16", "Medication administered as prescribed; MAR sheet countersigned by the senior on shift."),
+        log("l2", "2026-01-13", "Physical health observations completed and filed. Routine, nothing to note."),
+        log("l3", "2026-01-10", "Attended the scheduled clinic appointment, escorted by two staff. Returned to the placement afterwards."),
+      ],
+      keyWorkingSessions: [], behaviourLog: [], incidents: [], missingEpisodes: [],
+      returnInterviews: [], familyTimeSessions: [], educationRecords: [], lacReviews: [],
+      debriefRecords: [], riskAssessments: [],
+      staffName: (id) => id,
+    });
     expect(t.goodParenting.data.signalsPresent.length).toBe(0);
     expect(t.goodParenting.data.livedExperienceRead.toLowerCase()).toContain("care delivered more than a childhood");
     expect(t.goodParenting.confidence).toBe("none");
