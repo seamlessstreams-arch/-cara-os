@@ -301,29 +301,39 @@ alter table aria_gaps enable row level security;
 alter table aria_studio_audit_log enable row level security;
 
 -- Authenticated users can read sources for their home
-create policy if not exists "aria_sources_select" on aria_sources
+drop policy if exists "aria_sources_select" on aria_sources;
+create policy "aria_sources_select" on aria_sources
   for select to authenticated using (true);
 
 -- Authenticated users can read artifacts for their home
-create policy if not exists "aria_artifacts_select" on aria_artifacts
+drop policy if exists "aria_artifacts_select" on aria_artifacts;
+create policy "aria_artifacts_select" on aria_artifacts
   for select to authenticated using (true);
 
 -- Service role can do everything
-create policy if not exists "aria_sources_service" on aria_sources
+drop policy if exists "aria_sources_service" on aria_sources;
+create policy "aria_sources_service" on aria_sources
   for all to service_role using (true);
-create policy if not exists "aria_artifacts_service" on aria_artifacts
+drop policy if exists "aria_artifacts_service" on aria_artifacts;
+create policy "aria_artifacts_service" on aria_artifacts
   for all to service_role using (true);
-create policy if not exists "aria_artifact_versions_service" on aria_artifact_versions
+drop policy if exists "aria_artifact_versions_service" on aria_artifact_versions;
+create policy "aria_artifact_versions_service" on aria_artifact_versions
   for all to service_role using (true);
-create policy if not exists "aria_artifact_reviews_service" on aria_artifact_reviews
+drop policy if exists "aria_artifact_reviews_service" on aria_artifact_reviews;
+create policy "aria_artifact_reviews_service" on aria_artifact_reviews
   for all to service_role using (true);
-create policy if not exists "aria_artifact_actions_service" on aria_artifact_actions
+drop policy if exists "aria_artifact_actions_service" on aria_artifact_actions;
+create policy "aria_artifact_actions_service" on aria_artifact_actions
   for all to service_role using (true);
-create policy if not exists "aria_quality_checks_service" on aria_quality_checks
+drop policy if exists "aria_quality_checks_service" on aria_quality_checks;
+create policy "aria_quality_checks_service" on aria_quality_checks
   for all to service_role using (true);
-create policy if not exists "aria_gaps_service" on aria_gaps
+drop policy if exists "aria_gaps_service" on aria_gaps;
+create policy "aria_gaps_service" on aria_gaps
   for all to service_role using (true);
-create policy if not exists "aria_studio_audit_service" on aria_studio_audit_log
+drop policy if exists "aria_studio_audit_service" on aria_studio_audit_log;
+create policy "aria_studio_audit_service" on aria_studio_audit_log
   for all to service_role using (true);
 
 -- ── Seed data ──────────────────────────────────────────────────────────────────

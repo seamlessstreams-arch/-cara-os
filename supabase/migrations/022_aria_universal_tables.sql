@@ -179,10 +179,12 @@ CREATE INDEX IF NOT EXISTS idx_aria_task_links_output  ON aria_task_links(output
 -- UPDATED_AT TRIGGERS
 -- ══════════════════════════════════════════════════════════════════════════════
 
+DROP TRIGGER IF EXISTS trg_aria_requests_updated_at ON aria_requests;
 CREATE TRIGGER trg_aria_requests_updated_at
   BEFORE UPDATE ON aria_requests
   FOR EACH ROW EXECUTE FUNCTION aria_set_updated_at();
 
+DROP TRIGGER IF EXISTS trg_aria_outputs_updated_at ON aria_outputs;
 CREATE TRIGGER trg_aria_outputs_updated_at
   BEFORE UPDATE ON aria_outputs
   FOR EACH ROW EXECUTE FUNCTION aria_set_updated_at();
