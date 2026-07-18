@@ -52,20 +52,24 @@ The in-app status page for durable storage is `/data-persistence`
 npx supabase link --project-ref <REF>        # prompts for the DB password
 npx supabase migration list --linked         # what's applied vs pending
 npx supabase db push --dry-run               # review what will run
-npx supabase db push                         # applies the numbered chain 001 … 424
+npx supabase db push                         # applies ONE file: the lean baseline
 ```
 
 Notes, in the order you'll wonder about them:
 
-- The chain is additive and guarded (`create table if not exists`, `DO`
-  blocks) — re-running is safe.
-- **421 + 423 are the RLS hardening** from the security audit: RLS enabled on
-  every public table, and the policies that were silently public scoped to
-  `authenticated`. The app itself queries as `service_role` and is unaffected;
-  RLS is what protects the browser-visible keys.
-- **424 adds the `super_admin` role value.** Without it the master-admin seat
-  in step 2 is rejected by the database enum and `/hq` is unreachable for
-  everyone.
+- **The schema is a single squashed baseline** —
+  `supabase/migrations/00000000000000_lean_live_baseline.sql`. It creates
+  exactly the tables a live tenant persists to (the `/data-persistence`
+  manifest + dual-mode DAL + auth/tenancy), with RLS on every one, the
+  `super_admin` role value, and `staff_members.auth_user_id`. It was assembled
+  by replaying the full historical chain through a real Postgres engine and
+  verified to 0-diff column parity — so everything step 2 needs is in it.
+- **Apply to a FRESH database.** The baseline assumes an empty schema. If the
+  project already has a partial old chain applied, `supabase db reset` first
+  (or use a new project). The old 400+ feature migrations are archived under
+  `supabase/migrations_archive/` and are **not** applied — they were demo-only
+  and carried the duplicate-version/divergence bugs that stopped the chain
+  installing.
 - Afterwards run the advisors — Dashboard → *Advisors*, or
   `npx supabase db advisors` — and clear anything at security level before
   continuing.

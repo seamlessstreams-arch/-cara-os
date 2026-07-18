@@ -27,7 +27,7 @@ interface PersistenceStatus {
 
 const RUNBOOK = [
   { step: "Create a Supabase project", detail: "supabase.com → New project (EU region recommended for UK data). You hold the credentials — never share the service-role key." },
-  { step: "Apply the migrations in order", detail: "supabase/migrations/001…424 — `npx supabase db push` with the project linked (or the SQL files in numeric order in the SQL editor). 421/423 are the RLS hardening; 424 adds the super_admin role the HQ gate needs." },
+  { step: "Apply the lean baseline", detail: "`npx supabase db push` with the project linked applies one file — supabase/migrations/00000000000000_lean_live_baseline.sql — creating exactly the tables a live tenant persists to, with RLS, the super_admin role, and staff_members.auth_user_id. Apply to a fresh database (db reset first if a partial old chain is present)." },
   { step: "Set the environment variables in Vercel (Production)", detail: "NEXT_PUBLIC_SUPABASE_URL · NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (legacy ANON_KEY also works) · SUPABASE_SERVICE_ROLE_KEY (server-only) · SUPABASE_HOME_ID=<your home row's uuid> — and, for a real tenant rather than the demo, NEXT_PUBLIC_CARA_MODE=live on a SEPARATE Vercel project." },
   { step: "Redeploy, then verify", detail: "A redeploy bakes the env in; this page flips to Durable and the probe goes green. The full go-live sequence — master-admin bootstrap SQL, sign-off checklist, rollback — is docs/ACTIVATION.md in the repo." },
 ];
