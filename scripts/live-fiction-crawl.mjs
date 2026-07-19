@@ -48,6 +48,9 @@ const ROUTES = [
   // core record surfaces (main store)
   "/dashboard", "/incidents", "/young-people", "/staff", "/daily-log",
   "/safeguarding", "/tasks", "/calendar", "/rota", "/comms", "/handover",
+  // shift mode renders children's names (the face-to-face timer) off the main
+  // store, so it is a fiction surface; it also paints a top-level live clock.
+  "/shift-mode",
   // parallel intelligence-store consumers (#762)
   "/complaints", "/interventions", "/voice",
   // client-side DEMO_ pages (#763/#764) + page-level-gated demo pages

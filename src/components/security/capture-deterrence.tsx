@@ -16,20 +16,31 @@ import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
+import { useMounted } from "@/hooks/use-mounted";
 
 /** Faint tiled attribution across a sensitive surface. Visible enough to
  * attribute a leaked capture, faint enough not to fight the record itself.
  * Slightly stronger when printed. */
 function AttributionWatermark({ className }: { className?: string }) {
   const { currentUser } = useAuthContext();
+  // The identity (who · role) is stable across SSR and hydration; the clock is
+  // not. Gate the timestamp behind mount so the first client render matches the
+  // server HTML (no #418 hydration mismatch), then stamp the real view-time
+  // clock on the next tick — which is also the honest value for a watermark
+  // (when the screen was *seen*, not when it was built). A statically
+  // prerendered page freezes its server HTML at build time, so an ungated
+  // `new Date()` here mismatches on every view. See live-fiction-crawl.mjs.
   // Stamp once per mount — a per-render clock would defeat memo + churn tests.
+  const mounted = useMounted();
   const stamp = useMemo(() => {
     const who = currentUser?.full_name ?? "Unattributed session";
     const role = currentUser?.role ? ` · ${String(currentUser.role).replace(/_/g, " ")}` : "";
-    const at = new Date().toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
-    return `${who}${role} · ${at}`;
+    const at = mounted
+      ? ` · ${new Date().toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}`
+      : "";
+    return `${who}${role}${at}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser?.id]);
+  }, [currentUser?.id, mounted]);
 
   return (
     <div

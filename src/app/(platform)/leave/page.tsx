@@ -486,7 +486,10 @@ export default function LeavePage() {
             {tab === "calendar" && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Team Leave Calendar — {new Date().toLocaleString("default", { month: "long", year: "numeric" })}</CardTitle>
+                  {/* suppressHydrationWarning: a month label read from the wall
+                      clock. The SSR HTML is frozen at build time, so a build and
+                      a view either side of a month boundary would disagree here. */}
+                  <CardTitle suppressHydrationWarning className="text-base">Team Leave Calendar — {new Date().toLocaleString("default", { month: "long", year: "numeric" })}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">

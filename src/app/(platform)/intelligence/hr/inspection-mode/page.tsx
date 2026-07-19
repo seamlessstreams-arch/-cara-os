@@ -398,7 +398,10 @@ export default function HrInspectionModePage() {
             <FileSearch className="h-6 w-6 text-blue-700 mt-0.5 shrink-0" />
             <div>
               <h2 className="font-semibold text-blue-900 text-lg">Inspection Pack — HR Intelligence</h2>
-              <p className="text-sm text-blue-800 mt-1">
+              {/* suppressHydrationWarning: "as at <today>" is a wall-clock read.
+                  The SSR HTML is frozen at build time, so any view on a later day
+                  would disagree with it on hydration (React error #418). */}
+              <p suppressHydrationWarning className="text-sm text-blue-800 mt-1">
                 This pack presents the home&apos;s HR position across the 8 domains an Ofsted
                 inspector reviews. Every section can be printed to PDF or exported as a
                 spreadsheet. All staff names shown here are anonymised references. The
