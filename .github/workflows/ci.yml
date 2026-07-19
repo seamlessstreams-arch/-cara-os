@@ -113,3 +113,48 @@ jobs:
           # CI has no AI/Supabase secrets — the app must build without them
           # (providers are lazily read at request time; build stays clean).
           NEXT_TELEMETRY_DISABLED: "1"
+
+  live-crawl:
+    # The go-live acceptance test: build as a worst-case live tenant
+    # (NEXT_PUBLIC_CARA_MODE=live, no Supabase keys — every demo fallback
+    # under maximum pressure) and drive a real browser over every page that
+    # has ever carried demo fiction, asserting none of the seeded demo world
+    # renders and nothing crashes on the empty store. The static guards prove
+    # the KNOWN patterns are gated; only this proves no NEW render path leaks
+    # (pages are client-rendered — HTML-shell checks are vacuous). Found 2
+    # leaks the static guard passed (#764).
+    name: Live fiction crawl
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build as a live tenant (no Supabase keys)
+        run: npx next build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+          NEXT_TELEMETRY_DISABLED: "1"
+          # The worst-case misconfigured live tenant: mode=live with the
+          # Supabase keys explicitly absent, so every `if (!supabaseEnabled)`
+          # demo fallback fires and every gate is under maximum pressure. The
+          # crawl's own sentinel (the /data-persistence status page) fails the
+          # run if keys ever leak in and it silently reads "Durable mode".
+          NEXT_PUBLIC_CARA_MODE: live
+          NEXT_PUBLIC_SUPABASE_URL: ""
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ""
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ""
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Crawl every fiction-bearing page as a live tenant
+        run: node scripts/live-fiction-crawl.mjs
