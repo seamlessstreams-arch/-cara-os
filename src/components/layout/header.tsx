@@ -73,8 +73,10 @@ export function Header({ title, subtitle, actions, caraContext }: HeaderProps) {
           <div className="flex-1 min-w-0">
             {breadcrumb.length > 0 && (
               <div className="flex items-center gap-1 mb-0.5">
+                {/* keyed by level + href: on a group's landing page the group
+                    crumb and the page crumb share the same href */}
                 {breadcrumb.map((crumb, i) => (
-                  <React.Fragment key={crumb.href}>
+                  <React.Fragment key={`${i}-${crumb.href}`}>
                     {i > 0 && <ChevronRight className="h-3 w-3 text-[var(--cs-text-gentle)] shrink-0" />}
                     <Link
                       href={crumb.href}
