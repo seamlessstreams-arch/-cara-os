@@ -281,7 +281,7 @@ export default function OfstedEvidenceRoomPage() {
         regulationReference: undefined,
         confidenceScore: (row.quality_indicator as number) ?? undefined,
         evidenceDate: (row.evidence_date as string) ?? undefined,
-        createdBy: (row.created_at as string) ?? undefined,
+        createdBy: (row.created_by as string) ?? undefined,
         createdAt: row.created_at as string,
         updatedAt: row.created_at as string,
       })));
