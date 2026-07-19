@@ -35,6 +35,7 @@ import {
   CircleDot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getStaffById } from "@/lib/seed-data";
 import type {
   Reg44Visit,
   Reg44Action,
@@ -42,6 +43,10 @@ import type {
   Reg44ActionStatus,
   Reg44ActionPriority,
 } from "@/types/intelligence.layer";
+
+/* Seeded actions reference staff by roster id; Supabase rows may carry free
+ * text, so fall back to the raw value rather than "Unknown". */
+const assigneeLabel = (v: string) => getStaffById(v)?.full_name ?? v;
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -485,7 +490,7 @@ export default function Reg44Page() {
                                       </div>
                                     </div>
                                     {action.assignedTo && (
-                                      <p className="text-muted-foreground mt-1">Assigned to: {action.assignedTo}</p>
+                                      <p className="text-muted-foreground mt-1">Assigned to: {assigneeLabel(action.assignedTo)}</p>
                                     )}
                                     {action.dueDate && (
                                       <p className={cn(
@@ -580,7 +585,7 @@ export default function Reg44Page() {
                             {action.priority.charAt(0).toUpperCase() + action.priority.slice(1)}
                           </Badge>
                         </td>
-                        <td className="py-3 pr-3 text-muted-foreground">{action.assignedTo ?? "Unassigned"}</td>
+                        <td className="py-3 pr-3 text-muted-foreground">{action.assignedTo ? assigneeLabel(action.assignedTo) : "Unassigned"}</td>
                         <td className="py-3 pr-3">
                           <span className={cn(isOverdue ? "text-red-600 font-medium" : "text-muted-foreground")}>
                             {action.dueDate ? fmt(action.dueDate) : "No date"}

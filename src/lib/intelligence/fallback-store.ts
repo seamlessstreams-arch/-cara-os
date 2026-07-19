@@ -194,7 +194,7 @@ export const reg44Actions: IntelligenceReg44ActionRow[] = [
     description:
       "A fire drill was missed in the previous month. Arrange and complete a fire drill within 7 days, ensuring all young people and staff participate. Record outcomes and any issues identified.",
     priority: "high",
-    assigned_to: "Darren Laville (RM)",
+    assigned_to: "staff_darren",
     due_date: d(-5),
     status: "overdue",
     manager_response: null,
@@ -212,7 +212,7 @@ export const reg44Actions: IntelligenceReg44ActionRow[] = [
     description:
       "The privacy lock on Bedroom 3 has been reported as faulty by the young person. Arrange for repair or replacement to ensure the young person's right to privacy is upheld.",
     priority: "medium",
-    assigned_to: "Darren Laville (RM)",
+    assigned_to: "staff_darren",
     due_date: d(2),
     status: "in_progress",
     manager_response: "Maintenance contractor booked for this week.",
@@ -230,7 +230,7 @@ export const reg44Actions: IntelligenceReg44ActionRow[] = [
     description:
       "Wi-Fi filtering records have not been reviewed since last month. Review and update the filtering logs, ensuring all content restrictions are appropriate and documented.",
     priority: "medium",
-    assigned_to: "Ryan Mitchell (Deputy)",
+    assigned_to: "staff_ryan",
     due_date: d(5),
     status: "open",
     manager_response: null,
@@ -248,7 +248,7 @@ export const reg44Actions: IntelligenceReg44ActionRow[] = [
     description:
       "Minor maintenance issue with the garden fence panel identified during visit. Repair or replace to maintain secure boundary.",
     priority: "low",
-    assigned_to: "Darren Laville (RM)",
+    assigned_to: "staff_darren",
     due_date: d(-30),
     status: "completed",
     manager_response:
@@ -267,7 +267,7 @@ export const reg44Actions: IntelligenceReg44ActionRow[] = [
     description:
       "One staff member is overdue for PRICE refresher training. Book onto the next available course and confirm date.",
     priority: "high",
-    assigned_to: "Darren Laville (RM)",
+    assigned_to: "staff_darren",
     due_date: d(-25),
     status: "completed",
     manager_response: "Training booked and completed on target date.",
@@ -285,7 +285,7 @@ export const reg44Actions: IntelligenceReg44ActionRow[] = [
     description:
       "One restraint record lacked the required debrief notes from the young person. Complete the debrief and update the restraint record.",
     priority: "urgent",
-    assigned_to: "Darren Laville (RM)",
+    assigned_to: "staff_darren",
     due_date: d(-70),
     status: "completed",
     manager_response:
