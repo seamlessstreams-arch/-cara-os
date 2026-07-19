@@ -232,7 +232,10 @@ export default function Reg44Page() {
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-start gap-2">
           <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-semibold text-red-800">
+            {/* suppressHydrationWarning: a month label read from the wall clock.
+                The SSR HTML is frozen at build time, so a build and a view either
+                side of a month boundary would disagree here (React error #418). */}
+            <p suppressHydrationWarning className="font-semibold text-red-800">
               No Regulation 44 visit recorded for {new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
             </p>
             <p className="text-red-700">

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useMounted } from "@/hooks/use-mounted";
 import { getStore } from "@/lib/db/store";
 import {
   X, FileText, AlertTriangle, Moon, ArrowRightLeft, Pill, Timer,
@@ -19,6 +20,11 @@ export function ShiftMode({ onExit }: ShiftModeProps) {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerChild, setTimerChild] = useState<string>("");
   const [now, setNow] = useState(new Date());
+  // The clock (below) is minute-precision and rendered at the top of the page,
+  // so an ungated `now` mismatches the build-frozen SSR HTML on hydration
+  // (#418). Gate the displayed clock behind mount; the interval then keeps it
+  // live. `now`'s day-precision use for the store counts is unaffected.
+  const mounted = useMounted();
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -43,8 +49,8 @@ export function ShiftMode({ onExit }: ShiftModeProps) {
   }, []);
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-  const timeStr = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-  const dateStr = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const timeStr = mounted ? now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "--:--";
+  const dateStr = mounted ? now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) : "";
 
   const overdueTasks = (store.tasks as any[] || []).filter((t: any) => t.status === "pending" && t.due_date && t.due_date < now.toISOString().slice(0, 10)).length;
   const todayLogs = (store.dailyLog as any[] || []).filter((l: any) => l.date === now.toISOString().slice(0, 10)).length;
