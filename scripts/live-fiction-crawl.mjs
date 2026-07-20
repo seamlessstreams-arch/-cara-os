@@ -135,18 +135,38 @@ page.on("pageerror", (err) => {
 for (const route of ROUTES) {
   const url = `${BASE}${route}`;
   try {
-    await page.goto(url, { waitUntil: "networkidle", timeout: 45_000 });
+    // NOT networkidle. This app polls in the background (React Query refetch,
+    // realtime hooks), so networkidle never settles and every such page burned
+    // its FULL timeout — measured at 27+ min for this crawl on CI, which is
+    // 43 pages x 45s, i.e. the run died on the job timeout before finishing.
+    // domcontentloaded returns as soon as the HTML is parsed; `load` is then
+    // best-effort (never block on a poller), and the settle below is what
+    // actually matters, because the assertion reads the HYDRATED DOM.
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20_000 });
+    await page.waitForLoadState("load", { timeout: 8_000 }).catch(() => {});
   } catch (e) {
-    // networkidle can time out on pages with polling; fall back to loaded state
     if (!String(e).includes("Timeout")) {
       failures.push({ route, kind: "load", detail: String(e).slice(0, 200) });
       continue;
     }
   }
-  // Give client hydration a beat, then read the RENDERED text — the whole
-  // point over curl.
-  await page.waitForTimeout(500);
+  // Let client hydration paint, then read the RENDERED text — the whole point
+  // over curl. This wait is load-bearing: read too early and the page is still
+  // an empty shell, which would make the fiction check pass VACUOUSLY. The
+  // emptiness sentinel below is what stops that failure mode being silent.
+  await page.waitForTimeout(1_200);
   const text = await page.evaluate(() => document.body?.innerText ?? "");
+  // Empty-render sentinel: a page that painted nothing trivially contains no
+  // fiction, so a silent empty render would turn this crawl green for the
+  // worst possible reason. Every real page here paints shell chrome (nav,
+  // title) far above this bound, so tripping it means the settle above is too
+  // short for this runner, or the route genuinely failed to render.
+  if (text.trim().length < 120) {
+    failures.push({
+      route, kind: "vacuous",
+      detail: `rendered only ${text.trim().length} chars — page did not paint, so its "no fiction" result is meaningless`,
+    });
+  }
   // Non-vacuous-run sentinel: this crawl only proves anything against a
   // keys-absent live build. If Supabase keys leak into the environment the
   // status page reads "Durable mode" (and auth gates start answering) — the
