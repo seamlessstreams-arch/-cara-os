@@ -1,0 +1,74 @@
+name: Live fiction crawl
+
+# The go-live acceptance test, on its OWN schedule rather than every push.
+#
+# WHY IT MOVED OUT OF ci.yml: it lived there as a per-push job and was
+# CANCELLED on 11 of its 11 completed runs on main — never once finishing. It
+# takes ~12 minutes (full live-mode build + Playwright + 43 pages), main merges
+# land far closer together than that, and ci.yml sets `cancel-in-progress: true`
+# so every newer push killed it mid-crawl. The result was the worst of both:
+# a full build and browser install burned on every push, and zero signal ever
+# reported. A slow whole-app acceptance test is a PERIODIC check, not a
+# per-commit gate.
+#
+# So: nightly at 03:00 UTC (main is quiet), plus on-demand via the Actions tab
+# or `gh workflow run live-crawl.yml`. Its own concurrency group means a push
+# to main can never cancel it, and `cancel-in-progress: false` lets a run
+# finish rather than being superseded — safe here because at most one run is
+# scheduled per day, so there is nothing to pile up.
+#
+# What it asserts (see scripts/live-fiction-crawl.mjs): builds as a worst-case
+# live tenant (NEXT_PUBLIC_CARA_MODE=live, Supabase keys absent — every demo
+# fallback under maximum pressure), then drives a real browser over every page
+# that has ever carried demo fiction, failing on any seeded demo-world token or
+# genuine crash. The static guards (check-demo-seed, check-seed-refs) prove the
+# KNOWN patterns are gated; only this proves no NEW render path leaks, because
+# the pages are client-rendered and HTML-shell checks are vacuous. It caught 2
+# leaks the static guard passed (#764).
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: live-crawl
+  cancel-in-progress: false
+
+jobs:
+  live-crawl:
+    name: Live fiction crawl
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build as a live tenant (no Supabase keys)
+        run: npx next build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+          NEXT_TELEMETRY_DISABLED: "1"
+          # The worst-case misconfigured live tenant: mode=live with the
+          # Supabase keys explicitly absent, so every `if (!supabaseEnabled)`
+          # demo fallback fires and every gate is under maximum pressure. The
+          # crawl's own sentinel (the /data-persistence status page) fails the
+          # run if keys ever leak in and it silently reads "Durable mode".
+          NEXT_PUBLIC_CARA_MODE: live
+          NEXT_PUBLIC_SUPABASE_URL: ""
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ""
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ""
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Crawl every fiction-bearing page as a live tenant
+        run: node scripts/live-fiction-crawl.mjs
