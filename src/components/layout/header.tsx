@@ -5,18 +5,16 @@
 // Global search · Create · Cara button · Notifications · User profile
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { GlobalCreateMenu } from "@/components/common/global-create-menu";
 import { CaraDrawer, type CaraDrawerContext } from "@/components/cara/cara-drawer";
 import { NotificationCentre } from "@/components/layout/notification-centre";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { NAV_GROUPS } from "@/config/navigation";
 import {
-  Search, Bell, Sparkles, X, ChevronRight, Command,
+  Search, Sparkles, ChevronRight, Command,
 } from "lucide-react";
 
 // ── Breadcrumb helper ─────────────────────────────────────────────────────────
@@ -53,16 +51,7 @@ interface HeaderProps {
 export function Header({ title, subtitle, actions, caraContext }: HeaderProps) {
   const breadcrumb = useBreadcrumb();
 
-  const [caraOpen, setCaraOpen]       = useState(false);
-  const [todayStr, setTodayStr]       = useState("");
-
-  useEffect(() => {
-    setTodayStr(
-      new Date().toLocaleDateString("en-GB", {
-        weekday: "long", day: "numeric", month: "long", year: "numeric",
-      })
-    );
-  }, []);
+  const [caraOpen, setCaraOpen] = useState(false);
 
   return (
     <>
