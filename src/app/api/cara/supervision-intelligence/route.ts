@@ -15,7 +15,7 @@ function getDemoData() {
   const futureD = (daysAhead: number) => new Date(today.getTime() + daysAhead * 86400000).toISOString().slice(0, 10);
 
   const staffList = [
-    { id: "staff_darren", name: "Darren L" },
+    { id: "staff_darren", name: "Olivia H" },
     { id: "staff_pat", name: "Pat M" },
     { id: "staff_sarah", name: "Sarah K" },
     { id: "staff_mark", name: "Mark T" },
@@ -26,7 +26,7 @@ function getDemoData() {
   const records: SupervisionRecord[] = [
     // Darren — recent, good wellbeing
     {
-      id: "sup_1", staffId: "staff_darren", staffName: "Darren L",
+      id: "sup_1", staffId: "staff_darren", staffName: "Olivia H",
       supervisorId: "staff_manager", supervisorName: "Clare W (RM)",
       date: d(10), type: "formal", durationMinutes: 60,
       themes: ["Practice", "Key Working", "Children's Progress"],
@@ -38,7 +38,7 @@ function getDemoData() {
       staffReflection: "Feeling positive about Jordan's progress. Team dynamics good.",
     },
     {
-      id: "sup_2", staffId: "staff_darren", staffName: "Darren L",
+      id: "sup_2", staffId: "staff_darren", staffName: "Olivia H",
       supervisorId: "staff_manager", supervisorName: "Clare W (RM)",
       date: d(52), type: "formal", durationMinutes: 55,
       themes: ["Wellbeing", "Training", "Behaviour Management"],

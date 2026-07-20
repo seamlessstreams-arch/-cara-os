@@ -280,7 +280,7 @@ export const SEED_CARE_EVENTS: CareEvent[] = [
     locked_by: null,
     category: "family_contact",
     title: "Casey: Planned contact with mother — positive visit",
-    content: "Casey had planned telephone contact with her mother today. The call lasted 45 minutes. Contact appeared positive — Casey was engaged and happy throughout. Mother enquired about the upcoming review meeting and was provided with information by Mirela. Casey appeared settled after the call. No safeguarding concerns. Contact agreed in line with contact agreement.",
+    content: "Casey had planned telephone contact with her mother today. The call lasted 45 minutes. Contact appeared positive — Casey was engaged and happy throughout. Mother enquired about the upcoming review meeting and was provided with information by Elena. Casey appeared settled after the call. No safeguarding concerns. Contact agreed in line with contact agreement.",
     mood_score: 8,
     is_significant: false,
     status: "verified",

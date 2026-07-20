@@ -1108,7 +1108,7 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
     {
       id: "etr-8",
       staffId: "staff-darren",
-      staffName: "Darren Laville",
+      staffName: "Olivia Hayes",
       trainingType: "Equality Act 2010",
       status: "completed",
       completedDate: "2026-01-28",
@@ -1117,7 +1117,7 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
     {
       id: "etr-9",
       staffId: "staff-darren",
-      staffName: "Darren Laville",
+      staffName: "Olivia Hayes",
       trainingType: "Cultural Competency",
       status: "completed",
       completedDate: "2026-02-25",
@@ -1126,7 +1126,7 @@ export function getDemoTrainingRecords(): EDITrainingRecord[] {
     {
       id: "etr-10",
       staffId: "staff-darren",
-      staffName: "Darren Laville",
+      staffName: "Olivia Hayes",
       trainingType: "Anti-Discriminatory Practice",
       status: "completed",
       completedDate: "2026-03-10",

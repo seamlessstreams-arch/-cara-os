@@ -925,7 +925,7 @@ export const PRACTICE_OS_AUTISM_PLANS: AutismPlan[] = [
     staff_observation: "Every serious incident this quarter followed unplanned news landing without preparation — the plan holds when we prepare him.",
     next_step: "Agree a written court-day protocol with Alex and his social worker.",
     review_date: daysAgo(8), // OVERDUE — Cara flags the lapsed review
-    key_worker: "Edward Nkemelu",
+    key_worker: "Daniel Frost",
     created_at: iso(120),
   },
 ];
@@ -955,7 +955,7 @@ export const PRACTICE_OS_ADHD_PLANS: ADHDPlan[] = [
     staff_observation: "Since the medication timing changed and mornings slowed down, morning incidents have dropped.",
     next_step: "Keep the morning checklist; review medication timing at the next CAMHS appointment.",
     review_date: daysAgo(-60),
-    key_worker: "Edward Nkemelu",
+    key_worker: "Daniel Frost",
     created_at: iso(90),
   },
 ];
@@ -1101,7 +1101,7 @@ export const PRACTICE_OS_CIRCLE_NOTES: CircleNote[] = [
     date: daysAgo(6),
     facilitated_by: "staff_anna",
     themes: ["Everyone arrived tired", "Evening cover feels thin"],
-    gratitude: ["Lackson swapped a shift so Mirela could go to her graduation"],
+    gratitude: ["Samuel swapped a shift so Elena could go to her graduation"],
     emerging_concerns: [],
     created_at: iso(6, "08:35"),
     created_by: "staff_anna",

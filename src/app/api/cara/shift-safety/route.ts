@@ -22,7 +22,7 @@ function getDemoContext(): ShiftContext {
     staffOnDuty: [
       {
         id: "staff_darren",
-        name: "Darren L",
+        name: "Olivia H",
         role: "senior",
         qualifications: ["medication", "restraint", "first_aid", "senior_on_duty"],
         hoursWorkedToday: 6,
