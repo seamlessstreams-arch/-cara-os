@@ -39,7 +39,12 @@ jobs:
   live-crawl:
     name: Live fiction crawl
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # MEASURED, not guessed: against a cold `next start` the crawl step takes
+    # ~28 min (44 routes, each server-rendered on first hit — nothing is warm).
+    # At 30 the run finished its crawl and printed a PASS, then was killed
+    # during cleanup and reported "cancelled" — a green result thrown away by a
+    # 2-minute margin. 45 leaves real headroom as routes are added.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
