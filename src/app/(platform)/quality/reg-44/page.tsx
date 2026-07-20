@@ -113,12 +113,19 @@ const PRIORITY_CLR: Record<Reg44ActionPriority, string> = {
 
 /* ── monthly visit timeline ────────────────────────────────────────────────── */
 
+/* YYYY-MM from local date parts. toISOString() is UTC: during BST, local
+ * midnight on the 1st converts to 23:00 on the last day of the previous month,
+ * so UTC-derived keys land in the wrong month — and the March and April buckets
+ * both yield the same key at the DST boundary (duplicate React keys). */
+const localMonthKey = (dt: Date) =>
+  `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`;
+
 function buildMonthTimeline(visits: Reg44Visit[]) {
   const months: { key: string; label: string; hasVisit: boolean; visitDate?: string }[] = [];
   const now = new Date();
   for (let i = 11; i >= 0; i--) {
     const dt = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = dt.toISOString().slice(0, 7);
+    const key = localMonthKey(dt);
     const label = dt.toLocaleDateString("en-GB", { month: "short", year: "2-digit" });
     const match = visits.find((v) => v.visitDate.slice(0, 7) === key);
     months.push({ key, label, hasVisit: !!match, visitDate: match?.visitDate });
@@ -185,7 +192,7 @@ export default function Reg44Page() {
   const [actionFilter, setActionFilter] = useState<string>("all");
 
   const timeline = useMemo(() => buildMonthTimeline(visits), [visits]);
-  const currentMonthKey = new Date().toISOString().slice(0, 7);
+  const currentMonthKey = localMonthKey(new Date());
   const currentMonthHasVisit = visits.some((v) => v.visitDate.slice(0, 7) === currentMonthKey);
 
   /* action counts */
