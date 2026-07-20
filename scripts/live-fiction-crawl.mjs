@@ -109,7 +109,16 @@ if (!external) {
 }
 
 const browser = await chromium.launch();
-const page = await browser.newPage();
+
+// Crawl N routes at once. Serially this took 28 min on one CI run and 42 min on
+// the next — variance that was about to blow a 45-minute timeout, and chasing it
+// with a bigger number would only have hidden the real problem: 44 routes were
+// being walked one at a time, each paying a cold server-render plus a settle.
+// The work is almost entirely WAITING (server response, hydration), not local
+// CPU, so it parallelises well. Each worker owns its own page and its own
+// pageerror handler, so an error is always attributed to the route that caused
+// it — a single shared page could not do that once requests interleave.
+const CONCURRENCY = Number(process.env.CRAWL_CONCURRENCY ?? 6);
 
 const failures = []; // fatal: { route, kind: "fiction"|"error"|"load"|"config", detail }
 const warnings = []; // non-fatal: recoverable React hydration mismatches
@@ -125,14 +134,30 @@ const isHydrationMismatch = (s) =>
   /react\.dev\/errors\/4(18|21|22|23|25)\b/.test(s) ||
   /Hydration failed|did not match|Text content does not match/i.test(s);
 
-page.on("pageerror", (err) => {
-  const detail = String(err).slice(0, 200);
-  (isHydrationMismatch(detail) ? warnings : failures).push({
-    route: page.url(), kind: isHydrationMismatch(detail) ? "hydration" : "error", detail,
+// Hand each worker the next route off a shared cursor — keeps every worker busy
+// even though page cost varies wildly (a heavy dashboard vs a thin status page).
+let cursor = 0;
+async function worker() {
+  const page = await browser.newPage();
+  // Attribution must be per-page: `route` is captured in this worker's closure,
+  // so an error can never be mis-blamed on whatever another worker is loading.
+  let current = "";
+  page.on("pageerror", (err) => {
+    const detail = String(err).slice(0, 200);
+    (isHydrationMismatch(detail) ? warnings : failures).push({
+      route: current, kind: isHydrationMismatch(detail) ? "hydration" : "error", detail,
+    });
   });
-});
 
-for (const route of ROUTES) {
+  while (cursor < ROUTES.length) {
+    const route = ROUTES[cursor++];
+    current = route;
+    await visit(page, route);
+  }
+  await page.close();
+}
+
+async function visit(page, route) {
   const url = `${BASE}${route}`;
   try {
     // NOT networkidle. This app polls in the background (React Query refetch,
@@ -147,7 +172,7 @@ for (const route of ROUTES) {
   } catch (e) {
     if (!String(e).includes("Timeout")) {
       failures.push({ route, kind: "load", detail: String(e).slice(0, 200) });
-      continue;
+      return;
     }
   }
   // Let client hydration paint, then read the RENDERED text — the whole point
@@ -188,6 +213,11 @@ for (const route of ROUTES) {
   }
   log(`  ${failures.some((f) => f.route === route) ? "✖" : "✔"} ${route}`);
 }
+
+// Run the pool. Workers share the cursor, so a slow route delays only itself.
+await Promise.all(
+  Array.from({ length: Math.min(CONCURRENCY, ROUTES.length) }, () => worker()),
+);
 
 await browser.close();
 if (server) server.kill();
