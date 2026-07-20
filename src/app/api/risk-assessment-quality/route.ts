@@ -191,7 +191,7 @@ function generateDemoData(): {
     {
       id: "srt-004",
       staffId: "staff-darren",
-      staffName: "Darren Laville",
+      staffName: "Olivia Hayes",
       riskIdentification: true,
       mitigationPlanning: true,
       dynamicRiskAssessment: true,

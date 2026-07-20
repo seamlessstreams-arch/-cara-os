@@ -55,7 +55,7 @@ const DEMO_NODES: GraphNode[] = [
   { id: "n1", nodeType: "child", label: "Jayden", data: { age: 14 }, edgeCount: 8 },
   { id: "n2", nodeType: "child", label: "Amara", data: { age: 12 }, edgeCount: 6 },
   { id: "n3", nodeType: "child", label: "Reuben", data: { age: 15 }, edgeCount: 5 },
-  { id: "n4", nodeType: "staff", label: "Darren Laville", data: { role: "Registered Manager" }, edgeCount: 12 },
+  { id: "n4", nodeType: "staff", label: "Olivia Hayes", data: { role: "Registered Manager" }, edgeCount: 12 },
   { id: "n5", nodeType: "staff", label: "Sarah Thompson", data: { role: "Deputy Manager" }, edgeCount: 9 },
   { id: "n6", nodeType: "staff", label: "Marcus Williams", data: { role: "Care Worker" }, edgeCount: 7 },
   { id: "n7", nodeType: "theme", label: "Family Contact", data: {}, edgeCount: 4 },

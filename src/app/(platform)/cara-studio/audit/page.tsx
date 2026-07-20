@@ -52,21 +52,21 @@ const ACTION_CONFIG: Record<string, { icon: React.ElementType; colour: string; l
 const DEMO_AUDIT: AuditEntry[] = [
   {
     id: "aud-1", timestamp: "2026-05-12T08:15:00Z", action: "generated",
-    actorName: "Darren Laville", actorRole: "Registered Manager",
+    actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-1", artifactTitle: "Key Work Session — Jayden — Identity & Belonging",
     artifactType: "keywork_session",
     detail: "Generated with PACE framework, balanced tone, 3 evidence sources linked",
   },
   {
     id: "aud-2", timestamp: "2026-05-12T08:45:00Z", action: "edited",
-    actorName: "Darren Laville", actorRole: "Registered Manager",
+    actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-1", artifactTitle: "Key Work Session — Jayden — Identity & Belonging",
     artifactType: "keywork_session",
     detail: "Edited generated content — added specific reference to yesterday's conversation",
   },
   {
     id: "aud-3", timestamp: "2026-05-12T09:00:00Z", action: "submitted_for_review",
-    actorName: "Darren Laville", actorRole: "Registered Manager",
+    actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-1", artifactTitle: "Key Work Session — Jayden — Identity & Belonging",
     artifactType: "keywork_session",
     detail: "Submitted for peer review",
@@ -80,21 +80,21 @@ const DEMO_AUDIT: AuditEntry[] = [
   },
   {
     id: "aud-5", timestamp: "2026-05-11T17:00:00Z", action: "approved",
-    actorName: "Darren Laville", actorRole: "Registered Manager",
+    actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-2", artifactTitle: "Management Oversight — w/c 5 May",
     artifactType: "management_oversight",
     detail: "Approved — quality check passed, evidence confidence 78%",
   },
   {
     id: "aud-6", timestamp: "2026-05-11T17:15:00Z", action: "committed",
-    actorName: "Darren Laville", actorRole: "Registered Manager",
+    actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-2", artifactTitle: "Management Oversight — w/c 5 May",
     artifactType: "management_oversight",
     detail: "Committed to official record — filed to governance/management-oversight/2026-05-11",
   },
   {
     id: "aud-7", timestamp: "2026-05-10T14:00:00Z", action: "generated",
-    actorName: "Darren Laville", actorRole: "Registered Manager",
+    actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-3", artifactTitle: "Risk Review — Amara — Self-Harm Indicators",
     artifactType: "risk_review",
     detail: "Generated with trauma-informed framework, 5 evidence sources linked",
@@ -115,7 +115,7 @@ const DEMO_AUDIT: AuditEntry[] = [
   },
   {
     id: "aud-10", timestamp: "2026-05-09T11:00:00Z", action: "committed",
-    actorName: "Darren Laville", actorRole: "Registered Manager",
+    actorName: "Olivia Hayes", actorRole: "Registered Manager",
     artifactId: "art-4", artifactTitle: "What Happens at a Review — Amara",
     artifactType: "child_friendly_explanation",
     detail: "Committed — filed to young-people/child_2/communication",

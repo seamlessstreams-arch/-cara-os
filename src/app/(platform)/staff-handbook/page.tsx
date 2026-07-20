@@ -40,7 +40,7 @@ const buildSections = (homeName: string): HandbookSection[] => [
     content: [
       { heading: `Welcome to ${homeName}`, body: `Welcome to the ${homeName} team. This handbook provides essential information about your role, responsibilities, and the standards we uphold. ${homeName} is a 3-bed children's home for young people aged 11-17, registered with Ofsted under the Children's Homes (England) Regulations 2015. Our ethos is built on therapeutic care, relational practice, and ensuring every child feels safe, valued, and heard.` },
       { heading: "Our Values", body: "Respect — we treat every child and colleague with dignity. Safety — physical and emotional safety is our first priority. Empowerment — we help young people develop independence and self-belief. Honesty — we are transparent, accountable, and reflective. Collaboration — we work as a team and in partnership with families and professionals." },
-      { heading: "Registered Manager", body: "Darren Laville is the Registered Manager (RM). The RM is responsible for the day-to-day running of the home, regulatory compliance, staff supervision, and safeguarding. Ryan serves as Deputy Manager. In Darren's absence, Ryan assumes RM responsibilities." },
+      { heading: "Registered Manager", body: "Olivia Hayes is the Registered Manager (RM). The RM is responsible for the day-to-day running of the home, regulatory compliance, staff supervision, and safeguarding. Ryan serves as Deputy Manager. In Darren's absence, Ryan assumes RM responsibilities." },
     ],
   },
   {
@@ -196,7 +196,7 @@ export default function StaffHandbookPage() {
           <BookOpen className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
           <div className="text-sm">
             <p className="font-semibold text-blue-800">Staff Handbook — Version 4.2</p>
-            <p className="text-blue-700">Last reviewed: {d(-7)} · Next review: {d(90)} · Reviewed by: Darren Laville (RM). All staff must read and confirm understanding. This handbook supplements (but does not replace) the home&apos;s full policy library.</p>
+            <p className="text-blue-700">Last reviewed: {d(-7)} · Next review: {d(90)} · Reviewed by: Olivia Hayes (RM). All staff must read and confirm understanding. This handbook supplements (but does not replace) the home&apos;s full policy library.</p>
           </div>
         </div>
 

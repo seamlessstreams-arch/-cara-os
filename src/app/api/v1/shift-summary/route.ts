@@ -7,14 +7,14 @@ function todayStr() {
 
 function staffName(id: string): string {
   const names: Record<string, string> = {
-    staff_darren: "Darren Laville",
-    staff_ryan: "Ryan Mitchell",
-    staff_anna: "Anna Kowalski",
-    staff_edward: "Edward Chen",
-    staff_chervelle: "Chervelle Brooks",
-    staff_diane: "Diane Harper",
-    staff_lackson: "Lackson Banda",
-    staff_mirela: "Mirela Vasile",
+    staff_darren: "Olivia Hayes",
+    staff_ryan: "Marcus Bell",
+    staff_anna: "Priya Sharma",
+    staff_edward: "Daniel Frost",
+    staff_chervelle: "Naomi Reid",
+    staff_diane: "Maria Okafor",
+    staff_lackson: "Samuel Boateng",
+    staff_mirela: "Elena Novak",
   };
   return names[id] ?? id?.replace("staff_", "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Unknown";
 }

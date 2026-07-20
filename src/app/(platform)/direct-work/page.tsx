@@ -48,7 +48,7 @@ const DEMO_SESSIONS: DirectWorkSession[] = [
   {
     id: "dw_1",
     youngPerson: "Alex T.",
-    worker: "Ryan Thompson",
+    worker: "Marcus Bell",
     date: "2026-05-30",
     duration: "45 mins",
     type: "life_story",
@@ -60,7 +60,7 @@ const DEMO_SESSIONS: DirectWorkSession[] = [
   {
     id: "dw_2",
     youngPerson: "Jordan H.",
-    worker: "Anna Wilson",
+    worker: "Priya Sharma",
     date: "2026-05-29",
     duration: "30 mins",
     type: "emotional_regulation",
@@ -72,7 +72,7 @@ const DEMO_SESSIONS: DirectWorkSession[] = [
   {
     id: "dw_3",
     youngPerson: "Casey L.",
-    worker: "Ryan Thompson",
+    worker: "Marcus Bell",
     date: "2026-06-03",
     duration: "60 mins",
     type: "independence",
@@ -84,7 +84,7 @@ const DEMO_SESSIONS: DirectWorkSession[] = [
   {
     id: "dw_4",
     youngPerson: "Alex T.",
-    worker: "Darren Laville",
+    worker: "Olivia Hayes",
     date: "2026-05-27",
     duration: "40 mins",
     type: "identity",

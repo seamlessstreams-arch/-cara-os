@@ -61,9 +61,9 @@ function getDemoStaff(): StaffMember[] {
         { category: "record_keeping", status: "completed", completedAt: "2025-02-15", provider: "In-house" },
       ],
       supervisions: [
-        { id: "sv-s01", type: "formal", date: "2025-06-02", supervisorId: "staff-darren", supervisorName: "Darren Laville", durationMinutes: 60, topics: ["performance review", "reg 44 preparation"], actionPoints: 2, actionPointsCompleted: 1, signedOff: true },
-        { id: "sv-s02", type: "formal", date: "2025-05-05", supervisorId: "staff-darren", supervisorName: "Darren Laville", durationMinutes: 60, topics: ["staff development", "Ofsted readiness"], actionPoints: 3, actionPointsCompleted: 3, signedOff: true },
-        { id: "sv-s03", type: "formal", date: "2025-04-07", supervisorId: "staff-darren", supervisorName: "Darren Laville", durationMinutes: 55, topics: ["budget review", "placement stability"], actionPoints: 2, actionPointsCompleted: 2, signedOff: true },
+        { id: "sv-s01", type: "formal", date: "2025-06-02", supervisorId: "staff-darren", supervisorName: "Olivia Hayes", durationMinutes: 60, topics: ["performance review", "reg 44 preparation"], actionPoints: 2, actionPointsCompleted: 1, signedOff: true },
+        { id: "sv-s02", type: "formal", date: "2025-05-05", supervisorId: "staff-darren", supervisorName: "Olivia Hayes", durationMinutes: 60, topics: ["staff development", "Ofsted readiness"], actionPoints: 3, actionPointsCompleted: 3, signedOff: true },
+        { id: "sv-s03", type: "formal", date: "2025-04-07", supervisorId: "staff-darren", supervisorName: "Olivia Hayes", durationMinutes: 55, topics: ["budget review", "placement stability"], actionPoints: 2, actionPointsCompleted: 2, signedOff: true },
       ],
       absences: [
         { type: "annual_leave", startDate: "2025-04-14", endDate: "2025-04-18", daysLost: 5 },
@@ -144,10 +144,10 @@ function getDemoStaff(): StaffMember[] {
       absences: [],
     },
 
-    // ── Darren Laville — Registered Manager, fully compliant ─────────────
+    // ── Olivia Hayes — Registered Manager, fully compliant ─────────────
     {
       id: "staff-darren",
-      name: "Darren Laville",
+      name: "Olivia Hayes",
       role: "registered_manager",
       homeId: "oak-house",
       startDate: "2018-01-10",

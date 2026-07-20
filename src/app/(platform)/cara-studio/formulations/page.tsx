@@ -47,7 +47,7 @@ interface Formulation {
 const DEMO_FORMULATIONS: Formulation[] = [
   {
     id: "form-1", childId: "child_1", childName: "Jayden", framework: "psychologically_informed",
-    status: "approved", approvedBy: "Darren Laville", approvedAt: "2026-05-08T10:00:00Z", updatedAt: "2026-05-08T10:00:00Z",
+    status: "approved", approvedBy: "Olivia Hayes", approvedAt: "2026-05-08T10:00:00Z", updatedAt: "2026-05-08T10:00:00Z",
     data: {
       presenting_behaviour: ["Withdrawal during family discussions", "Reluctance to engage with new staff", "Positive engagement when given choice"],
       possible_unmet_needs: ["Belonging and identity", "Consistent adult relationships", "Sense of control over own life"],
