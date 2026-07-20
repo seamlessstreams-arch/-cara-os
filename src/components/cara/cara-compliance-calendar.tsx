@@ -78,7 +78,7 @@ function getDemoDeadlines(): ComplianceDeadline[] {
       daysUntilDue: -4,
       status: "overdue",
       regulation: "Reg 33 — Employment of staff",
-      assignedTo: "Darren L (RM)",
+      assignedTo: "Olivia H (RM)",
       relatedPerson: "Jordan P",
     },
     {
@@ -112,7 +112,7 @@ function getDemoDeadlines(): ComplianceDeadline[] {
       daysUntilDue: 13,
       status: "upcoming",
       regulation: "Reg 45 — Review of quality of care",
-      assignedTo: "Darren L (RM)",
+      assignedTo: "Olivia H (RM)",
     },
     {
       id: "cd_005",
@@ -164,7 +164,7 @@ function getDemoDeadlines(): ComplianceDeadline[] {
       dueDate: "2026-05-11",
       daysUntilDue: -1,
       status: "complete",
-      assignedTo: "Darren L (RM)",
+      assignedTo: "Olivia H (RM)",
       relatedPerson: "Alex R",
     },
   ];

@@ -1138,7 +1138,7 @@ export function generateDemoData(): {
       conditionsReviewed: 3,
       conditionsMet: 3,
       reviewOutcome: "all_met",
-      reviewerName: "Darren Laville",
+      reviewerName: "Olivia Hayes",
     },
   ];
 
@@ -1231,7 +1231,7 @@ export function generateDemoData(): {
     {
       id: "lt-004",
       staffId: "staff-darren",
-      staffName: "Darren Laville",
+      staffName: "Olivia Hayes",
       trainingDate: "2026-01-05",
       courtOrderAwareness: true,
       childrenActKnowledge: true,

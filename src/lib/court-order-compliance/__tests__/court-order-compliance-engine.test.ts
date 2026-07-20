@@ -948,9 +948,9 @@ describe("generateDemoData()", () => {
     expect(types.filter((t) => t === "advocacy_meeting")).toHaveLength(1);
   });
 
-  it("staff includes Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville", () => {
+  it("staff includes Sarah Johnson, Tom Richards, Lisa Williams, Olivia Hayes", () => {
     const { training } = generateDemoData();
     const names = training.map((t) => t.staffName).sort();
-    expect(names).toEqual(["Darren Laville", "Lisa Williams", "Sarah Johnson", "Tom Richards"]);
+    expect(names).toEqual(["Lisa Williams", "Olivia Hayes", "Sarah Johnson", "Tom Richards"]);
   });
 });

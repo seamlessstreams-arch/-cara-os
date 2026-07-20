@@ -1274,13 +1274,13 @@ describe("demo data integration", () => {
     expect(staffIds.size).toBe(4);
   });
 
-  it("demo training includes Sarah, Tom, Lisa, Darren", () => {
+  it("demo training includes Sarah, Tom, Lisa, Olivia", () => {
     const records = getDemoTrainingRecords();
     const names = new Set(records.map((r) => r.staffName));
     expect(names.has("Sarah Johnson")).toBe(true);
     expect(names.has("Tom Williams")).toBe(true);
     expect(names.has("Lisa Chen")).toBe(true);
-    expect(names.has("Darren Laville")).toBe(true);
+    expect(names.has("Olivia Hayes")).toBe(true);
   });
 
   it("getDemoIncidents returns incidents", () => {

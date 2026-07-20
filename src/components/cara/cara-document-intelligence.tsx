@@ -69,7 +69,7 @@ function getDemoDocuments(): TrackedDocument[] {
   return [
     {
       id: "doc_001", category: "policy", name: "Safeguarding Policy", status: "review_due",
-      lastReviewed: "2025-11-10", reviewCycleDays: 180, owner: "Darren L (RM)",
+      lastReviewed: "2025-11-10", reviewCycleDays: 180, owner: "Olivia H (RM)",
       caraNotes: "Annual review overdue by 2 days. Safeguarding policy should reference latest KCSIE 2026 guidance.",
     },
     {
@@ -83,7 +83,7 @@ function getDemoDocuments(): TrackedDocument[] {
     },
     {
       id: "doc_004", category: "certificate", name: "Fire Safety Certificate", status: "current",
-      expiryDate: "2026-12-01", daysUntilExpiry: 203, owner: "Darren L (RM)",
+      expiryDate: "2026-12-01", daysUntilExpiry: 203, owner: "Olivia H (RM)",
     },
     {
       id: "doc_005", category: "registration", name: "Ofsted Registration Certificate", status: "current",
@@ -91,15 +91,15 @@ function getDemoDocuments(): TrackedDocument[] {
     },
     {
       id: "doc_006", category: "policy", name: "Behaviour Management Policy", status: "current",
-      lastReviewed: "2026-02-15", reviewCycleDays: 365, owner: "Darren L (RM)",
+      lastReviewed: "2026-02-15", reviewCycleDays: 365, owner: "Olivia H (RM)",
     },
     {
       id: "doc_007", category: "policy", name: "Missing from Care Protocol", status: "current",
-      lastReviewed: "2026-01-20", reviewCycleDays: 365, owner: "Darren L (RM)",
+      lastReviewed: "2026-01-20", reviewCycleDays: 365, owner: "Olivia H (RM)",
     },
     {
       id: "doc_008", category: "training_record", name: "Team Training Matrix", status: "review_due",
-      lastReviewed: "2026-02-01", reviewCycleDays: 90, owner: "Darren L (RM)",
+      lastReviewed: "2026-02-01", reviewCycleDays: 90, owner: "Olivia H (RM)",
       caraNotes: "Quarterly review due. 2 staff members have training gaps flagged by Cara.",
     },
     {
@@ -108,7 +108,7 @@ function getDemoDocuments(): TrackedDocument[] {
     },
     {
       id: "doc_010", category: "policy", name: "Complaints Policy", status: "current",
-      lastReviewed: "2026-04-10", reviewCycleDays: 365, owner: "Darren L (RM)",
+      lastReviewed: "2026-04-10", reviewCycleDays: 365, owner: "Olivia H (RM)",
     },
     {
       id: "doc_011", category: "certificate", name: "First Aid at Work — Pat M", status: "expiring_soon",
@@ -116,7 +116,7 @@ function getDemoDocuments(): TrackedDocument[] {
     },
     {
       id: "doc_012", category: "policy", name: "Physical Intervention Policy", status: "missing",
-      owner: "Darren L (RM)",
+      owner: "Olivia H (RM)",
       caraNotes: "Required under Reg 35. Must be in place and reviewed. Urgent action needed.",
     },
   ];

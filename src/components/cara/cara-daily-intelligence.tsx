@@ -155,7 +155,7 @@ function generateDemoBrief(date: string): DailyBrief {
     {
       id: "evt_5", time: "13:30", category: "incident",
       priority: "high", summary: "Physical altercation between Alex W and Riley P in the lounge. De-escalated by staff using PACE approach. No injuries. Both YP separated and spoken to individually.",
-      childName: "Alex W", staffName: "Darren L", requiresFollowUp: true,
+      childName: "Alex W", staffName: "Olivia H", requiresFollowUp: true,
     },
     {
       id: "evt_6", time: "14:00", category: "contact",
