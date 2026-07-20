@@ -6,7 +6,7 @@
  * references a person by id — staff_id: "staff_naomi", supervised_by:
  * "staff_jasmine" — but no roster entry with that id exists anywhere. The
  * reference "resolves" to nothing: name lookups fall back to the raw id
- * ("staff_jasmine" rendered as a supervisor in the relational timeline),
+ * (a supervisor rendering as "staff_jasmine" in the relational timeline),
  * per-staff rollups silently drop the records, and the
  * "every authored record resolves to a named staff member" test goes red on
  * main days after the seed change merges (PR #767; before that fc2d87e39
@@ -45,10 +45,6 @@ const ALLOWLIST = new Set([
   // ("Olivia Hayes") and ask-cara derives readable names from the id by
   // convention — there is deliberately no roster row behind it.
   "staff_olivia",
-  // TEMPORARY — intelligence-store contact-log supervisor with no roster row;
-  // a fix is in flight in a parallel session (add Jasmine to the roster or
-  // remap). Remove this entry once that lands; the guard then enforces it.
-  "staff_jasmine",
 ]);
 
 // Fields whose string value is a person reference.
