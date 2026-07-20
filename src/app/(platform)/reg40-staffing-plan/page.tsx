@@ -62,13 +62,13 @@ const MINIMUM_STAFFING = [
 
 const GAP_ANALYSIS = [
   { id: "g1", area: "Level 3 Diploma", detail: "2 staff (Samuel, Elena) working toward Level 3 — both within the 2-year statutory window", severity: "medium", action: "Progress reviews monthly; on track" },
-  { id: "g2", area: "First Aid Coverage", detail: "Ryan's First Aid renewal due — currently 3 holders providing adequate coverage", severity: "low", action: "Renewal course booked" },
+  { id: "g2", area: "First Aid Coverage", detail: "Marcus's First Aid renewal due — currently 3 holders providing adequate coverage", severity: "low", action: "Renewal course booked" },
   { id: "g3", area: "Waking Night Lone Working", detail: "Lone working not permitted on waking nights until Samuel completes Level 3 — second staff required", severity: "high", action: "Schedule adjusted to pair Samuel with qualified staff" },
   { id: "g4", area: "Vacancies", detail: "No current vacancies — all posts filled", severity: "low", action: "N/A" },
 ];
 
 const RECENT_CHANGES = [
-  { id: "rc1", date: "2026-02-06", description: "Diane — dismissed (conduct)", type: "departure" },
+  { id: "rc1", date: "2026-02-06", description: "Maria — dismissed (conduct)", type: "departure" },
   { id: "rc2", date: "2026-03-08", description: "Elena Novak — started (replacement for Maria)", type: "arrival" },
   { id: "rc3", date: "2026-03-08", description: "Staff:child ratio improved to 2.3:1", type: "ratio_change" },
 ];
