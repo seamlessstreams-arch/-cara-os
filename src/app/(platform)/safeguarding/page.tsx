@@ -1255,14 +1255,14 @@ function ManagerActionsTab() {
 
   // Strategy discussion tracker (static display)
   const STRATEGY_DISCUSSIONS = [
-    { ref: "STR-001", subject: "Alex — Contextual Safeguarding / MFC Pattern", date: "2026-04-01", status: "completed", attendees: ["Darren Laville", "Karen Holding", "DC Smith (Police)"], outcome: "MASH referral made. Risk assessment updated. Monitoring plan agreed." },
-    { ref: "STR-002", subject: "Alex — Exploitation Disclosure (INC-2026-0043)", date: "2026-04-15", status: "scheduled", attendees: ["Darren Laville", "Karen Holding", "IRO", "MASH"], outcome: null },
+    { ref: "STR-001", subject: "Alex — Contextual Safeguarding / MFC Pattern", date: "2026-04-01", status: "completed", attendees: ["Olivia Hayes", "Karen Holding", "DC Smith (Police)"], outcome: "MASH referral made. Risk assessment updated. Monitoring plan agreed." },
+    { ref: "STR-002", subject: "Alex — Exploitation Disclosure (INC-2026-0043)", date: "2026-04-15", status: "scheduled", attendees: ["Olivia Hayes", "Karen Holding", "IRO", "MASH"], outcome: null },
   ];
 
   // Professional notifications log (static display)
   const NOTIF_LOG = [
     { date: "2026-04-14", time: "19:25", role: "Social Worker", contact: "Karen Holding", incident: "INC-2026-0043", method: "Phone", by: "staff_edward", acknowledged: true },
-    { date: "2026-04-14", time: "19:20", role: "Registered Manager", contact: "Darren Laville", incident: "INC-2026-0043", method: "Phone", by: "staff_edward", acknowledged: true },
+    { date: "2026-04-14", time: "19:20", role: "Registered Manager", contact: "Olivia Hayes", incident: "INC-2026-0043", method: "Phone", by: "staff_edward", acknowledged: true },
     { date: "2026-04-14", time: "20:00", role: "Police / MASH", contact: "MASH referral", incident: "INC-2026-0043", method: "Phone", by: "staff_darren", acknowledged: false },
     { date: "2026-04-13", time: "08:30", role: "Deputy Manager", contact: "Ryan Forsythe", incident: "INC-2026-0040", method: "In person", by: "staff_anna", acknowledged: true },
     { date: "2026-04-13", time: "09:15", role: "Social Worker", contact: "Karen Holding", incident: "INC-2026-0041", method: "Phone", by: "staff_darren", acknowledged: true },

@@ -97,7 +97,7 @@ const DEMO_PROFILES: TherapeuticProfile[] = [
       { title: "Process family contact feelings", description: "Gentle life story and feelings work around family relationships", framework: "DDP", status: "active" },
       { title: "Build independence skills", description: "Age-appropriate independence work aligned with pathway plan", framework: "Therapeutic Parenting", status: "active" },
     ],
-    approved_by: "Darren Laville", approved_at: "2026-04-15T10:00:00Z", updated_at: "2026-05-08T14:30:00Z",
+    approved_by: "Olivia Hayes", approved_at: "2026-04-15T10:00:00Z", updated_at: "2026-05-08T14:30:00Z",
   },
   {
     id: "prof-2", child_id: "child_2", childName: "Amara", status: "draft", version: 1,

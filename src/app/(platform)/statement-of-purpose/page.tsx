@@ -157,7 +157,7 @@ export default function StatementOfPurposePage() {
             </div>
             <div>
               <p className="text-muted-foreground text-xs">Registered Manager</p>
-              <p className="font-medium">Darren Laville</p>
+              <p className="font-medium">Olivia Hayes</p>
             </div>
             <div>
               <p className="text-muted-foreground text-xs">Ofsted URN</p>

@@ -32,8 +32,8 @@ const CHILD_OPTIONS = [
 const OWNER_OPTIONS = [
   { id: "staff_darren",    name: "Darren (RM)" },
   { id: "staff_ryan",      name: "Ryan" },
-  { id: "staff_chervelle", name: "Chervelle" },
-  { id: "staff_lackson",   name: "Lackson" },
+  { id: "staff_chervelle", name: "Naomi" },
+  { id: "staff_lackson",   name: "Samuel" },
 ] as const;
 
 // ── Field label helper ────────────────────────────────────────────────────────
