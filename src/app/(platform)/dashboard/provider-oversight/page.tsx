@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, localMonthKey } from "@/lib/utils";
 import {
   Building2,
   Shield,
@@ -163,7 +163,7 @@ export default function ProviderOversightPage() {
 
     // Compute inspection readiness from live cross-module data
     const reg44Visits = (reg44Data?.visits as Record<string, unknown>[]) ?? [];
-    const currentMonth = new Date().toISOString().slice(0, 7);
+    const currentMonth = localMonthKey();
     const hasReg44 = reg44Visits.some((v) => ((v.visit_date as string) ?? "").startsWith(currentMonth));
 
     const reg45Reviews = (reg45Data?.reviews as Record<string, unknown>[]) ?? [];

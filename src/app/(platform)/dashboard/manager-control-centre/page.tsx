@@ -17,7 +17,7 @@ import {
   Filter, Calendar, AlertCircle, UserCheck, Pill,
   FileSearch, BookOpen, Scale, Activity, Siren,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, localMonthKey } from "@/lib/utils";
 import { CaraDailyIntelligence } from "@/components/cara/cara-daily-intelligence";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { SupervisionIntelligenceCard } from "@/components/dashboard/supervision-intelligence-card";
@@ -667,7 +667,7 @@ export default function ManagerControlCentrePage() {
     const pendingReviews = learningReviews.filter((r) => r.review_status === "required" || r.status === "required").length;
 
     const reg44Visits = (reg44Data?.visits as Record<string, unknown>[]) ?? [];
-    const currentMonth = new Date().toISOString().slice(0, 7);
+    const currentMonth = localMonthKey();
     const reg44ThisMonth = reg44Visits.some((v) => ((v.visit_date as string) ?? "").startsWith(currentMonth));
 
     const reg45Reviews = (reg45Data?.reviews as Record<string, unknown>[]) ?? [];

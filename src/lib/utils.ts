@@ -44,6 +44,15 @@ export function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+// "Current month" must come from LOCAL date parts, not toISOString() (UTC).
+// In Europe/London (BST, UTC+1) between 00:00 and 00:59 on the 1st, the UTC
+// month is still the previous one, so month-scoped alerts and defaults go
+// wrong — and keys built from local-midnight month starts collide at the
+// spring clock change (Mar/Apr both map to "YYYY-03"), duplicating React keys.
+export function localMonthKey(dt: Date = new Date()): string {
+  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export function isOverdue(dueDate: string | null, status: string): boolean {
   if (status === "completed") return false;
   if (!dueDate) return false;

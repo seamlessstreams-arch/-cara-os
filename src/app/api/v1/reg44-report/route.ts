@@ -14,7 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { readJsonBody } from "@/lib/http/read-json";
 import { getStore, db } from "@/lib/db/store";
-import { generateId } from "@/lib/utils";
+import { generateId, localMonthKey } from "@/lib/utils";
 import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
 import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-assessment-engine";
 import { assembleReg44ReportDraft } from "@/lib/reg44-report-intelligence/report-assembly";
@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
 const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : "");
 function monthWindow(month: string): { start: string; end: string; month: string } {
   const m = /^(\d{4})-(\d{2})$/.exec(month || "");
-  const ym = m ? `${m[1]}-${m[2]}` : new Date().toISOString().slice(0, 7);
+  const ym = m ? `${m[1]}-${m[2]}` : localMonthKey();
   return { start: `${ym}-01`, end: `${ym}-31`, month: ym };
 }
 

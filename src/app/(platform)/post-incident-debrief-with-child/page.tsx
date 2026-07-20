@@ -15,7 +15,7 @@ import {
   HandHeart, CheckCircle2, AlertTriangle, Clock, Smile, Frown, BookOpen,
   PenTool, Footprints, Palette, UserRound, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, localMonthKey } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { usePostIncidentChildDebriefs } from "@/hooks/use-post-incident-child-debriefs";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -68,8 +68,7 @@ export default function PostIncidentDebriefWithChildPage() {
   }, [records, sortBy, filterChild, filterMethod]);
 
   /* summary stats */
-  const now = new Date();
-  const thisMonth = now.toISOString().slice(0, 7);
+  const thisMonth = localMonthKey();
   const debriefsThisMonth = records.filter((r) => r.debrief_date.startsWith(thisMonth)).length;
   const childLedCount = records.filter((r) => r.child_ready_to_debrief).length;
   const childLedPct = records.length > 0 ? Math.round((childLedCount / records.length) * 100) : 0;
