@@ -109,8 +109,9 @@ export async function GET(req: NextRequest) {
   // ── Meta stats ────────────────────────────────────────────────────────────
   const meta = {
     total: enriched.length,
-    on_shift_today: enriched.filter((s) => s.is_on_shift_today).length,
-    on_leave_today: enriched.filter((s) => s.is_on_leave_today).length,
+    on_shift: enriched.filter((s) => s.is_on_shift_today).length,
+    on_leave: enriched.filter((s) => s.is_on_leave_today).length,
+    bank: enriched.filter((s) => s.employment_type === "bank").length,
     supervision_overdue: enriched.filter((s) => s.supervision_overdue).length,
     training_expired: enriched.filter((s) => s.training_expired_count > 0).length,
   };
