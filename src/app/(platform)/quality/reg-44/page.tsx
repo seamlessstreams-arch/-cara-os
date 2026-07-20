@@ -34,7 +34,7 @@ import {
   Clock,
   CircleDot,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, localMonthKey } from "@/lib/utils";
 import { getStaffById } from "@/lib/seed-data";
 import type {
   Reg44Visit,
@@ -118,7 +118,7 @@ function buildMonthTimeline(visits: Reg44Visit[]) {
   const now = new Date();
   for (let i = 11; i >= 0; i--) {
     const dt = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = dt.toISOString().slice(0, 7);
+    const key = localMonthKey(dt);
     const label = dt.toLocaleDateString("en-GB", { month: "short", year: "2-digit" });
     const match = visits.find((v) => v.visitDate.slice(0, 7) === key);
     months.push({ key, label, hasVisit: !!match, visitDate: match?.visitDate });
@@ -185,7 +185,7 @@ export default function Reg44Page() {
   const [actionFilter, setActionFilter] = useState<string>("all");
 
   const timeline = useMemo(() => buildMonthTimeline(visits), [visits]);
-  const currentMonthKey = new Date().toISOString().slice(0, 7);
+  const currentMonthKey = localMonthKey();
   const currentMonthHasVisit = visits.some((v) => v.visitDate.slice(0, 7) === currentMonthKey);
 
   /* action counts */
