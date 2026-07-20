@@ -39,12 +39,20 @@ jobs:
   live-crawl:
     name: Live fiction crawl
     runs-on: ubuntu-latest
-    # MEASURED, not guessed: against a cold `next start` the crawl step takes
-    # ~28 min (44 routes, each server-rendered on first hit — nothing is warm).
-    # At 30 the run finished its crawl and printed a PASS, then was killed
-    # during cleanup and reported "cancelled" — a green result thrown away by a
-    # 2-minute margin. 45 leaves real headroom as routes are added.
-    timeout-minutes: 45
+    # MEASURED across four CI runs, not guessed. The crawl step costs ~28-42
+    # min and is genuinely VARIABLE: 28.1, 42.0 (serial), then 42.1 (parallel).
+    # The cost is irreducible cold-render time — a single `next start` on a
+    # 2-core runner server-rendering 44 heavy routes with nothing warm. It is
+    # NOT a fixable inefficiency, which is why parallelising the browser side
+    # (#794) changed nothing: six concurrent pages just queue against one
+    # saturated Node process.
+    #
+    # At 45 the job kept finishing its crawl, printing a PASS, and then being
+    # killed — a green result discarded on a coin-flip. 90 is set to fit the
+    # real workload with room for variance, rather than to sit just above the
+    # last observed number and lose the next toss. This is a nightly job, so
+    # wall-clock is close to free; a discarded pass is not.
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
