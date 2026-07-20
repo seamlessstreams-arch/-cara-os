@@ -56,20 +56,20 @@ const SEVERITY_META: Record<string, { colour: string }> = {
 const MINIMUM_STAFFING = [
   { id: "ms1", shift: "Day (07:00–14:00)", minimum: 2, current: "2–3", adequate: true, note: null as string | null },
   { id: "ms2", shift: "Afternoon (14:00–22:00)", minimum: 3, current: "3", adequate: true, note: null as string | null },
-  { id: "ms3", shift: "Waking Night (22:00–07:00)", minimum: 1, current: "1", adequate: true, note: "Lone working restricted until Lackson completes Level 3" },
+  { id: "ms3", shift: "Waking Night (22:00–07:00)", minimum: 1, current: "1", adequate: true, note: "Lone working restricted until Samuel completes Level 3" },
   { id: "ms4", shift: "Weekend Day", minimum: 2, current: "2–3", adequate: true, note: null as string | null },
 ];
 
 const GAP_ANALYSIS = [
-  { id: "g1", area: "Level 3 Diploma", detail: "2 staff (Lackson, Mirela) working toward Level 3 — both within the 2-year statutory window", severity: "medium", action: "Progress reviews monthly; on track" },
+  { id: "g1", area: "Level 3 Diploma", detail: "2 staff (Samuel, Elena) working toward Level 3 — both within the 2-year statutory window", severity: "medium", action: "Progress reviews monthly; on track" },
   { id: "g2", area: "First Aid Coverage", detail: "Ryan's First Aid renewal due — currently 3 holders providing adequate coverage", severity: "low", action: "Renewal course booked" },
-  { id: "g3", area: "Waking Night Lone Working", detail: "Lone working not permitted on waking nights until Lackson completes Level 3 — second staff required", severity: "high", action: "Schedule adjusted to pair Lackson with qualified staff" },
+  { id: "g3", area: "Waking Night Lone Working", detail: "Lone working not permitted on waking nights until Samuel completes Level 3 — second staff required", severity: "high", action: "Schedule adjusted to pair Samuel with qualified staff" },
   { id: "g4", area: "Vacancies", detail: "No current vacancies — all posts filled", severity: "low", action: "N/A" },
 ];
 
 const RECENT_CHANGES = [
   { id: "rc1", date: "2026-02-06", description: "Diane — dismissed (conduct)", type: "departure" },
-  { id: "rc2", date: "2026-03-08", description: "Mirela Tshawa Kalongo — started (replacement for Diane)", type: "arrival" },
+  { id: "rc2", date: "2026-03-08", description: "Elena Novak — started (replacement for Maria)", type: "arrival" },
   { id: "rc3", date: "2026-03-08", description: "Staff:child ratio improved to 2.3:1", type: "ratio_change" },
 ];
 

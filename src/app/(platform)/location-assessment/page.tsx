@@ -176,7 +176,7 @@ export default function LocationAssessmentPage() {
           services, transport, education, health, leisure opportunities, and any risks in the local area.
           The assessment should inform the Statement of Purpose and placement matching decisions.
           <p className="mt-2 text-xs text-blue-700">
-            Last full review: March 2026 · Next review due: September 2026 · Reviewed by: Darren Laville (RM)
+            Last full review: March 2026 · Next review due: September 2026 · Reviewed by: Olivia Hayes (RM)
           </p>
         </div>
       </div>

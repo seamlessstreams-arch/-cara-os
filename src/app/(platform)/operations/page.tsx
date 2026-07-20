@@ -206,10 +206,10 @@ function TasksTab() {
 
   const DEMO_TASKS = [
     { ref: "SFG-A1K001", title: "Review safeguarding concern — Alex W", category: "safeguarding", priority: "urgent", status: "in_progress", due: "Today", assigned: "Sarah M", riskScore: 72 },
-    { ref: "CMP-B2L002", title: "Update Reg 45 evidence folder", category: "compliance", priority: "high", status: "not_started", due: "Tomorrow", assigned: "Darren L", riskScore: 55 },
+    { ref: "CMP-B2L002", title: "Update Reg 45 evidence folder", category: "compliance", priority: "high", status: "not_started", due: "Tomorrow", assigned: "Olivia H", riskScore: 55 },
     { ref: "MED-C3M003", title: "Medication stock check — monthly", category: "medication", priority: "medium", status: "awaiting_sign_off", due: "14 May", assigned: "James H", riskScore: 30 },
     { ref: "TRN-D4N004", title: "Book restraint refresher training", category: "training", priority: "high", status: "overdue", due: "10 May", assigned: "Unassigned", riskScore: 68 },
-    { ref: "ARA-E5O005", title: "Cara: Pattern detected — weekend incident increase", category: "cara_generated", priority: "high", status: "not_started", due: "15 May", assigned: "Darren L", riskScore: 61 },
+    { ref: "ARA-E5O005", title: "Cara: Pattern detected — weekend incident increase", category: "cara_generated", priority: "high", status: "not_started", due: "15 May", assigned: "Olivia H", riskScore: 61 },
   ];
 
   return (
@@ -298,7 +298,7 @@ function WorkflowsTab() {
     {
       id: "w1", template: "New Placement Admission", child: "Alex W",
       status: "in_progress", step: 5, totalSteps: 8, progress: 62,
-      currentStep: "Staff Briefing", initiatedBy: "Darren L", date: "8 May 2026",
+      currentStep: "Staff Briefing", initiatedBy: "Olivia H", date: "8 May 2026",
     },
     {
       id: "w2", template: "Incident Response", child: "Jordan M",
@@ -308,12 +308,12 @@ function WorkflowsTab() {
     {
       id: "w3", template: "Incident Response", child: "Casey T",
       status: "in_progress", step: 6, totalSteps: 6, progress: 100,
-      currentStep: "Review & Learning", initiatedBy: "Darren L", date: "9 May 2026",
+      currentStep: "Review & Learning", initiatedBy: "Olivia H", date: "9 May 2026",
     },
     {
       id: "w4", template: "Reg 44 Monthly Visit", child: null,
       status: "in_progress", step: 2, totalSteps: 6, progress: 33,
-      currentStep: "Young People Consultation", initiatedBy: "Darren L", date: "1 May 2026",
+      currentStep: "Young People Consultation", initiatedBy: "Olivia H", date: "1 May 2026",
     },
   ];
 
@@ -816,12 +816,12 @@ function IntelligenceTab() {
 const DEMO_AUDIT_ENTRIES = [
   { id: "a1", action: "create", entity_type: "incident", entity_id: "inc-042", reference: "INC-042", performed_by: "Sarah Mitchell", created_at: "2026-05-12T15:32:00Z", details: "Created incident: Physical intervention with Jayden" },
   { id: "a2", action: "update", entity_type: "daily_log", entity_id: "dl-189", reference: "DL-189", performed_by: "James Wilson", created_at: "2026-05-12T14:15:00Z", details: "Updated daily log entry for Tyler" },
-  { id: "a3", action: "oversight_added", entity_type: "incident", entity_id: "inc-040", reference: "INC-040", performed_by: "Darren Laville", created_at: "2026-05-12T13:45:00Z", details: "Management oversight added: Quality score 4/5" },
-  { id: "a4", action: "approve", entity_type: "form_submission", entity_id: "fs-023", reference: "FS-023", performed_by: "Darren Laville", created_at: "2026-05-12T11:20:00Z", details: "Approved medication administration form" },
+  { id: "a3", action: "oversight_added", entity_type: "incident", entity_id: "inc-040", reference: "INC-040", performed_by: "Olivia Hayes", created_at: "2026-05-12T13:45:00Z", details: "Management oversight added: Quality score 4/5" },
+  { id: "a4", action: "approve", entity_type: "form_submission", entity_id: "fs-023", reference: "FS-023", performed_by: "Olivia Hayes", created_at: "2026-05-12T11:20:00Z", details: "Approved medication administration form" },
   { id: "a5", action: "complete", entity_type: "task", entity_id: "tsk-076", reference: "SFG-A1K076", performed_by: "Emily Chen", created_at: "2026-05-12T10:45:00Z", details: "Completed safeguarding task: Update risk assessment for Amara" },
-  { id: "a6", action: "workflow_advance", entity_type: "workflow", entity_id: "wf-012", reference: "WF-012", performed_by: "Darren Laville", created_at: "2026-05-12T09:30:00Z", details: "Advanced New Placement workflow to Pre-Admission phase" },
-  { id: "a7", action: "create", entity_type: "oversight_note", entity_id: "on-034", reference: "ON-034", performed_by: "Darren Laville", created_at: "2026-05-12T09:00:00Z", details: "Oversight note for missing from care episode (Tyler)" },
-  { id: "a8", action: "sign_off", entity_type: "task", entity_id: "tsk-074", reference: "MED-B2K074", performed_by: "Darren Laville", created_at: "2026-05-11T18:30:00Z", details: "Signed off medication audit task" },
+  { id: "a6", action: "workflow_advance", entity_type: "workflow", entity_id: "wf-012", reference: "WF-012", performed_by: "Olivia Hayes", created_at: "2026-05-12T09:30:00Z", details: "Advanced New Placement workflow to Pre-Admission phase" },
+  { id: "a7", action: "create", entity_type: "oversight_note", entity_id: "on-034", reference: "ON-034", performed_by: "Olivia Hayes", created_at: "2026-05-12T09:00:00Z", details: "Oversight note for missing from care episode (Tyler)" },
+  { id: "a8", action: "sign_off", entity_type: "task", entity_id: "tsk-074", reference: "MED-B2K074", performed_by: "Olivia Hayes", created_at: "2026-05-11T18:30:00Z", details: "Signed off medication audit task" },
   { id: "a9", action: "create", entity_type: "evidence_item", entity_id: "ev-019", reference: "EV-019", performed_by: "James Wilson", created_at: "2026-05-11T17:00:00Z", details: "Uploaded evidence: Fire drill log May 2026" },
   { id: "a10", action: "escalate", entity_type: "task", entity_id: "tsk-071", reference: "CMP-C3K071", performed_by: "Sarah Mitchell", created_at: "2026-05-11T16:15:00Z", details: "Escalated complaint task to Registered Manager" },
   { id: "a11", action: "create", entity_type: "communication_draft", entity_id: "cd-007", reference: "CD-007", performed_by: "Cara", created_at: "2026-05-11T15:30:00Z", details: "Cara generated shift briefing draft for night shift" },

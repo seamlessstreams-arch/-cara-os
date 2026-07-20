@@ -779,8 +779,8 @@ const CHILD_NAMES: Record<string, string> = {
 const OWNER_NAMES: Record<string, string> = {
   staff_darren:    "Darren (RM)",
   staff_ryan:      "Ryan",
-  staff_chervelle: "Chervelle",
-  staff_lackson:   "Lackson",
+  staff_chervelle: "Naomi",
+  staff_lackson:   "Samuel",
 };
 
 const STATUS_CLASSES: Record<string, string> = {
