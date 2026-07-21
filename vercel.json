@@ -1,6 +1,10 @@
 {
+  "framework": "nextjs",
   "buildCommand": "node --max-old-space-size=8192 node_modules/.bin/next build",
   "crons": [
-    { "path": "/api/cron", "schedule": "0 7 * * *" }
+    {
+      "path": "/api/cron",
+      "schedule": "0 7 * * *"
+    }
   ]
 }
