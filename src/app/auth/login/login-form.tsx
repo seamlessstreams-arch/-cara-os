@@ -21,6 +21,36 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+
+  // Self-service recovery. Deliberately NOT gated behind "ask your manager":
+  // the Registered Manager is the one account with nobody above them to ask, so
+  // that route strands the very person who can least afford to be locked out.
+  //
+  // The confirmation never reveals whether the address is registered — an
+  // unauthenticated form that says "no such user" is an account-enumeration
+  // oracle, and here the accounts belong to staff at a children's home.
+  const sendReset = async () => {
+    setError(null);
+    if (!email) {
+      setError("Enter your email address first, then choose 'Forgotten your password?'.");
+      return;
+    }
+    setResetBusy(true);
+    try {
+      const supabase = createClient();
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      // Same message on success and on unknown-address, by design (see above).
+      setResetSent(true);
+    } catch {
+      setError("Couldn't reach the sign-in service — check your connection and try again.");
+    } finally {
+      setResetBusy(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,8 +114,23 @@ export function LoginForm() {
         {busy ? (<><Loader2 className="h-4 w-4 animate-spin" /> Signing in…</>) : (<>Sign in <ArrowRight className="h-4 w-4" /></>)}
       </button>
 
+      <button
+        type="button"
+        onClick={sendReset}
+        disabled={resetBusy}
+        className="mt-4 block w-full text-center text-[11px] text-slate-400 underline-offset-4 transition-colors hover:text-slate-200 hover:underline disabled:opacity-60"
+      >
+        {resetBusy ? "Sending reset link…" : "Forgotten your password?"}
+      </button>
+
+      {resetSent && (
+        <p className="mt-3 rounded-xl border border-teal-400/25 bg-teal-500/10 px-4 py-2.5 text-center text-xs leading-relaxed text-teal-100">
+          If an account exists for that email, a reset link is on its way. It expires shortly, so use it soon.
+        </p>
+      )}
+
       <p className="mt-4 text-center text-[11px] text-slate-500">
-        Forgotten password? Ask your Registered Manager to reset your access.
+        Managers can also reset a colleague&apos;s access from the staff record.
       </p>
     </form>
   );
