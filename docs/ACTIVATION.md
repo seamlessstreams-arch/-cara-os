@@ -117,6 +117,27 @@ insert into platform_admins (user_id, full_name)
 values ('<AUTH_USER_UUID>', '<Your Name>');
 ```
 
+## 2c · Auth URLs — set these or password recovery breaks
+
+**Dashboard → Authentication → URL Configuration.** Two fields, and skipping
+them is not cosmetic:
+
+| field | value |
+| --- | --- |
+| **Site URL** | `https://<your-tenant-domain>` |
+| **Redirect URLs** | add `https://<your-tenant-domain>/**` |
+
+Supabase only honours a `redirectTo` that appears on the allow-list. When it
+does not match, it silently falls back to **Site URL** — which defaults to
+`http://127.0.0.1:3000`. On the first live tenant this sent the Registered
+Manager's password-reset email to **localhost**, with no error anywhere: the
+email sends, the link works, it just arrives nowhere reachable.
+
+Do NOT set these with `supabase config push`. That pushes the whole local
+`[auth]` block and would overwrite the live project's auth settings (providers,
+token expiry, rate limits) with local-dev values. These two fields belong in the
+dashboard.
+
 ## 3 · The tenant deployment — a new Vercel project
 
 Create a **new** Vercel project (e.g. `cara-<company>`) importing this same
