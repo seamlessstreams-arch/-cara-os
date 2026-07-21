@@ -6,11 +6,20 @@
 //     X-User-Id / X-User-Role header convention, so the demo is unaffected.
 //
 // Activated mode (Supabase configured):
-//   • Refreshes the Supabase auth session (cookie rotation via updateSession)
-//     and redirects unauthenticated PAGE requests to /auth/login.
-//   • API routes are intentionally excluded from the matcher: they enforce their
-//     own per-route guards (requirePermissionAsync) and must return 401/403, not
-//     a redirect.
+//   • Refreshes the Supabase auth session (cookie rotation via updateSession),
+//     redirects unauthenticated PAGE requests to /auth/login, and answers
+//     unauthenticated API requests with 401 JSON.
+//
+// API routes USED to be excluded here, on the stated assumption that "they
+// enforce their own per-route guards (requirePermissionAsync)". That assumption
+// was false: 376 of 513 /api/v1 route files call no guard at all, so on the
+// first live tenant `GET /api/v1/staff` returned 200 with real staff records to
+// an unauthenticated caller. Delegating a security invariant to 513 files means
+// relying on every one of them — and on every future one — to remember it.
+// The matcher now covers /api/* so the gate holds by construction; routes that
+// do guard themselves are unaffected (their check simply runs second and
+// agrees). The only exceptions are the tiny exact-match list in
+// PUBLIC_API_EXACT (health-check, cron), each justified there.
 //
 // The Supabase check is inlined (not imported from lib/supabase/server) so the
 // Edge bundle doesn't pull in the supabase-js service client.
@@ -34,9 +43,10 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Page routes only. Exclude API (per-route guards handle auth there), Next
-  // internals, and static assets.
+  // Pages AND API. Only Next internals and static assets are excluded — those
+  // carry no records and must stay fast. `api` is deliberately NOT in this
+  // exclusion list any more (see the note above).
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)",
   ],
 };
