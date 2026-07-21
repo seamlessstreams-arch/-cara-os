@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { isPublicPath } from '@/lib/auth/public-paths'
+import { isPublicPath, isApiPath } from '@/lib/auth/public-paths'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -44,6 +44,16 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims
 
   if (!user && !isPublicPath(request.nextUrl.pathname)) {
+    // An API caller must get a 401 it can read, never a 302 to an HTML login
+    // page: a redirect makes every fetch() in the app look like a mysterious
+    // parse error, and makes an unauthenticated probe look "fine". Same
+    // wording as the per-route guards so the two are indistinguishable.
+    if (isApiPath(request.nextUrl.pathname)) {
+      return NextResponse.json(
+        { error: 'Unauthorized', detail: 'A valid authenticated session is required.' },
+        { status: 401 },
+      )
+    }
     // No session on a platform page: send to the login door, remembering where
     // the visitor was heading so sign-in returns them there. The marketing
     // site (isPublicPath) stays public even in activated mode.
