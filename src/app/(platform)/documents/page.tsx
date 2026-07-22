@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
 import { useStaff } from "@/hooks/use-staff";
-import { useDocuments } from "@/hooks/use-documents";
+import { useDocuments, useCreateDocument } from "@/hooks/use-documents";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatDate, todayStr, daysFromNow } from "@/lib/utils";
 import { DOCUMENT_CATEGORIES } from "@/lib/constants";
@@ -207,15 +207,49 @@ export default function DocumentsPage() {
 
   // Upload form state
   const [uploadForm, setUploadForm] = useState(EMPTY_UPLOAD_FORM);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState("");
   const [uploadSaved, setUploadSaved] = useState(false);
+  const createDoc = useCreateDocument();
 
-  function handleUpload() {
+  async function handleUpload() {
     if (!uploadForm.title.trim()) { setUploadError("Document title is required."); return; }
     setUploadError("");
-    setUploadSaved(true);
-    setUploadForm(EMPTY_UPLOAD_FORM);
-    setTimeout(() => setUploadSaved(false), 4000);
+
+    // Read the chosen file inline (data URL). Capped so we don't post a huge
+    // payload; larger files would want object storage, which isn't wired yet.
+    let file_url = "", file_name = "", file_size = 0, mime_type = "";
+    if (uploadFile) {
+      if (uploadFile.size > 8 * 1024 * 1024) { setUploadError("File is too large (max 8MB)."); return; }
+      file_name = uploadFile.name; file_size = uploadFile.size; mime_type = uploadFile.type;
+      file_url = await new Promise<string>((resolve) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result ?? ""));
+        r.onerror = () => resolve("");
+        r.readAsDataURL(uploadFile);
+      });
+    }
+
+    createDoc.mutate(
+      {
+        title: uploadForm.title.trim(),
+        category: uploadForm.category as Document["category"],
+        description: uploadForm.description.trim() || null,
+        file_url, file_name, file_size, mime_type,
+        requires_read_sign: uploadForm.requiresReadSign,
+        expiry_date: uploadForm.expiryDate || null,
+        tags: uploadForm.tags ? uploadForm.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+      },
+      {
+        onSuccess: () => {
+          setUploadSaved(true);
+          setUploadForm(EMPTY_UPLOAD_FORM);
+          setUploadFile(null);
+          setTimeout(() => setUploadSaved(false), 4000);
+        },
+        onError: () => setUploadError("Couldn’t save the document. Please try again."),
+      },
+    );
   }
 
   const filteredDocs = useMemo(() => {
@@ -507,11 +541,20 @@ export default function DocumentsPage() {
                     <CheckCircle2 className="h-4 w-4 shrink-0" />Document uploaded successfully.
                   </div>
                 )}
-                <div className="border-2 border-dashed border-slate-300 rounded-2xl p-10 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
+                <label className="block border-2 border-dashed border-slate-300 rounded-2xl p-10 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
+                  <input
+                    type="file"
+                    className="sr-only"
+                    onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
+                  />
                   <Upload className="h-10 w-10 text-[var(--cs-text-muted)] mx-auto mb-3" />
-                  <div className="text-sm font-medium text-[var(--cs-text-secondary)]">Drop files here or click to browse</div>
-                  <div className="text-xs text-[var(--cs-text-muted)] mt-1">PDF, Word, Excel up to 25MB</div>
-                </div>
+                  <div className="text-sm font-medium text-[var(--cs-text-secondary)]">
+                    {uploadFile ? uploadFile.name : "Drop files here or click to browse"}
+                  </div>
+                  <div className="text-xs text-[var(--cs-text-muted)] mt-1">
+                    {uploadFile ? formatFileSize(uploadFile.size) : "PDF, Word, Excel up to 8MB"}
+                  </div>
+                </label>
                 <div className="space-y-4">
                   <div>
                     <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">
@@ -574,8 +617,8 @@ export default function DocumentsPage() {
                     />
                   </div>
                   {uploadError && <p className="text-xs text-red-600 font-medium">{uploadError}</p>}
-                  <Button className="w-full" onClick={handleUpload}>
-                    <Upload className="h-4 w-4 mr-2" />Upload Document
+                  <Button className="w-full" onClick={handleUpload} disabled={createDoc.isPending}>
+                    <Upload className="h-4 w-4 mr-2" />{createDoc.isPending ? "Uploading…" : "Upload Document"}
                   </Button>
                 </div>
               </div>

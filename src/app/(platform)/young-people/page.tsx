@@ -789,6 +789,12 @@ export default function YoungPeoplePage() {
       recordAnything
       actions={
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => router.push("/young-people/new")}
+            className="inline-flex items-center gap-1.5 rounded-md bg-[var(--cs-teal)] px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+          >
+            + Admit child
+          </button>
           <ExportButton data={filteredYP} columns={YP_EXPORT_COLS} filename="young-people" />
           <PrintButton title="Young People" subtitle="Children in Placement" targetId="young-people-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Young people — care document upload" />

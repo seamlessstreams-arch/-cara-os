@@ -10,11 +10,26 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+// Documents are read/written via the dual-mode dal (the documents table on a
+// live tenant, the in-memory store in demo). Read receipts have no dal accessor
+// yet, so they stay on the store — empty on a live home, which is correct.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function allDocuments(): Promise<any[]> {
+  try {
+    const r = await dal.documents.findAll();
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -23,7 +38,8 @@ export async function GET(req: NextRequest) {
   const filterCategory = searchParams.get("category");
   const filterRequiresSign = searchParams.get("requires_read_sign");
 
-  let docs = db.documents.findAll();
+  const allDocsSource = await allDocuments();
+  let docs = allDocsSource;
 
   if (filterCategory) {
     docs = docs.filter((d) => (d as unknown as Record<string, unknown>).category === filterCategory);
@@ -36,7 +52,7 @@ export async function GET(req: NextRequest) {
   const receipts = db.documentReadReceipts.findAll();
 
   // ── Compute meta over ALL documents (not just filtered) ─────────────────
-  const allDocs = db.documents.findAll();
+  const allDocs = allDocsSource;
 
   const thirtyDaysOut = new Date(today + "T00:00:00Z");
   thirtyDaysOut.setUTCDate(thirtyDaysOut.getUTCDate() + 30);
@@ -66,4 +82,24 @@ export async function GET(req: NextRequest) {
       expired,
     },
   });
+}
+
+// POST /api/v1/documents — register/upload a document. Persists via the
+// dual-mode dal (the documents table on a live tenant). Before this the route
+// was GET-only, so the upload form had no endpoint to call and silently saved
+// nothing.
+export async function POST(req: NextRequest) {
+  const parsed = await readJsonBody(req);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.data as Record<string, unknown>;
+  if (!body.title || typeof body.title !== "string" || !body.title.trim()) {
+    return NextResponse.json({ error: "A document title is required." }, { status: 400 });
+  }
+  const doc = await dal.documents.create({
+    version: 1,
+    requires_read_sign: false,
+    tags: [],
+    ...body,
+  });
+  return NextResponse.json({ data: doc }, { status: 201 });
 }
