@@ -28,7 +28,7 @@ const STATUS_BADGE: Record<string, { label: string; colour: string }> = {
 
 const COMPLIANCE_TILES: ComplianceTile[] = [
   {
-    href: "/ri/reg-44",
+    href: "/ri/reg44",
     icon: FileSearch,
     label: "Reg 44 Reports",
     desc: "Independent monthly monitoring visit reports and action tracking",
@@ -36,7 +36,7 @@ const COMPLIANCE_TILES: ComplianceTile[] = [
     status: "up_to_date",
   },
   {
-    href: "/ri/reg-45",
+    href: "/ri/reg45",
     icon: BookCheck,
     label: "Reg 45 Reviews",
     desc: "Six-monthly quality of care reviews by the Responsible Individual",

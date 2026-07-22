@@ -217,7 +217,7 @@ function buildActionItems(
       urgency: "urgent",
       icon: <AlertTriangle className="h-4 w-4 text-red-600" />,
       description: `${d.environment.building_checks_overdue} building check${d.environment.building_checks_overdue === 1 ? "" : "s"} overdue`,
-      href: "/building?filter=overdue",
+      href: "/buildings?filter=overdue",
       actionLabel: "Complete",
       category: "Building Check Overdue",
     });
@@ -230,7 +230,7 @@ function buildActionItems(
       urgency: "due_today",
       icon: <Calendar className="h-4 w-4 text-amber-600" />,
       description: `${d.environment.building_checks_due} building check${d.environment.building_checks_due === 1 ? "" : "s"} due today`,
-      href: "/building?filter=due_today",
+      href: "/buildings?filter=due_today",
       actionLabel: "Start",
       category: "Building Check Due",
     });

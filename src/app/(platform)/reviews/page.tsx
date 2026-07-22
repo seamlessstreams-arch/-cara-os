@@ -45,14 +45,14 @@ const REVIEW_TILES = [
     colour: "text-amber-600 bg-amber-50 border-amber-100",
   },
   {
-    href: "/ri/reg-44",
+    href: "/ri/reg44",
     icon: FileSearch,
     label: "Reg 44 Reports",
     desc: "Independent monthly monitoring visit reports",
     colour: "text-sky-600 bg-sky-50 border-sky-100",
   },
   {
-    href: "/ri/reg-45",
+    href: "/ri/reg45",
     icon: BookCheck,
     label: "Reg 45 Reviews",
     desc: "Six-monthly quality of care reviews by the Responsible Individual",
