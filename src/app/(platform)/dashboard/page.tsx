@@ -2097,7 +2097,22 @@ export default function DashboardPage() {
 
               {/* Home Health Check */}
               {config.showHealthCheck && (
-                healthCheck.isLoading ? <CardSkeleton rows={4} /> : hc ? (
+                healthCheck.isLoading ? <CardSkeleton rows={4} /> : hc?.assessed === false ? (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-2 text-[13px]">
+                        <Activity className="h-4 w-4 text-emerald-500" />
+                        Home Health Check
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm font-medium text-[var(--cs-navy)]">No data yet</p>
+                      <p className="mt-1 text-xs leading-relaxed text-[var(--cs-text-secondary)]">
+                        {hc.note ?? "The home health score appears once children and daily records are added."}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : hc ? (
                   <Card>
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
