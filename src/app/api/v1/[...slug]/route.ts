@@ -517,6 +517,31 @@ const DAL_MAP: Record<string, any> = {
   dailyLog: dal.dailyLog,
   incidents: dal.incidents,
   tasks: dal.tasks,
+  // Every other dual-mode dal accessor whose table now exists on a live tenant.
+  // Before this, the dispatcher routed these to the in-memory store: on a live
+  // tenant (store gated empty, never hydrated from Supabase) that meant a create
+  // wrote to the ephemeral store — lost on the next cold start — and the read
+  // came back empty. So recording a shift, a supervision, a handover, a
+  // chronology entry, a missing episode, a care form, staff training, etc. via
+  // the catch-all silently failed to persist. Routing them through the dal makes
+  // the write hit Postgres and the read reflect it. Demo is unchanged: with no
+  // service-role key sb() is null, so the dal falls back to the same store.
+  buildings: dal.buildings,
+  candidateProfiles: dal.candidateProfiles,
+  careForms: dal.careForms,
+  chronology: dal.chronology,
+  documents: dal.documents,
+  expenses: dal.expenses,
+  handovers: dal.handovers,
+  leave: dal.leave,
+  maintenance: dal.maintenance,
+  missingEpisodes: dal.missingEpisodes,
+  notifications: dal.notifications,
+  shifts: dal.shifts,
+  staff: dal.staff,
+  supervisions: dal.supervisions,
+  training: dal.training,
+  vehicles: dal.vehicles,
 };
 
 interface AsyncCollection {
