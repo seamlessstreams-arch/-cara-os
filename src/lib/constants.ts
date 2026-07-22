@@ -403,6 +403,7 @@ export const CARE_FORM_TYPES = [
   "professional_meeting",
   "supervision_record",
   "health_safety_check",
+  "other",
 ] as const;
 export type CareFormType = (typeof CARE_FORM_TYPES)[number];
 
@@ -426,6 +427,7 @@ export const CARE_FORM_TYPE_LABELS: Record<CareFormType, string> = {
   professional_meeting: "Professional Meeting",
   supervision_record: "Supervision Record",
   health_safety_check: "H&S Check",
+  other: "Other",
 };
 
 export const CARE_FORM_STATUSES = [
