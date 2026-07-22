@@ -69,6 +69,9 @@ jobs:
       - name: Seed-refs guard (every seeded person reference resolves to a roster id)
         run: node scripts/check-seed-refs.js
 
+      - name: DAL-persistence guard (every typed table is backed by a migration)
+        run: node scripts/check-dal-persistence.js
+
   test:
     name: Test suite
     runs-on: ubuntu-latest
