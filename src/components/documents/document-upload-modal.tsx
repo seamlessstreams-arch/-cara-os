@@ -125,7 +125,9 @@ export function DocumentUploadModal({
 
   // ── Upload + analyse ────────────────────────────────────────────────────────
   const handleAnalyse = async () => {
-    if (!fileName.trim() || !extractedText.trim()) return;
+    // Only a file name is required — a PDF/Word referral won't have client-side
+    // extracted text, and it should still upload (saved deterministically, no AI).
+    if (!fileName.trim()) return;
     setStep("analysing");
     setCaraError(null);
 
@@ -317,7 +319,7 @@ export function DocumentUploadModal({
               <div className="flex items-center gap-3 pt-1">
                 <button
                   onClick={handleAnalyse}
-                  disabled={!fileName.trim() || !extractedText.trim()}
+                  disabled={!fileName.trim()}
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--cs-navy)]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Sparkles className="h-4 w-4" />
