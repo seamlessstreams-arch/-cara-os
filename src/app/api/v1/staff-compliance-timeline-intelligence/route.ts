@@ -9,8 +9,20 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import type { StaffMember } from "@/types";
+
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
 
 type StaffComplianceSignal = "urgent" | "attention" | "due_soon" | "good";
 
@@ -87,10 +99,9 @@ function staffSignal(issues: string[]): StaffComplianceSignal {
 }
 
 export async function GET() {
-  const store = getStore();
   const today = new Date().toISOString().slice(0, 10);
 
-  const staff = (store.staff ?? []) as StaffMember[];
+  const staff = (await safeList(dal.staff.findAll())) as StaffMember[];
   const activeStaff = staff.filter(
     (s) => s.employment_status === "active" && s.role !== "responsible_individual"
   );

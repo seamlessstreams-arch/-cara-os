@@ -11,7 +11,8 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { db, getStore } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { buildReasoningSignals } from "@/lib/cara-reasoning/hydrate";
@@ -19,16 +20,28 @@ import { reasonOverChild } from "@/lib/cara-reasoning/practice-reasoning-engine"
 
 export const dynamic = "force-dynamic";
 
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET(req: NextRequest) {
   const auth = requirePermission(req, PERMISSIONS.VIEW_CARA_INTELLIGENCE);
   if (auth instanceof NextResponse) return auth;
 
   const today = new Date().toISOString().slice(0, 10);
-  const store = getStore();
+  const youngPeople = await safeList(dal.youngPeople.findAll());
   const childId =
     req.nextUrl.searchParams.get("childId") ||
     req.nextUrl.searchParams.get("child_id") ||
-    store.youngPeople[0]?.id;
+    youngPeople[0]?.id;
 
   if (!childId) {
     return NextResponse.json({ error: "No child available to reason over" }, { status: 404 });
@@ -47,7 +60,7 @@ export async function GET(req: NextRequest) {
     const signals = buildReasoningSignals({ childId, youngPerson, incidents, dailyLogs, chronology, today });
     const reasoning = reasonOverChild(signals);
     // A lightweight child list powers the page's picker in the same call.
-    const children = store.youngPeople
+    const children = youngPeople
       .filter((yp) => yp.status === "current" || yp.status === "planned")
       .map((yp) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Unknown" }));
     const child = { id: childId, name: signals.childName };

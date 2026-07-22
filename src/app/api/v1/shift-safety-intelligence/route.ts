@@ -19,7 +19,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -122,30 +122,27 @@ function buildSupervisionNote(
   return `${name}'s shift pattern is within safe parameters. In supervision, explore how ${name.split(" ")[0]} is finding their current rota and whether any adjustments would better support them.`;
 }
 
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore();
   const today = new Date().toISOString().slice(0, 10);
 
-  const staffMembers = (store.staff ?? []) as Array<{
-    id: string; full_name: string; role: string;
-  }>;
-
-  const shifts = (store.shifts ?? []) as Array<{
-    id: string;
-    staff_id: string;
-    date: string;
-    shift_type: string;
-    start_time: string;
-    end_time: string;
-    actual_start: string | null;
-    actual_end: string | null;
-    overtime_minutes: number;
-    status: string;
-    is_open_shift: boolean;
-    notes: string | null;
-  }>;
+  const [staffMembers, shifts] = await Promise.all([
+    safeList(dal.staff.findAll()),
+    safeList(dal.shifts.findAll()),
+  ]);
 
   const staffNames = new Map(staffMembers.map((s) => [s.id, s.full_name]));
 

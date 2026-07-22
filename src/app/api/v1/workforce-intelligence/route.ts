@@ -7,7 +7,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeWorkforceIntelligence,
   type StaffInput,
@@ -17,11 +17,29 @@ import {
   type LeaveInput,
 } from "@/lib/engines/workforce-intelligence-engine";
 
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
-  const store = getStore();
+  const [allStaff, allTraining, allSupervisions, allShifts, allLeaveRequests] = await Promise.all([
+    safeList(dal.staff.findAll()),
+    safeList(dal.training.findAll()),
+    safeList(dal.supervisions.findAll()),
+    safeList(dal.shifts.findAll()),
+    safeList(dal.leave.findAll()),
+  ]);
 
   // ── Map staff ────────────────────────────────────────────────────────
-  const staff: StaffInput[] = store.staff.map((s) => ({
+  const staff: StaffInput[] = allStaff.map((s) => ({
     id: s.id,
     full_name: s.full_name,
     role: s.role,
@@ -39,7 +57,7 @@ export async function GET() {
   }));
 
   // ── Map training ─────────────────────────────────────────────────────
-  const training: TrainingInput[] = store.trainingRecords.map((t) => ({
+  const training: TrainingInput[] = allTraining.map((t) => ({
     id: t.id,
     staff_id: t.staff_id,
     course_name: t.course_name,
@@ -51,7 +69,7 @@ export async function GET() {
   }));
 
   // ── Map supervisions ─────────────────────────────────────────────────
-  const supervisions: SupervisionInput[] = store.supervisions.map((s) => ({
+  const supervisions: SupervisionInput[] = allSupervisions.map((s) => ({
     id: s.id,
     staff_id: s.staff_id,
     scheduled_date: s.scheduled_date,
@@ -62,7 +80,7 @@ export async function GET() {
   }));
 
   // ── Map shifts ───────────────────────────────────────────────────────
-  const shifts: ShiftInput[] = store.shifts.map((s) => ({
+  const shifts: ShiftInput[] = allShifts.map((s) => ({
     id: s.id,
     staff_id: s.staff_id,
     date: s.date,
@@ -74,7 +92,7 @@ export async function GET() {
   }));
 
   // ── Map leave ────────────────────────────────────────────────────────
-  const leave: LeaveInput[] = store.leaveRequests.map((l) => ({
+  const leave: LeaveInput[] = allLeaveRequests.map((l) => ({
     id: l.id,
     staff_id: l.staff_id,
     leave_type: l.leave_type,

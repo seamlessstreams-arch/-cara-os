@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { getStaffName } from "@/lib/seed-data";
 import {
   computeShiftBriefing,
@@ -39,6 +40,18 @@ const REVIEW_REGISTRY: { key: string; label: string; reviewField: string; childF
 const DOW = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MON = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
   const store = getStore() as any;
   const now = new Date();
@@ -47,8 +60,17 @@ export async function GET() {
   const labelDate = new Date(Date.UTC(y, m - 1, d));
   const now_label = `${DOW[labelDate.getUTCDay()]}, ${d} ${MON[m - 1]} ${y}`;
 
+  const [allYoungPeople, allShifts, allTasks, allMedications, allDailyLog, allIncidents] = await Promise.all([
+    safeList(dal.youngPeople.findAll()),
+    safeList(dal.shifts.findAll()),
+    safeList(dal.tasks.findAll()),
+    safeList(dal.medications.findAll()),
+    safeList(dal.dailyLog.findAll()),
+    safeList(dal.incidents.findAll()),
+  ]);
+
   // Children name map (current only)
-  const yp = ((store.youngPeople ?? []) as any[]).filter((c) => c.status === "current");
+  const yp = ((allYoungPeople) as any[]).filter((c) => c.status === "current");
   const childName = new Map<string, string>(
     yp.map((c) => [String(c.id), c.preferred_name || [c.first_name, c.last_name].filter(Boolean).join(" ") || String(c.id)]),
   );
@@ -56,7 +78,7 @@ export async function GET() {
   const nameOf = (id: any) => (id ? childName.get(String(id)) ?? null : null);
 
   // ── On duty (today's shifts) ───────────────────────────────────────────────
-  const on_duty: OnDutyInput[] = ((store.shifts ?? []) as any[])
+  const on_duty: OnDutyInput[] = ((allShifts) as any[])
     .filter((s) => String(s.date).slice(0, 10) === today)
     .map((s) => ({
       staff_id: String(s.staff_id),
@@ -70,7 +92,7 @@ export async function GET() {
     }));
 
   // ── Tasks ──────────────────────────────────────────────────────────────────
-  const tasks: TaskInput[] = ((store.tasks ?? []) as any[]).map((t) => ({
+  const tasks: TaskInput[] = ((allTasks) as any[]).map((t) => ({
     id: String(t.id),
     title: t.title ?? t.name ?? "Task",
     due_date: t.due_date ?? null,
@@ -102,7 +124,7 @@ export async function GET() {
   }
 
   // ── Active medications ─────────────────────────────────────────────────────
-  const medications: MedInput[] = ((store.medications ?? []) as any[])
+  const medications: MedInput[] = ((allMedications) as any[])
     .filter((mm) => {
       if (mm.is_active === false) return false;
       const start = mm.start_date ? String(mm.start_date).slice(0, 10) : null;
@@ -123,7 +145,7 @@ export async function GET() {
 
   // ── Events (overnight / recent) ────────────────────────────────────────────
   const events: EventInput[] = [];
-  for (const l of (store.dailyLog ?? []) as any[]) {
+  for (const l of (allDailyLog) as any[]) {
     events.push({
       id: String(l.id),
       kind: "log",
@@ -135,7 +157,7 @@ export async function GET() {
       is_significant: !!l.is_significant,
     });
   }
-  for (const i of (store.incidents ?? []) as any[]) {
+  for (const i of (allIncidents) as any[]) {
     events.push({
       id: String(i.id),
       kind: "incident",

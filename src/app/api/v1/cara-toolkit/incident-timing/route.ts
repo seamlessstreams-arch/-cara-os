@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import type {
   IncidentTimingAnalysis,
   PeriodCount,
@@ -65,9 +65,20 @@ function toSignalColour(count: number, max: number) {
   return "green";
 }
 
+// Read a dal collection defensively: a transient query failure degrades to an
+// empty list rather than 500-ing the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
-  const store = getStore();
-  const incidents = (store.incidents as any[]) ?? [];
+  const incidents = await safeList(dal.incidents.findAll());
 
   // ── Parse incidents with a valid time ────────────────────────────────────
   const parsed = incidents

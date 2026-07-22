@@ -2,7 +2,7 @@
 // Deterministic Cara-generated plan for an upcoming shift, with an optional
 // Cara narrative on top. Reads the live store like every other engine route.
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { getStaffName } from "@/lib/seed-data";
 import { getCalendarFeed } from "@/lib/calendar/calendar-service";
 import { computeShiftPlan, type ShiftPeriod, type ShiftPlanChildWatchInput } from "@/lib/engines/shift-plan-engine";
@@ -20,14 +20,34 @@ function currentPeriod(now: Date): ShiftPeriod {
   return h >= 20 || h < 8 ? "night" : "day";
 }
 
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET(req: Request) {
-  const store = getStore() as any;
   const url = new URL(req.url);
   const now = new Date();
   const date = url.searchParams.get("date") || now.toISOString().slice(0, 10);
   const period = (url.searchParams.get("period") as ShiftPeriod) || currentPeriod(now);
 
-  const yp = (store.youngPeople ?? []).filter((c: any) => c.status === "current");
+  const [allYoungPeople, allShifts, allTasks, allMedications, allIncidents, allMissingEpisodes] = await Promise.all([
+    safeList(dal.youngPeople.findAll()),
+    safeList(dal.shifts.findAll()),
+    safeList(dal.tasks.findAll()),
+    safeList(dal.medications.findAll()),
+    safeList(dal.incidents.findAll()),
+    safeList(dal.missingEpisodes.findAll()),
+  ]);
+
+  const yp = (allYoungPeople).filter((c: any) => c.status === "current");
   const ypName = (id: any) => {
     const c = yp.find((x: any) => String(x.id) === String(id));
     return c ? c.preferred_name || c.first_name || "Unknown" : null;
@@ -35,7 +55,7 @@ export async function GET(req: Request) {
 
   // ── On shift (date + period) ──
   const isNightType = (t: string) => /night|waking|sleep/i.test(t || "");
-  const onShift = (store.shifts ?? [])
+  const onShift = (allShifts)
     .filter((s: any) => String(s.date).slice(0, 10) === date && s.status !== "cancelled" && s.status !== "no_show")
     .filter((s: any) => (period === "night" ? isNightType(s.shift_type) : !isNightType(s.shift_type)))
     .map((s: any) => ({ staff_name: getStaffName(s.staff_id) || String(s.staff_id), role: s.shift_type ?? null, shift_type: s.shift_type ?? null }));
@@ -45,7 +65,7 @@ export async function GET(req: Request) {
   const minimum = period === "night" ? 1 : 2;
   const shortfall = Math.max(0, minimum - onCount);
   const isUnderstaffed = shortfall > 0;
-  const hasWaking = (store.shifts ?? []).some(
+  const hasWaking = (allShifts).some(
     (s: any) => String(s.date).slice(0, 10) === date && /waking/i.test(s.shift_type || "") && s.status !== "cancelled",
   );
   const severity: "ok" | "high" | "critical" = onCount === 0 || shortfall >= 2 ? "critical" : shortfall > 0 ? "high" : "ok";
@@ -61,7 +81,7 @@ export async function GET(req: Request) {
     .map((i) => ({ id: i.id, start: i.start, title: i.title, child_name: i.child_name, kind: i.source }));
 
   // ── Tasks ──
-  const tasks = (store.tasks ?? []).map((t: any) => ({
+  const tasks = (allTasks).map((t: any) => ({
     id: String(t.id),
     title: t.title ?? "Task",
     priority: t.priority ?? "medium",
@@ -71,7 +91,7 @@ export async function GET(req: Request) {
   }));
 
   // ── Medications (active today) ──
-  const medications = (store.medications ?? [])
+  const medications = (allMedications)
     .filter((m: any) => {
       if (m.is_active === false) return false;
       const start = m.start_date ? String(m.start_date).slice(0, 10) : null;
@@ -86,11 +106,11 @@ export async function GET(req: Request) {
   const threeDaysAgo = new Date(Date.parse(`${date}T00:00:00Z`) - 3 * 864e5).toISOString().slice(0, 10);
   const watch: ShiftPlanChildWatchInput[] = yp.map((c: any) => {
     const flags: string[] = [];
-    const recentIncidents = (store.incidents ?? []).filter(
+    const recentIncidents = (allIncidents).filter(
       (i: any) => String(i.child_id) === String(c.id) && String(i.date).slice(0, 10) >= threeDaysAgo && String(i.date).slice(0, 10) <= date,
     );
     for (const inc of recentIncidents.slice(0, 2)) flags.push(`Recent incident: ${String(inc.type).replace(/_/g, " ")}`);
-    const activeMissing = (store.missingEpisodes ?? []).some(
+    const activeMissing = (allMissingEpisodes).some(
       (e: any) => String(e.child_id) === String(c.id) && !e.date_returned,
     );
     if (activeMissing) flags.push("Currently missing — follow protocol");

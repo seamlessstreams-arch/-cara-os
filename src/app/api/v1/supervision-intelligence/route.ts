@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeSupervisionIntelligence,
   type StaffInput,
@@ -17,11 +17,21 @@ import {
   type TrainingInput,
 } from "@/lib/engines/supervision-intelligence-engine";
 
-export async function GET() {
-  const store = getStore();
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
 
+export async function GET() {
   // ── Map staff ───────────────────────────────────────────────────────────────
-  const staff: StaffInput[] = store.staff
+  const staff: StaffInput[] = (await safeList(dal.staff.findAll()))
     .filter((s) => s.is_active)
     .map((s) => ({
       id: s.id,
@@ -30,7 +40,7 @@ export async function GET() {
     }));
 
   // ── Map supervisions ────────────────────────────────────────────────────────
-  const supervisions: SupervisionInput[] = store.supervisions.map((s) => ({
+  const supervisions: SupervisionInput[] = (await safeList(dal.supervisions.findAll())).map((s) => ({
     id: s.id,
     staff_id: s.staff_id,
     supervisor_id: s.supervisor_id,
@@ -39,7 +49,7 @@ export async function GET() {
     actual_date: s.actual_date,
     duration_minutes: s.duration_minutes,
     status: s.status as SupervisionInput["status"],
-    actions_agreed: s.actions_agreed.map((a) => ({
+    actions_agreed: s.actions_agreed.map((a: any) => ({
       description: a.description,
       owner: a.owner,
       due_date: a.due_date,
@@ -50,7 +60,7 @@ export async function GET() {
   }));
 
   // ── Map training records ────────────────────────────────────────────────────
-  const training: TrainingInput[] = store.trainingRecords.map((t) => ({
+  const training: TrainingInput[] = (await safeList(dal.training.findAll())).map((t) => ({
     id: t.id,
     staff_id: t.staff_id,
     course_name: t.course_name,

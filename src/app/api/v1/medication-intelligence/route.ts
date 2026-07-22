@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeMedicationIntelligence,
   type ChildInput,
@@ -17,17 +17,33 @@ import {
   type AdministrationInput,
 } from "@/lib/engines/medication-intelligence-engine";
 
+// Read a dal collection defensively: a transient query failure degrades to an
+// empty list rather than 500-ing the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
-  const store = getStore();
+  const [youngPeople, medicationRecords, administrationRecords] = await Promise.all([
+    safeList(dal.youngPeople.findAll()),
+    safeList(dal.medications.findAll()),
+    safeList(dal.medicationAdministrations.findAll()),
+  ]);
 
   // ── Map children ────────────────────────────────────────────────────────────
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeople.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
   }));
 
   // ── Map medications ─────────────────────────────────────────────────────────
-  const medications: MedicationInput[] = store.medications.map((m) => ({
+  const medications: MedicationInput[] = medicationRecords.map((m) => ({
     id: m.id,
     child_id: m.child_id,
     name: m.name,
@@ -39,7 +55,7 @@ export async function GET() {
   }));
 
   // ── Map administrations ─────────────────────────────────────────────────────
-  const administrations: AdministrationInput[] = store.medicationAdministrations.map((a) => ({
+  const administrations: AdministrationInput[] = administrationRecords.map((a) => ({
     id: a.id,
     medication_id: a.medication_id,
     child_id: a.child_id,

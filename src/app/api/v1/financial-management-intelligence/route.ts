@@ -9,18 +9,31 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeFinancialManagementIntelligence,
   type ExpenseInput,
   type StaffRef,
 } from "@/lib/engines/financial-management-intelligence-engine";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
-  const store = getStore();
+  const [expenseRecords, staffList] = await Promise.all([
+    safeList(dal.expenses.findAll()),
+    safeList(dal.staff.findAll()),
+  ]);
 
   // ── Map expenses ──────────────────────────────────────────────────────
-  const expenses: ExpenseInput[] = (store.expenses ?? []).map((e: any) => ({
+  const expenses: ExpenseInput[] = expenseRecords.map((e: any) => ({
     id: e.id,
     submitted_by: e.submitted_by,
     category: e.category,
@@ -37,7 +50,7 @@ export async function GET() {
   }));
 
   // ── Map active staff ──────────────────────────────────────────────────
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = staffList
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

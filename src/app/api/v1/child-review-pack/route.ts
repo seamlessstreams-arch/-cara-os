@@ -11,7 +11,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { getStaffName } from "@/lib/seed-data";
 import {
   buildChildReviewPack,
@@ -37,6 +37,18 @@ function num(v: any): number {
   return typeof v === "number" && isFinite(v) ? v : 0;
 }
 
+// Read a dal collection defensively: a transient query failure degrades to an
+// empty list rather than 500-ing the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
@@ -49,8 +61,7 @@ export async function GET(request: NextRequest) {
     if (denied) return denied;
     const today = new Date().toISOString().slice(0, 10);
 
-    const store = getStore();
-    const youngPeople = (store.youngPeople ?? []) as any[];
+    const youngPeople = await safeList(dal.youngPeople.findAll());
     const current = youngPeople.filter((c) => c.status === "current");
     const list = (current.length ? current : youngPeople).map((c) => ({
       id: c.id,

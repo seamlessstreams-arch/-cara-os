@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeChronologyIntelligence,
   type ChildInput,
@@ -18,20 +18,33 @@ import {
   type EventSignificance,
 } from "@/lib/engines/chronology-intelligence-engine";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
-  const store = getStore();
+  const [youngPeople, chronology] = await Promise.all([
+    safeList(dal.youngPeople.findAll()),
+    safeList(dal.chronology.findAll()),
+  ]);
 
   // ── Map children with placement start dates ─────────────────────────────────
   // YoungPerson has no name/admission_date fields — both old reads were
   // undefined, so every child fell back to the hardcoded 2025-01-01 baseline.
-  const children: ChildInput[] = store.youngPeople.map((yp) => ({
+  const children: ChildInput[] = youngPeople.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name || yp.first_name,
     placement_start_date: yp.placement_start || "2025-01-01",
   }));
 
   // ── Map chronology events ───────────────────────────────────────────────────
-  const events: ChronologyEventInput[] = store.chronology.map((c) => ({
+  const events: ChronologyEventInput[] = chronology.map((c) => ({
     id: c.id,
     child_id: c.child_id,
     date: c.date,

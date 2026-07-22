@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -18,12 +18,33 @@ interface FeedItem {
   href: string;
 }
 
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET(_req: NextRequest) {
-  const store = getStore();
+  const [allIncidents, allTasks, allDailyLog, allMars, allHandovers, allShifts, allTraining, allStaff] = await Promise.all([
+    safeList(dal.incidents.findAll()),
+    safeList(dal.tasks.findAll()),
+    safeList(dal.dailyLog.findAll()),
+    safeList(dal.medicationAdministrations.findAll()),
+    safeList(dal.handovers.findAll()),
+    safeList(dal.shifts.findAll()),
+    safeList(dal.training.findAll()),
+    safeList(dal.staff.findAll()),
+  ]);
   const items: FeedItem[] = [];
 
   // ── Incidents ──────────────────────────────────────────────────────────────
-  for (const inc of (store.incidents ?? []).slice(0, 15)) {
+  for (const inc of (allIncidents).slice(0, 15)) {
     items.push({
       id: `feed_inc_${inc.id}`,
       type: "incident",
@@ -39,7 +60,7 @@ export async function GET(_req: NextRequest) {
   }
 
   // ── Tasks ──────────────────────────────────────────────────────────────────
-  const recentTasks = (store.tasks ?? [])
+  const recentTasks = (allTasks)
     .filter((t) => t.updated_at)
     .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""))
     .slice(0, 10);
@@ -59,7 +80,7 @@ export async function GET(_req: NextRequest) {
   }
 
   // ── Daily Logs ─────────────────────────────────────────────────────────────
-  for (const log of (store.dailyLog ?? []).slice(0, 10)) {
+  for (const log of (allDailyLog).slice(0, 10)) {
     items.push({
       id: `feed_dl_${log.id}`,
       type: "daily_log",
@@ -77,7 +98,7 @@ export async function GET(_req: NextRequest) {
   }
 
   // ── Medication Administrations ─────────────────────────────────────────────
-  const recentMars = (store.medicationAdministrations ?? [])
+  const recentMars = (allMars)
     .filter((m) => m.actual_time)
     .sort((a, b) => (b.actual_time ?? "").localeCompare(a.actual_time ?? ""))
     .slice(0, 8);
@@ -97,7 +118,7 @@ export async function GET(_req: NextRequest) {
   }
 
   // ── Handovers ──────────────────────────────────────────────────────────────
-  for (const ho of (store.handovers ?? []).slice(0, 5)) {
+  for (const ho of (allHandovers).slice(0, 5)) {
     items.push({
       id: `feed_ho_${ho.id}`,
       type: "handover",
@@ -115,7 +136,7 @@ export async function GET(_req: NextRequest) {
   }
 
   // ── Shifts ─────────────────────────────────────────────────────────────────
-  const todayShifts = (store.shifts ?? []).filter((s) => s.date === todayStr()).slice(0, 6);
+  const todayShifts = (allShifts).filter((s) => s.date === todayStr()).slice(0, 6);
   for (const shift of todayShifts) {
     items.push({
       id: `feed_shift_${shift.id}`,
@@ -131,7 +152,7 @@ export async function GET(_req: NextRequest) {
   }
 
   // ── Training Records ───────────────────────────────────────────────────────
-  const expiredTraining = (store.trainingRecords ?? [])
+  const expiredTraining = (allTraining)
     .filter((t) => t.expiry_date && t.expiry_date < todayStr())
     .slice(0, 5);
   for (const tr of expiredTraining) {
@@ -140,7 +161,7 @@ export async function GET(_req: NextRequest) {
       type: "training",
       action: "expired",
       title: `Training expired — ${tr.course_name}`,
-      description: `${(store.staff ?? []).find((s) => s.id === tr.staff_id)?.full_name ?? tr.staff_id} — expired ${tr.expiry_date}`,
+      description: `${(allStaff).find((s) => s.id === tr.staff_id)?.full_name ?? tr.staff_id} — expired ${tr.expiry_date}`,
       timestamp: tr.expiry_date ?? tr.created_at,
       actor_id: tr.staff_id ?? undefined,
       severity: "medium",

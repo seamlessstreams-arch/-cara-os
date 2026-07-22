@@ -23,7 +23,7 @@ import {
   ENGINE_VERSION,
 } from "@/lib/cara/managementOversightEngine";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 
 // Tables in this module are not yet in the generated Database type, so we use
@@ -54,6 +54,18 @@ const VALID_RECORD_TYPES: RecordType[] = [
 
 const VALID_DECISIONS = ["approve", "edit", "reject", "request_rewrite"] as const;
 type Decision = (typeof VALID_DECISIONS)[number];
+
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
 
 // ─── POST: analyse a record ──────────────────────────────────────────────────
 
@@ -105,14 +117,17 @@ export async function POST(req: NextRequest) {
   // Full practice-intelligence lens: the child's Digital Twin (via the CPIE
   // chokepoint — never raw records) + training rows for the record's author.
   const twin = childId ? getChildTwin(childId) : null;
-  const store = getStore();
+  const [allStaff, allTraining] = await Promise.all([
+    safeList(dal.staff.findAll()),
+    safeList(dal.training.findAll()),
+  ]);
   const author = authorName
-    ? (store.staff ?? []).find(
+    ? allStaff.find(
         (st) => (st.full_name ?? `${st.first_name ?? ""} ${st.last_name ?? ""}`.trim()) === authorName || st.id === authorName,
       )
     : undefined;
   const staffTraining = author
-    ? (store.trainingRecords ?? [])
+    ? allTraining
         .filter((t) => t.staff_id === author.id)
         .map((t) => ({
           staffName: author.full_name ?? authorName ?? author.id,

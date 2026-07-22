@@ -11,7 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeHomeSummaryReport,
   type ReportSignalInput,
@@ -101,17 +101,30 @@ async function fetchSignal(baseUrl: string, route: string, section: string): Pro
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const baseUrl = `${url.protocol}//${url.host}`;
     const today = new Date().toISOString().slice(0, 10);
 
-    const store = getStore();
-    const youngPeople = (store.youngPeople ?? []) as any[];
+    const [youngPeople, staffList, home] = await Promise.all([
+      safeList(dal.youngPeople.findAll()),
+      safeList(dal.staff.findAll()),
+      dal.home.get(),
+    ]);
     const total_children = youngPeople.filter((c) => c.status === "current").length || youngPeople.length;
-    const total_staff = ((store.staff ?? []) as any[]).length;
-    const home_name = (store.home as any)?.name ?? "Oak House";
+    const total_staff = staffList.length;
+    const home_name = (home as any)?.name ?? "Oak House";
 
     const results = await Promise.allSettled(SECTION_ENGINES.map(([route, section]) => fetchSignal(baseUrl, route, section)));
     const signals = results

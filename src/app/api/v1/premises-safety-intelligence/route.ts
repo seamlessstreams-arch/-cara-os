@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computePremisesSafetyIntelligence,
   type BuildingInput,
@@ -19,11 +19,28 @@ import {
   type VehicleCheckInput,
 } from "@/lib/engines/premises-safety-intelligence-engine";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
-  const store = getStore();
+  const [buildingRecords, buildingCheckRecords, maintenanceRecords, vehicleRecords, vehicleCheckRecords] =
+    await Promise.all([
+      safeList(dal.buildings.findAll()),
+      safeList(dal.buildingChecks.findAll()),
+      safeList(dal.maintenance.findAll()),
+      safeList(dal.vehicles.findAll()),
+      safeList(dal.vehicleChecks.findAll()),
+    ]);
 
   // ── Map buildings ─────────────────────────────────────────────────────
-  const buildings: BuildingInput[] = (store.buildings ?? []).map((b: any) => ({
+  const buildings: BuildingInput[] = buildingRecords.map((b: any) => ({
     id: b.id,
     name: b.name,
     type: b.type,
@@ -37,7 +54,7 @@ export async function GET() {
   }));
 
   // ── Map building checks ───────────────────────────────────────────────
-  const building_checks: BuildingCheckInput[] = (store.buildingChecks ?? []).map((c: any) => ({
+  const building_checks: BuildingCheckInput[] = buildingCheckRecords.map((c: any) => ({
     id: c.id,
     building_id: c.building_id,
     area: c.area,
@@ -55,7 +72,7 @@ export async function GET() {
   }));
 
   // ── Map maintenance ───────────────────────────────────────────────────
-  const maintenance: MaintenanceInput[] = (store.maintenance ?? []).map((m: any) => ({
+  const maintenance: MaintenanceInput[] = maintenanceRecords.map((m: any) => ({
     id: m.id,
     title: m.title,
     category: m.category,
@@ -67,7 +84,7 @@ export async function GET() {
   }));
 
   // ── Map vehicles ──────────────────────────────────────────────────────
-  const vehicles: VehicleInput[] = (store.vehicles ?? []).map((v: any) => ({
+  const vehicles: VehicleInput[] = vehicleRecords.map((v: any) => ({
     id: v.id,
     registration: v.registration,
     make: v.make,
@@ -81,7 +98,7 @@ export async function GET() {
   }));
 
   // ── Map vehicle checks ────────────────────────────────────────────────
-  const vehicle_checks: VehicleCheckInput[] = (store.vehicleChecks ?? []).map((vc: any) => ({
+  const vehicle_checks: VehicleCheckInput[] = vehicleCheckRecords.map((vc: any) => ({
     id: vc.id,
     vehicle_id: vc.vehicle_id,
     check_type: vc.check_type,

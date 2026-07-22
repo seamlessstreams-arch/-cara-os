@@ -7,7 +7,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeRotaIntelligence,
   type ShiftInput,
@@ -15,11 +15,27 @@ import {
   type StaffRef,
 } from "@/lib/engines/rota-intelligence-engine";
 
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
-  const store = getStore();
+  const [allShifts, allLeaveRequests, allStaff] = await Promise.all([
+    safeList(dal.shifts.findAll()),
+    safeList(dal.leave.findAll()),
+    safeList(dal.staff.findAll()),
+  ]);
 
   // ── Map shifts ────────��──────────────────────��──────────────────────────
-  const shifts: ShiftInput[] = (store.shifts ?? []).map((s: any) => ({
+  const shifts: ShiftInput[] = (allShifts).map((s: any) => ({
     id: s.id,
     staff_id: s.staff_id ?? "",
     date: typeof s.date === "string" ? s.date.slice(0, 10) : s.date,
@@ -34,7 +50,7 @@ export async function GET() {
   }));
 
   // ── Map absences (from leave requests where type is sick/compassionate) ─
-  const absences: AbsenceInput[] = (store.leaveRequests ?? [])
+  const absences: AbsenceInput[] = (allLeaveRequests)
     .filter((l: any) => l.status === "approved")
     .map((a: any) => ({
       id: a.id,
@@ -46,7 +62,7 @@ export async function GET() {
     }));
 
   // ── Map staff ──────────���──────────────────────────────��─────────────────
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (allStaff)
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

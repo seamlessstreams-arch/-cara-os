@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { buildEventStream } from "@/lib/event-stream/event-projector";
 import { mapStoreToEventInput } from "@/lib/event-stream/store-mapper";
 import {
@@ -25,6 +26,18 @@ import {
   type ComplianceSupervisionInput,
   type ComplianceTrainingInput,
 } from "@/lib/compliance-rules/compliance-rules-engine";
+
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
 
 const d = (v: unknown, fallback = ""): string => (v == null ? fallback : v.toString().slice(0, 10));
 
@@ -35,7 +48,7 @@ export async function GET() {
   const events = buildEventStream(mapStoreToEventInput(store)).events;
 
   // ── Supervisions (Reg 33) ──────────────────────────────────────────────
-  const supervisions: ComplianceSupervisionInput[] = ((store.supervisions ?? []) as any[]).map((s: any) => ({
+  const supervisions: ComplianceSupervisionInput[] = ((await safeList(dal.supervisions.findAll())) as any[]).map((s: any) => ({
     id: s.id,
     staff_id: s.staff_id ?? "",
     type: s.type ?? "supervision",
@@ -45,7 +58,7 @@ export async function GET() {
   }));
 
   // ── Mandatory training records ──────────────────────────────────────────
-  const trainingRecords: ComplianceTrainingInput[] = ((store.trainingRecords ?? []) as any[]).map((t: any) => ({
+  const trainingRecords: ComplianceTrainingInput[] = ((await safeList(dal.training.findAll())) as any[]).map((t: any) => ({
     id: t.id,
     staff_id: t.staff_id ?? "",
     course_name: t.course_name ?? t.category ?? "Training",

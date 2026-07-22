@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -28,14 +29,34 @@ function childName(id: string): string {
   return names[id] ?? id?.replace("yp_", "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Unknown";
 }
 
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET(req: NextRequest) {
   const store = getStore();
   const { searchParams } = new URL(req.url);
   const date = searchParams.get("date") ?? todayStr();
   const shiftType = searchParams.get("shift") ?? "day";
 
+  const [allShifts, yps, dailyLogs, allIncidents, allMars, allTasks] = await Promise.all([
+    safeList(dal.shifts.findAll()),
+    safeList(dal.youngPeople.findAll()),
+    safeList(dal.dailyLog.findAll()),
+    safeList(dal.incidents.findAll()),
+    safeList(dal.medicationAdministrations.findAll()),
+    safeList(dal.tasks.findAll()),
+  ]);
+
   // ── Staff on Shift ─────────────────────────────────────────────────────────
-  const allShifts = store.shifts ?? [];
   const matchingShifts = allShifts.filter(
     (s) => (s.date === date || s.start_time?.startsWith(date)) &&
            (s.shift_type === shiftType || !shiftType)
@@ -51,8 +72,6 @@ export async function GET(req: NextRequest) {
     }));
 
   // ── Young People ───────────────────────────────────────────────────────────
-  const yps = store.youngPeople ?? [];
-  const dailyLogs = store.dailyLog ?? [];
   const todayLogs = dailyLogs.filter((l) => l.date === date);
 
   const youngPeople = yps.map((yp) => {
@@ -80,7 +99,7 @@ export async function GET(req: NextRequest) {
   const events: SummaryEvent[] = [];
 
   // Incidents
-  const dayIncidents = (store.incidents ?? []).filter((i) => i.date === date || i.created_at?.startsWith(date));
+  const dayIncidents = allIncidents.filter((i) => i.date === date || i.created_at?.startsWith(date));
   for (const inc of dayIncidents) {
     events.push({
       type: "incident",
@@ -95,7 +114,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Medication
-  const dayMars = (store.medicationAdministrations ?? []).filter((m) => m.scheduled_time?.startsWith(date));
+  const dayMars = allMars.filter((m) => m.scheduled_time?.startsWith(date));
   const givenMars = dayMars.filter((m) => m.status === "given" || m.status === "late");
   const missedMars = dayMars.filter((m) => m.status === "missed" || m.status === "refused");
 
@@ -127,7 +146,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Tasks completed today
-  const completedTasks = (store.tasks ?? []).filter((t) => t.status === "completed" && t.updated_at?.startsWith(date));
+  const completedTasks = allTasks.filter((t) => t.status === "completed" && t.updated_at?.startsWith(date));
   for (const task of completedTasks) {
     events.push({
       type: "task",

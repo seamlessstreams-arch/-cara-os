@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   buildRoutineActivityView,
   type IncidentPoint,
@@ -22,6 +22,18 @@ import {
 } from "@/lib/theory-lens/routine-activity-engine";
 
 export const dynamic = "force-dynamic";
+
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -39,12 +51,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const store = getStore();
+    const [allIncidents, allShifts] = await Promise.all([
+      safeList(dal.incidents.findAll()),
+      safeList(dal.shifts.findAll()),
+    ]);
     const homeId = identity.homeId;
     const scoped = <T extends { home_id?: string }>(rows: T[]): T[] =>
       homeId ? rows.filter((r) => r.home_id === homeId) : rows;
 
-    const incidents: IncidentPoint[] = scoped(store.incidents ?? []).map((i) => ({
+    const incidents: IncidentPoint[] = scoped(allIncidents).map((i) => ({
       id: i.id,
       date: i.date,
       time: i.time,
@@ -52,7 +67,7 @@ export async function GET(req: NextRequest) {
       severity: i.severity,
     }));
 
-    const shifts: ShiftPoint[] = scoped(store.shifts ?? []).map((s) => ({
+    const shifts: ShiftPoint[] = scoped(allShifts).map((s) => ({
       id: s.id,
       staff_id: s.staff_id,
       date: s.date,

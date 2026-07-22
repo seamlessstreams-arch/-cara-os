@@ -16,7 +16,19 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
+
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -100,17 +112,16 @@ function buildSupervisionPrompt(
 // ── Route ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const store = getStore();
   const today = new Date().toISOString().slice(0, 10);
 
-  const staffMembers = (store.staff ?? []) as Array<{
+  const staffMembers = (await safeList(dal.staff.findAll())) as Array<{
     id: string;
     full_name: string;
     role: string;
     status?: string;
   }>;
 
-  const trainingRecords = (store.trainingRecords ?? []) as Array<{
+  const trainingRecords = (await safeList(dal.training.findAll())) as Array<{
     staff_id: string;
     course_name: string;
     category: string;
