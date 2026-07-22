@@ -798,7 +798,9 @@ export default function InspectionPage() {
   const inspHistoryQuery = useInspectionHistory();
   const inspectionRecords = inspHistoryQuery.data?.data ?? [];
 
-  const readinessAreas = hc
+  // With no records yet the health-check reports assessed:false — its numeric
+  // fields are placeholders, so don't derive inspection-readiness from them.
+  const readinessAreas = hc && hc.assessed !== false
     ? [
         { area: "Outcomes for young people",           score: hc.overall,        status: hc.overall >= 85 ? "good" : "warn" },
         { area: "How well YP are helped & protected",  score: hc.safeguarding,   status: hc.safeguarding >= 85 ? "good" : "warn" },

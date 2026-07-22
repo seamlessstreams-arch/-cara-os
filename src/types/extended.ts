@@ -354,6 +354,12 @@ export interface HealthCheckScore {
   risk_level: "low" | "medium" | "high" | "critical";
   action_plan: HealthCheckAction[];
   generated_at: string;
+  // False when the home has no records to score yet (empty/newly-provisioned):
+  // surfaces render "No data yet" rather than the numeric scores, which would
+  // otherwise be fabricated from no-data defaults. Optional so existing
+  // constructors need no change; absent is treated as assessed.
+  assessed?: boolean;
+  note?: string;
 }
 
 export interface HealthCheckAction {
