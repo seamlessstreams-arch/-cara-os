@@ -16,7 +16,20 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { computePlanCurrency, type PlanRecordInput } from "@/lib/engines/plan-currency-engine";
+
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
 
 const REGISTRY: { key: string; label: string; typeKey: string; reviewField: string; childField: string }[] = [
   { key: "lacReviews", label: "LAC Review", typeKey: "lac_review", reviewField: "next_review_date", childField: "child_id" },
@@ -37,7 +50,7 @@ export async function GET() {
   const store = getStore();
   const today = new Date().toISOString().slice(0, 10);
 
-  const yp = ((store.youngPeople ?? []) as any[]).filter((c) => c.status === "current");
+  const yp = ((await safeList(dal.youngPeople.findAll())) as any[]).filter((c) => c.status === "current");
   const children = yp.map((c) => ({
     id: String(c.id),
     name: c.preferred_name || [c.first_name, c.last_name].filter(Boolean).join(" ") || String(c.id),

@@ -7,7 +7,7 @@
 // read-only projection — detects and advises, changes no record and never edits
 // the rota. Posture mirrors the sibling /staff-compliance route (demo).
 import { NextRequest, NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { computeStaffCompliance } from "@/lib/engines/staff-compliance-engine";
 import {
   computeDeploymentSuitability,
@@ -25,18 +25,35 @@ function addDays(isoDate: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET(req: NextRequest) {
-  const store = getStore() as any;
   const today = new Date().toISOString().slice(0, 10);
 
   const from = req.nextUrl.searchParams.get("from")?.slice(0, 10) || today;
   const to = req.nextUrl.searchParams.get("to")?.slice(0, 10) || addDays(today, 13); // default: 2-week window
   const staffId = req.nextUrl.searchParams.get("staff_id");
 
+  const [allStaff, allTraining, allShifts] = await Promise.all([
+    safeList(dal.staff.findAll()),
+    safeList(dal.training.findAll()),
+    safeList(dal.shifts.findAll()),
+  ]);
+
   // Reuse the mature compliance engine — identical mapping to /staff-compliance.
   const compliance = computeStaffCompliance({
     today,
-    staff: (store.staff ?? []).map((s: any) => ({
+    staff: (allStaff).map((s: any) => ({
       id: String(s.id),
       full_name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "Unknown",
       role: String(s.role ?? ""),
@@ -49,7 +66,7 @@ export async function GET(req: NextRequest) {
       next_supervision_due: s.next_supervision_due ?? null,
       next_appraisal_due: s.next_appraisal_due ?? null,
     })),
-    training: (store.trainingRecords ?? []).map((t: any) => ({
+    training: (allTraining).map((t: any) => ({
       staff_id: String(t.staff_id),
       course_name: String(t.course_name ?? "Training"),
       expiry_date: t.expiry_date ? String(t.expiry_date).slice(0, 10) : null,
@@ -67,7 +84,7 @@ export async function GET(req: NextRequest) {
     deployment_reasons: deploymentReasonsFromCompliance({ training: r.training, dbs: r.dbs }),
   }));
 
-  const staff: Reg32Staff[] = (store.staff ?? []).map((s: any) => ({
+  const staff: Reg32Staff[] = (allStaff).map((s: any) => ({
     id: String(s.id),
     full_name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || "Unknown",
     role: String(s.role ?? ""),
@@ -76,7 +93,7 @@ export async function GET(req: NextRequest) {
     is_active: s.is_active,
   }));
 
-  let shifts: Reg32Shift[] = (store.shifts ?? []).map((s: any) => ({
+  let shifts: Reg32Shift[] = (allShifts).map((s: any) => ({
     id: String(s.id),
     staff_id: String(s.staff_id ?? ""),
     date: String(s.date ?? "").slice(0, 10),

@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { buildEventStream } from "@/lib/event-stream/event-projector";
 import { mapStoreToEventInput } from "@/lib/event-stream/store-mapper";
 import {
@@ -19,12 +20,25 @@ import {
   type ChildRef,
 } from "@/lib/duplicate-detection/duplicate-detection-engine";
 
+// Read a dal collection defensively: a transient query failure degrades to an
+// empty list rather than 500-ing the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
   const store = getStore() as any;
 
   const stream = buildEventStream(mapStoreToEventInput(store));
 
-  const children: ChildRef[] = ((store.youngPeople ?? []) as any[]).map((yp: any) => ({
+  const youngPeople = await safeList(dal.youngPeople.findAll());
+  const children: ChildRef[] = youngPeople.map((yp: any) => ({
     id: yp.id,
     first_name: yp.first_name ?? "",
     last_name: yp.last_name ?? "",

@@ -1,20 +1,33 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 
 const NON_COMPLIANT = new Set(["refused", "withheld", "missed"]);
 const CONCERN_STATUSES = new Set(["refused", "missed", "withheld", "late"]);
 
+// Read a dal collection defensively: a transient query failure degrades to an
+// empty list rather than 500-ing the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
   try {
-    const store = getStore();
     const today = new Date().toISOString().split("T")[0];
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyStr = thirtyDaysAgo.toISOString().split("T")[0];
 
-    const youngPeople = (store.youngPeople as any[]) ?? [];
-    const medications = (store.medications as any[]) ?? [];
-    const administrations = (store.medicationAdministrations as any[]) ?? [];
+    const [youngPeople, medications, administrations] = await Promise.all([
+      safeList(dal.youngPeople.findAll()),
+      safeList(dal.medications.findAll()),
+      safeList(dal.medicationAdministrations.findAll()),
+    ]);
 
     const activeYP = youngPeople.filter((yp) => yp.status === "current");
 

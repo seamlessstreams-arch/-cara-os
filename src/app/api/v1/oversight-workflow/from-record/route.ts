@@ -10,7 +10,8 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { db, getStore } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { incidentToOversightInput } from "@/lib/oversight/hydrate";
@@ -19,6 +20,18 @@ import { getChildTwin } from "@/lib/cpie/get-child-twin";
 import { OVERSIGHT_DISCLAIMER, type OversightMode } from "@/lib/oversight/types";
 
 export const dynamic = "force-dynamic";
+
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
 
 const VALID_MODES: OversightMode[] = ["professional", "child_addressed", "both"];
 
@@ -81,7 +94,7 @@ export async function GET(req: NextRequest) {
     const st = db.staff.findById(sid);
     return st ? st.full_name || [st.first_name, st.last_name].filter(Boolean).join(" ") : sid;
   };
-  const staffTraining = (getStore().trainingRecords ?? [])
+  const staffTraining = (await safeList(dal.training.findAll()))
     .filter((t) => staffIds.includes(t.staff_id))
     .map((t) => ({
       staffName: staffNameOf(t.staff_id),

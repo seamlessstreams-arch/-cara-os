@@ -12,7 +12,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity } from "@/lib/auth-guard";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 import {
   buildCodebook,
@@ -23,8 +23,22 @@ import type { EntityRef, RedactableDocument } from "@/lib/entity-redaction/types
 
 export const dynamic = "force-dynamic";
 
-function homeEntities(store: ReturnType<typeof getStore>): EntityRef[] {
-  const children: EntityRef[] = ((store.youngPeople ?? []) as unknown as Array<Record<string, unknown>>)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
+async function homeEntities(): Promise<EntityRef[]> {
+  const [youngPeopleRows, staffRows] = await Promise.all([
+    safeList(dal.youngPeople.findAll()),
+    safeList(dal.staff.findAll()),
+  ]);
+  const children: EntityRef[] = (youngPeopleRows as unknown as Array<Record<string, unknown>>)
     .filter((yp) => (yp.status ?? "current") === "current")
     .map((yp) => ({
       id: String(yp.id),
@@ -32,7 +46,7 @@ function homeEntities(store: ReturnType<typeof getStore>): EntityRef[] {
       name: String(yp.full_name || [yp.first_name, yp.last_name].filter(Boolean).join(" ") || yp.preferred_name || yp.id),
       aliases: [yp.preferred_name, yp.first_name].filter((v): v is string => typeof v === "string" && v.length > 0),
     }));
-  const staff: EntityRef[] = ((store.staff ?? []) as unknown as Array<Record<string, unknown>>).map((s) => ({
+  const staff: EntityRef[] = (staffRows as unknown as Array<Record<string, unknown>>).map((s) => ({
     id: String(s.id),
     kind: "staff" as const,
     name: String(s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id),
@@ -45,8 +59,7 @@ export async function GET(req: NextRequest) {
   try {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity;
-    const store = getStore();
-    return NextResponse.json({ data: { codebook: buildCodebook(homeEntities(store)) } });
+    return NextResponse.json({ data: { codebook: buildCodebook(await homeEntities()) } });
   } catch (err) {
     console.error("[entity-redaction] codebook failed", err);
     return NextResponse.json({ error: "Failed to build codebook" }, { status: 500 });
@@ -71,8 +84,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "documents [{ id, text }] are required" }, { status: 400 });
     }
 
-    const store = getStore();
-    const entities: EntityRef[] = body.useHomeEntities ? homeEntities(store) : Array.isArray(body.entities) ? body.entities : [];
+    const entities: EntityRef[] = body.useHomeEntities ? await homeEntities() : Array.isArray(body.entities) ? body.entities : [];
 
     if (body.mode === "rehydrate") {
       const codebook = buildCodebook(entities);

@@ -6,7 +6,8 @@
 // marked `imported`, so they slot into the live per-child chronology by date.
 // Deterministic parse always; the saved entries auto-merge with live sources.
 import { NextResponse } from "next/server";
-import { db, getStore } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 import { parseChronologyText, type ParsedChronologyEntry } from "@/lib/chronology/chronology-import";
 import type { ChronologyEntry } from "@/types/extended";
@@ -16,12 +17,22 @@ export const dynamic = "force-dynamic";
 
 const HOME_ID = "home_oak";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 async function importChronology(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: childId } = await params;
   if (!childId) return NextResponse.json({ error: "Child ID required" }, { status: 400 });
 
-  const store = getStore() as any;
-  if (!store.youngPeople.some((y: any) => String(y.id) === String(childId))) {
+  const youngPeople = await safeList(dal.youngPeople.findAll());
+  if (!youngPeople.some((y: any) => String(y.id) === String(childId))) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
 

@@ -9,7 +9,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeHandoverContinuityIntelligence,
   type HandoverInput,
@@ -17,11 +17,25 @@ import {
   type ChildRef,
 } from "@/lib/engines/handover-continuity-intelligence-engine";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
-  const store = getStore();
+  const [handoverRecords, staffList, youngPeople] = await Promise.all([
+    safeList(dal.handovers.findAll()),
+    safeList(dal.staff.findAll()),
+    safeList(dal.youngPeople.findAll()),
+  ]);
 
   // ── Map handovers ─────────────────────────────────────────────────────
-  const handovers: HandoverInput[] = (store.handovers ?? []).map((h: any) => ({
+  const handovers: HandoverInput[] = handoverRecords.map((h: any) => ({
     id: h.id,
     shift_date: h.shift_date,
     shift_from: h.shift_from,
@@ -50,7 +64,7 @@ export async function GET() {
   }));
 
   // ── Map active staff ──────────────────────────────────────────────────
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = staffList
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,
@@ -58,7 +72,7 @@ export async function GET() {
     }));
 
   // ── Map young people ──────────────────────────────────────────────────
-  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+  const children: ChildRef[] = youngPeople.map((yp: any) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));

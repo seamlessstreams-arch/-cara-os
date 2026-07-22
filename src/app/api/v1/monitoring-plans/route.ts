@@ -9,7 +9,8 @@
 //   level is refused without acknowledgement + rationale + the child's views +
 //   a review within 28 days). Cara never sets or escalates a level itself.
 import { NextRequest, NextResponse } from "next/server";
-import { db, getStore } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -22,8 +23,19 @@ import {
 
 export const dynamic = "force-dynamic";
 
+// Read a dal collection defensively: a transient query failure degrades to an
+// empty list rather than 500-ing the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET(req: NextRequest) {
-  const store = getStore() as any;
   const childId = req.nextUrl.searchParams.get("child_id");
 
   if (childId) {
@@ -32,9 +44,10 @@ export async function GET(req: NextRequest) {
     });
   }
 
+  const youngPeople = await safeList(dal.youngPeople.findAll());
   const board = computeMonitoringBoard({
     plans: db.monitoringPlans.findAll(),
-    youngPeople: (store.youngPeople ?? []).map((y: any) => ({
+    youngPeople: youngPeople.map((y: any) => ({
       id: String(y.id),
       first_name: String(y.first_name ?? ""),
       last_name: String(y.last_name ?? ""),

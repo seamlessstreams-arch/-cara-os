@@ -7,7 +7,8 @@
 // via the mailto/.ics. This is the honest boundary: we prepare the invite, the
 // human dispatches it.
 import { NextResponse } from "next/server";
-import { db, getStore } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { buildICS, buildInviteMailto } from "@/lib/calendar/ics";
 import { markInviteSent } from "@/lib/calendar/calendar-service";
 
@@ -15,10 +16,25 @@ export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };
 
-function resolveNames(childId: string | null, organiserId: string) {
-  const store = getStore();
-  const yp = childId ? store.youngPeople.find((y) => y.id === childId) : null;
-  const staff = store.staff.find((m) => m.id === organiserId);
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole dashboard.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
+async function resolveNames(childId: string | null, organiserId: string) {
+  const [allYoungPeople, allStaff] = await Promise.all([
+    safeList(dal.youngPeople.findAll()),
+    safeList(dal.staff.findAll()),
+  ]);
+  const yp = childId ? allYoungPeople.find((y) => y.id === childId) : null;
+  const staff = allStaff.find((m) => m.id === organiserId);
   return {
     childName: yp ? yp.preferred_name || yp.first_name : null,
     organiserName: staff ? staff.full_name : "Cara",
@@ -30,7 +46,7 @@ export async function GET(_req: Request, { params }: Params) {
   const event = db.calendarEvents.findById(id);
   if (!event) return NextResponse.json({ error: "Event not found" }, { status: 404 });
 
-  const { childName, organiserName } = resolveNames(event.child_id, event.organiser_id);
+  const { childName, organiserName } = await resolveNames(event.child_id, event.organiser_id);
   const ics = buildICS(event, {
     dtstamp: new Date().toISOString(),
     organiserName,
@@ -52,7 +68,7 @@ export async function POST(_req: Request, { params }: Params) {
   const result = markInviteSent(id);
   if (!result) return NextResponse.json({ error: "Event not found" }, { status: 404 });
 
-  const { childName } = resolveNames(result.event.child_id, result.event.organiser_id);
+  const { childName } = await resolveNames(result.event.child_id, result.event.organiser_id);
   const mailto = buildInviteMailto(result.event, { childName });
   return NextResponse.json({
     data: {

@@ -9,18 +9,28 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeAuditQualityIntelligence,
   type AuditInput,
   type StaffRef,
 } from "@/lib/engines/audit-quality-intelligence-engine";
 
-export async function GET() {
-  const store = getStore();
+// Read a dal collection defensively: on a live tenant a transient query failure
+// must degrade to an empty section, never 500 the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
 
+export async function GET() {
   // ── Map audits ────────────────────────────────────────────────────────
-  const audits: AuditInput[] = (store.audits ?? []).map((a: any) => ({
+  const audits: AuditInput[] = (await safeList(dal.qaAudits.findAll())).map((a: any) => ({
     id: a.id,
     title: a.title,
     category: a.category,
@@ -35,7 +45,7 @@ export async function GET() {
   }));
 
   // ── Map active staff ──────────────────────────────────────────────────
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = (await safeList(dal.staff.findAll()))
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

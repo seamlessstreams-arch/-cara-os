@@ -9,18 +9,31 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeCareFormIntelligence,
   type CareFormInput,
   type StaffRef,
 } from "@/lib/engines/care-form-intelligence-engine";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
-  const store = getStore();
+  const [careForms, staffList] = await Promise.all([
+    safeList(dal.careForms.findAll()),
+    safeList(dal.staff.findAll()),
+  ]);
 
   // ── Map care forms ────────────────────────────────────────────────────
-  const forms: CareFormInput[] = (store.careForms ?? []).map((f: any) => ({
+  const forms: CareFormInput[] = careForms.map((f: any) => ({
     id: f.id,
     title: f.title,
     form_type: f.form_type,
@@ -42,7 +55,7 @@ export async function GET() {
   }));
 
   // ── Map active staff ──────────────────────────────────────────────────
-  const staff: StaffRef[] = (store.staff ?? [])
+  const staff: StaffRef[] = staffList
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

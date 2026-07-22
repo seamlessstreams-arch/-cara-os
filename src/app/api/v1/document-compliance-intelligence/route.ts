@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import {
   computeDocumentComplianceIntelligence,
   type DocumentInput,
@@ -17,11 +18,27 @@ import {
   type StaffRef,
 } from "@/lib/engines/document-compliance-intelligence-engine";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
+  // documentReadReceipts has no dal accessor with findAll — it stays on the
+  // in-memory store; documents and staff route through the dual-mode dal.
   const store = getStore();
+  const [documentRecords, staffList] = await Promise.all([
+    safeList(dal.documents.findAll()),
+    safeList(dal.staff.findAll()),
+  ]);
 
   // ── Map documents ─────────────────────────────────────────────────────
-  const documents: DocumentInput[] = (store.documents ?? []).map((d: any) => ({
+  const documents: DocumentInput[] = documentRecords.map((d: any) => ({
     id: d.id,
     title: d.title,
     category: d.category,
@@ -45,7 +62,7 @@ export async function GET() {
   }));
 
   // ── Map active staff ──────────────────────────────────────────────────
-  const active_staff: StaffRef[] = (store.staff ?? [])
+  const active_staff: StaffRef[] = staffList
     .filter((s: any) => s.is_active)
     .map((s: any) => ({
       id: s.id,

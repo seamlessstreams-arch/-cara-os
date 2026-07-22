@@ -1,6 +1,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
-import { getStore, db } from "@/lib/db/store";
+import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { getRequestIdentity, assertHomeAccess } from "@/lib/auth-guard";
 import { generateId } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
@@ -12,9 +13,21 @@ import type { RestrictionReview, YesNoUnknown } from "@/lib/rights-restriction/t
 
 export const dynamic = "force-dynamic";
 
-function childrenList() {
-  const store = getStore();
-  return (store.youngPeople ?? [])
+// Read a dal collection defensively: a transient query failure degrades to an
+// empty list rather than 500-ing the whole route.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeList(p: Promise<any[]>): Promise<any[]> {
+  try {
+    const r = await p;
+    return Array.isArray(r) ? r : [];
+  } catch {
+    return [];
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function childrenList(youngPeople: any[]) {
+  return youngPeople
     .filter((yp) => yp.status === "current")
     .map((yp) => ({
       id: yp.id,
@@ -32,13 +45,17 @@ export async function GET(req: NextRequest) {
   try {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity; // 401 in activated mode without a session
-    const store = getStore();
     const childId = new URL(req.url).searchParams.get("child_id");
     const now = new Date().toISOString();
 
+    const [youngPeople, incidents] = await Promise.all([
+      safeList(dal.youngPeople.findAll()),
+      safeList(dal.incidents.findAll()),
+    ]);
+
     if (childId) {
       // Tenant isolation: a child's restriction reviews may only be read by their own home.
-      const child = (store.youngPeople ?? []).find((yp: { id: string }) => yp.id === childId) as { home_id?: string } | undefined;
+      const child = youngPeople.find((yp: { id: string }) => yp.id === childId) as { home_id?: string } | undefined;
       const denied = assertHomeAccess(identity, child?.home_id);
       if (denied) return denied;
       const reviews = db.restrictionReviews.findByChild(childId);
@@ -56,8 +73,8 @@ export async function GET(req: NextRequest) {
     const overview = buildRestrictionOverview({
       now,
       reviews: db.restrictionReviews.findAll(),
-      children: childrenList(),
-      incidents: store.incidents ?? [],
+      children: childrenList(youngPeople),
+      incidents,
     });
     return NextResponse.json({ data: overview });
   } catch (error: unknown) {
@@ -86,9 +103,9 @@ export async function POST(req: NextRequest) {
       );
     }
     const now = new Date().toISOString();
-    const store = getStore();
+    const youngPeople = await safeList(dal.youngPeople.findAll());
     // Tenant isolation: the child must belong to the caller's home (activated mode).
-    const child = (store.youngPeople ?? []).find((yp: { id: string }) => yp.id === String(body.child_id)) as { home_id?: string } | undefined;
+    const child = youngPeople.find((yp: { id: string }) => yp.id === String(body.child_id)) as { home_id?: string } | undefined;
     const denied = assertHomeAccess(identity, child?.home_id);
     if (denied) return denied;
     // Identity + home come from the validated session in activated mode (never the
