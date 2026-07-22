@@ -101,6 +101,9 @@ if (!external) {
   server = spawn("npx", ["next", "start", "-p", String(PORT)], {
     env: { ...process.env, NEXT_PUBLIC_CARA_MODE: "live", NODE_ENV: "production" },
     stdio: ["ignore", "pipe", "pipe"],
+    // Own process group, so finish() can kill `next start` AND its workers with
+    // one group-signal. Without this, the workers outlive the crawl and hang it.
+    detached: true,
   });
   server.stdout.on("data", () => {});
   server.stderr.on("data", (d) => process.stderr.write(d));
@@ -220,7 +223,24 @@ await Promise.all(
 );
 
 await browser.close();
-if (server) server.kill();
+
+// Exit for real, killing the WHOLE server process tree. This is not a tidy-up
+// nicety — it is why every CI run was discarded. `next start` (spawned via npx)
+// forks worker children; a bare server.kill() SIGTERMs only the npx parent, the
+// workers survive, and their piped stdio keeps this Node event loop open. So on
+// success the crawl printed its verdict in ~3 min and then the process HUNG for
+// the rest of the job, every time, until the 90-min timeout cancelled it — the
+// pass thrown away not by the crawl being slow (it never was) but by the process
+// refusing to die. Local BASE_URL runs spawn no server (server=null) and exit
+// cleanly, which is exactly why this never reproduced off-CI. `process.exit`
+// after a group-kill guarantees we leave the moment the result is known.
+function finish(code) {
+  if (server?.pid) {
+    try { process.kill(-server.pid, "SIGKILL"); } // negative pid = the whole group
+    catch { try { server.kill("SIGKILL"); } catch { /* already gone */ } }
+  }
+  process.exit(code);
+}
 
 // De-dupe warnings by route+code (React can fire the same mismatch twice).
 const seen = new Set();
@@ -236,6 +256,7 @@ if (uniqWarnings.length > 0) {
 if (failures.length > 0) {
   console.error(`\nlive-fiction-crawl: ${failures.length} FATAL failure(s) — demo fiction or a genuine crash on a live tenant:\n`);
   for (const f of failures) console.error(`  ✖ [${f.kind}] ${f.route}\n      ${f.detail}`);
-  process.exit(1);
+  finish(1);
 }
 log(`\nlive-fiction-crawl: ${ROUTES.length} pages rendered as a live tenant — no demo fiction, no crashes ✓`);
+finish(0);
