@@ -362,6 +362,12 @@ export const dal = {
       }
       return db.documents.findById(id);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      const c = sb();
+      if (c) return sq.createDocument(c, { ...data, home_id: homeId() });
+      return db.documents.create(data);
+    },
   },
 
   documentReadReceipts: {

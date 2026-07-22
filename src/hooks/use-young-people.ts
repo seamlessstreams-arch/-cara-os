@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "./use-api";
 import type { YoungPerson, StaffMember } from "@/types";
 
@@ -50,5 +50,19 @@ export function useYoungPeople(status = "current") {
       api.get<{ data: YPEnriched[]; meta: Record<string, number> }>(
         `/young-people?status=${status}`
       ),
+  });
+}
+
+/**
+ * Admit a child to the home — a direct create that persists via the dual-mode
+ * dal (POST /api/v1/young-people → dal.youngPeople.create → the young_people
+ * table on a live tenant). This is the plain "add a child" path; the full
+ * admission-referral workflow is a separate, richer flow.
+ */
+export function useCreateYoungPerson() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<YoungPerson>) => api.post<{ data: YoungPerson }>("/young-people", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["young-people"] }),
   });
 }

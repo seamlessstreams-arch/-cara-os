@@ -20,6 +20,18 @@ export function useDocuments(params?: { category?: string; requires_read_sign?: 
   });
 }
 
+export function useCreateDocument() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Document>) => api.post<{ data: Document }>("/documents", data),
+    onSuccess: () => {
+      careToast.formSaved();
+      qc.invalidateQueries({ queryKey: ["documents"] });
+    },
+    onError: () => careToast.actionFailed("Upload document"),
+  });
+}
+
 export function useSignDocument() {
   const qc = useQueryClient();
   return useMutation({

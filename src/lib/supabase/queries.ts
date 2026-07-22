@@ -325,6 +325,10 @@ export async function getDocuments(sb: SB, homeId: string, filters?: {
   return unwrap(await query.order("title"));
 }
 
+export async function createDocument(sb: SB, data: Record<string, unknown>) {
+  return unwrap(await sb.from("documents").insert(data as never).select().single());
+}
+
 export async function getDocumentReadReceipts(sb: SB, documentIds: string[]) {
   if (!documentIds.length) return [];
   return unwrap(
