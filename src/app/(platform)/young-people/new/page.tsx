@@ -24,6 +24,14 @@ import { useHomeName } from "@/hooks/use-home-profile";
 const FIELD =
   "w-full rounded-md border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-teal)]";
 
+// Open the native date picker on any click/focus of the field, not only the
+// tiny calendar glyph (which is easy to miss in the dark theme). showPicker is
+// widely supported; the optional-chain guards older browsers.
+function openPicker(e: { currentTarget: EventTarget & HTMLInputElement }) {
+  const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+  try { el.showPicker?.(); } catch { /* not user-activated / unsupported */ }
+}
+
 const LEGAL_STATUSES = [
   "Section 20 (voluntary accommodation)",
   "Section 31 (care order)",
@@ -105,11 +113,11 @@ export default function NewYoungPersonPage() {
         <div className="grid grid-cols-2 gap-3">
           <label className="block space-y-1">
             <span className="text-xs font-medium text-[var(--cs-slate)]">Date of birth *</span>
-            <Input type="date" value={form.date_of_birth} onChange={set("date_of_birth")} />
+            <Input type="date" value={form.date_of_birth} onChange={set("date_of_birth")} onClick={openPicker} onFocus={openPicker} />
           </label>
           <label className="block space-y-1">
             <span className="text-xs font-medium text-[var(--cs-slate)]">Placement start *</span>
-            <Input type="date" value={form.placement_start} onChange={set("placement_start")} />
+            <Input type="date" value={form.placement_start} onChange={set("placement_start")} onClick={openPicker} onFocus={openPicker} />
           </label>
         </div>
 
