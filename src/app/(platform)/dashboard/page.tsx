@@ -2129,10 +2129,28 @@ export default function DashboardPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm font-medium text-[var(--cs-navy)]">No data yet</p>
+                      <p className="text-sm font-medium text-[var(--cs-navy)]">
+                        {/* "No data yet" is wrong once ANY domain is measured —
+                            Oak House has a real staffing figure. What is being
+                            withheld is the whole-home summary, not the data. */}
+                        {hc.overall === null && (hc.unmeasured?.length ?? 0) < 4
+                          ? "Not enough recorded to score the home yet"
+                          : "No data yet"}
+                      </p>
                       <p className="mt-1 text-xs leading-relaxed text-[var(--cs-text-secondary)]">
                         {hc.note ?? "The home health score appears once children and daily records are added."}
                       </p>
+                      {/* Show whatever IS evidenced. Withholding the headline is
+                          honest; hiding a domain the home has actually recorded
+                          would just be the same omission in reverse. */}
+                      {(hc.unmeasured?.length ?? 0) < 4 && (
+                        <div className="mt-3 space-y-2 border-t border-[var(--cs-border)] pt-3">
+                          <SubScoreBar label="Safeguarding" value={hc.safeguarding} icon={Shield} />
+                          <SubScoreBar label="Medication"   value={hc.medication}   icon={Pill} />
+                          <SubScoreBar label="Staffing"     value={hc.staffing}     icon={Users} />
+                          <SubScoreBar label="Compliance"   value={hc.compliance}   icon={GraduationCap} />
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ) : hc ? (

@@ -129,12 +129,24 @@ export async function GET(_req: NextRequest) {
   ];
   const measured = domains.filter((d) => d.score !== null);
   const weightSum = measured.reduce((s, d) => s + d.weight, 0);
-  const overall = weightSum > 0
+
+  // Renormalising is right for a partial picture but wrong for a sliver of one.
+  // Live Oak House had only staffing measured — today's shift-fill rate, weight
+  // 0.20 — and reported "100% overall, low risk" while safeguarding (weight
+  // 0.35) had nothing behind it at all. Renormalising over 20% of the model
+  // hands the whole verdict to its shallowest domain.
+  //
+  // So a whole-home score needs a majority of the weighted model behind it.
+  // Below that the domain scores still stand on their own; what is withheld is
+  // the summary, because that is the number people act on.
+  const MIN_COVERAGE = 0.5;
+  const overall = weightSum >= MIN_COVERAGE
     ? Math.round(measured.reduce((s, d) => s + (d.score as number) * d.weight, 0) / weightSum)
     : null;
   const unmeasured = domains.filter((d) => d.score === null).map((d) => d.key);
+  const coveragePct = Math.round(weightSum * 100);
 
-  // Risk is only claimable where there is something to judge.
+  // Risk is only claimable where there is enough to judge.
   const riskLevel = overall === null ? null
     : overall >= 80 ? "low" : overall >= 60 ? "medium" : overall >= 40 ? "high" : "critical";
 
@@ -184,9 +196,14 @@ export async function GET(_req: NextRequest) {
     staffing: "no shifts on today's rota",
     compliance: "no training records yet",
   };
-  const note = unmeasured.length > 0
-    ? `Not yet measured: ${unmeasured.map((k) => `${k} (${UNMEASURED_LABEL[k]})`).join(", ")}. The score covers only what has been recorded.`
-    : undefined;
+  const gapList = unmeasured.map((k) => `${k} (${UNMEASURED_LABEL[k]})`).join(", ");
+  const note = unmeasured.length === 0
+    ? undefined
+    : overall === null
+      // Too little of the model is evidenced to summarise it at all. Name the
+      // one thing that would change that rather than leaving a bare dash.
+      ? `Not enough recorded to score the home yet — only ${coveragePct}% of the health model has evidence behind it. Still to record: ${gapList}.`
+      : `Not yet measured: ${gapList}. The score covers ${coveragePct}% of the health model — only what has been recorded.`;
 
   return NextResponse.json({
     data: {
