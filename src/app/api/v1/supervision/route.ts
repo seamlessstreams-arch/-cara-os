@@ -11,9 +11,10 @@
 
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
+import type { Supervision } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -21,13 +22,20 @@ function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Reads and writes go through the dual-mode dal — the supervisions table on a
+// live tenant, the in-memory store in demo. This route previously used the
+// store directly for BOTH: on a live tenant that meant the page listed nothing
+// (the store is gated empty) and every scheduled supervision was written to an
+// ephemeral store that is lost on the next cold start — a silent data loss on a
+// statutory record.
 export async function GET(req: NextRequest) {
   const today = todayStr();
   const { searchParams } = new URL(req.url);
   const filterStaff = searchParams.get("staff_id");
   const filterStatus = searchParams.get("status");
 
-  let list = db.supervisions.findAll();
+  const allSupervisions = (await dal.supervisions.findAll()) as Supervision[];
+  let list = allSupervisions;
 
   if (filterStaff) {
     list = list.filter((s) => s.staff_id === filterStaff);
@@ -36,15 +44,14 @@ export async function GET(req: NextRequest) {
     list = list.filter((s) => s.status === filterStatus);
   }
 
-  // Sort: upcoming first, then completed by date desc
-  list.sort((a, b) => {
+  // Sort a copy — `list` may alias the dal result.
+  list = [...list].sort((a, b) => {
     if (a.status === "scheduled" && b.status !== "scheduled") return -1;
     if (a.status !== "scheduled" && b.status === "scheduled") return 1;
     return (b.scheduled_date ?? "").localeCompare(a.scheduled_date ?? "");
   });
 
   // ── Compute meta ────────────────────────────────────────────────────────
-  const allSupervisions = db.supervisions.findAll();
   const overdue = allSupervisions.filter(
     (s) => s.status === "scheduled" && s.scheduled_date < today
   ).length;
@@ -80,6 +87,11 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
-  const supervision = db.supervisions.create(body);
-  return NextResponse.json({ data: supervision }, { status: 201 });
+  try {
+    const supervision = await dal.supervisions.create(body);
+    return NextResponse.json({ data: supervision }, { status: 201 });
+  } catch (err) {
+    console.error("[api/supervision] create failed:", err);
+    return NextResponse.json({ error: "Could not schedule the supervision" }, { status: 500 });
+  }
 }
