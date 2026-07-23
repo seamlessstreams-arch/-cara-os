@@ -12,6 +12,7 @@ import {
   AlertTriangle, ArrowRightLeft, Brain, ChevronRight, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 import { useSupervisionIntelligence } from "@/hooks/use-supervision-intelligence";
 
 const ALERT_STYLES: Record<string, string> = {
@@ -79,7 +80,7 @@ export function HandoverPrompt() {
           <StatTile value={d?.overview?.total_staff ?? 0} label="Staff" />
           <StatTile value={d?.overview?.supervisions_completed_90d ?? 0} label="Done 90d" tone="success" />
           <StatTile value={overdue} label="Overdue" tone={overdue > 0 ? "warning" : "success"} />
-          <StatTile value={`${Math.round(d?.overview?.action_completion_rate ?? 0)}%`} label="Actions %" tone="success" />
+          <StatTile value={formatRate(d?.overview?.action_completion_rate)} label="Actions %" tone="success" />
         </div>
 
         {alerts.length > 0 && (

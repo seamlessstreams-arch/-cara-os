@@ -15,6 +15,7 @@ import {
   Users, CheckCheck, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { useHomeLACReviewIntelligence } from "@/hooks/use-home-lac-review-intelligence";
 import type { LACReviewRating } from "@/lib/engines/home-lac-review-intelligence-engine";
 
@@ -119,8 +120,8 @@ export function HomeLACReviewIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.participation.attended_rate === 100 ? "text-[--cs-success]" : d.participation.attended_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.participation.attended_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", meets(d.participation.attended_rate, 100) ? "text-[--cs-success]" : meets(d.participation.attended_rate, 80) ? "text-[--cs-warning]" : below(d.participation.attended_rate, 80) ? "text-[--cs-risk]" : "text-slate-400")}>
+                  {formatRate(d.participation.attended_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Participation</p>
@@ -130,8 +131,8 @@ export function HomeLACReviewIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <CheckCheck className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.actions.completion_rate >= 80 ? "text-[--cs-success]" : d.actions.completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.actions.completion_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", meets(d.actions.completion_rate, 80) ? "text-[--cs-success]" : meets(d.actions.completion_rate, 50) ? "text-[--cs-warning]" : below(d.actions.completion_rate, 50) ? "text-[--cs-risk]" : "text-slate-400")}>
+                  {formatRate(d.actions.completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Actions Done</p>
@@ -141,8 +142,8 @@ export function HomeLACReviewIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.stability.stability_rate === 100 ? "text-[--cs-success]" : d.stability.unstable_count > 0 ? "text-[--cs-risk]" : "text-[--cs-warning]")}>
-                  {d.stability.stability_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", meets(d.stability.stability_rate, 100) ? "text-[--cs-success]" : d.stability.unstable_count > 0 ? "text-[--cs-risk]" : d.stability.stability_rate === null ? "text-slate-400" : "text-[--cs-warning]")}>
+                  {formatRate(d.stability.stability_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Stable</p>
@@ -158,7 +159,7 @@ export function HomeLACReviewIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Compliance</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Per child: <span className="font-medium text-slate-600">{d.compliance.reviews_per_child}</span></p>
-                <p>Care plan rate: <span className={cn("font-medium", d.compliance.care_plan_update_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.compliance.care_plan_update_rate}%</span></p>
+                <p>Care plan rate: <span className={cn("font-medium", meets(d.compliance.care_plan_update_rate, 100) ? "text-[--cs-success]" : below(d.compliance.care_plan_update_rate, 100) ? "text-[--cs-warning]" : "text-slate-400")}>{formatRate(d.compliance.care_plan_update_rate)}</span></p>
                 {d.compliance.overdue_reviews.length > 0 && <p>Overdue: <span className="font-medium text-red-600">{d.compliance.overdue_reviews.length}</span></p>}
                 {d.compliance.children_without_reviews.length > 0 && <p>No reviews: <span className="font-medium text-red-600">{d.compliance.children_without_reviews.length} children</span></p>}
               </div>
@@ -168,7 +169,7 @@ export function HomeLACReviewIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Participation & Actions</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Views documented: <span className={cn("font-medium", d.participation.views_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.participation.views_rate}%</span></p>
+                <p>Views documented: <span className={cn("font-medium", meets(d.participation.views_rate, 100) ? "text-[--cs-success]" : below(d.participation.views_rate, 100) ? "text-[--cs-warning]" : "text-slate-400")}>{formatRate(d.participation.views_rate)}</span></p>
                 {d.participation.no_participation_count > 0 && <p>No participation: <span className="font-medium text-red-600">{d.participation.no_participation_count}</span></p>}
                 <p>Actions: <span className="font-medium text-slate-600">{d.actions.completed_actions}/{d.actions.total_actions}</span></p>
                 {d.actions.overdue_actions > 0 && <p>Overdue actions: <span className="font-medium text-red-600">{d.actions.overdue_actions}</span></p>}

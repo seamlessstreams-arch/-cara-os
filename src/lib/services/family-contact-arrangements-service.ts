@@ -30,6 +30,7 @@
 // ==============================================================================
 
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { formatRate, rate } from "@/lib/metrics/rate";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -370,25 +371,27 @@ export function computeMetrics(
   suspended_count: number;
   rescheduled_count: number;
   confirmed_count: number;
-  completion_rate: number;
+  // Every rate below is null when its population is empty — nothing to measure
+  // is reported as unknown, never as a full or a failing score.
+  completion_rate: number | null;
   by_relationship: Record<string, number>;
   by_contact_type: Record<string, number>;
   by_status: Record<string, number>;
   by_mood_before: Record<string, number>;
   by_mood_after: Record<string, number>;
   by_quality: Record<string, number>;
-  mood_improvement_rate: number;
-  mood_deterioration_rate: number;
-  concern_rate: number;
-  child_wishes_rate: number;
-  risk_assessment_rate: number;
-  supervision_rate: number;
-  average_duration: number;
+  mood_improvement_rate: number | null;
+  mood_deterioration_rate: number | null;
+  concern_rate: number | null;
+  child_wishes_rate: number | null;
+  risk_assessment_rate: number | null;
+  supervision_rate: number | null;
+  average_duration: number | null;
   unique_children: number;
   unique_contacts: number;
-  sw_notification_rate: number;
-  positive_quality_rate: number;
-  difficult_quality_rate: number;
+  sw_notification_rate: number | null;
+  positive_quality_rate: number | null;
+  difficult_quality_rate: number | null;
 } {
   const total = rows.length;
 
@@ -404,7 +407,7 @@ export function computeMetrics(
   const actionable = total - suspendedCount;
   const completionRate = actionable > 0
     ? Math.round((completedCount / actionable) * 1000) / 10
-    : 0;
+    : null;
 
   // Relationship breakdown
   const byRelationship: Record<string, number> = {};
@@ -444,9 +447,10 @@ export function computeMetrics(
     (r) => negativeMoodsBefore.includes(r.child_mood_before) && positiveMoodsAfter.includes(r.child_mood_after),
   ).length;
   const negativeBeforeCount = completedRows.filter((r) => negativeMoodsBefore.includes(r.child_mood_before)).length;
+  // Null = no child arrived anxious/reluctant/distressed, so there was nothing to improve.
   const moodImprovementRate = negativeBeforeCount > 0
     ? Math.round((moodImproved / negativeBeforeCount) * 1000) / 10
-    : 0;
+    : null;
 
   // Mood deterioration: mood was positive before and negative after
   const positiveMoodsBefore = ["Happy", "Excited", "Neutral"];
@@ -457,15 +461,15 @@ export function computeMetrics(
   const positiveBeforeCount = completedRows.filter((r) => positiveMoodsBefore.includes(r.child_mood_before)).length;
   const moodDeteriorationRate = positiveBeforeCount > 0
     ? Math.round((moodDeteriorated / positiveBeforeCount) * 1000) / 10
-    : 0;
+    : null;
 
   // Concern rate
   const concernCount = rows.filter((r) => r.concerns_raised).length;
-  const concernRate = total > 0 ? Math.round((concernCount / total) * 1000) / 10 : 0;
+  const concernRate = total > 0 ? Math.round((concernCount / total) * 1000) / 10 : null;
 
   // Child wishes rate
   const wishesCount = rows.filter((r) => r.child_wishes_considered).length;
-  const wishesRate = total > 0 ? Math.round((wishesCount / total) * 1000) / 10 : 0;
+  const wishesRate = total > 0 ? Math.round((wishesCount / total) * 1000) / 10 : null;
 
   // Risk assessment rate (for face-to-face and overnight contacts)
   const riskRequired = rows.filter((r) =>
@@ -474,45 +478,45 @@ export function computeMetrics(
     r.contact_type === "Holiday Contact",
   );
   const riskDone = riskRequired.filter((r) => r.risk_assessed).length;
+  // Null = no contact type requiring a risk assessment has been recorded.
   const riskRate = riskRequired.length > 0
     ? Math.round((riskDone / riskRequired.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Supervision rate (supervised contact types)
   const supervisedTypes = ["Face-to-Face Supervised", "Court Ordered", "Indirect — via Social Worker"];
   const supervisedCount = rows.filter((r) => supervisedTypes.includes(r.contact_type)).length;
   const supervisionRate = total > 0
     ? Math.round((supervisedCount / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Average duration (completed contacts with duration)
   const withDuration = completedRows.filter((r) => r.duration_minutes !== null && r.duration_minutes > 0);
   const totalDuration = withDuration.reduce((sum, r) => sum + (r.duration_minutes ?? 0), 0);
   const avgDuration = withDuration.length > 0
     ? Math.round((totalDuration / withDuration.length) * 10) / 10
-    : 0;
+    : null;
 
   // Unique children and contacts
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
   const uniqueContacts = new Set(rows.map((r) => r.contact_person_name)).size;
 
   // Social worker notification rate (when concerns raised)
+  // Null = no concerns were raised, so there was no notification duty to meet.
   const withConcerns = rows.filter((r) => r.concerns_raised);
   const swNotified = withConcerns.filter((r) => r.social_worker_notified).length;
-  const swRate = withConcerns.length > 0
-    ? Math.round((swNotified / withConcerns.length) * 1000) / 10
-    : 100;
+  const swRate = rate(swNotified, withConcerns.length);
 
   // Quality rates
   const positiveQuality = completedRows.filter((r) => r.contact_quality === "Positive").length;
   const positiveRate = completedRows.length > 0
     ? Math.round((positiveQuality / completedRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   const difficultQuality = completedRows.filter((r) => r.contact_quality === "Difficult").length;
   const difficultRate = completedRows.length > 0
     ? Math.round((difficultQuality / completedRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   return {
     total_contacts: total,
@@ -717,14 +721,20 @@ export function generateCaraInsights(
   const insights: string[] = [];
 
   // Insight 1: Summary overview
-  insights.push(
-    `[sky] ${metrics.total_contacts} family contact ${metrics.total_contacts === 1 ? "record" : "records"} for ${metrics.unique_children} ${metrics.unique_children === 1 ? "child" : "children"} with ${metrics.unique_contacts} family ${metrics.unique_contacts === 1 ? "member" : "members"}. ` +
-      `${metrics.completed_count} completed, ${metrics.cancelled_count} cancelled, ${metrics.refused_by_child_count} refused by child. ` +
-      `Completion rate: ${metrics.completion_rate}%. ` +
-      `Average duration: ${metrics.average_duration} minutes. ` +
-      `Positive quality rate: ${metrics.positive_quality_rate}%. ` +
-      `Child wishes considered in ${metrics.child_wishes_rate}% of contacts.`,
-  );
+  if (metrics.total_contacts === 0) {
+    insights.push(
+      `[sky] No family contact records held yet. Nothing can be evidenced about completion, quality or whether children's wishes were considered until contact is recorded — an empty record is a gap, not compliance.`,
+    );
+  } else {
+    insights.push(
+      `[sky] ${metrics.total_contacts} family contact ${metrics.total_contacts === 1 ? "record" : "records"} for ${metrics.unique_children} ${metrics.unique_children === 1 ? "child" : "children"} with ${metrics.unique_contacts} family ${metrics.unique_contacts === 1 ? "member" : "members"}. ` +
+        `${metrics.completed_count} completed, ${metrics.cancelled_count} cancelled, ${metrics.refused_by_child_count} refused by child. ` +
+        `Completion rate: ${formatRate(metrics.completion_rate, "not measured")}. ` +
+        `Average duration: ${metrics.average_duration === null ? "not recorded" : `${metrics.average_duration} minutes`}. ` +
+        `Positive quality rate: ${formatRate(metrics.positive_quality_rate, "not measured")}. ` +
+        `Child wishes considered in ${formatRate(metrics.child_wishes_rate, "no records yet")} of contacts.`,
+    );
+  }
 
   // Insight 2: Safety and wellbeing indicators
   const criticalAlerts = alerts.filter((a) => a.severity === "critical");
@@ -732,18 +742,22 @@ export function generateCaraInsights(
   if (criticalAlerts.length > 0 || highAlerts.length > 0) {
     insights.push(
       `[amber] ${criticalAlerts.length} critical and ${highAlerts.length} high-priority family contact alerts. ` +
-        `Concern rate: ${metrics.concern_rate}%. ` +
-        `Risk assessment completion: ${metrics.risk_assessment_rate}%. ` +
-        `Mood deterioration rate: ${metrics.mood_deterioration_rate}%. ` +
-        `Social worker notification rate for concerns: ${metrics.sw_notification_rate}%. ` +
-        `${metrics.difficult_quality_rate}% of completed contacts rated Difficult.`,
+        `Concern rate: ${formatRate(metrics.concern_rate, "not measured")}. ` +
+        `Risk assessment completion: ${formatRate(metrics.risk_assessment_rate, "no contact requiring one")}. ` +
+        `Mood deterioration rate: ${formatRate(metrics.mood_deterioration_rate, "not measured")}. ` +
+        `Social worker notification rate for concerns: ${formatRate(metrics.sw_notification_rate, "no concerns raised")}. ` +
+        `${formatRate(metrics.difficult_quality_rate, "None")} of completed contacts rated Difficult.`,
+    );
+  } else if (metrics.total_contacts === 0) {
+    insights.push(
+      `[amber] No family contact records to check. An absence of alerts here reflects an absence of records, not evidence that contact is safe and well supported.`,
     );
   } else {
     insights.push(
       `[amber] No critical or high-priority family contact alerts. ` +
-        `Risk assessment rate: ${metrics.risk_assessment_rate}%. ` +
-        `Mood improvement rate: ${metrics.mood_improvement_rate}% (children who arrived anxious/reluctant left feeling positive). ` +
-        `Supervision rate: ${metrics.supervision_rate}%. ` +
+        `Risk assessment rate: ${formatRate(metrics.risk_assessment_rate, "no contact requiring one")}. ` +
+        `Mood improvement rate: ${formatRate(metrics.mood_improvement_rate, "no child arrived distressed")} (children who arrived anxious/reluctant left feeling positive). ` +
+        `Supervision rate: ${formatRate(metrics.supervision_rate, "not measured")}. ` +
         `Continue supporting positive family contact to promote children's wellbeing per Reg 7.`,
     );
   }
@@ -755,9 +769,9 @@ export function generateCaraInsights(
         `What are the underlying reasons for refusal, and how is the home creating safe opportunities for children to express their feelings about contact? ` +
         `Are alternative forms of contact being explored when face-to-face contact is too difficult?`,
     );
-  } else if (metrics.mood_deterioration_rate > 20) {
+  } else if (metrics.mood_deterioration_rate !== null && metrics.mood_deterioration_rate > 20) {
     insights.push(
-      `[reflect] ${metrics.mood_deterioration_rate}% of children experienced mood deterioration during contact. ` +
+      `[reflect] ${formatRate(metrics.mood_deterioration_rate)} of children experienced mood deterioration during contact. ` +
         `What support is provided to children before, during, and after contact to help them manage their emotions? ` +
         `Are post-contact debriefs happening with key workers to process the child's experience?`,
     );

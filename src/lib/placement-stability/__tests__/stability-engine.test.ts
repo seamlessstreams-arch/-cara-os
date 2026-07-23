@@ -309,11 +309,14 @@ describe("calculateHomeStabilityMetrics", () => {
     expect(result.totalPlacements).toBe(1);
   });
 
-  it("returns defaults for no placements", () => {
+  it("measures nothing when there are no placements", () => {
     const result = calculateHomeStabilityMetrics([], "home-oak", "Chamberlain House", 4, FIXED_NOW);
     expect(result.totalPlacements).toBe(0);
-    expect(result.averageStabilityScore).toBe(100);
-    expect(result.disruptionRate).toBe(0);
+    expect(result.averageStabilityScore).toBeNull();
+    expect(result.disruptionRate).toBeNull();
+    expect(result.averageDaysInPlacement).toBeNull();
+    expect(result.averageMatchingScore).toBeNull();
+    expect(result.occupancyRate).toBe(0);
   });
 });
 

@@ -14,6 +14,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -160,7 +161,7 @@ export interface ContactQualityResult {
   averageParentEngagement: number;
   followUpNeededCount: number;
   followUpCompletedCount: number;
-  followUpCompletionRate: number;
+  followUpCompletionRate: number | null;   // null when no contact needed a follow-up
   childRefusalCount: number;
   childRefusalRate: number;
   parentNoShowCount: number;
@@ -269,7 +270,7 @@ export function evaluateContactQuality(contacts: ContactRecord[]): ContactQualit
       averageParentEngagement: 0,
       followUpNeededCount: 0,
       followUpCompletedCount: 0,
-      followUpCompletionRate: 0,
+      followUpCompletionRate: null,
       childRefusalCount: 0,
       childRefusalRate: 0,
       parentNoShowCount: 0,
@@ -310,12 +311,11 @@ export function evaluateContactQuality(contacts: ContactRecord[]): ContactQualit
     contacts.reduce((sum, c) => sum + c.parentEngagement, 0) / contacts.length,
   );
 
+  // Null when no contact called for a follow-up — nothing was owed, which is
+  // not the same as everything owed having been done.
   const followUpNeeded = contacts.filter((c) => c.followUpNeeded);
   const followUpCompleted = followUpNeeded.filter((c) => c.followUpCompleted === true);
-  const followUpCompletionRate =
-    followUpNeeded.length > 0
-      ? Math.round((followUpCompleted.length / followUpNeeded.length) * 100)
-      : 100;
+  const followUpCompletionRate = rateOf(followUpCompleted, followUpNeeded);
 
   const childRefusalCount = contacts.filter((c) => c.outcome === "child_refused").length;
   const childRefusalRate = Math.round((childRefusalCount / contacts.length) * 100);
@@ -341,14 +341,14 @@ export function evaluateContactQuality(contacts: ContactRecord[]): ContactQualit
     : 0;
   score += Math.min(6, avgContactsPerChild * 1.5);
 
-  // Positive outcomes — up to 8 points
-  score += (positiveOutcomeRate / 100) * 8;
-
-  // Mood uplift — up to 8 points
-  score += (moodUpliftRate / 100) * 8;
-
-  // Follow-up completion — up to 4 points
-  score += (followUpCompletionRate / 100) * 4;
+  // Positive outcomes, mood uplift and follow-up completion — 20 points between
+  // them. Follow-up drops out when nothing needed following up, and the other
+  // two carry the full 20 rather than the missing limb scoring as perfect.
+  score += ((weightedMeanOf([
+    { score: positiveOutcomeRate, weight: 8 },
+    { score: moodUpliftRate, weight: 8 },
+    { score: followUpCompletionRate, weight: 4 },
+  ]) ?? 0) / 100) * 20;
 
   // Low refusal/no-show bonus — up to 4 points
   const problemRate = (childRefusalCount + parentNoShowCount) / contacts.length;
@@ -896,7 +896,7 @@ function generateStrengths(
   if (cq.moodUpliftRate >= 60) {
     strengths.push("Children consistently show mood improvement following family contact");
   }
-  if (cq.followUpCompletionRate >= 90 && cq.followUpNeededCount > 0) {
+  if (meets(cq.followUpCompletionRate, 90) && cq.followUpNeededCount > 0) {
     strengths.push("Follow-up actions from contact sessions are being completed promptly");
   }
   if (ps.effectiveRate >= 70) {
@@ -944,7 +944,7 @@ function generateAreasForImprovement(
   if (cq.positiveOutcomeRate < 50 && cq.totalContacts > 0) {
     areas.push("Positive contact outcome rate below 50% — review contact arrangements and support strategies");
   }
-  if (cq.followUpCompletionRate < 70 && cq.followUpNeededCount > 0) {
+  if (below(cq.followUpCompletionRate, 70) && cq.followUpNeededCount > 0) {
     areas.push("Follow-up completion rate below 70% — embed systematic follow-up tracking");
   }
   if (cq.childRefusalRate > 20) {
@@ -1024,7 +1024,7 @@ function generateActions(
     );
   }
 
-  if (cq.followUpCompletionRate < 60 && cq.followUpNeededCount > 0) {
+  if (below(cq.followUpCompletionRate, 60) && cq.followUpNeededCount > 0) {
     actions.push(
       `MEDIUM: Only ${cq.followUpCompletionRate}% of follow-up actions completed. Implement tracking system and allocate responsibility to key workers.`,
     );

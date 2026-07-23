@@ -129,7 +129,9 @@ describe("evaluateReviewCompliance", () => {
   it("handles empty review list", () => {
     const result = evaluateReviewCompliance([], PERIOD_START, PERIOD_END);
     expect(result.totalReviewsDue).toBe(0);
-    expect(result.onTimeRate).toBe(100);
+    // Nothing due is nothing evidenced — not full compliance
+    expect(result.onTimeRate).toBeNull();
+    expect(result.completionRate).toBeNull();
   });
 });
 
@@ -148,8 +150,8 @@ describe("buildReviewTypeBreakdown", () => {
 
   it("identifies worst-performing review types", () => {
     const result = buildReviewTypeBreakdown(makeProblemReviews(), PERIOD_START, PERIOD_END);
-    // Sorted by onTimeRate ascending — worst first
-    expect(result[0].onTimeRate).toBeLessThanOrEqual(result[result.length - 1].onTimeRate);
+    // Sorted by onTimeRate ascending — worst first, with measured rates present here
+    expect(result[0].onTimeRate ?? 0).toBeLessThanOrEqual(result[result.length - 1].onTimeRate ?? 0);
   });
 
   it("handles mixed performance across types", () => {
@@ -180,7 +182,8 @@ describe("evaluateActionCompliance", () => {
   it("handles empty action list", () => {
     const result = evaluateActionCompliance([], PERIOD_START, PERIOD_END);
     expect(result.totalActions).toBe(0);
-    expect(result.completionRate).toBe(100);
+    expect(result.completionRate).toBeNull();
+    expect(result.overdueRate).toBeNull();
   });
 });
 

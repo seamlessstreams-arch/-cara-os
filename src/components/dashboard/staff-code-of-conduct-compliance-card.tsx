@@ -13,6 +13,7 @@ import {
   ShieldCheck, BookOpen, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meanOf, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 // ── Insight styling ──────────────────────────────────────────────────────────
@@ -48,9 +49,7 @@ export function StaffCodeOfConductComplianceCard() {
   }
 
   const { dbs, training, supervision, profile } = intel;
-  const avgTrainingCompliance = training.length > 0
-    ? Math.round(training.reduce((sum, t) => sum + t.compliance_rate, 0) / training.length)
-    : 0;
+  const avgTrainingCompliance = meanOf(training.map((t) => t.compliance_rate));
   const supervisionRate = supervision.total_staff_requiring > 0
     ? Math.round((supervision.up_to_date / supervision.total_staff_requiring) * 100)
     : 100;
@@ -73,15 +72,15 @@ export function StaffCodeOfConductComplianceCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", dbs.compliance_rate >= 95 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", dbs.compliance_rate >= 95 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {dbs.compliance_rate}%
+          <div className={cn("text-center rounded-lg p-2", meets(dbs.compliance_rate, 95) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(dbs.compliance_rate, 95) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(dbs.compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">DBS</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", avgTrainingCompliance >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", avgTrainingCompliance >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {avgTrainingCompliance}%
+          <div className={cn("text-center rounded-lg p-2", avgTrainingCompliance === null ? "bg-slate-50" : avgTrainingCompliance >= 90 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", avgTrainingCompliance === null ? "text-[var(--cs-text-muted)]" : avgTrainingCompliance >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(avgTrainingCompliance)}
             </p>
             <p className="text-[10px] text-muted-foreground">Training</p>
           </div>
@@ -135,8 +134,8 @@ export function StaffCodeOfConductComplianceCard() {
                     <ShieldCheck className="h-3 w-3 text-emerald-500 shrink-0" />
                     <span className="font-medium truncate">{t.category}</span>
                   </div>
-                  <Badge variant="outline" className={cn("text-[10px] shrink-0", t.compliance_rate >= 90 ? "text-green-700 bg-green-50 border-green-200" : t.compliance_rate >= 70 ? "text-amber-700 bg-amber-50 border-amber-200" : "text-red-700 bg-red-50 border-red-200")}>
-                    {t.compliance_rate}%
+                  <Badge variant="outline" className={cn("text-[10px] shrink-0", meets(t.compliance_rate, 90) ? "text-green-700 bg-green-50 border-green-200" : meets(t.compliance_rate, 70) ? "text-amber-700 bg-amber-50 border-amber-200" : "text-red-700 bg-red-50 border-red-200")}>
+                    {formatRate(t.compliance_rate)}
                   </Badge>
                 </div>
               ))}

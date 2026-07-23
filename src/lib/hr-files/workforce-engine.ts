@@ -23,6 +23,7 @@
 
 import type { Role } from "../permissions/types";
 import { isAtLeast } from "../permissions/role-rules";
+import { rate } from "../metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -149,7 +150,7 @@ export interface TrainingComplianceResult {
   staffId: string;
   staffName: string;
   overallCompliant: boolean;
-  completionRate: number;       // %
+  completionRate: number | null; // %; null = no training required of this role
   mandatoryComplete: number;
   mandatoryTotal: number;
   expired: TrainingCategory[];
@@ -170,18 +171,21 @@ export interface SupervisionComplianceResult {
   nextDue: string;
 }
 
+// Every rate below is null when its population is empty — an unstaffed or
+// unestablished home has nothing to measure, which is not the same as a
+// perfect score.
 export interface WorkforceMetrics {
   totalStaff: number;
   fullTimeEquivalent: number;
-  vacancyRate: number;            // %
-  turnoverRate: number;           // % (leavers in 12 months / avg headcount)
-  sicknessRate: number;           // % (days lost / total available days)
-  agencyUsage: number;            // %
-  averageTenure: number;          // months
-  trainingComplianceRate: number; // %
-  supervisionComplianceRate: number; // %
-  qualificationRate: number;      // % at/above required level
-  probationPassRate: number;      // %
+  vacancyRate: number | null;            // %
+  turnoverRate: number | null;           // % (leavers in 12 months / avg headcount)
+  sicknessRate: number | null;           // % (days lost / total available days)
+  agencyUsage: number | null;            // %
+  averageTenure: number | null;          // months
+  trainingComplianceRate: number | null; // %
+  supervisionComplianceRate: number | null; // %
+  qualificationRate: number | null;      // % at/above required level; null = no staff hold a target
+  probationPassRate: number | null;      // %; null = nobody on probation
   staffWithExpiredTraining: number;
   staffOverdueSupervision: number;
 }
@@ -288,9 +292,7 @@ export function evaluateTrainingCompliance(
     }
   }
 
-  const completionRate = required.length > 0
-    ? Math.round((completedCount / required.length) * 100)
-    : 100;
+  const completionRate = rate(completedCount, required.length);
 
   return {
     staffId: staff.id,
@@ -377,14 +379,10 @@ export function calculateWorkforceMetrics(
   const totalStaff = staff.length;
   const fullTimeEquivalent = staff.reduce((sum, s) => sum + (s.contractHours / 37.5), 0);
   const vacancies = Math.max(0, establishedPosts - totalStaff);
-  const vacancyRate = establishedPosts > 0
-    ? Math.round((vacancies / establishedPosts) * 100)
-    : 0;
+  const vacancyRate = rate(vacancies, establishedPosts);
 
   const avgHeadcount = totalStaff; // simplified
-  const turnoverRate = avgHeadcount > 0
-    ? Math.round((leaversInPeriod / avgHeadcount) * 100)
-    : 0;
+  const turnoverRate = rate(leaversInPeriod, avgHeadcount);
 
   // Sickness rate
   const totalDaysLost = staff.reduce(
@@ -394,11 +392,11 @@ export function calculateWorkforceMetrics(
   const totalAvailableDays = totalStaff * 260; // approx working days per year
   const sicknessRate = totalAvailableDays > 0
     ? Math.round((totalDaysLost / totalAvailableDays) * 1000) / 10
-    : 0;
+    : null;
 
   // Agency usage
   const agencyCount = staff.filter(s => s.isAgency).length;
-  const agencyUsage = totalStaff > 0 ? Math.round((agencyCount / totalStaff) * 100) : 0;
+  const agencyUsage = rate(agencyCount, totalStaff);
 
   // Average tenure
   const tenureMonths = staff.map(s => {
@@ -407,37 +405,29 @@ export function calculateWorkforceMetrics(
   });
   const averageTenure = tenureMonths.length > 0
     ? Math.round(tenureMonths.reduce((a, b) => a + b, 0) / tenureMonths.length)
-    : 0;
+    : null;
 
   // Training compliance
   const trainingResults = staff.map(s => evaluateTrainingCompliance(s, now));
   const trainingCompliant = trainingResults.filter(r => r.overallCompliant).length;
-  const trainingComplianceRate = totalStaff > 0
-    ? Math.round((trainingCompliant / totalStaff) * 100)
-    : 100;
+  const trainingComplianceRate = rate(trainingCompliant, totalStaff);
 
   // Supervision compliance
   const supervisionResults = staff.map(s => evaluateSupervisionCompliance(s, now));
   const supervisionCompliant = supervisionResults.filter(r => r.isCompliant).length;
-  const supervisionComplianceRate = totalStaff > 0
-    ? Math.round((supervisionCompliant / totalStaff) * 100)
-    : 100;
+  const supervisionComplianceRate = rate(supervisionCompliant, totalStaff);
 
   // Qualification rate
   const staffWithTarget = staff.filter(s => s.qualificationTarget);
   const atOrAboveTarget = staffWithTarget.filter(s =>
     (s.qualificationLevel ?? 0) >= (s.qualificationTarget ?? 0),
   ).length;
-  const qualificationRate = staffWithTarget.length > 0
-    ? Math.round((atOrAboveTarget / staffWithTarget.length) * 100)
-    : 100;
+  const qualificationRate = rate(atOrAboveTarget, staffWithTarget.length);
 
   // Probation pass rate
   const probationStaff = staff.filter(s => s.probation);
   const probationPassed = probationStaff.filter(s => s.probation?.status === "passed").length;
-  const probationPassRate = probationStaff.length > 0
-    ? Math.round((probationPassed / probationStaff.length) * 100)
-    : 100;
+  const probationPassRate = rate(probationPassed, probationStaff.length);
 
   return {
     totalStaff,

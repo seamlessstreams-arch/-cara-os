@@ -75,7 +75,7 @@ interface AnnexASection {
 }
 
 interface AnnexAMeta {
-  readiness_score: number;
+  readiness_score: number | null;  // null = no evidence recorded, so nothing to score
   total_evidence: number;
   pending_decisions: number;
   approved_count: number;

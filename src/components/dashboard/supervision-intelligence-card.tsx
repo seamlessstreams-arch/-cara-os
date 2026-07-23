@@ -16,6 +16,7 @@ import {
   Minus, BookOpen, Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 import { useSupervisionIntelligence } from "@/hooks/use-supervision-intelligence";
 
 // ── Styling ────────────────────────────────────────────────────────────────��
@@ -125,21 +126,21 @@ export function SupervisionIntelligenceCard() {
             <div className="flex items-center gap-1.5">
               <Heart className="h-3.5 w-3.5 text-pink-500" />
               <div>
-                <p className="text-xs font-medium">{o.avg_wellbeing_score}/10</p>
+                <p className="text-xs font-medium">{o.avg_wellbeing_score === null ? "—" : `${o.avg_wellbeing_score}/10`}</p>
                 <p className="text-[10px] text-muted-foreground">Wellbeing</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
               <BookOpen className="h-3.5 w-3.5 text-blue-500" />
               <div>
-                <p className="text-xs font-medium">{o.mandatory_training_compliance}%</p>
+                <p className="text-xs font-medium">{formatRate(o.mandatory_training_compliance)}</p>
                 <p className="text-[10px] text-muted-foreground">Training</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
               <div>
-                <p className="text-xs font-medium">{o.action_completion_rate}%</p>
+                <p className="text-xs font-medium">{formatRate(o.action_completion_rate)}</p>
                 <p className="text-[10px] text-muted-foreground">Actions</p>
               </div>
             </div>
@@ -177,7 +178,7 @@ export function SupervisionIntelligenceCard() {
                   <div className="flex items-center gap-3 mt-1.5 text-muted-foreground">
                     <span className="text-[10px] flex items-center gap-0.5">
                       {TREND_ICON[profile.wellbeing_trend]}
-                      {profile.avg_wellbeing > 0 ? `${profile.avg_wellbeing}/10` : "—"}
+                      {profile.avg_wellbeing !== null ? `${profile.avg_wellbeing}/10` : "—"}
                     </span>
                     <Badge className={cn("text-[9px]", tStyle.bg, tStyle.text)}>
                       {profile.training_status === "non_compliant" ? "training gap" : profile.training_status}

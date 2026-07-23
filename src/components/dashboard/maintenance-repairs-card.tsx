@@ -15,6 +15,7 @@ import {
   HardHat, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { usePremisesSafetyIntelligence } from "@/hooks/use-premises-safety-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -108,13 +109,13 @@ export function MaintenanceRepairsCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.check_completion_rate >= 90 ? "bg-green-50" : "bg-amber-50",
+            meets(o.check_completion_rate, 90) ? "bg-green-50" : "bg-amber-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.check_completion_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
+              meets(o.check_completion_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]",
             )}>
-              {o.check_completion_rate}%
+              {formatRate(o.check_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>

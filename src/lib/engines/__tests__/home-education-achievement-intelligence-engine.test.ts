@@ -258,9 +258,9 @@ describe("Home Education Achievement Intelligence Engine", () => {
       expect(r.achievements.concern_resolution_rate).toBe(67);
     });
 
-    it("defaults resolution rate to 100 when no concerns", () => {
+    it("leaves the resolution rate unmeasured when no concerns", () => {
       const r = computeHomeEducation(baseInput());
-      expect(r.achievements.concern_resolution_rate).toBe(100);
+      expect(r.achievements.concern_resolution_rate).toBeNull();
     });
   });
 
@@ -497,7 +497,7 @@ describe("Home Education Achievement Intelligence Engine", () => {
         makeRecord({ id: "edu_3", date: "2026-05-18" }),
       ];
       const r = computeHomeEducation(baseInput({ total_children: 0, child_ids: [], education_records: records }));
-      expect(r.pep.pep_per_child).toBe(0);
+      expect(r.pep.pep_per_child).toBeNull();
     });
   });
 });

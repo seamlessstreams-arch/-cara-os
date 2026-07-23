@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, ChevronRight, Brain, Loader2, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -86,8 +87,8 @@ export function StaffNvqQualificationTrackingCard() {
                   <span className="font-medium truncate">{t.category}</span>
                   <span className="text-muted-foreground">{t.compliant}/{t.total_required}</span>
                 </div>
-                <Badge variant="outline" className={cn("text-[10px] shrink-0", t.compliance_rate >= 90 ? "text-green-700 bg-green-50 border-green-200" : t.compliance_rate >= 70 ? "text-amber-700 bg-amber-50 border-amber-200" : "text-red-700 bg-red-50 border-red-200")}>
-                  {t.compliance_rate}%
+                <Badge variant="outline" className={cn("text-[10px] shrink-0", meets(t.compliance_rate, 90) ? "text-green-700 bg-green-50 border-green-200" : meets(t.compliance_rate, 70) ? "text-amber-700 bg-amber-50 border-amber-200" : "text-red-700 bg-red-50 border-red-200")}>
+                  {formatRate(t.compliance_rate)}
                 </Badge>
               </div>
             ))}

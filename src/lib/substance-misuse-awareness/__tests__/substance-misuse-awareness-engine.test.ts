@@ -146,11 +146,12 @@ describe("evaluateRiskScreening", () => {
     expect(r.referralMadeRate).toBe(50);
   });
 
-  it("gives full harm reduction and referral when no concerns", () => {
+  it("leaves harm reduction and referral unmeasured when no concerns", () => {
     const profiles = [makeProfile()];
     const r = evaluateRiskScreening(profiles);
-    expect(r.harmReductionRate).toBe(100);
-    expect(r.referralMadeRate).toBe(100);
+    // Nobody is at risk, so there is nothing to plan for or refer
+    expect(r.harmReductionRate).toBeNull();
+    expect(r.referralMadeRate).toBeNull();
   });
 
   it("caps at 25", () => {

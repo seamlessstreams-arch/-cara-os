@@ -127,7 +127,9 @@ describe("computeLACReviewIntelligence", () => {
         today: TODAY,
       });
       expect(result.overview.total_reviews).toBe(0);
-      expect(result.overview.timeliness_rate).toBe(100);
+      expect(result.overview.timeliness_rate).toBeNull();
+      expect(result.overview.child_participation_rate).toBeNull();
+      expect(result.action_compliance.completion_rate).toBeNull();
       expect(result.child_profiles).toHaveLength(0);
       expect(result.alerts).toHaveLength(0);
       expect(result.insights).toHaveLength(0);

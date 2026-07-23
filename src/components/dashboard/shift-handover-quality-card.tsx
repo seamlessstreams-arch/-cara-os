@@ -16,6 +16,7 @@ import {
   CheckCircle2, Clock, Heart, FileWarning, Users, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useHandoverContinuityIntelligence } from "@/hooks/use-handover-continuity-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -33,13 +34,15 @@ const INSIGHT_STYLES: Record<string, string> = {
   positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]",
 };
 
-function moodColor(score: number): string {
+function moodColor(score: number | null): string {
+  if (score === null) return "text-muted-foreground";
   if (score >= 7) return "text-[--cs-success]";
   if (score >= 5) return "text-[--cs-warning]";
   return "text-[--cs-risk]";
 }
 
-function moodBg(score: number): string {
+function moodBg(score: number | null): string {
+  if (score === null) return "bg-muted";
   if (score >= 7) return "bg-green-50";
   if (score >= 5) return "bg-amber-50";
   return "bg-red-50";
@@ -91,31 +94,31 @@ export function ShiftHandoverQualityCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.completion_rate === 100 ? "bg-green-50" : o.completion_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+            o.completion_rate === null ? "bg-muted" : meets(o.completion_rate, 100) ? "bg-green-50" : meets(o.completion_rate, 50) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.completion_rate === 100 ? "text-[--cs-success]" : o.completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.completion_rate === null ? "text-muted-foreground" : meets(o.completion_rate, 100) ? "text-[--cs-success]" : meets(o.completion_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.completion_rate}%
+              {formatRate(o.completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Complete</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.sign_off_rate === 100 ? "bg-green-50" : o.sign_off_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+            o.sign_off_rate === null ? "bg-muted" : meets(o.sign_off_rate, 100) ? "bg-green-50" : meets(o.sign_off_rate, 50) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.sign_off_rate === 100 ? "text-[--cs-success]" : o.sign_off_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.sign_off_rate === null ? "text-muted-foreground" : meets(o.sign_off_rate, 100) ? "text-[--cs-success]" : meets(o.sign_off_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.sign_off_rate}%
+              {formatRate(o.sign_off_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Signed Off</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", moodBg(o.avg_mood_score))}>
             <p className={cn("text-lg font-bold tabular-nums", moodColor(o.avg_mood_score))}>
-              {o.avg_mood_score}
+              {o.avg_mood_score ?? "—"}
             </p>
             <p className="text-[10px] text-muted-foreground">Avg Mood</p>
           </div>
@@ -169,7 +172,7 @@ export function ShiftHandoverQualityCard() {
                   <span className="font-medium">{cm.child_name}</span>
                   <div className="flex items-center gap-1.5">
                     <Badge className={cn("text-[9px]", moodBg(cm.avg_mood), moodColor(cm.avg_mood))}>
-                      {cm.avg_mood}/10
+                      {cm.avg_mood === null ? "— /10" : `${cm.avg_mood}/10`}
                     </Badge>
                     {cm.total_alerts > 0 && (
                       <Badge className="text-[9px] bg-[--cs-risk-bg] text-[--cs-risk]">

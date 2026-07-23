@@ -438,9 +438,11 @@ describe("evaluateAttendance", () => {
     expect(result.overallAttendanceRate).toBe(100);
   });
 
-  it("returns 100% attendance for empty records", () => {
+  it("reports attendance as unmeasured for empty records", () => {
     const result = evaluateAttendance([], ["child-alex"], PERIOD_START, PERIOD_END);
-    expect(result.overallAttendanceRate).toBe(100);
+    expect(result.overallAttendanceRate).toBeNull();
+    expect(result.unauthorisedAbsenceRate).toBeNull();
+    expect(result.latenessRate).toBeNull();
     expect(result.totalSchoolDays).toBe(0);
   });
 
@@ -529,7 +531,7 @@ describe("evaluateAttendance", () => {
     ];
     const result = evaluateAttendance(records, ["child-alex", "child-unknown"], "2026-01-01", "2026-03-31");
     const unknown = result.perChild.find(c => c.childId === "child-unknown")!;
-    expect(unknown.attendanceRate).toBe(100);
+    expect(unknown.attendanceRate).toBeNull();
     expect(unknown.totalDays).toBe(0);
   });
 
@@ -603,9 +605,9 @@ describe("evaluateExclusions", () => {
     const result = evaluateExclusions([]);
     expect(result.totalExclusions).toBe(0);
     expect(result.totalDaysLost).toBe(0);
-    expect(result.alternativeProvisionRate).toBe(100);
-    expect(result.reintegrationRate).toBe(100);
-    expect(result.homeChallengeRate).toBe(0);
+    expect(result.alternativeProvisionRate).toBeNull();
+    expect(result.reintegrationRate).toBeNull();
+    expect(result.homeChallengeRate).toBeNull();
     expect(result.perChild).toHaveLength(0);
   });
 
@@ -722,7 +724,7 @@ describe("evaluatePEPQuality", () => {
 
   it("handles empty childIds", () => {
     const result = evaluatePEPQuality(demoPEPs, [], REFERENCE_DATE);
-    expect(result.pepCurrencyRate).toBe(100);
+    expect(result.pepCurrencyRate).toBeNull();
     expect(result.perChild).toHaveLength(0);
   });
 
@@ -792,7 +794,8 @@ describe("evaluateSENDSupport", () => {
   it("handles empty SEND records", () => {
     const result = evaluateSENDSupport([], CHILD_IDS);
     expect(result.childrenWithSEND).toBe(0);
-    expect(result.sendCoverageRate).toBe(100);
+    expect(result.sendCoverageRate).toBeNull();
+    expect(result.ehcpCurrencyRate).toBeNull();
     expect(result.averageHoursPerWeek).toBe(0);
   });
 
@@ -1274,13 +1277,13 @@ describe("Edge cases", () => {
     expect(result.overallScore).toBeGreaterThanOrEqual(0);
   });
 
-  it("attendance with all school_holiday returns 100%", () => {
+  it("attendance is unmeasured when every record is a school holiday", () => {
     const records = [
       makeAttendance({ date: "2026-02-01", status: "school_holiday" }),
       makeAttendance({ date: "2026-02-02", status: "school_holiday" }),
     ];
     const result = evaluateAttendance(records, ["child-alex"], "2026-01-01", "2026-03-31");
-    expect(result.overallAttendanceRate).toBe(100);
+    expect(result.overallAttendanceRate).toBeNull();
     expect(result.totalSchoolDays).toBe(0);
   });
 
@@ -1364,6 +1367,6 @@ describe("Edge cases", () => {
     ];
     const result = evaluateAttendance(records, ["child-alex"], PERIOD_START, PERIOD_END);
     expect(result.totalSchoolDays).toBe(0);
-    expect(result.overallAttendanceRate).toBe(100);
+    expect(result.overallAttendanceRate).toBeNull();
   });
 });

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useRepairCycleIntelligence } from "@/hooks/use-repair-cycle-intelligence";
 import type {
   CycleStatus,
@@ -56,7 +57,10 @@ function StepChecklist({ steps }: { steps: RepairStep[] }) {
 
 // ── Completion bar ────────────────────────────────────────────────────────────
 
-function CompletionBar({ rate }: { rate: number }) {
+function CompletionBar({ rate }: { rate: number | null }) {
+  if (rate === null) {
+    return <div className="h-2 bg-gray-100 rounded-full overflow-hidden" />;
+  }
   const colour = rate >= 80 ? "bg-emerald-500" : rate >= 50 ? "bg-amber-400" : "bg-red-400";
   return (
     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -69,7 +73,7 @@ function CompletionBar({ rate }: { rate: number }) {
 
 function ChildCard({ summary }: { summary: ChildRepairSummary }) {
   const overallStatus: CycleStatus =
-    summary.cycleCompletionRate >= 80 ? "complete"
+    meets(summary.cycleCompletionRate, 80) ? "complete"
     : summary.incidentsWithNoRepair > 0 ? "missing"
     : "partial";
 
@@ -81,7 +85,7 @@ function ChildCard({ summary }: { summary: ChildRepairSummary }) {
           <p className="text-xs text-gray-400">{summary.totalIncidents} incident{summary.totalIncidents !== 1 ? "s" : ""} total</p>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-xl font-bold text-gray-800">{summary.cycleCompletionRate}%</p>
+          <p className="text-xl font-bold text-gray-800">{formatRate(summary.cycleCompletionRate)}</p>
           <p className="text-xs text-gray-400">complete</p>
         </div>
       </div>
@@ -163,16 +167,18 @@ export default function RepairCycleIntelligencePage() {
           : childSummaries.filter((c) =>
               statusFilter === "missing" ? c.incidentsWithNoRepair > 0
               : statusFilter === "partial" ? c.incidentsWithPartialRepair > 0
-              : c.cycleCompletionRate >= 80,
+              : meets(c.cycleCompletionRate, 80),
             );
 
         return (
           <div className="space-y-6">
             {/* ── Ofsted note ───────────────────────────────────────────── */}
             <div className={`rounded-lg border p-4 ${
-              summary.overallCompletionRate >= 80
+              meets(summary.overallCompletionRate, 80)
                 ? "border-emerald-200 bg-emerald-50"
-                : "border-amber-200 bg-amber-50"
+                : summary.overallCompletionRate === null
+                  ? "border-gray-200 bg-gray-50"
+                  : "border-amber-200 bg-amber-50"
             }`}>
               <p className="text-sm font-medium text-gray-800">{summary.ofstedNote}</p>
             </div>
@@ -191,8 +197,8 @@ export default function RepairCycleIntelligencePage() {
                 <p className="text-2xl font-bold text-gray-800">{summary.avgDebriefTurnaroundDays ?? "—"}</p>
                 <p className="text-xs text-gray-500 mt-0.5">Avg. debrief days</p>
               </div>
-              <div className={`rounded-xl border p-4 ${summary.overallCompletionRate >= 80 ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}>
-                <p className="text-2xl font-bold text-gray-800">{summary.overallCompletionRate}%</p>
+              <div className={`rounded-xl border p-4 ${meets(summary.overallCompletionRate, 80) ? "border-emerald-200 bg-emerald-50" : summary.overallCompletionRate === null ? "border-gray-200 bg-gray-50" : "border-amber-200 bg-amber-50"}`}>
+                <p className="text-2xl font-bold text-gray-800">{formatRate(summary.overallCompletionRate)}</p>
                 <p className="text-xs text-gray-500 mt-0.5">Cycle completion</p>
               </div>
             </div>

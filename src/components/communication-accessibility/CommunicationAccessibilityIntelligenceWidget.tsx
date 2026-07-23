@@ -1,8 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
-function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
+function ScoreBar({ label, value, max = 25 }: { label: string; value: number | null; max?: number }) {
+  if (value === null) {
+    return (
+      <div className="mb-2">
+        <div className="flex justify-between text-sm mb-1"><span>{label}</span><span className="font-medium text-gray-500">Not yet measured</span></div>
+        <div className="w-full h-2 bg-gray-200 rounded" />
+      </div>
+    );
+  }
   const pct = Math.min(100, Math.round((value / max) * 100));
   const colour = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-yellow-500" : pct >= 40 ? "bg-orange-500" : "bg-red-500";
   return (
@@ -11,6 +20,10 @@ function ScoreBar({ label, value, max = 25 }: { label: string; value: number; ma
       <div className="w-full h-2 bg-gray-200 rounded"><div className={`${colour} h-2 rounded`} style={{ width: `${pct}%` }} /></div>
     </div>
   );
+}
+
+function scoreOutOf(value: number | null, max: number): string {
+  return value === null ? "—" : `${value}/${max}`;
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -50,10 +63,10 @@ export function CommunicationAccessibilityIntelligenceWidget() {
   if (!data) return null;
 
   const d = data as Record<string, unknown>;
-  const needs = d.needsAssessment as Record<string, number>;
-  const support = d.supportProvision as Record<string, number>;
-  const info = d.accessibleInformation as Record<string, number>;
-  const staff = d.staffTraining as Record<string, number>;
+  const needs = d.needsAssessment as Record<string, number | null>;
+  const support = d.supportProvision as Record<string, number | null>;
+  const info = d.accessibleInformation as Record<string, number | null>;
+  const staff = d.staffTraining as Record<string, number | null>;
   const childSummaries = (d.childSummaries ?? []) as Record<string, unknown>[];
   const strengths = (d.strengths ?? []) as string[];
   const areas = (d.areasForImprovement ?? []) as string[];
@@ -68,52 +81,52 @@ export function CommunicationAccessibilityIntelligenceWidget() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <Stat label="Overall Score" value={`${d.overallScore}/100`} />
-        <Stat label="Needs Assessment" value={`${needs.score}/25`} />
-        <Stat label="Support Provision" value={`${support.score}/30`} />
-        <Stat label="Children With Needs" value={needs.childrenWithNeeds} />
+        <Stat label="Overall Score" value={scoreOutOf(d.overallScore as number | null, 100)} />
+        <Stat label="Needs Assessment" value={scoreOutOf(needs.score, 25)} />
+        <Stat label="Support Provision" value={scoreOutOf(support.score, 30)} />
+        <Stat label="Children With Needs" value={needs.childrenWithNeeds ?? 0} />
       </div>
 
       <Section title="Needs Assessment" defaultOpen>
         <ScoreBar label="Needs Assessment Score" value={needs.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Total Children" value={needs.totalChildren} />
-          <Stat label="Children Assessed" value={needs.childrenAssessed} />
-          <Stat label="Assessment Rate" value={`${needs.assessmentRate}%`} />
-          <Stat label="Passport Rate" value={`${needs.passportRate}%`} />
+          <Stat label="Total Children" value={needs.totalChildren ?? 0} />
+          <Stat label="Children Assessed" value={needs.childrenAssessed ?? 0} />
+          <Stat label="Assessment Rate" value={formatRate(needs.assessmentRate)} />
+          <Stat label="Passport Rate" value={formatRate(needs.passportRate)} />
         </div>
       </Section>
 
       <Section title="Support Provision">
         <ScoreBar label="Support Provision Score" value={support.score} max={30} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Total Recommendations" value={support.totalRecommendations} />
-          <Stat label="In Place" value={support.totalInPlace} />
-          <Stat label="Match Rate" value={`${support.supportMatchRate}%`} />
-          <Stat label="Full Support" value={support.childrenWithFullSupport} />
-          <Stat label="Partial Support" value={support.childrenWithPartialSupport} />
-          <Stat label="SLT Access" value={`${support.speechTherapyAccessRate}%`} />
+          <Stat label="Total Recommendations" value={support.totalRecommendations ?? 0} />
+          <Stat label="In Place" value={support.totalInPlace ?? 0} />
+          <Stat label="Match Rate" value={formatRate(support.supportMatchRate)} />
+          <Stat label="Full Support" value={support.childrenWithFullSupport ?? 0} />
+          <Stat label="Partial Support" value={support.childrenWithPartialSupport ?? 0} />
+          <Stat label="SLT Access" value={formatRate(support.speechTherapyAccessRate)} />
         </div>
       </Section>
 
       <Section title="Accessible Information">
         <ScoreBar label="Accessible Information Score" value={info.score} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Total Documents" value={info.totalDocuments} />
-          <Stat label="Multiple Formats" value={`${info.multipleFormatRate}%`} />
-          <Stat label="Key Doc Coverage" value={`${info.keyDocumentCoverageRate}%`} />
+          <Stat label="Total Documents" value={info.totalDocuments ?? 0} />
+          <Stat label="Multiple Formats" value={formatRate(info.multipleFormatRate)} />
+          <Stat label="Key Doc Coverage" value={formatRate(info.keyDocumentCoverageRate)} />
         </div>
       </Section>
 
       <Section title="Staff Training">
         <ScoreBar label="Staff Training Score" value={staff.score} max={20} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Total Staff" value={staff.totalStaff} />
-          <Stat label="Relevant Training" value={staff.staffWithRelevantTraining} />
-          <Stat label="Coverage Rate" value={`${staff.trainingCoverageRate}%`} />
-          <Stat label="Expired" value={staff.expiredTraining} />
-          <Stat label="Expiring (90d)" value={staff.expiringWithin90Days} />
-          <Stat label="Needs Coverage" value={staff.staffChildNeedsCoverage} />
+          <Stat label="Total Staff" value={staff.totalStaff ?? 0} />
+          <Stat label="Relevant Training" value={staff.staffWithRelevantTraining ?? 0} />
+          <Stat label="Coverage Rate" value={formatRate(staff.trainingCoverageRate)} />
+          <Stat label="Expired" value={staff.expiredTraining ?? 0} />
+          <Stat label="Expiring (90d)" value={staff.expiringWithin90Days ?? 0} />
+          <Stat label="Needs Coverage" value={formatRate(staff.staffChildNeedsCoverage)} />
         </div>
       </Section>
 
@@ -121,12 +134,12 @@ export function CommunicationAccessibilityIntelligenceWidget() {
         <Section title={`Child Summaries (${childSummaries.length})`}>
           {childSummaries.map((c) => (
             <div key={c.childId as string} className="mb-2 p-2 bg-gray-50 rounded">
-              <div className="flex justify-between text-sm font-medium"><span>{c.childName as string}</span><span>{c.overallScore as number}/100</span></div>
+              <div className="flex justify-between text-sm font-medium"><span>{c.childName as string}</span><span>{scoreOutOf(c.overallScore as number | null, 100)}</span></div>
               <p className="text-xs text-gray-500 mt-1">Needs: {(c.communicationNeeds as string[]).map((n) => n.replace(/_/g, " ")).join(", ") || "None"}</p>
               <div className="flex gap-2 mt-1 text-xs">
                 <span>{(c.assessed as boolean) ? "✓" : "✗"} Assessed</span>
                 <span>{(c.hasCommunicationPassport as boolean) ? "✓" : "✗"} Passport</span>
-                <span>Match: {c.supportMatchRate as number}%</span>
+                <span>Match: {formatRate(c.supportMatchRate as number | null)}</span>
               </div>
               {(c.concerns as string[]).length > 0 && <p className="text-xs text-red-600 mt-1">Concerns: {(c.concerns as string[]).join(", ")}</p>}
             </div>

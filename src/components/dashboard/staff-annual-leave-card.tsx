@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, ChevronRight, Brain, Loader2, TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -74,8 +75,8 @@ export function StaffAnnualLeaveCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">{trend.label}</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", staffing.coverage_rate >= 95 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", staffing.coverage_rate >= 95 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{staffing.coverage_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2", meets(staffing.coverage_rate, 95) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(staffing.coverage_rate, 95) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(staffing.coverage_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Coverage</p>
           </div>
         </div>

@@ -5,6 +5,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildResult {
   childId: string;
@@ -16,18 +17,18 @@ interface ChildResult {
   agencyTypesEngaged: number;
   unresponsiveContacts: number;
   escalationsNeeded: number;
-  communicationScore: number;
-  averageResponseDays: number;
+  communicationScore: number | null;
+  averageResponseDays: number | null;
   swContactCurrent: boolean;
   daysSinceLastSWVisit: number;
-  meetingsAttendedRate: number;
-  childViewsSubmittedRate: number;
-  actionsCompletionRate: number;
+  meetingsAttendedRate: number | null;
+  childViewsSubmittedRate: number | null;
+  actionsCompletionRate: number | null;
   meetingsLast6Months: number;
   activeReferrals: number;
   waitingReferrals: number;
   escalatedReferrals: number;
-  averageWaitDays: number;
+  averageWaitDays: number | null;
   childHasAdvocate: boolean;
 }
 
@@ -35,21 +36,21 @@ interface HomeMetrics {
   homeId: string;
   totalChildren: number;
   totalProfessionals: number;
-  averageAgencyTypes: number;
+  averageAgencyTypes: number | null;
   totalUnresponsive: number;
   totalEscalations: number;
-  averageCommunicationScore: number;
-  swContactCurrentRate: number;
-  averageMeetingAttendance: number;
-  averageChildViewsRate: number;
-  averageActionsCompletion: number;
+  averageCommunicationScore: number | null;
+  swContactCurrentRate: number | null;
+  averageMeetingAttendance: number | null;
+  averageChildViewsRate: number | null;
+  averageActionsCompletion: number | null;
   totalMeetingsLast6Months: number;
   totalActiveReferrals: number;
   totalWaiting: number;
   totalEscalated: number;
   longestWaitDays: number;
   complianceIssues: string[];
-  overallScore: number;
+  overallScore: number | null;
 }
 
 interface DashboardData {
@@ -59,13 +60,15 @@ interface DashboardData {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function getScoreColour(score: number): string {
+function getScoreColour(score: number | null): string {
+  if (score === null) return "text-slate-400";
   if (score >= 75) return "text-green-600";
   if (score >= 50) return "text-amber-600";
   return "text-red-600";
 }
 
-function getScoreBg(score: number): string {
+function getScoreBg(score: number | null): string {
+  if (score === null) return "bg-slate-50";
   if (score >= 75) return "bg-green-50";
   if (score >= 50) return "bg-amber-50";
   return "bg-red-50";
@@ -125,7 +128,7 @@ export function MultiAgencyDashboardWidget() {
         </div>
         <div className="text-right">
           <p className={`text-2xl font-bold ${getScoreColour(metrics.overallScore)}`}>
-            {metrics.overallScore}%
+            {formatRate(metrics.overallScore)}
           </p>
           <p className="text-xs text-slate-400">coordination score</p>
         </div>
@@ -135,25 +138,25 @@ export function MultiAgencyDashboardWidget() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard
           label="Communication"
-          value={`${metrics.averageCommunicationScore}%`}
+          value={formatRate(metrics.averageCommunicationScore)}
           sub={`${metrics.totalProfessionals} contacts`}
           score={metrics.averageCommunicationScore}
         />
         <MetricCard
           label="SW Contact"
-          value={`${metrics.swContactCurrentRate}%`}
+          value={formatRate(metrics.swContactCurrentRate)}
           sub="visits current"
           score={metrics.swContactCurrentRate}
         />
         <MetricCard
           label="Meeting Attendance"
-          value={`${metrics.averageMeetingAttendance}%`}
+          value={formatRate(metrics.averageMeetingAttendance)}
           sub={`${metrics.totalMeetingsLast6Months} meetings (6mo)`}
           score={metrics.averageMeetingAttendance}
         />
         <MetricCard
           label="Actions Done"
-          value={`${metrics.averageActionsCompletion}%`}
+          value={formatRate(metrics.averageActionsCompletion)}
           sub="from meetings"
           score={metrics.averageActionsCompletion}
         />
@@ -197,7 +200,7 @@ export function MultiAgencyDashboardWidget() {
             >
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${getScoreBg(child.communicationScore)} ${getScoreColour(child.communicationScore)}`}>
-                  {child.communicationScore}
+                  {formatRate(child.communicationScore, "—")}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-800">{child.childName}</p>
@@ -264,7 +267,7 @@ export function MultiAgencyDashboardWidget() {
       {/* Footer */}
       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
         <div className="flex items-center gap-4">
-          <MiniStat label="Child views" value={`${metrics.averageChildViewsRate}%`} />
+          <MiniStat label="Child views" value={formatRate(metrics.averageChildViewsRate)} />
           <MiniStat label="Avg agencies" value={String(metrics.averageAgencyTypes)} />
         </div>
         <span className="text-xs text-slate-400">
@@ -286,7 +289,7 @@ function MetricCard({
   label: string;
   value: string;
   sub: string;
-  score: number;
+  score: number | null;
 }) {
   return (
     <div className="bg-slate-50 rounded-lg p-3">

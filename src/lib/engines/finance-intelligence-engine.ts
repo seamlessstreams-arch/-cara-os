@@ -12,6 +12,8 @@
 //   Savings should be encouraged
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface PocketMoneyTransactionInput {
@@ -62,7 +64,7 @@ export interface FinanceOverview {
   total_allowances_monthly: number;
   total_savings: number;
   total_spending_this_period: number;
-  receipt_compliance_rate: number;
+  receipt_compliance_rate: number | null; // null = no spending recorded to receipt
   avg_spending_per_child: number;
 }
 
@@ -73,7 +75,7 @@ export interface ChildSpendingProfile {
   total_savings: number;
   monthly_allowance: number;
   spending_above_average: boolean;
-  receipt_rate: number;
+  receipt_rate: number | null; // null = this child has no spending recorded
   transaction_count: number;
 }
 
@@ -133,8 +135,8 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
   const totalSavingsWithdrawals = periodTransactions.filter((t) => t.type === "savings_withdrawal").reduce((sum, t) => sum + t.amount, 0);
   const totalSavings = totalSavingsDeposits - totalSavingsWithdrawals;
 
-  const receiptsHeld = spendingTransactions.filter((t) => t.receipt_held).length;
-  const receiptComplianceRate = spendingTransactions.length > 0 ? Math.round((receiptsHeld / spendingTransactions.length) * 100) : 100;
+  const receiptsHeld = spendingTransactions.filter((t) => t.receipt_held);
+  const receiptComplianceRate = rateOf(receiptsHeld, spendingTransactions);
 
   const totalChildren = children.length;
   const avgSpendingPerChild = totalChildren > 0 ? Math.round((totalSpending / totalChildren) * 100) / 100 : 0;
@@ -158,8 +160,8 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
     const childSavingsWithdrawals = childPeriodTx.filter((t) => t.type === "savings_withdrawal").reduce((sum, t) => sum + t.amount, 0);
     const childSavings = childSavingsDeposits - childSavingsWithdrawals;
     const childAllowance = childPeriodTx.filter((t) => t.type === "allowance").reduce((sum, t) => sum + t.amount, 0);
-    const childReceiptsHeld = childSpending.filter((t) => t.receipt_held).length;
-    const childReceiptRate = childSpending.length > 0 ? Math.round((childReceiptsHeld / childSpending.length) * 100) : 100;
+    const childReceiptsHeld = childSpending.filter((t) => t.receipt_held);
+    const childReceiptRate = rateOf(childReceiptsHeld, childSpending);
 
     return {
       child_id: child.id,
@@ -203,7 +205,7 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
     }
   }
 
-  if (receiptComplianceRate < 80) {
+  if (below(receiptComplianceRate, 80)) {
     alerts.push({
       severity: "medium",
       message: `Receipt compliance at ${receiptComplianceRate}% — below 80% target`,
@@ -256,7 +258,7 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
     });
   }
 
-  if (receiptComplianceRate < 80) {
+  if (below(receiptComplianceRate, 80)) {
     insights.push({
       severity: "warning",
       text: `Receipt compliance is ${receiptComplianceRate}%, below the 80% regulatory target under Reg 39`,
@@ -290,7 +292,7 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
     });
   }
 
-  if (receiptComplianceRate >= 90) {
+  if (meets(receiptComplianceRate, 90)) {
     insights.push({
       severity: "positive",
       text: `Receipt compliance at ${receiptComplianceRate}% — exceeds regulatory expectations`,

@@ -15,6 +15,7 @@ import {
   CalendarCheck, UserCheck, TrendingUp, TrendingDown, Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { useHomeChildVoiceIntelligence } from "@/hooks/use-home-child-voice-intelligence";
 import type { ChildVoiceRating } from "@/lib/engines/home-child-voice-intelligence-engine";
 
@@ -91,7 +92,7 @@ export function HomeChildVoiceIntelligenceCard() {
 
   const ratingStyle = RATING_STYLES[d.child_voice_rating] ?? RATING_STYLES.insufficient_data;
   const noMeetings = d.meetings.total_meetings_90d === 0 && d.child_voice_rating !== "insufficient_data";
-  const hasDBS = d.visitors.dbs_compliance_rate < 100 && d.visitors.professional_count > 0;
+  const hasDBS = below(d.visitors.dbs_compliance_rate, 100);
   const isAlert = noMeetings || hasDBS || d.child_voice_rating === "inadequate";
 
   const MtgTrendIcon = TREND_ICON[d.meetings.trend];
@@ -137,8 +138,8 @@ export function HomeChildVoiceIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.meetings.avg_attendance_rate >= 90 ? "text-[--cs-success]" : d.meetings.avg_attendance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.meetings.avg_attendance_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", meets(d.meetings.avg_attendance_rate, 90) ? "text-[--cs-success]" : meets(d.meetings.avg_attendance_rate, 70) ? "text-[--cs-warning]" : below(d.meetings.avg_attendance_rate, 70) ? "text-[--cs-risk]" : "text-slate-400")}>
+                  {formatRate(d.meetings.avg_attendance_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Attendance</p>
@@ -148,8 +149,8 @@ export function HomeChildVoiceIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <MessageCircle className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.meetings.child_raised_topic_rate >= 50 ? "text-[--cs-success]" : d.meetings.child_raised_topic_rate >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.meetings.child_raised_topic_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", meets(d.meetings.child_raised_topic_rate, 50) ? "text-[--cs-success]" : meets(d.meetings.child_raised_topic_rate, 30) ? "text-[--cs-warning]" : below(d.meetings.child_raised_topic_rate, 30) ? "text-[--cs-risk]" : "text-slate-400")}>
+                  {formatRate(d.meetings.child_raised_topic_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Child Voice</p>
@@ -176,8 +177,8 @@ export function HomeChildVoiceIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Meeting Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Full attend: <span className={cn("font-medium", d.meetings.full_attendance_count > 0 ? "text-[--cs-success]" : "text-slate-500")}>{d.meetings.full_attendance_count}</span></p>
-                <p>Avg feedback: <span className={cn("font-medium", d.meetings.avg_feedback_per_meeting >= 2 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.meetings.avg_feedback_per_meeting}</span></p>
-                <p>Actions done: <span className={cn("font-medium", d.meetings.action_completion_rate >= 90 ? "text-[--cs-success]" : d.meetings.action_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.meetings.action_completion_rate}%</span></p>
+                <p>Avg feedback: <span className={cn("font-medium", d.meetings.avg_feedback_per_meeting === null ? "text-slate-400" : d.meetings.avg_feedback_per_meeting >= 2 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.meetings.avg_feedback_per_meeting ?? "—"}</span></p>
+                <p>Actions done: <span className={cn("font-medium", meets(d.meetings.action_completion_rate, 90) ? "text-[--cs-success]" : meets(d.meetings.action_completion_rate, 70) ? "text-[--cs-warning]" : below(d.meetings.action_completion_rate, 70) ? "text-[--cs-risk]" : "text-slate-400")}>{formatRate(d.meetings.action_completion_rate)}</span></p>
                 {d.meetings.meeting_frequency_weeks !== null && (
                   <p>Frequency: <span className={cn("font-medium", d.meetings.meeting_frequency_weeks <= 1.5 ? "text-[--cs-success]" : d.meetings.meeting_frequency_weeks <= 2.5 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.meetings.meeting_frequency_weeks}wk</span></p>
                 )}
@@ -188,9 +189,9 @@ export function HomeChildVoiceIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Visitor Compliance</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>DBS: <span className={cn("font-medium", d.visitors.dbs_compliance_rate === 100 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.visitors.dbs_compliance_rate}%</span></p>
-                <p>ID verified: <span className={cn("font-medium", d.visitors.id_verification_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.visitors.id_verification_rate}%</span></p>
-                <p>Signed out: <span className={cn("font-medium", d.visitors.sign_out_compliance_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.visitors.sign_out_compliance_rate}%</span></p>
+                <p>DBS: <span className={cn("font-medium", meets(d.visitors.dbs_compliance_rate, 100) ? "text-[--cs-success]" : below(d.visitors.dbs_compliance_rate, 100) ? "text-[--cs-risk]" : "text-slate-400")}>{formatRate(d.visitors.dbs_compliance_rate)}</span></p>
+                <p>ID verified: <span className={cn("font-medium", meets(d.visitors.id_verification_rate, 100) ? "text-[--cs-success]" : below(d.visitors.id_verification_rate, 100) ? "text-[--cs-warning]" : "text-slate-400")}>{formatRate(d.visitors.id_verification_rate)}</span></p>
+                <p>Signed out: <span className={cn("font-medium", meets(d.visitors.sign_out_compliance_rate, 100) ? "text-[--cs-success]" : below(d.visitors.sign_out_compliance_rate, 100) ? "text-[--cs-warning]" : "text-slate-400")}>{formatRate(d.visitors.sign_out_compliance_rate)}</span></p>
                 {d.visitors.visitors_still_signed_in > 0 && (
                   <p className="text-red-600 font-medium">{d.visitors.visitors_still_signed_in} still in</p>
                 )}

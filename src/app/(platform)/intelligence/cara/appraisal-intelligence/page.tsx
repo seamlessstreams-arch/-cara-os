@@ -8,6 +8,7 @@ import type {
   CompetencyAnalysis,
   RatingBreakdown,
 } from "@/lib/engines/appraisal-intelligence-engine";
+import { below, formatRate } from "@/lib/metrics/rate";
 
 const RATING_COLORS: Record<string, { text: string; bg: string; border: string }> = {
   outstanding:         { text: "text-green-700",  bg: "bg-green-100",  border: "border-green-300" },
@@ -150,8 +151,8 @@ export default function AppraisalIntelligencePage() {
         {[
           { label: "Appraisals total", value: ov.total_appraisals },
           { label: "Completed", value: ov.completed, sub: `${ov.overdue_count} overdue`, alert: ov.overdue_count > 0 },
-          { label: "Completion rate", value: `${ov.completion_rate}%`, alert: ov.completion_rate < 80 },
-          { label: "Avg competency", value: ov.avg_competency_score > 0 ? `${ov.avg_competency_score.toFixed(1)}/5` : "—", alert: ov.avg_competency_score > 0 && ov.avg_competency_score < 3 },
+          { label: "Completion rate", value: formatRate(ov.completion_rate), alert: below(ov.completion_rate, 80) },
+          { label: "Avg competency", value: ov.avg_competency_score !== null ? `${ov.avg_competency_score.toFixed(1)}/5` : "—", alert: below(ov.avg_competency_score, 3) },
         ].map((m) => (
           <div
             key={m.label}

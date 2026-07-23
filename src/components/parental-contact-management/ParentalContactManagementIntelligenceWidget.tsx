@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -77,42 +78,42 @@ export function ParentalContactManagementIntelligenceWidget() {
       <Section title="Contact Plan Compliance" defaultOpen>
         <ScoreBar label="Plan Compliance" value={planCompliance.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Plan Exists" value={`${planCompliance.planExistsRate}%`} />
-          <Stat label="Plan Current" value={`${planCompliance.planCurrentRate}%`} />
-          <Stat label="Child View" value={`${planCompliance.childViewConsideredRate}%`} />
-          <Stat label="Court Order Compliant" value={`${planCompliance.courtOrderCompliantRate}%`} />
+          <Stat label="Plan Exists" value={formatRate(planCompliance.planExistsRate)} />
+          <Stat label="Plan Current" value={formatRate(planCompliance.planCurrentRate)} />
+          <Stat label="Child View" value={formatRate(planCompliance.childViewConsideredRate)} />
+          <Stat label="Court Order Compliant" value={formatRate(planCompliance.courtOrderCompliantRate)} />
         </div>
       </Section>
 
       <Section title="Contact Quality">
         <ScoreBar label="Contact Quality" value={contactQuality.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Positive Outcome" value={`${contactQuality.positiveOutcomeRate}%`} />
-          <Stat label="Child Prepared" value={`${contactQuality.childPreparedRate}%`} />
-          <Stat label="Child Debriefed" value={`${contactQuality.childDebriefedRate}%`} />
-          <Stat label="Parent Cooperative" value={`${contactQuality.parentCooperativeRate}%`} />
+          <Stat label="Positive Outcome" value={formatRate(contactQuality.positiveOutcomeRate)} />
+          <Stat label="Child Prepared" value={formatRate(contactQuality.childPreparedRate)} />
+          <Stat label="Child Debriefed" value={formatRate(contactQuality.childDebriefedRate)} />
+          <Stat label="Parent Cooperative" value={formatRate(contactQuality.parentCooperativeRate)} />
         </div>
       </Section>
 
       <Section title="Risk Management">
         <ScoreBar label="Risk Management" value={risk.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Risk Assessed" value={`${risk.riskAssessedRate}%`} />
-          <Stat label="Review Current" value={`${risk.reviewCurrentRate}%`} />
-          <Stat label="Safeguarding Measures" value={`${risk.safeguardingMeasuresRate}%`} />
-          <Stat label="Incident Rate" value={`${risk.incidentRate}%`} />
+          <Stat label="Risk Assessed" value={formatRate(risk.riskAssessedRate)} />
+          <Stat label="Review Current" value={formatRate(risk.reviewCurrentRate)} />
+          <Stat label="Safeguarding Measures" value={formatRate(risk.safeguardingMeasuresRate)} />
+          <Stat label="Incident Rate" value={formatRate(risk.incidentRate)} />
         </div>
       </Section>
 
       <Section title="Staff Contact Readiness">
         <ScoreBar label="Staff Readiness" value={staff.overallScore} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Supervised Contact" value={`${staff.supervisedContactRate}%`} />
-          <Stat label="Risk Assessment" value={`${staff.riskAssessmentRate}%`} />
-          <Stat label="Prep/Debrief" value={`${staff.prepDebriefRate}%`} />
-          <Stat label="Safeguarding" value={`${staff.safeguardingRate}%`} />
-          <Stat label="Parental Conflict" value={`${staff.parentalConflictRate}%`} />
-          <Stat label="Court Order" value={`${staff.courtOrderRate}%`} />
+          <Stat label="Supervised Contact" value={formatRate(staff.supervisedContactRate)} />
+          <Stat label="Risk Assessment" value={formatRate(staff.riskAssessmentRate)} />
+          <Stat label="Prep/Debrief" value={formatRate(staff.prepDebriefRate)} />
+          <Stat label="Safeguarding" value={formatRate(staff.safeguardingRate)} />
+          <Stat label="Parental Conflict" value={formatRate(staff.parentalConflictRate)} />
+          <Stat label="Court Order" value={formatRate(staff.courtOrderRate)} />
         </div>
       </Section>
 

@@ -108,12 +108,12 @@ describe("helpers", () => {
 // ── Empty State ─────────────────────────────────────────────────────────────
 
 describe("empty state", () => {
-  it("returns zeroed overview with no handovers", () => {
+  it("reports nothing measured with no handovers", () => {
     const r = run([]);
     expect(r.overview.total_handovers).toBe(0);
-    expect(r.overview.completion_rate).toBe(100);
-    expect(r.overview.sign_off_rate).toBe(100);
-    expect(r.overview.avg_mood_score).toBe(0);
+    expect(r.overview.completion_rate).toBeNull();
+    expect(r.overview.sign_off_rate).toBeNull();
+    expect(r.overview.avg_mood_score).toBeNull();
     expect(r.handover_profiles).toHaveLength(0);
     expect(r.child_mood_summary).toHaveLength(0);
     expect(r.alerts).toHaveLength(0);

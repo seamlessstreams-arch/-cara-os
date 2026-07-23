@@ -13,6 +13,7 @@ import {
   GraduationCap, ChevronRight, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meanOf, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -49,9 +50,7 @@ export function StaffMandatoryTrainingCard() {
 
   const totalExpiring = intel.training.reduce((s, t) => s + t.expiring_soon, 0);
   const totalExpired = intel.training.reduce((s, t) => s + t.expired, 0);
-  const avgCompliance = intel.training.length > 0
-    ? Math.round(intel.training.reduce((s, t) => s + t.compliance_rate, 0) / intel.training.length)
-    : 100;
+  const avgCompliance = meanOf(intel.training.map((t) => t.compliance_rate));
 
   return (
     <Card className="overflow-hidden">
@@ -71,8 +70,8 @@ export function StaffMandatoryTrainingCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", avgCompliance >= 95 ? "bg-green-50" : avgCompliance >= 80 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", avgCompliance >= 95 ? "text-[--cs-success]" : avgCompliance >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{avgCompliance}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(avgCompliance, 95) ? "bg-green-50" : meets(avgCompliance, 80) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(avgCompliance, 95) ? "text-[--cs-success]" : meets(avgCompliance, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(avgCompliance)}</p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">
@@ -98,12 +97,12 @@ export function StaffMandatoryTrainingCard() {
                 <span className="w-28 truncate capitalize text-muted-foreground">{t.category.replace(/_/g, " ")}</span>
                 <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
-                    className={cn("h-full rounded-full", t.compliance_rate >= 95 ? "bg-green-400" : t.compliance_rate >= 80 ? "bg-amber-400" : "bg-red-400")}
-                    style={{ width: `${t.compliance_rate}%` }}
+                    className={cn("h-full rounded-full", meets(t.compliance_rate, 95) ? "bg-green-400" : meets(t.compliance_rate, 80) ? "bg-amber-400" : "bg-red-400")}
+                    style={{ width: `${t.compliance_rate ?? 0}%` }}
                   />
                 </div>
-                <span className={cn("w-8 text-right tabular-nums font-medium", t.compliance_rate >= 95 ? "text-[--cs-success]" : t.compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {t.compliance_rate}%
+                <span className={cn("w-8 text-right tabular-nums font-medium", meets(t.compliance_rate, 95) ? "text-[--cs-success]" : meets(t.compliance_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+                  {formatRate(t.compliance_rate)}
                 </span>
                 {t.expired > 0 && <Badge className="text-[9px] bg-[--cs-risk-bg] text-[--cs-risk]">{t.expired}</Badge>}
               </div>

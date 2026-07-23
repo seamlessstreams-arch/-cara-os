@@ -15,6 +15,7 @@ import {
   CheckCircle2, Loader2, Users, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useMedicationIntelligence } from "@/hooks/use-medication-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -37,11 +38,12 @@ const COMPLIANCE_STYLES: Record<string, { bg: string; text: string }> = {
   good: { bg: "bg-blue-100", text: "text-blue-700" },
   concerns: { bg: "bg-amber-100", text: "text-amber-700" },
   critical: { bg: "bg-red-100", text: "text-red-700" },
+  not_measured: { bg: "bg-gray-100", text: "text-gray-600" },
 };
 
 // ── Compliance bar sub-component ────────────────────────────────────────────
 
-function ComplianceBar({ label, value }: { label: string; value: number }) {
+function ComplianceBar({ label, value }: { label: string; value: number | null }) {
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="w-24 truncate">{label}</span>
@@ -49,16 +51,16 @@ function ComplianceBar({ label, value }: { label: string; value: number }) {
         <div
           className={cn(
             "h-full rounded-full",
-            value >= 95 ? "bg-green-400" : value >= 80 ? "bg-amber-400" : "bg-red-400",
+            value === null ? "bg-gray-300" : meets(value, 95) ? "bg-green-400" : meets(value, 80) ? "bg-amber-400" : "bg-red-400",
           )}
-          style={{ width: `${value}%` }}
+          style={{ width: `${value ?? 0}%` }}
         />
       </div>
       <span className={cn(
         "w-8 text-right tabular-nums font-medium",
-        value >= 95 ? "text-[--cs-success]" : value >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+        value === null ? "text-muted-foreground" : meets(value, 95) ? "text-[--cs-success]" : meets(value, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]",
       )}>
-        {value}%
+        {formatRate(value)}
       </span>
     </div>
   );
@@ -108,9 +110,9 @@ export function MedicationIntelligenceCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", o.adherence_rate >= 95 ? "bg-green-50" : o.adherence_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.adherence_rate >= 95 ? "text-[--cs-success]" : o.adherence_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.adherence_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.adherence_rate === null ? "bg-gray-50" : meets(o.adherence_rate, 95) ? "bg-green-50" : meets(o.adherence_rate, 80) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.adherence_rate === null ? "text-muted-foreground" : meets(o.adherence_rate, 95) ? "text-[--cs-success]" : meets(o.adherence_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(o.adherence_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Adherence</p>
           </div>
@@ -118,15 +120,15 @@ export function MedicationIntelligenceCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{o.total_administrations_30d}</p>
             <p className="text-[10px] text-muted-foreground">Doses (30d)</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.refusal_rate === 0 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.refusal_rate === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.refusal_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.refusal_rate === null ? "bg-gray-50" : o.refusal_rate === 0 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.refusal_rate === null ? "text-muted-foreground" : o.refusal_rate === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(o.refusal_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Refused</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.missed_rate === 0 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.missed_rate === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
-              {o.missed_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.missed_rate === null ? "bg-gray-50" : o.missed_rate === 0 ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.missed_rate === null ? "text-muted-foreground" : o.missed_rate === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
+              {formatRate(o.missed_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Missed</p>
           </div>
@@ -167,11 +169,13 @@ export function MedicationIntelligenceCard() {
                       </span>
                     </div>
                     <Badge className={cn("text-[10px]", cStyle.bg, cStyle.text)}>
-                      {profile.compliance_status}
+                      {profile.compliance_status === "not_measured" ? "no records yet" : profile.compliance_status}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-muted-foreground">
-                    <span className="text-[10px]">{profile.adherence_rate}% adherence</span>
+                    <span className="text-[10px]">
+                      {profile.adherence_rate === null ? "No doses recorded (30d)" : `${profile.adherence_rate}% adherence`}
+                    </span>
                     {profile.refusal_count_30d > 0 && (
                       <Badge className="text-[9px] bg-[--cs-warning-bg] text-[--cs-warning]">
                         {profile.refusal_count_30d} refused
@@ -207,7 +211,7 @@ export function MedicationIntelligenceCard() {
             </div>
             <div className="text-right">
               <p className="text-sm font-bold tabular-nums">{intel.prn_analysis.total_prn_30d}</p>
-              <p className="text-[10px] text-muted-foreground">{intel.prn_analysis.effectiveness_rate}% documented</p>
+              <p className="text-[10px] text-muted-foreground">{formatRate(intel.prn_analysis.effectiveness_rate)} documented</p>
             </div>
           </div>
         )}

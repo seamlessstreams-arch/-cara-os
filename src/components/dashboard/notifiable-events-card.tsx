@@ -14,6 +14,7 @@ import {
   Brain, Clock, Send, ShieldAlert, Loader2, FileWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useNotifiableEventsIntelligence } from "@/hooks/use-notifiable-events-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -90,15 +91,17 @@ export function NotifiableEventsCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.compliance_rate === 100 ? "bg-green-50" : o.compliance_rate >= 80 ? "bg-amber-50" : "bg-red-50",
+            o.compliance_rate === null ? "bg-muted" : meets(o.compliance_rate, 100) ? "bg-green-50" : meets(o.compliance_rate, 80) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.compliance_rate === 100 ? "text-[--cs-success]" : o.compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.compliance_rate === null ? "text-muted-foreground" : meets(o.compliance_rate, 100) ? "text-[--cs-success]" : meets(o.compliance_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.compliance_rate}%
+              {formatRate(o.compliance_rate)}
             </p>
-            <p className="text-[10px] text-muted-foreground">Compliant</p>
+            <p className="text-[10px] text-muted-foreground">
+              {o.compliance_rate === null ? "None recorded" : "Compliant"}
+            </p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",

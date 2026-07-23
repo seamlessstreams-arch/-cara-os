@@ -96,7 +96,9 @@ describe("Admission Referral Engine — Empty State", () => {
 
     expect(result.overview.total_referrals).toBe(0);
     expect(result.overview.active_referrals).toBe(0);
-    expect(result.overview.impact_assessment_completion_rate).toBe(100);
+    expect(result.overview.impact_assessment_completion_rate).toBeNull();
+    expect(result.overview.avg_days_to_decision).toBeNull();
+    expect(result.decision_analysis.acceptance_rate).toBeNull();
     expect(result.overview.occupancy_rate).toBe(60);
     expect(result.overview.available_beds).toBe(2);
     expect(result.referral_profiles).toHaveLength(0);

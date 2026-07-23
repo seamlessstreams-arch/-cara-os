@@ -15,6 +15,8 @@
 //   SCCIF: "Relationships" quality standard — family engagement
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ChildInput {
@@ -59,8 +61,9 @@ export interface ContactComplianceSummary {
   plans_overdue_review: number;
   total_sessions_90d: number;
   completed_sessions_30d: number;
-  avg_sessions_per_child_30d: number;
-  overall_completion_rate: number; // percentage
+  // Null when there are no children in placement — nothing to average or rate.
+  avg_sessions_per_child_30d: number | null;
+  overall_completion_rate: number | null; // percentage
 }
 
 export interface FamilyTimeAnalysis {
@@ -68,11 +71,11 @@ export interface FamilyTimeAnalysis {
   total_sessions_90d: number;
   family_contact_sessions: number; // parent/grandparent
   sibling_contact_sessions: number;
-  avg_duration_minutes: number;
+  avg_duration_minutes: number | null;
   supervision_breakdown: { level: string; count: number }[];
   presentation_breakdown: { presentation: string; count: number }[];
   concern_sessions: number; // sessions with concerns raised
-  safe_sessions_pct: number;
+  safe_sessions_pct: number | null; // null when no sessions recorded
 }
 
 export interface ChildContactProfile {
@@ -90,8 +93,8 @@ export interface ChildContactProfile {
 
 export interface MoodImpactAnalysis {
   children_with_data: number;
-  avg_mood_contact_days: number; // avg mood on days with contact
-  avg_mood_non_contact_days: number; // avg mood on days without contact
+  avg_mood_contact_days: number | null; // avg mood on days with contact
+  avg_mood_non_contact_days: number | null; // avg mood on days without contact
   positive_impact_children: number; // children whose mood is better on contact days
   negative_impact_children: number;
   neutral_impact_children: number;
@@ -224,12 +227,10 @@ export function computeContactEngagement(
 
   const avgPerChild = children.length > 0
     ? Math.round((sessions30d.length / children.length) * 10) / 10
-    : 0;
+    : null;
 
   // Completion rate: sessions happened vs children × expected (at least 1/month)
-  const completionRate = children.length > 0
-    ? Math.round((Math.min(sessions30d.length, children.length) / children.length) * 100)
-    : 100;
+  const completionRate = rate(Math.min(sessions30d.length, children.length), children.length);
 
   const compliance: ContactComplianceSummary = {
     total_children: children.length,
@@ -248,7 +249,7 @@ export function computeContactEngagement(
 
   const avgDuration = sessions90d.length > 0
     ? Math.round(sessions90d.reduce((sum, s) => sum + s.duration_minutes, 0) / sessions90d.length)
-    : 0;
+    : null;
 
   // Supervision breakdown
   const supervisionCounts = new Map<string, number>();
@@ -270,7 +271,7 @@ export function computeContactEngagement(
 
   const concernSessions = sessions90d.filter((s) => s.concerns_count > 0).length;
   const safeSessions = sessions90d.filter((s) => s.was_safe).length;
-  const safePct = sessions90d.length > 0 ? Math.round((safeSessions / sessions90d.length) * 100) : 100;
+  const safePct = rate(safeSessions, sessions90d.length);
 
   const familyTime: FamilyTimeAnalysis = {
     total_sessions_30d: sessions30d.length,
@@ -385,10 +386,10 @@ export function computeContactEngagement(
 
   const avgMoodContactDays = totalContactDays > 0
     ? Math.round((totalContactDayMood / totalContactDays) * 10) / 10
-    : 0;
+    : null;
   const avgMoodNonContactDays = totalNonContactDays > 0
     ? Math.round((totalNonContactDayMood / totalNonContactDays) * 10) / 10
-    : 0;
+    : null;
 
   const moodImpact: MoodImpactAnalysis = {
     children_with_data: childrenWithData,
@@ -543,7 +544,7 @@ export function computeContactEngagement(
   }
 
   // 6. Positive: good engagement
-  if (sessions30d.length > 0 && children.length > 0 && avgPerChild >= 2) {
+  if (sessions30d.length > 0 && children.length > 0 && meets(avgPerChild, 2)) {
     insights.push({
       severity: "positive",
       text: `Strong family engagement with an average of ${avgPerChild} contact sessions per child this month. Positive evidence of the home promoting and facilitating family relationships.`,
@@ -551,7 +552,7 @@ export function computeContactEngagement(
   }
 
   // 7. Positive: all safe sessions
-  if (safePct === 100 && sessions90d.length >= 3) {
+  if (meets(safePct, 100) && sessions90d.length >= 3) {
     insights.push({
       severity: "positive",
       text: "All contact sessions in 90 days assessed as safe. Supervision arrangements and risk assessments are effectively managing contact safety.",
@@ -583,10 +584,17 @@ export function computeContactEngagement(
 
   // Ensure at least one insight
   if (insights.length === 0) {
-    insights.push({
-      severity: "positive",
-      text: `Contact monitoring active for ${children.length} child(ren). Continue recording family time sessions, monitoring presentations, and reviewing contact plans regularly for Reg 6/7 compliance.`,
-    });
+    insights.push(
+      familyTimeSessions.length === 0
+        ? {
+            severity: "warning",
+            text: `No family time sessions recorded. Reg 6/7 compliance is evidenced by the record of contact facilitated — with nothing recorded there is nothing to show an inspector, whether or not contact took place.`,
+          }
+        : {
+            severity: "positive",
+            text: `Contact monitoring active for ${children.length} child(ren). Continue recording family time sessions, monitoring presentations, and reviewing contact plans regularly for Reg 6/7 compliance.`,
+          },
+    );
   }
 
   return {

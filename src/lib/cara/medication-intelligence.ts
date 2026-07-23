@@ -15,6 +15,8 @@
 // Pure function — no side effects, no API calls.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate, meets, below, formatRate } from "@/lib/metrics/rate";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface MedicationRecord {
@@ -55,7 +57,7 @@ export interface MedicationIntelligence {
 
   // Overview
   totalAdministrations: number;
-  complianceRate: number;           // % given on time
+  complianceRate: number | null;    // % given on time — null when nothing was administered
   missedDoses: number;
   refusals: number;
   lateAdministrations: number;
@@ -75,9 +77,9 @@ export interface MedicationIntelligence {
   // Patterns
   patterns: MedPattern[];
 
-  // Regulatory status
+  // Regulatory status — `compliant` is null when there is nothing on record to judge
   regulatoryStatus: {
-    compliant: boolean;
+    compliant: boolean | null;
     issues: string[];
     strengths: string[];
   };
@@ -91,8 +93,8 @@ export interface ChildMedSummary {
   missed: number;
   refused: number;
   late: number;
-  compliancePercent: number;
-  refusalRate: number;
+  compliancePercent: number | null;
+  refusalRate: number | null;
   mostRefusedMedication?: string;
 }
 
@@ -121,8 +123,8 @@ export interface ControlledDrugStatus {
   totalAdministrations: number;
   withWitness: number;
   withoutWitness: number;
-  witnessCompliancePercent: number;
-  balanceChecked: boolean;
+  witnessCompliancePercent: number | null; // null when no controlled drugs were given
+  balanceChecked: boolean | null;          // null until a balance check is evidenced
 }
 
 export interface MedPattern {
@@ -156,9 +158,7 @@ export function analyseMedications(
   const refused = records.filter((r) => r.status === "refused");
   const late = given.filter((r) => isLate(r));
 
-  const complianceRate = totalAdministrations > 0
-    ? Math.round(((given.length - late.length) / totalAdministrations) * 100)
-    : 100;
+  const complianceRate = rate(given.length - late.length, totalAdministrations);
 
   // Per-child summaries
   const childIds = [...new Set(records.map((r) => r.childId))];
@@ -183,12 +183,8 @@ export function analyseMedications(
       missed: childMissed.length,
       refused: childRefused.length,
       late: childLate.length,
-      compliancePercent: childRecords.length > 0
-        ? Math.round(((childGiven.length - childLate.length) / childRecords.length) * 100)
-        : 100,
-      refusalRate: childRecords.length > 0
-        ? Math.round((childRefused.length / childRecords.length) * 100)
-        : 0,
+      compliancePercent: rate(childGiven.length - childLate.length, childRecords.length),
+      refusalRate: rate(childRefused.length, childRecords.length),
       mostRefusedMedication: mostRefused ? mostRefused[0] : undefined,
     };
   });
@@ -245,7 +241,7 @@ export function analyseMedications(
 
       patterns.push({
         type: "frequent_refusal",
-        description: `${summary.childName} frequently refuses medication (${summary.refusalRate}% refusal rate)`,
+        description: `${summary.childName} frequently refuses medication (${formatRate(summary.refusalRate)} refusal rate)`,
         significance: "high",
       });
     }
@@ -339,10 +335,8 @@ export function analyseMedications(
     totalAdministrations: controlledGiven.length,
     withWitness: withWitness.length,
     withoutWitness: withoutWitness.length,
-    witnessCompliancePercent: controlledGiven.length > 0
-      ? Math.round((withWitness.length / controlledGiven.length) * 100)
-      : 100,
-    balanceChecked: true, // Would be pulled from audit log in live version
+    witnessCompliancePercent: rate(withWitness.length, controlledGiven.length),
+    balanceChecked: null, // No balance-check audit log is wired in yet — unevidenced, not passed
   };
 
   // Time drift pattern
@@ -368,13 +362,15 @@ export function analyseMedications(
 
   if (missed.length > 0) issues.push(`${missed.length} missed doses in ${windowDays} days`);
   if (withoutWitness.length > 0) issues.push("Controlled drug witness gap");
-  if (complianceRate < 90) issues.push(`Compliance rate below 90% (${complianceRate}%)`);
+  if (below(complianceRate, 90)) issues.push(`Compliance rate below 90% (${complianceRate}%)`);
 
-  if (complianceRate >= 95) strengths.push("Excellent medication compliance rate");
-  if (controlledDrugAudit.witnessCompliancePercent === 100 && controlledGiven.length > 0) {
+  if (meets(complianceRate, 95)) strengths.push("Excellent medication compliance rate");
+  if (meets(controlledDrugAudit.witnessCompliancePercent, 100)) {
     strengths.push("All controlled drugs properly witnessed");
   }
-  if (missed.length === 0) strengths.push("No missed doses in the period");
+  if (totalAdministrations > 0 && missed.length === 0) {
+    strengths.push("No missed doses in the period");
+  }
 
   return {
     homeId,
@@ -391,7 +387,8 @@ export function analyseMedications(
     controlledDrugAudit,
     patterns,
     regulatoryStatus: {
-      compliant: issues.length === 0,
+      // No administrations on record is an unmeasured MAR chart, not a compliant one.
+      compliant: totalAdministrations === 0 ? null : issues.length === 0,
       issues,
       strengths,
     },

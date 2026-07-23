@@ -214,14 +214,14 @@ const demoTraining: CommunicationTraining[] = [
 // ════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateNeedsAssessment", () => {
-  it("returns zero results for empty inputs", () => {
+  it("reports nothing measured for empty inputs", () => {
     const result = evaluateNeedsAssessment([], [], []);
     expect(result.totalChildren).toBe(0);
     expect(result.childrenWithNeeds).toBe(0);
     expect(result.childrenAssessed).toBe(0);
-    expect(result.assessmentRate).toBe(0);
-    expect(result.passportRate).toBe(0);
-    expect(result.score).toBe(0);
+    expect(result.assessmentRate).toBeNull();
+    expect(result.passportRate).toBeNull();
+    expect(result.score).toBeNull();
   });
 
   it("calculates assessment rate correctly with demo data", () => {
@@ -256,7 +256,7 @@ describe("evaluateNeedsAssessment", () => {
     expect(result.childrenNotAssessed).toHaveLength(1);
   });
 
-  it("returns 100% passport rate when no children have needs", () => {
+  it("leaves the passport rate unmeasured when no children have needs", () => {
     const profiles: ChildCommunicationProfile[] = [
       {
         childId: "a",
@@ -271,7 +271,7 @@ describe("evaluateNeedsAssessment", () => {
       },
     ];
     const result = evaluateNeedsAssessment(profiles, [], ["a"]);
-    expect(result.passportRate).toBe(100);
+    expect(result.passportRate).toBeNull();
   });
 
   it("calculates partial passport rate", () => {
@@ -351,7 +351,8 @@ describe("evaluateNeedsAssessment", () => {
     const result = evaluateNeedsAssessment(profiles, assessments, ["only"]);
     expect(result.assessmentRate).toBe(100);
     expect(result.childrenWithNeeds).toBe(0);
-    expect(result.passportRate).toBe(100);
+    // No child has a recorded need, so there is no passport rate to report
+    expect(result.passportRate).toBeNull();
   });
 });
 
@@ -360,12 +361,12 @@ describe("evaluateNeedsAssessment", () => {
 // ════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateSupportProvision", () => {
-  it("returns zero results for empty inputs", () => {
+  it("reports nothing measured for empty inputs", () => {
     const result = evaluateSupportProvision([], [], []);
     expect(result.totalRecommendations).toBe(0);
     expect(result.totalInPlace).toBe(0);
-    expect(result.supportMatchRate).toBe(0);
-    expect(result.score).toBe(0);
+    expect(result.supportMatchRate).toBeNull();
+    expect(result.score).toBeNull();
   });
 
   it("calculates support match rate with demo data", () => {
@@ -406,7 +407,7 @@ describe("evaluateSupportProvision", () => {
     expect(result.interpreterProvisionRate).toBe(100);
   });
 
-  it("returns 100% SLT rate when no children need SLT", () => {
+  it("leaves the SLT rate unmeasured when no children need SLT", () => {
     const profiles: ChildCommunicationProfile[] = [
       {
         childId: "a",
@@ -421,10 +422,10 @@ describe("evaluateSupportProvision", () => {
       },
     ];
     const result = evaluateSupportProvision(profiles, [], ["a"]);
-    expect(result.speechTherapyAccessRate).toBe(100);
+    expect(result.speechTherapyAccessRate).toBeNull();
   });
 
-  it("returns 100% interpreter rate when nobody needs interpreter", () => {
+  it("leaves the interpreter rate unmeasured when nobody needs one", () => {
     const profiles: ChildCommunicationProfile[] = [
       {
         childId: "a",
@@ -439,7 +440,7 @@ describe("evaluateSupportProvision", () => {
       },
     ];
     const result = evaluateSupportProvision(profiles, [], ["a"]);
-    expect(result.interpreterProvisionRate).toBe(100);
+    expect(result.interpreterProvisionRate).toBeNull();
   });
 
   it("detects missing interpreter when required", () => {
@@ -545,7 +546,7 @@ describe("evaluateSupportProvision", () => {
     expect(result.childrenWithFullSupport).toBe(0);
   });
 
-  it("returns 100% match when no recommendations exist", () => {
+  it("leaves the match rate unmeasured when no recommendations exist", () => {
     const assessments: CommunicationAssessment[] = [
       {
         id: "a1",
@@ -561,7 +562,7 @@ describe("evaluateSupportProvision", () => {
       },
     ];
     const result = evaluateSupportProvision([], assessments, ["a"]);
-    expect(result.supportMatchRate).toBe(100);
+    expect(result.supportMatchRate).toBeNull();
   });
 });
 
@@ -660,11 +661,12 @@ describe("evaluateAccessibleInformation", () => {
 // ════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateStaffTraining", () => {
-  it("returns zero results for empty inputs", () => {
+  it("reports nothing measured for empty inputs", () => {
     const result = evaluateStaffTraining([], [], [], REFERENCE_DATE);
     expect(result.totalStaff).toBe(0);
     expect(result.staffWithRelevantTraining).toBe(0);
-    expect(result.score).toBe(0);
+    expect(result.trainingCoverageRate).toBeNull();
+    expect(result.score).toBeNull();
   });
 
   it("calculates training coverage rate", () => {
@@ -716,7 +718,7 @@ describe("evaluateStaffTraining", () => {
     expect(result.staffChildNeedsCoverage).toBe(100);
   });
 
-  it("returns 100% needs coverage when no children have needs", () => {
+  it("leaves needs coverage unmeasured when no children have needs", () => {
     const profiles: ChildCommunicationProfile[] = [
       {
         childId: "a",
@@ -731,7 +733,7 @@ describe("evaluateStaffTraining", () => {
       },
     ];
     const result = evaluateStaffTraining([], profiles, ["staff-01"], REFERENCE_DATE);
-    expect(result.staffChildNeedsCoverage).toBe(100);
+    expect(result.staffChildNeedsCoverage).toBeNull();
   });
 
   it("detects gaps in needs coverage", () => {
@@ -837,7 +839,8 @@ describe("buildChildCommunicationSummaries", () => {
     const summaries = buildChildCommunicationSummaries(demoProfiles, demoAssessments, CHILD_IDS, CHILD_NAMES);
     const jordan = summaries.find((s) => s.childId === "jordan")!;
     expect(jordan.communicationNeeds).toHaveLength(0);
-    expect(jordan.supportMatchRate).toBe(100);
+    // Nothing recommended for Jordan, so there is no match rate to report
+    expect(jordan.supportMatchRate).toBeNull();
     expect(jordan.concerns).toHaveLength(0);
   });
 
@@ -1005,7 +1008,7 @@ describe("buildChildCommunicationSummaries", () => {
     const summaries = buildChildCommunicationSummaries(demoProfiles, demoAssessments, CHILD_IDS, CHILD_NAMES);
     const jordan = summaries.find((s) => s.childId === "jordan")!;
     const morgan = summaries.find((s) => s.childId === "morgan")!;
-    expect(jordan.overallScore).toBeGreaterThan(morgan.overallScore);
+    expect(jordan.overallScore!).toBeGreaterThan(morgan.overallScore!);
   });
 
   it("uses latest assessment for child with multiple assessments", () => {
@@ -1043,7 +1046,7 @@ describe("buildChildCommunicationSummaries", () => {
   it("caps overall score at 100", () => {
     const summaries = buildChildCommunicationSummaries(demoProfiles, demoAssessments, CHILD_IDS, CHILD_NAMES);
     for (const s of summaries) {
-      expect(s.overallScore).toBeLessThanOrEqual(100);
+      expect(s.overallScore!).toBeLessThanOrEqual(100);
     }
   });
 
@@ -1096,17 +1099,18 @@ describe("generateCommunicationAccessibilityIntelligence", () => {
   it("calculates overall score as weighted sum", () => {
     const result = generate();
     const expected = Math.round(
-      (result.needsAssessment.score * 25) / 100 +
-      (result.supportProvision.score * 30) / 100 +
-      (result.accessibleInformation.score * 25) / 100 +
-      (result.staffTraining.score * 20) / 100,
+      (result.needsAssessment.score! * 25) / 100 +
+      (result.supportProvision.score! * 30) / 100 +
+      (result.accessibleInformation.score! * 25) / 100 +
+      (result.staffTraining.score! * 20) / 100,
     );
     expect(result.overallScore).toBe(expected);
   });
 
   it("assigns rating based on score", () => {
     const result = generate();
-    if (result.overallScore >= 80) expect(result.rating).toBe("outstanding");
+    if (result.overallScore === null) expect(result.rating).toBe("unmeasured");
+    else if (result.overallScore >= 80) expect(result.rating).toBe("outstanding");
     else if (result.overallScore >= 60) expect(result.rating).toBe("good");
     else if (result.overallScore >= 40) expect(result.rating).toBe("requires_improvement");
     else expect(result.rating).toBe("inadequate");
@@ -1114,8 +1118,9 @@ describe("generateCommunicationAccessibilityIntelligence", () => {
 
   it("overall score is between 0 and 100", () => {
     const result = generate();
-    expect(result.overallScore).toBeGreaterThanOrEqual(0);
-    expect(result.overallScore).toBeLessThanOrEqual(100);
+    expect(result.overallScore).not.toBeNull();
+    expect(result.overallScore!).toBeGreaterThanOrEqual(0);
+    expect(result.overallScore!).toBeLessThanOrEqual(100);
   });
 
   it("includes child summaries for all children", () => {
@@ -1136,7 +1141,7 @@ describe("generateCommunicationAccessibilityIntelligence", () => {
   it("generates strengths for high-scoring areas", () => {
     const result = generate();
     // needsAssessment should score high (all assessed)
-    if (result.needsAssessment.score >= 80) {
+    if ((result.needsAssessment.score ?? 0) >= 80) {
       expect(result.strengths.some((s) => s.includes("communication needs assessments"))).toBe(true);
     }
   });
@@ -1628,7 +1633,8 @@ describe("Edge cases", () => {
     ];
     const result = evaluateSupportProvision(profiles, assessments, ["a"]);
     expect(result.childrenWithFullSupport).toBe(1);
-    expect(result.supportMatchRate).toBe(100);
+    // Supports in place with nothing recommended gives no rate to report
+    expect(result.supportMatchRate).toBeNull();
   });
 
   it("all scores are whole numbers", () => {

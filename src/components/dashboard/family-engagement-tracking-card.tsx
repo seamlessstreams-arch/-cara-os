@@ -90,7 +90,7 @@ export function FamilyEngagementTrackingCard() {
             <p className="text-[10px] text-muted-foreground">Overdue</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums text-blue-600">{ft.avg_duration_minutes}m</p>
+            <p className="text-lg font-bold tabular-nums text-blue-600">{ft.avg_duration_minutes === null ? "—" : `${ft.avg_duration_minutes}m`}</p>
             <p className="text-[10px] text-muted-foreground">Avg Length</p>
           </div>
         </div>

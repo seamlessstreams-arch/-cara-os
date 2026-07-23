@@ -99,7 +99,7 @@ describe("empty state", () => {
   it("returns sensible defaults with no appraisals", () => {
     const r = run([]);
     expect(r.overview.total_appraisals).toBe(0);
-    expect(r.overview.completion_rate).toBe(100);
+    expect(r.overview.completion_rate).toBeNull(); // nothing actionable to complete
     expect(r.overview.compliance_rate).toBe(0); // 0 of 8 active staff
     expect(r.overview.staff_without_appraisal).toBe(8);
     expect(r.alerts.length).toBeGreaterThan(0);

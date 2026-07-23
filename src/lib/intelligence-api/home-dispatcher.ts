@@ -22,6 +22,7 @@ import type { SocialWorkerContactRecordInput } from "@/lib/engines/home-social-w
 import type { SubstanceScreeningRecordInput } from "@/lib/engines/home-substance-misuse-screening-intelligence-engine";
 import type { TraumaTherapyRecordInput } from "@/lib/engines/home-trauma-therapy-intelligence-engine";
 import { NextResponse } from "next/server";
+import { rate } from "@/lib/metrics/rate";
 import { computeAdvocacyIndependentVoice } from "@/lib/engines/home-advocacy-independent-voice-intelligence-engine";
 import { computeAnnualHealthAssessment } from "@/lib/engines/home-annual-health-assessment-intelligence-engine";
 import { computeAttachmentProfile } from "@/lib/engines/home-attachment-profile-intelligence-engine";
@@ -4182,7 +4183,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       // Nutrition
       const mealLogs = ((store as any).mealRecords as any[] ?? []).filter((m: any) => m.child_id === childId);
       const mealsEaten = mealLogs.filter((m: any) => m.eaten || m.status === "eaten" || m.portion_eaten !== "none").length;
-      const mealRate = mealLogs.length > 0 ? Math.round((mealsEaten / mealLogs.length) * 100) : 80;
+      const mealRate = rate(mealsEaten, mealLogs.length);
       const dietaryPlans = (store.dietaryPlans as any[] ?? []).filter((d: any) => d.child_id === childId);
       const dietaryMet = dietaryPlans.length === 0 || dietaryPlans.every((d: any) => d.met || d.status === "met");
   
@@ -28225,7 +28226,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const agencyStaff = optionalCollection(store, "agencyStaffRecords").filter((a: any) => a.active || a.status === "active");
     const handovers = (store.handovers as any[] ?? []);
     const handoverCompleted = (handovers as any[]).filter((h: any) => h.completed || h.status === "completed").length;
-    const handoverRate = handovers.length > 0 ? Math.round((handoverCompleted / handovers.length) * 100) : 90;
+    const handoverRate = rate(handoverCompleted, handovers.length);
     const loneIncidents = (store.loneWorkingRecords as any[] ?? []).filter((l: any) => l.incident || l.type === "incident").length;
     const exitInterviews = (store.staffExitInterviewRecords as any[] ?? []);
     const exitConducted = exitInterviews.filter((e: any) => e.completed || e.status === "completed").length;

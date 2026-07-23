@@ -16,6 +16,8 @@
 // Pure function — no side effects, no API calls.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface KeyWorkSession {
@@ -57,17 +59,17 @@ export interface KeyWorkAnalysis {
   totalSessions: number;
   childrenCovered: number;
   childrenTotal: number;
-  overallCompliancePercent: number;
+  overallCompliancePercent: number | null;
 
   // Per-child
   childAnalyses: ChildKeyWorkAnalysis[];
 
-  // Team metrics
+  // Team metrics — null where nothing has been recorded to measure
   teamMetrics: {
-    averageSessionDuration: number;
-    childVoiceRate: number;
-    actionCompletionRate: number;
-    objectiveCoverageRate: number;
+    averageSessionDuration: number | null;
+    childVoiceRate: number | null;
+    actionCompletionRate: number | null;
+    objectiveCoverageRate: number | null;
   };
 
   // Alerts
@@ -89,14 +91,14 @@ export interface ChildKeyWorkAnalysis {
   daysSinceLastSession: number | null;
   isOverdue: boolean;
   frequencyCompliant: boolean;
-  averageDuration: number;
-  childVoiceRate: number;
+  averageDuration: number | null;
+  childVoiceRate: number | null;
   engagementProfile: { high: number; moderate: number; low: number; refused: number };
   objectivesCovered: string[];
   objectivesNotCovered: string[];
-  objectiveCoveragePercent: number;
-  actionCompletionRate: number;
-  primaryKeyWorkerPercent: number;  // % of sessions done by designated key worker
+  objectiveCoveragePercent: number | null;   // null = no objectives on the care plan to cover
+  actionCompletionRate: number | null;       // null = no actions were set to complete
+  primaryKeyWorkerPercent: number | null;    // % of sessions done by designated key worker
 }
 
 export interface KeyWorkAlert {
@@ -137,13 +139,11 @@ export function analyseKeyWork(
     const frequencyCompliant = totalSessions >= expectedSessions;
 
     // Average duration
-    const averageDuration = totalSessions > 0
-      ? Math.round(childSessions.reduce((s, sess) => s + sess.durationMinutes, 0) / totalSessions)
-      : 0;
+    const averageDuration = meanOf(childSessions.map((sess) => sess.durationMinutes));
 
     // Child voice capture rate
     const withVoice = childSessions.filter((s) => s.hasChildVoice).length;
-    const childVoiceRate = totalSessions > 0 ? Math.round((withVoice / totalSessions) * 100) : 0;
+    const childVoiceRate = rate(withVoice, totalSessions);
 
     // Engagement profile
     const engagementProfile = { high: 0, moderate: 0, low: 0, refused: 0 };
@@ -159,22 +159,16 @@ export function analyseKeyWork(
     const objectivesNotCovered = config.carePlanObjectiveTitles.filter((_, i) =>
       !allLinkedObjectives.has(config.carePlanObjectiveIds[i])
     );
-    const objectiveCoveragePercent = config.carePlanObjectiveIds.length > 0
-      ? Math.round((objectivesCovered.length / config.carePlanObjectiveIds.length) * 100)
-      : 100;
+    const objectiveCoveragePercent = rate(objectivesCovered.length, config.carePlanObjectiveIds.length);
 
     // Action completion
     const totalPrevActions = childSessions.reduce((s, sess) => s + sess.previousActionsTotal, 0);
     const completedPrevActions = childSessions.reduce((s, sess) => s + sess.actionsCompleted, 0);
-    const actionCompletionRate = totalPrevActions > 0
-      ? Math.round((completedPrevActions / totalPrevActions) * 100)
-      : 100;
+    const actionCompletionRate = rate(completedPrevActions, totalPrevActions);
 
     // Key worker distribution
     const byKeyWorker = childSessions.filter((s) => s.staffId === config.keyWorker).length;
-    const primaryKeyWorkerPercent = totalSessions > 0
-      ? Math.round((byKeyWorker / totalSessions) * 100)
-      : 0;
+    const primaryKeyWorkerPercent = rate(byKeyWorker, totalSessions);
 
     // Generate child-specific alerts
     if (isOverdue && daysSinceLast !== null && daysSinceLast > config.frequencyDays * 2) {
@@ -200,27 +194,27 @@ export function analyseKeyWork(
       });
     }
 
-    if (childVoiceRate < 50 && totalSessions >= 2) {
+    if (below(childVoiceRate, 50) && totalSessions >= 2) {
       alerts.push({
         severity: "medium",
         category: "voice",
         childId: config.childId,
         childName: config.childName,
         title: `Low child voice capture for ${config.childName}`,
-        description: `Only ${childVoiceRate}% of sessions record the child's direct voice.`,
+        description: `Only ${formatRate(childVoiceRate)} of sessions record the child's direct voice.`,
         action: "Ensure the child's words, views and feelings are recorded in their own language.",
         regulation: "CHR 2015 Reg 7 (Child's Views)",
       });
     }
 
-    if (objectiveCoveragePercent < 60 && config.carePlanObjectiveIds.length >= 2) {
+    if (below(objectiveCoveragePercent, 60) && config.carePlanObjectiveIds.length >= 2) {
       alerts.push({
         severity: "medium",
         category: "coverage",
         childId: config.childId,
         childName: config.childName,
         title: `Care plan objectives not covered in key work for ${config.childName}`,
-        description: `Only ${objectiveCoveragePercent}% of objectives discussed. Missing: ${objectivesNotCovered.slice(0, 2).join(", ")}.`,
+        description: `Only ${formatRate(objectiveCoveragePercent)} of objectives discussed. Missing: ${objectivesNotCovered.slice(0, 2).join(", ")}.`,
         action: "Plan key work sessions to cover all objectives over a cycle.",
         regulation: "CHR 2015 Reg 14",
       });
@@ -259,28 +253,20 @@ export function analyseKeyWork(
 
   // Team metrics
   const allSessions = sessions.length;
-  const avgDuration = allSessions > 0
-    ? Math.round(sessions.reduce((s, sess) => s + sess.durationMinutes, 0) / allSessions)
-    : 0;
-  const voiceRate = allSessions > 0
-    ? Math.round((sessions.filter((s) => s.hasChildVoice).length / allSessions) * 100)
-    : 0;
+  const avgDuration = meanOf(sessions.map((sess) => sess.durationMinutes));
+  const voiceRate = rateOf(sessions.filter((s) => s.hasChildVoice), sessions);
   const totalPrev = sessions.reduce((s, sess) => s + sess.previousActionsTotal, 0);
   const completedPrev = sessions.reduce((s, sess) => s + sess.actionsCompleted, 0);
-  const actionRate = totalPrev > 0 ? Math.round((completedPrev / totalPrev) * 100) : 100;
+  const actionRate = rate(completedPrev, totalPrev);
 
   const allObjectiveIds = configs.flatMap((c) => c.carePlanObjectiveIds);
   const coveredIds = new Set(sessions.flatMap((s) => s.linkedObjectiveIds));
-  const objCoverage = allObjectiveIds.length > 0
-    ? Math.round((allObjectiveIds.filter((id) => coveredIds.has(id)).length / allObjectiveIds.length) * 100)
-    : 100;
+  const objCoverage = rate(allObjectiveIds.filter((id) => coveredIds.has(id)).length, allObjectiveIds.length);
 
   // Overall compliance
   const childrenCovered = childAnalyses.filter((c) => c.totalSessions > 0).length;
   const compliantChildren = childAnalyses.filter((c) => c.frequencyCompliant).length;
-  const overallCompliance = configs.length > 0
-    ? Math.round((compliantChildren / configs.length) * 100)
-    : 100;
+  const overallCompliance = rate(compliantChildren, configs.length);
 
   // Children with zero sessions
   const noSessions = childAnalyses.filter((c) => c.totalSessions === 0);
@@ -299,15 +285,19 @@ export function analyseKeyWork(
   const issues: string[] = [];
   const strengths: string[] = [];
 
+  // An empty register is the finding, not a pass — compliance cannot be asserted
+  // from nothing recorded.
+  if (allSessions === 0) issues.push(`No key work sessions recorded in ${windowDays} days`);
+
   const overdueChildren = childAnalyses.filter((c) => c.isOverdue);
   if (overdueChildren.length > 0) issues.push(`${overdueChildren.length} child(ren) overdue key work`);
-  if (voiceRate < 70) issues.push(`Low child voice capture rate (${voiceRate}%)`);
-  if (objCoverage < 70) issues.push(`Care plan objectives not adequately covered (${objCoverage}%)`);
+  if (below(voiceRate, 70)) issues.push(`Low child voice capture rate (${formatRate(voiceRate)})`);
+  if (below(objCoverage, 70)) issues.push(`Care plan objectives not adequately covered (${formatRate(objCoverage)})`);
 
-  if (overallCompliance === 100) strengths.push("All children receiving key work at expected frequency");
-  if (voiceRate >= 90) strengths.push("Excellent child voice capture in key work");
-  if (actionRate >= 80) strengths.push(`Strong action completion rate (${actionRate}%)`);
-  if (objCoverage === 100) strengths.push("All care plan objectives covered in key work");
+  if (meets(overallCompliance, 100)) strengths.push("All children receiving key work at expected frequency");
+  if (meets(voiceRate, 90)) strengths.push("Excellent child voice capture in key work");
+  if (meets(actionRate, 80)) strengths.push(`Strong action completion rate (${formatRate(actionRate)})`);
+  if (meets(objCoverage, 100)) strengths.push("All care plan objectives covered in key work");
 
   return {
     homeId,

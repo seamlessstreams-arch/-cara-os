@@ -115,9 +115,9 @@ describe("buildAnnexAQueue", () => {
     expect(meta.pending_decisions).toBe(1);
   });
 
-  it("is 100% ready with no evidence (no sections, no gaps)", () => {
+  it("reports no readiness score with no evidence (nothing to measure)", () => {
     const { meta } = buildAnnexAQueue([], () => undefined);
-    expect(meta.readiness_score).toBe(100);
+    expect(meta.readiness_score).toBeNull();
     expect(meta.gaps).toEqual([]);
   });
 });

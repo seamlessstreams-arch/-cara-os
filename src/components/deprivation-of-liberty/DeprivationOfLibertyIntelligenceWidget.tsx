@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -79,22 +80,22 @@ export function DeprivationOfLibertyIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Restrictions" value={auth.totalRestrictions} />
           <Stat label="Active" value={auth.activeRestrictions} />
-          <Stat label="Authorised" value={`${auth.authorisedRate}%`} />
+          <Stat label="Authorised" value={formatRate(auth.authorisedRate)} />
           <Stat label="Pending" value={auth.pendingApplications} />
           <Stat label="Expired" value={auth.expiredAuthorisations} />
-          <Stat label="Best Interests" value={`${auth.bestInterestsRate}%`} />
-          <Stat label="Least Restrictive" value={`${auth.leastRestrictiveRate}%`} />
-          <Stat label="Risk Linked" value={`${auth.riskAssessmentRate}%`} />
+          <Stat label="Best Interests" value={formatRate(auth.bestInterestsRate)} />
+          <Stat label="Least Restrictive" value={formatRate(auth.leastRestrictiveRate)} />
+          <Stat label="Risk Linked" value={formatRate(auth.riskAssessmentRate)} />
         </div>
       </Section>
 
       <Section title="Proportionality">
         <ScoreBar label="Proportionality" value={prop.overallScore as number} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Proportionate" value={`${prop.proportionateRate}%`} />
+          <Stat label="Proportionate" value={formatRate(prop.proportionateRate as number | null)} />
           <Stat label="Disproportionate" value={prop.disproportionateCount as number} />
           <Stat label="Not Assessed" value={prop.notAssessedCount as number} />
-          <Stat label="Avg Duration (days)" value={prop.averageActiveDurationDays as number} />
+          <Stat label="Avg Duration (days)" value={(prop.averageActiveDurationDays as number | null) ?? "—"} />
         </div>
       </Section>
 
@@ -104,23 +105,23 @@ export function DeprivationOfLibertyIntelligenceWidget() {
           <Stat label="Total Reviews" value={review.totalReviews as number} />
           <Stat label="On Time" value={review.reviewsOnTime as number} />
           <Stat label="Overdue" value={review.overdueReviews as number} />
-          <Stat label="Child Views" value={`${review.childViewsRate}%`} />
-          <Stat label="Family Consulted" value={`${review.familyConsultedRate}%`} />
-          <Stat label="Independent" value={`${review.independentInvolvementRate}%`} />
-          <Stat label="Proportionality Reassessed" value={`${review.proportionalityReassessedRate}%`} />
-          <Stat label="Less Restrictive" value={`${review.lessRestrictiveConsideredRate}%`} />
+          <Stat label="Child Views" value={formatRate(review.childViewsRate as number | null)} />
+          <Stat label="Family Consulted" value={formatRate(review.familyConsultedRate as number | null)} />
+          <Stat label="Independent" value={formatRate(review.independentInvolvementRate as number | null)} />
+          <Stat label="Proportionality Reassessed" value={formatRate(review.proportionalityReassessedRate as number | null)} />
+          <Stat label="Less Restrictive" value={formatRate(review.lessRestrictiveConsideredRate as number | null)} />
         </div>
       </Section>
 
       <Section title="Rights Protection">
         <ScoreBar label="Rights" value={rights.overallScore} max={20} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Safeguard Coverage" value={`${rights.safeguardCoverage}%`} />
-          <Stat label="Advocacy" value={`${rights.advocacyRate}%`} />
-          <Stat label="Legal Rep" value={`${rights.legalRepresentationRate}%`} />
-          <Stat label="Rights Info" value={`${rights.rightsInformationRate}%`} />
-          <Stat label="Family Notified" value={`${rights.familyNotificationRate}%`} />
-          <Stat label="Ofsted Notified" value={`${rights.ofstedNotificationRate}%`} />
+          <Stat label="Safeguard Coverage" value={formatRate(rights.safeguardCoverage)} />
+          <Stat label="Advocacy" value={formatRate(rights.advocacyRate)} />
+          <Stat label="Legal Rep" value={formatRate(rights.legalRepresentationRate)} />
+          <Stat label="Rights Info" value={formatRate(rights.rightsInformationRate)} />
+          <Stat label="Family Notified" value={formatRate(rights.familyNotificationRate)} />
+          <Stat label="Ofsted Notified" value={formatRate(rights.ofstedNotificationRate)} />
         </div>
       </Section>
 

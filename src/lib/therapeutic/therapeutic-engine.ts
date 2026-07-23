@@ -4,6 +4,8 @@
 // SCCIF: Experiences & Progress — Emotional Health
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, meets, rate, weightedMeanOf } from "@/lib/metrics/rate";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export type TherapeuticModel =
@@ -157,19 +159,20 @@ export interface HomeTherapeuticConfig {
 
 export interface TherapeuticComplianceResult {
   isCompliant: boolean;
-  overallScore: number;
+  overallScore: number | null;
   issues: string[];
   warnings: string[];
   modelAdherenceScore: number;
   staffTrainingScore: number;
-  interventionCoverageScore: number;
-  wellbeingProgressScore: number;
-  crisisManagementScore: number;
+  // Null when there are no profiles/crises to derive the score from
+  interventionCoverageScore: number | null;
+  wellbeingProgressScore: number | null;
+  crisisManagementScore: number | null;
   childrenWithActiveInterventions: number;
   childrenWithoutSupport: string[];
   childrenInCrisis: string[];
   childrenDeclining: string[];
-  averageWellbeingScore: number;
+  averageWellbeingScore: number | null;
   sdqOverdue: string[];
   wellbeingReviewOverdue: string[];
   camhsWaitingList: string[];
@@ -177,9 +180,9 @@ export interface TherapeuticComplianceResult {
 }
 
 export interface HomeTherapeuticMetrics {
-  overallWellbeingScore: number;
+  overallWellbeingScore: number | null;
   totalActiveInterventions: number;
-  interventionAttendanceRate: number;
+  interventionAttendanceRate: number | null;
   averageEffectiveness: number;
   childrenImproving: number;
   childrenStable: number;
@@ -192,7 +195,7 @@ export interface HomeTherapeuticMetrics {
   sdqAverageScore: number;
   staffTrainingPercentage: number;
   therapeuticHoursThisWeek: number;
-  modelAdherenceRate: number;
+  modelAdherenceRate: number | null;
   childMetrics: ChildWellbeingSummary[];
   issues: string[];
   warnings: string[];
@@ -201,7 +204,7 @@ export interface HomeTherapeuticMetrics {
 export interface ChildWellbeingSummary {
   childId: string;
   childName: string;
-  overallWellbeing: number;
+  overallWellbeing: number | null;
   trend: "improving" | "stable" | "declining";
   mentalHealthStatus: MentalHealthStatus;
   activeInterventions: number;
@@ -268,29 +271,26 @@ export function evaluateTherapeuticCompliance(
   if (childrenWithoutSupport.length > 0) {
     issues.push(`${childrenWithoutSupport.length} child(ren) need therapeutic support but have no active intervention: ${childrenWithoutSupport.join(", ")}`);
   }
-  const interventionCoverageScore = profiles.length > 0
-    ? Math.round(((profiles.length - childrenWithoutSupport.length) / profiles.length) * 100)
-    : 100;
+  const interventionCoverageScore = rate(
+    profiles.length - childrenWithoutSupport.length, profiles.length,
+  );
 
-  // 5. Wellbeing progress
-  let totalWellbeing = 0;
-  let wellbeingCount = 0;
+  // 5. Wellbeing progress — children with no wellbeing scores are unmeasured,
+  // not zero, so they neither drag nor flatter the home average.
   const childrenDeclining: string[] = [];
-  profiles.forEach((p) => {
-    const avgScore = p.wellbeingScores.length > 0
-      ? p.wellbeingScores.reduce((sum, w) => sum + w.score, 0) / p.wellbeingScores.length
-      : 0;
-    totalWellbeing += avgScore;
-    wellbeingCount++;
+  const perChildWellbeing = profiles.map((p) => {
     const decliningDomains = p.wellbeingScores.filter((w) => w.trend === "declining");
     if (decliningDomains.length >= 3) {
       childrenDeclining.push(p.childName);
     }
+    return p.wellbeingScores.length > 0
+      ? p.wellbeingScores.reduce((sum, w) => sum + w.score, 0) / p.wellbeingScores.length
+      : null;
   });
-  const averageWellbeingScore = wellbeingCount > 0
-    ? Math.round(totalWellbeing / wellbeingCount)
-    : 0;
-  const wellbeingProgressScore = Math.min(100, averageWellbeingScore);
+  const averageWellbeingScore = meanOf(perChildWellbeing);
+  const wellbeingProgressScore = averageWellbeingScore === null
+    ? null
+    : Math.min(100, averageWellbeingScore);
   if (childrenDeclining.length > 0) {
     issues.push(`${childrenDeclining.length} child(ren) declining across 3+ wellbeing domains: ${childrenDeclining.join(", ")}`);
   }
@@ -314,15 +314,14 @@ export function evaluateTherapeuticCompliance(
   if (childrenInCrisis.length > 0) {
     issues.push(`${childrenInCrisis.length} child(ren) currently in crisis: ${childrenInCrisis.join(", ")}`);
   }
-  const crisisFollowUpRate = totalFollowUps > 0
-    ? Math.round((followUpCompleted / totalFollowUps) * 100)
-    : 100;
-  if (crisisFollowUpRate < 100 && totalFollowUps > 0) {
-    issues.push(`Crisis follow-up completion at ${crisisFollowUpRate}% — must be 100%`);
+  const crisisFollowUpRate = rate(followUpCompleted, totalFollowUps);
+  if (below(crisisFollowUpRate, 100)) {
+    issues.push(`Crisis follow-up completion at ${formatRate(crisisFollowUpRate)} — must be 100%`);
   }
-  const crisisManagementScore = totalFollowUps > 0
-    ? Math.min(100, crisisFollowUpRate)
-    : 100;
+  // Null when there were no crisis follow-ups to manage this period.
+  const crisisManagementScore = crisisFollowUpRate === null
+    ? null
+    : Math.min(100, crisisFollowUpRate);
 
   // 7. SDQ overdue check
   const sdqOverdue: string[] = [];
@@ -371,16 +370,17 @@ export function evaluateTherapeuticCompliance(
     issues.push(`Therapeutic review overdue for: ${therapeuticReviewOverdue.join(", ")}`);
   }
 
-  // Overall score
-  const overallScore = Math.round(
-    modelAdherenceScore * 0.2 +
-    staffTrainingScore * 0.15 +
-    interventionCoverageScore * 0.25 +
-    wellbeingProgressScore * 0.25 +
-    crisisManagementScore * 0.15
-  );
+  // Overall score — components with nothing to measure drop out and the rest
+  // are renormalised, so an empty home does not inherit fabricated marks.
+  const overallScore = weightedMeanOf([
+    { score: modelAdherenceScore, weight: 20 },
+    { score: staffTrainingScore, weight: 15 },
+    { score: interventionCoverageScore, weight: 25 },
+    { score: wellbeingProgressScore, weight: 25 },
+    { score: crisisManagementScore, weight: 15 },
+  ]);
 
-  const isCompliant = issues.length === 0 && overallScore >= 70;
+  const isCompliant = issues.length === 0 && meets(overallScore, 70);
 
   return {
     isCompliant,
@@ -427,22 +427,20 @@ export function calculateHomeTherapeuticMetrics(
   });
   const overallWellbeingScore = wellbeingCount > 0
     ? Math.round(totalWellbeing / wellbeingCount)
-    : 0;
+    : null;
 
   // Interventions
   const allActiveInterventions = profiles.flatMap((p) => p.interventions.filter((i) => i.active));
   const totalActiveInterventions = allActiveInterventions.length;
   const totalAttended = allActiveInterventions.reduce((sum, i) => sum + i.sessionsAttended, 0);
   const totalSessions = allActiveInterventions.reduce((sum, i) => sum + i.sessionsAttended + i.sessionsMissed, 0);
-  const interventionAttendanceRate = totalSessions > 0
-    ? Math.round((totalAttended / totalSessions) * 100)
-    : 100;
+  const interventionAttendanceRate = rate(totalAttended, totalSessions);
   const averageEffectiveness = allActiveInterventions.length > 0
     ? Math.round(allActiveInterventions.reduce((sum, i) => sum + i.effectiveness, 0) / allActiveInterventions.length)
     : 0;
 
-  if (interventionAttendanceRate < 80) {
-    warnings.push(`Intervention attendance rate at ${interventionAttendanceRate}% — below 80% target`);
+  if (below(interventionAttendanceRate, 80)) {
+    warnings.push(`Intervention attendance rate at ${formatRate(interventionAttendanceRate)} — below 80% target`);
   }
 
   // Status counts
@@ -502,15 +500,13 @@ export function calculateHomeTherapeuticMetrics(
   const childrenUsingPrimaryModel = profiles.filter(
     (p) => p.primaryModel === config.primaryTherapeuticModel || p.secondaryModels.includes(config.primaryTherapeuticModel)
   ).length;
-  const modelAdherenceRate = profiles.length > 0
-    ? Math.round((childrenUsingPrimaryModel / profiles.length) * 100)
-    : 100;
+  const modelAdherenceRate = rate(childrenUsingPrimaryModel, profiles.length);
 
   // Child summaries
   const childMetrics: ChildWellbeingSummary[] = profiles.map((p) => {
     const avgWellbeing = p.wellbeingScores.length > 0
       ? Math.round(p.wellbeingScores.reduce((sum, w) => sum + w.score, 0) / p.wellbeingScores.length)
-      : 0;
+      : null;
     const improvingCount = p.wellbeingScores.filter((w) => w.trend === "improving").length;
     const decliningCount = p.wellbeingScores.filter((w) => w.trend === "declining").length;
     const trend: "improving" | "stable" | "declining" =

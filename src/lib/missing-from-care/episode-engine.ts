@@ -19,6 +19,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type EpisodeStatus =
@@ -156,12 +158,12 @@ export interface HomeMetrics {
   activeEpisodes: number;
   episodesThisMonth: number;
   episodesThisQuarter: number;
-  returnInterviewCompliance: number;   // %
-  averageResponseMinutes: number;      // time to police notification
+  returnInterviewCompliance: number | null;  // %, null when no episode has closed
+  averageResponseMinutes: number | null;     // time to police notification, null when none notified
   childrenWithEpisodes: number;
   repeatMissers: number;               // children with 3+ episodes
   exploitationConcerns: number;
-  complianceRate: number;              // %
+  complianceRate: number | null;       // %, null when there are no episodes
 }
 
 // ── Configuration ──────────────────────────────────────────────────────────
@@ -353,9 +355,7 @@ export function calculateHomeMetrics(
     e.returnInterview &&
     (e.returnInterview.status === "completed" || e.returnInterview.status === "refused"),
   );
-  const returnInterviewCompliance = returnedEpisodes.length > 0
-    ? Math.round((withRI.length / returnedEpisodes.length) * 100)
-    : 100;
+  const returnInterviewCompliance = rateOf(withRI, returnedEpisodes);
 
   // Average response time
   const withPolice = homeEpisodes.filter(e => e.policeNotifiedAt);
@@ -366,7 +366,7 @@ export function calculateHomeMetrics(
   }, 0);
   const averageResponseMinutes = withPolice.length > 0
     ? Math.round(totalResponseMinutes / withPolice.length)
-    : 0;
+    : null;
 
   // Unique children
   const uniqueChildren = new Set(homeEpisodes.map(e => e.childId));
@@ -382,9 +382,7 @@ export function calculateHomeMetrics(
   // Overall compliance
   const complianceResults = homeEpisodes.map(evaluateEpisodeCompliance);
   const compliantCount = complianceResults.filter(r => r.isCompliant).length;
-  const complianceRate = homeEpisodes.length > 0
-    ? Math.round((compliantCount / homeEpisodes.length) * 100)
-    : 100;
+  const complianceRate = rate(compliantCount, homeEpisodes.length);
 
   return {
     homeId,

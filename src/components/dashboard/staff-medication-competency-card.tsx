@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, ChevronRight, Brain, Loader2, Pill } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meanOf, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -35,9 +36,7 @@ export function StaffMedicationCompetencyCard() {
   if (!d) return null;
 
   const { training, dbs } = d;
-  const avgCompliance = training.length > 0
-    ? Math.round(training.reduce((sum, t) => sum + t.compliance_rate, 0) / training.length)
-    : 0;
+  const avgCompliance = meanOf(training.map((t) => t.compliance_rate));
 
   return (
     <Card className="overflow-hidden border-teal-200">
@@ -55,16 +54,16 @@ export function StaffMedicationCompetencyCard() {
       <CardContent className="space-y-4">
         {/* ── Summary strip ──────────────────────────────────────────── */}
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", avgCompliance >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", avgCompliance >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{avgCompliance}%</p>
+          <div className={cn("text-center rounded-lg p-2", meets(avgCompliance, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(avgCompliance, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(avgCompliance)}</p>
             <p className="text-[10px] text-muted-foreground">Avg Comp.</p>
           </div>
           <div className="text-center rounded-lg p-2 bg-teal-50">
             <p className="text-lg font-bold tabular-nums text-teal-600">{training.length}</p>
             <p className="text-[10px] text-muted-foreground">Categories</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", dbs.compliance_rate >= 95 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", dbs.compliance_rate >= 95 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{dbs.compliance_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2", meets(dbs.compliance_rate, 95) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(dbs.compliance_rate, 95) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(dbs.compliance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">DBS %</p>
           </div>
           <div className={cn("text-center rounded-lg p-2", dbs.expired_or_missing > 0 ? "bg-red-50" : "bg-green-50")}>
@@ -84,8 +83,8 @@ export function StaffMedicationCompetencyCard() {
                 <span className="text-muted-foreground truncate flex-1">{t.category}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground tabular-nums">{t.compliant}/{t.total_required}</span>
-                  <Badge variant="outline" className={cn("text-[10px] shrink-0", t.compliance_rate >= 90 ? "text-green-700 bg-green-50 border-green-200" : t.compliance_rate >= 70 ? "text-amber-700 bg-amber-50 border-amber-200" : "text-red-700 bg-red-50 border-red-200")}>
-                    {t.compliance_rate}%
+                  <Badge variant="outline" className={cn("text-[10px] shrink-0", meets(t.compliance_rate, 90) ? "text-green-700 bg-green-50 border-green-200" : meets(t.compliance_rate, 70) ? "text-amber-700 bg-amber-50 border-amber-200" : "text-red-700 bg-red-50 border-red-200")}>
+                    {formatRate(t.compliance_rate)}
                   </Badge>
                 </div>
               </div>

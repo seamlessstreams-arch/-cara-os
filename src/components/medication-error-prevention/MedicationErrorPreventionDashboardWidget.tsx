@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { MedicationErrorPreventionIntelligence } from "@/lib/medication-error-prevention";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -111,7 +112,7 @@ export function MedicationErrorPreventionDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Administrations</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.administrationQuality.onTimeRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.administrationQuality.onTimeRate)}</div>
           <div className="text-xs text-gray-500 mt-1">On-Time Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -121,11 +122,11 @@ export function MedicationErrorPreventionDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Errors</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.storageSafety.fullyCompliantRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.storageSafety.fullyCompliantRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Storage Compliant</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.trainingCompliance.currentRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.trainingCompliance.currentRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Training Current</div>
         </div>
       </div>
@@ -150,13 +151,13 @@ export function MedicationErrorPreventionDashboardWidget() {
                     <span className="text-sm text-gray-500">{child.overallScore}/10</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5 mb-2">
-                    <StatusBadge ok={child.onTimeRate >= 90} label={`On-Time ${child.onTimeRate}%`} />
+                    <StatusBadge ok={meets(child.onTimeRate, 90)} label={`On-Time ${formatRate(child.onTimeRate)}`} />
                     <StatusBadge ok={child.errorCount === 0} label={`Errors: ${child.errorCount}`} />
                     <StatusBadge ok={child.missedCount === 0} label={`Missed: ${child.missedCount}`} />
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Administrations: <span className="font-medium">{child.administrationCount}</span></div>
-                    <div>On-Time: <span className="font-medium">{child.onTimeRate}%</span></div>
+                    <div>On-Time: <span className="font-medium">{formatRate(child.onTimeRate)}</span></div>
                   </div>
                 </div>
               ))}
@@ -167,12 +168,12 @@ export function MedicationErrorPreventionDashboardWidget() {
         <Section title="Administration Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.administrationQuality.totalAdministrations}</span></div>
-            <div><span className="text-gray-500">On-Time:</span> <span className="font-medium">{data.administrationQuality.onTimeRate}%</span></div>
+            <div><span className="text-gray-500">On-Time:</span> <span className="font-medium">{formatRate(data.administrationQuality.onTimeRate)}</span></div>
             <div><span className="text-gray-500">Missed/Refused:</span> <span className={`font-medium ${data.administrationQuality.missedRefusedCount > 0 ? "text-amber-600" : "text-gray-900"}`}>{data.administrationQuality.missedRefusedCount}</span></div>
-            <div><span className="text-gray-500">Two-Person Check:</span> <span className="font-medium">{data.administrationQuality.twoPersonCheckRate}%</span></div>
-            <div><span className="text-gray-500">Documented Immediately:</span> <span className="font-medium">{data.administrationQuality.documentedImmediatelyRate}%</span></div>
-            <div><span className="text-gray-500">Child Consent:</span> <span className="font-medium">{data.administrationQuality.childConsentRate}%</span></div>
-            <div><span className="text-gray-500">Side Effects Monitored:</span> <span className="font-medium">{data.administrationQuality.sideEffectsMonitoredRate}%</span></div>
+            <div><span className="text-gray-500">Two-Person Check:</span> <span className="font-medium">{formatRate(data.administrationQuality.twoPersonCheckRate)}</span></div>
+            <div><span className="text-gray-500">Documented Immediately:</span> <span className="font-medium">{formatRate(data.administrationQuality.documentedImmediatelyRate)}</span></div>
+            <div><span className="text-gray-500">Child Consent:</span> <span className="font-medium">{formatRate(data.administrationQuality.childConsentRate)}</span></div>
+            <div><span className="text-gray-500">Side Effects Monitored:</span> <span className="font-medium">{formatRate(data.administrationQuality.sideEffectsMonitoredRate)}</span></div>
           </div>
         </Section>
 
@@ -180,21 +181,21 @@ export function MedicationErrorPreventionDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Errors:</span> <span className={`font-medium ${data.errorManagement.totalErrors > 0 ? "text-amber-600" : "text-green-600"}`}>{data.errorManagement.totalErrors}</span></div>
             <div><span className="text-gray-500">Near Misses:</span> <span className="font-medium">{data.errorManagement.nearMissCount}</span></div>
-            <div><span className="text-gray-500">No Harm:</span> <span className="font-medium">{data.errorManagement.noHarmRate}%</span></div>
-            <div><span className="text-gray-500">Reported Immediately:</span> <span className="font-medium">{data.errorManagement.reportedImmediatelyRate}%</span></div>
-            <div><span className="text-gray-500">Root Cause Identified:</span> <span className="font-medium">{data.errorManagement.rootCauseIdentifiedRate}%</span></div>
-            <div><span className="text-gray-500">Preventive Action:</span> <span className="font-medium">{data.errorManagement.preventiveActionRate}%</span></div>
-            <div><span className="text-gray-500">Duty of Candour:</span> <span className="font-medium">{data.errorManagement.dutyOfCandourRate}%</span></div>
+            <div><span className="text-gray-500">No Harm:</span> <span className="font-medium">{formatRate(data.errorManagement.noHarmRate)}</span></div>
+            <div><span className="text-gray-500">Reported Immediately:</span> <span className="font-medium">{formatRate(data.errorManagement.reportedImmediatelyRate)}</span></div>
+            <div><span className="text-gray-500">Root Cause Identified:</span> <span className="font-medium">{formatRate(data.errorManagement.rootCauseIdentifiedRate)}</span></div>
+            <div><span className="text-gray-500">Preventive Action:</span> <span className="font-medium">{formatRate(data.errorManagement.preventiveActionRate)}</span></div>
+            <div><span className="text-gray-500">Duty of Candour:</span> <span className="font-medium">{formatRate(data.errorManagement.dutyOfCandourRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Storage Safety">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Audits:</span> <span className="font-medium">{data.storageSafety.totalAudits}</span></div>
-            <div><span className="text-gray-500">Fully Compliant:</span> <span className="font-medium">{data.storageSafety.fullyCompliantRate}%</span></div>
-            <div><span className="text-gray-500">Temperature OK:</span> <span className="font-medium">{data.storageSafety.temperatureComplianceRate}%</span></div>
-            <div><span className="text-gray-500">Expiry Compliance:</span> <span className="font-medium">{data.storageSafety.expiryComplianceRate}%</span></div>
-            <div><span className="text-gray-500">MAR Chart Accuracy:</span> <span className="font-medium">{data.storageSafety.marChartAccuracyRate}%</span></div>
+            <div><span className="text-gray-500">Fully Compliant:</span> <span className="font-medium">{formatRate(data.storageSafety.fullyCompliantRate)}</span></div>
+            <div><span className="text-gray-500">Temperature OK:</span> <span className="font-medium">{formatRate(data.storageSafety.temperatureComplianceRate)}</span></div>
+            <div><span className="text-gray-500">Expiry Compliance:</span> <span className="font-medium">{formatRate(data.storageSafety.expiryComplianceRate)}</span></div>
+            <div><span className="text-gray-500">MAR Chart Accuracy:</span> <span className="font-medium">{formatRate(data.storageSafety.marChartAccuracyRate)}</span></div>
             <div><span className="text-gray-500">Expired Found:</span> <span className={`font-medium ${data.storageSafety.expiredMedicationAudits > 0 ? "text-red-600" : "text-green-600"}`}>{data.storageSafety.expiredMedicationAudits}</span></div>
           </div>
         </Section>
@@ -202,10 +203,10 @@ export function MedicationErrorPreventionDashboardWidget() {
         <Section title="Training Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Staff:</span> <span className="font-medium">{data.trainingCompliance.totalStaff}</span></div>
-            <div><span className="text-gray-500">Current:</span> <span className="font-medium">{data.trainingCompliance.currentRate}%</span></div>
-            <div><span className="text-gray-500">Competency Assessed:</span> <span className="font-medium">{data.trainingCompliance.competencyAssessedRate}%</span></div>
-            <div><span className="text-gray-500">Controlled Drugs:</span> <span className="font-medium">{data.trainingCompliance.controlledDrugsRate}%</span></div>
-            <div><span className="text-gray-500">Error Reporting:</span> <span className="font-medium">{data.trainingCompliance.errorReportingRate}%</span></div>
+            <div><span className="text-gray-500">Current:</span> <span className="font-medium">{formatRate(data.trainingCompliance.currentRate)}</span></div>
+            <div><span className="text-gray-500">Competency Assessed:</span> <span className="font-medium">{formatRate(data.trainingCompliance.competencyAssessedRate)}</span></div>
+            <div><span className="text-gray-500">Controlled Drugs:</span> <span className="font-medium">{formatRate(data.trainingCompliance.controlledDrugsRate)}</span></div>
+            <div><span className="text-gray-500">Error Reporting:</span> <span className="font-medium">{formatRate(data.trainingCompliance.errorReportingRate)}</span></div>
             <div><span className="text-gray-500">Expiring Soon:</span> <span className={`font-medium ${data.trainingCompliance.expiringCount > 0 ? "text-amber-600" : "text-gray-900"}`}>{data.trainingCompliance.expiringCount}</span></div>
           </div>
         </Section>

@@ -1119,12 +1119,12 @@ describe("generateInternetSafetyMonitoringIntelligence", () => {
     expect(result.referralAppropriatenessRate).toBe(50);
   });
 
-  it("returns 100 referral appropriateness when no high/critical incidents", () => {
+  it("leaves referral appropriateness unmeasured when no high/critical incidents", () => {
     const incidents = [makeIncident({ severity: "low" })];
     const result = generateInternetSafetyMonitoringIntelligence(
       incidents, fullPolicy, fullTraining, "oak-house", "2026-01-01", "2026-05-19",
     );
-    expect(result.referralAppropriatenessRate).toBe(100);
+    expect(result.referralAppropriatenessRate).toBeNull();
   });
 
   it("calculates staff training coverage rate", () => {
@@ -1148,11 +1148,11 @@ describe("generateInternetSafetyMonitoringIntelligence", () => {
     expect(result.staffTrainingCoverageRate).toBe(50);
   });
 
-  it("returns 0 staff training coverage when no training", () => {
+  it("leaves staff training coverage unmeasured when no training", () => {
     const result = generateInternetSafetyMonitoringIntelligence(
       [], fullPolicy, [], "oak-house", "2026-01-01", "2026-05-19",
     );
-    expect(result.staffTrainingCoverageRate).toBe(0);
+    expect(result.staffTrainingCoverageRate).toBeNull();
   });
 
   it("builds incidents by category breakdown", () => {

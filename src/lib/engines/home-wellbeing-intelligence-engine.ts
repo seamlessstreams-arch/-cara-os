@@ -59,6 +59,8 @@ export interface HomeWellbeingInput {
   activities: ActivityEntryInput[];
 }
 
+import { below, meanOf, meets, rateOf } from "@/lib/metrics/rate";
+
 // ── Output Types ────────────────────────────────────────────────────────────
 
 export type HomeTemperature = "thriving" | "positive" | "settled" | "unsettled" | "concerning";
@@ -66,27 +68,28 @@ export type HomeTemperature = "thriving" | "positive" | "settled" | "unsettled" 
 export interface ChildWellbeingProfile {
   child_id: string;
   child_name: string;
-  avg_mood_7d: number;
-  avg_mood_30d: number;
+  // Null throughout means nothing was recorded for that domain, not a zero result
+  avg_mood_7d: number | null;
+  avg_mood_30d: number | null;
   mood_trend: "improving" | "stable" | "declining" | "insufficient_data";
-  sleep_quality_score: number;   // 0-100
-  welfare_ok_rate: number;       // 0-100
+  sleep_quality_score: number | null;   // 0-100
+  welfare_ok_rate: number | null;       // 0-100
   incident_count_30d: number;
-  activity_participation_rate: number;
-  wellbeing_score: number;       // 0-100
+  activity_participation_rate: number | null;
+  wellbeing_score: number;              // 0-100
   flags: string[];
 }
 
 export interface HomeMoodSnapshot {
-  average_mood_today: number;
-  average_mood_7d: number;
-  average_mood_30d: number;
+  average_mood_today: number | null;
+  average_mood_7d: number | null;
+  average_mood_30d: number | null;
   trend: "improving" | "stable" | "declining" | "insufficient_data";
 }
 
 export interface SleepOverview {
-  good_rate: number;
-  disturbed_rate: number;
+  good_rate: number | null;
+  disturbed_rate: number | null;
   total_disturbances_7d: number;
   children_with_poor_sleep: string[];
 }
@@ -136,12 +139,9 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 100;
-}
-
-function avg(values: number[]): number {
-  return values.length > 0 ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10 : 0;
+function avg(values: number[]): number | null {
+  if (values.length === 0) return null;
+  return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
 }
 
 function sleepScore(quality: string): number {
@@ -175,8 +175,9 @@ export function computeHomeWellbeing(
     const avg30d = avg(moods30d);
     const avgPrev = avg(moodsPrev);
 
+    // A trend needs both windows measured — silence in either is not movement
     let moodTrend: ChildWellbeingProfile["mood_trend"];
-    if (moods30d.length < 2 && moodsPrev.length < 2) {
+    if (avg30d === null || avgPrev === null) {
       moodTrend = "insufficient_data";
     } else if (avg30d > avgPrev + 0.5) {
       moodTrend = "improving";
@@ -189,12 +190,12 @@ export function computeHomeWellbeing(
     // Sleep
     const sleep7d = sleep_entries.filter((s) => s.child_id === c.id && isWithin(today, s.date, 7));
     const sleepScores = sleep7d.map((s) => sleepScore(s.quality));
-    const sleepQual = sleepScores.length > 0 ? Math.round(avg(sleepScores)) : 100;
+    const sleepQual = meanOf(sleepScores);
 
     // Welfare checks
     const welf30d = welfare_checks.filter((w) => w.child_id === c.id && isWithin(today, w.date, 30));
     const welfOk = welf30d.filter((w) => w.outcome === "ok");
-    const welfOkRate = pct(welfOk.length, welf30d.length);
+    const welfOkRate = rateOf(welfOk, welf30d);
 
     // Incidents
     const inc30d = incidents.filter((i) => i.child_id === c.id && isWithin(today, i.date, 30));
@@ -202,31 +203,31 @@ export function computeHomeWellbeing(
     // Activities
     const act30d = activities.filter((a) => a.child_id === c.id && isWithin(today, a.date, 30));
     const actParticipated = act30d.filter((a) => a.participated);
-    const actRate = pct(actParticipated.length, act30d.length);
+    const actRate = rateOf(actParticipated, act30d);
 
     // Composite wellbeing score (0-100)
     let ws = 50;
-    if (avg30d >= 7) ws += 15;
-    else if (avg30d >= 5) ws += 5;
-    else if (avg30d > 0 && avg30d < 4) ws -= 15;
+    if (avg30d !== null && avg30d >= 7) ws += 15;
+    else if (avg30d !== null && avg30d >= 5) ws += 5;
+    else if (avg30d !== null && avg30d < 4) ws -= 15;
     if (moodTrend === "improving") ws += 5;
     if (moodTrend === "declining") ws -= 10;
-    if (sleepQual >= 80) ws += 5;
-    else if (sleepQual < 40) ws -= 10;
-    if (welfOkRate === 100 && welf30d.length > 0) ws += 5;
+    if (meets(sleepQual, 80)) ws += 5;
+    else if (below(sleepQual, 40)) ws -= 10;
+    if (meets(welfOkRate, 100)) ws += 5;
     if (welf30d.filter((w) => w.outcome === "concern").length > 0) ws -= 5;
     if (inc30d.length === 0) ws += 5;
     if (inc30d.length >= 3) ws -= 5;
     if (inc30d.some((i) => i.severity === "critical")) ws -= 10;
-    if (actRate >= 80 && act30d.length >= 2) ws += 5;
+    if (meets(actRate, 80) && act30d.length >= 2) ws += 5;
     else if (act30d.length === 0) ws -= 3;
 
     ws = clamp(ws, 0, 100);
 
     const flags: string[] = [];
-    if (avg30d > 0 && avg30d < 4) flags.push("Low mood (30d avg below 4)");
+    if (avg30d !== null && avg30d < 4) flags.push("Low mood (30d avg below 4)");
     if (moodTrend === "declining") flags.push("Mood declining");
-    if (sleepQual < 40) flags.push("Poor sleep quality");
+    if (below(sleepQual, 40)) flags.push("Poor sleep quality");
     if (inc30d.length >= 3) flags.push(`${inc30d.length} incidents in 30d`);
     if (welf30d.filter((w) => w.outcome === "concern").length >= 2) flags.push("Multiple welfare concerns");
 
@@ -254,16 +255,18 @@ export function computeHomeWellbeing(
     return da > 30 && da <= 60;
   }).map((m) => m.mood_score);
 
+  const avgAll30d = avg(allMoods30d);
+  const avgAllPrev = avg(allMoodsPrev);
   const homeMoodTrend: HomeMoodSnapshot["trend"] =
-    allMoods30d.length < 3 && allMoodsPrev.length < 3 ? "insufficient_data" :
-    avg(allMoods30d) > avg(allMoodsPrev) + 0.3 ? "improving" :
-    avg(allMoods30d) < avg(allMoodsPrev) - 0.3 ? "declining" :
+    avgAll30d === null || avgAllPrev === null ? "insufficient_data" :
+    avgAll30d > avgAllPrev + 0.3 ? "improving" :
+    avgAll30d < avgAllPrev - 0.3 ? "declining" :
     "stable";
 
   const mood_snapshot: HomeMoodSnapshot = {
     average_mood_today: avg(allMoodsToday),
     average_mood_7d: avg(allMoods7d),
-    average_mood_30d: avg(allMoods30d),
+    average_mood_30d: avgAll30d,
     trend: homeMoodTrend,
   };
 
@@ -280,8 +283,8 @@ export function computeHomeWellbeing(
     .map((id) => children.find((c) => c.id === id)?.name ?? id);
 
   const sleep_overview: SleepOverview = {
-    good_rate: pct(goodSleep.length, sleep7d.length),
-    disturbed_rate: pct(disturbedSleep.length, sleep7d.length),
+    good_rate: rateOf(goodSleep, sleep7d),
+    disturbed_rate: rateOf(disturbedSleep, sleep7d),
     total_disturbances_7d: totalDisturbances,
     children_with_poor_sleep: poorSleepNames,
   };
@@ -292,16 +295,14 @@ export function computeHomeWellbeing(
     .map((p) => p.child_name);
 
   // ── Composite Temperature Score ──────────────────────────────────────
-  const avgWellbeing = child_profiles.length > 0
-    ? avg(child_profiles.map((p) => p.wellbeing_score))
-    : 50;
+  const avgWellbeing = avg(child_profiles.map((p) => p.wellbeing_score));
 
-  let score = Math.round(avgWellbeing);
+  let score = Math.round(avgWellbeing ?? 50);
 
   // Adjust for home-wide factors
   if (mood_snapshot.trend === "improving") score += 5;
   if (mood_snapshot.trend === "declining") score -= 5;
-  if (sleep_overview.disturbed_rate > 30) score -= 5;
+  if (sleep_overview.disturbed_rate !== null && sleep_overview.disturbed_rate > 30) score -= 5;
   if (children_of_concern.length > 0) score -= children_of_concern.length * 3;
   if (children_of_concern.length === 0 && children.length > 0) score += 3;
 
@@ -317,7 +318,7 @@ export function computeHomeWellbeing(
   // ── Headline ──────────────────────────────────────────────────────────
   const parts: string[] = [];
   parts.push(`Home wellbeing temperature: ${temperature}`);
-  if (mood_snapshot.average_mood_7d > 0) parts.push(`avg mood ${mood_snapshot.average_mood_7d}/10 (7d)`);
+  if (mood_snapshot.average_mood_7d !== null) parts.push(`avg mood ${mood_snapshot.average_mood_7d}/10 (7d)`);
   if (children_of_concern.length > 0) parts.push(`${children_of_concern.length} child${children_of_concern.length !== 1 ? "ren" : ""} of concern`);
   if (sleep_overview.children_with_poor_sleep.length > 0) parts.push(`${sleep_overview.children_with_poor_sleep.length} with sleep issues`);
   const headline = parts.join(". ") + ".";
@@ -333,11 +334,11 @@ export function computeHomeWellbeing(
     strengths.push("Home-wide mood trend is improving. The care environment is having a positive impact on children's emotional wellbeing.");
   }
 
-  if (mood_snapshot.average_mood_7d >= 7 && allMoods7d.length >= 3) {
+  if (mood_snapshot.average_mood_7d !== null && mood_snapshot.average_mood_7d >= 7 && allMoods7d.length >= 3) {
     strengths.push(`Average mood across the home is ${mood_snapshot.average_mood_7d}/10 in the last 7 days. Children are experiencing a positive emotional environment.`);
   }
 
-  if (sleep_overview.good_rate >= 80 && sleep7d.length >= 3) {
+  if (meets(sleep_overview.good_rate, 80) && sleep7d.length >= 3) {
     strengths.push(`${sleep_overview.good_rate}% good sleep quality across the home. Effective bedtime routines and a calm night environment support children's wellbeing.`);
   }
 
@@ -357,7 +358,7 @@ export function computeHomeWellbeing(
     concerns.push("Home-wide mood trend is declining. This may indicate systemic issues — review care approach, staffing, and any environmental changes.");
   }
 
-  if (mood_snapshot.average_mood_7d > 0 && mood_snapshot.average_mood_7d < 5 && allMoods7d.length >= 3) {
+  if (mood_snapshot.average_mood_7d !== null && mood_snapshot.average_mood_7d < 5 && allMoods7d.length >= 3) {
     concerns.push(`Average home mood is ${mood_snapshot.average_mood_7d}/10 this week. Low collective mood warrants investigation — consider a team debrief and individual check-ins with each child.`);
   }
 
@@ -365,7 +366,7 @@ export function computeHomeWellbeing(
     concerns.push(`${children_of_concern.length} child${children_of_concern.length !== 1 ? "ren" : ""} of concern: ${children_of_concern.join(", ")}. Individual wellbeing plans should be reviewed and enhanced.`);
   }
 
-  if (sleep_overview.disturbed_rate > 30 && sleep7d.length >= 3) {
+  if (sleep_overview.disturbed_rate !== null && sleep_overview.disturbed_rate > 30 && sleep7d.length >= 3) {
     concerns.push(`${sleep_overview.disturbed_rate}% disturbed sleep rate across the home. Poor sleep impacts emotional regulation, education, and behaviour. Review night-time routines and environment.`);
   }
 
@@ -392,7 +393,7 @@ export function computeHomeWellbeing(
     });
   }
 
-  if (mood_snapshot.trend === "declining" && mood_snapshot.average_mood_30d < 5) {
+  if (mood_snapshot.trend === "declining" && mood_snapshot.average_mood_30d !== null && mood_snapshot.average_mood_30d < 5) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Hold a team meeting to review the emotional climate of the home. Identify contributing factors and develop an action plan to improve children's wellbeing.",
@@ -402,7 +403,7 @@ export function computeHomeWellbeing(
     });
   }
 
-  if (sleep_overview.disturbed_rate > 30 && sleep7d.length >= 3) {
+  if (sleep_overview.disturbed_rate !== null && sleep_overview.disturbed_rate > 30 && sleep7d.length >= 3) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review night-time routines and environment. Consider: screen time before bed, room temperature, noise levels, and individual wind-down plans for each child.",
@@ -446,7 +447,7 @@ export function computeHomeWellbeing(
     });
   }
 
-  if (mood_snapshot.trend === "improving" && sleep_overview.good_rate >= 70 && children_of_concern.length === 0) {
+  if (mood_snapshot.trend === "improving" && meets(sleep_overview.good_rate, 70) && children_of_concern.length === 0) {
     insights.push({
       severity: "positive",
       text: "Improving mood trend, good sleep quality, and no children of concern. The home is providing a stable, nurturing environment. Inspectors would see this as strong evidence of effective care practice.",

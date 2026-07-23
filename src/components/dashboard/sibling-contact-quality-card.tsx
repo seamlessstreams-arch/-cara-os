@@ -89,7 +89,7 @@ export function SiblingContactQualityCard() {
             <p className="text-[10px] text-muted-foreground">Concerns</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums text-blue-600">{ft.avg_duration_minutes}m</p>
+            <p className="text-lg font-bold tabular-nums text-blue-600">{ft.avg_duration_minutes === null ? "—" : `${ft.avg_duration_minutes}m`}</p>
             <p className="text-[10px] text-muted-foreground">Avg Duration</p>
           </div>
         </div>
@@ -117,8 +117,8 @@ export function SiblingContactQualityCard() {
               </div>
             </div>
             <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t">
-              <span>Mood on contact days: {mi.avg_mood_contact_days}/10</span>
-              <span>Non-contact: {mi.avg_mood_non_contact_days}/10</span>
+              <span>Mood on contact days: {mi.avg_mood_contact_days ?? "—"}/10</span>
+              <span>Non-contact: {mi.avg_mood_non_contact_days ?? "—"}/10</span>
             </div>
           </div>
         )}

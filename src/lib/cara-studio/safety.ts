@@ -131,7 +131,15 @@ export function preGenerationCheck(params: {
     });
   }
 
-  const score = blockers.length > 0 ? 0 : warnings.length > 2 ? 50 : warnings.length > 0 ? 75 : 100;
+  // A brief with no content was never scanned, so a clean result is not a clean
+  // bill of health — report it as unassessed rather than a perfect score.
+  const briefScanned = params.brief.trim().length > 0;
+  const score =
+    blockers.length > 0 ? 0
+    : warnings.length > 2 ? 50
+    : warnings.length > 0 ? 75
+    : briefScanned ? 100
+    : null;
 
   return {
     passed: blockers.length === 0,
@@ -224,10 +232,13 @@ export function postGenerationCheck(
     flags.push({ code: "REQUIRES_APPROVAL", severity: "warning", message: "Statutory draft — requires professional approval" });
   }
 
-  // Score calculation
-  let score = 100;
+  // Score calculation — nothing generated means nothing was scanned, so there is
+  // no safety score to report (an empty output must not score as near-clean).
+  let score: number | null;
   if (blockers.length > 0) score = 0;
+  else if (allContent.trim().length === 0) score = null;
   else {
+    score = 100;
     score -= flags.filter((f) => f.severity === "warning").length * 15;
     score -= flags.filter((f) => f.severity === "info").length * 5;
     score = Math.max(0, score);

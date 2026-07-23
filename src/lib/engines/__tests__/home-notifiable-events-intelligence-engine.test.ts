@@ -71,15 +71,25 @@ describe("Home Notifiable Events Intelligence Engine", () => {
 
   // ── Zero Events ───────────────────────────────────────────────────────────
 
-  it("rates outstanding with zero events", () => {
+  it("reports insufficient data when nothing has ever been recorded", () => {
     const r = computeHomeNotifiableEvents(baseInput({ events: [] }));
-    expect(r.events_rating).toBe("outstanding");
-    expect(r.events_score).toBe(90);
+    expect(r.events_rating).toBe("insufficient_data");
+    expect(r.events_score).toBe(0);
   });
 
-  it("has positive message with zero events", () => {
+  it("does not claim a strength from an empty register", () => {
     const r = computeHomeNotifiableEvents(baseInput({ events: [] }));
-    expect(r.strengths.length).toBeGreaterThan(0);
+    expect(r.strengths).toHaveLength(0);
+    expect(r.concerns.length).toBeGreaterThan(0);
+    expect(r.headline.toLowerCase()).toContain("cannot be evidenced");
+  });
+
+  it("rates outstanding when events are recorded but none fall in the window", () => {
+    const r = computeHomeNotifiableEvents(baseInput({
+      events: [makeEvent({ id: "old", date: "2026-01-01" })],
+    }));
+    expect(r.events_rating).toBe("outstanding");
+    expect(r.events_score).toBe(90);
     expect(r.headline.toLowerCase()).toContain("excellent");
   });
 
@@ -430,7 +440,7 @@ describe("Home Notifiable Events Intelligence Engine", () => {
         makeEvent({ id: "e1", ofsted_status: "not_required" }),
       ],
     }));
-    // not_required excluded from compliance calculation
-    expect(r.events_profile.notification_compliance_rate).toBe(100);
+    // not_required excluded from compliance calculation — nothing left to rate
+    expect(r.events_profile.notification_compliance_rate).toBeNull();
   });
 });

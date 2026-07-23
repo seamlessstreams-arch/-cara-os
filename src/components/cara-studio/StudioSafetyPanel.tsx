@@ -18,6 +18,7 @@ import {
   AlertCircle, Info, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets } from "@/lib/metrics/rate";
 import type { SafetyAssessment } from "@/lib/cara-studio/types";
 
 interface StudioSafetyPanelProps {
@@ -28,12 +29,16 @@ interface StudioSafetyPanelProps {
 export function StudioSafetyPanel({ safety, compact = false }: StudioSafetyPanelProps) {
   const passed = safety.passed;
   const score = safety.score;
+  const scoreLabel = score === null ? "—" : `${score}/100`;
 
-  // Determine overall status
+  // Determine overall status. A null score means nothing was scanned — that is
+  // "not assessed", never "Safe".
   const statusConfig = passed
-    ? score >= 90
-      ? { icon: ShieldCheck, label: "Safe", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" }
-      : { icon: Shield, label: "Passed with warnings", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" }
+    ? score === null
+      ? { icon: Shield, label: "Not assessed", color: "text-slate-600", bg: "bg-slate-50", border: "border-slate-200" }
+      : meets(score, 90)
+        ? { icon: ShieldCheck, label: "Safe", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" }
+        : { icon: Shield, label: "Passed with warnings", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" }
     : { icon: ShieldAlert, label: "Blocked", color: "text-red-600", bg: "bg-red-50", border: "border-red-200" };
 
   const StatusIcon = statusConfig.icon;
@@ -44,7 +49,7 @@ export function StudioSafetyPanel({ safety, compact = false }: StudioSafetyPanel
       <div className={cn("inline-flex items-center gap-1.5 rounded-md border px-2 py-1", statusConfig.bg, statusConfig.border)}>
         <StatusIcon className={cn("h-3.5 w-3.5", statusConfig.color)} />
         <span className={cn("text-xs font-medium", statusConfig.color)}>
-          {statusConfig.label} ({score}/100)
+          {statusConfig.label} ({scoreLabel})
         </span>
       </div>
     );
@@ -62,7 +67,7 @@ export function StudioSafetyPanel({ safety, compact = false }: StudioSafetyPanel
           </span>
         </div>
         <Badge className={cn("text-xs", statusConfig.bg, statusConfig.color, statusConfig.border)}>
-          Score: {score}/100
+          Score: {scoreLabel}
         </Badge>
       </div>
 

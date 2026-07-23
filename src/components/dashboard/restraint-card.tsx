@@ -15,6 +15,7 @@ import {
   ShieldCheck, Loader2, Clock, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useRestraintIntelligence } from "@/hooks/use-restraint-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -34,24 +35,27 @@ const INSIGHT_STYLES: Record<string, string> = {
 
 // ── Compliance bar sub-component ────────────────────────────────────────────
 
-function ComplianceBar({ label, value }: { label: string; value: number }) {
+function ComplianceBar({ label, value }: { label: string; value: number | null }) {
+  const measured = typeof value === "number";
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="w-28 truncate">{label}</span>
       <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className={cn(
-            "h-full rounded-full",
-            value >= 90 ? "bg-green-400" : value >= 70 ? "bg-amber-400" : "bg-red-400",
-          )}
-          style={{ width: `${value}%` }}
-        />
+        {measured && (
+          <div
+            className={cn(
+              "h-full rounded-full",
+              meets(value, 90) ? "bg-green-400" : meets(value, 70) ? "bg-amber-400" : "bg-red-400",
+            )}
+            style={{ width: `${value}%` }}
+          />
+        )}
       </div>
       <span className={cn(
         "w-8 text-right tabular-nums font-medium",
-        value >= 90 ? "text-[--cs-success]" : value >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+        !measured ? "text-muted-foreground" : meets(value, 90) ? "text-[--cs-success]" : meets(value, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]",
       )}>
-        {value}%
+        {formatRate(value)}
       </span>
     </div>
   );

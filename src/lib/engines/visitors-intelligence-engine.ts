@@ -5,6 +5,8 @@
 // SCCIF Helped & Protected, Leadership & Management.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, rateOf } from "@/lib/metrics/rate";
+
 export interface VisitorInput {
   id: string;
   date: string;
@@ -36,8 +38,8 @@ export interface VisitorsOverview {
   visits_last_30_days: number;
   currently_signed_in: number;
   unique_visitors: number;
-  dbs_compliance_rate: number;
-  id_compliance_rate: number;
+  dbs_compliance_rate: number | null;  // null = no visitor requiring a DBS check has attended
+  id_compliance_rate: number | null;   // null = no visit recorded
   children_with_visits: number;
   professional_visits: number;
   family_visits: number;
@@ -129,7 +131,7 @@ export function computeVisitorsIntelligence(input: EngineInput): VisitorsIntelli
     return {
       overview: {
         total_visits: 0, visits_last_30_days: 0, currently_signed_in: 0,
-        unique_visitors: 0, dbs_compliance_rate: 100, id_compliance_rate: 100,
+        unique_visitors: 0, dbs_compliance_rate: null, id_compliance_rate: null,
         children_with_visits: 0, professional_visits: 0, family_visits: 0,
       },
       category_breakdown: [],
@@ -161,8 +163,8 @@ export function computeVisitorsIntelligence(input: EngineInput): VisitorsIntelli
     visits_last_30_days: last30.length,
     currently_signed_in: signedIn.length,
     unique_visitors: uniqueNames.size,
-    dbs_compliance_rate: dbsRequired.length > 0 ? Math.round((dbsCompliant.length / dbsRequired.length) * 100) : 100,
-    id_compliance_rate: visitors.length > 0 ? Math.round((idVerified.length / visitors.length) * 100) : 100,
+    dbs_compliance_rate: rateOf(dbsCompliant, dbsRequired),
+    id_compliance_rate: rateOf(idVerified, visitors),
     children_with_visits: childrenWithVisits.size,
     professional_visits: professional.length,
     family_visits: family.length,
@@ -316,7 +318,7 @@ export function computeVisitorsIntelligence(input: EngineInput): VisitorsIntelli
   }
 
   // Positive: high DBS compliance
-  if (overview.dbs_compliance_rate === 100 && dbsRequired.length > 0) {
+  if (meets(overview.dbs_compliance_rate, 100) && dbsRequired.length > 0) {
     insights.push({
       severity: "positive",
       text: `100% DBS compliance for all ${dbsRequired.length} regulated visitors. Safeguarding checks robust.`,
@@ -332,7 +334,7 @@ export function computeVisitorsIntelligence(input: EngineInput): VisitorsIntelli
   }
 
   // Positive: good ID verification
-  if (overview.id_compliance_rate === 100 && visitors.length > 0) {
+  if (meets(overview.id_compliance_rate, 100) && visitors.length > 0) {
     insights.push({
       severity: "positive",
       text: `100% ID verification rate across all ${visitors.length} visits. Visitor management procedures consistently followed.`,

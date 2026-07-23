@@ -15,6 +15,7 @@ import {
   Scale, Eye, MessageSquare, Clock, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useDoLIntelligence } from "@/hooks/use-dol-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -94,13 +95,13 @@ export function DeprivationOfLibertyCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.proportionality_rate >= 90 ? "bg-green-50" : "bg-amber-50",
+            meets(o.proportionality_rate, 90) ? "bg-green-50" : o.proportionality_rate === null ? "bg-slate-50" : "bg-amber-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.proportionality_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
+              meets(o.proportionality_rate, 90) ? "text-[--cs-success]" : o.proportionality_rate === null ? "text-muted-foreground" : "text-[--cs-warning]",
             )}>
-              {o.proportionality_rate}%
+              {formatRate(o.proportionality_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Proportionate</p>
           </div>
@@ -180,15 +181,15 @@ export function DeprivationOfLibertyCard() {
                 <MessageSquare className="h-3 w-3" />
                 Child consulted
               </span>
-              <span className={cn("font-bold tabular-nums", o.child_consultation_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {o.child_consultation_rate}%
+              <span className={cn("font-bold tabular-nums", meets(o.child_consultation_rate, 90) ? "text-[--cs-success]" : o.child_consultation_rate === null ? "text-muted-foreground" : "text-[--cs-warning]")}>
+                {formatRate(o.child_consultation_rate)}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
                 <div
-                  className={cn("h-full rounded-full", o.child_consultation_rate >= 90 ? "bg-green-500" : "bg-amber-500")}
-                  style={{ width: `${o.child_consultation_rate}%` }}
+                  className={cn("h-full rounded-full", meets(o.child_consultation_rate, 90) ? "bg-green-500" : "bg-amber-500")}
+                  style={{ width: `${o.child_consultation_rate ?? 0}%` }}
                 />
               </div>
             </div>
@@ -196,15 +197,15 @@ export function DeprivationOfLibertyCard() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Social worker informed</span>
-              <span className={cn("font-bold tabular-nums", o.social_worker_informed_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {o.social_worker_informed_rate}%
+              <span className={cn("font-bold tabular-nums", meets(o.social_worker_informed_rate, 90) ? "text-[--cs-success]" : o.social_worker_informed_rate === null ? "text-muted-foreground" : "text-[--cs-warning]")}>
+                {formatRate(o.social_worker_informed_rate)}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
                 <div
-                  className={cn("h-full rounded-full", o.social_worker_informed_rate >= 90 ? "bg-green-500" : "bg-amber-500")}
-                  style={{ width: `${o.social_worker_informed_rate}%` }}
+                  className={cn("h-full rounded-full", meets(o.social_worker_informed_rate, 90) ? "bg-green-500" : "bg-amber-500")}
+                  style={{ width: `${o.social_worker_informed_rate ?? 0}%` }}
                 />
               </div>
             </div>

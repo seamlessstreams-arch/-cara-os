@@ -173,7 +173,7 @@ export function StaffPerformanceDashboardWidget() {
             <div><span className="text-gray-500">Achieved:</span> <span className="font-medium">{data.qualificationCompliance.totalAchieved}</span></div>
             <div><span className="text-gray-500">Achieved Rate:</span> <span className="font-medium">{data.qualificationCompliance.achievedRate}%</span></div>
             <div><span className="text-gray-500">Expired:</span> <span className={`font-medium ${data.qualificationCompliance.expiredCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.qualificationCompliance.expiredCount}</span></div>
-            <div><span className="text-gray-500">Renewal Rate:</span> <span className="font-medium">{data.qualificationCompliance.renewalRate}%</span></div>
+            <div><span className="text-gray-500">Renewal Rate:</span> <span className="font-medium">{typeof data.qualificationCompliance.renewalRate === "number" ? `${data.qualificationCompliance.renewalRate}%` : "—"}</span></div>
             <div><span className="text-gray-500">Mandatory:</span> <span className="font-medium">{data.qualificationCompliance.mandatoryComplianceRate}%</span></div>
           </div>
         </Section>

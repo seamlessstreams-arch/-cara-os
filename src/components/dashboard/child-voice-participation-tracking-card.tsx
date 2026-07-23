@@ -15,6 +15,7 @@ import {
   Loader2, Users, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useContactEngagement } from "@/hooks/use-contact-engagement";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -83,8 +84,8 @@ export function ChildVoiceParticipationTrackingCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{c.total_children}</p>
             <p className="text-[10px] text-muted-foreground">Children</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", c.overall_completion_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.overall_completion_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{c.overall_completion_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(c.overall_completion_rate, 80) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(c.overall_completion_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(c.overall_completion_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Completion</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", childrenWithConcerns === 0 ? "bg-green-50" : "bg-amber-50")}>

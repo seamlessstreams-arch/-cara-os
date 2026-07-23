@@ -19,6 +19,7 @@ import { useDailyLog } from "@/hooks/use-daily-log";
 import { useRecruitment } from "@/hooks/use-recruitment";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { computeRiScores } from "@/lib/ri/compute-scores";
+import { below, meanOf, meets } from "@/lib/metrics/rate";
 import { Sparkles, TrendingUp, TrendingDown, Minus, BarChart3, Zap, CircleDot, Shield, Users, Heart, Building2, FileCheck } from "lucide-react";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -40,10 +41,10 @@ type StrategicResult = {
   risk_level: string;
 };
 
-function ScoreBar({ label, score, prev }: { label: string; score: number; prev?: number }) {
-  const colour = score >= 80 ? "bg-emerald-500" : score >= 65 ? "bg-amber-400" : score >= 50 ? "bg-orange-400" : "bg-red-500";
-  const textColour = score >= 80 ? "text-emerald-700" : score >= 65 ? "text-amber-700" : score >= 50 ? "text-orange-700" : "text-red-700";
-  const delta = prev !== undefined ? score - prev : undefined;
+function ScoreBar({ label, score, prev }: { label: string; score: number | null; prev?: number }) {
+  const colour = meets(score, 80) ? "bg-emerald-500" : meets(score, 65) ? "bg-amber-400" : meets(score, 50) ? "bg-orange-400" : below(score, 50) ? "bg-red-500" : "bg-slate-200";
+  const textColour = meets(score, 80) ? "text-emerald-700" : meets(score, 65) ? "text-amber-700" : meets(score, 50) ? "text-orange-700" : below(score, 50) ? "text-red-700" : "text-[var(--cs-text-muted)]";
+  const delta = prev !== undefined && score !== null ? score - prev : undefined;
 
   return (
     <div className="group space-y-1.5 p-3 rounded-xl hover:bg-[var(--cs-surface)] transition-colors">
@@ -56,11 +57,11 @@ function ScoreBar({ label, score, prev }: { label: string; score: number; prev?:
               {delta !== 0 && ` ${Math.abs(delta)}`}
             </span>
           )}
-          <span className={cn("font-bold tabular-nums", textColour)}>{score}</span>
+          <span className={cn("font-bold tabular-nums", textColour)}>{score ?? "—"}</span>
         </div>
       </div>
       <div className="h-2 rounded-full bg-slate-100">
-        <div className={cn("h-2 rounded-full transition-all", colour)} style={{ width: `${score}%` }} />
+        <div className={cn("h-2 rounded-full transition-all", colour)} style={{ width: `${score ?? 0}%` }} />
       </div>
     </div>
   );
@@ -151,8 +152,9 @@ export default function ScorecardPage() {
 
   const urgentNeeds = (trainingNeedsData?.data ?? []).filter((n) => n.priority === "urgent" && !["completed", "no_action"].includes(n.status)).length;
   const overallScore = scores.overall_governance_score;
-  const riskLevel = overallScore >= 80 ? "low" : overallScore >= 65 ? "medium" : overallScore >= 50 ? "high" : "critical";
-  const riskColour = riskLevel === "low" ? "text-emerald-700 bg-emerald-100" : riskLevel === "medium" ? "text-amber-700 bg-amber-100" : riskLevel === "high" ? "text-orange-700 bg-orange-100" : "text-red-700 bg-red-100";
+  const riskLevel = meets(overallScore, 80) ? "low" : meets(overallScore, 65) ? "medium" : meets(overallScore, 50) ? "high" : below(overallScore, 50) ? "critical" : "not yet measured";
+  const riskColour = riskLevel === "low" ? "text-emerald-700 bg-emerald-100" : riskLevel === "medium" ? "text-amber-700 bg-amber-100" : riskLevel === "high" ? "text-orange-700 bg-orange-100" : riskLevel === "critical" ? "text-red-700 bg-red-100" : "text-slate-600 bg-slate-100";
+  const scoreByKey = scores as unknown as Record<string, number | null>;
   const liveMetricCount = ALL_METRICS.filter((m) => m.live).length;
 
   const generateStrategic = async () => {
@@ -163,7 +165,7 @@ export default function ScorecardPage() {
         {
           mode: "ri_strategic_analysis",
           style: "provider_summary",
-          source_content: `${homeName} governance scorecard (live data). Overall: ${overallScore}/100. Risk level: ${riskLevel}. ${urgentNeeds} urgent training needs. Metrics: ${ALL_METRICS.map((m) => `${m.label}: ${(scores as unknown as Record<string, number>)[m.key]}`).join(", ")}.`,
+          source_content: `${homeName} governance scorecard (live data). Overall: ${overallScore === null ? "not yet measured" : `${overallScore}/100`}. Risk level: ${riskLevel}. ${urgentNeeds} urgent training needs. Metrics: ${ALL_METRICS.map((m) => `${m.label}: ${scoreByKey[m.key] ?? "no records yet"}`).join(", ")}.`,
           page_context: "RI Governance Scorecard",
           record_type: "governance_analysis",
           user_role: "responsible_individual",
@@ -200,7 +202,7 @@ export default function ScorecardPage() {
         {/* Overall */}
         <div className="rounded-2xl bg-slate-900 p-6 text-white flex items-center gap-6">
           <div className="text-center shrink-0">
-            <div className="text-6xl font-bold tabular-nums">{overallScore}</div>
+            <div className="text-6xl font-bold tabular-nums">{overallScore ?? "—"}</div>
             <div className="text-xs text-[var(--cs-text-muted)] mt-1">Overall Score</div>
           </div>
           <div className="flex-1 space-y-2">
@@ -208,7 +210,7 @@ export default function ScorecardPage() {
               <BarChart3 className="h-4 w-4 text-indigo-400 shrink-0" />
               <span className="text-sm font-semibold text-white">{`${homeName} Governance`}</span>
               <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold ml-auto", riskColour)}>
-                {riskLevel.toUpperCase()} RISK
+                {riskLevel === "not yet measured" ? "NOT YET MEASURED" : `${riskLevel.toUpperCase()} RISK`}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -217,8 +219,8 @@ export default function ScorecardPage() {
             </div>
             <div className="h-2 rounded-full bg-white/10">
               <div
-                className={cn("h-2 rounded-full transition-all", overallScore >= 80 ? "bg-emerald-400" : overallScore >= 65 ? "bg-amber-400" : "bg-red-500")}
-                style={{ width: `${overallScore}%` }}
+                className={cn("h-2 rounded-full transition-all", meets(overallScore, 80) ? "bg-emerald-400" : meets(overallScore, 65) ? "bg-amber-400" : below(overallScore, 65) ? "bg-red-500" : "bg-white/20")}
+                style={{ width: `${overallScore ?? 0}%` }}
               />
             </div>
             <p className="text-xs text-[var(--cs-text-muted)]">Composite of 15 governance indicators. Safeguarding weighted 2×.</p>
@@ -226,11 +228,12 @@ export default function ScorecardPage() {
         </div>
 
         {/* Traffic light summary */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Green (80+)", count: ALL_METRICS.filter((m) => ((scores as unknown as Record<string, number>)[m.key] ?? 0) >= 80).length, colour: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200", dot: "bg-emerald-400" },
-            { label: "Amber (65-79)", count: ALL_METRICS.filter((m) => { const s = (scores as unknown as Record<string, number>)[m.key] ?? 0; return s >= 65 && s < 80; }).length, colour: "text-amber-700", bg: "bg-amber-50 border-amber-200", dot: "bg-amber-400" },
-            { label: "Red (<65)", count: ALL_METRICS.filter((m) => ((scores as unknown as Record<string, number>)[m.key] ?? 0) < 65).length, colour: "text-red-700", bg: "bg-red-50 border-red-200", dot: "bg-red-400" },
+            { label: "Green (80+)", count: ALL_METRICS.filter((m) => meets(scoreByKey[m.key], 80)).length, colour: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200", dot: "bg-emerald-400" },
+            { label: "Amber (65-79)", count: ALL_METRICS.filter((m) => meets(scoreByKey[m.key], 65) && below(scoreByKey[m.key], 80)).length, colour: "text-amber-700", bg: "bg-amber-50 border-amber-200", dot: "bg-amber-400" },
+            { label: "Red (<65)", count: ALL_METRICS.filter((m) => below(scoreByKey[m.key], 65)).length, colour: "text-red-700", bg: "bg-red-50 border-red-200", dot: "bg-red-400" },
+            { label: "No records yet", count: ALL_METRICS.filter((m) => scoreByKey[m.key] == null).length, colour: "text-slate-600", bg: "bg-slate-50 border-slate-200", dot: "bg-slate-300" },
           ].map((t) => (
             <div key={t.label} className={cn("rounded-xl border p-3 text-center", t.bg)}>
               <div className="flex items-center justify-center gap-1.5 mb-1">
@@ -246,9 +249,7 @@ export default function ScorecardPage() {
         <div className="grid gap-4 md:grid-cols-2">
           {METRIC_GROUPS.map((group) => {
             const GroupIcon = group.icon;
-            const avgScore = Math.round(
-              group.metrics.reduce((s, m) => s + ((scores as unknown as Record<string, number>)[m.key] ?? 0), 0) / group.metrics.length,
-            );
+            const avgScore = meanOf(group.metrics.map((m) => scoreByKey[m.key]));
             return (
               <Card key={group.label}>
                 <CardHeader className="pb-2">
@@ -259,9 +260,9 @@ export default function ScorecardPage() {
                     </CardTitle>
                     <span className={cn(
                       "text-sm font-bold tabular-nums",
-                      avgScore >= 80 ? "text-emerald-700" : avgScore >= 65 ? "text-amber-700" : "text-red-700",
+                      meets(avgScore, 80) ? "text-emerald-700" : meets(avgScore, 65) ? "text-amber-700" : below(avgScore, 65) ? "text-red-700" : "text-[var(--cs-text-muted)]",
                     )}>
-                      {avgScore}
+                      {avgScore ?? "—"}
                     </span>
                   </div>
                 </CardHeader>
@@ -269,7 +270,7 @@ export default function ScorecardPage() {
                   {group.metrics.map((m) => (
                     <div key={m.key} className="flex items-center gap-2">
                       <div className="flex-1">
-                        <ScoreBar label={m.label} score={(scores as unknown as Record<string, number>)[m.key] ?? 0} />
+                        <ScoreBar label={m.label} score={scoreByKey[m.key] ?? null} />
                       </div>
                       <span className={cn("shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full border",
                         m.live

@@ -165,8 +165,9 @@ describe("computeIncidentAnalytics — empty input", () => {
     expect(result.severity.low).toBe(0);
   });
 
-  it("returns 100% oversight compliance", () => {
-    expect(result.oversight.compliance_rate).toBe(100);
+  it("reports oversight compliance as unmeasured, not 100%, when no incident required oversight", () => {
+    // Zero incidents is not perfect oversight — there is nothing to have overseen.
+    expect(result.oversight.compliance_rate).toBeNull();
   });
 
   it("generates positive insights", () => {

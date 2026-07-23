@@ -5,6 +5,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 interface ComplianceSummary {
   totalOccurrences: number;
@@ -12,7 +13,7 @@ interface ComplianceSummary {
   completedLate: number;
   missed: number;
   overdue: number;
-  complianceRate: number;
+  complianceRate: number | null;
 }
 
 interface StatusBreakdown {
@@ -108,11 +109,12 @@ export function QualityEcologyDashboardWidget({ homeId = "home-oak" }: Props) {
             </div>
           </div>
           <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-            compliance.complianceRate >= 90 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" :
-            compliance.complianceRate >= 70 ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" :
+            compliance.complianceRate === null ? "bg-muted text-muted-foreground" :
+            meets(compliance.complianceRate, 90) ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" :
+            meets(compliance.complianceRate, 70) ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" :
             "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
           }`}>
-            {compliance.complianceRate}%
+            {formatRate(compliance.complianceRate)}
           </div>
         </div>
       </div>

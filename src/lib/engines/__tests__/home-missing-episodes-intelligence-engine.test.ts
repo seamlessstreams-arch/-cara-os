@@ -102,11 +102,11 @@ describe("no episodes", () => {
     expect(r.pattern.trend).toBe("insufficient_data");
   });
 
-  it("default reporting rates are 100% when no episodes", () => {
+  it("leaves reporting rates unmeasured when no episodes", () => {
     const r = run({});
-    expect(r.episodes.police_reported_rate).toBe(100);
-    expect(r.episodes.la_reported_rate).toBe(100);
-    expect(r.episodes.return_interview_rate).toBe(100);
+    expect(r.episodes.police_reported_rate).toBeNull();
+    expect(r.episodes.la_reported_rate).toBeNull();
+    expect(r.episodes.return_interview_rate).toBeNull();
   });
 
   it("contextual safeguarding count is 0", () => {
@@ -267,10 +267,10 @@ describe("reporting compliance", () => {
     expect(r.episodes.return_interview_rate).toBe(0);
   });
 
-  it("police rate 100% when no high/medium episodes", () => {
+  it("leaves the police rate unmeasured when no high/medium episodes", () => {
     const episodes = [makeEpisode({ risk_level: "low", date_missing: "2026-05-20" })];
     const r = run({ missing_episodes: episodes });
-    expect(r.episodes.police_reported_rate).toBe(100);
+    expect(r.episodes.police_reported_rate).toBeNull();
   });
 
   it("strength for 100% return interview", () => {
@@ -1517,8 +1517,8 @@ describe("comprehensive scenarios", () => {
       makeEpisode({ risk_level: "low", reported_to_police: false, date_missing: "2026-05-20" }),
     ];
     const r = run({ missing_episodes: episodes });
-    // No medium/high eps, so police rate defaults to 100%
-    expect(r.episodes.police_reported_rate).toBe(100);
+    // No medium/high eps, so there is no police reporting rate to report
+    expect(r.episodes.police_reported_rate).toBeNull();
   });
 
   it("adequate rating for mid-range scenario", () => {

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useHomeSaferRecruitmentVettingIntelligence } from "@/hooks/use-home-safer-recruitment-vetting-intelligence";
 import type { SaferRecruitmentRating } from "@/lib/engines/home-safer-recruitment-vetting-intelligence-engine";
 
@@ -63,20 +64,20 @@ export function HomeSaferRecruitmentVettingIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_candidates > 0 ? "text-[--cs-success]" : "text-slate-600")}>{d.total_candidates}</p>
               <p className="text-[9px] text-muted-foreground">Candidates</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.dbs_clearance_rate >= 95 ? "bg-green-50" : d.dbs_clearance_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.dbs_clearance_rate >= 95 ? "text-[--cs-success]" : d.dbs_clearance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dbs_clearance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.dbs_clearance_rate === null ? "bg-slate-50" : meets(d.dbs_clearance_rate, 95) ? "bg-green-50" : meets(d.dbs_clearance_rate, 80) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.dbs_clearance_rate === null ? "text-muted-foreground" : meets(d.dbs_clearance_rate, 95) ? "text-[--cs-success]" : meets(d.dbs_clearance_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dbs_clearance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">DBS Clear</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.reference_completion_rate >= 90 ? "bg-green-50" : d.reference_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reference_completion_rate >= 90 ? "text-[--cs-success]" : d.reference_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.reference_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.reference_completion_rate === null ? "bg-slate-50" : meets(d.reference_completion_rate, 90) ? "bg-green-50" : meets(d.reference_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.reference_completion_rate === null ? "text-muted-foreground" : meets(d.reference_completion_rate, 90) ? "text-[--cs-success]" : meets(d.reference_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.reference_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Refs Done</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.history_verification_rate >= 90 ? "bg-green-50" : d.history_verification_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.history_verification_rate >= 90 ? "text-[--cs-success]" : d.history_verification_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.history_verification_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.history_verification_rate === null ? "bg-slate-50" : meets(d.history_verification_rate, 90) ? "bg-green-50" : meets(d.history_verification_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.history_verification_rate === null ? "text-muted-foreground" : meets(d.history_verification_rate, 90) ? "text-[--cs-success]" : meets(d.history_verification_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.history_verification_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Verified</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.interview_compliance_rate >= 90 ? "bg-green-50" : d.interview_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.interview_compliance_rate >= 90 ? "text-[--cs-success]" : d.interview_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.interview_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.interview_compliance_rate === null ? "bg-slate-50" : meets(d.interview_compliance_rate, 90) ? "bg-green-50" : meets(d.interview_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.interview_compliance_rate === null ? "text-muted-foreground" : meets(d.interview_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.interview_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.interview_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Compliant</p>
             </div>
           </div>

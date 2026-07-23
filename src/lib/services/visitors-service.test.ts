@@ -111,12 +111,12 @@ describe("computeVisitorSummary", () => {
 // ── computeVisitorCompliance ───────────────────────────────────────────
 
 describe("computeVisitorCompliance", () => {
-  it("returns 100 rates for empty array (no violations)", () => {
+  it("returns unmeasured rates for empty array (nothing evidenced)", () => {
     const c = computeVisitorCompliance([]);
     expect(c.total_entries).toBe(0);
-    expect(c.dbs_check_rate).toBe(100);
-    expect(c.id_verification_rate).toBe(100);
-    expect(c.sign_out_rate).toBe(100);
+    expect(c.dbs_check_rate).toBeNull();
+    expect(c.id_verification_rate).toBeNull();
+    expect(c.sign_out_rate).toBeNull();
     expect(c.incomplete_entries).toBe(0);
   });
 

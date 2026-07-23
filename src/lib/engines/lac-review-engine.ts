@@ -9,6 +9,8 @@
 // Care Planning Regulations 2010. SCCIF: leadership & management.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ChildInput {
@@ -56,9 +58,9 @@ export interface ReviewComplianceOverview {
   total_reviews: number;
   reviews_in_timescale: number;  // within statutory 6-month window
   reviews_overdue: number;       // next_review_date < today and no newer review
-  timeliness_rate: number;       // 0-100
-  child_participation_rate: number; // 0-100 — % where child attended/submitted views/advocate
-  care_plan_update_rate: number;    // 0-100
+  timeliness_rate: number | null;       // 0-100; null = no children on roll
+  child_participation_rate: number | null; // 0-100 — % where child attended/submitted views/advocate
+  care_plan_update_rate: number | null;    // 0-100; null = no review has been held
   total_children: number;
   children_with_overdue_review: number;
 }
@@ -85,7 +87,7 @@ export interface ActionComplianceSummary {
   completed: number;
   outstanding: number;
   overdue: number;
-  completion_rate: number;  // 0-100
+  completion_rate: number | null;  // 0-100; null = no actions were agreed
 }
 
 export interface ParticipationAnalysis {
@@ -93,7 +95,7 @@ export interface ParticipationAnalysis {
   views_submitted: number;
   advocate_attended: number;
   did_not_participate: number;
-  participation_rate: number; // 0-100
+  participation_rate: number | null; // 0-100; null = no review has been held
 }
 
 export interface StabilityOverview {
@@ -212,15 +214,9 @@ export function computeLACReviewIntelligence(input: LACReviewEngineInput): LACRe
     total_reviews: reviews.length,
     reviews_in_timescale: reviews.length - overdueChildren.length,
     reviews_overdue: overdueChildren.length,
-    timeliness_rate: children.length > 0
-      ? Math.round(((children.length - overdueChildren.length) / children.length) * 100)
-      : 100,
-    child_participation_rate: reviews.length > 0
-      ? Math.round((participatingReviews.length / reviews.length) * 100)
-      : 0,
-    care_plan_update_rate: reviews.length > 0
-      ? Math.round((carePlanUpdated.length / reviews.length) * 100)
-      : 0,
+    timeliness_rate: rate(children.length - overdueChildren.length, children.length),
+    child_participation_rate: rateOf(participatingReviews, reviews),
+    care_plan_update_rate: rateOf(carePlanUpdated, reviews),
     total_children: children.length,
     children_with_overdue_review: overdueChildren.length,
   };
@@ -236,9 +232,7 @@ export function computeLACReviewIntelligence(input: LACReviewEngineInput): LACRe
     completed: completedActions.length,
     outstanding: outstandingActions.length,
     overdue: overdueActions.length,
-    completion_rate: allActions.length > 0
-      ? Math.round((completedActions.length / allActions.length) * 100)
-      : 100,
+    completion_rate: rateOf(completedActions, allActions),
   };
 
   // ── Participation Analysis ─────────────────────────────────────────────
@@ -252,9 +246,7 @@ export function computeLACReviewIntelligence(input: LACReviewEngineInput): LACRe
     views_submitted: viewsSubmitted,
     advocate_attended: advocateAttended,
     did_not_participate: didNotParticipate,
-    participation_rate: reviews.length > 0
-      ? Math.round(((reviews.length - didNotParticipate) / reviews.length) * 100)
-      : 0,
+    participation_rate: rate(reviews.length - didNotParticipate, reviews.length),
   };
 
   // ── Stability Overview ─────────────────────────────────────────────────
@@ -325,10 +317,10 @@ export function computeLACReviewIntelligence(input: LACReviewEngineInput): LACRe
   }
 
   // Warning: low action completion
-  if (allActions.length >= 3 && action_compliance.completion_rate < 60) {
+  if (allActions.length >= 3 && below(action_compliance.completion_rate, 60)) {
     insights.push({
       severity: "warning",
-      text: `LAC review action completion is ${action_compliance.completion_rate}%. Incomplete actions undermine care planning and may indicate multi-agency coordination issues. Escalate overdue actions to the IRO.`,
+      text: `LAC review action completion is ${formatRate(action_compliance.completion_rate)}. Incomplete actions undermine care planning and may indicate multi-agency coordination issues. Escalate overdue actions to the IRO.`,
     });
   }
 
@@ -342,15 +334,15 @@ export function computeLACReviewIntelligence(input: LACReviewEngineInput): LACRe
   }
 
   // Positive: all reviews current and participation high
-  if (overdueChildren.length === 0 && children.length > 0 && overview.timeliness_rate === 100) {
+  if (overdueChildren.length === 0 && children.length > 0 && meets(overview.timeliness_rate, 100)) {
     insights.push({
       severity: "positive",
-      text: `All LAC reviews are current across ${children.length} child${children.length > 1 ? "ren" : ""}. ${overview.child_participation_rate}% participation rate demonstrates strong voice-of-the-child practice. Evidence of good IRO relationships.`,
+      text: `All LAC reviews are current across ${children.length} child${children.length > 1 ? "ren" : ""}. ${formatRate(overview.child_participation_rate)} participation rate demonstrates strong voice-of-the-child practice. Evidence of good IRO relationships.`,
     });
   }
 
   // Positive: full participation
-  if (reviews.length >= 2 && participation.participation_rate === 100) {
+  if (reviews.length >= 2 && meets(participation.participation_rate, 100)) {
     insights.push({
       severity: "positive",
       text: `100% child participation across all ${reviews.length} reviews. Children are actively shaping their care plans — strong evidence of Reg 22 compliance and child-centred practice.`,
@@ -358,7 +350,7 @@ export function computeLACReviewIntelligence(input: LACReviewEngineInput): LACRe
   }
 
   // Positive: high care plan update rate
-  if (reviews.length >= 2 && overview.care_plan_update_rate === 100) {
+  if (reviews.length >= 2 && meets(overview.care_plan_update_rate, 100)) {
     insights.push({
       severity: "positive",
       text: `Care plans updated at every review. This ensures children's evolving needs are captured and the placement can adapt to their changing circumstances.`,

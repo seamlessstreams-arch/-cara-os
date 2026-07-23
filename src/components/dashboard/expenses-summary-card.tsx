@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFinancialManagementIntelligence } from "@/hooks/use-financial-management-intelligence";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -121,13 +122,13 @@ export function ExpensesSummaryCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.approval_rate >= 80 ? "bg-green-50" : o.approval_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+            meets(o.approval_rate, 80) ? "bg-green-50" : meets(o.approval_rate, 50) ? "bg-amber-50" : below(o.approval_rate, 50) ? "bg-red-50" : "bg-muted",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.approval_rate >= 80 ? "text-[--cs-success]" : o.approval_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.approval_rate, 80) ? "text-[--cs-success]" : meets(o.approval_rate, 50) ? "text-[--cs-warning]" : below(o.approval_rate, 50) ? "text-[--cs-risk]" : "text-muted-foreground",
             )}>
-              {o.approval_rate}%
+              {formatRate(o.approval_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Approved</p>
           </div>
@@ -145,9 +146,11 @@ export function ExpensesSummaryCard() {
           <div>
             <p className={cn(
               "font-bold tabular-nums",
-              o.avg_approval_days <= 2 ? "text-[--cs-success]" : o.avg_approval_days <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.avg_approval_days === null ? "text-muted-foreground"
+                : o.avg_approval_days <= 2 ? "text-[--cs-success]"
+                : o.avg_approval_days <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.avg_approval_days}d
+              {o.avg_approval_days === null ? "—" : `${o.avg_approval_days}d`}
             </p>
             <p className="text-[10px] text-muted-foreground">Avg Approval</p>
           </div>

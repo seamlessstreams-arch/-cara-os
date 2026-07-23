@@ -16,6 +16,7 @@ import {
   Heart, Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { useHomeStaffDevelopmentIntelligence } from "@/hooks/use-home-staff-development-intelligence";
 import type { StaffDevelopmentRating } from "@/lib/engines/home-staff-development-intelligence-engine";
 
@@ -124,8 +125,8 @@ export function HomeStaffDevelopmentIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <ClipboardCheck className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.supervision.completion_rate_6m >= 90 ? "text-[--cs-success]" : d.supervision.completion_rate_6m >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.supervision.completion_rate_6m}%
+                <p className={cn("text-lg font-bold tabular-nums", meets(d.supervision.completion_rate_6m, 90) ? "text-[--cs-success]" : meets(d.supervision.completion_rate_6m, 70) ? "text-[--cs-warning]" : below(d.supervision.completion_rate_6m, 70) ? "text-[--cs-risk]" : "text-slate-500")}>
+                  {formatRate(d.supervision.completion_rate_6m)}
                 </p>
                 {d.supervision.trend !== "insufficient_data" && (
                   <SupTrendIcon className={cn("h-3 w-3", TREND_COLOR[d.supervision.trend])} />
@@ -136,8 +137,8 @@ export function HomeStaffDevelopmentIntelligenceCard() {
 
             {/* Training Compliance */}
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", d.training.mandatory_compliance_rate === 100 ? "text-[--cs-success]" : d.training.mandatory_compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                {d.training.mandatory_compliance_rate}%
+              <p className={cn("text-lg font-bold tabular-nums", meets(d.training.mandatory_compliance_rate, 100) ? "text-[--cs-success]" : meets(d.training.mandatory_compliance_rate, 80) ? "text-[--cs-warning]" : below(d.training.mandatory_compliance_rate, 80) ? "text-[--cs-risk]" : "text-slate-500")}>
+                {formatRate(d.training.mandatory_compliance_rate)}
               </p>
               <p className="text-[10px] text-muted-foreground">Training Compliant</p>
             </div>
@@ -174,7 +175,7 @@ export function HomeStaffDevelopmentIntelligenceCard() {
               </p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Completed: <span className="font-medium text-slate-600">{d.supervision.total_completed_6m}</span> · Overdue: <span className={cn("font-medium", d.supervision.overdue_count > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>{d.supervision.overdue_count}</span></p>
-                <p>Dual-signed: <span className={cn("font-medium", d.supervision.dual_signature_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.supervision.dual_signature_rate}%</span></p>
+                <p>Dual-signed: <span className={cn("font-medium", meets(d.supervision.dual_signature_rate, 100) ? "text-[--cs-success]" : below(d.supervision.dual_signature_rate, 100) ? "text-[--cs-warning]" : "text-slate-500")}>{formatRate(d.supervision.dual_signature_rate)}</span></p>
                 {d.supervision.avg_duration_minutes !== null && (
                   <p>Avg duration: <span className="font-medium text-slate-600">{d.supervision.avg_duration_minutes}min</span></p>
                 )}
@@ -190,7 +191,7 @@ export function HomeStaffDevelopmentIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Completed: <span className="font-medium text-green-600">{d.qualifications.completed_count}</span> · In progress: <span className="font-medium text-blue-600">{d.qualifications.in_progress_count}</span></p>
                 <p>Not started: <span className={cn("font-medium", d.qualifications.not_started_count > 0 ? "text-[--cs-warning]" : "text-slate-600")}>{d.qualifications.not_started_count}</span></p>
-                <p>Mandatory: <span className={cn("font-medium", d.qualifications.mandatory_completion_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.qualifications.mandatory_completion_rate}%</span></p>
+                <p>Mandatory: <span className={cn("font-medium", meets(d.qualifications.mandatory_completion_rate, 80) ? "text-[--cs-success]" : below(d.qualifications.mandatory_completion_rate, 80) ? "text-[--cs-warning]" : "text-slate-500")}>{formatRate(d.qualifications.mandatory_completion_rate)}</span></p>
               </div>
             </div>
 
@@ -223,7 +224,7 @@ export function HomeStaffDevelopmentIntelligenceCard() {
                   <p className="text-red-600 font-medium">{d.inductions.overdue_count} overdue</p>
                 )}
                 {d.inductions.completed_count > 0 && (
-                  <p>Probation pass: <span className={cn("font-medium", d.inductions.probation_pass_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.inductions.probation_pass_rate}%</span></p>
+                  <p>Probation pass: <span className={cn("font-medium", meets(d.inductions.probation_pass_rate, 100) ? "text-[--cs-success]" : below(d.inductions.probation_pass_rate, 100) ? "text-[--cs-warning]" : "text-slate-500")}>{formatRate(d.inductions.probation_pass_rate)}</span></p>
                 )}
               </div>
             </div>

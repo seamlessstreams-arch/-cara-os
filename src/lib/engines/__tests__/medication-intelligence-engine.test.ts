@@ -90,8 +90,10 @@ describe("computeMedicationIntelligence", () => {
 
       expect(result.overview.total_active_medications).toBe(0);
       expect(result.overview.total_administrations_30d).toBe(0);
-      expect(result.overview.adherence_rate).toBe(0);
-      expect(result.overview.stock_check_compliance).toBe(100);
+      // No doses due and no active meds — adherence and stock compliance are
+      // unmeasured, not a fabricated 0%/100%.
+      expect(result.overview.adherence_rate).toBeNull();
+      expect(result.overview.stock_check_compliance).toBeNull();
       expect(result.child_profiles).toHaveLength(0);
       expect(result.alerts).toHaveLength(0);
       expect(result.insights).toHaveLength(0);

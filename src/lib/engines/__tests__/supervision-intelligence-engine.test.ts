@@ -192,8 +192,8 @@ describe("computeSupervisionIntelligence", () => {
       expect(result.overview.total_staff).toBe(0);
       expect(result.overview.supervisions_completed_90d).toBe(0);
       expect(result.overview.supervisions_overdue).toBe(0);
-      expect(result.overview.action_completion_rate).toBe(100);
-      expect(result.overview.training_compliance_rate).toBe(100);
+      expect(result.overview.action_completion_rate).toBeNull();
+      expect(result.overview.training_compliance_rate).toBeNull();
       expect(result.staff_profiles).toHaveLength(0);
       expect(result.alerts).toHaveLength(0);
       expect(result.insights).toHaveLength(0);

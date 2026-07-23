@@ -38,7 +38,7 @@ export interface ChildRepairSummary {
   incidentsWithCompleteRepair: number;
   incidentsWithPartialRepair: number;
   incidentsWithNoRepair: number;
-  cycleCompletionRate: number;
+  cycleCompletionRate: number | null;
   mostCommonMissingStep: string | null;
   supervisionPrompt: string;
 }
@@ -51,7 +51,7 @@ export interface RepairCycleSummary {
   incidentsWithCompleteRepair: number;
   avgDebriefTurnaroundDays: number | null;
   mostCommonMissingStep: string;
-  overallCompletionRate: number;
+  overallCompletionRate: number | null;
   ofstedNote: string;
 }
 

@@ -24,6 +24,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meanOf, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type VisitArea =
@@ -112,7 +114,7 @@ export interface VisitComplianceResult {
   warnings: string[];
   // Checks
   visitorIndependent: boolean;
-  childrenEngagementRate: number;         // % spoken to privately
+  childrenEngagementRate: number | null;  // % spoken to privately; null = no children in the home
   allAreasAssessed: boolean;
   reportCompleted: boolean;
   reportSentToOfsted: boolean;
@@ -130,20 +132,20 @@ export interface HomeReg44Metrics {
   lastVisitDate: string;
   nextVisitDue: string;
   daysUntilNextDue: number;
-  // Quality
-  averageChildEngagement: number;          // avg % children spoken privately
-  averageVisitDuration: number;
+  // Quality — null throughout means no visit in the last 12 months
+  averageChildEngagement: number | null;   // avg % children spoken privately
+  averageVisitDuration: number | null;
   areasNeverAssessed: VisitArea[];
   overallRatingTrend: VisitRating[];
   // Reports
-  reportCompletionRate: number;
-  ofstedSubmissionRate: number;
-  reportTimelinessRate: number;
+  reportCompletionRate: number | null;
+  ofstedSubmissionRate: number | null;
+  reportTimelinessRate: number | null;
   // Actions
   totalActionsRaised: number;
   actionsCompleted: number;
   actionsOverdue: number;
-  actionCompletionRate: number;
+  actionCompletionRate: number | null;     // null = no action was raised
   // Patterns
   recurringIssueAreas: VisitArea[];
   improvementTrend: "improving" | "stable" | "declining" | "insufficient_data";
@@ -181,14 +183,15 @@ export function evaluateVisitCompliance(
     issues.push("Visitor is not independent of the provider");
   }
 
-  // Children engagement
-  const childrenEngagementRate = visit.totalChildrenInHome > 0
-    ? Math.round((visit.childrenSpokenToPrivately.length / visit.totalChildrenInHome) * 100)
-    : 0;
+  // Children engagement — unmeasurable when no child was living in the home
+  const childrenEngagementRate = rate(
+    visit.childrenSpokenToPrivately.length,
+    visit.totalChildrenInHome,
+  );
 
-  if (visit.childrenSpokenToPrivately.length === 0) {
+  if (visit.totalChildrenInHome > 0 && visit.childrenSpokenToPrivately.length === 0) {
     issues.push("No children spoken to privately during visit");
-  } else if (childrenEngagementRate < 50) {
+  } else if (below(childrenEngagementRate, 50)) {
     warnings.push(`Only ${childrenEngagementRate}% of children spoken to privately`);
   }
 
@@ -305,13 +308,11 @@ export function calculateHomeReg44Metrics(
   // Quality metrics
   const results = recentVisits.map(v => evaluateVisitCompliance(v, now));
 
-  const averageChildEngagement = results.length > 0
-    ? Math.round(results.reduce((s, r) => s + r.childrenEngagementRate, 0) / results.length)
-    : 0;
+  const averageChildEngagement = meanOf(results.map(r => r.childrenEngagementRate));
 
   const averageVisitDuration = recentVisits.length > 0
     ? Math.round(recentVisits.reduce((s, v) => s + v.visitDuration, 0) / recentVisits.length)
-    : 0;
+    : null;
 
   // Areas never assessed in last 12 months
   const allAssessedAreas = new Set(recentVisits.flatMap(v => v.areasAssessed.map(a => a.area)));
@@ -321,26 +322,18 @@ export function calculateHomeReg44Metrics(
   const overallRatingTrend = recentVisits.slice(-6).map(v => v.overallRating);
 
   // Reports
-  const reportCompletionRate = recentVisits.length > 0
-    ? Math.round((recentVisits.filter(v => v.reportCompletedDate).length / recentVisits.length) * 100)
-    : 100;
+  const reportCompletionRate = rateOf(recentVisits.filter(v => v.reportCompletedDate), recentVisits);
 
-  const ofstedSubmissionRate = recentVisits.length > 0
-    ? Math.round((recentVisits.filter(v => v.reportSentToOfstedDate).length / recentVisits.length) * 100)
-    : 100;
+  const ofstedSubmissionRate = rateOf(recentVisits.filter(v => v.reportSentToOfstedDate), recentVisits);
 
-  const reportTimelinessRate = results.length > 0
-    ? Math.round((results.filter(r => r.reportTimely).length / results.length) * 100)
-    : 100;
+  const reportTimelinessRate = rateOf(results.filter(r => r.reportTimely), results);
 
   // Actions
   const allActions = recentVisits.flatMap(v => v.actionsRaised);
   const totalActionsRaised = allActions.length;
   const actionsCompleted = allActions.filter(a => a.status === "completed").length;
   const actionsOverdue = allActions.filter(a => a.status === "overdue").length;
-  const actionCompletionRate = totalActionsRaised > 0
-    ? Math.round((actionsCompleted / totalActionsRaised) * 100)
-    : 100;
+  const actionCompletionRate = rate(actionsCompleted, totalActionsRaised);
 
   // Recurring issues — areas rated "requires_improvement" or "inadequate" more than once
   const areaIssueCounts = new Map<VisitArea, number>();
@@ -375,8 +368,8 @@ export function calculateHomeReg44Metrics(
   // Compliance issues
   const complianceIssues: string[] = [];
   if (!frequencyCompliant) complianceIssues.push("Visit frequency non-compliant (gap exceeds 28 days)");
-  if (reportCompletionRate < 100) complianceIssues.push("Not all visit reports completed");
-  if (ofstedSubmissionRate < 100) complianceIssues.push("Not all reports submitted to Ofsted");
+  if (below(reportCompletionRate, 100)) complianceIssues.push("Not all visit reports completed");
+  if (below(ofstedSubmissionRate, 100)) complianceIssues.push("Not all reports submitted to Ofsted");
   if (actionsOverdue > 0) complianceIssues.push(`${actionsOverdue} action(s) overdue from Reg 44 visits`);
   if (areasNeverAssessed.length > 0) complianceIssues.push(`${areasNeverAssessed.length} area(s) never assessed in 12 months`);
 

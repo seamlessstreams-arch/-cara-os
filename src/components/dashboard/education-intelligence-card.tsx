@@ -15,6 +15,7 @@ import {
   Brain, BookOpen, Trophy, Calendar, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useEducationIntelligence } from "@/hooks/use-education-intelligence";
 
 // ── Styling maps ────────────────────────────────────────────────────────────
@@ -76,9 +77,9 @@ export function EducationIntelligenceCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", o.avg_attendance_pct >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.avg_attendance_pct >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.avg_attendance_pct}%
+          <div className={cn("text-center rounded-lg p-2", o.avg_attendance_pct === null ? "bg-muted" : meets(o.avg_attendance_pct, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.avg_attendance_pct === null ? "text-muted-foreground" : meets(o.avg_attendance_pct, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(o.avg_attendance_pct)}
             </p>
             <p className="text-[10px] text-muted-foreground">Avg Attendance</p>
           </div>
@@ -124,9 +125,11 @@ export function EducationIntelligenceCard() {
                   </div>
                   <span className={cn(
                     "font-medium tabular-nums",
-                    child.attendance_pct >= 90 ? "text-[--cs-success]" : child.attendance_pct >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+                    child.attendance_pct === null ? "text-muted-foreground"
+                      : meets(child.attendance_pct, 90) ? "text-[--cs-success]"
+                      : meets(child.attendance_pct, 85) ? "text-[--cs-warning]" : "text-[--cs-risk]",
                   )}>
-                    {child.attendance_pct}%
+                    {formatRate(child.attendance_pct)}
                   </span>
                 </div>
                 {child.school && (

@@ -773,7 +773,7 @@ describe("Home Regulatory Compliance Intelligence Engine", () => {
         makeReg44({ id: "v1", visit_date: "2026-05-19", recommendations: [] }),
       ],
     }));
-    expect(r.reg44.recommendation_completion_rate).toBe(100);
+    expect(r.reg44.recommendation_completion_rate).toBeNull();
     expect(r.reg44.open_recommendations).toBe(0);
   });
 
@@ -792,7 +792,7 @@ describe("Home Regulatory Compliance Intelligence Engine", () => {
         makeInspection({ actions_required: 0, actions_completed: 0 }),
       ],
     }));
-    expect(r.inspection.action_completion_rate).toBe(100);
+    expect(r.inspection.action_completion_rate).toBeNull();
   });
 
   it("handles policies with zero staff required", () => {
@@ -801,7 +801,7 @@ describe("Home Regulatory Compliance Intelligence Engine", () => {
         makePolicy({ id: "p1", acknowledgement_count: 0, total_staff_required: 0 }),
       ],
     }));
-    expect(r.policies.avg_acknowledgement_rate).toBe(100);
+    expect(r.policies.avg_acknowledgement_rate).toBeNull();
   });
 
   it("excludes future-dated visits from 12m count", () => {

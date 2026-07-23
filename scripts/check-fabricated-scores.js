@@ -56,6 +56,28 @@ const FLATTERING = 60;
  */
 const BASELINE = new Set(require("./fabricated-scores-baseline.json"));
 
+/*
+ * Verified-correct sites, kept SEPARATE from the burn-down baseline.
+ *
+ * The matcher cannot tell "no records exist" from "records were analysed and
+ * nothing was found" — and only the first is the bug. A detector that reads a
+ * record's own text and finds no concern is reporting a real finding, so
+ * scoring it well is right.
+ *
+ * An entry here is a claim that a human checked it. Keep the reason with it;
+ * an allowlist without reasons decays into a silencer.
+ */
+const ALLOWED = new Map([
+  [
+    "src/lib/cara-practice/cara-practice-engine.ts:gaps:100",
+    "gaps come from detectDevelopmentalGaps(text); the function already returns all-null for an empty record, so zero gaps here means analysed-and-clear",
+  ],
+  [
+    "src/lib/cara-practice/cara-practice-engine.ts:protective:100",
+    "detectProtectiveFactors matches WEAK_PROTECTIVE, so zero hits means no unevidenced protective claims were made — guarded by the same empty-record null return",
+  ],
+]);
+
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -95,11 +117,14 @@ for (const dir of SCAN_DIRS) {
   }
 }
 
-const fresh = found.filter((f) => !BASELINE.has(f.key));
+const fresh = found.filter((f) => !BASELINE.has(f.key) && !ALLOWED.has(f.key));
 // A baselined key that no longer appears has been fixed (or moved) — drop it
 // from the list so the baseline can only ever shrink.
 const foundKeys = new Set(found.map((f) => f.key));
 const stale = [...BASELINE].filter((k) => !foundKeys.has(k));
+// An allowlist entry whose site is gone is no longer vouching for anything;
+// leaving it would let a future site silently inherit someone else's sign-off.
+const staleAllowed = [...ALLOWED.keys()].filter((k) => !foundKeys.has(k));
 
 let failed = false;
 
@@ -124,8 +149,20 @@ if (stale.length > 0) {
   for (const k of stale) console.error(`  – ${k}`);
 }
 
+if (staleAllowed.length > 0) {
+  failed = true;
+  console.error(
+    `\ncheck-fabricated-scores: ${staleAllowed.length} allowlisted site(s) no longer exist.\n` +
+      "Remove them from the ALLOWED map in this file — a sign-off must point at real code:\n",
+  );
+  for (const k of staleAllowed) console.error(`  – ${k}`);
+}
+
 if (failed) process.exit(1);
 
+const remaining = BASELINE.size > 0
+  ? `${BASELINE.size} baselined site(s) remaining to burn down`
+  : "baseline empty — the class is fully burned down";
 console.log(
-  `check-fabricated-scores: no new fabricated-on-empty scores ✓ (${BASELINE.size} baselined site(s) remaining to burn down)`,
+  `check-fabricated-scores: no new fabricated-on-empty scores ✓ (${remaining}; ${ALLOWED.size} verified-correct site(s) allowlisted)`,
 );

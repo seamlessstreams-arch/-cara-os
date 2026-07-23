@@ -142,9 +142,10 @@ describe("Risk Assessment Engine — Empty State", () => {
 
     expect(result.overview.total_current_assessments).toBe(0);
     expect(result.overview.very_high_count).toBe(0);
-    expect(result.overview.child_voice_rate).toBe(100);
-    expect(result.overview.contingency_plan_rate).toBe(100);
-    expect(result.overview.mitigation_effectiveness_rate).toBe(100);
+    // No assessments on record — these rates are unmeasured, not a perfect 100%.
+    expect(result.overview.child_voice_rate).toBeNull();
+    expect(result.overview.contingency_plan_rate).toBeNull();
+    expect(result.overview.mitigation_effectiveness_rate).toBeNull();
     expect(result.child_profiles).toHaveLength(0);
     expect(result.domain_analysis).toHaveLength(0);
     expect(result.alerts).toHaveLength(0);

@@ -14,6 +14,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type AttendanceStatus =
@@ -127,10 +129,12 @@ export interface AchievementRecord {
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
+// Rates are null where there was nothing to measure — no attendance marks in
+// the period, no exclusions, no children on roll. Null is neither 0% nor 100%.
 export interface AttendanceEvaluation {
-  overallAttendanceRate: number;
-  unauthorisedAbsenceRate: number;
-  latenessRate: number;
+  overallAttendanceRate: number | null;
+  unauthorisedAbsenceRate: number | null;
+  latenessRate: number | null;
   eotasDays: number;
   totalSchoolDays: number;
   totalPresent: number;
@@ -140,9 +144,9 @@ export interface AttendanceEvaluation {
   perChild: {
     childId: string;
     childName: string;
-    attendanceRate: number;
-    unauthorisedRate: number;
-    latenessRate: number;
+    attendanceRate: number | null;
+    unauthorisedRate: number | null;
+    latenessRate: number | null;
     eotasDays: number;
     totalDays: number;
     trend: "improving" | "stable" | "declining";
@@ -156,9 +160,9 @@ export interface ExclusionEvaluation {
   permanentCount: number;
   internalCount: number;
   informalCount: number;
-  alternativeProvisionRate: number;
-  reintegrationRate: number;
-  homeChallengeRate: number;
+  alternativeProvisionRate: number | null;
+  reintegrationRate: number | null;
+  homeChallengeRate: number | null;
   perChild: {
     childId: string;
     childName: string;
@@ -170,7 +174,7 @@ export interface ExclusionEvaluation {
 }
 
 export interface PEPQualityEvaluation {
-  pepCurrencyRate: number;
+  pepCurrencyRate: number | null;
   virtualSchoolInvolvementRate: number;
   childAttendanceRate: number;
   childVoiceRate: number;
@@ -195,9 +199,9 @@ export interface PEPQualityEvaluation {
 
 export interface SENDSupportEvaluation {
   childrenWithSEND: number;
-  sendCoverageRate: number;
+  sendCoverageRate: number | null;
   ehcpCount: number;
-  ehcpCurrencyRate: number;
+  ehcpCurrencyRate: number | null;
   averageHoursPerWeek: number;
   effectivenessBreakdown: {
     excellent: number;
@@ -257,7 +261,7 @@ export interface EducationOutcomesIntelligence {
   childProfiles: {
     childId: string;
     childName: string;
-    attendanceRate: number;
+    attendanceRate: number | null;
     pepStatus: PEPStatus;
     exclusionDays: number;
     achievementCount: number;
@@ -269,7 +273,7 @@ export interface EducationOutcomesIntelligence {
   regulatoryLinks: {
     regulation: string;
     description: string;
-    status: "met" | "partially_met" | "not_met";
+    status: "met" | "partially_met" | "not_met" | "not_evidenced";
   }[];
 }
 
@@ -279,6 +283,16 @@ const ATTENDANCE_TARGET = 95;        // 95% minimum for looked-after children
 const ATTENDANCE_GOOD = 97;          // 97%+ is outstanding
 const EXCLUSION_DAYS_CONCERN = 5;    // 5+ days lost triggers concern
 const EHCP_REVIEW_MONTHS = 12;       // EHCP must be reviewed annually
+
+/**
+ * Percentage to one decimal place, or null when there is nothing to measure.
+ * Same contract as `rate()`; this module reports to 0.1% so attendance figures
+ * stay comparable with the school's own returns.
+ */
+function pct1(numerator: number, denominator: number): number | null {
+  if (denominator <= 0) return null;
+  return Math.round((numerator / denominator) * 1000) / 10;
+}
 
 // ── 1. Evaluate Attendance ─────────────────────────────────────────────────
 
@@ -311,15 +325,9 @@ export function evaluateAttendance(
   ).length;
   const eotasDays = countableRecords.filter(r => r.status === "EOTAS").length;
 
-  const overallAttendanceRate = totalSchoolDays > 0
-    ? Math.round((totalPresent / totalSchoolDays) * 1000) / 10
-    : 100;
-  const unauthorisedAbsenceRate = totalSchoolDays > 0
-    ? Math.round((totalUnauthorised / totalSchoolDays) * 1000) / 10
-    : 0;
-  const latenessRate = totalSchoolDays > 0
-    ? Math.round((totalLate / totalSchoolDays) * 1000) / 10
-    : 0;
+  const overallAttendanceRate = pct1(totalPresent, totalSchoolDays);
+  const unauthorisedAbsenceRate = pct1(totalUnauthorised, totalSchoolDays);
+  const latenessRate = pct1(totalLate, totalSchoolDays);
 
   // Per-child analysis
   const perChild = childIds.map(childId => {
@@ -352,15 +360,9 @@ export function evaluateAttendance(
     return {
       childId,
       childName,
-      attendanceRate: childTotal > 0
-        ? Math.round((childPresent / childTotal) * 1000) / 10
-        : 100,
-      unauthorisedRate: childTotal > 0
-        ? Math.round((childUnauth / childTotal) * 1000) / 10
-        : 0,
-      latenessRate: childTotal > 0
-        ? Math.round((childLate / childTotal) * 1000) / 10
-        : 0,
+      attendanceRate: pct1(childPresent, childTotal),
+      unauthorisedRate: pct1(childUnauth, childTotal),
+      latenessRate: pct1(childLate, childTotal),
       eotasDays: childEOTAS,
       totalDays: childTotal,
       trend,
@@ -394,20 +396,16 @@ export function evaluateExclusions(
   const internalCount = exclusions.filter(e => e.exclusionType === "internal").length;
   const informalCount = exclusions.filter(e => e.exclusionType === "informal").length;
 
+  // Null when there were no exclusions — nothing to provide for, meet about or
+  // challenge. The absence of exclusions is reported on its own terms below.
   const withAltProvision = exclusions.filter(e => e.alternativeProvision).length;
-  const alternativeProvisionRate = totalExclusions > 0
-    ? Math.round((withAltProvision / totalExclusions) * 1000) / 10
-    : 100;
+  const alternativeProvisionRate = pct1(withAltProvision, totalExclusions);
 
   const withReintegration = exclusions.filter(e => e.reintegrationMeeting).length;
-  const reintegrationRate = totalExclusions > 0
-    ? Math.round((withReintegration / totalExclusions) * 1000) / 10
-    : 100;
+  const reintegrationRate = pct1(withReintegration, totalExclusions);
 
   const challenged = exclusions.filter(e => e.challengedByHome).length;
-  const homeChallengeRate = totalExclusions > 0
-    ? Math.round((challenged / totalExclusions) * 1000) / 10
-    : 0;
+  const homeChallengeRate = pct1(challenged, totalExclusions);
 
   // Per-child analysis
   const childMap = new Map<string, { childName: string; exclusions: ExclusionRecord[] }>();
@@ -465,9 +463,7 @@ export function evaluatePEPQuality(
   const notInPlaceCount = childIds.length - relevantPEPs.length +
     relevantPEPs.filter(p => p.status === "not_in_place").length;
 
-  const pepCurrencyRate = childIds.length > 0
-    ? Math.round((currentCount / childIds.length) * 1000) / 10
-    : 100;
+  const pepCurrencyRate = pct1(currentCount, childIds.length);
 
   const vsInvolved = relevantPEPs.filter(p => p.virtualSchoolInvolved).length;
   const virtualSchoolInvolvementRate = relevantPEPs.length > 0
@@ -543,9 +539,7 @@ export function evaluateSENDSupport(
 
   // Coverage: children with SEND who have at least one support record
   const childrenWithSupport = new Set(supports.map(s => s.childId)).size;
-  const sendCoverageRate = childrenWithSEND > 0
-    ? Math.round((childrenWithSupport / childrenWithSEND) * 1000) / 10
-    : 100;
+  const sendCoverageRate = pct1(childrenWithSupport, childrenWithSEND);
 
   const ehcpRecords = supports.filter(s => s.ehcpInPlace);
   const ehcpCount = new Set(ehcpRecords.map(s => s.childId)).size;
@@ -560,9 +554,7 @@ export function evaluateSENDSupport(
     return monthsAgo <= EHCP_REVIEW_MONTHS;
   });
   const uniqueCurrentEHCP = new Set(ehcpCurrent.map(s => s.childId)).size;
-  const ehcpCurrencyRate = ehcpCount > 0
-    ? Math.round((uniqueCurrentEHCP / ehcpCount) * 1000) / 10
-    : 100;
+  const ehcpCurrencyRate = pct1(uniqueCurrentEHCP, ehcpCount);
 
   const averageHoursPerWeek = supports.length > 0
     ? Math.round((supports.reduce((s, r) => s + r.hoursPerWeek, 0) / supports.length) * 10) / 10
@@ -714,23 +706,29 @@ export function generateEducationOutcomesIntelligence(
   // Attendance (25 points)
   let attendanceScore = 0;
   // Attendance rate (up to 12 points)
-  if (attendanceEval.overallAttendanceRate >= ATTENDANCE_GOOD) attendanceScore += 12;
-  else if (attendanceEval.overallAttendanceRate >= ATTENDANCE_TARGET) attendanceScore += 10;
-  else if (attendanceEval.overallAttendanceRate >= 90) attendanceScore += 6;
-  else if (attendanceEval.overallAttendanceRate >= 85) attendanceScore += 3;
-  // else 0
+  if (meets(attendanceEval.overallAttendanceRate, ATTENDANCE_GOOD)) attendanceScore += 12;
+  else if (meets(attendanceEval.overallAttendanceRate, ATTENDANCE_TARGET)) attendanceScore += 10;
+  else if (meets(attendanceEval.overallAttendanceRate, 90)) attendanceScore += 6;
+  else if (meets(attendanceEval.overallAttendanceRate, 85)) attendanceScore += 3;
+  // else 0 — including when no attendance was marked at all
 
   // Unauthorised absence (up to 7 points)
-  if (attendanceEval.unauthorisedAbsenceRate <= 1) attendanceScore += 7;
-  else if (attendanceEval.unauthorisedAbsenceRate <= 3) attendanceScore += 5;
-  else if (attendanceEval.unauthorisedAbsenceRate <= 5) attendanceScore += 3;
-  else if (attendanceEval.unauthorisedAbsenceRate <= 8) attendanceScore += 1;
+  const unauthorisedRate = attendanceEval.unauthorisedAbsenceRate;
+  if (unauthorisedRate !== null) {
+    if (unauthorisedRate <= 1) attendanceScore += 7;
+    else if (unauthorisedRate <= 3) attendanceScore += 5;
+    else if (unauthorisedRate <= 5) attendanceScore += 3;
+    else if (unauthorisedRate <= 8) attendanceScore += 1;
+  }
 
   // Punctuality (up to 6 points)
-  if (attendanceEval.latenessRate <= 1) attendanceScore += 6;
-  else if (attendanceEval.latenessRate <= 3) attendanceScore += 4;
-  else if (attendanceEval.latenessRate <= 5) attendanceScore += 2;
-  else if (attendanceEval.latenessRate <= 8) attendanceScore += 1;
+  const overallLatenessRate = attendanceEval.latenessRate;
+  if (overallLatenessRate !== null) {
+    if (overallLatenessRate <= 1) attendanceScore += 6;
+    else if (overallLatenessRate <= 3) attendanceScore += 4;
+    else if (overallLatenessRate <= 5) attendanceScore += 2;
+    else if (overallLatenessRate <= 8) attendanceScore += 1;
+  }
 
   attendanceScore = Math.min(attendanceScore, 25);
 
@@ -746,29 +744,29 @@ export function generateEducationOutcomesIntelligence(
   if (exclusionEval.totalExclusions === 0) {
     exclusionScore += 4; // No exclusions to challenge
   } else {
-    if (exclusionEval.homeChallengeRate >= 80) exclusionScore += 4;
-    else if (exclusionEval.homeChallengeRate >= 50) exclusionScore += 3;
-    else if (exclusionEval.homeChallengeRate > 0) exclusionScore += 1;
+    if (meets(exclusionEval.homeChallengeRate, 80)) exclusionScore += 4;
+    else if (meets(exclusionEval.homeChallengeRate, 50)) exclusionScore += 3;
+    else if (meets(exclusionEval.homeChallengeRate, 0.1)) exclusionScore += 1;
   }
 
   // Reintegration meetings (up to 4 points)
   if (exclusionEval.totalExclusions === 0) {
     exclusionScore += 4;
   } else {
-    if (exclusionEval.reintegrationRate >= 90) exclusionScore += 4;
-    else if (exclusionEval.reintegrationRate >= 70) exclusionScore += 3;
-    else if (exclusionEval.reintegrationRate >= 50) exclusionScore += 2;
-    else if (exclusionEval.reintegrationRate > 0) exclusionScore += 1;
+    if (meets(exclusionEval.reintegrationRate, 90)) exclusionScore += 4;
+    else if (meets(exclusionEval.reintegrationRate, 70)) exclusionScore += 3;
+    else if (meets(exclusionEval.reintegrationRate, 50)) exclusionScore += 2;
+    else if (meets(exclusionEval.reintegrationRate, 0.1)) exclusionScore += 1;
   }
 
   // Alternative provision (up to 4 points)
   if (exclusionEval.totalExclusions === 0) {
     exclusionScore += 4;
   } else {
-    if (exclusionEval.alternativeProvisionRate >= 90) exclusionScore += 4;
-    else if (exclusionEval.alternativeProvisionRate >= 70) exclusionScore += 3;
-    else if (exclusionEval.alternativeProvisionRate >= 50) exclusionScore += 2;
-    else if (exclusionEval.alternativeProvisionRate > 0) exclusionScore += 1;
+    if (meets(exclusionEval.alternativeProvisionRate, 90)) exclusionScore += 4;
+    else if (meets(exclusionEval.alternativeProvisionRate, 70)) exclusionScore += 3;
+    else if (meets(exclusionEval.alternativeProvisionRate, 50)) exclusionScore += 2;
+    else if (meets(exclusionEval.alternativeProvisionRate, 0.1)) exclusionScore += 1;
   }
 
   exclusionScore = Math.min(exclusionScore, 20);
@@ -776,10 +774,10 @@ export function generateEducationOutcomesIntelligence(
   // PEP quality (25 points)
   let pepScore = 0;
   // Currency (up to 10 points)
-  if (pepEval.pepCurrencyRate >= 100) pepScore += 10;
-  else if (pepEval.pepCurrencyRate >= 80) pepScore += 7;
-  else if (pepEval.pepCurrencyRate >= 60) pepScore += 4;
-  else if (pepEval.pepCurrencyRate > 0) pepScore += 2;
+  if (meets(pepEval.pepCurrencyRate, 100)) pepScore += 10;
+  else if (meets(pepEval.pepCurrencyRate, 80)) pepScore += 7;
+  else if (meets(pepEval.pepCurrencyRate, 60)) pepScore += 4;
+  else if (meets(pepEval.pepCurrencyRate, 0.1)) pepScore += 2;
 
   // Child participation — attendance at PEP (up to 5 points)
   if (pepEval.childAttendanceRate >= 100) pepScore += 5;
@@ -807,10 +805,10 @@ export function generateEducationOutcomesIntelligence(
 
   if (hasSENDChildren) {
     // Coverage (up to 5 points)
-    if (sendEval.sendCoverageRate >= 100) sendScore += 5;
-    else if (sendEval.sendCoverageRate >= 80) sendScore += 4;
-    else if (sendEval.sendCoverageRate >= 60) sendScore += 2;
-    else if (sendEval.sendCoverageRate > 0) sendScore += 1;
+    if (meets(sendEval.sendCoverageRate, 100)) sendScore += 5;
+    else if (meets(sendEval.sendCoverageRate, 80)) sendScore += 4;
+    else if (meets(sendEval.sendCoverageRate, 60)) sendScore += 2;
+    else if (meets(sendEval.sendCoverageRate, 0.1)) sendScore += 1;
 
     // Effectiveness (up to 5 points)
     const totalRatings = sendSupport.length;
@@ -825,9 +823,9 @@ export function generateEducationOutcomesIntelligence(
     if (sendEval.ehcpCount === 0) {
       sendScore += 5; // No EHCPs needed
     } else {
-      if (sendEval.ehcpCurrencyRate >= 100) sendScore += 5;
-      else if (sendEval.ehcpCurrencyRate >= 80) sendScore += 4;
-      else if (sendEval.ehcpCurrencyRate >= 50) sendScore += 2;
+      if (meets(sendEval.ehcpCurrencyRate, 100)) sendScore += 5;
+      else if (meets(sendEval.ehcpCurrencyRate, 80)) sendScore += 4;
+      else if (meets(sendEval.ehcpCurrencyRate, 50)) sendScore += 2;
       else sendScore += 1;
     }
   } else {
@@ -880,7 +878,7 @@ export function generateEducationOutcomesIntelligence(
     return {
       childId,
       childName: childNames[childId] ?? childId,
-      attendanceRate: attendChild?.attendanceRate ?? 100,
+      attendanceRate: attendChild?.attendanceRate ?? null,
       pepStatus: pepChild?.pepStatus ?? ("not_in_place" as PEPStatus),
       exclusionDays: excChild?.totalDays ?? 0,
       achievementCount: achChild?.achievementCount ?? 0,
@@ -895,7 +893,10 @@ export function generateEducationOutcomesIntelligence(
   const actions: string[] = [];
 
   // Attendance strengths/areas
-  if (attendanceEval.overallAttendanceRate >= ATTENDANCE_GOOD) {
+  if (attendanceEval.overallAttendanceRate === null) {
+    areasForImprovement.push("No attendance marks recorded in the period — school attendance cannot be evidenced.");
+    actions.push("Obtain attendance registers from each child's school and record them against the placement.");
+  } else if (attendanceEval.overallAttendanceRate >= ATTENDANCE_GOOD) {
     strengths.push(`Excellent overall attendance at ${attendanceEval.overallAttendanceRate}%, exceeding the ${ATTENDANCE_TARGET}% target.`);
   } else if (attendanceEval.overallAttendanceRate >= ATTENDANCE_TARGET) {
     strengths.push(`Attendance at ${attendanceEval.overallAttendanceRate}% meets the ${ATTENDANCE_TARGET}% target for looked-after children.`);
@@ -904,7 +905,7 @@ export function generateEducationOutcomesIntelligence(
     actions.push("Develop individual attendance improvement plans for children below 95%.");
   }
 
-  if (attendanceEval.unauthorisedAbsenceRate > 3) {
+  if (meets(attendanceEval.unauthorisedAbsenceRate, 3.1)) {
     areasForImprovement.push(`Unauthorised absence rate of ${attendanceEval.unauthorisedAbsenceRate}% requires attention.`);
     actions.push("Review unauthorised absence reasons and implement targeted interventions.");
   }
@@ -920,10 +921,10 @@ export function generateEducationOutcomesIntelligence(
     if (exclusionEval.totalDaysLost >= EXCLUSION_DAYS_CONCERN) {
       areasForImprovement.push(`${exclusionEval.totalDaysLost} school days lost to exclusion — significant impact on learning.`);
     }
-    if (exclusionEval.homeChallengeRate > 50) {
+    if (meets(exclusionEval.homeChallengeRate, 50.1)) {
       strengths.push("Home actively challenges exclusions — strong advocacy for children's educational rights.");
     }
-    if (exclusionEval.reintegrationRate >= 80) {
+    if (meets(exclusionEval.reintegrationRate, 80)) {
       strengths.push("High reintegration meeting rate following exclusions.");
     } else {
       actions.push("Ensure reintegration meetings are held following every exclusion.");
@@ -931,9 +932,9 @@ export function generateEducationOutcomesIntelligence(
   }
 
   // PEP strengths/areas
-  if (pepEval.pepCurrencyRate >= 100) {
+  if (meets(pepEval.pepCurrencyRate, 100)) {
     strengths.push("All PEPs are current — full compliance with termly review requirement.");
-  } else if (pepEval.pepCurrencyRate < 100) {
+  } else if (below(pepEval.pepCurrencyRate, 100)) {
     areasForImprovement.push(`PEP currency rate is ${pepEval.pepCurrencyRate}% — all children must have current PEPs.`);
     actions.push("Schedule overdue PEP reviews with Virtual School Head as a matter of urgency.");
   }
@@ -1019,14 +1020,24 @@ function buildRegulatoryLinks(
 ): EducationOutcomesIntelligence["regulatoryLinks"] {
   const links: EducationOutcomesIntelligence["regulatoryLinks"] = [];
 
-  // Reg 8 — Education
-  const reg8Met = attendance.overallAttendanceRate >= ATTENDANCE_TARGET &&
-    pepQuality.pepCurrencyRate >= 80 &&
+  // Reg 8 — Education. With no attendance marks and no children on roll there
+  // is nothing to judge against, so the standard is reported as not evidenced
+  // rather than met or breached.
+  const educationMeasured =
+    attendance.overallAttendanceRate !== null || pepQuality.pepCurrencyRate !== null;
+  const reg8Met = meets(attendance.overallAttendanceRate, ATTENDANCE_TARGET) &&
+    meets(pepQuality.pepCurrencyRate, 80) &&
     exclusions.informalCount === 0;
   links.push({
     regulation: "CHR 2015 Reg 8",
     description: "The education standard — promote educational achievement, maintain school attendance, ensure PEP compliance.",
-    status: reg8Met ? "met" : attendance.overallAttendanceRate >= 90 && pepQuality.pepCurrencyRate >= 60 ? "partially_met" : "not_met",
+    status: !educationMeasured
+      ? "not_evidenced"
+      : reg8Met
+        ? "met"
+        : meets(attendance.overallAttendanceRate, 90) && meets(pepQuality.pepCurrencyRate, 60)
+          ? "partially_met"
+          : "not_met",
   });
 
   // Reg 9 — Enjoyment & Achievement
@@ -1040,32 +1051,46 @@ function buildRegulatoryLinks(
   });
 
   // SCCIF — Experiences & Progress
-  const sccifMet = attendance.overallAttendanceRate >= ATTENDANCE_TARGET &&
-    pepQuality.pepCurrencyRate >= 100 &&
+  const sccifMet = meets(attendance.overallAttendanceRate, ATTENDANCE_TARGET) &&
+    meets(pepQuality.pepCurrencyRate, 100) &&
     pepQuality.childVoiceRate >= 80;
   links.push({
     regulation: "SCCIF Experiences & Progress",
     description: "Children make good progress in education from their starting points, with effective support from the home.",
-    status: sccifMet ? "met" : pepQuality.pepCurrencyRate >= 60 ? "partially_met" : "not_met",
+    status: !educationMeasured
+      ? "not_evidenced"
+      : sccifMet
+        ? "met"
+        : meets(pepQuality.pepCurrencyRate, 60)
+          ? "partially_met"
+          : "not_met",
   });
 
   // Virtual School Head guidance
   const vsGuidanceMet = pepQuality.virtualSchoolInvolvementRate >= 80 &&
-    pepQuality.pepCurrencyRate >= 100;
+    meets(pepQuality.pepCurrencyRate, 100);
   links.push({
     regulation: "Virtual School Head Guidance",
     description: "Virtual School Head involved in PEP process, overseeing educational progress of looked-after children.",
-    status: vsGuidanceMet ? "met" : pepQuality.virtualSchoolInvolvementRate >= 50 ? "partially_met" : "not_met",
+    status: pepQuality.pepCurrencyRate === null
+      ? "not_evidenced"
+      : vsGuidanceMet
+        ? "met"
+        : pepQuality.virtualSchoolInvolvementRate >= 50
+          ? "partially_met"
+          : "not_met",
   });
 
   // SEND Code of Practice 2015
   if (sendSupport.childrenWithSEND > 0) {
-    const sendMet = sendSupport.sendCoverageRate >= 100 &&
-      sendSupport.ehcpCurrencyRate >= 100;
+    // An EHCP currency rate of null here means no EHCP is in place, so the
+    // annual-review limb has nothing to fail against.
+    const sendMet = meets(sendSupport.sendCoverageRate, 100) &&
+      (sendSupport.ehcpCurrencyRate === null || sendSupport.ehcpCurrencyRate >= 100);
     links.push({
       regulation: "SEND Code of Practice 2015",
       description: "Children with SEND receive appropriate support, EHCPs are reviewed annually, and child voice is captured.",
-      status: sendMet ? "met" : sendSupport.sendCoverageRate >= 80 ? "partially_met" : "not_met",
+      status: sendMet ? "met" : meets(sendSupport.sendCoverageRate, 80) ? "partially_met" : "not_met",
     });
   } else {
     links.push({

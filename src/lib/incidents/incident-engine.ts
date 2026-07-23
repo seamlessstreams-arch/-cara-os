@@ -26,6 +26,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "../metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type IncidentCategory =
@@ -187,11 +189,13 @@ export interface RestraintAnalysis {
   longestDurationMinutes: number;
   childrenRestrained: number;
   staffInvolved: number;
-  approvedTechniqueRate: number;     // %
-  deEscalationAttemptedRate: number; // %
-  childDebriefRate: number;          // %
-  staffDebriefRate: number;          // %
-  injuryRate: number;                // % incidents with injuries
+  // Null across the board when no restraint has been recorded: there is
+  // nothing to rate, which is not the same as perfect practice.
+  approvedTechniqueRate: number | null;     // %
+  deEscalationAttemptedRate: number | null; // %
+  childDebriefRate: number | null;          // %
+  staffDebriefRate: number | null;          // %
+  injuryRate: number | null;                // % incidents with injuries
   trend: "increasing" | "stable" | "decreasing";
   byChild: { childId: string; childName: string; count: number }[];
   byStaff: { staffId: string; count: number }[];
@@ -205,8 +209,8 @@ export interface IncidentMetrics {
   incidentsThisQuarter: number;
   bySeverity: { severity: IncidentSeverity; count: number }[];
   byCategory: { category: IncidentCategory; count: number }[];
-  complianceRate: number;            // %
-  averageResponseMinutes: number;    // report time - occurred time
+  complianceRate: number | null;     // %; null = no incidents recorded
+  averageResponseMinutes: number | null; // report time - occurred time; null = no incidents
   childrenInvolved: number;
   repeatPatterns: { childId: string; childName: string; count: number }[];
   requiresOfstedNotification: number;
@@ -401,11 +405,11 @@ export function analyzeRestraints(
   const injuryCount = homeIncidents.filter(i => i.injuries.length > 0).length;
 
   const total = homeIncidents.length;
-  const approvedTechniqueRate = total > 0 ? Math.round((approvedCount / total) * 100) : 100;
-  const deEscalationAttemptedRate = total > 0 ? Math.round((deEscCount / total) * 100) : 100;
-  const childDebriefRate = total > 0 ? Math.round((childDebriefCount / total) * 100) : 100;
-  const staffDebriefRate = total > 0 ? Math.round((staffDebriefCount / total) * 100) : 100;
-  const injuryRate = total > 0 ? Math.round((injuryCount / total) * 100) : 0;
+  const approvedTechniqueRate = rate(approvedCount, total);
+  const deEscalationAttemptedRate = rate(deEscCount, total);
+  const childDebriefRate = rate(childDebriefCount, total);
+  const staffDebriefRate = rate(staffDebriefCount, total);
+  const injuryRate = rate(injuryCount, total);
 
   // Trend (compare recent vs older)
   const recentRestraints = homeIncidents.filter(i => new Date(i.occurredAt) >= threeMonthsAgo);
@@ -509,9 +513,7 @@ export function calculateIncidentMetrics(
   // Compliance rate
   const complianceResults = homeIncidents.map(evaluateIncidentCompliance);
   const compliantCount = complianceResults.filter(r => r.isCompliant).length;
-  const complianceRate = homeIncidents.length > 0
-    ? Math.round((compliantCount / homeIncidents.length) * 100)
-    : 100;
+  const complianceRate = rate(compliantCount, homeIncidents.length);
 
   // Average response time
   const responseTimes = homeIncidents.map(i => {
@@ -521,7 +523,7 @@ export function calculateIncidentMetrics(
   });
   const averageResponseMinutes = responseTimes.length > 0
     ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
-    : 0;
+    : null;
 
   // Children involved
   const uniqueChildren = new Set(homeIncidents.map(i => i.childId));

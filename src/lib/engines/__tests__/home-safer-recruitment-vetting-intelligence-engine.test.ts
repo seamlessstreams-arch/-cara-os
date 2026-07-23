@@ -579,11 +579,11 @@ describe("Home Safer Recruitment Vetting Intelligence Engine", () => {
       expect(r.history_verification_rate).toBe(33);
     });
 
-    it("treats zero histories as neutral (+0)", () => {
+    it("treats zero histories as unmeasured, not a failure", () => {
       const r = computeSaferRecruitmentVetting(
         baseInput({ employment_histories: [] }),
       );
-      expect(r.history_verification_rate).toBe(0);
+      expect(r.history_verification_rate).toBeNull();
     });
   });
 
@@ -608,20 +608,20 @@ describe("Home Safer Recruitment Vetting Intelligence Engine", () => {
       expect(r.interview_compliance_rate).toBe(33);
     });
 
-    it("treats zero interviews as neutral (+0)", () => {
+    it("treats zero interviews as unmeasured, not a failure", () => {
       const r = computeSaferRecruitmentVetting(
         baseInput({ interviews: [] }),
       );
-      expect(r.interview_compliance_rate).toBe(0);
+      expect(r.interview_compliance_rate).toBeNull();
     });
   });
 
   // ── 10. Mod 5: Gap Explanation Rate ─────────────────────────────────────
 
   describe("Mod 5 — gap explanation rate", () => {
-    it("awards +4 when no gaps exist", () => {
+    it("leaves the gap rate unmeasured when no gaps exist", () => {
       const r = computeSaferRecruitmentVetting(baseInput());
-      expect(r.gap_explanation_rate).toBe(100);
+      expect(r.gap_explanation_rate).toBeNull();
     });
 
     it("awards +4 when gap explanation rate >= 95%", () => {
@@ -713,10 +713,10 @@ describe("Home Safer Recruitment Vetting Intelligence Engine", () => {
       expect(r.reference_completion_rate).toBe(100);
       expect(r.history_verification_rate).toBe(100);
       expect(r.interview_compliance_rate).toBe(100);
-      expect(r.gap_explanation_rate).toBe(100); // no gaps = 100%
+      expect(r.gap_explanation_rate).toBeNull(); // no gaps recorded = nothing to explain
     });
 
-    it("reports 0% for empty denominators", () => {
+    it("reports nothing measured for empty denominators", () => {
       const r = computeSaferRecruitmentVetting(
         baseInput({
           recruitment_records: [],
@@ -724,10 +724,10 @@ describe("Home Safer Recruitment Vetting Intelligence Engine", () => {
           interviews: [],
         }),
       );
-      expect(r.dbs_clearance_rate).toBe(0);
-      expect(r.reference_completion_rate).toBe(0);
-      expect(r.history_verification_rate).toBe(0);
-      expect(r.interview_compliance_rate).toBe(0);
+      expect(r.dbs_clearance_rate).toBeNull();
+      expect(r.reference_completion_rate).toBeNull();
+      expect(r.history_verification_rate).toBeNull();
+      expect(r.interview_compliance_rate).toBeNull();
     });
   });
 
@@ -1122,9 +1122,9 @@ describe("Home Safer Recruitment Vetting Intelligence Engine", () => {
       expect(r.concerns.some((c) => c.includes("2 candidates with DBS check still pending"))).toBe(true);
     });
 
-    it("gap_explanation_rate is 100 when no gaps exist", () => {
+    it("gap_explanation_rate is unmeasured when no gaps exist", () => {
       const r = computeSaferRecruitmentVetting(baseInput());
-      expect(r.gap_explanation_rate).toBe(100);
+      expect(r.gap_explanation_rate).toBeNull();
     });
 
     it("handles mixed DBS results correctly", () => {

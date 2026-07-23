@@ -16,6 +16,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, Clock, Pill, ShieldCheck, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, rateOf } from "@/lib/metrics/rate";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useMarEntries } from "@/hooks/use-mar-entries";
 import type { MarEntry, MarRoute, MarScheduleType } from "@/types/extended";
@@ -100,8 +101,8 @@ export default function MarSheetPage() {
     const dosesToday = entries.filter((e) => e.date === today && !e.refused && !e.missed_dose).length;
     const refusalsThisWeek = entries.filter((e) => e.refused && isWithinLastDays(e.date, 7)).length;
     const missedThisWeek = entries.filter((e) => e.missed_dose && isWithinLastDays(e.date, 7)).length;
-    const auditCompliant = entries.filter((e) => e.signature && e.administered_by && e.witnessed_by && e.expiry_check && e.batch_number.trim() !== "").length;
-    const auditPct = entries.length > 0 ? Math.round((auditCompliant / entries.length) * 100) : 100;
+    const auditCompliant = entries.filter((e) => e.signature && e.administered_by && e.witnessed_by && e.expiry_check && e.batch_number.trim() !== "");
+    const auditPct = rateOf(auditCompliant, entries);
     return { dosesToday, refusalsThisWeek, missedThisWeek, auditPct };
   }, [entries, today]);
 
@@ -151,7 +152,7 @@ export default function MarSheetPage() {
         <Card className="border-[var(--cs-border)]"><CardContent className="p-3"><div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide">Doses Today</div><div className="text-2xl font-bold text-emerald-600 mt-0.5">{stats.dosesToday}</div></CardContent></Card>
         <Card className="border-[var(--cs-border)]"><CardContent className="p-3"><div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide">Refusals (7d)</div><div className={cn("text-2xl font-bold mt-0.5", stats.refusalsThisWeek > 0 ? "text-rose-600" : "text-[var(--cs-navy)]")}>{stats.refusalsThisWeek}</div></CardContent></Card>
         <Card className="border-[var(--cs-border)]"><CardContent className="p-3"><div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide">Missed Doses (7d)</div><div className={cn("text-2xl font-bold mt-0.5", stats.missedThisWeek > 0 ? "text-amber-600" : "text-[var(--cs-navy)]")}>{stats.missedThisWeek}</div></CardContent></Card>
-        <Card className="border-[var(--cs-border)]"><CardContent className="p-3"><div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide">Audit Compliance</div><div className={cn("text-2xl font-bold mt-0.5", stats.auditPct === 100 ? "text-emerald-600" : "text-amber-600")}>{stats.auditPct}<span className="text-sm font-normal text-[var(--cs-text-muted)]">%</span></div></CardContent></Card>
+        <Card className="border-[var(--cs-border)]"><CardContent className="p-3"><div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide">Audit Compliance</div><div className={cn("text-2xl font-bold mt-0.5", stats.auditPct === null ? "text-[var(--cs-text-muted)]" : stats.auditPct === 100 ? "text-emerald-600" : "text-amber-600")}>{formatRate(stats.auditPct)}</div>{stats.auditPct === null && <div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">No entries recorded</div>}</CardContent></Card>
       </div>
 
       {followUps.length > 0 && (

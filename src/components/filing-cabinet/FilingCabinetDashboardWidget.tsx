@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type {
   FilingStats,
   FiledDocument,
@@ -36,21 +37,23 @@ interface FilingCabinetOverview {
 
 // ── Rating Badge ────────────────────────────────────────────────────────────
 
-function RatingBadge({ label, score }: { label: string; score: number }) {
+function RatingBadge({ label, score }: { label: string; score: number | null }) {
   const color =
-    score >= 95
-      ? "bg-green-100 text-green-800 border-green-300"
-      : score >= 80
-        ? "bg-blue-100 text-blue-800 border-blue-300"
-        : score >= 60
-          ? "bg-amber-100 text-amber-800 border-amber-300"
-          : "bg-red-100 text-red-800 border-red-300";
+    score === null
+      ? "bg-gray-100 text-gray-700 border-gray-300"
+      : score >= 95
+        ? "bg-green-100 text-green-800 border-green-300"
+        : score >= 80
+          ? "bg-blue-100 text-blue-800 border-blue-300"
+          : score >= 60
+            ? "bg-amber-100 text-amber-800 border-amber-300"
+            : "bg-red-100 text-red-800 border-red-300";
 
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-semibold ${color}`}
     >
-      {label} — {score}%
+      {label} — {formatRate(score)}
     </span>
   );
 }
@@ -215,13 +218,15 @@ export function FilingCabinetDashboardWidget() {
     setExpandedSection((prev) => (prev === section ? null : section));
 
   const complianceLabel =
-    stats.complianceRate >= 95
-      ? "Compliant"
-      : stats.complianceRate >= 80
-        ? "Mostly Compliant"
-        : stats.complianceRate >= 60
-          ? "Needs Attention"
-          : "Non-Compliant";
+    stats.complianceRate === null
+      ? "No documents filed"
+      : stats.complianceRate >= 95
+        ? "Compliant"
+        : stats.complianceRate >= 80
+          ? "Mostly Compliant"
+          : stats.complianceRate >= 60
+            ? "Needs Attention"
+            : "Non-Compliant";
 
   return (
     <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-6 shadow-sm">
@@ -246,14 +251,15 @@ export function FilingCabinetDashboardWidget() {
         />
         <MetricCard
           label="Compliance Rate"
-          value={stats.complianceRate}
-          suffix="%"
+          value={formatRate(stats.complianceRate)}
           color={
-            stats.complianceRate >= 95
-              ? "text-green-600"
-              : stats.complianceRate >= 80
-                ? "text-amber-600"
-                : "text-red-600"
+            stats.complianceRate === null
+              ? "text-gray-400"
+              : stats.complianceRate >= 95
+                ? "text-green-600"
+                : stats.complianceRate >= 80
+                  ? "text-amber-600"
+                  : "text-red-600"
           }
         />
         <MetricCard
@@ -290,7 +296,7 @@ export function FilingCabinetDashboardWidget() {
             {stats.onHold} ON HOLD
           </span>
         )}
-        {stats.complianceRate >= 95 && (
+        {meets(stats.complianceRate, 95) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             FULLY COMPLIANT
           </span>

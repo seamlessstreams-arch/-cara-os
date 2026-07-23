@@ -17,6 +17,8 @@
 //   SCCIF: "Leadership and management" — incident analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface IncidentInput {
@@ -82,7 +84,8 @@ export interface OversightCompliance {
   total_requiring_oversight: number;
   oversight_completed: number;
   oversight_pending: number;
-  compliance_rate: number; // percentage
+  // null when no incident has yet required oversight — nothing to review, not full compliance
+  compliance_rate: number | null; // percentage
 }
 
 export interface CaraInsight {
@@ -325,9 +328,7 @@ export function computeIncidentAnalytics(
   const requiresOversight = incidents.filter((i) => i.requires_oversight);
   const oversightCompleted = requiresOversight.filter((i) => i.oversight_by != null).length;
   const oversightPending = requiresOversight.length - oversightCompleted;
-  const complianceRate = requiresOversight.length > 0
-    ? Math.round((oversightCompleted / requiresOversight.length) * 100)
-    : 100;
+  const complianceRate = rate(oversightCompleted, requiresOversight.length);
 
   const oversight: OversightCompliance = {
     total_requiring_oversight: requiresOversight.length,
@@ -430,7 +431,7 @@ export function computeIncidentAnalytics(
     });
   }
 
-  if (complianceRate === 100 && requiresOversight.length > 0) {
+  if (meets(complianceRate, 100)) {
     insights.push({
       severity: "positive",
       text: "All incidents requiring management oversight have been reviewed. Reg 45 monitoring compliance is strong. Continue robust recording and review practice.",

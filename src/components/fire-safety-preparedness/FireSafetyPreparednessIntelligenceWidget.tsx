@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -50,10 +51,10 @@ export function FireSafetyPreparednessIntelligenceWidget() {
   if (!data) return null;
 
   const d = data as Record<string, unknown>;
-  const drills = d.fireDrillCompliance as Record<string, number>;
-  const equipment = d.equipmentChecks as Record<string, number>;
-  const evacuation = d.evacuationPlanning as Record<string, number>;
-  const staff = d.staffFireReadiness as Record<string, number>;
+  const drills = d.fireDrillCompliance as Record<string, number | null>;
+  const equipment = d.equipmentChecks as Record<string, number | null>;
+  const evacuation = d.evacuationPlanning as Record<string, number | null>;
+  const staff = d.staffFireReadiness as Record<string, number | null>;
   const children = (d.childSummaries ?? []) as Record<string, unknown>[];
   const strengths = (d.strengths ?? []) as string[];
   const areas = (d.areasForImprovement ?? []) as string[];
@@ -69,51 +70,51 @@ export function FireSafetyPreparednessIntelligenceWidget() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Stat label="Overall Score" value={`${d.overallScore}/100`} />
-        <Stat label="Drills" value={drills.totalDrills} />
-        <Stat label="Equipment Checks" value={equipment.totalChecks} />
+        <Stat label="Drills" value={drills.totalDrills ?? 0} />
+        <Stat label="Equipment Checks" value={equipment.totalChecks ?? 0} />
         <Stat label="Children" value={children.length} />
       </div>
 
       <Section title="Fire Drill Compliance" defaultOpen>
-        <ScoreBar label="Drill Compliance" value={drills.overallScore} />
+        <ScoreBar label="Drill Compliance" value={drills.overallScore ?? 0} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Success Rate" value={`${drills.successRate}%`} />
-          <Stat label="Full Participation" value={`${drills.fullParticipationRate}%`} />
-          <Stat label="Drill Types" value={drills.drillTypeVariety} />
-          <Stat label="Avg Evacuation" value={`${drills.averageEvacuationTime}s`} />
-          <Stat label="Corrective Actions" value={`${drills.correctiveActionsRate}%`} />
+          <Stat label="Success Rate" value={formatRate(drills.successRate)} />
+          <Stat label="Full Participation" value={formatRate(drills.fullParticipationRate)} />
+          <Stat label="Drill Types" value={drills.drillTypeVariety ?? 0} />
+          <Stat label="Avg Evacuation" value={drills.averageEvacuationTime === null ? "—" : `${drills.averageEvacuationTime}s`} />
+          <Stat label="Corrective Actions" value={formatRate(drills.correctiveActionsRate)} />
         </div>
       </Section>
 
       <Section title="Equipment Checks">
-        <ScoreBar label="Equipment" value={equipment.overallScore} />
+        <ScoreBar label="Equipment" value={equipment.overallScore ?? 0} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Pass Rate" value={`${equipment.passRate}%`} />
-          <Stat label="Major Fault" value={`${equipment.majorFaultRate}%`} />
-          <Stat label="Types Covered" value={equipment.equipmentTypesCovered} />
-          <Stat label="Rectification" value={`${equipment.rectificationRate}%`} />
+          <Stat label="Pass Rate" value={formatRate(equipment.passRate)} />
+          <Stat label="Major Fault" value={formatRate(equipment.majorFaultRate)} />
+          <Stat label="Types Covered" value={equipment.equipmentTypesCovered ?? 0} />
+          <Stat label="Rectification" value={formatRate(equipment.rectificationRate)} />
         </div>
       </Section>
 
       <Section title="Evacuation Planning">
-        <ScoreBar label="Evacuation" value={evacuation.overallScore} />
+        <ScoreBar label="Evacuation" value={evacuation.overallScore ?? 0} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="PEEP Current" value={`${evacuation.peepCurrentRate}%`} />
-          <Stat label="Assembly Point" value={`${evacuation.assemblyPointRate}%`} />
-          <Stat label="Escape Route" value={`${evacuation.escapeRouteRate}%`} />
-          <Stat label="Night Plan" value={`${evacuation.nightPlanRate}%`} />
+          <Stat label="PEEP Current" value={formatRate(evacuation.peepCurrentRate)} />
+          <Stat label="Assembly Point" value={formatRate(evacuation.assemblyPointRate)} />
+          <Stat label="Escape Route" value={formatRate(evacuation.escapeRouteRate)} />
+          <Stat label="Night Plan" value={formatRate(evacuation.nightPlanRate)} />
         </div>
       </Section>
 
       <Section title="Staff Fire Readiness">
-        <ScoreBar label="Staff Readiness" value={staff.overallScore} />
+        <ScoreBar label="Staff Readiness" value={staff.overallScore ?? 0} />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="Fire Awareness" value={`${staff.fireAwarenessRate}%`} />
-          <Stat label="Fire Marshal" value={`${staff.fireMarshalRate}%`} />
-          <Stat label="Evacuation" value={`${staff.evacuationRate}%`} />
-          <Stat label="Extinguisher" value={`${staff.extinguisherRate}%`} />
-          <Stat label="PEEP Awareness" value={`${staff.peepAwarenessRate}%`} />
-          <Stat label="Night Response" value={`${staff.nightResponseRate}%`} />
+          <Stat label="Fire Awareness" value={formatRate(staff.fireAwarenessRate)} />
+          <Stat label="Fire Marshal" value={formatRate(staff.fireMarshalRate)} />
+          <Stat label="Evacuation" value={formatRate(staff.evacuationRate)} />
+          <Stat label="Extinguisher" value={formatRate(staff.extinguisherRate)} />
+          <Stat label="PEEP Awareness" value={formatRate(staff.peepAwarenessRate)} />
+          <Stat label="Night Response" value={formatRate(staff.nightResponseRate)} />
         </div>
       </Section>
 

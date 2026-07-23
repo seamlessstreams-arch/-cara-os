@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { usePremisesSafetyIntelligence } from "@/hooks/use-premises-safety-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -97,8 +98,8 @@ export function VehicleManagementCard() {
             <p className={cn("text-lg font-bold tabular-nums", flagged === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{flagged}</p>
             <p className="text-[10px] text-muted-foreground">Flags</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", intel.overview.check_completion_rate >= 95 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", intel.overview.check_completion_rate >= 95 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{intel.overview.check_completion_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(intel.overview.check_completion_rate, 95) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(intel.overview.check_completion_rate, 95) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(intel.overview.check_completion_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
         </div>

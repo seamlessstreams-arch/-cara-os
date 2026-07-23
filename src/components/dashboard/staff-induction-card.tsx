@@ -14,6 +14,7 @@ import {
   Shield, BookOpen, CheckCircle2, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 // ── Insight styling ──────────────────────────────────────────────────────────
@@ -70,9 +71,9 @@ export function StaffInductionCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", dbs.compliance_rate >= 90 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", dbs.compliance_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
-              {dbs.compliance_rate}%
+          <div className={cn("text-center rounded-lg p-2", meets(dbs.compliance_rate, 90) ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(dbs.compliance_rate, 90) ? "text-[--cs-success]" : "text-[--cs-risk]")}>
+              {formatRate(dbs.compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">DBS</p>
           </div>
@@ -112,7 +113,7 @@ export function StaffInductionCard() {
                     <div className="h-full bg-red-400" style={{ width: `${(t.expired / Math.max(t.total_required, 1)) * 100}%` }} />
                   </div>
                   <span className="w-12 text-right tabular-nums font-medium text-[10px]">
-                    {t.compliance_rate}%
+                    {formatRate(t.compliance_rate)}
                   </span>
                 </div>
               ))}

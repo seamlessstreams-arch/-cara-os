@@ -15,6 +15,7 @@ import {
   Shield, GraduationCap, Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -76,21 +77,21 @@ export function WorkforcePlanningCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{p.active_staff}</p>
             <p className="text-[10px] text-muted-foreground">Active Staff</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", p.training_compliance_rate >= 90 ? "bg-green-50" : p.training_compliance_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", p.training_compliance_rate >= 90 ? "text-[--cs-success]" : p.training_compliance_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {p.training_compliance_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", meets(p.training_compliance_rate, 90) ? "bg-green-50" : meets(p.training_compliance_rate, 75) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(p.training_compliance_rate, 90) ? "text-[--cs-success]" : meets(p.training_compliance_rate, 75) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(p.training_compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Training</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", d.compliance_rate >= 100 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", d.compliance_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
-              {d.compliance_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", meets(d.compliance_rate, 100) ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(d.compliance_rate, 100) ? "text-[--cs-success]" : "text-[--cs-risk]")}>
+              {formatRate(d.compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">DBS</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", s.coverage_rate >= 95 ? "bg-green-50" : s.coverage_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", s.coverage_rate >= 95 ? "text-[--cs-success]" : s.coverage_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {s.coverage_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", meets(s.coverage_rate, 95) ? "bg-green-50" : meets(s.coverage_rate, 80) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(s.coverage_rate, 95) ? "text-[--cs-success]" : meets(s.coverage_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(s.coverage_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Shifts</p>
           </div>
@@ -103,7 +104,7 @@ export function WorkforcePlanningCard() {
             <div className="flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-blue-500" />
               <div>
-                <p className="text-xs font-medium">{p.supervision_compliance_rate}%</p>
+                <p className="text-xs font-medium">{formatRate(p.supervision_compliance_rate)}</p>
                 <p className="text-[10px] text-muted-foreground">Supervision</p>
               </div>
             </div>
@@ -154,13 +155,13 @@ export function WorkforcePlanningCard() {
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <GraduationCap className="h-3 w-3" />
-              Training ({p.training_compliance_rate}% compliant)
+              Training ({formatRate(p.training_compliance_rate)} compliant)
             </p>
             {intel.training.slice(0, 4).map((t) => (
               <div key={t.category} className="flex items-center justify-between rounded border p-2 text-xs">
                 <span className="capitalize truncate">{t.category.replace(/_/g, " ")}</span>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className={cn("font-medium tabular-nums", t.compliance_rate >= 100 ? "text-[--cs-success]" : t.compliance_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+                  <span className={cn("font-medium tabular-nums", meets(t.compliance_rate, 100) ? "text-[--cs-success]" : meets(t.compliance_rate, 75) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
                     {t.compliant}/{t.total_required}
                   </span>
                   {t.expired > 0 && (
@@ -198,7 +199,7 @@ export function WorkforcePlanningCard() {
               Coverage Concerns
             </p>
             <div className="rounded border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-2.5 text-xs text-[--cs-warning]">
-              {s.shifts_unfilled} shift{s.shifts_unfilled > 1 ? "s" : ""} unfilled this week out of {s.shifts_this_week}. Coverage rate: {s.coverage_rate}%.
+              {s.shifts_unfilled} shift{s.shifts_unfilled > 1 ? "s" : ""} unfilled this week out of {s.shifts_this_week}. Coverage rate: {formatRate(s.coverage_rate)}.
               {s.no_shows_this_month > 0 && ` ${s.no_shows_this_month} no-show(s) this month.`}
             </div>
           </div>

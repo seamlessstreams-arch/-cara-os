@@ -15,6 +15,7 @@ import {
   Users, CheckCircle2, Loader2, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useLACReviewIntelligence } from "@/hooks/use-lac-review-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -89,23 +90,23 @@ export function LACReviewCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", o.timeliness_rate === 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.timeliness_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.timeliness_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.timeliness_rate === null ? "bg-muted" : meets(o.timeliness_rate, 100) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.timeliness_rate === null ? "text-muted-foreground" : meets(o.timeliness_rate, 100) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(o.timeliness_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Timely</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums text-blue-600">{o.child_participation_rate}%</p>
+            <p className="text-lg font-bold tabular-nums text-blue-600">{formatRate(o.child_participation_rate)}</p>
             <p className="text-[10px] text-muted-foreground">YP Voice</p>
           </div>
           <div className="text-center rounded-lg bg-purple-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-purple-600">{o.total_reviews}</p>
             <p className="text-[10px] text-muted-foreground">Reviews</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.care_plan_update_rate === 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.care_plan_update_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.care_plan_update_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.care_plan_update_rate === null ? "bg-muted" : meets(o.care_plan_update_rate, 100) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.care_plan_update_rate === null ? "text-muted-foreground" : meets(o.care_plan_update_rate, 100) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(o.care_plan_update_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Plan Updated</p>
           </div>
@@ -162,7 +163,9 @@ export function LACReviewCard() {
             <div>
               <p className="text-xs font-medium">Review Actions</p>
               <p className="text-[10px] text-muted-foreground">
-                {ac.completed}/{ac.total_actions} completed · {ac.completion_rate}%
+                {ac.total_actions > 0
+                  ? `${ac.completed}/${ac.total_actions} completed · ${formatRate(ac.completion_rate)}`
+                  : "No review actions agreed yet"}
               </p>
             </div>
           </div>
@@ -170,6 +173,10 @@ export function LACReviewCard() {
             <Badge className="text-[10px] bg-[--cs-warning-bg] text-[--cs-warning]">
               <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
               {ac.overdue} overdue
+            </Badge>
+          ) : ac.total_actions === 0 ? (
+            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+              None agreed
             </Badge>
           ) : (
             <Badge className="text-[10px] bg-[--cs-success-bg] text-[--cs-success]">

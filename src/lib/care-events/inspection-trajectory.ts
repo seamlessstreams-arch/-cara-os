@@ -47,9 +47,18 @@ export interface TrajectorySummary {
 
 const HOLDING_BAND = 1; // |net delta| ≤ 1 ⇒ holding
 
+// A bundle whose readiness could not be scored (nothing measurable at the time)
+// is not a point on a readiness trajectory — you cannot draw a line through an
+// unknown. Such bundles are excluded from the trend rather than plotted at a
+// fabricated height. The row type narrows to a measured score here.
+type MeasuredBundleRow = PersistedInspectionBundleRow & { readiness_score: number };
+
 export function loadInspectionTrajectory(homeId: string): TrajectorySummary {
-  // listPersistedInspectionBundles returns newest-first; reverse for chronology
-  const rows: PersistedInspectionBundleRow[] = [...listPersistedInspectionBundles(homeId)].reverse();
+  // listPersistedInspectionBundles returns newest-first; reverse for chronology.
+  // Only bundles with an actual readiness score can chart a trajectory.
+  const rows: MeasuredBundleRow[] = [...listPersistedInspectionBundles(homeId)]
+    .reverse()
+    .filter((r): r is MeasuredBundleRow => r.readiness_score !== null);
 
   if (rows.length === 0) {
     return {

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { useHomeStatutoryVisitComplianceIntelligence } from "@/hooks/use-home-statutory-visit-compliance-intelligence";
 import type { StatutoryVisitRating } from "@/lib/engines/home-statutory-visit-compliance-intelligence-engine";
 
@@ -59,24 +60,24 @@ export function HomeStatutoryVisitComplianceIntelligenceCard() {
         {d.visit_rating === "insufficient_data" && <IntelligenceCardEmpty />}
         {d.visit_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.statutory_visit_completion_rate >= 85 ? "bg-green-50" : d.statutory_visit_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.statutory_visit_completion_rate >= 85 ? "text-[--cs-success]" : d.statutory_visit_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.statutory_visit_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.statutory_visit_completion_rate, 85) ? "bg-green-50" : meets(d.statutory_visit_completion_rate, 70) ? "bg-amber-50" : below(d.statutory_visit_completion_rate, 70) ? "bg-red-50" : "bg-muted")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.statutory_visit_completion_rate, 85) ? "text-[--cs-success]" : meets(d.statutory_visit_completion_rate, 70) ? "text-[--cs-warning]" : below(d.statutory_visit_completion_rate, 70) ? "text-[--cs-risk]" : "text-muted-foreground")}>{formatRate(d.statutory_visit_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Visits Done</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.children_seen_alone_rate >= 85 ? "bg-green-50" : "bg-amber-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.children_seen_alone_rate >= 85 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_seen_alone_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.children_seen_alone_rate, 85) ? "bg-green-50" : below(d.children_seen_alone_rate, 85) ? "bg-amber-50" : "bg-muted")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.children_seen_alone_rate, 85) ? "text-[--cs-success]" : below(d.children_seen_alone_rate, 85) ? "text-[--cs-warning]" : "text-muted-foreground")}>{formatRate(d.children_seen_alone_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Seen Alone</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.social_worker_contact_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.social_worker_contact_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.social_worker_contact_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.social_worker_contact_rate, 80) ? "bg-green-50" : below(d.social_worker_contact_rate, 80) ? "bg-amber-50" : "bg-muted")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.social_worker_contact_rate, 80) ? "text-[--cs-success]" : below(d.social_worker_contact_rate, 80) ? "text-[--cs-warning]" : "text-muted-foreground")}>{formatRate(d.social_worker_contact_rate)}</p>
               <p className="text-[9px] text-muted-foreground">SW Contact</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.children_without_recent_visit === 0 ? "bg-green-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.children_without_recent_visit === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.children_without_recent_visit}</p>
               <p className="text-[9px] text-muted-foreground">Overdue</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.reg22_compliance_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reg22_compliance_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.reg22_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.reg22_compliance_rate, 80) ? "bg-green-50" : below(d.reg22_compliance_rate, 80) ? "bg-amber-50" : "bg-muted")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.reg22_compliance_rate, 80) ? "text-[--cs-success]" : below(d.reg22_compliance_rate, 80) ? "text-[--cs-warning]" : "text-muted-foreground")}>{formatRate(d.reg22_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Reg 22</p>
             </div>
           </div>

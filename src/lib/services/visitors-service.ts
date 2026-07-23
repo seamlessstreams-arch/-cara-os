@@ -177,9 +177,11 @@ export function computeVisitorSummary(
  */
 export function computeVisitorCompliance(entries: VisitorEntry[]): {
   total_entries: number;
-  dbs_check_rate: number;
-  id_verification_rate: number;
-  sign_out_rate: number;
+  // Null when there is nobody in the relevant population — an empty visitor
+  // book evidences nothing, so it cannot evidence compliance either.
+  dbs_check_rate: number | null;
+  id_verification_rate: number | null;
+  sign_out_rate: number | null;
   incomplete_entries: number;
 } {
   const professionalTypes = new Set(
@@ -196,21 +198,21 @@ export function computeVisitorCompliance(entries: VisitorEntry[]): {
   const dbsCheckRate =
     professionalEntries.length > 0
       ? Math.round((dbsCheckedCount / professionalEntries.length) * 1000) / 10
-      : 100;
+      : null;
 
   // ID verification rate — all visitors
   const idVerifiedCount = entries.filter((e) => e.id_verified).length;
   const idVerificationRate =
     total > 0
       ? Math.round((idVerifiedCount / total) * 1000) / 10
-      : 100;
+      : null;
 
   // Sign-out rate — all visitors
   const signedOutCount = entries.filter((e) => e.departure_time != null).length;
   const signOutRate =
     total > 0
       ? Math.round((signedOutCount / total) * 1000) / 10
-      : 100;
+      : null;
 
   // Incomplete entries — missing departure time
   const incompleteEntries = entries.filter((e) => e.departure_time == null).length;

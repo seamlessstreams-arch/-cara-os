@@ -15,6 +15,7 @@ import {
   Brain, Users, Loader2, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useContactEngagement } from "@/hooks/use-contact-engagement";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -89,12 +90,12 @@ export function ContactEngagementCard() {
             <p className="text-[10px] text-muted-foreground">Sessions (30d)</p>
           </div>
           <div className="text-center rounded-lg bg-gray-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums">{c.avg_sessions_per_child_30d}</p>
+            <p className="text-lg font-bold tabular-nums">{c.avg_sessions_per_child_30d ?? "—"}</p>
             <p className="text-[10px] text-muted-foreground">Per Child</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", intel.family_time.safe_sessions_pct === 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", intel.family_time.safe_sessions_pct === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {intel.family_time.safe_sessions_pct}%
+          <div className={cn("text-center rounded-lg p-2.5", meets(intel.family_time.safe_sessions_pct, 100) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(intel.family_time.safe_sessions_pct, 100) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(intel.family_time.safe_sessions_pct)}
             </p>
             <p className="text-[10px] text-muted-foreground">Safe</p>
           </div>
@@ -155,7 +156,7 @@ export function ContactEngagementCard() {
               <div>
                 <p className="text-xs font-medium">Mood Impact</p>
                 <p className="text-[10px] text-muted-foreground">
-                  Contact days avg {intel.mood_impact.avg_mood_contact_days}/10 vs {intel.mood_impact.avg_mood_non_contact_days}/10
+                  Contact days avg {intel.mood_impact.avg_mood_contact_days ?? "—"}/10 vs {intel.mood_impact.avg_mood_non_contact_days ?? "—"}/10
                   {intel.mood_impact.positive_impact_children > 0 ? ` · ${intel.mood_impact.positive_impact_children} positive` : ""}
                   {intel.mood_impact.negative_impact_children > 0 ? ` · ${intel.mood_impact.negative_impact_children} negative` : ""}
                 </p>

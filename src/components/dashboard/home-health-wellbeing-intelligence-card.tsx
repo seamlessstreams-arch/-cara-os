@@ -18,6 +18,17 @@ import { cn } from "@/lib/utils";
 import { useHomeHealthWellbeingIntelligence } from "@/hooks/use-home-health-wellbeing-intelligence";
 import type { HealthWellbeingRating } from "@/lib/engines/home-health-wellbeing-intelligence-engine";
 
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
+function pct(value: number | null | undefined): string {
+  return typeof value === "number" && Number.isFinite(value) ? `${value}%` : "—";
+}
+
+function meets(value: number | null | undefined, threshold: number): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value >= threshold;
+}
+
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
 const RATING_STYLES: Record<HealthWellbeingRating, { bg: string; text: string; border: string; label: string }> = {
@@ -119,8 +130,8 @@ export function HomeHealthWellbeingIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <Stethoscope className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.records.follow_up_compliance_rate === 100 ? "text-[--cs-success]" : d.records.follow_up_compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.records.follow_up_compliance_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", d.records.follow_up_compliance_rate === null ? "text-muted-foreground" : d.records.follow_up_compliance_rate === 100 ? "text-[--cs-success]" : meets(d.records.follow_up_compliance_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+                  {pct(d.records.follow_up_compliance_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Follow-up</p>
@@ -130,8 +141,8 @@ export function HomeHealthWellbeingIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <Pill className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.medication.administered_rate === 100 ? "text-[--cs-success]" : d.medication.administered_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.medication.administered_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", d.medication.administered_rate === null ? "text-muted-foreground" : d.medication.administered_rate === 100 ? "text-[--cs-success]" : meets(d.medication.administered_rate, 90) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+                  {pct(d.medication.administered_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Med Admin</p>
@@ -141,8 +152,8 @@ export function HomeHealthWellbeingIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <Eye className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.records.outcome_rate >= 80 ? "text-[--cs-success]" : d.records.outcome_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.records.outcome_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", d.records.outcome_rate === null ? "text-muted-foreground" : meets(d.records.outcome_rate, 80) ? "text-[--cs-success]" : meets(d.records.outcome_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+                  {pct(d.records.outcome_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Outcomes</p>

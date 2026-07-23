@@ -15,6 +15,7 @@ import {
   CheckCircle2, XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 import { useManagerBriefing } from "@/hooks/use-manager-briefing";
 
 const RISK_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
@@ -22,6 +23,7 @@ const RISK_STYLES: Record<string, { bg: string; text: string; border: string; la
   elevated: { bg: "bg-amber-100", text: "text-amber-800", border: "border-amber-300", label: "ELEVATED" },
   moderate: { bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-300", label: "MODERATE" },
   stable: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "STABLE" },
+  unknown: { bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-300", label: "NOT ASSESSED" },
 };
 
 const STATUS_DOT: Record<string, string> = {
@@ -103,7 +105,7 @@ export function ManagerIntelligenceBriefingCard() {
             <p className="text-[10px] text-muted-foreground">Domains at Risk</p>
           </div>
           <div className="text-center rounded-lg bg-slate-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-slate-600">{reg.overall_compliance_pct}%</p>
+            <p className="text-lg font-bold tabular-nums text-slate-600">{formatRate(reg.overall_compliance_pct)}</p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
           <div className={cn("text-center rounded-lg p-2", exec.children_requiring_attention > 0 ? "bg-amber-50" : "bg-green-50")}>

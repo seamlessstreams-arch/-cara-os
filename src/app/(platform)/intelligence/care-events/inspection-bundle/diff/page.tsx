@@ -123,7 +123,7 @@ function Picker({
   label: string;
   value: string;
   onChange: (v: string) => void;
-  rows: { id: string; generated_at: string; readiness_score: number }[];
+  rows: { id: string; generated_at: string; readiness_score: number | null }[];
   allowNone?: boolean;
 }) {
   return (
@@ -137,7 +137,7 @@ function Picker({
         {allowNone && <option value="">(empty baseline)</option>}
         {rows.map((r) => (
           <option key={r.id} value={r.id}>
-            {new Date(r.generated_at).toLocaleString()} — readiness {r.readiness_score}
+            {new Date(r.generated_at).toLocaleString()} — readiness {r.readiness_score ?? "—"}
           </option>
         ))}
       </select>
@@ -147,19 +147,21 @@ function Picker({
 
 function DeltaRow({
   label, v,
-}: { label: string; v: { previous: number; current: number; delta: number } }) {
-  const sign = v.delta > 0 ? "+" : "";
-  const tone = v.delta > 0 ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-    : v.delta < 0 ? "bg-rose-100 text-rose-800 border-rose-300"
+}: { label: string; v: { previous: number | null; current: number | null; delta: number | null } }) {
+  const d = v.delta;
+  const sign = d !== null && d > 0 ? "+" : "";
+  const tone = d === null ? "bg-slate-100 text-slate-500 border-slate-200"
+    : d > 0 ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+    : d < 0 ? "bg-rose-100 text-rose-800 border-rose-300"
     : "bg-slate-100 text-slate-700 border-slate-200";
   return (
     <li className="flex items-center justify-between rounded border border-slate-200 bg-slate-50 p-2 text-sm">
       <span>{label}</span>
       <span className="flex items-center gap-2 text-xs">
-        <span className="text-slate-500">{v.previous}</span>
+        <span className="text-slate-500">{v.previous ?? "—"}</span>
         <ArrowRight className="h-3 w-3 text-slate-400" />
-        <span className="font-semibold text-slate-700">{v.current}</span>
-        <Badge className={`border ${tone}`}>{sign}{v.delta}</Badge>
+        <span className="font-semibold text-slate-700">{v.current ?? "—"}</span>
+        <Badge className={`border ${tone}`}>{d === null ? "n/a" : `${sign}${d}`}</Badge>
       </span>
     </li>
   );

@@ -12,6 +12,7 @@ import {
   Users, ChevronRight, AlertTriangle, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useSupervisionIntelligence } from "@/hooks/use-supervision-intelligence";
 
 const ALERT_STYLES: Record<string, string> = {
@@ -75,12 +76,12 @@ export function StaffTeamMeetingsCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{overview.supervisions_completed_90d}</p>
             <p className="text-[10px] text-muted-foreground">Sessions/90d</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", overview.action_completion_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", overview.action_completion_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{overview.action_completion_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(overview.action_completion_rate, 80) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(overview.action_completion_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(overview.action_completion_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Actions</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", overview.avg_wellbeing_score >= 7 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", overview.avg_wellbeing_score >= 7 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{overview.avg_wellbeing_score.toFixed(1)}</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(overview.avg_wellbeing_score, 7) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(overview.avg_wellbeing_score, 7) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{overview.avg_wellbeing_score?.toFixed(1) ?? "—"}</p>
             <p className="text-[10px] text-muted-foreground">Avg WB</p>
           </div>
         </div>

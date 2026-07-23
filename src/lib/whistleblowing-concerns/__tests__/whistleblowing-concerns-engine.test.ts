@@ -404,12 +404,12 @@ describe("evaluateResponseQuality", () => {
     expect(result.totalConcerns).toBe(0);
   });
 
-  it("returns 100% rates when no concerns", () => {
+  it("returns unmeasured rates when no concerns", () => {
     const result = evaluateResponseQuality([]);
-    expect(result.acknowledgedWithin48HrsRate).toBe(100);
-    expect(result.investigationStartedRate).toBe(100);
-    expect(result.resolvedWithin30DaysRate).toBe(100);
-    expect(result.lessonsIdentifiedRate).toBe(100);
+    expect(result.acknowledgedWithin48HrsRate).toBeNull();
+    expect(result.investigationStartedRate).toBeNull();
+    expect(result.resolvedWithin30DaysRate).toBeNull();
+    expect(result.lessonsIdentifiedRate).toBeNull();
   });
 
   it("awards 8 points when >=90% acknowledged within 48hrs", () => {
@@ -446,8 +446,8 @@ describe("evaluateResponseQuality", () => {
     );
     const result = evaluateResponseQuality(concerns);
     expect(result.acknowledgedWithin48HrsRate).toBe(80);
-    // No ack points (below 90%), but 3 for external referral rate (100% because no critical/high)
-    expect(result.score).toBe(3);
+    // No ack points (below 90%), and no external referral points (nothing critical/high to refer)
+    expect(result.score).toBe(0);
   });
 
   it("awards 6 points when >=90% investigation started", () => {
@@ -465,8 +465,8 @@ describe("evaluateResponseQuality", () => {
     );
     const result = evaluateResponseQuality(concerns);
     expect(result.investigationStartedRate).toBe(90);
-    // 6 for inv + 3 for ext ref (100% because no critical/high)
-    expect(result.score).toBe(9);
+    // 6 for inv; no external referral points (nothing critical/high to refer)
+    expect(result.score).toBe(6);
   });
 
   it("awards 6 points when >=80% resolved within 30 days", () => {
@@ -484,8 +484,8 @@ describe("evaluateResponseQuality", () => {
     );
     const result = evaluateResponseQuality(concerns);
     expect(result.resolvedWithin30DaysRate).toBe(80);
-    // 6 for resolved + 3 for ext ref (100% because no critical/high)
-    expect(result.score).toBe(9);
+    // 6 for resolved; no external referral points (nothing critical/high to refer)
+    expect(result.score).toBe(6);
   });
 
   it("awards 5 points when >=80% lessons identified", () => {
@@ -503,8 +503,8 @@ describe("evaluateResponseQuality", () => {
     );
     const result = evaluateResponseQuality(concerns);
     expect(result.lessonsIdentifiedRate).toBe(80);
-    // 5 for lessons + 3 for ext ref (100% because no critical/high)
-    expect(result.score).toBe(8);
+    // 5 for lessons; no external referral points (nothing critical/high to refer)
+    expect(result.score).toBe(5);
   });
 
   it("awards 3 points for external referral on critical/high concerns", () => {
@@ -540,8 +540,8 @@ describe("evaluateResponseQuality", () => {
     ];
     const result = evaluateResponseQuality(concerns);
     expect(result.averageActionsTaken).toBe(2);
-    // 2 for actions + 3 for ext ref (100% because no critical/high)
-    expect(result.score).toBe(5);
+    // 2 for actions; no external referral points (nothing critical/high to refer)
+    expect(result.score).toBe(2);
   });
 
   it("awards maximum 30 when all criteria met", () => {
@@ -586,7 +586,7 @@ describe("evaluateResponseQuality", () => {
     expect(result.averageActionsTaken).toBe(2);
   });
 
-  it("handles external referral rate with no critical/high concerns", () => {
+  it("leaves external referral rate unmeasured with no critical/high concerns", () => {
     const concerns = [
       makeConcern({
         id: "wbc-low",
@@ -600,7 +600,7 @@ describe("evaluateResponseQuality", () => {
       }),
     ];
     const result = evaluateResponseQuality(concerns);
-    expect(result.externalReferralForCriticalHighRate).toBe(100);
+    expect(result.externalReferralForCriticalHighRate).toBeNull();
   });
 });
 
@@ -787,7 +787,7 @@ describe("evaluateOutcomesLearning", () => {
   it("returns 0 score for empty concerns", () => {
     const result = evaluateOutcomesLearning([]);
     expect(result.score).toBe(0);
-    expect(result.resolutionDocumentedRate).toBe(0);
+    expect(result.resolutionDocumentedRate).toBeNull();
   });
 
   it("returns escalationAppropriate = true for empty concerns", () => {
@@ -1271,8 +1271,8 @@ describe("edge cases", () => {
       severity: "low",
     });
     const result = evaluateResponseQuality([concern]);
-    // 3 for ext ref (100% because no critical/high concerns)
-    expect(result.score).toBe(3);
+    // Nothing met and nothing critical/high to refer — no points at all
+    expect(result.score).toBe(0);
   });
 
   it("handles concern at exact period boundary (start)", () => {

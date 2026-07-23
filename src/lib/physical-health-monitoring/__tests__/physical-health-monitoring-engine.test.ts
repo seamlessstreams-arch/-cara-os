@@ -259,16 +259,16 @@ describe("evaluateAppointments", () => {
     expect(result.overallScore).toBeGreaterThan(50);
   });
 
-  it("returns zero with empty data", () => {
+  it("reports nothing measured with empty data", () => {
     const result = evaluateAppointments([]);
-    expect(result.overallScore).toBe(0);
+    expect(result.overallScore).toBeNull();
     expect(result.totalAppointments).toBe(0);
   });
 
-  it("gives 100% follow-up when none needed", () => {
+  it("leaves the follow-up rate unmeasured when none needed", () => {
     const noFollowUp = [makeAppointment({ followUpRequired: false })];
     const result = evaluateAppointments(noFollowUp);
-    expect(result.followUpBookedRate).toBe(100);
+    expect(result.followUpBookedRate).toBeNull();
   });
 
   it("handles all missed appointments", () => {
@@ -327,9 +327,9 @@ describe("evaluateAssessments", () => {
     expect(result.overallScore).toBeGreaterThan(70);
   });
 
-  it("returns zero with empty data", () => {
+  it("reports nothing measured with empty data", () => {
     const result = evaluateAssessments([], CHILD_IDS, REFERENCE_DATE);
-    expect(result.overallScore).toBe(0);
+    expect(result.overallScore).toBeNull();
   });
 });
 
@@ -370,16 +370,16 @@ describe("evaluateHealthNeeds", () => {
     expect(result.overallScore).toBeGreaterThan(40);
   });
 
-  it("returns zero with empty data", () => {
+  it("reports nothing measured with empty data", () => {
     const result = evaluateHealthNeeds([]);
-    expect(result.overallScore).toBe(0);
+    expect(result.overallScore).toBeNull();
   });
 
-  it("gives 100% management when no active needs", () => {
+  it("leaves management rates unmeasured when no active needs", () => {
     const resolved = [makeHealthNeed({ status: "resolved" })];
     const result = evaluateHealthNeeds(resolved);
-    expect(result.managementPlanRate).toBe(100);
-    expect(result.currentlyManagedRate).toBe(100);
+    expect(result.managementPlanRate).toBeNull();
+    expect(result.currentlyManagedRate).toBeNull();
   });
 });
 
@@ -417,9 +417,9 @@ describe("evaluateHealthPromotion", () => {
     expect(result.overallScore).toBeGreaterThan(50);
   });
 
-  it("returns zero with empty data", () => {
+  it("reports nothing measured with empty data", () => {
     const result = evaluateHealthPromotion([], CHILD_IDS);
-    expect(result.overallScore).toBe(0);
+    expect(result.overallScore).toBeNull();
   });
 });
 
@@ -450,9 +450,9 @@ describe("evaluateImmunisations", () => {
     expect(result.overallScore).toBeCloseTo(67, 0);
   });
 
-  it("returns zero with empty data", () => {
+  it("reports nothing measured with empty data", () => {
     const result = evaluateImmunisations([], CHILD_IDS);
-    expect(result.overallScore).toBe(0);
+    expect(result.overallScore).toBeNull();
   });
 
   it("gives 100 when all up to date", () => {
@@ -600,19 +600,21 @@ describe("scoring thresholds", () => {
       demoPromotion(), demoImmunisations(), CHILD_IDS,
       HOME_ID, PERIOD_START, PERIOD_END, REFERENCE_DATE,
     );
-    if (result.overallScore >= 80) expect(result.rating).toBe("outstanding");
-    else if (result.overallScore >= 60) expect(result.rating).toBe("good");
-    else if (result.overallScore >= 40) expect(result.rating).toBe("requires_improvement");
+    const score = result.overallScore;
+    if (score === null) expect(result.rating).toBe("unmeasured");
+    else if (score >= 80) expect(result.rating).toBe("outstanding");
+    else if (score >= 60) expect(result.rating).toBe("good");
+    else if (score >= 40) expect(result.rating).toBe("requires_improvement");
     else expect(result.rating).toBe("inadequate");
   });
 
-  it("inadequate with empty data", () => {
+  it("unmeasured with empty data", () => {
     const result = generatePhysicalHealthIntelligence(
       [], [], [], [], [], CHILD_IDS,
       HOME_ID, PERIOD_START, PERIOD_END, REFERENCE_DATE,
     );
-    expect(result.overallScore).toBe(0);
-    expect(result.rating).toBe("inadequate");
+    expect(result.overallScore).toBeNull();
+    expect(result.rating).toBe("unmeasured");
   });
 });
 

@@ -17,6 +17,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -154,10 +155,10 @@ export interface MatchingComplianceResult {
   totalChildren: number;
   assessmentsCompleted: number;
   assessmentsOverdue: number;
-  complianceRate: number;
+  complianceRate: number | null;   // null = no children placed to assess
   unsuitablePlacements: number;
   conditionalPlacements: number;
-  conditionsMetRate: number;
+  conditionsMetRate: number | null; // null = no conditional placements
 }
 
 export interface PeerDynamicsIntelligenceResult {
@@ -503,16 +504,13 @@ export function evaluateMatchingCompliance(
     totalChildren: activeChildren.length,
     assessmentsCompleted: assessedChildIds.size,
     assessmentsOverdue: overdueAssessments.length,
-    complianceRate: activeChildren.length > 0
-      ? Math.round((assessedChildIds.size / activeChildren.length) * 100) : 100,
+    complianceRate: rate(assessedChildIds.size, activeChildren.length),
     unsuitablePlacements: unsuitable.length,
     conditionalPlacements: conditional.length,
-    conditionsMetRate: conditional.length > 0
-      ? Math.round(
-        (conditional.filter((a) =>
-          a.conditions && a.conditions.length > 0,
-        ).length / conditional.length) * 100,
-      ) : 100,
+    conditionsMetRate: rateOf(
+      conditional.filter((a) => a.conditions && a.conditions.length > 0),
+      conditional,
+    ),
   };
 }
 
@@ -658,9 +656,10 @@ function calculatePeerDynamicsScore(
     score += positiveRate * 25;
   }
 
-  // Matching compliance (max 20)
-  score += (matching.complianceRate / 100) * 15;
-  if (matching.unsuitablePlacements === 0) score += 5;
+  // Matching compliance (max 20) — an unassessed home earns nothing here rather
+  // than being credited for assessments it has not done.
+  if (matching.complianceRate !== null) score += (matching.complianceRate / 100) * 15;
+  if (matching.totalChildren > 0 && matching.unsuitablePlacements === 0) score += 5;
 
   // Group stability (max 20)
   score += (latestGroupStability / 5) * 20;
@@ -713,11 +712,11 @@ function generatePeerStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  const positiveRate = totalCount > 0 ? (positiveCount / totalCount) * 100 : 0;
-  if (positiveRate >= 70) {
+  const positiveRate = rate(positiveCount, totalCount);
+  if (meets(positiveRate, 70)) {
     strengths.push("Group dynamics are predominantly positive — children engage cooperatively");
   }
-  if (matching.complianceRate === 100 && matching.totalChildren > 0) {
+  if (meets(matching.complianceRate, 100)) {
     strengths.push("All children have up-to-date matching assessments (Reg 12 compliant)");
   }
   if (dyads.every((d) => d.relationshipHealth === "healthy") && dyads.length > 0) {
@@ -785,10 +784,10 @@ function generatePeerConcerns(
     );
   }
 
-  const conflictRate = totalCount > 0 ? (negativeCount / totalCount) * 100 : 0;
-  if (conflictRate > 40) {
+  const conflictRate = rate(negativeCount, totalCount);
+  if (conflictRate !== null && conflictRate > 40) {
     concerns.push(
-      `Conflict rate is ${Math.round(conflictRate)}% — group dynamics are predominantly negative`,
+      `Conflict rate is ${formatRate(conflictRate)} — group dynamics are predominantly negative`,
     );
   }
 

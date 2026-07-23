@@ -161,7 +161,8 @@ describe("empty state", () => {
     const r = run();
     expect(r.overview.total_buildings).toBe(0);
     expect(r.overview.total_checks).toBe(0);
-    expect(r.overview.check_completion_rate).toBe(100);
+    // No checks recorded is unmeasured, not 100% complete.
+    expect(r.overview.check_completion_rate).toBeNull();
     expect(r.overview.fire_safety_compliant).toBe(true);
     expect(r.overview.total_vehicles).toBe(0);
     expect(r.building_profiles).toHaveLength(0);

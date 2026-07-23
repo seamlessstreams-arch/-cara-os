@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { matchedKeywords } from "@/lib/keyword-match";
+import { formatRate, meanOf } from "@/lib/metrics/rate";
 import {
   CaraFlag,
   CaraPracticeInput,
@@ -306,21 +307,43 @@ function score(
   immediate: boolean,
   hasWellbeing: boolean,
 ): CaraPracticeScores {
+  // Every domain below is inferred from the record's own words. An empty record
+  // is nothing recorded, not a clean record — Cara refuses to score it.
+  if (norm(text).trim().length === 0) {
+    return {
+      developmentalGap: null,
+      livedExperience: null,
+      protectiveFactors: null,
+      relationshipDepth: null,
+      safeguardingThreshold: null,
+      staffWellbeing: null,
+      overall: null,
+    };
+  }
+
   const weakActivity = has(text, WEAK_ACTIVITY);
   const childImpact = has(text, CHILD_IMPACT);
 
   const livedExperience = childImpact ? (weakActivity ? 70 : 90) : weakActivity ? 35 : 60;
   const developmentalGap = gaps.length === 0 ? 100 : clamp(100 - gaps.length * 22, 20);
   const protectiveFactors = protective.length === 0 ? 100 : 45;
-  const relationshipDepth = relationship ? clamp(relationship.stage * 18 + 10) : 60;
+  // Null = the record is not a relational one, so there is no depth to classify.
+  const relationshipDepth = relationship ? clamp(relationship.stage * 18 + 10) : null;
   const safeguardingThreshold = !hasSafeguarding ? 100 : immediate ? 20 : 45;
   const staffWellbeing = hasWellbeing ? 45 : 100;
 
-  let overall = clamp(
-    (livedExperience + developmentalGap + protectiveFactors + relationshipDepth + safeguardingThreshold + staffWellbeing) / 6,
-  );
-  if (flags.some((f) => f.severity === "critical")) overall = Math.min(overall, 40);
-  else if (flags.some((f) => f.severity === "high")) overall = Math.min(overall, 55);
+  let overall = meanOf([
+    livedExperience,
+    developmentalGap,
+    protectiveFactors,
+    relationshipDepth,
+    safeguardingThreshold,
+    staffWellbeing,
+  ]);
+  if (overall !== null) {
+    if (flags.some((f) => f.severity === "critical")) overall = Math.min(overall, 40);
+    else if (flags.some((f) => f.severity === "high")) overall = Math.min(overall, 55);
+  }
 
   return {
     developmentalGap,
@@ -717,11 +740,14 @@ function buildSummary(flags: CaraFlag[], scores: CaraPracticeScores, immediate: 
   if (immediate) {
     return "Cara has detected possible immediate danger. Make the child safe now, then consult. Cara advises; the manager decides.";
   }
+  if (scores.overall === null) {
+    return "Nothing has been recorded yet, so Cara has nothing to read. An empty record is not a clean record — write what happened and what became different for the child.";
+  }
   if (flags.length === 0) {
-    return `No practice concerns detected. Overall practice-quality score ${scores.overall}. Cara still asks: what has become different for the child?`;
+    return `No practice concerns detected. Overall practice-quality score ${formatRate(scores.overall)}. Cara still asks: what has become different for the child?`;
   }
   const parts = flags.map((f) => f.title.toLowerCase());
-  return `Cara recognised ${flags.length} practice signal(s): ${parts.join("; ")}. Overall practice-quality score ${scores.overall}. Cara advises — the manager decides, and the child's lived experience remains the measure of quality.`;
+  return `Cara recognised ${flags.length} practice signal(s): ${parts.join("; ")}. Overall practice-quality score ${formatRate(scores.overall)}. Cara advises — the manager decides, and the child's lived experience remains the measure of quality.`;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

@@ -204,13 +204,13 @@ describe("Home Key Working Intelligence Engine", () => {
       expect(r.sessions.follow_up_rate).toBe(50);
     });
 
-    it("defaults follow-up rate to 100 when no follow-ups set", () => {
+    it("leaves follow-up rate unmeasured when no follow-ups set", () => {
       const sessions = [
         makeSession({ id: "kw_1", date: "2026-05-20", has_follow_up: false }),
         makeSession({ id: "kw_2", date: "2026-05-13", has_follow_up: false }),
       ];
       const r = computeHomeKeyWorking(baseInput({ sessions }));
-      expect(r.sessions.follow_up_rate).toBe(100);
+      expect(r.sessions.follow_up_rate).toBeNull();
     });
 
     it("calculates goal-linked rate", () => {

@@ -311,12 +311,12 @@ describe("Home Health & Wellbeing Intelligence Engine", () => {
     expect(r.medication.administered_rate).toBe(100);
   });
 
-  it("returns 100% admin rate when no medications", () => {
+  it("reports admin rate as unmeasured when no medications", () => {
     const r = computeHomeHealthWellbeing(baseInput({
       medications: [],
       medication_administrations: [],
     }));
-    expect(r.medication.administered_rate).toBe(100);
+    expect(r.medication.administered_rate).toBeNull();
   });
 
   // ── Coverage ──────────────────────────────────────────────────────────────

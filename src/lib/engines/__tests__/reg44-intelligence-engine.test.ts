@@ -91,8 +91,11 @@ describe("computeReg44Intelligence", () => {
 
       expect(result.overview.total_visits_12m).toBe(0);
       expect(result.overview.visits_on_schedule).toBe(false); // 999 days since last
-      expect(result.overview.completion_rate).toBe(100);
-      expect(result.overview.ofsted_reporting_compliance).toBe(100);
+      expect(result.overview.completion_rate).toBeNull();
+      expect(result.overview.ofsted_reporting_compliance).toBeNull();
+      expect(result.overview.children_participation_rate).toBeNull();
+      expect(result.overview.avg_days_between_visits).toBeNull();
+      expect(result.overview.avg_duration_hours).toBeNull();
       expect(result.visit_profiles).toHaveLength(0);
       expect(result.alerts.some((a) => a.severity === "critical")).toBe(true); // overdue
     });

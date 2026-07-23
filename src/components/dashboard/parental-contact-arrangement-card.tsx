@@ -15,6 +15,7 @@ import {
   Loader2, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useContactEngagement } from "@/hooks/use-contact-engagement";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -89,8 +90,8 @@ export function ParentalContactArrangementCard() {
             <p className={cn("text-lg font-bold tabular-nums", ft.concern_sessions === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{ft.concern_sessions}</p>
             <p className="text-[10px] text-muted-foreground">Concerns</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", ft.safe_sessions_pct === 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", ft.safe_sessions_pct === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{ft.safe_sessions_pct}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(ft.safe_sessions_pct, 100) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(ft.safe_sessions_pct, 100) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(ft.safe_sessions_pct)}</p>
             <p className="text-[10px] text-muted-foreground">Safe</p>
           </div>
         </div>

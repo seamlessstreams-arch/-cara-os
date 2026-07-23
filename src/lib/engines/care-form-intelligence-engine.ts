@@ -10,6 +10,8 @@
 // date, and support effective planning?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type CareFormStatus =
@@ -69,7 +71,7 @@ export interface CareFormOverview {
   high_priority_count: number;
   child_linked_count: number;
   incident_linked_count: number;
-  completion_rate: number;        // approved / (total - draft - archived) %
+  completion_rate: number | null; // approved / (total - draft - archived) %, null when nothing is awaiting or through review
   avg_review_days: number;        // avg days from submitted_at to reviewed_at
   form_types_used: number;
 }
@@ -160,9 +162,7 @@ export function computeCareFormIntelligence(
 
   // ── Completion rate ──────────────────────────────────────────────────
   const actionable = forms.filter((f) => f.status !== "draft" && f.status !== "archived");
-  const completionRate = actionable.length > 0
-    ? Math.round((approved.length / actionable.length) * 100)
-    : 100;
+  const completionRate = rateOf(approved, actionable);
 
   // ── Avg review turnaround ────────────────────────────────────────────
   const reviewedForms = forms.filter((f) => f.reviewed_at && f.submitted_at);
@@ -319,7 +319,7 @@ export function computeCareFormIntelligence(
   }
 
   // Warning: low completion rate
-  if (completionRate < 50 && actionable.length > 0) {
+  if (below(completionRate, 50)) {
     insights.push({
       severity: "warning",
       text: `Form completion rate is ${completionRate}%. Fewer than half of submitted forms have been approved. Review the documentation workflow and ensure managers are reviewing forms in a timely manner.`,
@@ -335,7 +335,7 @@ export function computeCareFormIntelligence(
   }
 
   // Positive: high completion rate
-  if (completionRate >= 80 && actionable.length > 0) {
+  if (meets(completionRate, 80)) {
     insights.push({
       severity: "positive",
       text: `Form completion rate is ${completionRate}%. A strong approval pipeline demonstrates effective documentation governance and supports Ofsted evidence requirements.`,

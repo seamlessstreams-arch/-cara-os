@@ -941,11 +941,11 @@ describe("getValidTransitions", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("calculateCompliance", () => {
-  it("returns 100% for empty array", () => {
+  it("reports nothing scheduled as unmeasured, not compliant", () => {
     const result = calculateCompliance([]);
-    expect(result.complianceRate).toBe(100);
+    expect(result.complianceRate).toBeNull();
     expect(result.totalScheduled).toBe(0);
-    expect(result.qaPassRate).toBe(100);
+    expect(result.qaPassRate).toBeNull();
   });
 
   it("calculates 100% when all completed on time", () => {
@@ -1052,10 +1052,19 @@ describe("calculateCompliance", () => {
     expect(result.qaPassRate).toBe(67);
   });
 
-  it("returns 100% QA pass rate when nothing sampled", () => {
+  it("reports an unsampled QA pass rate as unmeasured, not 100%", () => {
     const occurrences = [
       makeOccurrence({ status: "filed" }),
       makeOccurrence({ id: "occ-2", status: "filed" }),
+    ];
+    const result = calculateCompliance(occurrences);
+    expect(result.qaPassRate).toBeNull();
+  });
+
+  it("excludes sampled-but-unscored occurrences from the QA pass rate", () => {
+    const occurrences = [
+      makeOccurrence({ status: "filed", qaSampledAt: "2026-05-16T10:00:00Z", qaScore: 4 }),
+      makeOccurrence({ id: "occ-2", status: "filed", qaSampledAt: "2026-05-16T10:00:00Z" }),
     ];
     const result = calculateCompliance(occurrences);
     expect(result.qaPassRate).toBe(100);

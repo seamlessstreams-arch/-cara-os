@@ -522,7 +522,10 @@ export interface PersistedInspectionSnapshot {
   generated_at: string;
   generated_by: string | null;
   schema_version: number;
-  readiness_score: number;
+  // null when the snapshot was taken with nothing measurable on record —
+  // persisting a fabricated score would outlive the moment and be read later
+  // as evidence the home once scored well.
+  readiness_score: number | null;
   readiness_severity: string;
   payload: unknown;
 }
@@ -570,7 +573,9 @@ export interface PersistedInspectionBundle {
   reg45_evidence_items: number;
   annex_a_evidence_items: number;
   recent_exports_included: number;
-  readiness_score: number;
+  // null when the bundle was built from a snapshot that had nothing measurable —
+  // see PersistedInspectionSnapshot.readiness_score above for the same reasoning.
+  readiness_score: number | null;
   readiness_severity: string;
   trajectory_alerts_open: number;
   trajectory_acks_recent: number;

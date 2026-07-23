@@ -5,6 +5,10 @@ function ScoreBar({ label, value, max = 25 }: { label: string; value: number; ma
   const colour = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-yellow-500" : pct >= 40 ? "bg-orange-500" : "bg-red-500";
   return (<div className="mb-2"><div className="flex justify-between text-sm mb-1"><span>{label}</span><span className="font-medium">{value}/{max}</span></div><div className="w-full h-2 bg-gray-200 rounded"><div className={`${colour} h-2 rounded`} style={{ width: `${pct}%` }} /></div></div>);
 }
+/** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
+function rateText(value: unknown): string {
+  return typeof value === "number" && Number.isFinite(value) ? `${value}%` : "—";
+}
 function Stat({ label, value }: { label: string; value: string | number }) {
   return <div className="bg-gray-50 rounded p-3 text-center"><p className="text-xs text-gray-500">{label}</p><p className="text-lg font-semibold">{String(value)}</p></div>;
 }
@@ -51,7 +55,7 @@ export function HomeMatchingImpactIntelligenceWidget() {
           <Stat label="Total Assessments" value={matching.totalAssessments} />
           <Stat label="Completion Rate" value={`${matching.assessmentCompletionRate}%`} />
           <Stat label="Children Consulted" value={`${matching.existingChildrenConsultedRate}%`} />
-          <Stat label="Conditions Applied" value={`${matching.conditionsAppliedRate}%`} />
+          <Stat label="Conditions Applied" value={rateText(matching.conditionsAppliedRate)} />
         </div>
       </Section>
       <Section title="Impact Monitoring">
@@ -60,7 +64,7 @@ export function HomeMatchingImpactIntelligenceWidget() {
           <Stat label="Total Records" value={impact.totalMonitoringRecords} />
           <Stat label="Positive Impact" value={`${impact.positiveImpactRate}%`} />
           <Stat label="Negative Impact" value={`${impact.negativeImpactRate}%`} />
-          <Stat label="Resolution" value={`${impact.resolutionRate}%`} />
+          <Stat label="Resolution" value={rateText(impact.resolutionRate)} />
         </div>
       </Section>
       <Section title="Resident Consultation">

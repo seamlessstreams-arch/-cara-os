@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppraisalIntelligence } from "@/hooks/use-appraisal-intelligence";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -101,13 +102,13 @@ export function AppraisalsCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.compliance_rate >= 90 ? "bg-green-50" : o.compliance_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+            meets(o.compliance_rate, 90) ? "bg-green-50" : meets(o.compliance_rate, 50) ? "bg-amber-50" : below(o.compliance_rate, 50) ? "bg-red-50" : "bg-muted",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.compliance_rate >= 90 ? "text-[--cs-success]" : o.compliance_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.compliance_rate, 90) ? "text-[--cs-success]" : meets(o.compliance_rate, 50) ? "text-[--cs-warning]" : below(o.compliance_rate, 50) ? "text-[--cs-risk]" : "text-muted-foreground",
             )}>
-              {o.compliance_rate}%
+              {formatRate(o.compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
@@ -131,13 +132,13 @@ export function AppraisalsCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.fitness_confirmed_rate === 100 ? "bg-green-50" : "bg-amber-50",
+            meets(o.fitness_confirmed_rate, 100) ? "bg-green-50" : o.fitness_confirmed_rate === null ? "bg-muted" : "bg-amber-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.fitness_confirmed_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]",
+              meets(o.fitness_confirmed_rate, 100) ? "text-[--cs-success]" : o.fitness_confirmed_rate === null ? "text-muted-foreground" : "text-[--cs-warning]",
             )}>
-              {o.fitness_confirmed_rate}%
+              {formatRate(o.fitness_confirmed_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Fitness</p>
           </div>

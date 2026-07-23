@@ -196,14 +196,18 @@ export interface ThresholdConsultationResult {
   managerSummary: string;
 }
 
+/**
+ * Every score is read off the record's own words. Null means the record gave
+ * Cara nothing to read on that domain — never "clean", never "failing".
+ */
 export interface CaraPracticeScores {
-  developmentalGap: number;
-  livedExperience: number;
-  protectiveFactors: number;
-  relationshipDepth: number;
-  safeguardingThreshold: number;
-  staffWellbeing: number;
-  overall: number;
+  developmentalGap: number | null;
+  livedExperience: number | null;
+  protectiveFactors: number | null;
+  relationshipDepth: number | null;
+  safeguardingThreshold: number | null;
+  staffWellbeing: number | null;
+  overall: number | null;
 }
 
 export interface CaraPracticeOutput {
@@ -241,14 +245,14 @@ export interface CaraPracticeAssessment {
   created_by: string;
   created_at: string;
   updated_at: string;
-  developmental_gap_score: number;
-  child_lived_experience_score: number;
-  protective_factor_score: number;
-  relationship_depth_score: number;
-  safeguarding_threshold_score: number;
-  supervision_quality_score: number;
-  workforce_wellbeing_score: number;
-  overall_practice_quality_score: number;
+  developmental_gap_score: number | null;
+  child_lived_experience_score: number | null;
+  protective_factor_score: number | null;
+  relationship_depth_score: number | null;
+  safeguarding_threshold_score: number | null;
+  supervision_quality_score: number | null;
+  workforce_wellbeing_score: number | null;
+  overall_practice_quality_score: number | null;
   summary: string;
   cara_advice: CaraRecommendation[];
   cara_flags: CaraFlag[];

@@ -16,6 +16,8 @@
 // Pure function — no side effects, no API calls.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface StaffTrainingRecord {
@@ -70,7 +72,7 @@ export interface TrainingCompliance {
   analysisDate: string;
 
   // Overview
-  overallCompliancePercent: number;
+  overallCompliancePercent: number | null;   // null when no staff records exist
   totalStaff: number;
   fullyCompliant: number;
   withGaps: number;
@@ -93,7 +95,7 @@ export interface TrainingCompliance {
 
   // Regulatory status
   regulatoryStatus: {
-    compliant: boolean;
+    compliant: boolean | null;   // null when nothing has been recorded to judge
     issues: string[];
     strengths: string[];
   };
@@ -103,7 +105,7 @@ export interface StaffTrainingProfile {
   staffId: string;
   staffName: string;
   role: string;
-  compliancePercent: number;
+  compliancePercent: number | null;   // null when no mandatory training applies
   mandatoryComplete: number;
   mandatoryTotal: number;
   expiredCount: number;
@@ -117,7 +119,7 @@ export interface TeamCoverageItem {
   label: string;
   staffWithTraining: number;
   totalStaff: number;
-  coveragePercent: number;
+  coveragePercent: number | null;   // null when there are no staff to cover
   mandatory: boolean;
 }
 
@@ -190,9 +192,7 @@ export function analyseTrainingCompliance(
       .filter((t) => t.status !== "completed")
       .map((t) => t.courseName);
 
-    const compliancePercent = mandatory.length > 0
-      ? Math.round((mandatoryComplete / mandatory.length) * 100)
-      : 100;
+    const compliancePercent = rate(mandatoryComplete, mandatory.length);
 
     return {
       staffId: staff.staffId,
@@ -250,7 +250,7 @@ export function analyseTrainingCompliance(
       label: CATEGORY_LABELS[cat],
       staffWithTraining,
       totalStaff: records.length,
-      coveragePercent: records.length > 0 ? Math.round((staffWithTraining / records.length) * 100) : 100,
+      coveragePercent: rate(staffWithTraining, records.length),
       mandatory: isMandatory,
     };
   });
@@ -296,7 +296,7 @@ export function analyseTrainingCompliance(
   }
 
   // Coverage gaps (less than 80% team coverage on mandatory)
-  const poorCoverage = teamCoverage.filter((c) => c.mandatory && c.coveragePercent < 80);
+  const poorCoverage = teamCoverage.filter((c) => c.mandatory && below(c.coveragePercent, 80));
   if (poorCoverage.length > 0) {
     alerts.push({
       severity: "medium",
@@ -339,10 +339,8 @@ export function analyseTrainingCompliance(
   }
 
   // Overall compliance
-  const overallCompliancePercent = staffProfiles.length > 0
-    ? Math.round(staffProfiles.reduce((sum, s) => sum + s.compliancePercent, 0) / staffProfiles.length)
-    : 100;
-  const fullyCompliant = staffProfiles.filter((s) => s.compliancePercent === 100 && s.expiredCount === 0).length;
+  const overallCompliancePercent = meanOf(staffProfiles.map((s) => s.compliancePercent));
+  const fullyCompliant = staffProfiles.filter((s) => meets(s.compliancePercent, 100) && s.expiredCount === 0).length;
   const withGaps = staffProfiles.filter((s) => s.gaps.length > 0).length;
   const withExpired = staffProfiles.filter((s) => s.expiredCount > 0).length;
 
@@ -351,13 +349,14 @@ export function analyseTrainingCompliance(
   const strengths: string[] = [];
 
   if (withExpired > 0) issues.push(`${withExpired} staff with expired training`);
-  if (overallCompliancePercent < 90) issues.push(`Team compliance at ${overallCompliancePercent}% (below 90%)`);
+  if (below(overallCompliancePercent, 90)) issues.push(`Team compliance at ${formatRate(overallCompliancePercent)} (below 90%)`);
   if (poorCoverage.length > 0) issues.push(`Low coverage in ${poorCoverage.length} mandatory area(s)`);
+  if (records.length === 0) issues.push("No staff training records held — compliance cannot be evidenced");
 
-  if (overallCompliancePercent === 100) strengths.push("100% mandatory training compliance across team");
-  else if (overallCompliancePercent >= 95) strengths.push("Excellent training compliance (95%+)");
-  if (withExpired === 0) strengths.push("No expired training certificates");
-  if (qualOverview.l3Completed === qualOverview.l3Required) strengths.push("All staff hold required Level 3 qualification");
+  if (meets(overallCompliancePercent, 100)) strengths.push("100% mandatory training compliance across team");
+  else if (meets(overallCompliancePercent, 95)) strengths.push("Excellent training compliance (95%+)");
+  if (records.length > 0 && withExpired === 0) strengths.push("No expired training certificates");
+  if (qualOverview.l3Required > 0 && qualOverview.l3Completed === qualOverview.l3Required) strengths.push("All staff hold required Level 3 qualification");
 
   return {
     homeId,
@@ -367,13 +366,13 @@ export function analyseTrainingCompliance(
     fullyCompliant,
     withGaps,
     withExpiredTraining: withExpired,
-    staffProfiles: staffProfiles.sort((a, b) => a.compliancePercent - b.compliancePercent),
-    teamCoverage: teamCoverage.sort((a, b) => a.coveragePercent - b.coveragePercent),
+    staffProfiles: staffProfiles.sort((a, b) => byScoreAsc(a.compliancePercent, b.compliancePercent)),
+    teamCoverage: teamCoverage.sort((a, b) => byScoreAsc(a.coveragePercent, b.coveragePercent)),
     expiryWarnings: expiryWarnings.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry),
     alerts: alerts.sort((a, b) => severityOrder(a.severity) - severityOrder(b.severity)),
     qualificationOverview: qualOverview,
     regulatoryStatus: {
-      compliant: issues.length === 0,
+      compliant: records.length === 0 ? null : issues.length === 0,
       issues,
       strengths,
     },
@@ -384,6 +383,14 @@ export function analyseTrainingCompliance(
 
 function dateDiff(dateA: string, dateB: string): number {
   return Math.round((new Date(dateB).getTime() - new Date(dateA).getTime()) / 86400000);
+}
+
+/** Worst measured score first; unmeasured last — a gap to fill, not the worst score. */
+function byScoreAsc(a: number | null, b: number | null): number {
+  if (a === null && b === null) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return a - b;
 }
 
 function severityOrder(s: "critical" | "high" | "medium" | "advisory"): number {

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStaffDevelopmentIntelligence } from "@/hooks/use-staff-development-intelligence";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -93,25 +94,25 @@ export function StaffDevelopmentPlanCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.appraisal_completion_rate >= 80 ? "bg-green-50" : o.appraisal_completion_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+            meets(o.appraisal_completion_rate, 80) ? "bg-green-50" : meets(o.appraisal_completion_rate, 50) ? "bg-amber-50" : below(o.appraisal_completion_rate, 50) ? "bg-red-50" : "bg-muted",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.appraisal_completion_rate >= 80 ? "text-[--cs-success]" : o.appraisal_completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.appraisal_completion_rate, 80) ? "text-[--cs-success]" : meets(o.appraisal_completion_rate, 50) ? "text-[--cs-warning]" : below(o.appraisal_completion_rate, 50) ? "text-[--cs-risk]" : "text-muted-foreground",
             )}>
-              {o.appraisal_completion_rate}%
+              {formatRate(o.appraisal_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Appraised</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.mandatory_qual_compliance_rate >= 80 ? "bg-green-50" : o.mandatory_qual_compliance_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+            meets(o.mandatory_qual_compliance_rate, 80) ? "bg-green-50" : meets(o.mandatory_qual_compliance_rate, 50) ? "bg-amber-50" : below(o.mandatory_qual_compliance_rate, 50) ? "bg-red-50" : "bg-muted",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.mandatory_qual_compliance_rate >= 80 ? "text-[--cs-success]" : o.mandatory_qual_compliance_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.mandatory_qual_compliance_rate, 80) ? "text-[--cs-success]" : meets(o.mandatory_qual_compliance_rate, 50) ? "text-[--cs-warning]" : below(o.mandatory_qual_compliance_rate, 50) ? "text-[--cs-risk]" : "text-muted-foreground",
             )}>
-              {o.mandatory_qual_compliance_rate}%
+              {formatRate(o.mandatory_qual_compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Qual Compliant</p>
           </div>
@@ -137,7 +138,7 @@ export function StaffDevelopmentPlanCard() {
 
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <div>
-            <p className="font-bold text-slate-700 tabular-nums">{o.avg_competency_readiness}%</p>
+            <p className="font-bold text-slate-700 tabular-nums">{formatRate(o.avg_competency_readiness)}</p>
             <p className="text-[10px] text-muted-foreground">Avg Readiness</p>
           </div>
           <div>
@@ -147,7 +148,7 @@ export function StaffDevelopmentPlanCard() {
             <p className="text-[10px] text-muted-foreground">Quals Expiring</p>
           </div>
           <div>
-            <p className="font-bold text-slate-700 tabular-nums">{o.development_plan_progress_rate}%</p>
+            <p className="font-bold text-slate-700 tabular-nums">{formatRate(o.development_plan_progress_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Plan Progress</p>
           </div>
         </div>
@@ -234,12 +235,12 @@ export function StaffDevelopmentPlanCard() {
                       <div
                         className={cn(
                           "h-full rounded-full",
-                          profile.readiness_score >= 70 ? "bg-green-500" : profile.readiness_score >= 50 ? "bg-amber-500" : "bg-red-500",
+                          meets(profile.readiness_score, 70) ? "bg-green-500" : meets(profile.readiness_score, 50) ? "bg-amber-500" : below(profile.readiness_score, 50) ? "bg-red-500" : "bg-gray-300",
                         )}
-                        style={{ width: `${profile.readiness_score}%` }}
+                        style={{ width: `${profile.readiness_score ?? 0}%` }}
                       />
                     </div>
-                    <span className="text-[10px] font-medium tabular-nums w-8 text-right">{profile.readiness_score}%</span>
+                    <span className="text-[10px] font-medium tabular-nums w-8 text-right">{formatRate(profile.readiness_score)}</span>
                   </div>
                 </div>
               );

@@ -15,6 +15,7 @@ import {
   Brain, Shield, BookOpen, Loader2, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 // ── Insight styling ──────────────────────────────────────────────────────────
@@ -75,15 +76,15 @@ export function TrainingIntelligenceCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg p-2" style={{ background: p.training_compliance_rate >= 90 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", p.training_compliance_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {p.training_compliance_rate}%
+          <div className="text-center rounded-lg p-2" style={{ background: meets(p.training_compliance_rate, 90) ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(p.training_compliance_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(p.training_compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: p.supervision_compliance_rate >= 90 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", p.supervision_compliance_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {p.supervision_compliance_rate}%
+          <div className="text-center rounded-lg p-2" style={{ background: meets(p.supervision_compliance_rate, 90) ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(p.supervision_compliance_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(p.supervision_compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Supervision</p>
           </div>

@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import type { CommunicationAccessibilityIntelligenceResult } from "@/lib/communication-accessibility";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
   good: "bg-blue-100 text-blue-800 border-blue-300",
   requires_improvement: "bg-amber-100 text-amber-800 border-amber-300",
   inadequate: "bg-red-100 text-red-800 border-red-300",
+  unmeasured: "bg-gray-100 text-gray-700 border-gray-300",
 };
 
 const ratingLabels: Record<string, string> = {
@@ -15,6 +17,7 @@ const ratingLabels: Record<string, string> = {
   good: "Good",
   requires_improvement: "Requires Improvement",
   inadequate: "Inadequate",
+  unmeasured: "Not Yet Measured",
 };
 
 const engagementLabels: Record<string, string> = {
@@ -33,7 +36,16 @@ const engagementColors: Record<string, string> = {
   unable_to_assess: "text-gray-500",
 };
 
-function ScoreBar({ score, label }: { score: number; label: string }) {
+function ScoreBar({ score, label }: { score: number | null; label: string }) {
+  if (score === null) {
+    return (
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-gray-600 w-44 shrink-0">{label}</span>
+        <div className="flex-1 bg-gray-100 rounded-full h-2.5" />
+        <span className="text-sm font-medium w-10 text-right text-gray-400">—</span>
+      </div>
+    );
+  }
   const color =
     score >= 80
       ? "bg-green-500"
@@ -148,7 +160,7 @@ export function CommunicationAccessibilityDashboardWidget() {
         </div>
         <div className="text-right">
           <div className="text-3xl font-bold text-gray-900">
-            {data.overallScore}
+            {data.overallScore ?? "—"}
           </div>
           <span
             className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${ratingClass}`}
@@ -162,25 +174,25 @@ export function CommunicationAccessibilityDashboardWidget() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.needsAssessment.assessmentRate}%
+            {formatRate(data.needsAssessment.assessmentRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Assessment Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.supportProvision.supportMatchRate}%
+            {formatRate(data.supportProvision.supportMatchRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Support Match</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.accessibleInformation.keyDocumentCoverageRate}%
+            {formatRate(data.accessibleInformation.keyDocumentCoverageRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Docs Accessible</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.staffTraining.trainingCoverageRate}%
+            {formatRate(data.staffTraining.trainingCoverageRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Staff Trained</div>
         </div>
@@ -218,7 +230,7 @@ export function CommunicationAccessibilityDashboardWidget() {
                     {child.childName}
                   </span>
                   <span className="text-sm font-medium text-gray-600">
-                    Score: {child.overallScore}/100
+                    Score: {child.overallScore ?? "—"}/100
                   </span>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-gray-600">
@@ -259,7 +271,7 @@ export function CommunicationAccessibilityDashboardWidget() {
                   <div>
                     <span className="text-gray-400">Support Match:</span>{" "}
                     <span className="font-medium">
-                      {child.supportMatchRate}%
+                      {formatRate(child.supportMatchRate)}
                     </span>
                   </div>
                   <div>
@@ -350,7 +362,7 @@ export function CommunicationAccessibilityDashboardWidget() {
             <div>
               <span className="text-gray-500">Passport Rate:</span>{" "}
               <span className="font-medium">
-                {data.needsAssessment.passportRate}%
+                {formatRate(data.needsAssessment.passportRate)}
               </span>
             </div>
           </div>
@@ -380,19 +392,19 @@ export function CommunicationAccessibilityDashboardWidget() {
             <div>
               <span className="text-gray-500">Support Match:</span>{" "}
               <span className="font-medium">
-                {data.supportProvision.supportMatchRate}%
+                {formatRate(data.supportProvision.supportMatchRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">SLT Access:</span>{" "}
               <span className="font-medium">
-                {data.supportProvision.speechTherapyAccessRate}%
+                {formatRate(data.supportProvision.speechTherapyAccessRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Interpreter Provision:</span>{" "}
               <span className="font-medium">
-                {data.supportProvision.interpreterProvisionRate}%
+                {formatRate(data.supportProvision.interpreterProvisionRate)}
               </span>
             </div>
             <div>
@@ -438,7 +450,7 @@ export function CommunicationAccessibilityDashboardWidget() {
             <div>
               <span className="text-gray-500">Multi-Format Rate:</span>{" "}
               <span className="font-medium">
-                {data.accessibleInformation.multipleFormatRate}%
+                {formatRate(data.accessibleInformation.multipleFormatRate)}
               </span>
             </div>
           </div>
@@ -469,13 +481,13 @@ export function CommunicationAccessibilityDashboardWidget() {
             <div>
               <span className="text-gray-500">Coverage Rate:</span>{" "}
               <span className="font-medium">
-                {data.staffTraining.trainingCoverageRate}%
+                {formatRate(data.staffTraining.trainingCoverageRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Needs Coverage:</span>{" "}
               <span className="font-medium">
-                {data.staffTraining.staffChildNeedsCoverage}%
+                {formatRate(data.staffTraining.staffChildNeedsCoverage)}
               </span>
             </div>
           </div>

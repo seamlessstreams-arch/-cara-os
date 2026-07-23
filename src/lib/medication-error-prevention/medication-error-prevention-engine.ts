@@ -18,6 +18,8 @@
 //   CQC Medicines guidance — safe management of medicines
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+
 // ── Types ───────────────────────────────────────────────────────────────────
 
 export type MedicationType =
@@ -135,42 +137,44 @@ export interface StaffMedicationTraining {
 export interface AdministrationQualityResult {
   overallScore: number; // 0–25
   totalAdministrations: number;
-  onTimeRate: number;
+  // Rates are null when nothing was administered — no dose is not every dose on time
+  onTimeRate: number | null;
   missedRefusedCount: number;
-  twoPersonCheckRate: number;
-  documentedImmediatelyRate: number;
-  childConsentRate: number;
-  sideEffectsMonitoredRate: number;
+  twoPersonCheckRate: number | null;
+  documentedImmediatelyRate: number | null;
+  childConsentRate: number | null;
+  sideEffectsMonitoredRate: number | null;
 }
 
 export interface ErrorManagementResult {
   overallScore: number; // 0–25
   totalErrors: number;
-  noHarmRate: number;
-  reportedImmediatelyRate: number;
-  rootCauseIdentifiedRate: number;
-  preventiveActionRate: number;
-  dutyOfCandourRate: number;
+  /** null = no error reached a child, so there is no harm outcome to rate. */
+  noHarmRate: number | null;
+  reportedImmediatelyRate: number | null;
+  rootCauseIdentifiedRate: number | null;
+  preventiveActionRate: number | null;
+  dutyOfCandourRate: number | null;
   nearMissCount: number;
 }
 
 export interface StorageSafetyResult {
   overallScore: number; // 0–25
   totalAudits: number;
-  fullyCompliantRate: number;
-  temperatureComplianceRate: number;
-  expiryComplianceRate: number;
-  marChartAccuracyRate: number;
+  fullyCompliantRate: number | null;
+  temperatureComplianceRate: number | null;
+  expiryComplianceRate: number | null;
+  marChartAccuracyRate: number | null;
   expiredMedicationAudits: number;
 }
 
 export interface TrainingComplianceResult {
   overallScore: number; // 0–25
   totalStaff: number;
-  currentRate: number;
-  competencyAssessedRate: number;
-  controlledDrugsRate: number;
-  errorReportingRate: number;
+  currentRate: number | null;
+  competencyAssessedRate: number | null;
+  controlledDrugsRate: number | null;
+  errorReportingRate: number | null;
   expiringCount: number;
 }
 
@@ -178,7 +182,7 @@ export interface ChildMedicationProfile {
   childId: string;
   childName: string;
   administrationCount: number;
-  onTimeRate: number;
+  onTimeRate: number | null;
   errorCount: number;
   missedCount: number;
   overallScore: number; // 0–10
@@ -305,12 +309,12 @@ export function evaluateAdministrationQuality(
     return {
       overallScore: 0,
       totalAdministrations: 0,
-      onTimeRate: 0,
+      onTimeRate: null,
       missedRefusedCount: 0,
-      twoPersonCheckRate: 0,
-      documentedImmediatelyRate: 0,
-      childConsentRate: 0,
-      sideEffectsMonitoredRate: 0,
+      twoPersonCheckRate: null,
+      documentedImmediatelyRate: null,
+      childConsentRate: null,
+      sideEffectsMonitoredRate: null,
     };
   }
 
@@ -369,11 +373,11 @@ export function evaluateErrorManagement(
     return {
       overallScore: 25,
       totalErrors: 0,
-      noHarmRate: 0,
-      reportedImmediatelyRate: 0,
-      rootCauseIdentifiedRate: 0,
-      preventiveActionRate: 0,
-      dutyOfCandourRate: 0,
+      noHarmRate: null,
+      reportedImmediatelyRate: null,
+      rootCauseIdentifiedRate: null,
+      preventiveActionRate: null,
+      dutyOfCandourRate: null,
       nearMissCount: 0,
     };
   }
@@ -385,8 +389,10 @@ export function evaluateErrorManagement(
   // separately (nearMissCount) and excluded here — otherwise they inflate the
   // no-harm rate and can mask a serious-harm error in the same period.
   const actualErrors = errors.filter((e) => e.errorType !== "near_miss");
-  const noHarmCount = actualErrors.filter((e) => e.severity === "no_harm").length;
-  const noHarmRate = actualErrors.length > 0 ? pct(noHarmCount, actualErrors.length) : 100;
+  const noHarmRate = rateOf(
+    actualErrors.filter((e) => e.severity === "no_harm"),
+    actualErrors,
+  );
 
   const reportedCount = errors.filter((e) => e.reportedImmediately).length;
   const reportedImmediatelyRate = pct(reportedCount, total);
@@ -402,13 +408,16 @@ export function evaluateErrorManagement(
 
   const nearMissCount = errors.filter((e) => e.errorType === "near_miss").length;
 
-  // Scoring — 25 points max
-  let score = 0;
-  score += (noHarmRate / 100) * 5;                 // No-harm rate: 5 pts
-  score += (reportedImmediatelyRate / 100) * 6;    // Immediate reporting: 6 pts
-  score += (rootCauseIdentifiedRate / 100) * 5;    // Root cause analysis: 5 pts
-  score += (preventiveActionRate / 100) * 5;       // Preventive action: 5 pts
-  score += (dutyOfCandourRate / 100) * 4;          // Duty of candour: 4 pts
+  // Scoring — 25 points max, renormalised over the components that were
+  // measurable (a period of near-misses only has no harm outcome to rate)
+  const measured = weightedMeanOf([
+    { score: noHarmRate, weight: 5 },                 // No-harm rate: 5 pts
+    { score: reportedImmediatelyRate, weight: 6 },    // Immediate reporting: 6 pts
+    { score: rootCauseIdentifiedRate, weight: 5 },    // Root cause analysis: 5 pts
+    { score: preventiveActionRate, weight: 5 },       // Preventive action: 5 pts
+    { score: dutyOfCandourRate, weight: 4 },          // Duty of candour: 4 pts
+  ]);
+  let score = ((measured ?? 0) / 100) * 25;
 
   // Penalty: -5 per serious_harm error
   const seriousCount = errors.filter((e) => e.severity === "serious_harm").length;
@@ -438,10 +447,10 @@ export function evaluateStorageSafety(
     return {
       overallScore: 0,
       totalAudits: 0,
-      fullyCompliantRate: 0,
-      temperatureComplianceRate: 0,
-      expiryComplianceRate: 0,
-      marChartAccuracyRate: 0,
+      fullyCompliantRate: null,
+      temperatureComplianceRate: null,
+      expiryComplianceRate: null,
+      marChartAccuracyRate: null,
       expiredMedicationAudits: 0,
     };
   }
@@ -500,10 +509,10 @@ export function evaluateTrainingCompliance(
     return {
       overallScore: 0,
       totalStaff: 0,
-      currentRate: 0,
-      competencyAssessedRate: 0,
-      controlledDrugsRate: 0,
-      errorReportingRate: 0,
+      currentRate: null,
+      competencyAssessedRate: null,
+      controlledDrugsRate: null,
+      errorReportingRate: null,
       expiringCount: 0,
     };
   }
@@ -576,7 +585,7 @@ export function buildChildMedicationProfiles(
     const onTimeCount = data.admins.filter(
       (a) => a.status === "given_on_time" || a.status === "self_administered",
     ).length;
-    const onTimeRate = pct(onTimeCount, adminCount);
+    const onTimeRate = rate(onTimeCount, adminCount);
 
     const errorCount = data.errors.length;
     const missedCount = data.admins.filter((a) => a.status === "missed").length;
@@ -585,15 +594,15 @@ export function buildChildMedicationProfiles(
 
     // Score out of 10
     let score = 5; // Start at midpoint
-    if (onTimeRate >= 90) score += 2;
-    else if (onTimeRate >= 75) score += 1;
+    if (meets(onTimeRate, 90)) score += 2;
+    else if (meets(onTimeRate, 75)) score += 1;
     if (errorCount === 0) score += 2;
     if (missedCount === 0) score += 1;
     // Penalties
     if (errorCount > 2) score -= 2;
     else if (errorCount > 0) score -= 1;
     if (missedCount > 2) score -= 1;
-    if (onTimeRate < 50 && adminCount > 0) score -= 1;
+    if (below(onTimeRate, 50)) score -= 1;
 
     profiles.push({
       childId,
@@ -645,79 +654,79 @@ export function generateMedicationErrorPreventionIntelligence(
 
   // ── Strengths ──
   const strengths: string[] = [];
-  if (administrationQuality.totalAdministrations > 0 && administrationQuality.onTimeRate >= 90) {
+  if (meets(administrationQuality.onTimeRate, 90)) {
     strengths.push("Medications are consistently administered on time, supporting children's health outcomes");
   }
-  if (administrationQuality.twoPersonCheckRate >= 90 && administrationQuality.totalAdministrations > 0) {
+  if (meets(administrationQuality.twoPersonCheckRate, 90)) {
     strengths.push("Two-person checks are routinely carried out, reducing administration error risk");
   }
-  if (administrationQuality.documentedImmediatelyRate >= 90 && administrationQuality.totalAdministrations > 0) {
+  if (meets(administrationQuality.documentedImmediatelyRate, 90)) {
     strengths.push("Medication administration is documented immediately, ensuring accurate MAR records");
   }
-  if (administrationQuality.childConsentRate >= 90 && administrationQuality.totalAdministrations > 0) {
+  if (meets(administrationQuality.childConsentRate, 90)) {
     strengths.push("Children's consent is consistently obtained before medication administration");
   }
   if (errorManagement.totalErrors === 0) {
     strengths.push("No medication errors recorded in the period — a strong indicator of safe practice");
   }
-  if (errorManagement.totalErrors > 0 && errorManagement.reportedImmediatelyRate >= 95) {
+  if (meets(errorManagement.reportedImmediatelyRate, 95)) {
     strengths.push("All medication errors are reported immediately, enabling swift corrective action");
   }
-  if (errorManagement.totalErrors > 0 && errorManagement.rootCauseIdentifiedRate >= 90) {
+  if (meets(errorManagement.rootCauseIdentifiedRate, 90)) {
     strengths.push("Root cause analysis is consistently completed for medication errors");
   }
-  if (errorManagement.totalErrors > 0 && errorManagement.preventiveActionRate >= 90) {
+  if (meets(errorManagement.preventiveActionRate, 90)) {
     strengths.push("Preventive actions are consistently taken following medication errors");
   }
-  if (storageSafety.fullyCompliantRate >= 90 && storageSafety.totalAudits > 0) {
+  if (meets(storageSafety.fullyCompliantRate, 90)) {
     strengths.push("Medication storage is consistently fully compliant across audits");
   }
-  if (storageSafety.marChartAccuracyRate >= 95 && storageSafety.totalAudits > 0) {
+  if (meets(storageSafety.marChartAccuracyRate, 95)) {
     strengths.push("MAR charts are accurate, supporting safe medication management");
   }
-  if (trainingCompliance.currentRate >= 90 && trainingCompliance.totalStaff > 0) {
+  if (meets(trainingCompliance.currentRate, 90)) {
     strengths.push("Staff medication training is current and up to date");
   }
-  if (trainingCompliance.competencyAssessedRate >= 90 && trainingCompliance.totalStaff > 0) {
+  if (meets(trainingCompliance.competencyAssessedRate, 90)) {
     strengths.push("Competency assessments are consistently completed for medication-administering staff");
   }
 
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
-  if (administrationQuality.totalAdministrations > 0 && administrationQuality.onTimeRate < 80) {
+  if (below(administrationQuality.onTimeRate, 80)) {
     areasForImprovement.push("Medication on-time administration rate is below acceptable threshold");
   }
   if (administrationQuality.missedRefusedCount > 0) {
     areasForImprovement.push(`${administrationQuality.missedRefusedCount} medication dose(s) were missed or refused — review reasons and follow-up actions`);
   }
-  if (administrationQuality.twoPersonCheckRate < 80 && administrationQuality.totalAdministrations > 0) {
+  if (below(administrationQuality.twoPersonCheckRate, 80)) {
     areasForImprovement.push("Two-person medication checks are not consistently carried out");
   }
-  if (administrationQuality.documentedImmediatelyRate < 80 && administrationQuality.totalAdministrations > 0) {
+  if (below(administrationQuality.documentedImmediatelyRate, 80)) {
     areasForImprovement.push("Medication administration is not always documented immediately");
   }
-  if (administrationQuality.childConsentRate < 80 && administrationQuality.totalAdministrations > 0) {
+  if (below(administrationQuality.childConsentRate, 80)) {
     areasForImprovement.push("Children's consent is not consistently obtained before medication administration");
   }
   if (errorManagement.totalErrors > 0) {
     areasForImprovement.push(`${errorManagement.totalErrors} medication error(s) occurred in the period — review systemic factors`);
   }
-  if (errorManagement.totalErrors > 0 && errorManagement.reportedImmediatelyRate < 80) {
+  if (below(errorManagement.reportedImmediatelyRate, 80)) {
     areasForImprovement.push("Medication errors are not consistently reported immediately");
   }
-  if (errorManagement.totalErrors > 0 && errorManagement.rootCauseIdentifiedRate < 80) {
+  if (below(errorManagement.rootCauseIdentifiedRate, 80)) {
     areasForImprovement.push("Root cause analysis is not consistently completed for medication errors");
   }
-  if (storageSafety.totalAudits > 0 && storageSafety.fullyCompliantRate < 80) {
+  if (below(storageSafety.fullyCompliantRate, 80)) {
     areasForImprovement.push("Medication storage compliance is below acceptable standard");
   }
   if (storageSafety.expiredMedicationAudits > 0) {
     areasForImprovement.push("Expired medication was found during storage audits — review expiry checking procedures");
   }
-  if (storageSafety.totalAudits > 0 && storageSafety.temperatureComplianceRate < 80) {
+  if (below(storageSafety.temperatureComplianceRate, 80)) {
     areasForImprovement.push("Temperature monitoring and compliance needs improvement");
   }
-  if (trainingCompliance.totalStaff > 0 && trainingCompliance.currentRate < 80) {
+  if (below(trainingCompliance.currentRate, 80)) {
     areasForImprovement.push("Staff medication training currency is below acceptable threshold");
   }
   if (trainingCompliance.expiringCount > 0) {
@@ -730,31 +739,31 @@ export function generateMedicationErrorPreventionIntelligence(
   if (seriousErrors.length > 0) {
     actions.push("URGENT: Review all serious harm medication errors and implement immediate corrective action");
   }
-  if (errorManagement.totalErrors > 0 && errorManagement.reportedImmediatelyRate < 80) {
+  if (below(errorManagement.reportedImmediatelyRate, 80)) {
     actions.push("URGENT: Reinforce mandatory immediate reporting of all medication errors to the responsible person");
   }
   if (storageSafety.expiredMedicationAudits > 0) {
     actions.push("HIGH: Remove all expired medication and implement weekly expiry date checking protocol");
   }
-  if (administrationQuality.totalAdministrations > 0 && administrationQuality.twoPersonCheckRate < 80) {
+  if (below(administrationQuality.twoPersonCheckRate, 80)) {
     actions.push("HIGH: Implement mandatory two-person checks for all controlled and high-risk medications");
   }
-  if (administrationQuality.totalAdministrations > 0 && administrationQuality.onTimeRate < 80) {
+  if (below(administrationQuality.onTimeRate, 80)) {
     actions.push("HIGH: Review medication rounds scheduling to improve on-time administration rates");
   }
-  if (trainingCompliance.totalStaff > 0 && trainingCompliance.currentRate < 80) {
+  if (below(trainingCompliance.currentRate, 80)) {
     actions.push("MEDIUM: Schedule medication training refreshers for staff with expired or expiring certification");
   }
-  if (administrationQuality.totalAdministrations > 0 && administrationQuality.documentedImmediatelyRate < 80) {
+  if (below(administrationQuality.documentedImmediatelyRate, 80)) {
     actions.push("MEDIUM: Reinforce requirement for immediate documentation following medication administration");
   }
-  if (trainingCompliance.totalStaff > 0 && trainingCompliance.controlledDrugsRate < 80) {
+  if (below(trainingCompliance.controlledDrugsRate, 80)) {
     actions.push("MEDIUM: Ensure all staff complete controlled drugs training as required by regulations");
   }
-  if (administrationQuality.childConsentRate < 80 && administrationQuality.totalAdministrations > 0) {
+  if (below(administrationQuality.childConsentRate, 80)) {
     actions.push("LOW: Develop age-appropriate tools to support children's informed consent for medication");
   }
-  if (administrationQuality.sideEffectsMonitoredRate < 80 && administrationQuality.totalAdministrations > 0) {
+  if (below(administrationQuality.sideEffectsMonitoredRate, 80)) {
     actions.push("LOW: Implement systematic side-effects monitoring and recording following medication administration");
   }
 

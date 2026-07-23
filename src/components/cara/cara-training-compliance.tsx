@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -135,11 +136,13 @@ export default function CaraTrainingCompliance({ homeId = "home_oak" }: Props) {
     );
   }
 
-  const statusColor = data.regulatoryStatus.compliant
-    ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-    : data.withExpiredTraining > 0
-      ? "text-red-700 bg-red-50 border-red-200"
-      : "text-amber-700 bg-amber-50 border-amber-200";
+  const statusColor = data.regulatoryStatus.compliant === null
+    ? "text-gray-600 bg-gray-50 border-gray-200"
+    : data.regulatoryStatus.compliant
+      ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+      : data.withExpiredTraining > 0
+        ? "text-red-700 bg-red-50 border-red-200"
+        : "text-amber-700 bg-amber-50 border-amber-200";
 
   const statusIcon = data.regulatoryStatus.compliant
     ? <CheckCircle2 className="h-4 w-4 text-emerald-600" />
@@ -167,9 +170,11 @@ export default function CaraTrainingCompliance({ homeId = "home_oak" }: Props) {
       <div className={cn("mx-4 mb-3 rounded-lg border px-3 py-2 flex items-center gap-2", statusColor)}>
         {statusIcon}
         <span className="text-xs font-medium">
-          {data.regulatoryStatus.compliant
-            ? `All staff training compliant (${data.overallCompliancePercent}%)`
-            : `Training compliance at ${data.overallCompliancePercent}%`}
+          {data.regulatoryStatus.compliant === null
+            ? "No mandatory training records — compliance not evidenced"
+            : data.regulatoryStatus.compliant
+              ? `All staff training compliant (${formatRate(data.overallCompliancePercent)})`
+              : `Training compliance at ${formatRate(data.overallCompliancePercent)}`}
         </span>
       </div>
 

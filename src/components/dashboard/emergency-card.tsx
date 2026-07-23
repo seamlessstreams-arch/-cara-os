@@ -14,6 +14,7 @@ import {
   Timer, FileCheck, ShieldAlert, Loader2, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useEmergencyIntelligence } from "@/hooks/use-emergency-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -96,19 +97,19 @@ export function EmergencyCard() {
           </div>
           <div className="text-center rounded-lg bg-indigo-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-indigo-600">
-              {o.avg_response_time_minutes.toFixed(1)}m
+              {o.avg_response_time_minutes === null ? "—" : `${o.avg_response_time_minutes.toFixed(1)}m`}
             </p>
             <p className="text-[10px] text-muted-foreground">Avg Time</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.protocol_followed_rate >= 95 ? "bg-green-50" : o.protocol_followed_rate >= 80 ? "bg-amber-50" : "bg-red-50",
+            meets(o.protocol_followed_rate, 95) ? "bg-green-50" : meets(o.protocol_followed_rate, 80) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.protocol_followed_rate >= 95 ? "text-[--cs-success]" : o.protocol_followed_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.protocol_followed_rate, 95) ? "text-[--cs-success]" : meets(o.protocol_followed_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.protocol_followed_rate}%
+              {formatRate(o.protocol_followed_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Protocol</p>
           </div>
@@ -226,9 +227,9 @@ export function EmergencyCard() {
 
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center gap-2 rounded border p-2.5 text-xs">
-            <CheckCircle2 className={cn("h-4 w-4 shrink-0", o.satisfactory_rate >= 90 ? "text-green-500" : "text-amber-500")} />
+            <CheckCircle2 className={cn("h-4 w-4 shrink-0", meets(o.satisfactory_rate, 90) ? "text-green-500" : "text-amber-500")} />
             <div>
-              <p className="font-medium">{o.satisfactory_rate}% satisfactory</p>
+              <p className="font-medium">{formatRate(o.satisfactory_rate)} satisfactory</p>
               <p className="text-[10px] text-muted-foreground">drill outcomes</p>
             </div>
           </div>

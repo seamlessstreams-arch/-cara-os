@@ -21,6 +21,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type HarmDomain =
@@ -190,21 +192,21 @@ export interface ContextualSafeguardingResult {
   // Peer network analysis
   totalPeerAssociations: number;
   highRiskPeers: number;
-  monitoredPeerRate: number;
+  monitoredPeerRate: number | null;  // null = no concerning or high-risk associations to monitor
 
   // Online safety
   totalOnlineRisks: number;
   activeOnlineRisks: number;
 
   // Protective factors
-  averageProtectiveScore: number;
+  averageProtectiveScore: number | null;  // null = no child profiles assessed
   protectiveFactorGaps: string[];
 
   // Intervention effectiveness
   totalInterventions: number;
   effectiveInterventions: number;
-  interventionEffectivenessRate: number;
-  multiAgencyRate: number;
+  interventionEffectivenessRate: number | null;  // null = no interventions concluded
+  multiAgencyRate: number | null;                // null = no interventions recorded
 
   // Child profiles
   childProfiles: ChildContextualProfile[];
@@ -458,19 +460,16 @@ export function generateContextualAssessment(
   const concerningOrHighRiskPeers = peerAssociations.filter(
     (p) => p.peerType === "high_risk" || p.peerType === "concerning",
   );
-  const monitoredPeerRate = concerningOrHighRiskPeers.length > 0
-    ? Math.round((peerAssociations.filter((p) =>
-        (p.peerType === "high_risk" || p.peerType === "concerning") && p.isMonitored,
-      ).length / concerningOrHighRiskPeers.length) * 100)
-    : 100;
+  const monitoredPeerRate = rateOf(
+    concerningOrHighRiskPeers.filter((p) => p.isMonitored),
+    concerningOrHighRiskPeers,
+  );
 
   // Online safety
   const activeOnlineRisks = onlineRisks.filter((r) => r.isActive).length;
 
   // Protective factors
-  const avgProtective = childProfiles.length > 0
-    ? Math.round(childProfiles.reduce((s, p) => s + p.protectiveScore, 0) / childProfiles.length)
-    : 0;
+  const avgProtective = meanOf(childProfiles.map((p) => p.protectiveScore));
   const protectiveFactorGaps = identifyProtectiveGaps(childProfiles);
 
   // Intervention effectiveness
@@ -478,13 +477,9 @@ export function generateContextualAssessment(
     (i) => i.status === "completed" || i.status === "effective" || i.status === "ineffective",
   );
   const effectiveInterventions = interventions.filter((i) => i.status === "effective").length;
-  const interventionEffectivenessRate = completedInterventions.length > 0
-    ? Math.round((effectiveInterventions / completedInterventions.length) * 100)
-    : 0;
+  const interventionEffectivenessRate = rate(effectiveInterventions, completedInterventions.length);
   const multiAgencyInterventions = interventions.filter((i) => i.multiAgencyInvolved);
-  const multiAgencyRate = interventions.length > 0
-    ? Math.round((multiAgencyInterventions.length / interventions.length) * 100)
-    : 0;
+  const multiAgencyRate = rateOf(multiAgencyInterventions, interventions);
 
   // Children at risk counts
   const childrenAtSignificantRisk = childProfiles.filter(
@@ -559,10 +554,10 @@ function riskLevelValue(level: RiskLevel): number {
 
 function calculateOverallScore(
   profiles: ChildContextualProfile[],
-  monitoredPeerRate: number,
-  avgProtective: number,
-  interventionEffectiveness: number,
-  multiAgencyRate: number,
+  monitoredPeerRate: number | null,
+  avgProtective: number | null,
+  interventionEffectiveness: number | null,
+  multiAgencyRate: number | null,
   activeOnlineRisks: number,
   protectiveGaps: string[],
 ): number {
@@ -576,17 +571,17 @@ function calculateOverallScore(
   const significant = profiles.filter((p) => p.overallRiskLevel === "significant").length;
   score -= significant * 6;
 
-  // Poor peer monitoring
-  score -= Math.max(0, 100 - monitoredPeerRate) * 0.15;
+  // Poor peer monitoring — no concerning associations means nothing to penalise
+  if (monitoredPeerRate !== null) score -= Math.max(0, 100 - monitoredPeerRate) * 0.15;
 
   // Low protective factors
-  score -= Math.max(0, 50 - avgProtective) * 0.3;
+  if (avgProtective !== null) score -= Math.max(0, 50 - avgProtective) * 0.3;
 
   // Intervention effectiveness bonus
-  score += (interventionEffectiveness / 100) * 10;
+  if (interventionEffectiveness !== null) score += (interventionEffectiveness / 100) * 10;
 
   // Multi-agency engagement bonus
-  score += (multiAgencyRate / 100) * 10;
+  if (multiAgencyRate !== null) score += (multiAgencyRate / 100) * 10;
 
   // Active online risks penalty
   score -= activeOnlineRisks * 3;
@@ -607,28 +602,28 @@ function getOverallRating(score: number): "outstanding" | "good" | "requires_imp
 // ── Insight Generation ─────────────────────────────────────────────────────
 
 function generateStrengths(
-  monitoredPeerRate: number,
-  avgProtective: number,
-  interventionEffectiveness: number,
-  multiAgencyRate: number,
+  monitoredPeerRate: number | null,
+  avgProtective: number | null,
+  interventionEffectiveness: number | null,
+  multiAgencyRate: number | null,
   profiles: ChildContextualProfile[],
   gaps: string[],
 ): string[] {
   const strengths: string[] = [];
 
-  if (monitoredPeerRate >= 90) {
+  if (meets(monitoredPeerRate, 90)) {
     strengths.push("Excellent peer monitoring: concerning associations are actively tracked and reviewed");
   }
-  if (avgProtective >= 50) {
+  if (meets(avgProtective, 50)) {
     strengths.push("Strong protective factors across the cohort support resilience building");
   }
-  if (interventionEffectiveness >= 70) {
+  if (meets(interventionEffectiveness, 70)) {
     strengths.push("High intervention effectiveness rate demonstrates responsive safeguarding practice");
   }
-  if (multiAgencyRate >= 80) {
+  if (meets(multiAgencyRate, 80)) {
     strengths.push("Strong multi-agency involvement in contextual safeguarding interventions");
   }
-  if (gaps.length === 0) {
+  if (gaps.length === 0 && profiles.length > 0) {
     strengths.push("No critical protective factor gaps identified — all children have baseline resilience");
   }
   if (profiles.every((p) => p.overallRiskLevel === "low" || p.overallRiskLevel === "moderate")) {
@@ -640,10 +635,10 @@ function generateStrengths(
 
 function generateConcerns(
   profiles: ChildContextualProfile[],
-  monitoredPeerRate: number,
+  monitoredPeerRate: number | null,
   activeOnlineRisks: number,
   gaps: string[],
-  interventionEffectiveness: number,
+  interventionEffectiveness: number | null,
 ): string[] {
   const concerns: string[] = [];
 
@@ -654,8 +649,8 @@ function generateConcerns(
     );
   }
 
-  if (monitoredPeerRate < 70) {
-    concerns.push(`Peer monitoring rate at ${monitoredPeerRate}%: concerning associations may go untracked`);
+  if (below(monitoredPeerRate, 70)) {
+    concerns.push(`Peer monitoring rate at ${formatRate(monitoredPeerRate)}: concerning associations may go untracked`);
   }
 
   if (activeOnlineRisks > 0) {
@@ -666,8 +661,8 @@ function generateConcerns(
     concerns.push(`${gaps.length} protective factor gaps identified — resilience building capacity insufficient`);
   }
 
-  if (interventionEffectiveness < 50 && interventionEffectiveness > 0) {
-    concerns.push(`Intervention effectiveness at ${interventionEffectiveness}%: review intervention approaches`);
+  if (below(interventionEffectiveness, 50) && interventionEffectiveness! > 0) {
+    concerns.push(`Intervention effectiveness at ${formatRate(interventionEffectiveness)}: review intervention approaches`);
   }
 
   const multiDomain = profiles.filter((p) => p.activeHarmDomains.length >= 3);

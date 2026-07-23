@@ -19,7 +19,7 @@ interface StaffResilienceProfile {
 interface RegulatoryLink {
   regulation: string;
   requirement: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   evidence: string;
 }
 
@@ -29,7 +29,7 @@ interface StaffAbsencePattern {
   totalDays: number;
   stressDays: number;
   absenceCount: number;
-  returnToWorkRate: number;
+  returnToWorkRate: number | null;
   hasAdjustments: boolean;
 }
 
@@ -39,8 +39,8 @@ interface StaffSupervisionDetail {
   supervisionCount: number;
   lastSupervisionDate: string | null;
   isOverdue: boolean;
-  wellbeingDiscussedRate: number;
-  actionCompletionRate: number;
+  wellbeingDiscussedRate: number | null;
+  actionCompletionRate: number | null;
 }
 
 interface ResilienceData {
@@ -59,9 +59,9 @@ interface ResilienceData {
   };
   absencePatterns: {
     overallAbsenceRate: number;
-    stressRelatedAbsenceRate: number;
-    returnToWorkCompletionRate: number;
-    adjustmentRate: number;
+    stressRelatedAbsenceRate: number | null;
+    returnToWorkCompletionRate: number | null;
+    adjustmentRate: number | null;
     staffPatterns: StaffAbsencePattern[];
     totalAbsenceDays: number;
     totalStressAbsenceDays: number;
@@ -69,17 +69,17 @@ interface ResilienceData {
   supportAccess: {
     accessRatePerStaff: number;
     supportTypeVariety: number;
-    voluntaryAccessRate: number;
-    satisfactionRate: number;
-    followUpRate: number;
+    voluntaryAccessRate: number | null;
+    satisfactionRate: number | null;
+    followUpRate: number | null;
     totalAccesses: number;
     typeBreakdown: Record<string, number>;
   };
   supervisionQuality: {
-    frequencyRate: number;
-    wellbeingDiscussedRate: number;
-    workloadDiscussedRate: number;
-    actionCompletionRate: number;
+    frequencyRate: number | null;
+    wellbeingDiscussedRate: number | null;
+    workloadDiscussedRate: number | null;
+    actionCompletionRate: number | null;
     averageActionPoints: number;
     overdueCount: number;
     staffSupervisionDetails: StaffSupervisionDetail[];
@@ -87,19 +87,19 @@ interface ResilienceData {
   teamHealth: {
     latestMorale: string;
     moraleTrend: string;
-    workloadManageableRate: number;
-    supportAdequacyRate: number;
-    communicationEffectiveRate: number;
-    actionCompletionRate: number;
+    workloadManageableRate: number | null;
+    supportAdequacyRate: number | null;
+    communicationEffectiveRate: number | null;
+    actionCompletionRate: number | null;
     totalIssuesRaised: number;
     totalActionsAgreed: number;
   };
   secondaryTrauma: {
-    screeningCoverage: number;
-    indicatorPrevalence: number;
-    supportOfferedRate: number;
-    supportAcceptedRate: number;
-    actionPlanRate: number;
+    screeningCoverage: number | null;
+    indicatorPrevalence: number | null;
+    supportOfferedRate: number | null;
+    supportAcceptedRate: number | null;
+    actionPlanRate: number | null;
     mostCommonIndicators: { indicator: string; count: number }[];
     staffWithIndicators: number;
   };
@@ -119,16 +119,28 @@ const RATING_STYLES: Record<string, string> = {
   inadequate: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
 };
 
+/** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
+function pct(value: number | null | undefined): string {
+  return typeof value === "number" && Number.isFinite(value) ? `${value}%` : "—";
+}
+
+/** True only when the rate exists and clears the threshold. */
+function meets(value: number | null | undefined, threshold: number): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value >= threshold;
+}
+
 const STATUS_STYLES: Record<string, string> = {
   met: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
   partially_met: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
   not_met: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+  not_evidenced: "bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-300",
 };
 
 const STATUS_LABELS: Record<string, string> = {
   met: "Met",
   partially_met: "Partial",
   not_met: "Not Met",
+  not_evidenced: "Not Evidenced",
 };
 
 const MORALE_STYLES: Record<string, string> = {
@@ -253,8 +265,8 @@ export function StaffResilienceDashboardWidget({ homeId = "home-oak" }: Props) {
           <p className="text-[10px] text-muted-foreground">Support Access</p>
         </div>
         <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${data.supervisionQuality.frequencyRate >= 90 ? "text-emerald-600 dark:text-emerald-400" : data.supervisionQuality.frequencyRate >= 50 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
-            {data.supervisionQuality.frequencyRate}%
+          <p className={`text-lg font-bold ${meets(data.supervisionQuality.frequencyRate, 90) ? "text-emerald-600 dark:text-emerald-400" : meets(data.supervisionQuality.frequencyRate, 50) ? "text-amber-600 dark:text-amber-400" : data.supervisionQuality.frequencyRate === null ? "text-muted-foreground" : "text-red-600 dark:text-red-400"}`}>
+            {pct(data.supervisionQuality.frequencyRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Supervision Currency</p>
         </div>
@@ -347,9 +359,9 @@ export function StaffResilienceDashboardWidget({ homeId = "home-oak" }: Props) {
             <div className="grid grid-cols-2 gap-2 text-[10px]">
               <div className="flex justify-between"><span className="text-muted-foreground">Total absence days</span><span className="font-medium">{data.absencePatterns.totalAbsenceDays}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Stress absence days</span><span className="font-medium">{data.absencePatterns.totalStressAbsenceDays}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Stress absence rate</span><span className="font-medium">{data.absencePatterns.stressRelatedAbsenceRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">RTW completion</span><span className="font-medium">{data.absencePatterns.returnToWorkCompletionRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Adjustment rate</span><span className="font-medium">{data.absencePatterns.adjustmentRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Stress absence rate</span><span className="font-medium">{pct(data.absencePatterns.stressRelatedAbsenceRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">RTW completion</span><span className="font-medium">{pct(data.absencePatterns.returnToWorkCompletionRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Adjustment rate</span><span className="font-medium">{pct(data.absencePatterns.adjustmentRate)}</span></div>
             </div>
             <div className="mt-2 divide-y divide-border">
               {data.absencePatterns.staffPatterns.map(sp => (
@@ -378,9 +390,9 @@ export function StaffResilienceDashboardWidget({ homeId = "home-oak" }: Props) {
               <div className="flex justify-between"><span className="text-muted-foreground">Total accesses</span><span className="font-medium">{data.supportAccess.totalAccesses}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Per staff</span><span className="font-medium">{data.supportAccess.accessRatePerStaff}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Type variety</span><span className="font-medium">{data.supportAccess.supportTypeVariety} types</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Voluntary rate</span><span className="font-medium">{data.supportAccess.voluntaryAccessRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Satisfaction</span><span className="font-medium">{data.supportAccess.satisfactionRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Follow-up rate</span><span className="font-medium">{data.supportAccess.followUpRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Voluntary rate</span><span className="font-medium">{pct(data.supportAccess.voluntaryAccessRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Satisfaction</span><span className="font-medium">{pct(data.supportAccess.satisfactionRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Follow-up rate</span><span className="font-medium">{pct(data.supportAccess.followUpRate)}</span></div>
             </div>
             <div className="mt-2">
               <p className="text-[10px] font-medium text-muted-foreground mb-1">Type breakdown</p>
@@ -408,10 +420,10 @@ export function StaffResilienceDashboardWidget({ homeId = "home-oak" }: Props) {
         {expanded.supervision && (
           <div className="px-4 py-3 space-y-2 text-[10px]">
             <div className="grid grid-cols-2 gap-2">
-              <div className="flex justify-between"><span className="text-muted-foreground">Frequency rate</span><span className="font-medium">{data.supervisionQuality.frequencyRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Wellbeing discussed</span><span className="font-medium">{data.supervisionQuality.wellbeingDiscussedRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Workload discussed</span><span className="font-medium">{data.supervisionQuality.workloadDiscussedRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Action completion</span><span className="font-medium">{data.supervisionQuality.actionCompletionRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Frequency rate</span><span className="font-medium">{pct(data.supervisionQuality.frequencyRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Wellbeing discussed</span><span className="font-medium">{pct(data.supervisionQuality.wellbeingDiscussedRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Workload discussed</span><span className="font-medium">{pct(data.supervisionQuality.workloadDiscussedRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Action completion</span><span className="font-medium">{pct(data.supervisionQuality.actionCompletionRate)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Avg action points</span><span className="font-medium">{data.supervisionQuality.averageActionPoints}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Overdue</span><span className={`font-medium ${data.supervisionQuality.overdueCount > 0 ? "text-red-600 dark:text-red-400" : ""}`}>{data.supervisionQuality.overdueCount}</span></div>
             </div>
@@ -423,8 +435,8 @@ export function StaffResilienceDashboardWidget({ homeId = "home-oak" }: Props) {
                     <span className="text-muted-foreground">{sd.supervisionCount} sessions</span>
                   </div>
                   <div className="flex gap-3 text-muted-foreground">
-                    <span>Wellbeing: {sd.wellbeingDiscussedRate}%</span>
-                    <span>Actions: {sd.actionCompletionRate}%</span>
+                    <span>Wellbeing: {pct(sd.wellbeingDiscussedRate)}</span>
+                    <span>Actions: {pct(sd.actionCompletionRate)}</span>
                     {sd.isOverdue && <span className="text-red-600 dark:text-red-400">OVERDUE</span>}
                   </div>
                 </div>
@@ -448,10 +460,10 @@ export function StaffResilienceDashboardWidget({ homeId = "home-oak" }: Props) {
             <div className="grid grid-cols-2 gap-2">
               <div className="flex justify-between"><span className="text-muted-foreground">Latest morale</span><span className={`font-medium capitalize ${MORALE_STYLES[data.teamHealth.latestMorale] ?? ""}`}>{data.teamHealth.latestMorale}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Morale trend</span><span className="font-medium">{TREND_ICONS[data.teamHealth.moraleTrend] ?? ""} {data.teamHealth.moraleTrend}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Workload manageable</span><span className="font-medium">{data.teamHealth.workloadManageableRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Support adequate</span><span className="font-medium">{data.teamHealth.supportAdequacyRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Communication</span><span className="font-medium">{data.teamHealth.communicationEffectiveRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Actions completed</span><span className="font-medium">{data.teamHealth.actionCompletionRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Workload manageable</span><span className="font-medium">{pct(data.teamHealth.workloadManageableRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Support adequate</span><span className="font-medium">{pct(data.teamHealth.supportAdequacyRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Communication</span><span className="font-medium">{pct(data.teamHealth.communicationEffectiveRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Actions completed</span><span className="font-medium">{pct(data.teamHealth.actionCompletionRate)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Issues raised</span><span className="font-medium">{data.teamHealth.totalIssuesRaised}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Actions agreed</span><span className="font-medium">{data.teamHealth.totalActionsAgreed}</span></div>
             </div>
@@ -471,12 +483,12 @@ export function StaffResilienceDashboardWidget({ homeId = "home-oak" }: Props) {
         {expanded.trauma && (
           <div className="px-4 py-3 space-y-2 text-[10px]">
             <div className="grid grid-cols-2 gap-2">
-              <div className="flex justify-between"><span className="text-muted-foreground">Screening coverage</span><span className="font-medium">{data.secondaryTrauma.screeningCoverage}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Avg indicators/staff</span><span className="font-medium">{data.secondaryTrauma.indicatorPrevalence}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Screening coverage</span><span className="font-medium">{pct(data.secondaryTrauma.screeningCoverage)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Avg indicators/staff</span><span className="font-medium">{data.secondaryTrauma.indicatorPrevalence ?? "—"}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Staff with indicators</span><span className="font-medium">{data.secondaryTrauma.staffWithIndicators}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Support offered</span><span className="font-medium">{data.secondaryTrauma.supportOfferedRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Support accepted</span><span className="font-medium">{data.secondaryTrauma.supportAcceptedRate}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Action plan rate</span><span className="font-medium">{data.secondaryTrauma.actionPlanRate}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Support offered</span><span className="font-medium">{pct(data.secondaryTrauma.supportOfferedRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Support accepted</span><span className="font-medium">{pct(data.secondaryTrauma.supportAcceptedRate)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Action plan rate</span><span className="font-medium">{pct(data.secondaryTrauma.actionPlanRate)}</span></div>
             </div>
             {data.secondaryTrauma.mostCommonIndicators.length > 0 && (
               <div className="mt-2">

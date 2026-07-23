@@ -71,8 +71,8 @@ export function StaffDebriefSupportCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{overview.supervisions_completed_90d}</p>
             <p className="text-[10px] text-muted-foreground">Sessions/90d</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", wellbeing.avg_score >= 7 ? "bg-green-50" : wellbeing.avg_score >= 5 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", wellbeing.avg_score >= 7 ? "text-[--cs-success]" : wellbeing.avg_score >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{wellbeing.avg_score.toFixed(1)}</p>
+          <div className={cn("text-center rounded-lg p-2.5", wellbeing.avg_score === null ? "bg-slate-50" : wellbeing.avg_score >= 7 ? "bg-green-50" : wellbeing.avg_score >= 5 ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", wellbeing.avg_score === null ? "text-[var(--cs-text-muted)]" : wellbeing.avg_score >= 7 ? "text-[--cs-success]" : wellbeing.avg_score >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{wellbeing.avg_score === null ? "—" : wellbeing.avg_score.toFixed(1)}</p>
             <p className="text-[10px] text-muted-foreground">Wellbeing</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", wellbeing.staff_below_threshold === 0 ? "bg-green-50" : "bg-red-50")}>
@@ -93,7 +93,7 @@ export function StaffDebriefSupportCard() {
             {staff_profiles.filter((s) => s.wellbeing_trend === "declining").slice(0, 3).map((s) => (
               <div key={s.staff_id} className="flex items-center justify-between rounded border p-2.5 text-xs">
                 <span className="font-medium">{s.staff_name}</span>
-                <Badge className="text-[9px] bg-[--cs-risk-bg] text-[--cs-risk]">WB: {s.avg_wellbeing.toFixed(1)}</Badge>
+                <Badge className="text-[9px] bg-[--cs-risk-bg] text-[--cs-risk]">WB: {s.avg_wellbeing?.toFixed(1) ?? "—"}</Badge>
               </div>
             ))}
           </div>

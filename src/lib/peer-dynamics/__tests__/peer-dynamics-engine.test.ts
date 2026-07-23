@@ -604,7 +604,7 @@ describe("evaluateMatchingCompliance", () => {
   it("handles empty children array", () => {
     const result = evaluateMatchingCompliance([], [], CURRENT_DATE);
     expect(result.totalChildren).toBe(0);
-    expect(result.complianceRate).toBe(100);
+    expect(result.complianceRate).toBeNull();
   });
 
   it("handles missing assessments for some children", () => {

@@ -18,6 +18,15 @@ import { cn } from "@/lib/utils";
 import { useHomeNotifiableEventsIntelligence } from "@/hooks/use-home-notifiable-events-intelligence";
 import type { NotifiableEventsRating } from "@/lib/engines/home-notifiable-events-intelligence-engine";
 
+/** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
+function pct(value: number | null | undefined): string {
+  return typeof value === "number" && Number.isFinite(value) ? `${value}%` : "—";
+}
+
+function meets(value: number | null | undefined, threshold: number): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value >= threshold;
+}
+
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
 const RATING_STYLES: Record<NotifiableEventsRating, { bg: string; text: string; border: string; label: string }> = {
@@ -124,9 +133,9 @@ export function HomeNotifiableEventsIntelligenceCard() {
                 <Clock className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.events_profile.notification_compliance_rate === 100 ? "text-[--cs-success]" :
-                  d.events_profile.notification_compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.events_profile.notification_compliance_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.events_profile.notification_compliance_rate}%
+                  {pct(d.events_profile.notification_compliance_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Notified &lt;24h</p>
@@ -138,9 +147,9 @@ export function HomeNotifiableEventsIntelligenceCard() {
                 <CheckCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.events_profile.follow_up_rate === 100 ? "text-[--cs-success]" :
-                  d.events_profile.follow_up_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.events_profile.follow_up_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.events_profile.follow_up_rate}%
+                  {pct(d.events_profile.follow_up_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Follow-up</p>
@@ -152,9 +161,9 @@ export function HomeNotifiableEventsIntelligenceCard() {
                 <Sparkles className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.events_profile.lesson_learned_rate === 100 ? "text-[--cs-success]" :
-                  d.events_profile.lesson_learned_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.events_profile.lesson_learned_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.events_profile.lesson_learned_rate}%
+                  {pct(d.events_profile.lesson_learned_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Lessons</p>
@@ -168,7 +177,7 @@ export function HomeNotifiableEventsIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Compliance</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Multi-agency: <span className={cn("font-medium", d.events_profile.multi_agency_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.events_profile.multi_agency_rate}%</span></p>
+                <p>Multi-agency: <span className={cn("font-medium", d.events_profile.multi_agency_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{pct(d.events_profile.multi_agency_rate)}</span></p>
                 {d.events_profile.pending_count > 0 && <p>Pending: <span className="font-medium text-red-600">{d.events_profile.pending_count}</span></p>}
               </div>
             </div>

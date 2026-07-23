@@ -17,6 +17,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, formatRate, meets, rate, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -102,8 +103,8 @@ export interface ReviewComplianceResult {
   overdue: number;
   scheduled: number;
   cancelled: number;
-  onTimeRate: number;
-  completionRate: number;
+  onTimeRate: number | null;
+  completionRate: number | null;
 }
 
 export interface ReviewTypeBreakdown {
@@ -112,7 +113,7 @@ export interface ReviewTypeBreakdown {
   onTime: number;
   late: number;
   overdue: number;
-  onTimeRate: number;
+  onTimeRate: number | null;
 }
 
 export interface ActionComplianceResult {
@@ -121,8 +122,8 @@ export interface ActionComplianceResult {
   inProgress: number;
   overdue: number;
   notStarted: number;
-  completionRate: number;
-  overdueRate: number;
+  completionRate: number | null;
+  overdueRate: number | null;
 }
 
 export interface ChildPlanningProfile {
@@ -131,11 +132,11 @@ export interface ChildPlanningProfile {
   reviewsDue: number;
   reviewsCompleted: number;
   reviewsOverdue: number;
-  actionCompletionRate: number;
+  actionCompletionRate: number | null;
   actionsOverdue: number;
   documentsUpToDate: number;
   documentsOutdated: number;
-  childParticipationRate: number;
+  childParticipationRate: number | null;
   primaryConcern?: string;
 }
 
@@ -146,8 +147,8 @@ export interface CarePlanningIntelligenceResult {
   periodEnd: string;
 
   // Overall
-  overallScore: number;
-  rating: "outstanding" | "good" | "requires_improvement" | "inadequate";
+  overallScore: number | null;
+  rating: "outstanding" | "good" | "requires_improvement" | "inadequate" | "unmeasured";
 
   // Review compliance
   reviewCompliance: ReviewComplianceResult;
@@ -159,12 +160,12 @@ export interface CarePlanningIntelligenceResult {
   // Document currency
   documentsUpToDate: number;
   documentsOutdated: number;
-  documentCurrencyRate: number;
+  documentCurrencyRate: number | null;
 
   // Participation
-  childParticipationRate: number;
-  parentParticipationRate: number;
-  socialWorkerAttendanceRate: number;
+  childParticipationRate: number | null;
+  parentParticipationRate: number | null;
+  socialWorkerAttendanceRate: number | null;
 
   // Per-child
   childProfiles: ChildPlanningProfile[];
@@ -201,10 +202,8 @@ export function evaluateReviewCompliance(
     overdue,
     scheduled,
     cancelled,
-    onTimeRate: periodReviews.length > 0
-      ? Math.round((completedOnTime / periodReviews.length) * 100) : 100,
-    completionRate: periodReviews.length > 0
-      ? Math.round((completed / periodReviews.length) * 100) : 100,
+    onTimeRate: rate(completedOnTime, periodReviews.length),
+    completionRate: rate(completed, periodReviews.length),
   };
 }
 
@@ -237,9 +236,14 @@ export function buildReviewTypeBreakdown(
       onTime,
       late,
       overdue,
-      onTimeRate: typeReviews.length > 0 ? Math.round((onTime / typeReviews.length) * 100) : 100,
+      onTimeRate: rate(onTime, typeReviews.length),
     };
-  }).sort((a, b) => a.onTimeRate - b.onTimeRate);
+    // Worst on-time rate first; types with nothing to measure sort last.
+  }).sort((a, b) => {
+    if (a.onTimeRate === null) return b.onTimeRate === null ? 0 : 1;
+    if (b.onTimeRate === null) return -1;
+    return a.onTimeRate - b.onTimeRate;
+  });
 }
 
 // ── Core: Evaluate Action Compliance ──────────────────────────────────────
@@ -264,10 +268,8 @@ export function evaluateActionCompliance(
     inProgress,
     overdue,
     notStarted,
-    completionRate: periodActions.length > 0
-      ? Math.round((completed / periodActions.length) * 100) : 100,
-    overdueRate: periodActions.length > 0
-      ? Math.round((overdue / periodActions.length) * 100) : 0,
+    completionRate: rate(completed, periodActions.length),
+    overdueRate: rate(overdue, periodActions.length),
   };
 }
 
@@ -302,8 +304,7 @@ export function buildChildPlanningProfiles(
     const docsOutdated = childDocs.filter((d) => !d.isUpToDate).length;
 
     const participated = completed.filter((r) => r.childParticipated);
-    const participationRate = completed.length > 0
-      ? Math.round((participated.length / completed.length) * 100) : 0;
+    const participationRate = rateOf(participated, completed);
 
     let primaryConcern: string | undefined;
     if (overdue.length >= 2) {
@@ -320,8 +321,7 @@ export function buildChildPlanningProfiles(
       reviewsDue: childReviews.length,
       reviewsCompleted: completed.length,
       reviewsOverdue: overdue.length,
-      actionCompletionRate: childActions.length > 0
-        ? Math.round((actionsCompleted / childActions.length) * 100) : 100,
+      actionCompletionRate: rate(actionsCompleted, childActions.length),
       actionsOverdue,
       documentsUpToDate: docsUpToDate,
       documentsOutdated: docsOutdated,
@@ -358,19 +358,21 @@ export function generateCarePlanningIntelligence(
   const allDocs = documents.filter((d) => activeChildren.some((c) => c.id === d.childId));
   const docsUpToDate = allDocs.filter((d) => d.isUpToDate).length;
   const docsOutdated = allDocs.filter((d) => !d.isUpToDate).length;
-  const documentCurrencyRate = allDocs.length > 0
-    ? Math.round((docsUpToDate / allDocs.length) * 100) : 100;
+  const documentCurrencyRate = rate(docsUpToDate, allDocs.length);
 
   // Participation rates
   const completedReviews = periodReviews.filter(
     (r) => r.status === "completed_on_time" || r.status === "completed_late",
   );
-  const childParticipationRate = completedReviews.length > 0
-    ? Math.round((completedReviews.filter((r) => r.childParticipated).length / completedReviews.length) * 100) : 0;
-  const parentParticipationRate = completedReviews.length > 0
-    ? Math.round((completedReviews.filter((r) => r.parentAttended).length / completedReviews.length) * 100) : 0;
-  const socialWorkerAttendanceRate = completedReviews.length > 0
-    ? Math.round((completedReviews.filter((r) => r.socialWorkerAttended).length / completedReviews.length) * 100) : 0;
+  const childParticipationRate = rateOf(
+    completedReviews.filter((r) => r.childParticipated), completedReviews,
+  );
+  const parentParticipationRate = rateOf(
+    completedReviews.filter((r) => r.parentAttended), completedReviews,
+  );
+  const socialWorkerAttendanceRate = rateOf(
+    completedReviews.filter((r) => r.socialWorkerAttended), completedReviews,
+  );
 
   // Score
   const overallScore = calculateCarePlanningScore(
@@ -424,38 +426,37 @@ export function generateCarePlanningIntelligence(
 function calculateCarePlanningScore(
   review: ReviewComplianceResult,
   actions: ActionComplianceResult,
-  docCurrencyRate: number,
-  childParticipation: number,
+  docCurrencyRate: number | null,
+  childParticipation: number | null,
   profiles: ChildPlanningProfile[],
-): number {
-  let score = 0;
+): number | null {
+  // Overdue headroom, not a rate: 0% of actions overdue scores full marks,
+  // 10% or more scores none.
+  const overdueHeadroom = actions.overdueRate === null
+    ? null
+    : Math.max(0, 100 - actions.overdueRate * 10);
 
-  // Review compliance (max 35)
-  score += (review.onTimeRate / 100) * 20;
-  score += (review.completionRate / 100) * 15;
-
-  // Action compliance (max 25)
-  score += (actions.completionRate / 100) * 15;
-  score += actions.overdueRate === 0 ? 10 : Math.max(0, 10 - (actions.overdueRate / 10) * 10);
-
-  // Document currency (max 15)
-  score += (docCurrencyRate / 100) * 15;
-
-  // Child participation (max 15)
-  score += (childParticipation / 100) * 15;
-
-  // Consistency bonus/penalty (max 10)
+  // Consistency across children — only meaningful once there are children.
   const childrenWithConcerns = profiles.filter((p) => p.primaryConcern);
-  if (childrenWithConcerns.length === 0 && profiles.length > 0) {
-    score += 10;
-  } else {
-    score -= childrenWithConcerns.length * 3;
-  }
+  const consistency = profiles.length === 0
+    ? null
+    : Math.max(0, 100 - childrenWithConcerns.length * 30);
 
-  return Math.max(0, Math.min(100, Math.round(score)));
+  return weightedMeanOf([
+    { score: review.onTimeRate, weight: 20 },
+    { score: review.completionRate, weight: 15 },
+    { score: actions.completionRate, weight: 15 },
+    { score: overdueHeadroom, weight: 10 },
+    { score: docCurrencyRate, weight: 15 },
+    { score: childParticipation, weight: 15 },
+    { score: consistency, weight: 10 },
+  ]);
 }
 
-function getCarePlanningRating(score: number): "outstanding" | "good" | "requires_improvement" | "inadequate" {
+function getCarePlanningRating(
+  score: number | null,
+): "outstanding" | "good" | "requires_improvement" | "inadequate" | "unmeasured" {
+  if (score === null) return "unmeasured";
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
   if (score >= 40) return "requires_improvement";
@@ -467,25 +468,25 @@ function getCarePlanningRating(score: number): "outstanding" | "good" | "require
 function generatePlanningStrengths(
   review: ReviewComplianceResult,
   actions: ActionComplianceResult,
-  docCurrencyRate: number,
-  childParticipation: number,
-  parentParticipation: number,
+  docCurrencyRate: number | null,
+  childParticipation: number | null,
+  parentParticipation: number | null,
 ): string[] {
   const strengths: string[] = [];
 
-  if (review.onTimeRate >= 90) {
+  if (meets(review.onTimeRate, 90)) {
     strengths.push("Reviews consistently completed within statutory timescales — strong compliance culture");
   }
-  if (actions.completionRate >= 85) {
+  if (meets(actions.completionRate, 85)) {
     strengths.push("Review actions have a high completion rate — care plans are actively progressed");
   }
-  if (docCurrencyRate >= 90) {
+  if (meets(docCurrencyRate, 90)) {
     strengths.push("Planning documentation is current and up-to-date across all children");
   }
-  if (childParticipation >= 90) {
+  if (meets(childParticipation, 90)) {
     strengths.push("Excellent child participation in reviews — children are active partners in planning");
   }
-  if (parentParticipation >= 70) {
+  if (meets(parentParticipation, 70)) {
     strengths.push("Good parental participation in reviews — family engagement is prioritised");
   }
   if (review.cancelled === 0 && review.totalReviewsDue > 0) {
@@ -498,32 +499,35 @@ function generatePlanningStrengths(
 function generatePlanningDevelopment(
   review: ReviewComplianceResult,
   actions: ActionComplianceResult,
-  docCurrencyRate: number,
-  childParticipation: number,
+  docCurrencyRate: number | null,
+  childParticipation: number | null,
   typeBreakdown: ReviewTypeBreakdown[],
   profiles: ChildPlanningProfile[],
 ): string[] {
   const areas: string[] = [];
 
-  if (review.onTimeRate < 80) {
-    areas.push(`On-time review rate is ${review.onTimeRate}% — review scheduling and preparation processes`);
+  if (below(review.onTimeRate, 80)) {
+    areas.push(`On-time review rate is ${formatRate(review.onTimeRate)} — review scheduling and preparation processes`);
   }
   if (review.overdue > 0) {
     areas.push(`${review.overdue} review(s) currently overdue — prioritise immediate completion`);
   }
-  if (actions.overdueRate > 20) {
-    areas.push(`${actions.overdueRate}% of review actions are overdue — embed action tracking in supervision`);
+  if (actions.overdueRate !== null && actions.overdueRate > 20) {
+    areas.push(`${formatRate(actions.overdueRate)} of review actions are overdue — embed action tracking in supervision`);
   }
-  if (docCurrencyRate < 80) {
-    areas.push(`Document currency rate is ${docCurrencyRate}% — schedule document review alongside care plan reviews`);
+  if (below(docCurrencyRate, 80)) {
+    areas.push(`Document currency rate is ${formatRate(docCurrencyRate)} — schedule document review alongside care plan reviews`);
   }
-  if (childParticipation < 75) {
-    areas.push(`Child participation is ${childParticipation}% — review barriers and offer advocacy support`);
+  if (below(childParticipation, 75)) {
+    areas.push(`Child participation is ${formatRate(childParticipation)} — review barriers and offer advocacy support`);
+  }
+  if (review.totalReviewsDue === 0) {
+    areas.push("No reviews due or recorded for this period — planning compliance cannot be evidenced without records");
   }
 
-  const weakTypes = typeBreakdown.filter((t) => t.onTimeRate < 60 && t.total >= 2);
+  const weakTypes = typeBreakdown.filter((t) => below(t.onTimeRate, 60) && t.total >= 2);
   for (const type of weakTypes) {
-    areas.push(`${type.reviewType.replace(/_/g, " ")} reviews: only ${type.onTimeRate}% on time — review scheduling process`);
+    areas.push(`${type.reviewType.replace(/_/g, " ")} reviews: only ${formatRate(type.onTimeRate)} on time — review scheduling process`);
   }
 
   return areas;
@@ -560,7 +564,11 @@ function generatePlanningActions(
   }
 
   if (planActions.length === 0) {
-    planActions.push("No immediate actions required. Care planning compliance is strong and child-centred.");
+    planActions.push(
+      review.totalReviewsDue === 0 && actions.totalActions === 0
+        ? "No reviews or review actions recorded for this period. Care planning compliance cannot be assessed until records exist."
+        : "No immediate actions required. Care planning compliance is strong and child-centred.",
+    );
   }
 
   return planActions;

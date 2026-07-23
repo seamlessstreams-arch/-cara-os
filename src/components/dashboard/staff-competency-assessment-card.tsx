@@ -14,6 +14,7 @@ import {
   BookOpen, Users, Shield, CheckCircle2, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 // ── Insight styling ──────────────────────────────────────────────────────────
@@ -52,14 +53,10 @@ export function StaffCompetencyAssessmentCard() {
   const dbs = intel.dbs;
 
   // Compute overall training compliance average
-  const avgCompliance = intel.training.length > 0
-    ? Math.round(intel.training.reduce((sum, t) => sum + t.compliance_rate, 0) / intel.training.length)
-    : 0;
+  const avgCompliance = meanOf(intel.training.map((t) => t.compliance_rate));
 
   const categoriesWithExpired = intel.training.filter((t) => t.expired > 0).length;
-  const supRate = sup.total_staff_requiring > 0
-    ? Math.round((sup.up_to_date / sup.total_staff_requiring) * 100)
-    : 100;
+  const supRate = rate(sup.up_to_date, sup.total_staff_requiring);
 
   return (
     <Card className="overflow-hidden">
@@ -79,9 +76,9 @@ export function StaffCompetencyAssessmentCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", avgCompliance >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", avgCompliance >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {avgCompliance}%
+          <div className={cn("text-center rounded-lg p-2", meets(avgCompliance, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(avgCompliance, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(avgCompliance)}
             </p>
             <p className="text-[10px] text-muted-foreground">Training</p>
           </div>
@@ -91,15 +88,15 @@ export function StaffCompetencyAssessmentCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">Expired Cat.</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", supRate >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", supRate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {supRate}%
+          <div className={cn("text-center rounded-lg p-2", meets(supRate, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(supRate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(supRate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Supervision</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", dbs.compliance_rate >= 90 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", dbs.compliance_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
-              {dbs.compliance_rate}%
+          <div className={cn("text-center rounded-lg p-2", meets(dbs.compliance_rate, 90) ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(dbs.compliance_rate, 90) ? "text-[--cs-success]" : "text-[--cs-risk]")}>
+              {formatRate(dbs.compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">DBS</p>
           </div>
@@ -123,7 +120,7 @@ export function StaffCompetencyAssessmentCard() {
                     <div className="h-full bg-red-400" style={{ width: `${(t.expired / Math.max(t.total_required, 1)) * 100}%` }} />
                   </div>
                   <span className="w-12 text-right tabular-nums font-medium text-[10px]">
-                    {t.compliance_rate}%
+                    {formatRate(t.compliance_rate)}
                   </span>
                 </div>
               ))}

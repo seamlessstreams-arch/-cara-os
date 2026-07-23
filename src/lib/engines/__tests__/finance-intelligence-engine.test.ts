@@ -470,7 +470,7 @@ describe("Finance Intelligence Engine", () => {
       expect(result.overview.total_spending_this_period).toBe(0);
       expect(result.overview.total_allowances_monthly).toBe(0);
       expect(result.overview.total_savings).toBe(0);
-      expect(result.overview.receipt_compliance_rate).toBe(100);
+      expect(result.overview.receipt_compliance_rate).toBeNull();
       expect(result.overview.avg_spending_per_child).toBe(0);
     });
 
@@ -617,7 +617,7 @@ describe("Finance Intelligence Engine", () => {
       expect(alex.spending_above_average).toBe(false);
     });
 
-    it("calculates receipt_rate as 100% for child with no spending", () => {
+    it("leaves receipt_rate unmeasured for child with no spending", () => {
       const input: FinanceEngineInput = {
         transactions: [
           makeTransaction({ id: "tx_allow", child_id: "yp_alex", date: "2026-05-20", type: "allowance", amount: 20, category: "allowance" }),
@@ -629,7 +629,7 @@ describe("Finance Intelligence Engine", () => {
       };
       const result = computeFinanceIntelligence(input);
       const alex = result.child_spending.find((p) => p.child_id === "yp_alex")!;
-      expect(alex.receipt_rate).toBe(100);
+      expect(alex.receipt_rate).toBeNull();
     });
   });
 });

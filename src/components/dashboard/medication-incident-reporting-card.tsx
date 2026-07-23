@@ -15,6 +15,7 @@ import {
   Loader2, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useMedicationIntelligence } from "@/hooks/use-medication-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -76,15 +77,15 @@ export function MedicationIncidentReportingCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", o.missed_rate === 0 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.missed_rate === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
-              {o.missed_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.missed_rate === null ? "bg-gray-50" : o.missed_rate === 0 ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.missed_rate === null ? "text-muted-foreground" : o.missed_rate === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
+              {formatRate(o.missed_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Missed</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.refusal_rate === 0 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.refusal_rate === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.refusal_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.refusal_rate === null ? "bg-gray-50" : o.refusal_rate === 0 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.refusal_rate === null ? "text-muted-foreground" : o.refusal_rate === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(o.refusal_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Refused</p>
           </div>

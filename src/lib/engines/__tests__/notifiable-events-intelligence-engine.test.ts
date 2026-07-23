@@ -66,7 +66,7 @@ describe("Notifiable Events Intelligence Engine", () => {
     it("returns safe defaults when no events provided", () => {
       const result = run([]);
       expect(result.overview.total_events).toBe(0);
-      expect(result.overview.compliance_rate).toBe(100);
+      expect(result.overview.compliance_rate).toBeNull();
       expect(result.overview.pending).toBe(0);
       expect(result.event_types).toHaveLength(0);
       expect(result.child_profiles).toHaveLength(0);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { ParentalContactManagementIntelligence } from "@/lib/parental-contact-management";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -105,7 +106,7 @@ export function ParentalContactManagementDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Sessions</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.contactQuality.positiveOutcomeRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.contactQuality.positiveOutcomeRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Positive</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -113,7 +114,7 @@ export function ParentalContactManagementDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Risk Assessments</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.riskManagement.incidentRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.riskManagement.incidentRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Incident Rate</div>
         </div>
       </div>
@@ -138,8 +139,8 @@ export function ParentalContactManagementDashboardWidget() {
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Parents: <span className="font-medium">{child.parentCount}</span></div>
                     <div>Sessions: <span className="font-medium">{child.sessionsInPeriod}</span></div>
-                    <div>Positive: <span className="font-medium">{child.positiveOutcomeRate}%</span></div>
-                    <div>Prepared: <span className="font-medium">{child.childPreparedRate}%</span></div>
+                    <div>Positive: <span className="font-medium">{formatRate(child.positiveOutcomeRate)}</span></div>
+                    <div>Prepared: <span className="font-medium">{formatRate(child.childPreparedRate)}</span></div>
                     <div>Risk Assessed: <span className={`font-medium ${child.riskAssessed ? "text-green-600" : "text-amber-600"}`}>{child.riskAssessed ? "Yes" : "No"}</span></div>
                   </div>
                 </div>
@@ -151,42 +152,42 @@ export function ParentalContactManagementDashboardWidget() {
         <Section title="Contact Plan Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Plans:</span> <span className="font-medium">{data.contactPlanCompliance.totalPlans}</span></div>
-            <div><span className="text-gray-500">Plan Exists:</span> <span className="font-medium">{data.contactPlanCompliance.planExistsRate}%</span></div>
-            <div><span className="text-gray-500">Current:</span> <span className="font-medium">{data.contactPlanCompliance.planCurrentRate}%</span></div>
-            <div><span className="text-gray-500">Child View:</span> <span className="font-medium">{data.contactPlanCompliance.childViewConsideredRate}%</span></div>
-            <div><span className="text-gray-500">Court Order:</span> <span className="font-medium">{data.contactPlanCompliance.courtOrderCompliantRate}%</span></div>
+            <div><span className="text-gray-500">Plan Exists:</span> <span className="font-medium">{formatRate(data.contactPlanCompliance.planExistsRate)}</span></div>
+            <div><span className="text-gray-500">Current:</span> <span className="font-medium">{formatRate(data.contactPlanCompliance.planCurrentRate)}</span></div>
+            <div><span className="text-gray-500">Child View:</span> <span className="font-medium">{formatRate(data.contactPlanCompliance.childViewConsideredRate)}</span></div>
+            <div><span className="text-gray-500">Court Order:</span> <span className="font-medium">{formatRate(data.contactPlanCompliance.courtOrderCompliantRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Contact Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Sessions:</span> <span className="font-medium">{data.contactQuality.totalSessions}</span></div>
-            <div><span className="text-gray-500">Positive:</span> <span className="font-medium">{data.contactQuality.positiveOutcomeRate}%</span></div>
-            <div><span className="text-gray-500">Prepared:</span> <span className="font-medium">{data.contactQuality.childPreparedRate}%</span></div>
-            <div><span className="text-gray-500">Debriefed:</span> <span className="font-medium">{data.contactQuality.childDebriefedRate}%</span></div>
-            <div><span className="text-gray-500">Parent Cooperative:</span> <span className="font-medium">{data.contactQuality.parentCooperativeRate}%</span></div>
+            <div><span className="text-gray-500">Positive:</span> <span className="font-medium">{formatRate(data.contactQuality.positiveOutcomeRate)}</span></div>
+            <div><span className="text-gray-500">Prepared:</span> <span className="font-medium">{formatRate(data.contactQuality.childPreparedRate)}</span></div>
+            <div><span className="text-gray-500">Debriefed:</span> <span className="font-medium">{formatRate(data.contactQuality.childDebriefedRate)}</span></div>
+            <div><span className="text-gray-500">Parent Cooperative:</span> <span className="font-medium">{formatRate(data.contactQuality.parentCooperativeRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Risk Management">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Assessments:</span> <span className="font-medium">{data.riskManagement.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Risk Assessed:</span> <span className="font-medium">{data.riskManagement.riskAssessedRate}%</span></div>
-            <div><span className="text-gray-500">Review Current:</span> <span className="font-medium">{data.riskManagement.reviewCurrentRate}%</span></div>
-            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{data.riskManagement.safeguardingMeasuresRate}%</span></div>
-            <div><span className="text-gray-500">Incidents:</span> <span className={`font-medium ${data.riskManagement.incidentRate > 0 ? "text-red-600" : "text-green-600"}`}>{data.riskManagement.incidentRate}%</span></div>
+            <div><span className="text-gray-500">Risk Assessed:</span> <span className="font-medium">{formatRate(data.riskManagement.riskAssessedRate)}</span></div>
+            <div><span className="text-gray-500">Review Current:</span> <span className="font-medium">{formatRate(data.riskManagement.reviewCurrentRate)}</span></div>
+            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{formatRate(data.riskManagement.safeguardingMeasuresRate)}</span></div>
+            <div><span className="text-gray-500">Incidents:</span> <span className={`font-medium ${data.riskManagement.incidentRate === null ? "text-gray-500" : data.riskManagement.incidentRate > 0 ? "text-red-600" : "text-green-600"}`}>{formatRate(data.riskManagement.incidentRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffContactReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">Supervised:</span> <span className="font-medium">{data.staffContactReadiness.supervisedContactRate}%</span></div>
-            <div><span className="text-gray-500">Risk Assessment:</span> <span className="font-medium">{data.staffContactReadiness.riskAssessmentRate}%</span></div>
-            <div><span className="text-gray-500">Prep/Debrief:</span> <span className="font-medium">{data.staffContactReadiness.prepDebriefRate}%</span></div>
-            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{data.staffContactReadiness.safeguardingRate}%</span></div>
-            <div><span className="text-gray-500">Parental Conflict:</span> <span className="font-medium">{data.staffContactReadiness.parentalConflictRate}%</span></div>
-            <div><span className="text-gray-500">Court Order:</span> <span className="font-medium">{data.staffContactReadiness.courtOrderRate}%</span></div>
+            <div><span className="text-gray-500">Supervised:</span> <span className="font-medium">{formatRate(data.staffContactReadiness.supervisedContactRate)}</span></div>
+            <div><span className="text-gray-500">Risk Assessment:</span> <span className="font-medium">{formatRate(data.staffContactReadiness.riskAssessmentRate)}</span></div>
+            <div><span className="text-gray-500">Prep/Debrief:</span> <span className="font-medium">{formatRate(data.staffContactReadiness.prepDebriefRate)}</span></div>
+            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{formatRate(data.staffContactReadiness.safeguardingRate)}</span></div>
+            <div><span className="text-gray-500">Parental Conflict:</span> <span className="font-medium">{formatRate(data.staffContactReadiness.parentalConflictRate)}</span></div>
+            <div><span className="text-gray-500">Court Order:</span> <span className="font-medium">{formatRate(data.staffContactReadiness.courtOrderRate)}</span></div>
           </div>
         </Section>
 

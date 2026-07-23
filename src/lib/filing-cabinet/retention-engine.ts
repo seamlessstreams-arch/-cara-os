@@ -19,6 +19,7 @@
 
 import type { Role } from "../permissions/types";
 import { isAtLeast } from "../permissions/role-rules";
+import { rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -141,7 +142,7 @@ export interface FilingStats {
   pendingDestruction: number;
   approachingExpiry: number;   // within 90 days
   onHold: number;
-  complianceRate: number;      // % with correct retention applied
+  complianceRate: number | null;  // % with correct retention applied; null with no documents
 }
 
 // ── Retention Policy Configuration ────────────────────────────────────────
@@ -712,9 +713,7 @@ export function calculateFilingStats(
     }
   }
 
-  const complianceRate = documents.length > 0
-    ? Math.round((correctRetention / documents.length) * 100)
-    : 100;
+  const complianceRate = rate(correctRetention, documents.length);
 
   return {
     totalDocuments: documents.length,

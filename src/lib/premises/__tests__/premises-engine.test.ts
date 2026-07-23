@@ -166,7 +166,7 @@ describe("evaluateComplianceChecks", () => {
   it("handles empty checks array", () => {
     const r = evaluateComplianceChecks([], REF_DATE);
     expect(r.totalChecks).toBe(0);
-    expect(r.complianceRate).toBe(0);
+    expect(r.complianceRate).toBeNull();
     expect(r.categoryBreakdown.length).toBe(0);
   });
 
@@ -237,8 +237,8 @@ describe("evaluateMaintenance", () => {
   it("handles empty requests array", () => {
     const r = evaluateMaintenance([], REF_DATE);
     expect(r.totalRequests).toBe(0);
-    expect(r.completionRate).toBe(0);
-    expect(r.avgResolutionDays).toBe(0);
+    expect(r.completionRate).toBeNull();
+    expect(r.avgResolutionDays).toBeNull();
   });
 
   it("calculates correct days open for open requests", () => {
@@ -310,8 +310,8 @@ describe("evaluateFireDrills", () => {
     const r = evaluateFireDrills([], PERIOD_START, PERIOD_END);
     expect(r.totalDrills).toBe(0);
     expect(r.drillsInPeriod).toBe(0);
-    expect(r.avgEvacuationTime).toBe(0);
-    expect(r.allChildrenAccountedForRate).toBe(0);
+    expect(r.avgEvacuationTime).toBeNull();
+    expect(r.allChildrenAccountedForRate).toBeNull();
     expect(r.drillFrequencyAdequate).toBe(false);
   });
 
@@ -386,7 +386,7 @@ describe("evaluateEnvironmentalRisks", () => {
   it("handles empty risks array", () => {
     const r = evaluateEnvironmentalRisks([], REF_DATE);
     expect(r.totalRisks).toBe(0);
-    expect(r.mitigationRate).toBe(100); // No active risks → 100%
+    expect(r.mitigationRate).toBeNull(); // No active risks → nothing to measure
     expect(r.overdueReviews.length).toBe(0);
   });
 

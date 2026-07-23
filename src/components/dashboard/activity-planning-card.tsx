@@ -12,6 +12,7 @@ import {
   AlertTriangle, Brain, Calendar, ChevronRight, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 import { useEducationIntelligence } from "@/hooks/use-education-intelligence";
 
 const ALERT_STYLES: Record<string, string> = {
@@ -68,7 +69,7 @@ export function ActivityPlanningCard() {
             <p className="text-[10px] text-muted-foreground">Placed</p>
           </div>
           <div className="text-center rounded-lg bg-green-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-green-600">{Math.round(d?.attendance?.overall_pct ?? 0)}%</p>
+            <p className="text-lg font-bold tabular-nums text-green-600">{formatRate(d?.attendance?.overall_pct)}</p>
             <p className="text-[10px] text-muted-foreground">Attend %</p>
           </div>
           <div className={cn("text-center rounded-lg p-2", (d?.overview?.neet_count ?? 0) > 0 ? "bg-red-50" : "bg-green-50")}>

@@ -13,6 +13,7 @@ import type {
 } from "./types";
 import type { SopRealityCheck } from "@/lib/sop-reality-check/sop-reality-check-engine";
 import type { OrgRiskDashboard } from "@/lib/org-risk/org-risk-engine";
+import { rate, meanOf, formatRate } from "@/lib/metrics/rate";
 
 // ── Input type ─────────────────────────────────────────────────────────────
 
@@ -107,6 +108,13 @@ function scoreToRating(
   return "inadequate";
 }
 
+/** An unscored section is "not assessed" — never a grade, in either direction. */
+function ratingFor(
+  score: number | null | undefined,
+): "outstanding" | "good" | "adequate" | "inadequate" | "not_assessed" {
+  return typeof score === "number" ? scoreToRating(score) : "not_assessed";
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -156,15 +164,8 @@ export function computeInspectionEvidencePack(
   ];
 
   const totalItems = sections.reduce((sum, s) => sum + s.items.length, 0);
-  const sectionScores = sections
-    .filter((s) => s.score !== undefined)
-    .map((s) => s.score!);
-  const overallScore =
-    sectionScores.length > 0
-      ? Math.round(
-          sectionScores.reduce((a, b) => a + b, 0) / sectionScores.length,
-        )
-      : 0;
+  // Unassessed sections are excluded from the headline rather than scored as zero.
+  const overallScore = meanOf(sections.map((s) => s.score));
 
   const strengths = identifyStrengths(sections);
   const areasForImprovement = identifyAreasForImprovement(sections);
@@ -177,7 +178,7 @@ export function computeInspectionEvidencePack(
     home_name: input.home_name,
     period_from: input.period_from,
     period_to: input.period_to,
-    overall_rating: scoreToRating(overallScore),
+    overall_rating: ratingFor(overallScore),
     overall_score: overallScore,
     sections,
     strengths,
@@ -207,7 +208,8 @@ function buildChildOverview(
     tags: ["demographics", "placement"],
   }));
 
-  const score = children.length > 0 ? clamp(70 + children.length * 5, 0, 100) : 50;
+  const score =
+    children.length > 0 ? clamp(70 + children.length * 5, 0, 100) : undefined;
 
   return {
     id: "child_overview",
@@ -218,8 +220,11 @@ function buildChildOverview(
     data_sources: ["youngPeople"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${children.length} children currently in placement. All profiles documented.`,
+    rating: ratingFor(score),
+    summary:
+      children.length > 0
+        ? `${children.length} children currently in placement. All profiles documented.`
+        : "No children currently in placement — nothing to evidence in this section.",
   };
 }
 
@@ -247,15 +252,15 @@ function buildPlacementHistory(
     };
   });
 
-  const avgDays =
-    items.length > 0
-      ? items.reduce((sum, i) => {
-          const match = i.summary.match(/(\d+) days/);
-          return sum + (match ? parseInt(match[1]) : 0);
-        }, 0) / items.length
-      : 0;
+  const avgDays = meanOf(
+    items.map((i) => {
+      const match = i.summary.match(/(\d+) days/);
+      return match ? parseInt(match[1]) : null;
+    }),
+  );
 
-  const score = clamp(Math.round(60 + Math.min(avgDays / 10, 30)), 0, 100);
+  const score =
+    avgDays === null ? undefined : clamp(Math.round(60 + Math.min(avgDays / 10, 30)), 0, 100);
 
   return {
     id: "placement_history",
@@ -266,8 +271,11 @@ function buildPlacementHistory(
     data_sources: ["youngPeople"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${children.length} placements active. Average placement duration: ${Math.round(avgDays)} days.`,
+    rating: ratingFor(score),
+    summary:
+      avgDays === null
+        ? "No active placements recorded — placement stability cannot be evidenced."
+        : `${children.length} placements active. Average placement duration: ${avgDays} days.`,
   };
 }
 
@@ -301,11 +309,8 @@ function buildCarePlanProgress(
     ),
   ).length;
 
-  const coverage =
-    children.length > 0
-      ? Math.round((childrenWithPlan / children.length) * 100)
-      : 0;
-  const score = clamp(coverage, 0, 100);
+  const coverage = rate(childrenWithPlan, children.length);
+  const score = coverage === null ? undefined : clamp(coverage, 0, 100);
 
   return {
     id: "care_plan_progress",
@@ -316,8 +321,11 @@ function buildCarePlanProgress(
     data_sources: ["careForms", "outcomeTargets", "outcomeReviews"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${childrenWithPlan}/${children.length} children have current care plans. ${periodForms.length} care records in period.`,
+    rating: ratingFor(score),
+    summary:
+      coverage === null
+        ? `No children in placement to plan for. ${periodForms.length} care records in period.`
+        : `${childrenWithPlan}/${children.length} children have current care plans. ${periodForms.length} care records in period.`,
   };
 }
 
@@ -358,16 +366,13 @@ function buildRiskManagement(
     ),
   ).length;
 
-  const coverage =
-    children.length > 0
-      ? Math.round((childrenWithRA / children.length) * 100)
-      : 0;
+  const coverage = rate(childrenWithRA, children.length);
   const overdueCount = input.riskAssessments.filter((r: any) => {
     const reviewDate = r.review_date ?? r.next_review;
     return reviewDate && reviewDate < input.today && r.status === "current";
   }).length;
 
-  const score = clamp(coverage - overdueCount * 5, 0, 100);
+  const score = coverage === null ? undefined : clamp(coverage - overdueCount * 5, 0, 100);
 
   return {
     id: "risk_management",
@@ -378,8 +383,11 @@ function buildRiskManagement(
     data_sources: ["riskAssessments"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${childrenWithRA}/${children.length} children have current risk assessments. ${overdueCount} overdue reviews. ${periodRAs.length} assessments in period.`,
+    rating: ratingFor(score),
+    summary:
+      coverage === null
+        ? `No children in placement to risk assess. ${overdueCount} overdue reviews. ${periodRAs.length} assessments in period.`
+        : `${childrenWithRA}/${children.length} children have current risk assessments. ${overdueCount} overdue reviews. ${periodRAs.length} assessments in period.`,
   };
 }
 
@@ -462,16 +470,14 @@ function buildSafeguardingActions(
   const returnInterviewsDone = periodMissing.filter(
     (m: any) => m.return_interview_completed,
   ).length;
-  const riRate =
-    periodMissing.length > 0
-      ? Math.round((returnInterviewsDone / periodMissing.length) * 100)
-      : 100;
+  // No missing episodes means no return interviews were due — there is nothing to
+  // rate, and an empty register must not present as full safeguarding assurance.
+  const riRate = rate(returnInterviewsDone, periodMissing.length);
 
-  const score = clamp(
-    riRate - highRiskScreenings * 3 - periodMissing.length * 2,
-    0,
-    100,
-  );
+  const score =
+    riRate === null
+      ? undefined
+      : clamp(riRate - highRiskScreenings * 3 - periodMissing.length * 2, 0, 100);
 
   return {
     id: "safeguarding_actions",
@@ -486,8 +492,10 @@ function buildSafeguardingActions(
     ],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${periodScreenings.length} exploitation screenings, ${periodMissing.length} missing episodes, ${periodDisclosures.length} disclosures in period. Return interview completion: ${riRate}%.`,
+    rating: ratingFor(score),
+    summary: `${periodScreenings.length} exploitation screenings, ${periodMissing.length} missing episodes, ${periodDisclosures.length} disclosures in period. Return interview completion: ${
+      riRate === null ? "no missing episodes recorded" : formatRate(riRate)
+    }.`,
   };
 }
 
@@ -521,12 +529,9 @@ function buildDirectWorkSummary(
   const childrenWithSessions = new Set(
     periodSessions.map((s: any) => s.child_id),
   ).size;
-  const coverage =
-    children.length > 0
-      ? Math.round((childrenWithSessions / children.length) * 100)
-      : 0;
+  const coverage = rate(childrenWithSessions, children.length);
 
-  const score = clamp(coverage, 0, 100);
+  const score = coverage === null ? undefined : clamp(coverage, 0, 100);
 
   return {
     id: "direct_work_summary",
@@ -537,8 +542,11 @@ function buildDirectWorkSummary(
     data_sources: ["keyWorkingSessions", "keyworkerSessions"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${periodSessions.length} direct work sessions in period. ${childrenWithSessions}/${children.length} children received direct work.`,
+    rating: ratingFor(score),
+    summary:
+      coverage === null
+        ? `${periodSessions.length} direct work sessions in period. No children in placement to receive direct work.`
+        : `${periodSessions.length} direct work sessions in period. ${childrenWithSessions}/${children.length} children received direct work.`,
   };
 }
 
@@ -600,16 +608,13 @@ function buildIncidentsAndResponses(
   const closedCount = periodIncidents.filter(
     (i: any) => i.status === "closed" || i.status === "resolved",
   ).length;
-  const closureRate =
-    periodIncidents.length > 0
-      ? Math.round((closedCount / periodIncidents.length) * 100)
-      : 100;
+  // No incidents recorded is an empty register, not a 100% closure record.
+  const closureRate = rate(closedCount, periodIncidents.length);
 
-  const score = clamp(
-    closureRate - criticalCount * 10 - periodRestraints.length * 3,
-    0,
-    100,
-  );
+  const score =
+    closureRate === null
+      ? undefined
+      : clamp(closureRate - criticalCount * 10 - periodRestraints.length * 3, 0, 100);
 
   return {
     id: "incidents_responses",
@@ -620,8 +625,10 @@ function buildIncidentsAndResponses(
     data_sources: ["incidents", "restraints", "significantEvents"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${periodIncidents.length} incidents (${criticalCount} critical), ${periodRestraints.length} restraints in period. Closure rate: ${closureRate}%.`,
+    rating: ratingFor(score),
+    summary: `${periodIncidents.length} incidents (${criticalCount} critical), ${periodRestraints.length} restraints in period. Closure rate: ${
+      closureRate === null ? "no incidents recorded" : formatRate(closureRate)
+    }.`,
   };
 }
 
@@ -654,16 +661,12 @@ function buildEducationNotes(
     (r: any) => r.record_type === "pep",
   );
   const childrenWithPEP = new Set(pepRecords.map((r: any) => r.child_id)).size;
-  const pepRate =
-    children.length > 0
-      ? Math.round((childrenWithPEP / children.length) * 100)
-      : 0;
+  const pepRate = rate(childrenWithPEP, children.length);
 
-  const score = clamp(
-    Math.round((pepRate + (childrenWithEdu > 0 ? 70 : 40)) / 2),
-    0,
-    100,
-  );
+  const score =
+    pepRate === null
+      ? undefined
+      : clamp(Math.round((pepRate + (childrenWithEdu > 0 ? 70 : 40)) / 2), 0, 100);
 
   return {
     id: "education_notes",
@@ -674,8 +677,10 @@ function buildEducationNotes(
     data_sources: ["educationRecords"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${periodEdu.length} education records in period. PEP coverage: ${pepRate}%. ${childrenWithEdu}/${children.length} children with education records.`,
+    rating: ratingFor(score),
+    summary: `${periodEdu.length} education records in period. PEP coverage: ${
+      pepRate === null ? "no children in placement" : formatRate(pepRate)
+    }. ${childrenWithEdu}/${children.length} children with education records.`,
   };
 }
 
@@ -766,12 +771,9 @@ function buildHealthNotes(
   const childrenWithHealth = new Set(
     input.healthAssessments.map((h: any) => h.child_id),
   ).size;
-  const coverage =
-    children.length > 0
-      ? Math.round((childrenWithHealth / children.length) * 100)
-      : 0;
+  const coverage = rate(childrenWithHealth, children.length);
 
-  const score = clamp(coverage, 0, 100);
+  const score = coverage === null ? undefined : clamp(coverage, 0, 100);
 
   return {
     id: "health_notes",
@@ -787,8 +789,10 @@ function buildHealthNotes(
     ],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${items.length} health records in period. Health assessment coverage: ${coverage}%.`,
+    rating: ratingFor(score),
+    summary: `${items.length} health records in period. Health assessment coverage: ${
+      coverage === null ? "no children in placement" : formatRate(coverage)
+    }.`,
   };
 }
 
@@ -838,12 +842,9 @@ function buildFamilyContact(
   const childrenWithContact = new Set(
     periodFamilyTime.map((f: any) => f.child_id),
   ).size;
-  const coverage =
-    children.length > 0
-      ? Math.round((childrenWithContact / children.length) * 100)
-      : 0;
+  const coverage = rate(childrenWithContact, children.length);
 
-  const score = clamp(coverage, 0, 100);
+  const score = coverage === null ? undefined : clamp(coverage, 0, 100);
 
   return {
     id: "family_contact",
@@ -854,8 +855,11 @@ function buildFamilyContact(
     data_sources: ["familyTimeSessions", "contactPlans"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${periodFamilyTime.length} family contact sessions in period. ${childrenWithContact}/${children.length} children had family contact.`,
+    rating: ratingFor(score),
+    summary:
+      coverage === null
+        ? `${periodFamilyTime.length} family contact sessions in period. No children in placement.`
+        : `${periodFamilyTime.length} family contact sessions in period. ${childrenWithContact}/${children.length} children had family contact.`,
   };
 }
 
@@ -911,11 +915,12 @@ function buildProfessionalContact(
     });
   });
 
-  const score = clamp(
-    60 + periodMAM.length * 5 + periodLAC.length * 10,
-    0,
-    100,
-  );
+  // With no meetings or reviews on record there is nothing to score — a baseline
+  // "good" for an empty multi-agency register is assurance the home has not earned.
+  const score =
+    periodMAM.length > 0 || periodLAC.length > 0
+      ? clamp(60 + periodMAM.length * 5 + periodLAC.length * 10, 0, 100)
+      : undefined;
 
   return {
     id: "professional_contact",
@@ -926,8 +931,11 @@ function buildProfessionalContact(
     data_sources: ["multiAgencyMeetings", "lacReviews"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${periodMAM.length} multi-agency meetings and ${periodLAC.length} LAC reviews in period.`,
+    rating: ratingFor(score),
+    summary:
+      score === undefined
+        ? "No multi-agency meetings or LAC reviews recorded in this period."
+        : `${periodMAM.length} multi-agency meetings and ${periodLAC.length} LAC reviews in period.`,
   };
 }
 
@@ -1000,20 +1008,15 @@ function buildManagementOversight(
     });
   });
 
-  const supRate =
-    activeStaff.length > 0
-      ? Math.round(
-          (new Set(periodSupervisions.map((s: any) => s.staff_id)).size /
-            activeStaff.length) *
-            100,
-        )
-      : 0;
-
-  const score = clamp(
-    Math.round((supRate + (periodAudits.length > 0 ? 80 : 50)) / 2),
-    0,
-    100,
+  const supRate = rate(
+    new Set(periodSupervisions.map((s: any) => s.staff_id)).size,
+    activeStaff.length,
   );
+
+  const score =
+    supRate === null
+      ? undefined
+      : clamp(Math.round((supRate + (periodAudits.length > 0 ? 80 : 50)) / 2), 0, 100);
 
   return {
     id: "management_oversight",
@@ -1024,8 +1027,10 @@ function buildManagementOversight(
     data_sources: ["supervisions", "qaAuditRecords", "trainingRecords"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${periodSupervisions.length} supervisions, ${periodAudits.length} audits, ${periodTraining.length} training records in period. Supervision coverage: ${supRate}%.`,
+    rating: ratingFor(score),
+    summary: `${periodSupervisions.length} supervisions, ${periodAudits.length} audits, ${periodTraining.length} training records in period. Supervision coverage: ${
+      supRate === null ? "no active staff on record" : formatRate(supRate)
+    }.`,
   };
 }
 
@@ -1066,15 +1071,20 @@ function buildAuditTrail(
   );
 
   const logDensity =
-    children.length > 0
-      ? Math.round(periodLogs.length / children.length)
-      : 0;
+    children.length > 0 ? Math.round(periodLogs.length / children.length) : null;
 
-  const score = clamp(
-    50 + periodCFA.length * 10 + Math.min(logDensity, 20),
-    0,
-    100,
-  );
+  // Nothing audited and nothing logged is an absent audit trail, not a baseline pass.
+  const hasRecordKeepingEvidence =
+    periodCFA.length > 0 || periodLogs.length > 0 || periodChronology.length > 0;
+  const score = hasRecordKeepingEvidence
+    ? clamp(
+        50 +
+          periodCFA.length * 10 +
+          (logDensity === null ? 0 : Math.min(logDensity, 20)),
+        0,
+        100,
+      )
+    : undefined;
 
   return {
     id: "audit_trail",
@@ -1086,8 +1096,10 @@ function buildAuditTrail(
     data_sources: ["caseFileAudits", "dailyLog", "chronology"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${periodCFA.length} case file audits, ${periodLogs.length} daily log entries, ${periodChronology.length} chronology entries in period. Log density: ${logDensity} entries per child.`,
+    rating: ratingFor(score),
+    summary: `${periodCFA.length} case file audits, ${periodLogs.length} daily log entries, ${periodChronology.length} chronology entries in period. Log density: ${
+      logDensity === null ? "not measurable — no children in placement" : `${logDensity} entries per child`
+    }.`,
   };
 }
 
@@ -1130,7 +1142,9 @@ function buildOutstandingActions(
     tags: ["outstanding", "overdue", t.priority ?? "normal"],
   }));
 
-  const score = clamp(100 - overdueTasks.length * 5, 0, 100);
+  // An empty task register is not the same as nothing being overdue.
+  const score =
+    input.tasks.length > 0 ? clamp(100 - overdueTasks.length * 5, 0, 100) : undefined;
 
   return {
     id: "outstanding_actions",
@@ -1141,8 +1155,11 @@ function buildOutstandingActions(
     data_sources: ["tasks"],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${overdueTasks.length} overdue tasks, ${pendingTasks.length} total open tasks. Action completion needs attention.`,
+    rating: ratingFor(score),
+    summary:
+      input.tasks.length === 0
+        ? "No tasks recorded — action tracking cannot be evidenced for this period."
+        : `${overdueTasks.length} overdue tasks, ${pendingTasks.length} total open tasks. Action completion needs attention.`,
   };
 }
 
@@ -1256,21 +1273,22 @@ function buildEvidenceOfProgress(
       });
     });
 
-  const avgReadiness =
-    input.independenceSkillsRecords.length > 0
-      ? Math.round(
-          input.independenceSkillsRecords.reduce(
-            (sum: number, r: any) => sum + (r.overall_readiness ?? 0),
-            0,
-          ) / input.independenceSkillsRecords.length,
-        )
-      : 0;
-
-  const score = clamp(
-    50 + items.length * 3 + Math.round(avgReadiness / 5),
-    0,
-    100,
+  const avgReadiness = meanOf(
+    input.independenceSkillsRecords.map((r: any) =>
+      typeof r.overall_readiness === "number" ? r.overall_readiness : null,
+    ),
   );
+
+  const score =
+    items.length > 0
+      ? clamp(
+          50 +
+            items.length * 3 +
+            (avgReadiness === null ? 0 : Math.round(avgReadiness / 5)),
+          0,
+          100,
+        )
+      : undefined;
 
   return {
     id: "evidence_of_progress",
@@ -1288,8 +1306,13 @@ function buildEvidenceOfProgress(
     ],
     items,
     score,
-    rating: scoreToRating(score),
-    summary: `${items.length} progress evidence items. Average independence readiness: ${avgReadiness}%.`,
+    rating: ratingFor(score),
+    summary:
+      items.length === 0
+        ? "No progress evidence recorded in this period."
+        : `${items.length} progress evidence items. Average independence readiness: ${
+            avgReadiness === null ? "not assessed" : formatRate(avgReadiness)
+          }.`,
   };
 }
 
@@ -1679,13 +1702,18 @@ function identifyStrengths(sections: EvidenceSection[]): string[] {
   }
 
   if (strengths.length === 0) {
-    const bestSection = sections.reduce(
-      (best, s) => ((s.score ?? 0) > (best.score ?? 0) ? s : best),
-      sections[0],
+    // Only sections that were actually scored can be "strongest" — an unassessed
+    // section has no score to hold up as a high-water mark.
+    const scored = sections.filter(
+      (s): s is EvidenceSection & { score: number } => typeof s.score === "number",
+    );
+    const bestSection = scored.reduce(
+      (best, s) => (s.score > best.score ? s : best),
+      scored[0],
     );
     if (bestSection) {
       strengths.push(
-        `${bestSection.title}: Strongest area with score of ${bestSection.score ?? 0}%.`,
+        `${bestSection.title}: Strongest area with score of ${bestSection.score}%.`,
       );
     }
   }
@@ -1699,23 +1727,31 @@ function identifyAreasForImprovement(sections: EvidenceSection[]): string[] {
   for (const section of sections) {
     if (section.rating === "inadequate") {
       areas.push(
-        `${section.title}: Significant improvement needed. Current score: ${section.score ?? 0}%.`,
+        `${section.title}: Significant improvement needed. Current score: ${formatRate(section.score)}.`,
       );
     } else if (section.rating === "adequate") {
       areas.push(
-        `${section.title}: Requires improvement to reach good rating. Current score: ${section.score ?? 0}%.`,
+        `${section.title}: Requires improvement to reach good rating. Current score: ${formatRate(section.score)}.`,
+      );
+    } else if (section.rating === "not_assessed") {
+      // An unevidenced area is a finding at inspection, not a neutral blank.
+      areas.push(
+        `${section.title}: Nothing recorded in this period, so nothing can be evidenced. Ofsted judges on evidence — an empty register is a gap, not a pass.`,
       );
     }
   }
 
   if (areas.length === 0) {
-    const weakestSection = sections.reduce(
-      (worst, s) => ((s.score ?? 100) < (worst.score ?? 100) ? s : worst),
-      sections[0],
+    const scored = sections.filter(
+      (s): s is EvidenceSection & { score: number } => typeof s.score === "number",
     );
-    if (weakestSection && (weakestSection.score ?? 100) < 85) {
+    const weakestSection = scored.reduce(
+      (worst, s) => (s.score < worst.score ? s : worst),
+      scored[0],
+    );
+    if (weakestSection && weakestSection.score < 85) {
       areas.push(
-        `${weakestSection.title}: Lowest scoring area at ${weakestSection.score ?? 0}%. Focus here for improvement.`,
+        `${weakestSection.title}: Lowest scoring area at ${weakestSection.score}%. Focus here for improvement.`,
       );
     }
   }

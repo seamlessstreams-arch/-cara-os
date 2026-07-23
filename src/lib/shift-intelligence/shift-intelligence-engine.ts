@@ -129,6 +129,8 @@ export interface ShiftCoverageResult {
   staffOnShift: string[];
 }
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Deployment Intelligence Result ─────────────────────────────────────────
 
 export interface DeploymentIntelligenceResult {
@@ -141,16 +143,16 @@ export interface DeploymentIntelligenceResult {
   overallScore: number; // 0-100
   complianceRating: "compliant" | "minor_concerns" | "significant_concerns" | "non_compliant";
 
-  // Coverage analysis
+  // Coverage analysis — percentages are null when no shift was analysed
   totalShiftsAnalysed: number;
   coveredShifts: number;
   uncoveredShifts: number;
-  coveragePercentage: number;
+  coveragePercentage: number | null;
 
   // Staffing metrics
-  averageStaffPerShift: number;
-  agencyUsagePercentage: number;
-  seniorCoveragePercentage: number;
+  averageStaffPerShift: number | null;
+  agencyUsagePercentage: number | null;
+  seniorCoveragePercentage: number | null;
 
   // Fatigue risk
   fatigueAssessments: FatigueAssessment[];
@@ -158,7 +160,8 @@ export interface DeploymentIntelligenceResult {
 
   // Key Worker compliance
   keyWorkerAvailability: KeyWorkerAvailability[];
-  keyWorkerComplianceRate: number;
+  /** null = no child has a key worker to assess against. */
+  keyWorkerComplianceRate: number | null;
 
   // Shift coverage breakdown
   coverageByShiftType: ShiftCoverageResult[];
@@ -471,23 +474,20 @@ export function generateDeploymentIntelligence(
   const totalShiftsAnalysed = coverageResults.length;
   const coveredShifts = coverageResults.filter((r) => r.isCovered).length;
   const uncoveredShifts = totalShiftsAnalysed - coveredShifts;
-  const coveragePercentage =
-    totalShiftsAnalysed > 0 ? Math.round((coveredShifts / totalShiftsAnalysed) * 100) : 100;
+  const coveragePercentage = rate(coveredShifts, totalShiftsAnalysed);
 
   // 2. Staffing metrics
   const totalStaffOnAllShifts = coverageResults.reduce((sum, r) => sum + r.actualStaff, 0);
   const averageStaffPerShift =
     totalShiftsAnalysed > 0
       ? Math.round((totalStaffOnAllShifts / totalShiftsAnalysed) * 10) / 10
-      : 0;
+      : null;
 
   const totalAgency = coverageResults.reduce((sum, r) => sum + r.agencyCount, 0);
-  const agencyUsagePercentage =
-    totalStaffOnAllShifts > 0 ? Math.round((totalAgency / totalStaffOnAllShifts) * 100) : 0;
+  const agencyUsagePercentage = rate(totalAgency, totalStaffOnAllShifts);
 
   const seniorCoveredShifts = coverageResults.filter((r) => r.seniorPresent).length;
-  const seniorCoveragePercentage =
-    totalShiftsAnalysed > 0 ? Math.round((seniorCoveredShifts / totalShiftsAnalysed) * 100) : 100;
+  const seniorCoveragePercentage = rate(seniorCoveredShifts, totalShiftsAnalysed);
 
   // 3. Fatigue Risk Assessment
   const fatigueAssessments = staff
@@ -501,10 +501,8 @@ export function generateDeploymentIntelligence(
   // 4. Key Worker Availability
   const keyWorkerAvailability = evaluateKeyWorkerAvailability(staff, shifts, children, requirements);
   const kwCompliant = keyWorkerAvailability.filter((k) => k.isCompliant).length;
-  const keyWorkerComplianceRate =
-    keyWorkerAvailability.length > 0
-      ? Math.round((kwCompliant / keyWorkerAvailability.length) * 100)
-      : 100;
+  // Null when no child has a key worker on record — nothing to be compliant with
+  const keyWorkerComplianceRate = rate(kwCompliant, keyWorkerAvailability.length);
 
   // 5. Aggregate concerns
   const allConcerns = coverageResults.flatMap((r) => r.concerns);
@@ -592,29 +590,31 @@ export function generateDeploymentIntelligence(
 // ── Scoring ────────────────────────────────────────────────────────────────
 
 function calculateOverallScore(
-  coveragePercentage: number,
-  agencyPercentage: number,
-  seniorCoverage: number,
+  coveragePercentage: number | null,
+  agencyPercentage: number | null,
+  seniorCoverage: number | null,
   highFatigueStaff: number,
-  kwCompliance: number,
+  kwCompliance: number | null,
   concerns: { concern: DeploymentConcern; count: number; severity: "low" | "medium" | "high" }[],
 ): number {
   let score = 100;
 
+  // An unmeasured domain cannot be penalised — there is nothing to score against
+
   // Coverage penalty (most critical)
-  score -= Math.max(0, 100 - coveragePercentage) * 1.5;
+  if (coveragePercentage !== null) score -= Math.max(0, 100 - coveragePercentage) * 1.5;
 
   // Agency overuse penalty
-  if (agencyPercentage > 30) score -= (agencyPercentage - 30) * 0.5;
+  if (agencyPercentage !== null && agencyPercentage > 30) score -= (agencyPercentage - 30) * 0.5;
 
   // Senior coverage penalty
-  score -= Math.max(0, 100 - seniorCoverage) * 0.3;
+  if (seniorCoverage !== null) score -= Math.max(0, 100 - seniorCoverage) * 0.3;
 
   // Fatigue risk penalty
   score -= highFatigueStaff * 8;
 
   // Key Worker compliance penalty
-  score -= Math.max(0, 100 - kwCompliance) * 0.4;
+  if (kwCompliance !== null) score -= Math.max(0, 100 - kwCompliance) * 0.4;
 
   // High severity concerns
   const highSeverity = concerns.filter((c) => c.severity === "high");

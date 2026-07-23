@@ -12,6 +12,8 @@
 // Pure deterministic analysis — no AI calls.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface SupervisionRecord {
@@ -50,7 +52,7 @@ export interface StaffSupervisionProfile {
   nextDue: string;
   averageWellbeing: number | null;
   wellbeingTrend: "improving" | "stable" | "declining" | "unknown";
-  actionCompletionRate: number;  // 0-100
+  actionCompletionRate: number | null;  // 0-100; null = no actions were agreed to complete
   topThemes: string[];
   overdueActions: number;
 }
@@ -62,7 +64,7 @@ export interface SupervisionIntelligence {
   overdueCount: number;
   overdueStaff: StaffSupervisionProfile[];
   upcomingDue: StaffSupervisionProfile[];   // due within 7 days
-  teamActionCompletionRate: number;
+  teamActionCompletionRate: number | null;
   teamWellbeingAverage: number | null;
   commonThemes: { theme: string; count: number; trend: "increasing" | "stable" | "decreasing" }[];
   trainingNeeds: { area: string; staffCount: number; staffNames: string[] }[];
@@ -71,7 +73,7 @@ export interface SupervisionIntelligence {
   concerns: string[];
   regulatoryStatus: {
     reg33Compliant: boolean;
-    compliancePercent: number;
+    compliancePercent: number | null;
     detail: string;
   };
 }
@@ -110,9 +112,7 @@ export function analyseSupervisions(
   // Team action completion
   const allActions = records.flatMap((r) => r.actionsAgreed);
   const completedActions = allActions.filter((a) => a.completed);
-  const teamActionCompletionRate = allActions.length > 0
-    ? Math.round((completedActions.length / allActions.length) * 100)
-    : 100;
+  const teamActionCompletionRate = rateOf(completedActions, allActions);
 
   // Team wellbeing
   const wellbeingScores = records
@@ -141,19 +141,18 @@ export function analyseSupervisions(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (teamActionCompletionRate >= 80) strengths.push("Strong action completion rate across the team");
-  if (overdueStaff.length === 0) strengths.push("All supervisions are up to date (Reg 33 compliant)");
+  if (meets(teamActionCompletionRate, 80)) strengths.push("Strong action completion rate across the team");
+  if (staffList.length > 0 && overdueStaff.length === 0) strengths.push("All supervisions are up to date (Reg 33 compliant)");
   if (teamWellbeingAverage && teamWellbeingAverage >= 4) strengths.push("Team wellbeing scores are positive");
   if (commonThemes.some((t) => t.theme === "Practice" && t.trend === "increasing")) strengths.push("Increasing focus on practice development in supervisions");
 
   if (overdueStaff.length > 0) concerns.push(`${overdueStaff.length} staff member${overdueStaff.length > 1 ? "s have" : " has"} overdue supervision`);
-  if (teamActionCompletionRate < 60) concerns.push("Low action completion rate — follow-through needs addressing");
+  if (below(teamActionCompletionRate, 60)) concerns.push("Low action completion rate — follow-through needs addressing");
   if (wellbeingConcerns.length > 0) concerns.push(`${wellbeingConcerns.length} staff member${wellbeingConcerns.length > 1 ? "s" : ""} showing wellbeing concerns`);
+  if (staffList.length === 0) concerns.push("No staff on record — supervision compliance cannot be evidenced");
 
   // Regulatory status
-  const compliancePercent = staffList.length > 0
-    ? Math.round(((staffList.length - overdueStaff.length) / staffList.length) * 100)
-    : 100;
+  const compliancePercent = rate(staffList.length - overdueStaff.length, staffList.length);
 
   return {
     homeId,
@@ -170,11 +169,13 @@ export function analyseSupervisions(
     strengths,
     concerns,
     regulatoryStatus: {
-      reg33Compliant: overdueStaff.length === 0,
+      reg33Compliant: staffList.length > 0 && overdueStaff.length === 0,
       compliancePercent,
-      detail: overdueStaff.length === 0
-        ? "All staff have received supervision within the required timeframe."
-        : `${overdueStaff.length} of ${staffList.length} staff are overdue. Reg 33 requires regular supervision of all staff.`,
+      detail: staffList.length === 0
+        ? "No staff on record — Reg 33 compliance cannot be evidenced."
+        : overdueStaff.length === 0
+          ? "All staff have received supervision within the required timeframe."
+          : `${overdueStaff.length} of ${staffList.length} staff are overdue. Reg 33 requires regular supervision of all staff.`,
     },
   };
 }
@@ -219,9 +220,7 @@ function buildProfiles(
     // Action completion
     const allActions = staffRecords.flatMap((r) => r.actionsAgreed);
     const completedActions = allActions.filter((a) => a.completed);
-    const actionCompletionRate = allActions.length > 0
-      ? Math.round((completedActions.length / allActions.length) * 100)
-      : 100;
+    const actionCompletionRate = rateOf(completedActions, allActions);
 
     // Top themes
     const themeCounts = new Map<string, number>();

@@ -373,14 +373,18 @@ describe("generateEscalationMetrics", () => {
     expect(result.totalConcernsRaised).toBe(1);
   });
 
-  it("handles empty data gracefully", () => {
+  it("does not score escalation practice when no concern was raised", () => {
     const result = generateEscalationMetrics(
       [], [], "oak-house", "2026-05-01", "2026-05-18", "2026-05-18T17:00:00",
     );
 
     expect(result.totalConcernsRaised).toBe(0);
-    expect(result.overallScore).toBeGreaterThanOrEqual(0);
-    expect(result.thresholdAccuracyRate).toBe(100);
+    expect(result.overallScore).toBeNull();
+    expect(result.rating).toBe("not_assessed");
+    expect(result.thresholdAccuracyRate).toBeNull();
+    expect(result.ofstedComplianceRate).toBeNull();
+    expect(result.laComplianceRate).toBeNull();
+    expect(result.multiAgencyEngagementRate).toBeNull();
   });
 
   it("generates immediate actions for overdue Ofsted notifications", () => {

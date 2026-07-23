@@ -24,6 +24,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { getStore } from "@/lib/db/store";
+import { rateOf, meanOf, meets, formatRate } from "@/lib/metrics/rate";
 
 export type RepairCycleStatus = "complete" | "partial" | "missing";
 
@@ -67,7 +68,7 @@ export interface ChildRepairSummary {
   incidentsWithCompleteRepair: number;
   incidentsWithPartialRepair: number;
   incidentsWithNoRepair: number;
-  cycleCompletionRate: number; // 0–100
+  cycleCompletionRate: number | null; // 0–100, null when the child has no incidents
   mostCommonMissingStep: string | null;
   supervisionPrompt: string;
 }
@@ -80,7 +81,7 @@ export interface RepairCycleSummary {
   incidentsWithCompleteRepair: number;
   avgDebriefTurnaroundDays: number | null;
   mostCommonMissingStep: string;
-  overallCompletionRate: number; // 0–100
+  overallCompletionRate: number | null; // 0–100, null when no incidents are recorded
   ofstedNote: string;
 }
 
@@ -125,20 +126,20 @@ function incidentSupervisionPrompt(
 
 function childSupervisionPrompt(
   childName: string,
-  rate: number,
+  completionRate: number | null,
   totalIncidents: number,
   noRepair: number,
 ): string {
-  if (totalIncidents === 0) {
+  if (totalIncidents === 0 || completionRate === null) {
     return `${childName} has no incidents recorded. Nothing to review in this domain.`;
   }
-  if (rate >= 80) {
-    return `${childName}'s repair cycle completion rate is strong (${rate}%). Continue reinforcing the therapeutic culture of repair after difficulty.`;
+  if (meets(completionRate, 80)) {
+    return `${childName}'s repair cycle completion rate is strong (${formatRate(completionRate)}). Continue reinforcing the therapeutic culture of repair after difficulty.`;
   }
   if (noRepair > 0) {
     return `${childName} has ${noRepair} incident${noRepair > 1 ? "s" : ""} with no repair cycle completed. Each missed repair is a missed therapeutic opportunity. Prioritise in supervision.`;
   }
-  return `${childName}'s repair cycle is ${rate}% complete. Explore what is getting in the way of completing all steps consistently.`;
+  return `${childName}'s repair cycle is ${formatRate(completionRate)} complete. Explore what is getting in the way of completing all steps consistently.`;
 }
 
 // ── Builder ───────────────────────────────────────────────────────────────────
@@ -240,10 +241,11 @@ export function buildRepairCycleIntelligence(store: ReturnType<typeof getStore>)
   const childSummaries: ChildRepairSummary[] = [];
   for (const [childId, profiles] of childIncidentMap) {
     const name = nameById.get(childId) ?? "Unknown";
-    const complete = profiles.filter((p) => p.cycleStatus === "complete").length;
+    const completeProfiles = profiles.filter((p) => p.cycleStatus === "complete");
+    const complete = completeProfiles.length;
     const partial  = profiles.filter((p) => p.cycleStatus === "partial").length;
     const missing  = profiles.filter((p) => p.cycleStatus === "missing").length;
-    const rate = profiles.length > 0 ? Math.round((complete / profiles.length) * 100) : 0;
+    const completionRate = rateOf(completeProfiles, profiles);
 
     // Most common missing step for this child
     const stepCount: Record<string, number> = {};
@@ -261,28 +263,26 @@ export function buildRepairCycleIntelligence(store: ReturnType<typeof getStore>)
       incidentsWithCompleteRepair: complete,
       incidentsWithPartialRepair: partial,
       incidentsWithNoRepair: missing,
-      cycleCompletionRate: rate,
+      cycleCompletionRate: completionRate,
       mostCommonMissingStep: topMissing,
-      supervisionPrompt: childSupervisionPrompt(name, rate, profiles.length, missing),
+      supervisionPrompt: childSupervisionPrompt(name, completionRate, profiles.length, missing),
     });
   }
-  childSummaries.sort((a, b) => a.cycleCompletionRate - b.cycleCompletionRate);
+  // Unmeasured children sort last rather than pretending to be the worst performers.
+  childSummaries.sort((a, b) => (a.cycleCompletionRate ?? 101) - (b.cycleCompletionRate ?? 101));
 
   // ── Home-level summary ────────────────────────────────────────────────────
   const total = incidentProfiles.length;
   const withDebrief = incidentProfiles.filter((p) => p.hasDebrief).length;
   const withLessons = incidentProfiles.filter((p) => p.lessonsLearnedDocumented).length;
   const withChildPerspective = incidentProfiles.filter((p) => p.childPerspectiveCaptured).length;
-  const withCompleteRepair = incidentProfiles.filter((p) => p.cycleStatus === "complete").length;
+  const completeRepairProfiles = incidentProfiles.filter((p) => p.cycleStatus === "complete");
+  const withCompleteRepair = completeRepairProfiles.length;
 
-  const turnaroundValues = incidentProfiles
-    .map((p) => p.debriefTurnaroundDays)
-    .filter((v): v is number => v !== null);
-  const avgTurnaround = turnaroundValues.length > 0
-    ? Math.round(turnaroundValues.reduce((s, v) => s + v, 0) / turnaroundValues.length)
-    : null;
+  const turnaroundValues = incidentProfiles.map((p) => p.debriefTurnaroundDays);
+  const avgTurnaround = meanOf(turnaroundValues);
 
-  const overallRate = total > 0 ? Math.round((withCompleteRepair / total) * 100) : 100;
+  const overallRate = rateOf(completeRepairProfiles, incidentProfiles);
 
   // Most common missing step across all incidents
   const allStepCount: Record<string, number> = {};
@@ -295,9 +295,9 @@ export function buildRepairCycleIntelligence(store: ReturnType<typeof getStore>)
 
   const ofstedNote =
     total === 0 ? "No incidents recorded — no repair cycles to review."
-    : overallRate >= 80 ? `Post-incident repair cycle is strong (${overallRate}% complete). Staff are consistently following through after difficult events.`
+    : meets(overallRate, 80) ? `Post-incident repair cycle is strong (${formatRate(overallRate)} complete). Staff are consistently following through after difficult events.`
     : withDebrief === 0 ? `No post-incident debriefs found. Ofsted inspectors look specifically at what happens after incidents — this is a development area.`
-    : `${overallRate}% of incidents have a complete repair cycle. The most commonly missed step is: ${topStep}.`;
+    : `${formatRate(overallRate)} of incidents have a complete repair cycle. The most commonly missed step is: ${topStep}.`;
 
   const summary: RepairCycleSummary = {
     totalIncidents: total,

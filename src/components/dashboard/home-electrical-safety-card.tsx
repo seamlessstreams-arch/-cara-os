@@ -12,6 +12,7 @@ import {
   AlertTriangle, Brain, ChevronRight, Loader2, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 import { usePremisesSafetyIntelligence } from "@/hooks/use-premises-safety-intelligence";
 
 const ALERT_STYLES: Record<string, string> = {
@@ -72,7 +73,7 @@ export function HomeElectricalSafetyCard() {
             <p className="text-[10px] text-muted-foreground">Overdue</p>
           </div>
           <div className="text-center rounded-lg bg-green-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-green-600">{Math.round(d?.overview?.check_completion_rate ?? 0)}%</p>
+            <p className="text-lg font-bold tabular-nums text-green-600">{formatRate(d?.overview?.check_completion_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Rate %</p>
           </div>
         </div>

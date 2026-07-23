@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { DeprivationOfLibertyIntelligence } from "@/lib/deprivation-of-liberty";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -115,7 +116,7 @@ export function DeprivationOfLibertyDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Active</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.authorisationCompliance.authorisedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.authorisationCompliance.authorisedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Authorised</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -125,7 +126,7 @@ export function DeprivationOfLibertyDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Disproportionate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.rightsProtection.safeguardCoverage}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.rightsProtection.safeguardCoverage)}</div>
           <div className="text-xs text-gray-500 mt-1">Safeguard Coverage</div>
         </div>
       </div>
@@ -168,21 +169,21 @@ export function DeprivationOfLibertyDashboardWidget() {
         <Section title="Authorisation Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.authorisationCompliance.totalRestrictions}</span></div>
-            <div><span className="text-gray-500">Authorised:</span> <span className="font-medium">{data.authorisationCompliance.authorisedRate}%</span></div>
+            <div><span className="text-gray-500">Authorised:</span> <span className="font-medium">{formatRate(data.authorisationCompliance.authorisedRate)}</span></div>
             <div><span className="text-gray-500">Pending:</span> <span className={`font-medium ${data.authorisationCompliance.pendingApplications > 0 ? "text-amber-600" : "text-gray-900"}`}>{data.authorisationCompliance.pendingApplications}</span></div>
             <div><span className="text-gray-500">Expired:</span> <span className={`font-medium ${data.authorisationCompliance.expiredAuthorisations > 0 ? "text-red-600" : "text-green-600"}`}>{data.authorisationCompliance.expiredAuthorisations}</span></div>
-            <div><span className="text-gray-500">Best Interests:</span> <span className="font-medium">{data.authorisationCompliance.bestInterestsRate}%</span></div>
-            <div><span className="text-gray-500">Least Restrictive:</span> <span className="font-medium">{data.authorisationCompliance.leastRestrictiveRate}%</span></div>
-            <div><span className="text-gray-500">Risk Assessed:</span> <span className="font-medium">{data.authorisationCompliance.riskAssessmentRate}%</span></div>
+            <div><span className="text-gray-500">Best Interests:</span> <span className="font-medium">{formatRate(data.authorisationCompliance.bestInterestsRate)}</span></div>
+            <div><span className="text-gray-500">Least Restrictive:</span> <span className="font-medium">{formatRate(data.authorisationCompliance.leastRestrictiveRate)}</span></div>
+            <div><span className="text-gray-500">Risk Assessed:</span> <span className="font-medium">{formatRate(data.authorisationCompliance.riskAssessmentRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Proportionality Assessment">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Proportionate:</span> <span className="font-medium">{data.proportionality.proportionateRate}%</span></div>
+            <div><span className="text-gray-500">Proportionate:</span> <span className="font-medium">{formatRate(data.proportionality.proportionateRate)}</span></div>
             <div><span className="text-gray-500">Disproportionate:</span> <span className={`font-medium ${data.proportionality.disproportionateCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.proportionality.disproportionateCount}</span></div>
             <div><span className="text-gray-500">Not Assessed:</span> <span className={`font-medium ${data.proportionality.notAssessedCount > 0 ? "text-amber-600" : "text-gray-900"}`}>{data.proportionality.notAssessedCount}</span></div>
-            <div><span className="text-gray-500">Avg Duration:</span> <span className="font-medium">{data.proportionality.averageActiveDurationDays}d</span></div>
+            <div><span className="text-gray-500">Avg Duration:</span> <span className="font-medium">{data.proportionality.averageActiveDurationDays === null ? "—" : `${data.proportionality.averageActiveDurationDays}d`}</span></div>
           </div>
           {Object.keys(data.proportionality.restrictionTypeBreakdown).length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -200,23 +201,23 @@ export function DeprivationOfLibertyDashboardWidget() {
             <div><span className="text-gray-500">Total Reviews:</span> <span className="font-medium">{data.reviewSafeguards.totalReviews}</span></div>
             <div><span className="text-gray-500">On Time:</span> <span className="font-medium">{data.reviewSafeguards.reviewsOnTime}</span></div>
             <div><span className="text-gray-500">Overdue:</span> <span className={`font-medium ${data.reviewSafeguards.overdueReviews > 0 ? "text-red-600" : "text-green-600"}`}>{data.reviewSafeguards.overdueReviews}</span></div>
-            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{data.reviewSafeguards.childViewsRate}%</span></div>
-            <div><span className="text-gray-500">Family Consulted:</span> <span className="font-medium">{data.reviewSafeguards.familyConsultedRate}%</span></div>
-            <div><span className="text-gray-500">Independent Involved:</span> <span className="font-medium">{data.reviewSafeguards.independentInvolvementRate}%</span></div>
-            <div><span className="text-gray-500">Proportionality Reviewed:</span> <span className="font-medium">{data.reviewSafeguards.proportionalityReassessedRate}%</span></div>
-            <div><span className="text-gray-500">Less Restrictive Considered:</span> <span className="font-medium">{data.reviewSafeguards.lessRestrictiveConsideredRate}%</span></div>
+            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{formatRate(data.reviewSafeguards.childViewsRate)}</span></div>
+            <div><span className="text-gray-500">Family Consulted:</span> <span className="font-medium">{formatRate(data.reviewSafeguards.familyConsultedRate)}</span></div>
+            <div><span className="text-gray-500">Independent Involved:</span> <span className="font-medium">{formatRate(data.reviewSafeguards.independentInvolvementRate)}</span></div>
+            <div><span className="text-gray-500">Proportionality Reviewed:</span> <span className="font-medium">{formatRate(data.reviewSafeguards.proportionalityReassessedRate)}</span></div>
+            <div><span className="text-gray-500">Less Restrictive Considered:</span> <span className="font-medium">{formatRate(data.reviewSafeguards.lessRestrictiveConsideredRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Rights Protection">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Safeguard Coverage:</span> <span className="font-medium">{data.rightsProtection.safeguardCoverage}%</span></div>
-            <div><span className="text-gray-500">Advocacy:</span> <span className="font-medium">{data.rightsProtection.advocacyRate}%</span></div>
-            <div><span className="text-gray-500">Legal Rep:</span> <span className="font-medium">{data.rightsProtection.legalRepresentationRate}%</span></div>
-            <div><span className="text-gray-500">Rights Info:</span> <span className="font-medium">{data.rightsProtection.rightsInformationRate}%</span></div>
-            <div><span className="text-gray-500">Family Notified:</span> <span className="font-medium">{data.rightsProtection.familyNotificationRate}%</span></div>
-            <div><span className="text-gray-500">Ofsted Notified:</span> <span className="font-medium">{data.rightsProtection.ofstedNotificationRate}%</span></div>
-            <div><span className="text-gray-500">Court Order Compliance:</span> <span className="font-medium">{data.rightsProtection.courtOrderComplianceRate}%</span></div>
+            <div><span className="text-gray-500">Safeguard Coverage:</span> <span className="font-medium">{formatRate(data.rightsProtection.safeguardCoverage)}</span></div>
+            <div><span className="text-gray-500">Advocacy:</span> <span className="font-medium">{formatRate(data.rightsProtection.advocacyRate)}</span></div>
+            <div><span className="text-gray-500">Legal Rep:</span> <span className="font-medium">{formatRate(data.rightsProtection.legalRepresentationRate)}</span></div>
+            <div><span className="text-gray-500">Rights Info:</span> <span className="font-medium">{formatRate(data.rightsProtection.rightsInformationRate)}</span></div>
+            <div><span className="text-gray-500">Family Notified:</span> <span className="font-medium">{formatRate(data.rightsProtection.familyNotificationRate)}</span></div>
+            <div><span className="text-gray-500">Ofsted Notified:</span> <span className="font-medium">{formatRate(data.rightsProtection.ofstedNotificationRate)}</span></div>
+            <div><span className="text-gray-500">Court Order Compliance:</span> <span className="font-medium">{formatRate(data.rightsProtection.courtOrderComplianceRate)}</span></div>
           </div>
         </Section>
 

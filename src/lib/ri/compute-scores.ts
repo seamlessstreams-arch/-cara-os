@@ -10,6 +10,7 @@ import type { Incident } from "@/types/index";
 import type { Supervision } from "@/types/index";
 import type { Audit } from "@/types/extended";
 import type { RiChallengeLog } from "@/types/extended";
+import { weightedMeanOf } from "@/lib/metrics/rate";
 
 function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, Math.round(v)));
@@ -33,22 +34,25 @@ export interface RiScoreInputs {
   ypCount?: number;
 }
 
+// Domains scored from a collection are null when that collection is empty:
+// an unevidenced domain is a gap to report, not a baseline to assume. The
+// composite renormalises over the domains that are actually measured.
 export interface RiScores {
-  overall_governance_score: number;
+  overall_governance_score: number | null;
   safeguarding_oversight_score: number;
   incident_management_score: number;
   missing_episodes_score: number;
-  reg45_compliance_score: number;
+  reg45_compliance_score: number | null;
   staff_supervision_score: number;
-  training_compliance_score: number;
-  medication_governance_score: number;
-  care_planning_score: number;
-  child_voice_score: number;
+  training_compliance_score: number | null;
+  medication_governance_score: number | null;
+  care_planning_score: number | null;
+  child_voice_score: number | null;
   complaint_management_score: number;
-  building_safety_score: number;
-  recruitment_compliance_score: number;
+  building_safety_score: number | null;
+  recruitment_compliance_score: number | null;
   oversight_quality_score: number;
-  outcome_evidence_score: number;
+  outcome_evidence_score: number | null;
   challenge_log_score: number;
 }
 
@@ -64,13 +68,14 @@ export function computeRiScores(inputs: RiScoreInputs): RiScores {
   const urgentN = trainingNeeds.filter((n) => n.priority === "urgent" && !["completed", "no_action"].includes(n.status)).length;
   const highN = trainingNeeds.filter((n) => n.priority === "high" && !["completed", "no_action"].includes(n.status)).length;
   const mandatory = trainingRecords.filter((r) => r.is_mandatory);
-  const mc = mandatory.length || 1;
   const compliant = mandatory.filter((r) => r.status === "compliant").length;
   const expiring = mandatory.filter((r) => r.status === "expiring_soon").length;
-  const training_compliance_score = clamp(
-    (compliant + expiring * 0.6) / mc * 95 - urgentN * 8 - highN * 3,
-    30, 95
-  );
+  const training_compliance_score = mandatory.length > 0
+    ? clamp(
+        (compliant + expiring * 0.6) / mandatory.length * 95 - urgentN * 8 - highN * 3,
+        30, 95
+      )
+    : null;
 
   // Safeguarding oversight
   const criticalU = alerts.filter((a) => !a.is_resolved && a.severity === "critical").length;
@@ -90,7 +95,7 @@ export function computeRiScores(inputs: RiScoreInputs): RiScores {
   const openC = challenges.filter((c) => c.status === "open" || c.status === "action_pending").length;
   const challenge_log_score = clamp(90 - openC * 12, 40, 92);
 
-  // Reg 45
+  // Reg 45 — no evidence at all is unmeasured, not a low score
   const latestReg45 = reg45Items[0];
   const reg45_compliance_score =
     latestReg45?.status === "submitted" ? 100
@@ -98,7 +103,8 @@ export function computeRiScores(inputs: RiScoreInputs): RiScores {
     : latestReg45?.status === "reviewed" ? 72
     : latestReg45?.status === "in_progress" ? 58
     : latestReg45?.status === "draft" ? 45
-    : 40;
+    : latestReg45 ? 40
+    : null;
 
   // Oversight quality
   const overdueA = auditsMeta?.overdue ?? 0;
@@ -106,25 +112,25 @@ export function computeRiScores(inputs: RiScoreInputs): RiScores {
   const oversight_quality_score = clamp(88 - overdueA * 8 - totalU * 4, 45, 92);
 
   // Medication governance
-  const medication_governance_score = clamp(
-    medicationAudits.length > 0
-      ? Math.round(medicationAudits.reduce((s, a) => s + (a.score / Math.max(a.max_score, 1)) * 100, 0) / medicationAudits.length)
-      : 78,
-    40, 98
-  );
+  const medication_governance_score = medicationAudits.length > 0
+    ? clamp(
+        Math.round(medicationAudits.reduce((s, a) => s + (a.score / Math.max(a.max_score, 1)) * 100, 0) / medicationAudits.length),
+        40, 98
+      )
+    : null;
 
   // Building safety
   const bAudits = audits.filter((a) => ["building_safety", "fire_safety", "health_and_safety", "health_safety"].includes(a.category));
   const building_safety_score = bAudits.length > 0
     ? clamp(Math.round(bAudits.reduce((s, a) => s + (a.score / Math.max(a.max_score, 1)) * 100, 0) / bAudits.length), 40, 98)
-    : 82;
+    : null;
 
   // Missing episodes (derived from open high/critical incidents)
   const missing_episodes_score = clamp(75 - openHC * 3, 40, 90);
 
   // Care planning — based on care form completion status
   const care_planning_score = (() => {
-    if (!careForms || careForms.length === 0) return 76;
+    if (!careForms || careForms.length === 0) return null;
     const today = new Date().toISOString().slice(0, 10);
     const total = careForms.length;
     const approved = careForms.filter((f) => f.status === "approved").length;
@@ -137,13 +143,15 @@ export function computeRiScores(inputs: RiScoreInputs): RiScores {
 
   // Child voice — average mood coverage and log volume across YP
   const child_voice_score = (() => {
-    if (!dailyLogs || dailyLogs.length === 0) return 68;
+    // Without a resident count there is no denominator for coverage, so the
+    // domain is unmeasured rather than assumed complete.
+    if (!dailyLogs || dailyLogs.length === 0 || !ypCount) return null;
     const recent = dailyLogs.filter((l) => {
       const d = new Date(l.created_at);
       return Date.now() - d.getTime() < 7 * 24 * 60 * 60 * 1000;
     });
     const yps = new Set(recent.map((l) => l.child_id)).size;
-    const coverage = ypCount ? yps / ypCount : 1;
+    const coverage = yps / ypCount;
     const moodEntries = recent.filter((l) => l.mood_score !== null && l.mood_score !== undefined);
     const avgMood = moodEntries.length > 0
       ? moodEntries.reduce((s, l) => s + (l.mood_score ?? 5), 0) / moodEntries.length
@@ -161,14 +169,14 @@ export function computeRiScores(inputs: RiScoreInputs): RiScores {
 
   // Recruitment compliance — average compliance score across active candidates
   const recruitment_compliance_score = (() => {
-    if (!activeCandidates || activeCandidates.length === 0) return 85;
+    if (!activeCandidates || activeCandidates.length === 0) return null;
     const avg = activeCandidates.reduce((s, c) => s + c.compliance_score, 0) / activeCandidates.length;
     return clamp(avg, 30, 100);
   })();
 
   // Outcome evidence — daily log coverage over last 30 days
   const outcome_evidence_score = (() => {
-    if (!dailyLogs || dailyLogs.length === 0 || !ypCount) return 70;
+    if (!dailyLogs || dailyLogs.length === 0 || !ypCount) return null;
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const recent30 = dailyLogs.filter((l) => l.created_at >= cutoff);
     const significantEntries = recent30.filter((l) => l.is_significant).length;
@@ -176,29 +184,25 @@ export function computeRiScores(inputs: RiScoreInputs): RiScores {
     return clamp(Math.min(avgPerYP / 2, 1) * 60 + significantEntries * 2, 30, 92);
   })();
 
-  // Weighted composite
-  const weighted = [
-    { s: safeguarding_oversight_score, w: 2.0 },
-    { s: incident_management_score, w: 1.5 },
-    { s: reg45_compliance_score, w: 1.5 },
-    { s: staff_supervision_score, w: 1.5 },
-    { s: training_compliance_score, w: 1.5 },
-    { s: missing_episodes_score, w: 1.0 },
-    { s: medication_governance_score, w: 1.0 },
-    { s: care_planning_score, w: 1.0 },
-    { s: child_voice_score, w: 1.0 },
-    { s: complaint_management_score, w: 1.0 },
-    { s: building_safety_score, w: 1.0 },
-    { s: recruitment_compliance_score, w: 1.0 },
-    { s: oversight_quality_score, w: 1.5 },
-    { s: outcome_evidence_score, w: 1.0 },
-    { s: challenge_log_score, w: 1.0 },
-  ];
-  const tw = weighted.reduce((s, e) => s + e.w, 0);
-  const overall_governance_score = clamp(
-    weighted.reduce((s, e) => s + e.s * e.w, 0) / tw,
-    0, 100
-  );
+  // Weighted composite — unmeasured domains drop out and the remaining
+  // weights renormalise, so a gap neither flatters nor penalises the home.
+  const overall_governance_score = weightedMeanOf([
+    { score: safeguarding_oversight_score, weight: 2.0 },
+    { score: incident_management_score, weight: 1.5 },
+    { score: reg45_compliance_score, weight: 1.5 },
+    { score: staff_supervision_score, weight: 1.5 },
+    { score: training_compliance_score, weight: 1.5 },
+    { score: missing_episodes_score, weight: 1.0 },
+    { score: medication_governance_score, weight: 1.0 },
+    { score: care_planning_score, weight: 1.0 },
+    { score: child_voice_score, weight: 1.0 },
+    { score: complaint_management_score, weight: 1.0 },
+    { score: building_safety_score, weight: 1.0 },
+    { score: recruitment_compliance_score, weight: 1.0 },
+    { score: oversight_quality_score, weight: 1.5 },
+    { score: outcome_evidence_score, weight: 1.0 },
+    { score: challenge_log_score, weight: 1.0 },
+  ]);
 
   return {
     overall_governance_score,

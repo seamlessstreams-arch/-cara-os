@@ -12,6 +12,8 @@
 // SCCIF: "Helped & Protected" and "Leadership & Management".
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ProtocolDrillInput {
@@ -48,9 +50,10 @@ export interface StaffRef {
 export interface EmergencyOverview {
   total_drills: number;
   drills_last_90_days: number;
-  avg_response_time_minutes: number;
-  protocol_followed_rate: number;
-  satisfactory_rate: number;
+  // Null when no drill has been run — an empty drill log is a gap, not a pass.
+  avg_response_time_minutes: number | null;
+  protocol_followed_rate: number | null;
+  satisfactory_rate: number | null;
   total_plans: number;
   current_plans: number;
   expired_plans: number;
@@ -169,19 +172,13 @@ export function computeEmergencyIntelligence(input: {
             drills.length) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   const protocolFollowedCount = drills.filter((d) => d.protocol_followed).length;
-  const protocolFollowedRate =
-    drills.length > 0
-      ? Math.round((protocolFollowedCount / drills.length) * 100)
-      : 100;
+  const protocolFollowedRate = rate(protocolFollowedCount, drills.length);
 
   const satisfactoryCount = drills.filter((d) => d.outcome === "satisfactory").length;
-  const satisfactoryRate =
-    drills.length > 0
-      ? Math.round((satisfactoryCount / drills.length) * 100)
-      : 100;
+  const satisfactoryRate = rate(satisfactoryCount, drills.length);
 
   const totalActionsOutstanding = drills.reduce(
     (sum, d) => sum + d.actions_required.length,
@@ -334,10 +331,10 @@ export function computeEmergencyIntelligence(input: {
   }
 
   // Medium: protocol compliance < 90%
-  if (protocolFollowedRate < 90 && drills.length > 0) {
+  if (below(protocolFollowedRate, 90)) {
     alerts.push({
       severity: "medium",
-      message: `Protocol compliance rate is ${protocolFollowedRate}% (below 90% threshold) — review training needs`,
+      message: `Protocol compliance rate is ${formatRate(protocolFollowedRate)} (below 90% threshold) — review training needs`,
     });
   }
 
@@ -384,10 +381,10 @@ export function computeEmergencyIntelligence(input: {
   }
 
   // Warning: low protocol compliance
-  if (protocolFollowedRate < 90 && drills.length > 0) {
+  if (below(protocolFollowedRate, 90)) {
     insights.push({
       severity: "warning",
-      text: `Protocol compliance during drills is ${protocolFollowedRate}%. Staff are deviating from agreed procedures — this indicates a training gap or that protocols need revision to be practical.`,
+      text: `Protocol compliance during drills is ${formatRate(protocolFollowedRate)}. Staff are deviating from agreed procedures — this indicates a training gap or that protocols need revision to be practical.`,
     });
   }
 
@@ -413,15 +410,15 @@ export function computeEmergencyIntelligence(input: {
   }
 
   // Positive: high protocol compliance >= 95%
-  if (protocolFollowedRate >= 95 && drills.length > 0) {
+  if (meets(protocolFollowedRate, 95) && drills.length > 0) {
     insights.push({
       severity: "positive",
-      text: `Protocol compliance rate is ${protocolFollowedRate}%. Staff consistently follow agreed emergency procedures — this is strong evidence of effective training and leadership.`,
+      text: `Protocol compliance rate is ${formatRate(protocolFollowedRate)}. Staff consistently follow agreed emergency procedures — this is strong evidence of effective training and leadership.`,
     });
   }
 
   // Positive: all satisfactory
-  if (satisfactoryRate === 100 && drills.length > 0) {
+  if (meets(satisfactoryRate, 100) && drills.length > 0) {
     insights.push({
       severity: "positive",
       text: `All ${drills.length} drills achieved a satisfactory outcome. The home consistently demonstrates effective emergency response capability.`,
@@ -441,7 +438,7 @@ export function computeEmergencyIntelligence(input: {
   }
 
   // Positive: low response times (below 5 min average)
-  if (avgResponseTime > 0 && avgResponseTime < 5 && drills.length > 0) {
+  if (avgResponseTime !== null && avgResponseTime > 0 && avgResponseTime < 5 && drills.length > 0) {
     insights.push({
       severity: "positive",
       text: `Average drill response time is ${avgResponseTime} minutes (below 5-minute target). Fast response times indicate well-rehearsed staff who can act decisively in emergencies.`,

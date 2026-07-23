@@ -126,15 +126,15 @@ const baseDrill: FireDrillRecord = {
 };
 
 describe("evaluateFireDrillCompliance", () => {
-  it("returns all zeroes for empty data", () => {
+  it("reports rates as unmeasured for empty data", () => {
     const r = evaluateFireDrillCompliance([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalDrills).toBe(0);
-    expect(r.successRate).toBe(0);
-    expect(r.fullParticipationRate).toBe(0);
+    expect(r.successRate).toBeNull();
+    expect(r.fullParticipationRate).toBeNull();
     expect(r.drillTypeVariety).toBe(0);
-    expect(r.averageEvacuationTime).toBe(0);
-    expect(r.correctiveActionsRate).toBe(0);
+    expect(r.averageEvacuationTime).toBeNull();
+    expect(r.correctiveActionsRate).toBeNull();
   });
 
   it("scores maximum for perfect drill data", () => {
@@ -188,12 +188,12 @@ describe("evaluateFireDrillCompliance", () => {
     expect(r.averageEvacuationTime).toBe(150);
   });
 
-  it("corrective actions rate is 100% when no issues identified", () => {
+  it("corrective actions rate is unmeasured when no issues identified", () => {
     const drills: FireDrillRecord[] = [
       { ...baseDrill, id: "d-1", issuesIdentified: [] },
     ];
     const r = evaluateFireDrillCompliance(drills);
-    expect(r.correctiveActionsRate).toBe(100);
+    expect(r.correctiveActionsRate).toBeNull();
   });
 
   it("measures corrective actions for drills with issues", () => {
@@ -247,14 +247,14 @@ const baseCheck: EquipmentCheck = {
 };
 
 describe("evaluateEquipmentChecks", () => {
-  it("returns all zeroes for empty data", () => {
+  it("reports rates as unmeasured for empty data", () => {
     const r = evaluateEquipmentChecks([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalChecks).toBe(0);
-    expect(r.passRate).toBe(0);
-    expect(r.majorFaultRate).toBe(0);
+    expect(r.passRate).toBeNull();
+    expect(r.majorFaultRate).toBeNull();
     expect(r.equipmentTypesCovered).toBe(0);
-    expect(r.rectificationRate).toBe(0);
+    expect(r.rectificationRate).toBeNull();
   });
 
   it("scores maximum for all pass checks across many types", () => {
@@ -271,7 +271,7 @@ describe("evaluateEquipmentChecks", () => {
     expect(r.passRate).toBe(100);
     expect(r.majorFaultRate).toBe(0);
     expect(r.equipmentTypesCovered).toBe(6);
-    expect(r.rectificationRate).toBe(100);
+    expect(r.rectificationRate).toBeNull();
   });
 
   it("reduces score for failures", () => {
@@ -295,12 +295,12 @@ describe("evaluateEquipmentChecks", () => {
     expect(r.rectificationRate).toBe(67);
   });
 
-  it("rectification rate is 100% when no faults", () => {
+  it("rectification rate is unmeasured when no faults", () => {
     const checks: EquipmentCheck[] = [
       { ...baseCheck, id: "ec-1", outcome: "pass" },
     ];
     const r = evaluateEquipmentChecks(checks);
-    expect(r.rectificationRate).toBe(100);
+    expect(r.rectificationRate).toBeNull();
   });
 
   it("counts equipment types covered", () => {
@@ -350,14 +350,14 @@ const basePlan: EvacuationPlan = {
 };
 
 describe("evaluateEvacuationPlanning", () => {
-  it("returns all zeroes for empty data", () => {
+  it("reports rates as unmeasured for empty data", () => {
     const r = evaluateEvacuationPlanning([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalPlans).toBe(0);
-    expect(r.peepCurrentRate).toBe(0);
-    expect(r.assemblyPointRate).toBe(0);
-    expect(r.escapeRouteRate).toBe(0);
-    expect(r.nightPlanRate).toBe(0);
+    expect(r.peepCurrentRate).toBeNull();
+    expect(r.assemblyPointRate).toBeNull();
+    expect(r.escapeRouteRate).toBeNull();
+    expect(r.nightPlanRate).toBeNull();
   });
 
   it("scores maximum for perfect plans", () => {
@@ -454,16 +454,16 @@ const baseTraining: StaffFireTraining = {
 };
 
 describe("evaluateStaffFireReadiness", () => {
-  it("returns all zeroes for empty data", () => {
+  it("reports rates as unmeasured for empty data", () => {
     const r = evaluateStaffFireReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.fireAwarenessRate).toBe(0);
-    expect(r.fireMarshalRate).toBe(0);
-    expect(r.evacuationRate).toBe(0);
-    expect(r.extinguisherRate).toBe(0);
-    expect(r.peepAwarenessRate).toBe(0);
-    expect(r.nightResponseRate).toBe(0);
+    expect(r.fireAwarenessRate).toBeNull();
+    expect(r.fireMarshalRate).toBeNull();
+    expect(r.evacuationRate).toBeNull();
+    expect(r.extinguisherRate).toBeNull();
+    expect(r.peepAwarenessRate).toBeNull();
+    expect(r.nightResponseRate).toBeNull();
   });
 
   it("scores maximum for fully trained staff", () => {

@@ -671,7 +671,9 @@ describe("Home LAC Review Intelligence Engine", () => {
       ],
     }));
     expect(r.actions.total_actions).toBe(0);
-    expect(r.actions.completion_rate).toBe(100); // default when no actions
+    expect(r.actions.completion_rate).toBeNull(); // nothing was agreed, so nothing is complete
+    expect(r.strengths.some(s => s.includes("action completion rate"))).toBe(false);
+    expect(r.concerns.some(c => c.includes("review actions completed"))).toBe(false);
   });
 
   it("handles future-dated reviews gracefully", () => {

@@ -14,6 +14,7 @@ import {
   Brain, ClipboardCheck, ShieldAlert, Clock, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useHandoverContinuityIntelligence } from "@/hooks/use-handover-continuity-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -102,13 +103,13 @@ export function HandoverCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.completion_rate >= 95 ? "bg-green-50" : o.completion_rate >= 80 ? "bg-amber-50" : "bg-red-50",
+            o.completion_rate === null ? "bg-muted" : meets(o.completion_rate, 95) ? "bg-green-50" : meets(o.completion_rate, 80) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.completion_rate >= 95 ? "text-[--cs-success]" : o.completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.completion_rate === null ? "text-muted-foreground" : meets(o.completion_rate, 95) ? "text-[--cs-success]" : meets(o.completion_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.completion_rate}%
+              {formatRate(o.completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Completed</p>
           </div>
@@ -120,13 +121,13 @@ export function HandoverCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.sign_off_rate >= 90 ? "bg-green-50" : o.sign_off_rate >= 70 ? "bg-amber-50" : "bg-red-50",
+            o.sign_off_rate === null ? "bg-muted" : meets(o.sign_off_rate, 90) ? "bg-green-50" : meets(o.sign_off_rate, 70) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.sign_off_rate >= 90 ? "text-[--cs-success]" : o.sign_off_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.sign_off_rate === null ? "text-muted-foreground" : meets(o.sign_off_rate, 90) ? "text-[--cs-success]" : meets(o.sign_off_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.sign_off_rate}%
+              {formatRate(o.sign_off_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Signed Off</p>
           </div>
@@ -183,9 +184,9 @@ export function HandoverCard() {
                 <div className="flex items-center gap-2">
                   <span className={cn(
                     "tabular-nums font-bold",
-                    c.avg_mood >= 7 ? "text-[--cs-success]" : c.avg_mood >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+                    c.avg_mood === null ? "text-muted-foreground" : c.avg_mood >= 7 ? "text-[--cs-success]" : c.avg_mood >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
                   )}>
-                    {c.avg_mood.toFixed(1)}
+                    {c.avg_mood === null ? "—" : c.avg_mood.toFixed(1)}
                   </span>
                   {c.total_alerts > 0 && (
                     <Badge className="text-[10px] bg-[--cs-warning-bg] text-[--cs-warning]">

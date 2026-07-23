@@ -547,9 +547,9 @@ describe("calculateFilingStats", () => {
     expect(stats.complianceRate).toBe(67); // 2/3 = 66.6... rounds to 67
   });
 
-  it("returns 100% for empty document set", () => {
+  it("reports nothing measured for an empty document set", () => {
     const stats = calculateFilingStats([], FIXED_NOW);
-    expect(stats.complianceRate).toBe(100);
+    expect(stats.complianceRate).toBeNull();
     expect(stats.totalDocuments).toBe(0);
   });
 });

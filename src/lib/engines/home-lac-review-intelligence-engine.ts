@@ -6,6 +6,8 @@
 // CHR 2015 Reg 36. SCCIF: "Experiences and progress", "Overall experiences."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface LACReviewActionInput {
@@ -53,13 +55,13 @@ export interface ReviewComplianceProfile {
   children_without_reviews: string[];
   first_reviews: number;
   subsequent_reviews: number;
-  care_plan_update_rate: number;           // % with care plan updated
+  care_plan_update_rate: number | null;   // null = no review recorded           // % with care plan updated
   overdue_reviews: string[];               // child IDs with overdue next_review_date
 }
 
 export interface ParticipationProfile {
-  attended_rate: number;                   // % where child attended or submitted views
-  views_rate: number;                      // % with child views documented
+  attended_rate: number | null;            // % where child attended or submitted views
+  views_rate: number | null;               // % with child views documented
   advocate_count: number;
   no_participation_count: number;
 }
@@ -67,7 +69,7 @@ export interface ParticipationProfile {
 export interface ActionProfile {
   total_actions: number;
   completed_actions: number;
-  completion_rate: number;
+  completion_rate: number | null;          // null = no action was agreed at review
   overdue_actions: number;
 }
 
@@ -75,7 +77,7 @@ export interface StabilityProfile {
   stable_count: number;
   some_concerns_count: number;
   unstable_count: number;
-  stability_rate: number;                  // % stable
+  stability_rate: number | null;           // % stable; null = no review to draw on
 }
 
 export interface LACReviewInsight {
@@ -161,9 +163,7 @@ export function computeHomeLACReview(
   const firstReviews = workingReviews.filter(r => r.review_type === "first_review").length;
   const subsequentReviews = workingReviews.filter(r => r.review_type === "subsequent").length;
   const carePlanUpdated = workingReviews.filter(r => r.care_plan_updated).length;
-  const carePlanRate = workingReviews.length > 0
-    ? Math.round((carePlanUpdated / workingReviews.length) * 100)
-    : 0;
+  const carePlanRate = rate(carePlanUpdated, workingReviews.length);
 
   // Overdue reviews: children whose most recent review has next_review_date < today
   const overdueReviews: string[] = [];
@@ -200,14 +200,10 @@ export function computeHomeLACReview(
   const attended = workingReviews.filter(r =>
     r.child_participation === "attended" || r.child_participation === "views_submitted"
   ).length;
-  const attendedRate = workingReviews.length > 0
-    ? Math.round((attended / workingReviews.length) * 100)
-    : 0;
+  const attendedRate = rate(attended, workingReviews.length);
 
   const withViews = workingReviews.filter(r => r.has_child_views).length;
-  const viewsRate = workingReviews.length > 0
-    ? Math.round((withViews / workingReviews.length) * 100)
-    : 0;
+  const viewsRate = rate(withViews, workingReviews.length);
 
   const advocateCount = workingReviews.filter(r => r.child_participation === "advocate").length;
   const noParticipation = workingReviews.filter(r => r.child_participation === "none").length;
@@ -222,9 +218,8 @@ export function computeHomeLACReview(
   // ── Action Profile ────────────────────────────────────────────────────
   const allActions = workingReviews.flatMap(r => r.actions_agreed);
   const completedActions = allActions.filter(a => a.completed).length;
-  const actionCompletionRate = allActions.length > 0
-    ? Math.round((completedActions / allActions.length) * 100)
-    : 100;
+  // Null when no action was agreed at any review — nothing to follow through on
+  const actionCompletionRate = rate(completedActions, allActions.length);
   const overdueActions = allActions.filter(a => !a.completed && a.due_date < today).length;
 
   const actionProfile: ActionProfile = {
@@ -247,9 +242,7 @@ export function computeHomeLACReview(
   const stableCount = latestPerChild.filter(r => r.placement_stability === "stable").length;
   const someConcerns = latestPerChild.filter(r => r.placement_stability === "some_concerns").length;
   const unstableCount = latestPerChild.filter(r => r.placement_stability === "unstable").length;
-  const stabilityRate = latestPerChild.length > 0
-    ? Math.round((stableCount / latestPerChild.length) * 100)
-    : 0;
+  const stabilityRate = rate(stableCount, latestPerChild.length);
 
   const stabilityProfile: StabilityProfile = {
     stable_count: stableCount,
@@ -272,32 +265,32 @@ export function computeHomeLACReview(
   else score -= 3;
 
   // Child participation (±10)
-  if (attendedRate === 100) score += 6;
-  else if (attendedRate >= 80) score += 3;
-  else if (attendedRate < 50) score -= 5;
+  if (meets(attendedRate, 100)) score += 6;
+  else if (meets(attendedRate, 80)) score += 3;
+  else if (below(attendedRate, 50)) score -= 5;
 
   // Child views (±6)
-  if (viewsRate === 100) score += 4;
-  else if (viewsRate >= 80) score += 2;
-  else if (viewsRate < 50) score -= 4;
+  if (meets(viewsRate, 100)) score += 4;
+  else if (meets(viewsRate, 80)) score += 2;
+  else if (below(viewsRate, 50)) score -= 4;
 
   // No participation is a concern
   if (noParticipation > 0) score -= 4;
 
   // Care plan updates (±6)
-  if (carePlanRate === 100) score += 4;
-  else if (carePlanRate < 80) score -= 4;
+  if (meets(carePlanRate, 100)) score += 4;
+  else if (below(carePlanRate, 80)) score -= 4;
 
   // Action completion (±8)
-  if (actionCompletionRate >= 80) score += 4;
-  else if (actionCompletionRate < 50) score -= 5;
+  if (meets(actionCompletionRate, 80)) score += 4;
+  else if (below(actionCompletionRate, 50)) score -= 5;
 
   // Overdue actions
   if (overdueActions >= 3) score -= 4;
   else if (overdueActions >= 1) score -= 2;
 
   // Placement stability (±8)
-  if (stabilityRate === 100) score += 5;
+  if (meets(stabilityRate, 100)) score += 5;
   else if (unstableCount > 0) score -= 5;
   else if (someConcerns > 0) score -= 2;
 
@@ -313,11 +306,11 @@ export function computeHomeLACReview(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (childrenWithoutReviews.length === 0 && total_children > 0) strengths.push("All children have documented LAC reviews — statutory compliance evidenced.");
-  if (attendedRate === 100 && workingReviews.length > 0) strengths.push("100% child participation in LAC reviews — every child attended or submitted views.");
-  if (viewsRate === 100 && workingReviews.length > 0) strengths.push("Child views documented in every review — excellent practice in capturing the child's voice.");
-  if (carePlanRate === 100 && workingReviews.length > 0) strengths.push("Care plans updated after every review — proactive care planning evidenced.");
-  if (actionCompletionRate >= 80 && allActions.length > 0) strengths.push(`${actionCompletionRate}% action completion rate — strong follow-through on review decisions.`);
-  if (stabilityRate === 100 && latestPerChild.length > 0) strengths.push("All placements rated as stable — children are settled and secure.");
+  if (meets(attendedRate, 100)) strengths.push("100% child participation in LAC reviews — every child attended or submitted views.");
+  if (meets(viewsRate, 100)) strengths.push("Child views documented in every review — excellent practice in capturing the child's voice.");
+  if (meets(carePlanRate, 100)) strengths.push("Care plans updated after every review — proactive care planning evidenced.");
+  if (meets(actionCompletionRate, 80)) strengths.push(`${formatRate(actionCompletionRate)} action completion rate — strong follow-through on review decisions.`);
+  if (meets(stabilityRate, 100)) strengths.push("All placements rated as stable — children are settled and secure.");
   if (allHaveSW && allHaveIRO && workingReviews.length > 0) strengths.push("Social worker and IRO attended all reviews — strong multi-agency engagement.");
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -327,8 +320,8 @@ export function computeHomeLACReview(
   if (noParticipation > 0) concerns.push(`${noParticipation} review${noParticipation > 1 ? "s" : ""} with no child participation — the child must be supported to contribute.`);
   if (overdueActions > 0) concerns.push(`${overdueActions} overdue review action${overdueActions > 1 ? "s" : ""} — these require urgent attention.`);
   if (unstableCount > 0) concerns.push(`${unstableCount} placement${unstableCount > 1 ? "s" : ""} rated as unstable — urgent stability planning needed.`);
-  if (carePlanRate < 100 && workingReviews.length > 0) concerns.push(`Care plan updated in only ${carePlanRate}% of reviews — plans must be updated after every review.`);
-  if (actionCompletionRate < 50 && allActions.length > 0) concerns.push(`Only ${actionCompletionRate}% of review actions completed — this undermines the value of the review process.`);
+  if (below(carePlanRate, 100)) concerns.push(`Care plan updated in only ${formatRate(carePlanRate)} of reviews — plans must be updated after every review.`);
+  if (below(actionCompletionRate, 50)) concerns.push(`Only ${formatRate(actionCompletionRate)} of review actions completed — this undermines the value of the review process.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: LACReviewRecommendation[] = [];
@@ -349,7 +342,7 @@ export function computeHomeLACReview(
   if (unstableCount > 0) {
     recs.push({ rank: rank++, recommendation: "Convene stability meetings for children with unstable placements — identify and address root causes.", urgency: "immediate", regulatory_ref: "Reg 36" });
   }
-  if (carePlanRate < 100 && workingReviews.length > 0) {
+  if (below(carePlanRate, 100)) {
     recs.push({ rank: rank++, recommendation: "Ensure care plans are updated after every review — document changes and circulate.", urgency: "planned", regulatory_ref: "Reg 36" });
   }
 
@@ -365,14 +358,14 @@ export function computeHomeLACReview(
   if (noParticipation > 0) {
     insights.push({ text: `${noParticipation} review${noParticipation > 1 ? "s" : ""} with no child participation. Ofsted places significant weight on the child's voice in reviews — this must be addressed.`, severity: "warning" });
   }
-  if (attendedRate === 100 && viewsRate === 100 && workingReviews.length > 0) {
+  if (meets(attendedRate, 100) && meets(viewsRate, 100)) {
     insights.push({ text: "Excellent child participation: every child either attended their review or submitted views, with views documented in every case. This evidences outstanding child-centred practice.", severity: "positive" });
   }
-  if (stabilityRate === 100 && latestPerChild.length > 0) {
+  if (meets(stabilityRate, 100)) {
     insights.push({ text: "All placements are stable. This evidences effective matching, planning, and responsive care.", severity: "positive" });
   }
-  if (actionCompletionRate >= 80 && allActions.length >= 3) {
-    insights.push({ text: `Strong action follow-through at ${actionCompletionRate}%. This shows the home takes review recommendations seriously and acts on them.`, severity: "positive" });
+  if (meets(actionCompletionRate, 80) && allActions.length >= 3) {
+    insights.push({ text: `Strong action follow-through at ${formatRate(actionCompletionRate)}. This shows the home takes review recommendations seriously and acts on them.`, severity: "positive" });
   }
   if (overdueActions === 0 && allActions.length > 0) {
     insights.push({ text: "No overdue review actions — all agreed actions are being progressed within timescales.", severity: "positive" });
@@ -383,7 +376,7 @@ export function computeHomeLACReview(
   if (rating === "outstanding") {
     headline = "Outstanding LAC review compliance — full coverage, strong child participation, and excellent action follow-through.";
   } else if (rating === "good") {
-    headline = `Good LAC review practice — ${workingReviews.length} reviews with ${attendedRate}% child participation and ${actionCompletionRate}% action completion.`;
+    headline = `Good LAC review practice — ${workingReviews.length} reviews with ${formatRate(attendedRate)} child participation and ${formatRate(actionCompletionRate, "no")} action completion.`;
   } else if (rating === "adequate") {
     headline = "Adequate LAC review compliance — improvements needed in coverage, participation, or action tracking.";
   } else {
@@ -412,18 +405,18 @@ function emptyCompliance(overdue: string[] = []): ReviewComplianceProfile {
     total_reviews_180d: 0, reviews_per_child: 0,
     children_with_reviews: [], children_without_reviews: overdue,
     first_reviews: 0, subsequent_reviews: 0,
-    care_plan_update_rate: 0, overdue_reviews: overdue,
+    care_plan_update_rate: null, overdue_reviews: overdue,
   };
 }
 
 function emptyParticipation(): ParticipationProfile {
-  return { attended_rate: 0, views_rate: 0, advocate_count: 0, no_participation_count: 0 };
+  return { attended_rate: null, views_rate: null, advocate_count: 0, no_participation_count: 0 };
 }
 
 function emptyActions(): ActionProfile {
-  return { total_actions: 0, completed_actions: 0, completion_rate: 100, overdue_actions: 0 };
+  return { total_actions: 0, completed_actions: 0, completion_rate: null, overdue_actions: 0 };
 }
 
 function emptyStability(): StabilityProfile {
-  return { stable_count: 0, some_concerns_count: 0, unstable_count: 0, stability_rate: 0 };
+  return { stable_count: 0, some_concerns_count: 0, unstable_count: 0, stability_rate: null };
 }

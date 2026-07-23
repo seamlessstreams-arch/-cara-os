@@ -22,6 +22,8 @@
 // No AI. No external calls. Pure input -> output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type BurnoutIndicator =
@@ -119,11 +121,14 @@ export interface SecondaryTraumaScreen {
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
+// Every rate below is null when there was nothing to measure — no absences
+// logged, no supervisions held, no screens completed. Null is not 0% and it is
+// not 100%: it is a gap in the record, and it is reported as one.
 export interface AbsencePatternResult {
-  overallAbsenceRate: number;           // days per staff member in period
-  stressRelatedAbsenceRate: number;     // % of absences that are stress-related
-  returnToWorkCompletionRate: number;   // % of absences with RTW completed
-  adjustmentRate: number;               // % of absences with adjustments made
+  overallAbsenceRate: number;                  // days per staff member in period
+  stressRelatedAbsenceRate: number | null;     // % of absences that are stress-related
+  returnToWorkCompletionRate: number | null;   // % of absences with RTW completed
+  adjustmentRate: number | null;               // % of absences with adjustments made
   staffPatterns: StaffAbsencePattern[];
   totalAbsenceDays: number;
   totalStressAbsenceDays: number;
@@ -135,27 +140,27 @@ export interface StaffAbsencePattern {
   totalDays: number;
   stressDays: number;
   absenceCount: number;
-  returnToWorkRate: number;
+  returnToWorkRate: number | null;
   hasAdjustments: boolean;
 }
 
 export interface SupportAccessResult {
   accessRatePerStaff: number;           // average support accesses per staff
   supportTypeVariety: number;           // number of distinct support types used
-  voluntaryAccessRate: number;          // % of accesses that were voluntary
-  satisfactionRate: number;             // average satisfaction (0-100 scaled)
-  followUpRate: number;                 // % with follow-up planned
+  voluntaryAccessRate: number | null;   // % of accesses that were voluntary
+  satisfactionRate: number | null;      // average satisfaction (0-100 scaled)
+  followUpRate: number | null;          // % with follow-up planned
   totalAccesses: number;
   typeBreakdown: Record<string, number>;
 }
 
 export interface SupervisionQualityResult {
-  frequencyRate: number;                // % of staff with monthly supervision
-  wellbeingDiscussedRate: number;       // % of supervisions discussing wellbeing
-  workloadDiscussedRate: number;        // % of supervisions discussing workload
-  actionCompletionRate: number;         // % of action points completed
+  frequencyRate: number | null;            // % of staff with monthly supervision
+  wellbeingDiscussedRate: number | null;   // % of supervisions discussing wellbeing
+  workloadDiscussedRate: number | null;    // % of supervisions discussing workload
+  actionCompletionRate: number | null;     // % of action points completed
   averageActionPoints: number;
-  overdueCount: number;                 // staff with overdue supervision
+  overdueCount: number;                    // staff with overdue supervision
   staffSupervisionDetails: StaffSupervisionDetail[];
 }
 
@@ -165,35 +170,35 @@ export interface StaffSupervisionDetail {
   supervisionCount: number;
   lastSupervisionDate: string | null;
   isOverdue: boolean;
-  wellbeingDiscussedRate: number;
-  actionCompletionRate: number;
+  wellbeingDiscussedRate: number | null;
+  actionCompletionRate: number | null;
 }
 
 export interface TeamHealthResult {
   latestMorale: "high" | "good" | "mixed" | "low" | "no_data";
   moraleTrend: "improving" | "stable" | "declining" | "insufficient_data";
-  workloadManageableRate: number;       // % of checks where workload manageable
-  supportAdequacyRate: number;          // % where support adequate
-  communicationEffectiveRate: number;   // % where communication effective
-  actionCompletionRate: number;         // % of checks with actions completed
+  workloadManageableRate: number | null;       // % of checks where workload manageable
+  supportAdequacyRate: number | null;          // % where support adequate
+  communicationEffectiveRate: number | null;   // % where communication effective
+  actionCompletionRate: number | null;         // % of checks with actions completed
   totalIssuesRaised: number;
   totalActionsAgreed: number;
 }
 
 export interface SecondaryTraumaResult {
-  screeningCoverage: number;            // % of staff screened
-  indicatorPrevalence: number;          // average indicators per screened staff
-  supportOfferedRate: number;           // % offered support
-  supportAcceptedRate: number;          // % who accepted support (of those offered)
-  actionPlanRate: number;               // % with action plans
+  screeningCoverage: number | null;      // % of staff screened
+  indicatorPrevalence: number | null;    // average indicators per screened staff
+  supportOfferedRate: number | null;     // % offered support
+  supportAcceptedRate: number | null;    // % who accepted support (of those offered)
+  actionPlanRate: number | null;         // % with action plans
   mostCommonIndicators: { indicator: BurnoutIndicator; count: number }[];
-  staffWithIndicators: number;          // count of staff with any indicators
+  staffWithIndicators: number;           // count of staff with any indicators
 }
 
 export interface RegulatoryLink {
   regulation: string;
   requirement: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   evidence: string;
 }
 
@@ -273,23 +278,17 @@ export function evaluateAbsencePatterns(
   // Rates
   const staffCount = staffIds.length || 1;
   const overallAbsenceRate = Math.round((totalAbsenceDays / staffCount) * 10) / 10;
-  const stressRelatedAbsenceRate = periodAbsences.length > 0
-    ? Math.round((stressAbsences.length / periodAbsences.length) * 100)
-    : 0;
+  const stressRelatedAbsenceRate = rateOf(stressAbsences, periodAbsences);
 
   // Exclude annual_leave and training from RTW expectations
   const rtwApplicable = periodAbsences.filter(
     a => a.reason !== "annual_leave" && a.reason !== "training"
   );
   const rtwCompleted = rtwApplicable.filter(a => a.returnToWorkCompleted);
-  const returnToWorkCompletionRate = rtwApplicable.length > 0
-    ? Math.round((rtwCompleted.length / rtwApplicable.length) * 100)
-    : 100;
+  const returnToWorkCompletionRate = rateOf(rtwCompleted, rtwApplicable);
 
   const withAdjustments = rtwApplicable.filter(a => a.adjustmentsMade != null && a.adjustmentsMade.length > 0);
-  const adjustmentRate = rtwApplicable.length > 0
-    ? Math.round((withAdjustments.length / rtwApplicable.length) * 100)
-    : 100;
+  const adjustmentRate = rateOf(withAdjustments, rtwApplicable);
 
   // Per-staff patterns
   const staffPatterns: StaffAbsencePattern[] = staffIds.map(staffId => {
@@ -306,9 +305,7 @@ export function evaluateAbsencePatterns(
       totalDays: staffAbsences.reduce((sum, a) => sum + a.days, 0),
       stressDays: staffStress.reduce((sum, a) => sum + a.days, 0),
       absenceCount: staffAbsences.length,
-      returnToWorkRate: staffRtwApplicable.length > 0
-        ? Math.round((staffRtwDone.length / staffRtwApplicable.length) * 100)
-        : 100,
+      returnToWorkRate: rateOf(staffRtwDone, staffRtwApplicable),
       hasAdjustments: staffAbsences.some(a => a.adjustmentsMade != null && a.adjustmentsMade.length > 0),
     };
   });
@@ -333,9 +330,9 @@ export function evaluateSupportAccess(
     return {
       accessRatePerStaff: 0,
       supportTypeVariety: 0,
-      voluntaryAccessRate: 0,
-      satisfactionRate: 0,
-      followUpRate: 0,
+      voluntaryAccessRate: null,
+      satisfactionRate: null,
+      followUpRate: null,
       totalAccesses: 0,
       typeBreakdown: {},
     };
@@ -348,15 +345,17 @@ export function evaluateSupportAccess(
   const supportTypeVariety = types.size;
 
   const voluntary = supports.filter(s => s.accessedVoluntarily);
-  const voluntaryAccessRate = Math.round((voluntary.length / supports.length) * 100);
+  const voluntaryAccessRate = rateOf(voluntary, supports);
 
+  // Unrated support is unrated, not dissatisfying.
   const rated = supports.filter(s => s.satisfactionRating != null);
-  const satisfactionRate = rated.length > 0
-    ? Math.round((rated.reduce((sum, s) => sum + s.satisfactionRating!, 0) / rated.length / 5) * 100)
-    : 0;
+  const satisfactionRate = rate(
+    rated.reduce((sum, s) => sum + s.satisfactionRating!, 0),
+    rated.length * 5,
+  );
 
   const followUps = supports.filter(s => s.followUpPlanned);
-  const followUpRate = Math.round((followUps.length / supports.length) * 100);
+  const followUpRate = rateOf(followUps, supports);
 
   // Type breakdown
   const typeBreakdown: Record<string, number> = {};
@@ -394,27 +393,21 @@ export function evaluateSupervisionQuality(
       staffWithMonthly.add(staffId);
     }
   }
-  const frequencyRate = staffIds.length > 0
-    ? Math.round((staffWithMonthly.size / staffIds.length) * 100)
-    : 0;
+  // Null only when there are no staff on the team — with staff and no
+  // supervisions the rate is a genuine 0%.
+  const frequencyRate = rate(staffWithMonthly.size, staffIds.length);
 
-  // Quality rates
+  // Quality rates — unknown until a supervision has actually been recorded.
   const wellbeingDiscussed = periodSupervisions.filter(s => s.wellbeingDiscussed);
-  const wellbeingDiscussedRate = periodSupervisions.length > 0
-    ? Math.round((wellbeingDiscussed.length / periodSupervisions.length) * 100)
-    : 0;
+  const wellbeingDiscussedRate = rateOf(wellbeingDiscussed, periodSupervisions);
 
   const workloadDiscussed = periodSupervisions.filter(s => s.workloadDiscussed);
-  const workloadDiscussedRate = periodSupervisions.length > 0
-    ? Math.round((workloadDiscussed.length / periodSupervisions.length) * 100)
-    : 0;
+  const workloadDiscussedRate = rateOf(workloadDiscussed, periodSupervisions);
 
   // Action completion
   const totalActions = periodSupervisions.reduce((sum, s) => sum + s.actionPoints, 0);
   const completedActions = periodSupervisions.reduce((sum, s) => sum + s.actionPointsCompleted, 0);
-  const actionCompletionRate = totalActions > 0
-    ? Math.round((completedActions / totalActions) * 100)
-    : 100;
+  const actionCompletionRate = rate(completedActions, totalActions);
 
   const averageActionPoints = periodSupervisions.length > 0
     ? Math.round((totalActions / periodSupervisions.length) * 10) / 10
@@ -444,12 +437,8 @@ export function evaluateSupervisionQuality(
       supervisionCount: staffSups.length,
       lastSupervisionDate: lastDate,
       isOverdue,
-      wellbeingDiscussedRate: staffSups.length > 0
-        ? Math.round((staffWellbeing.length / staffSups.length) * 100)
-        : 0,
-      actionCompletionRate: staffActions > 0
-        ? Math.round((staffCompleted / staffActions) * 100)
-        : 100,
+      wellbeingDiscussedRate: rateOf(staffWellbeing, staffSups),
+      actionCompletionRate: rate(staffCompleted, staffActions),
     };
   });
 
@@ -473,10 +462,10 @@ export function evaluateTeamHealth(
     return {
       latestMorale: "no_data",
       moraleTrend: "insufficient_data",
-      workloadManageableRate: 0,
-      supportAdequacyRate: 0,
-      communicationEffectiveRate: 0,
-      actionCompletionRate: 0,
+      workloadManageableRate: null,
+      supportAdequacyRate: null,
+      communicationEffectiveRate: null,
+      actionCompletionRate: null,
       totalIssuesRaised: 0,
       totalActionsAgreed: 0,
     };
@@ -531,21 +520,22 @@ export function evaluateSecondaryTrauma(
   screens: SecondaryTraumaScreen[],
   staffIds: string[],
 ): SecondaryTraumaResult {
-  if (screens.length === 0 || staffIds.length === 0) {
+  // Coverage: unique staff screened / total staff. With staff on the books and
+  // no screens this is a real 0% — it is only unknown when there are no staff.
+  const screenedStaff = new Set(screens.map(s => s.staffId));
+  const screeningCoverage = rate(screenedStaff.size, staffIds.length);
+
+  if (screens.length === 0) {
     return {
-      screeningCoverage: 0,
-      indicatorPrevalence: 0,
-      supportOfferedRate: 0,
-      supportAcceptedRate: 0,
-      actionPlanRate: 0,
+      screeningCoverage,
+      indicatorPrevalence: null,
+      supportOfferedRate: null,
+      supportAcceptedRate: null,
+      actionPlanRate: null,
       mostCommonIndicators: [],
       staffWithIndicators: 0,
     };
   }
-
-  // Coverage: unique staff screened / total staff
-  const screenedStaff = new Set(screens.map(s => s.staffId));
-  const screeningCoverage = Math.round((screenedStaff.size / staffIds.length) * 100);
 
   // Indicator prevalence: average indicators per screened staff
   const totalIndicators = screens.reduce((sum, s) => sum + s.indicatorsPresent.length, 0);
@@ -554,22 +544,23 @@ export function evaluateSecondaryTrauma(
   // Staff with any indicators
   const staffWithIndicators = screens.filter(s => s.indicatorsPresent.length > 0).length;
 
-  // Support offered rate
+  // Support offered rate — null when no screened staff showed indicators, i.e.
+  // nothing to respond to rather than a response that went well.
   const withIndicatorsScreens = screens.filter(s => s.indicatorsPresent.length > 0);
-  const supportOfferedRate = withIndicatorsScreens.length > 0
-    ? Math.round((withIndicatorsScreens.filter(s => s.supportOffered).length / withIndicatorsScreens.length) * 100)
-    : 100;
+  const supportOfferedRate = rateOf(
+    withIndicatorsScreens.filter(s => s.supportOffered),
+    withIndicatorsScreens,
+  );
 
   // Support accepted rate (of those offered)
   const offered = screens.filter(s => s.supportOffered);
-  const supportAcceptedRate = offered.length > 0
-    ? Math.round((offered.filter(s => s.supportAccepted).length / offered.length) * 100)
-    : 0;
+  const supportAcceptedRate = rateOf(offered.filter(s => s.supportAccepted), offered);
 
   // Action plan rate
-  const actionPlanRate = withIndicatorsScreens.length > 0
-    ? Math.round((withIndicatorsScreens.filter(s => s.actionPlan).length / withIndicatorsScreens.length) * 100)
-    : 100;
+  const actionPlanRate = rateOf(
+    withIndicatorsScreens.filter(s => s.actionPlan),
+    withIndicatorsScreens,
+  );
 
   // Most common indicators
   const indicatorCounts: Record<string, number> = {};
@@ -624,14 +615,14 @@ export function generateStaffResilienceIntelligence(
   else if (absencePatterns.overallAbsenceRate <= 15) absenceScore += 2;
 
   // Return to work completion (up to 6 points)
-  if (absencePatterns.returnToWorkCompletionRate >= 90) absenceScore += 6;
-  else if (absencePatterns.returnToWorkCompletionRate >= 75) absenceScore += 4;
-  else if (absencePatterns.returnToWorkCompletionRate >= 50) absenceScore += 2;
+  if (meets(absencePatterns.returnToWorkCompletionRate, 90)) absenceScore += 6;
+  else if (meets(absencePatterns.returnToWorkCompletionRate, 75)) absenceScore += 4;
+  else if (meets(absencePatterns.returnToWorkCompletionRate, 50)) absenceScore += 2;
 
   // Adjustments made (up to 6 points)
-  if (absencePatterns.adjustmentRate >= 80) absenceScore += 6;
-  else if (absencePatterns.adjustmentRate >= 60) absenceScore += 4;
-  else if (absencePatterns.adjustmentRate >= 40) absenceScore += 2;
+  if (meets(absencePatterns.adjustmentRate, 80)) absenceScore += 6;
+  else if (meets(absencePatterns.adjustmentRate, 60)) absenceScore += 4;
+  else if (meets(absencePatterns.adjustmentRate, 40)) absenceScore += 2;
 
   // ── Score: Support Access (0-20) ────────────────────────────────────────
   let supportScore = 0;
@@ -647,30 +638,30 @@ export function generateStaffResilienceIntelligence(
   else if (supportAccess.supportTypeVariety >= 1) supportScore += 2;
 
   // Satisfaction (up to 7 points)
-  if (supportAccess.satisfactionRate >= 80) supportScore += 7;
-  else if (supportAccess.satisfactionRate >= 60) supportScore += 5;
-  else if (supportAccess.satisfactionRate >= 40) supportScore += 3;
-  else if (supportAccess.satisfactionRate > 0) supportScore += 1;
+  if (meets(supportAccess.satisfactionRate, 80)) supportScore += 7;
+  else if (meets(supportAccess.satisfactionRate, 60)) supportScore += 5;
+  else if (meets(supportAccess.satisfactionRate, 40)) supportScore += 3;
+  else if (meets(supportAccess.satisfactionRate, 1)) supportScore += 1;
 
   // ── Score: Supervision Quality (0-25) ───────────────────────────────────
   let supervisionScore = 0;
   // Frequency (up to 10 points)
-  if (supervisionQuality.frequencyRate >= 90) supervisionScore += 10;
-  else if (supervisionQuality.frequencyRate >= 75) supervisionScore += 7;
-  else if (supervisionQuality.frequencyRate >= 50) supervisionScore += 4;
-  else if (supervisionQuality.frequencyRate > 0) supervisionScore += 2;
+  if (meets(supervisionQuality.frequencyRate, 90)) supervisionScore += 10;
+  else if (meets(supervisionQuality.frequencyRate, 75)) supervisionScore += 7;
+  else if (meets(supervisionQuality.frequencyRate, 50)) supervisionScore += 4;
+  else if (meets(supervisionQuality.frequencyRate, 1)) supervisionScore += 2;
 
   // Wellbeing discussed (up to 8 points)
-  if (supervisionQuality.wellbeingDiscussedRate >= 90) supervisionScore += 8;
-  else if (supervisionQuality.wellbeingDiscussedRate >= 75) supervisionScore += 6;
-  else if (supervisionQuality.wellbeingDiscussedRate >= 50) supervisionScore += 3;
-  else if (supervisionQuality.wellbeingDiscussedRate > 0) supervisionScore += 1;
+  if (meets(supervisionQuality.wellbeingDiscussedRate, 90)) supervisionScore += 8;
+  else if (meets(supervisionQuality.wellbeingDiscussedRate, 75)) supervisionScore += 6;
+  else if (meets(supervisionQuality.wellbeingDiscussedRate, 50)) supervisionScore += 3;
+  else if (meets(supervisionQuality.wellbeingDiscussedRate, 1)) supervisionScore += 1;
 
   // Action completion (up to 7 points)
-  if (supervisionQuality.actionCompletionRate >= 90) supervisionScore += 7;
-  else if (supervisionQuality.actionCompletionRate >= 75) supervisionScore += 5;
-  else if (supervisionQuality.actionCompletionRate >= 50) supervisionScore += 3;
-  else if (supervisionQuality.actionCompletionRate > 0) supervisionScore += 1;
+  if (meets(supervisionQuality.actionCompletionRate, 90)) supervisionScore += 7;
+  else if (meets(supervisionQuality.actionCompletionRate, 75)) supervisionScore += 5;
+  else if (meets(supervisionQuality.actionCompletionRate, 50)) supervisionScore += 3;
+  else if (meets(supervisionQuality.actionCompletionRate, 1)) supervisionScore += 1;
 
   // ── Score: Team Health (0-15) ───────────────────────────────────────────
   let teamHealthScore = 0;
@@ -682,32 +673,32 @@ export function generateStaffResilienceIntelligence(
   else if (moraleVal >= 1) teamHealthScore += 1;
 
   // Workload manageable (up to 5 points)
-  if (teamHealth.workloadManageableRate >= 80) teamHealthScore += 5;
-  else if (teamHealth.workloadManageableRate >= 60) teamHealthScore += 3;
-  else if (teamHealth.workloadManageableRate > 0) teamHealthScore += 1;
+  if (meets(teamHealth.workloadManageableRate, 80)) teamHealthScore += 5;
+  else if (meets(teamHealth.workloadManageableRate, 60)) teamHealthScore += 3;
+  else if (meets(teamHealth.workloadManageableRate, 1)) teamHealthScore += 1;
 
   // Communication effective (up to 5 points)
-  if (teamHealth.communicationEffectiveRate >= 80) teamHealthScore += 5;
-  else if (teamHealth.communicationEffectiveRate >= 60) teamHealthScore += 3;
-  else if (teamHealth.communicationEffectiveRate > 0) teamHealthScore += 1;
+  if (meets(teamHealth.communicationEffectiveRate, 80)) teamHealthScore += 5;
+  else if (meets(teamHealth.communicationEffectiveRate, 60)) teamHealthScore += 3;
+  else if (meets(teamHealth.communicationEffectiveRate, 1)) teamHealthScore += 1;
 
   // ── Score: Secondary Trauma (0-20) ──────────────────────────────────────
   let traumaScore = 0;
   // Screening coverage (up to 8 points)
-  if (secondaryTrauma.screeningCoverage >= 90) traumaScore += 8;
-  else if (secondaryTrauma.screeningCoverage >= 75) traumaScore += 6;
-  else if (secondaryTrauma.screeningCoverage >= 50) traumaScore += 4;
-  else if (secondaryTrauma.screeningCoverage > 0) traumaScore += 2;
+  if (meets(secondaryTrauma.screeningCoverage, 90)) traumaScore += 8;
+  else if (meets(secondaryTrauma.screeningCoverage, 75)) traumaScore += 6;
+  else if (meets(secondaryTrauma.screeningCoverage, 50)) traumaScore += 4;
+  else if (meets(secondaryTrauma.screeningCoverage, 1)) traumaScore += 2;
 
   // Support offered (up to 6 points)
-  if (secondaryTrauma.supportOfferedRate >= 90) traumaScore += 6;
-  else if (secondaryTrauma.supportOfferedRate >= 75) traumaScore += 4;
-  else if (secondaryTrauma.supportOfferedRate >= 50) traumaScore += 2;
+  if (meets(secondaryTrauma.supportOfferedRate, 90)) traumaScore += 6;
+  else if (meets(secondaryTrauma.supportOfferedRate, 75)) traumaScore += 4;
+  else if (meets(secondaryTrauma.supportOfferedRate, 50)) traumaScore += 2;
 
   // Action plans (up to 6 points)
-  if (secondaryTrauma.actionPlanRate >= 90) traumaScore += 6;
-  else if (secondaryTrauma.actionPlanRate >= 75) traumaScore += 4;
-  else if (secondaryTrauma.actionPlanRate >= 50) traumaScore += 2;
+  if (meets(secondaryTrauma.actionPlanRate, 90)) traumaScore += 6;
+  else if (meets(secondaryTrauma.actionPlanRate, 75)) traumaScore += 4;
+  else if (meets(secondaryTrauma.actionPlanRate, 50)) traumaScore += 2;
 
   const overallScore = absenceScore + supportScore + supervisionScore + teamHealthScore + traumaScore;
 
@@ -720,86 +711,127 @@ export function generateStaffResilienceIntelligence(
 
   // ── Strengths ───────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (absencePatterns.returnToWorkCompletionRate >= 90)
+  if (meets(absencePatterns.returnToWorkCompletionRate, 90))
     strengths.push("Excellent return-to-work process completion");
-  if (supportAccess.voluntaryAccessRate >= 70)
+  if (meets(supportAccess.voluntaryAccessRate, 70))
     strengths.push("High voluntary access to support services");
-  if (supervisionQuality.wellbeingDiscussedRate >= 80)
+  if (meets(supervisionQuality.wellbeingDiscussedRate, 80))
     strengths.push("Wellbeing consistently addressed in supervision");
-  if (supervisionQuality.frequencyRate >= 90)
+  if (meets(supervisionQuality.frequencyRate, 90))
     strengths.push("Monthly supervision target met for all staff");
   if (teamHealth.latestMorale === "high" || teamHealth.latestMorale === "good")
     strengths.push("Positive team morale");
-  if (secondaryTrauma.screeningCoverage >= 90)
+  if (meets(secondaryTrauma.screeningCoverage, 90))
     strengths.push("Comprehensive secondary trauma screening coverage");
-  if (absencePatterns.stressRelatedAbsenceRate <= 10)
+  if (below(absencePatterns.stressRelatedAbsenceRate, 11))
     strengths.push("Low stress-related absence rate");
-  if (supportAccess.satisfactionRate >= 80)
+  if (meets(supportAccess.satisfactionRate, 80))
     strengths.push("High satisfaction with support services");
 
   // ── Areas for Improvement ───────────────────────────────────────────────
   const areasForImprovement: string[] = [];
-  if (absencePatterns.returnToWorkCompletionRate < 75)
+  if (below(absencePatterns.returnToWorkCompletionRate, 75))
     areasForImprovement.push("Return-to-work completion rate below expected standard");
-  if (supervisionQuality.frequencyRate < 75)
+  if (below(supervisionQuality.frequencyRate, 75))
     areasForImprovement.push("Supervision frequency below monthly target");
-  if (supervisionQuality.wellbeingDiscussedRate < 50)
+  if (below(supervisionQuality.wellbeingDiscussedRate, 50))
     areasForImprovement.push("Wellbeing not consistently discussed in supervision");
   if (teamHealth.latestMorale === "low" || teamHealth.latestMorale === "mixed")
     areasForImprovement.push("Team morale requires attention");
-  if (secondaryTrauma.screeningCoverage < 75)
+  if (below(secondaryTrauma.screeningCoverage, 75))
     areasForImprovement.push("Secondary trauma screening coverage below target");
-  if (supportAccess.supportTypeVariety < 3)
+  if (supportAccess.totalAccesses > 0 && supportAccess.supportTypeVariety < 3)
     areasForImprovement.push("Limited variety of support types accessed");
-  if (absencePatterns.stressRelatedAbsenceRate > 25)
+  if (meets(absencePatterns.stressRelatedAbsenceRate, 26))
     areasForImprovement.push("Stress-related absence rate is elevated");
-  if (teamHealth.workloadManageableRate < 50)
+  if (below(teamHealth.workloadManageableRate, 50))
     areasForImprovement.push("Team reporting unmanageable workload");
+
+  // ── Nothing recorded ────────────────────────────────────────────────────
+  if (absencePatterns.returnToWorkCompletionRate === null)
+    areasForImprovement.push("No absences recorded in period — return-to-work practice cannot be evidenced");
+  if (supervisionQuality.wellbeingDiscussedRate === null)
+    areasForImprovement.push("No supervisions recorded in period — supervision quality cannot be evidenced");
+  if (teamHealth.latestMorale === "no_data")
+    areasForImprovement.push("No team health checks recorded — team morale cannot be evidenced");
 
   // ── Recommended Actions ─────────────────────────────────────────────────
   const recommendedActions: string[] = [];
   if (supervisionQuality.overdueCount > 0)
     recommendedActions.push(`Schedule overdue supervision for ${supervisionQuality.overdueCount} staff member(s)`);
-  if (absencePatterns.stressRelatedAbsenceRate > 15)
+  if (meets(absencePatterns.stressRelatedAbsenceRate, 16))
     recommendedActions.push("Review stress risk assessments and consider additional support measures");
-  if (secondaryTrauma.screeningCoverage < 100)
+  if (below(secondaryTrauma.screeningCoverage, 100))
     recommendedActions.push("Complete secondary trauma screening for all staff");
   if (teamHealth.latestMorale === "low")
     recommendedActions.push("Arrange team wellbeing day or away day");
-  if (supportAccess.followUpRate < 50)
+  if (below(supportAccess.followUpRate, 50))
     recommendedActions.push("Improve follow-up planning for support access");
-  if (absencePatterns.returnToWorkCompletionRate < 75)
+  if (below(absencePatterns.returnToWorkCompletionRate, 75))
     recommendedActions.push("Ensure return-to-work meetings completed for all absences");
-  if (supervisionQuality.actionCompletionRate < 75)
+  if (below(supervisionQuality.actionCompletionRate, 75))
     recommendedActions.push("Review supervision action points and support completion");
-  if (secondaryTrauma.staffWithIndicators > 0 && secondaryTrauma.actionPlanRate < 75)
+  if (secondaryTrauma.staffWithIndicators > 0 && below(secondaryTrauma.actionPlanRate, 75))
     recommendedActions.push("Develop action plans for staff showing trauma indicators");
 
   // ── Regulatory Links ────────────────────────────────────────────────────
+  // A status is only "met" where the practice was measured. Where the register
+  // is empty the requirement is "not_evidenced": Cara has no basis to assert
+  // compliance, and no basis to allege a breach either.
+  const stressAbsenceRate = absencePatterns.stressRelatedAbsenceRate;
+  // Screening happened and nobody showed indicators — nothing to respond to.
+  const traumaSupportAssured =
+    meets(secondaryTrauma.supportOfferedRate, 75) ||
+    (secondaryTrauma.supportOfferedRate === null && screens.length > 0);
+
   const regulatoryLinks: RegulatoryLink[] = [
     {
       regulation: "CHR 2015 Reg 32",
       requirement: "Fitness of workers — staff must be physically and mentally fit",
-      status: absencePatterns.stressRelatedAbsenceRate <= 15 && secondaryTrauma.supportOfferedRate >= 75 ? "met" : absencePatterns.stressRelatedAbsenceRate <= 25 ? "partially_met" : "not_met",
-      evidence: `Stress absence rate: ${absencePatterns.stressRelatedAbsenceRate}%. Secondary trauma support offered: ${secondaryTrauma.supportOfferedRate}%.`,
+      status: stressAbsenceRate === null
+        ? "not_evidenced"
+        : below(stressAbsenceRate, 16) && traumaSupportAssured
+          ? "met"
+          : below(stressAbsenceRate, 26)
+            ? "partially_met"
+            : "not_met",
+      evidence: `Stress absence rate: ${formatRate(stressAbsenceRate, "no absences recorded")}. Secondary trauma support offered: ${formatRate(secondaryTrauma.supportOfferedRate, "no staff screened with indicators")}.`,
     },
     {
       regulation: "CHR 2015 Reg 33",
       requirement: "Employment of staff — sufficient, competent, supervised staff",
-      status: supervisionQuality.frequencyRate >= 90 && supervisionQuality.overdueCount === 0 ? "met" : supervisionQuality.frequencyRate >= 50 ? "partially_met" : "not_met",
-      evidence: `Supervision frequency: ${supervisionQuality.frequencyRate}%. Overdue: ${supervisionQuality.overdueCount}.`,
+      status: supervisionQuality.frequencyRate === null
+        ? "not_evidenced"
+        : meets(supervisionQuality.frequencyRate, 90) && supervisionQuality.overdueCount === 0
+          ? "met"
+          : meets(supervisionQuality.frequencyRate, 50)
+            ? "partially_met"
+            : "not_met",
+      evidence: `Supervision frequency: ${formatRate(supervisionQuality.frequencyRate, "no staff on record")}. Overdue: ${supervisionQuality.overdueCount}.`,
     },
     {
       regulation: "ACAS Guidance",
       requirement: "Managing attendance — fair and supportive absence management",
-      status: absencePatterns.returnToWorkCompletionRate >= 90 && absencePatterns.adjustmentRate >= 60 ? "met" : absencePatterns.returnToWorkCompletionRate >= 50 ? "partially_met" : "not_met",
-      evidence: `RTW completion: ${absencePatterns.returnToWorkCompletionRate}%. Adjustments: ${absencePatterns.adjustmentRate}%.`,
+      status: absencePatterns.returnToWorkCompletionRate === null
+        ? "not_evidenced"
+        : meets(absencePatterns.returnToWorkCompletionRate, 90) && meets(absencePatterns.adjustmentRate, 60)
+          ? "met"
+          : meets(absencePatterns.returnToWorkCompletionRate, 50)
+            ? "partially_met"
+            : "not_met",
+      evidence: `RTW completion: ${formatRate(absencePatterns.returnToWorkCompletionRate, "no absences recorded")}. Adjustments: ${formatRate(absencePatterns.adjustmentRate, "no absences recorded")}.`,
     },
     {
       regulation: "Health & Safety at Work Act 1974",
       requirement: "Employer duty of care — health, safety and welfare of employees",
-      status: teamHealth.workloadManageableRate >= 80 && supportAccess.accessRatePerStaff >= 1 ? "met" : teamHealth.workloadManageableRate >= 50 ? "partially_met" : "not_met",
-      evidence: `Workload manageable: ${teamHealth.workloadManageableRate}%. Support access rate: ${supportAccess.accessRatePerStaff} per staff.`,
+      status: teamHealth.workloadManageableRate === null
+        ? "not_evidenced"
+        : meets(teamHealth.workloadManageableRate, 80) && supportAccess.accessRatePerStaff >= 1
+          ? "met"
+          : meets(teamHealth.workloadManageableRate, 50)
+            ? "partially_met"
+            : "not_met",
+      evidence: `Workload manageable: ${formatRate(teamHealth.workloadManageableRate, "no team health checks recorded")}. Support access rate: ${supportAccess.accessRatePerStaff} per staff.`,
     },
     {
       regulation: "SCCIF Leadership & Management",

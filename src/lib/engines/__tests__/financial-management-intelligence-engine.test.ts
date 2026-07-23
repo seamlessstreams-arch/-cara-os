@@ -103,7 +103,7 @@ describe("empty state", () => {
     expect(r.overview.pending_approval).toBe(0);
     expect(r.overview.missing_receipts).toBe(0);
     expect(r.overview.avg_expense_amount).toBe(0);
-    expect(r.overview.avg_approval_days).toBe(0);
+    expect(r.overview.avg_approval_days).toBeNull();
     expect(r.category_spend).toHaveLength(0);
     expect(r.staff_spend).toHaveLength(0);
     expect(r.alerts).toHaveLength(0);
@@ -196,12 +196,12 @@ describe("overview", () => {
     expect(r.overview.approval_rate).toBe(50);
   });
 
-  it("approval rate is 100 when no decided expenses", () => {
+  it("approval rate is unmeasured when no decided expenses", () => {
     const r = run([
       makeExpense({ status: "submitted" }),
       makeExpense({ status: "draft" }),
     ]);
-    expect(r.overview.approval_rate).toBe(100);
+    expect(r.overview.approval_rate).toBeNull();
   });
 
   it("calculates average expense amount", () => {

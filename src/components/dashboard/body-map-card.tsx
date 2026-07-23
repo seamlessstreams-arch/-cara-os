@@ -13,6 +13,7 @@ import {
   PersonStanding, ChevronRight, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { rate, meets, formatRate } from "@/lib/metrics/rate";
 import { useSafeguardingIntelligence } from "@/hooks/use-safeguarding-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -38,9 +39,9 @@ export function BodyMapCard() {
   const restraints = d?.restraints;
   const insights = d?.insights ?? [];
 
-  const injuryRate = restraints && restraints.total_restraints_90d > 0
-    ? Math.round((restraints.injuries_during_restraint / restraints.total_restraints_90d) * 100)
-    : 0;
+  const injuryRate = restraints
+    ? rate(restraints.injuries_during_restraint, restraints.total_restraints_90d)
+    : null;
 
   return (
     <Card className="overflow-hidden">
@@ -66,12 +67,12 @@ export function BodyMapCard() {
             <p className={cn("text-lg font-bold tabular-nums", (restraints?.children_restrained ?? 0) > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{restraints?.children_restrained ?? 0}</p>
             <p className="text-[10px] text-muted-foreground">Children</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", injuryRate > 0 ? "bg-red-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", injuryRate > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>{injuryRate}%</p>
+          <div className={cn("text-center rounded-lg p-2", injuryRate === null ? "bg-slate-50" : injuryRate > 0 ? "bg-red-50" : "bg-green-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", injuryRate === null ? "text-muted-foreground" : injuryRate > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>{formatRate(injuryRate)}</p>
             <p className="text-[10px] text-muted-foreground">Injury</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", (restraints?.debrief_completion_rate ?? 0) >= 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", (restraints?.debrief_completion_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{restraints?.debrief_completion_rate ?? 0}%</p>
+          <div className={cn("text-center rounded-lg p-2", restraints?.debrief_completion_rate == null ? "bg-slate-50" : meets(restraints.debrief_completion_rate, 100) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", restraints?.debrief_completion_rate == null ? "text-muted-foreground" : meets(restraints.debrief_completion_rate, 100) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(restraints?.debrief_completion_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Debrief</p>
           </div>
         </div>

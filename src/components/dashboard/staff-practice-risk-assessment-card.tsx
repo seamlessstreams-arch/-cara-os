@@ -12,6 +12,7 @@ import {
   Brain, ChevronRight, Loader2, ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -64,7 +65,7 @@ export function StaffPracticeRiskAssessmentCard() {
             <p className="text-[10px] text-muted-foreground">Overdue</p>
           </div>
           <div className="text-center rounded-lg bg-green-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-green-600">{Math.round(d?.profile?.training_compliance_rate ?? 0)}%</p>
+            <p className={cn("text-lg font-bold tabular-nums", d?.profile?.training_compliance_rate == null ? "text-muted-foreground" : "text-green-600")}>{formatRate(d?.profile?.training_compliance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Training %</p>
           </div>
         </div>

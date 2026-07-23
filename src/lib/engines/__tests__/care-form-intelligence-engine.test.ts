@@ -83,7 +83,8 @@ describe("empty state", () => {
   it("returns zeroed overview with no forms", () => {
     const r = run([]);
     expect(r.overview.total_forms).toBe(0);
-    expect(r.overview.completion_rate).toBe(100);
+    // No forms to action — completion is unmeasured, not 100% complete.
+    expect(r.overview.completion_rate).toBeNull();
     expect(r.overview.avg_review_days).toBe(0);
     expect(r.form_type_analysis).toHaveLength(0);
     expect(r.form_profiles).toHaveLength(0);

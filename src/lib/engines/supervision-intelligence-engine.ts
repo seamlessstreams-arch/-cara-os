@@ -10,6 +10,8 @@
 // SCCIF: Leadership & Management — "Are staff supervised and supported?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, meets, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface StaffInput {
@@ -67,11 +69,12 @@ export interface SupervisionOverview {
   total_staff: number;
   supervisions_completed_90d: number;
   supervisions_overdue: number;
-  avg_days_between_supervisions: number;
-  avg_wellbeing_score: number;
-  action_completion_rate: number;  // 0-100
-  training_compliance_rate: number; // 0-100
-  mandatory_training_compliance: number; // 0-100
+  // Every rate/average below is null when nothing has been recorded to measure.
+  avg_days_between_supervisions: number | null;
+  avg_wellbeing_score: number | null;
+  action_completion_rate: number | null;  // 0-100
+  training_compliance_rate: number | null; // 0-100
+  mandatory_training_compliance: number | null; // 0-100
 }
 
 export interface StaffSupervisionProfile {
@@ -83,7 +86,7 @@ export interface StaffSupervisionProfile {
   last_supervision_days_ago: number;
   next_supervision_date: string | null;
   next_supervision_in_days: number;
-  avg_wellbeing: number;
+  avg_wellbeing: number | null;   // null when no wellbeing score has been recorded
   wellbeing_trend: "improving" | "stable" | "declining" | "insufficient_data";
   actions_pending: number;
   actions_overdue: number;
@@ -92,7 +95,7 @@ export interface StaffSupervisionProfile {
 }
 
 export interface WellbeingAnalysis {
-  avg_score: number;
+  avg_score: number | null;
   lowest_score_staff: string | null;
   highest_score_staff: string | null;
   staff_below_threshold: number; // wellbeing <= 5
@@ -145,6 +148,12 @@ export function daysUntil(from: string, to: string): number {
 export function average(arr: number[]): number {
   if (arr.length === 0) return 0;
   return arr.reduce((s, v) => s + v, 0) / arr.length;
+}
+
+/** Mean to one decimal place, or null when nothing has been scored. */
+export function averageOrNull(arr: number[]): number | null {
+  if (arr.length === 0) return null;
+  return Math.round(average(arr) * 10) / 10;
 }
 
 /**
@@ -221,7 +230,7 @@ export function computeSupervisionIntelligence(input: SupervisionIntelligenceInp
       .filter((s) => s.wellbeing_score != null)
       .sort((a, b) => (a.actual_date ?? "").localeCompare(b.actual_date ?? ""))
       .map((s) => s.wellbeing_score!);
-    const avgWellbeing = Math.round(average(wellbeingScores) * 10) / 10;
+    const avgWellbeing = averageOrNull(wellbeingScores);
 
     // Actions
     const allActions = memberSups.flatMap((s) => s.actions_agreed);
@@ -289,22 +298,17 @@ export function computeSupervisionIntelligence(input: SupervisionIntelligenceInp
     total_staff: staff.length,
     supervisions_completed_90d: completed90d.length,
     supervisions_overdue: overdueStaff.length,
-    avg_days_between_supervisions: Math.round(average(intervalsByStaff)),
-    avg_wellbeing_score: Math.round(average(wellbeingScoresAll) * 10) / 10,
-    action_completion_rate: allActions.length > 0
-      ? Math.round((completedActions.length / allActions.length) * 100)
-      : 100,
-    training_compliance_rate: training.length > 0
-      ? Math.round((allCompliant.length / training.length) * 100)
-      : 100,
-    mandatory_training_compliance: mandatoryTraining.length > 0
-      ? Math.round((mandatoryCompliant.length / mandatoryTraining.length) * 100)
-      : 100,
+    // A staff member needs two supervisions before an interval exists at all.
+    avg_days_between_supervisions: intervalsByStaff.length > 0 ? Math.round(average(intervalsByStaff)) : null,
+    avg_wellbeing_score: averageOrNull(wellbeingScoresAll),
+    action_completion_rate: rateOf(completedActions, allActions),
+    training_compliance_rate: rateOf(allCompliant, training),
+    mandatory_training_compliance: rateOf(mandatoryCompliant, mandatoryTraining),
   };
 
   // ── Wellbeing Analysis ────────────────────────────────────────────────
   const staffWellbeingAvgs = staff_profiles
-    .filter((p) => p.avg_wellbeing > 0)
+    .filter((p): p is StaffSupervisionProfile & { avg_wellbeing: number } => p.avg_wellbeing !== null)
     .sort((a, b) => a.avg_wellbeing - b.avg_wellbeing);
 
   const belowThreshold = staffWellbeingAvgs.filter((p) => p.avg_wellbeing <= 5);
@@ -316,7 +320,7 @@ export function computeSupervisionIntelligence(input: SupervisionIntelligenceInp
   const overallScores = sortedCompleted.map((s) => s.wellbeing_score!);
 
   const wellbeing: WellbeingAnalysis = {
-    avg_score: Math.round(average(wellbeingScoresAll) * 10) / 10,
+    avg_score: averageOrNull(wellbeingScoresAll),
     lowest_score_staff: staffWellbeingAvgs[0]?.staff_name ?? null,
     highest_score_staff: staffWellbeingAvgs[staffWellbeingAvgs.length - 1]?.staff_name ?? null,
     staff_below_threshold: belowThreshold.length,
@@ -405,10 +409,18 @@ export function computeSupervisionIntelligence(input: SupervisionIntelligenceInp
   }
 
   // Warning: low training compliance
-  if (mandatoryTraining.length >= 3 && overview.mandatory_training_compliance < 80) {
+  if (mandatoryTraining.length >= 3 && below(overview.mandatory_training_compliance, 80)) {
     insights.push({
       severity: "warning",
-      text: `Mandatory training compliance is ${overview.mandatory_training_compliance}%. Non-compliance creates regulatory risk under Reg 32. Review training schedule and remove barriers to completion.`,
+      text: `Mandatory training compliance is ${formatRate(overview.mandatory_training_compliance)}. Non-compliance creates regulatory risk under Reg 32. Review training schedule and remove barriers to completion.`,
+    });
+  }
+
+  // Warning: no mandatory training recorded at all — silence is the finding
+  if (staff.length > 0 && mandatoryTraining.length === 0) {
+    insights.push({
+      severity: "warning",
+      text: `No mandatory training records held for any of the ${staff.length} staff. Compliance with Reg 32 cannot be evidenced from an empty training register — inspectors treat missing evidence as a gap, not a pass.`,
     });
   }
 
@@ -421,7 +433,7 @@ export function computeSupervisionIntelligence(input: SupervisionIntelligenceInp
   }
 
   // Positive: high wellbeing
-  if (wellbeingScoresAll.length >= 3 && wellbeing.avg_score >= 7.5) {
+  if (wellbeingScoresAll.length >= 3 && meets(wellbeing.avg_score, 7.5)) {
     insights.push({
       severity: "positive",
       text: `Average staff wellbeing score is ${wellbeing.avg_score}/10. High wellbeing correlates with better care quality, lower turnover, and improved outcomes for children.`,
@@ -429,10 +441,10 @@ export function computeSupervisionIntelligence(input: SupervisionIntelligenceInp
   }
 
   // Positive: high action completion
-  if (allActions.length >= 3 && overview.action_completion_rate >= 80) {
+  if (allActions.length >= 3 && meets(overview.action_completion_rate, 80)) {
     insights.push({
       severity: "positive",
-      text: `Supervision action completion rate is ${overview.action_completion_rate}%. Strong follow-through demonstrates accountable management and genuine professional development.`,
+      text: `Supervision action completion rate is ${formatRate(overview.action_completion_rate)}. Strong follow-through demonstrates accountable management and genuine professional development.`,
     });
   }
 

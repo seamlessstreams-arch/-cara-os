@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFinanceIntelligence } from "@/hooks/use-finance-intelligence";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -89,13 +90,13 @@ export function FinanceIntelligenceCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.receipt_compliance_rate >= 90 ? "bg-green-50" : o.receipt_compliance_rate >= 80 ? "bg-amber-50" : "bg-red-50",
+            meets(o.receipt_compliance_rate, 90) ? "bg-green-50" : meets(o.receipt_compliance_rate, 80) ? "bg-amber-50" : below(o.receipt_compliance_rate, 80) ? "bg-red-50" : "bg-muted",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.receipt_compliance_rate >= 90 ? "text-[--cs-success]" : o.receipt_compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.receipt_compliance_rate, 90) ? "text-[--cs-success]" : meets(o.receipt_compliance_rate, 80) ? "text-[--cs-warning]" : below(o.receipt_compliance_rate, 80) ? "text-[--cs-risk]" : "text-muted-foreground",
             )}>
-              {o.receipt_compliance_rate}%
+              {formatRate(o.receipt_compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Receipts</p>
           </div>
@@ -131,7 +132,7 @@ export function FinanceIntelligenceCard() {
                   </Badge>
                   <Badge variant="outline" className="text-[10px] tabular-nums">
                     <Receipt className="h-2.5 w-2.5 mr-0.5" />
-                    {child.receipt_rate}%
+                    {formatRate(child.receipt_rate)}
                   </Badge>
                 </div>
               </div>

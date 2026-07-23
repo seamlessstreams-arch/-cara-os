@@ -284,13 +284,20 @@ describe("evaluateErrorManagement", () => {
     const result = evaluateErrorManagement([]);
     expect(result.totalErrors).toBe(0);
     expect(result.overallScore).toBe(25);
+    // Nothing was reported, investigated or acted on because nothing happened
+    expect(result.noHarmRate).toBeNull();
+    expect(result.reportedImmediatelyRate).toBeNull();
+    expect(result.rootCauseIdentifiedRate).toBeNull();
+    expect(result.preventiveActionRate).toBeNull();
+    expect(result.dutyOfCandourRate).toBeNull();
   });
 
   it("scores well when errors are well-managed", () => {
     const errors = [makeError()];
     const result = evaluateErrorManagement(errors);
     expect(result.totalErrors).toBe(1);
-    expect(result.noHarmRate).toBe(100);
+    // The only error was a near-miss, so nothing reached a child to rate for harm
+    expect(result.noHarmRate).toBeNull();
     expect(result.reportedImmediatelyRate).toBe(100);
     expect(result.rootCauseIdentifiedRate).toBe(100);
     expect(result.preventiveActionRate).toBe(100);
@@ -783,7 +790,7 @@ describe("generateMedicationErrorPreventionIntelligence", () => {
     const em = result.errorManagement;
     expect(em.totalErrors).toBe(1);
     expect(em.nearMissCount).toBe(1);
-    expect(em.noHarmRate).toBe(100);
+    expect(em.noHarmRate).toBeNull();
     expect(em.reportedImmediatelyRate).toBe(100);
     expect(em.rootCauseIdentifiedRate).toBe(100);
     expect(em.preventiveActionRate).toBe(100);

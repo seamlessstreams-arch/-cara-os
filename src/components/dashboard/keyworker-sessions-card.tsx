@@ -15,7 +15,9 @@ import {
   Loader2, Users, Clock, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useKeyworkingIntelligence } from "@/hooks/use-keyworking-intelligence";
+import { NO_SESSION_RECORDED } from "@/lib/engines/keyworking-intelligence-engine";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -86,15 +88,15 @@ export function KeyworkerSessionsCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">Avg/Child</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.child_voice_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.child_voice_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.child_voice_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.child_voice_rate === null ? "bg-muted" : meets(o.child_voice_rate, 80) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.child_voice_rate === null ? "text-muted-foreground" : meets(o.child_voice_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(o.child_voice_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Child Voice</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.follow_up_completion_rate >= 95 ? "bg-green-50" : o.follow_up_completion_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.follow_up_completion_rate >= 95 ? "text-[--cs-success]" : o.follow_up_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.follow_up_completion_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.follow_up_completion_rate === null ? "bg-muted" : meets(o.follow_up_completion_rate, 95) ? "bg-green-50" : meets(o.follow_up_completion_rate, 80) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.follow_up_completion_rate === null ? "text-muted-foreground" : meets(o.follow_up_completion_rate, 95) ? "text-[--cs-success]" : meets(o.follow_up_completion_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(o.follow_up_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Follow-Up</p>
           </div>
@@ -123,7 +125,9 @@ export function KeyworkerSessionsCard() {
                     profile.last_session_days_ago <= 14 ? "bg-[--cs-warning-bg] text-[--cs-warning]" :
                     "bg-[--cs-risk-bg] text-[--cs-risk]",
                   )}>
-                    {profile.last_session_days_ago}d ago
+                    {profile.last_session_days_ago === NO_SESSION_RECORDED
+                      ? "none recorded"
+                      : `${profile.last_session_days_ago}d ago`}
                   </Badge>
                 </div>
                 {(profile.session_types?.length ?? 0) > 0 && (
@@ -177,10 +181,11 @@ export function KeyworkerSessionsCard() {
             <div className="text-right">
               <p className={cn(
                 "text-sm font-bold tabular-nums",
-                intel.follow_up_compliance.completion_rate >= 90 ? "text-[--cs-success]" :
-                intel.follow_up_compliance.completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+                intel.follow_up_compliance.completion_rate === null ? "text-muted-foreground" :
+                meets(intel.follow_up_compliance.completion_rate, 90) ? "text-[--cs-success]" :
+                meets(intel.follow_up_compliance.completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]",
               )}>
-                {intel.follow_up_compliance.completion_rate}%
+                {formatRate(intel.follow_up_compliance.completion_rate)}
               </p>
             </div>
           </div>

@@ -9,6 +9,7 @@ import type {
   TrainingCategory,
 } from "@/lib/hr-files/workforce-engine";
 import { formatTrainingName } from "@/lib/hr-files/workforce-engine";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -122,7 +123,8 @@ export function HrFilesDashboardWidget() {
   const toggle = (section: string) =>
     setExpandedSection((prev) => (prev === section ? null : section));
 
-  const metricColor = (value: number, goodThreshold: number, warnThreshold: number, invert = false) => {
+  const metricColor = (value: number | null, goodThreshold: number, warnThreshold: number, invert = false) => {
+    if (value === null) return "text-gray-400";
     if (invert) {
       return value <= goodThreshold ? "text-green-600" : value <= warnThreshold ? "text-amber-600" : "text-red-600";
     }
@@ -143,18 +145,22 @@ export function HrFilesDashboardWidget() {
         </div>
         <span
           className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${
-            metrics.trainingComplianceRate >= 90 && metrics.supervisionComplianceRate >= 80
+            meets(metrics.trainingComplianceRate, 90) && meets(metrics.supervisionComplianceRate, 80)
               ? "bg-green-100 text-green-800 border-green-300"
-              : metrics.trainingComplianceRate >= 70
+              : meets(metrics.trainingComplianceRate, 70)
                 ? "bg-amber-100 text-amber-800 border-amber-300"
-                : "bg-red-100 text-red-800 border-red-300"
+                : below(metrics.trainingComplianceRate, 70)
+                  ? "bg-red-100 text-red-800 border-red-300"
+                  : "bg-gray-100 text-gray-700 border-gray-300"
           }`}
         >
-          {metrics.trainingComplianceRate >= 90 && metrics.supervisionComplianceRate >= 80
+          {meets(metrics.trainingComplianceRate, 90) && meets(metrics.supervisionComplianceRate, 80)
             ? "Good"
-            : metrics.trainingComplianceRate >= 70
+            : meets(metrics.trainingComplianceRate, 70)
               ? "Requires Improvement"
-              : "Inadequate"}
+              : below(metrics.trainingComplianceRate, 70)
+                ? "Inadequate"
+                : "No records yet"}
         </span>
       </div>
 
@@ -170,14 +176,12 @@ export function HrFilesDashboardWidget() {
         />
         <MetricCard
           label="Vacancy Rate"
-          value={metrics.vacancyRate}
-          suffix="%"
+          value={formatRate(metrics.vacancyRate)}
           color={metricColor(metrics.vacancyRate, 10, 20, true)}
         />
         <MetricCard
           label="Turnover Rate"
-          value={metrics.turnoverRate}
-          suffix="%"
+          value={formatRate(metrics.turnoverRate)}
           color={metricColor(metrics.turnoverRate, 15, 25, true)}
         />
       </div>
@@ -186,26 +190,22 @@ export function HrFilesDashboardWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         <MetricCard
           label="Sickness Rate"
-          value={metrics.sicknessRate}
-          suffix="%"
+          value={formatRate(metrics.sicknessRate)}
           color={metricColor(metrics.sicknessRate, 3, 5, true)}
         />
         <MetricCard
           label="Agency Usage"
-          value={metrics.agencyUsage}
-          suffix="%"
+          value={formatRate(metrics.agencyUsage)}
           color={metricColor(metrics.agencyUsage, 10, 20, true)}
         />
         <MetricCard
           label="Training Compliance"
-          value={metrics.trainingComplianceRate}
-          suffix="%"
+          value={formatRate(metrics.trainingComplianceRate)}
           color={metricColor(metrics.trainingComplianceRate, 90, 75)}
         />
         <MetricCard
           label="Supervision Compliance"
-          value={metrics.supervisionComplianceRate}
-          suffix="%"
+          value={formatRate(metrics.supervisionComplianceRate)}
           color={metricColor(metrics.supervisionComplianceRate, 90, 75)}
         />
       </div>
@@ -222,17 +222,17 @@ export function HrFilesDashboardWidget() {
             {metrics.staffOverdueSupervision} OVERDUE SUPERVISION
           </span>
         )}
-        {metrics.agencyUsage > 0 && (
+        {metrics.agencyUsage !== null && metrics.agencyUsage > 0 && (
           <span className="rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-xs font-medium border border-blue-200">
             {metrics.agencyUsage}% AGENCY RELIANCE
           </span>
         )}
-        {metrics.vacancyRate > 0 && (
+        {metrics.vacancyRate !== null && metrics.vacancyRate > 0 && (
           <span className="rounded-full bg-orange-100 text-orange-700 px-3 py-1 text-xs font-medium border border-orange-200">
             {metrics.vacancyRate}% VACANCY RATE
           </span>
         )}
-        {metrics.trainingComplianceRate === 100 && metrics.supervisionComplianceRate === 100 && (
+        {meets(metrics.trainingComplianceRate, 100) && meets(metrics.supervisionComplianceRate, 100) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             FULLY COMPLIANT
           </span>
@@ -264,10 +264,10 @@ export function HrFilesDashboardWidget() {
                 <div className="mb-2">
                   <div className="flex justify-between text-xs text-gray-500 mb-1">
                     <span>Completion Rate</span>
-                    <span>{tc.completionRate}%</span>
+                    <span>{formatRate(tc.completionRate)}</span>
                   </div>
                   <ProgressBar
-                    value={tc.completionRate}
+                    value={tc.completionRate ?? 0}
                     max={100}
                     color={tc.overallCompliant ? "bg-green-500" : "bg-amber-500"}
                   />
@@ -411,18 +411,18 @@ export function HrFilesDashboardWidget() {
           <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="text-center">
-                <span className="text-2xl font-bold text-gray-900">{metrics.averageTenure}</span>
+                <span className="text-2xl font-bold text-gray-900">{metrics.averageTenure ?? "—"}</span>
                 <p className="text-xs text-gray-500 mt-1">Avg Tenure (months)</p>
               </div>
               <div className="text-center">
                 <span className={`text-2xl font-bold ${metricColor(metrics.qualificationRate, 90, 75)}`}>
-                  {metrics.qualificationRate}%
+                  {formatRate(metrics.qualificationRate)}
                 </span>
                 <p className="text-xs text-gray-500 mt-1">Qualification Rate</p>
               </div>
               <div className="text-center">
                 <span className={`text-2xl font-bold ${metricColor(metrics.probationPassRate, 90, 70)}`}>
-                  {metrics.probationPassRate}%
+                  {formatRate(metrics.probationPassRate)}
                 </span>
                 <p className="text-xs text-gray-500 mt-1">Probation Pass Rate</p>
               </div>

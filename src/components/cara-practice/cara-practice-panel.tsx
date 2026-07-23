@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, AlertTriangle, ShieldAlert, HelpCircle, ListChecks, Loader2, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 import { useCaraPracticeAnalyse, type AnalyseInput } from "@/hooks/use-cara-practice";
 import { SAFEGUARDING_FLAG_TYPES } from "@/lib/cara-practice/types";
 import type { CaraSeverity, PracticeSourceType } from "@/lib/cara-practice/types";
@@ -57,7 +58,7 @@ export function CaraPracticePanel(props: CaraPracticePanelProps) {
           <span>{props.title ?? "Cara Practice Intelligence"}</span>
           {out && (
             <span className="ml-auto text-xs font-bold tabular-nums text-slate-600">
-              Practice quality {out.scores.overall}%
+              Practice quality {formatRate(out.scores.overall)}
             </span>
           )}
         </CardTitle>

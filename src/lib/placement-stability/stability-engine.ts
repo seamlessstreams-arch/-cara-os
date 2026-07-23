@@ -22,6 +22,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meanOf, rate } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type PlacementStatus =
@@ -133,7 +135,8 @@ export interface PlacementStabilityResult {
   daysInPlacement: number;
   stabilityScore: number;           // 0-100
   stabilityRating: "excellent" | "good" | "concerning" | "at_risk" | "critical";
-  matchingAdequacy: "strong" | "adequate" | "weak";
+  /** "not_assessed" = no matching assessment exists, which is never "adequate". */
+  matchingAdequacy: "strong" | "adequate" | "weak" | "not_assessed";
   riskIndicatorCount: number;
   activeRisks: RiskIndicator[];
   milestonesAchieved: number;
@@ -148,13 +151,13 @@ export interface HomeStabilityMetrics {
   homeName: string;
   totalPlacements: number;
   activePlacements: number;
-  averageDaysInPlacement: number;
-  averageStabilityScore: number;
+  averageDaysInPlacement: number | null;
+  averageStabilityScore: number | null;   // null = no active placement to score
   placementsAtRisk: number;
   plannedEndings: number;
-  disruptionRate: number;           // % ended by disruption
-  averageMatchingScore: number;
-  occupancyRate: number;            // %
+  disruptionRate: number | null;    // % ended by disruption; null = no placement has ended
+  averageMatchingScore: number | null;
+  occupancyRate: number | null;     // %; null = no registered capacity
   stabilityByChild: { childId: string; childName: string; score: number; days: number }[];
   riskSummary: { indicator: RiskIndicator; count: number }[];
 }
@@ -238,12 +241,14 @@ export function evaluatePlacementStability(
   else if (stabilityScore >= 30) stabilityRating = "at_risk";
   else stabilityRating = "critical";
 
-  // Matching adequacy
+  // Matching adequacy. No assessment means the match was never evidenced —
+  // that is a Reg 12 gap, not a mid-range pass.
   const avgMatchScore = placement.matchingAssessment.length > 0
     ? placement.matchingAssessment.reduce((s, m) => s + m.score, 0) / placement.matchingAssessment.length
-    : 7;
+    : null;
   let matchingAdequacy: PlacementStabilityResult["matchingAdequacy"];
-  if (avgMatchScore >= 8) matchingAdequacy = "strong";
+  if (avgMatchScore === null) matchingAdequacy = "not_assessed";
+  else if (avgMatchScore >= 8) matchingAdequacy = "strong";
   else if (avgMatchScore >= 6) matchingAdequacy = "adequate";
   else matchingAdequacy = "weak";
 
@@ -309,15 +314,11 @@ export function calculateHomeStabilityMetrics(
   const daysValues = activePlacements.map(p =>
     Math.floor((currentDate.getTime() - new Date(p.admissionDate).getTime()) / (24 * 60 * 60 * 1000)),
   );
-  const averageDays = daysValues.length > 0
-    ? Math.round(daysValues.reduce((a, b) => a + b, 0) / daysValues.length)
-    : 0;
+  const averageDays = meanOf(daysValues);
 
   // Stability scores
   const stabilityResults = activePlacements.map(p => evaluatePlacementStability(p, now));
-  const averageStability = stabilityResults.length > 0
-    ? Math.round(stabilityResults.reduce((s, r) => s + r.stabilityScore, 0) / stabilityResults.length)
-    : 100;
+  const averageStability = meanOf(stabilityResults.map(r => r.stabilityScore));
 
   // At risk
   const atRisk = stabilityResults.filter(r =>
@@ -331,20 +332,13 @@ export function calculateHomeStabilityMetrics(
 
   // Disruption rate
   const disruptedCount = endedPlacements.filter(p => p.endReason === "disruption").length;
-  const disruptionRate = endedPlacements.length > 0
-    ? Math.round((disruptedCount / endedPlacements.length) * 100)
-    : 0;
+  const disruptionRate = rate(disruptedCount, endedPlacements.length);
 
   // Average matching score
-  const matchingScores = homePlacements.map(p => p.matchingScore);
-  const averageMatching = matchingScores.length > 0
-    ? Math.round(matchingScores.reduce((a, b) => a + b, 0) / matchingScores.length)
-    : 0;
+  const averageMatching = meanOf(homePlacements.map(p => p.matchingScore));
 
   // Occupancy
-  const occupancyRate = capacity > 0
-    ? Math.round((activePlacements.length / capacity) * 100)
-    : 0;
+  const occupancyRate = rate(activePlacements.length, capacity);
 
   // By child
   const stabilityByChild = stabilityResults.map(r => ({

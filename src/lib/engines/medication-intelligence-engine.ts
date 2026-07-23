@@ -10,6 +10,8 @@
 // Children's Homes Regulations 2015 + Ofsted SCCIF: Health domain.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ChildInput {
@@ -55,17 +57,19 @@ export interface MedicationIntelligenceInput {
 
 // ── Output Types ────────────────────────────────────────────────────────────
 
+// Rates are null when nothing has been recorded to measure — no administrations
+// in the window, or no active medications on the register at all.
 export interface MedicationOverview {
   total_active_medications: number;
   total_administrations_30d: number;
-  adherence_rate: number;         // 0-100 (given + self_administered / total non-scheduled)
-  refusal_rate: number;           // 0-100
-  late_rate: number;              // 0-100
-  missed_rate: number;            // 0-100
-  witnessing_rate: number;        // 0-100 (has witnessed_by)
+  adherence_rate: number | null;         // 0-100 (given + self_administered / total non-scheduled)
+  refusal_rate: number | null;           // 0-100
+  late_rate: number | null;              // 0-100
+  missed_rate: number | null;            // 0-100
+  witnessing_rate: number | null;        // 0-100 (has witnessed_by)
   prn_administrations_30d: number;
   controlled_drug_count: number;
-  stock_check_compliance: number; // 0-100 (checked within 7 days)
+  stock_check_compliance: number | null; // 0-100 (checked within 7 days)
 }
 
 export interface ChildMedicationProfile {
@@ -73,12 +77,12 @@ export interface ChildMedicationProfile {
   child_name: string;
   active_medications: number;
   administrations_30d: number;
-  adherence_rate: number;
+  adherence_rate: number | null;
   refusal_count_30d: number;
   late_count_30d: number;
   missed_count_30d: number;
   prn_uses_30d: number;
-  compliance_status: "excellent" | "good" | "concerns" | "critical";
+  compliance_status: "excellent" | "good" | "concerns" | "critical" | "not_measured";
 }
 
 export interface MedicationDetail {
@@ -87,7 +91,7 @@ export interface MedicationDetail {
   child_name: string;
   type: MedicationType;
   administrations_30d: number;
-  adherence_rate: number;
+  adherence_rate: number | null;
   refusal_count: number;
   late_count: number;
   missed_count: number;
@@ -98,7 +102,7 @@ export interface MedicationDetail {
 export interface PRNAnalysis {
   total_prn_30d: number;
   by_medication: { name: string; count: number }[];
-  effectiveness_rate: number; // pct with reported effectiveness
+  effectiveness_rate: number | null; // pct with reported effectiveness
 }
 
 export interface MedicationAlert {
@@ -131,10 +135,6 @@ export function daysBetween(a: string, b: string): number {
 export function average(arr: number[]): number {
   if (arr.length === 0) return 0;
   return arr.reduce((s, v) => s + v, 0) / arr.length;
-}
-
-function pctOf(n: number, total: number): number {
-  return total > 0 ? Math.round((n / total) * 100) : 0;
 }
 
 function dateOnly(isoDatetime: string): string {
@@ -182,14 +182,14 @@ export function computeMedicationIntelligence(input: MedicationIntelligenceInput
   const overview: MedicationOverview = {
     total_active_medications: activeMeds.length,
     total_administrations_30d: total30d,
-    adherence_rate: pctOf(adhered, total30d),
-    refusal_rate: pctOf(refused, total30d),
-    late_rate: pctOf(late, total30d),
-    missed_rate: pctOf(missed, total30d),
-    witnessing_rate: pctOf(witnessed, total30d),
+    adherence_rate: rate(adhered, total30d),
+    refusal_rate: rate(refused, total30d),
+    late_rate: rate(late, total30d),
+    missed_rate: rate(missed, total30d),
+    witnessing_rate: rate(witnessed, total30d),
     prn_administrations_30d: prnAdmins30d.length,
     controlled_drug_count: controlledCount,
-    stock_check_compliance: activeMeds.length > 0 ? pctOf(stockChecked, activeMeds.length) : 100,
+    stock_check_compliance: rate(stockChecked, activeMeds.length),
   };
 
   // ── Child Profiles ────────────────────────────────────────────────────
@@ -203,12 +203,14 @@ export function computeMedicationIntelligence(input: MedicationIntelligenceInput
       const childRefused = childAdmins.filter((a) => a.status === "refused").length;
       const childMissed = childAdmins.filter((a) => a.status === "missed").length;
       const childPrn = childAdmins.filter((a) => prnMedIds.has(a.medication_id)).length;
-      const adherence = pctOf(childGiven + childLate, childTotal);
+      const adherence = rate(childGiven + childLate, childTotal);
 
-      let compliance_status: "excellent" | "good" | "concerns" | "critical";
-      if (adherence >= 95 && childRefused === 0 && childMissed === 0) compliance_status = "excellent";
-      else if (adherence >= 85) compliance_status = "good";
-      else if (adherence >= 70) compliance_status = "concerns";
+      // Nothing administered in the window is a recording gap, not a compliance grade
+      let compliance_status: ChildMedicationProfile["compliance_status"];
+      if (adherence === null) compliance_status = "not_measured";
+      else if (meets(adherence, 95) && childRefused === 0 && childMissed === 0) compliance_status = "excellent";
+      else if (meets(adherence, 85)) compliance_status = "good";
+      else if (meets(adherence, 70)) compliance_status = "concerns";
       else compliance_status = "critical";
 
       return {
@@ -245,7 +247,7 @@ export function computeMedicationIntelligence(input: MedicationIntelligenceInput
       child_name: childName,
       type: med.type,
       administrations_30d: medTotal,
-      adherence_rate: pctOf(medGiven + medLate, medTotal),
+      adherence_rate: rate(medGiven + medLate, medTotal),
       refusal_count: medRefused,
       late_count: medLate,
       missed_count: medMissed,
@@ -270,7 +272,7 @@ export function computeMedicationIntelligence(input: MedicationIntelligenceInput
     by_medication: [...prnByMed.entries()]
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count),
-    effectiveness_rate: prnAdmins30d.length > 0 ? pctOf(withEffectiveness, prnAdmins30d.length) : 100,
+    effectiveness_rate: rate(withEffectiveness, prnAdmins30d.length),
   };
 
   // ── Alerts ─────────────────────────────────────────────────────────────
@@ -304,7 +306,7 @@ export function computeMedicationIntelligence(input: MedicationIntelligenceInput
   }
 
   // Medium: witnessing below 100%
-  if (total30d >= 3 && overview.witnessing_rate < 100) {
+  if (total30d >= 3 && below(overview.witnessing_rate, 100)) {
     alerts.push({
       severity: "medium",
       message: `Witnessing rate is ${overview.witnessing_rate}% — all medication administration must be witnessed by a second trained staff member`,
@@ -323,7 +325,7 @@ export function computeMedicationIntelligence(input: MedicationIntelligenceInput
   }
 
   // Low: high late rate
-  if (total30d >= 5 && overview.late_rate > 20) {
+  if (total30d >= 5 && meets(overview.late_rate, 21)) {
     alerts.push({
       severity: "low",
       message: `${overview.late_rate}% of administrations were late — review scheduling and shift handover procedures`,
@@ -359,7 +361,7 @@ export function computeMedicationIntelligence(input: MedicationIntelligenceInput
   }
 
   // Positive: excellent adherence
-  if (total30d >= 5 && overview.adherence_rate >= 95 && refused === 0 && missed === 0) {
+  if (total30d >= 5 && meets(overview.adherence_rate, 95) && refused === 0 && missed === 0) {
     insights.push({
       severity: "positive",
       text: `${overview.adherence_rate}% medication adherence with zero refusals and zero missed doses. Excellent practice demonstrating robust medication management under Reg 23.`,
@@ -375,7 +377,7 @@ export function computeMedicationIntelligence(input: MedicationIntelligenceInput
   }
 
   // Positive: PRN effectiveness documented
-  if (prnAdmins30d.length >= 2 && prn_analysis.effectiveness_rate === 100) {
+  if (prnAdmins30d.length >= 2 && meets(prn_analysis.effectiveness_rate, 100)) {
     insights.push({
       severity: "positive",
       text: `PRN effectiveness documented for 100% of administrations. This supports evidence-based prescribing reviews and demonstrates thoughtful medication management.`,

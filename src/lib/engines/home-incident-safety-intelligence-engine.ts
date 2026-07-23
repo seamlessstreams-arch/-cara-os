@@ -6,6 +6,8 @@
 // protected" and "The effectiveness of leaders and managers."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface IncidentInput {
@@ -77,9 +79,9 @@ export interface IncidentProfile {
   high_count_30d: number;
   by_type: { type: string; count: number }[];
   by_child: { child_id: string; count: number }[];
-  body_map_compliance_rate: number;       // % of required body maps completed
-  oversight_completion_rate: number;      // % of oversight-required incidents completed
-  lessons_learned_rate: number;           // % of closed incidents with lessons
+  body_map_compliance_rate: number | null;   // % of required body maps completed; null = none required
+  oversight_completion_rate: number | null;  // % of oversight-required incidents completed; null = none required
+  lessons_learned_rate: number | null;       // % of closed incidents with lessons; null = none closed
   trend: "improving" | "stable" | "worsening" | "insufficient_data";
 }
 
@@ -88,9 +90,9 @@ export interface RestraintProfile {
   total_90d: number;
   avg_duration_minutes: number | null;
   long_restraint_count: number;           // >10 min
-  child_debrief_rate: number;             // 0-100
-  staff_debrief_rate: number;             // 0-100
-  body_map_rate: number;                  // 0-100
+  child_debrief_rate: number | null;      // 0-100; null = no restraints in window
+  staff_debrief_rate: number | null;      // 0-100; null = no restraints in window
+  body_map_rate: number | null;           // 0-100; null = no restraints in window
   injury_count: number;
   by_child: { child_id: string; count: number }[];
   trend: "improving" | "stable" | "worsening" | "insufficient_data";
@@ -98,10 +100,10 @@ export interface RestraintProfile {
 
 export interface HandoverProfile {
   total_30d: number;
-  completion_rate: number;                // % completed
-  sign_off_rate: number;                  // % signed off
-  avg_flags_per_handover: number;
-  incident_linked_rate: number;           // % of handovers with linked incidents
+  completion_rate: number | null;         // % completed; null = no handovers recorded
+  sign_off_rate: number | null;           // % signed off; null = no handovers recorded
+  avg_flags_per_handover: number | null;
+  incident_linked_rate: number | null;    // % of handovers with linked incidents
 }
 
 export interface SafetyInsight {
@@ -191,26 +193,20 @@ export function computeHomeIncidentSafety(
     .map(([child_id, count]) => ({ child_id, count }))
     .sort((a, b) => b.count - a.count);
 
-  // Body map compliance
+  // Body map compliance — null when no incident required one (nothing applicable)
   const bodyMapRequired = incidents.filter(i => i.body_map_required);
   const bodyMapCompleted = bodyMapRequired.filter(i => i.body_map_completed);
-  const bodyMapRate = bodyMapRequired.length > 0
-    ? Math.round((bodyMapCompleted.length / bodyMapRequired.length) * 100)
-    : 100;
+  const bodyMapRate = rateOf(bodyMapCompleted, bodyMapRequired);
 
-  // Oversight completion
+  // Oversight completion — null when no incident required oversight
   const oversightRequired = incidents.filter(i => i.requires_oversight);
   const oversightDone = oversightRequired.filter(i => i.oversight_completed);
-  const oversightRate = oversightRequired.length > 0
-    ? Math.round((oversightDone.length / oversightRequired.length) * 100)
-    : 100;
+  const oversightRate = rateOf(oversightDone, oversightRequired);
 
-  // Lessons learned (from closed incidents)
+  // Lessons learned (from closed incidents) — null when nothing has been closed yet
   const closedInc = incidents.filter(i => i.status === "closed");
   const withLessons = closedInc.filter(i => i.has_lessons_learned);
-  const lessonsRate = closedInc.length > 0
-    ? Math.round((withLessons.length / closedInc.length) * 100)
-    : 100;
+  const lessonsRate = rateOf(withLessons, closedInc);
 
   // Incident trend: compare first 45d vs last 45d of 90d window
   let incTrend: "improving" | "stable" | "worsening" | "insufficient_data" = "insufficient_data";
@@ -248,15 +244,9 @@ export function computeHomeIncidentSafety(
     : null;
   const longRestraints = rst90d.filter(r => r.duration_minutes > 10).length;
 
-  const childDebriefRate = rst90d.length > 0
-    ? Math.round((rst90d.filter(r => r.has_child_debrief).length / rst90d.length) * 100)
-    : 100;
-  const staffDebriefRate = rst90d.length > 0
-    ? Math.round((rst90d.filter(r => r.has_staff_debrief).length / rst90d.length) * 100)
-    : 100;
-  const rstBodyMapRate = rst90d.length > 0
-    ? Math.round((rst90d.filter(r => r.body_map_completed).length / rst90d.length) * 100)
-    : 100;
+  const childDebriefRate = rateOf(rst90d.filter(r => r.has_child_debrief), rst90d);
+  const staffDebriefRate = rateOf(rst90d.filter(r => r.has_staff_debrief), rst90d);
+  const rstBodyMapRate = rateOf(rst90d.filter(r => r.body_map_completed), rst90d);
   const totalInjuries = rst90d.reduce((s, r) => s + r.injury_count, 0);
 
   // Restraint by child
@@ -295,18 +285,12 @@ export function computeHomeIncidentSafety(
     return d >= 0 && d <= 30;
   });
 
-  const completionRate = hnd30d.length > 0
-    ? Math.round((hnd30d.filter(h => h.is_completed).length / hnd30d.length) * 100)
-    : 0;
-  const signOffRate = hnd30d.length > 0
-    ? Math.round((hnd30d.filter(h => h.is_signed_off).length / hnd30d.length) * 100)
-    : 0;
+  const completionRate = rateOf(hnd30d.filter(h => h.is_completed), hnd30d);
+  const signOffRate = rateOf(hnd30d.filter(h => h.is_signed_off), hnd30d);
   const avgFlags = hnd30d.length > 0
     ? Math.round((hnd30d.reduce((s, h) => s + h.flags_count, 0) / hnd30d.length) * 10) / 10
-    : 0;
-  const incLinkedRate = hnd30d.length > 0
-    ? Math.round((hnd30d.filter(h => h.linked_incident_count > 0).length / hnd30d.length) * 100)
-    : 0;
+    : null;
+  const incLinkedRate = rateOf(hnd30d.filter(h => h.linked_incident_count > 0), hnd30d);
 
   const handoverProfile: HandoverProfile = {
     total_30d: hnd30d.length,
@@ -340,17 +324,17 @@ export function computeHomeIncidentSafety(
   else score -= 2;
 
   // Body map compliance (±5)
-  if (bodyMapRate === 100) score += 3;
-  else if (bodyMapRate < 80) score -= 5;
+  if (meets(bodyMapRate, 100)) score += 3;
+  else if (below(bodyMapRate, 80)) score -= 5;
 
   // Oversight (±5)
-  if (oversightRate === 100) score += 3;
-  else if (oversightRate < 50) score -= 5;
-  else if (oversightRate < 80) score -= 3;
+  if (meets(oversightRate, 100)) score += 3;
+  else if (below(oversightRate, 50)) score -= 5;
+  else if (below(oversightRate, 80)) score -= 3;
 
   // Lessons learned (±3)
-  if (lessonsRate >= 80) score += 3;
-  else if (lessonsRate < 50) score -= 3;
+  if (meets(lessonsRate, 80)) score += 3;
+  else if (below(lessonsRate, 50)) score -= 3;
 
   // Incident trend (±5)
   if (incTrend === "improving") score += 5;
@@ -364,11 +348,11 @@ export function computeHomeIncidentSafety(
 
   // Restraint compliance (±8)
   if (rst90d.length > 0) {
-    if (childDebriefRate === 100 && staffDebriefRate === 100) score += 5;
-    else if (childDebriefRate < 80 || staffDebriefRate < 80) score -= 5;
+    if (meets(childDebriefRate, 100) && meets(staffDebriefRate, 100)) score += 5;
+    else if (below(childDebriefRate, 80) || below(staffDebriefRate, 80)) score -= 5;
 
-    if (rstBodyMapRate === 100) score += 3;
-    else if (rstBodyMapRate < 80) score -= 3;
+    if (meets(rstBodyMapRate, 100)) score += 3;
+    else if (below(rstBodyMapRate, 80)) score -= 3;
   }
 
   // Injuries (±8)
@@ -380,11 +364,11 @@ export function computeHomeIncidentSafety(
 
   // Handovers (±8)
   if (hnd30d.length > 0) {
-    if (completionRate === 100) score += 4;
-    else if (completionRate < 80) score -= 4;
+    if (meets(completionRate, 100)) score += 4;
+    else if (below(completionRate, 80)) score -= 4;
 
-    if (signOffRate >= 80) score += 2;
-    else if (signOffRate < 50) score -= 2;
+    if (meets(signOffRate, 80)) score += 2;
+    else if (below(signOffRate, 50)) score -= 2;
   }
 
   // Notifiable events penalty
@@ -398,11 +382,11 @@ export function computeHomeIncidentSafety(
   const strengths: string[] = [];
   if (inc30d.length === 0) strengths.push("No incidents recorded in the last 30 days — home is in a calm, settled period.");
   if (critical30d === 0 && high30d === 0 && inc30d.length > 0) strengths.push("No critical or high-severity incidents in the last 30 days.");
-  if (bodyMapRate === 100 && bodyMapRequired.length > 0) strengths.push("100% body map compliance — all required body maps completed.");
-  if (lessonsRate >= 80 && closedInc.length > 0) strengths.push(`Lessons learned documented for ${lessonsRate}% of closed incidents — evidence of reflective practice.`);
+  if (meets(bodyMapRate, 100)) strengths.push("100% body map compliance — all required body maps completed.");
+  if (meets(lessonsRate, 80)) strengths.push(`Lessons learned documented for ${formatRate(lessonsRate)} of closed incidents — evidence of reflective practice.`);
   if (rst30d.length === 0 && restraints.length > 0) strengths.push("No restraints in the last 30 days — de-escalation strategies are working.");
-  if (rst90d.length > 0 && childDebriefRate === 100 && staffDebriefRate === 100) strengths.push("100% debrief compliance for both children and staff after every restraint.");
-  if (completionRate === 100 && hnd30d.length > 0) strengths.push("100% handover completion rate — continuity of care is strong.");
+  if (meets(childDebriefRate, 100) && meets(staffDebriefRate, 100)) strengths.push("100% debrief compliance for both children and staff after every restraint.");
+  if (meets(completionRate, 100)) strengths.push("100% handover completion rate — continuity of care is strong.");
   if (incTrend === "improving") strengths.push("Incident trend is improving — evidence of effective preventative strategies.");
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -410,12 +394,12 @@ export function computeHomeIncidentSafety(
   if (critical30d >= 2) concerns.push(`${critical30d} critical incidents in the last 30 days — pattern analysis and strategy review needed.`);
   else if (critical30d > 0) concerns.push(`${critical30d} critical incident in the last 30 days.`);
   if (openInc.length >= 3) concerns.push(`${openInc.length} incidents still open — timely closure and review is essential.`);
-  if (bodyMapRate < 100 && bodyMapRequired.length > 0) concerns.push(`Body map compliance is ${bodyMapRate}% — ${bodyMapRequired.length - bodyMapCompleted.length} body map${bodyMapRequired.length - bodyMapCompleted.length > 1 ? "s" : ""} outstanding.`);
-  if (oversightRate < 80 && oversightRequired.length > 0) concerns.push(`Manager oversight completion is only ${oversightRate}% — incidents require timely review.`);
+  if (below(bodyMapRate, 100)) concerns.push(`Body map compliance is ${formatRate(bodyMapRate)} — ${bodyMapRequired.length - bodyMapCompleted.length} body map${bodyMapRequired.length - bodyMapCompleted.length > 1 ? "s" : ""} outstanding.`);
+  if (below(oversightRate, 80)) concerns.push(`Manager oversight completion is only ${formatRate(oversightRate)} — incidents require timely review.`);
   if (totalInjuries > 0) concerns.push(`${totalInjuries} injur${totalInjuries > 1 ? "ies" : "y"} recorded from restraints in the last 90 days.`);
   if (longRestraints > 0) concerns.push(`${longRestraints} restraint${longRestraints > 1 ? "s" : ""} exceeded 10 minutes — review proportionality.`);
-  if (rst90d.length > 0 && childDebriefRate < 80) concerns.push(`Child debrief rate after restraint is only ${childDebriefRate}% — Reg 35 requires post-incident debriefs.`);
-  if (completionRate < 80 && hnd30d.length > 0) concerns.push(`Handover completion rate is ${completionRate}% — information may be lost between shifts.`);
+  if (below(childDebriefRate, 80)) concerns.push(`Child debrief rate after restraint is only ${formatRate(childDebriefRate)} — Reg 35 requires post-incident debriefs.`);
+  if (below(completionRate, 80)) concerns.push(`Handover completion rate is ${formatRate(completionRate)} — information may be lost between shifts.`);
   if (incTrend === "worsening") concerns.push("Incident frequency is increasing — consider team reflection and strategy review.");
 
   // Concentration on one child
@@ -433,16 +417,16 @@ export function computeHomeIncidentSafety(
   if (pendingNE.length > 0) {
     recs.push({ rank: rank++, recommendation: `Submit ${pendingNE.length} pending Ofsted notification${pendingNE.length > 1 ? "s" : ""} — 24-hour statutory requirement.`, urgency: "immediate", regulatory_ref: "Reg 40" });
   }
-  if (oversightRate < 80 && oversightRequired.length > 0) {
+  if (below(oversightRate, 80)) {
     recs.push({ rank: rank++, recommendation: `Complete manager oversight for ${oversightRequired.length - oversightDone.length} incident${oversightRequired.length - oversightDone.length > 1 ? "s" : ""}.`, urgency: "immediate", regulatory_ref: "Reg 13" });
   }
   if (totalInjuries > 0) {
     recs.push({ rank: rank++, recommendation: "Review all restraint-related injuries — assess technique, staffing levels, and de-escalation strategies.", urgency: "soon", regulatory_ref: "Reg 35" });
   }
-  if (rst90d.length > 0 && childDebriefRate < 100) {
+  if (below(childDebriefRate, 100)) {
     recs.push({ rank: rank++, recommendation: "Ensure post-restraint child debriefs are completed for every incident.", urgency: "soon", regulatory_ref: "Reg 35" });
   }
-  if (lessonsRate < 60 && closedInc.length > 0) {
+  if (below(lessonsRate, 60)) {
     recs.push({ rank: rank++, recommendation: "Improve lessons-learned documentation — reflective practice is essential for continuous improvement.", urgency: "planned", regulatory_ref: "Reg 13" });
   }
   if (byChild.length > 0 && byChild[0].count >= 4) {
@@ -470,7 +454,7 @@ export function computeHomeIncidentSafety(
   if (incTrend === "improving" && rstTrend === "improving") {
     insights.push({ text: "Both incident and restraint trends are improving — preventative strategies and therapeutic approaches are having a positive impact.", severity: "positive" });
   }
-  if (rst90d.length > 0 && childDebriefRate === 100 && staffDebriefRate === 100 && rstBodyMapRate === 100) {
+  if (meets(childDebriefRate, 100) && meets(staffDebriefRate, 100) && meets(rstBodyMapRate, 100)) {
     insights.push({ text: "Exemplary post-restraint practice: 100% compliance across child debriefs, staff debriefs, and body maps.", severity: "positive" });
   }
   if (rstTrend === "worsening") {
@@ -510,13 +494,13 @@ export function computeHomeIncidentSafety(
 // ── Empty Defaults ──────────────────────────────────────────────────────────
 
 function emptyIncidents(): IncidentProfile {
-  return { total_30d: 0, total_90d: 0, open_count: 0, critical_count_30d: 0, high_count_30d: 0, by_type: [], by_child: [], body_map_compliance_rate: 0, oversight_completion_rate: 0, lessons_learned_rate: 0, trend: "insufficient_data" };
+  return { total_30d: 0, total_90d: 0, open_count: 0, critical_count_30d: 0, high_count_30d: 0, by_type: [], by_child: [], body_map_compliance_rate: null, oversight_completion_rate: null, lessons_learned_rate: null, trend: "insufficient_data" };
 }
 
 function emptyRestraints(): RestraintProfile {
-  return { total_30d: 0, total_90d: 0, avg_duration_minutes: null, long_restraint_count: 0, child_debrief_rate: 0, staff_debrief_rate: 0, body_map_rate: 0, injury_count: 0, by_child: [], trend: "insufficient_data" };
+  return { total_30d: 0, total_90d: 0, avg_duration_minutes: null, long_restraint_count: 0, child_debrief_rate: null, staff_debrief_rate: null, body_map_rate: null, injury_count: 0, by_child: [], trend: "insufficient_data" };
 }
 
 function emptyHandovers(): HandoverProfile {
-  return { total_30d: 0, completion_rate: 0, sign_off_rate: 0, avg_flags_per_handover: 0, incident_linked_rate: 0 };
+  return { total_30d: 0, completion_rate: null, sign_off_rate: null, avg_flags_per_handover: null, incident_linked_rate: null };
 }

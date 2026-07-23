@@ -117,44 +117,47 @@ export interface StaffContactTraining {
   courtOrderAwareness: boolean;
 }
 
+import { below, formatRate, meets, rate, weightedMeanOf } from "@/lib/metrics/rate";
+
 // -- Result Interfaces --------------------------------------------------------
 
 export interface ContactPlanComplianceResult {
   overallScore: number;
   totalPlans: number;
-  planExistsRate: number;
-  planCurrentRate: number;
-  childViewConsideredRate: number;
-  courtOrderCompliantRate: number;
+  planExistsRate: number | null;
+  planCurrentRate: number | null;
+  childViewConsideredRate: number | null;
+  /** null = no plan is court-ordered, so there is no order to comply with. */
+  courtOrderCompliantRate: number | null;
 }
 
 export interface ContactQualityResult {
   overallScore: number;
   totalSessions: number;
-  positiveOutcomeRate: number;
-  childPreparedRate: number;
-  childDebriefedRate: number;
-  parentCooperativeRate: number;
+  positiveOutcomeRate: number | null;
+  childPreparedRate: number | null;
+  childDebriefedRate: number | null;
+  parentCooperativeRate: number | null;
 }
 
 export interface RiskManagementResult {
   overallScore: number;
   totalAssessments: number;
-  riskAssessedRate: number;
-  reviewCurrentRate: number;
-  safeguardingMeasuresRate: number;
-  incidentRate: number;
+  riskAssessedRate: number | null;
+  reviewCurrentRate: number | null;
+  safeguardingMeasuresRate: number | null;
+  incidentRate: number | null;
 }
 
 export interface StaffContactReadinessResult {
   overallScore: number;
   totalStaff: number;
-  supervisedContactRate: number;
-  riskAssessmentRate: number;
-  prepDebriefRate: number;
-  safeguardingRate: number;
-  parentalConflictRate: number;
-  courtOrderRate: number;
+  supervisedContactRate: number | null;
+  riskAssessmentRate: number | null;
+  prepDebriefRate: number | null;
+  safeguardingRate: number | null;
+  parentalConflictRate: number | null;
+  courtOrderRate: number | null;
 }
 
 export interface ChildContactProfile {
@@ -162,8 +165,8 @@ export interface ChildContactProfile {
   childName: string;
   parentCount: number;
   sessionsInPeriod: number;
-  positiveOutcomeRate: number;
-  childPreparedRate: number;
+  positiveOutcomeRate: number | null;
+  childPreparedRate: number | null;
   riskAssessed: boolean;
   overallScore: number;
 }
@@ -262,10 +265,10 @@ export function evaluateContactPlanCompliance(
     return {
       overallScore: 0,
       totalPlans: 0,
-      planExistsRate: 0,
-      planCurrentRate: 0,
-      childViewConsideredRate: 0,
-      courtOrderCompliantRate: 0,
+      planExistsRate: null,
+      planCurrentRate: null,
+      childViewConsideredRate: null,
+      courtOrderCompliantRate: null,
     };
   }
 
@@ -281,16 +284,19 @@ export function evaluateContactPlanCompliance(
   const planExistsRate = pct(planExistsCount, plans.length);
   const planCurrentRate = pct(planCurrentCount, plans.length);
   const childViewConsideredRate = pct(childViewCount, plans.length);
-  const courtOrderCompliantRate = courtOrderPlans.length > 0
-    ? pct(courtOrderCompliant, courtOrderPlans.length)
-    : 100; // No court orders = fully compliant by default
+  // Null when no plan is court-ordered — nothing to comply with, which is not
+  // the same as every order being complied with
+  const courtOrderCompliantRate = rate(courtOrderCompliant, courtOrderPlans.length);
 
-  // Scoring
-  let score = 0;
-  score += Math.round((planExistsRate / 100) * 7);
-  score += Math.round((planCurrentRate / 100) * 6);
-  score += Math.round((childViewConsideredRate / 100) * 6);
-  score += Math.round((courtOrderCompliantRate / 100) * 6);
+  // Scoring, renormalised over the components that could be measured
+  const score = Math.round(
+    ((weightedMeanOf([
+      { score: planExistsRate, weight: 7 },
+      { score: planCurrentRate, weight: 6 },
+      { score: childViewConsideredRate, weight: 6 },
+      { score: courtOrderCompliantRate, weight: 6 },
+    ]) ?? 0) / 100) * 25,
+  );
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -316,10 +322,10 @@ export function evaluateContactQuality(
     return {
       overallScore: 0,
       totalSessions: 0,
-      positiveOutcomeRate: 0,
-      childPreparedRate: 0,
-      childDebriefedRate: 0,
-      parentCooperativeRate: 0,
+      positiveOutcomeRate: null,
+      childPreparedRate: null,
+      childDebriefedRate: null,
+      parentCooperativeRate: null,
     };
   }
 
@@ -371,10 +377,10 @@ export function evaluateRiskManagement(
     return {
       overallScore: 25,
       totalAssessments: 0,
-      riskAssessedRate: 0,
-      reviewCurrentRate: 0,
-      safeguardingMeasuresRate: 0,
-      incidentRate: 0,
+      riskAssessedRate: null,
+      reviewCurrentRate: null,
+      safeguardingMeasuresRate: null,
+      incidentRate: null,
     };
   }
 
@@ -384,20 +390,20 @@ export function evaluateRiskManagement(
   const hasSafeguardingMeasures = assessments.filter((a) => a.safeguardingMeasures.length > 0).length;
   const incidents = sessions.filter((s) => s.incidentDuringContact).length;
 
-  const riskAssessedRate = pct(riskAssessed, assessments.length);
-  const reviewCurrentRate = pct(reviewCurrent, assessments.length);
-  const safeguardingMeasuresRate = pct(hasSafeguardingMeasures, assessments.length);
-  const incidentRate = pct(incidents, sessions.length);
+  const riskAssessedRate = rate(riskAssessed, assessments.length);
+  const reviewCurrentRate = rate(reviewCurrent, assessments.length);
+  const safeguardingMeasuresRate = rate(hasSafeguardingMeasures, assessments.length);
+  const incidentRate = rate(incidents, sessions.length);
 
   let score = 0;
   // Risk assessed: having assessments with risk factors identified is good practice
   if (assessments.length > 0) {
-    score += Math.round((riskAssessedRate / 100) * 7);
-    score += Math.round((reviewCurrentRate / 100) * 6);
-    score += Math.round((safeguardingMeasuresRate / 100) * 6);
+    score += Math.round(((riskAssessedRate ?? 0) / 100) * 7);
+    score += Math.round(((reviewCurrentRate ?? 0) / 100) * 6);
+    score += Math.round(((safeguardingMeasuresRate ?? 0) / 100) * 6);
   }
   // Incidents rate penalty: 0-6 bonus if no incidents
-  if (sessions.length === 0 || incidentRate === 0) {
+  if (incidentRate === null || incidentRate === 0) {
     score += 6;
   } else if (incidentRate <= 10) {
     score += 3;
@@ -430,12 +436,12 @@ export function evaluateStaffContactReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      supervisedContactRate: 0,
-      riskAssessmentRate: 0,
-      prepDebriefRate: 0,
-      safeguardingRate: 0,
-      parentalConflictRate: 0,
-      courtOrderRate: 0,
+      supervisedContactRate: null,
+      riskAssessmentRate: null,
+      prepDebriefRate: null,
+      safeguardingRate: null,
+      parentalConflictRate: null,
+      courtOrderRate: null,
     };
   }
 
@@ -511,10 +517,10 @@ export function buildChildContactProfiles(
     for (const s of childSessions) parentIds.add(s.parentId);
 
     const positiveSessions = childSessions.filter((s) => s.outcome === "positive").length;
-    const positiveOutcomeRate = pct(positiveSessions, childSessions.length);
+    const positiveOutcomeRate = rate(positiveSessions, childSessions.length);
 
     const preparedSessions = childSessions.filter((s) => s.childPrepared).length;
-    const childPreparedRate = pct(preparedSessions, childSessions.length);
+    const childPreparedRate = rate(preparedSessions, childSessions.length);
 
     const riskAssessed = childAssessments.length > 0;
 
@@ -529,9 +535,9 @@ export function buildChildContactProfiles(
       if (allCurrent && allChildView) score += 1;
     }
     // Positive outcome rate (0-3)
-    score += Math.round((positiveOutcomeRate / 100) * 3);
+    score += Math.round(((positiveOutcomeRate ?? 0) / 100) * 3);
     // Child prepared rate (0-2)
-    score += Math.round((childPreparedRate / 100) * 2);
+    score += Math.round(((childPreparedRate ?? 0) / 100) * 2);
     // Risk assessed (0-2)
     if (riskAssessed) {
       score += 1;
@@ -580,45 +586,45 @@ export function generateParentalContactManagementIntelligence(
 
   // -- Strengths --
   const strengths: string[] = [];
-  if (plans.length > 0 && contactPlanCompliance.planCurrentRate === 100)
+  if (meets(contactPlanCompliance.planCurrentRate, 100))
     strengths.push("All parental contact plans are current and up to date");
-  if (plans.length > 0 && contactPlanCompliance.childViewConsideredRate === 100)
+  if (meets(contactPlanCompliance.childViewConsideredRate, 100))
     strengths.push("Child's views considered in all contact plan decisions");
-  if (sessions.length > 0 && contactQuality.positiveOutcomeRate >= 90)
-    strengths.push("Positive outcomes in " + contactQuality.positiveOutcomeRate + "% of parental contact sessions");
-  if (sessions.length > 0 && contactQuality.childPreparedRate === 100)
+  if (meets(contactQuality.positiveOutcomeRate, 90))
+    strengths.push("Positive outcomes in " + formatRate(contactQuality.positiveOutcomeRate) + " of parental contact sessions");
+  if (meets(contactQuality.childPreparedRate, 100))
     strengths.push("Children consistently prepared before every parental contact session");
-  if (sessions.length > 0 && contactQuality.childDebriefedRate === 100)
+  if (meets(contactQuality.childDebriefedRate, 100))
     strengths.push("Children consistently debriefed after every parental contact session");
-  if (sessions.length > 0 && contactQuality.parentCooperativeRate >= 90)
-    strengths.push("High level of parental cooperation at " + contactQuality.parentCooperativeRate + "%");
-  if (assessments.length > 0 && riskManagement.reviewCurrentRate === 100)
+  if (meets(contactQuality.parentCooperativeRate, 90))
+    strengths.push("High level of parental cooperation at " + formatRate(contactQuality.parentCooperativeRate));
+  if (meets(riskManagement.reviewCurrentRate, 100))
     strengths.push("All contact risk assessments are current and reviewed");
-  if (sessions.length > 0 && riskManagement.incidentRate === 0)
+  if (riskManagement.incidentRate === 0)
     strengths.push("No incidents during parental contact in the reporting period");
-  if (training.length > 0 && staffContactReadiness.supervisedContactRate === 100)
+  if (meets(staffContactReadiness.supervisedContactRate, 100))
     strengths.push("All staff trained in supervised contact management");
 
   // -- Areas for Improvement --
   const areasForImprovement: string[] = [];
   if (plans.length === 0)
     areasForImprovement.push("No parental contact plans documented — all children should have contact arrangements recorded");
-  if (plans.length > 0 && contactPlanCompliance.planCurrentRate < 100)
-    areasForImprovement.push((100 - contactPlanCompliance.planCurrentRate) + "% of contact plans are not current — review and update required");
-  if (plans.length > 0 && contactPlanCompliance.childViewConsideredRate < 80)
-    areasForImprovement.push("Child views considered in only " + contactPlanCompliance.childViewConsideredRate + "% of plans — target 100%");
-  if (sessions.length > 0 && contactQuality.childPreparedRate < 80)
-    areasForImprovement.push("Child preparation before contact at only " + contactQuality.childPreparedRate + "% — improve pre-contact support");
-  if (sessions.length > 0 && contactQuality.childDebriefedRate < 80)
-    areasForImprovement.push("Child debriefing after contact at only " + contactQuality.childDebriefedRate + "% — improve post-contact support");
-  if (sessions.length > 0 && contactQuality.positiveOutcomeRate < 60)
-    areasForImprovement.push("Only " + contactQuality.positiveOutcomeRate + "% of sessions had positive outcomes — review contact arrangements");
+  if (below(contactPlanCompliance.planCurrentRate, 100))
+    areasForImprovement.push((100 - (contactPlanCompliance.planCurrentRate ?? 0)) + "% of contact plans are not current — review and update required");
+  if (below(contactPlanCompliance.childViewConsideredRate, 80))
+    areasForImprovement.push("Child views considered in only " + formatRate(contactPlanCompliance.childViewConsideredRate) + " of plans — target 100%");
+  if (below(contactQuality.childPreparedRate, 80))
+    areasForImprovement.push("Child preparation before contact at only " + formatRate(contactQuality.childPreparedRate) + " — improve pre-contact support");
+  if (below(contactQuality.childDebriefedRate, 80))
+    areasForImprovement.push("Child debriefing after contact at only " + formatRate(contactQuality.childDebriefedRate) + " — improve post-contact support");
+  if (below(contactQuality.positiveOutcomeRate, 60))
+    areasForImprovement.push("Only " + formatRate(contactQuality.positiveOutcomeRate) + " of sessions had positive outcomes — review contact arrangements");
   if (sessions.length === 0 && plans.length > 0)
     areasForImprovement.push("No contact sessions recorded despite active contact plans");
   if (training.length === 0)
     areasForImprovement.push("No staff training records for parental contact management");
-  if (training.length > 0 && staffContactReadiness.supervisedContactRate < 75)
-    areasForImprovement.push("Only " + staffContactReadiness.supervisedContactRate + "% of staff trained in supervised contact — target 100%");
+  if (below(staffContactReadiness.supervisedContactRate, 75))
+    areasForImprovement.push("Only " + formatRate(staffContactReadiness.supervisedContactRate) + " of staff trained in supervised contact — target 100%");
 
   // -- Actions --
   const actions: string[] = [];
@@ -636,17 +642,17 @@ export function generateParentalContactManagementIntelligence(
     actions.push("Document parental contact plans for all children — statutory requirement under Children Act 1989 s34");
   if (assessments.length === 0 && sessions.length > 0)
     actions.push("Complete contact risk assessments — contact is occurring without documented risk assessment");
-  if (assessments.length > 0 && riskManagement.reviewCurrentRate < 100)
-    actions.push("Update " + (100 - riskManagement.reviewCurrentRate) + "% of contact risk assessments that are overdue for review");
+  if (below(riskManagement.reviewCurrentRate, 100))
+    actions.push("Update " + (100 - (riskManagement.reviewCurrentRate ?? 0)) + "% of contact risk assessments that are overdue for review");
   const highRiskNoMeasures = assessments.filter(
     (a) => (a.riskLevel === "high" || a.riskLevel === "very_high") && a.safeguardingMeasures.length === 0,
   );
   if (highRiskNoMeasures.length > 0)
     actions.push("URGENT: " + highRiskNoMeasures.length + " high/very-high risk assessment(s) with no safeguarding measures documented");
-  if (training.length > 0 && staffContactReadiness.safeguardingRate < 75)
-    actions.push("Arrange safeguarding in contact training — only " + staffContactReadiness.safeguardingRate + "% of staff trained");
-  if (training.length > 0 && staffContactReadiness.courtOrderRate < 75)
-    actions.push("Arrange court order awareness training — only " + staffContactReadiness.courtOrderRate + "% of staff trained");
+  if (below(staffContactReadiness.safeguardingRate, 75))
+    actions.push("Arrange safeguarding in contact training — only " + formatRate(staffContactReadiness.safeguardingRate) + " of staff trained");
+  if (below(staffContactReadiness.courtOrderRate, 75))
+    actions.push("Arrange court order awareness training — only " + formatRate(staffContactReadiness.courtOrderRate) + " of staff trained");
 
   const regulatoryLinks: string[] = [
     "Children Act 1989 s34 — Parental contact with looked-after children",

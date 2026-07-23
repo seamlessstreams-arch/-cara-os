@@ -5,6 +5,8 @@
 // CHR 2015 Reg 12, 34. SCCIF: "Safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface MissingEpisodeInput {
@@ -44,9 +46,9 @@ export interface EpisodeProfile {
   longest_duration_hours: number;
   children_with_episodes: string[];
   repeat_children: string[];             // children with 2+ episodes in 180d
-  police_reported_rate: number;          // % reported to police (high risk)
-  la_reported_rate: number;              // % reported to LA
-  return_interview_rate: number;         // % with return interview completed
+  police_reported_rate: number | null;   // % reported to police (high risk); null with no such episodes
+  la_reported_rate: number | null;       // % reported to LA; null with no episodes
+  return_interview_rate: number | null;  // % with return interview completed; null with no episodes
   contextual_safeguarding_count: number;
   open_episodes: number;
 }
@@ -152,19 +154,13 @@ export function computeHomeMissingEpisodes(
   // Reporting compliance
   const highRiskEps = eps180d.filter(e => e.risk_level === "high" || e.risk_level === "medium");
   const policeReported = highRiskEps.filter(e => e.reported_to_police);
-  const policeRate = highRiskEps.length > 0
-    ? Math.round((policeReported.length / highRiskEps.length) * 100)
-    : 100;
+  const policeRate = rate(policeReported.length, highRiskEps.length);
 
   const laReported = eps180d.filter(e => e.reported_to_la);
-  const laRate = eps180d.length > 0
-    ? Math.round((laReported.length / eps180d.length) * 100)
-    : 100;
+  const laRate = rate(laReported.length, eps180d.length);
 
   const riCompleted = eps180d.filter(e => e.return_interview_completed);
-  const riRate = eps180d.length > 0
-    ? Math.round((riCompleted.length / eps180d.length) * 100)
-    : 100;
+  const riRate = rate(riCompleted.length, eps180d.length);
 
   const csCount = eps180d.filter(e => e.contextual_safeguarding_risk).length;
   const openEps = eps180d.filter(e => e.status === "open").length;
@@ -262,12 +258,12 @@ export function computeHomeMissingEpisodes(
   else if (csCount >= 2) score -= 6;
   else score -= 3;
 
-  // Reporting compliance (±8)
-  if (riRate === 100) score += 3;
-  else if (riRate < 80) score -= 5;
+  // Reporting compliance (±8) — no episodes to report on earns neither
+  if (meets(riRate, 100)) score += 3;
+  else if (below(riRate, 80)) score -= 5;
 
-  if (laRate === 100) score += 2;
-  else if (laRate < 80) score -= 3;
+  if (meets(laRate, 100)) score += 2;
+  else if (below(laRate, 80)) score -= 3;
 
   // Trend (±5)
   if (trend === "improving") score += 3;
@@ -282,8 +278,8 @@ export function computeHomeMissingEpisodes(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (eps90d.length === 0 && eps180d.length > 0) strengths.push("No missing episodes in the last 90 days — frequency has reduced.");
-  if (riRate === 100 && eps180d.length > 0) strengths.push("100% return interview completion — every missing episode has been properly followed up.");
-  if (laRate === 100 && eps180d.length > 0) strengths.push("100% LA notification rate — all episodes properly reported to the placing authority.");
+  if (meets(riRate, 100) && eps180d.length > 0) strengths.push("100% return interview completion — every missing episode has been properly followed up.");
+  if (meets(laRate, 100) && eps180d.length > 0) strengths.push("100% LA notification rate — all episodes properly reported to the placing authority.");
   if (trend === "improving") strengths.push("Missing episodes are reducing in frequency or duration — interventions are working.");
   if (csCount === 0 && eps180d.length > 0) strengths.push("No contextual safeguarding risks identified — children are not at risk from external exploitation.");
 
@@ -293,7 +289,7 @@ export function computeHomeMissingEpisodes(
   if (highRisk.length > 0) concerns.push(`${highRisk.length} high-risk missing episode${highRisk.length > 1 ? "s" : ""} — these present significant safeguarding concerns.`);
   if (repeatChildren.length > 0) concerns.push(`${repeatChildren.length} child${repeatChildren.length > 1 ? "ren" : ""} with repeat missing episodes — patterns indicate unresolved triggers.`);
   if (csCount > 0) concerns.push(`${csCount} episode${csCount > 1 ? "s" : ""} with contextual safeguarding risk — external exploitation concerns require urgent attention.`);
-  if (riRate < 100 && eps180d.length > 0) concerns.push(`Return interview completion at ${riRate}% — all children must have a return interview after every episode.`);
+  if (below(riRate, 100) && eps180d.length > 0) concerns.push(`Return interview completion at ${formatRate(riRate)} — all children must have a return interview after every episode.`);
   if (escalating) concerns.push("Missing episodes are escalating in duration or frequency — intervention strategy needs review.");
   if (openEps > 0) concerns.push(`${openEps} missing episode${openEps > 1 ? "s" : ""} still open — ensure timely closure with documented outcomes.`);
   if (longestDuration > 4) concerns.push(`Longest episode was ${longestDuration} hours — extended absences increase safeguarding risk.`);
@@ -305,7 +301,7 @@ export function computeHomeMissingEpisodes(
   if (csCount > 0) {
     recs.push({ rank: rank++, recommendation: "Review contextual safeguarding strategy — ensure MACE referrals are active and safety plans are in place.", urgency: "immediate", regulatory_ref: "Reg 12" });
   }
-  if (riRate < 100 && eps180d.length > 0) {
+  if (below(riRate, 100) && eps180d.length > 0) {
     recs.push({ rank: rank++, recommendation: "Complete all outstanding return interviews — these are a statutory requirement.", urgency: "immediate", regulatory_ref: "Reg 34" });
   }
   if (repeatChildren.length > 0) {
@@ -317,7 +313,7 @@ export function computeHomeMissingEpisodes(
   if (eps90d.length >= 3) {
     recs.push({ rank: rank++, recommendation: "Review risk assessments and safety plans for all children with missing episodes.", urgency: "soon", regulatory_ref: "Reg 12" });
   }
-  if (policeRate < 100 && highRiskEps.length > 0) {
+  if (below(policeRate, 100) && highRiskEps.length > 0) {
     recs.push({ rank: rank++, recommendation: "Ensure all medium/high risk missing episodes are reported to police in line with protocol.", urgency: "soon", regulatory_ref: "Reg 34" });
   }
 
@@ -336,7 +332,7 @@ export function computeHomeMissingEpisodes(
   if (eps90d.length === 0 && eps180d.length > 0) {
     insights.push({ text: "No recent missing episodes despite historical pattern — the home's response strategy appears to be effective.", severity: "positive" });
   }
-  if (riRate === 100 && laRate === 100 && eps180d.length > 0) {
+  if (meets(riRate, 100) && meets(laRate, 100) && eps180d.length > 0) {
     insights.push({ text: "Excellent procedural compliance: 100% return interviews and LA notifications. This evidences a robust missing from care protocol.", severity: "positive" });
   }
   if (eps180d.length <= 1 && total_children > 0) {
@@ -353,7 +349,7 @@ export function computeHomeMissingEpisodes(
       ? "No missing episodes — outstanding safeguarding and placement stability."
       : "Outstanding missing from care management — low frequency with excellent procedural compliance.";
   } else if (rating === "good") {
-    headline = `Good missing from care management — ${eps90d.length} episode${eps90d.length !== 1 ? "s" : ""} in 90 days with ${riRate}% return interview completion.`;
+    headline = `Good missing from care management — ${eps90d.length} episode${eps90d.length !== 1 ? "s" : ""} in 90 days with ${formatRate(riRate)} return interview completion.`;
   } else if (rating === "adequate") {
     headline = "Adequate missing from care response — improvements needed in frequency reduction or procedural compliance.";
   } else {
@@ -376,7 +372,7 @@ export function computeHomeMissingEpisodes(
 // ── Empty Defaults ──────────────────────────────────────────────────────────
 
 function emptyEpisodes(): EpisodeProfile {
-  return { total_90d: 0, total_180d: 0, high_risk_count: 0, avg_duration_hours: 0, longest_duration_hours: 0, children_with_episodes: [], repeat_children: [], police_reported_rate: 100, la_reported_rate: 100, return_interview_rate: 100, contextual_safeguarding_count: 0, open_episodes: 0 };
+  return { total_90d: 0, total_180d: 0, high_risk_count: 0, avg_duration_hours: 0, longest_duration_hours: 0, children_with_episodes: [], repeat_children: [], police_reported_rate: null, la_reported_rate: null, return_interview_rate: null, contextual_safeguarding_count: 0, open_episodes: 0 };
 }
 
 function emptyPattern(): PatternProfile {

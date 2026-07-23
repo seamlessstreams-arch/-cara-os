@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSafeguardingIntelligence } from "@/hooks/use-safeguarding-intelligence";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -77,8 +78,8 @@ export function SafeguardingPartnershipCard() {
             <p className={cn("text-lg font-bold tabular-nums", p.incidents_needing_oversight === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{p.incidents_needing_oversight}</p>
             <p className="text-[10px] text-muted-foreground">Escalated</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", ne.compliance_rate >= 100 ? "bg-green-50" : ne.compliance_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", ne.compliance_rate >= 100 ? "text-[--cs-success]" : ne.compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{ne.compliance_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", ne.compliance_rate === null ? "bg-slate-50" : ne.compliance_rate >= 100 ? "bg-green-50" : ne.compliance_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", ne.compliance_rate === null ? "text-[var(--cs-text-muted)]" : ne.compliance_rate >= 100 ? "text-[--cs-success]" : ne.compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(ne.compliance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", m.children_with_episodes === 0 ? "bg-green-50" : "bg-amber-50")}>

@@ -80,7 +80,7 @@ export function StaffPerformanceIntelligenceWidget() {
           <Stat label="Achieved Rate" value={`${qualComp.achievedRate}%`} />
           <Stat label="Expired" value={qualComp.expiredCount as number} />
           <Stat label="Mandatory Compliance" value={`${qualComp.mandatoryComplianceRate}%`} />
-          <Stat label="Renewal Rate" value={`${qualComp.renewalRate}%`} />
+          <Stat label="Renewal Rate" value={typeof qualComp.renewalRate === "number" ? `${qualComp.renewalRate}%` : "—"} />
         </div>
       </Section>
 

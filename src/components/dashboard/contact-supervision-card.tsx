@@ -92,7 +92,7 @@ export function ContactSupervisionCard() {
             <p className="text-[10px] text-muted-foreground">Overdue</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums text-blue-600">{o.avg_days_between_supervisions}d</p>
+            <p className="text-lg font-bold tabular-nums text-blue-600">{o.avg_days_between_supervisions === null ? "—" : `${o.avg_days_between_supervisions}d`}</p>
             <p className="text-[10px] text-muted-foreground">Avg Gap</p>
           </div>
           <div className="text-center rounded-lg bg-gray-50 p-2.5">
