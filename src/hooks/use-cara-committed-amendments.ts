@@ -26,7 +26,7 @@ export function useCommittedVersionHistory(recordId: string | null) {
     queryKey: ["cara-committed-versions", recordId],
     queryFn: () =>
       api.get<ListResponse<CaraCommittedRecord>>(
-        `/api/v1/cara-studio/committed-amendments?record_id=${encodeURIComponent(
+        `/cara-studio/committed-amendments?record_id=${encodeURIComponent(
           recordId ?? "",
         )}`,
       ),

@@ -39,7 +39,7 @@ export function useAuditTrail(homeId: string, filters: AuditTrailFilters = {}) {
     ],
     queryFn: () =>
       api.get<ListResponse<CaraStudioAuditLog>>(
-        `/api/v1/cara-studio/audit-trail?${qs.toString()}`,
+        `/cara-studio/audit-trail?${qs.toString()}`,
       ),
     refetchInterval: 15000,
   });
@@ -54,7 +54,7 @@ export function useAuditActors(homeId: string) {
     queryKey: ["cara-audit-actors", homeId],
     queryFn: () =>
       api.get<ListResponse<string>>(
-        `/api/v1/cara-studio/audit-trail?home_id=${encodeURIComponent(homeId)}&actors=1`,
+        `/cara-studio/audit-trail?home_id=${encodeURIComponent(homeId)}&actors=1`,
       ),
     refetchInterval: 60000,
   });

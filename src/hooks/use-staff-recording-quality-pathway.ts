@@ -58,7 +58,7 @@ export function useStaffRecordingQualityPathway() {
   return useQuery({
     queryKey: ["staff-recording-quality-pathway"],
     queryFn: () =>
-      api.get<{ data: StaffRecordingQualityPathwayResponse }>("/v1/staff-recording-quality-pathway"),
+      api.get<{ data: StaffRecordingQualityPathwayResponse }>("/staff-recording-quality-pathway"),
     staleTime: 60_000,
   });
 }

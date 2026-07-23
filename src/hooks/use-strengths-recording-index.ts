@@ -59,7 +59,7 @@ export function useStrengthsRecordingIndex() {
   return useQuery({
     queryKey: ["strengths-recording-index"],
     queryFn: () =>
-      api.get<{ data: StrengthsRecordingIndexResponse }>("/v1/strengths-recording-index"),
+      api.get<{ data: StrengthsRecordingIndexResponse }>("/strengths-recording-index"),
     staleTime: 120_000,
   });
 }

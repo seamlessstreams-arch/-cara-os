@@ -51,7 +51,7 @@ export function usePracticeFrameworkUsage() {
   return useQuery({
     queryKey: ["practice-framework-usage"],
     queryFn: () =>
-      api.get<{ data: PracticeFrameworkUsageResponse }>("/v1/practice-framework-usage"),
+      api.get<{ data: PracticeFrameworkUsageResponse }>("/practice-framework-usage"),
     staleTime: 60_000,
   });
 }
