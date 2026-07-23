@@ -41,10 +41,88 @@ function classify(name: string, ctx: string): string {
   return "policy";
 }
 
-export async function GET() {
-  // No base list is consumed today; keep a stable empty response rather than
-  // 405 in case a future caller GETs this path.
-  return NextResponse.json({ data: [] });
+// Map a persisted Document (the table POST writes to) onto the UploadedDocument
+// shape the Document Intelligence page renders. Uploads are saved
+// deterministically with no AI pass, so the AI-derived fields are null/empty
+// rather than fabricated.
+function toUploadedDocument(d: Record<string, unknown>) {
+  const tags = Array.isArray(d.tags) ? (d.tags as string[]) : [];
+  const mime = (d.mime_type as string) || "";
+  const fileType =
+    /pdf/.test(mime) ? "pdf" :
+    /word|docx/.test(mime) ? "docx" :
+    /sheet|xlsx|excel/.test(mime) ? "xlsx" :
+    /csv/.test(mime) ? "csv" :
+    /png/.test(mime) ? "png" :
+    /jpe?g/.test(mime) ? "jpg" :
+    /plain|txt/.test(mime) ? "txt" : "other";
+  return {
+    id: d.id as string,
+    original_file_name: (d.title as string) || (d.file_name as string) || "Document",
+    stored_file_path: (d.file_url as string) || "",
+    file_type: fileType,
+    file_size: (d.file_size as number) ?? 0,
+    uploaded_by: (d.created_by as string) || "",
+    uploaded_at: (d.created_at as string) || new Date().toISOString(),
+    linked_home_id: (d.home_id as string) || "",
+    linked_child_id: (d.linked_child_id as string) ?? null,
+    linked_staff_id: (d.linked_staff_id as string) ?? null,
+    linked_incident_id: (d.linked_incident_id as string) ?? null,
+    linked_task_id: null,
+    // Saved without a review workflow — a clean, honest terminal state.
+    document_status: "approved",
+    document_category: (d.category as string) ?? null,
+    classification_confidence: null,
+    ai_summary: null,
+    ai_risk_level: null,
+    review_required: false,
+    approved_by: null,
+    approved_at: (d.created_at as string) || null,
+    extracted_text: (d.description as string) || "",
+    ai_result: null,
+    tasks_created: [],
+    evidence_linked: false,
+    chronology_created: false,
+    upload_context: tags[0] ?? null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any;
+}
+
+export async function GET(req: NextRequest) {
+  // The Document Intelligence page lists documents through this path
+  // (useDocumentIntelligence). It used to return a hardcoded empty array, so
+  // every upload persisted to the documents table but the page showed nothing.
+  // Read them back through the dual-mode dal so uploads actually appear — on a
+  // live tenant as much as in demo.
+  const url = new URL(req.url);
+  const status = url.searchParams.get("status");
+  const risk = url.searchParams.get("risk_level");
+  const category = url.searchParams.get("category");
+
+  let docs: Record<string, unknown>[] = [];
+  try {
+    docs = (await dal.documents.findAll()) as unknown as Record<string, unknown>[];
+  } catch {
+    docs = [];
+  }
+
+  let mapped = docs.map(toUploadedDocument);
+  if (status && status !== "all") mapped = mapped.filter((d) => d.document_status === status);
+  if (risk && risk !== "all") mapped = mapped.filter((d) => d.ai_risk_level === risk);
+  if (category && category !== "all") mapped = mapped.filter((d) => d.document_category === category);
+
+  // newest first
+  mapped.sort((a, b) => String(b.uploaded_at).localeCompare(String(a.uploaded_at)));
+
+  const meta = {
+    total: mapped.length,
+    awaiting_review: mapped.filter((d) => d.document_status === "review" || d.document_status === "pending").length,
+    high_risk: mapped.filter((d) => d.ai_risk_level === "high" || d.ai_risk_level === "critical").length,
+    tasks_created: mapped.reduce((s, d) => s + (d.tasks_created?.length ?? 0), 0),
+    injection_detected: mapped.filter((d) => d.ai_result?.prompt_injection_detected).length,
+  };
+
+  return NextResponse.json({ data: mapped, meta });
 }
 
 export async function POST(req: NextRequest) {
