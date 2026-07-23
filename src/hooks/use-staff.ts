@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./use-api";
 import type { StaffMember, TrainingRecord, Supervision, Task } from "@/types";
 
@@ -29,6 +29,14 @@ export function useStaff(params?: { role?: string; status?: string; employment_t
     queryKey: ["staff", params],
     queryFn: () =>
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
+  });
+}
+
+export function useCreateStaffMember() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<StaffMember>) => api.post<{ data: StaffMember }>("/staff", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["staff"] }),
   });
 }
 

@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -117,4 +118,22 @@ export async function GET(req: NextRequest) {
   };
 
   return NextResponse.json({ data: enriched, meta });
+}
+
+// POST /api/v1/staff — create a staff member.
+// This dedicated route shadows the catch-all dispatcher for /staff, so without
+// a POST here "Add staff member" 405s before any create logic can run. Persists
+// via the dual-mode dal (staff_members on a live tenant, the store in demo);
+// createStaffMember strips the GENERATED full_name column and fills NOT NULL
+// defaults so a minimal form can create a seat.
+export async function POST(req: NextRequest) {
+  const parsed = await readJsonBody(req);
+  if (!parsed.ok) return parsed.response;
+  try {
+    const created = await dal.staff.create(parsed.data as Record<string, unknown>);
+    return NextResponse.json({ data: created }, { status: 201 });
+  } catch (err) {
+    console.error("[api/staff] create failed:", err);
+    return NextResponse.json({ error: "Could not create the staff member" }, { status: 500 });
+  }
 }

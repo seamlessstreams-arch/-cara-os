@@ -11,6 +11,7 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { dal } from "@/lib/db/dal";
 import { createServerClient } from "@/lib/supabase/server";
 import * as sq from "@/lib/supabase/queries";
@@ -565,6 +566,14 @@ function resolveAccessor(slug: string): AsyncCollection | null {
   const mem = (db as Record<string, any>)[collectionName] as Record<string, (...args: unknown[]) => unknown> | undefined;
   if (!mem || typeof mem !== "object") return null;
 
+  // On a live tenant the in-memory store is ephemeral (blanked, lost on cold
+  // start): a write that falls back to it LOOKS saved and then vanishes. That
+  // silent loss is worse than an honest error on a children's-records system,
+  // so in live mode mem-backed writes are withheld (null → the handler's
+  // "does not support create/update" response) instead of pretend-saving.
+  // Reads may still fall back — an empty list is the true live state.
+  const live = isLiveTenant();
+
   // Dal-routed core entities: reads via the dual-mode dal (real table on, store off);
   // writes via dal where available, else the store.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -582,15 +591,15 @@ function resolveAccessor(slug: string): AsyncCollection | null {
         : async (id: string) => asList(await dalCol.findAll()).find((x: any) => x?.id === id) ?? null,
       create:
         typeof dalCol.create === "function" ? async (d: Record<string, unknown>) => dalCol.create(d)
-        : typeof mem.create === "function" ? async (d: Record<string, unknown>) => mem.create!(d) : null,
+        : !live && typeof mem.create === "function" ? async (d: Record<string, unknown>) => mem.create!(d) : null,
       update:
         typeof dalCol.update === "function" ? async (id: string, d: Record<string, unknown>) => (await dalCol.update(id, d)) ?? null
-        : typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null : null,
+        : !live && typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null : null,
       patch:
         typeof dalCol.patch === "function" ? async (id: string, d: Record<string, unknown>) => (await dalCol.patch(id, d)) ?? null
         : typeof dalCol.update === "function" ? async (id: string, d: Record<string, unknown>) => (await dalCol.update(id, d)) ?? null
-        : typeof mem.patch === "function" ? async (id: string, d: Record<string, unknown>) => mem.patch!(id, d) ?? null
-        : typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null
+        : !live && typeof mem.patch === "function" ? async (id: string, d: Record<string, unknown>) => mem.patch!(id, d) ?? null
+        : !live && typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null
         : null,
     };
   }
@@ -603,11 +612,11 @@ function resolveAccessor(slug: string): AsyncCollection | null {
       findAll: async () => asList(typeof mem.findAll === "function" ? mem.findAll() : typeof mem.getAll === "function" ? mem.getAll() : []),
       findByChild: typeof mem.findByChild === "function" ? async (id: string) => asList(mem.findByChild!(id)) : null,
       findById: typeof mem.findById === "function" ? async (id: string) => mem.findById!(id) ?? null : null,
-      create: typeof mem.create === "function" ? async (d: Record<string, unknown>) => mem.create!(d) : null,
-      update: typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null : null,
+      create: !live && typeof mem.create === "function" ? async (d: Record<string, unknown>) => mem.create!(d) : null,
+      update: !live && typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null : null,
       patch:
-        typeof mem.patch === "function" ? async (id: string, d: Record<string, unknown>) => mem.patch!(id, d) ?? null
-        : typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null
+        !live && typeof mem.patch === "function" ? async (id: string, d: Record<string, unknown>) => mem.patch!(id, d) ?? null
+        : !live && typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null
         : null,
     };
   }
@@ -645,7 +654,12 @@ function resolveAccessor(slug: string): AsyncCollection | null {
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { id: (row as any).id, ...rest, created_at: (row as any).created_at };
-      } catch { return memCreate(data); }
+      } catch (err) {
+        // Live: a failed durable insert must surface (500), never pretend-save
+        // into the ephemeral store. Demo: the store IS the data — fall back.
+        if (live) throw err;
+        return memCreate(data);
+      }
     },
     update: (id: string, data: Record<string, unknown>) => updateGeneric(c, id, data),
     patch: (id: string, data: Record<string, unknown>) => updateGeneric(c, id, data),
