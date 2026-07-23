@@ -55,38 +55,23 @@ const DISPATCHER = path.join(API_V1, "[...slug]", "route.ts");
 const ALLOWLIST = new Set([]);
 
 /*
- * KNOWN-BROKEN BASELINE (2026-07-23).
+ * KNOWN-BROKEN BASELINE — currently EMPTY, and it should stay that way.
  *
- * These 13 were already broken when the guard was written. They are NOT
- * acceptable — each is a real 404/405/undefined-field at runtime — but each
- * needs a handler implemented rather than a one-line correction, so they are
- * recorded here to stop the bleeding (any NEW breakage fails CI immediately)
- * while the debt stays visible.
+ * It held 13 entries when the guard landed (2026-07-23) and was burned down to
+ * zero the same day: 9 turned out to be the guard's own false positives (it
+ * matched `care-events/[id]` ahead of `care-events/notifications` — fixed in
+ * routeFor by preferring static segments, the way Next.js resolves), and the
+ * real 4 were fixed — three missing per-record workforce [id] PATCH routes
+ * (appraisals, competency-profiles, development-plans) and the welfare-checks
+ * response shape.
  *
- * THIS LIST MAY ONLY SHRINK. Fixing an entry and leaving it here fails the
- * guard with "stale baseline entry" — so the list cannot quietly rot into a
- * permanent excuse. Never add to it to make a build pass.
+ * THIS LIST MAY ONLY SHRINK. A fixed entry left here fails the guard as a stale
+ * entry, so it cannot rot into a permanent excuse. Never add to it to make a
+ * build pass — fix the endpoint instead.
  *
  * Key: "KIND|hook file|METHOD /path"
  */
-const BASELINE = new Set([
-  // POST handlers never implemented on care-events sub-routes (405).
-  "METHOD NOT EXPORTED|src/hooks/use-care-events-notifications.ts|POST /care-events/notifications",
-  "METHOD NOT EXPORTED|src/hooks/use-care-events.ts|POST /care-events/jobs",
-  "METHOD NOT EXPORTED|src/hooks/use-export-history.ts|POST /care-events/filing-cabinet/export",
-  "METHOD NOT EXPORTED|src/hooks/use-export-history.ts|POST /care-events/inspection-bundle/export",
-  "METHOD NOT EXPORTED|src/hooks/use-inspection-snapshot.ts|POST /care-events/inspection-snapshot",
-  "METHOD NOT EXPORTED|src/hooks/use-manager-verify-queue.ts|POST /care-events/manager-verify-queue",
-  "METHOD NOT EXPORTED|src/hooks/use-reg44-pack.ts|POST /care-events/reg44-pack",
-  "METHOD NOT EXPORTED|src/hooks/use-routing-health.ts|POST /care-events/routing-health",
-  "METHOD NOT EXPORTED|src/hooks/use-recruitment.ts|POST /recruitment/references",
-  // Collection routes exist; the per-record [id] route does not, so PATCH 404s.
-  "MISSING ENDPOINT|src/hooks/use-workforce.ts|PATCH /workforce/competency-profiles/*",
-  "MISSING ENDPOINT|src/hooks/use-workforce.ts|PATCH /workforce/development-plans/*",
-  "MISSING ENDPOINT|src/hooks/use-workforce.ts|PATCH /workforce/appraisals/*",
-  // Declares a `checks` key the dispatcher envelope never returns.
-  "SHAPE MISMATCH|src/hooks/use-welfare-checks.ts|GET /welfare-checks",
-]);
+const BASELINE = new Set([]);
 
 // The dispatcher's response envelope — `{ data, meta }` for list/detail reads.
 const DISPATCHER_KEYS = new Set(["data", "meta"]);
@@ -124,13 +109,23 @@ const routes = []; // { segments: string[], methods: Set<string> }
   }
 })(API_V1, []);
 
-/** Match request segments against a route's segments, honouring [param]. */
+/**
+ * Match request segments against a route's segments, honouring [param].
+ * Next.js resolves a STATIC segment ahead of a dynamic one, so when several
+ * routes match, pick the most static. Taking the first match instead made
+ * `care-events/[id]` (GET, PATCH) swallow `/care-events/notifications` (GET,
+ * POST) and report a POST handler that exists as missing — nine false
+ * positives, which is exactly how a guard loses its credibility.
+ */
 function routeFor(segments) {
-  return routes.find(
+  const matches = routes.filter(
     (r) =>
       r.segments.length === segments.length &&
       r.segments.every((seg, i) => seg.startsWith("[") || seg === segments[i]),
   );
+  if (matches.length === 0) return undefined;
+  const dynamicCount = (r) => r.segments.filter((s) => s.startsWith("[")).length;
+  return matches.reduce((best, r) => (dynamicCount(r) < dynamicCount(best) ? r : best));
 }
 
 // ── Resolve a declared response type to its top-level keys ───────────────────
