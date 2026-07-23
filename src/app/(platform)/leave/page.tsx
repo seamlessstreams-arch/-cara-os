@@ -172,7 +172,7 @@ function RequestLeaveDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-lg p-6 space-y-5">
+      <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-lg p-6 space-y-5 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-[var(--cs-navy)]">Request Leave</h2>
@@ -251,7 +251,7 @@ function RTWPanel({ req, onClose }: { req: LeaveRequest; onClose: () => void }) 
   const [signed, setSigned] = useState(false);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-lg p-6 space-y-5">
+      <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-lg p-6 space-y-5 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-[var(--cs-navy)]">Return to Work Interview</h2>

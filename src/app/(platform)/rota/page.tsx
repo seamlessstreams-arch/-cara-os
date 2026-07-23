@@ -731,7 +731,7 @@ export default function RotaPage() {
         onClick={() => setAddShift(null)}
       >
         <div
-          className="w-full max-w-md bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-hidden"
+          className="w-full max-w-md bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between px-6 py-4 border-b">
@@ -851,7 +851,7 @@ export default function RotaPage() {
     {/* Fill Shift Modal */}
     {fillShift && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 space-y-5">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 space-y-5 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-base font-semibold text-[var(--cs-navy)]">Fill Open Shift</div>
@@ -905,7 +905,7 @@ export default function RotaPage() {
         onClick={() => setSwapModal(null)}
       >
         <div
-          className="w-full max-w-md bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-hidden"
+          className="w-full max-w-md bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between px-6 py-4 border-b">
@@ -998,7 +998,7 @@ export default function RotaPage() {
         onClick={() => setAbsenceModal(null)}
       >
         <div
-          className="w-full max-w-sm bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-hidden"
+          className="w-full max-w-sm bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between px-6 py-4 border-b">

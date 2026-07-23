@@ -537,7 +537,7 @@ export default function MaintenancePage() {
           onClick={() => setShowLog(false)}
         >
           <div
-            className="w-full max-w-md bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] p-6"
+            className="w-full max-w-md bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] p-6 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">

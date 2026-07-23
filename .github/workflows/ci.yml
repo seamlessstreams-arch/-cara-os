@@ -75,6 +75,9 @@ jobs:
       - name: API-contract guard (hook endpoints exist, with matching method + shape)
         run: node scripts/check-api-contracts.js
 
+      - name: Modal-viewport guard (centred panels capped to the viewport and scrollable)
+        run: node scripts/check-modal-viewport.js
+
   test:
     name: Test suite
     runs-on: ubuntu-latest

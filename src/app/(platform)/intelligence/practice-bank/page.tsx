@@ -245,7 +245,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
       {/* Suggestions Modal */}
       {suggestions && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); setSuggestions(null); }}>
-          <div className="w-full max-w-xl bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-xl bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-[var(--cs-cara-gold)]" />

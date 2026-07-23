@@ -282,7 +282,7 @@ export default function RightToWorkPage() {
       {/* Add verification modal (simple inline) */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]">
             <div className="text-sm font-semibold text-[var(--cs-navy)] mb-4">Add Right to Work Verification</div>
             <div className="space-y-3">
               <div>

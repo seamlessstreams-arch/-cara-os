@@ -524,7 +524,7 @@ function SafeguardingConcernsTab() {
       {/* Safeguarding Scan Modal */}
       {scanOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setScanOpen(false)}>
-          <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Eye className="h-5 w-5 text-violet-600" />
@@ -915,7 +915,7 @@ function MFCTab() {
       {/* Log episode modal */}
       {logOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setLogOpen(false)}>
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-bold text-slate-900">Log Missing Episode</span>
               <button onClick={() => setLogOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="h-4 w-4" /></button>
@@ -1171,7 +1171,7 @@ function ChronologyTab() {
       {/* Add entry modal */}
       {addEntryOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setAddEntryOpen(false)}>
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-bold text-slate-900">Add Chronology Entry</span>
               <button onClick={() => setAddEntryOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="h-4 w-4" /></button>

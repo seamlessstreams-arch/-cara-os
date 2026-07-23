@@ -231,7 +231,7 @@ function AddCheckForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (d
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]" onClick={(e) => e.stopPropagation()}>
         <div className="px-6 py-4 border-b bg-slate-50 flex items-center justify-between">
           <div className="font-bold text-slate-900">Record Building Check</div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-lg leading-none">&times;</button>

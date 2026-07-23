@@ -54,7 +54,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--cs-navy)]/60 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-[var(--cs-shadow-elevated)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+      <div className="w-full max-w-md rounded-2xl bg-white shadow-[var(--cs-shadow-elevated)] overflow-y-auto overflow-x-hidden animate-in fade-in zoom-in-95 duration-300 max-h-[calc(100dvh-2rem)]">
         {/* Skip */}
         <div className="flex justify-end px-4 pt-3">
           <button onClick={handleComplete} className="text-xs text-[var(--cs-text-muted)] hover:text-[var(--cs-text)] flex items-center gap-1 transition-colors">

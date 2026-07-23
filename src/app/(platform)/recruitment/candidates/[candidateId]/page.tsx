@@ -1121,7 +1121,7 @@ export default function CandidateDetailPage() {
     {/* ── Flag Concern Modal ─────────────────────────────────────────────────── */}
     {flagConcern && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-md p-6 space-y-4">
+        <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-md p-6 space-y-4 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]">
           <h2 className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2">
             <Flag className="h-4 w-4 text-red-500" /> Flag Concern
           </h2>
@@ -1151,7 +1151,7 @@ export default function CandidateDetailPage() {
     {/* ── Request Override Modal ─────────────────────────────────────────────── */}
     {requestOverride && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-md p-6 space-y-4">
+        <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-md p-6 space-y-4 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]">
           <h2 className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2">
             <Shield className="h-4 w-4 text-purple-500" /> Request Override
           </h2>
@@ -1181,7 +1181,7 @@ export default function CandidateDetailPage() {
     {/* ── Add Reference Modal ────────────────────────────────────────────────── */}
     {showAddRef && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-md p-6 space-y-4">
+        <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-md p-6 space-y-4 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]">
           <h2 className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2">
             <Users className="h-4 w-4 text-blue-600" /> Add Reference
           </h2>

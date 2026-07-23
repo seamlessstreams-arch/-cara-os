@@ -209,7 +209,7 @@ function VehicleCheckForm({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-xl bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]" onClick={(e) => e.stopPropagation()}>
         <div className="px-6 py-4 border-b bg-slate-50 flex items-center justify-between">
           <div className="font-bold text-[var(--cs-navy)]">Log Vehicle Check</div>
           <button onClick={onClose} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] text-lg leading-none">&times;</button>
