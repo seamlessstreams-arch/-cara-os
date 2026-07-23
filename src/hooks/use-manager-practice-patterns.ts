@@ -52,7 +52,7 @@ export function useManagerPracticePatterns() {
   return useQuery({
     queryKey: ["manager-practice-patterns"],
     queryFn: () =>
-      api.get<{ data: ManagerPracticePatternsResponse }>("/v1/manager-practice-patterns"),
+      api.get<{ data: ManagerPracticePatternsResponse }>("/manager-practice-patterns"),
     staleTime: 60_000,
   });
 }

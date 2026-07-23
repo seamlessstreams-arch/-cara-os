@@ -56,7 +56,7 @@ export function useCareLanguageAudit() {
   return useQuery({
     queryKey: ["care-language-audit"],
     queryFn: () =>
-      api.get<{ data: CareLanguageAuditResponse }>("/v1/care-language-audit"),
+      api.get<{ data: CareLanguageAuditResponse }>("/care-language-audit"),
     staleTime: 120_000,
   });
 }

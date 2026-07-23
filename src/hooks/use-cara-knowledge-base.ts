@@ -36,7 +36,7 @@ export function useCaraKnowledgeBase(params?: {
   return useQuery({
     queryKey: ["cara-knowledge-base", params],
     queryFn: () =>
-      api.get<{ data: KBResponse }>(`/v1/cara-knowledge-base${qs ? `?${qs}` : ""}`),
+      api.get<{ data: KBResponse }>(`/cara-knowledge-base${qs ? `?${qs}` : ""}`),
     staleTime: 300_000,
   });
 }

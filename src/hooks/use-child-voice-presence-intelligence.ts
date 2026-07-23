@@ -50,7 +50,7 @@ export function useChildVoicePresenceIntelligence() {
   return useQuery({
     queryKey: ["child-voice-presence-intelligence"],
     queryFn: () =>
-      api.get<{ data: ChildVoicePresenceResponse }>("/v1/child-voice-presence-intelligence"),
+      api.get<{ data: ChildVoicePresenceResponse }>("/child-voice-presence-intelligence"),
     staleTime: 60_000,
   });
 }
