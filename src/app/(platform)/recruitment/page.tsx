@@ -857,7 +857,7 @@ export default function RecruitmentPage() {
     {/* ── Add Candidate Modal ────────────────────────────────────────────────── */}
     {showAddCandidate && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
               <UserPlus className="h-4 w-4 text-blue-600" /> Add Candidate

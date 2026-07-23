@@ -177,7 +177,7 @@ function ChildVoiceSummarySection({ childId, childName }: { childId: string; chi
       </div>
       {showModal && summary && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <div className="flex items-center gap-2"><BookOpen className="h-5 w-5 text-emerald-600" /><span className="text-lg font-bold text-slate-900">Child Voice Summary</span></div>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600"><X className="h-5 w-5" /></button>
@@ -233,7 +233,7 @@ function WhatChangedSection({ childName, incidents, chronology, recentLog }: {
       </div>
       {showModal && analysis && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <div className="flex items-center gap-2"><Activity className="h-5 w-5 text-violet-600" /><span className="text-lg font-bold text-slate-900">What Has Changed — {childName}</span></div>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600"><X className="h-5 w-5" /></button>

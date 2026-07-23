@@ -504,7 +504,7 @@ function ScheduleModal({ onClose, prefill }: { onClose: () => void; prefill?: { 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] p-6 space-y-5 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <div>
             <div className="text-base font-bold text-[var(--cs-navy)]">Schedule Supervision</div>

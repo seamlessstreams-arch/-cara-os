@@ -304,7 +304,7 @@ export function CaraDictationPanel(props: CaraDictationPanelProps) {
       aria-modal="true"
       aria-label="Cara voice dictation"
     >
-      <Card className="w-full max-w-xl">
+      <Card className="w-full max-w-xl overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]">
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-2 text-base">
             <span className="flex items-center gap-2">

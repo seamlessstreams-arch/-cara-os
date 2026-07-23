@@ -665,7 +665,7 @@ function RecentInterventionsSection() {
           onClick={() => setShowReviewModal(false)}
         >
           <div
-            className="w-full max-w-2xl bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-hidden"
+            className="w-full max-w-2xl bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-2rem)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">

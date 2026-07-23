@@ -21,7 +21,8 @@
     "check:demo-seed": "node scripts/check-demo-seed.js",
     "check:seed-refs": "node scripts/check-seed-refs.js",
     "check:dal-persistence": "node scripts/check-dal-persistence.js",
-    "check:api-contracts": "node scripts/check-api-contracts.js"
+    "check:api-contracts": "node scripts/check-api-contracts.js",
+    "check:modal-viewport": "node scripts/check-modal-viewport.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.89.0",
