@@ -156,8 +156,8 @@ describe("computeRestraintIntelligence", () => {
       expect(result.overview.total_incidents_90d).toBe(0);
       expect(result.overview.avg_duration_minutes).toBe(0);
       expect(result.overview.children_involved_30d).toBe(0);
-      expect(result.overview.child_debrief_rate).toBe(100);
-      expect(result.overview.team_teach_compliance_rate).toBe(100);
+      expect(result.overview.child_debrief_rate).toBeNull();
+      expect(result.overview.team_teach_compliance_rate).toBeNull();
       expect(result.child_profiles).toHaveLength(0);
       expect(result.reason_breakdown).toHaveLength(0);
       expect(result.alerts).toHaveLength(0);

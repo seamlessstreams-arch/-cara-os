@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { below } from "@/lib/metrics/rate";
 
 import {
   computeSafeguardingIntelligence,
@@ -447,7 +448,7 @@ export async function GET() {
     ...(safeguarding.risk_assessments.overdue_reviews > 0
       ? [{ severity: "medium", message: `${safeguarding.risk_assessments.overdue_reviews} risk assessments overdue for review` }]
       : []),
-    ...(safeguarding.missing.return_interview_rate < 100
+    ...(below(safeguarding.missing.return_interview_rate, 100)
       ? [{ severity: "high", message: `Return interview completion at ${safeguarding.missing.return_interview_rate}% — target 100%` }]
       : []),
   ];

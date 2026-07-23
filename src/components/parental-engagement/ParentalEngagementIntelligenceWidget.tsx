@@ -79,7 +79,7 @@ export function ParentalEngagementIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Positive Outcome" value={`${contactQuality.positiveOutcomeRate}%`} />
           <Stat label="Mood Uplift" value={`${contactQuality.moodUpliftRate}%`} />
-          <Stat label="Follow-Up Done" value={`${contactQuality.followUpCompletionRate}%`} />
+          <Stat label="Follow-Up Done" value={typeof contactQuality.followUpCompletionRate === "number" ? `${contactQuality.followUpCompletionRate}%` : "—"} />
           <Stat label="Child Refusal" value={`${contactQuality.childRefusalRate}%`} />
           <Stat label="Parent No-Show" value={`${contactQuality.parentNoShowRate}%`} />
           <Stat label="Avg Duration" value={`${contactQuality.averageDurationMinutes} min`} />

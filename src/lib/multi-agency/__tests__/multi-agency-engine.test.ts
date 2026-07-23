@@ -281,7 +281,7 @@ describe("calculateHomeMultiAgencyMetrics", () => {
   it("handles empty profiles", () => {
     const result = calculateHomeMultiAgencyMetrics([], "home-oak", NOW);
     expect(result.totalChildren).toBe(0);
-    expect(result.overallScore).toBe(0);
+    expect(result.overallScore).toBeNull();
   });
 
   it("counts escalations across home", () => {

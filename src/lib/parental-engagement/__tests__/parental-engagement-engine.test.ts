@@ -441,10 +441,10 @@ describe("evaluateContactQuality", () => {
     expect(result.score).toBeLessThanOrEqual(10);
   });
 
-  it("gives follow-up completion 100% when none needed", () => {
+  it("reports follow-up completion as unmeasured when none needed", () => {
     const contacts = [makeContact({ followUpNeeded: false })];
     const result = evaluateContactQuality(contacts);
-    expect(result.followUpCompletionRate).toBe(100);
+    expect(result.followUpCompletionRate).toBeNull();
   });
 
   it("handles single contact correctly", () => {

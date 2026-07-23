@@ -14,6 +14,7 @@ import {
   Heart, Calendar, Smile, Frown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useContactEngagement } from "@/hooks/use-contact-engagement";
 
 // ── Colour maps ────────────────────────────────────────────────────────────
@@ -84,9 +85,9 @@ export function ContactIntelligenceCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">Plan Rate</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: c.overall_completion_rate >= 80 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", c.overall_completion_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {c.overall_completion_rate}%
+          <div className="text-center rounded-lg p-2" style={{ background: meets(c.overall_completion_rate, 80) ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(c.overall_completion_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(c.overall_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Completion</p>
           </div>
@@ -96,9 +97,9 @@ export function ContactIntelligenceCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">Sessions 90d</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: ft.safe_sessions_pct >= 80 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", ft.safe_sessions_pct >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {ft.safe_sessions_pct}%
+          <div className="text-center rounded-lg p-2" style={{ background: meets(ft.safe_sessions_pct, 80) ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(ft.safe_sessions_pct, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(ft.safe_sessions_pct)}
             </p>
             <p className="text-[10px] text-muted-foreground">Safe</p>
           </div>
@@ -131,11 +132,11 @@ export function ContactIntelligenceCard() {
           </div>
           <div className="flex items-center justify-between rounded-lg border p-2.5 mt-2">
             <div className="flex items-center gap-2">
-              <Smile className={cn("h-4 w-4", ft.safe_sessions_pct >= 75 ? "text-green-500" : "text-amber-500")} />
+              <Smile className={cn("h-4 w-4", meets(ft.safe_sessions_pct, 75) ? "text-green-500" : "text-amber-500")} />
               <div>
                 <p className="text-xs font-medium">Session Safety</p>
                 <p className="text-[10px] text-muted-foreground">
-                  {ft.safe_sessions_pct}% safe · avg {ft.avg_duration_minutes} min
+                  {formatRate(ft.safe_sessions_pct)} safe · avg {ft.avg_duration_minutes ?? "—"} min
                 </p>
               </div>
             </div>
@@ -188,7 +189,7 @@ export function ContactIntelligenceCard() {
             <div>
               <p className="text-xs font-medium">Mood Impact</p>
               <p className="text-[10px] text-muted-foreground">
-                Non-contact days: {mood.avg_mood_non_contact_days.toFixed(1)} · Contact days: {mood.avg_mood_contact_days.toFixed(1)}
+                Non-contact days: {mood.avg_mood_non_contact_days?.toFixed(1) ?? "—"} · Contact days: {mood.avg_mood_contact_days?.toFixed(1) ?? "—"}
               </p>
             </div>
           </div>

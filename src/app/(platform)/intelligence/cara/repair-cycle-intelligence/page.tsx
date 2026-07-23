@@ -3,6 +3,7 @@
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, AlertTriangle, Clock } from "lucide-react";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import {
   useRepairCycleIntelligence,
   type IncidentRepairProfile,
@@ -93,8 +94,8 @@ export default function RepairCycleIntelligencePage() {
             <p className="text-sm font-medium">Overall repair cycle completion rate</p>
             <p className="text-xs text-muted-foreground">{summary.mostCommonMissingStep ? `Most common gap: ${summary.mostCommonMissingStep}` : "No recurring gaps"}</p>
           </div>
-          <p className={`text-3xl font-bold ${summary.overallCompletionRate >= 80 ? "text-emerald-600" : summary.overallCompletionRate >= 50 ? "text-amber-600" : "text-red-600"}`}>
-            {Math.round(summary.overallCompletionRate)}%
+          <p className={`text-3xl font-bold ${meets(summary.overallCompletionRate, 80) ? "text-emerald-600" : meets(summary.overallCompletionRate, 50) ? "text-amber-600" : summary.overallCompletionRate === null ? "text-muted-foreground" : "text-red-600"}`}>
+            {formatRate(summary.overallCompletionRate)}
           </p>
         </div>
 
@@ -158,8 +159,8 @@ export default function RepairCycleIntelligencePage() {
                       <p className="text-xs text-amber-600 mt-0.5">Gap: {cs.mostCommonMissingStep}</p>
                     )}
                   </div>
-                  <p className={`text-xl font-bold ml-4 ${cs.cycleCompletionRate >= 80 ? "text-emerald-600" : cs.cycleCompletionRate >= 50 ? "text-amber-600" : "text-red-600"}`}>
-                    {Math.round(cs.cycleCompletionRate)}%
+                  <p className={`text-xl font-bold ml-4 ${meets(cs.cycleCompletionRate, 80) ? "text-emerald-600" : meets(cs.cycleCompletionRate, 50) ? "text-amber-600" : cs.cycleCompletionRate === null ? "text-muted-foreground" : "text-red-600"}`}>
+                    {formatRate(cs.cycleCompletionRate)}
                   </p>
                 </div>
               ))}

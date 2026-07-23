@@ -216,6 +216,15 @@ describe("calculateHomeReg44Metrics", () => {
     expect(result.totalVisitsLast12Months).toBe(0);
     expect(result.frequencyCompliant).toBe(false);
     expect(result.complianceIssues.some(i => i.includes("non-compliant"))).toBe(true);
+    // No visit means nothing was measured — not full compliance
+    expect(result.reportCompletionRate).toBeNull();
+    expect(result.ofstedSubmissionRate).toBeNull();
+    expect(result.reportTimelinessRate).toBeNull();
+    expect(result.actionCompletionRate).toBeNull();
+    expect(result.averageChildEngagement).toBeNull();
+    expect(result.averageVisitDuration).toBeNull();
+    expect(result.complianceIssues.some(i => i.includes("reports completed"))).toBe(false);
+    expect(result.complianceIssues.some(i => i.includes("submitted to Ofsted"))).toBe(false);
   });
 
   it("identifies recurring issue areas", () => {

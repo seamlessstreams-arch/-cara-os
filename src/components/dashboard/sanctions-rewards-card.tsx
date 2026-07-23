@@ -15,6 +15,7 @@ import {
   ThumbsDown, ThumbsUp, BarChart3, Loader2, FileWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useSanctionsRewardsIntelligence } from "@/hooks/use-sanctions-rewards-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -78,25 +79,25 @@ export function SanctionsRewardsCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.reward_to_sanction_ratio >= 3 ? "bg-green-50" : o.reward_to_sanction_ratio >= 2 ? "bg-amber-50" : "bg-red-50",
+            meets(o.reward_to_sanction_ratio, 3) ? "bg-green-50" : meets(o.reward_to_sanction_ratio, 2) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.reward_to_sanction_ratio >= 3 ? "text-[--cs-success]" : o.reward_to_sanction_ratio >= 2 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.reward_to_sanction_ratio, 3) ? "text-[--cs-success]" : meets(o.reward_to_sanction_ratio, 2) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.reward_to_sanction_ratio}:1
+              {o.reward_to_sanction_ratio === null ? "—" : `${o.reward_to_sanction_ratio}:1`}
             </p>
             <p className="text-[10px] text-muted-foreground">R:S Ratio</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.proportionality_rate === 100 ? "bg-green-50" : o.proportionality_rate >= 80 ? "bg-amber-50" : "bg-red-50",
+            meets(o.proportionality_rate, 100) ? "bg-green-50" : meets(o.proportionality_rate, 80) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.proportionality_rate === 100 ? "text-[--cs-success]" : o.proportionality_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.proportionality_rate, 100) ? "text-[--cs-success]" : meets(o.proportionality_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.proportionality_rate}%
+              {formatRate(o.proportionality_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Proportionate</p>
           </div>
@@ -171,11 +172,11 @@ export function SanctionsRewardsCard() {
                     {c.sanctions > 0 && (
                       <Badge className={cn(
                         "text-[10px] tabular-nums",
-                        c.ratio >= 3 ? "bg-[--cs-success-bg] text-[--cs-success]"
-                          : c.ratio >= 2 ? "bg-[--cs-warning-bg] text-[--cs-warning]"
+                        meets(c.ratio, 3) ? "bg-[--cs-success-bg] text-[--cs-success]"
+                          : meets(c.ratio, 2) ? "bg-[--cs-warning-bg] text-[--cs-warning]"
                           : "bg-[--cs-risk-bg] text-[--cs-risk]",
                       )}>
-                        {c.ratio}:1
+                        {c.ratio === null ? "—" : `${c.ratio}:1`}
                       </Badge>
                     )}
                   </div>

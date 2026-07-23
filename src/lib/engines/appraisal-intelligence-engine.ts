@@ -13,6 +13,8 @@
 // trained?" Quality Standards: workforce development and fitness tracking.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type AppraisalType = "probation_review" | "annual_appraisal" | "mid_year" | "pip";
@@ -67,12 +69,12 @@ export interface AppraisalOverview {
   overdue: number;
   scheduled: number;
   in_progress: number;
-  completion_rate: number;             // pct of non-scheduled that are completed
-  compliance_rate: number;             // pct of active staff with ≥1 completed appraisal
+  completion_rate: number | null;      // pct of non-scheduled that are completed; null = none to complete
+  compliance_rate: number | null;      // pct of active staff with ≥1 completed appraisal; null = no active staff
   staff_with_appraisal: number;
   staff_without_appraisal: number;
-  avg_competency_score: number;        // avg across all domains of completed appraisals
-  fitness_confirmed_rate: number;      // pct of completed that are signed by staff
+  avg_competency_score: number | null; // avg across all domains of completed appraisals; null = nothing scored
+  fitness_confirmed_rate: number | null; // pct of completed that are signed by staff; null = none completed
   overdue_count: number;
 }
 
@@ -191,17 +193,13 @@ export function computeAppraisalIntelligence(
 
   // completion_rate = completed / (total - scheduled) — only actionable items
   const actionable = appraisals.filter((a) => a.status !== "scheduled");
-  const completionRate = actionable.length > 0
-    ? Math.round((completed.length / actionable.length) * 100)
-    : 100;
+  const completionRate = rate(completed.length, actionable.length);
 
   // ── Staff coverage ─────────────────────────────────────────────────────
   const staffWithCompleted = new Set(completed.map((a) => a.staff_id));
   const staffWithAppraisal = activeStaff.filter((s) => staffWithCompleted.has(s.id)).length;
   const staffWithoutAppraisal = activeStaff.length - staffWithAppraisal;
-  const complianceRate = activeStaff.length > 0
-    ? Math.round((staffWithAppraisal / activeStaff.length) * 100)
-    : 100;
+  const complianceRate = rate(staffWithAppraisal, activeStaff.length);
 
   // ── Competency scores ──────────────────────────────────────────────────
   const allScores: number[] = [];
@@ -209,13 +207,11 @@ export function computeAppraisalIntelligence(
     const scores = Object.values(a.competency_scores).filter((v) => typeof v === "number" && v > 0);
     allScores.push(...scores);
   }
-  const avgCompetencyScore = allScores.length > 0 ? round1(average(allScores)) : 0;
+  const avgCompetencyScore = allScores.length > 0 ? round1(average(allScores)) : null;
 
   // ── Fitness confirmed (signed by staff) ────────────────────────────────
   const signedCount = completed.filter((a) => a.signed_by_staff).length;
-  const fitnessConfirmedRate = completed.length > 0
-    ? Math.round((signedCount / completed.length) * 100)
-    : 100;
+  const fitnessConfirmedRate = rate(signedCount, completed.length);
 
   const overview: AppraisalOverview = {
     total_appraisals: appraisals.length,
@@ -438,7 +434,7 @@ export function computeAppraisalIntelligence(
   }
 
   // Positive: 100% compliance rate
-  if (complianceRate === 100 && activeStaff.length > 0) {
+  if (meets(complianceRate, 100)) {
     insights.push({
       severity: "positive",
       text: `All ${activeStaff.length} active staff have at least one completed appraisal. Full coverage demonstrates the registered person takes workforce fitness seriously — a strong SCCIF indicator.`,
@@ -446,7 +442,7 @@ export function computeAppraisalIntelligence(
   }
 
   // Positive: high average competency
-  if (avgCompetencyScore >= 4 && allScores.length > 0) {
+  if (meets(avgCompetencyScore, 4)) {
     insights.push({
       severity: "positive",
       text: `Average competency score is ${avgCompetencyScore}/5 ("proficient" level). High workforce competency indicates effective recruitment, training, and professional development aligned with the home's Statement of Purpose.`,
@@ -454,7 +450,7 @@ export function computeAppraisalIntelligence(
   }
 
   // Positive: 100% fitness confirmed
-  if (fitnessConfirmedRate === 100 && completed.length > 0) {
+  if (meets(fitnessConfirmedRate, 100)) {
     insights.push({
       severity: "positive",
       text: `All completed appraisals are signed by staff. 100% sign-off rate demonstrates transparent performance management and fitness confirmation under Reg 32.`,

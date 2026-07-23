@@ -19,6 +19,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { Role } from "../permissions/types";
+import { rate } from "../metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -111,7 +112,7 @@ export interface ComplianceResult {
   issues: ComplianceIssue[];
   completedChecks: number;
   totalRequired: number;
-  completionPercentage: number;
+  completionPercentage: number | null;
   nextActions: string[];
   reg34Compliant: boolean;
   schedule2Complete: boolean;
@@ -251,9 +252,7 @@ export function evaluateCompliance(
     issues,
     completedChecks: completedCount,
     totalRequired: requiredChecks.length,
-    completionPercentage: requiredChecks.length > 0
-      ? Math.round((completedCount / requiredChecks.length) * 100)
-      : 100,
+    completionPercentage: rate(completedCount, requiredChecks.length),
     nextActions,
     reg34Compliant,
     schedule2Complete,
@@ -313,9 +312,9 @@ export function checkStartReadiness(
 export interface PipelineMetrics {
   totalCandidates: number;
   byStage: Record<RecruitmentStage, number>;
-  averageTimeToHire: number;       // days
+  averageTimeToHire: number | null;  // days; null = nobody appointed yet
   blockedCount: number;
-  clearanceRate: number;           // % reaching appointed
+  clearanceRate: number | null;      // % reaching appointed; null = nobody in the pipeline
   overdueChecks: number;
   expiringChecks: number;          // within 30 days
 }
@@ -382,14 +381,12 @@ export function calculatePipelineMetrics(
   }
 
   const activeCandidates = candidates.filter(c => isActiveStage(c.stage)).length;
-  const clearanceRate = activeCandidates + appointedCount > 0
-    ? Math.round((appointedCount / (activeCandidates + appointedCount)) * 100)
-    : 0;
+  const clearanceRate = rate(appointedCount, activeCandidates + appointedCount);
 
   return {
     totalCandidates: candidates.length,
     byStage,
-    averageTimeToHire: appointedCount > 0 ? Math.round(totalDaysToHire / appointedCount) : 0,
+    averageTimeToHire: appointedCount > 0 ? Math.round(totalDaysToHire / appointedCount) : null,
     blockedCount,
     clearanceRate,
     overdueChecks,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRestraintIntelligence } from "@/hooks/use-restraint-intelligence";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import type {
   ChildRestraintProfile,
   ReasonBreakdown,
@@ -30,19 +31,27 @@ const INSIGHT_BORDER: Record<string, string> = {
   positive: "border-green-300 bg-green-50 text-green-800",
 };
 
-function RateBar({ label, rate, alertBelow }: { label: string; rate: number; alertBelow?: number }) {
-  const alert = alertBelow !== undefined && rate < alertBelow;
-  const barColor = rate >= 90 ? "bg-green-400" : rate >= 70 ? "bg-amber-400" : "bg-red-400";
+function RateBar({ label, rate, alertBelow }: { label: string; rate: number | null; alertBelow?: number }) {
+  const alert = alertBelow !== undefined && below(rate, alertBelow);
+  const good = meets(rate, 90);
+  const barColor = good ? "bg-green-400" : meets(rate, 70) ? "bg-amber-400" : "bg-red-400";
+  const measured = typeof rate === "number";
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
         <span className="text-slate-600">{label}</span>
-        <span className={`font-semibold ${alert ? "text-red-600" : rate >= 90 ? "text-green-600" : "text-amber-600"}`}>
-          {rate}%
+        <span
+          className={`font-semibold ${
+            !measured ? "text-slate-400" : alert ? "text-red-600" : good ? "text-green-600" : "text-amber-600"
+          }`}
+        >
+          {measured ? formatRate(rate) : "Not recorded"}
         </span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${rate}%` }} />
+        {measured && (
+          <div className={`h-full rounded-full ${barColor}`} style={{ width: `${rate}%` }} />
+        )}
       </div>
     </div>
   );

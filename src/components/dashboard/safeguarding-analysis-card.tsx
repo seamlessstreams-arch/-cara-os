@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSafeguardingIntelligence } from "@/hooks/use-safeguarding-intelligence";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -101,7 +102,7 @@ export function SafeguardingAnalysisCard() {
               <p className="text-[10px] text-muted-foreground">Children</p>
             </div>
             <div>
-              <p className={cn("text-sm font-bold tabular-nums", r.debrief_completion_rate >= 100 ? "text-[--cs-success]" : r.debrief_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{r.debrief_completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", r.debrief_completion_rate === null ? "text-[var(--cs-text-muted)]" : r.debrief_completion_rate >= 100 ? "text-[--cs-success]" : r.debrief_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(r.debrief_completion_rate)}</p>
               <p className="text-[10px] text-muted-foreground">Debrief</p>
             </div>
             <div>
@@ -145,7 +146,7 @@ export function SafeguardingAnalysisCard() {
               <p className="text-[10px] text-muted-foreground">Episodes (90d)</p>
             </div>
             <div>
-              <p className={cn("text-sm font-bold tabular-nums", m.return_interview_rate >= 100 ? "text-[--cs-success]" : m.return_interview_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{m.return_interview_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", m.return_interview_rate === null ? "text-[var(--cs-text-muted)]" : m.return_interview_rate >= 100 ? "text-[--cs-success]" : m.return_interview_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(m.return_interview_rate)}</p>
               <p className="text-[10px] text-muted-foreground">RI Rate</p>
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -81,33 +82,33 @@ export function MedicationErrorPreventionIntelligenceWidget() {
 
       <Section title="Administration Quality" defaultOpen>
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="On-Time Rate" value={`${aq.onTimeRate}%`} />
+          <Stat label="On-Time Rate" value={formatRate(aq.onTimeRate)} />
           <Stat label="Missed/Refused" value={aq.missedRefusedCount} />
-          <Stat label="Two-Person Check" value={`${aq.twoPersonCheckRate}%`} />
-          <Stat label="Documented Immediately" value={`${aq.documentedImmediatelyRate}%`} />
-          <Stat label="Child Consent" value={`${aq.childConsentRate}%`} />
-          <Stat label="Side Effects Monitored" value={`${aq.sideEffectsMonitoredRate}%`} />
+          <Stat label="Two-Person Check" value={formatRate(aq.twoPersonCheckRate)} />
+          <Stat label="Documented Immediately" value={formatRate(aq.documentedImmediatelyRate)} />
+          <Stat label="Child Consent" value={formatRate(aq.childConsentRate)} />
+          <Stat label="Side Effects Monitored" value={formatRate(aq.sideEffectsMonitoredRate)} />
         </div>
       </Section>
 
       <Section title="Error Management">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Errors" value={em.totalErrors} />
-          <Stat label="No Harm Rate" value={`${em.noHarmRate}%`} />
-          <Stat label="Reported Immediately" value={`${em.reportedImmediatelyRate}%`} />
-          <Stat label="Root Cause Identified" value={`${em.rootCauseIdentifiedRate}%`} />
-          <Stat label="Preventive Action" value={`${em.preventiveActionRate}%`} />
-          <Stat label="Duty of Candour" value={`${em.dutyOfCandourRate}%`} />
+          <Stat label="No Harm Rate" value={formatRate(em.noHarmRate)} />
+          <Stat label="Reported Immediately" value={formatRate(em.reportedImmediatelyRate)} />
+          <Stat label="Root Cause Identified" value={formatRate(em.rootCauseIdentifiedRate)} />
+          <Stat label="Preventive Action" value={formatRate(em.preventiveActionRate)} />
+          <Stat label="Duty of Candour" value={formatRate(em.dutyOfCandourRate)} />
         </div>
       </Section>
 
       <Section title="Storage Safety">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Audits" value={ss.totalAudits} />
-          <Stat label="Fully Compliant" value={`${ss.fullyCompliantRate}%`} />
-          <Stat label="Temperature OK" value={`${ss.temperatureComplianceRate}%`} />
-          <Stat label="Expiry Compliance" value={`${ss.expiryComplianceRate}%`} />
-          <Stat label="MAR Chart Accuracy" value={`${ss.marChartAccuracyRate}%`} />
+          <Stat label="Fully Compliant" value={formatRate(ss.fullyCompliantRate)} />
+          <Stat label="Temperature OK" value={formatRate(ss.temperatureComplianceRate)} />
+          <Stat label="Expiry Compliance" value={formatRate(ss.expiryComplianceRate)} />
+          <Stat label="MAR Chart Accuracy" value={formatRate(ss.marChartAccuracyRate)} />
           <Stat label="Expired Found" value={ss.expiredMedicationAudits} />
         </div>
       </Section>
@@ -115,10 +116,10 @@ export function MedicationErrorPreventionIntelligenceWidget() {
       <Section title="Training Compliance">
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Staff" value={tc.totalStaff} />
-          <Stat label="Current Rate" value={`${tc.currentRate}%`} />
-          <Stat label="Competency Assessed" value={`${tc.competencyAssessedRate}%`} />
-          <Stat label="Controlled Drugs" value={`${tc.controlledDrugsRate}%`} />
-          <Stat label="Error Reporting" value={`${tc.errorReportingRate}%`} />
+          <Stat label="Current Rate" value={formatRate(tc.currentRate)} />
+          <Stat label="Competency Assessed" value={formatRate(tc.competencyAssessedRate)} />
+          <Stat label="Controlled Drugs" value={formatRate(tc.controlledDrugsRate)} />
+          <Stat label="Error Reporting" value={formatRate(tc.errorReportingRate)} />
           <Stat label="Expiring Soon" value={tc.expiringCount} />
         </div>
       </Section>
@@ -128,7 +129,7 @@ export function MedicationErrorPreventionIntelligenceWidget() {
           {profiles.map((c) => (
             <div key={c.childId as string} className="mb-2 p-2 bg-gray-50 rounded">
               <div className="flex justify-between text-sm font-medium"><span>{c.childName as string}</span><span>{c.overallScore as number}/10</span></div>
-              <p className="text-xs text-gray-500 mt-1">{c.administrationCount as number} administrations · {c.onTimeRate as number}% on time</p>
+              <p className="text-xs text-gray-500 mt-1">{c.administrationCount as number} administrations · {formatRate(c.onTimeRate as number | null)} on time</p>
               <p className="text-xs text-gray-500">{c.errorCount as number} errors · {c.missedCount as number} missed</p>
             </div>
           ))}

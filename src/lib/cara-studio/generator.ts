@@ -114,10 +114,14 @@ export async function generate(request: GenerationRequest): Promise<GenerationRe
   // Step 6: Post-generation safety check
   const postSafety = postGenerationCheck(output, request.generationType);
 
-  // Merge pre and post safety
+  // Merge pre and post safety — the worst of the checks that actually ran; if
+  // neither ran there is no combined score to report.
+  const measuredScores = [preSafety.score, postSafety.score].filter(
+    (s): s is number => typeof s === "number",
+  );
   const combinedSafety: SafetyAssessment = {
     passed: preSafety.passed && postSafety.passed,
-    score: Math.min(preSafety.score, postSafety.score),
+    score: measuredScores.length > 0 ? Math.min(...measuredScores) : null,
     flags: [...preSafety.flags, ...postSafety.flags],
     warnings: [...preSafety.warnings, ...postSafety.warnings],
     blockers: [...preSafety.blockers, ...postSafety.blockers],

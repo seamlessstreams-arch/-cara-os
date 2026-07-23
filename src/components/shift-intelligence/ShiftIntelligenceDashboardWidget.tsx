@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 
 interface FatigueAssessment {
   staffId: string;
@@ -51,14 +52,14 @@ interface DeploymentData {
   totalShiftsAnalysed: number;
   coveredShifts: number;
   uncoveredShifts: number;
-  coveragePercentage: number;
-  averageStaffPerShift: number;
-  agencyUsagePercentage: number;
-  seniorCoveragePercentage: number;
+  coveragePercentage: number | null;
+  averageStaffPerShift: number | null;
+  agencyUsagePercentage: number | null;
+  seniorCoveragePercentage: number | null;
   fatigueAssessments: FatigueAssessment[];
   staffAtHighFatigueRisk: number;
   keyWorkerAvailability: KeyWorkerAvailability[];
-  keyWorkerComplianceRate: number;
+  keyWorkerComplianceRate: number | null;
   concerns: Concern[];
   immediateActions: string[];
   regulatoryLinks: string[];
@@ -102,23 +103,25 @@ function MetricCard({
   status,
 }: {
   label: string;
-  value: number | string;
+  value: number | string | null;
   suffix?: string;
-  status: "good" | "warning" | "critical";
+  status: "good" | "warning" | "critical" | "unmeasured";
 }) {
   const statusColor =
     status === "good"
       ? "text-green-700"
       : status === "warning"
         ? "text-yellow-700"
-        : "text-red-700";
+        : status === "critical"
+          ? "text-red-700"
+          : "text-gray-400";
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-3">
       <div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div>
       <div className={`text-xl font-bold mt-1 ${statusColor}`}>
-        {value}
-        {suffix && <span className="text-sm font-normal ml-0.5">{suffix}</span>}
+        {value === null ? "—" : value}
+        {suffix && value !== null && <span className="text-sm font-normal ml-0.5">{suffix}</span>}
       </div>
     </div>
   );
@@ -242,24 +245,24 @@ export function ShiftIntelligenceDashboardWidget() {
           label="Coverage"
           value={data.coveragePercentage}
           suffix="%"
-          status={data.coveragePercentage >= 95 ? "good" : data.coveragePercentage >= 80 ? "warning" : "critical"}
+          status={meets(data.coveragePercentage, 95) ? "good" : meets(data.coveragePercentage, 80) ? "warning" : below(data.coveragePercentage, 80) ? "critical" : "unmeasured"}
         />
         <MetricCard
           label="Avg Staff/Shift"
           value={data.averageStaffPerShift}
-          status={data.averageStaffPerShift >= 2 ? "good" : "warning"}
+          status={data.averageStaffPerShift === null ? "unmeasured" : data.averageStaffPerShift >= 2 ? "good" : "warning"}
         />
         <MetricCard
           label="Agency Usage"
           value={data.agencyUsagePercentage}
           suffix="%"
-          status={data.agencyUsagePercentage <= 20 ? "good" : data.agencyUsagePercentage <= 30 ? "warning" : "critical"}
+          status={data.agencyUsagePercentage === null ? "unmeasured" : data.agencyUsagePercentage <= 20 ? "good" : data.agencyUsagePercentage <= 30 ? "warning" : "critical"}
         />
         <MetricCard
           label="Senior Cover"
           value={data.seniorCoveragePercentage}
           suffix="%"
-          status={data.seniorCoveragePercentage >= 90 ? "good" : data.seniorCoveragePercentage >= 70 ? "warning" : "critical"}
+          status={meets(data.seniorCoveragePercentage, 90) ? "good" : meets(data.seniorCoveragePercentage, 70) ? "warning" : below(data.seniorCoveragePercentage, 70) ? "critical" : "unmeasured"}
         />
       </div>
 
@@ -309,7 +312,7 @@ export function ShiftIntelligenceDashboardWidget() {
           {/* Key Worker Availability */}
           <div>
             <h4 className="text-sm font-semibold text-gray-800 mb-2">
-              Key Worker Contact ({data.keyWorkerComplianceRate}% compliance)
+              Key Worker Contact ({formatRate(data.keyWorkerComplianceRate)} compliance)
             </h4>
             <div className="bg-gray-50 rounded-lg p-3">
               {data.keyWorkerAvailability.map((kw) => (

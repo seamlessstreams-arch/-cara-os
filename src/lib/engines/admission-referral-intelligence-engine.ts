@@ -11,6 +11,8 @@
 // impact assessment demonstrates a good match?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type ReferralSource = "local_authority" | "agency" | "emergency" | "internal_transfer";
@@ -53,9 +55,9 @@ export interface PipelineOverview {
   accepted_count: number;
   declined_count: number;
   withdrawn_count: number;
-  impact_assessment_completion_rate: number; // % of non-new referrals with IA done
-  avg_days_to_decision: number;
-  occupancy_rate: number; // percentage
+  impact_assessment_completion_rate: number | null; // % of non-new referrals with IA done
+  avg_days_to_decision: number | null;              // null = nothing has been decided yet
+  occupancy_rate: number | null;                    // percentage; null = no registered capacity
   available_beds: number;
 }
 
@@ -79,15 +81,15 @@ export interface SourceAnalysis {
   count: number;
   accepted: number;
   declined: number;
-  avg_days_to_decision: number;
+  avg_days_to_decision: number | null;
 }
 
 export interface DecisionAnalysis {
   total_decisions: number;
-  acceptance_rate: number;
-  decline_rate: number;
-  withdrawal_rate: number;
-  avg_days_to_decision: number;
+  acceptance_rate: number | null;
+  decline_rate: number | null;
+  withdrawal_rate: number | null;
+  avg_days_to_decision: number | null;
   decisions_without_impact_assessment: number;
 }
 
@@ -151,15 +153,15 @@ export function computeAdmissionReferralIntelligence(
   // Impact assessment completion — for referrals past "new" stage
   const pastNewStage = referrals.filter((r) => r.status !== "new");
   const withIA = pastNewStage.filter((r) => r.impact_assessment_complete).length;
-  const iaRate = pastNewStage.length > 0 ? Math.round((withIA / pastNewStage.length) * 100) : 100;
+  const iaRate = rate(withIA, pastNewStage.length);
 
   // Average days to decision (for decided referrals)
   const decided = referrals.filter((r) => DECIDED_STATUSES.includes(r.status) && r.decision_date);
   const decisionDays = decided.map((r) => daysBetween(r.referral_date, r.decision_date!));
-  const avgDaysToDecision = decisionDays.length > 0 ? Math.round(average(decisionDays)) : 0;
+  const avgDaysToDecision = meanOf(decisionDays);
 
   // Occupancy
-  const occupancyRate = max_occupancy > 0 ? Math.round((current_occupancy / max_occupancy) * 100) : 0;
+  const occupancyRate = rate(current_occupancy, max_occupancy);
   const availableBeds = Math.max(0, max_occupancy - current_occupancy);
 
   const overview: PipelineOverview = {
@@ -223,7 +225,7 @@ export function computeAdmissionReferralIntelligence(
       count: items.length,
       accepted: sourceAccepted,
       declined: sourceDeclined,
-      avg_days_to_decision: sourceDays.length > 0 ? Math.round(average(sourceDays)) : 0,
+      avg_days_to_decision: meanOf(sourceDays),
     };
   });
 
@@ -235,9 +237,9 @@ export function computeAdmissionReferralIntelligence(
 
   const decision_analysis: DecisionAnalysis = {
     total_decisions: totalDecisions,
-    acceptance_rate: totalDecisions > 0 ? Math.round((accepted / totalDecisions) * 100) : 0,
-    decline_rate: totalDecisions > 0 ? Math.round((declined / totalDecisions) * 100) : 0,
-    withdrawal_rate: totalDecisions > 0 ? Math.round((withdrawn / totalDecisions) * 100) : 0,
+    acceptance_rate: rate(accepted, totalDecisions),
+    decline_rate: rate(declined, totalDecisions),
+    withdrawal_rate: rate(withdrawn, totalDecisions),
     avg_days_to_decision: avgDaysToDecision,
     decisions_without_impact_assessment: decisionsWithoutIA,
   };
@@ -315,15 +317,15 @@ export function computeAdmissionReferralIntelligence(
   }
 
   // Warning: impact assessment gaps
-  if (iaRate < 100 && pastNewStage.length >= 2) {
+  if (below(iaRate, 100) && pastNewStage.length >= 2) {
     insights.push({
       severity: "warning",
-      text: `Impact assessment completion rate is ${iaRate}%. Reg 12 requires a documented impact assessment demonstrating how each new admission will interact with existing children. Incomplete IAs are a common Ofsted shortfall.`,
+      text: `Impact assessment completion rate is ${formatRate(iaRate)}. Reg 12 requires a documented impact assessment demonstrating how each new admission will interact with existing children. Incomplete IAs are a common Ofsted shortfall.`,
     });
   }
 
   // Warning: slow decision-making
-  if (avgDaysToDecision > 14 && decided.length >= 2) {
+  if (avgDaysToDecision !== null && avgDaysToDecision > 14 && decided.length >= 2) {
     insights.push({
       severity: "warning",
       text: `Average time to decision is ${avgDaysToDecision} days. While thorough assessment is essential, children waiting for placement decisions experience uncertainty. Review whether process bottlenecks can be addressed.`,
@@ -331,15 +333,15 @@ export function computeAdmissionReferralIntelligence(
   }
 
   // Warning: high decline rate
-  if (decision_analysis.decline_rate > 60 && totalDecisions >= 3) {
+  if (meets(decision_analysis.decline_rate, 61) && totalDecisions >= 3) {
     insights.push({
       severity: "warning",
-      text: `Decline rate is ${decision_analysis.decline_rate}% (${declined} of ${totalDecisions}). A high decline rate may indicate referrals don't match the Statement of Purpose, or that the matching criteria need review with commissioners.`,
+      text: `Decline rate is ${formatRate(decision_analysis.decline_rate)} (${declined} of ${totalDecisions}). A high decline rate may indicate referrals don't match the Statement of Purpose, or that the matching criteria need review with commissioners.`,
     });
   }
 
   // Positive: good IA compliance
-  if (iaRate === 100 && pastNewStage.length >= 2) {
+  if (meets(iaRate, 100) && pastNewStage.length >= 2) {
     insights.push({
       severity: "positive",
       text: `100% impact assessment completion for all referrals past initial stage. Strong Reg 12 compliance — demonstrating robust matching and safeguarding before any admission decision.`,
@@ -347,7 +349,7 @@ export function computeAdmissionReferralIntelligence(
   }
 
   // Positive: timely decisions
-  if (avgDaysToDecision <= 14 && decided.length >= 2) {
+  if (avgDaysToDecision !== null && avgDaysToDecision <= 14 && decided.length >= 2) {
     insights.push({
       severity: "positive",
       text: `Average decision time is ${avgDaysToDecision} days — within 14-day best practice. Timely decisions reduce uncertainty for children and demonstrate efficient management systems.`,

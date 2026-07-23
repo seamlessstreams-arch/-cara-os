@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCareFormIntelligence } from "@/hooks/use-care-form-intelligence";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -90,13 +91,13 @@ export function FormComplianceCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.completion_rate >= 80 ? "bg-green-50" : o.completion_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+            o.completion_rate === null ? "bg-slate-50" : o.completion_rate >= 80 ? "bg-green-50" : o.completion_rate >= 50 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.completion_rate >= 80 ? "text-[--cs-success]" : o.completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.completion_rate === null ? "text-[var(--cs-text-muted)]" : o.completion_rate >= 80 ? "text-[--cs-success]" : o.completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.completion_rate}%
+              {formatRate(o.completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Complete</p>
           </div>

@@ -25,6 +25,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { below, rate, weightedMeanOf } from "@/lib/metrics/rate";
 import { loadAmendmentReviewQueue } from "@/lib/care-events/amendment-review";
 import { loadRoutingHealth } from "@/lib/care-events/routing-health";
 
@@ -32,12 +33,13 @@ export type ReadinessSeverity =
   | "ready"
   | "minor_gaps"
   | "significant_gaps"
-  | "at_risk";
+  | "at_risk"
+  | "not_measured";
 
 export interface ReadinessCategory {
   key: string;
   label: string;
-  score: number;            // 0–100
+  score: number | null;     // 0–100; null when there is nothing to measure
   weight: number;           // currently always 1
   detail: string;
   open_count: number;
@@ -47,7 +49,7 @@ export interface ReadinessCategory {
 export interface InspectionReadinessReport {
   home_id: string;
   generated_at: string;
-  overall_score: number;
+  overall_score: number | null;
   severity: ReadinessSeverity;
   categories: ReadinessCategory[];
   blocking_categories: string[];
@@ -62,7 +64,8 @@ function clamp(n: number): number {
   return Math.round(n);
 }
 
-function severityFor(score: number): ReadinessSeverity {
+function severityFor(score: number | null): ReadinessSeverity {
+  if (score === null) return "not_measured";
   if (score >= 90) return "ready";
   if (score >= 70) return "minor_gaps";
   if (score >= 50) return "significant_gaps";
@@ -134,17 +137,14 @@ export function computeInspectionReadiness(homeId: string): InspectionReadinessR
 
   let covered = 0;
   for (const p of expectedPairs) if (havePairs.has(p)) covered += 1;
-  const coverageScore = expectedPairs.size === 0
-    ? 100
-    : clamp((covered / expectedPairs.size) * 100);
+  // No qualifying events = nothing recorded to summarise, not full coverage.
+  const coverageScore = rate(covered, expectedPairs.size);
 
   // ── Care event currency (last 7 days verified/locked %) ───────────────────
   const finalisedRecent = recentEvents.filter(
     (e) => e.status === "verified" || e.status === "locked",
   ).length;
-  const currencyScore = recentEvents.length === 0
-    ? 100
-    : clamp((finalisedRecent / recentEvents.length) * 100);
+  const currencyScore = rate(finalisedRecent, recentEvents.length);
 
   // ── Compose categories ────────────────────────────────────────────────────
   const categories: ReadinessCategory[] = [
@@ -195,24 +195,23 @@ export function computeInspectionReadiness(homeId: string): InspectionReadinessR
       score: coverageScore, weight: 1,
       open_count: expectedPairs.size - covered,
       detail: expectedPairs.size === 0
-        ? "No qualifying events in the last 7 days."
+        ? "No qualifying events in the last 7 days — coverage not measured."
         : `${covered}/${expectedPairs.size} (child × day) pairs have a summary.`,
-      blocking: coverageScore < 90,
+      blocking: below(coverageScore, 90),
     },
     {
       key: "care_event_currency", label: "Care event currency (7d)",
       score: currencyScore, weight: 1,
       open_count: recentEvents.length - finalisedRecent,
       detail: recentEvents.length === 0
-        ? "No care events in the last 7 days."
+        ? "No care events in the last 7 days — currency not measured."
         : `${finalisedRecent}/${recentEvents.length} recent events verified or locked.`,
-      blocking: currencyScore < 90,
+      blocking: below(currencyScore, 90),
     },
   ];
 
-  const totalWeight = categories.reduce((a, c) => a + c.weight, 0);
-  const weightedSum = categories.reduce((a, c) => a + c.score * c.weight, 0);
-  const overall_score = clamp(weightedSum / totalWeight);
+  // Unmeasured categories are dropped from the mean, never counted as 100.
+  const overall_score = weightedMeanOf(categories);
 
   return {
     home_id: homeId,

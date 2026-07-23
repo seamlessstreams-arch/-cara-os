@@ -368,12 +368,12 @@ describe("calculatePipelineMetrics", () => {
     expect(metrics.expiringChecks).toBe(1);
   });
 
-  it("returns 0 average time to hire when no appointed candidates", () => {
+  it("reports no average time to hire when no appointed candidates", () => {
     const candidates = [
       makeChecklist({ candidateId: "c1", stage: "shortlisted" }),
     ];
     const metrics = calculatePipelineMetrics(candidates);
-    expect(metrics.averageTimeToHire).toBe(0);
+    expect(metrics.averageTimeToHire).toBeNull();
   });
 });
 

@@ -107,8 +107,9 @@ describe("computeKeyworkingIntelligence", () => {
       });
       expect(result.overview.total_sessions_30d).toBe(0);
       expect(result.overview.avg_sessions_per_child_30d).toBe(0);
-      expect(result.overview.child_voice_rate).toBe(0);
-      expect(result.overview.mood_improvement_rate).toBe(0);
+      expect(result.overview.child_voice_rate).toBeNull();
+      expect(result.overview.mood_improvement_rate).toBeNull();
+      expect(result.overview.follow_up_completion_rate).toBeNull();
       expect(result.child_profiles).toHaveLength(0);
       expect(result.topic_analysis).toHaveLength(0);
       expect(result.alerts).toHaveLength(0);
@@ -330,7 +331,7 @@ describe("computeKeyworkingIntelligence", () => {
       expect(result.follow_up_compliance.completion_rate).toBe(67);
     });
 
-    it("returns 100% when no follow-ups are due", () => {
+    it("reports no completion rate when no follow-ups are due", () => {
       const result = computeKeyworkingIntelligence({
         children: [makeChild("yp_1", "Alex")],
         sessions: [
@@ -338,7 +339,7 @@ describe("computeKeyworkingIntelligence", () => {
         ],
         today: TODAY,
       });
-      expect(result.follow_up_compliance.completion_rate).toBe(100);
+      expect(result.follow_up_compliance.completion_rate).toBeNull();
     });
   });
 

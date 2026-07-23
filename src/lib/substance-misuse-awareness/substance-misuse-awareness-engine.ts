@@ -12,6 +12,8 @@
 //             KCSIE 2024, UNCRC Article 33, Drug Strategy 2021
 // ==============================================================================
 
+import { rateOf, meets, below } from "@/lib/metrics/rate";
+
 // -- Type unions ---------------------------------------------------------------
 
 export type SubstanceType =
@@ -196,11 +198,12 @@ export interface StaffSubstanceTraining {
 export interface RiskScreeningResult {
   overallScore: number;
   totalProfiles: number;
-  screenedRate: number;
-  reviewCurrentRate: number;
-  noConcernsRate: number;
-  referralMadeRate: number;
-  harmReductionRate: number;
+  screenedRate: number | null;
+  reviewCurrentRate: number | null;
+  noConcernsRate: number | null;
+  // Null when no child is at that risk level — nothing to plan or refer for
+  referralMadeRate: number | null;
+  harmReductionRate: number | null;
 }
 
 export interface EducationPreventionResult {
@@ -292,22 +295,27 @@ export function evaluateRiskScreening(
     return {
       overallScore: 0,
       totalProfiles: 0,
-      screenedRate: 0,
-      reviewCurrentRate: 0,
-      noConcernsRate: 0,
-      referralMadeRate: 0,
-      harmReductionRate: 0,
+      screenedRate: null,
+      reviewCurrentRate: null,
+      noConcernsRate: null,
+      referralMadeRate: null,
+      harmReductionRate: null,
     };
   }
 
   let score = 0;
+  // Dimensions that do not apply are dropped from the denominator too, so a
+  // home with nothing to refer is neither rewarded nor punished for it.
+  let maxScore = 0;
 
   // All children screened — having profiles = screened 100%
   const screenedRate = 100;
   score += 7; // All have profiles = 100% screened
+  maxScore += 7;
 
   const reviewCurrent = profiles.filter((p) => p.reviewCurrent).length;
   const reviewCurrentRate = pct(reviewCurrent, profiles.length);
+  maxScore += 6;
   if (reviewCurrentRate >= 90) score += 6;
   else if (reviewCurrentRate >= 70) score += 4;
   else if (reviewCurrentRate >= 50) score += 3;
@@ -322,15 +330,17 @@ export function evaluateRiskScreening(
   const withConcerns = profiles.filter(
     (p) => p.riskLevel !== "no_concerns",
   );
-  const harmReduction = withConcerns.filter(
-    (p) => p.harmReductionPlanInPlace,
-  ).length;
-  const harmReductionRate =
-    withConcerns.length > 0 ? pct(harmReduction, withConcerns.length) : 100;
-  if (harmReductionRate >= 90) score += 6;
-  else if (harmReductionRate >= 70) score += 4;
-  else if (harmReductionRate >= 50) score += 3;
-  else if (harmReductionRate > 0) score += 1;
+  const harmReductionRate = rateOf(
+    withConcerns.filter((p) => p.harmReductionPlanInPlace),
+    withConcerns,
+  );
+  if (harmReductionRate !== null) {
+    maxScore += 6;
+    if (harmReductionRate >= 90) score += 6;
+    else if (harmReductionRate >= 70) score += 4;
+    else if (harmReductionRate >= 50) score += 3;
+    else if (harmReductionRate > 0) score += 1;
+  }
 
   // Referral made for medium+ risk
   const mediumPlus = profiles.filter(
@@ -339,18 +349,20 @@ export function evaluateRiskScreening(
       p.riskLevel === "high" ||
       p.riskLevel === "active_use",
   );
-  const referred = mediumPlus.filter(
-    (p) => p.professionalReferralMade,
-  ).length;
-  const referralMadeRate =
-    mediumPlus.length > 0 ? pct(referred, mediumPlus.length) : 100;
-  if (referralMadeRate >= 90) score += 6;
-  else if (referralMadeRate >= 70) score += 4;
-  else if (referralMadeRate >= 50) score += 3;
-  else if (referralMadeRate > 0) score += 1;
+  const referralMadeRate = rateOf(
+    mediumPlus.filter((p) => p.professionalReferralMade),
+    mediumPlus,
+  );
+  if (referralMadeRate !== null) {
+    maxScore += 6;
+    if (referralMadeRate >= 90) score += 6;
+    else if (referralMadeRate >= 70) score += 4;
+    else if (referralMadeRate >= 50) score += 3;
+    else if (referralMadeRate > 0) score += 1;
+  }
 
   return {
-    overallScore: Math.min(score, 25),
+    overallScore: Math.round((Math.min(score, maxScore) / maxScore) * 25),
     totalProfiles: profiles.length,
     screenedRate,
     reviewCurrentRate,
@@ -683,7 +695,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
       "All children screened for substance misuse risk — comprehensive assessment coverage",
     );
   }
-  if (riskScreening.reviewCurrentRate >= 90 && profiles.length > 0) {
+  if (meets(riskScreening.reviewCurrentRate, 90) && profiles.length > 0) {
     strengths.push(
       "Substance risk assessments consistently reviewed and kept current",
     );
@@ -714,7 +726,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
       "Staff team demonstrates high levels of substance awareness training",
     );
   }
-  if (riskScreening.noConcernsRate >= 80 && profiles.length > 0) {
+  if (meets(riskScreening.noConcernsRate, 80) && profiles.length > 0) {
     strengths.push(
       "Majority of children have no substance misuse concerns identified",
     );
@@ -723,7 +735,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (riskScreening.reviewCurrentRate < 70 && profiles.length > 0) {
+  if (below(riskScreening.reviewCurrentRate, 70) && profiles.length > 0) {
     areasForImprovement.push(
       "Substance risk assessment reviews not consistently up to date",
     );
@@ -803,7 +815,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
       "URGENT: Children identified with active substance use — ensure immediate professional referral and support",
     );
   }
-  if (riskScreening.harmReductionRate < 50 && profiles.length > 0) {
+  if (below(riskScreening.harmReductionRate, 50) && profiles.length > 0) {
     actions.push(
       "Develop harm reduction plans for all children with identified substance concerns",
     );

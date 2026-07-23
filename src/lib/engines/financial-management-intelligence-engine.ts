@@ -10,6 +10,8 @@
 // managed?" and "Does the home provide good value?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type ExpenseCategory =
@@ -71,9 +73,9 @@ export interface FinancialOverview {
   missing_receipts: number;
   child_linked_spend: number;       // total amount linked to a child
   child_linked_count: number;
-  approval_rate: number;            // pct of submitted that are approved/paid
+  approval_rate: number | null;     // pct of submitted that are approved/paid; null = nothing decided yet
   avg_expense_amount: number;
-  avg_approval_days: number;        // avg days from submitted to approved
+  avg_approval_days: number | null; // avg days from submitted to approved; null = nothing approved yet
 }
 
 export interface CategorySpend {
@@ -159,10 +161,7 @@ export function computeFinancialManagementIntelligence(
   // Approval rate: out of all submitted+approved+rejected+paid, what pct ended up approved or paid
   const decidedExpenses = [...approved, ...rejected, ...paid];
   const approvedOrPaid = [...approved, ...paid];
-  const approvalRate =
-    decidedExpenses.length > 0
-      ? Math.round((approvedOrPaid.length / decidedExpenses.length) * 100)
-      : 100;
+  const approvalRate = rateOf(approvedOrPaid, decidedExpenses);
 
   // Average expense amount
   const avgAmount = expenses.length > 0 ? round2(totalSpend / expenses.length) : 0;
@@ -173,7 +172,7 @@ export function computeFinancialManagementIntelligence(
     .map((e) => Math.max(0, daysBetween(e.created_at, e.approved_at!)));
   const avgApprovalDays = approvalDays.length > 0
     ? Math.round(average(approvalDays))
-    : 0;
+    : null;
 
   const overview: FinancialOverview = {
     total_expenses: expenses.length,
@@ -314,7 +313,7 @@ export function computeFinancialManagementIntelligence(
   }
 
   // Warning: low approval rate
-  if (approvalRate < 80 && decidedExpenses.length > 0) {
+  if (below(approvalRate, 80)) {
     insights.push({
       severity: "warning",
       text: `Expense approval rate is ${approvalRate}%. A high rejection rate may indicate unclear spending guidelines or insufficient pre-approval processes. Review spending policies with the team.`,
@@ -339,7 +338,7 @@ export function computeFinancialManagementIntelligence(
   }
 
   // Positive: fast approval turnaround
-  if (avgApprovalDays <= 2 && approvalDays.length > 0) {
+  if (avgApprovalDays !== null && avgApprovalDays <= 2) {
     insights.push({
       severity: "positive",
       text: `Average expense approval turnaround is ${avgApprovalDays} day(s). Prompt financial oversight demonstrates active management engagement.`,

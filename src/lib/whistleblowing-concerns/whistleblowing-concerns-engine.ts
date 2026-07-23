@@ -17,6 +17,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -139,30 +140,32 @@ export interface ReportingCultureResult {
 export interface ResponseQualityResult {
   score: number;
   totalConcerns: number;
-  acknowledgedWithin48HrsRate: number;
-  investigationStartedRate: number;
-  resolvedWithin30DaysRate: number;
-  lessonsIdentifiedRate: number;
-  externalReferralForCriticalHighRate: number;
-  averageActionsTaken: number;
+  // null throughout = no concern of the relevant kind was raised, so there is
+  // nothing to have acknowledged, investigated, resolved or referred.
+  acknowledgedWithin48HrsRate: number | null;
+  investigationStartedRate: number | null;
+  resolvedWithin30DaysRate: number | null;
+  lessonsIdentifiedRate: number | null;
+  externalReferralForCriticalHighRate: number | null;
+  averageActionsTaken: number | null;
 }
 
 export interface StaffProtectionResult {
   score: number;
   totalProtections: number;
-  fullyProtectedRate: number;
-  confidentialityMaintainedRate: number;
-  supportOfferedRate: number;
+  fullyProtectedRate: number | null;
+  confidentialityMaintainedRate: number | null;
+  supportOfferedRate: number | null;
   noRetaliationReported: boolean;
   allRetaliationInvestigated: boolean;
 }
 
 export interface OutcomesLearningResult {
   score: number;
-  resolutionDocumentedRate: number;
-  substantiationRate: number;
-  lessonsIdentifiedRate: number;
-  averageActionsPerConcern: number;
+  resolutionDocumentedRate: number | null;
+  substantiationRate: number | null;
+  lessonsIdentifiedRate: number | null;
+  averageActionsPerConcern: number | null;
   escalationAppropriate: boolean;
 }
 
@@ -240,12 +243,12 @@ export function evaluateResponseQuality(
     return {
       score: Math.min(20 + 5, 30),
       totalConcerns: 0,
-      acknowledgedWithin48HrsRate: 100,
-      investigationStartedRate: 100,
-      resolvedWithin30DaysRate: 100,
-      lessonsIdentifiedRate: 100,
-      externalReferralForCriticalHighRate: 100,
-      averageActionsTaken: 0,
+      acknowledgedWithin48HrsRate: null,
+      investigationStartedRate: null,
+      resolvedWithin30DaysRate: null,
+      lessonsIdentifiedRate: null,
+      externalReferralForCriticalHighRate: null,
+      averageActionsTaken: null,
     };
   }
 
@@ -260,10 +263,10 @@ export function evaluateResponseQuality(
   const criticalHigh = concerns.filter(
     (c) => c.severity === "critical" || c.severity === "high",
   );
-  const externalReferralRate =
-    criticalHigh.length > 0
-      ? (criticalHigh.filter((c) => c.externalReferralMade).length / criticalHigh.length) * 100
-      : 100;
+  const externalReferralRate = rateOf(
+    criticalHigh.filter((c) => c.externalReferralMade),
+    criticalHigh,
+  );
 
   const totalActions = concerns.reduce((sum, c) => sum + c.actionsTaken.length, 0);
   const avgActions = totalActions / n;
@@ -272,7 +275,7 @@ export function evaluateResponseQuality(
   if (invRate >= 90) score += 6;
   if (resRate >= 80) score += 6;
   if (lessonsRate >= 80) score += 5;
-  if (externalReferralRate >= 80) score += 3;
+  if (meets(externalReferralRate, 80)) score += 3;
   if (avgActions >= 2) score += 2;
 
   return {
@@ -282,7 +285,7 @@ export function evaluateResponseQuality(
     investigationStartedRate: Math.round(invRate),
     resolvedWithin30DaysRate: Math.round(resRate),
     lessonsIdentifiedRate: Math.round(lessonsRate),
-    externalReferralForCriticalHighRate: Math.round(externalReferralRate),
+    externalReferralForCriticalHighRate: externalReferralRate,
     averageActionsTaken: Math.round(avgActions * 10) / 10,
   };
 }
@@ -296,9 +299,9 @@ export function evaluateStaffProtection(
     return {
       score: 0,
       totalProtections: 0,
-      fullyProtectedRate: 0,
-      confidentialityMaintainedRate: 0,
-      supportOfferedRate: 0,
+      fullyProtectedRate: null,
+      confidentialityMaintainedRate: null,
+      supportOfferedRate: null,
       noRetaliationReported: true,
       allRetaliationInvestigated: true,
     };
@@ -345,10 +348,10 @@ export function evaluateOutcomesLearning(
   if (concerns.length === 0) {
     return {
       score: 0,
-      resolutionDocumentedRate: 0,
-      substantiationRate: 0,
-      lessonsIdentifiedRate: 0,
-      averageActionsPerConcern: 0,
+      resolutionDocumentedRate: null,
+      substantiationRate: null,
+      lessonsIdentifiedRate: null,
+      averageActionsPerConcern: null,
       escalationAppropriate: true,
     };
   }
@@ -366,10 +369,9 @@ export function evaluateOutcomesLearning(
       c.resolutionOutcome === "substantiated" ||
       c.resolutionOutcome === "partially_substantiated",
   );
-  const substantiationRate =
-    documented.length > 0
-      ? (substantiated.length / documented.length) * 100
-      : 0;
+  const substantiationRate = documented.length > 0
+    ? (substantiated.length / documented.length) * 100
+    : null;
 
   // Lessons identified rate
   const lessonsRate = (concerns.filter((c) => c.lessonsIdentified).length / n) * 100;
@@ -392,7 +394,7 @@ export function evaluateOutcomesLearning(
   score += Math.round((resolutionDocumentedRate / 100) * 6);
 
   // Substantiation rate "appropriate" means between 20-80% (not all upheld, not all rejected)
-  if (documented.length > 0) {
+  if (substantiationRate !== null) {
     if (substantiationRate >= 20 && substantiationRate <= 80) {
       score += 5;
     } else if (substantiationRate > 0) {
@@ -407,7 +409,7 @@ export function evaluateOutcomesLearning(
   return {
     score: Math.min(score, 20),
     resolutionDocumentedRate: Math.round(resolutionDocumentedRate),
-    substantiationRate: Math.round(substantiationRate),
+    substantiationRate: substantiationRate === null ? null : Math.round(substantiationRate),
     lessonsIdentifiedRate: Math.round(lessonsRate),
     averageActionsPerConcern: Math.round(avgActions * 10) / 10,
     escalationAppropriate,
@@ -458,17 +460,17 @@ function generateStrengths(
       "No formal concerns raised this period — may indicate healthy culture, but verify staff feel able to raise concerns",
     );
   }
-  if (responseQuality.totalConcerns > 0 && responseQuality.acknowledgedWithin48HrsRate >= 90) {
+  if (meets(responseQuality.acknowledgedWithin48HrsRate, 90)) {
     strengths.push(
       "Concerns consistently acknowledged within 48 hours — demonstrates responsive management",
     );
   }
-  if (responseQuality.totalConcerns > 0 && responseQuality.resolvedWithin30DaysRate >= 80) {
+  if (meets(responseQuality.resolvedWithin30DaysRate, 80)) {
     strengths.push(
       "Concerns resolved within 30 days in most cases — timely investigation and resolution",
     );
   }
-  if (staffProtection.totalProtections > 0 && staffProtection.fullyProtectedRate >= 90) {
+  if (meets(staffProtection.fullyProtectedRate, 90)) {
     strengths.push(
       "Whistleblowers consistently protected from detriment — compliant with PIDA 1998",
     );
@@ -478,12 +480,12 @@ function generateStrengths(
       "No retaliation reported against staff who raised concerns",
     );
   }
-  if (staffProtection.totalProtections > 0 && staffProtection.confidentialityMaintainedRate >= 95) {
+  if (meets(staffProtection.confidentialityMaintainedRate, 95)) {
     strengths.push(
       "Confidentiality maintained in all or nearly all cases",
     );
   }
-  if (outcomesLearning.lessonsIdentifiedRate >= 80 && responseQuality.totalConcerns > 0) {
+  if (meets(outcomesLearning.lessonsIdentifiedRate, 80)) {
     strengths.push(
       "Lessons consistently identified from concerns — evidence of learning culture",
     );
@@ -530,14 +532,14 @@ function generateConcerns(
       "Staff confidence to report concerns is below target — potential barriers to raising concerns",
     );
   }
-  if (responseQuality.totalConcerns > 0 && responseQuality.acknowledgedWithin48HrsRate < 90) {
+  if (below(responseQuality.acknowledgedWithin48HrsRate, 90)) {
     concerns.push(
-      `Only ${responseQuality.acknowledgedWithin48HrsRate}% of concerns acknowledged within 48 hours — target is 90%`,
+      `Only ${formatRate(responseQuality.acknowledgedWithin48HrsRate)} of concerns acknowledged within 48 hours — target is 90%`,
     );
   }
-  if (responseQuality.totalConcerns > 0 && responseQuality.investigationStartedRate < 90) {
+  if (below(responseQuality.investigationStartedRate, 90)) {
     concerns.push(
-      `Only ${responseQuality.investigationStartedRate}% of investigations started within 7 days — target is 90%`,
+      `Only ${formatRate(responseQuality.investigationStartedRate)} of investigations started within 7 days — target is 90%`,
     );
   }
   if (!staffProtection.noRetaliationReported) {
@@ -545,19 +547,19 @@ function generateConcerns(
       "Retaliation reported against whistleblower(s) — serious PIDA 1998 breach requiring urgent action",
     );
   }
-  if (staffProtection.totalProtections > 0 && staffProtection.fullyProtectedRate < 90) {
+  if (below(staffProtection.fullyProtectedRate, 90)) {
     concerns.push(
-      `Fully protected rate is ${staffProtection.fullyProtectedRate}% — below 90% target`,
+      `Fully protected rate is ${formatRate(staffProtection.fullyProtectedRate)} — below 90% target`,
     );
   }
-  if (staffProtection.totalProtections > 0 && staffProtection.confidentialityMaintainedRate < 95) {
+  if (below(staffProtection.confidentialityMaintainedRate, 95)) {
     concerns.push(
-      `Confidentiality maintained in only ${staffProtection.confidentialityMaintainedRate}% of cases — below 95% target`,
+      `Confidentiality maintained in only ${formatRate(staffProtection.confidentialityMaintainedRate)} of cases — below 95% target`,
     );
   }
-  if (outcomesLearning.lessonsIdentifiedRate < 80 && responseQuality.totalConcerns > 0) {
+  if (below(outcomesLearning.lessonsIdentifiedRate, 80)) {
     concerns.push(
-      `Lessons identified in only ${outcomesLearning.lessonsIdentifiedRate}% of concerns — missing learning opportunities`,
+      `Lessons identified in only ${formatRate(outcomesLearning.lessonsIdentifiedRate)} of concerns — missing learning opportunities`,
     );
   }
 
@@ -607,12 +609,12 @@ function generateImmediateActions(
       "MEDIUM: Develop child-friendly version of whistleblowing information",
     );
   }
-  if (responseQuality.totalConcerns > 0 && responseQuality.acknowledgedWithin48HrsRate < 90) {
+  if (below(responseQuality.acknowledgedWithin48HrsRate, 90)) {
     actions.push(
       "HIGH: Implement 48-hour acknowledgement protocol for all whistleblowing concerns",
     );
   }
-  if (outcomesLearning.lessonsIdentifiedRate < 80 && responseQuality.totalConcerns > 0) {
+  if (below(outcomesLearning.lessonsIdentifiedRate, 80)) {
     actions.push(
       "MEDIUM: Embed lessons-learned review into concern resolution process",
     );

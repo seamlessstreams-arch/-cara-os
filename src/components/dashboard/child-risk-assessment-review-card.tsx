@@ -14,6 +14,7 @@ import {
   Target, TrendingDown, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useRiskAssessmentIntelligence } from "@/hooks/use-risk-assessment-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -94,8 +95,8 @@ export function ChildRiskAssessmentReviewCard() {
             <p className={cn("text-lg font-bold tabular-nums", (o.very_high_count + o.high_count) === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{o.very_high_count + o.high_count}</p>
             <p className="text-[10px] text-muted-foreground">High+</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.child_voice_rate >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.child_voice_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{o.child_voice_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", o.child_voice_rate === null ? "bg-gray-50" : meets(o.child_voice_rate, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.child_voice_rate === null ? "text-muted-foreground" : meets(o.child_voice_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(o.child_voice_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Voice</p>
           </div>
         </div>
@@ -145,11 +146,11 @@ export function ChildRiskAssessmentReviewCard() {
                   <span className="w-20 truncate capitalize text-muted-foreground">{da.domain.replace(/_/g, " ")}</span>
                   <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className={cn("h-full rounded-full", da.mitigation_effective_rate >= 75 ? "bg-green-400" : da.mitigation_effective_rate >= 50 ? "bg-amber-400" : "bg-red-400")}
-                      style={{ width: `${da.mitigation_effective_rate}%` }}
+                      className={cn("h-full rounded-full", da.mitigation_effective_rate === null ? "bg-gray-300" : meets(da.mitigation_effective_rate, 75) ? "bg-green-400" : meets(da.mitigation_effective_rate, 50) ? "bg-amber-400" : "bg-red-400")}
+                      style={{ width: `${da.mitigation_effective_rate ?? 0}%` }}
                     />
                   </div>
-                  <span className="text-[10px] tabular-nums font-medium w-8 text-right">{da.mitigation_effective_rate}%</span>
+                  <span className="text-[10px] tabular-nums font-medium w-8 text-right">{formatRate(da.mitigation_effective_rate)}</span>
                 </div>
               ))}
             </div>

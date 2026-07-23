@@ -15,6 +15,7 @@ import {
   Loader2, Users, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useContactEngagement } from "@/hooks/use-contact-engagement";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -82,16 +83,16 @@ export function ChildrensParticipationCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{c.completed_sessions_30d}</p>
             <p className="text-[10px] text-muted-foreground">Sessions (30d)</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", c.overall_completion_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.overall_completion_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{c.overall_completion_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(c.overall_completion_rate, 80) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(c.overall_completion_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(c.overall_completion_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Completion</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-blue-600">{c.active_plans}</p>
             <p className="text-[10px] text-muted-foreground">Active Plans</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", ft.safe_sessions_pct === 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", ft.safe_sessions_pct === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{ft.safe_sessions_pct}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(ft.safe_sessions_pct, 100) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(ft.safe_sessions_pct, 100) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(ft.safe_sessions_pct)}</p>
             <p className="text-[10px] text-muted-foreground">Safe</p>
           </div>
         </div>

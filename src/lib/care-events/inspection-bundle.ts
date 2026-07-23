@@ -46,7 +46,7 @@ export interface InspectionBundleHeadline {
   reg45_evidence_items: number;
   annex_a_evidence_items: number;
   recent_exports_included: number;
-  readiness_score: number;
+  readiness_score: number | null;
   readiness_severity: string;
   trajectory_alerts_open: number;
   trajectory_acks_recent: number;
@@ -145,7 +145,7 @@ export interface PersistedInspectionBundleRow {
   reg45_evidence_items: number;
   annex_a_evidence_items: number;
   recent_exports_included: number;
-  readiness_score: number;
+  readiness_score: number | null;
   readiness_severity: string;
   trajectory_alerts_open: number;
   trajectory_acks_recent: number;

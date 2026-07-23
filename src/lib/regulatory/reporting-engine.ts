@@ -18,6 +18,7 @@
 
 import type { Role } from "../permissions/types";
 import { isAtLeast } from "../permissions/role-rules";
+import { rate, rateOf } from "../metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -194,7 +195,7 @@ export interface RegulatoryComplianceResult {
     total: number;
     overdue: number;
     withinTimescale: number;
-    complianceRate: number;       // %
+    complianceRate: number | null; // %; null when nothing notifiable was recorded
   };
   overallStatus: "compliant" | "at_risk" | "non_compliant";
   issues: string[];
@@ -320,12 +321,21 @@ export function evaluateRegulatoryCompliance(
   const homeNotifications = notifications.filter(n => n.homeId === homeId);
   const overdueNotifications = homeNotifications.filter(n => n.isOverdue);
   const withinTimescale = homeNotifications.filter(n => !n.isOverdue);
-  const notificationComplianceRate = homeNotifications.length > 0
-    ? Math.round((withinTimescale.length / homeNotifications.length) * 100)
-    : 100;
+  // Null when no notification was made in the period. An empty notification
+  // register is not evidence of timely notification.
+  const notificationComplianceRate = rateOf(withinTimescale, homeNotifications);
 
   if (overdueNotifications.length > 0) {
     issues.push(`${overdueNotifications.length} statutory notification(s) were submitted late.`);
+  }
+
+  // An empty register cannot evidence compliance — say so rather than let the
+  // absence of issues read as assurance.
+  if (homeReports.length === 0) {
+    issues.push("No Reg 44 independent visits recorded — monthly visits are a statutory requirement and cannot be evidenced.");
+  }
+  if (homeReviews.length === 0) {
+    issues.push("No Reg 45 quality of care review recorded — reviews are required at least every 6 months and cannot be evidenced.");
   }
 
   // ── Overall Status ──
@@ -493,7 +503,7 @@ export interface ActionPointSummary {
   completed: number;
   open: number;
   overdue: number;
-  completionRate: number;
+  completionRate: number | null;
   byPriority: Record<string, number>;
   averageResolutionDays: number;
 }
@@ -539,9 +549,7 @@ export function summarizeActionPoints(
     completed: completed.length,
     open: open.length,
     overdue: overdue.length,
-    completionRate: allActions.length > 0
-      ? Math.round((completed.length / allActions.length) * 100)
-      : 100,
+    completionRate: rate(completed.length, allActions.length),
     byPriority,
     averageResolutionDays,
   };

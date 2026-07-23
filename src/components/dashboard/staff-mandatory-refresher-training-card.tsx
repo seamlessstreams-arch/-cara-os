@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, ChevronRight, Brain, Loader2, BookCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meanOf, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -35,9 +36,7 @@ export function StaffMandatoryRefresherTrainingCard() {
   if (!d) return null;
 
   const { training } = d;
-  const avgCompliance = training.length > 0
-    ? Math.round(training.reduce((sum, t) => sum + t.compliance_rate, 0) / training.length)
-    : 0;
+  const avgCompliance = meanOf(training.map((t) => t.compliance_rate));
   const totalExpiring = training.reduce((sum, t) => sum + t.expiring_soon, 0);
   const totalExpired = training.reduce((sum, t) => sum + t.expired, 0);
 
@@ -57,8 +56,8 @@ export function StaffMandatoryRefresherTrainingCard() {
       <CardContent className="space-y-4">
         {/* ── Summary strip ──────────────────────────────────────────── */}
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", avgCompliance >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", avgCompliance >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{avgCompliance}%</p>
+          <div className={cn("text-center rounded-lg p-2", meets(avgCompliance, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(avgCompliance, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(avgCompliance)}</p>
             <p className="text-[10px] text-muted-foreground">Avg Comp.</p>
           </div>
           <div className={cn("text-center rounded-lg p-2", totalExpiring > 0 ? "bg-amber-50" : "bg-green-50")}>
@@ -85,12 +84,12 @@ export function StaffMandatoryRefresherTrainingCard() {
               <div key={i} className="space-y-0.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground truncate">{t.category}</span>
-                  <span className={cn("font-bold tabular-nums", t.compliance_rate >= 90 ? "text-[--cs-success]" : t.compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{t.compliance_rate}%</span>
+                  <span className={cn("font-bold tabular-nums", meets(t.compliance_rate, 90) ? "text-[--cs-success]" : meets(t.compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(t.compliance_rate)}</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
                   <div
-                    className={cn("h-full rounded-full", t.compliance_rate >= 90 ? "bg-green-500" : t.compliance_rate >= 70 ? "bg-amber-500" : "bg-red-500")}
-                    style={{ width: `${t.compliance_rate}%` }}
+                    className={cn("h-full rounded-full", meets(t.compliance_rate, 90) ? "bg-green-500" : meets(t.compliance_rate, 70) ? "bg-amber-500" : "bg-red-500")}
+                    style={{ width: `${t.compliance_rate ?? 0}%` }}
                   />
                 </div>
               </div>

@@ -151,14 +151,14 @@ describe("label functions", () => {
 // -- evaluateContactPlanCompliance --------------------------------------------
 
 describe("evaluateContactPlanCompliance", () => {
-  it("returns 0 for empty plans", () => {
+  it("returns 0 for empty plans and reports rates as unmeasured", () => {
     const result = evaluateContactPlanCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalPlans).toBe(0);
-    expect(result.planExistsRate).toBe(0);
-    expect(result.planCurrentRate).toBe(0);
-    expect(result.childViewConsideredRate).toBe(0);
-    expect(result.courtOrderCompliantRate).toBe(0);
+    expect(result.planExistsRate).toBeNull();
+    expect(result.planCurrentRate).toBeNull();
+    expect(result.childViewConsideredRate).toBeNull();
+    expect(result.courtOrderCompliantRate).toBeNull();
   });
 
   it("scores high for fully compliant plans", () => {
@@ -208,10 +208,10 @@ describe("evaluateContactPlanCompliance", () => {
     expect(result.courtOrderCompliantRate).toBe(0);
   });
 
-  it("court order rate 100 when no court orders", () => {
+  it("court order rate is unmeasured when no plan is court-ordered", () => {
     const plans = [mkPlan({ courtOrderInPlace: false })];
     const result = evaluateContactPlanCompliance(plans);
-    expect(result.courtOrderCompliantRate).toBe(100);
+    expect(result.courtOrderCompliantRate).toBeNull();
   });
 
   it("handles mixed compliance", () => {
@@ -239,14 +239,14 @@ describe("evaluateContactPlanCompliance", () => {
 // -- evaluateContactQuality ---------------------------------------------------
 
 describe("evaluateContactQuality", () => {
-  it("returns 0 for empty sessions", () => {
+  it("returns 0 for empty sessions and reports rates as unmeasured", () => {
     const result = evaluateContactQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.positiveOutcomeRate).toBe(0);
-    expect(result.childPreparedRate).toBe(0);
-    expect(result.childDebriefedRate).toBe(0);
-    expect(result.parentCooperativeRate).toBe(0);
+    expect(result.positiveOutcomeRate).toBeNull();
+    expect(result.childPreparedRate).toBeNull();
+    expect(result.childDebriefedRate).toBeNull();
+    expect(result.parentCooperativeRate).toBeNull();
   });
 
   it("scores high for all positive sessions", () => {
@@ -335,10 +335,10 @@ describe("evaluateRiskManagement", () => {
     const result = evaluateRiskManagement([], []);
     expect(result.overallScore).toBe(25);
     expect(result.totalAssessments).toBe(0);
-    expect(result.riskAssessedRate).toBe(0);
-    expect(result.reviewCurrentRate).toBe(0);
-    expect(result.safeguardingMeasuresRate).toBe(0);
-    expect(result.incidentRate).toBe(0);
+    expect(result.riskAssessedRate).toBeNull();
+    expect(result.reviewCurrentRate).toBeNull();
+    expect(result.safeguardingMeasuresRate).toBeNull();
+    expect(result.incidentRate).toBeNull();
   });
 
   it("scores well for thorough assessments with no incidents", () => {
@@ -422,7 +422,8 @@ describe("evaluateRiskManagement", () => {
     const assessments = [mkAssessment()];
     const result = evaluateRiskManagement(assessments, []);
     expect(result.overallScore).toBeGreaterThan(0);
-    expect(result.incidentRate).toBe(0);
+    // No session took place, so there is no incident rate to report
+    expect(result.incidentRate).toBeNull();
   });
 
   it("handles sessions with no assessments", () => {
@@ -436,16 +437,16 @@ describe("evaluateRiskManagement", () => {
 // -- evaluateStaffContactReadiness --------------------------------------------
 
 describe("evaluateStaffContactReadiness", () => {
-  it("returns 0 for empty training", () => {
+  it("returns 0 for empty training and reports rates as unmeasured", () => {
     const result = evaluateStaffContactReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.supervisedContactRate).toBe(0);
-    expect(result.riskAssessmentRate).toBe(0);
-    expect(result.prepDebriefRate).toBe(0);
-    expect(result.safeguardingRate).toBe(0);
-    expect(result.parentalConflictRate).toBe(0);
-    expect(result.courtOrderRate).toBe(0);
+    expect(result.supervisedContactRate).toBeNull();
+    expect(result.riskAssessmentRate).toBeNull();
+    expect(result.prepDebriefRate).toBeNull();
+    expect(result.safeguardingRate).toBeNull();
+    expect(result.parentalConflictRate).toBeNull();
+    expect(result.courtOrderRate).toBeNull();
   });
 
   it("scores high for fully trained staff", () => {

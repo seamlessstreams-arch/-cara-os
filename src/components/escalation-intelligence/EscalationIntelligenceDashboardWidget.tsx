@@ -28,17 +28,17 @@ interface EscalationData {
   homeId: string;
   periodStart: string;
   periodEnd: string;
-  overallScore: number;
+  overallScore: number | null;
   rating: string;
   totalConcernsRaised: number;
   totalEscalations: number;
   escalationsTimely: number;
   escalationsDelayed: number;
   escalationsMissing: number;
-  thresholdAccuracyRate: number;
-  ofstedComplianceRate: number;
-  laComplianceRate: number;
-  multiAgencyEngagementRate: number;
+  thresholdAccuracyRate: number | null;
+  ofstedComplianceRate: number | null;
+  laComplianceRate: number | null;
+  multiAgencyEngagementRate: number | null;
   averageResponseTimeHours: number;
   assessments: ThresholdAssessment[];
   strengths: string[];
@@ -52,25 +52,28 @@ interface EscalationData {
 
 // ── Rating Badge ───────────────────────────────────────────────────────────
 
-function RatingBadge({ score, rating }: { score: number; rating: string }) {
+function RatingBadge({ score, rating }: { score: number | null; rating: string }) {
   const colorClass =
-    rating === "outstanding"
-      ? "bg-green-100 text-green-800 border-green-300"
-      : rating === "good"
-        ? "bg-blue-100 text-blue-800 border-blue-300"
-        : rating === "requires_improvement"
-          ? "bg-orange-100 text-orange-800 border-orange-300"
-          : "bg-red-100 text-red-800 border-red-300";
+    rating === "not_assessed"
+      ? "bg-slate-100 text-slate-700 border-slate-300"
+      : rating === "outstanding"
+        ? "bg-green-100 text-green-800 border-green-300"
+        : rating === "good"
+          ? "bg-blue-100 text-blue-800 border-blue-300"
+          : rating === "requires_improvement"
+            ? "bg-orange-100 text-orange-800 border-orange-300"
+            : "bg-red-100 text-red-800 border-red-300";
 
   const label =
-    rating === "outstanding" ? "Outstanding"
-      : rating === "good" ? "Good"
-        : rating === "requires_improvement" ? "Requires Improvement"
-          : "Inadequate";
+    rating === "not_assessed" ? "Not Assessed"
+      : rating === "outstanding" ? "Outstanding"
+        : rating === "good" ? "Good"
+          : rating === "requires_improvement" ? "Requires Improvement"
+            : "Inadequate";
 
   return (
     <div className={`rounded-lg border px-4 py-3 text-center ${colorClass}`}>
-      <div className="text-3xl font-bold">{score}</div>
+      <div className="text-3xl font-bold">{score ?? "—"}</div>
       <div className="text-sm font-medium mt-1">{label}</div>
     </div>
   );
@@ -78,15 +81,19 @@ function RatingBadge({ score, rating }: { score: number; rating: string }) {
 
 // ── Compliance Gauge ───────────────────────────────────────────────────────
 
-function ComplianceGauge({ label, value }: { label: string; value: number }) {
+function ComplianceGauge({ label, value }: { label: string; value: number | null }) {
+  // Null means nothing met this threshold in the period, so there is no rate to
+  // colour green or red.
+  const measured = typeof value === "number" && Number.isFinite(value);
   const color =
-    value >= 90 ? "text-green-700 bg-green-100"
-      : value >= 70 ? "text-yellow-700 bg-yellow-100"
-        : "text-red-700 bg-red-100";
+    !measured ? "text-slate-600 bg-slate-100"
+      : value >= 90 ? "text-green-700 bg-green-100"
+        : value >= 70 ? "text-yellow-700 bg-yellow-100"
+          : "text-red-700 bg-red-100";
 
   return (
     <div className={`rounded-lg p-3 text-center ${color}`}>
-      <div className="text-2xl font-bold">{value}%</div>
+      <div className="text-2xl font-bold">{measured ? `${value}%` : "—"}</div>
       <div className="text-xs font-medium mt-0.5">{label}</div>
     </div>
   );

@@ -388,11 +388,14 @@ describe("Deprivation of Liberty Intelligence Engine", () => {
   // ── evaluateAuthorisationCompliance ────────────────────────────────────
 
   describe("evaluateAuthorisationCompliance", () => {
-    it("returns max score for no restrictions", () => {
+    it("returns max score for no restrictions and reports rates as unmeasured", () => {
       const result = evaluateAuthorisationCompliance([]);
       expect(result.overallScore).toBe(30);
       expect(result.totalRestrictions).toBe(0);
-      expect(result.authorisedRate).toBe(100);
+      expect(result.authorisedRate).toBeNull();
+      expect(result.bestInterestsRate).toBeNull();
+      expect(result.leastRestrictiveRate).toBeNull();
+      expect(result.riskAssessmentRate).toBeNull();
     });
 
     it("scores high for all authorised restrictions with full compliance", () => {
@@ -483,10 +486,11 @@ describe("Deprivation of Liberty Intelligence Engine", () => {
   // ── evaluateProportionality ────────────────────────────────────────────
 
   describe("evaluateProportionality", () => {
-    it("returns max score for no restrictions", () => {
+    it("returns max score for no restrictions and reports rates as unmeasured", () => {
       const result = evaluateProportionality([], PERIOD_END);
       expect(result.overallScore).toBe(25);
-      expect(result.proportionateRate).toBe(100);
+      expect(result.proportionateRate).toBeNull();
+      expect(result.averageActiveDurationDays).toBeNull();
     });
 
     it("scores high for all proportionate restrictions", () => {
@@ -669,9 +673,12 @@ describe("Deprivation of Liberty Intelligence Engine", () => {
   // ── evaluateRightsProtection ───────────────────────────────────────────
 
   describe("evaluateRightsProtection", () => {
-    it("returns max score when no restrictions", () => {
+    it("returns max score when no restrictions and reports rates as unmeasured", () => {
       const result = evaluateRightsProtection([], [], []);
       expect(result.overallScore).toBe(20);
+      expect(result.safeguardCoverage).toBeNull();
+      expect(result.advocacyRate).toBeNull();
+      expect(result.courtOrderComplianceRate).toBeNull();
     });
 
     it("scores well for demo data with comprehensive safeguards", () => {

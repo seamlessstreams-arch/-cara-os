@@ -15,6 +15,7 @@ import {
   Loader2, User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useMedicationIntelligence } from "@/hooks/use-medication-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -37,6 +38,7 @@ const COMPLIANCE_BADGES: Record<string, { label: string; color: string }> = {
   good:      { label: "Good", color: "text-blue-700 bg-blue-50 border-blue-200" },
   concerns:  { label: "Concerns", color: "text-amber-700 bg-amber-50 border-amber-200" },
   critical:  { label: "Critical", color: "text-red-700 bg-red-50 border-red-200" },
+  not_measured: { label: "No records", color: "text-gray-600 bg-gray-50 border-gray-200" },
 };
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -85,25 +87,25 @@ export function MedicationAuditCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.stock_check_compliance >= 90 ? "bg-green-50" : o.stock_check_compliance >= 75 ? "bg-amber-50" : "bg-red-50",
+            o.stock_check_compliance === null ? "bg-gray-50" : meets(o.stock_check_compliance, 90) ? "bg-green-50" : meets(o.stock_check_compliance, 75) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.stock_check_compliance >= 90 ? "text-[--cs-success]" : o.stock_check_compliance >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.stock_check_compliance === null ? "text-muted-foreground" : meets(o.stock_check_compliance, 90) ? "text-[--cs-success]" : meets(o.stock_check_compliance, 75) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.stock_check_compliance}%
+              {formatRate(o.stock_check_compliance)}
             </p>
             <p className="text-[10px] text-muted-foreground">Stock Check</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.witnessing_rate >= 95 ? "bg-green-50" : o.witnessing_rate >= 80 ? "bg-amber-50" : "bg-red-50",
+            o.witnessing_rate === null ? "bg-gray-50" : meets(o.witnessing_rate, 95) ? "bg-green-50" : meets(o.witnessing_rate, 80) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.witnessing_rate >= 95 ? "text-[--cs-success]" : o.witnessing_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.witnessing_rate === null ? "text-muted-foreground" : meets(o.witnessing_rate, 95) ? "text-[--cs-success]" : meets(o.witnessing_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.witnessing_rate}%
+              {formatRate(o.witnessing_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Witnessing</p>
           </div>
@@ -131,13 +133,13 @@ export function MedicationAuditCard() {
             </p>
             <div className="space-y-1">
               {intel.child_profiles.slice(0, 6).map((cp) => {
-                const badge = COMPLIANCE_BADGES[cp.compliance_status] ?? COMPLIANCE_BADGES.good;
+                const badge = COMPLIANCE_BADGES[cp.compliance_status] ?? COMPLIANCE_BADGES.not_measured;
                 return (
                   <div key={cp.child_id} className="flex items-center justify-between rounded border p-2 text-xs">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <User className="h-3 w-3 text-blue-500 shrink-0" />
                       <span className="font-medium truncate">{cp.child_name}</span>
-                      <span className="text-muted-foreground">{cp.active_medications} meds · {cp.adherence_rate}%</span>
+                      <span className="text-muted-foreground">{cp.active_medications} meds · {formatRate(cp.adherence_rate)}</span>
                     </div>
                     <Badge variant="outline" className={cn("text-[10px] shrink-0", badge.color)}>
                       {badge.label}

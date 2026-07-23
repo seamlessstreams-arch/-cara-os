@@ -22,6 +22,7 @@ import type {
   ManagerDecision,
 } from "@/types/care-events";
 import type { NotifiableEvent, NotifiableEventType } from "@/types/extended";
+import { rate } from "@/lib/metrics/rate";
 
 const APPROVED_DECISIONS: ManagerDecision[] = ["approved", "accepted"];
 
@@ -134,9 +135,8 @@ export function buildAnnexAQueue(
   const rejected_count = items.filter((i) => i.manager_decision === "rejected").length;
   const pending_decisions = items.filter((i) => i.manager_decision === "pending").length;
   const gaps = sections.filter((s) => s.has_gap).map((s) => s.key);
-  const readiness_score = sections.length
-    ? Math.round((sections.filter((s) => !s.has_gap).length / sections.length) * 100)
-    : 100;
+  // No evidence at all means no sections to score — unmeasured, not inspection-ready.
+  const readiness_score = rate(sections.filter((s) => !s.has_gap).length, sections.length);
 
   return {
     data,

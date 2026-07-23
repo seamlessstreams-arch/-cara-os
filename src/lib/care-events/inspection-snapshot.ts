@@ -25,7 +25,8 @@ import { db } from "@/lib/db/store";
 import type { PersistedInspectionSnapshot } from "@/lib/db/store";
 
 export interface InspectionSnapshotHeadline {
-  readiness_score: number;
+  /** null when nothing was measurable at the time the snapshot was taken. */
+  readiness_score: number | null;
   readiness_severity: InspectionReadinessReport["severity"];
   filing_total: number;
   filing_unverified_pct: number;
@@ -163,7 +164,7 @@ export interface PersistedSnapshotRow {
   generated_at: string;
   generated_by: string | null;
   schema_version: number;
-  readiness_score: number;
+  readiness_score: number | null;
   readiness_severity: string;
 }
 

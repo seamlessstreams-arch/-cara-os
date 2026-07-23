@@ -12,6 +12,8 @@
 //             CHR 2015 Reg 25, SCCIF, NMS 10, Health and Safety at Work Act 1974
 // ==============================================================================
 
+import { below, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+
 // -- Type unions ---------------------------------------------------------------
 
 export type DrillType =
@@ -183,40 +185,42 @@ export interface StaffFireTraining {
 export interface FireDrillComplianceResult {
   overallScore: number;
   totalDrills: number;
-  successRate: number;
-  fullParticipationRate: number;
+  successRate: number | null;
+  fullParticipationRate: number | null;
   drillTypeVariety: number;
-  averageEvacuationTime: number;
-  correctiveActionsRate: number;
+  averageEvacuationTime: number | null;
+  /** null = no drill identified an issue, so there was nothing to correct. */
+  correctiveActionsRate: number | null;
 }
 
 export interface EquipmentCheckResult {
   overallScore: number;
   totalChecks: number;
-  passRate: number;
-  majorFaultRate: number;
+  passRate: number | null;
+  majorFaultRate: number | null;
   equipmentTypesCovered: number;
-  rectificationRate: number;
+  /** null = no fault was found, so there was nothing to rectify. */
+  rectificationRate: number | null;
 }
 
 export interface EvacuationPlanResult {
   overallScore: number;
   totalPlans: number;
-  peepCurrentRate: number;
-  assemblyPointRate: number;
-  escapeRouteRate: number;
-  nightPlanRate: number;
+  peepCurrentRate: number | null;
+  assemblyPointRate: number | null;
+  escapeRouteRate: number | null;
+  nightPlanRate: number | null;
 }
 
 export interface StaffFireReadinessResult {
   overallScore: number;
   totalStaff: number;
-  fireAwarenessRate: number;
-  fireMarshalRate: number;
-  evacuationRate: number;
-  extinguisherRate: number;
-  peepAwarenessRate: number;
-  nightResponseRate: number;
+  fireAwarenessRate: number | null;
+  fireMarshalRate: number | null;
+  evacuationRate: number | null;
+  extinguisherRate: number | null;
+  peepAwarenessRate: number | null;
+  nightResponseRate: number | null;
 }
 
 export interface ChildFireSafetySummary {
@@ -260,6 +264,26 @@ export function getRating(score: number): Rating {
   return "inadequate";
 }
 
+/**
+ * Domain sub-score over the components that could actually be measured.
+ * A component with nothing to measure (no faults to rectify, no drill issues to
+ * correct) is dropped and the remaining weights renormalise, so silence neither
+ * earns its points nor forfeits them.
+ */
+function scaleToBand(
+  components: readonly { score: number | null; weight: number }[],
+  max: number,
+): number {
+  const proportion = weightedMeanOf(
+    components.map((c) => ({
+      score: c.score === null ? null : (c.score / c.weight) * 100,
+      weight: c.weight,
+    })),
+  );
+  if (proportion === null) return 0;
+  return Math.min(Math.round((proportion / 100) * max), max);
+}
+
 // -- Evaluators ----------------------------------------------------------------
 
 /**
@@ -278,49 +302,47 @@ export function evaluateFireDrillCompliance(
     return {
       overallScore: 0,
       totalDrills: 0,
-      successRate: 0,
-      fullParticipationRate: 0,
+      successRate: null,
+      fullParticipationRate: null,
       drillTypeVariety: 0,
-      averageEvacuationTime: 0,
-      correctiveActionsRate: 0,
+      averageEvacuationTime: null,
+      correctiveActionsRate: null,
     };
   }
 
-  let score = 0;
-
   const successful = drills.filter((d) => d.outcome === "successful").length;
   const successRate = pct(successful, drills.length);
-  if (successRate >= 90) score += 7;
-  else if (successRate >= 70) score += 5;
-  else if (successRate >= 50) score += 3;
-  else if (successRate > 0) score += 1;
+  let successPoints = 0;
+  if (successRate >= 90) successPoints = 7;
+  else if (successRate >= 70) successPoints = 5;
+  else if (successRate >= 50) successPoints = 3;
+  else if (successRate > 0) successPoints = 1;
 
   const fullParticipation = drills.filter(
     (d) => d.allChildrenParticipated && d.allStaffParticipated,
   ).length;
   const fullParticipationRate = pct(fullParticipation, drills.length);
-  if (fullParticipationRate >= 90) score += 6;
-  else if (fullParticipationRate >= 70) score += 4;
-  else if (fullParticipationRate >= 50) score += 3;
-  else if (fullParticipationRate > 0) score += 1;
+  let participationPoints = 0;
+  if (fullParticipationRate >= 90) participationPoints = 6;
+  else if (fullParticipationRate >= 70) participationPoints = 4;
+  else if (fullParticipationRate >= 50) participationPoints = 3;
+  else if (fullParticipationRate > 0) participationPoints = 1;
 
   const uniqueTypes = new Set(drills.map((d) => d.drillType));
   const drillTypeVariety = uniqueTypes.size;
-  if (drillTypeVariety >= 4) score += 6;
-  else if (drillTypeVariety >= 3) score += 4;
-  else if (drillTypeVariety >= 2) score += 3;
-  else score += 1;
+  let varietyPoints = 1;
+  if (drillTypeVariety >= 4) varietyPoints = 6;
+  else if (drillTypeVariety >= 3) varietyPoints = 4;
+  else if (drillTypeVariety >= 2) varietyPoints = 3;
 
   const withIssues = drills.filter((d) => d.issuesIdentified.length > 0);
-  const correctedIssues = withIssues.filter(
-    (d) => d.correctiveActionsTaken,
-  ).length;
-  const correctiveActionsRate =
-    withIssues.length > 0 ? pct(correctedIssues, withIssues.length) : 100;
-  if (correctiveActionsRate >= 90) score += 6;
-  else if (correctiveActionsRate >= 70) score += 4;
-  else if (correctiveActionsRate >= 50) score += 3;
-  else if (correctiveActionsRate > 0) score += 1;
+  const corrected = withIssues.filter((d) => d.correctiveActionsTaken);
+  const correctiveActionsRate = rateOf(corrected, withIssues);
+  let correctivePoints: number | null = null;
+  if (meets(correctiveActionsRate, 90)) correctivePoints = 6;
+  else if (meets(correctiveActionsRate, 70)) correctivePoints = 4;
+  else if (meets(correctiveActionsRate, 50)) correctivePoints = 3;
+  else if (below(correctiveActionsRate, 50)) correctivePoints = correctiveActionsRate! > 0 ? 1 : 0;
 
   const totalTime = drills.reduce(
     (sum, d) => sum + d.evacuationTimeSeconds,
@@ -329,7 +351,15 @@ export function evaluateFireDrillCompliance(
   const averageEvacuationTime = Math.round(totalTime / drills.length);
 
   return {
-    overallScore: Math.min(score, 25),
+    overallScore: scaleToBand(
+      [
+        { score: successPoints, weight: 7 },
+        { score: participationPoints, weight: 6 },
+        { score: varietyPoints, weight: 6 },
+        { score: correctivePoints, weight: 6 },
+      ],
+      25,
+    ),
     totalDrills: drills.length,
     successRate,
     fullParticipationRate,
@@ -355,51 +385,59 @@ export function evaluateEquipmentChecks(
     return {
       overallScore: 0,
       totalChecks: 0,
-      passRate: 0,
-      majorFaultRate: 0,
+      passRate: null,
+      majorFaultRate: null,
       equipmentTypesCovered: 0,
-      rectificationRate: 0,
+      rectificationRate: null,
     };
   }
 
-  let score = 0;
-
   const passed = checks.filter((c) => c.outcome === "pass").length;
   const passRate = pct(passed, checks.length);
-  if (passRate >= 95) score += 8;
-  else if (passRate >= 80) score += 6;
-  else if (passRate >= 60) score += 4;
-  else if (passRate > 0) score += 2;
+  let passPoints = 0;
+  if (passRate >= 95) passPoints = 8;
+  else if (passRate >= 80) passPoints = 6;
+  else if (passRate >= 60) passPoints = 4;
+  else if (passRate > 0) passPoints = 2;
 
   const uniqueTypes = new Set(checks.map((c) => c.equipmentType));
   const equipmentTypesCovered = uniqueTypes.size;
-  if (equipmentTypesCovered >= 6) score += 6;
-  else if (equipmentTypesCovered >= 4) score += 4;
-  else if (equipmentTypesCovered >= 2) score += 3;
-  else score += 1;
+  let coveragePoints = 1;
+  if (equipmentTypesCovered >= 6) coveragePoints = 6;
+  else if (equipmentTypesCovered >= 4) coveragePoints = 4;
+  else if (equipmentTypesCovered >= 2) coveragePoints = 3;
 
   const faults = checks.filter(
     (c) => c.outcome === "minor_fault" || c.outcome === "major_fault",
   );
-  const rectified = faults.filter((c) => c.rectifiedDate).length;
-  const rectificationRate =
-    faults.length > 0 ? pct(rectified, faults.length) : 100;
-  if (rectificationRate >= 90) score += 6;
-  else if (rectificationRate >= 70) score += 4;
-  else if (rectificationRate >= 50) score += 3;
-  else if (rectificationRate > 0) score += 1;
+  const rectified = faults.filter((c) => c.rectifiedDate);
+  const rectificationRate = rateOf(rectified, faults);
+  let rectificationPoints: number | null = null;
+  if (meets(rectificationRate, 90)) rectificationPoints = 6;
+  else if (meets(rectificationRate, 70)) rectificationPoints = 4;
+  else if (meets(rectificationRate, 50)) rectificationPoints = 3;
+  else if (below(rectificationRate, 50)) rectificationPoints = rectificationRate! > 0 ? 1 : 0;
 
   const majorFaults = checks.filter(
     (c) => c.outcome === "major_fault" || c.outcome === "out_of_service",
   ).length;
   const majorFaultRate = pct(majorFaults, checks.length);
-  if (majorFaultRate === 0) score += 5;
-  else if (majorFaultRate <= 5) score += 3;
-  else if (majorFaultRate <= 15) score += 2;
-  else if (majorFaultRate <= 30) score += 1;
+  let majorFaultPoints = 0;
+  if (majorFaultRate === 0) majorFaultPoints = 5;
+  else if (majorFaultRate <= 5) majorFaultPoints = 3;
+  else if (majorFaultRate <= 15) majorFaultPoints = 2;
+  else if (majorFaultRate <= 30) majorFaultPoints = 1;
 
   return {
-    overallScore: Math.min(score, 25),
+    overallScore: scaleToBand(
+      [
+        { score: passPoints, weight: 8 },
+        { score: coveragePoints, weight: 6 },
+        { score: rectificationPoints, weight: 6 },
+        { score: majorFaultPoints, weight: 5 },
+      ],
+      25,
+    ),
     totalChecks: checks.length,
     passRate,
     majorFaultRate,
@@ -424,10 +462,10 @@ export function evaluateEvacuationPlanning(
     return {
       overallScore: 0,
       totalPlans: 0,
-      peepCurrentRate: 0,
-      assemblyPointRate: 0,
-      escapeRouteRate: 0,
-      nightPlanRate: 0,
+      peepCurrentRate: null,
+      assemblyPointRate: null,
+      escapeRouteRate: null,
+      nightPlanRate: null,
     };
   }
 
@@ -493,12 +531,12 @@ export function evaluateStaffFireReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      fireAwarenessRate: 0,
-      fireMarshalRate: 0,
-      evacuationRate: 0,
-      extinguisherRate: 0,
-      peepAwarenessRate: 0,
-      nightResponseRate: 0,
+      fireAwarenessRate: null,
+      fireMarshalRate: null,
+      evacuationRate: null,
+      extinguisherRate: null,
+      peepAwarenessRate: null,
+      nightResponseRate: null,
     };
   }
 
@@ -628,37 +666,37 @@ export function generateFireSafetyPreparednessIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (fireDrillCompliance.successRate >= 90 && drills.length > 0) {
+  if (meets(fireDrillCompliance.successRate, 90)) {
     strengths.push(
       "Fire drills consistently achieving successful outcomes",
     );
   }
-  if (fireDrillCompliance.fullParticipationRate >= 90 && drills.length > 0) {
+  if (meets(fireDrillCompliance.fullParticipationRate, 90)) {
     strengths.push(
       "Full participation from children and staff in fire drills",
     );
   }
-  if (equipmentChecks.passRate >= 95 && checks.length > 0) {
+  if (meets(equipmentChecks.passRate, 95)) {
     strengths.push(
       "Fire safety equipment maintained to an excellent standard",
     );
   }
-  if (equipmentChecks.majorFaultRate === 0 && checks.length > 0) {
+  if (equipmentChecks.majorFaultRate === 0) {
     strengths.push(
       "No major faults identified in fire equipment during the assessment period",
     );
   }
-  if (evacuationPlanning.peepCurrentRate >= 90 && plans.length > 0) {
+  if (meets(evacuationPlanning.peepCurrentRate, 90)) {
     strengths.push(
       "Personal Emergency Evacuation Plans current for all children",
     );
   }
-  if (staffFireReadiness.fireAwarenessRate >= 90 && training.length > 0) {
+  if (meets(staffFireReadiness.fireAwarenessRate, 90)) {
     strengths.push(
       "Staff team demonstrates comprehensive fire safety awareness",
     );
   }
-  if (evacuationPlanning.nightPlanRate >= 90 && plans.length > 0) {
+  if (meets(evacuationPlanning.nightPlanRate, 90)) {
     strengths.push(
       "Night evacuation plans in place for all children",
     );
@@ -667,7 +705,7 @@ export function generateFireSafetyPreparednessIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (fireDrillCompliance.successRate < 70 && drills.length > 0) {
+  if (below(fireDrillCompliance.successRate, 70)) {
     areasForImprovement.push(
       "Fire drill success rate below expected standard — review procedures",
     );
@@ -677,22 +715,22 @@ export function generateFireSafetyPreparednessIntelligence(
       "Limited variety of fire drill types — incorporate night drills and unannounced drills",
     );
   }
-  if (equipmentChecks.rectificationRate < 70 && checks.length > 0) {
+  if (below(equipmentChecks.rectificationRate, 70)) {
     areasForImprovement.push(
       "Faults in fire equipment not consistently rectified in a timely manner",
     );
   }
-  if (evacuationPlanning.escapeRouteRate < 80 && plans.length > 0) {
+  if (below(evacuationPlanning.escapeRouteRate, 80)) {
     areasForImprovement.push(
       "Not all escape routes confirmed as accessible — review and update",
     );
   }
-  if (staffFireReadiness.fireMarshalRate < 50 && training.length > 0) {
+  if (below(staffFireReadiness.fireMarshalRate, 50)) {
     areasForImprovement.push(
       "Insufficient fire marshal trained staff — increase training provision",
     );
   }
-  if (evacuationPlanning.nightPlanRate < 70 && plans.length > 0) {
+  if (below(evacuationPlanning.nightPlanRate, 70)) {
     areasForImprovement.push(
       "Night evacuation planning not comprehensive for all children",
     );
@@ -721,7 +759,7 @@ export function generateFireSafetyPreparednessIntelligence(
       "URGENT: No staff fire safety training records — deliver mandatory training immediately",
     );
   }
-  if (equipmentChecks.majorFaultRate > 15 && checks.length > 0) {
+  if (equipmentChecks.majorFaultRate !== null && equipmentChecks.majorFaultRate > 15) {
     actions.push(
       "URGENT: High rate of major faults in fire equipment — prioritise rectification",
     );
@@ -732,15 +770,12 @@ export function generateFireSafetyPreparednessIntelligence(
       `URGENT: ${overdue.length} PEEP(s) overdue for review — update immediately`,
     );
   }
-  if (fireDrillCompliance.successRate < 50 && drills.length > 0) {
+  if (below(fireDrillCompliance.successRate, 50)) {
     actions.push(
       "Review fire drill procedures and address recurring issues preventing successful outcomes",
     );
   }
-  if (
-    staffFireReadiness.extinguisherRate < 50 &&
-    training.length > 0
-  ) {
+  if (below(staffFireReadiness.extinguisherRate, 50)) {
     actions.push(
       "Provide fire extinguisher training to all staff",
     );

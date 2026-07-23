@@ -13,6 +13,11 @@ function ScoreBar({ label, value, max = 25 }: { label: string; value: number; ma
   );
 }
 
+/** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
+function pct(value: unknown): string {
+  return typeof value === "number" && Number.isFinite(value) ? `${value}%` : "—";
+}
+
 function Stat({ label, value }: { label: string; value: string | number }) {
   return <div className="bg-gray-50 rounded p-3 text-center"><p className="text-xs text-gray-500">{label}</p><p className="text-lg font-semibold">{String(value)}</p></div>;
 }
@@ -87,9 +92,9 @@ export function StaffResilienceIntelligenceWidget() {
       <Section title="Absence Patterns">
         <div className="grid grid-cols-2 gap-2">
           <Stat label="Absence Rate/Staff" value={absence.overallAbsenceRate as number} />
-          <Stat label="Stress-Related" value={`${absence.stressRelatedAbsenceRate}%`} />
-          <Stat label="RTW Completion" value={`${absence.returnToWorkCompletionRate}%`} />
-          <Stat label="Adjustments Made" value={`${absence.adjustmentRate}%`} />
+          <Stat label="Stress-Related" value={pct(absence.stressRelatedAbsenceRate)} />
+          <Stat label="RTW Completion" value={pct(absence.returnToWorkCompletionRate)} />
+          <Stat label="Adjustments Made" value={pct(absence.adjustmentRate)} />
           <Stat label="Total Absence Days" value={absence.totalAbsenceDays as number} />
           <Stat label="Stress Days" value={absence.totalStressAbsenceDays as number} />
         </div>
@@ -99,18 +104,18 @@ export function StaffResilienceIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2">
           <Stat label="Access Rate/Staff" value={support.accessRatePerStaff as number} />
           <Stat label="Type Variety" value={support.supportTypeVariety as number} />
-          <Stat label="Voluntary Access" value={`${support.voluntaryAccessRate}%`} />
-          <Stat label="Satisfaction" value={`${support.satisfactionRate}%`} />
-          <Stat label="Follow-Up" value={`${support.followUpRate}%`} />
+          <Stat label="Voluntary Access" value={pct(support.voluntaryAccessRate)} />
+          <Stat label="Satisfaction" value={pct(support.satisfactionRate)} />
+          <Stat label="Follow-Up" value={pct(support.followUpRate)} />
         </div>
       </Section>
 
       <Section title="Supervision Quality">
         <div className="grid grid-cols-2 gap-2">
-          <Stat label="Frequency Rate" value={`${supervision.frequencyRate}%`} />
-          <Stat label="Wellbeing Discussed" value={`${supervision.wellbeingDiscussedRate}%`} />
-          <Stat label="Workload Discussed" value={`${supervision.workloadDiscussedRate}%`} />
-          <Stat label="Action Completion" value={`${supervision.actionCompletionRate}%`} />
+          <Stat label="Frequency Rate" value={pct(supervision.frequencyRate)} />
+          <Stat label="Wellbeing Discussed" value={pct(supervision.wellbeingDiscussedRate)} />
+          <Stat label="Workload Discussed" value={pct(supervision.workloadDiscussedRate)} />
+          <Stat label="Action Completion" value={pct(supervision.actionCompletionRate)} />
           <Stat label="Overdue" value={supervision.overdueCount as number} />
         </div>
       </Section>
@@ -119,20 +124,20 @@ export function StaffResilienceIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2">
           <Stat label="Morale" value={(team.latestMorale as string).replace(/_/g, " ")} />
           <Stat label="Trend" value={(team.moraleTrend as string).replace(/_/g, " ")} />
-          <Stat label="Workload Manageable" value={`${team.workloadManageableRate}%`} />
-          <Stat label="Support Adequate" value={`${team.supportAdequacyRate}%`} />
-          <Stat label="Communication" value={`${team.communicationEffectiveRate}%`} />
+          <Stat label="Workload Manageable" value={pct(team.workloadManageableRate)} />
+          <Stat label="Support Adequate" value={pct(team.supportAdequacyRate)} />
+          <Stat label="Communication" value={pct(team.communicationEffectiveRate)} />
           <Stat label="Issues Raised" value={team.totalIssuesRaised as number} />
         </div>
       </Section>
 
       <Section title="Secondary Trauma">
         <div className="grid grid-cols-2 gap-2">
-          <Stat label="Screening Coverage" value={`${trauma.screeningCoverage}%`} />
-          <Stat label="Indicator Prevalence" value={trauma.indicatorPrevalence as number} />
-          <Stat label="Support Offered" value={`${trauma.supportOfferedRate}%`} />
-          <Stat label="Support Accepted" value={`${trauma.supportAcceptedRate}%`} />
-          <Stat label="Action Plans" value={`${trauma.actionPlanRate}%`} />
+          <Stat label="Screening Coverage" value={pct(trauma.screeningCoverage)} />
+          <Stat label="Indicator Prevalence" value={typeof trauma.indicatorPrevalence === "number" ? trauma.indicatorPrevalence : "—"} />
+          <Stat label="Support Offered" value={pct(trauma.supportOfferedRate)} />
+          <Stat label="Support Accepted" value={pct(trauma.supportAcceptedRate)} />
+          <Stat label="Action Plans" value={pct(trauma.actionPlanRate)} />
           <Stat label="Staff With Indicators" value={trauma.staffWithIndicators as number} />
         </div>
       </Section>

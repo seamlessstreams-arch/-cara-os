@@ -9,12 +9,21 @@
 
 import { useEffect, useState } from "react";
 
+/** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
+function pct(value: number | null | undefined): string {
+  return typeof value === "number" && Number.isFinite(value) ? `${value}%` : "—";
+}
+
+function meets(value: number | null | undefined, threshold: number): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value >= threshold;
+}
+
 // ── Local types mirroring engine output ────────────────────────────────────
 
 interface ChildProfile {
   childId: string;
   childName: string;
-  attendanceRate: number;
+  attendanceRate: number | null;
   pepStatus: string;
   exclusionDays: number;
   achievementCount: number;
@@ -24,9 +33,9 @@ interface ChildProfile {
 interface PerChildAttendance {
   childId: string;
   childName: string;
-  attendanceRate: number;
-  unauthorisedRate: number;
-  latenessRate: number;
+  attendanceRate: number | null;
+  unauthorisedRate: number | null;
+  latenessRate: number | null;
   eotasDays: number;
   totalDays: number;
   trend: string;
@@ -93,9 +102,9 @@ interface IntelligenceData {
     achievements: { score: number; maxScore: number };
   };
   attendance: {
-    overallAttendanceRate: number;
-    unauthorisedAbsenceRate: number;
-    latenessRate: number;
+    overallAttendanceRate: number | null;
+    unauthorisedAbsenceRate: number | null;
+    latenessRate: number | null;
     eotasDays: number;
     totalSchoolDays: number;
     totalPresent: number;
@@ -111,13 +120,13 @@ interface IntelligenceData {
     permanentCount: number;
     internalCount: number;
     informalCount: number;
-    alternativeProvisionRate: number;
-    reintegrationRate: number;
-    homeChallengeRate: number;
+    alternativeProvisionRate: number | null;
+    reintegrationRate: number | null;
+    homeChallengeRate: number | null;
     perChild: PerChildExclusion[];
   };
   pepQuality: {
-    pepCurrencyRate: number;
+    pepCurrencyRate: number | null;
     virtualSchoolInvolvementRate: number;
     childAttendanceRate: number;
     childVoiceRate: number;
@@ -131,9 +140,9 @@ interface IntelligenceData {
   };
   sendSupport: {
     childrenWithSEND: number;
-    sendCoverageRate: number;
+    sendCoverageRate: number | null;
     ehcpCount: number;
-    ehcpCurrencyRate: number;
+    ehcpCurrencyRate: number | null;
     averageHoursPerWeek: number;
     effectivenessBreakdown: Record<string, number>;
     childVoiceCapturedRate: number;
@@ -306,15 +315,15 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 border-b border-border">
         <MetricCard
           label="Attendance Rate"
-          value={`${data.attendance.overallAttendanceRate}%`}
-          sub={data.attendance.overallAttendanceRate >= 95 ? "On target" : "Below 95% target"}
-          accent={data.attendance.overallAttendanceRate >= 95 ? "emerald" : "amber"}
+          value={pct(data.attendance.overallAttendanceRate)}
+          sub={data.attendance.overallAttendanceRate === null ? "No attendance recorded" : meets(data.attendance.overallAttendanceRate, 95) ? "On target" : "Below 95% target"}
+          accent={meets(data.attendance.overallAttendanceRate, 95) ? "emerald" : "amber"}
         />
         <MetricCard
           label="PEP Currency"
-          value={`${data.pepQuality.pepCurrencyRate}%`}
+          value={pct(data.pepQuality.pepCurrencyRate)}
           sub={`${data.pepQuality.overduePEPs} overdue`}
-          accent={data.pepQuality.pepCurrencyRate >= 100 ? "emerald" : "amber"}
+          accent={meets(data.pepQuality.pepCurrencyRate, 100) ? "emerald" : "amber"}
         />
         <MetricCard
           label="Exclusion Days"
@@ -363,7 +372,7 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
                   )}
                 </div>
                 <div className="flex items-center gap-3 text-muted-foreground">
-                  <span>Att: {c.attendanceRate}%</span>
+                  <span>Att: {pct(c.attendanceRate)}</span>
                   <span className={PEP_COLORS[c.pepStatus] ?? ""}>PEP: {c.pepStatus}</span>
                   <span>Excl: {c.exclusionDays}d</span>
                   <span>Ach: {c.achievementCount}</span>
@@ -382,8 +391,8 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
         >
           <div className="space-y-2 text-xs">
             <div className="grid grid-cols-3 gap-2">
-              <Stat label="Unauthorised Rate" value={`${data.attendance.unauthorisedAbsenceRate}%`} />
-              <Stat label="Lateness Rate" value={`${data.attendance.latenessRate}%`} />
+              <Stat label="Unauthorised Rate" value={pct(data.attendance.unauthorisedAbsenceRate)} />
+              <Stat label="Lateness Rate" value={pct(data.attendance.latenessRate)} />
               <Stat label="EOTAS Days" value={String(data.attendance.eotasDays)} />
             </div>
             <div className="mt-2">
@@ -394,10 +403,10 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
                   <div key={c.childId} className="flex items-center justify-between py-1 border-b border-border last:border-0">
                     <span className="text-foreground">{c.childName}</span>
                     <div className="flex items-center gap-3 text-muted-foreground">
-                      <span>{c.attendanceRate}%</span>
+                      <span>{pct(c.attendanceRate)}</span>
                       <span className={trend.color}>{trend.icon}</span>
-                      <span>Unauth: {c.unauthorisedRate}%</span>
-                      <span>Late: {c.latenessRate}%</span>
+                      <span>Unauth: {pct(c.unauthorisedRate)}</span>
+                      <span>Late: {pct(c.latenessRate)}</span>
                     </div>
                   </div>
                 );
@@ -420,9 +429,9 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
               <Stat label="Days Lost" value={String(data.exclusions.totalDaysLost)} />
             </div>
             <div className="grid grid-cols-3 gap-2 mt-1">
-              <Stat label="Alt Provision" value={`${data.exclusions.alternativeProvisionRate}%`} />
-              <Stat label="Reintegration" value={`${data.exclusions.reintegrationRate}%`} />
-              <Stat label="Home Challenge" value={`${data.exclusions.homeChallengeRate}%`} />
+              <Stat label="Alt Provision" value={pct(data.exclusions.alternativeProvisionRate)} />
+              <Stat label="Reintegration" value={pct(data.exclusions.reintegrationRate)} />
+              <Stat label="Home Challenge" value={pct(data.exclusions.homeChallengeRate)} />
             </div>
             {data.exclusions.perChild.length > 0 && (
               <div className="mt-2">
@@ -451,15 +460,15 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
         >
           <div className="space-y-2 text-xs">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <Stat label="Currency" value={`${data.pepQuality.pepCurrencyRate}%`} />
-              <Stat label="VS Involved" value={`${data.pepQuality.virtualSchoolInvolvementRate}%`} />
-              <Stat label="Child Attended" value={`${data.pepQuality.childAttendanceRate}%`} />
-              <Stat label="Child Voice" value={`${data.pepQuality.childVoiceRate}%`} />
+              <Stat label="Currency" value={pct(data.pepQuality.pepCurrencyRate)} />
+              <Stat label="VS Involved" value={pct(data.pepQuality.virtualSchoolInvolvementRate)} />
+              <Stat label="Child Attended" value={pct(data.pepQuality.childAttendanceRate)} />
+              <Stat label="Child Voice" value={pct(data.pepQuality.childVoiceRate)} />
             </div>
             <div className="grid grid-cols-3 gap-2">
               <Stat label="Targets Set" value={String(data.pepQuality.totalTargetsSet)} />
               <Stat label="Targets Achieved" value={String(data.pepQuality.totalTargetsAchieved)} />
-              <Stat label="Achievement Rate" value={`${data.pepQuality.targetAchievementRate}%`} />
+              <Stat label="Achievement Rate" value={pct(data.pepQuality.targetAchievementRate)} />
             </div>
             <div className="mt-2">
               <p className="text-xs font-medium text-muted-foreground mb-1">Per Child</p>
@@ -486,13 +495,13 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
         >
           <div className="space-y-2 text-xs">
             <div className="grid grid-cols-3 gap-2">
-              <Stat label="Coverage" value={`${data.sendSupport.sendCoverageRate}%`} />
+              <Stat label="Coverage" value={pct(data.sendSupport.sendCoverageRate)} />
               <Stat label="EHCPs" value={String(data.sendSupport.ehcpCount)} />
-              <Stat label="EHCP Currency" value={`${data.sendSupport.ehcpCurrencyRate}%`} />
+              <Stat label="EHCP Currency" value={pct(data.sendSupport.ehcpCurrencyRate)} />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Stat label="Avg Hours/Week" value={String(data.sendSupport.averageHoursPerWeek)} />
-              <Stat label="Child Voice" value={`${data.sendSupport.childVoiceCapturedRate}%`} />
+              <Stat label="Child Voice" value={pct(data.sendSupport.childVoiceCapturedRate)} />
             </div>
             {data.sendSupport.perChild.length > 0 && (
               <div className="mt-2">
@@ -531,8 +540,8 @@ export function EducationOutcomesDashboardWidget({ homeId = "home-oak" }: Props)
           <div className="space-y-2 text-xs">
             <div className="grid grid-cols-3 gap-2">
               <Stat label="Variety Score" value={`${data.achievements.typeVarietyScore}%`} />
-              <Stat label="Celebration Rate" value={`${data.achievements.celebrationRate}%`} />
-              <Stat label="Evidence Rate" value={`${data.achievements.evidenceRecordingRate}%`} />
+              <Stat label="Celebration Rate" value={pct(data.achievements.celebrationRate)} />
+              <Stat label="Evidence Rate" value={pct(data.achievements.evidenceRecordingRate)} />
             </div>
             <div className="mt-1">
               <p className="text-xs font-medium text-muted-foreground mb-1">By Type</p>

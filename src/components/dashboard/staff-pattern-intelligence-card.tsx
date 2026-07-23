@@ -12,6 +12,7 @@ import {
   BarChart3, ChevronRight, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -93,7 +94,7 @@ export function StaffPatternIntelligenceCard() {
             </div>
             <div className="rounded border p-2">
               <span className="text-muted-foreground">Coverage:</span>{" "}
-              <span className="font-semibold">{staffing.coverage_rate}%</span>
+              <span className="font-semibold">{formatRate(staffing.coverage_rate)}</span>
             </div>
             <div className="rounded border p-2">
               <span className="text-muted-foreground">Bradford alerts:</span>{" "}

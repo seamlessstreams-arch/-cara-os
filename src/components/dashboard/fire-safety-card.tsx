@@ -15,6 +15,7 @@ import {
   Timer, FileCheck, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useEmergencyIntelligence } from "@/hooks/use-emergency-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -89,25 +90,25 @@ export function FireSafetyCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.protocol_followed_rate >= 90 ? "bg-green-50" : "bg-amber-50",
+            meets(o.protocol_followed_rate, 90) ? "bg-green-50" : "bg-amber-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.protocol_followed_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
+              meets(o.protocol_followed_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]",
             )}>
-              {o.protocol_followed_rate}%
+              {formatRate(o.protocol_followed_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Protocol</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.satisfactory_rate >= 90 ? "bg-green-50" : "bg-amber-50",
+            meets(o.satisfactory_rate, 90) ? "bg-green-50" : "bg-amber-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.satisfactory_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
+              meets(o.satisfactory_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]",
             )}>
-              {o.satisfactory_rate}%
+              {formatRate(o.satisfactory_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Satisfactory</p>
           </div>

@@ -15,6 +15,7 @@ import {
   Loader2, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useMedicationIntelligence } from "@/hooks/use-medication-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -81,21 +82,21 @@ export function MedicationSideEffectsCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{o.prn_administrations_30d}</p>
             <p className="text-[10px] text-muted-foreground">PRN (30d)</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", prn.effectiveness_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", prn.effectiveness_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {prn.effectiveness_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", prn.effectiveness_rate === null ? "bg-gray-50" : meets(prn.effectiveness_rate, 80) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", prn.effectiveness_rate === null ? "text-muted-foreground" : meets(prn.effectiveness_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(prn.effectiveness_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Effect.</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.refusal_rate === 0 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.refusal_rate === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.refusal_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.refusal_rate === null ? "bg-gray-50" : o.refusal_rate === 0 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.refusal_rate === null ? "text-muted-foreground" : o.refusal_rate === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(o.refusal_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Refused</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.adherence_rate >= 95 ? "bg-green-50" : o.adherence_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.adherence_rate >= 95 ? "text-[--cs-success]" : o.adherence_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.adherence_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.adherence_rate === null ? "bg-gray-50" : meets(o.adherence_rate, 95) ? "bg-green-50" : meets(o.adherence_rate, 80) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.adherence_rate === null ? "text-muted-foreground" : meets(o.adherence_rate, 95) ? "text-[--cs-success]" : meets(o.adherence_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(o.adherence_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Adherence</p>
           </div>

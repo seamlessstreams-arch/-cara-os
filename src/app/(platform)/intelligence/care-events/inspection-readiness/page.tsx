@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { RefreshCw, AlertTriangle, CheckCircle2, ShieldCheck } from "lucide-react";
+import { RefreshCw, AlertTriangle, CheckCircle2, ShieldCheck, HelpCircle } from "lucide-react";
 import { useInspectionReadiness } from "@/hooks/use-inspection-readiness";
 import type { ReadinessSeverity } from "@/lib/care-events/inspection-readiness";
 
@@ -23,6 +23,7 @@ const SEVERITY_META: Record<ReadinessSeverity, { label: string; tone: string; ic
   minor_gaps:        { label: "Minor gaps",         tone: "bg-amber-100 text-amber-800",     icon: <AlertTriangle className="h-4 w-4" /> },
   significant_gaps:  { label: "Significant gaps",   tone: "bg-orange-100 text-orange-800",   icon: <AlertTriangle className="h-4 w-4" /> },
   at_risk:           { label: "At risk",            tone: "bg-rose-100 text-rose-800",       icon: <AlertTriangle className="h-4 w-4" /> },
+  not_measured:      { label: "Not yet measured",    tone: "bg-slate-100 text-slate-700",     icon: <HelpCircle className="h-4 w-4" /> },
 };
 
 export default function InspectionReadinessPage() {
@@ -57,10 +58,10 @@ export default function InspectionReadinessPage() {
                   </span>
                 </div>
                 <div className="mt-2 flex items-end gap-2">
-                  <span className="text-5xl font-semibold">{report.overall_score}</span>
+                  <span className="text-5xl font-semibold">{report.overall_score ?? "—"}</span>
                   <span className="pb-2 text-sm text-muted-foreground">/ 100</span>
                 </div>
-                <Progress value={report.overall_score} className="mt-3 h-2" />
+                <Progress value={report.overall_score ?? 0} className="mt-3 h-2" />
               </div>
             </CardContent>
           </Card>
@@ -76,6 +77,11 @@ export default function InspectionReadinessPage() {
                         <AlertTriangle className="mr-1 h-3 w-3" />
                         Blocking
                       </Badge>
+                    ) : c.score === null ? (
+                      <Badge variant="outline" className="bg-slate-50 text-slate-700">
+                        <HelpCircle className="mr-1 h-3 w-3" />
+                        Not measured
+                      </Badge>
                     ) : (
                       <Badge variant="outline" className="bg-emerald-50 text-emerald-800">
                         <CheckCircle2 className="mr-1 h-3 w-3" />
@@ -86,10 +92,10 @@ export default function InspectionReadinessPage() {
                 </CardHeader>
                 <CardContent className="space-y-2 pt-0 text-xs">
                   <div className="flex items-end gap-2">
-                    <span className="text-2xl font-semibold">{c.score}</span>
+                    <span className="text-2xl font-semibold">{c.score ?? "—"}</span>
                     <span className="pb-0.5 text-muted-foreground">/ 100</span>
                   </div>
-                  <Progress value={c.score} className="h-1.5" />
+                  <Progress value={c.score ?? 0} className="h-1.5" />
                   <p className="text-muted-foreground">{c.detail}</p>
                 </CardContent>
               </Card>

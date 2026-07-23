@@ -11,6 +11,7 @@ import {
   ClipboardList, ChevronRight, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -63,8 +64,8 @@ export function StaffHandoverNotesCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{staffing.shifts_this_week}</p>
             <p className="text-[10px] text-muted-foreground">Shifts/wk</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", staffing.coverage_rate >= 95 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", staffing.coverage_rate >= 95 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{staffing.coverage_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(staffing.coverage_rate, 95) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(staffing.coverage_rate, 95) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(staffing.coverage_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Coverage</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">

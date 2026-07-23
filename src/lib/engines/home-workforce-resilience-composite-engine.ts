@@ -5,6 +5,8 @@
 // Pure deterministic engine. CHR 2015 Reg 31–34 / Schedule 2.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets } from "@/lib/metrics/rate";
+
 export interface StaffResilienceSnapshot {
   staff_id: string;
   supervision_completed: number;
@@ -28,7 +30,7 @@ export interface HomeLevelWorkforce {
   shifts_total: number;
   agency_staff_in_use: number;
   lone_working_incidents: number;
-  handover_completion_rate: number;  // 0–100
+  handover_completion_rate: number | null;  // 0–100; null = no handovers recorded
   exit_interviews_conducted: number;
   exit_interviews_due: number;
 }
@@ -167,10 +169,14 @@ export function computeWorkforceResilience(input: WorkforceResilienceInput): Wor
   else if (home_level.agency_staff_in_use <= 4) opsScore += 5;
   else opsScore += 1;
 
-  if (home_level.handover_completion_rate >= 95) opsScore += 15;
-  else if (home_level.handover_completion_rate >= 80) opsScore += 10;
-  else if (home_level.handover_completion_rate >= 60) opsScore += 5;
-  else opsScore += 1;
+  // With no handovers recorded there is nothing to score, so the 15 points are
+  // taken out of the denominator instead of awarded or withheld.
+  const handoverMeasured = typeof home_level.handover_completion_rate === "number";
+  const opsMax = handoverMeasured ? 100 : 85;
+  if (meets(home_level.handover_completion_rate, 95)) opsScore += 15;
+  else if (meets(home_level.handover_completion_rate, 80)) opsScore += 10;
+  else if (meets(home_level.handover_completion_rate, 60)) opsScore += 5;
+  else if (handoverMeasured) opsScore += 1;
 
   if (home_level.lone_working_incidents === 0) opsScore += 15;
   else if (home_level.lone_working_incidents <= 2) opsScore += 8;
@@ -183,7 +189,7 @@ export function computeWorkforceResilience(input: WorkforceResilienceInput): Wor
   else if (exitRate >= 70) opsScore += 6;
   else opsScore += 2;
 
-  opsScore = Math.min(opsScore, 100);
+  opsScore = Math.min(Math.round((opsScore / opsMax) * 100), 100);
 
   // ── Domain scores ───────────────────────────────────────────────────────
   const domainNames = ["supervision", "training", "wellbeing", "compliance"];

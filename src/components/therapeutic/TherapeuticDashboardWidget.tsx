@@ -6,6 +6,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface WellbeingScore {
   domain: string;
@@ -53,7 +54,7 @@ interface ChildProfile {
 interface ChildWellbeingSummary {
   childId: string;
   childName: string;
-  overallWellbeing: number;
+  overallWellbeing: number | null;
   trend: "improving" | "stable" | "declining";
   mentalHealthStatus: string;
   activeInterventions: number;
@@ -64,14 +65,14 @@ interface ChildWellbeingSummary {
 
 interface Compliance {
   isCompliant: boolean;
-  overallScore: number;
+  overallScore: number | null;
   issues: string[];
   warnings: string[];
   modelAdherenceScore: number;
   staffTrainingScore: number;
-  interventionCoverageScore: number;
-  wellbeingProgressScore: number;
-  crisisManagementScore: number;
+  interventionCoverageScore: number | null;
+  wellbeingProgressScore: number | null;
+  crisisManagementScore: number | null;
   childrenInCrisis: string[];
   childrenDeclining: string[];
   sdqOverdue: string[];
@@ -79,9 +80,9 @@ interface Compliance {
 }
 
 interface Metrics {
-  overallWellbeingScore: number;
+  overallWellbeingScore: number | null;
   totalActiveInterventions: number;
-  interventionAttendanceRate: number;
+  interventionAttendanceRate: number | null;
   averageEffectiveness: number;
   childrenImproving: number;
   childrenStable: number;
@@ -94,7 +95,7 @@ interface Metrics {
   sdqAverageScore: number;
   staffTrainingPercentage: number;
   therapeuticHoursThisWeek: number;
-  modelAdherenceRate: number;
+  modelAdherenceRate: number | null;
   childMetrics: ChildWellbeingSummary[];
   issues: string[];
   warnings: string[];
@@ -108,13 +109,15 @@ interface DashboardData {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function getScoreColour(score: number): string {
+function getScoreColour(score: number | null): string {
+  if (score === null) return "text-slate-400";
   if (score >= 75) return "text-green-600";
   if (score >= 50) return "text-amber-600";
   return "text-red-600";
 }
 
-function getScoreBg(score: number): string {
+function getScoreBg(score: number | null): string {
+  if (score === null) return "bg-slate-300";
   if (score >= 75) return "bg-green-500";
   if (score >= 50) return "bg-amber-500";
   return "bg-red-500";
@@ -222,7 +225,7 @@ export function TherapeuticDashboardWidget() {
         </div>
         <div className="text-right">
           <p className={`text-2xl font-bold ${getScoreColour(compliance.overallScore)}`}>
-            {compliance.overallScore}%
+            {formatRate(compliance.overallScore)}
           </p>
           <p className="text-xs text-slate-400">therapeutic score</p>
         </div>
@@ -232,13 +235,13 @@ export function TherapeuticDashboardWidget() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <MetricTile
           label="Wellbeing"
-          value={`${metrics.overallWellbeingScore}%`}
+          value={formatRate(metrics.overallWellbeingScore)}
           score={metrics.overallWellbeingScore}
         />
         <MetricTile
           label="Interventions"
           value={String(metrics.totalActiveInterventions)}
-          sub={`${metrics.interventionAttendanceRate}% attended`}
+          sub={`${formatRate(metrics.interventionAttendanceRate)} attended`}
           score={metrics.interventionAttendanceRate}
         />
         <MetricTile
@@ -281,7 +284,7 @@ export function TherapeuticDashboardWidget() {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-purple-50 border border-purple-100 flex items-center justify-center">
                     <span className={`text-lg font-bold ${getScoreColour(child.overallWellbeing)}`}>
-                      {child.overallWellbeing}
+                      {child.overallWellbeing ?? "—"}
                     </span>
                   </div>
                   <div>
@@ -373,7 +376,7 @@ export function TherapeuticDashboardWidget() {
       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
         <div className="flex items-center gap-4">
           <MiniStat label="SDQ Avg" value={String(metrics.sdqAverageScore)} />
-          <MiniStat label="Model" value={`${metrics.modelAdherenceRate}%`} />
+          <MiniStat label="Model" value={formatRate(metrics.modelAdherenceRate)} />
           <MiniStat label="Hrs/wk" value={String(metrics.therapeuticHoursThisWeek)} />
         </div>
         <span className="text-xs text-slate-400">
@@ -395,7 +398,7 @@ function MetricTile({
   label: string;
   value: string;
   sub?: string;
-  score: number;
+  score: number | null;
 }) {
   return (
     <div className="bg-slate-50 rounded-lg p-3">

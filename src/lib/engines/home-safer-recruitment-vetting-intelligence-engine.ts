@@ -52,6 +52,8 @@ export interface SaferRecruitmentInput {
   interviews: InterviewInput[];
 }
 
+import { below, formatRate, meanOf, meets, rateOf } from "@/lib/metrics/rate";
+
 // ── Output Types ────────────────────────────────────────────────────────────
 
 export type SaferRecruitmentRating =
@@ -66,11 +68,12 @@ export interface SaferRecruitmentResult {
   recruitment_score: number;
   headline: string;
   total_candidates: number;
-  dbs_clearance_rate: number;
-  reference_completion_rate: number;
-  history_verification_rate: number;
-  interview_compliance_rate: number;
-  gap_explanation_rate: number;
+  // Each is null when nothing of that kind has been recorded
+  dbs_clearance_rate: number | null;
+  reference_completion_rate: number | null;
+  history_verification_rate: number | null;
+  interview_compliance_rate: number | null;
+  gap_explanation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -95,10 +98,6 @@ function toRating(score: number): SaferRecruitmentRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeSaferRecruitmentVetting(
@@ -120,11 +119,11 @@ export function computeSaferRecruitmentVetting(
       headline:
         "No staff recorded — safer recruitment vetting cannot be assessed.",
       total_candidates: 0,
-      dbs_clearance_rate: 0,
-      reference_completion_rate: 0,
-      history_verification_rate: 0,
-      interview_compliance_rate: 0,
-      gap_explanation_rate: 0,
+      dbs_clearance_rate: null,
+      reference_completion_rate: null,
+      history_verification_rate: null,
+      interview_compliance_rate: null,
+      gap_explanation_rate: null,
       strengths: [],
       concerns: [
         "No staff recorded — Ofsted expects evidence that every person working with children has been safely recruited.",
@@ -161,71 +160,57 @@ export function computeSaferRecruitmentVetting(
     (r) =>
       r.dbs_result === "clear" || r.dbs_result === "disclosure_reviewed",
   );
-  const dbsClearanceRate = pct(dbsCleared.length, dbsRelevant.length);
+  const dbsClearanceRate = rateOf(dbsCleared, dbsRelevant);
 
   // Mod 2: Reference completion — candidates with refs received >= required
   const refsComplete = recruitment_records.filter(
     (r) => r.references_received >= r.references_required,
   );
-  const referenceCompletionRate = pct(
-    refsComplete.length,
-    recruitment_records.length,
-  );
+  const referenceCompletionRate = rateOf(refsComplete, recruitment_records);
 
   // Mod 3: Employment history verification
   const verifiedHistories = employment_histories.filter((h) => h.verified);
-  const historyVerificationRate = pct(
-    verifiedHistories.length,
-    employment_histories.length,
-  );
+  const historyVerificationRate = rateOf(verifiedHistories, employment_histories);
 
   // Mod 4: Interview compliance — panel >= 2 AND safer recruitment trained
   const compliantInterviews = interviews.filter(
     (i) => i.panel_size >= 2 && i.safer_recruitment_trained_on_panel,
   );
-  const interviewComplianceRate = pct(
-    compliantInterviews.length,
-    interviews.length,
-  );
+  const interviewComplianceRate = rateOf(compliantInterviews, interviews);
 
   // Mod 5: Gap explanation rate
   const explainedGaps = gap_explanations.filter((g) => g.explained);
-  const gapExplanationRate = pct(
-    explainedGaps.length,
-    gap_explanations.length,
-  );
+  const gapExplanationRate = rateOf(explainedGaps, gap_explanations);
 
   // Mod 6: Checklist completion — average checklist_complete_rate
-  const avgChecklist =
-    recruitment_records.length > 0
-      ? Math.round(
-          recruitment_records.reduce(
-            (sum, r) => sum + r.checklist_complete_rate,
-            0,
-          ) / recruitment_records.length,
-        )
-      : 0;
+  const avgChecklist = meanOf(
+    recruitment_records.map((r) => r.checklist_complete_rate),
+  );
 
   // ── Scoring ──────────────────────────────────────────────────────
   let score = 52;
 
   // Mod 1: DBS clearance rate
-  if (dbsClearanceRate >= 95) score += 6;
-  else if (dbsClearanceRate >= 80) score += 3;
-  else if (dbsClearanceRate >= 60) score += 0;
-  else score -= 6;
+  if (dbsClearanceRate !== null) {
+    if (meets(dbsClearanceRate, 95)) score += 6;
+    else if (meets(dbsClearanceRate, 80)) score += 3;
+    else if (meets(dbsClearanceRate, 60)) score += 0;
+    else score -= 6;
+  }
 
   // Mod 2: Reference completion
-  if (referenceCompletionRate >= 90) score += 5;
-  else if (referenceCompletionRate >= 70) score += 2;
-  else if (referenceCompletionRate >= 50) score += 0;
-  else score -= 5;
+  if (referenceCompletionRate !== null) {
+    if (meets(referenceCompletionRate, 90)) score += 5;
+    else if (meets(referenceCompletionRate, 70)) score += 2;
+    else if (meets(referenceCompletionRate, 50)) score += 0;
+    else score -= 5;
+  }
 
   // Mod 3: History verification
   if (employment_histories.length > 0) {
-    if (historyVerificationRate >= 90) score += 5;
-    else if (historyVerificationRate >= 70) score += 2;
-    else if (historyVerificationRate >= 50) score += 0;
+    if (meets(historyVerificationRate, 90)) score += 5;
+    else if (meets(historyVerificationRate, 70)) score += 2;
+    else if (meets(historyVerificationRate, 50)) score += 0;
     else score -= 5;
   } else {
     // No histories to verify — treat as neutral but flag concern
@@ -234,29 +219,30 @@ export function computeSaferRecruitmentVetting(
 
   // Mod 4: Interview compliance
   if (interviews.length > 0) {
-    if (interviewComplianceRate >= 90) score += 5;
-    else if (interviewComplianceRate >= 70) score += 2;
-    else if (interviewComplianceRate >= 50) score += 0;
+    if (meets(interviewComplianceRate, 90)) score += 5;
+    else if (meets(interviewComplianceRate, 70)) score += 2;
+    else if (meets(interviewComplianceRate, 50)) score += 0;
     else score -= 5;
   } else {
     score += 0;
   }
 
-  // Mod 5: Gap explanation rate
+  // Mod 5: Gap explanation rate. No gap records against real candidates means
+  // no gaps to explain; no candidates at all means nothing has been checked.
   if (gap_explanations.length === 0) {
-    score += 4; // No gaps is excellent
+    if (recruitment_records.length > 0) score += 4;
   } else {
-    if (gapExplanationRate >= 95) score += 4;
-    else if (gapExplanationRate >= 80) score += 1;
-    else if (gapExplanationRate >= 60) score += 0;
+    if (meets(gapExplanationRate, 95)) score += 4;
+    else if (meets(gapExplanationRate, 80)) score += 1;
+    else if (meets(gapExplanationRate, 60)) score += 0;
     else score -= 4;
   }
 
   // Mod 6: Checklist completion
   if (recruitment_records.length > 0) {
-    if (avgChecklist >= 95) score += 5;
-    else if (avgChecklist >= 80) score += 2;
-    else if (avgChecklist >= 60) score += 0;
+    if (meets(avgChecklist, 95)) score += 5;
+    else if (meets(avgChecklist, 80)) score += 2;
+    else if (meets(avgChecklist, 60)) score += 0;
     else score -= 5;
   } else {
     score += 0;
@@ -268,41 +254,38 @@ export function computeSaferRecruitmentVetting(
   // ── Strengths ────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (dbsClearanceRate >= 95 && dbsRelevant.length > 0) {
+  if (meets(dbsClearanceRate, 95)) {
     strengths.push(
-      `${dbsClearanceRate}% DBS clearance rate — robust pre-employment vetting ensures children are protected.`,
+      `${formatRate(dbsClearanceRate)} DBS clearance rate — robust pre-employment vetting ensures children are protected.`,
     );
   }
-  if (referenceCompletionRate >= 90 && recruitment_records.length > 0) {
+  if (meets(referenceCompletionRate, 90)) {
     strengths.push(
-      `${referenceCompletionRate}% reference completion — thorough reference checking for all candidates.`,
+      `${formatRate(referenceCompletionRate)} reference completion — thorough reference checking for all candidates.`,
     );
   }
-  if (
-    historyVerificationRate >= 90 &&
-    employment_histories.length > 0
-  ) {
+  if (meets(historyVerificationRate, 90)) {
     strengths.push(
-      `${historyVerificationRate}% employment history verification — full account of each candidate's work history.`,
+      `${formatRate(historyVerificationRate)} employment history verification — full account of each candidate's work history.`,
     );
   }
-  if (interviewComplianceRate >= 90 && interviews.length > 0) {
+  if (meets(interviewComplianceRate, 90)) {
     strengths.push(
-      `${interviewComplianceRate}% interview compliance — panels meet safer recruitment standards with trained members.`,
+      `${formatRate(interviewComplianceRate)} interview compliance — panels meet safer recruitment standards with trained members.`,
     );
   }
   if (gap_explanations.length === 0 && recruitment_records.length > 0) {
     strengths.push(
       "No employment gaps identified — continuous employment histories for all candidates.",
     );
-  } else if (gapExplanationRate >= 95 && gap_explanations.length > 0) {
+  } else if (meets(gapExplanationRate, 95)) {
     strengths.push(
-      `${gapExplanationRate}% of employment gaps satisfactorily explained and documented.`,
+      `${formatRate(gapExplanationRate)} of employment gaps satisfactorily explained and documented.`,
     );
   }
-  if (avgChecklist >= 95 && recruitment_records.length > 0) {
+  if (meets(avgChecklist, 95)) {
     strengths.push(
-      `${avgChecklist}% average checklist completion — recruitment files are thorough and audit-ready.`,
+      `${formatRate(avgChecklist)} average checklist completion — recruitment files are thorough and audit-ready.`,
     );
   }
   const redFlagCandidates = recruitment_records.filter(
@@ -366,9 +349,9 @@ export function computeSaferRecruitmentVetting(
     );
   }
 
-  if (avgChecklist < 60 && recruitment_records.length > 0) {
+  if (below(avgChecklist, 60)) {
     concerns.push(
-      `Average checklist completion is only ${avgChecklist}% — recruitment files are incomplete and not audit-ready.`,
+      `Average checklist completion is only ${formatRate(avgChecklist)} — recruitment files are incomplete and not audit-ready.`,
     );
   }
 
@@ -435,10 +418,10 @@ export function computeSaferRecruitmentVetting(
     });
   }
 
-  if (avgChecklist < 80 && recruitment_records.length > 0) {
+  if (below(avgChecklist, 80)) {
     recs.push({
       rank: rank++,
-      recommendation: `Improve recruitment checklist completion (currently ${avgChecklist}%) — aim for 95%+ to ensure audit-ready files.`,
+      recommendation: `Improve recruitment checklist completion (currently ${formatRate(avgChecklist)}) — aim for 95%+ to ensure audit-ready files.`,
       urgency: "planned",
       regulatory_ref: null,
     });
@@ -448,13 +431,13 @@ export function computeSaferRecruitmentVetting(
   const insights: { text: string; severity: string }[] = [];
 
   if (
-    dbsClearanceRate >= 95 &&
-    referenceCompletionRate >= 90 &&
-    historyVerificationRate >= 90 &&
-    interviewComplianceRate >= 90
+    meets(dbsClearanceRate, 95) &&
+    meets(referenceCompletionRate, 90) &&
+    meets(historyVerificationRate, 90) &&
+    meets(interviewComplianceRate, 90)
   ) {
     insights.push({
-      text: `Safer recruitment vetting is exemplary — ${dbsClearanceRate}% DBS clearance, ${referenceCompletionRate}% references complete, ${historyVerificationRate}% histories verified, and ${interviewComplianceRate}% interview compliance. Ofsted will see a home that takes workforce safety seriously, with a systematic approach to ensuring every person working with children has been thoroughly vetted under Regulation 32.`,
+      text: `Safer recruitment vetting is exemplary — ${formatRate(dbsClearanceRate)} DBS clearance, ${formatRate(referenceCompletionRate)} references complete, ${formatRate(historyVerificationRate)} histories verified, and ${formatRate(interviewComplianceRate)} interview compliance. Ofsted will see a home that takes workforce safety seriously, with a systematic approach to ensuring every person working with children has been thoroughly vetted under Regulation 32.`,
       severity: "positive",
     });
   }
@@ -497,9 +480,9 @@ export function computeSaferRecruitmentVetting(
     });
   }
 
-  if (avgChecklist < 60 && recruitment_records.length > 0) {
+  if (below(avgChecklist, 60)) {
     insights.push({
-      text: `Average checklist completion is only ${avgChecklist}%. Recruitment files are incomplete and will not withstand Ofsted scrutiny. A robust checklist ensures no pre-employment step is missed.`,
+      text: `Average checklist completion is only ${formatRate(avgChecklist)}. Recruitment files are incomplete and will not withstand Ofsted scrutiny. A robust checklist ensures no pre-employment step is missed.`,
       severity: "critical",
     });
   }
@@ -507,7 +490,7 @@ export function computeSaferRecruitmentVetting(
   // ── Headline ─────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding safer recruitment vetting — ${dbsClearanceRate}% DBS clearance, ${referenceCompletionRate}% references complete, ${recruitment_records.length} candidates tracked.`;
+    headline = `Outstanding safer recruitment vetting — ${formatRate(dbsClearanceRate)} DBS clearance, ${formatRate(referenceCompletionRate)} references complete, ${recruitment_records.length} candidates tracked.`;
   } else if (rating === "good") {
     headline =
       "Good recruitment vetting — most pre-employment checks are in place with minor gaps to address.";
@@ -528,8 +511,7 @@ export function computeSaferRecruitmentVetting(
     reference_completion_rate: referenceCompletionRate,
     history_verification_rate: historyVerificationRate,
     interview_compliance_rate: interviewComplianceRate,
-    gap_explanation_rate:
-      gap_explanations.length === 0 ? 100 : gapExplanationRate,
+    gap_explanation_rate: gapExplanationRate,
     strengths,
     concerns,
     recommendations: recs,

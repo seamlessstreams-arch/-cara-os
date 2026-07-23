@@ -26,6 +26,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, rate, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type AgencyType =
@@ -146,20 +148,20 @@ export interface MultiAgencyComplianceResult {
   unresponsiveContacts: number;
   escalationsNeeded: number;
   // Communication
-  communicationScore: number;            // 0-100
-  averageResponseDays: number;
+  communicationScore: number | null;     // 0-100; null with no professionals recorded
+  averageResponseDays: number | null;
   swContactCurrent: boolean;
   daysSinceLastSWVisit: number;
   // Meetings
-  meetingsAttendedRate: number;          // % home attended
-  childViewsSubmittedRate: number;       // % where child views shared
-  actionsCompletionRate: number;         // % actions completed
+  meetingsAttendedRate: number | null;      // % home attended; null with no meetings
+  childViewsSubmittedRate: number | null;   // % where child views shared
+  actionsCompletionRate: number | null;     // % actions completed; null with no actions
   meetingsLast6Months: number;
   // Referrals
   activeReferrals: number;
   waitingReferrals: number;
   escalatedReferrals: number;
-  averageWaitDays: number;
+  averageWaitDays: number | null;
   // Child involvement
   childHasAdvocate: boolean;
   childViewsShared: boolean;
@@ -170,16 +172,16 @@ export interface HomeMultiAgencyMetrics {
   totalChildren: number;
   // Network
   totalProfessionals: number;
-  averageAgencyTypes: number;
+  averageAgencyTypes: number | null;
   totalUnresponsive: number;
   totalEscalations: number;
-  // Communication
-  averageCommunicationScore: number;
-  swContactCurrentRate: number;          // % children with current SW contact
+  // Communication — each averages only the children it can be measured for
+  averageCommunicationScore: number | null;
+  swContactCurrentRate: number | null;   // % children with current SW contact
   // Meetings
-  averageMeetingAttendance: number;
-  averageChildViewsRate: number;
-  averageActionsCompletion: number;
+  averageMeetingAttendance: number | null;
+  averageChildViewsRate: number | null;
+  averageActionsCompletion: number | null;
   totalMeetingsLast6Months: number;
   // Referrals
   totalActiveReferrals: number;
@@ -188,7 +190,7 @@ export interface HomeMultiAgencyMetrics {
   longestWaitDays: number;
   // Compliance
   complianceIssues: string[];
-  overallScore: number;
+  overallScore: number | null;
 }
 
 // ── Configuration ──────────────────────────────────────────────────────────
@@ -235,19 +237,14 @@ export function evaluateMultiAgencyCompliance(
   const activeContacts = profile.professionals.filter(
     p => p.communicationStatus === "active" || p.communicationStatus === "responsive"
   ).length;
-  const communicationScore = totalProfessionals > 0
-    ? Math.round((activeContacts / totalProfessionals) * 100)
-    : 0;
+  const communicationScore = rate(activeContacts, totalProfessionals);
 
   // Average response time
-  const responseTimes = profile.professionals.map(p => p.responseTimeDays);
-  const averageResponseDays = responseTimes.length > 0
-    ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
-    : 0;
+  const averageResponseDays = meanOf(profile.professionals.map(p => p.responseTimeDays));
 
-  if (averageResponseDays > RESPONSE_TIME_ISSUE_DAYS) {
+  if (averageResponseDays !== null && averageResponseDays > RESPONSE_TIME_ISSUE_DAYS) {
     issues.push(`Average professional response time ${averageResponseDays} days — exceeds ${RESPONSE_TIME_ISSUE_DAYS}-day threshold`);
-  } else if (averageResponseDays > RESPONSE_TIME_WARNING_DAYS) {
+  } else if (averageResponseDays !== null && averageResponseDays > RESPONSE_TIME_WARNING_DAYS) {
     warnings.push(`Average response time ${averageResponseDays} days — approaching threshold`);
   }
 
@@ -268,33 +265,29 @@ export function evaluateMultiAgencyCompliance(
   );
   const meetingsLast6Months = recentMeetings.length;
 
-  const attendedMeetings = recentMeetings.filter(m => m.attendedByHome);
-  const meetingsAttendedRate = recentMeetings.length > 0
-    ? Math.round((attendedMeetings.length / recentMeetings.length) * 100)
-    : 100;
+  const meetingsAttendedRate = rateOf(
+    recentMeetings.filter(m => m.attendedByHome), recentMeetings,
+  );
 
-  if (meetingsAttendedRate < 90) {
-    issues.push(`Home attended only ${meetingsAttendedRate}% of multi-agency meetings`);
+  if (below(meetingsAttendedRate, 90)) {
+    issues.push(`Home attended only ${formatRate(meetingsAttendedRate)} of multi-agency meetings`);
   }
 
-  const childViewsMeetings = recentMeetings.filter(m => m.childViewsSubmitted);
-  const childViewsSubmittedRate = recentMeetings.length > 0
-    ? Math.round((childViewsMeetings.length / recentMeetings.length) * 100)
-    : 100;
+  const childViewsSubmittedRate = rateOf(
+    recentMeetings.filter(m => m.childViewsSubmitted), recentMeetings,
+  );
 
-  if (childViewsSubmittedRate < 80) {
-    warnings.push(`Child views shared in only ${childViewsSubmittedRate}% of meetings`);
+  if (below(childViewsSubmittedRate, 80)) {
+    warnings.push(`Child views shared in only ${formatRate(childViewsSubmittedRate)} of meetings`);
   }
 
   // Actions completion
   const totalActions = recentMeetings.reduce((s, m) => s + m.actionsForHome, 0);
   const completedActions = recentMeetings.reduce((s, m) => s + m.actionsCompleted, 0);
-  const actionsCompletionRate = totalActions > 0
-    ? Math.round((completedActions / totalActions) * 100)
-    : 100;
+  const actionsCompletionRate = rate(completedActions, totalActions);
 
-  if (actionsCompletionRate < 80) {
-    warnings.push(`Only ${actionsCompletionRate}% of multi-agency actions completed`);
+  if (below(actionsCompletionRate, 80)) {
+    warnings.push(`Only ${formatRate(actionsCompletionRate)} of multi-agency actions completed`);
   }
 
   // Referrals
@@ -304,16 +297,13 @@ export function evaluateMultiAgencyCompliance(
   const waitingReferrals = profile.referrals.filter(r => r.status === "waiting_list").length;
   const escalatedReferrals = profile.referrals.filter(r => r.escalated).length;
 
-  const waitingDays = profile.referrals
-    .filter(r => r.status === "waiting_list")
-    .map(r => r.waitingDays);
-  const averageWaitDays = waitingDays.length > 0
-    ? Math.round(waitingDays.reduce((a, b) => a + b, 0) / waitingDays.length)
-    : 0;
+  const averageWaitDays = meanOf(
+    profile.referrals.filter(r => r.status === "waiting_list").map(r => r.waitingDays),
+  );
 
-  if (averageWaitDays > REFERRAL_WAIT_ISSUE_DAYS) {
+  if (averageWaitDays !== null && averageWaitDays > REFERRAL_WAIT_ISSUE_DAYS) {
     issues.push(`Average referral wait ${averageWaitDays} days — escalation may be needed`);
-  } else if (averageWaitDays > REFERRAL_WAIT_WARNING_DAYS) {
+  } else if (averageWaitDays !== null && averageWaitDays > REFERRAL_WAIT_WARNING_DAYS) {
     warnings.push(`Average referral wait ${averageWaitDays} days — monitor closely`);
   }
 
@@ -367,49 +357,37 @@ export function calculateHomeMultiAgencyMetrics(
       homeId,
       totalChildren: 0,
       totalProfessionals: 0,
-      averageAgencyTypes: 0,
+      averageAgencyTypes: null,
       totalUnresponsive: 0,
       totalEscalations: 0,
-      averageCommunicationScore: 0,
-      swContactCurrentRate: 0,
-      averageMeetingAttendance: 0,
-      averageChildViewsRate: 0,
-      averageActionsCompletion: 0,
+      averageCommunicationScore: null,
+      swContactCurrentRate: null,
+      averageMeetingAttendance: null,
+      averageChildViewsRate: null,
+      averageActionsCompletion: null,
       totalMeetingsLast6Months: 0,
       totalActiveReferrals: 0,
       totalWaiting: 0,
       totalEscalated: 0,
       longestWaitDays: 0,
       complianceIssues: [],
-      overallScore: 0,
+      overallScore: null,
     };
   }
 
   const results = homeProfiles.map(p => evaluateMultiAgencyCompliance(p, now));
 
   const totalProfessionals = results.reduce((s, r) => s + r.totalProfessionals, 0);
-  const averageAgencyTypes = Math.round(
-    results.reduce((s, r) => s + r.agencyTypesEngaged, 0) / results.length
-  );
+  const averageAgencyTypes = meanOf(results.map(r => r.agencyTypesEngaged));
   const totalUnresponsive = results.reduce((s, r) => s + r.unresponsiveContacts, 0);
   const totalEscalations = results.reduce((s, r) => s + r.escalationsNeeded, 0);
 
-  const averageCommunicationScore = Math.round(
-    results.reduce((s, r) => s + r.communicationScore, 0) / results.length
-  );
-  const swContactCurrentRate = Math.round(
-    (results.filter(r => r.swContactCurrent).length / results.length) * 100
-  );
+  const averageCommunicationScore = meanOf(results.map(r => r.communicationScore));
+  const swContactCurrentRate = rateOf(results.filter(r => r.swContactCurrent), results);
 
-  const averageMeetingAttendance = Math.round(
-    results.reduce((s, r) => s + r.meetingsAttendedRate, 0) / results.length
-  );
-  const averageChildViewsRate = Math.round(
-    results.reduce((s, r) => s + r.childViewsSubmittedRate, 0) / results.length
-  );
-  const averageActionsCompletion = Math.round(
-    results.reduce((s, r) => s + r.actionsCompletionRate, 0) / results.length
-  );
+  const averageMeetingAttendance = meanOf(results.map(r => r.meetingsAttendedRate));
+  const averageChildViewsRate = meanOf(results.map(r => r.childViewsSubmittedRate));
+  const averageActionsCompletion = meanOf(results.map(r => r.actionsCompletionRate));
   const totalMeetingsLast6Months = results.reduce((s, r) => s + r.meetingsLast6Months, 0);
 
   const totalActiveReferrals = results.reduce((s, r) => s + r.activeReferrals, 0);
@@ -420,14 +398,13 @@ export function calculateHomeMultiAgencyMetrics(
 
   const complianceIssues = [...new Set(results.flatMap(r => r.issues))];
 
-  // Overall score
-  const commScore = averageCommunicationScore;
-  const meetingScore = averageMeetingAttendance;
-  const actionScore = averageActionsCompletion;
-  const swScore = swContactCurrentRate;
-  const overallScore = Math.round(
-    (commScore * 0.25) + (meetingScore * 0.25) + (actionScore * 0.25) + (swScore * 0.25)
-  );
+  // Overall score — areas with nothing to measure drop out of the average
+  const overallScore = weightedMeanOf([
+    { score: averageCommunicationScore, weight: 25 },
+    { score: averageMeetingAttendance, weight: 25 },
+    { score: averageActionsCompletion, weight: 25 },
+    { score: swContactCurrentRate, weight: 25 },
+  ]);
 
   return {
     homeId,

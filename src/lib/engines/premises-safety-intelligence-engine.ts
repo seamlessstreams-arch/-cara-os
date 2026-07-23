@@ -12,6 +12,8 @@
 // Fire safety compliance: Regulatory Reform (Fire Safety) Order 2005.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type BuildingStatus = "operational" | "restricted" | "closed";
@@ -108,7 +110,7 @@ export interface PremisesOverview {
   checks_completed: number;
   checks_overdue: number;
   checks_failed: number;
-  check_completion_rate: number;       // pct of non-waived checks completed
+  check_completion_rate: number | null; // pct of non-waived checks completed; null when none apply
   fire_safety_compliant: boolean;      // fire risk assessment + gas cert valid
   certifications_expiring_soon: number; // within 90 days
   certifications_expired: number;
@@ -143,7 +145,7 @@ export interface CheckTypeAnalysis {
   completed: number;
   overdue: number;
   failed: number;
-  pass_rate: number; // pct of completed that passed
+  pass_rate: number | null; // pct of completed that passed; null when none completed
 }
 
 export interface MaintenanceAnalysis {
@@ -242,10 +244,8 @@ export function computePremisesSafetyIntelligence(
   const completedChecks = building_checks.filter((c) => c.status === "completed");
   const overdueChecks = building_checks.filter((c) => c.status === "overdue");
   const failedChecks = building_checks.filter((c) => c.status === "completed" && c.result === "fail");
-  const checkCompletionRate =
-    nonWaivedChecks.length > 0
-      ? Math.round((completedChecks.length / nonWaivedChecks.length) * 100)
-      : 100;
+  // Null covers both "no checks recorded" and "every check waived" — neither is a pass.
+  const checkCompletionRate = rateOf(completedChecks, nonWaivedChecks);
 
   // ── Certification expiry ───────────────────────────────────────────────
   let certificationsExpiringSoon = 0;
@@ -418,10 +418,16 @@ export function computePremisesSafetyIntelligence(
         completed,
         overdue,
         failed,
-        pass_rate: completed > 0 ? Math.round((passed / completed) * 100) : 0,
+        pass_rate: rate(passed, completed),
       };
     })
-    .sort((a, b) => a.pass_rate - b.pass_rate); // worst pass rate first
+    // Worst pass rate first; types with nothing completed yet sort last.
+    .sort((a, b) => {
+      if (a.pass_rate === null || b.pass_rate === null) {
+        return (a.pass_rate === null ? 1 : 0) - (b.pass_rate === null ? 1 : 0);
+      }
+      return a.pass_rate - b.pass_rate;
+    });
 
   // ── Maintenance analysis ───────────────────────────────────────────────
   const maintCatMap = new Map<string, MaintenanceInput[]>();
@@ -575,10 +581,10 @@ export function computePremisesSafetyIntelligence(
   }
 
   // Warning: low check completion
-  if (checkCompletionRate < 80 && nonWaivedChecks.length > 0) {
+  if (below(checkCompletionRate, 80)) {
     insights.push({
       severity: "warning",
-      text: `Building check completion rate is ${checkCompletionRate}%. A strong home maintains a comprehensive evidence trail of premises checks. Aim for 100% completion to demonstrate proactive safety management.`,
+      text: `Building check completion rate is ${formatRate(checkCompletionRate)}. A strong home maintains a comprehensive evidence trail of premises checks. Aim for 100% completion to demonstrate proactive safety management.`,
     });
   }
 
@@ -600,7 +606,7 @@ export function computePremisesSafetyIntelligence(
   }
 
   // Positive: 100% check completion
-  if (checkCompletionRate === 100 && nonWaivedChecks.length > 0) {
+  if (meets(checkCompletionRate, 100) && nonWaivedChecks.length > 0) {
     insights.push({
       severity: "positive",
       text: `All ${nonWaivedChecks.length} building checks completed. This demonstrates excellent premises safety oversight — a key indicator of strong management under SCCIF.`,

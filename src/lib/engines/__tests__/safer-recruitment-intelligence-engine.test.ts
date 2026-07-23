@@ -138,9 +138,9 @@ describe("empty state", () => {
     const result = run();
     expect(result.overview.total_vacancies).toBe(0);
     expect(result.overview.active_candidates).toBe(0);
-    expect(result.overview.compliance_rate).toBe(100);
-    expect(result.overview.dbs_completion_rate).toBe(100);
-    expect(result.overview.schedule2_completion_rate).toBe(100);
+    expect(result.overview.compliance_rate).toBeNull();
+    expect(result.overview.dbs_completion_rate).toBeNull();
+    expect(result.overview.schedule2_completion_rate).toBeNull();
     expect(result.candidate_profiles).toHaveLength(0);
     expect(result.check_analysis).toHaveLength(0);
     expect(result.alerts).toHaveLength(0);

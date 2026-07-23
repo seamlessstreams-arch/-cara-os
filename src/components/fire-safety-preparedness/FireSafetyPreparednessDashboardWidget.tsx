@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -25,37 +26,37 @@ interface FireSafetyData {
   fireDrillCompliance: {
     overallScore: number;
     totalDrills: number;
-    successRate: number;
-    fullParticipationRate: number;
+    successRate: number | null;
+    fullParticipationRate: number | null;
     drillTypeVariety: number;
-    averageEvacuationTime: number;
-    correctiveActionsRate: number;
+    averageEvacuationTime: number | null;
+    correctiveActionsRate: number | null;
   };
   equipmentChecks: {
     overallScore: number;
     totalChecks: number;
-    passRate: number;
-    majorFaultRate: number;
+    passRate: number | null;
+    majorFaultRate: number | null;
     equipmentTypesCovered: number;
-    rectificationRate: number;
+    rectificationRate: number | null;
   };
   evacuationPlanning: {
     overallScore: number;
     totalPlans: number;
-    peepCurrentRate: number;
-    assemblyPointRate: number;
-    escapeRouteRate: number;
-    nightPlanRate: number;
+    peepCurrentRate: number | null;
+    assemblyPointRate: number | null;
+    escapeRouteRate: number | null;
+    nightPlanRate: number | null;
   };
   staffFireReadiness: {
     overallScore: number;
     totalStaff: number;
-    fireAwarenessRate: number;
-    fireMarshalRate: number;
-    evacuationRate: number;
-    extinguisherRate: number;
-    peepAwarenessRate: number;
-    nightResponseRate: number;
+    fireAwarenessRate: number | null;
+    fireMarshalRate: number | null;
+    evacuationRate: number | null;
+    extinguisherRate: number | null;
+    peepAwarenessRate: number | null;
+    nightResponseRate: number | null;
   };
   childSummaries: ChildFireSafetySummary[];
   strengths: string[];
@@ -218,11 +219,11 @@ export default function FireSafetyPreparednessDashboardWidget() {
       <Section title="Fire Drill Compliance" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat label="Total Drills" value={data.fireDrillCompliance.totalDrills} />
-          <Stat label="Success Rate" value={`${data.fireDrillCompliance.successRate}%`} />
-          <Stat label="Full Participation" value={`${data.fireDrillCompliance.fullParticipationRate}%`} />
+          <Stat label="Success Rate" value={formatRate(data.fireDrillCompliance.successRate)} />
+          <Stat label="Full Participation" value={formatRate(data.fireDrillCompliance.fullParticipationRate)} />
           <Stat label="Drill Types" value={data.fireDrillCompliance.drillTypeVariety} />
-          <Stat label="Avg Evacuation" value={`${data.fireDrillCompliance.averageEvacuationTime}s`} />
-          <Stat label="Corrective Actions" value={`${data.fireDrillCompliance.correctiveActionsRate}%`} />
+          <Stat label="Avg Evacuation" value={data.fireDrillCompliance.averageEvacuationTime === null ? "—" : `${data.fireDrillCompliance.averageEvacuationTime}s`} />
+          <Stat label="Corrective Actions" value={formatRate(data.fireDrillCompliance.correctiveActionsRate)} />
         </div>
       </Section>
 
@@ -230,10 +231,10 @@ export default function FireSafetyPreparednessDashboardWidget() {
       <Section title="Equipment Checks">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat label="Total Checks" value={data.equipmentChecks.totalChecks} />
-          <Stat label="Pass Rate" value={`${data.equipmentChecks.passRate}%`} />
-          <Stat label="Major Fault Rate" value={`${data.equipmentChecks.majorFaultRate}%`} />
+          <Stat label="Pass Rate" value={formatRate(data.equipmentChecks.passRate)} />
+          <Stat label="Major Fault Rate" value={formatRate(data.equipmentChecks.majorFaultRate)} />
           <Stat label="Types Covered" value={data.equipmentChecks.equipmentTypesCovered} />
-          <Stat label="Rectification" value={`${data.equipmentChecks.rectificationRate}%`} />
+          <Stat label="Rectification" value={formatRate(data.equipmentChecks.rectificationRate)} />
         </div>
       </Section>
 
@@ -241,10 +242,10 @@ export default function FireSafetyPreparednessDashboardWidget() {
       <Section title="Evacuation Planning">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat label="Total Plans" value={data.evacuationPlanning.totalPlans} />
-          <Stat label="PEEPs Current" value={`${data.evacuationPlanning.peepCurrentRate}%`} />
-          <Stat label="Assembly Point" value={`${data.evacuationPlanning.assemblyPointRate}%`} />
-          <Stat label="Escape Route" value={`${data.evacuationPlanning.escapeRouteRate}%`} />
-          <Stat label="Night Plans" value={`${data.evacuationPlanning.nightPlanRate}%`} />
+          <Stat label="PEEPs Current" value={formatRate(data.evacuationPlanning.peepCurrentRate)} />
+          <Stat label="Assembly Point" value={formatRate(data.evacuationPlanning.assemblyPointRate)} />
+          <Stat label="Escape Route" value={formatRate(data.evacuationPlanning.escapeRouteRate)} />
+          <Stat label="Night Plans" value={formatRate(data.evacuationPlanning.nightPlanRate)} />
         </div>
       </Section>
 
@@ -252,12 +253,12 @@ export default function FireSafetyPreparednessDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffFireReadiness.totalStaff} />
-          <Stat label="Fire Awareness" value={`${data.staffFireReadiness.fireAwarenessRate}%`} />
-          <Stat label="Fire Marshal" value={`${data.staffFireReadiness.fireMarshalRate}%`} />
-          <Stat label="Evacuation" value={`${data.staffFireReadiness.evacuationRate}%`} />
-          <Stat label="Extinguisher" value={`${data.staffFireReadiness.extinguisherRate}%`} />
-          <Stat label="PEEP Awareness" value={`${data.staffFireReadiness.peepAwarenessRate}%`} />
-          <Stat label="Night Response" value={`${data.staffFireReadiness.nightResponseRate}%`} />
+          <Stat label="Fire Awareness" value={formatRate(data.staffFireReadiness.fireAwarenessRate)} />
+          <Stat label="Fire Marshal" value={formatRate(data.staffFireReadiness.fireMarshalRate)} />
+          <Stat label="Evacuation" value={formatRate(data.staffFireReadiness.evacuationRate)} />
+          <Stat label="Extinguisher" value={formatRate(data.staffFireReadiness.extinguisherRate)} />
+          <Stat label="PEEP Awareness" value={formatRate(data.staffFireReadiness.peepAwarenessRate)} />
+          <Stat label="Night Response" value={formatRate(data.staffFireReadiness.nightResponseRate)} />
         </div>
       </Section>
 

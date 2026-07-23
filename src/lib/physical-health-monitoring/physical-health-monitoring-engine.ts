@@ -135,57 +135,59 @@ export interface ImmunisationRecord {
 }
 
 // ── Result Types ─────────────────────────────────────────────────────────────
+// Every rate below is null when its population is empty: nothing recorded is
+// "not yet measured", never full marks and never a failure.
 
 export interface AppointmentResult {
   totalAppointments: number;
-  attendanceRate: number;
-  missedRate: number;
-  childRefusedRate: number;
-  followUpBookedRate: number;
-  healthPlanUpdatedRate: number;
+  attendanceRate: number | null;
+  missedRate: number | null;
+  childRefusedRate: number | null;
+  followUpBookedRate: number | null;
+  healthPlanUpdatedRate: number | null;
   typeBreakdown: Record<string, number>;
   statusBreakdown: Record<string, number>;
-  overallScore: number;
+  overallScore: number | null;
 }
 
 export interface AssessmentResult {
   totalAssessments: number;
   initialCompleted: number;
   reviewCompleted: number;
-  completedOnTimeRate: number;
-  actionPlanRate: number;
-  childParticipationRate: number;
-  sharedWithCarersRate: number;
+  completedOnTimeRate: number | null;
+  actionPlanRate: number | null;
+  childParticipationRate: number | null;
+  sharedWithCarersRate: number | null;
   childrenWithCurrentAssessment: number;
-  assessmentCoverageRate: number;
-  overallScore: number;
+  assessmentCoverageRate: number | null;
+  overallScore: number | null;
 }
 
 export interface HealthNeedsResult {
   totalNeeds: number;
   activeNeeds: number;
-  managementPlanRate: number;
-  currentlyManagedRate: number;
-  specialistInvolvedRate: number;
+  managementPlanRate: number | null;
+  currentlyManagedRate: number | null;
+  specialistInvolvedRate: number | null;
   categoryBreakdown: Record<string, number>;
-  overallScore: number;
+  overallScore: number | null;
 }
 
 export interface HealthPromotionResult {
   totalActivities: number;
   childrenEngaged: number;
-  averageEngagement: number;
-  topicCoverage: number;
+  averageEngagement: number | null;
+  topicCoverage: number | null;
   topicBreakdown: Record<string, number>;
-  overallScore: number;
+  overallScore: number | null;
 }
 
 export interface ImmunisationResult {
   totalRecords: number;
-  upToDateRate: number;
+  upToDateRate: number | null;
   overdueCount: number;
   declinedCount: number;
-  overallScore: number;
+  overallScore: number | null;
 }
 
 export interface ChildHealthProfile {
@@ -198,9 +200,9 @@ export interface ChildHealthProfile {
   immunisationsUpToDate: boolean;
   activeHealthNeeds: number;
   managedHealthNeeds: number;
-  appointmentAttendance: number;
-  healthPromotionEngagement: number;
-  overallHealthScore: number;
+  appointmentAttendance: number | null;
+  healthPromotionEngagement: number | null;
+  overallHealthScore: number | null;
   concerns: string[];
   positives: string[];
 }
@@ -210,8 +212,8 @@ export interface PhysicalHealthMonitoringIntelligence {
   periodStart: string;
   periodEnd: string;
   referenceDate: string;
-  overallScore: number;
-  rating: "outstanding" | "good" | "requires_improvement" | "inadequate";
+  overallScore: number | null;
+  rating: "outstanding" | "good" | "requires_improvement" | "inadequate" | "unmeasured";
   appointments: AppointmentResult;
   assessments: AssessmentResult;
   healthNeeds: HealthNeedsResult;
@@ -223,6 +225,8 @@ export interface PhysicalHealthMonitoringIntelligence {
   actions: string[];
   regulatoryLinks: string[];
 }
+
+import { below, meets, weightedMeanOf } from "@/lib/metrics/rate";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -236,9 +240,9 @@ export function evaluateAppointments(
 ): AppointmentResult {
   if (appointments.length === 0) {
     return {
-      totalAppointments: 0, attendanceRate: 0, missedRate: 0, childRefusedRate: 0,
-      followUpBookedRate: 0, healthPlanUpdatedRate: 0, typeBreakdown: {},
-      statusBreakdown: {}, overallScore: 0,
+      totalAppointments: 0, attendanceRate: null, missedRate: null, childRefusedRate: null,
+      followUpBookedRate: null, healthPlanUpdatedRate: null, typeBreakdown: {},
+      statusBreakdown: {}, overallScore: null,
     };
   }
 
@@ -250,15 +254,17 @@ export function evaluateAppointments(
   const missedRate = Math.round((missed / total) * 1000) / 10;
   const childRefusedRate = Math.round((childRefused / total) * 1000) / 10;
 
+  // Null rather than 100: no appointment needed a follow-up, so there is
+  // nothing to have booked.
   const needingFollowUp = appointments.filter(a => a.followUpRequired);
   const followUpBookedRate = needingFollowUp.length > 0
     ? Math.round((needingFollowUp.filter(a => a.followUpBooked).length / needingFollowUp.length) * 1000) / 10
-    : 100;
+    : null;
 
   const attendedAppts = appointments.filter(a => a.status === "attended");
   const healthPlanUpdatedRate = attendedAppts.length > 0
     ? Math.round((attendedAppts.filter(a => a.healthActionPlanUpdated).length / attendedAppts.length) * 1000) / 10
-    : 0;
+    : null;
 
   const typeBreakdown: Record<string, number> = {};
   for (const a of appointments) {
@@ -271,10 +277,11 @@ export function evaluateAppointments(
   }
 
   // Scoring: attendance(40) + follow-up(30) + plan updated(30) = 100
-  const attendScore = Math.min(attendanceRate, 100) * 0.4;
-  const followUpScore = Math.min(followUpBookedRate, 100) * 0.3;
-  const planScore = Math.min(healthPlanUpdatedRate, 100) * 0.3;
-  const overallScore = Math.round(attendScore + followUpScore + planScore);
+  const overallScore = weightedMeanOf([
+    { score: Math.min(attendanceRate, 100), weight: 40 },
+    { score: followUpBookedRate === null ? null : Math.min(followUpBookedRate, 100), weight: 30 },
+    { score: healthPlanUpdatedRate === null ? null : Math.min(healthPlanUpdatedRate, 100), weight: 30 },
+  ]);
 
   return {
     totalAppointments: total, attendanceRate, missedRate, childRefusedRate,
@@ -291,9 +298,9 @@ export function evaluateAssessments(
   if (assessments.length === 0) {
     return {
       totalAssessments: 0, initialCompleted: 0, reviewCompleted: 0,
-      completedOnTimeRate: 0, actionPlanRate: 0, childParticipationRate: 0,
-      sharedWithCarersRate: 0, childrenWithCurrentAssessment: 0,
-      assessmentCoverageRate: 0, overallScore: 0,
+      completedOnTimeRate: null, actionPlanRate: null, childParticipationRate: null,
+      sharedWithCarersRate: null, childrenWithCurrentAssessment: 0,
+      assessmentCoverageRate: null, overallScore: null,
     };
   }
 
@@ -326,15 +333,16 @@ export function evaluateAssessments(
   const childrenWithCurrentAssessment = currentCount;
   const assessmentCoverageRate = childIds.length > 0
     ? Math.round((childrenWithCurrentAssessment / childIds.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Scoring: coverage(30) + timeliness(25) + action plan(20) + child participation(15) + shared(10)
-  const coverageScore = Math.min(assessmentCoverageRate, 100) * 0.3;
-  const timeScore = Math.min(completedOnTimeRate, 100) * 0.25;
-  const actionScore = Math.min(actionPlanRate, 100) * 0.2;
-  const childScore = Math.min(childParticipationRate, 100) * 0.15;
-  const sharedScore = Math.min(sharedWithCarersRate, 100) * 0.1;
-  const overallScore = Math.round(coverageScore + timeScore + actionScore + childScore + sharedScore);
+  const overallScore = weightedMeanOf([
+    { score: assessmentCoverageRate === null ? null : Math.min(assessmentCoverageRate, 100), weight: 30 },
+    { score: Math.min(completedOnTimeRate, 100), weight: 25 },
+    { score: Math.min(actionPlanRate, 100), weight: 20 },
+    { score: Math.min(childParticipationRate, 100), weight: 15 },
+    { score: Math.min(sharedWithCarersRate, 100), weight: 10 },
+  ]);
 
   return {
     totalAssessments: total, initialCompleted, reviewCompleted,
@@ -349,25 +357,27 @@ export function evaluateHealthNeeds(
 ): HealthNeedsResult {
   if (needs.length === 0) {
     return {
-      totalNeeds: 0, activeNeeds: 0, managementPlanRate: 0,
-      currentlyManagedRate: 0, specialistInvolvedRate: 0,
-      categoryBreakdown: {}, overallScore: 0,
+      totalNeeds: 0, activeNeeds: 0, managementPlanRate: null,
+      currentlyManagedRate: null, specialistInvolvedRate: null,
+      categoryBreakdown: {}, overallScore: null,
     };
   }
 
   const total = needs.length;
   const active = needs.filter(n => n.status === "active");
   const activeNeeds = active.length;
+  // Null rather than 100: no need is currently active, so there is nothing to
+  // have a plan for.
   const managementPlanRate = activeNeeds > 0
     ? Math.round((active.filter(n => n.managementPlan).length / activeNeeds) * 1000) / 10
-    : 100;
+    : null;
   const currentlyManagedRate = activeNeeds > 0
     ? Math.round((active.filter(n => n.currentlyManaged).length / activeNeeds) * 1000) / 10
-    : 100;
+    : null;
   const needingSpecialist = needs.filter(n => n.specialistInvolved);
   const specialistInvolvedRate = total > 0
     ? Math.round((needingSpecialist.length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const categoryBreakdown: Record<string, number> = {};
   for (const n of needs) {
@@ -375,10 +385,12 @@ export function evaluateHealthNeeds(
   }
 
   // Scoring: management plan(40) + currently managed(40) + specialist access(20) = 100
-  const planScore = Math.min(managementPlanRate, 100) * 0.4;
-  const managedScore = Math.min(currentlyManagedRate, 100) * 0.4;
-  const specialistScore = Math.min(specialistInvolvedRate * 2, 100) * 0.2; // reward having specialists involved
-  const overallScore = Math.round(planScore + managedScore + specialistScore);
+  const overallScore = weightedMeanOf([
+    { score: managementPlanRate === null ? null : Math.min(managementPlanRate, 100), weight: 40 },
+    { score: currentlyManagedRate === null ? null : Math.min(currentlyManagedRate, 100), weight: 40 },
+    // reward having specialists involved
+    { score: specialistInvolvedRate === null ? null : Math.min(specialistInvolvedRate * 2, 100), weight: 20 },
+  ]);
 
   return {
     totalNeeds: total, activeNeeds, managementPlanRate,
@@ -393,8 +405,8 @@ export function evaluateHealthPromotion(
 ): HealthPromotionResult {
   if (activities.length === 0) {
     return {
-      totalActivities: 0, childrenEngaged: 0, averageEngagement: 0,
-      topicCoverage: 0, topicBreakdown: {}, overallScore: 0,
+      totalActivities: 0, childrenEngaged: 0, averageEngagement: null,
+      topicCoverage: null, topicBreakdown: {}, overallScore: null,
     };
   }
 
@@ -413,11 +425,12 @@ export function evaluateHealthPromotion(
   // Scoring: coverage of children(30) + engagement(30) + topic diversity(40) = 100
   const childCoverage = childIds.length > 0
     ? Math.min((childrenEngaged / childIds.length) * 100, 100)
-    : 0;
-  const childCoverageScore = childCoverage * 0.3;
-  const engagementScore = (averageEngagement / 10) * 30;
-  const topicScore = Math.min(topicCoverage, 100) * 0.4;
-  const overallScore = Math.round(childCoverageScore + engagementScore + topicScore);
+    : null;
+  const overallScore = weightedMeanOf([
+    { score: childCoverage, weight: 30 },
+    { score: averageEngagement * 10, weight: 30 },
+    { score: Math.min(topicCoverage, 100), weight: 40 },
+  ]);
 
   return {
     totalActivities: total, childrenEngaged, averageEngagement,
@@ -431,8 +444,8 @@ export function evaluateImmunisations(
 ): ImmunisationResult {
   if (records.length === 0) {
     return {
-      totalRecords: 0, upToDateRate: 0, overdueCount: 0,
-      declinedCount: 0, overallScore: 0,
+      totalRecords: 0, upToDateRate: null, overdueCount: 0,
+      declinedCount: 0, overallScore: null,
     };
   }
 
@@ -514,12 +527,12 @@ export function buildChildHealthProfiles(
     const attendedCount = childAppts.filter(a => a.status === "attended").length;
     const appointmentAttendance = childAppts.length > 0
       ? Math.round((attendedCount / childAppts.length) * 1000) / 10
-      : 0;
+      : null;
 
     // Health promotion engagement
     const healthPromotionEngagement = childPromotion.length > 0
       ? Math.round((childPromotion.reduce((s, p) => s + p.childEngagement, 0) / childPromotion.length) * 10) / 10
-      : 0;
+      : null;
 
     // Overall health score
     const scores: number[] = [];
@@ -528,14 +541,14 @@ export function buildChildHealthProfiles(
     if (opticiansCheckCurrent) scores.push(10); else scores.push(0);
     if (healthAssessmentCurrent) scores.push(10); else scores.push(0);
     if (immunisationsUpToDate) scores.push(10); else scores.push(0);
-    scores.push(appointmentAttendance / 10); // 0-10
-    scores.push(healthPromotionEngagement); // 0-10
+    if (appointmentAttendance !== null) scores.push(appointmentAttendance / 10); // 0-10
+    if (healthPromotionEngagement !== null) scores.push(healthPromotionEngagement); // 0-10
     if (activeHealthNeeds > 0) {
       scores.push(managedHealthNeeds === activeHealthNeeds ? 10 : (managedHealthNeeds / activeHealthNeeds) * 10);
     }
     const overallHealthScore = scores.length > 0
       ? Math.round((scores.reduce((s, v) => s + v, 0) / scores.length) * 10) / 10
-      : 0;
+      : null;
 
     // Concerns and positives
     const concerns: string[] = [];
@@ -546,14 +559,14 @@ export function buildChildHealthProfiles(
     if (!opticiansCheckCurrent) concerns.push("Optician check not current");
     if (!healthAssessmentCurrent) concerns.push("Health assessment not current");
     if (!immunisationsUpToDate && childImmunisations.length > 0) concerns.push("Immunisations not up to date");
-    if (appointmentAttendance < 70) concerns.push("Low appointment attendance rate");
+    if (below(appointmentAttendance, 70)) concerns.push("Low appointment attendance rate");
     if (activeHealthNeeds > managedHealthNeeds) concerns.push("Unmanaged health needs present");
 
     if (gpRegistered) positives.push("Registered with GP");
     if (dentalCheckCurrent) positives.push("Dental check current");
     if (healthAssessmentCurrent) positives.push("Health assessment current");
     if (immunisationsUpToDate) positives.push("Immunisations up to date");
-    if (appointmentAttendance >= 90) positives.push("Excellent appointment attendance");
+    if (meets(appointmentAttendance, 90)) positives.push("Excellent appointment attendance");
     if (activeHealthNeeds > 0 && managedHealthNeeds === activeHealthNeeds) positives.push("All health needs actively managed");
 
     const childName = childAppts[0]?.childName
@@ -597,45 +610,46 @@ export function generatePhysicalHealthIntelligence(
   );
 
   // Weighted scoring: appointments(20) + assessments(25) + needs(20) + promotion(15) + immunisations(20)
-  const overallScore = Math.round(
-    apptResult.overallScore * 0.2 +
-    assessResult.overallScore * 0.25 +
-    needsResult.overallScore * 0.2 +
-    promoResult.overallScore * 0.15 +
-    immunResult.overallScore * 0.2,
-  );
+  const overallScore = weightedMeanOf([
+    { score: apptResult.overallScore, weight: 20 },
+    { score: assessResult.overallScore, weight: 25 },
+    { score: needsResult.overallScore, weight: 20 },
+    { score: promoResult.overallScore, weight: 15 },
+    { score: immunResult.overallScore, weight: 20 },
+  ]);
 
-  const rating = overallScore >= 80 ? "outstanding"
-    : overallScore >= 60 ? "good"
-    : overallScore >= 40 ? "requires_improvement"
-    : "inadequate";
+  const rating = overallScore === null ? "unmeasured" as const
+    : overallScore >= 80 ? "outstanding" as const
+    : overallScore >= 60 ? "good" as const
+    : overallScore >= 40 ? "requires_improvement" as const
+    : "inadequate" as const;
 
   // Strengths
   const strengths: string[] = [];
-  if (apptResult.attendanceRate >= 90) strengths.push("Excellent health appointment attendance demonstrates proactive health advocacy");
-  if (assessResult.assessmentCoverageRate >= 100) strengths.push("All children have current health assessments — statutory requirements fully met");
-  if (assessResult.childParticipationRate >= 80) strengths.push("Children actively participate in their health assessments");
-  if (needsResult.currentlyManagedRate >= 90) strengths.push("All identified health needs are actively managed with appropriate plans");
-  if (immunResult.upToDateRate >= 90) strengths.push("Immunisation programme is well-maintained with high coverage");
-  if (promoResult.topicCoverage >= 60) strengths.push("Good diversity of health promotion activities covering multiple topics");
-  if (childProfiles.every(p => p.gpRegistered)) strengths.push("All children registered with a GP");
+  if (meets(apptResult.attendanceRate, 90)) strengths.push("Excellent health appointment attendance demonstrates proactive health advocacy");
+  if (meets(assessResult.assessmentCoverageRate, 100)) strengths.push("All children have current health assessments — statutory requirements fully met");
+  if (meets(assessResult.childParticipationRate, 80)) strengths.push("Children actively participate in their health assessments");
+  if (meets(needsResult.currentlyManagedRate, 90)) strengths.push("All identified health needs are actively managed with appropriate plans");
+  if (meets(immunResult.upToDateRate, 90)) strengths.push("Immunisation programme is well-maintained with high coverage");
+  if (meets(promoResult.topicCoverage, 60)) strengths.push("Good diversity of health promotion activities covering multiple topics");
+  if (childProfiles.length > 0 && childProfiles.every(p => p.gpRegistered)) strengths.push("All children registered with a GP");
 
   // Areas for improvement
   const areasForImprovement: string[] = [];
-  if (apptResult.attendanceRate < 80) areasForImprovement.push("Appointment attendance below expected level — review barriers and advocacy approach");
-  if (apptResult.childRefusedRate > 10) areasForImprovement.push("Significant rate of child refusal for health appointments — explore underlying concerns");
-  if (assessResult.assessmentCoverageRate < 100) areasForImprovement.push("Not all children have current health assessments — statutory gap");
-  if (assessResult.completedOnTimeRate < 80) areasForImprovement.push("Health assessments not consistently completed on time");
-  if (needsResult.managementPlanRate < 80) areasForImprovement.push("Not all active health needs have management plans in place");
+  if (below(apptResult.attendanceRate, 80)) areasForImprovement.push("Appointment attendance below expected level — review barriers and advocacy approach");
+  if (apptResult.childRefusedRate !== null && apptResult.childRefusedRate > 10) areasForImprovement.push("Significant rate of child refusal for health appointments — explore underlying concerns");
+  if (below(assessResult.assessmentCoverageRate, 100)) areasForImprovement.push("Not all children have current health assessments — statutory gap");
+  if (below(assessResult.completedOnTimeRate, 80)) areasForImprovement.push("Health assessments not consistently completed on time");
+  if (below(needsResult.managementPlanRate, 80)) areasForImprovement.push("Not all active health needs have management plans in place");
   if (immunResult.overdueCount > 0) areasForImprovement.push("Overdue immunisations require immediate action to protect children's health");
-  if (promoResult.topicCoverage < 40) areasForImprovement.push("Limited range of health promotion topics — broaden programme");
+  if (below(promoResult.topicCoverage, 40)) areasForImprovement.push("Limited range of health promotion topics — broaden programme");
   if (childProfiles.some(p => !p.dentalCheckCurrent)) areasForImprovement.push("Some children's dental checks are not current");
 
   // Actions
   const actions: string[] = [];
-  if (assessResult.assessmentCoverageRate < 100) actions.push("Commission outstanding health assessments for all children without current assessment");
-  if (apptResult.missedRate > 10) actions.push("Implement appointment tracking system with reminders and transport planning");
-  if (needsResult.managementPlanRate < 100) actions.push("Create health management plans for all identified health needs");
+  if (below(assessResult.assessmentCoverageRate, 100)) actions.push("Commission outstanding health assessments for all children without current assessment");
+  if (apptResult.missedRate !== null && apptResult.missedRate > 10) actions.push("Implement appointment tracking system with reminders and transport planning");
+  if (below(needsResult.managementPlanRate, 100)) actions.push("Create health management plans for all identified health needs");
   if (immunResult.overdueCount > 0) actions.push("Contact GP to schedule overdue immunisations as priority");
   if (childProfiles.some(p => !p.gpRegistered)) actions.push("Register all children with a local GP within 5 working days");
   if (childProfiles.some(p => !p.dentalCheckCurrent)) actions.push("Book dental appointments for children with overdue checks");

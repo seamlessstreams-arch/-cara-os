@@ -21,7 +21,8 @@ export interface BundleHeadlineDelta {
   reg45_evidence_items:     { previous: number; current: number; delta: number };
   annex_a_evidence_items:   { previous: number; current: number; delta: number };
   recent_exports_included:  { previous: number; current: number; delta: number };
-  readiness_score:          { previous: number; current: number; delta: number };
+  // previous/current/delta are null when either bundle had no measurable readiness.
+  readiness_score:          { previous: number | null; current: number | null; delta: number | null };
   readiness_severity:       { previous: string; current: string; changed: boolean };
   trajectory_alerts_open:   { previous: number; current: number; delta: number };
   trajectory_acks_recent:   { previous: number; current: number; delta: number };
@@ -107,7 +108,7 @@ export function diffInspectionBundles(
     reg45_evidence_items:    diffNum(prevHead.reg45_evidence_items,   ch.reg45_evidence_items),
     annex_a_evidence_items:  diffNum(prevHead.annex_a_evidence_items, ch.annex_a_evidence_items),
     recent_exports_included: diffNum(prevHead.recent_exports_included,ch.recent_exports_included),
-    readiness_score:         diffNum(prevHead.readiness_score,        ch.readiness_score),
+    readiness_score:         diffScore(prevHead.readiness_score,      ch.readiness_score),
     readiness_severity: {
       previous: prevHead.readiness_severity,
       current:  ch.readiness_severity,
@@ -136,7 +137,7 @@ export function diffInspectionBundles(
       `Readiness severity changed: ${headline.readiness_severity.previous} → ${headline.readiness_severity.current}`,
     );
   }
-  if (headline.readiness_score.delta !== 0) {
+  if (headline.readiness_score.delta !== null && headline.readiness_score.delta !== 0) {
     const sign = headline.readiness_score.delta > 0 ? "+" : "";
     notable.push(`Readiness score ${sign}${headline.readiness_score.delta}`);
   }
@@ -168,4 +169,10 @@ export function diffInspectionBundles(
 
 function diffNum(previous: number, current: number) {
   return { previous, current, delta: current - previous };
+}
+
+// A delta between readiness scores is only meaningful when both are measured.
+function diffScore(previous: number | null, current: number | null) {
+  const delta = previous !== null && current !== null ? current - previous : null;
+  return { previous, current, delta };
 }

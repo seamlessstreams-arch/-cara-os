@@ -169,12 +169,12 @@ describe("evaluateStaffingAdequacy", () => {
     expect(result.statusBreakdown.filled).toBe(24);
   });
 
-  it("returns zeros for empty data", () => {
+  it("returns unmeasured rates for empty data", () => {
     const result = evaluateStaffingAdequacy([], [], PERIOD_START, PERIOD_END);
-    expect(result.fillRate).toBe(0);
+    expect(result.fillRate).toBeNull();
     expect(result.shiftsTotal).toBe(0);
-    expect(result.averageStaffChildRatio).toBe(0);
-    expect(result.seniorOnShiftRate).toBe(0);
+    expect(result.averageStaffChildRatio).toBeNull();
+    expect(result.seniorOnShiftRate).toBeNull();
   });
 
   it("filters rotas outside the period", () => {
@@ -190,7 +190,7 @@ describe("evaluateStaffingAdequacy", () => {
       { date: "2026-02-01T00:00:00Z", shiftType: "morning", plannedStaff: ["s1"], actualStaff: ["s1"], status: "filled", childrenPresent: 0 },
     ];
     const result = evaluateStaffingAdequacy(rotas, [], PERIOD_START, PERIOD_END);
-    expect(result.averageStaffChildRatio).toBe(0);
+    expect(result.averageStaffChildRatio).toBeNull();
     expect(result.fillRate).toBe(100);
   });
 
@@ -266,18 +266,18 @@ describe("evaluateAgencyMinimisation", () => {
     expect(result.agencyReasons["sickness_cover"]).toBe(1);
   });
 
-  it("returns defaults for empty agency usage", () => {
+  it("returns zero usage but unmeasured briefing rates for empty agency usage", () => {
     const result = evaluateAgencyMinimisation([], makeOakHouseRotas(), PERIOD_START, PERIOD_END);
     expect(result.agencyUsageRate).toBe(0);
     expect(result.agencyShiftsCount).toBe(0);
-    expect(result.briefingCompletionRate).toBe(100);
-    expect(result.childrenKnownRate).toBe(100);
+    expect(result.briefingCompletionRate).toBeNull();
+    expect(result.childrenKnownRate).toBeNull();
   });
 
-  it("returns zero total shift staff for empty rotas", () => {
+  it("returns zero total shift staff and unmeasured usage rate for empty rotas", () => {
     const result = evaluateAgencyMinimisation([], [], PERIOD_START, PERIOD_END);
     expect(result.totalShiftStaff).toBe(0);
-    expect(result.agencyUsageRate).toBe(0);
+    expect(result.agencyUsageRate).toBeNull();
   });
 
   it("handles all agency shifts scenario", () => {
@@ -359,12 +359,12 @@ describe("evaluateConsistencyOfCare", () => {
     }
   });
 
-  it("returns zeros for empty data", () => {
+  it("returns unmeasured values for empty data", () => {
     const result = evaluateConsistencyOfCare([]);
-    expect(result.averageUniqueStaffPerChild).toBe(0);
-    expect(result.keyWorkerCoverage).toBe(0);
-    expect(result.secondaryKeyWorkerCoverage).toBe(0);
-    expect(result.averageContactsPerChild).toBe(0);
+    expect(result.averageUniqueStaffPerChild).toBeNull();
+    expect(result.keyWorkerCoverage).toBeNull();
+    expect(result.secondaryKeyWorkerCoverage).toBeNull();
+    expect(result.averageContactsPerChild).toBeNull();
     expect(result.childConsistencyDetails).toHaveLength(0);
   });
 
@@ -458,18 +458,18 @@ describe("evaluateRotaCompliance", () => {
     expect(result.nightCoverRate).toBe(100);
   });
 
-  it("returns 0 published on time rate for empty published dates", () => {
+  it("returns an unmeasured published on time rate for empty published dates", () => {
     const result = evaluateRotaCompliance(makeOakHouseRotas(), [], PERIOD_START, PERIOD_END);
-    expect(result.rotaPublishedOnTimeRate).toBe(0);
+    expect(result.rotaPublishedOnTimeRate).toBeNull();
   });
 
-  it("returns 100 for long day and night cover when no such shifts exist", () => {
+  it("returns unmeasured long day and night cover when no such shifts exist", () => {
     const rotas: ShiftRota[] = [
       { date: "2026-02-01T00:00:00Z", shiftType: "morning", plannedStaff: ["s1"], actualStaff: ["s1"], status: "filled", childrenPresent: 2 },
     ];
     const result = evaluateRotaCompliance(rotas, [], PERIOD_START, PERIOD_END);
-    expect(result.longDayComplianceRate).toBe(100);
-    expect(result.nightCoverRate).toBe(100);
+    expect(result.longDayComplianceRate).toBeNull();
+    expect(result.nightCoverRate).toBeNull();
   });
 
   it("detects late rota publication", () => {
@@ -539,10 +539,10 @@ describe("evaluateIncidentManagement", () => {
     expect(result.resolutionRate).toBe(100);
   });
 
-  it("returns defaults for no incidents", () => {
+  it("returns an unmeasured resolution rate for no incidents", () => {
     const result = evaluateIncidentManagement([], PERIOD_START, PERIOD_END);
     expect(result.totalIncidents).toBe(0);
-    expect(result.resolutionRate).toBe(100);
+    expect(result.resolutionRate).toBeNull();
     expect(result.loneWorkingIncidents).toBe(0);
   });
 
@@ -713,7 +713,7 @@ describe("generateStaffDeploymentIntelligence", () => {
 
   it("rates good when score >= 60 and < 80", () => {
     const result = generateOakHouse();
-    if (result.overallScore >= 60 && result.overallScore < 80) {
+    if (result.overallScore !== null && result.overallScore >= 60 && result.overallScore < 80) {
       expect(result.overallRating).toBe("good");
     }
   });
@@ -740,7 +740,7 @@ describe("generateStaffDeploymentIntelligence", () => {
       { date: "2026-02-01T00:00:00Z", type: "understaffed", impact: "Short", resolution: "Fixed" },
     ];
     const result = generateStaffDeploymentIntelligence(staff, rotas, agencyUsages, consistency, incidents, [], "h1", PERIOD_START, PERIOD_END, REFERENCE_DATE);
-    if (result.overallScore >= 40 && result.overallScore < 60) {
+    if (result.overallScore !== null && result.overallScore >= 40 && result.overallScore < 60) {
       expect(result.overallRating).toBe("requires_improvement");
     }
   });
@@ -906,11 +906,12 @@ describe("generateStaffDeploymentIntelligence", () => {
 
   // ── Edge Cases ──────────────────────────────────────────────────────────
 
-  it("handles completely empty data without crashing", () => {
+  it("handles completely empty data without crashing or scoring it", () => {
     const result = generateStaffDeploymentIntelligence([], [], [], [], [], [], "h1", PERIOD_START, PERIOD_END, REFERENCE_DATE);
-    expect(result.overallScore).toBeLessThanOrEqual(55);
-    expect(["inadequate", "requires_improvement"]).toContain(result.overallRating);
+    expect(result.overallScore).toBeNull();
+    expect(result.overallRating).toBe("insufficient_data");
     expect(result.staffProfiles).toHaveLength(0);
+    expect(result.regulatoryLinks.every(l => l.status === "not_evidenced")).toBe(true);
   });
 
   it("handles all-agency scenario", () => {
@@ -1038,14 +1039,19 @@ describe("generateStaffDeploymentIntelligence", () => {
     const staff: StaffMember[] = [
       { id: "s1", name: "A", role: "rsw", contractType: "permanent", startDate: "2022-01-01", keyChildren: [] },
     ];
-    const noIncidents = generateStaffDeploymentIntelligence(staff, [], [], [], [], [], "h1", PERIOD_START, PERIOD_END, REFERENCE_DATE);
+    // Both scenarios need a rostered period — "no incidents" only counts in the
+    // home's favour when there were shifts for incidents to occur on.
+    const rotas: ShiftRota[] = [
+      { date: "2026-02-01T00:00:00Z", shiftType: "morning", plannedStaff: ["s1"], actualStaff: ["s1"], status: "filled", childrenPresent: 2 },
+    ];
+    const noIncidents = generateStaffDeploymentIntelligence(staff, rotas, [], [], [], [], "h1", PERIOD_START, PERIOD_END, REFERENCE_DATE);
     const manyIncidents: StaffingIncident[] = Array.from({ length: 15 }, (_, i) => ({
       date: `2026-02-${String(i + 1).padStart(2, "0")}T00:00:00Z`,
       type: "lone_working" as const,
       impact: "Risk",
       resolution: "",
     }));
-    const withIncidents = generateStaffDeploymentIntelligence(staff, [], [], [], manyIncidents, [], "h1", PERIOD_START, PERIOD_END, REFERENCE_DATE);
+    const withIncidents = generateStaffDeploymentIntelligence(staff, rotas, [], [], manyIncidents, [], "h1", PERIOD_START, PERIOD_END, REFERENCE_DATE);
     expect(noIncidents.componentScores.incidentManagement).toBeGreaterThan(withIncidents.componentScores.incidentManagement);
   });
 

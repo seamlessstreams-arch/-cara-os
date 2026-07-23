@@ -15,6 +15,7 @@ import {
   Users, Loader2, BookOpen, UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets } from "@/lib/metrics/rate";
 import { useSupervisionIntelligence } from "@/hooks/use-supervision-intelligence";
 
 // ── Styling ──────────────────────────────────────────────────────────────────
@@ -97,9 +98,9 @@ export function StaffSupervisionComplianceCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{o.supervisions_completed_90d}</p>
             <p className="text-[10px] text-muted-foreground">Done (90d)</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.avg_wellbeing_score >= 7 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.avg_wellbeing_score >= 7 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.avg_wellbeing_score}/10
+          <div className={cn("text-center rounded-lg p-2.5", meets(o.avg_wellbeing_score, 7) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(o.avg_wellbeing_score, 7) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {o.avg_wellbeing_score === null ? "—" : `${o.avg_wellbeing_score}/10`}
             </p>
             <p className="text-[10px] text-muted-foreground">Wellbeing</p>
           </div>

@@ -12,6 +12,7 @@ import {
   BookOpen, ChevronRight, AlertTriangle, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets, rate } from "@/lib/metrics/rate";
 import { useSupervisionIntelligence } from "@/hooks/use-supervision-intelligence";
 
 const ALERT_STYLES: Record<string, string> = {
@@ -50,9 +51,7 @@ export function StaffReflectivePracticeCard() {
   }
 
   const { overview, training_compliance, staff_profiles } = intel;
-  const mandatoryRate = training_compliance.mandatory_total > 0
-    ? Math.round((training_compliance.mandatory_compliant / training_compliance.mandatory_total) * 100)
-    : 100;
+  const mandatoryRate = rate(training_compliance.mandatory_compliant, training_compliance.mandatory_total);
 
   return (
     <Card className="overflow-hidden">
@@ -74,12 +73,12 @@ export function StaffReflectivePracticeCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{overview.supervisions_completed_90d}</p>
             <p className="text-[10px] text-muted-foreground">Sessions</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", overview.action_completion_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", overview.action_completion_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{overview.action_completion_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(overview.action_completion_rate, 80) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(overview.action_completion_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(overview.action_completion_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Actions</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", mandatoryRate >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", mandatoryRate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{mandatoryRate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(mandatoryRate, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(mandatoryRate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(mandatoryRate)}</p>
             <p className="text-[10px] text-muted-foreground">Mandatory</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", training_compliance.expired === 0 ? "bg-green-50" : "bg-red-50")}>

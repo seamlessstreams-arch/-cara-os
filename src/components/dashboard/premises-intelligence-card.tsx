@@ -15,6 +15,7 @@ import {
   Flame, Wrench, Car, ShieldCheck, FileWarning, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { usePremisesSafetyIntelligence } from "@/hooks/use-premises-safety-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -82,13 +83,13 @@ export function PremisesIntelligenceCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.check_completion_rate >= 80 ? "bg-green-50" : o.check_completion_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+            meets(o.check_completion_rate, 80) ? "bg-green-50" : meets(o.check_completion_rate, 50) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.check_completion_rate >= 80 ? "text-[--cs-success]" : o.check_completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.check_completion_rate, 80) ? "text-[--cs-success]" : meets(o.check_completion_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.check_completion_rate}%
+              {formatRate(o.check_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Checks Done</p>
           </div>
@@ -176,12 +177,12 @@ export function PremisesIntelligenceCard() {
                   <div
                     className={cn(
                       "h-full rounded-full",
-                      ca.pass_rate >= 80 ? "bg-green-400" : ca.pass_rate >= 50 ? "bg-amber-400" : "bg-red-400",
+                      meets(ca.pass_rate, 80) ? "bg-green-400" : meets(ca.pass_rate, 50) ? "bg-amber-400" : "bg-red-400",
                     )}
-                    style={{ width: `${Math.max(4, ca.pass_rate)}%` }}
+                    style={{ width: `${Math.max(4, ca.pass_rate ?? 0)}%` }}
                   />
                 </div>
-                <span className="w-8 text-right font-medium tabular-nums">{ca.pass_rate}%</span>
+                <span className="w-8 text-right font-medium tabular-nums">{formatRate(ca.pass_rate)}</span>
               </div>
             ))}
           </div>

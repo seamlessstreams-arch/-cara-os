@@ -10,6 +10,8 @@
 // Ofsted SCCIF: Leadership & Management — independent scrutiny.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate, rateOf, meanOf, meets, below, formatRate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type RecommendationStatus = "pending" | "in_progress" | "completed" | "rejected";
@@ -51,15 +53,15 @@ export interface Reg44IntelligenceInput {
 export interface Reg44Overview {
   total_visits_12m: number;
   visits_on_schedule: boolean;    // monthly visits maintained
-  avg_days_between_visits: number;
-  children_participation_rate: number; // 0-100
+  avg_days_between_visits: number | null;    // null until two visits exist to span
+  children_participation_rate: number | null; // 0-100, null when no visit measured it
   total_recommendations: number;
   recommendations_completed: number;
   recommendations_in_progress: number;
   recommendations_pending: number;
-  completion_rate: number;        // 0-100
-  ofsted_reporting_compliance: number; // 0-100 (sent within 5 working days)
-  avg_duration_hours: number;
+  completion_rate: number | null;        // 0-100, null when no recommendations were made
+  ofsted_reporting_compliance: number | null; // 0-100, null when there were no visits
+  avg_duration_hours: number | null;
 }
 
 export interface VisitComplianceProfile {
@@ -68,7 +70,7 @@ export interface VisitComplianceProfile {
   visitor: string;
   days_since_previous: number | null;
   on_schedule: boolean;           // within 35 days of previous
-  children_spoken_rate: number;   // 0-100
+  children_spoken_rate: number | null; // 0-100, null when no children were placed
   recommendations_count: number;
   report_sent_timely: boolean;
   overall_judgement: string;
@@ -77,7 +79,7 @@ export interface VisitComplianceProfile {
 export interface RecommendationAnalysis {
   total: number;
   by_priority: { priority: RecommendationPriority; count: number; completed: number }[];
-  avg_days_to_complete: number;
+  avg_days_to_complete: number | null; // null until something has actually been completed
   overdue: number; // in_progress or pending for 30+ days
   high_priority_incomplete: number;
 }
@@ -139,10 +141,8 @@ export function computeReg44Intelligence(input: Reg44IntelligenceInput): Reg44In
     // On schedule: no more than 35 days since previous (Reg 44 = monthly)
     const onSchedule = daysSincePrev === null || daysSincePrev <= 35;
 
-    // Children spoken rate
-    const childSpokenRate = visit.children_total > 0
-      ? Math.round((visit.children_spoken_count / visit.children_total) * 100)
-      : 100;
+    // Children spoken rate — no children placed means nothing to measure, not full coverage
+    const childSpokenRate = rate(visit.children_spoken_count, visit.children_total);
 
     // Report sent within 5 working days (~7 calendar days)
     const reportTimely = visit.report_sent_to_ofsted && visit.report_sent_date
@@ -186,15 +186,17 @@ export function computeReg44Intelligence(input: Reg44IntelligenceInput): Reg44In
   const overview: Reg44Overview = {
     total_visits_12m: within12m.length,
     visits_on_schedule: visitsOnSchedule && daysSinceLastVisit <= 35,
-    avg_days_between_visits: Math.round(average(intervals)),
-    children_participation_rate: Math.round(average(childRates)),
+    avg_days_between_visits: meanOf(intervals),
+    children_participation_rate: meanOf(childRates),
     total_recommendations: allRecs.length,
     recommendations_completed: completedRecs.length,
     recommendations_in_progress: inProgressRecs.length,
     recommendations_pending: pendingRecs.length,
-    completion_rate: allRecs.length > 0 ? Math.round((completedRecs.length / allRecs.length) * 100) : 100,
-    ofsted_reporting_compliance: within12m.length > 0 ? Math.round((reportsCompliant / within12m.length) * 100) : 100,
-    avg_duration_hours: Math.round(average(within12m.map((v) => v.duration_hours)) * 10) / 10,
+    completion_rate: rateOf(completedRecs, allRecs),
+    ofsted_reporting_compliance: rate(reportsCompliant, within12m.length),
+    avg_duration_hours: within12m.length > 0
+      ? Math.round(average(within12m.map((v) => v.duration_hours)) * 10) / 10
+      : null,
   };
 
   // ── Recommendation Analysis ───────────────────────────────────────────
@@ -232,7 +234,7 @@ export function computeReg44Intelligence(input: Reg44IntelligenceInput): Reg44In
   const recommendation_analysis: RecommendationAnalysis = {
     total: allRecs.length,
     by_priority: byPriority,
-    avg_days_to_complete: Math.round(average(completionDays)),
+    avg_days_to_complete: meanOf(completionDays),
     overdue: overdueRecs.length,
     high_priority_incomplete: highPriorityIncomplete,
   };
@@ -274,7 +276,7 @@ export function computeReg44Intelligence(input: Reg44IntelligenceInput): Reg44In
   }
 
   // Low: children not spoken to
-  const lowParticipation = visit_profiles.filter((v) => v.children_spoken_rate < 100);
+  const lowParticipation = visit_profiles.filter((v) => below(v.children_spoken_rate, 100));
   if (lowParticipation.length > 0) {
     alerts.push({
       severity: "low",
@@ -294,18 +296,18 @@ export function computeReg44Intelligence(input: Reg44IntelligenceInput): Reg44In
   }
 
   // Warning: low completion rate
-  if (allRecs.length >= 3 && overview.completion_rate < 70) {
+  if (allRecs.length >= 3 && below(overview.completion_rate, 70)) {
     insights.push({
       severity: "warning",
-      text: `Only ${overview.completion_rate}% of independent visitor recommendations completed. Low follow-through undermines the purpose of independent scrutiny and suggests accountability gaps. Ofsted expects robust RM responses to all recommendations.`,
+      text: `Only ${formatRate(overview.completion_rate)} of independent visitor recommendations completed. Low follow-through undermines the purpose of independent scrutiny and suggests accountability gaps. Ofsted expects robust RM responses to all recommendations.`,
     });
   }
 
   // Warning: reporting delays
-  if (within12m.length >= 2 && overview.ofsted_reporting_compliance < 100) {
+  if (within12m.length >= 2 && below(overview.ofsted_reporting_compliance, 100)) {
     insights.push({
       severity: "warning",
-      text: `Ofsted reporting compliance is ${overview.ofsted_reporting_compliance}%. Schedule 4 requires the report to be sent within 5 working days of the visit. Late reporting is a regulatory breach.`,
+      text: `Ofsted reporting compliance is ${formatRate(overview.ofsted_reporting_compliance)}. Schedule 4 requires the report to be sent within 5 working days of the visit. Late reporting is a regulatory breach.`,
     });
   }
 
@@ -313,20 +315,20 @@ export function computeReg44Intelligence(input: Reg44IntelligenceInput): Reg44In
   if (within12m.length >= 3 && visitsOnSchedule && daysSinceLastVisit <= 35) {
     insights.push({
       severity: "positive",
-      text: `All ${within12m.length} Reg 44 visits completed on schedule with an average of ${overview.avg_days_between_visits} days between visits. Consistent independent scrutiny demonstrates strong governance under Reg 44.`,
+      text: `All ${within12m.length} Reg 44 visits completed on schedule with an average of ${overview.avg_days_between_visits ?? "—"} days between visits. Consistent independent scrutiny demonstrates strong governance under Reg 44.`,
     });
   }
 
   // Positive: high completion rate
-  if (allRecs.length >= 3 && overview.completion_rate >= 80) {
+  if (allRecs.length >= 3 && meets(overview.completion_rate, 80)) {
     insights.push({
       severity: "positive",
-      text: `${overview.completion_rate}% of independent visitor recommendations completed. Strong follow-through shows the RM values independent scrutiny and is committed to continuous improvement.`,
+      text: `${formatRate(overview.completion_rate)} of independent visitor recommendations completed. Strong follow-through shows the RM values independent scrutiny and is committed to continuous improvement.`,
     });
   }
 
   // Positive: all children spoken to
-  if (within12m.length >= 2 && overview.children_participation_rate === 100) {
+  if (within12m.length >= 2 && meets(overview.children_participation_rate, 100)) {
     insights.push({
       severity: "positive",
       text: `100% of children spoken to across all visits. This ensures every child has an independent person they can speak to about their care — a key safeguarding measure.`,

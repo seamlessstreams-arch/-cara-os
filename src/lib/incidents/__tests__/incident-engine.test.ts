@@ -392,12 +392,12 @@ describe("analyzeRestraints", () => {
     expect(result.byTimeOfDay[0].count).toBe(2);
   });
 
-  it("returns defaults for empty incidents", () => {
+  it("leaves restraint rates unmeasured for empty incidents", () => {
     const result = analyzeRestraints([], "home-oak", FIXED_NOW);
     expect(result.totalRestraints).toBe(0);
     expect(result.averageDurationMinutes).toBe(0);
-    expect(result.approvedTechniqueRate).toBe(100);
-    expect(result.injuryRate).toBe(0);
+    expect(result.approvedTechniqueRate).toBeNull();
+    expect(result.injuryRate).toBeNull();
   });
 
   it("filters to correct home", () => {
@@ -521,11 +521,11 @@ describe("calculateIncidentMetrics", () => {
     expect(result.restraintMetrics.totalRestraints).toBe(1);
   });
 
-  it("returns defaults for empty incidents", () => {
+  it("leaves metrics unmeasured for empty incidents", () => {
     const result = calculateIncidentMetrics([], "home-oak", FIXED_NOW);
     expect(result.totalIncidents).toBe(0);
-    expect(result.complianceRate).toBe(100);
-    expect(result.averageResponseMinutes).toBe(0);
+    expect(result.complianceRate).toBeNull();
+    expect(result.averageResponseMinutes).toBeNull();
   });
 });
 

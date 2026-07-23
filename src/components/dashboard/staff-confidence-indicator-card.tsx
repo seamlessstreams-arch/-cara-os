@@ -13,6 +13,7 @@ import {
   AlertTriangle, Users, TrendingUp, TrendingDown, Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useSupervisionIntelligence } from "@/hooks/use-supervision-intelligence";
 
 // ── Styling ──────────────────────────────────────────────────────────────────
@@ -84,9 +85,9 @@ export function StaffConfidenceIndicatorCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", wellbeing.avg_score >= 7 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", wellbeing.avg_score >= 7 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {wellbeing.avg_score}/10
+          <div className={cn("text-center rounded-lg p-2", wellbeing.avg_score === null ? "bg-slate-50" : wellbeing.avg_score >= 7 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", wellbeing.avg_score === null ? "text-[var(--cs-text-muted)]" : wellbeing.avg_score >= 7 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {wellbeing.avg_score ?? "—"}/10
             </p>
             <p className="text-[10px] text-muted-foreground">Wellbeing</p>
           </div>
@@ -96,9 +97,9 @@ export function StaffConfidenceIndicatorCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">Below Thr.</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", completionRate >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", completionRate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {completionRate}%
+          <div className={cn("text-center rounded-lg p-2", meets(completionRate, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(completionRate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(completionRate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Completion</p>
           </div>
@@ -120,8 +121,8 @@ export function StaffConfidenceIndicatorCard() {
             </p>
             <div className="space-y-1">
               {staff_profiles
-                .filter((p) => p.avg_wellbeing > 0)
-                .sort((a, b) => a.avg_wellbeing - b.avg_wellbeing)
+                .filter((p) => p.avg_wellbeing !== null)
+                .sort((a, b) => (a.avg_wellbeing ?? 0) - (b.avg_wellbeing ?? 0))
                 .slice(0, 5)
                 .map((profile) => (
                   <div key={profile.staff_id} className="flex items-center justify-between rounded border p-2 text-xs">
@@ -130,7 +131,7 @@ export function StaffConfidenceIndicatorCard() {
                       <span className="font-medium">{profile.staff_name}</span>
                       <span className="text-muted-foreground truncate">{profile.role}</span>
                     </div>
-                    <Badge variant="outline" className={cn("text-[10px] shrink-0", profile.avg_wellbeing >= 7 ? "text-green-700 bg-green-50 border-green-200" : profile.avg_wellbeing >= 5 ? "text-amber-700 bg-amber-50 border-amber-200" : "text-red-700 bg-red-50 border-red-200")}>
+                    <Badge variant="outline" className={cn("text-[10px] shrink-0", meets(profile.avg_wellbeing, 7) ? "text-green-700 bg-green-50 border-green-200" : meets(profile.avg_wellbeing, 5) ? "text-amber-700 bg-amber-50 border-amber-200" : "text-red-700 bg-red-50 border-red-200")}>
                       {profile.avg_wellbeing}/10
                     </Badge>
                   </div>

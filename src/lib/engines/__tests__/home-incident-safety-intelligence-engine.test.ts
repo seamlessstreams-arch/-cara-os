@@ -545,39 +545,48 @@ describe("Home Incident Safety Intelligence Engine", () => {
     expect(r.incident_safety_score).toBeGreaterThanOrEqual(0);
   });
 
-  it("handles no body-map-required incidents gracefully", () => {
+  it("reports body map compliance as unmeasured when no incident required one", () => {
     const r = computeHomeIncidentSafety(baseInput({
       incidents: [
         makeIncident({ id: "i1", body_map_required: false }),
       ],
     }));
-    expect(r.incidents.body_map_compliance_rate).toBe(100);
+    expect(r.incidents.body_map_compliance_rate).toBeNull();
+    expect(r.strengths.some(s => s.includes("body map"))).toBe(false);
+    expect(r.concerns.some(c => c.includes("Body map"))).toBe(false);
   });
 
-  it("handles no closed incidents for lessons rate", () => {
+  it("reports lessons learned as unmeasured when nothing is closed", () => {
     const r = computeHomeIncidentSafety(baseInput({
       incidents: [
         makeIncident({ id: "i1", status: "open" }),
       ],
     }));
-    expect(r.incidents.lessons_learned_rate).toBe(100);
+    expect(r.incidents.lessons_learned_rate).toBeNull();
+    expect(r.strengths.some(s => s.includes("Lessons learned"))).toBe(false);
   });
 
-  it("handles no restraints gracefully for debrief rates", () => {
+  it("reports debrief rates as unmeasured when there are no restraints", () => {
     const r = computeHomeIncidentSafety(baseInput({
       restraints: [],
     }));
-    expect(r.restraints.child_debrief_rate).toBe(100);
-    expect(r.restraints.staff_debrief_rate).toBe(100);
+    expect(r.restraints.child_debrief_rate).toBeNull();
+    expect(r.restraints.staff_debrief_rate).toBeNull();
+    expect(r.restraints.body_map_rate).toBeNull();
     expect(r.restraints.avg_duration_minutes).toBeNull();
+    expect(r.strengths.some(s => s.includes("debrief compliance"))).toBe(false);
   });
 
   it("handles no handovers in 30 days", () => {
     const r = computeHomeIncidentSafety(baseInput({
       handovers: [],
     }));
-    expect(r.handovers.completion_rate).toBe(0);
+    expect(r.handovers.completion_rate).toBeNull();
+    expect(r.handovers.sign_off_rate).toBeNull();
+    expect(r.handovers.avg_flags_per_handover).toBeNull();
+    expect(r.handovers.incident_linked_rate).toBeNull();
     expect(r.handovers.total_30d).toBe(0);
+    expect(r.concerns.some(c => c.includes("Handover completion"))).toBe(false);
   });
 
   it("excludes future-dated incidents from counts", () => {

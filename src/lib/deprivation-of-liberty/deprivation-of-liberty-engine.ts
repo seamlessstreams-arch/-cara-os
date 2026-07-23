@@ -17,6 +17,8 @@
 // Pure deterministic engine — no AI, no external calls.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+
 // ── Type Definitions ─────────────────────────────────────────────────────────
 
 export type RestrictionType =
@@ -140,21 +142,23 @@ export interface AuthorisationComplianceResult {
   overallScore: number; // 0-30
   totalRestrictions: number;
   activeRestrictions: number;
-  authorisedRate: number;
+  // Rates are null when no restriction was recorded — nothing to authorise,
+  // which is not the same as everything having been authorised.
+  authorisedRate: number | null;
   pendingApplications: number;
   expiredAuthorisations: number;
-  bestInterestsRate: number;
-  leastRestrictiveRate: number;
-  riskAssessmentRate: number;
+  bestInterestsRate: number | null;
+  leastRestrictiveRate: number | null;
+  riskAssessmentRate: number | null;
 }
 
 export interface ProportionalityResult {
   overallScore: number; // 0-25
-  proportionateRate: number;
+  proportionateRate: number | null;
   disproportionateCount: number;
   notAssessedCount: number;
   restrictionTypeBreakdown: Record<RestrictionType, number>;
-  averageActiveDurationDays: number;
+  averageActiveDurationDays: number | null;
 }
 
 export interface ReviewSafeguardsResult {
@@ -162,23 +166,24 @@ export interface ReviewSafeguardsResult {
   totalReviews: number;
   reviewsOnTime: number;
   overdueReviews: number;
-  childViewsRate: number;
-  familyConsultedRate: number;
-  independentInvolvementRate: number;
-  proportionalityReassessedRate: number;
-  lessRestrictiveConsideredRate: number;
+  childViewsRate: number | null;
+  familyConsultedRate: number | null;
+  independentInvolvementRate: number | null;
+  proportionalityReassessedRate: number | null;
+  lessRestrictiveConsideredRate: number | null;
   reviewOutcomeBreakdown: Record<ReviewOutcome, number>;
 }
 
 export interface RightsProtectionResult {
   overallScore: number; // 0-20
-  safeguardCoverage: number; // % of children with all required safeguards
-  advocacyRate: number;
-  legalRepresentationRate: number;
-  rightsInformationRate: number;
-  familyNotificationRate: number;
-  ofstedNotificationRate: number;
-  courtOrderComplianceRate: number;
+  safeguardCoverage: number | null; // % of children with all required safeguards
+  advocacyRate: number | null;
+  legalRepresentationRate: number | null;
+  rightsInformationRate: number | null;
+  familyNotificationRate: number | null;
+  ofstedNotificationRate: number | null;
+  /** null = no court order is in place, so there is nothing to comply with. */
+  courtOrderComplianceRate: number | null;
 }
 
 export interface ChildDoLSProfile {
@@ -299,6 +304,25 @@ function pct(numerator: number, denominator: number): number {
   return Math.round((numerator / denominator) * 100);
 }
 
+/**
+ * Domain sub-score over the components that could actually be measured, with
+ * the remaining weights renormalised. Silence neither earns points nor
+ * forfeits them.
+ */
+function scaleToBand(
+  components: readonly { score: number | null; weight: number }[],
+  max: number,
+): number {
+  const proportion = weightedMeanOf(
+    components.map((c) => ({
+      score: c.score === null ? null : (c.score / c.weight) * 100,
+      weight: c.weight,
+    })),
+  );
+  if (proportion === null) return 0;
+  return Math.min(Math.round((proportion / 100) * max), max);
+}
+
 function daysBetween(a: string, b: string): number {
   return Math.abs(
     Math.floor(
@@ -333,12 +357,12 @@ export function evaluateAuthorisationCompliance(
       overallScore: 30,
       totalRestrictions: 0,
       activeRestrictions: 0,
-      authorisedRate: 100,
+      authorisedRate: null,
       pendingApplications: 0,
       expiredAuthorisations: 0,
-      bestInterestsRate: 100,
-      leastRestrictiveRate: 100,
-      riskAssessmentRate: 100,
+      bestInterestsRate: null,
+      leastRestrictiveRate: null,
+      riskAssessmentRate: null,
     };
   }
 
@@ -433,11 +457,11 @@ export function evaluateProportionality(
   if (restrictions.length === 0) {
     return {
       overallScore: 25,
-      proportionateRate: 100,
+      proportionateRate: null,
       disproportionateCount: 0,
       notAssessedCount: 0,
       restrictionTypeBreakdown: typeBreakdown,
-      averageActiveDurationDays: 0,
+      averageActiveDurationDays: null,
     };
   }
 
@@ -471,7 +495,7 @@ export function evaluateProportionality(
 
   // Average active restriction duration — shorter is better
   const activeRestrictions = restrictions.filter((r) => r.isActive);
-  let avgDuration = 0;
+  let avgDuration: number | null = null;
   if (activeRestrictions.length > 0) {
     const totalDays = activeRestrictions.reduce((sum, r) => {
       const end = r.endDate || periodEnd;
@@ -481,7 +505,7 @@ export function evaluateProportionality(
   }
 
   // +4 for avg duration ≤ 30 days, +2 for ≤ 90 days
-  if (activeRestrictions.length === 0 || avgDuration <= 30) score += 4;
+  if (avgDuration === null || avgDuration <= 30) score += 4;
   else if (avgDuration <= 90) score += 2;
 
   // +3 if no seclusion or chemical_restraint types
@@ -531,11 +555,11 @@ export function evaluateReviewSafeguards(
       totalReviews: 0,
       reviewsOnTime: 0,
       overdueReviews: 0,
-      childViewsRate: 100,
-      familyConsultedRate: 100,
-      independentInvolvementRate: 100,
-      proportionalityReassessedRate: 100,
-      lessRestrictiveConsideredRate: 100,
+      childViewsRate: null,
+      familyConsultedRate: null,
+      independentInvolvementRate: null,
+      proportionalityReassessedRate: null,
+      lessRestrictiveConsideredRate: null,
       reviewOutcomeBreakdown: outcomeBreakdown,
     };
   }
@@ -547,11 +571,11 @@ export function evaluateReviewSafeguards(
       totalReviews: 0,
       reviewsOnTime: 0,
       overdueReviews: activeRestrictions.length,
-      childViewsRate: 0,
-      familyConsultedRate: 0,
-      independentInvolvementRate: 0,
-      proportionalityReassessedRate: 0,
-      lessRestrictiveConsideredRate: 0,
+      childViewsRate: null,
+      familyConsultedRate: null,
+      independentInvolvementRate: null,
+      proportionalityReassessedRate: null,
+      lessRestrictiveConsideredRate: null,
       reviewOutcomeBreakdown: outcomeBreakdown,
     };
   }
@@ -657,13 +681,13 @@ export function evaluateRightsProtection(
   if (childrenWithRestrictions.length === 0) {
     return {
       overallScore: 20,
-      safeguardCoverage: 100,
-      advocacyRate: 100,
-      legalRepresentationRate: 100,
-      rightsInformationRate: 100,
-      familyNotificationRate: 100,
-      ofstedNotificationRate: 100,
-      courtOrderComplianceRate: 100,
+      safeguardCoverage: null,
+      advocacyRate: null,
+      legalRepresentationRate: null,
+      rightsInformationRate: null,
+      familyNotificationRate: null,
+      ofstedNotificationRate: null,
+      courtOrderComplianceRate: null,
     };
   }
 
@@ -731,28 +755,28 @@ export function evaluateRightsProtection(
   if (ofstedNotificationRate >= 90) score += 3;
   else if (ofstedNotificationRate >= 70) score += 2;
 
-  // Legal compliance — court orders
+  // Legal compliance — court orders. Null when no court order is in place:
+  // there is nothing to notify about, which is not the same as having notified.
   const childrenWithCourtOrders = legalCompliance.filter(
     (l) => l.courtOrderInPlace,
   );
-  const courtOrderComplianceRate =
-    childrenWithCourtOrders.length > 0
-      ? pct(
-          childrenWithCourtOrders.filter(
-            (l) => l.localAuthorityNotified && l.ofstedNotified,
-          ).length,
-          childrenWithCourtOrders.length,
-        )
-      : 100;
+  const courtOrderComplianceRate = rateOf(
+    childrenWithCourtOrders.filter(
+      (l) => l.localAuthorityNotified && l.ofstedNotified,
+    ),
+    childrenWithCourtOrders,
+  );
 
   // +3 for court order compliance
-  if (courtOrderComplianceRate >= 90) score += 3;
-  else if (courtOrderComplianceRate >= 70) score += 2;
+  let courtOrderPoints: number | null = null;
+  if (meets(courtOrderComplianceRate, 90)) courtOrderPoints = 3;
+  else if (meets(courtOrderComplianceRate, 70)) courtOrderPoints = 2;
+  else if (below(courtOrderComplianceRate, 70)) courtOrderPoints = 0;
 
   // +3 bonus if all children have legal representation where court order exists
-  const courtChildren = legalCompliance.filter((l) => l.courtOrderInPlace);
-  if (courtChildren.length > 0) {
-    const allHaveLegalRep = courtChildren.every((l) => {
+  let legalRepPoints: number | null = null;
+  if (childrenWithCourtOrders.length > 0) {
+    const allHaveLegalRep = childrenWithCourtOrders.every((l) => {
       const childSafeguards = safeguards.filter(
         (s) =>
           s.childId === l.childId &&
@@ -761,14 +785,18 @@ export function evaluateRightsProtection(
       );
       return childSafeguards.length > 0;
     });
-    if (allHaveLegalRep) score += 3;
-  } else {
-    // No court orders — bonus applies
-    score += 3;
+    legalRepPoints = allHaveLegalRep ? 3 : 0;
   }
 
   return {
-    overallScore: Math.min(score, 20),
+    overallScore: scaleToBand(
+      [
+        { score: score, weight: 14 },
+        { score: courtOrderPoints, weight: 3 },
+        { score: legalRepPoints, weight: 3 },
+      ],
+      20,
+    ),
     safeguardCoverage,
     advocacyRate,
     legalRepresentationRate,
@@ -887,19 +915,19 @@ function generateStrengths(
     );
   }
 
-  if (auth.authorisedRate >= 95 && auth.totalRestrictions > 0) {
+  if (meets(auth.authorisedRate, 95)) {
     strengths.push(
       "Excellent authorisation compliance — all restrictions properly authorised",
     );
   }
 
-  if (auth.bestInterestsRate >= 90 && auth.totalRestrictions > 0) {
+  if (meets(auth.bestInterestsRate, 90)) {
     strengths.push(
       "Best interests assessments completed for all restrictions",
     );
   }
 
-  if (prop.proportionateRate >= 90 && auth.totalRestrictions > 0) {
+  if (meets(prop.proportionateRate, 90)) {
     strengths.push(
       "High proportionality rate demonstrates careful consideration of necessity",
     );
@@ -909,32 +937,29 @@ function generateStrengths(
     strengths.push("No disproportionate restrictions identified");
   }
 
-  if (review.childViewsRate >= 90 && review.totalReviews > 0) {
+  if (meets(review.childViewsRate, 90)) {
     strengths.push(
       "Strong child participation — views obtained in the majority of reviews",
     );
   }
 
-  if (review.independentInvolvementRate >= 80 && review.totalReviews > 0) {
+  if (meets(review.independentInvolvementRate, 80)) {
     strengths.push(
       "Good independent oversight with external involvement in reviews",
     );
   }
 
-  if (rights.advocacyRate >= 90 && auth.totalRestrictions > 0) {
+  if (meets(rights.advocacyRate, 90)) {
     strengths.push("Advocacy in place for all children subject to restrictions");
   }
 
-  if (rights.safeguardCoverage >= 90 && auth.totalRestrictions > 0) {
+  if (meets(rights.safeguardCoverage, 90)) {
     strengths.push(
       "Comprehensive safeguards in place — children's rights well protected",
     );
   }
 
-  if (
-    review.lessRestrictiveConsideredRate >= 90 &&
-    review.totalReviews > 0
-  ) {
+  if (meets(review.lessRestrictiveConsideredRate, 90)) {
     strengths.push(
       "Less restrictive alternatives consistently explored at review — evidence of rights-based practice",
     );
@@ -957,15 +982,15 @@ function generateAreasForImprovement(
     );
   }
 
-  if (auth.authorisedRate < 90 && auth.totalRestrictions > 0) {
+  if (below(auth.authorisedRate, 90)) {
     areas.push(
-      `Authorisation compliance at ${auth.authorisedRate}% — below the 90% target`,
+      `Authorisation compliance at ${formatRate(auth.authorisedRate)} — below the 90% target`,
     );
   }
 
-  if (auth.bestInterestsRate < 90 && auth.totalRestrictions > 0) {
+  if (below(auth.bestInterestsRate, 90)) {
     areas.push(
-      `Best interests assessments completed for only ${auth.bestInterestsRate}% of restrictions`,
+      `Best interests assessments completed for only ${formatRate(auth.bestInterestsRate)} of restrictions`,
     );
   }
 
@@ -987,21 +1012,21 @@ function generateAreasForImprovement(
     );
   }
 
-  if (review.childViewsRate < 80 && review.totalReviews > 0) {
+  if (below(review.childViewsRate, 80)) {
     areas.push(
-      `Child views obtained in only ${review.childViewsRate}% of reviews — UNCRC Art 12 requires participation`,
+      `Child views obtained in only ${formatRate(review.childViewsRate)} of reviews — UNCRC Art 12 requires participation`,
     );
   }
 
-  if (rights.advocacyRate < 80 && auth.totalRestrictions > 0) {
+  if (below(rights.advocacyRate, 80)) {
     areas.push(
-      `Advocacy provision at ${rights.advocacyRate}% — all children subject to DoLS should have an advocate`,
+      `Advocacy provision at ${formatRate(rights.advocacyRate)} — all children subject to DoLS should have an advocate`,
     );
   }
 
-  if (rights.ofstedNotificationRate < 100 && auth.totalRestrictions > 0) {
+  if (below(rights.ofstedNotificationRate, 100)) {
     areas.push(
-      `Ofsted notification rate at ${rights.ofstedNotificationRate}% — Reg 40 requires notification of all restrictions`,
+      `Ofsted notification rate at ${formatRate(rights.ofstedNotificationRate)} — Reg 40 requires notification of all restrictions`,
     );
   }
 
@@ -1034,7 +1059,7 @@ function generateActions(
     );
   }
 
-  if (auth.bestInterestsRate < 100 && auth.totalRestrictions > 0) {
+  if (below(auth.bestInterestsRate, 100)) {
     actions.push(
       "Complete best interests assessments for all current restrictions",
     );
@@ -1046,34 +1071,31 @@ function generateActions(
     );
   }
 
-  if (review.childViewsRate < 90 && review.totalReviews > 0) {
+  if (below(review.childViewsRate, 90)) {
     actions.push(
       "Implement child participation strategy for DoLS reviews — ensure views are routinely sought",
     );
   }
 
-  if (rights.advocacyRate < 100 && auth.totalRestrictions > 0) {
+  if (below(rights.advocacyRate, 100)) {
     actions.push(
       "Arrange advocacy support for all children subject to deprivation of liberty",
     );
   }
 
-  if (review.familyConsultedRate < 80 && review.totalReviews > 0) {
+  if (below(review.familyConsultedRate, 80)) {
     actions.push(
       "Improve family consultation rates in DoLS reviews — families should be consulted unless contra-indicated",
     );
   }
 
-  if (rights.ofstedNotificationRate < 100 && auth.totalRestrictions > 0) {
+  if (below(rights.ofstedNotificationRate, 100)) {
     actions.push(
       "Ensure Ofsted is notified of all deprivation of liberty restrictions as required by Reg 40",
     );
   }
 
-  if (
-    auth.totalRestrictions > 0 &&
-    auth.leastRestrictiveRate < 100
-  ) {
+  if (below(auth.leastRestrictiveRate, 100)) {
     actions.push(
       "Document least restrictive alternative considerations for all restrictions",
     );

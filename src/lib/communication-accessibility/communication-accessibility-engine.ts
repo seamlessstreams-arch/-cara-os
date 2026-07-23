@@ -12,6 +12,8 @@
 // expression), Equality Act 2010
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export type CommunicationNeed =
@@ -70,7 +72,7 @@ export type TrainingType =
   | "eal_support"
   | "trauma_informed_communication";
 
-export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate" | "unmeasured";
 
 // ── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -123,49 +125,51 @@ export interface NeedsAssessmentResult {
   totalChildren: number;
   childrenWithNeeds: number;
   childrenAssessed: number;
-  assessmentRate: number;
+  assessmentRate: number | null;
   needsBreakdown: Record<string, number>;
   childrenWithCommunicationPassport: number;
-  passportRate: number;
+  passportRate: number | null;
   childrenNotAssessed: string[];
-  score: number;
+  score: number | null;
 }
 
 export interface SupportProvisionResult {
   totalRecommendations: number;
   totalInPlace: number;
-  supportMatchRate: number;
+  supportMatchRate: number | null;
   childrenWithFullSupport: number;
   childrenWithPartialSupport: number;
   childrenWithNoSupport: number;
-  speechTherapyAccessRate: number;
-  interpreterProvisionRate: number;
+  speechTherapyAccessRate: number | null;
+  interpreterProvisionRate: number | null;
   supportBreakdown: Record<string, number>;
   gaps: string[];
-  score: number;
+  score: number | null;
 }
 
 export interface AccessibleInformationResult {
   totalDocuments: number;
   documentsWithMultipleFormats: number;
-  multipleFormatRate: number;
+  multipleFormatRate: number | null;
   keyDocumentsCovered: number;
   totalKeyDocumentTypes: number;
+  // Denominator is the fixed list of statutory key documents, so this stays
+  // measurable even when nothing has been recorded — 0 of 6 is a finding.
   keyDocumentCoverageRate: number;
   formatBreakdown: Record<string, number>;
   missingDocumentTypes: string[];
-  score: number;
+  score: number | null;
 }
 
 export interface StaffTrainingResult {
   totalStaff: number;
   staffWithRelevantTraining: number;
-  trainingCoverageRate: number;
+  trainingCoverageRate: number | null;
   trainingTypeBreakdown: Record<string, number>;
   expiredTraining: number;
   expiringWithin90Days: number;
-  staffChildNeedsCoverage: number;
-  score: number;
+  staffChildNeedsCoverage: number | null;
+  score: number | null;
 }
 
 export interface ChildCommunicationSummary {
@@ -178,11 +182,11 @@ export interface ChildCommunicationSummary {
   engagementLevel?: EngagementLevel;
   supportsRecommended: SupportType[];
   supportsInPlace: SupportType[];
-  supportMatchRate: number;
+  supportMatchRate: number | null;
   hasCommunicationPassport: boolean;
   hasSpeechTherapyAccess: boolean;
   staffTrainedInNeeds: boolean;
-  overallScore: number;
+  overallScore: number | null;
   concerns: string[];
 }
 
@@ -191,7 +195,7 @@ export interface CommunicationAccessibilityIntelligenceResult {
   periodStart: string;
   periodEnd: string;
   referenceDate: string;
-  overallScore: number;
+  overallScore: number | null;
   rating: Rating;
   needsAssessment: NeedsAssessmentResult;
   supportProvision: SupportProvisionResult;
@@ -236,12 +240,12 @@ export function evaluateNeedsAssessment(
       totalChildren: 0,
       childrenWithNeeds: 0,
       childrenAssessed: 0,
-      assessmentRate: 0,
+      assessmentRate: null,
       needsBreakdown: {},
       childrenWithCommunicationPassport: 0,
-      passportRate: 0,
+      passportRate: null,
       childrenNotAssessed: [],
-      score: 0,
+      score: null,
     };
   }
 
@@ -253,7 +257,7 @@ export function evaluateNeedsAssessment(
   // Children assessed (have at least one assessment)
   const assessedChildIds = new Set(assessments.map((a) => a.childId));
   const childrenAssessed = childIds.filter((id) => assessedChildIds.has(id)).length;
-  const assessmentRate = Math.round((childrenAssessed / totalChildren) * 100);
+  const assessmentRate = rate(childrenAssessed, totalChildren);
 
   // Needs breakdown
   const needsBreakdown: Record<string, number> = {};
@@ -267,28 +271,25 @@ export function evaluateNeedsAssessment(
   const childrenWithCommunicationPassport = profiles.filter(
     (p) => p.communicationPassport,
   ).length;
-  const childrenWithNeedsCount = Math.max(childrenWithNeeds, 1);
-  const passportRate = childrenWithNeeds > 0
-    ? Math.round(
-        (childrenWithCommunicationPassport / childrenWithNeedsCount) * 100,
-      )
-    : 100; // No children with needs = full compliance
+  // Null when no child has a recorded communication need — that may mean no
+  // passport is required, or that no needs have been recorded at all.
+  const passportRate = rate(childrenWithCommunicationPassport, childrenWithNeeds);
 
   // Children not assessed
   const childrenNotAssessed = childIds.filter((id) => !assessedChildIds.has(id));
 
   // Score: assessment coverage (40%) + passport rate (30%) + needs identification depth (30%)
-  const assessmentNorm = assessmentRate / 100;
-  const passportNorm = passportRate / 100;
   // Needs identification: if there are children with needs, having them identified is positive
-  const needsIdentificationNorm =
-    totalChildren > 0 && childrenWithNeeds > 0
-      ? Math.min(childrenAssessed / childrenWithNeeds, 1)
-      : assessmentNorm; // fallback to assessment rate
+  const needsIdentification =
+    childrenWithNeeds > 0
+      ? Math.round(Math.min(childrenAssessed / childrenWithNeeds, 1) * 100)
+      : assessmentRate; // fallback to assessment rate
 
-  const score = Math.round(
-    (assessmentNorm * 0.4 + passportNorm * 0.3 + needsIdentificationNorm * 0.3) * 100,
-  );
+  const score = weightedMeanOf([
+    { score: assessmentRate, weight: 40 },
+    { score: passportRate, weight: 30 },
+    { score: needsIdentification, weight: 30 },
+  ]);
 
   return {
     totalChildren,
@@ -312,15 +313,15 @@ export function evaluateSupportProvision(
     return {
       totalRecommendations: 0,
       totalInPlace: 0,
-      supportMatchRate: 0,
+      supportMatchRate: null,
       childrenWithFullSupport: 0,
       childrenWithPartialSupport: 0,
       childrenWithNoSupport: 0,
-      speechTherapyAccessRate: 0,
-      interpreterProvisionRate: 0,
+      speechTherapyAccessRate: null,
+      interpreterProvisionRate: null,
       supportBreakdown: {},
       gaps: [],
-      score: 0,
+      score: null,
     };
   }
 
@@ -379,53 +380,39 @@ export function evaluateSupportProvision(
     }
   }
 
-  const supportMatchRate =
-    totalRecommendations > 0
-      ? Math.round((totalInPlace / totalRecommendations) * 100)
-      : 100;
+  const supportMatchRate = rate(totalInPlace, totalRecommendations);
 
   // Speech therapy access for children who need it
   const childrenNeedingSLT = profiles.filter((p) =>
     p.communicationNeeds.includes("speech_language"),
   );
-  const childrenWithSLTAccess = childrenNeedingSLT.filter(
-    (p) => p.speechTherapyAccess,
-  ).length;
-  const speechTherapyAccessRate =
-    childrenNeedingSLT.length > 0
-      ? Math.round((childrenWithSLTAccess / childrenNeedingSLT.length) * 100)
-      : 100;
+  const speechTherapyAccessRate = rateOf(
+    childrenNeedingSLT.filter((p) => p.speechTherapyAccess),
+    childrenNeedingSLT,
+  );
 
   // Interpreter provision for children who need it
   const childrenNeedingInterpreter = profiles.filter(
     (p) => p.interpreterRequired,
   );
-  const childrenWithInterpreter = childrenNeedingInterpreter.filter((p) =>
-    p.currentSupports.includes("interpreter") ||
-    p.currentSupports.includes("translation"),
-  ).length;
-  const interpreterProvisionRate =
-    childrenNeedingInterpreter.length > 0
-      ? Math.round(
-          (childrenWithInterpreter / childrenNeedingInterpreter.length) * 100,
-        )
-      : 100;
+  const interpreterProvisionRate = rateOf(
+    childrenNeedingInterpreter.filter(
+      (p) =>
+        p.currentSupports.includes("interpreter") ||
+        p.currentSupports.includes("translation"),
+    ),
+    childrenNeedingInterpreter,
+  );
 
   // Score: support match (35%) + SLT access (25%) + interpreter (20%) + full support rate (20%)
-  const matchNorm = supportMatchRate / 100;
-  const sltNorm = speechTherapyAccessRate / 100;
-  const interpreterNorm = interpreterProvisionRate / 100;
-  const assessedChildren = latestAssessmentByChild.size;
-  const fullSupportNorm =
-    assessedChildren > 0 ? fullSupport / assessedChildren : 0.5;
+  const fullSupportRate = rate(fullSupport, latestAssessmentByChild.size);
 
-  const score = Math.round(
-    (matchNorm * 0.35 +
-      sltNorm * 0.25 +
-      interpreterNorm * 0.2 +
-      fullSupportNorm * 0.2) *
-      100,
-  );
+  const score = weightedMeanOf([
+    { score: supportMatchRate, weight: 35 },
+    { score: speechTherapyAccessRate, weight: 25 },
+    { score: interpreterProvisionRate, weight: 20 },
+    { score: fullSupportRate, weight: 20 },
+  ]);
 
   return {
     totalRecommendations,
@@ -449,7 +436,7 @@ export function evaluateAccessibleInformation(
     return {
       totalDocuments: 0,
       documentsWithMultipleFormats: 0,
-      multipleFormatRate: 0,
+      multipleFormatRate: null,
       keyDocumentsCovered: 0,
       totalKeyDocumentTypes: KEY_DOCUMENT_TYPES.length,
       keyDocumentCoverageRate: 0,
@@ -466,9 +453,7 @@ export function evaluateAccessibleInformation(
       (d.formatsAvailable.length === 1 &&
         d.formatsAvailable[0] !== "standard"),
   ).length;
-  const multipleFormatRate = Math.round(
-    (docsWithMultipleFormats / documents.length) * 100,
-  );
+  const multipleFormatRate = rate(docsWithMultipleFormats, documents.length);
 
   // Key document type coverage
   const coveredTypes = new Set(documents.map((d) => d.documentType));
@@ -478,6 +463,7 @@ export function evaluateAccessibleInformation(
   const keyDocumentCoverageRate = Math.round(
     (keyDocumentsCovered / KEY_DOCUMENT_TYPES.length) * 100,
   );
+
 
   // Format breakdown
   const formatBreakdown: Record<string, number> = {};
@@ -493,8 +479,6 @@ export function evaluateAccessibleInformation(
   ).map(getDocumentTypeLabel);
 
   // Score: key doc coverage (40%) + multiple formats rate (35%) + format variety (25%)
-  const coverageNorm = keyDocumentCoverageRate / 100;
-  const multipleNorm = multipleFormatRate / 100;
   // Format variety: how many different accessible formats are available across docs
   const uniqueFormats = new Set<string>();
   for (const d of documents) {
@@ -503,11 +487,13 @@ export function evaluateAccessibleInformation(
     }
   }
   // 7 possible non-standard formats; variety score based on how many are used
-  const varietyNorm = Math.min(uniqueFormats.size / 4, 1); // 4+ formats = full score
+  const variety = Math.round(Math.min(uniqueFormats.size / 4, 1) * 100); // 4+ formats = full score
 
-  const score = Math.round(
-    (coverageNorm * 0.4 + multipleNorm * 0.35 + varietyNorm * 0.25) * 100,
-  );
+  const score = weightedMeanOf([
+    { score: keyDocumentCoverageRate, weight: 40 },
+    { score: multipleFormatRate, weight: 35 },
+    { score: variety, weight: 25 },
+  ]);
 
   return {
     totalDocuments: documents.length,
@@ -534,12 +520,12 @@ export function evaluateStaffTraining(
     return {
       totalStaff: 0,
       staffWithRelevantTraining: 0,
-      trainingCoverageRate: 0,
+      trainingCoverageRate: null,
       trainingTypeBreakdown: {},
       expiredTraining: 0,
       expiringWithin90Days: 0,
-      staffChildNeedsCoverage: 0,
-      score: 0,
+      staffChildNeedsCoverage: null,
+      score: null,
     };
   }
 
@@ -575,9 +561,7 @@ export function evaluateStaffTraining(
   }
 
   const staffWithRelevantTraining = staffWithTraining.size;
-  const trainingCoverageRate = Math.round(
-    (staffWithRelevantTraining / totalStaff) * 100,
-  );
+  const trainingCoverageRate = rate(staffWithRelevantTraining, totalStaff);
 
   // Staff-child needs coverage: do staff have training matching children's needs?
   const neededTrainingTypes = new Set<TrainingType>();
@@ -596,29 +580,29 @@ export function evaluateStaffTraining(
     coveredTrainingTypes.add(t.trainingType);
   }
 
-  const staffChildNeedsCoverage =
-    neededTrainingTypes.size > 0
-      ? Math.round(
-          ([...neededTrainingTypes].filter((t) => coveredTrainingTypes.has(t))
-            .length /
-            neededTrainingTypes.size) *
-            100,
-        )
-      : 100; // No specific needs = full coverage
+  // Null when no child has a recorded need that maps to a training type — there
+  // is nothing for staff training to have to cover.
+  const staffChildNeedsCoverage = rate(
+    [...neededTrainingTypes].filter((t) => coveredTrainingTypes.has(t)).length,
+    neededTrainingTypes.size,
+  );
 
   // Score: coverage rate (40%) + needs matching (35%) + training currency (25%)
-  const coverageNorm = trainingCoverageRate / 100;
-  const needsNorm = staffChildNeedsCoverage / 100;
-  // Training currency: penalise for expired/expiring
+  // Training currency: penalise for expired/expiring. Nothing to date when
+  // there are no training records at all.
   const totalTrainingRecords = training.length;
-  const currencyNorm =
+  const currency =
     totalTrainingRecords > 0
-      ? Math.max(0, 1 - (expiredCount + expiringCount * 0.5) / totalTrainingRecords)
-      : 0;
+      ? Math.round(
+          Math.max(0, 1 - (expiredCount + expiringCount * 0.5) / totalTrainingRecords) * 100,
+        )
+      : null;
 
-  const score = Math.round(
-    (coverageNorm * 0.4 + needsNorm * 0.35 + currencyNorm * 0.25) * 100,
-  );
+  const score = weightedMeanOf([
+    { score: trainingCoverageRate, weight: 40 },
+    { score: staffChildNeedsCoverage, weight: 35 },
+    { score: currency, weight: 25 },
+  ]);
 
   return {
     totalStaff,
@@ -656,15 +640,11 @@ export function buildChildCommunicationSummaries(
     const supportsRecommended = latestAssessment?.supportsRecommended || [];
     const supportsInPlace = latestAssessment?.supportsInPlace || [];
 
-    // Support match rate for this child
-    const supportMatchRate =
-      supportsRecommended.length > 0
-        ? Math.round(
-            (supportsRecommended.filter((r) => supportsInPlace.includes(r)).length /
-              supportsRecommended.length) *
-              100,
-          )
-        : 100;
+    // Support match rate for this child — null when nothing was recommended
+    const supportMatchRate = rateOf(
+      supportsRecommended.filter((r) => supportsInPlace.includes(r)),
+      supportsRecommended,
+    );
 
     const hasCommunicationPassport = profile?.communicationPassport || false;
     const hasSpeechTherapyAccess = profile?.speechTherapyAccess || false;
@@ -687,7 +667,7 @@ export function buildChildCommunicationSummaries(
     if (!staffTrainedInNeeds && communicationNeeds.length > 0) {
       concerns.push("Staff not trained in this child's specific communication needs");
     }
-    if (supportMatchRate < 50 && supportsRecommended.length > 0) {
+    if (below(supportMatchRate, 50)) {
       concerns.push("Fewer than half of recommended supports are in place");
     }
     if (
@@ -699,46 +679,43 @@ export function buildChildCommunicationSummaries(
       );
     }
 
-    // Overall score for child
-    const assessedScore = assessed ? 20 : 0;
-    const passportScore = (() => {
-      if (communicationNeeds.length === 0) return 15;
-      return hasCommunicationPassport ? 15 : 0;
-    })();
-    const supportScore = (() => {
-      if (supportsRecommended.length === 0) return 30;
-      return Math.round((supportMatchRate / 100) * 30);
-    })();
-    const sltScore = (() => {
-      if (!communicationNeeds.includes("speech_language")) return 15;
-      return hasSpeechTherapyAccess ? 15 : 0;
-    })();
-    const staffScore = (() => {
-      if (communicationNeeds.length === 0) return 10;
-      return staffTrainedInNeeds ? 10 : 0;
-    })();
+    // Overall score for child. Dimensions that do not apply to this child —
+    // no recorded needs, nothing recommended, no assessment to read engagement
+    // from — drop out rather than being awarded full marks.
+    const passportScore = communicationNeeds.length === 0
+      ? null
+      : hasCommunicationPassport ? 100 : 0;
+    const sltScore = !communicationNeeds.includes("speech_language")
+      ? null
+      : hasSpeechTherapyAccess ? 100 : 0;
+    const staffScore = communicationNeeds.length === 0
+      ? null
+      : staffTrainedInNeeds ? 100 : 0;
     const engagementScore = (() => {
-      if (!engagementLevel) return 5;
       switch (engagementLevel) {
         case "fully_engaged":
-          return 10;
+          return 100;
         case "partially_engaged":
-          return 7;
+          return 70;
         case "minimally_engaged":
-          return 3;
+          return 30;
         case "not_engaged":
           return 0;
         case "unable_to_assess":
-          return 5;
+          return 50;
         default:
-          return 5;
+          return null;
       }
     })();
 
-    const overallScore = Math.min(
-      100,
-      assessedScore + passportScore + supportScore + sltScore + staffScore + engagementScore,
-    );
+    const overallScore = weightedMeanOf([
+      { score: assessed ? 100 : 0, weight: 20 },
+      { score: passportScore, weight: 15 },
+      { score: supportMatchRate, weight: 30 },
+      { score: sltScore, weight: 15 },
+      { score: staffScore, weight: 10 },
+      { score: engagementScore, weight: 10 },
+    ]);
 
     return {
       childId,
@@ -792,22 +769,25 @@ export function generateCommunicationAccessibilityIntelligence(
     childNames,
   );
 
-  // Weighted scoring: needs(25) + support(30) + info(25) + training(20) = 100
-  const overallScore = Math.round(
-    (needsResult.score * WEIGHTS.needsAssessment) / 100 +
-      (supportResult.score * WEIGHTS.supportProvision) / 100 +
-      (infoResult.score * WEIGHTS.accessibleInformation) / 100 +
-      (trainingResult.score * WEIGHTS.staffTraining) / 100,
-  );
+  // Weighted scoring: needs(25) + support(30) + info(25) + training(20) = 100,
+  // renormalised over whichever areas have something to measure.
+  const overallScore = weightedMeanOf([
+    { score: needsResult.score, weight: WEIGHTS.needsAssessment },
+    { score: supportResult.score, weight: WEIGHTS.supportProvision },
+    { score: infoResult.score, weight: WEIGHTS.accessibleInformation },
+    { score: trainingResult.score, weight: WEIGHTS.staffTraining },
+  ]);
 
   const rating: Rating =
-    overallScore >= 80
-      ? "outstanding"
-      : overallScore >= 60
-        ? "good"
-        : overallScore >= 40
-          ? "requires_improvement"
-          : "inadequate";
+    overallScore === null
+      ? "unmeasured"
+      : overallScore >= 80
+        ? "outstanding"
+        : overallScore >= 60
+          ? "good"
+          : overallScore >= 40
+            ? "requires_improvement"
+            : "inadequate";
 
   // Generate insights
   const strengths: string[] = [];
@@ -815,47 +795,47 @@ export function generateCommunicationAccessibilityIntelligence(
   const actions: string[] = [];
 
   // Strengths
-  if (needsResult.score >= 80) {
+  if (meets(needsResult.score, 80)) {
     strengths.push(
       "Comprehensive communication needs assessments are in place for all children with identified needs",
     );
   }
-  if (supportResult.score >= 80) {
+  if (meets(supportResult.score, 80)) {
     strengths.push(
       "Excellent provision of communication support with recommended interventions consistently in place",
     );
   }
-  if (infoResult.score >= 80) {
+  if (meets(infoResult.score, 80)) {
     strengths.push(
       "Key documents are available in multiple accessible formats meeting diverse communication needs",
     );
   }
-  if (trainingResult.score >= 80) {
+  if (meets(trainingResult.score, 80)) {
     strengths.push(
       "Staff are well-trained in communication approaches relevant to the children in their care",
     );
   }
-  if (needsResult.assessmentRate === 100) {
+  if (meets(needsResult.assessmentRate, 100)) {
     strengths.push(
       "All children have had their communication needs formally assessed",
     );
   }
-  if (needsResult.passportRate === 100 && needsResult.childrenWithNeeds > 0) {
+  if (meets(needsResult.passportRate, 100) && needsResult.childrenWithNeeds > 0) {
     strengths.push(
       "All children with communication needs have a communication passport in place",
     );
   }
-  if (supportResult.speechTherapyAccessRate === 100 && profiles.some((p) => p.communicationNeeds.includes("speech_language"))) {
+  if (meets(supportResult.speechTherapyAccessRate, 100) && profiles.some((p) => p.communicationNeeds.includes("speech_language"))) {
     strengths.push(
       "All children with speech and language needs have access to speech and language therapy",
     );
   }
-  if (supportResult.interpreterProvisionRate === 100 && profiles.some((p) => p.interpreterRequired)) {
+  if (meets(supportResult.interpreterProvisionRate, 100) && profiles.some((p) => p.interpreterRequired)) {
     strengths.push(
       "Interpreter provision is in place for all children requiring it",
     );
   }
-  if (trainingResult.staffChildNeedsCoverage === 100 && trainingResult.totalStaff > 0) {
+  if (meets(trainingResult.staffChildNeedsCoverage, 100) && trainingResult.totalStaff > 0) {
     strengths.push(
       "Staff training covers all communication approaches required for the children currently in placement",
     );
@@ -867,7 +847,7 @@ export function generateCommunicationAccessibilityIntelligence(
       `${needsResult.childrenNotAssessed.length} child(ren) have not had a formal communication needs assessment`,
     );
   }
-  if (needsResult.passportRate < 100 && needsResult.childrenWithNeeds > 0) {
+  if (below(needsResult.passportRate, 100) && needsResult.childrenWithNeeds > 0) {
     const missing =
       needsResult.childrenWithNeeds -
       needsResult.childrenWithCommunicationPassport;
@@ -880,12 +860,12 @@ export function generateCommunicationAccessibilityIntelligence(
       `Support gaps identified: ${supportResult.gaps.length} child(ren) are missing recommended communication supports`,
     );
   }
-  if (supportResult.speechTherapyAccessRate < 100 && profiles.some((p) => p.communicationNeeds.includes("speech_language"))) {
+  if (below(supportResult.speechTherapyAccessRate, 100) && profiles.some((p) => p.communicationNeeds.includes("speech_language"))) {
     areasForImprovement.push(
       "Not all children with speech and language needs have access to speech and language therapy",
     );
   }
-  if (supportResult.interpreterProvisionRate < 100 && profiles.some((p) => p.interpreterRequired)) {
+  if (below(supportResult.interpreterProvisionRate, 100) && profiles.some((p) => p.interpreterRequired)) {
     areasForImprovement.push(
       "Interpreter provision is not in place for all children requiring it",
     );
@@ -895,14 +875,14 @@ export function generateCommunicationAccessibilityIntelligence(
       `Key documents not available in accessible formats: ${infoResult.missingDocumentTypes.join(", ")}`,
     );
   }
-  if (infoResult.multipleFormatRate < 80) {
+  if (below(infoResult.multipleFormatRate, 80)) {
     areasForImprovement.push(
       "Most documents are not available in multiple accessible formats",
     );
   }
-  if (trainingResult.trainingCoverageRate < 80) {
+  if (below(trainingResult.trainingCoverageRate, 80)) {
     areasForImprovement.push(
-      `Only ${trainingResult.trainingCoverageRate}% of staff have relevant communication training`,
+      `Only ${formatRate(trainingResult.trainingCoverageRate)} of staff have relevant communication training`,
     );
   }
   if (trainingResult.expiredTraining > 0) {
@@ -910,7 +890,7 @@ export function generateCommunicationAccessibilityIntelligence(
       `${trainingResult.expiredTraining} staff training record(s) have expired and need renewal`,
     );
   }
-  if (trainingResult.staffChildNeedsCoverage < 100 && trainingResult.totalStaff > 0) {
+  if (below(trainingResult.staffChildNeedsCoverage, 100) && trainingResult.totalStaff > 0) {
     areasForImprovement.push(
       "Staff training does not cover all communication approaches required for current children",
     );
@@ -922,7 +902,7 @@ export function generateCommunicationAccessibilityIntelligence(
       "Complete communication needs assessments for all children who have not yet been assessed",
     );
   }
-  if (needsResult.passportRate < 100 && needsResult.childrenWithNeeds > 0) {
+  if (below(needsResult.passportRate, 100) && needsResult.childrenWithNeeds > 0) {
     actions.push(
       "Develop communication passports for all children with identified communication needs",
     );
@@ -932,12 +912,12 @@ export function generateCommunicationAccessibilityIntelligence(
       "Address identified support gaps by arranging recommended communication supports for each child",
     );
   }
-  if (supportResult.speechTherapyAccessRate < 100 && profiles.some((p) => p.communicationNeeds.includes("speech_language"))) {
+  if (below(supportResult.speechTherapyAccessRate, 100) && profiles.some((p) => p.communicationNeeds.includes("speech_language"))) {
     actions.push(
       "Refer children with speech and language needs to SLT services where access is not currently in place",
     );
   }
-  if (supportResult.interpreterProvisionRate < 100 && profiles.some((p) => p.interpreterRequired)) {
+  if (below(supportResult.interpreterProvisionRate, 100) && profiles.some((p) => p.interpreterRequired)) {
     actions.push(
       "Arrange interpreter or translation services for all children identified as requiring them",
     );
@@ -947,12 +927,12 @@ export function generateCommunicationAccessibilityIntelligence(
       "Produce accessible versions of all key documents including children's guide, complaints procedure, and house rules",
     );
   }
-  if (infoResult.multipleFormatRate < 80) {
+  if (below(infoResult.multipleFormatRate, 80)) {
     actions.push(
       "Create additional accessible formats (easy read, pictorial, translated, audio) for key documents",
     );
   }
-  if (trainingResult.trainingCoverageRate < 80) {
+  if (below(trainingResult.trainingCoverageRate, 80)) {
     actions.push(
       "Arrange communication training for staff who have not yet completed relevant courses",
     );
@@ -962,7 +942,7 @@ export function generateCommunicationAccessibilityIntelligence(
       "Renew expired staff communication training to maintain competency",
     );
   }
-  if (trainingResult.staffChildNeedsCoverage < 100 && trainingResult.totalStaff > 0) {
+  if (below(trainingResult.staffChildNeedsCoverage, 100) && trainingResult.totalStaff > 0) {
     actions.push(
       "Deliver targeted training to ensure staff are equipped for the specific communication needs of children in placement",
     );
@@ -1101,6 +1081,7 @@ export function getRatingLabel(rating: Rating): string {
     good: "Good",
     requires_improvement: "Requires Improvement",
     inadequate: "Inadequate",
+    unmeasured: "Not Yet Measured",
   };
   return labels[rating] || rating;
 }

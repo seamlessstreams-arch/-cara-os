@@ -5,6 +5,8 @@
 // Pure deterministic engine. CHR 2015 Reg 7/10/33/34.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets } from "@/lib/metrics/rate";
+
 export interface ChildWellbeingSnapshot {
   child_id: string;
   // Health domain
@@ -19,7 +21,7 @@ export interface ChildWellbeingSnapshot {
   // Sleep domain
   avg_sleep_hours: number; sleep_disruptions_7d: number;
   // Nutrition domain
-  meals_eaten_rate: number; // 0-100
+  meals_eaten_rate: number | null; // 0-100; null = no meals recorded
   dietary_needs_met: boolean;
   // Education
   attendance_rate: number; // 0-100
@@ -128,16 +130,21 @@ function scoreChild(c: ChildWellbeingSnapshot): { score: number; risks: string[]
   else sleepScore += 1;
   score += Math.min(sleepScore, 15);
 
-  // Nutrition (0-10)
-  max += 10;
+  // Nutrition (0-10, or 0-4 when no meals are recorded — the meal component is
+  // dropped from the denominator rather than scored on a fabricated rate)
+  const mealsMeasured = typeof c.meals_eaten_rate === "number";
+  const nutMax = mealsMeasured ? 10 : 4;
+  max += nutMax;
   let nutScore = 0;
-  if (c.meals_eaten_rate >= 90) nutScore += 6;
-  else if (c.meals_eaten_rate >= 70) nutScore += 4;
-  else if (c.meals_eaten_rate >= 50) nutScore += 2;
-  else { nutScore += 0; risks.push("nutrition"); }
+  if (mealsMeasured) {
+    if (meets(c.meals_eaten_rate, 90)) nutScore += 6;
+    else if (meets(c.meals_eaten_rate, 70)) nutScore += 4;
+    else if (meets(c.meals_eaten_rate, 50)) nutScore += 2;
+    else { nutScore += 0; risks.push("nutrition"); }
+  }
   if (c.dietary_needs_met) nutScore += 4;
   else risks.push("nutrition");
-  score += Math.min(nutScore, 10);
+  score += Math.min(nutScore, nutMax);
 
   // Education (0-10)
   max += 10;

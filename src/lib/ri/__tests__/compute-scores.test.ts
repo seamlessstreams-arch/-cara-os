@@ -261,43 +261,44 @@ describe("computeRiScores", () => {
       ];
       for (const key of keys) {
         expect(scores).toHaveProperty(key);
-        expect(typeof scores[key]).toBe("number");
+        const v = scores[key];
+        expect(v === null || typeof v === "number").toBe(true);
       }
     });
 
-    it("produces default medication governance score of 78 with no audits", () => {
+    it("leaves medication governance unmeasured with no audits", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.medication_governance_score).toBe(78);
+      expect(scores.medication_governance_score).toBeNull();
     });
 
-    it("produces default building safety score of 82 with no safety audits", () => {
+    it("leaves building safety unmeasured with no safety audits", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.building_safety_score).toBe(82);
+      expect(scores.building_safety_score).toBeNull();
     });
 
-    it("produces default care planning score of 76 with no forms", () => {
+    it("leaves care planning unmeasured with no forms", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.care_planning_score).toBe(76);
+      expect(scores.care_planning_score).toBeNull();
     });
 
-    it("produces default child voice score of 68 with no logs", () => {
+    it("leaves child voice unmeasured with no logs", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.child_voice_score).toBe(68);
+      expect(scores.child_voice_score).toBeNull();
     });
 
-    it("produces default recruitment compliance score of 85 with no candidates", () => {
+    it("leaves recruitment compliance unmeasured with no candidates", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.recruitment_compliance_score).toBe(85);
+      expect(scores.recruitment_compliance_score).toBeNull();
     });
 
-    it("produces default outcome evidence score of 70 with no logs and no ypCount", () => {
+    it("leaves outcome evidence unmeasured with no logs and no ypCount", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.outcome_evidence_score).toBe(70);
+      expect(scores.outcome_evidence_score).toBeNull();
     });
 
-    it("produces reg45 score of 40 with no reg45 items", () => {
+    it("leaves reg45 unmeasured with no reg45 items", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.reg45_compliance_score).toBe(40);
+      expect(scores.reg45_compliance_score).toBeNull();
     });
 
     it("produces challenge log score of 40 minimum when there are no challenges", () => {
@@ -664,9 +665,9 @@ describe("computeRiScores", () => {
       expect(scores.reg45_compliance_score).toBe(45);
     });
 
-    it("scores 40 for no reg45 items", () => {
+    it("is unmeasured for no reg45 items", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.reg45_compliance_score).toBe(40);
+      expect(scores.reg45_compliance_score).toBeNull();
     });
 
     it("uses only the first reg45 item", () => {
@@ -733,9 +734,9 @@ describe("computeRiScores", () => {
   // ── Medication governance ─────────────────────────────────────────────────
 
   describe("medication governance", () => {
-    it("defaults to 78 with no medication audits", () => {
+    it("is unmeasured with no medication audits", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.medication_governance_score).toBe(78);
+      expect(scores.medication_governance_score).toBeNull();
     });
 
     it("computes from medication audit scores", () => {
@@ -782,9 +783,9 @@ describe("computeRiScores", () => {
   // ── Building safety ───────────────────────────────────────────────────────
 
   describe("building safety", () => {
-    it("defaults to 82 with no safety audits", () => {
+    it("is unmeasured with no safety audits", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.building_safety_score).toBe(82);
+      expect(scores.building_safety_score).toBeNull();
     });
 
     it("computes from building_safety category audits", () => {
@@ -839,7 +840,7 @@ describe("computeRiScores", () => {
         makeAudit({ id: "bs-1", category: "medication", score: 40, max_score: 100 }),
       ];
       const scores = computeRiScores(inputs);
-      expect(scores.building_safety_score).toBe(82); // default
+      expect(scores.building_safety_score).toBeNull(); // nothing safety-related audited
     });
   });
 
@@ -873,9 +874,9 @@ describe("computeRiScores", () => {
   // ── Care planning ─────────────────────────────────────────────────────────
 
   describe("care planning", () => {
-    it("defaults to 76 with no care forms", () => {
+    it("is unmeasured with no care forms", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.care_planning_score).toBe(76);
+      expect(scores.care_planning_score).toBeNull();
     });
 
     it("scores high when all forms are approved", () => {
@@ -961,16 +962,23 @@ describe("computeRiScores", () => {
   // ── Child voice ───────────────────────────────────────────────────────────
 
   describe("child voice", () => {
-    it("defaults to 68 with no daily logs", () => {
+    it("is unmeasured with no daily logs", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.child_voice_score).toBe(68);
+      expect(scores.child_voice_score).toBeNull();
     });
 
-    it("defaults to 68 with empty daily logs array", () => {
+    it("is unmeasured with empty daily logs array", () => {
       const inputs = emptyInputs();
       inputs.dailyLogs = [];
       const scores = computeRiScores(inputs);
-      expect(scores.child_voice_score).toBe(68);
+      expect(scores.child_voice_score).toBeNull();
+    });
+
+    it("is unmeasured when there is no resident count to measure coverage against", () => {
+      const inputs = emptyInputs();
+      inputs.dailyLogs = [makeDailyLog()];
+      const scores = computeRiScores(inputs);
+      expect(scores.child_voice_score).toBeNull();
     });
 
     it("computes from recent logs, coverage, and mood scores", () => {
@@ -1098,9 +1106,9 @@ describe("computeRiScores", () => {
   // ── Recruitment compliance ────────────────────────────────────────────────
 
   describe("recruitment compliance", () => {
-    it("defaults to 85 with no active candidates", () => {
+    it("is unmeasured with no active candidates", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.recruitment_compliance_score).toBe(85);
+      expect(scores.recruitment_compliance_score).toBeNull();
     });
 
     it("computes average compliance score from candidates", () => {
@@ -1135,17 +1143,17 @@ describe("computeRiScores", () => {
   // ── Outcome evidence ──────────────────────────────────────────────────────
 
   describe("outcome evidence", () => {
-    it("defaults to 70 with no logs", () => {
+    it("is unmeasured with no logs", () => {
       const scores = computeRiScores(emptyInputs());
-      expect(scores.outcome_evidence_score).toBe(70);
+      expect(scores.outcome_evidence_score).toBeNull();
     });
 
-    it("defaults to 70 when ypCount is 0", () => {
+    it("is unmeasured when ypCount is 0", () => {
       const inputs = emptyInputs();
       inputs.dailyLogs = [makeDailyLog()];
       inputs.ypCount = 0;
       const scores = computeRiScores(inputs);
-      expect(scores.outcome_evidence_score).toBe(70);
+      expect(scores.outcome_evidence_score).toBeNull();
     });
 
     it("computes from log volume and significant entries", () => {
@@ -1246,7 +1254,7 @@ describe("computeRiScores", () => {
       const goodScores = computeRiScores(goodInputs);
       const badScores = computeRiScores(badInputs);
 
-      expect(goodScores.overall_governance_score).toBeGreaterThan(badScores.overall_governance_score);
+      expect(goodScores.overall_governance_score ?? 0).toBeGreaterThan(badScores.overall_governance_score ?? 0);
     });
 
     it("gives safeguarding the highest weight (2.0)", () => {
@@ -1260,7 +1268,7 @@ describe("computeRiScores", () => {
 
       // Safeguarding has weight 2.0, total weights = 18.5
       // Drop in safeguarding = 15, contribution to overall = 15 * 2.0 / 18.5 ≈ 1.62
-      const overallDrop = baseline.overall_governance_score - safeguardingScores.overall_governance_score;
+      const overallDrop = (baseline.overall_governance_score ?? 0) - (safeguardingScores.overall_governance_score ?? 0);
       expect(overallDrop).toBeGreaterThan(1);
     });
   });
@@ -1277,7 +1285,7 @@ describe("computeRiScores", () => {
       ];
       const scores = computeRiScores(inputs);
       for (const [, value] of Object.entries(scores)) {
-        expect(Number.isInteger(value)).toBe(true);
+        expect(value === null || Number.isInteger(value)).toBe(true);
       }
     });
 
@@ -1287,6 +1295,7 @@ describe("computeRiScores", () => {
       inputs.activeCandidates = [{ compliance_score: 100 }]; // 100
       const scores = computeRiScores(inputs);
       for (const [, value] of Object.entries(scores)) {
+        if (value === null) continue;
         expect(value).toBeLessThanOrEqual(100);
       }
     });
@@ -1312,7 +1321,7 @@ describe("computeRiScores", () => {
       expect(scores.safeguarding_oversight_score).toBeGreaterThanOrEqual(45);
       expect(scores.incident_management_score).toBeGreaterThanOrEqual(40);
       expect(scores.staff_supervision_score).toBeGreaterThanOrEqual(40);
-      expect(scores.training_compliance_score).toBeGreaterThanOrEqual(30);
+      expect(scores.training_compliance_score).toBeNull(); // no mandatory records to measure
       expect(scores.challenge_log_score).toBeGreaterThanOrEqual(40);
       expect(scores.oversight_quality_score).toBeGreaterThanOrEqual(45);
       expect(scores.missing_episodes_score).toBeGreaterThanOrEqual(40);

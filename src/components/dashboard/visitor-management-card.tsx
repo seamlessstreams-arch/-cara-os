@@ -15,6 +15,7 @@ import {
   Shield, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useVisitorsIntelligence } from "@/hooks/use-visitors-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -100,13 +101,13 @@ export function VisitorManagementCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.dbs_compliance_rate === 100 ? "bg-green-50" : o.dbs_compliance_rate >= 90 ? "bg-amber-50" : "bg-red-50",
+            o.dbs_compliance_rate === null ? "bg-muted" : meets(o.dbs_compliance_rate, 100) ? "bg-green-50" : meets(o.dbs_compliance_rate, 90) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.dbs_compliance_rate === 100 ? "text-[--cs-success]" : o.dbs_compliance_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.dbs_compliance_rate === null ? "text-muted-foreground" : meets(o.dbs_compliance_rate, 100) ? "text-[--cs-success]" : meets(o.dbs_compliance_rate, 90) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.dbs_compliance_rate}%
+              {formatRate(o.dbs_compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">DBS</p>
           </div>

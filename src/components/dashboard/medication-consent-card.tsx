@@ -15,6 +15,7 @@ import {
   Loader2, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useMedicationIntelligence } from "@/hooks/use-medication-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -37,6 +38,7 @@ const COMPLIANCE_STYLES: Record<string, { bg: string; text: string }> = {
   good: { bg: "bg-blue-100", text: "text-blue-700" },
   concerns: { bg: "bg-amber-100", text: "text-amber-700" },
   critical: { bg: "bg-red-100", text: "text-red-700" },
+  not_measured: { bg: "bg-gray-100", text: "text-gray-600" },
 };
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -84,9 +86,9 @@ export function MedicationConsentCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", o.adherence_rate >= 95 ? "bg-green-50" : o.adherence_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.adherence_rate >= 95 ? "text-[--cs-success]" : o.adherence_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.adherence_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.adherence_rate === null ? "bg-gray-50" : meets(o.adherence_rate, 95) ? "bg-green-50" : meets(o.adherence_rate, 80) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.adherence_rate === null ? "text-muted-foreground" : meets(o.adherence_rate, 95) ? "text-[--cs-success]" : meets(o.adherence_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(o.adherence_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Adherence</p>
           </div>
@@ -98,9 +100,9 @@ export function MedicationConsentCard() {
             <p className="text-lg font-bold tabular-nums text-purple-600">{childrenOnMeds}</p>
             <p className="text-[10px] text-muted-foreground">Children</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.witnessing_rate >= 95 ? "bg-green-50" : o.witnessing_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.witnessing_rate >= 95 ? "text-[--cs-success]" : o.witnessing_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.witnessing_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.witnessing_rate === null ? "bg-gray-50" : meets(o.witnessing_rate, 95) ? "bg-green-50" : meets(o.witnessing_rate, 80) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.witnessing_rate === null ? "text-muted-foreground" : meets(o.witnessing_rate, 95) ? "text-[--cs-success]" : meets(o.witnessing_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(o.witnessing_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Witnessed</p>
           </div>
@@ -126,11 +128,13 @@ export function MedicationConsentCard() {
                       </span>
                     </div>
                     <Badge className={cn("text-[10px]", cStyle.bg, cStyle.text)}>
-                      {profile.compliance_status}
+                      {profile.compliance_status === "not_measured" ? "no records yet" : profile.compliance_status}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-muted-foreground">
-                    <span className="text-[10px]">{profile.adherence_rate}% adherence</span>
+                    <span className="text-[10px]">
+                      {profile.adherence_rate === null ? "No doses recorded (30d)" : `${profile.adherence_rate}% adherence`}
+                    </span>
                     {profile.refusal_count_30d > 0 && (
                       <Badge className="text-[9px] bg-[--cs-warning-bg] text-[--cs-warning]">
                         {profile.refusal_count_30d} refused

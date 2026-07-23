@@ -10,6 +10,8 @@
 // in developing its workforce?" and "Are staff competent and well supported?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type AppraisalType =
@@ -133,16 +135,16 @@ export interface DevelopmentOverview {
   appraisals_completed: number;
   appraisals_overdue: number;
   appraisals_scheduled: number;
-  appraisal_completion_rate: number; // pct of active staff with a completed appraisal
-  avg_competency_readiness: number; // avg across all profiles
+  appraisal_completion_rate: number | null; // pct of active staff with a completed appraisal; null = no active staff
+  avg_competency_readiness: number | null; // avg across all profiles; null = no profiles
   qualifications_in_progress: number;
   qualifications_not_started: number;
   qualifications_expiring_soon: number; // within 90 days
-  mandatory_qual_compliance_rate: number;
+  mandatory_qual_compliance_rate: number | null; // null = no mandatory qualifications recorded
   inductions_in_progress: number;
   inductions_complete: number;
   development_plans_active: number;
-  development_plan_progress_rate: number; // avg % completion across active plans
+  development_plan_progress_rate: number | null; // avg % completion across active plans; null = none active
 }
 
 export interface StaffDevelopmentProfile {
@@ -153,15 +155,15 @@ export interface StaffDevelopmentProfile {
   latest_appraisal_rating: OverallRating;
   latest_appraisal_date: string | undefined;
   appraisal_overdue: boolean;
-  avg_competency_score: number; // avg of all competency scores from latest appraisal
-  readiness_score: number; // from competency profile
+  avg_competency_score: number | null; // avg of all competency scores from latest appraisal; null = nothing scored
+  readiness_score: number | null; // from competency profile; null = no profile held
   current_stage: string;
   target_stage: string | undefined;
   mandatory_quals_total: number;
   mandatory_quals_completed: number;
   mandatory_qual_compliant: boolean;
   has_active_development_plan: boolean;
-  development_plan_progress: number; // pct
+  development_plan_progress: number | null; // pct; null = no active plan with actions
   induction_status: InductionStatus | "not_applicable";
   risk_flags: string[];
 }
@@ -260,21 +262,18 @@ export function computeStaffDevelopmentIntelligence(
 
   // Staff with at least one completed appraisal
   const staffWithCompleted = new Set(completedAppraisals.map((a) => a.staff_id));
-  const appraisalCompletionRate =
-    activeStaff.length > 0
-      ? Math.round((activeStaff.filter((s) => staffWithCompleted.has(s.id)).length / activeStaff.length) * 100)
-      : 100;
+  const appraisalCompletionRate = rate(
+    activeStaff.filter((s) => staffWithCompleted.has(s.id)).length,
+    activeStaff.length,
+  );
 
   const readinessScores = competency_profiles.map((p) => p.overall_readiness_score);
-  const avgReadiness = Math.round(average(readinessScores));
+  const avgReadiness = meanOf(readinessScores);
 
   // Qualifications
   const mandatoryQuals = qualifications.filter((q) => q.mandatory);
   const mandatoryCompleted = mandatoryQuals.filter((q) => q.status === "completed");
-  const mandatoryComplianceRate =
-    mandatoryQuals.length > 0
-      ? Math.round((mandatoryCompleted.length / mandatoryQuals.length) * 100)
-      : 100;
+  const mandatoryComplianceRate = rate(mandatoryCompleted.length, mandatoryQuals.length);
 
   const qualsInProgress = qualifications.filter((q) => q.status === "in_progress").length;
   const qualsNotStarted = qualifications.filter((q) => q.status === "not_started" && q.mandatory).length;
@@ -290,12 +289,10 @@ export function computeStaffDevelopmentIntelligence(
 
   // Development plans
   const activePlans = development_plans.filter((dp) => dp.status === "active");
-  const planProgressRates = activePlans.map((dp) =>
-    dp.total_actions > 0
-      ? Math.round((dp.completed_actions / dp.total_actions) * 100)
-      : 0,
-  );
-  const avgPlanProgress = Math.round(average(planProgressRates));
+  // A plan with no actions has nothing to progress through, so it is left out
+  // of the average rather than counted as 0% done.
+  const planProgressRates = activePlans.map((dp) => rate(dp.completed_actions, dp.total_actions));
+  const avgPlanProgress = meanOf(planProgressRates);
 
   const overview: DevelopmentOverview = {
     total_staff: staff.length,
@@ -329,11 +326,11 @@ export function computeStaffDevelopmentIntelligence(
     const scores = latest ? Object.values(latest.competency_scores) : [];
     const avgCompetency = scores.length > 0
       ? Math.round(average(scores) * 10) / 10
-      : 0;
+      : null;
 
     // Competency profile
     const profile = profileByStaff.get(s.id);
-    const readinessScore = profile?.overall_readiness_score ?? 0;
+    const readinessScore = profile?.overall_readiness_score ?? null;
     const currentStage = profile?.current_stage ?? s.role;
     const targetStage = profile?.target_stage;
 
@@ -348,10 +345,8 @@ export function computeStaffDevelopmentIntelligence(
     const staffPlans = plansByStaff.get(s.id) ?? [];
     const activePlan = staffPlans.find((dp) => dp.status === "active");
     const planProgress = activePlan
-      ? (activePlan.total_actions > 0
-          ? Math.round((activePlan.completed_actions / activePlan.total_actions) * 100)
-          : 0)
-      : 0;
+      ? rate(activePlan.completed_actions, activePlan.total_actions)
+      : null;
 
     // Induction
     const induction = inductionByStaff.get(s.id);
@@ -533,7 +528,7 @@ export function computeStaffDevelopmentIntelligence(
   }
 
   // Warning: low appraisal completion rate
-  if (appraisalCompletionRate < 80 && activeStaff.length > 0) {
+  if (below(appraisalCompletionRate, 80)) {
     insights.push({
       severity: "warning",
       text: `Only ${appraisalCompletionRate}% of active staff have a completed appraisal. A strong home demonstrates that performance is regularly assessed and development is purposeful. Aim for 100% coverage.`,
@@ -541,7 +536,7 @@ export function computeStaffDevelopmentIntelligence(
   }
 
   // Warning: low mandatory qualification compliance
-  if (mandatoryComplianceRate < 80 && mandatoryQuals.length > 0) {
+  if (below(mandatoryComplianceRate, 80)) {
     insights.push({
       severity: "warning",
       text: `Mandatory qualification compliance is at ${mandatoryComplianceRate}%. Reg 32 requires all staff to be fit for purpose — mandatory qualifications are the foundation. Prioritise enrolments and completions.`,
@@ -559,7 +554,7 @@ export function computeStaffDevelopmentIntelligence(
   }
 
   // Positive: 100% appraisal completion
-  if (appraisalCompletionRate === 100 && activeStaff.length > 0) {
+  if (meets(appraisalCompletionRate, 100)) {
     insights.push({
       severity: "positive",
       text: `All ${activeStaff.length} active staff have a completed appraisal. This demonstrates strong workforce oversight and commitment to individual development — a key strength under SCCIF.`,
@@ -567,7 +562,7 @@ export function computeStaffDevelopmentIntelligence(
   }
 
   // Positive: high average readiness
-  if (avgReadiness >= 70 && competency_profiles.length > 0) {
+  if (meets(avgReadiness, 70)) {
     insights.push({
       severity: "positive",
       text: `Average competency readiness score is ${avgReadiness}%. The workforce has a strong overall capability profile. Continue investing in targeted development to maintain this standard.`,
@@ -583,7 +578,7 @@ export function computeStaffDevelopmentIntelligence(
   }
 
   // Positive: all mandatory quals compliant
-  if (mandatoryComplianceRate === 100 && mandatoryQuals.length > 0) {
+  if (meets(mandatoryComplianceRate, 100)) {
     insights.push({
       severity: "positive",
       text: `100% mandatory qualification compliance across ${mandatoryQuals.length} requirements. Every staff member meets or exceeds the regulatory qualification standard.`,

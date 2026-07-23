@@ -20,6 +20,8 @@
 //   SCCIF: "How well children are helped and protected"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate, below } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface IncidentInput {
@@ -98,9 +100,9 @@ export interface RestraintProfile {
   children_restrained: number;
   average_duration_minutes: number;
   injuries_during_restraint: number;
-  debrief_completion_rate: number; // percentage
-  review_completion_rate: number; // percentage
-  de_escalation_always_attempted: boolean;
+  debrief_completion_rate: number | null; // percentage — null when no restraints to debrief
+  review_completion_rate: number | null; // percentage — null when no restraints to review
+  de_escalation_always_attempted: boolean | null; // null when there were no restraints
 }
 
 export interface RiskAssessmentProfile {
@@ -118,7 +120,7 @@ export interface MissingProfile {
   total_episodes_30d: number;
   children_with_episodes: number;
   repeat_missing_children: number; // 3+ episodes in 90 days
-  return_interview_rate: number; // percentage
+  return_interview_rate: number | null; // percentage — null when no episodes have closed
   contextual_safeguarding_flagged: number;
   high_risk_episodes: number;
 }
@@ -128,7 +130,7 @@ export interface NotifiableEventProfile {
   notified_on_time: number;
   notified_late: number;
   pending_notification: number;
-  compliance_rate: number; // percentage
+  compliance_rate: number | null; // percentage — null when nothing required notifying
   by_type: { type: string; count: number }[];
 }
 
@@ -252,17 +254,15 @@ export function computeSafeguardingIntelligence(
   const childDebriefed = restraints90d.filter((r) => r.child_debriefed).length;
   const staffDebriefed = restraints90d.filter((r) => r.staff_debriefed).length;
   const totalDebriefable = restraints90d.length * 2; // child + staff per restraint
-  const debriefRate = totalDebriefable > 0
-    ? Math.round(((childDebriefed + staffDebriefed) / totalDebriefable) * 100)
-    : 100;
+  const debriefRate = rate(childDebriefed + staffDebriefed, totalDebriefable);
 
   const reviewed = restraints90d.filter((r) => r.review_status === "reviewed").length;
-  const reviewRate = restraints90d.length > 0
-    ? Math.round((reviewed / restraints90d.length) * 100)
-    : 100;
+  const reviewRate = rate(reviewed, restraints90d.length);
 
-  const deEscalationAlways = restraints90d.length === 0 ||
-    restraints90d.every((r) => r.de_escalation_attempts.length > 0);
+  // No restraints means the question was never put — not a clean de-escalation record.
+  const deEscalationAlways = restraints90d.length === 0
+    ? null
+    : restraints90d.every((r) => r.de_escalation_attempts.length > 0);
 
   const restraintProfile: RestraintProfile = {
     total_restraints_90d: restraints90d.length,
@@ -336,9 +336,7 @@ export function computeSafeguardingIntelligence(
 
   const closedEpisodes = missing90d.filter((m) => m.status === "closed");
   const returnInterviewed = closedEpisodes.filter((m) => m.return_interview_completed).length;
-  const returnInterviewRate = closedEpisodes.length > 0
-    ? Math.round((returnInterviewed / closedEpisodes.length) * 100)
-    : 100;
+  const returnInterviewRate = rate(returnInterviewed, closedEpisodes.length);
 
   const csFlagged = missing90d.filter((m) => m.contextual_safeguarding_risk).length;
   const highRiskEpisodes = missing90d.filter((m) => m.risk_level === "high").length;
@@ -368,9 +366,7 @@ export function computeSafeguardingIntelligence(
     (n) => n.ofsted_status === "pending"
   ).length;
 
-  const complianceRate = requiresNotification.length > 0
-    ? Math.round((notifiedOnTime / requiresNotification.length) * 100)
-    : 100;
+  const complianceRate = rate(notifiedOnTime, requiresNotification.length);
 
   // By type breakdown
   const typeMap = new Map<string, number>();
@@ -399,6 +395,15 @@ export function computeSafeguardingIntelligence(
 
   // ── Cara Safeguarding Intelligence Insights ───────────────────────────
   const insights: CaraInsight[] = [];
+
+  // An absence only evidences good practice if the home is demonstrably recording.
+  // With nothing on the register at all, "zero restraints" is silence, not safety.
+  const recordingActive =
+    incidents90d.length > 0 ||
+    missing90d.length > 0 ||
+    restraints90d.length > 0 ||
+    currentAssessments.length > 0 ||
+    notifiableEvents.length > 0;
 
   // 1. Pending Ofsted notifications (critical)
   if (pending > 0) {
@@ -468,7 +473,7 @@ export function computeSafeguardingIntelligence(
     });
   }
 
-  if (returnInterviewRate < 100 && closedEpisodes.length > 0) {
+  if (below(returnInterviewRate, 100)) {
     insights.push({
       severity: "warning",
       text: `Return interview completion rate is ${returnInterviewRate}%. Every missing episode must have a return home interview within 72 hours to identify safeguarding concerns.`,
@@ -508,22 +513,30 @@ export function computeSafeguardingIntelligence(
     });
   }
 
-  if (restraints90d.length === 0 && children.length > 0) {
+  if (restraints90d.length === 0 && children.length > 0 && recordingActive) {
     insights.push({
       severity: "positive",
       text: "Zero restraints in the past 90 days. This evidences effective de-escalation practice and a settled, therapeutic home environment.",
     });
   }
 
-  if (missing90d.length === 0 && children.length > 0) {
+  if (missing90d.length === 0 && children.length > 0 && recordingActive) {
     insights.push({
       severity: "positive",
       text: "No missing from care episodes in 90 days. Children are settled and engaged. Continue building trusting relationships and monitoring wellbeing.",
     });
   }
 
-  // 8. Overall compliance
-  if (pending === 0 && notifiedLate === 0 && needingOversight.length === 0 && overdueReviews === 0) {
+  // 8. Overall compliance — only claimed where each strand was actually evidenced
+  if (
+    requiresNotification.length > 0 &&
+    incidents.length > 0 &&
+    currentAssessments.length > 0 &&
+    pending === 0 &&
+    notifiedLate === 0 &&
+    needingOversight.length === 0 &&
+    overdueReviews === 0
+  ) {
     insights.push({
       severity: "positive",
       text: "Safeguarding compliance strong — all notifications timely, all oversight complete, all risk reviews current. Continue robust safeguarding practice.",
@@ -532,10 +545,17 @@ export function computeSafeguardingIntelligence(
 
   // Ensure at least one insight
   if (insights.length === 0) {
-    insights.push({
-      severity: "positive",
-      text: "Safeguarding intelligence engine active. Recording and monitoring systems in place. Continue evidencing practice against Reg 12, 35, 40, and SCCIF criteria.",
-    });
+    insights.push(
+      recordingActive
+        ? {
+            severity: "positive",
+            text: "Safeguarding intelligence engine active. Recording and monitoring systems in place. Continue evidencing practice against Reg 12, 35, 40, and SCCIF criteria.",
+          }
+        : {
+            severity: "warning",
+            text: "No safeguarding records yet — no incidents, missing episodes, restraints, risk assessments or notifiable events on file. Nothing has been evidenced against Reg 12, 35 or 40; an empty register is a finding at inspection, not a pass.",
+          },
+    );
   }
 
   return {

@@ -38,17 +38,18 @@ function makeRow(overrides: Partial<FamilyContactArrangementsRow> = {}): FamilyC
 }
 
 describe("computeMetrics", () => {
-  it("returns zeroes for empty data", () => {
+  it("returns nulls for empty data — an empty register is not a score", () => {
     const m = computeMetrics([]);
     expect(m.total_contacts).toBe(0);
     expect(m.completed_count).toBe(0);
-    expect(m.completion_rate).toBe(0);
-    expect(m.concern_rate).toBe(0);
+    expect(m.completion_rate).toBeNull();
+    expect(m.concern_rate).toBeNull();
     expect(m.unique_children).toBe(0);
     expect(m.unique_contacts).toBe(0);
-    expect(m.average_duration).toBe(0);
-    expect(m.positive_quality_rate).toBe(0);
-    expect(m.difficult_quality_rate).toBe(0);
+    expect(m.average_duration).toBeNull();
+    expect(m.positive_quality_rate).toBeNull();
+    expect(m.difficult_quality_rate).toBeNull();
+    expect(m.sw_notification_rate).toBeNull();
   });
 
   it("computes correct counts and rates for populated data", () => {

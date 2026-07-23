@@ -15,6 +15,7 @@ import {
   Loader2, UserCheck, Clock, CheckCircle2, FileWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useSaferRecruitmentIntelligence } from "@/hooks/use-safer-recruitment-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -91,9 +92,9 @@ export function SaferRecruitmentCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", o.compliance_rate >= 80 ? "bg-green-50" : o.compliance_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.compliance_rate >= 80 ? "text-[--cs-success]" : o.compliance_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.compliance_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.compliance_rate === null ? "bg-muted" : meets(o.compliance_rate, 80) ? "bg-green-50" : meets(o.compliance_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.compliance_rate === null ? "text-muted-foreground" : meets(o.compliance_rate, 80) ? "text-[--cs-success]" : meets(o.compliance_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(o.compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Compliant</p>
           </div>
@@ -107,9 +108,9 @@ export function SaferRecruitmentCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">Overdue</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.dbs_completion_rate >= 80 ? "bg-green-50" : o.dbs_completion_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.dbs_completion_rate >= 80 ? "text-[--cs-success]" : o.dbs_completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.dbs_completion_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.dbs_completion_rate === null ? "bg-muted" : meets(o.dbs_completion_rate, 80) ? "bg-green-50" : meets(o.dbs_completion_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.dbs_completion_rate === null ? "text-muted-foreground" : meets(o.dbs_completion_rate, 80) ? "text-[--cs-success]" : meets(o.dbs_completion_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(o.dbs_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">DBS Done</p>
           </div>
@@ -119,7 +120,7 @@ export function SaferRecruitmentCard() {
 
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <div>
-            <p className="font-bold text-slate-700 tabular-nums">{o.schedule2_completion_rate}%</p>
+            <p className="font-bold text-slate-700 tabular-nums">{formatRate(o.schedule2_completion_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Schedule 2</p>
           </div>
           <div>
@@ -145,12 +146,14 @@ export function SaferRecruitmentCard() {
                   {ca.check_type.replace(/_/g, " ")}
                 </span>
                 <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={cn("h-full rounded-full", ca.completion_rate >= 80 ? "bg-green-400" : ca.completion_rate >= 50 ? "bg-amber-400" : "bg-red-400")}
-                    style={{ width: `${Math.max(4, ca.completion_rate)}%` }}
-                  />
+                  {ca.completion_rate !== null && (
+                    <div
+                      className={cn("h-full rounded-full", meets(ca.completion_rate, 80) ? "bg-green-400" : meets(ca.completion_rate, 50) ? "bg-amber-400" : "bg-red-400")}
+                      style={{ width: `${Math.max(4, ca.completion_rate)}%` }}
+                    />
+                  )}
                 </div>
-                <span className="w-8 text-right font-medium tabular-nums">{ca.completion_rate}%</span>
+                <span className="w-8 text-right font-medium tabular-nums">{formatRate(ca.completion_rate)}</span>
               </div>
             ))}
           </div>
@@ -187,11 +190,11 @@ export function SaferRecruitmentCard() {
                 <div className="flex items-center gap-2 mt-1.5">
                   <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className={cn("h-full rounded-full", profile.check_completion_pct >= 100 ? "bg-green-500" : profile.check_completion_pct >= 50 ? "bg-amber-500" : "bg-red-500")}
-                      style={{ width: `${profile.check_completion_pct}%` }}
+                      className={cn("h-full rounded-full", meets(profile.check_completion_pct, 100) ? "bg-green-500" : meets(profile.check_completion_pct, 50) ? "bg-amber-500" : "bg-red-500")}
+                      style={{ width: `${profile.check_completion_pct ?? 0}%` }}
                     />
                   </div>
-                  <span className="text-[10px] font-medium tabular-nums">{profile.check_completion_pct}%</span>
+                  <span className="text-[10px] font-medium tabular-nums">{formatRate(profile.check_completion_pct)}</span>
                 </div>
                 {/* Risk flags */}
                 {(profile.risk_flags?.length ?? 0) > 0 && (

@@ -19,6 +19,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type NotifiableEventCategory =
@@ -116,8 +118,8 @@ export interface NotifiableEventsMetrics {
   eventsThisQuarter: number;
   pendingNotifications: number;
   overdueNotifications: number;
-  complianceRate: number;              // %
-  averageResponseHours: number;
+  complianceRate: number | null;       // %, null = no notifiable events for the home
+  averageResponseHours: number | null; // null = no notification has been sent yet
   byCategory: { category: NotifiableEventCategory; count: number }[];
   byStatus: { status: NotificationStatus; count: number }[];
   recentEvents: { id: string; category: NotifiableEventCategory; title: string; occurredAt: string; status: string }[];
@@ -346,9 +348,7 @@ export function calculateNotifiableEventsMetrics(
 
   const complianceResults = homeEvents.map(e => evaluateNotificationCompliance(e, now));
   const compliantCount = complianceResults.filter(r => r.isCompliant).length;
-  const complianceRate = homeEvents.length > 0
-    ? Math.round((compliantCount / homeEvents.length) * 100)
-    : 100;
+  const complianceRate = rate(compliantCount, homeEvents.length);
 
   // By category
   const categoryMap = new Map<NotifiableEventCategory, number>();
@@ -408,7 +408,7 @@ export function calculateNotifiableEventsMetrics(
     pendingNotifications,
     overdueNotifications,
     complianceRate,
-    averageResponseHours: respondedCount > 0 ? Math.round(totalResponseHours / respondedCount) : 0,
+    averageResponseHours: respondedCount > 0 ? Math.round(totalResponseHours / respondedCount) : null,
     byCategory,
     byStatus,
     recentEvents,

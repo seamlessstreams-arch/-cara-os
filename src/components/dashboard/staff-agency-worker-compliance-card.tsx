@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building2, ChevronRight, Brain, Loader2, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -56,12 +57,12 @@ export function StaffAgencyWorkerComplianceCard() {
             <p className="text-lg font-bold tabular-nums text-emerald-600">{profile.bank_agency}</p>
             <p className="text-[10px] text-muted-foreground">Bank/Agency</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", dbs.compliance_rate >= 95 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", dbs.compliance_rate >= 95 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{dbs.compliance_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2", meets(dbs.compliance_rate, 95) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(dbs.compliance_rate, 95) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(dbs.compliance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">DBS %</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", staffing.coverage_rate >= 95 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", staffing.coverage_rate >= 95 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{staffing.coverage_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2", meets(staffing.coverage_rate, 95) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(staffing.coverage_rate, 95) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(staffing.coverage_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Coverage</p>
           </div>
           <div className="text-center rounded-lg p-2 bg-emerald-50">

@@ -15,6 +15,8 @@
 //   SCCIF: "Education and learning" quality standard
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ChildInput {
@@ -60,7 +62,7 @@ export interface EducationOverview {
   excluded_count: number; // currently excluded (recent)
   exclusion_events_90d: number;
   sen_support_count: number;
-  avg_attendance_pct: number;
+  avg_attendance_pct: number | null;  // null = no attendance recorded for any child
   pep_current_count: number;
   pep_overdue_count: number;
 }
@@ -69,7 +71,7 @@ export interface ChildEducationProfile {
   child_id: string;
   child_name: string;
   school: string | null;
-  attendance_pct: number;
+  attendance_pct: number | null;  // null = no attendance recorded for this child
   attendance_trend: "improving" | "stable" | "declining" | "unknown";
   exclusion_count_90d: number;
   latest_pep_date: string | null;
@@ -80,7 +82,7 @@ export interface ChildEducationProfile {
 }
 
 export interface AttendanceAnalysis {
-  overall_pct: number;
+  overall_pct: number | null;
   sessions_total: number;
   sessions_present: number;
   sessions_absent: number;
@@ -171,9 +173,9 @@ export function isAbsent(code: string): boolean {
   return code === "U" || code === "N" || code === "O" || code === "I" || code === "M";
 }
 
-/** Compute attendance percentage */
-export function computeAttendancePct(present: number, total: number): number {
-  if (total === 0) return 100;
+/** Compute attendance percentage. Null when no sessions were recorded at all. */
+export function computeAttendancePct(present: number, total: number): number | null {
+  if (total <= 0) return null;
   return Math.round((present / total) * 1000) / 10;
 }
 
@@ -249,11 +251,11 @@ export function computeEducationIntelligence(
 
   // ── Compute per-child attendance percentages ─────────────────────────────
 
-  function getChildAttendance(childId: string): { pct: number; trend: "improving" | "stable" | "declining" | "unknown"; hasData: boolean } {
+  function getChildAttendance(childId: string): { pct: number | null; trend: "improving" | "stable" | "declining" | "unknown"; hasData: boolean } {
     if (hasDetailedAttendance) {
       const records = (attendanceByChild.get(childId) ?? [])
         .filter((r) => r.date >= ninetyDaysAgo && r.date <= today);
-      if (records.length === 0) return { pct: 100, trend: "unknown", hasData: false };
+      if (records.length === 0) return { pct: null, trend: "unknown", hasData: false };
 
       const presentCount = records.filter((r) => isPresent(r.attendance_code) || isLate(r.attendance_code)).length;
       const pct = computeAttendancePct(presentCount, records.length);
@@ -267,7 +269,9 @@ export function computeEducationIntelligence(
         const olderPresent = olderRecords.filter((r) => isPresent(r.attendance_code) || isLate(r.attendance_code)).length;
         const recentPct = computeAttendancePct(recentPresent, recentRecords.length);
         const olderPct = computeAttendancePct(olderPresent, olderRecords.length);
-        return { pct, trend: computeAttendanceTrend(recentPct, olderPct), hasData: true };
+        if (recentPct !== null && olderPct !== null) {
+          return { pct, trend: computeAttendanceTrend(recentPct, olderPct), hasData: true };
+        }
       }
 
       return { pct, trend: "unknown", hasData: true };
@@ -276,7 +280,7 @@ export function computeEducationIntelligence(
     // Fallback: use education records with attendance_status
     const childRecs = (eduRecordsByChild.get(childId) ?? [])
       .filter((r) => r.record_type === "attendance" && r.attendance_status != null);
-    if (childRecs.length === 0) return { pct: 100, trend: "unknown", hasData: false };
+    if (childRecs.length === 0) return { pct: null, trend: "unknown", hasData: false };
 
     const presentStatuses = ["present", "late", "part_day"];
     const presentCount = childRecs.filter((r) => presentStatuses.includes(r.attendance_status!)).length;
@@ -291,7 +295,9 @@ export function computeEducationIntelligence(
       const olderPresent = olderRecs.filter((r) => presentStatuses.includes(r.attendance_status!)).length;
       const recentPct = computeAttendancePct(recentPresent, recentRecs.length);
       const olderPct = computeAttendancePct(olderPresent, olderRecs.length);
-      return { pct, trend: computeAttendanceTrend(recentPct, olderPct), hasData: true };
+      if (recentPct !== null && olderPct !== null) {
+        return { pct, trend: computeAttendanceTrend(recentPct, olderPct), hasData: true };
+      }
     }
 
     return { pct, trend: "unknown", hasData: true };
@@ -334,13 +340,15 @@ export function computeEducationIntelligence(
   // ── Overview ─────────────────────────────────────────────────────────────
 
   const childAttendances = children.map((c) => getChildAttendance(c.id));
-  // Average only children who actually have attendance data. A no-data child
-  // reads 100% (pct(0,0)), which would otherwise inflate the home average and
-  // can trigger a false "exceeding national target" insight.
-  const trackedAttendances = childAttendances.filter((a) => a.hasData);
-  const avgAttendance = trackedAttendances.length > 0
-    ? Math.round((trackedAttendances.reduce((sum, a) => sum + a.pct, 0) / trackedAttendances.length) * 10) / 10
-    : 100;
+  // Average only children who actually have attendance data. A child with no
+  // attendance records is unmeasured, so they neither inflate nor depress the
+  // home average — and with nothing recorded at all there is no average to give.
+  const trackedPcts = childAttendances
+    .map((a) => a.pct)
+    .filter((p): p is number => p !== null);
+  const avgAttendance = trackedPcts.length > 0
+    ? Math.round((trackedPcts.reduce((sum, p) => sum + p, 0) / trackedPcts.length) * 10) / 10
+    : null;
 
   let pepCurrentCount = 0;
   let pepOverdueCount = 0;
@@ -437,8 +445,8 @@ export function computeEducationIntelligence(
     sessionsAbsent = attRecs.filter((r) => r.attendance_status === "absent_authorised" || r.attendance_status === "absent_unauthorised" || r.attendance_status === "excluded").length;
   }
 
-  const below90 = childProfiles.filter((p) => p.attendance_pct < 90).length;
-  const persistentAbsence = childProfiles.filter((p) => p.attendance_pct < 50).length;
+  const below90 = childProfiles.filter((p) => below(p.attendance_pct, 90)).length;
+  const persistentAbsence = childProfiles.filter((p) => below(p.attendance_pct, 50)).length;
 
   const attendance: AttendanceAnalysis = {
     overall_pct: computeAttendancePct(sessionsPresent + sessionsLate, sessionsTotal),
@@ -529,15 +537,15 @@ export function computeEducationIntelligence(
   // single worst case — a child whose recorded attendance is 0% (all absent) —
   // while below90/persistentAbsence already counted them, so the overview showed
   // a child below 90% with no alert naming them. A child with NO attendance
-  // records reads 100% (handled separately), so dropping the guard does not
-  // false-alert untracked children; it only surfaces genuine 0% attendance.
+  // records is unmeasured (null) and `below` never fires on that, so dropping
+  // the guard does not false-alert untracked children.
   for (const profile of childProfiles) {
-    if (profile.attendance_pct < 90) {
+    if (below(profile.attendance_pct, 90)) {
       alerts.push({
-        severity: profile.attendance_pct < 50 ? "critical" : "medium",
+        severity: below(profile.attendance_pct, 50) ? "critical" : "medium",
         type: "low_attendance",
         child_name: profile.child_name,
-        message: `${profile.child_name} attendance at ${profile.attendance_pct}% — below 90% threshold. Review barriers to attendance and update attendance plan.`,
+        message: `${profile.child_name} attendance at ${formatRate(profile.attendance_pct)} — below 90% threshold. Review barriers to attendance and update attendance plan.`,
       });
     }
   }
@@ -621,10 +629,10 @@ export function computeEducationIntelligence(
 
   // 7. Positive: good attendance — only when there is actual attendance data
   // (otherwise a home with no logged attendance would falsely "exceed" the target).
-  if (avgAttendance >= 95 && trackedAttendances.length > 0) {
+  if (meets(avgAttendance, 95)) {
     insights.push({
       severity: "positive",
-      text: `Average attendance is ${avgAttendance}% — exceeding the 95% national target. Excellent evidence of the home's commitment to educational stability and support.`,
+      text: `Average attendance is ${formatRate(avgAttendance)} — exceeding the 95% national target. Excellent evidence of the home's commitment to educational stability and support.`,
     });
   }
 

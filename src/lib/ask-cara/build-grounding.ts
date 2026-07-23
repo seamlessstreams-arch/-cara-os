@@ -69,7 +69,7 @@ function childBlock(snap: AskCaraSnapshot, child: AskCaraChild, asOf: string, ti
   const srp = pr?.strengthsRecording?.perChild.find((p) => p.childId === child.id);
   if (srp && srp.rate !== null) lines.push(line("Strengths in the recording", `${srp.rate}% of records${srp.topPhrase ? ` (e.g. "${srp.topPhrase}")` : ""}`));
   const rcp = pr?.repairCycle?.perChild.find((p) => p.childId === child.id);
-  if (rcp) lines.push(line("Repair cycles", `${rcp.completionRate}% complete${rcp.noRepair ? `, ${rcp.noRepair} unrepaired` : ""}${rcp.missingStep && rcp.missingStep !== "None" ? ` (missing: ${rcp.missingStep})` : ""}`));
+  if (rcp) lines.push(line("Repair cycles", `${rcp.completionRate === null ? "no incidents recorded" : `${rcp.completionRate}% complete`}${rcp.noRepair ? `, ${rcp.noRepair} unrepaired` : ""}${rcp.missingStep && rcp.missingStep !== "None" ? ` (missing: ${rcp.missingStep})` : ""}`));
   const rsp = pr?.relationalSafety?.perChild.find((p) => p.childId === child.id);
   if (rsp) lines.push(line("Relational safety map", `${rsp.status}; key worker ${rsp.keyWorkerName ?? "NOT assigned"}; ${rsp.sessions30d} key-work (30d); ${rsp.trustedAdults} trusted adults`));
   const tap = pr?.teamApproach?.perChild.find((p) => p.childId === child.id);
@@ -125,7 +125,7 @@ function homeBlock(snap: AskCaraSnapshot, tier: AccessTier, asOf: string): strin
     if (pr?.careLanguage) lines.push(line("Care language (home)", `${pr.careLanguage.totalHits} flags, ${pr.careLanguage.childrenAffected} children affected`));
     if (pr?.recordingGaps) lines.push(line("Recording gaps (home)", `${pr.recordingGaps.childrenWithCriticalGap} children with critical gaps`));
     if (pr?.strengthsRecording) lines.push(line("Strengths recording (home)", `${pr.strengthsRecording.overallRate}% of records carry a strength`));
-    if (pr?.repairCycle) lines.push(line("Repair cycles (home)", `${pr.repairCycle.overallCompletionRate}% complete over ${pr.repairCycle.totalIncidents} incidents${pr.repairCycle.mostCommonMissingStep && pr.repairCycle.mostCommonMissingStep !== "None" ? `; most-missed step: ${pr.repairCycle.mostCommonMissingStep}` : ""}`));
+    if (pr?.repairCycle) lines.push(line("Repair cycles (home)", `${pr.repairCycle.overallCompletionRate === null ? "no incidents recorded" : `${pr.repairCycle.overallCompletionRate}% complete`} over ${pr.repairCycle.totalIncidents} incidents${pr.repairCycle.mostCommonMissingStep && pr.repairCycle.mostCommonMissingStep !== "None" ? `; most-missed step: ${pr.repairCycle.mostCommonMissingStep}` : ""}`));
     if (pr?.relationalSafety) lines.push(line("Relational safety (home)", `${pr.relationalSafety.secureCount} secure / ${pr.relationalSafety.developingCount} developing / ${pr.relationalSafety.fragileCount} fragile; ${pr.relationalSafety.noKeyWorker} without a key worker`));
     if (pr?.teamApproach) lines.push(line("Team approach (home)", `${pr.teamApproach.consistentCount} consistent / ${pr.teamApproach.mixedCount} mixed / ${pr.teamApproach.divergentCount} divergent; therapeutic ${pr.teamApproach.overallTherapeuticRate}%`));
     if (pr?.practiceCulture) lines.push(line("Practice culture", `${pr.practiceCulture.overallScore}/100 (${pr.practiceCulture.overallStatus.replace(/_/g, " ")}); priority: ${pr.practiceCulture.priorityLabel}`));

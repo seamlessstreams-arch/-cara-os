@@ -92,8 +92,8 @@ describe("empty state", () => {
     expect(r.overview.total_entries).toBe(0);
     expect(r.overview.total_rewards).toBe(0);
     expect(r.overview.total_sanctions).toBe(0);
-    expect(r.overview.reward_to_sanction_ratio).toBe(0);
-    expect(r.overview.proportionality_rate).toBe(100);
+    expect(r.overview.reward_to_sanction_ratio).toBeNull();
+    expect(r.overview.proportionality_rate).toBeNull();
     expect(r.overview.children_with_entries).toBe(0);
     expect(r.child_profiles.length).toBe(0);
     expect(r.reward_types.length).toBe(0);
@@ -140,9 +140,9 @@ describe("overview", () => {
     expect(r.overview.reward_to_sanction_ratio).toBe(2);
   });
 
-  it("ratio is 0 when no entries at all", () => {
+  it("ratio is null when no entries at all", () => {
     const r = run([]);
-    expect(r.overview.reward_to_sanction_ratio).toBe(0);
+    expect(r.overview.reward_to_sanction_ratio).toBeNull();
   });
 
   it("calculates proportionality_rate", () => {

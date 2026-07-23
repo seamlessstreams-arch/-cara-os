@@ -15,6 +15,7 @@ import {
   CheckCircle2, Loader2, Clock, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useReg44Intelligence } from "@/hooks/use-reg44-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -86,15 +87,15 @@ export function Reg44IndependentVisitorCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">On Schedule</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.completion_rate >= 80 ? "bg-green-50" : o.completion_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.completion_rate >= 80 ? "text-[--cs-success]" : o.completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.completion_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.completion_rate === null ? "bg-slate-50" : meets(o.completion_rate, 80) ? "bg-green-50" : meets(o.completion_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.completion_rate === null ? "text-muted-foreground" : meets(o.completion_rate, 80) ? "text-[--cs-success]" : meets(o.completion_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(o.completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Recs Done</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.ofsted_reporting_compliance === 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.ofsted_reporting_compliance === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.ofsted_reporting_compliance}%
+          <div className={cn("text-center rounded-lg p-2.5", meets(o.ofsted_reporting_compliance, 100) ? "bg-green-50" : o.ofsted_reporting_compliance === null ? "bg-slate-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(o.ofsted_reporting_compliance, 100) ? "text-[--cs-success]" : o.ofsted_reporting_compliance === null ? "text-muted-foreground" : "text-[--cs-warning]")}>
+              {formatRate(o.ofsted_reporting_compliance)}
             </p>
             <p className="text-[10px] text-muted-foreground">Reported</p>
           </div>
@@ -107,21 +108,21 @@ export function Reg44IndependentVisitorCard() {
             <div className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-blue-500" />
               <div>
-                <p className="text-xs font-medium">{o.avg_days_between_visits}d</p>
+                <p className="text-xs font-medium">{o.avg_days_between_visits === null ? "—" : `${o.avg_days_between_visits}d`}</p>
                 <p className="text-[10px] text-muted-foreground">Avg Gap</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
               <Users className="h-3.5 w-3.5 text-green-500" />
               <div>
-                <p className="text-xs font-medium">{o.children_participation_rate}%</p>
+                <p className="text-xs font-medium">{formatRate(o.children_participation_rate)}</p>
                 <p className="text-[10px] text-muted-foreground">YP Spoken</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-purple-500" />
               <div>
-                <p className="text-xs font-medium">{o.avg_duration_hours}h</p>
+                <p className="text-xs font-medium">{o.avg_duration_hours === null ? "—" : `${o.avg_duration_hours}h`}</p>
                 <p className="text-[10px] text-muted-foreground">Avg Visit</p>
               </div>
             </div>
@@ -197,7 +198,7 @@ export function Reg44IndependentVisitorCard() {
                 </div>
                 <div className="flex items-center gap-3 mt-1 text-muted-foreground">
                   <span className="text-[10px]">{visit.visitor}</span>
-                  <span className="text-[10px]">{visit.children_spoken_rate}% YP spoken</span>
+                  <span className="text-[10px]">{formatRate(visit.children_spoken_rate)} YP spoken</span>
                   <span className="text-[10px]">{visit.recommendations_count} recs</span>
                 </div>
               </div>

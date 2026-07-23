@@ -524,10 +524,11 @@ describe("calculateHomeMetrics", () => {
     expect(result.complianceRate).toBe(50);
   });
 
-  it("returns 100% compliance for no episodes", () => {
+  it("reports nothing measured when there are no episodes", () => {
     const result = calculateHomeMetrics([], "home-oak", FIXED_NOW);
-    expect(result.complianceRate).toBe(100);
-    expect(result.returnInterviewCompliance).toBe(100);
+    expect(result.complianceRate).toBeNull();
+    expect(result.returnInterviewCompliance).toBeNull();
+    expect(result.averageResponseMinutes).toBeNull();
     expect(result.totalEpisodes).toBe(0);
   });
 

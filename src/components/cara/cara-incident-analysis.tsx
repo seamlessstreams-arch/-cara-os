@@ -16,16 +16,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface RestraintAnalysis {
   totalRestraints: number;
-  restraintRate: number;
+  restraintRate: number | null;
   averageDuration: number;
-  deEscalationBeforeRestraint: number;
+  deEscalationBeforeRestraint: number | null;
   injuryDuringRestraint: number;
-  debriefRate: number;
+  debriefRate: number | null;
 }
 
 interface ChildIncidentSummary {
@@ -67,7 +68,7 @@ interface IncidentData {
   restraintAnalysis: RestraintAnalysis;
   childBreakdown: ChildIncidentSummary[];
   triggerAnalysis: TriggerInsight[];
-  deEscalationRate: number;
+  deEscalationRate: number | null;
   alerts: IncidentAlert[];
   regulatoryStatus: {
     compliant: boolean;
@@ -176,7 +177,7 @@ export default function CaraIncidentAnalysis({ homeId = "home_oak", days = 28 }:
       <div className="grid grid-cols-4 gap-2 px-4 pb-3">
         <MetricBox label="Per Week" value={String(data.incidentsPerWeek)} good={data.incidentsPerWeek <= 2} warn={data.incidentsPerWeek > 4} />
         <MetricBox label="Restraints" value={String(data.restraintAnalysis.totalRestraints)} good={data.restraintAnalysis.totalRestraints === 0} warn={data.restraintAnalysis.totalRestraints > 2} />
-        <MetricBox label="De-esc %" value={`${data.deEscalationRate}%`} good={data.deEscalationRate >= 80} warn={data.deEscalationRate < 60} />
+        <MetricBox label="De-esc %" value={formatRate(data.deEscalationRate)} good={meets(data.deEscalationRate, 80)} warn={below(data.deEscalationRate, 60)} />
         <MetricBox label="Alerts" value={String(data.alerts.length)} good={data.alerts.length === 0} warn={data.alerts.length > 2} />
       </div>
 
@@ -192,8 +193,8 @@ export default function CaraIncidentAnalysis({ homeId = "home_oak", days = 28 }:
             <span className="text-gray-300">|</span>
             <span>Avg {data.restraintAnalysis.averageDuration}min</span>
             <span className="text-gray-300">|</span>
-            <span className={cn(data.restraintAnalysis.debriefRate === 100 ? "text-emerald-700" : "text-amber-700")}>
-              {data.restraintAnalysis.debriefRate}% debriefed
+            <span className={cn(meets(data.restraintAnalysis.debriefRate, 100) ? "text-emerald-700" : "text-amber-700")}>
+              {formatRate(data.restraintAnalysis.debriefRate)} debriefed
             </span>
             {data.restraintAnalysis.injuryDuringRestraint > 0 && (
               <>

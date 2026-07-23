@@ -15,6 +15,7 @@ import {
   User, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useMedicationIntelligence } from "@/hooks/use-medication-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -87,25 +88,25 @@ export function MedicationErrorsCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.missed_rate === 0 ? "bg-green-50" : o.missed_rate <= 3 ? "bg-amber-50" : "bg-red-50",
+            o.missed_rate === null ? "bg-gray-50" : o.missed_rate === 0 ? "bg-green-50" : o.missed_rate <= 3 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.missed_rate === 0 ? "text-[--cs-success]" : o.missed_rate <= 3 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.missed_rate === null ? "text-muted-foreground" : o.missed_rate === 0 ? "text-[--cs-success]" : o.missed_rate <= 3 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.missed_rate}%
+              {formatRate(o.missed_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Missed</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.refusal_rate === 0 ? "bg-green-50" : o.refusal_rate <= 5 ? "bg-amber-50" : "bg-red-50",
+            o.refusal_rate === null ? "bg-gray-50" : o.refusal_rate === 0 ? "bg-green-50" : o.refusal_rate <= 5 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.refusal_rate === 0 ? "text-[--cs-success]" : o.refusal_rate <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.refusal_rate === null ? "text-muted-foreground" : o.refusal_rate === 0 ? "text-[--cs-success]" : o.refusal_rate <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.refusal_rate}%
+              {formatRate(o.refusal_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Refusal</p>
           </div>

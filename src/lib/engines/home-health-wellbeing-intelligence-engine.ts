@@ -5,6 +5,8 @@
 // CHR 2015 Reg 10. SCCIF: "Health", "Experiences and progress."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface HealthRecordInput {
@@ -58,17 +60,17 @@ export interface HealthRecordsProfile {
   health_assessments_count: number;
   mental_health_count: number;
   referrals_active: number;
-  follow_up_compliance_rate: number;       // % with follow-up not overdue
+  follow_up_compliance_rate: number | null; // % with follow-up not overdue; null when no record carries a follow-up
   overdue_follow_ups: number;
   records_with_outcomes: number;
-  outcome_rate: number;                    // % with documented outcome
+  outcome_rate: number | null;              // % with documented outcome; null when no records in window
 }
 
 export interface MedicationProfile {
   active_medications: number;
   children_on_medication: string[];
   admin_records_30d: number;
-  administered_rate: number;               // % administered out of non-scheduled
+  administered_rate: number | null;        // % administered out of non-scheduled; null when nothing was due
   refused_count: number;
   missed_count: number;
   late_count: number;
@@ -169,14 +171,10 @@ export function computeHomeHealthWellbeing(
 
   const recsWithFollowUp = recs180d.filter(r => r.has_follow_up);
   const overdueFollowUps = recsWithFollowUp.filter(r => r.follow_up_overdue).length;
-  const followUpCompliance = recsWithFollowUp.length > 0
-    ? Math.round(((recsWithFollowUp.length - overdueFollowUps) / recsWithFollowUp.length) * 100)
-    : 100;
+  const followUpCompliance = rate(recsWithFollowUp.length - overdueFollowUps, recsWithFollowUp.length);
 
   const recsWithOutcome = recs180d.filter(r => r.has_outcome).length;
-  const outcomeRate = recs180d.length > 0
-    ? Math.round((recsWithOutcome / recs180d.length) * 100)
-    : 0;
+  const outcomeRate = rate(recsWithOutcome, recs180d.length);
 
   const recordsPerChild = total_children > 0
     ? Math.round((recs180d.length / total_children) * 10) / 10
@@ -207,9 +205,9 @@ export function computeHomeHealthWellbeing(
   });
   const nonScheduled = admins30d.filter(a => a.status !== "scheduled");
   const administered = nonScheduled.filter(a => a.status === "administered");
-  const adminRate = nonScheduled.length > 0
-    ? Math.round((administered.length / nonScheduled.length) * 100)
-    : 100;
+  // Null when no dose was due in the window. An empty MAR chart is not a
+  // perfect administration record.
+  const adminRate = rate(administered.length, nonScheduled.length);
 
   const refused = admins30d.filter(a => a.status === "refused").length;
   const missed = admins30d.filter(a => a.status === "missed").length;
@@ -257,16 +255,18 @@ export function computeHomeHealthWellbeing(
   if (healthAssessments >= total_children) score += 5;
   else if (healthAssessments === 0) score -= 6;
 
-  // Follow-up compliance (±8)
-  if (followUpCompliance === 100) score += 5;
-  else if (followUpCompliance >= 80) score += 2;
-  else if (followUpCompliance < 60) score -= 6;
-  else score -= 2;
+  // Follow-up compliance (±8) — unmeasured moves the score neither way
+  if (followUpCompliance !== null) {
+    if (followUpCompliance === 100) score += 5;
+    else if (followUpCompliance >= 80) score += 2;
+    else if (followUpCompliance < 60) score -= 6;
+    else score -= 2;
+  }
 
   // Outcome documentation (±6)
-  if (outcomeRate >= 80) score += 4;
-  else if (outcomeRate >= 60) score += 2;
-  else if (outcomeRate < 40) score -= 4;
+  if (meets(outcomeRate, 80)) score += 4;
+  else if (meets(outcomeRate, 60)) score += 2;
+  else if (below(outcomeRate, 40)) score -= 4;
 
   // Dental & optical coverage (±6)
   if (coverageProfile.dental_coverage) score += 3;
@@ -280,8 +280,8 @@ export function computeHomeHealthWellbeing(
   // Medication compliance (±8)
   if (activeMeds.length > 0) {
     if (adminRate === 100 && missed === 0) score += 5;
-    else if (adminRate >= 90) score += 2;
-    else if (adminRate < 80) score -= 5;
+    else if (meets(adminRate, 90)) score += 2;
+    else if (below(adminRate, 80)) score -= 5;
     if (missed >= 3) score -= 3;
   }
 
@@ -297,7 +297,7 @@ export function computeHomeHealthWellbeing(
   if (childrenWithoutRecords.length === 0 && total_children > 0) strengths.push("All children have documented health records — comprehensive monitoring in place.");
   if (healthAssessments >= total_children && total_children > 0) strengths.push("Health assessments completed for all children — Reg 10 compliance evidenced.");
   if (followUpCompliance === 100 && recsWithFollowUp.length > 0) strengths.push("100% follow-up compliance — all health actions are being tracked and completed on time.");
-  if (outcomeRate >= 80 && recs180d.length > 0) strengths.push(`${outcomeRate}% of health records have documented outcomes — excellent recording practice.`);
+  if (meets(outcomeRate, 80)) strengths.push(`${outcomeRate}% of health records have documented outcomes — excellent recording practice.`);
   if (adminRate === 100 && activeMeds.length > 0) strengths.push("100% medication administration rate — no missed or refused doses.");
   if (coverageProfile.dental_coverage && coverageProfile.optical_coverage) strengths.push("Full dental and optical coverage across all children.");
   if (mhMonitored && mentalHealth > 0) strengths.push("Active mental health monitoring in place with CAMHS or equivalent engagement.");
@@ -309,7 +309,8 @@ export function computeHomeHealthWellbeing(
   if (overdueFollowUps > 0) concerns.push(`${overdueFollowUps} overdue health follow-up${overdueFollowUps > 1 ? "s" : ""} — these require urgent attention to maintain compliance.`);
   if (missed > 0) concerns.push(`${missed} missed medication administration${missed > 1 ? "s" : ""} in the last 30 days — each missed dose requires documentation and review.`);
   if (refused > 0) concerns.push(`${refused} refused medication${refused > 1 ? "s" : ""} in the last 30 days — refusals should trigger a review with the prescribing professional.`);
-  if (outcomeRate < 50 && recs180d.length > 0) concerns.push(`Only ${outcomeRate}% of health records have documented outcomes — this weakens the evidence of health monitoring.`);
+  if (below(outcomeRate, 50)) concerns.push(`Only ${outcomeRate}% of health records have documented outcomes — this weakens the evidence of health monitoring.`);
+  if (activeMeds.length > 0 && adminRate === null) concerns.push(`${activeMeds.length} active medication${activeMeds.length > 1 ? "s" : ""} but no administration recorded in the last 30 days — administration cannot be evidenced.`);
   if (!coverageProfile.dental_coverage && total_children > 0) concerns.push("Not all children have dental records in the last 180 days — 6-monthly dental checks are expected.");
   if (!coverageProfile.optical_coverage && total_children > 0) concerns.push("Not all children have optical records in the last 180 days — annual eye tests are expected.");
 
@@ -332,8 +333,11 @@ export function computeHomeHealthWellbeing(
   if (!coverageProfile.optical_coverage && total_children > 0) {
     recs.push({ rank: rank++, recommendation: "Arrange eye tests for children without recent optical records.", urgency: "planned", regulatory_ref: "Reg 10" });
   }
-  if (outcomeRate < 60 && recs180d.length > 0) {
+  if (below(outcomeRate, 60)) {
     recs.push({ rank: rank++, recommendation: "Improve outcome documentation on health records — record what happened after each appointment.", urgency: "planned", regulatory_ref: "Reg 10" });
+  }
+  if (activeMeds.length > 0 && adminRate === null) {
+    recs.push({ rank: rank++, recommendation: "Record medication administration on the MAR chart — no administration has been logged for active medications in the last 30 days.", urgency: "immediate", regulatory_ref: "Reg 23" });
   }
 
   // ── Insights ──────────────────────────────────────────────────────────
@@ -357,7 +361,7 @@ export function computeHomeHealthWellbeing(
   if (coverageProfile.dental_coverage && coverageProfile.optical_coverage && coverageProfile.mental_health_monitored) {
     insights.push({ text: "Full health coverage: dental, optical, and mental health all actively monitored. This is Ofsted-outstanding standard.", severity: "positive" });
   }
-  if (recordsPerChild >= 3 && followUpCompliance === 100) {
+  if (recordsPerChild >= 3 && followUpCompliance === 100 && recsWithFollowUp.length > 0) {
     insights.push({ text: "High record volume with complete follow-up tracking. The home can confidently evidence health outcomes to Ofsted.", severity: "positive" });
   }
 
@@ -366,7 +370,7 @@ export function computeHomeHealthWellbeing(
   if (rating === "outstanding") {
     headline = "Outstanding health monitoring — comprehensive records, strong coverage, and excellent follow-up compliance.";
   } else if (rating === "good") {
-    headline = `Good health monitoring — ${recs180d.length} records across ${childrenWithRecords.length} children with ${followUpCompliance}% follow-up compliance.`;
+    headline = `Good health monitoring — ${recs180d.length} records across ${childrenWithRecords.length} children with ${formatRate(followUpCompliance, "no")} follow-up compliance.`;
   } else if (rating === "adequate") {
     headline = "Adequate health monitoring — some gaps in coverage or follow-up compliance need addressing.";
   } else {
@@ -394,15 +398,15 @@ function emptyRecords(): HealthRecordsProfile {
     total_records_180d: 0, records_per_child: 0, record_types: {},
     children_with_records: [], children_without_records: [],
     health_assessments_count: 0, mental_health_count: 0, referrals_active: 0,
-    follow_up_compliance_rate: 100, overdue_follow_ups: 0,
-    records_with_outcomes: 0, outcome_rate: 0,
+    follow_up_compliance_rate: null, overdue_follow_ups: 0,
+    records_with_outcomes: 0, outcome_rate: null,
   };
 }
 
 function emptyMedication(): MedicationProfile {
   return {
     active_medications: 0, children_on_medication: [],
-    admin_records_30d: 0, administered_rate: 100,
+    admin_records_30d: 0, administered_rate: null,
     refused_count: 0, missed_count: 0, late_count: 0,
   };
 }

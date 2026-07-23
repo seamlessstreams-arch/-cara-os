@@ -12,6 +12,7 @@ import {
   Leaf, ChevronRight, Brain, AlertTriangle, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { usePremisesSafetyIntelligence } from "@/hooks/use-premises-safety-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -74,13 +75,13 @@ export function EnvironmentalImpactAssessmentCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2",
-            overview.check_completion_rate >= 90 ? "bg-green-50" : "bg-amber-50",
+            meets(overview.check_completion_rate, 90) ? "bg-green-50" : "bg-amber-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              overview.check_completion_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
+              meets(overview.check_completion_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]",
             )}>
-              {overview.check_completion_rate}%
+              {formatRate(overview.check_completion_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Completion</p>
           </div>

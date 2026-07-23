@@ -203,7 +203,7 @@ describe("evaluateMedicationQuality", () => {
     expect(result.administeredCorrectlyRate).toBe(0);
     expect(result.signedByTwoStaffRate).toBe(0);
     expect(result.consentOnFileRate).toBe(0);
-    expect(result.errorReportedRate).toBe(0);
+    expect(result.errorReportedRate).toBeNull();
     expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
   });
@@ -216,7 +216,7 @@ describe("evaluateMedicationQuality", () => {
     expect(result.administeredCorrectlyRate).toBe(100);
     expect(result.signedByTwoStaffRate).toBe(100);
     expect(result.consentOnFileRate).toBe(100);
-    expect(result.errorReportedRate).toBe(100);
+    expect(result.errorReportedRate).toBeNull();
     expect(result.overallScore).toBe(25);
   });
 
@@ -243,7 +243,8 @@ describe("evaluateMedicationQuality", () => {
 
   it("applies correct weight of 7 to administeredCorrectlyRate", () => {
     // Only administeredCorrectly = true. The record has no error (outcome defaults
-    // to administered_correctly), so errorReportedRate = 100 contributes its full 6.
+    // to administered_correctly), so errorReportedRate is unmeasured and its 6
+    // points are renormalised across the three limbs that WERE measured.
     const recs = [
       makeRecord({
         administeredCorrectly: true,
@@ -253,7 +254,7 @@ describe("evaluateMedicationQuality", () => {
       }),
     ];
     const result = evaluateMedicationQuality(recs);
-    expect(result.overallScore).toBe(13); // 7 (admin) + 6 (error-free reporting baseline)
+    expect(result.overallScore).toBe(9); // (100x7)/19 of 25
   });
 
   it("applies correct weight of 6 to signedByTwoStaffRate", () => {
@@ -266,7 +267,7 @@ describe("evaluateMedicationQuality", () => {
       }),
     ];
     const result = evaluateMedicationQuality(recs);
-    expect(result.overallScore).toBe(12); // 6 (signed) + 6 (error-free reporting baseline)
+    expect(result.overallScore).toBe(8); // (100x6)/19 of 25
   });
 
   it("applies correct weight of 6 to consentOnFileRate", () => {
@@ -279,7 +280,7 @@ describe("evaluateMedicationQuality", () => {
       }),
     ];
     const result = evaluateMedicationQuality(recs);
-    expect(result.overallScore).toBe(12); // 6 (consent) + 6 (error-free reporting baseline)
+    expect(result.overallScore).toBe(8); // (100x6)/19 of 25
   });
 
   it("applies correct weight of 6 to errorReportedRate (a reported error)", () => {
@@ -313,8 +314,9 @@ describe("evaluateMedicationQuality", () => {
     expect(result.overallScore).toBe(0);
   });
 
-  it("scores errorReportedRate 100 when there are NO errors (not penalised)", () => {
-    // Error-free administrations have nothing to report -> full marks, not 0.
+  it("reports errorReportedRate as unmeasured when there are NO errors", () => {
+    // Error-free administrations have nothing to report -> unmeasured, which is
+    // neither full marks nor a 0% failure.
     const recs = [
       makeRecord({
         administeredCorrectly: true,
@@ -324,7 +326,7 @@ describe("evaluateMedicationQuality", () => {
       }),
     ];
     const result = evaluateMedicationQuality(recs);
-    expect(result.errorReportedRate).toBe(100);
+    expect(result.errorReportedRate).toBeNull();
   });
 
   it("clamps score to 0-25 range", () => {
@@ -354,7 +356,7 @@ describe("evaluateMedicationQuality", () => {
     expect(result.administeredCorrectlyRate).toBe(70);
     expect(result.signedByTwoStaffRate).toBe(50);
     expect(result.consentOnFileRate).toBe(80);
-    expect(result.errorReportedRate).toBe(100); // no error records (all administered_correctly) -> full marks
+    expect(result.errorReportedRate).toBeNull(); // no error records (all administered_correctly) -> nothing to rate
   });
 });
 
@@ -1060,14 +1062,27 @@ describe("generateMedicationIntelligence", () => {
   });
 
   it("generates strengths for high rates (>=80%)", () => {
+    // One identified-and-reported error, so the reporting culture is actually
+    // measured; without it there is nothing to call a strength.
     const recs = Array.from({ length: 10 }, (_, i) =>
-      makeRecord({ id: `r-${i}` }),
+      makeRecord(
+        i === 0
+          ? { id: "r-0", outcome: "error_identified", errorReported: true }
+          : { id: `r-${i}` },
+      ),
     );
     const result = generateMedicationIntelligence(recs, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
     expect(result.strengths.some((s) => s.includes("administered correctly"))).toBe(true);
     expect(result.strengths.some((s) => s.includes("Dual-signature"))).toBe(true);
     expect(result.strengths.some((s) => s.includes("Consent records"))).toBe(true);
     expect(result.strengths.some((s) => s.includes("Error reporting"))).toBe(true);
+  });
+
+  it("does not claim an error-reporting strength when no error was identified", () => {
+    const recs = Array.from({ length: 10 }, (_, i) => makeRecord({ id: `r-${i}` }));
+    const result = generateMedicationIntelligence(recs, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
+    expect(result.strengths.some((s) => s.includes("Error reporting"))).toBe(false);
+    expect(result.areasForImprovement.some((s) => s.includes("Error reporting"))).toBe(false);
   });
 
   it("generates areas for improvement for low rates (<60%)", () => {
@@ -1161,9 +1176,10 @@ describe("generateMedicationIntelligence", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("Edge Cases", () => {
-  it("single error-free record with all-false booleans still earns the reporting baseline", () => {
-    // outcome defaults to administered_correctly (no error) -> errorReportedRate 100 -> 6;
-    // every other flag false -> 0. Score = 6, not 0 (an error-free home isn't penalised).
+  it("single error-free record with all-false booleans scores nothing it has not evidenced", () => {
+    // outcome defaults to administered_correctly (no error) -> errorReportedRate is
+    // unmeasured and drops out; every other flag false -> 0. Score = 0, because the
+    // record evidences nothing, not because an error-free home is penalised.
     const recs = [
       makeRecord({
         administeredCorrectly: false,
@@ -1173,7 +1189,7 @@ describe("Edge Cases", () => {
       }),
     ];
     const result = evaluateMedicationQuality(recs);
-    expect(result.overallScore).toBe(6);
+    expect(result.overallScore).toBe(0);
   });
 
   it("single staff with all false skills scores 0", () => {
@@ -1253,8 +1269,8 @@ describe("Edge Cases", () => {
     );
     const result = evaluateMedicationQuality(recs);
     expect(result.administeredCorrectlyRate).toBe(75);
-    // 0.75*7 + 0.75*6 + 0.75*6 + 1.0*6 (no errors -> errorReported 100)
-    //   = 5.25 + 4.5 + 4.5 + 6 = 20.25 -> round = 20
-    expect(result.overallScore).toBe(20);
+    // No errors, so the reporting limb is unmeasured and drops out: the mean of
+    // the three measured limbs is 75, over the full 25 -> 18.75 -> round = 19.
+    expect(result.overallScore).toBe(19);
   });
 });

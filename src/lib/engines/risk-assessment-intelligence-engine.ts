@@ -10,6 +10,8 @@
 // SCCIF: Safety domain — "Are risks assessed and managed effectively?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type RiskLevel = "very_high" | "high" | "medium" | "low" | "minimal";
@@ -61,9 +63,9 @@ export interface RiskOverview {
   increasing_count: number;
   decreasing_count: number;
   overdue_review_count: number;
-  child_voice_rate: number;        // 0-100
-  contingency_plan_rate: number;   // 0-100
-  mitigation_effectiveness_rate: number; // 0-100 (pct effective)
+  child_voice_rate: number | null;        // 0-100, null when no current assessments
+  contingency_plan_rate: number | null;   // 0-100, null when no current assessments
+  mitigation_effectiveness_rate: number | null; // 0-100 (pct effective), null when no mitigations recorded
 }
 
 export interface ChildRiskProfile {
@@ -83,7 +85,7 @@ export interface DomainAnalysis {
   avg_level_score: number; // 1-5 (minimal to very_high)
   increasing: number;
   decreasing: number;
-  mitigation_effective_rate: number;
+  mitigation_effective_rate: number | null;
 }
 
 export interface RiskAlert {
@@ -176,11 +178,9 @@ export function computeRiskAssessmentIntelligence(input: RiskAssessmentIntellige
     increasing_count: increasing,
     decreasing_count: decreasing,
     overdue_review_count: overdueReviews,
-    child_voice_rate: current.length > 0 ? Math.round((withChildViews / current.length) * 100) : 100,
-    contingency_plan_rate: current.length > 0 ? Math.round((withContingency / current.length) * 100) : 100,
-    mitigation_effectiveness_rate: allMitigations.length > 0
-      ? Math.round((effectiveMitigations / allMitigations.length) * 100)
-      : 100,
+    child_voice_rate: rate(withChildViews, current.length),
+    contingency_plan_rate: rate(withContingency, current.length),
+    mitigation_effectiveness_rate: rate(effectiveMitigations, allMitigations.length),
   };
 
   // ── Child Profiles ────────────────────────────────────────────────────
@@ -226,7 +226,8 @@ export function computeRiskAssessmentIntelligence(input: RiskAssessmentIntellige
         avg_level_score: Math.round(average(scores) * 10) / 10,
         increasing: items.filter((a) => a.trend === "increasing").length,
         decreasing: items.filter((a) => a.trend === "decreasing").length,
-        mitigation_effective_rate: mitigations.length > 0 ? Math.round((effective / mitigations.length) * 100) : 100,
+        // null when the domain's assessments carry no mitigation strategies at all
+        mitigation_effective_rate: rate(effective, mitigations.length),
       };
     })
     .sort((a, b) => b.avg_level_score - a.avg_level_score);
@@ -341,10 +342,11 @@ export function computeRiskAssessmentIntelligence(input: RiskAssessmentIntellige
   }
 
   // Positive: high mitigation effectiveness
-  if (allMitigations.length >= 3 && overview.mitigation_effectiveness_rate >= 80) {
+  const mitigationRate = overview.mitigation_effectiveness_rate;
+  if (allMitigations.length >= 3 && meets(mitigationRate, 80)) {
     insights.push({
       severity: "positive",
-      text: `${overview.mitigation_effectiveness_rate}% of risk mitigation strategies rated as effective. Evidence-based interventions are reducing risk and keeping children safe.`,
+      text: `${mitigationRate}% of risk mitigation strategies rated as effective. Evidence-based interventions are reducing risk and keeping children safe.`,
     });
   }
 

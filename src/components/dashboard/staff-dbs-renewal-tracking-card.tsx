@@ -13,6 +13,7 @@ import {
   Shield, ChevronRight, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -67,8 +68,8 @@ export function StaffDbsRenewalTrackingCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", d.compliance_rate >= 100 ? "bg-green-50" : d.compliance_rate >= 90 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", d.compliance_rate >= 100 ? "text-[--cs-success]" : d.compliance_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.compliance_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(d.compliance_rate, 100) ? "bg-green-50" : meets(d.compliance_rate, 90) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(d.compliance_rate, 100) ? "text-[--cs-success]" : meets(d.compliance_rate, 90) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.compliance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">

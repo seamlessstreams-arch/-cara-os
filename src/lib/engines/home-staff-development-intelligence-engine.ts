@@ -6,6 +6,8 @@
 // CHR 2015 Reg 32, 33. SCCIF: "Leadership and management."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface SupervisionInput {
@@ -83,10 +85,10 @@ export interface SupervisionProfile {
   total_completed_6m: number;
   total_scheduled: number;
   overdue_count: number;
-  completion_rate_6m: number;             // % of scheduled supervisions completed in 6m
+  completion_rate_6m: number | null;      // % of scheduled supervisions completed in 6m
   avg_wellbeing_score: number | null;     // 1-10
   low_wellbeing_staff: string[];          // staff names with score < 5
-  dual_signature_rate: number;            // % with both signatures
+  dual_signature_rate: number | null;     // % with both signatures
   avg_duration_minutes: number | null;
   staff_without_recent_supervision: string[]; // no supervision in 8 weeks
   trend: "improving" | "stable" | "declining" | "insufficient_data";
@@ -96,7 +98,7 @@ export interface TrainingProfile {
   total_records: number;
   mandatory_total: number;
   mandatory_compliant: number;
-  mandatory_compliance_rate: number;      // 0-100
+  mandatory_compliance_rate: number | null; // 0-100, null = no mandatory training on record
   expired_count: number;
   expiring_soon_count: number;
   not_started_count: number;
@@ -110,7 +112,7 @@ export interface QualificationProfile {
   completed_count: number;
   in_progress_count: number;
   not_started_count: number;
-  mandatory_completion_rate: number;      // 0-100 (completed / mandatory total)
+  mandatory_completion_rate: number | null; // 0-100 (completed / mandatory total)
   expiring_qualifications: string[];
   staff_without_mandatory: string[];      // staff names with mandatory quals not started
 }
@@ -120,8 +122,8 @@ export interface InductionProfile {
   completed_count: number;
   in_progress_count: number;
   overdue_count: number;
-  avg_completion_rate: number;            // avg % of items completed across in-progress
-  probation_pass_rate: number;            // % of completed inductions with probation passed
+  avg_completion_rate: number | null;     // avg % of items completed across in-progress
+  probation_pass_rate: number | null;     // % of completed inductions with probation passed
 }
 
 export interface StaffDevelopmentInsight {
@@ -205,9 +207,7 @@ export function computeHomeStaffDevelopment(
     return false;
   });
 
-  const supCompletionRate = sup6m.length > 0
-    ? Math.round((completedSups.length / sup6m.length) * 100)
-    : 0;
+  const supCompletionRate = rateOf(completedSups, sup6m);
 
   const wellbeingScores = completedSups
     .filter(s => s.wellbeing_score !== null)
@@ -224,9 +224,7 @@ export function computeHomeStaffDevelopment(
     });
 
   const dualSignedSups = completedSups.filter(s => s.staff_signature && s.supervisor_signature);
-  const dualSignRate = completedSups.length > 0
-    ? Math.round((dualSignedSups.length / completedSups.length) * 100)
-    : 0;
+  const dualSignRate = rateOf(dualSignedSups, completedSups);
 
   const durations = completedSups.filter(s => s.duration_minutes !== null).map(s => s.duration_minutes!);
   const avgDuration = durations.length > 0
@@ -278,9 +276,7 @@ export function computeHomeStaffDevelopment(
   // ── Training Profile ────────────────────────────────────────────────────
   const mandatoryTraining = training_records.filter(t => t.is_mandatory);
   const mandatoryCompliant = mandatoryTraining.filter(t => t.status === "compliant");
-  const mandatoryComplianceRate = mandatoryTraining.length > 0
-    ? Math.round((mandatoryCompliant.length / mandatoryTraining.length) * 100)
-    : 100;
+  const mandatoryComplianceRate = rateOf(mandatoryCompliant, mandatoryTraining);
 
   const expired = training_records.filter(t => t.status === "expired");
   const expiringSoon = training_records.filter(t => t.status === "expiring_soon");
@@ -318,9 +314,7 @@ export function computeHomeStaffDevelopment(
 
   const mandatoryQuals = qualifications.filter(q => q.is_mandatory);
   const mandatoryCompleteQuals = mandatoryQuals.filter(q => q.status === "completed");
-  const mandatoryQualRate = mandatoryQuals.length > 0
-    ? Math.round((mandatoryCompleteQuals.length / mandatoryQuals.length) * 100)
-    : 100;
+  const mandatoryQualRate = rateOf(mandatoryCompleteQuals, mandatoryQuals);
 
   const expiringQuals = qualifications
     .filter(q => q.expiry_date && daysBetween(today, q.expiry_date) >= 0 && daysBetween(today, q.expiry_date) <= 90)
@@ -355,15 +349,11 @@ export function computeHomeStaffDevelopment(
 
   const inProgressRates = inProgressInductions
     .filter(i => i.total_items > 0)
-    .map(i => (i.completed_items / i.total_items) * 100);
-  const avgCompletionRate = inProgressRates.length > 0
-    ? Math.round(inProgressRates.reduce((s, v) => s + v, 0) / inProgressRates.length)
-    : 0;
+    .map(i => rate(i.completed_items, i.total_items));
+  const avgCompletionRate = meanOf(inProgressRates);
 
   const probationPassed = completedInductions.filter(i => i.probation_passed).length;
-  const probationPassRate = completedInductions.length > 0
-    ? Math.round((probationPassed / completedInductions.length) * 100)
-    : 0;
+  const probationPassRate = rate(probationPassed, completedInductions.length);
 
   const inductionProfile: InductionProfile = {
     total_inductions: inductions.length,
@@ -379,10 +369,10 @@ export function computeHomeStaffDevelopment(
 
   // Supervision (±20)
   if (supervisions.length > 0) {
-    if (supCompletionRate >= 90) score += 8;
-    else if (supCompletionRate >= 70) score += 3;
-    else if (supCompletionRate < 50) score -= 8;
-    else score -= 3;
+    if (meets(supCompletionRate, 90)) score += 8;
+    else if (meets(supCompletionRate, 70)) score += 3;
+    else if (below(supCompletionRate, 50)) score -= 8;
+    else if (supCompletionRate !== null) score -= 3;
 
     if (overdueSups.length === 0) score += 4;
     else if (overdueSups.length >= 3) score -= 6;
@@ -392,8 +382,8 @@ export function computeHomeStaffDevelopment(
     else if (staffWithoutRecent.length >= 3) score -= 6;
     else score -= 3;
 
-    if (dualSignRate === 100) score += 3;
-    else if (dualSignRate < 80) score -= 3;
+    if (meets(dualSignRate, 100)) score += 3;
+    else if (below(dualSignRate, 80)) score -= 3;
 
     if (supTrend === "improving") score += 2;
     else if (supTrend === "declining") score -= 3;
@@ -401,10 +391,10 @@ export function computeHomeStaffDevelopment(
 
   // Training (±20)
   if (training_records.length > 0) {
-    if (mandatoryComplianceRate === 100) score += 10;
-    else if (mandatoryComplianceRate >= 80) score += 5;
-    else if (mandatoryComplianceRate < 60) score -= 10;
-    else score -= 3;
+    if (meets(mandatoryComplianceRate, 100)) score += 10;
+    else if (meets(mandatoryComplianceRate, 80)) score += 5;
+    else if (below(mandatoryComplianceRate, 60)) score -= 10;
+    else if (mandatoryComplianceRate !== null) score -= 3;
 
     if (expired.length === 0) score += 5;
     else if (expired.length >= 3) score -= 8;
@@ -415,9 +405,9 @@ export function computeHomeStaffDevelopment(
 
   // Qualifications (±15)
   if (qualifications.length > 0) {
-    if (mandatoryQualRate >= 80) score += 5;
-    else if (mandatoryQualRate >= 50) score += 2;
-    else score -= 5;
+    if (meets(mandatoryQualRate, 80)) score += 5;
+    else if (meets(mandatoryQualRate, 50)) score += 2;
+    else if (mandatoryQualRate !== null) score -= 5;
 
     if (notStartedQuals.length === 0) score += 3;
     else if (staffMandatoryNotStarted.length > 0) score -= 5;
@@ -430,8 +420,8 @@ export function computeHomeStaffDevelopment(
     if (overdueInductions.length === 0) score += 4;
     else score -= 4;
 
-    if (probationPassRate === 100 && completedInductions.length > 0) score += 3;
-    else if (probationPassRate < 80 && completedInductions.length > 0) score -= 3;
+    if (meets(probationPassRate, 100)) score += 3;
+    else if (below(probationPassRate, 80)) score -= 3;
   }
 
   // Wellbeing bonus/penalty
@@ -445,14 +435,14 @@ export function computeHomeStaffDevelopment(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (supCompletionRate >= 90 && completedSups.length > 0) strengths.push(`Supervision completion rate is ${supCompletionRate}% — demonstrating robust oversight.`);
-  if (dualSignRate === 100 && completedSups.length > 0) strengths.push("100% dual-signature compliance across all completed supervisions.");
+  if (meets(supCompletionRate, 90) && completedSups.length > 0) strengths.push(`Supervision completion rate is ${formatRate(supCompletionRate)} — demonstrating robust oversight.`);
+  if (meets(dualSignRate, 100)) strengths.push("100% dual-signature compliance across all completed supervisions.");
   if (staffWithoutRecent.length === 0 && staff.length > 0 && completedSups.length > 0) strengths.push("All staff have received supervision within the last 8 weeks.");
-  if (mandatoryComplianceRate === 100 && mandatoryTraining.length > 0) strengths.push(`All ${mandatoryTraining.length} mandatory training records are compliant.`);
+  if (meets(mandatoryComplianceRate, 100)) strengths.push(`All ${mandatoryTraining.length} mandatory training records are compliant.`);
   if (expired.length === 0 && training_records.length > 0) strengths.push("No expired training across the staff team.");
   if (avgWellbeing !== null && avgWellbeing >= 7) strengths.push(`Staff wellbeing average is ${avgWellbeing}/10 — team morale is strong.`);
   if (inProgressQuals.length > 0) strengths.push(`${inProgressQuals.length} qualification${inProgressQuals.length > 1 ? "s" : ""} actively in progress — evidence of ongoing professional development.`);
-  if (probationPassRate === 100 && completedInductions.length > 0) strengths.push("100% probation pass rate for completed inductions.");
+  if (meets(probationPassRate, 100)) strengths.push("100% probation pass rate for completed inductions.");
   if (overdueInductions.length === 0 && inductions.length > 0) strengths.push("All inductions are on track or completed.");
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -462,10 +452,10 @@ export function computeHomeStaffDevelopment(
   if (lowWellbeingStaff.length > 0) concerns.push(`Low wellbeing score${lowWellbeingStaff.length > 1 ? "s" : ""} recorded for: ${[...new Set(lowWellbeingStaff)].join(", ")} — follow-up support needed.`);
   if (expired.length > 0) concerns.push(`${expired.length} training record${expired.length > 1 ? "s" : ""} expired: ${expired.map(t => t.course_name).join(", ")}.`);
   if (expiringSoon.length > 0) concerns.push(`${expiringSoon.length} training record${expiringSoon.length > 1 ? "s" : ""} expiring soon: ${expiringSoon.map(t => t.course_name).join(", ")}.`);
-  if (mandatoryComplianceRate < 80 && mandatoryTraining.length > 0) concerns.push(`Mandatory training compliance is only ${mandatoryComplianceRate}% — significant gap in statutory training requirements.`);
+  if (below(mandatoryComplianceRate, 80)) concerns.push(`Mandatory training compliance is only ${formatRate(mandatoryComplianceRate)} — significant gap in statutory training requirements.`);
   if (staffMandatoryNotStarted.length > 0) concerns.push(`${staffMandatoryNotStarted.length} staff member${staffMandatoryNotStarted.length > 1 ? "s have" : " has"} not started mandatory qualifications: ${[...new Set(staffMandatoryNotStarted)].join(", ")}.`);
   if (overdueInductions.length > 0) concerns.push(`${overdueInductions.length} induction${overdueInductions.length > 1 ? "s" : ""} overdue — new staff may not be fully equipped.`);
-  if (dualSignRate < 80 && completedSups.length > 0) concerns.push(`Dual-signature rate is only ${dualSignRate}% — supervision records may not be robust.`);
+  if (below(dualSignRate, 80)) concerns.push(`Dual-signature rate is only ${formatRate(dualSignRate)} — supervision records may not be robust.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: StaffDevelopmentRecommendation[] = [];
@@ -508,8 +498,8 @@ export function computeHomeStaffDevelopment(
     insights.push({ text: `${overdueSups.length} supervision${overdueSups.length > 1 ? "s" : ""} overdue — address promptly to maintain compliance.`, severity: "warning" });
   }
 
-  if (avgWellbeing !== null && avgWellbeing >= 7 && mandatoryComplianceRate >= 90 && overdueSups.length === 0) {
-    insights.push({ text: `Strong staff development position: supervision on track, training ${mandatoryComplianceRate}% compliant, wellbeing averaging ${avgWellbeing}/10. Well-placed for inspection.`, severity: "positive" });
+  if (avgWellbeing !== null && avgWellbeing >= 7 && meets(mandatoryComplianceRate, 90) && overdueSups.length === 0) {
+    insights.push({ text: `Strong staff development position: supervision on track, training ${formatRate(mandatoryComplianceRate)} compliant, wellbeing averaging ${avgWellbeing}/10. Well-placed for inspection.`, severity: "positive" });
   }
 
   if (supTrend === "improving") {
@@ -561,17 +551,17 @@ export function computeHomeStaffDevelopment(
 // ── Empty Defaults ──────────────────────────────────────────────────────────
 
 function emptySup(): SupervisionProfile {
-  return { total_completed_6m: 0, total_scheduled: 0, overdue_count: 0, completion_rate_6m: 0, avg_wellbeing_score: null, low_wellbeing_staff: [], dual_signature_rate: 0, avg_duration_minutes: null, staff_without_recent_supervision: [], trend: "insufficient_data" };
+  return { total_completed_6m: 0, total_scheduled: 0, overdue_count: 0, completion_rate_6m: null, avg_wellbeing_score: null, low_wellbeing_staff: [], dual_signature_rate: null, avg_duration_minutes: null, staff_without_recent_supervision: [], trend: "insufficient_data" };
 }
 
 function emptyTraining(): TrainingProfile {
-  return { total_records: 0, mandatory_total: 0, mandatory_compliant: 0, mandatory_compliance_rate: 0, expired_count: 0, expiring_soon_count: 0, not_started_count: 0, expired_courses: [], expiring_courses: [], category_coverage: [] };
+  return { total_records: 0, mandatory_total: 0, mandatory_compliant: 0, mandatory_compliance_rate: null, expired_count: 0, expiring_soon_count: 0, not_started_count: 0, expired_courses: [], expiring_courses: [], category_coverage: [] };
 }
 
 function emptyQual(): QualificationProfile {
-  return { total_qualifications: 0, completed_count: 0, in_progress_count: 0, not_started_count: 0, mandatory_completion_rate: 0, expiring_qualifications: [], staff_without_mandatory: [] };
+  return { total_qualifications: 0, completed_count: 0, in_progress_count: 0, not_started_count: 0, mandatory_completion_rate: null, expiring_qualifications: [], staff_without_mandatory: [] };
 }
 
 function emptyInduction(): InductionProfile {
-  return { total_inductions: 0, completed_count: 0, in_progress_count: 0, overdue_count: 0, avg_completion_rate: 0, probation_pass_rate: 0 };
+  return { total_inductions: 0, completed_count: 0, in_progress_count: 0, overdue_count: 0, avg_completion_rate: null, probation_pass_rate: null };
 }

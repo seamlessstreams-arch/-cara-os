@@ -24,6 +24,7 @@ import { buildFreeChatGrounding } from "@/lib/cara/ask-cara-natural";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 import { readJsonBody } from "@/lib/http/read-json";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ─── Deterministic safeguarding scan (no AI key required) ────────────────────
 
@@ -356,10 +357,10 @@ function deterministicStaffDevelopmentSummary(): string {
     "",
     "**Workforce development at a glance**",
     `- Active staff: ${o.active_staff} of ${o.total_staff}`,
-    `- Appraisals: ${o.appraisals_completed} completed, ${o.appraisals_overdue} overdue (${o.appraisal_completion_rate}% of active staff complete)`,
-    `- Average competency readiness: ${o.avg_competency_readiness}%`,
-    `- Mandatory qualification compliance: ${o.mandatory_qual_compliance_rate}% (${o.qualifications_expiring_soon} expiring within 90 days)`,
-    `- Active development plans: ${o.development_plans_active} (avg ${o.development_plan_progress_rate}% complete)`,
+    `- Appraisals: ${o.appraisals_completed} completed, ${o.appraisals_overdue} overdue (${formatRate(o.appraisal_completion_rate, "no active staff on record")} of active staff complete)`,
+    `- Average competency readiness: ${formatRate(o.avg_competency_readiness, "no competency profiles recorded")}`,
+    `- Mandatory qualification compliance: ${formatRate(o.mandatory_qual_compliance_rate, "no mandatory qualifications recorded")} (${o.qualifications_expiring_soon} expiring within 90 days)`,
+    `- Active development plans: ${o.development_plans_active} (avg ${formatRate(o.development_plan_progress_rate, "no progress recorded yet")} complete)`,
     "",
   ];
 

@@ -13,6 +13,15 @@
 
 import { useState, useEffect } from "react";
 
+/** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
+function pct(value: number | null | undefined): string {
+  return typeof value === "number" && Number.isFinite(value) ? `${value}%` : "—";
+}
+
+function meets(value: number | null | undefined, threshold: number): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value >= threshold;
+}
+
 // ── Interfaces ─────────────────────────────────────────────────────────────
 
 interface HomeMatchingImpactData {
@@ -27,7 +36,7 @@ interface HomeMatchingImpactData {
     averageCompatibilityScore: number;
     assessmentCompletionRate: number;
     existingChildrenConsultedRate: number;
-    conditionsAppliedRate: number;
+    conditionsAppliedRate: number | null;
     decisionBreakdown: Record<string, number>;
     admissionTypeBreakdown: Record<string, number>;
     averageRiskFactors: number;
@@ -40,8 +49,8 @@ interface HomeMatchingImpactData {
     significantNegativeRate: number;
     positiveImpactRate: number;
     impactAreaBreakdown: Record<string, number>;
-    resolutionRate: number;
-    mitigationProvidedRate: number;
+    resolutionRate: number | null;
+    mitigationProvidedRate: number | null;
     averageMonitoringPerChild: number;
     monitoringFrequencyAdequate: boolean;
   };
@@ -436,13 +445,13 @@ export function HomeMatchingImpactDashboardWidget() {
             />
             <MetricCard
               label="Resolution Rate"
-              value={`${data.impactMonitoring.resolutionRate}%`}
-              color={data.impactMonitoring.resolutionRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
+              value={pct(data.impactMonitoring.resolutionRate)}
+              color={meets(data.impactMonitoring.resolutionRate, 80) ? "text-green-700 bg-green-50" : data.impactMonitoring.resolutionRate === null ? "text-gray-600 bg-gray-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard
               label="Mitigation Rate"
-              value={`${data.impactMonitoring.mitigationProvidedRate}%`}
-              color={data.impactMonitoring.mitigationProvidedRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
+              value={pct(data.impactMonitoring.mitigationProvidedRate)}
+              color={meets(data.impactMonitoring.mitigationProvidedRate, 80) ? "text-green-700 bg-green-50" : data.impactMonitoring.mitigationProvidedRate === null ? "text-gray-600 bg-gray-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard
               label="Avg per Child"

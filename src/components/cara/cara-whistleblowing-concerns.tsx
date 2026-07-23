@@ -24,6 +24,7 @@ import type {
   Rating,
   WhistleblowingConcernsIntelligenceResult,
 } from "@/lib/whistleblowing-concerns";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Config ──────────────────────────────────────────────────────────────────
 
@@ -128,18 +129,18 @@ export function CaraWhistleblowingConcerns() {
           <div className="grid grid-cols-3 gap-2 text-xs">
             <MetricPill
               label="Ack &lt;48hrs"
-              value={`${intel.responseQuality.acknowledgedWithin48HrsRate}%`}
-              good={intel.responseQuality.acknowledgedWithin48HrsRate >= 90}
+              value={formatRate(intel.responseQuality.acknowledgedWithin48HrsRate)}
+              good={meets(intel.responseQuality.acknowledgedWithin48HrsRate, 90)}
             />
             <MetricPill
               label="Inv &lt;7d"
-              value={`${intel.responseQuality.investigationStartedRate}%`}
-              good={intel.responseQuality.investigationStartedRate >= 90}
+              value={formatRate(intel.responseQuality.investigationStartedRate)}
+              good={meets(intel.responseQuality.investigationStartedRate, 90)}
             />
             <MetricPill
               label="Res &lt;30d"
-              value={`${intel.responseQuality.resolvedWithin30DaysRate}%`}
-              good={intel.responseQuality.resolvedWithin30DaysRate >= 80}
+              value={formatRate(intel.responseQuality.resolvedWithin30DaysRate)}
+              good={meets(intel.responseQuality.resolvedWithin30DaysRate, 80)}
             />
           </div>
         </div>

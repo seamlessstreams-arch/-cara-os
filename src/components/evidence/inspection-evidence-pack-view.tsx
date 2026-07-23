@@ -253,21 +253,23 @@ function OverallScoreCard({ pack }: { pack: InspectionEvidencePack }) {
               fill="none"
               strokeWidth="8"
               strokeLinecap="round"
-              strokeDasharray={`${pack.overall_score * 2.64} 264`}
+              strokeDasharray={`${(pack.overall_score ?? 0) * 2.64} 264`}
               className={
-                pack.overall_score >= 85
-                  ? "text-emerald-500"
-                  : pack.overall_score >= 65
-                    ? "text-blue-500"
-                    : pack.overall_score >= 45
-                      ? "text-amber-500"
-                      : "text-red-500"
+                pack.overall_score === null
+                  ? "text-muted"
+                  : pack.overall_score >= 85
+                    ? "text-emerald-500"
+                    : pack.overall_score >= 65
+                      ? "text-blue-500"
+                      : pack.overall_score >= 45
+                        ? "text-amber-500"
+                        : "text-red-500"
               }
               stroke="currentColor"
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-2xl font-bold">{pack.overall_score}</span>
+            <span className="text-2xl font-bold">{pack.overall_score ?? "—"}</span>
           </div>
         </div>
 
@@ -281,7 +283,7 @@ function OverallScoreCard({ pack }: { pack: InspectionEvidencePack }) {
               <p className="text-[10px] text-muted-foreground leading-tight truncate">
                 {section.title.split(" ").slice(0, 2).join(" ")}
               </p>
-              <p className="text-xs font-semibold">{section.score ?? "--"}%</p>
+              <p className="text-xs font-semibold">{section.score === undefined ? "—" : `${section.score}%`}</p>
             </div>
           ))}
         </div>

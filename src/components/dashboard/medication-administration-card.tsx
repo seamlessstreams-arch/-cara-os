@@ -16,6 +16,7 @@ import {
   Pill, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useMedicationIntelligence } from "@/hooks/use-medication-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -79,13 +80,13 @@ export function MedicationAdministrationCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.adherence_rate >= 90 ? "bg-green-50" : o.adherence_rate >= 75 ? "bg-amber-50" : "bg-red-50",
+            o.adherence_rate === null ? "bg-gray-50" : meets(o.adherence_rate, 90) ? "bg-green-50" : meets(o.adherence_rate, 75) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.adherence_rate >= 90 ? "text-[--cs-success]" : o.adherence_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.adherence_rate === null ? "text-muted-foreground" : meets(o.adherence_rate, 90) ? "text-[--cs-success]" : meets(o.adherence_rate, 75) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.adherence_rate}%
+              {formatRate(o.adherence_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Adherence</p>
           </div>
@@ -97,25 +98,25 @@ export function MedicationAdministrationCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.refusal_rate === 0 ? "bg-green-50" : o.refusal_rate <= 5 ? "bg-amber-50" : "bg-red-50",
+            o.refusal_rate === null ? "bg-gray-50" : o.refusal_rate === 0 ? "bg-green-50" : o.refusal_rate <= 5 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.refusal_rate === 0 ? "text-[--cs-success]" : o.refusal_rate <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.refusal_rate === null ? "text-muted-foreground" : o.refusal_rate === 0 ? "text-[--cs-success]" : o.refusal_rate <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.refusal_rate}%
+              {formatRate(o.refusal_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Refusal</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.missed_rate === 0 ? "bg-green-50" : o.missed_rate <= 3 ? "bg-amber-50" : "bg-red-50",
+            o.missed_rate === null ? "bg-gray-50" : o.missed_rate === 0 ? "bg-green-50" : o.missed_rate <= 3 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.missed_rate === 0 ? "text-[--cs-success]" : o.missed_rate <= 3 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.missed_rate === null ? "text-muted-foreground" : o.missed_rate === 0 ? "text-[--cs-success]" : o.missed_rate <= 3 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.missed_rate}%
+              {formatRate(o.missed_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Missed</p>
           </div>
@@ -140,11 +141,12 @@ export function MedicationAdministrationCard() {
                   <div className="flex items-center gap-1.5 ml-2">
                     <Badge variant="outline" className={cn(
                       "text-[10px] shrink-0",
-                      med.adherence_rate >= 90 ? "text-green-700 bg-green-50 border-green-200" :
-                      med.adherence_rate >= 75 ? "text-amber-700 bg-amber-50 border-amber-200" :
+                      med.adherence_rate === null ? "text-gray-600 bg-gray-50 border-gray-200" :
+                      meets(med.adherence_rate, 90) ? "text-green-700 bg-green-50 border-green-200" :
+                      meets(med.adherence_rate, 75) ? "text-amber-700 bg-amber-50 border-amber-200" :
                       "text-red-700 bg-red-50 border-red-200",
                     )}>
-                      {med.adherence_rate}%
+                      {formatRate(med.adherence_rate)}
                     </Badge>
                     <span className="text-[10px] text-muted-foreground whitespace-nowrap">
                       {med.administrations_30d} dose{med.administrations_30d !== 1 ? "s" : ""}

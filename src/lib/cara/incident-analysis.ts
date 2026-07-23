@@ -17,6 +17,8 @@
 // Pure function — no side effects, no API calls.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface IncidentRecord {
@@ -91,8 +93,8 @@ export interface IncidentAnalysis {
   // Alerts
   alerts: IncidentAlert[];
 
-  // De-escalation
-  deEscalationRate: number;
+  // De-escalation — null when de-escalation was never attempted (or recorded)
+  deEscalationRate: number | null;
 
   // Regulatory compliance
   regulatoryStatus: {
@@ -102,15 +104,17 @@ export interface IncidentAnalysis {
   };
 }
 
+// Every rate here is null when there is nothing to measure — no incidents at all
+// for restraintRate, no restraints at all for the two restraint-scoped rates.
 export interface RestraintAnalysis {
   totalRestraints: number;
-  restraintRate: number;        // % of incidents involving restraint
+  restraintRate: number | null;        // % of incidents involving restraint
   averageDuration: number;      // minutes
   physicalCount: number;
-  deEscalationBeforeRestraint: number;  // % that attempted de-escalation first
+  deEscalationBeforeRestraint: number | null;  // % that attempted de-escalation first
   injuryDuringRestraint: number;
   debriefCompleted: number;
-  debriefRate: number;
+  debriefRate: number | null;
 }
 
 export interface TimePattern {
@@ -224,7 +228,8 @@ export function analyseIncidents(
 
   // Restraint analysis
   const restraints = records.filter((r) => r.restraintUsed);
-  const restraintRate = totalIncidents > 0 ? Math.round((restraints.length / totalIncidents) * 100) : 0;
+  const restraintRate = rate(restraints.length, totalIncidents);
+  const restraintRateHigh = restraintRate !== null && restraintRate > 30 && restraints.length >= 3;
   const avgDuration = restraints.length > 0
     ? Math.round(restraints.reduce((s, r) => s + (r.restraintDurationMinutes ?? 0), 0) / restraints.length)
     : 0;
@@ -237,10 +242,10 @@ export function analyseIncidents(
     restraintRate,
     averageDuration: avgDuration,
     physicalCount: restraints.filter((r) => r.restraintType === "physical").length,
-    deEscalationBeforeRestraint: restraints.length > 0 ? Math.round((deEscBeforeRestraint / restraints.length) * 100) : 100,
+    deEscalationBeforeRestraint: rate(deEscBeforeRestraint, restraints.length),
     injuryDuringRestraint: injuryDuring,
     debriefCompleted: debriefsDone,
-    debriefRate: restraints.length > 0 ? Math.round((debriefsDone / restraints.length) * 100) : 100,
+    debriefRate: rate(debriefsDone, restraints.length),
   };
 
   // Time patterns
@@ -339,9 +344,7 @@ export function analyseIncidents(
   // De-escalation rate
   const deEscAttempted = records.filter((r) => r.deEscalationAttempted);
   const deEscSuccessful = deEscAttempted.filter((r) => r.deEscalationSuccessful);
-  const deEscalationRate = deEscAttempted.length > 0
-    ? Math.round((deEscSuccessful.length / deEscAttempted.length) * 100)
-    : 100;
+  const deEscalationRate = rate(deEscSuccessful.length, deEscAttempted.length);
 
   // Generate alerts
   // Increasing trend
@@ -357,7 +360,7 @@ export function analyseIncidents(
   }
 
   // High restraint rate
-  if (restraintRate > 30 && restraints.length >= 3) {
+  if (restraintRateHigh) {
     alerts.push({
       severity: "high",
       category: "restraint",
@@ -369,7 +372,7 @@ export function analyseIncidents(
   }
 
   // Restraint without de-escalation
-  if (restraintAnalysis.deEscalationBeforeRestraint < 100 && restraints.length > 0) {
+  if (below(restraintAnalysis.deEscalationBeforeRestraint, 100)) {
     const withoutDeEsc = restraints.length - deEscBeforeRestraint;
     if (withoutDeEsc > 0) {
       alerts.push({
@@ -398,7 +401,7 @@ export function analyseIncidents(
   }
 
   // Debrief not completed after restraint
-  if (restraints.length > 0 && restraintAnalysis.debriefRate < 100) {
+  if (below(restraintAnalysis.debriefRate, 100)) {
     const noDebrief = restraints.length - debriefsDone;
     alerts.push({
       severity: "medium",
@@ -427,14 +430,15 @@ export function analyseIncidents(
   const strengths: string[] = [];
 
   if (unnotified.length > 0) issues.push(`${unnotified.length} missing Reg 40 notifications`);
-  if (restraintAnalysis.deEscalationBeforeRestraint < 100 && restraints.length > 0) issues.push("Restraint used without de-escalation");
+  if (below(restraintAnalysis.deEscalationBeforeRestraint, 100)) issues.push("Restraint used without de-escalation");
   if (trend === "increasing") issues.push("Incident frequency increasing");
-  if (restraintRate > 30 && restraints.length >= 3) issues.push(`High restraint rate (${restraintRate}%)`);
+  if (restraintRateHigh) issues.push(`High restraint rate (${restraintRate}%)`);
 
-  if (deEscalationRate >= 80) strengths.push(`Good de-escalation success rate (${deEscalationRate}%)`);
+  if (meets(deEscalationRate, 80)) strengths.push(`Good de-escalation success rate (${deEscalationRate}%)`);
   if (trend === "decreasing") strengths.push("Incidents decreasing — positive trend");
-  if (restraints.length === 0) strengths.push("No restraints used in the period");
-  if (restraintAnalysis.debriefRate === 100 && restraints.length > 0) strengths.push("All restraints followed up with debrief");
+  // Only evidence of restraint-free practice when there were incidents to manage
+  if (totalIncidents > 0 && restraints.length === 0) strengths.push("No restraints used in the period");
+  if (meets(restraintAnalysis.debriefRate, 100)) strengths.push("All restraints followed up with debrief");
   if (unnotified.length === 0 && notifiable.length > 0) strengths.push("All notifiable incidents properly reported");
 
   return {

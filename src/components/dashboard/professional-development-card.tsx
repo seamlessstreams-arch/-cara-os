@@ -14,6 +14,7 @@ import {
   BookOpen, Users, CheckCircle2, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meanOf, meets, rate } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 // ── Insight styling ──────────────────────────────────────────────────────────
@@ -51,14 +52,10 @@ export function ProfessionalDevelopmentCard() {
   const sup = intel.supervision;
 
   // Compute aggregated training stats
-  const avgCompliance = intel.training.length > 0
-    ? Math.round(intel.training.reduce((sum, t) => sum + t.compliance_rate, 0) / intel.training.length)
-    : 0;
+  const avgCompliance = meanOf(intel.training.map((t) => t.compliance_rate));
   const totalExpiring = intel.training.reduce((sum, t) => sum + t.expiring_soon, 0);
   const totalExpired = intel.training.reduce((sum, t) => sum + t.expired, 0);
-  const supRate = sup.total_staff_requiring > 0
-    ? Math.round((sup.up_to_date / sup.total_staff_requiring) * 100)
-    : 100;
+  const supRate = rate(sup.up_to_date, sup.total_staff_requiring);
 
   return (
     <Card className="overflow-hidden">
@@ -82,9 +79,9 @@ export function ProfessionalDevelopmentCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{intel.training.length}</p>
             <p className="text-[10px] text-muted-foreground">Categories</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", avgCompliance >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", avgCompliance >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {avgCompliance}%
+          <div className={cn("text-center rounded-lg p-2", meets(avgCompliance, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(avgCompliance, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(avgCompliance)}
             </p>
             <p className="text-[10px] text-muted-foreground">Avg Compliance</p>
           </div>
@@ -137,7 +134,7 @@ export function ProfessionalDevelopmentCard() {
             <div>
               <p className="text-xs font-medium">Supervision</p>
               <p className="text-[10px] text-muted-foreground">
-                Avg frequency: {sup.avg_frequency_days} days · {supRate}% completion
+                Avg frequency: {sup.avg_frequency_days === null ? "not yet measured" : `${sup.avg_frequency_days} days`} · {formatRate(supRate)} completion
               </p>
             </div>
           </div>

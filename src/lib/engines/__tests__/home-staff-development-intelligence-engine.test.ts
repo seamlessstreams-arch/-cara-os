@@ -685,14 +685,14 @@ describe("Home Staff Development Intelligence Engine", () => {
         makeTraining({ id: "t1", is_mandatory: false, status: "compliant" }),
       ],
     }));
-    expect(r.training.mandatory_compliance_rate).toBe(100);
+    expect(r.training.mandatory_compliance_rate).toBeNull();
   });
 
   it("handles no qualifications gracefully", () => {
     const r = computeHomeStaffDevelopment(baseInput({
       qualifications: [],
     }));
-    expect(r.qualifications.mandatory_completion_rate).toBe(100);
+    expect(r.qualifications.mandatory_completion_rate).toBeNull();
     expect(r.qualifications.staff_without_mandatory).toHaveLength(0);
   });
 
@@ -700,6 +700,6 @@ describe("Home Staff Development Intelligence Engine", () => {
     const r = computeHomeStaffDevelopment(baseInput({
       inductions: [],
     }));
-    expect(r.inductions.probation_pass_rate).toBe(0);
+    expect(r.inductions.probation_pass_rate).toBeNull();
   });
 });

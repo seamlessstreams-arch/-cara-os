@@ -255,8 +255,9 @@ describe("evaluateAbsencePatterns", () => {
   it("handles empty absences", () => {
     const result = evaluateAbsencePatterns([], STAFF_IDS, PERIOD_START, PERIOD_END);
     expect(result.overallAbsenceRate).toBe(0);
-    expect(result.stressRelatedAbsenceRate).toBe(0);
-    expect(result.returnToWorkCompletionRate).toBe(100);
+    expect(result.stressRelatedAbsenceRate).toBeNull();
+    expect(result.returnToWorkCompletionRate).toBeNull();
+    expect(result.adjustmentRate).toBeNull();
     expect(result.totalAbsenceDays).toBe(0);
   });
 
@@ -344,9 +345,9 @@ describe("evaluateSupportAccess", () => {
     const result = evaluateSupportAccess([]);
     expect(result.accessRatePerStaff).toBe(0);
     expect(result.supportTypeVariety).toBe(0);
-    expect(result.voluntaryAccessRate).toBe(0);
-    expect(result.satisfactionRate).toBe(0);
-    expect(result.followUpRate).toBe(0);
+    expect(result.voluntaryAccessRate).toBeNull();
+    expect(result.satisfactionRate).toBeNull();
+    expect(result.followUpRate).toBeNull();
     expect(result.totalAccesses).toBe(0);
   });
 
@@ -355,7 +356,7 @@ describe("evaluateSupportAccess", () => {
       { id: "nr1", staffId: "staff-sarah", staffName: "Sarah Johnson", date: "2026-02-01T10:00:00Z", supportType: "EAP", accessedVoluntarily: true, followUpPlanned: true },
     ];
     const result = evaluateSupportAccess(noRating);
-    expect(result.satisfactionRate).toBe(0);
+    expect(result.satisfactionRate).toBeNull();
   });
 
   it("correctly handles single staff access", () => {
@@ -441,14 +442,14 @@ describe("evaluateSupervisionQuality", () => {
   it("handles empty supervisions", () => {
     const result = evaluateSupervisionQuality([], STAFF_IDS, PERIOD_START, PERIOD_END);
     expect(result.frequencyRate).toBe(0);
-    expect(result.wellbeingDiscussedRate).toBe(0);
-    expect(result.actionCompletionRate).toBe(100);
+    expect(result.wellbeingDiscussedRate).toBeNull();
+    expect(result.actionCompletionRate).toBeNull();
     expect(result.overdueCount).toBe(4);
   });
 
   it("handles empty staff IDs", () => {
     const result = evaluateSupervisionQuality(supervisions, [], PERIOD_START, PERIOD_END);
-    expect(result.frequencyRate).toBe(0);
+    expect(result.frequencyRate).toBeNull();
     expect(result.staffSupervisionDetails).toHaveLength(0);
   });
 
@@ -531,7 +532,10 @@ describe("evaluateTeamHealth", () => {
     const result = evaluateTeamHealth([]);
     expect(result.latestMorale).toBe("no_data");
     expect(result.moraleTrend).toBe("insufficient_data");
-    expect(result.workloadManageableRate).toBe(0);
+    expect(result.workloadManageableRate).toBeNull();
+    expect(result.supportAdequacyRate).toBeNull();
+    expect(result.communicationEffectiveRate).toBeNull();
+    expect(result.actionCompletionRate).toBeNull();
   });
 
   it("handles single check — insufficient data for trend", () => {
@@ -625,31 +629,33 @@ describe("evaluateSecondaryTrauma", () => {
   it("handles empty screens", () => {
     const result = evaluateSecondaryTrauma([], STAFF_IDS);
     expect(result.screeningCoverage).toBe(0);
-    expect(result.indicatorPrevalence).toBe(0);
+    expect(result.indicatorPrevalence).toBeNull();
+    expect(result.supportOfferedRate).toBeNull();
+    expect(result.actionPlanRate).toBeNull();
     expect(result.staffWithIndicators).toBe(0);
   });
 
   it("handles empty staff IDs", () => {
     const result = evaluateSecondaryTrauma(screens, []);
-    expect(result.screeningCoverage).toBe(0);
+    expect(result.screeningCoverage).toBeNull();
   });
 
-  it("returns 100% support offered when no one has indicators", () => {
+  it("reports support offered as unmeasured when no one has indicators", () => {
     const clean: SecondaryTraumaScreen[] = [
       { ...screens[0], indicatorsPresent: [] },
       { ...screens[3], indicatorsPresent: [] },
     ];
     const result = evaluateSecondaryTrauma(clean, ["staff-sarah", "staff-darren"]);
-    expect(result.supportOfferedRate).toBe(100);
+    expect(result.supportOfferedRate).toBeNull();
     expect(result.staffWithIndicators).toBe(0);
   });
 
-  it("returns 100% action plan rate when no one has indicators", () => {
+  it("reports action plan rate as unmeasured when no one has indicators", () => {
     const clean: SecondaryTraumaScreen[] = [
       { ...screens[0], indicatorsPresent: [] },
     ];
     const result = evaluateSecondaryTrauma(clean, ["staff-sarah"]);
-    expect(result.actionPlanRate).toBe(100);
+    expect(result.actionPlanRate).toBeNull();
   });
 
   it("handles partial screening coverage", () => {
@@ -905,8 +911,12 @@ describe("generateStaffResilienceIntelligence", () => {
 
 describe("scoring and ratings", () => {
   it("rates outstanding when score >= 80", () => {
-    // Create ideal data to push score high
-    const idealAbsences: StaffAbsenceRecord[] = [];
+    // Ideal data means every domain is EVIDENCED and good — an absence handled
+    // properly, a screen acted on. A domain with no records evidences nothing
+    // and no longer scores as if it were perfect.
+    const idealAbsences: StaffAbsenceRecord[] = [
+      { id: "ia1", staffId: "s1", staffName: "A", startDate: "2026-03-02T00:00:00Z", endDate: "2026-03-02T00:00:00Z", reason: "sickness", returnToWorkCompleted: true, adjustmentsMade: "Phased return agreed" },
+    ];
     const idealSupports: SupportAccessRecord[] = [
       { id: "is1", staffId: "s1", staffName: "A", date: "2026-02-01T10:00:00Z", supportType: "clinical_supervision", accessedVoluntarily: true, followUpPlanned: true, satisfactionRating: 5 },
       { id: "is2", staffId: "s1", staffName: "A", date: "2026-03-01T10:00:00Z", supportType: "peer_support", accessedVoluntarily: true, followUpPlanned: true, satisfactionRating: 5 },
@@ -926,7 +936,7 @@ describe("scoring and ratings", () => {
       { id: "ith2", date: "2026-04-15T10:00:00Z", conductedBy: "B", teamMorale: "high", workloadManageable: true, supportAdequate: true, communicationEffective: true, issuesRaised: [], actionsAgreed: [], actionsCompleted: true },
     ];
     const idealScreens: SecondaryTraumaScreen[] = [
-      { id: "its1", staffId: "s1", staffName: "A", screeningDate: "2026-03-01T10:00:00Z", screenedBy: "C", indicatorsPresent: [], supportOffered: false, supportAccepted: false, actionPlan: false, reviewDate: "2026-09-01T10:00:00Z" },
+      { id: "its1", staffId: "s1", staffName: "A", screeningDate: "2026-03-01T10:00:00Z", screenedBy: "C", indicatorsPresent: ["emotional_exhaustion"], supportOffered: true, supportAccepted: true, actionPlan: true, reviewDate: "2026-09-01T10:00:00Z" },
     ];
 
     const result = generateStaffResilienceIntelligence(
@@ -997,12 +1007,12 @@ describe("edge cases", () => {
     expect(result.totalAbsenceDays).toBe(1);
   });
 
-  it("supervision with zero action points has 100% completion", () => {
+  it("supervision with zero action points has no measurable completion rate", () => {
     const zeroActions: SupervisionRecord[] = [
       { id: "za1", staffId: "s1", staffName: "A", date: "2026-03-01T10:00:00Z", supervisorName: "B", wellbeingDiscussed: true, workloadDiscussed: true, developmentDiscussed: true, actionPoints: 0, actionPointsCompleted: 0, nextDueDate: "2026-04-01T10:00:00Z" },
     ];
     const result = evaluateSupervisionQuality(zeroActions, ["s1"], PERIOD_START, PERIOD_END);
-    expect(result.actionCompletionRate).toBe(100);
+    expect(result.actionCompletionRate).toBeNull();
   });
 
   it("support access with only one type shows variety of 1", () => {

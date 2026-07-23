@@ -19,6 +19,8 @@
 //   Children's Homes Regulations 2015
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Types ───────────────────────────────────────────────────────────────────
 
 export interface StaffInput {
@@ -89,9 +91,10 @@ export interface WorkforceProfile {
   part_time: number;
   bank_agency: number;
   on_probation: number;
-  training_compliance_rate: number; // percentage
-  supervision_compliance_rate: number; // percentage
-  dbs_compliance_rate: number; // percentage
+  // null = nothing on the register to measure, not full compliance
+  training_compliance_rate: number | null; // percentage
+  supervision_compliance_rate: number | null; // percentage
+  dbs_compliance_rate: number | null; // percentage
   staff_on_leave_today: number;
   staff_on_shift_today: number;
   average_tenure_months: number;
@@ -104,7 +107,7 @@ export interface TrainingCompliance {
   expiring_soon: number; // within 30 days
   expired: number;
   not_started: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
 }
 
 export interface SupervisionCompliance {
@@ -112,7 +115,7 @@ export interface SupervisionCompliance {
   up_to_date: number;
   overdue: number;
   due_within_7_days: number;
-  avg_frequency_days: number;
+  avg_frequency_days: number | null; // null until two supervisions exist to measure a gap
   avg_wellbeing_score: number | null;
   staff_overdue: { staff_id: string; staff_name: string; days_overdue: number }[];
 }
@@ -121,7 +124,7 @@ export interface StaffingCoverage {
   shifts_this_week: number;
   shifts_filled: number;
   shifts_unfilled: number;
-  coverage_rate: number; // percentage
+  coverage_rate: number | null; // percentage, null when no shifts are rostered
   overtime_hours_this_month: number;
   no_shows_this_month: number;
   avg_shifts_per_staff_per_week: number;
@@ -132,7 +135,7 @@ export interface DBSCompliance {
   valid_dbs: number;
   update_service_enrolled: number;
   expired_or_missing: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
   staff_needing_renewal: { staff_id: string; staff_name: string; issue_date: string | null; days_since_issue: number }[];
 }
 
@@ -287,19 +290,17 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
       expiring_soon: expiringSoon,
       expired,
       not_started: notStarted,
-      compliance_rate: total > 0 ? Math.round(((compliant + expiringSoon) / total) * 100) : 100,
+      compliance_rate: rate(compliant + expiringSoon, total),
     });
 
     totalTrainingCompliant += compliant + expiringSoon;
     totalTrainingRequired += total;
   }
 
-  // Sort by compliance rate (worst first)
-  trainingCompliance.sort((a, b) => a.compliance_rate - b.compliance_rate);
+  // Sort by compliance rate (worst first); unmeasured categories sort last
+  trainingCompliance.sort((a, b) => (a.compliance_rate ?? Infinity) - (b.compliance_rate ?? Infinity));
 
-  const overallTrainingRate = totalTrainingRequired > 0
-    ? Math.round((totalTrainingCompliant / totalTrainingRequired) * 100)
-    : 100;
+  const overallTrainingRate = rate(totalTrainingCompliant, totalTrainingRequired);
 
   // ── Supervision Compliance ─────────────────────────────────────────────
   const staffRequiringSupervision = activeStaff.filter(
@@ -344,7 +345,7 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
       gapCount++;
     }
   }
-  const avgFrequencyDays = gapCount > 0 ? Math.round(totalGaps / gapCount) : 0;
+  const avgFrequencyDays = gapCount > 0 ? Math.round(totalGaps / gapCount) : null;
 
   // Average wellbeing score
   const wellbeingScores = completedSupervisions
@@ -354,9 +355,7 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
     ? Math.round((wellbeingScores.reduce((a, b) => a + b, 0) / wellbeingScores.length) * 10) / 10
     : null;
 
-  const supervisionComplianceRate = staffRequiringSupervision.length > 0
-    ? Math.round((upToDate.length / staffRequiringSupervision.length) * 100)
-    : 100;
+  const supervisionComplianceRate = rate(upToDate.length, staffRequiringSupervision.length);
 
   const supervisionResult: SupervisionCompliance = {
     total_staff_requiring: staffRequiringSupervision.length,
@@ -379,9 +378,7 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
     s.status === "cancelled" || s.status === "no_show"
   ).length;
   const totalWeekShifts = thisWeekShifts.length;
-  const coverageRate = totalWeekShifts > 0
-    ? Math.round((filledShifts / totalWeekShifts) * 100)
-    : 100;
+  const coverageRate = rate(filledShifts, totalWeekShifts);
 
   // Overtime this month
   const ms = monthStart(today);
@@ -431,9 +428,7 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
     }
   }
 
-  const dbsComplianceRate = activeStaff.length > 0
-    ? Math.round((validDBS / activeStaff.length) * 100)
-    : 100;
+  const dbsComplianceRate = rate(validDBS, activeStaff.length);
 
   const dbsResult: DBSCompliance = {
     total_staff: activeStaff.length,
@@ -538,10 +533,15 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
       severity: "critical",
       text: `${expiredTraining.length} mandatory training record(s) expired across ${categories.length} category/categories (${categories.slice(0, 3).join(", ")}). Reg 32 requires all staff to maintain competency. Address immediately — staff with expired mandatory training may need supervision adjustment.`,
     });
-  } else if (overallTrainingRate === 100) {
+  } else if (meets(overallTrainingRate, 100)) {
     insights.push({
       severity: "positive",
       text: "100% mandatory training compliance. All staff current on required certifications. Reg 32 workforce competency well evidenced.",
+    });
+  } else if (overallTrainingRate === null) {
+    insights.push({
+      severity: "warning",
+      text: "No mandatory training records held for any staff member. Reg 32 competency cannot be evidenced from an empty register — record completions and expiry dates before compliance can be judged.",
     });
   }
 
@@ -568,7 +568,7 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
   }
 
   // Staffing coverage
-  if (coverageRate < 90 && totalWeekShifts > 0) {
+  if (below(coverageRate, 90)) {
     insights.push({
       severity: "warning",
       text: `Staffing coverage this week at ${coverageRate}% (${unfilledShifts} shift(s) unfilled). Consider bank/agency cover or rota adjustments. Understaffing impacts quality of care and Reg 23 compliance.`,
@@ -609,10 +609,10 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
 
   // Positive workforce insight
   if (
-    overallTrainingRate >= 90 &&
-    supervisionComplianceRate >= 90 &&
-    dbsComplianceRate === 100 &&
-    coverageRate >= 95
+    meets(overallTrainingRate, 90) &&
+    meets(supervisionComplianceRate, 90) &&
+    meets(dbsComplianceRate, 100) &&
+    meets(coverageRate, 95)
   ) {
     insights.push({
       severity: "positive",

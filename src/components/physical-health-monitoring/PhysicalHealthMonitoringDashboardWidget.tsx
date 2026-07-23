@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import type { PhysicalHealthMonitoringIntelligence } from "@/lib/physical-health-monitoring";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
   good: "bg-blue-100 text-blue-800 border-blue-300",
   requires_improvement: "bg-amber-100 text-amber-800 border-amber-300",
   inadequate: "bg-red-100 text-red-800 border-red-300",
+  unmeasured: "bg-gray-100 text-gray-700 border-gray-300",
 };
 
 const ratingLabels: Record<string, string> = {
@@ -15,9 +17,19 @@ const ratingLabels: Record<string, string> = {
   good: "Good",
   requires_improvement: "Requires Improvement",
   inadequate: "Inadequate",
+  unmeasured: "Not Yet Measured",
 };
 
-function ScoreBar({ score, label, maxScore = 100 }: { score: number; label: string; maxScore?: number }) {
+function ScoreBar({ score, label, maxScore = 100 }: { score: number | null; label: string; maxScore?: number }) {
+  if (score === null) {
+    return (
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-gray-600 w-44 shrink-0">{label}</span>
+        <div className="flex-1 bg-gray-100 rounded-full h-2.5" />
+        <span className="text-sm font-medium w-12 text-right text-gray-400">—</span>
+      </div>
+    );
+  }
   const pct = (score / maxScore) * 100;
   const color = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
   return (
@@ -97,7 +109,7 @@ export function PhysicalHealthMonitoringDashboardWidget() {
           <p className="text-sm text-gray-500 mt-1">{data.periodStart} to {data.periodEnd}</p>
         </div>
         <div className="text-right">
-          <div className="text-3xl font-bold text-gray-900">{data.overallScore}</div>
+          <div className="text-3xl font-bold text-gray-900">{data.overallScore ?? "—"}</div>
           <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${ratingColors[data.rating] || ""}`}>
             {ratingLabels[data.rating] || data.rating}
           </span>
@@ -107,11 +119,11 @@ export function PhysicalHealthMonitoringDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.appointments.attendanceRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.appointments.attendanceRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Attendance</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.assessments.assessmentCoverageRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.assessments.assessmentCoverageRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Assessment Coverage</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -119,7 +131,7 @@ export function PhysicalHealthMonitoringDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Active Needs</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.immunisations.upToDateRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.immunisations.upToDateRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Immunisations</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -147,7 +159,7 @@ export function PhysicalHealthMonitoringDashboardWidget() {
               <div key={child.childId} className="border border-gray-100 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium text-gray-900">{child.childName}</span>
-                  <span className="text-sm text-gray-500">{child.overallHealthScore}/10</span>
+                  <span className="text-sm text-gray-500">{child.overallHealthScore ?? "—"}/10</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   <StatusBadge ok={child.gpRegistered} label="GP" />
@@ -159,8 +171,8 @@ export function PhysicalHealthMonitoringDashboardWidget() {
                 <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                   <div>Active Needs: <span className="font-medium">{child.activeHealthNeeds}</span></div>
                   <div>Managed: <span className="font-medium">{child.managedHealthNeeds}/{child.activeHealthNeeds}</span></div>
-                  <div>Attendance: <span className="font-medium">{child.appointmentAttendance}%</span></div>
-                  <div>HP Engagement: <span className="font-medium">{child.healthPromotionEngagement}/10</span></div>
+                  <div>Attendance: <span className="font-medium">{formatRate(child.appointmentAttendance)}</span></div>
+                  <div>HP Engagement: <span className="font-medium">{child.healthPromotionEngagement ?? "—"}/10</span></div>
                 </div>
               </div>
             ))}
@@ -170,22 +182,22 @@ export function PhysicalHealthMonitoringDashboardWidget() {
         <Section title="Health Appointments">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.appointments.totalAppointments}</span></div>
-            <div><span className="text-gray-500">Attended:</span> <span className="font-medium text-green-600">{data.appointments.attendanceRate}%</span></div>
-            <div><span className="text-gray-500">Missed:</span> <span className={`font-medium ${data.appointments.missedRate > 10 ? "text-red-600" : "text-gray-900"}`}>{data.appointments.missedRate}%</span></div>
-            <div><span className="text-gray-500">Refused:</span> <span className={`font-medium ${data.appointments.childRefusedRate > 10 ? "text-amber-600" : "text-gray-900"}`}>{data.appointments.childRefusedRate}%</span></div>
-            <div><span className="text-gray-500">Follow-up Booked:</span> <span className="font-medium">{data.appointments.followUpBookedRate}%</span></div>
-            <div><span className="text-gray-500">Plan Updated:</span> <span className="font-medium">{data.appointments.healthPlanUpdatedRate}%</span></div>
+            <div><span className="text-gray-500">Attended:</span> <span className="font-medium text-green-600">{formatRate(data.appointments.attendanceRate)}</span></div>
+            <div><span className="text-gray-500">Missed:</span> <span className={`font-medium ${(data.appointments.missedRate ?? 0) > 10 ? "text-red-600" : "text-gray-900"}`}>{formatRate(data.appointments.missedRate)}</span></div>
+            <div><span className="text-gray-500">Refused:</span> <span className={`font-medium ${(data.appointments.childRefusedRate ?? 0) > 10 ? "text-amber-600" : "text-gray-900"}`}>{formatRate(data.appointments.childRefusedRate)}</span></div>
+            <div><span className="text-gray-500">Follow-up Booked:</span> <span className="font-medium">{formatRate(data.appointments.followUpBookedRate)}</span></div>
+            <div><span className="text-gray-500">Plan Updated:</span> <span className="font-medium">{formatRate(data.appointments.healthPlanUpdatedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Health Assessments">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.assessments.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Coverage:</span> <span className="font-medium">{data.assessments.assessmentCoverageRate}%</span></div>
-            <div><span className="text-gray-500">On Time:</span> <span className="font-medium">{data.assessments.completedOnTimeRate}%</span></div>
-            <div><span className="text-gray-500">Action Plan:</span> <span className="font-medium">{data.assessments.actionPlanRate}%</span></div>
-            <div><span className="text-gray-500">Child Participated:</span> <span className="font-medium">{data.assessments.childParticipationRate}%</span></div>
-            <div><span className="text-gray-500">Shared:</span> <span className="font-medium">{data.assessments.sharedWithCarersRate}%</span></div>
+            <div><span className="text-gray-500">Coverage:</span> <span className="font-medium">{formatRate(data.assessments.assessmentCoverageRate)}</span></div>
+            <div><span className="text-gray-500">On Time:</span> <span className="font-medium">{formatRate(data.assessments.completedOnTimeRate)}</span></div>
+            <div><span className="text-gray-500">Action Plan:</span> <span className="font-medium">{formatRate(data.assessments.actionPlanRate)}</span></div>
+            <div><span className="text-gray-500">Child Participated:</span> <span className="font-medium">{formatRate(data.assessments.childParticipationRate)}</span></div>
+            <div><span className="text-gray-500">Shared:</span> <span className="font-medium">{formatRate(data.assessments.sharedWithCarersRate)}</span></div>
           </div>
         </Section>
 
@@ -193,9 +205,9 @@ export function PhysicalHealthMonitoringDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.healthNeeds.totalNeeds}</span></div>
             <div><span className="text-gray-500">Active:</span> <span className="font-medium">{data.healthNeeds.activeNeeds}</span></div>
-            <div><span className="text-gray-500">With Plan:</span> <span className="font-medium">{data.healthNeeds.managementPlanRate}%</span></div>
-            <div><span className="text-gray-500">Managed:</span> <span className="font-medium">{data.healthNeeds.currentlyManagedRate}%</span></div>
-            <div><span className="text-gray-500">Specialist:</span> <span className="font-medium">{data.healthNeeds.specialistInvolvedRate}%</span></div>
+            <div><span className="text-gray-500">With Plan:</span> <span className="font-medium">{formatRate(data.healthNeeds.managementPlanRate)}</span></div>
+            <div><span className="text-gray-500">Managed:</span> <span className="font-medium">{formatRate(data.healthNeeds.currentlyManagedRate)}</span></div>
+            <div><span className="text-gray-500">Specialist:</span> <span className="font-medium">{formatRate(data.healthNeeds.specialistInvolvedRate)}</span></div>
           </div>
         </Section>
 

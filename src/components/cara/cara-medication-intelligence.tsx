@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { meets, below, formatRate } from "@/lib/metrics/rate";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,8 +28,8 @@ interface ChildMedSummary {
   missed: number;
   refused: number;
   late: number;
-  compliancePercent: number;
-  refusalRate: number;
+  compliancePercent: number | null;
+  refusalRate: number | null;
   mostRefusedMedication?: string;
 }
 
@@ -57,8 +58,8 @@ interface ControlledDrugStatus {
   totalAdministrations: number;
   withWitness: number;
   withoutWitness: number;
-  witnessCompliancePercent: number;
-  balanceChecked: boolean;
+  witnessCompliancePercent: number | null;
+  balanceChecked: boolean | null;
 }
 
 interface MedPattern {
@@ -72,7 +73,7 @@ interface MedicationData {
   analysisDate: string;
   windowDays: number;
   totalAdministrations: number;
-  complianceRate: number;
+  complianceRate: number | null;
   missedDoses: number;
   refusals: number;
   lateAdministrations: number;
@@ -82,7 +83,7 @@ interface MedicationData {
   controlledDrugAudit: ControlledDrugStatus;
   patterns: MedPattern[];
   regulatoryStatus: {
-    compliant: boolean;
+    compliant: boolean | null;
     issues: string[];
     strengths: string[];
   };
@@ -137,11 +138,13 @@ export default function CaraMedicationIntelligence({ homeId = "home_oak", days =
     );
   }
 
-  const statusColor = data.regulatoryStatus.compliant
-    ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-    : data.alerts.some((a) => a.severity === "critical")
-      ? "text-red-700 bg-red-50 border-red-200"
-      : "text-amber-700 bg-amber-50 border-amber-200";
+  const statusColor = data.regulatoryStatus.compliant === null
+    ? "text-gray-600 bg-gray-50 border-gray-200"
+    : data.regulatoryStatus.compliant
+      ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+      : data.alerts.some((a) => a.severity === "critical")
+        ? "text-red-700 bg-red-50 border-red-200"
+        : "text-amber-700 bg-amber-50 border-amber-200";
 
   const statusIcon = data.regulatoryStatus.compliant
     ? <CheckCircle2 className="h-4 w-4 text-emerald-600" />
@@ -170,15 +173,17 @@ export default function CaraMedicationIntelligence({ homeId = "home_oak", days =
       <div className={cn("mx-4 mb-3 rounded-lg border px-3 py-2 flex items-center gap-2", statusColor)}>
         {statusIcon}
         <span className="text-xs font-medium">
-          {data.regulatoryStatus.compliant
-            ? "Medication management compliant"
-            : `${data.regulatoryStatus.issues.length} compliance issue${data.regulatoryStatus.issues.length > 1 ? "s" : ""} identified`}
+          {data.regulatoryStatus.compliant === null
+            ? "No administrations recorded — medication management not evidenced"
+            : data.regulatoryStatus.compliant
+              ? "Medication management compliant"
+              : `${data.regulatoryStatus.issues.length} compliance issue${data.regulatoryStatus.issues.length > 1 ? "s" : ""} identified`}
         </span>
       </div>
 
       {/* Key metrics */}
       <div className="grid grid-cols-4 gap-2 px-4 pb-3">
-        <MetricBox label="Compliance" value={`${data.complianceRate}%`} good={data.complianceRate >= 95} warn={data.complianceRate < 90} />
+        <MetricBox label="Compliance" value={formatRate(data.complianceRate)} good={meets(data.complianceRate, 95)} warn={below(data.complianceRate, 90)} />
         <MetricBox label="Missed" value={String(data.missedDoses)} good={data.missedDoses === 0} warn={data.missedDoses > 0} />
         <MetricBox label="Refusals" value={String(data.refusals)} good={data.refusals === 0} warn={data.refusals >= 3} />
         <MetricBox label="Late" value={String(data.lateAdministrations)} good={data.lateAdministrations === 0} warn={data.lateAdministrations > 2} />
@@ -194,10 +199,14 @@ export default function CaraMedicationIntelligence({ homeId = "home_oak", days =
           <span>{data.controlledDrugAudit.totalAdministrations} administered</span>
           <span className="text-gray-300">|</span>
           <span className={cn(
-            data.controlledDrugAudit.witnessCompliancePercent === 100 ? "text-emerald-700" : "text-red-700"
+            meets(data.controlledDrugAudit.witnessCompliancePercent, 100)
+              ? "text-emerald-700"
+              : data.controlledDrugAudit.witnessCompliancePercent === null
+                ? "text-gray-500"
+                : "text-red-700"
           )}>
             <Eye className="h-3 w-3 inline mr-0.5" />
-            {data.controlledDrugAudit.witnessCompliancePercent}% witnessed
+            {formatRate(data.controlledDrugAudit.witnessCompliancePercent)} witnessed
           </span>
           {data.controlledDrugAudit.withoutWitness > 0 && (
             <span className="text-red-600 font-medium">
@@ -230,8 +239,8 @@ export default function CaraMedicationIntelligence({ homeId = "home_oak", days =
                 <div key={child.childId} className="rounded-lg bg-gray-50 px-3 py-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-gray-800">{child.childName}</span>
-                    <span className={cn("text-xs font-semibold", child.compliancePercent >= 95 ? "text-emerald-700" : child.compliancePercent < 80 ? "text-red-700" : "text-amber-700")}>
-                      {child.compliancePercent}%
+                    <span className={cn("text-xs font-semibold", meets(child.compliancePercent, 95) ? "text-emerald-700" : below(child.compliancePercent, 80) ? "text-red-700" : child.compliancePercent === null ? "text-gray-500" : "text-amber-700")}>
+                      {formatRate(child.compliancePercent)}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-500">

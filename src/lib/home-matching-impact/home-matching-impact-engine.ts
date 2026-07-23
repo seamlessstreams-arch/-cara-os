@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -122,7 +123,7 @@ export interface MatchingQualityResult {
   averageCompatibilityScore: number;
   assessmentCompletionRate: number;
   existingChildrenConsultedRate: number;
-  conditionsAppliedRate: number;
+  conditionsAppliedRate: number | null;   // null when no admission proceeded with conditions
   decisionBreakdown: Record<MatchingDecision, number>;
   admissionTypeBreakdown: Record<AdmissionType, number>;
   averageRiskFactors: number;
@@ -136,8 +137,8 @@ export interface ImpactMonitoringResult {
   significantNegativeRate: number;
   positiveImpactRate: number;
   impactAreaBreakdown: Record<ImpactArea, number>;
-  resolutionRate: number;
-  mitigationProvidedRate: number;
+  resolutionRate: number | null;          // null when no negative impact was recorded
+  mitigationProvidedRate: number | null;  // null when no negative impact was recorded
   averageMonitoringPerChild: number;
   monitoringFrequencyAdequate: boolean;
 }
@@ -256,14 +257,12 @@ export function evaluateMatchingQuality(
   const proceedWithConditions = periodAssessments.filter(
     (a) => a.decision === "proceed_with_conditions",
   );
-  const conditionsAppliedRate =
-    proceedWithConditions.length > 0
-      ? Math.round(
-          (proceedWithConditions.filter((a) => a.conditionsApplied.length > 0).length /
-            proceedWithConditions.length) *
-            100,
-        )
-      : 100; // If no conditional admissions, conditions requirement is met by default
+  // Null when nothing was admitted subject to conditions — there is no
+  // conditions practice to rate, which is not the same as rating it perfect.
+  const conditionsAppliedRate = rateOf(
+    proceedWithConditions.filter((a) => a.conditionsApplied.length > 0),
+    proceedWithConditions,
+  );
 
   // Decision breakdown
   const decisionBreakdown: Record<MatchingDecision, number> = {
@@ -395,19 +394,15 @@ export function evaluateImpactMonitoring(
     (m) => m.impactLevel === "negative" || m.impactLevel === "significant_negative",
   );
   const resolvedRecords = resolvableRecords.filter((m) => m.resolved);
-  const resolutionRate =
-    resolvableRecords.length > 0
-      ? Math.round((resolvedRecords.length / resolvableRecords.length) * 100)
-      : 100; // No issues = nothing unresolved
+  // Null when no negative impact was recorded — nothing to resolve, rather
+  // than everything resolved.
+  const resolutionRate = rateOf(resolvedRecords, resolvableRecords);
 
   // Mitigation provided rate (for negative/significant_negative only)
   const mitigatedRecords = resolvableRecords.filter(
     (m) => m.mitigationAction.length > 0,
   );
-  const mitigationProvidedRate =
-    resolvableRecords.length > 0
-      ? Math.round((mitigatedRecords.length / resolvableRecords.length) * 100)
-      : 100;
+  const mitigationProvidedRate = rateOf(mitigatedRecords, resolvableRecords);
 
   // Average monitoring records per new child admitted in period
   const periodAssessments = assessments.filter(
@@ -703,13 +698,16 @@ function calculateComponentScores(
   // Impact monitoring: max 25 points
   let imScore = 0;
   if (im.totalMonitoringRecords > 0) {
-    // Resolution rate: 8 pts
-    imScore += (im.resolutionRate / 100) * 8;
-    // Mitigation provided rate: 7 pts
-    imScore += (im.mitigationProvidedRate / 100) * 7;
-    // Low negative impact (invert: higher is better): 5 pts
+    // Resolution and mitigation are only measurable where a negative impact was
+    // recorded; when they are not, the remaining 20 points are carried by the
+    // limbs that were measured rather than awarded for silence.
     const negativeInverse = Math.max(0, 100 - im.negativeImpactRate);
-    imScore += (negativeInverse / 100) * 5;
+    const measured = weightedMeanOf([
+      { score: im.resolutionRate, weight: 8 },
+      { score: im.mitigationProvidedRate, weight: 7 },
+      { score: negativeInverse, weight: 5 },
+    ]);
+    imScore += ((measured ?? 0) / 100) * 20;
     // Monitoring frequency adequate: 5 pts
     imScore += im.monitoringFrequencyAdequate ? 5 : 0;
   } else if (mq.totalAssessments > 0) {
@@ -815,13 +813,13 @@ function generateStrengths(
     );
   }
 
-  if (im.resolutionRate >= 90 && im.totalMonitoringRecords > 0) {
+  if (meets(im.resolutionRate, 90)) {
     strengths.push(
       "Excellent resolution rate for negative impact concerns, demonstrating responsive practice",
     );
   }
 
-  if (im.mitigationProvidedRate >= 90 && im.totalMonitoringRecords > 0) {
+  if (meets(im.mitigationProvidedRate, 90)) {
     strengths.push(
       "Mitigation actions consistently documented for negative impacts, supporting evidence-based care",
     );
@@ -928,13 +926,13 @@ function generateAreasForImprovement(
     );
   }
 
-  if (im.resolutionRate < 70 && im.totalMonitoringRecords > 0) {
+  if (below(im.resolutionRate, 70)) {
     areas.push(
       "Low resolution rate for negative impacts: strengthen follow-up and mitigation tracking processes",
     );
   }
 
-  if (im.mitigationProvidedRate < 80 && im.totalMonitoringRecords > 0) {
+  if (below(im.mitigationProvidedRate, 80)) {
     areas.push(
       "Mitigation actions not consistently documented: ensure all negative impacts have recorded mitigation plans",
     );
@@ -1029,7 +1027,7 @@ function generateActions(
     );
   }
 
-  if (im.resolutionRate < 80 && im.totalMonitoringRecords > 0) {
+  if (below(im.resolutionRate, 80)) {
     actions.push(
       "Establish weekly impact review meetings to track resolution progress for outstanding negative impacts",
     );

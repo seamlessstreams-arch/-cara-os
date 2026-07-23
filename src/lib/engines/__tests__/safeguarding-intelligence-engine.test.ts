@@ -216,15 +216,18 @@ describe("computeSafeguardingIntelligence — empty input", () => {
     expect(result.missing.total_episodes_90d).toBe(0);
   });
 
-  it("returns 100% compliance rates by default", () => {
-    expect(result.restraints.debrief_completion_rate).toBe(100);
-    expect(result.missing.return_interview_rate).toBe(100);
-    expect(result.notifiable_events.compliance_rate).toBe(100);
+  it("reports compliance rates as unmeasured, never as 100%", () => {
+    expect(result.restraints.debrief_completion_rate).toBeNull();
+    expect(result.restraints.review_completion_rate).toBeNull();
+    expect(result.restraints.de_escalation_always_attempted).toBeNull();
+    expect(result.missing.return_interview_rate).toBeNull();
+    expect(result.notifiable_events.compliance_rate).toBeNull();
   });
 
-  it("generates positive insights for clean state", () => {
+  it("does not claim safeguarding assurance when nothing is recorded", () => {
     expect(result.insights.length).toBeGreaterThan(0);
-    expect(result.insights.some((i) => i.severity === "positive")).toBe(true);
+    expect(result.insights.some((i) => i.severity === "positive")).toBe(false);
+    expect(result.insights[0].text.toLowerCase()).toContain("no safeguarding records");
   });
 });
 
@@ -604,13 +607,21 @@ describe("computeSafeguardingIntelligence — positive insights", () => {
     expect(zeroRestraints!.severity).toBe("positive");
   });
 
-  it("generates zero missing insight", () => {
-    const result = computeSafeguardingIntelligence(makeInput());
+  it("generates zero missing insight when the home is recording", () => {
+    const result = computeSafeguardingIntelligence(makeInput({
+      incidents: [makeIncident({ id: "1" })], // the home is demonstrably recording
+    }));
     const zeroMissing = result.insights.find((i) =>
       i.text.includes("No missing from care")
     );
     expect(zeroMissing).toBeDefined();
     expect(zeroMissing!.severity).toBe("positive");
+  });
+
+  it("does not claim zero restraints or zero missing episodes on an empty register", () => {
+    const result = computeSafeguardingIntelligence(makeInput());
+    expect(result.insights.some((i) => i.text.includes("Zero restraints"))).toBe(false);
+    expect(result.insights.some((i) => i.text.includes("No missing from care"))).toBe(false);
   });
 
   it("generates improving risk assessment insight", () => {
@@ -627,13 +638,22 @@ describe("computeSafeguardingIntelligence — positive insights", () => {
     expect(improvingInsight!.severity).toBe("positive");
   });
 
-  it("generates compliance strong insight when all clear", () => {
-    const result = computeSafeguardingIntelligence(makeInput());
+  it("generates compliance strong insight when every strand is evidenced and clear", () => {
+    const result = computeSafeguardingIntelligence(makeInput({
+      incidents: [makeIncident({ id: "1" })],
+      riskAssessments: [makeRiskAssessment({ id: "ra_1" })],
+      notifiableEvents: [makeNotifiable({ id: "ne_1" })],
+    }));
     const complianceInsight = result.insights.find((i) =>
       i.text.includes("Safeguarding compliance strong")
     );
     expect(complianceInsight).toBeDefined();
     expect(complianceInsight!.severity).toBe("positive");
+  });
+
+  it("does not claim strong compliance when nothing has been recorded", () => {
+    const result = computeSafeguardingIntelligence(makeInput());
+    expect(result.insights.some((i) => i.text.includes("Safeguarding compliance strong"))).toBe(false);
   });
 });
 

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import type { RiScores } from "@/lib/ri/compute-scores";
+import { below, meets } from "@/lib/metrics/rate";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -27,29 +28,33 @@ interface RiApiResponse {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function scoreColor(score: number): string {
-  if (score >= 80) return "text-green-600";
-  if (score >= 60) return "text-amber-600";
-  return "text-red-600";
+function scoreColor(score: number | null): string {
+  if (meets(score, 80)) return "text-green-600";
+  if (meets(score, 60)) return "text-amber-600";
+  if (below(score, 60)) return "text-red-600";
+  return "text-gray-400";
 }
 
-function barColor(score: number): string {
-  if (score >= 80) return "bg-green-500";
-  if (score >= 60) return "bg-amber-500";
-  return "bg-red-500";
+function barColor(score: number | null): string {
+  if (meets(score, 80)) return "bg-green-500";
+  if (meets(score, 60)) return "bg-amber-500";
+  if (below(score, 60)) return "bg-red-500";
+  return "bg-gray-300";
 }
 
-function barBgColor(score: number): string {
-  if (score >= 80) return "bg-green-100";
-  if (score >= 60) return "bg-amber-100";
-  return "bg-red-100";
+function barBgColor(score: number | null): string {
+  if (meets(score, 80)) return "bg-green-100";
+  if (meets(score, 60)) return "bg-amber-100";
+  if (below(score, 60)) return "bg-red-100";
+  return "bg-gray-100";
 }
 
-function riskLevel(score: number): { label: string; className: string } {
-  if (score >= 85) return { label: "LOW RISK", className: "bg-green-100 text-green-800 border-green-300" };
-  if (score >= 70) return { label: "MODERATE", className: "bg-amber-100 text-amber-800 border-amber-300" };
-  if (score >= 55) return { label: "ELEVATED", className: "bg-orange-100 text-orange-800 border-orange-300" };
-  return { label: "HIGH RISK", className: "bg-red-100 text-red-800 border-red-300" };
+function riskLevel(score: number | null): { label: string; className: string } {
+  if (meets(score, 85)) return { label: "LOW RISK", className: "bg-green-100 text-green-800 border-green-300" };
+  if (meets(score, 70)) return { label: "MODERATE", className: "bg-amber-100 text-amber-800 border-amber-300" };
+  if (meets(score, 55)) return { label: "ELEVATED", className: "bg-orange-100 text-orange-800 border-orange-300" };
+  if (below(score, 55)) return { label: "HIGH RISK", className: "bg-red-100 text-red-800 border-red-300" };
+  return { label: "NOT YET MEASURED", className: "bg-gray-100 text-gray-700 border-gray-300" };
 }
 
 const SCORE_LABELS: Record<string, string> = {
@@ -72,17 +77,17 @@ const SCORE_LABELS: Record<string, string> = {
 
 // ── Score Bar ───────────────────────────────────────────────────────────────
 
-function ScoreBar({ label, score }: { label: string; score: number }) {
+function ScoreBar({ label, score }: { label: string; score: number | null }) {
   return (
     <div className="flex items-center gap-3 py-1.5">
       <span className="text-xs text-gray-600 w-44 shrink-0 truncate">{label}</span>
       <div className="flex-1 h-3 rounded-full bg-gray-200 overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${barColor(score)}`}
-          style={{ width: `${score}%` }}
+          style={{ width: `${score ?? 0}%` }}
         />
       </div>
-      <span className={`text-xs font-bold w-8 text-right ${scoreColor(score)}`}>{score}</span>
+      <span className={`text-xs font-bold w-12 text-right ${scoreColor(score)}`}>{score ?? "—"}</span>
     </div>
   );
 }
@@ -228,19 +233,20 @@ export function RiGovernanceDashboardWidget() {
 
       {/* Hero metric */}
       <div className={`flex flex-col items-center rounded-xl border-2 p-6 mb-5 ${
-        scores.overall_governance_score >= 80 ? "border-green-200 bg-green-50" :
-        scores.overall_governance_score >= 60 ? "border-amber-200 bg-amber-50" :
-        "border-red-200 bg-red-50"
+        meets(scores.overall_governance_score, 80) ? "border-green-200 bg-green-50" :
+        meets(scores.overall_governance_score, 60) ? "border-amber-200 bg-amber-50" :
+        below(scores.overall_governance_score, 60) ? "border-red-200 bg-red-50" :
+        "border-gray-200 bg-gray-50"
       }`}>
         <span className={`text-5xl font-black ${scoreColor(scores.overall_governance_score)}`}>
-          {scores.overall_governance_score}
+          {scores.overall_governance_score ?? "—"}
         </span>
         <span className="text-sm text-gray-600 mt-1 font-medium">Overall Governance Score</span>
         <div className="w-full max-w-xs mt-3">
           <div className={`h-3 rounded-full overflow-hidden ${barBgColor(scores.overall_governance_score)}`}>
             <div
               className={`h-full rounded-full transition-all ${barColor(scores.overall_governance_score)}`}
-              style={{ width: `${scores.overall_governance_score}%` }}
+              style={{ width: `${scores.overall_governance_score ?? 0}%` }}
             />
           </div>
         </div>
@@ -248,32 +254,32 @@ export function RiGovernanceDashboardWidget() {
 
       {/* Quick summary badges */}
       <div className="flex flex-wrap gap-2 mb-5">
-        {scores.safeguarding_oversight_score < 80 && (
+        {below(scores.safeguarding_oversight_score, 80) && (
           <span className="rounded-full bg-red-100 text-red-700 px-3 py-1 text-xs font-medium border border-red-200">
             SAFEGUARDING ATTENTION NEEDED
           </span>
         )}
-        {scores.reg45_compliance_score >= 88 && (
+        {meets(scores.reg45_compliance_score, 88) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             REG 45 ON TRACK
           </span>
         )}
-        {scores.building_safety_score >= 85 && (
+        {meets(scores.building_safety_score, 85) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             BUILDING SAFETY STRONG
           </span>
         )}
-        {scores.recruitment_compliance_score >= 85 && (
+        {meets(scores.recruitment_compliance_score, 85) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             RECRUITMENT COMPLIANT
           </span>
         )}
-        {scores.staff_supervision_score < 70 && (
+        {below(scores.staff_supervision_score, 70) && (
           <span className="rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-xs font-medium border border-amber-200">
             SUPERVISION OVERDUE
           </span>
         )}
-        {scores.training_compliance_score < 70 && (
+        {below(scores.training_compliance_score, 70) && (
           <span className="rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-xs font-medium border border-amber-200">
             TRAINING GAPS
           </span>
@@ -291,7 +297,7 @@ export function RiGovernanceDashboardWidget() {
       >
         <div className="space-y-0.5">
           {allSubScores
-            .sort((a, b) => a.score - b.score)
+            .sort((a, b) => (a.score ?? Infinity) - (b.score ?? Infinity))
             .map(({ key, label, score }) => (
               <ScoreBar key={key} label={label} score={score} />
             ))}
@@ -304,7 +310,7 @@ export function RiGovernanceDashboardWidget() {
         expanded={expandedSection === "critical"}
         onToggle={() => toggle("critical")}
         badge={
-          criticalScores.some(({ key }) => scores[key] < 60) ? (
+          criticalScores.some(({ key }) => below(scores[key], 60)) ? (
             <span className="ml-2 rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-xs font-medium border border-red-200">
               ATTENTION
             </span>

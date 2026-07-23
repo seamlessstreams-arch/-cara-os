@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useKeyworkingIntelligence } from "@/hooks/use-keyworking-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -88,12 +89,12 @@ export function KeyworkingIntelligenceCard() {
             <p className="text-[10px] text-muted-foreground">Sessions (30d)</p>
           </div>
           <div className="text-center rounded-lg bg-green-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums text-green-600">{o.mood_improvement_rate}%</p>
+            <p className="text-lg font-bold tabular-nums text-green-600">{formatRate(o.mood_improvement_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Mood ↑</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.child_voice_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.child_voice_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {o.child_voice_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", meets(o.child_voice_rate, 80) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(o.child_voice_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(o.child_voice_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Voice</p>
           </div>
@@ -162,7 +163,9 @@ export function KeyworkingIntelligenceCard() {
             <div>
               <p className="text-xs font-medium">Follow-up Actions</p>
               <p className="text-[10px] text-muted-foreground">
-                {fu.completed}/{fu.total_due} completed · {fu.completion_rate}%
+                {fu.total_due > 0
+                  ? `${fu.completed}/${fu.total_due} completed · ${formatRate(fu.completion_rate)}`
+                  : "No follow-up actions due yet"}
               </p>
             </div>
           </div>
@@ -170,6 +173,10 @@ export function KeyworkingIntelligenceCard() {
             <Badge className="text-[10px] bg-[--cs-warning-bg] text-[--cs-warning]">
               <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
               {fu.overdue} overdue
+            </Badge>
+          ) : fu.total_due === 0 ? (
+            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+              None due
             </Badge>
           ) : (
             <Badge className="text-[10px] bg-[--cs-success-bg] text-[--cs-success]">

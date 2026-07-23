@@ -212,7 +212,7 @@ export interface GenerationSection {
 
 export interface SafetyAssessment {
   passed: boolean;
-  score: number;              // 0-100
+  score: number | null;       // 0-100, or null when there was nothing to scan
   flags: SafetyFlag[];
   warnings: string[];
   blockers: string[];         // Hard blocks that prevent generation

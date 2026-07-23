@@ -491,7 +491,11 @@ describe("generateDeploymentIntelligence", () => {
     );
 
     expect(result.totalShiftsAnalysed).toBe(0);
-    expect(result.coveragePercentage).toBe(100); // no shifts = no uncovered shifts
+    // No shift analysed means coverage is unmeasured, not fully covered
+    expect(result.coveragePercentage).toBeNull();
+    expect(result.seniorCoveragePercentage).toBeNull();
+    expect(result.agencyUsagePercentage).toBeNull();
+    expect(result.averageStaffPerShift).toBeNull();
     expect(result.overallScore).toBeGreaterThanOrEqual(0);
   });
 

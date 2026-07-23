@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -55,15 +56,15 @@ export function ShiftIntelligenceIntelligenceWidget() {
 
   const overallScore = data.overallScore as number;
   const complianceRating = data.complianceRating as string;
-  const coveragePercentage = data.coveragePercentage as number;
-  const agencyUsagePercentage = data.agencyUsagePercentage as number;
-  const seniorCoveragePercentage = data.seniorCoveragePercentage as number;
+  const coveragePercentage = data.coveragePercentage as number | null;
+  const agencyUsagePercentage = data.agencyUsagePercentage as number | null;
+  const seniorCoveragePercentage = data.seniorCoveragePercentage as number | null;
   const totalShiftsAnalysed = data.totalShiftsAnalysed as number;
   const coveredShifts = data.coveredShifts as number;
   const uncoveredShifts = data.uncoveredShifts as number;
-  const averageStaffPerShift = data.averageStaffPerShift as number;
+  const averageStaffPerShift = data.averageStaffPerShift as number | null;
   const staffAtHighFatigueRisk = data.staffAtHighFatigueRisk as number;
-  const keyWorkerComplianceRate = data.keyWorkerComplianceRate as number;
+  const keyWorkerComplianceRate = data.keyWorkerComplianceRate as number | null;
   const fatigueAssessments = (data.fatigueAssessments ?? []) as Record<string, unknown>[];
   const keyWorkerAvailability = (data.keyWorkerAvailability ?? []) as Record<string, unknown>[];
   const concerns = (data.concerns ?? []) as Record<string, unknown>[];
@@ -79,9 +80,9 @@ export function ShiftIntelligenceIntelligenceWidget() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Overall Score" value={`${overallScore}/100`} />
-        <Stat label="Coverage" value={`${coveragePercentage}%`} />
-        <Stat label="Agency Usage" value={`${agencyUsagePercentage}%`} />
-        <Stat label="Senior Coverage" value={`${seniorCoveragePercentage}%`} />
+        <Stat label="Coverage" value={formatRate(coveragePercentage)} />
+        <Stat label="Agency Usage" value={formatRate(agencyUsagePercentage)} />
+        <Stat label="Senior Coverage" value={formatRate(seniorCoveragePercentage)} />
       </div>
 
       <Section title="Coverage Summary" defaultOpen>
@@ -89,11 +90,11 @@ export function ShiftIntelligenceIntelligenceWidget() {
           <Stat label="Shifts Analysed" value={totalShiftsAnalysed} />
           <Stat label="Covered" value={coveredShifts} />
           <Stat label="Uncovered" value={uncoveredShifts} />
-          <Stat label="Avg Staff/Shift" value={averageStaffPerShift} />
+          <Stat label="Avg Staff/Shift" value={averageStaffPerShift ?? "—"} />
         </div>
         <div className="mt-3">
-          <ScoreBar label="Coverage" value={coveragePercentage} max={100} />
-          <ScoreBar label="KW Compliance" value={keyWorkerComplianceRate} max={100} />
+          <ScoreBar label="Coverage" value={coveragePercentage ?? 0} max={100} />
+          <ScoreBar label="KW Compliance" value={keyWorkerComplianceRate ?? 0} max={100} />
         </div>
       </Section>
 

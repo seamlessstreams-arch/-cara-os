@@ -15,6 +15,8 @@
 // No AI. No external calls. Pure input -> output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type StaffRole =
@@ -89,30 +91,32 @@ export interface ConsistencyRecord {
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
+// Every rate below is null when its population is empty: no rota recorded is not
+// a fully-staffed home, and no agency shift is not a perfectly-briefed one.
 export interface StaffingAdequacyResult {
-  fillRate: number;                       // % of shifts filled
-  averageStaffChildRatio: number;         // average ratio across shifts
+  fillRate: number | null;                // % of shifts filled, null = no shifts rostered
+  averageStaffChildRatio: number | null;  // average ratio across shifts with children present
   shiftsUnderstaffed: number;             // count of unfilled shifts
   shiftsFilled: number;                   // count of filled shifts
   shiftsTotal: number;
-  seniorOnShiftRate: number;              // % of shifts with senior/manager present
+  seniorOnShiftRate: number | null;       // % of shifts with senior/manager present
   statusBreakdown: Record<DeploymentStatus, number>;
 }
 
 export interface AgencyMinimisationResult {
-  agencyUsageRate: number;                // % of total shift-staff that are agency
+  agencyUsageRate: number | null;         // % of total shift-staff that are agency
   agencyShiftsCount: number;              // total agency shift appearances
-  briefingCompletionRate: number;         // % of agency uses with briefing completed
-  childrenKnownRate: number;              // % of agency uses where staff knew children
+  briefingCompletionRate: number | null;  // % of agency uses with briefing completed
+  childrenKnownRate: number | null;       // % of agency uses where staff knew children
   totalShiftStaff: number;               // total staff appearances across all shifts
   agencyReasons: Record<string, number>;  // breakdown by reason
 }
 
 export interface ConsistencyOfCareResult {
-  averageUniqueStaffPerChild: number;     // lower is better for consistency
-  keyWorkerCoverage: number;              // % of children with primary key worker
-  secondaryKeyWorkerCoverage: number;     // % of children with secondary key worker
-  averageContactsPerChild: number;        // average staff contact count
+  averageUniqueStaffPerChild: number | null; // lower is better for consistency
+  keyWorkerCoverage: number | null;       // % of children with primary key worker
+  secondaryKeyWorkerCoverage: number | null; // % of children with secondary key worker
+  averageContactsPerChild: number | null; // average staff contact count
   childConsistencyDetails: ChildConsistencyDetail[];
 }
 
@@ -126,10 +130,10 @@ export interface ChildConsistencyDetail {
 }
 
 export interface RotaComplianceResult {
-  rotaPublishedOnTimeRate: number;        // % of rotas published >= 7 days ahead
+  rotaPublishedOnTimeRate: number | null; // % of rotas published >= 7 days ahead
   shiftTypeDistribution: Record<ShiftType, number>;
-  longDayComplianceRate: number;          // % of long days properly staffed
-  nightCoverRate: number;                 // % of nights with waking cover
+  longDayComplianceRate: number | null;   // % of long days properly staffed, null = no long days rostered
+  nightCoverRate: number | null;          // % of nights with waking cover, null = no nights rostered
 }
 
 export interface IncidentManagementResult {
@@ -139,13 +143,15 @@ export interface IncidentManagementResult {
   understaffedIncidents: number;
   noSeniorIncidents: number;
   unplannedAbsenceIncidents: number;
-  resolutionRate: number;                 // % of incidents with resolution documented
+  resolutionRate: number | null;          // % of incidents with resolution documented
 }
 
 export interface RegulatoryLink {
   regulation: string;
   requirement: string;
-  status: "met" | "partially_met" | "not_met";
+  // "not_evidenced" = nothing recorded to judge against, which is neither a pass
+  // nor a breach. It is the honest answer for an empty register.
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   evidence: string;
 }
 
@@ -166,8 +172,8 @@ export interface StaffDeploymentIntelligence {
   periodStart: string;
   periodEnd: string;
   generatedAt: string;
-  overallScore: number;                   // 0-100
-  overallRating: OverallRating;
+  overallScore: number | null;            // 0-100 over the domains actually evidenced
+  overallRating: OverallRating | "insufficient_data";
   componentScores: {
     staffingAdequacy: number;             // 0-25
     agencyMinimisation: number;           // 0-20
@@ -208,12 +214,12 @@ export function evaluateStaffingAdequacy(
 
   if (periodRotas.length === 0) {
     return {
-      fillRate: 0,
-      averageStaffChildRatio: 0,
+      fillRate: null,
+      averageStaffChildRatio: null,
       shiftsUnderstaffed: 0,
       shiftsFilled: 0,
       shiftsTotal: 0,
-      seniorOnShiftRate: 0,
+      seniorOnShiftRate: null,
       statusBreakdown: { filled: 0, unfilled: 0, agency_cover: 0, bank_cover: 0, overtime: 0 },
     };
   }
@@ -221,7 +227,7 @@ export function evaluateStaffingAdequacy(
   const shiftsTotal = periodRotas.length;
   const shiftsFilled = periodRotas.filter(r => r.status !== "unfilled").length;
   const shiftsUnderstaffed = periodRotas.filter(r => r.status === "unfilled").length;
-  const fillRate = Math.round((shiftsFilled / shiftsTotal) * 100);
+  const fillRate = rate(shiftsFilled, shiftsTotal);
 
   // Average staff:child ratio — only count shifts with children present
   const shiftsWithChildren = periodRotas.filter(r => r.childrenPresent > 0);
@@ -229,7 +235,7 @@ export function evaluateStaffingAdequacy(
     ? Math.round((shiftsWithChildren.reduce((sum, r) => {
         return sum + (r.actualStaff.length / r.childrenPresent);
       }, 0) / shiftsWithChildren.length) * 100) / 100
-    : 0;
+    : null;
 
   // Senior on shift rate
   const staffRoleMap = new Map<string, StaffRole>();
@@ -243,7 +249,7 @@ export function evaluateStaffingAdequacy(
       return role !== undefined && SENIOR_ROLES.includes(role);
     })
   );
-  const seniorOnShiftRate = Math.round((shiftsWithSenior.length / shiftsTotal) * 100);
+  const seniorOnShiftRate = rate(shiftsWithSenior.length, shiftsTotal);
 
   // Status breakdown
   const statusBreakdown: Record<DeploymentStatus, number> = {
@@ -279,21 +285,17 @@ export function evaluateAgencyMinimisation(
   const totalShiftStaff = periodRotas.reduce((sum, r) => sum + r.actualStaff.length, 0);
 
   const agencyShiftsCount = periodUsages.length;
-  const agencyUsageRate = totalShiftStaff > 0
-    ? Math.round((agencyShiftsCount / totalShiftStaff) * 100)
-    : 0;
+  // Null when no shift-staff were rostered at all — an unrostered period is not
+  // a home with zero agency reliance.
+  const agencyUsageRate = rate(agencyShiftsCount, totalShiftStaff);
 
-  // Briefing completion
+  // Briefing completion — null when no agency staff were used (nothing to brief)
   const briefingCompleted = periodUsages.filter(u => u.briefingCompleted);
-  const briefingCompletionRate = periodUsages.length > 0
-    ? Math.round((briefingCompleted.length / periodUsages.length) * 100)
-    : 100;
+  const briefingCompletionRate = rateOf(briefingCompleted, periodUsages);
 
   // Children known rate
   const childrenKnown = periodUsages.filter(u => u.childrenKnown);
-  const childrenKnownRate = periodUsages.length > 0
-    ? Math.round((childrenKnown.length / periodUsages.length) * 100)
-    : 100;
+  const childrenKnownRate = rateOf(childrenKnown, periodUsages);
 
   // Reasons breakdown
   const agencyReasons: Record<string, number> = {};
@@ -318,10 +320,10 @@ export function evaluateConsistencyOfCare(
 ): ConsistencyOfCareResult {
   if (consistencyRecords.length === 0) {
     return {
-      averageUniqueStaffPerChild: 0,
-      keyWorkerCoverage: 0,
-      secondaryKeyWorkerCoverage: 0,
-      averageContactsPerChild: 0,
+      averageUniqueStaffPerChild: null,
+      keyWorkerCoverage: null,
+      secondaryKeyWorkerCoverage: null,
+      averageContactsPerChild: null,
       childConsistencyDetails: [],
     };
   }
@@ -330,10 +332,10 @@ export function evaluateConsistencyOfCare(
 
   // Key worker coverage
   const withPrimary = consistencyRecords.filter(c => c.primaryKeyWorker.length > 0);
-  const keyWorkerCoverage = Math.round((withPrimary.length / totalChildren) * 100);
+  const keyWorkerCoverage = rateOf(withPrimary, consistencyRecords);
 
   const withSecondary = consistencyRecords.filter(c => c.secondaryKeyWorker.length > 0);
-  const secondaryKeyWorkerCoverage = Math.round((withSecondary.length / totalChildren) * 100);
+  const secondaryKeyWorkerCoverage = rateOf(withSecondary, consistencyRecords);
 
   // Averages
   const totalUnique = consistencyRecords.reduce((sum, c) => sum + c.uniqueStaffCount, 0);
@@ -394,9 +396,7 @@ export function evaluateRotaCompliance(
     const published = new Date(rp.publishedDate).getTime();
     return (weekStart - published) >= SEVEN_DAYS_MS;
   }).length;
-  const rotaPublishedOnTimeRate = rotaPublishedDates.length > 0
-    ? Math.round((onTimeCount / rotaPublishedDates.length) * 100)
-    : 0;
+  const rotaPublishedOnTimeRate = rate(onTimeCount, rotaPublishedDates.length);
 
   // Shift type distribution
   const shiftTypeDistribution: Record<ShiftType, number> = {
@@ -409,16 +409,12 @@ export function evaluateRotaCompliance(
   // Long day compliance: long_day shifts that are filled
   const longDayShifts = periodRotas.filter(r => r.shiftType === "long_day");
   const longDayFilled = longDayShifts.filter(r => r.status !== "unfilled");
-  const longDayComplianceRate = longDayShifts.length > 0
-    ? Math.round((longDayFilled.length / longDayShifts.length) * 100)
-    : 100;
+  const longDayComplianceRate = rateOf(longDayFilled, longDayShifts);
 
   // Night cover rate: waking_night + sleep_in shifts that are filled
   const nightShifts = periodRotas.filter(r => r.shiftType === "waking_night" || r.shiftType === "sleep_in");
   const nightFilled = nightShifts.filter(r => r.status !== "unfilled");
-  const nightCoverRate = nightShifts.length > 0
-    ? Math.round((nightFilled.length / nightShifts.length) * 100)
-    : 100;
+  const nightCoverRate = rateOf(nightFilled, nightShifts);
 
   return {
     rotaPublishedOnTimeRate,
@@ -445,7 +441,7 @@ export function evaluateIncidentManagement(
       understaffedIncidents: 0,
       noSeniorIncidents: 0,
       unplannedAbsenceIncidents: 0,
-      resolutionRate: 100,
+      resolutionRate: null,
     };
   }
 
@@ -462,7 +458,7 @@ export function evaluateIncidentManagement(
   const unplannedAbsenceIncidents = periodIncidents.filter(i => i.type === "unplanned_absence").length;
 
   const withResolution = periodIncidents.filter(i => i.resolution.length > 0);
-  const resolutionRate = Math.round((withResolution.length / totalIncidents) * 100);
+  const resolutionRate = rate(withResolution.length, totalIncidents);
 
   return {
     totalIncidents,
@@ -496,172 +492,225 @@ export function generateStaffDeploymentIntelligence(
   const rotaCompliance = evaluateRotaCompliance(rotas, rotaPublishedDates, periodStart, periodEnd);
   const incidentManagement = evaluateIncidentManagement(incidents, periodStart, periodEnd);
 
+  // Each sub-metric contributes its points to the denominator only when it was
+  // actually measurable, so a domain with nothing recorded neither earns points
+  // nor drags the home down — it is renormalised out of the overall score.
+  let pointsAvailable = 0;
+  const weigh = (measured: boolean, points: number): boolean => {
+    if (measured) pointsAvailable += points;
+    return measured;
+  };
+
   // ── Score: Staffing Adequacy (0-25) ────────────────────────────────────
   let adequacyScore = 0;
   // Fill rate (up to 10 points)
-  if (staffingAdequacy.fillRate >= 95) adequacyScore += 10;
-  else if (staffingAdequacy.fillRate >= 85) adequacyScore += 7;
-  else if (staffingAdequacy.fillRate >= 70) adequacyScore += 4;
-  else if (staffingAdequacy.fillRate > 0) adequacyScore += 2;
+  if (weigh(staffingAdequacy.fillRate !== null, 10)) {
+    if (meets(staffingAdequacy.fillRate, 95)) adequacyScore += 10;
+    else if (meets(staffingAdequacy.fillRate, 85)) adequacyScore += 7;
+    else if (meets(staffingAdequacy.fillRate, 70)) adequacyScore += 4;
+    else if (meets(staffingAdequacy.fillRate, 1)) adequacyScore += 2;
+  }
 
   // Staff:child ratio — 0.5+ is good (up to 8 points)
-  if (staffingAdequacy.averageStaffChildRatio >= 0.5) adequacyScore += 8;
-  else if (staffingAdequacy.averageStaffChildRatio >= 0.4) adequacyScore += 6;
-  else if (staffingAdequacy.averageStaffChildRatio >= 0.3) adequacyScore += 4;
-  else if (staffingAdequacy.averageStaffChildRatio > 0) adequacyScore += 2;
+  const staffChildRatio = staffingAdequacy.averageStaffChildRatio;
+  if (weigh(staffChildRatio !== null, 8)) {
+    if (meets(staffChildRatio, 0.5)) adequacyScore += 8;
+    else if (meets(staffChildRatio, 0.4)) adequacyScore += 6;
+    else if (meets(staffChildRatio, 0.3)) adequacyScore += 4;
+    else if (staffChildRatio! > 0) adequacyScore += 2;
+  }
 
   // Senior on shift (up to 7 points)
-  if (staffingAdequacy.seniorOnShiftRate >= 90) adequacyScore += 7;
-  else if (staffingAdequacy.seniorOnShiftRate >= 75) adequacyScore += 5;
-  else if (staffingAdequacy.seniorOnShiftRate >= 50) adequacyScore += 3;
-  else if (staffingAdequacy.seniorOnShiftRate > 0) adequacyScore += 1;
+  if (weigh(staffingAdequacy.seniorOnShiftRate !== null, 7)) {
+    if (meets(staffingAdequacy.seniorOnShiftRate, 90)) adequacyScore += 7;
+    else if (meets(staffingAdequacy.seniorOnShiftRate, 75)) adequacyScore += 5;
+    else if (meets(staffingAdequacy.seniorOnShiftRate, 50)) adequacyScore += 3;
+    else if (meets(staffingAdequacy.seniorOnShiftRate, 1)) adequacyScore += 1;
+  }
 
   // ── Score: Agency Minimisation (0-20) ──────────────────────────────────
   let agencyScore = 0;
   // Low agency usage rate (up to 8 points)
-  if (agencyMinimisation.agencyUsageRate <= 5) agencyScore += 8;
-  else if (agencyMinimisation.agencyUsageRate <= 10) agencyScore += 6;
-  else if (agencyMinimisation.agencyUsageRate <= 20) agencyScore += 4;
-  else if (agencyMinimisation.agencyUsageRate <= 30) agencyScore += 2;
+  const agencyUsage = agencyMinimisation.agencyUsageRate;
+  if (weigh(agencyUsage !== null, 8)) {
+    if (agencyUsage! <= 5) agencyScore += 8;
+    else if (agencyUsage! <= 10) agencyScore += 6;
+    else if (agencyUsage! <= 20) agencyScore += 4;
+    else if (agencyUsage! <= 30) agencyScore += 2;
+  }
 
   // Briefing completion (up to 6 points)
-  if (agencyMinimisation.briefingCompletionRate >= 95) agencyScore += 6;
-  else if (agencyMinimisation.briefingCompletionRate >= 80) agencyScore += 4;
-  else if (agencyMinimisation.briefingCompletionRate >= 60) agencyScore += 2;
+  if (weigh(agencyMinimisation.briefingCompletionRate !== null, 6)) {
+    if (meets(agencyMinimisation.briefingCompletionRate, 95)) agencyScore += 6;
+    else if (meets(agencyMinimisation.briefingCompletionRate, 80)) agencyScore += 4;
+    else if (meets(agencyMinimisation.briefingCompletionRate, 60)) agencyScore += 2;
+  }
 
   // Children known (up to 6 points)
-  if (agencyMinimisation.childrenKnownRate >= 80) agencyScore += 6;
-  else if (agencyMinimisation.childrenKnownRate >= 60) agencyScore += 4;
-  else if (agencyMinimisation.childrenKnownRate >= 40) agencyScore += 2;
+  if (weigh(agencyMinimisation.childrenKnownRate !== null, 6)) {
+    if (meets(agencyMinimisation.childrenKnownRate, 80)) agencyScore += 6;
+    else if (meets(agencyMinimisation.childrenKnownRate, 60)) agencyScore += 4;
+    else if (meets(agencyMinimisation.childrenKnownRate, 40)) agencyScore += 2;
+  }
 
   // ── Score: Consistency of Care (0-25) ──────────────────────────────────
   let consistencyScore = 0;
   // Low unique staff per child (up to 10 points)
-  if (consistencyOfCare.averageUniqueStaffPerChild > 0 && consistencyOfCare.averageUniqueStaffPerChild <= 4) consistencyScore += 10;
-  else if (consistencyOfCare.averageUniqueStaffPerChild <= 6) consistencyScore += 7;
-  else if (consistencyOfCare.averageUniqueStaffPerChild <= 8) consistencyScore += 4;
-  else if (consistencyOfCare.averageUniqueStaffPerChild > 0) consistencyScore += 2;
+  if (weigh(consistencyOfCare.averageUniqueStaffPerChild !== null, 10)) {
+    const unique = consistencyOfCare.averageUniqueStaffPerChild!;
+    if (unique > 0 && unique <= 4) consistencyScore += 10;
+    else if (unique > 0 && unique <= 6) consistencyScore += 7;
+    else if (unique > 0 && unique <= 8) consistencyScore += 4;
+    else if (unique > 0) consistencyScore += 2;
+  }
 
   // Key worker coverage (up to 8 points)
-  if (consistencyOfCare.keyWorkerCoverage >= 100) consistencyScore += 8;
-  else if (consistencyOfCare.keyWorkerCoverage >= 90) consistencyScore += 6;
-  else if (consistencyOfCare.keyWorkerCoverage >= 75) consistencyScore += 4;
-  else if (consistencyOfCare.keyWorkerCoverage > 0) consistencyScore += 2;
+  if (weigh(consistencyOfCare.keyWorkerCoverage !== null, 8)) {
+    if (meets(consistencyOfCare.keyWorkerCoverage, 100)) consistencyScore += 8;
+    else if (meets(consistencyOfCare.keyWorkerCoverage, 90)) consistencyScore += 6;
+    else if (meets(consistencyOfCare.keyWorkerCoverage, 75)) consistencyScore += 4;
+    else if (meets(consistencyOfCare.keyWorkerCoverage, 1)) consistencyScore += 2;
+  }
 
   // Secondary key worker coverage (up to 7 points)
-  if (consistencyOfCare.secondaryKeyWorkerCoverage >= 100) consistencyScore += 7;
-  else if (consistencyOfCare.secondaryKeyWorkerCoverage >= 90) consistencyScore += 5;
-  else if (consistencyOfCare.secondaryKeyWorkerCoverage >= 75) consistencyScore += 3;
-  else if (consistencyOfCare.secondaryKeyWorkerCoverage > 0) consistencyScore += 1;
+  if (weigh(consistencyOfCare.secondaryKeyWorkerCoverage !== null, 7)) {
+    if (meets(consistencyOfCare.secondaryKeyWorkerCoverage, 100)) consistencyScore += 7;
+    else if (meets(consistencyOfCare.secondaryKeyWorkerCoverage, 90)) consistencyScore += 5;
+    else if (meets(consistencyOfCare.secondaryKeyWorkerCoverage, 75)) consistencyScore += 3;
+    else if (meets(consistencyOfCare.secondaryKeyWorkerCoverage, 1)) consistencyScore += 1;
+  }
 
   // ── Score: Rota Compliance (0-15) ──────────────────────────────────────
   let rotaScore = 0;
   // Published on time (up to 6 points)
-  if (rotaCompliance.rotaPublishedOnTimeRate >= 90) rotaScore += 6;
-  else if (rotaCompliance.rotaPublishedOnTimeRate >= 75) rotaScore += 4;
-  else if (rotaCompliance.rotaPublishedOnTimeRate >= 50) rotaScore += 2;
+  if (weigh(rotaCompliance.rotaPublishedOnTimeRate !== null, 6)) {
+    if (meets(rotaCompliance.rotaPublishedOnTimeRate, 90)) rotaScore += 6;
+    else if (meets(rotaCompliance.rotaPublishedOnTimeRate, 75)) rotaScore += 4;
+    else if (meets(rotaCompliance.rotaPublishedOnTimeRate, 50)) rotaScore += 2;
+  }
 
   // Night cover (up to 5 points)
-  if (rotaCompliance.nightCoverRate >= 95) rotaScore += 5;
-  else if (rotaCompliance.nightCoverRate >= 80) rotaScore += 3;
-  else if (rotaCompliance.nightCoverRate >= 60) rotaScore += 1;
+  if (weigh(rotaCompliance.nightCoverRate !== null, 5)) {
+    if (meets(rotaCompliance.nightCoverRate, 95)) rotaScore += 5;
+    else if (meets(rotaCompliance.nightCoverRate, 80)) rotaScore += 3;
+    else if (meets(rotaCompliance.nightCoverRate, 60)) rotaScore += 1;
+  }
 
   // Long day compliance (up to 4 points)
-  if (rotaCompliance.longDayComplianceRate >= 95) rotaScore += 4;
-  else if (rotaCompliance.longDayComplianceRate >= 80) rotaScore += 3;
-  else if (rotaCompliance.longDayComplianceRate >= 60) rotaScore += 1;
+  if (weigh(rotaCompliance.longDayComplianceRate !== null, 4)) {
+    if (meets(rotaCompliance.longDayComplianceRate, 95)) rotaScore += 4;
+    else if (meets(rotaCompliance.longDayComplianceRate, 80)) rotaScore += 3;
+    else if (meets(rotaCompliance.longDayComplianceRate, 60)) rotaScore += 1;
+  }
 
   // ── Score: Incident Management (0-15) ──────────────────────────────────
+  // "No incidents" only counts in the home's favour when there was a rostered
+  // period for incidents to occur in — otherwise it is silence, not safety.
+  const hadPeriodActivity = staffingAdequacy.shiftsTotal > 0 || incidentManagement.totalIncidents > 0;
   let incidentScore = 0;
   // Low incident count (up to 7 points)
-  if (incidentManagement.totalIncidents === 0) incidentScore += 7;
-  else if (incidentManagement.totalIncidents <= 2) incidentScore += 5;
-  else if (incidentManagement.totalIncidents <= 5) incidentScore += 3;
-  else if (incidentManagement.totalIncidents <= 10) incidentScore += 1;
+  if (weigh(hadPeriodActivity, 7)) {
+    if (incidentManagement.totalIncidents === 0) incidentScore += 7;
+    else if (incidentManagement.totalIncidents <= 2) incidentScore += 5;
+    else if (incidentManagement.totalIncidents <= 5) incidentScore += 3;
+    else if (incidentManagement.totalIncidents <= 10) incidentScore += 1;
+  }
 
   // No lone working (up to 4 points)
-  if (incidentManagement.loneWorkingIncidents === 0) incidentScore += 4;
-  else if (incidentManagement.loneWorkingIncidents <= 1) incidentScore += 2;
+  if (weigh(hadPeriodActivity, 4)) {
+    if (incidentManagement.loneWorkingIncidents === 0) incidentScore += 4;
+    else if (incidentManagement.loneWorkingIncidents <= 1) incidentScore += 2;
+  }
 
   // Resolution rate (up to 4 points)
-  if (incidentManagement.resolutionRate >= 95) incidentScore += 4;
-  else if (incidentManagement.resolutionRate >= 80) incidentScore += 3;
-  else if (incidentManagement.resolutionRate >= 60) incidentScore += 2;
-  else if (incidentManagement.resolutionRate > 0) incidentScore += 1;
+  if (weigh(incidentManagement.resolutionRate !== null, 4)) {
+    if (meets(incidentManagement.resolutionRate, 95)) incidentScore += 4;
+    else if (meets(incidentManagement.resolutionRate, 80)) incidentScore += 3;
+    else if (meets(incidentManagement.resolutionRate, 60)) incidentScore += 2;
+    else if (meets(incidentManagement.resolutionRate, 1)) incidentScore += 1;
+  }
 
-  const overallScore = adequacyScore + agencyScore + consistencyScore + rotaScore + incidentScore;
+  const pointsEarned = adequacyScore + agencyScore + consistencyScore + rotaScore + incidentScore;
+  const overallScore = rate(pointsEarned, pointsAvailable);
 
   // Rating
-  let overallRating: OverallRating;
-  if (overallScore >= 80) overallRating = "outstanding";
+  let overallRating: OverallRating | "insufficient_data";
+  if (overallScore === null) overallRating = "insufficient_data";
+  else if (overallScore >= 80) overallRating = "outstanding";
   else if (overallScore >= 60) overallRating = "good";
   else if (overallScore >= 40) overallRating = "requires_improvement";
   else overallRating = "inadequate";
 
   // ── Strengths ───────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (staffingAdequacy.fillRate >= 95)
+  if (meets(staffingAdequacy.fillRate, 95))
     strengths.push("Excellent shift fill rate demonstrating robust staffing arrangements");
-  if (agencyMinimisation.agencyUsageRate <= 5)
+  if (agencyUsage !== null && agencyUsage <= 5)
     strengths.push("Minimal agency usage preserving consistency of care");
-  if (agencyMinimisation.agencyUsageRate <= 10 && agencyMinimisation.briefingCompletionRate >= 90)
+  if (agencyUsage !== null && agencyUsage <= 10 && meets(agencyMinimisation.briefingCompletionRate, 90))
     strengths.push("Agency staff consistently briefed prior to shifts");
-  if (consistencyOfCare.keyWorkerCoverage >= 100)
+  if (meets(consistencyOfCare.keyWorkerCoverage, 100))
     strengths.push("All children have an assigned primary key worker");
-  if (consistencyOfCare.averageUniqueStaffPerChild > 0 && consistencyOfCare.averageUniqueStaffPerChild <= 4)
+  if (consistencyOfCare.averageUniqueStaffPerChild !== null && consistencyOfCare.averageUniqueStaffPerChild > 0 && consistencyOfCare.averageUniqueStaffPerChild <= 4)
     strengths.push("Low turnover of staff around children promotes attachment and stability");
-  if (staffingAdequacy.seniorOnShiftRate >= 90)
+  if (meets(staffingAdequacy.seniorOnShiftRate, 90))
     strengths.push("Senior staff consistently present on shift providing leadership and oversight");
-  if (incidentManagement.totalIncidents === 0)
+  if (hadPeriodActivity && incidentManagement.totalIncidents === 0)
     strengths.push("No staffing incidents recorded in the period");
   if (incidentManagement.loneWorkingIncidents === 0 && incidentManagement.totalIncidents > 0)
     strengths.push("No lone working incidents recorded");
-  if (rotaCompliance.rotaPublishedOnTimeRate >= 90)
+  if (meets(rotaCompliance.rotaPublishedOnTimeRate, 90))
     strengths.push("Rotas consistently published on time supporting staff work-life balance");
-  if (rotaCompliance.nightCoverRate >= 95)
+  if (meets(rotaCompliance.nightCoverRate, 95))
     strengths.push("Night cover arrangements are robust and consistently maintained");
 
   // ── Areas for Improvement ───────────────────────────────────────────────
   const areasForImprovement: string[] = [];
-  if (staffingAdequacy.fillRate < 85)
+  if (below(staffingAdequacy.fillRate, 85))
     areasForImprovement.push("Shift fill rate is below acceptable threshold — children may not always have sufficient staff");
-  if (agencyMinimisation.agencyUsageRate > 20)
+  if (agencyUsage !== null && agencyUsage > 20)
     areasForImprovement.push("Over-reliance on agency staff undermines consistency and relationship-based care");
-  if (agencyMinimisation.briefingCompletionRate < 80)
+  if (below(agencyMinimisation.briefingCompletionRate, 80))
     areasForImprovement.push("Agency staff not consistently briefed about children's needs and risks");
-  if (consistencyOfCare.keyWorkerCoverage < 100)
+  if (below(consistencyOfCare.keyWorkerCoverage, 100))
     areasForImprovement.push("Not all children have an assigned primary key worker");
-  if (consistencyOfCare.averageUniqueStaffPerChild > 7)
+  if (consistencyOfCare.averageUniqueStaffPerChild !== null && consistencyOfCare.averageUniqueStaffPerChild > 7)
     areasForImprovement.push("High number of unique staff members caring for each child reduces consistency");
-  if (staffingAdequacy.seniorOnShiftRate < 75)
+  if (below(staffingAdequacy.seniorOnShiftRate, 75))
     areasForImprovement.push("Insufficient senior staff presence on shifts to provide guidance and oversight");
   if (incidentManagement.loneWorkingIncidents > 0)
     areasForImprovement.push("Lone working incidents require immediate review of staffing arrangements");
-  if (rotaCompliance.rotaPublishedOnTimeRate < 75)
+  if (below(rotaCompliance.rotaPublishedOnTimeRate, 75))
     areasForImprovement.push("Rotas not consistently published 7 days in advance");
-  if (rotaCompliance.nightCoverRate < 80)
+  if (below(rotaCompliance.nightCoverRate, 80))
     areasForImprovement.push("Night cover arrangements have gaps that may compromise children's safety");
-  if (incidentManagement.resolutionRate < 80)
+  if (below(incidentManagement.resolutionRate, 80))
     areasForImprovement.push("Staffing incidents not always resolved and documented promptly");
+  if (staffingAdequacy.shiftsTotal === 0)
+    areasForImprovement.push("No shifts recorded for the period — staffing sufficiency cannot be evidenced");
+  if (consistencyOfCare.keyWorkerCoverage === null)
+    areasForImprovement.push("No key worker records for the period — consistency of care cannot be evidenced");
 
   // ── Recommended Actions ─────────────────────────────────────────────────
   const recommendedActions: string[] = [];
-  if (staffingAdequacy.fillRate < 90)
+  if (below(staffingAdequacy.fillRate, 90))
     recommendedActions.push("Review recruitment strategy to improve shift fill rate");
-  if (agencyMinimisation.agencyUsageRate > 15)
+  if (agencyUsage !== null && agencyUsage > 15)
     recommendedActions.push("Develop agency reduction plan with targets and timescales");
-  if (agencyMinimisation.briefingCompletionRate < 100)
+  if (below(agencyMinimisation.briefingCompletionRate, 100))
     recommendedActions.push("Ensure all agency staff receive a full briefing before every shift");
-  if (consistencyOfCare.keyWorkerCoverage < 100)
+  if (below(consistencyOfCare.keyWorkerCoverage, 100))
     recommendedActions.push("Assign primary key workers to all children without delay");
-  if (consistencyOfCare.secondaryKeyWorkerCoverage < 100)
+  if (below(consistencyOfCare.secondaryKeyWorkerCoverage, 100))
     recommendedActions.push("Assign secondary key workers to provide resilience in key worker arrangements");
-  if (staffingAdequacy.seniorOnShiftRate < 80)
+  if (below(staffingAdequacy.seniorOnShiftRate, 80))
     recommendedActions.push("Adjust rota to ensure a senior member of staff is present on every shift");
   if (incidentManagement.loneWorkingIncidents > 0)
     recommendedActions.push("Conduct urgent lone working risk assessment and implement immediate mitigations");
-  if (rotaCompliance.rotaPublishedOnTimeRate < 80)
+  if (below(rotaCompliance.rotaPublishedOnTimeRate, 80))
     recommendedActions.push("Implement rota planning process to ensure 7-day advance publication");
+  if (rotaCompliance.rotaPublishedOnTimeRate === null)
+    recommendedActions.push("Record rota publication dates so advance-notice compliance can be evidenced");
   if (incidentManagement.noSeniorIncidents > 0)
     recommendedActions.push("Review and adjust rota to guarantee senior cover on all shifts");
   if (incidentManagement.understaffedIncidents > 2)
@@ -672,36 +721,41 @@ export function generateStaffDeploymentIntelligence(
     {
       regulation: "CHR 2015 Reg 32",
       requirement: "Organisation of children's home — ensure sufficient staff at all times",
-      status: staffingAdequacy.fillRate >= 90 && staffingAdequacy.seniorOnShiftRate >= 80 ? "met"
-        : staffingAdequacy.fillRate >= 70 ? "partially_met" : "not_met",
-      evidence: `Fill rate: ${staffingAdequacy.fillRate}%. Senior on shift: ${staffingAdequacy.seniorOnShiftRate}%. Staff:child ratio: ${staffingAdequacy.averageStaffChildRatio}.`,
+      status: staffingAdequacy.fillRate === null ? "not_evidenced"
+        : meets(staffingAdequacy.fillRate, 90) && meets(staffingAdequacy.seniorOnShiftRate, 80) ? "met"
+        : meets(staffingAdequacy.fillRate, 70) ? "partially_met" : "not_met",
+      evidence: `Fill rate: ${formatRate(staffingAdequacy.fillRate, "not recorded")}. Senior on shift: ${formatRate(staffingAdequacy.seniorOnShiftRate, "not recorded")}. Staff:child ratio: ${staffingAdequacy.averageStaffChildRatio ?? "not recorded"}.`,
     },
     {
       regulation: "CHR 2015 Reg 33",
       requirement: "Employment of staff — competent staff, minimal agency reliance",
-      status: agencyMinimisation.agencyUsageRate <= 10 && agencyMinimisation.briefingCompletionRate >= 90 ? "met"
-        : agencyMinimisation.agencyUsageRate <= 20 ? "partially_met" : "not_met",
-      evidence: `Agency usage: ${agencyMinimisation.agencyUsageRate}%. Briefing rate: ${agencyMinimisation.briefingCompletionRate}%.`,
+      status: agencyUsage === null ? "not_evidenced"
+        : agencyUsage <= 10 && meets(agencyMinimisation.briefingCompletionRate, 90) ? "met"
+        : agencyUsage <= 20 ? "partially_met" : "not_met",
+      evidence: `Agency usage: ${formatRate(agencyUsage, "not recorded")}. Briefing rate: ${formatRate(agencyMinimisation.briefingCompletionRate, "no agency shifts")}.`,
     },
     {
       regulation: "Schedule 1 Standard 25",
       requirement: "Sufficient staff with the right skills, qualifications and experience",
-      status: staffingAdequacy.fillRate >= 90 && consistencyOfCare.keyWorkerCoverage >= 90 ? "met"
-        : staffingAdequacy.fillRate >= 70 ? "partially_met" : "not_met",
-      evidence: `Fill rate: ${staffingAdequacy.fillRate}%. Key worker coverage: ${consistencyOfCare.keyWorkerCoverage}%.`,
+      status: staffingAdequacy.fillRate === null ? "not_evidenced"
+        : meets(staffingAdequacy.fillRate, 90) && meets(consistencyOfCare.keyWorkerCoverage, 90) ? "met"
+        : meets(staffingAdequacy.fillRate, 70) ? "partially_met" : "not_met",
+      evidence: `Fill rate: ${formatRate(staffingAdequacy.fillRate, "not recorded")}. Key worker coverage: ${formatRate(consistencyOfCare.keyWorkerCoverage, "not recorded")}.`,
     },
     {
       regulation: "SCCIF",
       requirement: "Leaders ensure staffing is sufficient and stable for children's needs",
-      status: overallScore >= 70 ? "met" : overallScore >= 50 ? "partially_met" : "not_met",
-      evidence: `Overall deployment score: ${overallScore}/100 (${overallRating}).`,
+      status: overallScore === null ? "not_evidenced"
+        : meets(overallScore, 70) ? "met" : meets(overallScore, 50) ? "partially_met" : "not_met",
+      evidence: `Overall deployment score: ${overallScore === null ? "not measurable" : `${overallScore}/100`} (${overallRating}).`,
     },
     {
       regulation: "Working Together 2023",
       requirement: "Organisations ensure sufficient trained staff to safeguard children",
-      status: incidentManagement.loneWorkingIncidents === 0 && staffingAdequacy.fillRate >= 85 ? "met"
+      status: staffingAdequacy.fillRate === null ? "not_evidenced"
+        : incidentManagement.loneWorkingIncidents === 0 && meets(staffingAdequacy.fillRate, 85) ? "met"
         : incidentManagement.loneWorkingIncidents <= 1 ? "partially_met" : "not_met",
-      evidence: `Lone working incidents: ${incidentManagement.loneWorkingIncidents}. Fill rate: ${staffingAdequacy.fillRate}%.`,
+      evidence: `Lone working incidents: ${incidentManagement.loneWorkingIncidents}. Fill rate: ${formatRate(staffingAdequacy.fillRate, "not recorded")}.`,
     },
   ];
 

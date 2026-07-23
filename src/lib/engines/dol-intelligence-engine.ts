@@ -11,6 +11,8 @@
 // Children Act 1989 — inherent jurisdiction orders.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate, meets, below, formatRate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface DoLRestrictionInput {
@@ -64,9 +66,11 @@ export interface DoLOverview {
   active_restrictions: number;
   children_with_restrictions: number;
   total_children: number;
-  proportionality_rate: number;
-  child_consultation_rate: number;
-  social_worker_informed_rate: number;
+  // Null when there are no active restrictions — nothing to be proportionate about,
+  // consulted on, or notified, so there is no rate to report.
+  proportionality_rate: number | null;
+  child_consultation_rate: number | null;
+  social_worker_informed_rate: number | null;
   overdue_reviews: number;
   restrictions_removed_last_30_days: number;
 }
@@ -84,7 +88,7 @@ export interface ChildRestrictionProfile {
   child_name: string;
   active_restrictions: number;
   overdue_reviews: number;
-  child_consulted_rate: number;
+  child_consulted_rate: number | null;
   has_dol_order: boolean;
 }
 
@@ -171,7 +175,7 @@ export function computeDoLIntelligence(input: DoLIntelligenceInput): DoLIntellig
   const swInformedCount = activeRestrictions.filter((r) => r.social_worker_informed).length;
 
   const totalActive = activeRestrictions.length;
-  const pctRate = (n: number) => (totalActive > 0 ? Math.round((n / totalActive) * 100) : 100);
+  const pctRate = (n: number) => rate(n, totalActive);
 
   const removedLast30Days = restrictions.filter(
     (r) => r.status === "removed" && daysBetween(r.last_reviewed, today) <= 30,
@@ -225,9 +229,7 @@ export function computeDoLIntelligence(input: DoLIntelligenceInput): DoLIntellig
         child_name: child.name,
         active_restrictions: childActive.length,
         overdue_reviews: childOverdue.length,
-        child_consulted_rate: childActive.length > 0
-          ? Math.round((childConsulted / childActive.length) * 100)
-          : 100,
+        child_consulted_rate: rate(childConsulted, childActive.length),
         has_dol_order: childOrderSet.has(child.id),
       };
     });
@@ -292,18 +294,18 @@ export function computeDoLIntelligence(input: DoLIntelligenceInput): DoLIntellig
   }
 
   // Medium: Child consultation rate below 80%
-  if (totalActive > 0 && overview.child_consultation_rate < 80) {
+  if (below(overview.child_consultation_rate, 80)) {
     alerts.push({
       severity: "medium",
-      message: `Child consultation rate is ${overview.child_consultation_rate}% — below 80% threshold. Children's views must be sought on all restrictions per Reg 21`,
+      message: `Child consultation rate is ${formatRate(overview.child_consultation_rate)} — below 80% threshold. Children's views must be sought on all restrictions per Reg 21`,
     });
   }
 
   // Medium: Social worker informed rate below 90%
-  if (totalActive > 0 && overview.social_worker_informed_rate < 90) {
+  if (below(overview.social_worker_informed_rate, 90)) {
     alerts.push({
       severity: "medium",
-      message: `Social worker informed rate is ${overview.social_worker_informed_rate}% — below 90% threshold. All restrictions must be communicated to placing authorities`,
+      message: `Social worker informed rate is ${formatRate(overview.social_worker_informed_rate)} — below 90% threshold. All restrictions must be communicated to placing authorities`,
     });
   }
 
@@ -342,10 +344,10 @@ export function computeDoLIntelligence(input: DoLIntelligenceInput): DoLIntellig
   }
 
   // Warning: Low child consultation rate
-  if (totalActive > 0 && overview.child_consultation_rate < 80) {
+  if (below(overview.child_consultation_rate, 80)) {
     insights.push({
       severity: "warning",
-      text: `Child consultation rate is ${overview.child_consultation_rate}%. Reg 21 requires that children's views are sought on any restriction affecting their liberty or privacy. Low consultation undermines participation rights and regulatory compliance.`,
+      text: `Child consultation rate is ${formatRate(overview.child_consultation_rate)}. Reg 21 requires that children's views are sought on any restriction affecting their liberty or privacy. Low consultation undermines participation rights and regulatory compliance.`,
     });
   }
 
@@ -358,7 +360,7 @@ export function computeDoLIntelligence(input: DoLIntelligenceInput): DoLIntellig
   }
 
   // Positive: 100% child consultation and social worker notification
-  if (totalActive > 0 && overview.child_consultation_rate === 100 && overview.social_worker_informed_rate === 100) {
+  if (meets(overview.child_consultation_rate, 100) && meets(overview.social_worker_informed_rate, 100)) {
     insights.push({
       severity: "positive",
       text: `100% child consultation and social worker notification rate. Excellent compliance with Reg 21 participation rights and placing authority communication requirements.`,

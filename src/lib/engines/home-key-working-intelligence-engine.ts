@@ -5,6 +5,8 @@
 // CHR 2015 Reg 14, 44. SCCIF: "Experiences and progress of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface KeyWorkingSessionInput {
@@ -45,10 +47,10 @@ export interface SessionsProfile {
   avg_per_child_30d: number;
   avg_duration_minutes: number;
   types_distribution: { type: string; count: number }[];
-  child_voice_rate: number;             // % with child voice recorded
+  child_voice_rate: number | null;      // % with child voice recorded, null = no sessions in 90d
   actions_per_session: number;          // avg actions agreed
-  follow_up_rate: number;              // % of follow-ups completed (of those that have follow-ups)
-  goal_linked_rate: number;            // % linked to goals
+  follow_up_rate: number | null;       // % of follow-ups completed, null = no session set a follow-up
+  goal_linked_rate: number | null;     // % linked to goals, null = no sessions in 90d
 }
 
 export interface MoodProfile {
@@ -161,9 +163,7 @@ export function computeHomeKeyWorking(
 
   // Child voice rate
   const withVoice = sessions90d.filter(s => s.has_child_voice);
-  const childVoiceRate = sessions90d.length > 0
-    ? Math.round((withVoice.length / sessions90d.length) * 100)
-    : 0;
+  const childVoiceRate = rateOf(withVoice, sessions90d);
 
   // Actions per session
   const totalActions = sessions90d.reduce((s, se) => s + se.actions_agreed_count, 0);
@@ -174,15 +174,11 @@ export function computeHomeKeyWorking(
   // Follow-up rate (only for sessions that have follow-ups set)
   const withFollowUp = sessions90d.filter(s => s.has_follow_up);
   const followUpCompleted = withFollowUp.filter(s => s.follow_up_completed);
-  const followUpRate = withFollowUp.length > 0
-    ? Math.round((followUpCompleted.length / withFollowUp.length) * 100)
-    : 100;
+  const followUpRate = rateOf(followUpCompleted, withFollowUp);
 
   // Goal-linked rate
   const withGoals = sessions90d.filter(s => s.linked_goals_count > 0);
-  const goalLinkedRate = sessions90d.length > 0
-    ? Math.round((withGoals.length / sessions90d.length) * 100)
-    : 0;
+  const goalLinkedRate = rateOf(withGoals, sessions90d);
 
   const sessionsProfile: SessionsProfile = {
     total_90d: sessions90d.length,
@@ -308,9 +304,9 @@ export function computeHomeKeyWorking(
   else if (childrenWithout.length > 1) score -= 5;
 
   // Child voice (±8)
-  if (childVoiceRate >= 90) score += 6;
-  else if (childVoiceRate >= 70) score += 3;
-  else if (childVoiceRate < 50) score -= 4;
+  if (meets(childVoiceRate, 90)) score += 6;
+  else if (meets(childVoiceRate, 70)) score += 3;
+  else if (below(childVoiceRate, 50)) score -= 4;
 
   // Actions (±5)
   if (actionsPerSession >= 2) score += 4;
@@ -318,9 +314,9 @@ export function computeHomeKeyWorking(
   else score -= 2;
 
   // Follow-up (±6)
-  if (followUpRate >= 90) score += 5;
-  else if (followUpRate >= 70) score += 2;
-  else if (followUpRate < 50) score -= 4;
+  if (meets(followUpRate, 90)) score += 5;
+  else if (meets(followUpRate, 70)) score += 2;
+  else if (below(followUpRate, 50)) score -= 4;
 
   // Mood improvement (±6)
   if (positiveShiftRate >= 80) score += 5;
@@ -328,9 +324,9 @@ export function computeHomeKeyWorking(
   else if (positiveShiftRate < 30 && withMood.length > 0) score -= 3;
 
   // Goal linkage (±4)
-  if (goalLinkedRate >= 70) score += 3;
-  else if (goalLinkedRate >= 40) score += 1;
-  else if (goalLinkedRate < 20 && sessions90d.length > 0) score -= 2;
+  if (meets(goalLinkedRate, 70)) score += 3;
+  else if (meets(goalLinkedRate, 40)) score += 1;
+  else if (below(goalLinkedRate, 20)) score -= 2;
 
   // Duration quality (±4)
   if (avgDuration >= 30) score += 3;
@@ -350,11 +346,11 @@ export function computeHomeKeyWorking(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (childVoiceRate >= 90 && sessions90d.length > 0) strengths.push(`${childVoiceRate}% of sessions include the child's own voice — demonstrating a genuinely child-centred approach.`);
+  if (meets(childVoiceRate, 90)) strengths.push(`${formatRate(childVoiceRate)} of sessions include the child's own voice — demonstrating a genuinely child-centred approach.`);
   if (avgPerChild30d >= 2) strengths.push(`${avgPerChild30d} sessions per child in the last 30 days — exceeding minimum expectations for key working frequency.`);
   if (childrenWithout.length === 0 && total_children > 0) strengths.push("All children have received key working sessions in the last 30 days — no child is missing out.");
   if (positiveShiftRate >= 70 && withMood.length > 0) strengths.push(`${positiveShiftRate}% of sessions show improved mood — key working is having a measurable therapeutic impact.`);
-  if (followUpRate >= 90 && withFollowUp.length > 0) strengths.push(`${followUpRate}% of follow-up actions completed — demonstrating excellent continuity of support.`);
+  if (meets(followUpRate, 90)) strengths.push(`${formatRate(followUpRate)} of follow-up actions completed — demonstrating excellent continuity of support.`);
   if (actionsPerSession >= 2) strengths.push(`Average ${actionsPerSession} actions per session — sessions are purposeful and outcome-focused.`);
   if (typesDistribution.length >= 4) strengths.push("Sessions cover a diverse range of types (therapeutic, wellbeing, life skills, goals) — holistic approach to key working.");
   if (avgDuration >= 30) strengths.push(`Average session duration of ${avgDuration} minutes — allowing meaningful engagement time.`);
@@ -365,8 +361,8 @@ export function computeHomeKeyWorking(
   if (childrenWithout.length > 0) {
     concerns.push(`${childrenWithout.length} child${childrenWithout.length > 1 ? "ren" : ""} had no key working sessions in the last 30 days.`);
   }
-  if (childVoiceRate < 50 && sessions90d.length > 0) concerns.push(`Only ${childVoiceRate}% of sessions include the child's own voice — sessions may not be child-centred.`);
-  if (followUpRate < 60 && withFollowUp.length > 0) concerns.push(`Only ${followUpRate}% of follow-up actions completed — children may feel their concerns are not being addressed.`);
+  if (below(childVoiceRate, 50)) concerns.push(`Only ${formatRate(childVoiceRate)} of sessions include the child's own voice — sessions may not be child-centred.`);
+  if (below(followUpRate, 60)) concerns.push(`Only ${formatRate(followUpRate)} of follow-up actions completed — children may feel their concerns are not being addressed.`);
   if (positiveShiftRate < 30 && withMood.length > 0) concerns.push("Very few sessions show mood improvement — review the quality and approach of key working practice.");
   if (avgDuration < 15 && sessions90d.length > 0) concerns.push(`Average session duration is only ${avgDuration} minutes — insufficient time for meaningful engagement.`);
   if (trend === "declining") concerns.push("Key working quality is declining — mood outcomes are worsening over recent sessions.");
@@ -381,13 +377,13 @@ export function computeHomeKeyWorking(
   if (childrenWithout.length > 0) {
     recs.push({ rank: rank++, recommendation: `Ensure key working sessions are scheduled for all children — ${childrenWithout.length} currently without recent sessions.`, urgency: "immediate", regulatory_ref: "Reg 14" });
   }
-  if (childVoiceRate < 70 && sessions90d.length > 0) {
+  if (below(childVoiceRate, 70)) {
     recs.push({ rank: rank++, recommendation: "Record the child's own words in every session — their voice must be central to key working.", urgency: "soon", regulatory_ref: "Reg 7" });
   }
-  if (followUpRate < 70 && withFollowUp.length > 0) {
+  if (below(followUpRate, 70)) {
     recs.push({ rank: rank++, recommendation: "Improve follow-through on session actions — children need to see that their sessions lead to change.", urgency: "soon", regulatory_ref: "Reg 14" });
   }
-  if (goalLinkedRate < 40 && sessions90d.length > 0) {
+  if (below(goalLinkedRate, 40)) {
     recs.push({ rank: rank++, recommendation: "Link more sessions to care plan goals — this evidences purposeful, outcome-focused key working.", urgency: "planned", regulatory_ref: "Reg 14" });
   }
   if (typesDistribution.length < 3 && sessions90d.length > 0) {
@@ -406,7 +402,7 @@ export function computeHomeKeyWorking(
   if (positiveShiftRate >= 70 && avgImprovement >= 1 && withMood.length > 0) {
     insights.push({ text: `Excellent therapeutic impact: ${positiveShiftRate}% of sessions show mood improvement, with an average uplift of ${avgImprovement} points. This is strong evidence of effective key working.`, severity: "positive" });
   }
-  if (childVoiceRate >= 90 && actionsPerSession >= 2 && followUpRate >= 80 && sessions90d.length > 0) {
+  if (meets(childVoiceRate, 90) && actionsPerSession >= 2 && meets(followUpRate, 80)) {
     insights.push({ text: "Outstanding key working practice: child voice consistently recorded, actions agreed and followed through. Ofsted will recognise this as evidence of child-centred care.", severity: "positive" });
   }
   if (avgPerChild30d >= 3) {
@@ -449,7 +445,7 @@ export function computeHomeKeyWorking(
 // ── Empty Defaults ──────────────────────────────────────────────────────────
 
 function emptySessions(): SessionsProfile {
-  return { total_90d: 0, total_30d: 0, avg_per_child_30d: 0, avg_duration_minutes: 0, types_distribution: [], child_voice_rate: 0, actions_per_session: 0, follow_up_rate: 0, goal_linked_rate: 0 };
+  return { total_90d: 0, total_30d: 0, avg_per_child_30d: 0, avg_duration_minutes: 0, types_distribution: [], child_voice_rate: null, actions_per_session: 0, follow_up_rate: null, goal_linked_rate: null };
 }
 
 function emptyMood(): MoodProfile {

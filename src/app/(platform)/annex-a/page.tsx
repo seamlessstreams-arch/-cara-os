@@ -46,6 +46,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import {
   useAnnexAReadiness,
   useDecideAnnexAEvidence,
@@ -132,22 +133,28 @@ function ReadinessCheck({
 
 // ── Readiness score ring ──────────────────────────────────────────────────────
 
-function ReadinessRing({ score }: { score: number }) {
+function ReadinessRing({ score }: { score: number | null }) {
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
+  // No evidence at all leaves the ring empty and unscored — an empty register is
+  // a gap in the evidence, not a readiness percentage in either direction.
+  const strokeDashoffset = score === null ? circumference : circumference - (score / 100) * circumference;
 
   const colour =
-    score >= 80
+    score === null
+      ? "#94a3b8" // slate
+      : meets(score, 80)
       ? "#10b981" // emerald
-      : score >= 60
+      : meets(score, 60)
       ? "#f59e0b" // amber
       : "#ef4444"; // red
 
   const label =
-    score >= 80
+    score === null
+      ? "No evidence recorded"
+      : meets(score, 80)
       ? "Inspection ready"
-      : score >= 60
+      : meets(score, 60)
       ? "Needs attention"
       : "Not ready";
 
@@ -170,7 +177,7 @@ function ReadinessRing({ score }: { score: number }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-slate-900">{score}%</span>
+          <span className="text-2xl font-bold text-slate-900">{formatRate(score)}</span>
         </div>
       </div>
       <p className="text-sm font-medium" style={{ color: colour }}>
@@ -540,7 +547,7 @@ export default function AnnexAReadinessPage() {
             {/* Readiness score */}
             <Card className="border-slate-200 flex items-center justify-center p-4">
               <CardContent className="p-0 flex flex-col items-center gap-3">
-                <ReadinessRing score={meta?.readiness_score ?? 0} />
+                <ReadinessRing score={meta?.readiness_score ?? null} />
                 <p className="text-xs text-slate-500 text-center">
                   Overall Annex A readiness score
                 </p>
@@ -776,7 +783,7 @@ export default function AnnexAReadinessPage() {
           <div className="space-y-4 py-2">
             {/* Overall score */}
             <div className="rounded-lg border bg-slate-50 p-4 flex items-center gap-4">
-              <ReadinessRing score={meta?.readiness_score ?? 0} />
+              <ReadinessRing score={meta?.readiness_score ?? null} />
               <div>
                 <p className="text-sm font-semibold text-slate-800">Overall Annex A readiness</p>
                 <p className="text-xs text-slate-500 mt-0.5">

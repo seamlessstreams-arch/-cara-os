@@ -10,6 +10,8 @@
 // SCCIF: How well children are helped and protected.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ChildInput {
@@ -57,9 +59,9 @@ export interface KeyworkingOverview {
   total_sessions_90d: number;
   avg_sessions_per_child_30d: number;
   avg_duration_minutes: number;
-  child_voice_rate: number;     // 0-100 — % sessions with child voice
-  follow_up_completion_rate: number; // 0-100
-  mood_improvement_rate: number;     // 0-100 — % sessions where mood improved
+  child_voice_rate: number | null;     // 0-100 — % sessions with child voice; null = no sessions recorded
+  follow_up_completion_rate: number | null; // 0-100; null = no follow-up was due
+  mood_improvement_rate: number | null;     // 0-100 — % sessions where mood improved
   therapeutic_sessions_30d: number;
 }
 
@@ -72,9 +74,9 @@ export interface ChildKeyworkProfile {
   primary_worker: string | null;  // staff_id with most sessions
   session_types: SessionType[];   // unique types used
   avg_mood_improvement: number;   // avg(after - before)
-  follow_up_completion_rate: number;
-  voice_captured_rate: number;
-  last_session_days_ago: number;
+  follow_up_completion_rate: number | null;
+  voice_captured_rate: number | null;
+  last_session_days_ago: number;  // NO_SESSION_RECORDED when the child has never had one
   compliance: "on_track" | "below_target" | "overdue";
 }
 
@@ -95,7 +97,7 @@ export interface FollowUpCompliance {
   total_due: number;
   completed: number;
   overdue: number;
-  completion_rate: number;
+  completion_rate: number | null;
 }
 
 export interface KeyworkingAlert {
@@ -154,6 +156,9 @@ export function mostFrequent(arr: string[]): string | null {
   return best;
 }
 
+/** Sentinel for "this child has no keywork session on record at all". */
+export const NO_SESSION_RECORDED = 999;
+
 /** Keywork compliance: expects 1 session per child per 7 days minimum */
 export function computeCompliance(
   sessions30d: number,
@@ -189,15 +194,9 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
     total_sessions_90d: sessions90d.length,
     avg_sessions_per_child_30d: Math.round((sessions30d.length / childCount) * 10) / 10,
     avg_duration_minutes: Math.round(average(sessions30d.map((s) => s.duration_minutes))),
-    child_voice_rate: sessions30d.length > 0
-      ? Math.round((sessionsWithVoice.length / sessions30d.length) * 100)
-      : 0,
-    follow_up_completion_rate: followUpsDue.length > 0
-      ? Math.round((followUpsCompleted.length / followUpsDue.length) * 100)
-      : 100,
-    mood_improvement_rate: sessions30d.length > 0
-      ? Math.round((sessionsWithMoodImprovement.length / sessions30d.length) * 100)
-      : 0,
+    child_voice_rate: rateOf(sessionsWithVoice, sessions30d),
+    follow_up_completion_rate: rateOf(followUpsCompleted, followUpsDue),
+    mood_improvement_rate: rateOf(sessionsWithMoodImprovement, sessions30d),
     therapeutic_sessions_30d: therapeuticSessions.length,
   };
 
@@ -222,7 +221,7 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
     // Last session
     const sorted = [...childAll].sort((a, b) => b.date.localeCompare(a.date));
     const lastDate = sorted[0]?.date;
-    const daysSinceLast = lastDate ? daysBetween(lastDate, today) : 999;
+    const daysSinceLast = lastDate ? daysBetween(lastDate, today) : NO_SESSION_RECORDED;
 
     return {
       child_id: child.id,
@@ -233,12 +232,8 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
       primary_worker: mostFrequent(staffIds),
       session_types: types,
       avg_mood_improvement: Math.round(average(moodChanges) * 10) / 10,
-      follow_up_completion_rate: childFollowUps.length > 0
-        ? Math.round((childCompleted.length / childFollowUps.length) * 100)
-        : 100,
-      voice_captured_rate: child30d.length > 0
-        ? Math.round((voiceSessions.length / child30d.length) * 100)
-        : 0,
+      follow_up_completion_rate: rateOf(childCompleted, childFollowUps),
+      voice_captured_rate: rateOf(voiceSessions, child30d),
       last_session_days_ago: daysSinceLast,
       compliance: computeCompliance(child30d.length, daysSinceLast),
     };
@@ -285,9 +280,7 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
     total_due: followUpsDue.length,
     completed: followUpsCompleted.length,
     overdue: overdueFU.length,
-    completion_rate: followUpsDue.length > 0
-      ? Math.round((followUpsCompleted.length / followUpsDue.length) * 100)
-      : 100,
+    completion_rate: rate(followUpsCompleted.length, followUpsDue.length),
   };
 
   // ── Alerts ─────────────────────────────────────────────────────────────
@@ -299,16 +292,18 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
     for (const c of overdueChildren) {
       alerts.push({
         severity: "critical",
-        message: `${c.child_name} has not had a keywork session in ${c.last_session_days_ago} days — schedule immediately`,
+        message: c.last_session_days_ago === NO_SESSION_RECORDED
+          ? `${c.child_name} has no keywork session on record — schedule immediately`
+          : `${c.child_name} has not had a keywork session in ${c.last_session_days_ago} days — schedule immediately`,
       });
     }
   }
 
   // High: low follow-up completion
-  if (followUpsDue.length >= 3 && follow_up_compliance.completion_rate < 60) {
+  if (followUpsDue.length >= 3 && below(follow_up_compliance.completion_rate, 60)) {
     alerts.push({
       severity: "high",
-      message: `Follow-up completion rate is ${follow_up_compliance.completion_rate}% — ${overdueFU.length} action${overdueFU.length > 1 ? "s" : ""} overdue`,
+      message: `Follow-up completion rate is ${formatRate(follow_up_compliance.completion_rate)} — ${overdueFU.length} action${overdueFU.length > 1 ? "s" : ""} overdue`,
     });
   }
 
@@ -322,10 +317,10 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
   }
 
   // Medium: low child voice capture
-  if (sessions30d.length >= 3 && overview.child_voice_rate < 70) {
+  if (sessions30d.length >= 3 && below(overview.child_voice_rate, 70)) {
     alerts.push({
       severity: "medium",
-      message: `Child voice captured in only ${overview.child_voice_rate}% of sessions — Reg 22 requires consistent recording of wishes and feelings`,
+      message: `Child voice captured in only ${formatRate(overview.child_voice_rate)} of sessions — Reg 22 requires consistent recording of wishes and feelings`,
     });
   }
 
@@ -351,10 +346,10 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
   }
 
   // Warning: sessions not improving mood
-  if (sessions30d.length >= 4 && overview.mood_improvement_rate < 40) {
+  if (sessions30d.length >= 4 && below(overview.mood_improvement_rate, 40)) {
     insights.push({
       severity: "warning",
-      text: `Only ${overview.mood_improvement_rate}% of sessions show mood improvement. Consider reviewing session approaches — therapeutic techniques, environment, timing, and whether children feel safe to engage.`,
+      text: `Only ${formatRate(overview.mood_improvement_rate)} of sessions show mood improvement. Consider reviewing session approaches — therapeutic techniques, environment, timing, and whether children feel safe to engage.`,
     });
   }
 
@@ -367,18 +362,18 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
   }
 
   // Positive: good engagement
-  if (sessions30d.length >= 4 && overview.mood_improvement_rate >= 70) {
+  if (sessions30d.length >= 4 && meets(overview.mood_improvement_rate, 70)) {
     insights.push({
       severity: "positive",
-      text: `${overview.mood_improvement_rate}% of keywork sessions resulted in mood improvement. Strong evidence of positive therapeutic relationships and effective practice.`,
+      text: `${formatRate(overview.mood_improvement_rate)} of keywork sessions resulted in mood improvement. Strong evidence of positive therapeutic relationships and effective practice.`,
     });
   }
 
   // Positive: high voice capture
-  if (sessions30d.length >= 4 && overview.child_voice_rate >= 90) {
+  if (sessions30d.length >= 4 && meets(overview.child_voice_rate, 90)) {
     insights.push({
       severity: "positive",
-      text: `Child voice captured in ${overview.child_voice_rate}% of sessions. Excellent Reg 22 compliance — children's wishes and feelings are being consistently heard and recorded.`,
+      text: `Child voice captured in ${formatRate(overview.child_voice_rate)} of sessions. Excellent Reg 22 compliance — children's wishes and feelings are being consistently heard and recorded.`,
     });
   }
 

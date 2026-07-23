@@ -56,7 +56,8 @@ describe("Training Compliance Tracker", () => {
     it("returns correct structure with no records", () => {
       const result = analyseTrainingCompliance([], "home_oak");
       expect(result.homeId).toBe("home_oak");
-      expect(result.overallCompliancePercent).toBe(100);
+      expect(result.overallCompliancePercent).toBeNull();
+      expect(result.regulatoryStatus.compliant).toBeNull();
       expect(result.totalStaff).toBe(0);
       expect(result.fullyCompliant).toBe(0);
       expect(result.withGaps).toBe(0);

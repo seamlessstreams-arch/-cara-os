@@ -403,13 +403,13 @@ describe("evaluateQualificationCompliance", () => {
     expect(result.achievedRate).toBe(75);
   });
 
-  it("awards renewal rate bonus when no quals have renewalDue", () => {
+  it("reports renewal rate as unmeasured when no quals have renewalDue", () => {
     const staff = [makeStaff({ id: "s1", requiredQualifications: ["level_3_diploma"] })];
     const quals: QualificationRecord[] = [
       makeQualification({ id: "q1", staffId: "s1", type: "level_3_diploma", status: "achieved" }),
     ];
     const result = evaluateQualificationCompliance(staff, quals, PERIOD_END);
-    expect(result.renewalRate).toBe(100);
+    expect(result.renewalRate).toBeNull();
   });
 
   it("calculates renewal rate correctly", () => {

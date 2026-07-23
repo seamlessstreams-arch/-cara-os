@@ -24,7 +24,7 @@ interface ContactQualityData {
   averageParentEngagement: number;
   followUpNeededCount: number;
   followUpCompletedCount: number;
-  followUpCompletionRate: number;
+  followUpCompletionRate: number | null;
   childRefusalCount: number;
   childRefusalRate: number;
   parentNoShowCount: number;

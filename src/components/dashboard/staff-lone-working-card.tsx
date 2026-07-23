@@ -11,6 +11,7 @@ import {
   UserX, ChevronRight, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -63,8 +64,8 @@ export function StaffLoneWorkingCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{profile.staff_on_shift_today}</p>
             <p className="text-[10px] text-muted-foreground">On Shift</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", staffing.coverage_rate >= 95 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", staffing.coverage_rate >= 95 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{staffing.coverage_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(staffing.coverage_rate, 95) ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(staffing.coverage_rate, 95) ? "text-[--cs-success]" : "text-[--cs-risk]")}>{formatRate(staffing.coverage_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Coverage</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", staffing.shifts_unfilled === 0 ? "bg-green-50" : "bg-red-50")}>

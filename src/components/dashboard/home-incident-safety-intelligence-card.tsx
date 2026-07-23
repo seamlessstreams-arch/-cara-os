@@ -15,6 +15,7 @@ import {
   TrendingUp, TrendingDown, Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { useHomeIncidentSafetyIntelligence } from "@/hooks/use-home-incident-safety-intelligence";
 import type { IncidentSafetyRating } from "@/lib/engines/home-incident-safety-intelligence-engine";
 
@@ -160,8 +161,8 @@ export function HomeIncidentSafetyIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <ArrowRightLeft className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.handovers.completion_rate === 100 ? "text-[--cs-success]" : d.handovers.completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.handovers.completion_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", meets(d.handovers.completion_rate, 100) ? "text-[--cs-success]" : meets(d.handovers.completion_rate, 80) ? "text-[--cs-warning]" : below(d.handovers.completion_rate, 80) ? "text-[--cs-risk]" : "text-slate-400")}>
+                  {formatRate(d.handovers.completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Handover</p>
@@ -176,9 +177,9 @@ export function HomeIncidentSafetyIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Incident Compliance</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Body maps: <span className={cn("font-medium", d.incidents.body_map_compliance_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.incidents.body_map_compliance_rate}%</span></p>
-                <p>Oversight: <span className={cn("font-medium", d.incidents.oversight_completion_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.incidents.oversight_completion_rate}%</span></p>
-                <p>Lessons: <span className={cn("font-medium", d.incidents.lessons_learned_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.incidents.lessons_learned_rate}%</span></p>
+                <p>Body maps: <span className={cn("font-medium", meets(d.incidents.body_map_compliance_rate, 100) ? "text-[--cs-success]" : below(d.incidents.body_map_compliance_rate, 100) ? "text-[--cs-warning]" : "text-slate-400")}>{formatRate(d.incidents.body_map_compliance_rate)}</span></p>
+                <p>Oversight: <span className={cn("font-medium", meets(d.incidents.oversight_completion_rate, 100) ? "text-[--cs-success]" : below(d.incidents.oversight_completion_rate, 100) ? "text-[--cs-warning]" : "text-slate-400")}>{formatRate(d.incidents.oversight_completion_rate)}</span></p>
+                <p>Lessons: <span className={cn("font-medium", meets(d.incidents.lessons_learned_rate, 80) ? "text-[--cs-success]" : below(d.incidents.lessons_learned_rate, 80) ? "text-[--cs-warning]" : "text-slate-400")}>{formatRate(d.incidents.lessons_learned_rate)}</span></p>
                 {d.incidents.critical_count_30d > 0 && (
                   <p className="text-red-600 font-medium">{d.incidents.critical_count_30d} critical (30d)</p>
                 )}
@@ -189,8 +190,8 @@ export function HomeIncidentSafetyIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Restraint Compliance</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Child debrief: <span className={cn("font-medium", d.restraints.child_debrief_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.restraints.child_debrief_rate}%</span></p>
-                <p>Staff debrief: <span className={cn("font-medium", d.restraints.staff_debrief_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.restraints.staff_debrief_rate}%</span></p>
+                <p>Child debrief: <span className={cn("font-medium", meets(d.restraints.child_debrief_rate, 100) ? "text-[--cs-success]" : below(d.restraints.child_debrief_rate, 100) ? "text-[--cs-warning]" : "text-slate-400")}>{formatRate(d.restraints.child_debrief_rate)}</span></p>
+                <p>Staff debrief: <span className={cn("font-medium", meets(d.restraints.staff_debrief_rate, 100) ? "text-[--cs-success]" : below(d.restraints.staff_debrief_rate, 100) ? "text-[--cs-warning]" : "text-slate-400")}>{formatRate(d.restraints.staff_debrief_rate)}</span></p>
                 {d.restraints.avg_duration_minutes !== null && (
                   <p>Avg: <span className="font-medium text-slate-600">{d.restraints.avg_duration_minutes}min</span></p>
                 )}

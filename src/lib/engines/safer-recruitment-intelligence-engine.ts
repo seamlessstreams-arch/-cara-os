@@ -11,6 +11,8 @@
 // SCCIF: Leadership & Management — "Are safer recruitment processes robust?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type CandidateStage =
@@ -135,9 +137,10 @@ export interface RecruitmentOverview {
   avg_days_in_pipeline: number;
   overdue_checks: number;
   outstanding_references: number;
-  compliance_rate: number; // pct of active candidates with all required checks verified
-  dbs_completion_rate: number; // pct of active candidates with DBS verified
-  schedule2_completion_rate: number; // pct of active candidates meeting full Schedule 2
+  // null on every rate below = no active candidates, so nothing is evidenced
+  compliance_rate: number | null; // pct of active candidates with all required checks verified
+  dbs_completion_rate: number | null; // pct of active candidates with DBS verified
+  schedule2_completion_rate: number | null; // pct of active candidates meeting full Schedule 2
 }
 
 export interface CandidateRecruitmentProfile {
@@ -148,7 +151,7 @@ export interface CandidateRecruitmentProfile {
   days_in_pipeline: number;
   total_checks: number;
   completed_checks: number;
-  check_completion_pct: number;
+  check_completion_pct: number | null;  // null = no required checks recorded for this candidate
   overdue_checks: number;
   dbs_status: CheckStatus | "none";
   references_received: number;
@@ -170,7 +173,7 @@ export interface CheckTypeAnalysis {
   not_started: number;
   overdue: number;
   concern_flagged: number;
-  completion_rate: number;
+  completion_rate: number | null;
 }
 
 export interface RecruitmentAlert {
@@ -338,20 +341,11 @@ export function computeSaferRecruitmentIntelligence(
     if (s2Met) schedule2Complete++;
   }
 
-  const complianceRate =
-    activeCandidates.length > 0
-      ? Math.round((fullyCompliant / activeCandidates.length) * 100)
-      : 100;
+  const complianceRate = rate(fullyCompliant, activeCandidates.length);
 
-  const dbsCompletionRate =
-    activeCandidates.length > 0
-      ? Math.round((dbsComplete / activeCandidates.length) * 100)
-      : 100;
+  const dbsCompletionRate = rate(dbsComplete, activeCandidates.length);
 
-  const schedule2CompletionRate =
-    activeCandidates.length > 0
-      ? Math.round((schedule2Complete / activeCandidates.length) * 100)
-      : 100;
+  const schedule2CompletionRate = rate(schedule2Complete, activeCandidates.length);
 
   const overview: RecruitmentOverview = {
     total_vacancies: vacancies.length,
@@ -461,10 +455,7 @@ export function computeSaferRecruitmentIntelligence(
         days_in_pipeline: daysInPipeline,
         total_checks: requiredChecks.length,
         completed_checks: completedChecks.length,
-        check_completion_pct:
-          requiredChecks.length > 0
-            ? Math.round((completedChecks.length / requiredChecks.length) * 100)
-            : 100,
+        check_completion_pct: rateOf(completedChecks, requiredChecks),
         overdue_checks: overdueForCandidate.length,
         dbs_status: dbsStatus,
         references_received: refsReceived,
@@ -515,11 +506,11 @@ export function computeSaferRecruitmentIntelligence(
         not_started: notStarted,
         overdue,
         concern_flagged: concernFlagged,
-        completion_rate:
-          items.length > 0 ? Math.round((verified / items.length) * 100) : 100,
+        completion_rate: rate(verified, items.length),
       };
     })
-    .sort((a, b) => a.completion_rate - b.completion_rate); // worst completion first
+    // worst completion first; an unmeasured rate sorts ahead of any measured one
+    .sort((a, b) => (a.completion_rate ?? -1) - (b.completion_rate ?? -1));
 
   // ── Alerts ────────────────────────────────────────────────────────────
   const alerts: RecruitmentAlert[] = [];
@@ -620,7 +611,7 @@ export function computeSaferRecruitmentIntelligence(
 
   // Critical: any candidate at pre-start or beyond without full Schedule 2
   const advancedNoSchedule2 = candidate_profiles.filter(
-    (p) => ADVANCED_STAGES.has(p.current_stage) && p.check_completion_pct < 100,
+    (p) => ADVANCED_STAGES.has(p.current_stage) && below(p.check_completion_pct, 100),
   );
   if (advancedNoSchedule2.length > 0) {
     insights.push({
@@ -630,22 +621,20 @@ export function computeSaferRecruitmentIntelligence(
   }
 
   // Warning: low DBS completion rate
-  if (dbsCompletionRate < 50 && activeCandidates.length > 0) {
+  if (below(dbsCompletionRate, 50)) {
     insights.push({
       severity: "warning",
-      text: `Only ${dbsCompletionRate}% of active candidates have a verified DBS. Enhanced DBS with barred list check is the single most critical safeguarding requirement for staff in children's homes. Prioritise DBS submissions.`,
+      text: `Only ${formatRate(dbsCompletionRate)} of active candidates have a verified DBS. Enhanced DBS with barred list check is the single most critical safeguarding requirement for staff in children's homes. Prioritise DBS submissions.`,
     });
   }
 
   // Warning: outstanding references
   if (outstandingRefs.length > 0 && activeCandidates.length > 0) {
-    const pct = Math.round(
-      (outstandingRefs.length / activeRefs.length) * 100,
-    );
-    if (pct >= 50) {
+    const pct = rateOf(outstandingRefs, activeRefs);
+    if (meets(pct, 50)) {
       insights.push({
         severity: "warning",
-        text: `${pct}% of references are still outstanding. Ofsted expects references to be received, verbally verified, and checked for discrepancies before appointment. Chase outstanding referees promptly.`,
+        text: `${formatRate(pct)} of references are still outstanding. Ofsted expects references to be received, verbally verified, and checked for discrepancies before appointment. Chase outstanding referees promptly.`,
       });
     }
   }
@@ -659,10 +648,7 @@ export function computeSaferRecruitmentIntelligence(
   }
 
   // Positive: all active candidates have DBS verified
-  if (
-    dbsCompletionRate === 100 &&
-    activeCandidates.length > 0
-  ) {
+  if (meets(dbsCompletionRate, 100)) {
     insights.push({
       severity: "positive",
       text: `All ${activeCandidates.length} active candidate(s) have a verified DBS. This demonstrates robust management of the most critical pre-employment check — an inspector would note this positively.`,
@@ -670,10 +656,7 @@ export function computeSaferRecruitmentIntelligence(
   }
 
   // Positive: full Schedule 2 compliance
-  if (
-    schedule2CompletionRate === 100 &&
-    activeCandidates.length > 0
-  ) {
+  if (meets(schedule2CompletionRate, 100)) {
     insights.push({
       severity: "positive",
       text: `All active candidates meet full Schedule 2 requirements. The SCR is complete for every candidate in the pipeline — a clear indicator of strong safer recruitment practice.`,

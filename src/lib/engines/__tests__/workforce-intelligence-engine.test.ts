@@ -172,9 +172,14 @@ describe("computeWorkforceIntelligence — empty inputs", () => {
 
     expect(result.profile.total_staff).toBe(0);
     expect(result.profile.active_staff).toBe(0);
-    expect(result.profile.training_compliance_rate).toBe(100);
+    // An empty register is a gap, not full compliance
+    expect(result.profile.training_compliance_rate).toBeNull();
+    expect(result.profile.supervision_compliance_rate).toBeNull();
+    expect(result.profile.dbs_compliance_rate).toBeNull();
+    expect(result.staffing.coverage_rate).toBeNull();
     expect(result.training).toHaveLength(0);
     expect(result.insights.length).toBeGreaterThanOrEqual(1);
+    expect(result.insights.some((i) => i.severity === "positive" && i.text.includes("100% mandatory training"))).toBe(false);
   });
 });
 

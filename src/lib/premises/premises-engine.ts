@@ -13,6 +13,8 @@
 //   - SCCIF — "the home is well maintained and homely"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type CheckCategory =
@@ -124,10 +126,6 @@ export function getCategoryLabel(category: CheckCategory): string {
 
 // ── Helper ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   const msA = new Date(a).getTime();
   const msB = new Date(b).getTime();
@@ -147,7 +145,7 @@ export interface ComplianceResult {
   overdue: number;
   dueSoon: number;
   notDue: number;
-  complianceRate: number; // % of checks that are passed or not_due
+  complianceRate: number | null; // % of checks that are passed or not_due, null = no checks on record
   overdueChecks: { id: string; category: CheckCategory; checkName: string; nextDueDate: string; daysPastDue: number }[];
   dueSoonChecks: { id: string; category: CheckCategory; checkName: string; nextDueDate: string; daysUntilDue: number }[];
   failedChecks: { id: string; category: CheckCategory; checkName: string; lastCompletedDate: string; notes?: string }[];
@@ -164,9 +162,7 @@ export function evaluateComplianceChecks(
   const dueSoon = checks.filter((c) => c.status === "due_soon").length;
   const notDue = checks.filter((c) => c.status === "not_due").length;
 
-  const complianceRate = checks.length > 0
-    ? pct(passed + notDue, checks.length)
-    : 0;
+  const complianceRate = rate(passed + notDue, checks.length);
 
   const overdueChecks = checks
     .filter((c) => c.status === "overdue")
@@ -236,10 +232,10 @@ export interface MaintenanceResult {
   open: number;
   completed: number;
   deferred: number;
-  avgResolutionDays: number;
+  avgResolutionDays: number | null; // null = nothing completed yet to time
   criticalOpen: number;
   highOpen: number;
-  completionRate: number;
+  completionRate: number | null;    // null = no maintenance requests raised
   openRequests: { id: string; category: CheckCategory; description: string; urgency: Urgency; reportedDate: string; daysOpen: number }[];
   urgencyBreakdown: { urgency: Urgency; total: number; open: number; completed: number }[];
 }
@@ -258,7 +254,7 @@ export function evaluateMaintenance(
         completedWithDates.reduce((sum, r) => sum + daysBetween(r.reportedDate, r.completedDate!), 0)
         / completedWithDates.length
       )
-    : 0;
+    : null;
 
   const criticalOpen = requests.filter(
     (r) => r.urgency === "critical" && ["reported", "scheduled", "in_progress"].includes(r.status)
@@ -267,7 +263,7 @@ export function evaluateMaintenance(
     (r) => r.urgency === "high" && ["reported", "scheduled", "in_progress"].includes(r.status)
   ).length;
 
-  const completionRate = requests.length > 0 ? pct(completed, requests.length) : 0;
+  const completionRate = rate(completed, requests.length);
 
   const openRequests = requests
     .filter((r) => ["reported", "scheduled", "in_progress"].includes(r.status))
@@ -316,15 +312,15 @@ export function evaluateMaintenance(
 export interface FireDrillResult {
   totalDrills: number;
   drillsInPeriod: number;
-  avgEvacuationTime: number;
-  allChildrenAccountedForRate: number;
-  allStaffParticipatedRate: number;
+  avgEvacuationTime: number | null;
+  allChildrenAccountedForRate: number | null;
+  allStaffParticipatedRate: number | null;
   issuesIdentifiedCount: number;
   nightDrillsConducted: number;
   eveningDrillsConducted: number;
   dayDrillsConducted: number;
   drillFrequencyAdequate: boolean; // at least 1 per quarter
-  drillsByTimeOfDay: { timeOfDay: string; count: number; avgEvacTime: number }[];
+  drillsByTimeOfDay: { timeOfDay: string; count: number; avgEvacTime: number | null }[];
 }
 
 export function evaluateFireDrills(
@@ -336,15 +332,17 @@ export function evaluateFireDrills(
 
   const avgEvacuationTime = inRange.length > 0
     ? Math.round(inRange.reduce((s, d) => s + d.evacuationTimeMinutes, 0) / inRange.length * 10) / 10
-    : 0;
+    : null;
 
-  const allChildrenAccountedForRate = inRange.length > 0
-    ? pct(inRange.filter((d) => d.allChildrenAccountedFor).length, inRange.length)
-    : 0;
+  const allChildrenAccountedForRate = rateOf(
+    inRange.filter((d) => d.allChildrenAccountedFor),
+    inRange,
+  );
 
-  const allStaffParticipatedRate = inRange.length > 0
-    ? pct(inRange.filter((d) => d.allStaffParticipated).length, inRange.length)
-    : 0;
+  const allStaffParticipatedRate = rateOf(
+    inRange.filter((d) => d.allStaffParticipated),
+    inRange,
+  );
 
   const issuesIdentifiedCount = inRange.reduce((s, d) => s + d.issuesIdentified.length, 0);
 
@@ -358,9 +356,9 @@ export function evaluateFireDrills(
   const drillFrequencyAdequate = inRange.length >= expectedDrills;
 
   const drillsByTimeOfDay = [
-    { timeOfDay: "day", count: day.length, avgEvacTime: day.length > 0 ? Math.round(day.reduce((s, d) => s + d.evacuationTimeMinutes, 0) / day.length * 10) / 10 : 0 },
-    { timeOfDay: "evening", count: evening.length, avgEvacTime: evening.length > 0 ? Math.round(evening.reduce((s, d) => s + d.evacuationTimeMinutes, 0) / evening.length * 10) / 10 : 0 },
-    { timeOfDay: "night", count: night.length, avgEvacTime: night.length > 0 ? Math.round(night.reduce((s, d) => s + d.evacuationTimeMinutes, 0) / night.length * 10) / 10 : 0 },
+    { timeOfDay: "day", count: day.length, avgEvacTime: day.length > 0 ? Math.round(day.reduce((s, d) => s + d.evacuationTimeMinutes, 0) / day.length * 10) / 10 : null },
+    { timeOfDay: "evening", count: evening.length, avgEvacTime: evening.length > 0 ? Math.round(evening.reduce((s, d) => s + d.evacuationTimeMinutes, 0) / evening.length * 10) / 10 : null },
+    { timeOfDay: "night", count: night.length, avgEvacTime: night.length > 0 ? Math.round(night.reduce((s, d) => s + d.evacuationTimeMinutes, 0) / night.length * 10) / 10 : null },
   ];
 
   return {
@@ -388,7 +386,7 @@ export interface EnvironmentalRiskResult {
   acceptedRisks: number;
   criticalOpen: number;
   highOpen: number;
-  mitigationRate: number; // % of open+mitigated that have mitigation
+  mitigationRate: number | null; // % of open+mitigated that have mitigation, null = none active
   overdueReviews: { id: string; riskArea: string; riskLevel: Urgency; reviewDate: string; daysPastDue: number }[];
   risksByLevel: { level: Urgency; total: number; open: number; mitigated: number }[];
 }
@@ -407,7 +405,7 @@ export function evaluateEnvironmentalRisks(
 
   const activeRisks = risks.filter((r) => r.status === "open" || r.status === "mitigated");
   const withMitigation = activeRisks.filter((r) => r.mitigationInPlace);
-  const mitigationRate = activeRisks.length > 0 ? pct(withMitigation.length, activeRisks.length) : 100;
+  const mitigationRate = rateOf(withMitigation, activeRisks);
 
   const overdueReviews = risks
     .filter((r) => (r.status === "open" || r.status === "mitigated") && r.reviewDate < referenceDate)
@@ -487,9 +485,9 @@ export function generatePremisesIntelligence(
   // Compliance (30 points)
   let complianceScore = 0;
   if (compliance.totalChecks > 0) {
-    if (compliance.complianceRate >= 95) complianceScore = 30;
-    else if (compliance.complianceRate >= 85) complianceScore = 24;
-    else if (compliance.complianceRate >= 70) complianceScore = 16;
+    if (meets(compliance.complianceRate, 95)) complianceScore = 30;
+    else if (meets(compliance.complianceRate, 85)) complianceScore = 24;
+    else if (meets(compliance.complianceRate, 70)) complianceScore = 16;
     else complianceScore = 8;
     // Deduct for overdue checks
     complianceScore = Math.max(0, complianceScore - compliance.overdue * 2);
@@ -500,13 +498,13 @@ export function generatePremisesIntelligence(
   // Maintenance (25 points)
   let maintenanceScore = 0;
   if (maintenance.totalRequests > 0) {
-    if (maintenance.completionRate >= 90) maintenanceScore = 20;
-    else if (maintenance.completionRate >= 70) maintenanceScore = 14;
-    else if (maintenance.completionRate >= 50) maintenanceScore = 8;
+    if (meets(maintenance.completionRate, 90)) maintenanceScore = 20;
+    else if (meets(maintenance.completionRate, 70)) maintenanceScore = 14;
+    else if (meets(maintenance.completionRate, 50)) maintenanceScore = 8;
     else maintenanceScore = 4;
-    // Bonus for quick resolution
-    if (maintenance.avgResolutionDays <= 7) maintenanceScore += 5;
-    else if (maintenance.avgResolutionDays <= 14) maintenanceScore += 3;
+    // Bonus for quick resolution — nothing completed yet earns no bonus
+    if (below(maintenance.avgResolutionDays, 7.0001)) maintenanceScore += 5;
+    else if (below(maintenance.avgResolutionDays, 14.0001)) maintenanceScore += 3;
     // Deduct for critical/high open
     maintenanceScore = Math.max(0, maintenanceScore - maintenance.criticalOpen * 5 - maintenance.highOpen * 2);
   } else {
@@ -520,12 +518,12 @@ export function generatePremisesIntelligence(
   if (drills.drillsInPeriod > 0) {
     if (drills.drillFrequencyAdequate) drillScore += 10;
     else drillScore += 4;
-    if (drills.allChildrenAccountedForRate === 100) drillScore += 5;
-    else if (drills.allChildrenAccountedForRate >= 80) drillScore += 3;
-    if (drills.allStaffParticipatedRate === 100) drillScore += 3;
-    else if (drills.allStaffParticipatedRate >= 80) drillScore += 2;
-    if (drills.avgEvacuationTime <= 3) drillScore += 4;
-    else if (drills.avgEvacuationTime <= 5) drillScore += 2;
+    if (meets(drills.allChildrenAccountedForRate, 100)) drillScore += 5;
+    else if (meets(drills.allChildrenAccountedForRate, 80)) drillScore += 3;
+    if (meets(drills.allStaffParticipatedRate, 100)) drillScore += 3;
+    else if (meets(drills.allStaffParticipatedRate, 80)) drillScore += 2;
+    if (below(drills.avgEvacuationTime, 3.0001)) drillScore += 4;
+    else if (below(drills.avgEvacuationTime, 5.0001)) drillScore += 2;
     // Bonus for variety (night + evening drills)
     if (drills.nightDrillsConducted > 0) drillScore += 2;
     if (drills.eveningDrillsConducted > 0) drillScore += 1;
@@ -538,8 +536,8 @@ export function generatePremisesIntelligence(
     if (risks.criticalOpen === 0 && risks.highOpen === 0) riskScore += 10;
     else if (risks.criticalOpen === 0) riskScore += 6;
     else riskScore += 2;
-    if (risks.mitigationRate >= 90) riskScore += 5;
-    else if (risks.mitigationRate >= 70) riskScore += 3;
+    if (meets(risks.mitigationRate, 90)) riskScore += 5;
+    else if (meets(risks.mitigationRate, 70)) riskScore += 3;
     if (risks.overdueReviews.length === 0) riskScore += 5;
     else if (risks.overdueReviews.length <= 2) riskScore += 2;
   } else {
@@ -558,13 +556,13 @@ export function generatePremisesIntelligence(
   // ── Strengths ──────────────────────────────────────────────────────────
 
   const strengths: string[] = [];
-  if (compliance.complianceRate >= 90 && compliance.totalChecks > 0)
+  if (meets(compliance.complianceRate, 90))
     strengths.push("Strong compliance with premises safety checks.");
   if (drills.drillFrequencyAdequate && drills.drillsInPeriod > 0)
     strengths.push("Fire drill frequency meets regulatory expectations.");
-  if (drills.allChildrenAccountedForRate === 100 && drills.drillsInPeriod > 0)
+  if (meets(drills.allChildrenAccountedForRate, 100))
     strengths.push("All children accounted for in every fire drill.");
-  if (maintenance.completionRate >= 80 && maintenance.totalRequests > 0)
+  if (meets(maintenance.completionRate, 80))
     strengths.push("Good maintenance completion rate demonstrates responsive property management.");
   if (risks.criticalOpen === 0 && risks.highOpen === 0 && risks.totalRisks > 0)
     strengths.push("No critical or high environmental risks currently open.");

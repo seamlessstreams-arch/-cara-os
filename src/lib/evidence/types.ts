@@ -38,7 +38,7 @@ export interface InspectionEvidencePack {
   period_from: string;
   period_to: string;
   overall_rating: string;
-  overall_score: number;
+  overall_score: number | null; // null when no section could be scored at all
   sections: EvidenceSection[];
   strengths: string[];
   areas_for_improvement: string[];

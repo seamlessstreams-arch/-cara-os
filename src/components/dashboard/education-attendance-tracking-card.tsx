@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { School, ChevronRight, AlertTriangle, Brain, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { useEducationIntelligence } from "@/hooks/use-education-intelligence";
 
 const ALERT_STYLES: Record<string, string> = {
@@ -41,7 +42,7 @@ export function EducationAttendanceTrackingCard() {
   const alerts = intel.alerts ?? [];
   const insights = intel.insights ?? [];
   const below90Names = (intel.child_profiles ?? [])
-    .filter((p) => p.attendance_pct < 90)
+    .filter((p) => below(p.attendance_pct, 90))
     .map((p) => p.child_name);
 
   return (
@@ -67,16 +68,16 @@ export function EducationAttendanceTrackingCard() {
           <div
             className={cn(
               "text-center rounded-lg p-2",
-              overview.avg_attendance_pct >= 95 ? "bg-green-50" : "bg-amber-50"
+              meets(overview.avg_attendance_pct, 95) ? "bg-green-50" : overview.avg_attendance_pct === null ? "bg-muted" : "bg-amber-50"
             )}
           >
             <p
               className={cn(
                 "text-lg font-bold tabular-nums",
-                overview.avg_attendance_pct >= 95 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                meets(overview.avg_attendance_pct, 95) ? "text-[--cs-success]" : overview.avg_attendance_pct === null ? "text-muted-foreground" : "text-[--cs-warning]"
               )}
             >
-              {overview.avg_attendance_pct}%
+              {formatRate(overview.avg_attendance_pct)}
             </p>
             <p className="text-[10px] text-muted-foreground">Attendance</p>
           </div>
@@ -136,14 +137,16 @@ export function EducationAttendanceTrackingCard() {
                   variant="outline"
                   className={cn(
                     "text-[10px]",
-                    attendance.overall_pct >= 95
+                    attendance.overall_pct === null
+                      ? "text-muted-foreground bg-muted border-transparent"
+                      : meets(attendance.overall_pct, 95)
                       ? "text-green-700 bg-green-50 border-green-200"
-                      : attendance.overall_pct >= 90
+                      : meets(attendance.overall_pct, 90)
                       ? "text-amber-700 bg-amber-50 border-amber-200"
                       : "text-red-700 bg-red-50 border-red-200"
                   )}
                 >
-                  {attendance.overall_pct}%
+                  {formatRate(attendance.overall_pct)}
                 </Badge>
               </div>
 

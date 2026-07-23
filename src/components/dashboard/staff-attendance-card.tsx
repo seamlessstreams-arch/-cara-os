@@ -14,6 +14,7 @@ import {
   CheckCircle2, Clock, Users, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 // ── Insight styling ──────────────────────────────────────────────────────────
@@ -69,9 +70,9 @@ export function StaffAttendanceCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", st.coverage_rate >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", st.coverage_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {st.coverage_rate}%
+          <div className={cn("text-center rounded-lg p-2", meets(st.coverage_rate, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(st.coverage_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              {formatRate(st.coverage_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Coverage</p>
           </div>
@@ -114,12 +115,12 @@ export function StaffAttendanceCard() {
           <div className="space-y-0.5">
             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
               <span>Coverage</span>
-              <span className="tabular-nums">{st.coverage_rate}%</span>
+              <span className="tabular-nums">{formatRate(st.coverage_rate)}</span>
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className={cn("h-full rounded-full", st.coverage_rate >= 90 ? "bg-green-400" : st.coverage_rate >= 75 ? "bg-amber-400" : "bg-red-400")}
-                style={{ width: `${Math.min(st.coverage_rate, 100)}%` }}
+                className={cn("h-full rounded-full", meets(st.coverage_rate, 90) ? "bg-green-400" : meets(st.coverage_rate, 75) ? "bg-amber-400" : "bg-red-400")}
+                style={{ width: `${Math.min(st.coverage_rate ?? 0, 100)}%` }}
               />
             </div>
           </div>

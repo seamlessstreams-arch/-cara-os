@@ -372,10 +372,10 @@ describe("evaluateMatchingQuality", () => {
     expect(result.conditionsAppliedRate).toBe(50);
   });
 
-  it("returns 100% conditions applied rate when no conditional decisions exist", () => {
+  it("reports conditions applied rate as unmeasured when no conditional decisions exist", () => {
     const assessments = [makeAssessment({ decision: "proceed" })];
     const result = evaluateMatchingQuality(assessments, PERIOD_START, PERIOD_END);
-    expect(result.conditionsAppliedRate).toBe(100);
+    expect(result.conditionsAppliedRate).toBeNull();
   });
 
   it("calculates decision breakdown correctly", () => {
@@ -534,10 +534,10 @@ describe("evaluateImpactMonitoring", () => {
     expect(result.resolutionRate).toBe(50);
   });
 
-  it("returns 100% resolution rate when no negative records exist", () => {
+  it("reports resolution rate as unmeasured when no negative records exist", () => {
     const monitoring = [makeMonitoring({ impactLevel: "positive" })];
     const result = evaluateImpactMonitoring(monitoring, [], PERIOD_START, PERIOD_END);
-    expect(result.resolutionRate).toBe(100);
+    expect(result.resolutionRate).toBeNull();
   });
 
   it("calculates mitigation provided rate for negative records", () => {
@@ -549,10 +549,10 @@ describe("evaluateImpactMonitoring", () => {
     expect(result.mitigationProvidedRate).toBe(50);
   });
 
-  it("returns 100% mitigation rate when no negative records exist", () => {
+  it("reports mitigation rate as unmeasured when no negative records exist", () => {
     const monitoring = [makeMonitoring({ impactLevel: "neutral" })];
     const result = evaluateImpactMonitoring(monitoring, [], PERIOD_START, PERIOD_END);
-    expect(result.mitigationProvidedRate).toBe(100);
+    expect(result.mitigationProvidedRate).toBeNull();
   });
 
   it("calculates average monitoring per child", () => {

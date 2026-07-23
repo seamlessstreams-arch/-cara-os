@@ -5,6 +5,8 @@
 // and generates Cara intelligence insights.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 export interface NotifiableEventInput {
   id: string;
   date: string;
@@ -35,7 +37,7 @@ export interface NotifiableEventsOverview {
   notified_within_24h: number;
   notified_late: number;
   pending: number;
-  compliance_rate: number;
+  compliance_rate: number | null;  // null = no notifiable events recorded, so nothing to notify
   events_last_30_days: number;
   events_last_90_days: number;
   unique_children_involved: number;
@@ -137,7 +139,7 @@ export function computeNotifiableEventsIntelligence(input: EngineInput): Notifia
         notified_within_24h: 0,
         notified_late: 0,
         pending: 0,
-        compliance_rate: 100,
+        compliance_rate: null,
         events_last_30_days: 0,
         events_last_90_days: 0,
         unique_children_involved: 0,
@@ -159,9 +161,7 @@ export function computeNotifiableEventsIntelligence(input: EngineInput): Notifia
   const notifiedLate = events.filter((e) => e.ofsted_status === "notified_late").length;
   const pending = events.filter((e) => e.ofsted_status === "pending").length;
   const completed = notifiedWithin24h + notifiedLate;
-  const complianceRate = events.length > 0
-    ? Math.round((notifiedWithin24h / events.length) * 100)
-    : 100;
+  const complianceRate = rate(notifiedWithin24h, events.length);
 
   const eventsLast30 = events.filter((e) => daysBetween(e.date, today) >= 0 && daysBetween(e.date, today) <= 30).length;
   const eventsLast90 = events.filter((e) => daysBetween(e.date, today) >= 0 && daysBetween(e.date, today) <= 90).length;
@@ -332,7 +332,7 @@ export function computeNotifiableEventsIntelligence(input: EngineInput): Notifia
   }
 
   // Positive: 100% compliance
-  if (complianceRate === 100 && events.length > 0) {
+  if (meets(complianceRate, 100)) {
     insights.push({
       severity: "positive",
       text: `100% Ofsted notification compliance — all ${events.length} events notified within 24 hours. Reg 40 fully met.`,
@@ -340,10 +340,10 @@ export function computeNotifiableEventsIntelligence(input: EngineInput): Notifia
   }
 
   // Positive: high compliance (>=80% but not 100%)
-  if (complianceRate >= 80 && complianceRate < 100 && events.length > 0) {
+  if (meets(complianceRate, 80) && below(complianceRate, 100)) {
     insights.push({
       severity: "positive",
-      text: `${complianceRate}% notification compliance rate. ${notifiedWithin24h} of ${events.length} events notified within 24 hours. Reg 40 requirements broadly met.`,
+      text: `${formatRate(complianceRate)} notification compliance rate. ${notifiedWithin24h} of ${events.length} events notified within 24 hours. Reg 40 requirements broadly met.`,
     });
   }
 

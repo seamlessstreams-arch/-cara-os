@@ -233,9 +233,11 @@ describe("Emergency Intelligence Engine", () => {
 
       expect(result.overview.total_drills).toBe(0);
       expect(result.overview.drills_last_90_days).toBe(0);
-      expect(result.overview.avg_response_time_minutes).toBe(0);
-      expect(result.overview.protocol_followed_rate).toBe(100);
-      expect(result.overview.satisfactory_rate).toBe(100);
+      // No drills conducted — response time and follow-through rates are
+      // unmeasured, not a fabricated 0 / 100%.
+      expect(result.overview.avg_response_time_minutes).toBeNull();
+      expect(result.overview.protocol_followed_rate).toBeNull();
+      expect(result.overview.satisfactory_rate).toBeNull();
       expect(result.overview.total_plans).toBe(0);
       expect(result.overview.current_plans).toBe(0);
       expect(result.overview.expired_plans).toBe(0);

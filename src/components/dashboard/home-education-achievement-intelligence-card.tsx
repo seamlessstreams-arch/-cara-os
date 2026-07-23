@@ -15,6 +15,7 @@ import {
   Clock, Ban, Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { useHomeEducationAchievementIntelligence } from "@/hooks/use-home-education-achievement-intelligence";
 import type { EducationRating } from "@/lib/engines/home-education-achievement-intelligence-engine";
 
@@ -77,7 +78,7 @@ export function HomeEducationAchievementIntelligenceCard() {
 
   const ratingStyle = RATING_STYLES[d.education_rating] ?? RATING_STYLES.insufficient_data;
   const hasExcl = d.attendance.exclusion_count_90d > 0;
-  const lowAtt = d.attendance.attendance_rate < 80 && d.attendance.total_attendance_records_30d > 0;
+  const lowAtt = below(d.attendance.attendance_rate, 80);
   const missingPep = d.pep.children_without_pep_90d.length > 0;
   const isAlert = hasExcl || lowAtt || missingPep || d.education_rating === "inadequate";
 
@@ -108,8 +109,8 @@ export function HomeEducationAchievementIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <BookOpen className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.attendance.attendance_rate >= 90 ? "text-[--cs-success]" : d.attendance.attendance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.attendance.attendance_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", d.attendance.attendance_rate === null ? "text-muted-foreground" : meets(d.attendance.attendance_rate, 90) ? "text-[--cs-success]" : meets(d.attendance.attendance_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+                  {formatRate(d.attendance.attendance_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Attendance</p>
@@ -161,7 +162,7 @@ export function HomeEducationAchievementIntelligenceCard() {
                 {d.attendance.late_count > 0 && <p>Late: <span className="font-medium text-amber-600">{d.attendance.late_count}</span></p>}
                 {d.attendance.absent_count > 0 && <p>Absent: <span className="font-medium text-red-600">{d.attendance.absent_count}</span></p>}
                 {d.attendance.excluded_count > 0 && <p>Excluded: <span className="font-medium text-red-600">{d.attendance.excluded_count}</span></p>}
-                <p>Punctuality: <span className={cn("font-medium", d.attendance.punctuality_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.attendance.punctuality_rate}%</span></p>
+                <p>Punctuality: <span className={cn("font-medium", d.attendance.punctuality_rate === null ? "text-muted-foreground" : meets(d.attendance.punctuality_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.attendance.punctuality_rate)}</span></p>
               </div>
             </div>
 
@@ -172,7 +173,7 @@ export function HomeEducationAchievementIntelligenceCard() {
                 <p>PEP coverage: <span className={cn("font-medium", missingPep ? "text-[--cs-risk]" : "text-[--cs-success]")}>{d.pep.children_with_pep_90d.length}/{d.pep.children_with_pep_90d.length + d.pep.children_without_pep_90d.length}</span></p>
                 <p>Attainment: <span className="font-medium text-slate-600">{d.achievements.attainment_records_90d}</span></p>
                 {d.achievements.concerns_90d > 0 && (
-                  <p>Concerns: <span className={cn("font-medium", d.achievements.concern_resolution_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.achievements.concerns_90d} ({d.achievements.concern_resolution_rate}% managed)</span></p>
+                  <p>Concerns: <span className={cn("font-medium", meets(d.achievements.concern_resolution_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.achievements.concerns_90d} ({formatRate(d.achievements.concern_resolution_rate)} managed)</span></p>
                 )}
               </div>
             </div>

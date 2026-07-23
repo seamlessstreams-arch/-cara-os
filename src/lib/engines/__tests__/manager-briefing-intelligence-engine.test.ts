@@ -250,13 +250,14 @@ describe("Manager Briefing Intelligence Engine", () => {
     expect(result.priority_actions.length).toBeLessThanOrEqual(15);
   });
 
-  it("handles empty domains gracefully", () => {
+  it("handles empty domains gracefully without claiming stability", () => {
     const result = computeManagerBriefing(makeInput({ domains: [] }));
 
-    expect(result.executive_summary.overall_risk_level).toBe("stable");
+    expect(result.executive_summary.overall_risk_level).toBe("unknown");
     expect(result.executive_summary.domains_total).toBe(0);
     expect(result.domain_health).toHaveLength(0);
-    expect(result.regulatory_compliance.overall_compliance_pct).toBe(100);
+    expect(result.regulatory_compliance.overall_compliance_pct).toBeNull();
+    expect(result.executive_summary.avg_compliance_rate).toBeNull();
   });
 
   it("includes generated_at and home_name in result", () => {

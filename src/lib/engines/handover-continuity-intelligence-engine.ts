@@ -11,6 +11,8 @@
 // continuity of care across shifts.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type ShiftType = "day" | "sleep_in" | "waking_night" | "night" | "morning";
@@ -70,10 +72,10 @@ export interface HandoverOverview {
   total_handovers: number;
   completed_count: number;
   incomplete_count: number;
-  completion_rate: number;            // pct completed
+  completion_rate: number | null;     // pct completed; null = no handover recorded
   fully_signed_off_count: number;     // where all incoming staff signed
-  sign_off_rate: number;              // pct of handovers fully signed
-  avg_mood_score: number;             // avg across all child mood scores
+  sign_off_rate: number | null;       // pct of handovers fully signed
+  avg_mood_score: number | null;      // avg across all child mood scores; null = none logged
   total_child_updates: number;
   total_child_alerts: number;
   total_flags: number;
@@ -97,7 +99,7 @@ export interface HandoverProfile {
   child_alert_count: number;
   flag_count: number;
   incident_link_count: number;
-  avg_mood: number;
+  avg_mood: number | null;           // null = no mood was logged in this handover
   low_mood_children: string[];        // children with mood <= 4
   risk_flags: string[];
 }
@@ -106,7 +108,7 @@ export interface ChildMoodSummary {
   child_id: string;
   child_name: string;
   mood_entries: number;
-  avg_mood: number;
+  avg_mood: number | null;           // null = no mood logged for this child
   latest_mood: number | null;
   total_alerts: number;
   alert_themes: string[];             // unique alert strings
@@ -166,24 +168,20 @@ export function computeHandoverContinuityIntelligence(
   // ── Completion ──────────────────────────────────────────────────────────
   const completed = handovers.filter((h) => h.completed_at !== null);
   const incomplete = handovers.filter((h) => h.completed_at === null);
-  const completionRate = handovers.length > 0
-    ? Math.round((completed.length / handovers.length) * 100)
-    : 100;
+  const completionRate = rateOf(completed, handovers);
 
   // ── Sign-offs ─────────────────────────────────────────────────────────
   const fullySigned = handovers.filter(
     (h) => h.incoming_staff.length > 0 && h.sign_offs.length >= h.incoming_staff.length,
   );
-  const signOffRate = handovers.length > 0
-    ? Math.round((fullySigned.length / handovers.length) * 100)
-    : 100;
+  const signOffRate = rateOf(fullySigned, handovers);
 
   // ── Child mood ────────────────────────────────────────────────────────
   const allMoodScores = handovers
     .flatMap((h) => h.child_updates)
     .map((u) => u.mood_score)
     .filter((s): s is number => s !== null);
-  const avgMood = allMoodScores.length > 0 ? round1(average(allMoodScores)) : 0;
+  const avgMood = allMoodScores.length > 0 ? round1(average(allMoodScores)) : null;
 
   const totalChildUpdates = handovers.reduce((s, h) => s + h.child_updates.length, 0);
   const totalChildAlerts = handovers.reduce(
@@ -218,7 +216,7 @@ export function computeHandoverContinuityIntelligence(
     const isFullySigned = h.incoming_staff.length > 0 && h.sign_offs.length >= h.incoming_staff.length;
     const childAlerts = h.child_updates.reduce((s, u) => s + u.alerts.length, 0);
     const moodScores = h.child_updates.map((u) => u.mood_score).filter((s): s is number => s !== null);
-    const handoverAvgMood = moodScores.length > 0 ? round1(average(moodScores)) : 0;
+    const handoverAvgMood = moodScores.length > 0 ? round1(average(moodScores)) : null;
     const lowMoodChildren = h.child_updates
       .filter((u) => u.mood_score !== null && u.mood_score <= 4)
       .map((u) => childMap.get(u.child_id) ?? u.child_id);
@@ -274,13 +272,15 @@ export function computeHandoverContinuityIntelligence(
         child_id,
         child_name: childMap.get(child_id) ?? child_id,
         mood_entries: moods.length,
-        avg_mood: moods.length > 0 ? round1(average(moods)) : 0,
+        avg_mood: moods.length > 0 ? round1(average(moods)) : null,
         latest_mood: latestMood,
         total_alerts: allAlerts.length,
         alert_themes: uniqueAlerts,
       };
     })
-    .sort((a, b) => a.avg_mood - b.avg_mood); // lowest mood first
+    // lowest mood first; children with no mood logged sort last — unmeasured is
+    // not the same as unhappy.
+    .sort((a, b) => (a.avg_mood ?? Infinity) - (b.avg_mood ?? Infinity));
 
   // ── Alerts ────────────────────────────────────────────────────────────
   const alerts: HandoverAlert[] = [];
@@ -309,7 +309,7 @@ export function computeHandoverContinuityIntelligence(
   }
 
   // High: low mood children (<=4)
-  const lowMoodEntries = child_mood_summary.filter((c) => c.avg_mood > 0 && c.avg_mood <= 5);
+  const lowMoodEntries = child_mood_summary.filter((c) => c.avg_mood !== null && c.avg_mood <= 5);
   if (lowMoodEntries.length > 0) {
     const names = lowMoodEntries.map((c) => `${c.child_name} (avg ${c.avg_mood})`).join(", ");
     alerts.push({
@@ -354,10 +354,10 @@ export function computeHandoverContinuityIntelligence(
   }
 
   // Warning: missing sign-offs
-  if (signOffRate < 100 && handovers.length > 0) {
+  if (below(signOffRate, 100)) {
     insights.push({
       severity: "warning",
-      text: `Sign-off rate is ${signOffRate}%. Not all incoming staff have acknowledged handover receipt. Full sign-off demonstrates accountability and is an indicator of professional practice.`,
+      text: `Sign-off rate is ${formatRate(signOffRate)}. Not all incoming staff have acknowledged handover receipt. Full sign-off demonstrates accountability and is an indicator of professional practice.`,
     });
   }
 
@@ -378,7 +378,7 @@ export function computeHandoverContinuityIntelligence(
   }
 
   // Positive: full sign-off compliance
-  if (signOffRate === 100 && handovers.length > 0) {
+  if (meets(signOffRate, 100)) {
     insights.push({
       severity: "positive",
       text: `All handovers are fully signed off by incoming staff. 100% sign-off compliance is a strong governance indicator under Reg 34.`,
@@ -386,7 +386,7 @@ export function computeHandoverContinuityIntelligence(
   }
 
   // Positive: good average mood (>=7)
-  if (avgMood >= 7 && allMoodScores.length > 0) {
+  if (avgMood !== null && avgMood >= 7) {
     insights.push({
       severity: "positive",
       text: `Average child mood score is ${avgMood}/10. High overall mood indicates children feel settled and supported — a positive wellbeing indicator for SCCIF.`,

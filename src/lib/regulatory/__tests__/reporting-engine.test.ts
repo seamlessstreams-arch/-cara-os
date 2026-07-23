@@ -407,10 +407,10 @@ describe("summarizeActionPoints", () => {
     expect(result.averageResolutionDays).toBe(11); // (7+14)/2 ≈ 10.5, rounds to 11
   });
 
-  it("returns 100% completion for empty action list", () => {
+  it("reports completion as unmeasured for an empty action list", () => {
     const reports = [makeReg44Report({ actionPoints: [] })];
     const result = summarizeActionPoints(reports, FIXED_NOW);
-    expect(result.completionRate).toBe(100);
+    expect(result.completionRate).toBeNull();
     expect(result.total).toBe(0);
   });
 

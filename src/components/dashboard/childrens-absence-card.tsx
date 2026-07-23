@@ -13,6 +13,7 @@ import {
   CalendarX, ChevronRight, AlertTriangle, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useEducationIntelligence } from "@/hooks/use-education-intelligence";
 
 const ALERT_STYLES: Record<string, string> = {
@@ -68,8 +69,8 @@ export function ChildrensAbsenceCard() {
       <CardContent className="space-y-4">
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", attendance.overall_pct >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", attendance.overall_pct >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{attendance.overall_pct}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", attendance.overall_pct === null ? "bg-muted" : meets(attendance.overall_pct, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", attendance.overall_pct === null ? "text-muted-foreground" : meets(attendance.overall_pct, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(attendance.overall_pct)}</p>
             <p className="text-[10px] text-muted-foreground">Attendance</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", attendance.below_90_count === 0 ? "bg-green-50" : "bg-amber-50")}>

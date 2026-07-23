@@ -15,6 +15,7 @@ import {
   TrendingUp, Brain, Loader2, Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useRiskAssessmentIntelligence } from "@/hooks/use-risk-assessment-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -125,9 +126,9 @@ export function RiskIntelligenceCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">Overdue</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.child_voice_rate === 100 ? "bg-green-50" : o.child_voice_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.child_voice_rate === 100 ? "text-[--cs-success]" : o.child_voice_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.child_voice_rate}%
+          <div className={cn("text-center rounded-lg p-2.5", o.child_voice_rate === null ? "bg-gray-50" : o.child_voice_rate === 100 ? "bg-green-50" : meets(o.child_voice_rate, 75) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.child_voice_rate === null ? "text-muted-foreground" : o.child_voice_rate === 100 ? "text-[--cs-success]" : meets(o.child_voice_rate, 75) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {formatRate(o.child_voice_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Voice</p>
           </div>
@@ -167,11 +168,11 @@ export function RiskIntelligenceCard() {
         <div className="flex items-center justify-between rounded-lg border p-3">
           <div className="flex items-center gap-4">
             <div>
-              <p className="text-xs font-medium">{o.mitigation_effectiveness_rate}%</p>
+              <p className="text-xs font-medium">{formatRate(o.mitigation_effectiveness_rate)}</p>
               <p className="text-[10px] text-muted-foreground">Mitigations</p>
             </div>
             <div>
-              <p className="text-xs font-medium">{o.contingency_plan_rate}%</p>
+              <p className="text-xs font-medium">{formatRate(o.contingency_plan_rate)}</p>
               <p className="text-[10px] text-muted-foreground">Contingency</p>
             </div>
             <div>

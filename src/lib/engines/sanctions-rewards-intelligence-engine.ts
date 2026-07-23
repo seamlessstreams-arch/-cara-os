@@ -12,6 +12,8 @@
 // reward-led, restorative approach?
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type Direction = "reward" | "sanction";
@@ -52,8 +54,8 @@ export interface SROverview {
   total_entries: number;
   total_rewards: number;
   total_sanctions: number;
-  reward_to_sanction_ratio: number;    // e.g. 2.5 = 2.5 rewards per sanction
-  proportionality_rate: number;        // pct of all entries marked proportionate
+  reward_to_sanction_ratio: number | null;    // e.g. 2.5 = 2.5 rewards per sanction; null when nothing recorded
+  proportionality_rate: number | null;        // pct of all entries marked proportionate
   children_with_entries: number;
   children_with_sanctions: number;
   children_with_rewards_only: number;  // children with rewards but 0 sanctions
@@ -72,10 +74,10 @@ export interface ChildBehaviourProfile {
   child_name: string;
   rewards: number;
   sanctions: number;
-  ratio: number;                       // rewards / sanctions (Infinity if 0 sanctions)
+  ratio: number | null;                // rewards / sanctions; null when the child has no entries
   reward_types: string[];              // unique reward types
   sanction_types: string[];            // unique sanction types
-  proportionate_pct: number;
+  proportionate_pct: number | null;
   disproportionate_count: number;
   risk_flags: string[];
 }
@@ -130,12 +132,10 @@ export function computeSanctionsRewardsIntelligence(
   const totalSanctions = sanctions.length;
   const ratio = totalSanctions > 0
     ? round1(totalRewards / totalSanctions)
-    : totalRewards > 0 ? totalRewards : 0;
+    : totalRewards > 0 ? totalRewards : null;
 
   const proportionate = entries.filter((e) => e.proportionate);
-  const proportionalityRate = entries.length > 0
-    ? Math.round((proportionate.length / entries.length) * 100)
-    : 100;
+  const proportionalityRate = rate(proportionate.length, entries.length);
 
   const childIdSet = new Set(entries.map((e) => e.child_id));
   const childrenWithSanctions = new Set(sanctions.map((e) => e.child_id));
@@ -194,18 +194,16 @@ export function computeSanctionsRewardsIntelligence(
       const childSanctions = childEntries.filter((e) => e.direction === "sanction");
       const childRatio = childSanctions.length > 0
         ? round1(childRewards.length / childSanctions.length)
-        : childRewards.length > 0 ? childRewards.length : 0;
+        : childRewards.length > 0 ? childRewards.length : null;
 
       const rewardTypes = [...new Set(childRewards.map((e) => e.reward_type).filter(Boolean) as string[])];
       const sanctionTypes = [...new Set(childSanctions.map((e) => e.sanction_type).filter(Boolean) as string[])];
 
       const disproportionate = childEntries.filter((e) => !e.proportionate);
-      const proportionatePct = childEntries.length > 0
-        ? Math.round(((childEntries.length - disproportionate.length) / childEntries.length) * 100)
-        : 100;
+      const proportionatePct = rate(childEntries.length - disproportionate.length, childEntries.length);
 
       const riskFlags: string[] = [];
-      if (childRatio > 0 && childRatio < 2 && childSanctions.length > 0)
+      if (childRatio !== null && childRatio > 0 && childRatio < 2 && childSanctions.length > 0)
         riskFlags.push("low_reward_ratio");
       if (disproportionate.length > 0)
         riskFlags.push("disproportionate_entries");
@@ -230,6 +228,8 @@ export function computeSanctionsRewardsIntelligence(
     .sort((a, b) => {
       // Sort: highest risk first (most flags, then lowest ratio)
       if (b.risk_flags.length !== a.risk_flags.length) return b.risk_flags.length - a.risk_flags.length;
+      // A child with no entries has no ratio — sort them last rather than worst.
+      if (a.ratio === null || b.ratio === null) return (a.ratio === null ? 1 : 0) - (b.ratio === null ? 1 : 0);
       return a.ratio - b.ratio;
     });
 
@@ -256,7 +256,7 @@ export function computeSanctionsRewardsIntelligence(
   }
 
   // High: low overall ratio (< 2:1)
-  if (totalSanctions > 0 && ratio < 2) {
+  if (totalSanctions > 0 && ratio !== null && ratio < 2) {
     alerts.push({
       severity: "high",
       message: `Reward-to-sanction ratio is ${ratio}:1 (below recommended 2:1 minimum). Research indicates a 3:1 or higher ratio promotes positive outcomes. Review whether rewards are being consistently recognised and recorded.`,
@@ -303,7 +303,7 @@ export function computeSanctionsRewardsIntelligence(
   }
 
   // Warning: low ratio
-  if (totalSanctions > 0 && ratio < 2) {
+  if (totalSanctions > 0 && ratio !== null && ratio < 2) {
     insights.push({
       severity: "warning",
       text: `Reward-to-sanction ratio is ${ratio}:1. Best practice in residential childcare recommends at least 3:1 — children thrive when positive behaviour is consistently noticed and celebrated. Low ratios may indicate a punitive culture that SCCIF will challenge.`,
@@ -319,7 +319,7 @@ export function computeSanctionsRewardsIntelligence(
   }
 
   // Positive: high overall ratio (≥3:1)
-  if (totalSanctions > 0 && ratio >= 3) {
+  if (totalSanctions > 0 && ratio !== null && ratio >= 3) {
     insights.push({
       severity: "positive",
       text: `Reward-to-sanction ratio is ${ratio}:1 — above the recommended 3:1 threshold. This indicates a strongly positive, reward-led culture aligned with Reg 35 and SCCIF best practice.`,
@@ -327,7 +327,7 @@ export function computeSanctionsRewardsIntelligence(
   }
 
   // Positive: 100% proportionality
-  if (proportionalityRate === 100 && entries.length > 0) {
+  if (meets(proportionalityRate, 100) && entries.length > 0) {
     insights.push({
       severity: "positive",
       text: `All ${entries.length} entries are marked as proportionate. 100% proportionality demonstrates that behaviour management is fair and measured — a key Reg 19 compliance indicator.`,

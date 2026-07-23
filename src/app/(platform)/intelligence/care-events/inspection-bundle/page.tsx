@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useExportInspectionBundle } from "@/hooks/use-export-history";
 import { useInspectionBundles } from "@/hooks/use-inspection-bundles";
 import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
+import { formatRate } from "@/lib/metrics/rate";
 
 const HOME_ID = "home_oak";
 
@@ -109,7 +110,7 @@ export default function InspectionBundlePage() {
                 <Stat label="Reg 45 evidence" value={result.headline.reg45_evidence_items} />
                 <Stat label="Annex A evidence" value={result.headline.annex_a_evidence_items} />
                 <Stat label="Recent exports" value={result.headline.recent_exports_included} />
-                <Stat label="Readiness" value={result.headline.readiness_score} />
+                <Stat label="Readiness" value={formatRate(result.headline.readiness_score)} />
               </ul>
             </CardContent>
           </Card>

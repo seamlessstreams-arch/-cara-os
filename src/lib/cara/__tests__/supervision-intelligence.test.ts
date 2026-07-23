@@ -99,10 +99,10 @@ describe("Supervision Intelligence", () => {
       expect(result.teamActionCompletionRate).toBe(75); // 3/4 completed
     });
 
-    it("reports 100% when no actions", () => {
+    it("reports no rate when no actions were agreed", () => {
       const records = [makeRecord({ staffId: "s1", date: makeDate(10) })];
       const result = analyseSupervisions(records, STAFF);
-      expect(result.teamActionCompletionRate).toBe(100);
+      expect(result.teamActionCompletionRate).toBeNull();
     });
   });
 

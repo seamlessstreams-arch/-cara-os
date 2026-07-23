@@ -10,6 +10,8 @@
 // Children's Homes Regulations 2015 + Ofsted SCCIF: Safety domain.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ChildInput {
@@ -67,12 +69,14 @@ export interface RestraintOverview {
   max_duration_minutes: number;
   children_involved_30d: number;
   incidents_with_injury: number;
-  child_debrief_rate: number;      // 0-100
-  staff_debrief_rate: number;      // 0-100
-  review_completion_rate: number;  // 0-100
-  body_map_rate: number;           // 0-100
-  de_escalation_documented_rate: number; // 0-100
-  team_teach_compliance_rate: number;    // 0-100
+  // null on every rate below = no restraint records in the window, so practice
+  // quality is unmeasured — not perfect
+  child_debrief_rate: number | null;      // 0-100
+  staff_debrief_rate: number | null;      // 0-100
+  review_completion_rate: number | null;  // 0-100
+  body_map_rate: number | null;           // 0-100
+  de_escalation_documented_rate: number | null; // 0-100
+  team_teach_compliance_rate: number | null;    // 0-100
 }
 
 export interface ChildRestraintProfile {
@@ -84,7 +88,7 @@ export interface ChildRestraintProfile {
   primary_reason: RestraintReason | null;
   primary_type: RestraintType | null;
   injuries_count: number;
-  debriefed_rate: number;
+  debriefed_rate: number | null;
   frequency_trend: "increasing" | "stable" | "decreasing" | "insufficient_data";
 }
 
@@ -201,7 +205,7 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
   const trainedStaff = allStaff.filter((s) => s.team_teach_trained).length;
 
   const total90d = within90d.length;
-  const pct = (n: number) => (total90d > 0 ? Math.round((n / total90d) * 100) : 100);
+  const pct = (n: number) => rate(n, total90d);
 
   const overview: RestraintOverview = {
     total_incidents_30d: within30d.length,
@@ -215,7 +219,7 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
     review_completion_rate: pct(reviewed),
     body_map_rate: pct(bodyMaps),
     de_escalation_documented_rate: pct(deEscDoc),
-    team_teach_compliance_rate: allStaff.length > 0 ? Math.round((trainedStaff / allStaff.length) * 100) : 100,
+    team_teach_compliance_rate: rate(trainedStaff, allStaff.length),
   };
 
   // ── Child Profiles ────────────────────────────────────────────────────
@@ -240,7 +244,7 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
         primary_reason: majority(reasons),
         primary_type: majority(types),
         injuries_count: injuryCount,
-        debriefed_rate: childIncidents90d.length > 0 ? Math.round((debriefed / childIncidents90d.length) * 100) : 100,
+        debriefed_rate: rate(debriefed, childIncidents90d.length),
         frequency_trend: computeFrequencyTrend(childIncidents90d.filter((r) => daysBetween(r.date, today) <= 30), today),
       };
     });
@@ -364,23 +368,23 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
   }
 
   // Warning: low debrief rate
-  if (total90d >= 2 && overview.child_debrief_rate < 100) {
+  if (total90d >= 2 && below(overview.child_debrief_rate, 100)) {
     insights.push({
       severity: "warning",
-      text: `Child debrief rate is ${overview.child_debrief_rate}%. Every child must be offered a debrief following physical intervention to process the experience therapeutically. Lack of debrief compounds trauma and reduces trust.`,
+      text: `Child debrief rate is ${formatRate(overview.child_debrief_rate)}. Every child must be offered a debrief following physical intervention to process the experience therapeutically. Lack of debrief compounds trauma and reduces trust.`,
     });
   }
 
   // Warning: untrained staff
-  if (overview.team_teach_compliance_rate < 100 && allStaff.length > 0) {
+  if (below(overview.team_teach_compliance_rate, 100)) {
     insights.push({
       severity: "warning",
-      text: `Team Teach compliance is ${overview.team_teach_compliance_rate}%. All staff involved in physical intervention must hold current certification. Untrained staff increase risk of harm and regulatory non-compliance.`,
+      text: `Team Teach compliance is ${formatRate(overview.team_teach_compliance_rate)}. All staff involved in physical intervention must hold current certification. Untrained staff increase risk of harm and regulatory non-compliance.`,
     });
   }
 
   // Positive: all debriefs completed
-  if (total90d >= 2 && overview.child_debrief_rate === 100 && overview.staff_debrief_rate === 100) {
+  if (total90d >= 2 && meets(overview.child_debrief_rate, 100) && meets(overview.staff_debrief_rate, 100)) {
     insights.push({
       severity: "positive",
       text: `100% debrief completion for both children and staff. This demonstrates trauma-informed practice and commitment to therapeutic recovery following physical intervention.`,
@@ -407,7 +411,7 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
   }
 
   // Positive: all reviews complete
-  if (total90d >= 2 && overview.review_completion_rate === 100) {
+  if (total90d >= 2 && meets(overview.review_completion_rate, 100)) {
     insights.push({
       severity: "positive",
       text: `All ${total90d} restraint records have been reviewed by management. This demonstrates robust oversight and accountability under Reg 35.`,

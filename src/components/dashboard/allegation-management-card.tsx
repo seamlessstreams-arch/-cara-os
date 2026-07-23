@@ -14,6 +14,7 @@ import {
   ShieldAlert, ChevronRight, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 import { useSafeguardingIntelligence } from "@/hooks/use-safeguarding-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -85,7 +86,7 @@ export function AllegationManagementCard() {
             </div>
             <div className="rounded border p-2">
               <span className="text-muted-foreground">Debrief rate:</span>{" "}
-              <span className="font-semibold">{restraints?.debrief_completion_rate ?? 0}%</span>
+              <span className="font-semibold">{formatRate(restraints?.debrief_completion_rate)}</span>
             </div>
             <div className="rounded border p-2">
               <span className="text-muted-foreground">Notifiable events:</span>{" "}

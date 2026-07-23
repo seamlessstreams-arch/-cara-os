@@ -340,9 +340,9 @@ describe("computeDoLIntelligence — Overview", () => {
     expect(result.overview.active_restrictions).toBe(0);
     expect(result.overview.children_with_restrictions).toBe(0);
     expect(result.overview.total_children).toBe(0);
-    expect(result.overview.proportionality_rate).toBe(100);
-    expect(result.overview.child_consultation_rate).toBe(100);
-    expect(result.overview.social_worker_informed_rate).toBe(100);
+    expect(result.overview.proportionality_rate).toBeNull();
+    expect(result.overview.child_consultation_rate).toBeNull();
+    expect(result.overview.social_worker_informed_rate).toBeNull();
     expect(result.overview.overdue_reviews).toBe(0);
     expect(result.overview.restrictions_removed_last_30_days).toBe(0);
   });

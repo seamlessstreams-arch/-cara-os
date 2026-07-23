@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useHomeWellbeingIntelligence } from "@/hooks/use-home-wellbeing-intelligence";
 import type { HomeTemperature } from "@/lib/engines/home-wellbeing-intelligence-engine";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -119,11 +120,11 @@ export function HomeWellbeingIntelligenceCard() {
 
         {/* Mood + Sleep Overview Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", d.mood_snapshot.average_mood_7d > 0 ? moodBg(d.mood_snapshot.average_mood_7d) : "bg-slate-50")}>
+          <div className={cn("text-center rounded-lg p-2", d.mood_snapshot.average_mood_7d !== null ? moodBg(d.mood_snapshot.average_mood_7d) : "bg-slate-50")}>
             <div className="flex items-center justify-center gap-1">
-              <Smile className={cn("h-4 w-4", d.mood_snapshot.average_mood_7d > 0 ? moodColor(d.mood_snapshot.average_mood_7d) : "text-slate-400")} />
-              <p className={cn("text-lg font-bold tabular-nums", d.mood_snapshot.average_mood_7d > 0 ? moodColor(d.mood_snapshot.average_mood_7d) : "text-slate-400")}>
-                {d.mood_snapshot.average_mood_7d > 0 ? `${d.mood_snapshot.average_mood_7d}/10` : "—"}
+              <Smile className={cn("h-4 w-4", d.mood_snapshot.average_mood_7d !== null ? moodColor(d.mood_snapshot.average_mood_7d) : "text-slate-400")} />
+              <p className={cn("text-lg font-bold tabular-nums", d.mood_snapshot.average_mood_7d !== null ? moodColor(d.mood_snapshot.average_mood_7d) : "text-slate-400")}>
+                {d.mood_snapshot.average_mood_7d !== null ? `${d.mood_snapshot.average_mood_7d}/10` : "—"}
               </p>
               <MoodTrendIcon className={cn("h-3.5 w-3.5", TREND_TEXT[d.mood_snapshot.trend])} />
             </div>
@@ -134,18 +135,18 @@ export function HomeWellbeingIntelligenceCard() {
           </div>
           <div className="text-center rounded-lg bg-slate-50 p-2">
             <div className="flex items-center justify-center gap-1">
-              <Smile className={cn("h-4 w-4", d.mood_snapshot.average_mood_30d > 0 ? moodColor(d.mood_snapshot.average_mood_30d) : "text-slate-400")} />
-              <p className={cn("text-lg font-bold tabular-nums", d.mood_snapshot.average_mood_30d > 0 ? moodColor(d.mood_snapshot.average_mood_30d) : "text-slate-400")}>
-                {d.mood_snapshot.average_mood_30d > 0 ? `${d.mood_snapshot.average_mood_30d}/10` : "—"}
+              <Smile className={cn("h-4 w-4", d.mood_snapshot.average_mood_30d !== null ? moodColor(d.mood_snapshot.average_mood_30d) : "text-slate-400")} />
+              <p className={cn("text-lg font-bold tabular-nums", d.mood_snapshot.average_mood_30d !== null ? moodColor(d.mood_snapshot.average_mood_30d) : "text-slate-400")}>
+                {d.mood_snapshot.average_mood_30d !== null ? `${d.mood_snapshot.average_mood_30d}/10` : "—"}
               </p>
             </div>
             <p className="text-[10px] text-muted-foreground">Mood (30d avg)</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", d.sleep_overview.good_rate >= 70 ? "bg-indigo-50" : d.sleep_overview.good_rate >= 40 ? "bg-amber-50" : "bg-red-50")}>
+          <div className={cn("text-center rounded-lg p-2", meets(d.sleep_overview.good_rate, 70) ? "bg-indigo-50" : meets(d.sleep_overview.good_rate, 40) ? "bg-amber-50" : below(d.sleep_overview.good_rate, 40) ? "bg-red-50" : "bg-slate-50")}>
             <div className="flex items-center justify-center gap-1">
-              <Moon className={cn("h-4 w-4", d.sleep_overview.good_rate >= 70 ? "text-indigo-500" : d.sleep_overview.good_rate >= 40 ? "text-amber-500" : "text-red-500")} />
-              <p className={cn("text-lg font-bold tabular-nums", d.sleep_overview.good_rate >= 70 ? "text-indigo-600" : d.sleep_overview.good_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                {d.sleep_overview.good_rate}%
+              <Moon className={cn("h-4 w-4", meets(d.sleep_overview.good_rate, 70) ? "text-indigo-500" : meets(d.sleep_overview.good_rate, 40) ? "text-amber-500" : below(d.sleep_overview.good_rate, 40) ? "text-red-500" : "text-slate-400")} />
+              <p className={cn("text-lg font-bold tabular-nums", meets(d.sleep_overview.good_rate, 70) ? "text-indigo-600" : meets(d.sleep_overview.good_rate, 40) ? "text-[--cs-warning]" : below(d.sleep_overview.good_rate, 40) ? "text-[--cs-risk]" : "text-slate-400")}>
+                {formatRate(d.sleep_overview.good_rate)}
               </p>
             </div>
             <p className="text-[10px] text-muted-foreground">Good Sleep</p>
@@ -180,7 +181,7 @@ export function HomeWellbeingIntelligenceCard() {
                       <span className={cn("font-bold tabular-nums", wellbeingColor(cp.wellbeing_score))}>{cp.wellbeing_score}%</span>
                     </div>
                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                      {cp.avg_mood_7d > 0 && (
+                      {cp.avg_mood_7d !== null && (
                         <span className={moodColor(cp.avg_mood_7d)}>Mood {cp.avg_mood_7d}/10</span>
                       )}
                       {cp.mood_trend !== "insufficient_data" && (

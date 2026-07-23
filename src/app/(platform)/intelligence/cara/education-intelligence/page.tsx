@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEducationIntelligence } from "@/hooks/use-education-intelligence";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import type {
   ChildEducationProfile,
   EducationAlert,
@@ -31,9 +32,11 @@ const INSIGHT_COLOURS: Record<string, string> = {
 };
 
 function childSignal(p: ChildEducationProfile): Signal {
-  if (p.exclusion_count_90d > 0 || (p.attendance_pct > 0 && p.attendance_pct < 80) || p.concerns_open > 0) return "red";
-  if (p.attendance_pct > 0 && p.attendance_pct < 90) return "amber";
+  if (p.exclusion_count_90d > 0 || below(p.attendance_pct, 80) || p.concerns_open > 0) return "red";
+  if (below(p.attendance_pct, 90)) return "amber";
   if (p.pep_current === false && p.latest_pep_date !== null) return "amber";
+  // No attendance recorded is a gap in the evidence, not a green light
+  if (p.attendance_pct === null) return "grey";
   return "green";
 }
 
@@ -47,15 +50,14 @@ function ChildEduCard({ profile }: { profile: ChildEducationProfile }) {
           <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${style.dot}`} />
           <span className="font-semibold text-slate-900 text-sm">{profile.child_name}</span>
         </div>
-        {profile.attendance_pct > 0 && (
-          <span className={`text-xs font-bold rounded-full px-2 py-0.5 ${
-            profile.attendance_pct >= 90 ? "bg-green-100 text-green-700" :
-            profile.attendance_pct >= 80 ? "bg-amber-100 text-amber-700" :
-            "bg-red-100 text-red-700"
-          }`}>
-            {profile.attendance_pct}% attendance
-          </span>
-        )}
+        <span className={`text-xs font-bold rounded-full px-2 py-0.5 ${
+          profile.attendance_pct === null ? "bg-slate-100 text-slate-500" :
+          meets(profile.attendance_pct, 90) ? "bg-green-100 text-green-700" :
+          meets(profile.attendance_pct, 80) ? "bg-amber-100 text-amber-700" :
+          "bg-red-100 text-red-700"
+        }`}>
+          {profile.attendance_pct === null ? "No attendance recorded" : `${formatRate(profile.attendance_pct)} attendance`}
+        </span>
       </div>
 
       {profile.school && (
@@ -144,10 +146,16 @@ export default function EducationIntelligencePage() {
       <div className={`rounded-2xl border-2 p-5 ${overallStyle.bg} ${overallStyle.border}`}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
-            <p className={`text-2xl font-bold ${att.overall_pct >= 90 ? "text-green-700" : att.overall_pct >= 80 ? "text-amber-700" : "text-red-700"}`}>
-              {att.overall_pct}%
+            <p className={`text-2xl font-bold ${
+              att.overall_pct === null ? "text-slate-400" :
+              meets(att.overall_pct, 90) ? "text-green-700" :
+              meets(att.overall_pct, 80) ? "text-amber-700" : "text-red-700"
+            }`}>
+              {formatRate(att.overall_pct)}
             </p>
-            <p className="text-xs text-slate-500">Overall attendance</p>
+            <p className="text-xs text-slate-500">
+              {att.overall_pct === null ? "Overall attendance — none recorded" : "Overall attendance"}
+            </p>
           </div>
           <div>
             <p className={`text-2xl font-bold ${ov.exclusion_events_90d > 0 ? "text-red-700" : "text-slate-700"}`}>

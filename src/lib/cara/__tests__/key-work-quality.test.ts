@@ -55,7 +55,8 @@ describe("Key Work Quality Analyser", () => {
       expect(result.totalSessions).toBe(0);
       expect(result.childrenCovered).toBe(0);
       expect(result.childrenTotal).toBe(0);
-      expect(result.overallCompliancePercent).toBe(100);
+      expect(result.overallCompliancePercent).toBeNull();
+      expect(result.regulatoryStatus.compliant).toBe(false);
     });
 
     it("counts total sessions", () => {

@@ -6,6 +6,8 @@
 // CHR 2015 Reg 44, 45, 46. SCCIF: "Leadership and management."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, meets, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface Reg44VisitInput {
@@ -92,8 +94,8 @@ export interface Reg44Profile {
   latest_judgement: string;
   open_recommendations: number;
   high_priority_open: number;
-  recommendation_completion_rate: number; // 0-100
-  reports_sent_to_ofsted_rate: number;    // 0-100
+  recommendation_completion_rate: number | null; // 0-100, null = no recommendations raised
+  reports_sent_to_ofsted_rate: number | null;    // 0-100, null = no visits to send
   trend: "improving" | "stable" | "declining" | "insufficient_data";
 }
 
@@ -110,10 +112,10 @@ export interface AuditProfile {
 export interface NotifiableEventProfile {
   total_90d: number;
   total_12m: number;
-  notified_within_24h_rate: number;       // 0-100
+  notified_within_24h_rate: number | null;  // null = no notifiable events in 12m
   pending_count: number;
-  follow_up_rate: number;                 // 0-100
-  lesson_learned_rate: number;            // 0-100
+  follow_up_rate: number | null;            // null = no notifiable events in 12m
+  lesson_learned_rate: number | null;       // null = no notifiable events in 12m
   event_types: { type: string; count: number }[];
 }
 
@@ -122,8 +124,8 @@ export interface InspectionProfile {
   grade_trend: "improving" | "stable" | "declining" | "insufficient_data";
   total_actions_required: number;
   total_actions_completed: number;
-  action_completion_rate: number;         // 0-100
-  months_since_last_inspection: number;
+  action_completion_rate: number | null;  // null = no actions required by any inspection
+  months_since_last_inspection: number | null; // null = no inspection on record
 }
 
 export interface PolicyProfile {
@@ -131,7 +133,7 @@ export interface PolicyProfile {
   current_count: number;
   overdue_count: number;
   overdue_policies: string[];             // titles
-  avg_acknowledgement_rate: number;       // 0-100
+  avg_acknowledgement_rate: number | null; // null = no policy has an acknowledgement roll
   policies_below_100_ack: number;
   review_due_within_30d: number;
 }
@@ -252,10 +254,8 @@ export function computeHomeRegulatoryCompliance(
   const openRecs = allRecs.filter(r => r.status !== "completed");
   const highPriorityOpen = openRecs.filter(r => r.priority === "high").length;
   const completedRecs = allRecs.filter(r => r.status === "completed").length;
-  const recCompletionRate = allRecs.length > 0 ? Math.round((completedRecs / allRecs.length) * 100) : 100;
-  const sentToOfstedRate = visits12m.length > 0
-    ? Math.round((visits12m.filter(v => v.report_sent_to_ofsted).length / visits12m.length) * 100)
-    : 100;
+  const recCompletionRate = rate(completedRecs, allRecs.length);
+  const sentToOfstedRate = rateOf(visits12m.filter(v => v.report_sent_to_ofsted), visits12m);
 
   const latestVisit = sorted44.length > 0 ? sorted44[sorted44.length - 1] : null;
 
@@ -341,9 +341,9 @@ export function computeHomeRegulatoryCompliance(
   const withFollowUp = ne12m.filter(n => n.has_follow_up);
   const withLesson = ne12m.filter(n => n.has_lesson_learned);
 
-  const notifiedRate = ne12m.length > 0 ? Math.round((notifiedOnTime.length / ne12m.length) * 100) : 100;
-  const followUpRate = ne12m.length > 0 ? Math.round((withFollowUp.length / ne12m.length) * 100) : 100;
-  const lessonRate = ne12m.length > 0 ? Math.round((withLesson.length / ne12m.length) * 100) : 100;
+  const notifiedRate = rateOf(notifiedOnTime, ne12m);
+  const followUpRate = rateOf(withFollowUp, ne12m);
+  const lessonRate = rateOf(withLesson, ne12m);
 
   // Event type breakdown
   const typeMap = new Map<string, number>();
@@ -365,11 +365,11 @@ export function computeHomeRegulatoryCompliance(
   // ── Inspection Profile ──────────────────────────────────────────────────
   const sortedInsp = [...inspections].sort((a, b) => a.inspection_date.localeCompare(b.inspection_date));
   const latestInsp = sortedInsp.length > 0 ? sortedInsp[sortedInsp.length - 1] : null;
-  const monthsSinceLast = latestInsp ? monthsBetween(latestInsp.inspection_date, today) : 99;
+  const monthsSinceLast = latestInsp ? monthsBetween(latestInsp.inspection_date, today) : null;
 
   const totalActionsReq = inspections.reduce((s, i) => s + i.actions_required, 0);
   const totalActionsComp = inspections.reduce((s, i) => s + i.actions_completed, 0);
-  const actionCompRate = totalActionsReq > 0 ? Math.round((totalActionsComp / totalActionsReq) * 100) : 100;
+  const actionCompRate = rate(totalActionsComp, totalActionsReq);
 
   // Grade trend
   const gradeValue = (g: string): number => {
@@ -408,8 +408,8 @@ export function computeHomeRegulatoryCompliance(
 
   const ackRates = policies
     .filter(p => p.total_staff_required > 0)
-    .map(p => (p.acknowledgement_count / p.total_staff_required) * 100);
-  const avgAckRate = ackRates.length > 0 ? Math.round(ackRates.reduce((s, v) => s + v, 0) / ackRates.length) : 100;
+    .map(p => rate(p.acknowledgement_count, p.total_staff_required));
+  const avgAckRate = meanOf(ackRates);
   const below100Ack = policies.filter(p => p.total_staff_required > 0 && p.acknowledgement_count < p.total_staff_required).length;
 
   const reviewDue30d = policies.filter(p => {
@@ -440,14 +440,14 @@ export function computeHomeRegulatoryCompliance(
     if (consecutiveMonthsWithout >= 3) score -= 8;
     else if (consecutiveMonthsWithout >= 2) score -= 4;
 
-    if (recCompletionRate >= 90) score += 5;
-    else if (recCompletionRate >= 70) score += 2;
-    else if (recCompletionRate < 50) score -= 5;
+    if (meets(recCompletionRate, 90)) score += 5;
+    else if (meets(recCompletionRate, 70)) score += 2;
+    else if (below(recCompletionRate, 50)) score -= 5;
 
     if (highPriorityOpen > 0) score -= 4;
 
-    if (sentToOfstedRate === 100) score += 3;
-    else if (sentToOfstedRate < 80) score -= 3;
+    if (meets(sentToOfstedRate, 100)) score += 3;
+    else if (below(sentToOfstedRate, 80)) score -= 3;
   }
 
   // Audits (±15)
@@ -467,17 +467,17 @@ export function computeHomeRegulatoryCompliance(
 
   // Notifiable Events (±15)
   if (ne12m.length > 0) {
-    if (notifiedRate === 100) score += 8;
-    else if (notifiedRate >= 80) score += 3;
-    else if (notifiedRate < 60) score -= 8;
+    if (meets(notifiedRate, 100)) score += 8;
+    else if (meets(notifiedRate, 80)) score += 3;
+    else if (below(notifiedRate, 60)) score -= 8;
 
     if (pending.length === 0) score += 3;
     else score -= 3 * Math.min(pending.length, 3);
 
-    if (followUpRate === 100) score += 2;
-    else if (followUpRate < 70) score -= 3;
+    if (meets(followUpRate, 100)) score += 2;
+    else if (below(followUpRate, 70)) score -= 3;
 
-    if (lessonRate >= 80) score += 2;
+    if (meets(lessonRate, 80)) score += 2;
   }
 
   // Inspection (±15)
@@ -488,8 +488,8 @@ export function computeHomeRegulatoryCompliance(
     else if (gv === 2) score -= 5;
     else if (gv === 1) score -= 15;
 
-    if (actionCompRate === 100) score += 3;
-    else if (actionCompRate < 70) score -= 5;
+    if (meets(actionCompRate, 100)) score += 3;
+    else if (below(actionCompRate, 70)) score -= 5;
 
     if (gradeTrend === "improving") score += 3;
     else if (gradeTrend === "declining") score -= 5;
@@ -502,9 +502,9 @@ export function computeHomeRegulatoryCompliance(
     else if (overduePolicies.length >= 4) score -= 8;
     else score -= 3;
 
-    if (avgAckRate === 100) score += 5;
-    else if (avgAckRate >= 90) score += 2;
-    else if (avgAckRate < 80) score -= 5;
+    if (meets(avgAckRate, 100)) score += 5;
+    else if (meets(avgAckRate, 90)) score += 2;
+    else if (below(avgAckRate, 80)) score -= 5;
   }
 
   score = clamp(score, 0, 100);
@@ -513,28 +513,28 @@ export function computeHomeRegulatoryCompliance(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (reg44Profile.visits_on_schedule) strengths.push("Reg 44 independent visits are occurring on schedule every month.");
-  if (recCompletionRate >= 90 && allRecs.length > 0) strengths.push(`${completedRecs} of ${allRecs.length} Reg 44 recommendations completed — ${recCompletionRate}% completion rate.`);
-  if (sentToOfstedRate === 100 && visits12m.length > 0) strengths.push("All Reg 44 reports have been sent to Ofsted.");
+  if (meets(recCompletionRate, 90)) strengths.push(`${completedRecs} of ${allRecs.length} Reg 44 recommendations completed — ${formatRate(recCompletionRate)} completion rate.`);
+  if (meets(sentToOfstedRate, 100)) strengths.push("All Reg 44 reports have been sent to Ofsted.");
   if (avgAuditScore !== null && avgAuditScore >= 85) strengths.push(`Quality audit average score is ${avgAuditScore}% — demonstrating robust internal quality assurance.`);
-  if (notifiedRate === 100 && ne12m.length > 0) strengths.push(`All ${ne12m.length} notifiable events in 12 months were reported to Ofsted within 24 hours.`);
-  if (followUpRate === 100 && ne12m.length > 0) strengths.push("Every notifiable event has documented follow-up actions.");
-  if (actionCompRate === 100 && totalActionsReq > 0) strengths.push("All inspection actions have been completed.");
+  if (meets(notifiedRate, 100)) strengths.push(`All ${ne12m.length} notifiable events in 12 months were reported to Ofsted within 24 hours.`);
+  if (meets(followUpRate, 100)) strengths.push("Every notifiable event has documented follow-up actions.");
+  if (meets(actionCompRate, 100)) strengths.push("All inspection actions have been completed.");
   if (gradeTrend === "improving") strengths.push("Inspection grade trend is improving — evidence of sustained leadership improvement.");
   if (overduePolicies.length === 0 && policies.length > 0) strengths.push("All home policies are within their review dates.");
-  if (avgAckRate === 100 && policies.length > 0) strengths.push("100% staff acknowledgement across all home policies.");
+  if (meets(avgAckRate, 100)) strengths.push("100% staff acknowledgement across all home policies.");
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (consecutiveMonthsWithout >= 2) concerns.push(`${consecutiveMonthsWithout} consecutive months without a Reg 44 independent visit — this is a regulatory breach.`);
   if (highPriorityOpen > 0) concerns.push(`${highPriorityOpen} high-priority Reg 44 recommendation${highPriorityOpen > 1 ? "s" : ""} still open.`);
   if (pending.length > 0) concerns.push(`${pending.length} notifiable event${pending.length > 1 ? "s" : ""} pending Ofsted notification — immediate action required.`);
-  if (notifiedRate < 80 && ne12m.length > 0) concerns.push(`Only ${notifiedRate}% of notifiable events reported within 24 hours — non-compliance with notification regulations.`);
+  if (below(notifiedRate, 80)) concerns.push(`Only ${formatRate(notifiedRate)} of notifiable events reported within 24 hours — non-compliance with notification regulations.`);
   if (avgAuditScore !== null && avgAuditScore < 70) concerns.push(`Audit average score is ${avgAuditScore}% — below the expected standard.`);
   if (overdueAudits.length > 0) concerns.push(`${overdueAudits.length} audit${overdueAudits.length > 1 ? "s" : ""} overdue.`);
   if (overduePolicies.length > 0) concerns.push(`${overduePolicies.length} polic${overduePolicies.length > 1 ? "ies" : "y"} overdue for review: ${overdueNames.join(", ")}.`);
   if (below100Ack > 0) concerns.push(`${below100Ack} polic${below100Ack > 1 ? "ies" : "y"} without 100% staff acknowledgement.`);
   if (gradeValue(latestInsp?.grade ?? "") <= 2 && latestInsp) concerns.push(`Latest inspection grade is "${latestInsp.grade}" — improvement plan required.`);
-  if (actionCompRate < 100 && totalActionsReq > 0) concerns.push(`${totalActionsReq - totalActionsComp} inspection action${totalActionsReq - totalActionsComp > 1 ? "s" : ""} remain outstanding.`);
+  if (below(actionCompRate, 100)) concerns.push(`${totalActionsReq - totalActionsComp} inspection action${totalActionsReq - totalActionsComp > 1 ? "s" : ""} remain outstanding.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: RegulatoryRecommendation[] = [];
@@ -561,7 +561,7 @@ export function computeHomeRegulatoryCompliance(
   if (policyProfile.review_due_within_30d > 0) {
     recs.push({ rank: rank++, recommendation: `${policyProfile.review_due_within_30d} polic${policyProfile.review_due_within_30d > 1 ? "ies" : "y"} due for review within 30 days — schedule reviews now.`, urgency: "planned", regulatory_ref: "Reg 45" });
   }
-  if (lessonRate < 80 && ne12m.length > 0) {
+  if (below(lessonRate, 80)) {
     recs.push({ rank: rank++, recommendation: "Ensure lessons-learned are documented for all notifiable events — critical for continuous improvement evidence.", urgency: "planned", regulatory_ref: "Reg 45" });
   }
 
@@ -582,7 +582,7 @@ export function computeHomeRegulatoryCompliance(
   } else if (overduePolicies.length > 0) {
     insights.push({ text: `${overduePolicies.length} polic${overduePolicies.length > 1 ? "ies" : "y"} overdue for review — schedule promptly to avoid accumulation.`, severity: "warning" });
   }
-  if (avgAuditScore !== null && avgAuditScore >= 85 && overduePolicies.length === 0 && pending.length === 0) {
+  if (avgAuditScore !== null && avgAuditScore >= 85 && policies.length > 0 && overduePolicies.length === 0 && pending.length === 0) {
     insights.push({ text: `Strong regulatory position: audits averaging ${avgAuditScore}%, policies up to date, and notifications compliant. Well-placed for inspection.`, severity: "positive" });
   }
   if (gradeTrend === "improving") {
@@ -630,7 +630,7 @@ export function computeHomeRegulatoryCompliance(
 // ── Empty Defaults ──────────────────────────────────────────────────────────
 
 function emptyReg44(): Reg44Profile {
-  return { total_visits_12m: 0, visits_on_schedule: false, months_without_visit: 0, latest_judgement: "N/A", open_recommendations: 0, high_priority_open: 0, recommendation_completion_rate: 0, reports_sent_to_ofsted_rate: 0, trend: "insufficient_data" };
+  return { total_visits_12m: 0, visits_on_schedule: false, months_without_visit: 0, latest_judgement: "N/A", open_recommendations: 0, high_priority_open: 0, recommendation_completion_rate: null, reports_sent_to_ofsted_rate: null, trend: "insufficient_data" };
 }
 
 function emptyAudit(): AuditProfile {
@@ -638,13 +638,13 @@ function emptyAudit(): AuditProfile {
 }
 
 function emptyNotifiable(): NotifiableEventProfile {
-  return { total_90d: 0, total_12m: 0, notified_within_24h_rate: 0, pending_count: 0, follow_up_rate: 0, lesson_learned_rate: 0, event_types: [] };
+  return { total_90d: 0, total_12m: 0, notified_within_24h_rate: null, pending_count: 0, follow_up_rate: null, lesson_learned_rate: null, event_types: [] };
 }
 
 function emptyInspection(): InspectionProfile {
-  return { latest_grade: "N/A", grade_trend: "insufficient_data", total_actions_required: 0, total_actions_completed: 0, action_completion_rate: 0, months_since_last_inspection: 99 };
+  return { latest_grade: "N/A", grade_trend: "insufficient_data", total_actions_required: 0, total_actions_completed: 0, action_completion_rate: null, months_since_last_inspection: null };
 }
 
 function emptyPolicy(): PolicyProfile {
-  return { total_policies: 0, current_count: 0, overdue_count: 0, overdue_policies: [], avg_acknowledgement_rate: 0, policies_below_100_ack: 0, review_due_within_30d: 0 };
+  return { total_policies: 0, current_count: 0, overdue_count: 0, overdue_policies: [], avg_acknowledgement_rate: null, policies_below_100_ack: 0, review_due_within_30d: 0 };
 }

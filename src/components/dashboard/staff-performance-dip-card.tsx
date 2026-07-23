@@ -12,6 +12,7 @@ import {
   TrendingDown, ChevronRight, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -64,8 +65,8 @@ export function StaffPerformanceDipCard() {
       <CardContent className="space-y-4">
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", profile.training_compliance_rate >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", profile.training_compliance_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{profile.training_compliance_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(profile.training_compliance_rate, 90) ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(profile.training_compliance_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(profile.training_compliance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Training</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", supervisionRate >= 90 ? "bg-green-50" : "bg-amber-50")}>

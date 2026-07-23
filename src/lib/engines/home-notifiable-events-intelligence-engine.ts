@@ -5,6 +5,8 @@
 // CHR 2015 Reg 40. SCCIF: "Safe", "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface NotifiableEventInput {
@@ -39,11 +41,11 @@ export type NotifiableEventsRating =
 export interface EventsProfile {
   total_events_90d: number;
   event_types: Record<string, number>;
-  notification_compliance_rate: number;      // % notified_within_24h
+  notification_compliance_rate: number | null; // % notified_within_24h; null when no event required notification
   pending_count: number;
-  follow_up_rate: number;
-  lesson_learned_rate: number;
-  multi_agency_rate: number;                 // % with all applicable notifications
+  follow_up_rate: number | null;
+  lesson_learned_rate: number | null;
+  multi_agency_rate: number | null;            // % with all applicable notifications
   children_involved: string[];
   repeat_children: string[];                 // children in 2+ events
 }
@@ -100,7 +102,23 @@ export function computeHomeNotifiableEvents(
   // Filter to 90-day window
   const events90d = events.filter(e => daysBetween(e.date, today) <= 90);
 
-  // Zero events = outstanding (no notifiable events is an excellent position)
+  // An empty register is not a clean 90 days: if nothing has ever been logged
+  // Cara cannot tell "no events occurred" from "no events were recorded", and
+  // Reg 40 practice cannot be evidenced either way.
+  if (events.length === 0) {
+    return {
+      events_rating: "insufficient_data",
+      events_score: 0,
+      headline: "No notifiable events have ever been recorded — Reg 40 notification practice cannot be evidenced.",
+      events_profile: emptyProfile(),
+      strengths: [],
+      concerns: ["Nothing on the notifiable events register. Either no event has occurred or none are being logged — neither can be told apart from the record."],
+      recommendations: [{ rank: 1, recommendation: "Confirm the notifiable events register is in use and log every Reg 40 event, so that notification timeliness can be evidenced.", urgency: "soon", regulatory_ref: "Reg 40" }],
+      insights: [{ text: "Ofsted judges a home on the evidence it can show. An empty notifiable events register evidences nothing about Regulation 40 compliance — it is a gap in the record, not a clean record.", severity: "warning" }],
+    };
+  }
+
+  // Events are being recorded and none fell in the window — a real position.
   if (events90d.length === 0) {
     return {
       events_rating: "outstanding",
@@ -122,25 +140,27 @@ export function computeHomeNotifiableEvents(
 
   const requiringNotification = events90d.filter(e => e.ofsted_status !== "not_required");
   const notifiedWithin24h = requiringNotification.filter(e => e.ofsted_status === "notified_within_24h").length;
+  // Null when every event in the window was "not_required" — nothing was
+  // notifiable, which is not the same as everything being notified on time.
   const notificationRate = requiringNotification.length > 0
     ? Math.round((notifiedWithin24h / requiringNotification.length) * 100)
-    : 100;
+    : null;
 
   const pending = events90d.filter(e => e.ofsted_status === "pending").length;
 
-  const withFollowUp = events90d.filter(e => e.has_follow_up).length;
-  const followUpRate = Math.round((withFollowUp / events90d.length) * 100);
+  const withFollowUp = events90d.filter(e => e.has_follow_up);
+  const followUpRate = rateOf(withFollowUp, events90d);
 
-  const withLesson = events90d.filter(e => e.has_lesson_learned).length;
-  const lessonRate = Math.round((withLesson / events90d.length) * 100);
+  const withLesson = events90d.filter(e => e.has_lesson_learned);
+  const lessonRate = rateOf(withLesson, events90d);
 
   // Multi-agency: events that have all applicable notifications
   const withMultiAgency = events90d.filter(e => {
     const hasOfsted = e.has_ofsted_notification || e.ofsted_status === "not_required";
     const hasLA = e.has_la_notification;
     return hasOfsted && hasLA;
-  }).length;
-  const multiAgencyRate = Math.round((withMultiAgency / events90d.length) * 100);
+  });
+  const multiAgencyRate = rateOf(withMultiAgency, events90d);
 
   const childrenInvolved = [...new Set(events90d.filter(e => e.child_id).map(e => e.child_id as string))];
   const childEventCounts: Record<string, number> = {};
@@ -171,25 +191,27 @@ export function computeHomeNotifiableEvents(
   else if (events90d.length <= 5) score += 0;
   else score -= 5;
 
-  // Notification compliance (±12)
-  if (notificationRate === 100 && pending === 0) score += 8;
-  else if (notificationRate >= 80) score += 3;
-  else score -= 6;
+  // Notification compliance (±12) — nothing notifiable moves the score neither way
+  if (notificationRate !== null) {
+    if (notificationRate === 100 && pending === 0) score += 8;
+    else if (notificationRate >= 80) score += 3;
+    else score -= 6;
+  }
   if (pending > 0) score -= 3;
 
   // Follow-up (±8)
   if (followUpRate === 100) score += 5;
-  else if (followUpRate >= 80) score += 2;
+  else if (meets(followUpRate, 80)) score += 2;
   else score -= 5;
 
   // Lessons learned (±6)
   if (lessonRate === 100) score += 4;
-  else if (lessonRate >= 80) score += 2;
-  else if (lessonRate < 50) score -= 3;
+  else if (meets(lessonRate, 80)) score += 2;
+  else if (below(lessonRate, 50)) score -= 3;
 
   // Multi-agency (±6)
   if (multiAgencyRate === 100) score += 4;
-  else if (multiAgencyRate >= 80) score += 2;
+  else if (meets(multiAgencyRate, 80)) score += 2;
   else score -= 4;
 
   // Repeat children (±4)
@@ -211,9 +233,9 @@ export function computeHomeNotifiableEvents(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (pending > 0) concerns.push(`${pending} event${pending > 1 ? "s" : ""} with pending Ofsted notification — these must be reported within 24 hours.`);
-  if (notificationRate < 80 && requiringNotification.length > 0) concerns.push(`Only ${notificationRate}% notification compliance — Ofsted expects all events reported within 24 hours.`);
-  if (followUpRate < 80) concerns.push(`Follow-up rate is ${followUpRate}% — every event should have documented follow-up actions.`);
-  if (lessonRate < 50) concerns.push(`Only ${lessonRate}% of events have lessons learned documented — this is essential for continuous improvement.`);
+  if (below(notificationRate, 80)) concerns.push(`Only ${notificationRate}% notification compliance — Ofsted expects all events reported within 24 hours.`);
+  if (below(followUpRate, 80)) concerns.push(`Follow-up rate is ${followUpRate}% — every event should have documented follow-up actions.`);
+  if (below(lessonRate, 50)) concerns.push(`Only ${lessonRate}% of events have lessons learned documented — this is essential for continuous improvement.`);
   if (repeatChildren.length > 0) concerns.push(`${repeatChildren.length} child${repeatChildren.length > 1 ? "ren" : ""} involved in multiple notifiable events — pattern analysis needed.`);
   if (events90d.length > 5) concerns.push(`${events90d.length} notifiable events in 90 days — high volume suggests systemic issues.`);
 
@@ -224,16 +246,16 @@ export function computeHomeNotifiableEvents(
   if (pending > 0) {
     recs.push({ rank: rank++, recommendation: `Submit ${pending} pending Ofsted notification${pending > 1 ? "s" : ""} immediately — 24-hour deadline applies.`, urgency: "immediate", regulatory_ref: "Reg 40" });
   }
-  if (notificationRate < 100 && requiringNotification.length > 0) {
+  if (below(notificationRate, 100)) {
     recs.push({ rank: rank++, recommendation: "Review notification procedures to ensure all events are reported within 24 hours.", urgency: "immediate", regulatory_ref: "Reg 40" });
   }
-  if (followUpRate < 100) {
+  if (below(followUpRate, 100)) {
     recs.push({ rank: rank++, recommendation: "Complete follow-up documentation for all events — this evidences responsive management.", urgency: "soon", regulatory_ref: "Reg 40" });
   }
   if (repeatChildren.length > 0) {
     recs.push({ rank: rank++, recommendation: `Conduct pattern analysis for ${repeatChildren.length} child${repeatChildren.length > 1 ? "ren" : ""} with repeat events — targeted intervention may be needed.`, urgency: "soon", regulatory_ref: "Reg 12" });
   }
-  if (lessonRate < 100) {
+  if (below(lessonRate, 100)) {
     recs.push({ rank: rank++, recommendation: "Ensure lessons learned are captured for every event and shared with the staff team.", urgency: "planned", regulatory_ref: "Reg 40" });
   }
 
@@ -264,7 +286,7 @@ export function computeHomeNotifiableEvents(
   if (rating === "outstanding") {
     headline = `Outstanding event management — ${events90d.length} events with full notification compliance and documented follow-up.`;
   } else if (rating === "good") {
-    headline = `Good event management — ${events90d.length} events in 90 days with ${notificationRate}% notification compliance.`;
+    headline = `Good event management — ${events90d.length} events in 90 days with ${formatRate(notificationRate, "no")} notification compliance.`;
   } else if (rating === "adequate") {
     headline = "Adequate event management — improvements needed in notification timeliness, follow-up, or lessons learned.";
   } else {
@@ -288,8 +310,8 @@ export function computeHomeNotifiableEvents(
 function emptyProfile(): EventsProfile {
   return {
     total_events_90d: 0, event_types: {},
-    notification_compliance_rate: 100, pending_count: 0,
-    follow_up_rate: 100, lesson_learned_rate: 100, multi_agency_rate: 100,
+    notification_compliance_rate: null, pending_count: 0,
+    follow_up_rate: null, lesson_learned_rate: null, multi_agency_rate: null,
     children_involved: [], repeat_children: [],
   };
 }

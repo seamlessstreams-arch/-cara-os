@@ -186,10 +186,10 @@ describe("empty state", () => {
     expect(r.overview.total_staff).toBe(0);
     expect(r.overview.active_staff).toBe(0);
     expect(r.overview.appraisals_completed).toBe(0);
-    expect(r.overview.appraisal_completion_rate).toBe(100);
-    expect(r.overview.avg_competency_readiness).toBe(0);
-    expect(r.overview.mandatory_qual_compliance_rate).toBe(100);
-    expect(r.overview.development_plan_progress_rate).toBe(0);
+    expect(r.overview.appraisal_completion_rate).toBeNull();
+    expect(r.overview.avg_competency_readiness).toBeNull();
+    expect(r.overview.mandatory_qual_compliance_rate).toBeNull();
+    expect(r.overview.development_plan_progress_rate).toBeNull();
     expect(r.staff_profiles).toHaveLength(0);
     expect(r.competency_analysis).toHaveLength(0);
     expect(r.alerts).toHaveLength(0);
@@ -348,11 +348,11 @@ describe("staff profiles", () => {
     expect(r.staff_profiles[0].avg_competency_score).toBe(3);
   });
 
-  it("returns 0 avg competency when no completed appraisals", () => {
+  it("leaves avg competency unmeasured when no completed appraisals", () => {
     const s1 = makeStaff();
     const a1 = makeAppraisal(s1.id, { status: "scheduled" });
     const r = run({ staff: [s1], appraisals: [a1] });
-    expect(r.staff_profiles[0].avg_competency_score).toBe(0);
+    expect(r.staff_profiles[0].avg_competency_score).toBeNull();
   });
 
   it("picks readiness score from competency profile", () => {
@@ -362,10 +362,10 @@ describe("staff profiles", () => {
     expect(r.staff_profiles[0].readiness_score).toBe(88);
   });
 
-  it("returns 0 readiness when no competency profile exists", () => {
+  it("leaves readiness unmeasured when no competency profile exists", () => {
     const s1 = makeStaff();
     const r = run({ staff: [s1] });
-    expect(r.staff_profiles[0].readiness_score).toBe(0);
+    expect(r.staff_profiles[0].readiness_score).toBeNull();
   });
 
   it("calculates mandatory qualification compliance per staff", () => {
@@ -403,13 +403,13 @@ describe("staff profiles", () => {
     expect(p.development_plan_progress).toBe(75);
   });
 
-  it("returns 0 progress when no active plan", () => {
+  it("leaves progress unmeasured when no active plan", () => {
     const s1 = makeStaff();
     const dp = makeDevelopmentPlan(s1.id, { status: "completed" });
     const r = run({ staff: [s1], development_plans: [dp] });
     const p = r.staff_profiles[0];
     expect(p.has_active_development_plan).toBe(false);
-    expect(p.development_plan_progress).toBe(0);
+    expect(p.development_plan_progress).toBeNull();
   });
 
   it("maps induction status correctly", () => {

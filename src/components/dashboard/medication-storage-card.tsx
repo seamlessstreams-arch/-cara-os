@@ -15,6 +15,7 @@ import {
   Pill, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useMedicationIntelligence } from "@/hooks/use-medication-intelligence";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -84,13 +85,13 @@ export function MedicationStorageCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.stock_check_compliance >= 90 ? "bg-green-50" : o.stock_check_compliance >= 75 ? "bg-amber-50" : "bg-red-50",
+            o.stock_check_compliance === null ? "bg-gray-50" : meets(o.stock_check_compliance, 90) ? "bg-green-50" : meets(o.stock_check_compliance, 75) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.stock_check_compliance >= 90 ? "text-[--cs-success]" : o.stock_check_compliance >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.stock_check_compliance === null ? "text-muted-foreground" : meets(o.stock_check_compliance, 90) ? "text-[--cs-success]" : meets(o.stock_check_compliance, 75) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.stock_check_compliance}%
+              {formatRate(o.stock_check_compliance)}
             </p>
             <p className="text-[10px] text-muted-foreground">Stock Check</p>
           </div>
@@ -108,13 +109,13 @@ export function MedicationStorageCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.witnessing_rate >= 95 ? "bg-green-50" : o.witnessing_rate >= 80 ? "bg-amber-50" : "bg-red-50",
+            o.witnessing_rate === null ? "bg-gray-50" : meets(o.witnessing_rate, 95) ? "bg-green-50" : meets(o.witnessing_rate, 80) ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.witnessing_rate >= 95 ? "text-[--cs-success]" : o.witnessing_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              o.witnessing_rate === null ? "text-muted-foreground" : meets(o.witnessing_rate, 95) ? "text-[--cs-success]" : meets(o.witnessing_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
-              {o.witnessing_rate}%
+              {formatRate(o.witnessing_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Witnessing</p>
           </div>

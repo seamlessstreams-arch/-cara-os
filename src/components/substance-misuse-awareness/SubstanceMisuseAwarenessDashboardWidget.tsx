@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -26,11 +27,11 @@ interface SubstanceMisuseData {
   riskScreening: {
     overallScore: number;
     totalProfiles: number;
-    screenedRate: number;
-    reviewCurrentRate: number;
-    noConcernsRate: number;
-    referralMadeRate: number;
-    harmReductionRate: number;
+    screenedRate: number | null;
+    reviewCurrentRate: number | null;
+    noConcernsRate: number | null;
+    referralMadeRate: number | null;
+    harmReductionRate: number | null;
   };
   educationPrevention: {
     overallScore: number;
@@ -212,11 +213,11 @@ export default function SubstanceMisuseAwarenessDashboardWidget() {
       <Section title="Risk Screening" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat label="Profiles" value={data.riskScreening.totalProfiles} />
-          <Stat label="Screened" value={`${data.riskScreening.screenedRate}%`} />
-          <Stat label="Reviews Current" value={`${data.riskScreening.reviewCurrentRate}%`} />
-          <Stat label="No Concerns" value={`${data.riskScreening.noConcernsRate}%`} />
-          <Stat label="Referral Made" value={`${data.riskScreening.referralMadeRate}%`} />
-          <Stat label="Harm Reduction" value={`${data.riskScreening.harmReductionRate}%`} />
+          <Stat label="Screened" value={formatRate(data.riskScreening.screenedRate)} />
+          <Stat label="Reviews Current" value={formatRate(data.riskScreening.reviewCurrentRate)} />
+          <Stat label="No Concerns" value={formatRate(data.riskScreening.noConcernsRate)} />
+          <Stat label="Referral Made" value={formatRate(data.riskScreening.referralMadeRate)} />
+          <Stat label="Harm Reduction" value={formatRate(data.riskScreening.harmReductionRate)} />
         </div>
       </Section>
 

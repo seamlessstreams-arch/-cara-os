@@ -56,7 +56,7 @@ describe("Medication Intelligence", () => {
       expect(result.homeId).toBe("home_oak");
       expect(result.windowDays).toBe(7);
       expect(result.totalAdministrations).toBe(0);
-      expect(result.complianceRate).toBe(100);
+      expect(result.complianceRate).toBeNull();
       expect(result.missedDoses).toBe(0);
       expect(result.refusals).toBe(0);
       expect(result.lateAdministrations).toBe(0);
@@ -64,7 +64,9 @@ describe("Medication Intelligence", () => {
       expect(result.alerts).toHaveLength(0);
       expect(result.prnAnalysis).toHaveLength(0);
       expect(result.patterns).toHaveLength(0);
-      expect(result.regulatoryStatus.compliant).toBe(true);
+      expect(result.regulatoryStatus.compliant).toBeNull();
+      expect(result.regulatoryStatus.strengths).toHaveLength(0);
+      expect(result.controlledDrugAudit.witnessCompliancePercent).toBeNull();
     });
 
     it("counts total administrations", () => {

@@ -18,6 +18,7 @@ import type {
 } from "./types";
 import type { UserContext, Role, ApprovalLevel } from "../permissions/types";
 import { isAtLeast, MAX_APPROVAL_LEVEL, SELF_APPROVAL_BLOCKED_ROLES } from "../permissions/role-rules";
+import { rate, rateOf } from "../metrics/rate";
 
 // ── Valid Transitions ───────────────────────────────────────────────────────
 
@@ -339,10 +340,10 @@ export interface ComplianceSummary {
   missed: number;
   overdue: number;
   escalated: number;
-  complianceRate: number;         // 0-100
+  complianceRate: number | null;  // 0-100, null when nothing was scheduled
   avgCompletionMinutes: number;
   returnedCount: number;
-  qaPassRate: number;             // 0-100
+  qaPassRate: number | null;      // 0-100, null when nothing was QA-sampled and scored
 }
 
 export function calculateCompliance(
@@ -357,10 +358,10 @@ export function calculateCompliance(
       missed: 0,
       overdue: 0,
       escalated: 0,
-      complianceRate: 100,
+      complianceRate: null,
       avgCompletionMinutes: 0,
       returnedCount: 0,
-      qaPassRate: 100,
+      qaPassRate: null,
     };
   }
 
@@ -382,13 +383,12 @@ export function calculateCompliance(
   const escalated = occurrences.filter(o => o.status === "escalated" || o.escalationLevel > 0).length;
   const returned = occurrences.filter(o => o.resubmissionCount > 0).length;
 
-  const qaSampled = occurrences.filter(o => o.qaSampledAt);
-  const qaPassed = qaSampled.filter(o => (o.qaScore ?? 0) >= 3);
+  // A sample without a score has not been judged — it can neither pass nor fail
+  const qaScored = occurrences.filter(o => o.qaSampledAt && typeof o.qaScore === "number");
+  const qaPassed = qaScored.filter(o => (o.qaScore as number) >= 3);
 
-  const complianceRate = Math.round(((onTime.length) / total) * 100);
-  const qaPassRate = qaSampled.length > 0
-    ? Math.round((qaPassed.length / qaSampled.length) * 100)
-    : 100;
+  const complianceRate = rate(onTime.length, total);
+  const qaPassRate = rateOf(qaPassed, qaScored);
 
   return {
     totalScheduled: total,

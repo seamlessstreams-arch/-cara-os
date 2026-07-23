@@ -385,7 +385,7 @@ describe("Contact Engagement Engine — Mood Impact", () => {
 
     expect(result.mood_impact.children_with_data).toBe(1);
     expect(result.mood_impact.positive_impact_children).toBe(1);
-    expect(result.mood_impact.avg_mood_contact_days).toBeGreaterThan(result.mood_impact.avg_mood_non_contact_days);
+    expect(result.mood_impact.avg_mood_contact_days!).toBeGreaterThan(result.mood_impact.avg_mood_non_contact_days!);
   });
 
   it("detects negative mood impact on contact days", () => {

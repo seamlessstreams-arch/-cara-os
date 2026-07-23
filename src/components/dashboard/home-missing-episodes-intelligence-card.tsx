@@ -15,6 +15,7 @@ import {
   Shield, Clock, UserX, AlertOctagon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useHomeMissingEpisodesIntelligence } from "@/hooks/use-home-missing-episodes-intelligence";
 import type { MissingEpisodesRating } from "@/lib/engines/home-missing-episodes-intelligence-engine";
 
@@ -131,8 +132,8 @@ export function HomeMissingEpisodesIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.episodes.return_interview_rate === 100 ? "text-[--cs-success]" : d.episodes.return_interview_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.episodes.return_interview_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", d.episodes.return_interview_rate === null ? "text-muted-foreground" : meets(d.episodes.return_interview_rate, 100) ? "text-[--cs-success]" : meets(d.episodes.return_interview_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+                  {formatRate(d.episodes.return_interview_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">RI Rate</p>
@@ -170,8 +171,8 @@ export function HomeMissingEpisodesIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Compliance & Pattern</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Police reported: <span className={cn("font-medium", d.episodes.police_reported_rate === 100 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.episodes.police_reported_rate}%</span></p>
-                <p>LA notified: <span className={cn("font-medium", d.episodes.la_reported_rate === 100 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.episodes.la_reported_rate}%</span></p>
+                <p>Police reported: <span className={cn("font-medium", d.episodes.police_reported_rate === null ? "text-muted-foreground" : meets(d.episodes.police_reported_rate, 100) ? "text-[--cs-success]" : "text-[--cs-risk]")}>{formatRate(d.episodes.police_reported_rate)}</span></p>
+                <p>LA notified: <span className={cn("font-medium", d.episodes.la_reported_rate === null ? "text-muted-foreground" : meets(d.episodes.la_reported_rate, 100) ? "text-[--cs-success]" : "text-[--cs-risk]")}>{formatRate(d.episodes.la_reported_rate)}</span></p>
                 {d.episodes.repeat_children.length > 0 && <p>Repeat children: <span className="font-medium text-red-600">{d.episodes.repeat_children.length}</span></p>}
                 <p>Trend: <span className={cn("font-medium", d.pattern.trend === "improving" ? "text-[--cs-success]" : d.pattern.trend === "worsening" ? "text-[--cs-risk]" : "text-slate-600")}>{d.pattern.trend}</span></p>
                 {d.pattern.escalating && <p className="font-medium text-red-600">⚠ Escalating</p>}

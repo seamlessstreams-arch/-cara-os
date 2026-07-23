@@ -202,12 +202,12 @@ export interface AskCaraPracticeDigest {
   };
   /** Repair Cycle Intelligence — DDP rupture-repair completion per incident. */
   repairCycle?: {
-    overallCompletionRate: number; // 0–100
+    overallCompletionRate: number | null; // 0–100, null when no incidents are recorded
     totalIncidents: number;
     incidentsWithChildPerspective: number;
     mostCommonMissingStep: string;
     avgDebriefTurnaroundDays: number | null;
-    perChild: { childId: string; completionRate: number; noRepair: number; missingStep?: string }[]; // worst-first
+    perChild: { childId: string; completionRate: number | null; noRepair: number; missingStep?: string }[]; // worst-first
   };
   /** Relational Safety Map — key-worker coverage + trusted-adult synthesis. */
   relationalSafety?: {

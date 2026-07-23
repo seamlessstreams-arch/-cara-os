@@ -15,6 +15,7 @@ import {
   Brain, Bell, Loader2, ShieldAlert, MapPin, TrendingDown, TrendingUp, Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useSafeguardingIntelligence } from "@/hooks/use-safeguarding-intelligence";
 
 // ── Styling maps ────────────────────────────────────────────────────────────
@@ -105,9 +106,9 @@ export function SafeguardingIntelligenceCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">Restraints</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: ne.compliance_rate >= 100 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", ne.compliance_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-              {ne.compliance_rate}%
+          <div className="text-center rounded-lg p-2" style={{ background: meets(ne.compliance_rate, 100) ? "hsl(var(--chart-2) / 0.1)" : ne.compliance_rate === null ? "hsl(var(--muted) / 0.4)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(ne.compliance_rate, 100) ? "text-[--cs-success]" : ne.compliance_rate === null ? "text-muted-foreground" : "text-[--cs-warning]")}>
+              {formatRate(ne.compliance_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Reg 40</p>
           </div>
@@ -151,7 +152,7 @@ export function SafeguardingIntelligenceCard() {
               <div>
                 <p className="text-xs font-medium">Physical Interventions</p>
                 <p className="text-[10px] text-muted-foreground">
-                  {r.total_restraints_90d} in 90d · Avg {r.average_duration_minutes}min · {r.debrief_completion_rate}% debriefed
+                  {r.total_restraints_90d} in 90d · Avg {r.average_duration_minutes}min · {formatRate(r.debrief_completion_rate)} debriefed
                 </p>
               </div>
             </div>
@@ -176,7 +177,7 @@ export function SafeguardingIntelligenceCard() {
               <div>
                 <p className="text-xs font-medium">Missing from Care</p>
                 <p className="text-[10px] text-muted-foreground">
-                  {m.total_episodes_90d} episodes · {m.children_with_episodes} child(ren) · {m.return_interview_rate}% return interviews
+                  {m.total_episodes_90d} episodes · {m.children_with_episodes} child(ren) · {formatRate(m.return_interview_rate)} return interviews
                 </p>
               </div>
             </div>

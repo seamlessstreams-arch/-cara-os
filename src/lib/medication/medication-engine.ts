@@ -18,6 +18,8 @@
    No AI. No external calls. Pure input → output.
    ────────────────────────────────────────────────────────────── */
 
+import { below, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type MedicationCategory =
@@ -126,7 +128,7 @@ export interface MedicationQualityResult {
   administeredCorrectlyRate: number;
   signedByTwoStaffRate: number;
   consentOnFileRate: number;
-  errorReportedRate: number;
+  errorReportedRate: number | null;   // null when no error was identified — nothing to report
 }
 
 export interface MedicationComplianceResult {
@@ -228,7 +230,7 @@ export function evaluateMedicationQuality(records: MedicationRecord[]): Medicati
       administeredCorrectlyRate: 0,
       signedByTwoStaffRate: 0,
       consentOnFileRate: 0,
-      errorReportedRate: 0,
+      errorReportedRate: null,
     };
   }
 
@@ -236,20 +238,21 @@ export function evaluateMedicationQuality(records: MedicationRecord[]): Medicati
   const signedByTwoStaffRate = pct(records.filter((r) => r.signedByTwoStaff).length, total);
   const consentOnFileRate = pct(records.filter((r) => r.consentOnFile).length, total);
   // "Of the administrations where an error occurred, how many were reported?"
-  // A home with NO errors has nothing to report and scores full marks (100) —
-  // rather than being penalised for a 0% rate computed over error-free records.
+  // With no errors identified there is nothing to report and no reporting
+  // culture to rate — neither a full-marks pass nor a 0% failure.
   const errorRecords = records.filter((r) => r.outcome === "error_identified");
-  const errorReportedRate = errorRecords.length > 0
-    ? pct(errorRecords.filter((r) => r.errorReported).length, errorRecords.length)
-    : 100;
+  const errorReportedRate = rateOf(errorRecords.filter((r) => r.errorReported), errorRecords);
 
-  // Weighted: administeredCorrectlyRate 7 + signedByTwoStaffRate 6 + consentOnFileRate 6 + errorReportedRate 6 = 25
-  const raw =
-    (administeredCorrectlyRate / 100) * 7 +
-    (signedByTwoStaffRate / 100) * 6 +
-    (consentOnFileRate / 100) * 6 +
-    (errorReportedRate / 100) * 6;
-  const overallScore = Math.min(25, Math.round(raw));
+  // Weighted: administeredCorrectlyRate 7 + signedByTwoStaffRate 6 + consentOnFileRate 6 + errorReportedRate 6 = 25.
+  // An unmeasured limb drops out and the remaining weights carry the full 25,
+  // so an error-free register is scored on what it actually evidences.
+  const measured = weightedMeanOf([
+    { score: administeredCorrectlyRate, weight: 7 },
+    { score: signedByTwoStaffRate, weight: 6 },
+    { score: consentOnFileRate, weight: 6 },
+    { score: errorReportedRate, weight: 6 },
+  ]);
+  const overallScore = Math.min(25, Math.round(((measured ?? 0) / 100) * 25));
 
   return {
     overallScore,
@@ -474,7 +477,7 @@ export function generateMedicationIntelligence(
   if (medicationQuality.administeredCorrectlyRate >= 80) strengths.push("Medications are consistently administered correctly");
   if (medicationQuality.signedByTwoStaffRate >= 80) strengths.push("Dual-signature practice is well established");
   if (medicationQuality.consentOnFileRate >= 80) strengths.push("Consent records are consistently maintained");
-  if (medicationQuality.errorReportedRate >= 80) strengths.push("Error reporting culture is strong and transparent");
+  if (meets(medicationQuality.errorReportedRate, 80)) strengths.push("Error reporting culture is strong and transparent");
   if (medicationCompliance.documentationRate >= 80) strengths.push("Medication documentation is thorough and complete");
   if (medicationCompliance.timelyRecordingRate >= 80) strengths.push("Medication records are completed in a timely manner");
   if (staffReadiness.medicationAdministrationRate >= 80) strengths.push("Staff are well trained in medication administration");
@@ -485,7 +488,7 @@ export function generateMedicationIntelligence(
   if (medicationQuality.administeredCorrectlyRate < 60) areasForImprovement.push("Medication administration accuracy needs improvement");
   if (medicationQuality.signedByTwoStaffRate < 60) areasForImprovement.push("Dual-signature practice is not consistently followed");
   if (medicationQuality.consentOnFileRate < 60) areasForImprovement.push("Consent records are not consistently maintained");
-  if (medicationQuality.errorReportedRate < 60) areasForImprovement.push("Error reporting is inconsistent — errors may go unrecorded");
+  if (below(medicationQuality.errorReportedRate, 60)) areasForImprovement.push("Error reporting is inconsistent — errors may go unrecorded");
   if (medicationCompliance.documentationRate < 60) areasForImprovement.push("Medication documentation is incomplete or inconsistent");
   if (medicationCompliance.timelyRecordingRate < 60) areasForImprovement.push("Medication records are not being completed promptly");
   if (staffReadiness.medicationAdministrationRate < 60) areasForImprovement.push("Staff need more training in medication administration");

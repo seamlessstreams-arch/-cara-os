@@ -68,8 +68,8 @@ describe("Visitors Intelligence Engine", () => {
     it("returns safe defaults when no visitors provided", () => {
       const result = run([]);
       expect(result.overview.total_visits).toBe(0);
-      expect(result.overview.dbs_compliance_rate).toBe(100);
-      expect(result.overview.id_compliance_rate).toBe(100);
+      expect(result.overview.dbs_compliance_rate).toBeNull();
+      expect(result.overview.id_compliance_rate).toBeNull();
       expect(result.category_breakdown).toHaveLength(0);
       expect(result.child_profiles).toHaveLength(0);
       expect(result.recent_visitors).toHaveLength(0);

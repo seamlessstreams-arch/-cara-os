@@ -16,6 +16,8 @@
 //   Working Together 2023 Ch2 — organisational responsibilities
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets } from "@/lib/metrics/rate";
+
 // ── Types ───────────────────────────────────────────────────────────────────
 
 export type QualificationStatus =
@@ -144,7 +146,7 @@ export interface QualificationComplianceResult {
   totalAchieved: number;
   achievedRate: number;
   expiredCount: number;
-  renewalRate: number;
+  renewalRate: number | null;   // null when no qualification is due for renewal
   mandatoryComplianceRate: number;
   overallScore: number; // 0-25
 }
@@ -348,7 +350,7 @@ export function evaluateQualificationCompliance(
       totalAchieved: 0,
       achievedRate: 0,
       expiredCount: 0,
-      renewalRate: 0,
+      renewalRate: null,
       mandatoryComplianceRate: 0,
       overallScore: 0,
     };
@@ -380,7 +382,10 @@ export function evaluateQualificationCompliance(
   const renewedCount = qualsWithRenewal.filter(
     (q) => q.status === "achieved" && (!q.expiryDate || q.expiryDate >= periodEnd),
   ).length;
-  const renewalRate = pct(renewedCount, qualsWithRenewal.length);
+  // Null when nothing is up for renewal — there is no renewal practice to rate.
+  const renewalRate = qualsWithRenewal.length > 0
+    ? pct(renewedCount, qualsWithRenewal.length)
+    : null;
 
   // Mandatory compliance: level_3_diploma, first_aid, safeguarding achieved by all active staff
   let mandatoryTotal = 0;
@@ -408,15 +413,16 @@ export function evaluateQualificationCompliance(
   // +3 if all mandatory (level_3_diploma, first_aid, safeguarding) achieved by all staff
   if (mandatoryAchieved === mandatoryTotal && mandatoryTotal > 0) score += 3;
 
-  // +4 if qualification renewal rate >= 90%
-  if (qualsWithRenewal.length === 0 || renewalRate >= 90) score += 4;
+  // +4 if qualification renewal rate >= 90%. Nothing due for renewal earns
+  // nothing here — it is not evidence that renewals are kept on top of.
+  if (meets(renewalRate, 90)) score += 4;
 
   return {
     totalRequired,
     totalAchieved,
     achievedRate,
     expiredCount,
-    renewalRate: qualsWithRenewal.length === 0 ? 100 : renewalRate,
+    renewalRate,
     mandatoryComplianceRate,
     overallScore: Math.round(Math.min(score, 25) * 10) / 10,
   };

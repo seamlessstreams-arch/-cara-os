@@ -16,6 +16,7 @@ import {
   SmilePlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { useHomeKeyWorkingIntelligence } from "@/hooks/use-home-key-working-intelligence";
 import type { KeyWorkingRating } from "@/lib/engines/home-key-working-intelligence-engine";
 
@@ -137,8 +138,8 @@ export function HomeKeyWorkingIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.sessions.child_voice_rate >= 90 ? "text-[--cs-success]" : d.sessions.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.sessions.child_voice_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", meets(d.sessions.child_voice_rate, 90) ? "text-[--cs-success]" : meets(d.sessions.child_voice_rate, 70) ? "text-[--cs-warning]" : below(d.sessions.child_voice_rate, 70) ? "text-[--cs-risk]" : "text-slate-500")}>
+                  {formatRate(d.sessions.child_voice_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Child Voice</p>
@@ -177,8 +178,8 @@ export function HomeKeyWorkingIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Avg duration: <span className={cn("font-medium", d.sessions.avg_duration_minutes >= 30 ? "text-[--cs-success]" : d.sessions.avg_duration_minutes >= 20 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sessions.avg_duration_minutes}min</span></p>
                 <p>Actions/session: <span className={cn("font-medium", d.sessions.actions_per_session >= 2 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.sessions.actions_per_session}</span></p>
-                <p>Follow-up: <span className={cn("font-medium", d.sessions.follow_up_rate >= 90 ? "text-[--cs-success]" : d.sessions.follow_up_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sessions.follow_up_rate}%</span></p>
-                <p>Goal-linked: <span className={cn("font-medium", d.sessions.goal_linked_rate >= 70 ? "text-[--cs-success]" : d.sessions.goal_linked_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sessions.goal_linked_rate}%</span></p>
+                <p>Follow-up: <span className={cn("font-medium", meets(d.sessions.follow_up_rate, 90) ? "text-[--cs-success]" : meets(d.sessions.follow_up_rate, 70) ? "text-[--cs-warning]" : below(d.sessions.follow_up_rate, 70) ? "text-[--cs-risk]" : "text-slate-500")}>{formatRate(d.sessions.follow_up_rate)}</span></p>
+                <p>Goal-linked: <span className={cn("font-medium", meets(d.sessions.goal_linked_rate, 70) ? "text-[--cs-success]" : meets(d.sessions.goal_linked_rate, 40) ? "text-[--cs-warning]" : below(d.sessions.goal_linked_rate, 40) ? "text-[--cs-risk]" : "text-slate-500")}>{formatRate(d.sessions.goal_linked_rate)}</span></p>
               </div>
             </div>
 

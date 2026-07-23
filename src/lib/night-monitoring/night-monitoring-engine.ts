@@ -24,6 +24,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meanOf, rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type CheckFrequency =
@@ -144,7 +146,7 @@ export interface NightShiftComplianceResult {
   missedChecks: number;
   totalChecksExpected: number;
   totalChecksRecorded: number;
-  checkCompletionRate: number;
+  checkCompletionRate: number | null;   // null when no check plan sets an expectation
   incidentCount: number;
   highSeverityIncidents: number;
   handoverCompleted: boolean;
@@ -155,18 +157,19 @@ export interface NightShiftComplianceResult {
 export interface HomeNightMonitoringMetrics {
   homeId: string;
   totalNightsRecorded: number;
-  overallComplianceRate: number;
-  averageCheckCompletionRate: number;
-  staffingComplianceRate: number;
-  handoverCompletionRate: number;
+  // Every rate below is null when no night has been recorded to measure.
+  overallComplianceRate: number | null;
+  averageCheckCompletionRate: number | null;
+  staffingComplianceRate: number | null;
+  handoverCompletionRate: number | null;
   totalIncidents30Days: number;
   incidentsByType: { type: string; count: number }[];
-  averageSleepHours: number;
-  poorSleepRate: number;            // % of nights rated "poor"
+  averageSleepHours: number | null;
+  poorSleepRate: number | null;            // % of nights rated "poor"
   childrenWithSleepIssues: { childName: string; poorNights: number; totalNights: number }[];
-  missedCheckRate: number;
+  missedCheckRate: number | null;
   nightsWithIssues: number;
-  recentShifts: { date: string; compliant: boolean; incidents: number; checkRate: number }[];
+  recentShifts: { date: string; compliant: boolean; incidents: number; checkRate: number | null }[];
 }
 
 // ── Configuration ──────────────────────────────────────────────────────────
@@ -204,9 +207,7 @@ export function evaluateNightShiftCompliance(
   }
 
   const totalChecksRecorded = shift.checks.length;
-  const checkCompletionRate = totalChecksExpected > 0
-    ? Math.round((totalChecksRecorded / totalChecksExpected) * 100)
-    : 100;
+  const checkCompletionRate = rate(totalChecksRecorded, totalChecksExpected);
 
   // Check which children were actually checked
   const childIds = checkPlans.map(p => p.childId);
@@ -229,10 +230,14 @@ export function evaluateNightShiftCompliance(
   }
 
   // Check completion
-  if (checkCompletionRate < 80) {
-    issues.push(`Check completion rate below 80% (${checkCompletionRate}%)`);
-  } else if (checkCompletionRate < 95) {
-    warnings.push(`Check completion rate ${checkCompletionRate}% (target: 100%)`);
+  if (below(checkCompletionRate, 80)) {
+    issues.push(`Check completion rate below 80% (${formatRate(checkCompletionRate)})`);
+  } else if (below(checkCompletionRate, 95)) {
+    warnings.push(`Check completion rate ${formatRate(checkCompletionRate)} (target: 100%)`);
+  } else if (checkCompletionRate === null && checkPlans.length === 0) {
+    // Nothing recorded vs nothing required: no plan sets an expectation, so completion
+    // is unmeasurable — surfaced as a gap rather than scored as a pass or a failure.
+    warnings.push("No night check plan in place — check completion cannot be evidenced");
   }
 
   // Incidents
@@ -290,26 +295,18 @@ export function calculateHomeNightMetrics(
   // Compliance
   const results = recentShifts.map(s => evaluateNightShiftCompliance(s, checkPlans));
   const compliantShifts = results.filter(r => r.isCompliant);
-  const overallComplianceRate = results.length > 0
-    ? Math.round((compliantShifts.length / results.length) * 100)
-    : 100;
+  const overallComplianceRate = rateOf(compliantShifts, results);
 
-  // Check completion
-  const averageCheckCompletionRate = results.length > 0
-    ? Math.round(results.reduce((s, r) => s + r.checkCompletionRate, 0) / results.length)
-    : 100;
+  // Check completion — shifts with no expectation set are excluded, not counted as 100%
+  const averageCheckCompletionRate = meanOf(results.map(r => r.checkCompletionRate));
 
   // Staffing compliance
   const staffingCompliant = results.filter(r => r.staffingAdequate);
-  const staffingComplianceRate = results.length > 0
-    ? Math.round((staffingCompliant.length / results.length) * 100)
-    : 100;
+  const staffingComplianceRate = rateOf(staffingCompliant, results);
 
   // Handover
   const handoversCompleted = recentShifts.filter(s => s.handoverCompleted);
-  const handoverCompletionRate = recentShifts.length > 0
-    ? Math.round((handoversCompleted.length / recentShifts.length) * 100)
-    : 100;
+  const handoverCompletionRate = rateOf(handoversCompleted, recentShifts);
 
   // Incidents
   const allIncidents = recentShifts.flatMap(s => s.incidents);
@@ -326,12 +323,10 @@ export function calculateHomeNightMetrics(
   const withHours = recentSleep.filter(sp => sp.totalSleepHours !== undefined);
   const averageSleepHours = withHours.length > 0
     ? Math.round((withHours.reduce((s, sp) => s + (sp.totalSleepHours ?? 0), 0) / withHours.length) * 10) / 10
-    : 0;
+    : null;
 
   const poorSleepNights = recentSleep.filter(sp => sp.overallQuality === "poor");
-  const poorSleepRate = recentSleep.length > 0
-    ? Math.round((poorSleepNights.length / recentSleep.length) * 100)
-    : 0;
+  const poorSleepRate = rateOf(poorSleepNights, recentSleep);
 
   // Children with sleep issues
   const childSleepMap = new Map<string, { childName: string; poor: number; total: number }>();
@@ -351,7 +346,7 @@ export function calculateHomeNightMetrics(
   const totalExpected = results.reduce((s, r) => s + r.totalChecksExpected, 0);
   const missedCheckRate = totalExpected > 0
     ? Math.round((totalMissed / totalExpected) * 100 * 10) / 10
-    : 0;
+    : null;
 
   // Recent shifts for display
   const recentShiftSummary = results

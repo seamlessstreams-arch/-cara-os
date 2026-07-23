@@ -14,6 +14,7 @@ import {
   Users, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useContactEngagement } from "@/hooks/use-contact-engagement";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -76,8 +77,8 @@ export function ContactMonitoringCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", c.overall_completion_rate >= 90 ? "bg-green-50" : c.overall_completion_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.overall_completion_rate >= 90 ? "text-[--cs-success]" : c.overall_completion_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{c.overall_completion_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(c.overall_completion_rate, 90) ? "bg-green-50" : meets(c.overall_completion_rate, 75) ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(c.overall_completion_rate, 90) ? "text-[--cs-success]" : meets(c.overall_completion_rate, 75) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(c.overall_completion_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Completion</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">

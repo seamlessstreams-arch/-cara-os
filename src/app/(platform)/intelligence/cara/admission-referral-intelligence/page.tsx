@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdmissionReferralIntelligence } from "@/hooks/use-admission-referral-intelligence";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import type {
   ReferralProfile,
   SourceAnalysis,
@@ -89,7 +90,7 @@ function SourceBar({ s }: { s: SourceAnalysis }) {
         <div className="h-full rounded-full bg-teal-400" style={{ width: `${acceptPct}%` }} />
       </div>
       <span className="w-28 shrink-0 text-right text-xs text-slate-500">
-        {s.accepted}/{s.count} accepted · {s.avg_days_to_decision}d avg
+        {s.accepted}/{s.count} accepted{s.avg_days_to_decision !== null ? ` · ${s.avg_days_to_decision}d avg` : ""}
       </span>
     </div>
   );
@@ -130,7 +131,7 @@ export default function AdmissionReferralIntelligencePage() {
       <div className={`rounded-lg border px-5 py-4 flex items-center gap-6 ${ov.available_beds === 0 ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"}`}>
         <div>
           <p className="text-xs text-slate-500">Occupancy</p>
-          <p className={`text-3xl font-bold ${ov.occupancy_rate >= 100 ? "text-amber-700" : "text-slate-800"}`}>{ov.occupancy_rate}%</p>
+          <p className={`text-3xl font-bold ${meets(ov.occupancy_rate, 100) ? "text-amber-700" : "text-slate-800"}`}>{formatRate(ov.occupancy_rate)}</p>
         </div>
         <div className="h-10 w-px bg-slate-200" />
         <div>
@@ -145,8 +146,8 @@ export default function AdmissionReferralIntelligencePage() {
         <div className="flex-1">
           <div className="h-4 w-full overflow-hidden rounded-full bg-slate-100">
             <div
-              className={`h-full rounded-full ${ov.occupancy_rate >= 100 ? "bg-amber-400" : ov.occupancy_rate >= 80 ? "bg-teal-400" : "bg-slate-300"}`}
-              style={{ width: `${Math.min(100, ov.occupancy_rate)}%` }}
+              className={`h-full rounded-full ${meets(ov.occupancy_rate, 100) ? "bg-amber-400" : meets(ov.occupancy_rate, 80) ? "bg-teal-400" : "bg-slate-300"}`}
+              style={{ width: `${Math.min(100, ov.occupancy_rate ?? 0)}%` }}
             />
           </div>
         </div>
@@ -158,7 +159,7 @@ export default function AdmissionReferralIntelligencePage() {
           { label: "New", value: ov.new_count },
           { label: "Under assessment", value: ov.under_assessment_count },
           { label: "Panel", value: ov.panel_count },
-          { label: "Impact assessment", value: ov.impact_assessment_count, alert: ov.impact_assessment_completion_rate < 100 },
+          { label: "Impact assessment", value: ov.impact_assessment_count, alert: below(ov.impact_assessment_completion_rate, 100) },
         ].map((m) => (
           <div key={m.label} className={`rounded-lg border p-4 ${m.alert ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"}`}>
             <p className="text-xs text-slate-500">{m.label}</p>
@@ -172,10 +173,10 @@ export default function AdmissionReferralIntelligencePage() {
         <h2 className="text-sm font-semibold text-slate-700">Decision Analysis</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Acceptance rate", value: `${da.acceptance_rate}%`, green: da.acceptance_rate > 50 },
-            { label: "Decline rate", value: `${da.decline_rate}%` },
-            { label: "Withdrawal rate", value: `${da.withdrawal_rate}%` },
-            { label: "Avg days to decision", value: `${da.avg_days_to_decision}d`, alert: da.avg_days_to_decision > 14 },
+            { label: "Acceptance rate", value: formatRate(da.acceptance_rate), green: meets(da.acceptance_rate, 51) },
+            { label: "Decline rate", value: formatRate(da.decline_rate) },
+            { label: "Withdrawal rate", value: formatRate(da.withdrawal_rate) },
+            { label: "Avg days to decision", value: da.avg_days_to_decision === null ? "—" : `${da.avg_days_to_decision}d`, alert: da.avg_days_to_decision !== null && da.avg_days_to_decision > 14 },
           ].map((m) => (
             <div key={m.label} className={`rounded border p-3 text-center ${m.alert ? "border-amber-300 bg-amber-50" : m.green ? "border-green-200 bg-green-50" : "border-slate-100 bg-slate-50"}`}>
               <p className="text-xs text-slate-500">{m.label}</p>
@@ -183,7 +184,7 @@ export default function AdmissionReferralIntelligencePage() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-slate-500">Impact assessment completion: <span className={`font-semibold ${ov.impact_assessment_completion_rate < 100 ? "text-amber-600" : "text-green-600"}`}>{ov.impact_assessment_completion_rate}%</span></p>
+        <p className="text-xs text-slate-500">Impact assessment completion: <span className={`font-semibold ${ov.impact_assessment_completion_rate === null ? "text-slate-500" : below(ov.impact_assessment_completion_rate, 100) ? "text-amber-600" : "text-green-600"}`}>{formatRate(ov.impact_assessment_completion_rate)}</span></p>
       </div>
 
       {/* Source analysis */}

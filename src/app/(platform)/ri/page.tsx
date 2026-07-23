@@ -23,6 +23,7 @@ import { useSupervisions } from "@/hooks/use-supervision";
 import { useTraining } from "@/hooks/use-training";
 import { useAudits } from "@/hooks/use-audits";
 import { computeRiScores } from "@/lib/ri/compute-scores";
+import { below, meets } from "@/lib/metrics/rate";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -38,24 +39,25 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 
 // ── Score pill ─────────────────────────────────────────────────────────────────
-function ScorePill({ score, size = "md" }: { score: number; size?: "sm" | "md" | "lg" }) {
+function ScorePill({ score, size = "md" }: { score: number | null; size?: "sm" | "md" | "lg" }) {
   const colour =
-    score >= 80 ? "bg-emerald-100 text-emerald-700 border-emerald-200"
-    : score >= 65 ? "bg-amber-100 text-amber-700 border-amber-200"
-    : score >= 50 ? "bg-orange-100 text-orange-700 border-orange-200"
-    : "bg-red-100 text-red-700 border-red-200";
+    meets(score, 80) ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+    : meets(score, 65) ? "bg-amber-100 text-amber-700 border-amber-200"
+    : meets(score, 50) ? "bg-orange-100 text-orange-700 border-orange-200"
+    : below(score, 50) ? "bg-red-100 text-red-700 border-red-200"
+    : "bg-slate-100 text-slate-500 border-slate-200";
   const sizes = { sm: "text-xs px-2 py-0.5", md: "text-sm px-2.5 py-1 font-semibold", lg: "text-xl px-3 py-1.5 font-bold" };
   return (
     <span className={cn("rounded-full border tabular-nums", colour, sizes[size])}>
-      {score}
+      {score ?? "—"}
     </span>
   );
 }
 
 // ── Governance metric row ──────────────────────────────────────────────────────
-function MetricBar({ label, score, max = 100 }: { label: string; score: number; max?: number }) {
-  const pct = Math.round((score / max) * 100);
-  const barColour = score >= 80 ? "bg-emerald-500" : score >= 65 ? "bg-amber-400" : score >= 50 ? "bg-orange-400" : "bg-red-500";
+function MetricBar({ label, score, max = 100 }: { label: string; score: number | null; max?: number }) {
+  const pct = score === null ? 0 : Math.round((score / max) * 100);
+  const barColour = meets(score, 80) ? "bg-emerald-500" : meets(score, 65) ? "bg-amber-400" : meets(score, 50) ? "bg-orange-400" : below(score, 50) ? "bg-red-500" : "bg-slate-200";
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
@@ -148,8 +150,8 @@ export default function RiHubPage() {
 
   const hasCritical = criticalAlerts.length > 0;
   const overallScore = scores.overall_governance_score;
-  const riskLevel = overallScore >= 80 ? "LOW RISK" : overallScore >= 65 ? "MEDIUM RISK" : overallScore >= 50 ? "HIGH RISK" : "CRITICAL";
-  const riskColour = overallScore >= 80 ? "bg-emerald-500/20 text-emerald-200" : overallScore >= 65 ? "bg-amber-500/20 text-amber-200" : overallScore >= 50 ? "bg-orange-500/20 text-orange-200" : "bg-red-500/20 text-red-200";
+  const riskLevel = meets(overallScore, 80) ? "LOW RISK" : meets(overallScore, 65) ? "MEDIUM RISK" : meets(overallScore, 50) ? "HIGH RISK" : below(overallScore, 50) ? "CRITICAL" : "NOT YET MEASURED";
+  const riskColour = meets(overallScore, 80) ? "bg-emerald-500/20 text-emerald-200" : meets(overallScore, 65) ? "bg-amber-500/20 text-amber-200" : meets(overallScore, 50) ? "bg-orange-500/20 text-orange-200" : below(overallScore, 50) ? "bg-red-500/20 text-red-200" : "bg-slate-500/20 text-slate-200";
 
   return (
     <PageShell
@@ -202,7 +204,7 @@ export default function RiHubPage() {
             </div>
             <div className="text-right shrink-0">
               <div className="flex items-center gap-2 justify-end">
-                <div className="text-3xl font-bold text-white tabular-nums">{overallScore}</div>
+                <div className="text-3xl font-bold text-white tabular-nums">{overallScore ?? "—"}</div>
                 <span className={cn("text-[10px] font-semibold rounded-full px-2 py-0.5", riskColour)}>{riskLevel}</span>
               </div>
               <div className="flex items-center gap-1 justify-end mt-1">

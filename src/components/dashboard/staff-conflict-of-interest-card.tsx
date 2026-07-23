@@ -12,6 +12,7 @@ import {
   ShieldAlert, ChevronRight, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meanOf, meets } from "@/lib/metrics/rate";
 import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
 const INSIGHT_STYLES: Record<string, string> = {
@@ -43,9 +44,7 @@ export function StaffConflictOfInterestCard() {
   }
 
   const { profile, dbs, training } = intel;
-  const avgTraining = training.length > 0
-    ? Math.round(training.reduce((s, t) => s + t.compliance_rate, 0) / training.length)
-    : 0;
+  const avgTraining = meanOf(training.map((t) => t.compliance_rate));
 
   return (
     <Card className="overflow-hidden">
@@ -67,12 +66,12 @@ export function StaffConflictOfInterestCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{profile.active_staff}</p>
             <p className="text-[10px] text-muted-foreground">Active</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", dbs.compliance_rate >= 95 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", dbs.compliance_rate >= 95 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{dbs.compliance_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", meets(dbs.compliance_rate, 95) ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(dbs.compliance_rate, 95) ? "text-[--cs-success]" : "text-[--cs-risk]")}>{formatRate(dbs.compliance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">DBS</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", avgTraining >= 90 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", avgTraining >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{avgTraining}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", avgTraining === null ? "bg-slate-50" : avgTraining >= 90 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", avgTraining === null ? "text-[var(--cs-text-muted)]" : avgTraining >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(avgTraining)}</p>
             <p className="text-[10px] text-muted-foreground">Training</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", profile.on_probation === 0 ? "bg-green-50" : "bg-amber-50")}>

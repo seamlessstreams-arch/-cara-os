@@ -404,12 +404,12 @@ describe("computeVisitorSummary", () => {
 // ── computeVisitorCompliance ────────────────────────────────────────────
 
 describe("computeVisitorCompliance", () => {
-  it("returns zeroed counts with 100% rates for empty array", () => {
+  it("returns zeroed counts with unmeasured rates for empty array", () => {
     const result = computeVisitorCompliance([]);
     expect(result.total_entries).toBe(0);
-    expect(result.dbs_check_rate).toBe(100);
-    expect(result.id_verification_rate).toBe(100);
-    expect(result.sign_out_rate).toBe(100);
+    expect(result.dbs_check_rate).toBeNull();
+    expect(result.id_verification_rate).toBeNull();
+    expect(result.sign_out_rate).toBeNull();
     expect(result.incomplete_entries).toBe(0);
   });
 
@@ -433,12 +433,12 @@ describe("computeVisitorCompliance", () => {
     expect(result.dbs_check_rate).toBe(50);
   });
 
-  it("returns 100% dbs_check_rate when no professional visitors exist", () => {
+  it("leaves dbs_check_rate unmeasured when no professional visitors exist", () => {
     const result = computeVisitorCompliance([
       makeVisitorEntry({ visitor_type: "family_member", dbs_checked: false }),
       makeVisitorEntry({ id: "v-2", visitor_type: "contractor", dbs_checked: false }),
     ]);
-    expect(result.dbs_check_rate).toBe(100);
+    expect(result.dbs_check_rate).toBeNull();
   });
 
   it("returns 100% dbs_check_rate when all professionals have DBS checked", () => {

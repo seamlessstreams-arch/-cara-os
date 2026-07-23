@@ -20,6 +20,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -145,9 +146,10 @@ export interface HomeEscalationMetrics {
   periodStart: string;
   periodEnd: string;
 
-  // Summary
-  overallScore: number; // 0-100
-  rating: "outstanding" | "good" | "requires_improvement" | "inadequate";
+  // Summary — null when no concern in the period could be assessed, so there
+  // is no escalation practice to score either way.
+  overallScore: number | null; // 0-100
+  rating: "outstanding" | "good" | "requires_improvement" | "inadequate" | "not_assessed";
 
   // Counts
   totalConcernsRaised: number;
@@ -160,22 +162,22 @@ export interface HomeEscalationMetrics {
   appropriateThresholds: number;
   underEscalated: number;
   overEscalated: number;
-  thresholdAccuracyRate: number;
+  thresholdAccuracyRate: number | null;
 
   // Notification compliance
   ofstedNotified: number;
   ofstedRequired: number;
-  ofstedComplianceRate: number;
+  ofstedComplianceRate: number | null;   // null when no concern required Ofsted notification
   laNotified: number;
   laRequired: number;
-  laComplianceRate: number;
+  laComplianceRate: number | null;       // null when no concern required LA notification
 
   // Per-concern breakdown
   assessments: ThresholdAssessment[];
 
   // Quality indicators
   averageResponseTimeHours: number;
-  multiAgencyEngagementRate: number;
+  multiAgencyEngagementRate: number | null;
 
   // Actions & regulatory
   strengths: string[];
@@ -476,10 +478,7 @@ export function generateEscalationMetrics(
   ).length;
   const underEscalated = assessments.filter((a) => a.outcome === "under_escalated" || a.outcome === "not_escalated").length;
   const overEscalated = assessments.filter((a) => a.outcome === "over_escalated").length;
-  const thresholdAccuracyRate =
-    totalConcernsRaised > 0
-      ? Math.round((appropriateThresholds / totalConcernsRaised) * 100)
-      : 100;
+  const thresholdAccuracyRate = rate(appropriateThresholds, totalConcernsRaised);
 
   // Ofsted notification compliance
   const ofstedRequired = assessments.filter((a) =>
@@ -489,7 +488,9 @@ export function generateEscalationMetrics(
     a.requiredEscalations.some((e) => e.target === "ofsted") &&
     a.actualEscalations.some((e) => e.escalatedTo === "ofsted"),
   ).length;
-  const ofstedComplianceRate = ofstedRequired > 0 ? Math.round((ofstedNotified / ofstedRequired) * 100) : 100;
+  // Null when nothing met the Ofsted threshold — no notification was owed, which
+  // is not the same as every owed notification having been made.
+  const ofstedComplianceRate = rate(ofstedNotified, ofstedRequired);
 
   // LA notification compliance
   const laTargets: EscalationTarget[] = ["local_authority_mash", "placing_authority"];
@@ -500,7 +501,7 @@ export function generateEscalationMetrics(
     a.requiredEscalations.some((e) => laTargets.includes(e.target)) &&
     a.actualEscalations.some((e) => laTargets.includes(e.escalatedTo)),
   ).length;
-  const laComplianceRate = laRequired > 0 ? Math.round((laNotified / laRequired) * 100) : 100;
+  const laComplianceRate = rate(laNotified, laRequired);
 
   // Average response time (from escalations that got a response)
   const responseTimes = escalations
@@ -521,10 +522,7 @@ export function generateEscalationMetrics(
   const multiAgencyEngaged = concernsNeedingMultiAgency.filter((a) =>
     a.actualEscalations.some((e) => multiAgencyTargets.includes(e.escalatedTo)),
   );
-  const multiAgencyEngagementRate =
-    concernsNeedingMultiAgency.length > 0
-      ? Math.round((multiAgencyEngaged.length / concernsNeedingMultiAgency.length) * 100)
-      : 100;
+  const multiAgencyEngagementRate = rateOf(multiAgencyEngaged, concernsNeedingMultiAgency);
 
   // Calculate overall score
   const overallScore = calculateEscalationScore(
@@ -586,39 +584,34 @@ export function generateEscalationMetrics(
 // ── Scoring ────────────────────────────────────────────────────────────────
 
 function calculateEscalationScore(
-  thresholdAccuracy: number,
-  ofstedCompliance: number,
-  laCompliance: number,
+  thresholdAccuracy: number | null,
+  ofstedCompliance: number | null,
+  laCompliance: number | null,
   timelyCount: number,
   totalConcerns: number,
   missingCount: number,
-  multiAgencyRate: number,
-): number {
-  let score = 0;
+  multiAgencyRate: number | null,
+): number | null {
+  // Limbs that could not be measured — no concern met that threshold — are
+  // dropped and the weights renormalised over what WAS measured, so an empty
+  // safeguarding register cannot score 100.
+  const measured = weightedMeanOf([
+    { score: thresholdAccuracy, weight: 30 },
+    { score: ofstedCompliance, weight: 20 },
+    { score: laCompliance, weight: 15 },
+    { score: rate(timelyCount, totalConcerns), weight: 20 },
+    { score: multiAgencyRate, weight: 15 },
+  ]);
+  if (measured === null) return null;
 
-  // Threshold accuracy (max 30)
-  score += (thresholdAccuracy / 100) * 30;
-
-  // Ofsted compliance (max 20)
-  score += (ofstedCompliance / 100) * 20;
-
-  // LA compliance (max 15)
-  score += (laCompliance / 100) * 15;
-
-  // Timeliness (max 20)
-  const timelinessRate = totalConcerns > 0 ? (timelyCount / totalConcerns) * 100 : 100;
-  score += (timelinessRate / 100) * 20;
-
-  // Multi-agency engagement (max 15)
-  score += (multiAgencyRate / 100) * 15;
-
-  // Penalties
-  score -= missingCount * 8;
-
+  const score = measured - missingCount * 8;
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
-function getEscalationRating(score: number): "outstanding" | "good" | "requires_improvement" | "inadequate" {
+function getEscalationRating(
+  score: number | null,
+): "outstanding" | "good" | "requires_improvement" | "inadequate" | "not_assessed" {
+  if (score === null) return "not_assessed";
   if (score >= 85) return "outstanding";
   if (score >= 65) return "good";
   if (score >= 45) return "requires_improvement";
@@ -628,24 +621,24 @@ function getEscalationRating(score: number): "outstanding" | "good" | "requires_
 // ── Insight Generation ─────────────────────────────────────────────────────
 
 function generateEscalationStrengths(
-  thresholdAccuracy: number,
-  ofstedCompliance: number,
-  laCompliance: number,
-  multiAgencyRate: number,
+  thresholdAccuracy: number | null,
+  ofstedCompliance: number | null,
+  laCompliance: number | null,
+  multiAgencyRate: number | null,
   assessments: ThresholdAssessment[],
 ): string[] {
   const strengths: string[] = [];
 
-  if (thresholdAccuracy >= 90) {
+  if (meets(thresholdAccuracy, 90)) {
     strengths.push("Excellent threshold decision-making: appropriate escalation in over 90% of cases");
   }
   if (ofstedCompliance === 100 && assessments.some((a) => a.requiredEscalations.some((e) => e.target === "ofsted"))) {
     strengths.push("100% Ofsted notification compliance: all required notifications made in time");
   }
-  if (laCompliance >= 90) {
+  if (meets(laCompliance, 90)) {
     strengths.push("Strong local authority engagement: timely notifications to placing authorities and MASH");
   }
-  if (multiAgencyRate >= 90) {
+  if (meets(multiAgencyRate, 90)) {
     strengths.push("High multi-agency engagement rate demonstrates effective partnership working");
   }
 
@@ -659,9 +652,9 @@ function generateEscalationStrengths(
 
 function generateEscalationConcerns(
   assessments: ThresholdAssessment[],
-  ofstedCompliance: number,
-  laCompliance: number,
-  multiAgencyRate: number,
+  ofstedCompliance: number | null,
+  laCompliance: number | null,
+  multiAgencyRate: number | null,
 ): string[] {
   const concerns: string[] = [];
 
@@ -675,15 +668,15 @@ function generateEscalationConcerns(
     concerns.push(`${underEsc.length} concern(s) under-escalated: not all required notifications made`);
   }
 
-  if (ofstedCompliance < 100) {
+  if (below(ofstedCompliance, 100)) {
     concerns.push(`Ofsted notification compliance at ${ofstedCompliance}%: some required notifications missed`);
   }
 
-  if (laCompliance < 80) {
+  if (below(laCompliance, 80)) {
     concerns.push(`Local authority notification rate below 80%: potential safeguarding gap`);
   }
 
-  if (multiAgencyRate < 70) {
+  if (below(multiAgencyRate, 70)) {
     concerns.push(`Multi-agency engagement rate of ${multiAgencyRate}% suggests insufficient partnership working`);
   }
 
@@ -737,7 +730,11 @@ function generateEscalationActions(
   }
 
   if (actions.length === 0) {
-    actions.push("No immediate actions required. Escalation practice is operating within required standards.");
+    actions.push(
+      assessments.length === 0
+        ? "No concerns recorded in the period — escalation practice cannot be assessed. Confirm concerns are being logged."
+        : "No immediate actions required. Escalation practice is operating within required standards.",
+    );
   }
 
   return actions;

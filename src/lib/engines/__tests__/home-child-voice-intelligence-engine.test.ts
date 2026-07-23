@@ -213,13 +213,14 @@ describe("Home Child Voice Intelligence Engine", () => {
       expect(r.meetings.action_completion_rate).toBe(75);
     });
 
-    it("defaults action completion to 100% when no previous actions", () => {
+    it("reports action completion as unmeasured when no previous actions", () => {
       const meetings = [
         makeMeeting({ id: "hm_1", date: "2026-05-20", previous_actions_completed: 0, previous_actions_total: 0 }),
         makeMeeting({ id: "hm_2", date: "2026-05-13", previous_actions_completed: 0, previous_actions_total: 0 }),
       ];
       const r = computeHomeChildVoice(baseInput({ house_meetings: meetings }));
-      expect(r.meetings.action_completion_rate).toBe(100);
+      expect(r.meetings.action_completion_rate).toBeNull();
+      expect(r.strengths.some(s => s.includes("meeting actions completed"))).toBe(false);
     });
 
     it("calculates average duration", () => {
@@ -355,13 +356,15 @@ describe("Home Child Voice Intelligence Engine", () => {
       expect(r.visitors.children_seen_rate).toBe(50);
     });
 
-    it("defaults DBS rate to 100 when no professionals", () => {
+    it("reports DBS rate as unmeasured when no professionals visited", () => {
       const visitors = [
         makeVisitor({ id: "vis_1", date: "2026-05-20", category: "family", dbs_checked: false }),
         makeVisitor({ id: "vis_2", date: "2026-05-15", category: "tradesperson", dbs_checked: false }),
       ];
       const r = computeHomeChildVoice(baseInput({ visitors }));
-      expect(r.visitors.dbs_compliance_rate).toBe(100);
+      expect(r.visitors.dbs_compliance_rate).toBeNull();
+      expect(r.strengths.some(s => s.includes("DBS compliance"))).toBe(false);
+      expect(r.concerns.some(c => c.includes("DBS compliance"))).toBe(false);
     });
   });
 
@@ -808,7 +811,8 @@ describe("Home Child Voice Intelligence Engine", () => {
         makeMeeting({ id: "hm_2", date: "2026-05-13", children_present: 0, children_absent: 0 }),
       ];
       const r = computeHomeChildVoice(baseInput({ house_meetings: meetings }));
-      expect(r.meetings.avg_attendance_rate).toBe(0);
+      expect(r.meetings.avg_attendance_rate).toBeNull();
+      expect(r.concerns.some(c => c.includes("average attendance"))).toBe(false);
     });
 
     it("handles meetings with zero agenda items", () => {
@@ -817,7 +821,8 @@ describe("Home Child Voice Intelligence Engine", () => {
         makeMeeting({ id: "hm_2", date: "2026-05-13", child_raised_topics: 0, total_agenda_items: 0 }),
       ];
       const r = computeHomeChildVoice(baseInput({ house_meetings: meetings }));
-      expect(r.meetings.child_raised_topic_rate).toBe(0);
+      expect(r.meetings.child_raised_topic_rate).toBeNull();
+      expect(r.concerns.some(c => c.includes("agenda items raised by children"))).toBe(false);
     });
 
     it("handles all visitors in the future", () => {

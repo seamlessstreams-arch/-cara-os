@@ -146,8 +146,8 @@ describe("Education Intelligence Engine — Helper Functions", () => {
   });
 
   describe("computeAttendancePct", () => {
-    it("returns 100 for zero total", () => {
-      expect(computeAttendancePct(0, 0)).toBe(100);
+    it("returns null for zero total — nothing recorded is not full attendance", () => {
+      expect(computeAttendancePct(0, 0)).toBeNull();
     });
 
     it("computes correct percentage", () => {
@@ -184,7 +184,7 @@ describe("Education Intelligence Engine — Empty Input", () => {
 
     expect(result.overview.total_children).toBe(0);
     expect(result.overview.neet_count).toBe(0);
-    expect(result.attendance.overall_pct).toBe(100);
+    expect(result.attendance.overall_pct).toBeNull();
     expect(result.activities.total_activities_30d).toBe(0);
     expect(result.child_profiles).toHaveLength(0);
     expect(result.alerts).toHaveLength(0);

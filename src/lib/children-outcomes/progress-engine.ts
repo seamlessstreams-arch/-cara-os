@@ -19,6 +19,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate, rateOf } from "../metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type OutcomeDomain =
@@ -94,12 +96,12 @@ export interface ProgressReview {
 export interface ChildProgressResult {
   childId: string;
   childName: string;
-  overallRating: number;           // average across domains (1-5)
+  overallRating: number | null;    // average across domains (1-5); null = nothing assessed
   overallTrend: Trend;
   domainSummary: DomainSummary[];
   goalsAchieved: number;
   goalsActive: number;
-  goalAchievementRate: number;     // %
+  goalAchievementRate: number | null; // %; null = no goals set
   reviewsInPeriod: number;
   lastReviewDate: string | null;
   daysSinceLastReview: number | null;
@@ -121,16 +123,18 @@ export interface DomainSummary {
 export interface CohortAnalysis {
   homeId: string;
   childCount: number;
-  averageOverallRating: number;
-  byDomain: { domain: OutcomeDomain; averageRating: number; trend: Trend }[];
+  averageOverallRating: number | null;
+  byDomain: { domain: OutcomeDomain; averageRating: number | null; trend: Trend }[];
   childrenImproving: number;
   childrenStable: number;
   childrenDeclining: number;
   strengthDomains: OutcomeDomain[];
   concernDomains: OutcomeDomain[];
-  goalAchievementRate: number;     // %
-  reviewComplianceRate: number;    // %
-  ofstedRating: "outstanding" | "good" | "requires_improvement" | "inadequate";
+  goalAchievementRate: number | null;  // %; null = no goals set
+  reviewComplianceRate: number | null; // %; null = no children to review
+  // Null until there is enough evidence to say anything — an empty home is
+  // not "requires improvement", it is unassessed.
+  ofstedRating: "outstanding" | "good" | "requires_improvement" | "inadequate" | null;
 }
 
 // ── Configuration ──────────────────────────────────────────────────────────
@@ -169,7 +173,7 @@ export function evaluateChildProgress(
   const ratings = profile.currentOutcomes.map(o => o.rating);
   const overallRating = ratings.length > 0
     ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
-    : 3;
+    : null;
 
   // Overall trend
   const improving = profile.currentOutcomes.filter(o => o.trend === "improving").length;
@@ -184,9 +188,7 @@ export function evaluateChildProgress(
   const goalsAchieved = profile.goals.filter(g => g.status === "achieved").length;
   const goalsActive = profile.goals.filter(g => g.status === "active").length;
   const totalGoals = profile.goals.length;
-  const goalAchievementRate = totalGoals > 0
-    ? Math.round((goalsAchieved / totalGoals) * 100)
-    : 0;
+  const goalAchievementRate = rate(goalsAchieved, totalGoals);
 
   // Review compliance
   const sortedReviews = [...profile.reviews].sort(
@@ -245,9 +247,12 @@ export function analyzeCohort(
   const progressResults = profiles.map(p => evaluateChildProgress(p, now));
 
   // Average overall rating
-  const averageOverallRating = progressResults.length > 0
-    ? Math.round((progressResults.reduce((sum, r) => sum + r.overallRating, 0) / progressResults.length) * 10) / 10
-    : 3;
+  const assessedRatings = progressResults
+    .map(r => r.overallRating)
+    .filter((r): r is number => r !== null);
+  const averageOverallRating = assessedRatings.length > 0
+    ? Math.round((assessedRatings.reduce((sum, r) => sum + r, 0) / assessedRatings.length) * 10) / 10
+    : null;
 
   // By domain
   const domains: OutcomeDomain[] = ["safety", "health", "education", "positive_contribution", "economic_wellbeing", "identity", "emotional_wellbeing"];
@@ -258,7 +263,7 @@ export function analyzeCohort(
       .map(o => o!.rating);
     const avg = domainRatings.length > 0
       ? Math.round((domainRatings.reduce((a, b) => a + b, 0) / domainRatings.length) * 10) / 10
-      : 3;
+      : null;
 
     const trends = profiles
       .map(p => p.currentOutcomes.find(o => o.domain === domain)?.trend)
@@ -276,29 +281,27 @@ export function analyzeCohort(
   const childrenDeclining = progressResults.filter(r => r.overallTrend === "declining").length;
 
   // Strength/concern domains (cohort level)
-  const strengthDomains = byDomain.filter(d => d.averageRating >= 4).map(d => d.domain);
-  const concernDomains = byDomain.filter(d => d.averageRating < 3 || d.trend === "declining").map(d => d.domain);
+  const strengthDomains = byDomain.filter(d => meets(d.averageRating, 4)).map(d => d.domain);
+  const concernDomains = byDomain.filter(d => below(d.averageRating, 3) || d.trend === "declining").map(d => d.domain);
 
   // Goal achievement rate
   const allGoals = profiles.flatMap(p => p.goals);
-  const achieved = allGoals.filter(g => g.status === "achieved").length;
-  const goalAchievementRate = allGoals.length > 0
-    ? Math.round((achieved / allGoals.length) * 100)
-    : 0;
+  const achieved = allGoals.filter(g => g.status === "achieved");
+  const goalAchievementRate = rateOf(achieved, allGoals);
 
   // Review compliance
-  const reviewCompliant = progressResults.filter(r => !r.reviewOverdue).length;
-  const reviewComplianceRate = progressResults.length > 0
-    ? Math.round((reviewCompliant / progressResults.length) * 100)
-    : 100;
+  const reviewCompliant = progressResults.filter(r => !r.reviewOverdue);
+  const reviewComplianceRate = rateOf(reviewCompliant, progressResults);
 
-  // Ofsted rating
+  // Ofsted rating — never inferred from an unassessed cohort
   let ofstedRating: CohortAnalysis["ofstedRating"];
-  if (averageOverallRating >= 4.2 && childrenDeclining === 0 && reviewComplianceRate >= 95) {
+  if (averageOverallRating === null) {
+    ofstedRating = null;
+  } else if (meets(averageOverallRating, 4.2) && childrenDeclining === 0 && meets(reviewComplianceRate, 95)) {
     ofstedRating = "outstanding";
-  } else if (averageOverallRating >= 3.5 && childrenDeclining <= 1) {
+  } else if (meets(averageOverallRating, 3.5) && childrenDeclining <= 1) {
     ofstedRating = "good";
-  } else if (averageOverallRating >= 2.5) {
+  } else if (meets(averageOverallRating, 2.5)) {
     ofstedRating = "requires_improvement";
   } else {
     ofstedRating = "inadequate";
@@ -378,7 +381,7 @@ export function analyzeDomainTrends(
 
 function generateRecommendations(
   profile: ChildProfile,
-  overallRating: number,
+  overallRating: number | null,
   concernAreas: OutcomeDomain[],
   reviewOverdue: boolean,
 ): string[] {
@@ -404,7 +407,7 @@ function generateRecommendations(
     recommendations.push(`${activeGoalsPastDue.length} goal(s) past target date — review and revise or close.`);
   }
 
-  if (overallRating >= 4 && concernAreas.length === 0) {
+  if (meets(overallRating, 4) && concernAreas.length === 0) {
     recommendations.push("Strong progress — consider increasing independence targets and transition planning.");
   }
 

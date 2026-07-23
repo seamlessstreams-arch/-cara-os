@@ -13,6 +13,8 @@
 // SCCIF: Overall Experiences, Helped & Protected, Leadership & Management.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meanOf, meets, below, formatRate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type DomainStatus = "green" | "amber" | "red";
@@ -29,7 +31,7 @@ export interface DomainDigest {
   improving_count: number;
   worsening_count: number;
   key_metric_label: string;
-  key_metric_value: number;
+  key_metric_value: number | null;
   key_metric_target: number | null;
   alerts: Array<{ severity: string; message: string }>;
   insights: Array<{ severity: string; text: string }>;
@@ -54,7 +56,8 @@ export interface ManagerBriefingInput {
 
 // ── Output Types ────────────────────────────────────────────────────────────
 
-export type OverallRiskLevel = "critical" | "elevated" | "moderate" | "stable";
+// "unknown" = no domain intelligence reached the briefing at all. Silence is not stability.
+export type OverallRiskLevel = "critical" | "elevated" | "moderate" | "stable" | "unknown";
 
 export interface ExecutiveSummary {
   overall_risk_level: OverallRiskLevel;
@@ -65,7 +68,7 @@ export interface ExecutiveSummary {
   domains_at_risk: number;
   domains_compliant: number;
   domains_total: number;
-  avg_compliance_rate: number;
+  avg_compliance_rate: number | null; // null when no domain reported a compliance rate
   children_requiring_attention: number;
   total_children: number;
   total_staff: number;
@@ -81,7 +84,7 @@ export interface DomainHealth {
   overdue_count: number;
   trend_direction: "improving" | "stable" | "worsening";
   key_metric: string;
-  key_metric_value: number;
+  key_metric_value: number | null;
   key_metric_target: number | null;
 }
 
@@ -103,7 +106,7 @@ export interface PriorityAction {
 }
 
 export interface RegulatoryComplianceSummary {
-  overall_compliance_pct: number;
+  overall_compliance_pct: number | null;
   domains_above_threshold: number;
   domains_below_threshold: number;
   weakest_domain: string | null;
@@ -172,7 +175,7 @@ function computeDomainStatus(d: DomainDigest): DomainStatus {
   if (
     d.medium_alerts > 2 ||
     d.overdue_count > 0 ||
-    (d.compliance_rate !== null && d.compliance_rate < 80) ||
+    below(d.compliance_rate, 80) ||
     d.worsening_count > d.improving_count
   ) {
     return "amber";
@@ -190,11 +193,14 @@ function computeOverallRisk(
   totalCritical: number,
   totalHigh: number,
   domainsAtRisk: number,
-  avgCompliance: number,
+  avgCompliance: number | null,
+  domainsTotal: number,
 ): OverallRiskLevel {
   if (totalCritical > 0 || domainsAtRisk >= 3) return "critical";
-  if (totalHigh > 2 || domainsAtRisk >= 2 || avgCompliance < 70) return "elevated";
-  if (totalHigh > 0 || domainsAtRisk >= 1 || avgCompliance < 85) return "moderate";
+  if (totalHigh > 2 || domainsAtRisk >= 2 || below(avgCompliance, 70)) return "elevated";
+  if (totalHigh > 0 || domainsAtRisk >= 1 || below(avgCompliance, 85)) return "moderate";
+  // No domains reported in: nothing has been assessed, which is not the same as stable.
+  if (domainsTotal === 0) return "unknown";
   return "stable";
 }
 
@@ -213,6 +219,9 @@ function generateHeadline(
   }
   if (risk === "moderate") {
     return `${homeName}: Moderate position — minor actions outstanding, no critical concerns`;
+  }
+  if (risk === "unknown") {
+    return `${homeName}: No domain intelligence available yet — nothing has been evidenced, so no position can be reported`;
   }
   return `${homeName}: Stable — all domains within acceptable thresholds`;
 }
@@ -254,9 +263,7 @@ export function computeManagerBriefing(input: ManagerBriefingInput): ManagerBrie
 
   // ── Compliance ────────────────────────────────────────────────────────
   const complianceDomains = input.domains.filter((d) => d.compliance_rate !== null);
-  const avgCompliance = complianceDomains.length > 0
-    ? Math.round(complianceDomains.reduce((s, d) => s + d.compliance_rate!, 0) / complianceDomains.length)
-    : 100;
+  const avgCompliance = meanOf(input.domains.map((d) => d.compliance_rate));
 
   const sorted = [...complianceDomains].sort((a, b) => a.compliance_rate! - b.compliance_rate!);
   const weakest = sorted[0] ?? null;
@@ -265,8 +272,8 @@ export function computeManagerBriefing(input: ManagerBriefingInput): ManagerBrie
 
   const regulatory: RegulatoryComplianceSummary = {
     overall_compliance_pct: avgCompliance,
-    domains_above_threshold: complianceDomains.filter((d) => d.compliance_rate! >= THRESHOLD).length,
-    domains_below_threshold: complianceDomains.filter((d) => d.compliance_rate! < THRESHOLD).length,
+    domains_above_threshold: complianceDomains.filter((d) => meets(d.compliance_rate, THRESHOLD)).length,
+    domains_below_threshold: complianceDomains.filter((d) => below(d.compliance_rate, THRESHOLD)).length,
     weakest_domain: weakest?.domain_label ?? null,
     weakest_domain_rate: weakest?.compliance_rate ?? null,
     strongest_domain: strongest?.domain_label ?? null,
@@ -324,7 +331,13 @@ export function computeManagerBriefing(input: ManagerBriefingInput): ManagerBrie
     }));
 
   // ── Overall risk level ────────────────────────────────────────────────
-  const overallRisk = computeOverallRisk(totalCritical, totalHigh, domainsAtRisk, avgCompliance);
+  const overallRisk = computeOverallRisk(
+    totalCritical,
+    totalHigh,
+    domainsAtRisk,
+    avgCompliance,
+    input.domains.length,
+  );
 
   // ── Executive summary ─────────────────────────────────────────────────
   const executiveSummary: ExecutiveSummary = {
@@ -383,17 +396,32 @@ export function computeManagerBriefing(input: ManagerBriefingInput): ManagerBrie
     });
   }
 
+  if (overallRisk === "unknown") {
+    insights.push({
+      severity: "warning",
+      text: "No domain intelligence reached this briefing. Nothing has been evidenced for this home yet, so no compliance position — good or bad — can be reported.",
+    });
+  }
+
   if (overallRisk === "stable" && trendAnalysis.domains_improving > 0) {
     insights.push({
       severity: "positive",
-      text: `Positive trajectory: ${trendAnalysis.improving_domains.join(", ")} showing improvement. Overall compliance at ${avgCompliance}% — the home is in a strong regulatory position.`,
+      text: `Positive trajectory: ${trendAnalysis.improving_domains.join(", ")} showing improvement. ${
+        avgCompliance === null
+          ? "No domain has reported a compliance rate yet."
+          : `Overall compliance at ${formatRate(avgCompliance)} — the home is in a strong regulatory position.`
+      }`,
     });
   }
 
   if (overallRisk === "stable" && trendAnalysis.domains_improving === 0) {
     insights.push({
       severity: "positive",
-      text: `Stable position across all ${input.domains.length} monitored domains. Average compliance at ${avgCompliance}%. No critical or high alerts requiring immediate action.`,
+      text: `Stable position across all ${input.domains.length} monitored domains. ${
+        avgCompliance === null
+          ? "No domain has reported a compliance rate yet."
+          : `Average compliance at ${formatRate(avgCompliance)}.`
+      } No critical or high alerts requiring immediate action.`,
     });
   }
 

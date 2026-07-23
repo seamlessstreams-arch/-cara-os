@@ -30,6 +30,8 @@
 // No AI. No external calls. No randomness. No Date.now(). Pure input -> output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate, rateOf } from "@/lib/metrics/rate";
+
 // ── Type Unions ──────────────────────────────────────────────────────────────
 
 export type RiskCategory =
@@ -171,12 +173,12 @@ export interface InternetSafetyMonitoringResult {
   // Key metrics
   totalIncidents: number;
   highCriticalIncidents: number;
-  actionTakenRate: number;
-  childSupportedRate: number;
-  recordedTimelyRate: number;
-  lessonsAppliedRate: number;
-  referralAppropriatenessRate: number;
-  staffTrainingCoverageRate: number;
+  actionTakenRate: number | null;
+  childSupportedRate: number | null;
+  recordedTimelyRate: number | null;
+  lessonsAppliedRate: number | null;
+  referralAppropriatenessRate: number | null;  // null = no high/critical incident to refer
+  staffTrainingCoverageRate: number | null;    // null = no training records held
 
   // Breakdowns
   incidentsByCategory: { category: RiskCategory; count: number; label: string }[];
@@ -797,19 +799,19 @@ export function generateInternetSafetyMonitoringIntelligence(
   const highCriticalIncidents = incidents.filter(
     (i) => i.severity === "high" || i.severity === "critical",
   ).length;
-  const actionTakenRate = pct(
+  const actionTakenRate = rate(
     incidents.filter((i) => i.actionTaken).length,
     totalIncidents,
   );
-  const childSupportedRate = pct(
+  const childSupportedRate = rate(
     incidents.filter((i) => i.childSupported).length,
     totalIncidents,
   );
-  const recordedTimelyRate = pct(
+  const recordedTimelyRate = rate(
     incidents.filter((i) => i.recordedTimely).length,
     totalIncidents,
   );
-  const lessonsAppliedRate = pct(
+  const lessonsAppliedRate = rate(
     incidents.filter((i) => i.lessonsApplied).length,
     totalIncidents,
   );
@@ -818,27 +820,24 @@ export function generateInternetSafetyMonitoringIntelligence(
   const highCritical = incidents.filter(
     (i) => i.severity === "high" || i.severity === "critical",
   );
-  const referralAppropriatenessRate =
-    highCritical.length > 0
-      ? pct(highCritical.filter((i) => i.referralMade).length, highCritical.length)
-      : 100;
+  const referralAppropriatenessRate = rateOf(
+    highCritical.filter((i) => i.referralMade),
+    highCritical,
+  );
 
   // Staff training coverage
-  const staffTrainingCoverageRate =
-    training.length > 0
-      ? pct(
-          training.filter(
-            (t) =>
-              t.onlineSafety &&
-              t.groomingAwareness &&
-              t.cyberbullying &&
-              t.socialMediaRisks &&
-              t.reportingProcedures &&
-              t.ageAppropriateAccess,
-          ).length,
-          training.length,
-        )
-      : 0;
+  const staffTrainingCoverageRate = rateOf(
+    training.filter(
+      (t) =>
+        t.onlineSafety &&
+        t.groomingAwareness &&
+        t.cyberbullying &&
+        t.socialMediaRisks &&
+        t.reportingProcedures &&
+        t.ageAppropriateAccess,
+    ),
+    training,
+  );
 
   // Incidents by category
   const categoryMap = new Map<RiskCategory, number>();
