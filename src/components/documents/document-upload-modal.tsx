@@ -187,16 +187,24 @@ export function DocumentUploadModal({
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
+    // Scrolling backdrop + a flex-column panel. Centring a panel taller than the
+    // viewport with `items-center` clips its top OUTSIDE the scroll container,
+    // so the header and the start of the form become unreachable — the window
+    // looked cut off and could not be scrolled back up. The backdrop scrolls
+    // instead, and the panel is capped to the viewport (100dvh, so mobile
+    // browser chrome is accounted for) with only its body scrolling, which keeps
+    // the header and the buttons at the end of the form reachable at any height.
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
+      <div className="flex min-h-full items-center justify-center p-4">
       <div
-        className="w-full max-w-2xl bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-2xl bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-white rounded-t-2xl border-b border-[var(--cs-border-subtle)] px-6 py-4 flex items-center gap-3">
+        <div className="flex-none bg-white rounded-t-2xl border-b border-[var(--cs-border-subtle)] px-6 py-4 flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--cs-cara-gold-bg)]">
             <Sparkles className="h-4.5 w-4.5 text-[var(--cs-cara-gold)]" style={{ width: "1.125rem", height: "1.125rem" }} />
           </div>
@@ -225,7 +233,7 @@ export function DocumentUploadModal({
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="flex-1 min-h-0 overflow-y-auto p-6">
 
           {/* ── STEP 1: Select + paste ── */}
           {step === "select" && (
@@ -689,6 +697,7 @@ export function DocumentUploadModal({
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
