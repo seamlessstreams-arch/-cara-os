@@ -29,8 +29,8 @@ export interface IncidentOversightSummary {
   criticalWithoutOversight: number;
   physicalInterventionsWithoutOversight: number;
   avgHoursToOversight: number | null;
-  lessonsLearnedRate: number;
-  notificationAcknowledgementRate: number;
+  lessonsLearnedRate: number | null;
+  notificationAcknowledgementRate: number | null;
   signal: HomeOversightSignal;
 }
 

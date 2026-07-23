@@ -344,14 +344,22 @@ export interface CaraResponse {
 // ── Health Check Score ─────────────────────────────────────────────────────────
 
 export interface HealthCheckScore {
-  overall: number;
-  operational: number;
-  safeguarding: number;
-  medication: number;
-  staffing: number;
-  compliance: number;
-  environment: number;
-  risk_level: "low" | "medium" | "high" | "critical";
+  // null where the domain has no source records — it is UNMEASURED, not
+  // perfect. Scoring an absence of data as a high number is what let a home
+  // with one child and nothing else recorded report 99% overall and 100%
+  // safeguarding. `overall` averages only the measured domains.
+  overall: number | null;
+  // The health-check route does not compute these two; they are nullable so a
+  // consumer cannot render `undefined%` believing it read a score.
+  operational: number | null;
+  safeguarding: number | null;
+  medication: number | null;
+  staffing: number | null;
+  compliance: number | null;
+  environment: number | null;
+  risk_level: "low" | "medium" | "high" | "critical" | null;
+  /** Domain keys with no source records — render "not yet measured", not a number. */
+  unmeasured?: string[];
   action_plan: HealthCheckAction[];
   generated_at: string;
   // False when the home has no records to score yet (empty/newly-provisioned):

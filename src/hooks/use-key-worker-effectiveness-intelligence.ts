@@ -18,11 +18,11 @@ export interface StaffKeyWorkerProfile {
   keyChildren: KeyChildSnapshot[];
   totalSessionsLast30d: number;
   avgSessionsPerKeyChildLast30d: number;
-  childVoiceScore: number;
-  childVoicePresenceRate: number;
-  moodImprovementRate: number;
-  followUpCompletionRate: number;
-  therapeuticApproachRate: number;
+  childVoiceScore: number | null;
+  childVoicePresenceRate: number | null;
+  moodImprovementRate: number | null;
+  followUpCompletionRate: number | null;
+  therapeuticApproachRate: number | null;
   keyChildrenNotSeen: number;
   effectivenessSignal: EffectivenessSignal;
   supervisionPrompt: string;
@@ -35,8 +35,8 @@ export interface KeyWorkerEffectivenessSummary {
   developing: number;
   needs_support: number;
   keyChildrenNotSeenIn30d: number;
-  homeFollowUpCompletionRate: number;
-  homeChildVoicePresenceRate: number;
+  homeFollowUpCompletionRate: number | null;
+  homeChildVoicePresenceRate: number | null;
   managerNote: string;
 }
 

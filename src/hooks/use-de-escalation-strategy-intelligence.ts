@@ -30,7 +30,7 @@ export interface ChildBehaviourProfile {
   totalEntries: number;
   positiveCount: number;
   concerningCount: number;
-  positiveRatio: number;
+  positiveRatio: number | null; // 0–100; null when nothing has been recorded for this child
   last30dConcerning: number;
   prior30dConcerning: number;
   concernTrend: "improving" | "stable" | "worsening";
@@ -45,7 +45,7 @@ export interface DeEscalationSummary {
   totalEntries: number;
   totalPositive: number;
   totalConcerning: number;
-  homePositiveRatio: number;
+  homePositiveRatio: number | null;
   homeConcernTrend: "improving" | "stable" | "worsening";
   mostEffectiveStrategies: StrategyResult[];
   highRiskTimeSlots: TimeSlot[];

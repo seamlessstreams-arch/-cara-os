@@ -68,41 +68,82 @@ export async function GET(_req: NextRequest) {
     });
   }
 
+  // A domain with no source records is UNMEASURED, not perfect. Scoring the
+  // absence of data as a high number is what let a home with one child, one
+  // staff member and nothing else recorded report 99% overall and 100%
+  // safeguarding — the defaults (medication ?? 95, staffing ?? 85, compliance
+  // 1/1) simply outvoted the one real signal. Each domain below returns null
+  // when it has nothing to measure, and the overall score averages only the
+  // domains that ARE measured, so an unmeasured domain can neither flatter nor
+  // penalise the home.
+
   // ── Safeguarding ────────────────────────────────────────────────────────────
+  // What this scores is the home's RESPONSE to concerns — how much is sitting
+  // open and unresolved. With no incidents on record there is no response to
+  // judge, so it is unmeasured. Scoring it on the children alone would put a
+  // home that has never recorded an incident on the same 100% as one that
+  // handled fifty of them well, which is the flattery this whole route is
+  // being fixed to stop.
   const status = (i: Record<string, unknown>) => i.status as string;
   const severity = (i: Record<string, unknown>) => i.severity as string;
   const openCritical = incidents.filter((i) => (status(i) === "open" || status(i) === "under_review") && severity(i) === "critical");
   const openHigh = incidents.filter((i) => (status(i) === "open" || status(i) === "under_review") && severity(i) === "high");
-  const safeguardingScore = clamp(100 - (openCritical.length * 20) - (openHigh.length * 10));
+  const safeguardingScore = incidents.length > 0
+    ? clamp(100 - (openCritical.length * 20) - (openHigh.length * 10))
+    : null;
 
   // ── Medication ──────────────────────────────────────────────────────────────
+  // Unmeasured until doses are actually scheduled — "no medication round today"
+  // is not a 95% administration record.
   const todayMars = allMars.filter((m) => (m.scheduled_time as string | undefined)?.startsWith(today));
   const givenToday = todayMars.filter((m) => m.status === "given");
   const medicationScore = todayMars.length > 0
     ? clamp(Math.round((givenToday.length / todayMars.length) * 100))
-    : 95; // no meds scheduled today → nothing to miss
+    : null;
 
   // ── Staffing ────────────────────────────────────────────────────────────────
+  // Unmeasured until shifts exist for today — an empty rota is not 85% covered.
   const todayShifts = shifts.filter((s) => s.date === today || (s.start_time as string | undefined)?.startsWith(today));
   const filledShifts = todayShifts.filter((s) => s.staff_id && !s.is_open_shift);
   const staffingScore = todayShifts.length > 0
     ? clamp(Math.round((filledShifts.length / todayShifts.length) * 100))
-    : 85;
+    : null;
 
   // ── Compliance ──────────────────────────────────────────────────────────────
-  const totalTraining = training.length || 1;
+  // Unmeasured until training is recorded. The old `training.length || 1` made
+  // an empty register read as 1-of-1 current = 100%, which is the exact inverse
+  // of the truth: nothing is evidenced.
   const expiredTraining = training.filter((t) => t.expiry_date && (t.expiry_date as string) < today);
-  const complianceScore = clamp(Math.round(((totalTraining - expiredTraining.length) / totalTraining) * 100));
+  const complianceScore = training.length > 0
+    ? clamp(Math.round(((training.length - expiredTraining.length) / training.length) * 100))
+    : null;
 
   // ── Overall + risk ──────────────────────────────────────────────────────────
-  const overall = Math.round(
-    (safeguardingScore * 0.35) + (medicationScore * 0.25) + (staffingScore * 0.20) + (complianceScore * 0.20),
-  );
-  const riskLevel = overall >= 80 ? "low" : overall >= 60 ? "medium" : overall >= 40 ? "high" : "critical";
+  // Weighted mean over measured domains only, with the weights renormalised so
+  // the result stays on a 0-100 scale. Null when nothing is measured.
+  const domains = [
+    { key: "safeguarding", score: safeguardingScore, weight: 0.35 },
+    { key: "medication", score: medicationScore, weight: 0.25 },
+    { key: "staffing", score: staffingScore, weight: 0.20 },
+    { key: "compliance", score: complianceScore, weight: 0.20 },
+  ];
+  const measured = domains.filter((d) => d.score !== null);
+  const weightSum = measured.reduce((s, d) => s + d.weight, 0);
+  const overall = weightSum > 0
+    ? Math.round(measured.reduce((s, d) => s + (d.score as number) * d.weight, 0) / weightSum)
+    : null;
+  const unmeasured = domains.filter((d) => d.score === null).map((d) => d.key);
+
+  // Risk is only claimable where there is something to judge.
+  const riskLevel = overall === null ? null
+    : overall >= 80 ? "low" : overall >= 60 ? "medium" : overall >= 40 ? "high" : "critical";
 
   // ── Action plan ─────────────────────────────────────────────────────────────
+  // Only a MEASURED domain can raise an action — an unmeasured one has no
+  // finding to act on, and inventing one would be the same fabrication in
+  // reverse. The gap itself is surfaced separately, as `unmeasured`.
   const actionPlan: { issue: string; area: string; priority: string; due: string }[] = [];
-  if (safeguardingScore < 80) {
+  if (safeguardingScore !== null && safeguardingScore < 80) {
     actionPlan.push({
       issue: `${openCritical.length + openHigh.length} open safeguarding incidents need management oversight`,
       area: "Safeguarding",
@@ -110,7 +151,7 @@ export async function GET(_req: NextRequest) {
       due: today,
     });
   }
-  if (medicationScore < 90) {
+  if (medicationScore !== null && medicationScore < 90) {
     const missed = todayMars.length - givenToday.length;
     actionPlan.push({
       issue: `${missed} medication administration${missed !== 1 ? "s" : ""} outstanding today`,
@@ -119,7 +160,7 @@ export async function GET(_req: NextRequest) {
       due: today,
     });
   }
-  if (staffingScore < 85) {
+  if (staffingScore !== null && staffingScore < 85) {
     const gaps = todayShifts.length - filledShifts.length;
     actionPlan.push({
       issue: `${gaps} shift gap${gaps !== 1 ? "s" : ""} require immediate cover`,
@@ -128,7 +169,7 @@ export async function GET(_req: NextRequest) {
       due: today,
     });
   }
-  if (complianceScore < 90) {
+  if (complianceScore !== null && complianceScore < 90) {
     actionPlan.push({
       issue: `${expiredTraining.length} training record${expiredTraining.length !== 1 ? "s" : ""} expired — renewal required`,
       area: "Compliance",
@@ -137,14 +178,30 @@ export async function GET(_req: NextRequest) {
     });
   }
 
+  const UNMEASURED_LABEL: Record<string, string> = {
+    safeguarding: "no incidents recorded to assess the response to",
+    medication: "no medication scheduled today",
+    staffing: "no shifts on today's rota",
+    compliance: "no training records yet",
+  };
+  const note = unmeasured.length > 0
+    ? `Not yet measured: ${unmeasured.map((k) => `${k} (${UNMEASURED_LABEL[k]})`).join(", ")}. The score covers only what has been recorded.`
+    : undefined;
+
   return NextResponse.json({
     data: {
-      assessed: true,
+      // assessed:false when NOTHING could be measured — the card shows its
+      // "No data yet" state rather than a score built from no evidence.
+      assessed: overall !== null,
       overall,
       safeguarding: safeguardingScore,
       medication: medicationScore,
       staffing: staffingScore,
       compliance: complianceScore,
+      // Which domains have no source records, so the UI can say "not yet
+      // measured" against them instead of rendering an invented number.
+      unmeasured,
+      note,
       risk_level: riskLevel,
       action_plan: actionPlan,
       build: BUILD(),

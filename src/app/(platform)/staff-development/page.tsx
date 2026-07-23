@@ -17,6 +17,7 @@ import {
   ClipboardCheck, ArrowUpDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -45,7 +46,8 @@ interface StaffDevelopmentProfile {
   open_training_needs: number;
   urgent_training_needs: number;
   completed_training_needs: number;
-  training_compliance_pct: number;
+  /** null when no mandatory training is recorded for this staff member. */
+  training_compliance_pct: number | null;
   last_supervision_date: string | null;
   next_supervision_date: string | null;
   supervision_overdue: boolean;
@@ -63,7 +65,7 @@ interface DevelopmentSummary {
   at_risk: number;
   supervision_overdue: number;
   appraisal_overdue: number;
-  avg_training_compliance: number;
+  avg_training_compliance: number | null;
 }
 
 const STAFF_DEV_EXPORT_COLS: ExportColumn<StaffDevelopmentProfile>[] = [
@@ -71,7 +73,7 @@ const STAFF_DEV_EXPORT_COLS: ExportColumn<StaffDevelopmentProfile>[] = [
   { header: "Job Title", accessor: (s) => s.job_title },
   { header: "Role", accessor: (s) => s.role },
   { header: "Status", accessor: (s) => s.status },
-  { header: "Training Compliance", accessor: (s) => `${s.training_compliance_pct}%` },
+  { header: "Training Compliance", accessor: (s) => formatRate(s.training_compliance_pct, "Not recorded") },
   { header: "Open Needs", accessor: (s) => String(s.open_training_needs) },
   { header: "Urgent Needs", accessor: (s) => String(s.urgent_training_needs) },
   { header: "Last Supervision", accessor: (s) => s.last_supervision_date ?? "" },
@@ -106,14 +108,14 @@ function priorityColour(p: string) {
   }
 }
 
-function ComplianceBar({ pct }: { pct: number }) {
-  const colour = pct >= 80 ? "bg-emerald-500" : pct >= 60 ? "bg-amber-500" : "bg-red-500";
+function ComplianceBar({ pct }: { pct: number | null }) {
+  const colour = meets(pct, 80) ? "bg-emerald-500" : meets(pct, 60) ? "bg-amber-500" : pct === null ? "bg-slate-200" : "bg-red-500";
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-        <div className={cn("h-full rounded-full transition-all", colour)} style={{ width: `${pct}%` }} />
+        <div className={cn("h-full rounded-full transition-all", colour)} style={{ width: `${pct ?? 0}%` }} />
       </div>
-      <span className="text-[10px] font-semibold text-slate-600 w-7 text-right">{pct}%</span>
+      <span className="text-[10px] font-semibold text-slate-600 w-7 text-right">{formatRate(pct)}</span>
     </div>
   );
 }
@@ -292,7 +294,11 @@ export default function StaffDevelopmentPage() {
         case "name":
           return a.full_name.localeCompare(b.full_name);
         case "compliance":
-          return a.training_compliance_pct - b.training_compliance_pct;
+          // Staff with nothing recorded sort last, not as the worst performers.
+          return (
+            (a.training_compliance_pct ?? Number.POSITIVE_INFINITY) -
+            (b.training_compliance_pct ?? Number.POSITIVE_INFINITY)
+          );
         case "needs":
           return b.urgent_training_needs - a.urgent_training_needs || b.open_training_needs - a.open_training_needs;
         case "status":
@@ -313,7 +319,7 @@ export default function StaffDevelopmentPage() {
     const lines = [
       `Staff development overview for ${homeName} — ${profiles.length} active staff.`,
       `On track: ${summary?.on_track ?? 0} | Needs attention: ${summary?.needs_attention ?? 0} | At risk: ${summary?.at_risk ?? 0}`,
-      `Average training compliance: ${summary?.avg_training_compliance ?? 0}%`,
+      `Average training compliance: ${formatRate(summary?.avg_training_compliance, "not yet measured")}`,
       summary?.supervision_overdue
         ? `${summary.supervision_overdue} staff have overdue supervisions.`
         : null,
@@ -398,7 +404,7 @@ export default function StaffDevelopmentPage() {
           <StatTile
             icon={GraduationCap}
             label="Avg compliance"
-            value={`${summary.avg_training_compliance}%`}
+            value={formatRate(summary.avg_training_compliance)}
             colour="text-blue-600"
             accent="bg-blue-50"
           />

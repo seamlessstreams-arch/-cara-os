@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
 import {
   useIncidentOversightQualityIntelligence,
   type IncidentOversightProfile,
@@ -227,12 +228,14 @@ export default function IncidentOversightQualityPage() {
               <p className="text-gray-500 text-xs">Avg. time to oversight</p>
             </div>
             <div className="text-center">
-              <p className="font-bold text-gray-900 text-xl">{summary.lessonsLearnedRate}%</p>
+              <p className="font-bold text-gray-900 text-xl">
+                {formatRate(summary.lessonsLearnedRate)}
+              </p>
               <p className="text-gray-500 text-xs">Lessons learned</p>
             </div>
             <div className="text-center">
               <p className="font-bold text-gray-900 text-xl">
-                {summary.notificationAcknowledgementRate}%
+                {formatRate(summary.notificationAcknowledgementRate)}
               </p>
               <p className="text-gray-500 text-xs">Notifications ack.</p>
             </div>

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-export type TrainingSignal = "non_compliant" | "expiring" | "compliant";
+export type TrainingSignal = "non_compliant" | "expiring" | "compliant" | "not_recorded";
 
 export interface TrainingIssue {
   courseName: string;
@@ -20,7 +20,7 @@ export interface StaffTrainingProfile {
   mandatoryExpiringSoon: number;
   mandatoryExpired: number;
   mandatoryNotStarted: number;
-  complianceRate: number;
+  complianceRate: number | null;
   issues: TrainingIssue[];
   signal: TrainingSignal;
   supervisionPrompt: string;
@@ -35,9 +35,10 @@ export interface CategoryRisk {
 export interface TrainingComplianceSummary {
   totalStaff: number;
   compliantStaff: number;
+  notRecordedStaff: number;
   expiringStaff: number;
   nonCompliantStaff: number;
-  overallMandatoryComplianceRate: number;
+  overallMandatoryComplianceRate: number | null;
   totalMandatoryRecords: number;
   compliantMandatoryRecords: number;
   expiringSoonRecords: number;

@@ -23,6 +23,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -56,7 +57,7 @@ interface ChildBehaviourProfile {
   totalEntries: number;
   positiveCount: number;
   concerningCount: number;
-  positiveRatio: number;
+  positiveRatio: number | null; // 0–100; null when nothing has been recorded for this child
   last30dConcerning: number;
   prior30dConcerning: number;
   concernTrend: "improving" | "stable" | "worsening";
@@ -71,7 +72,7 @@ interface DeEscalationSummary {
   totalEntries: number;
   totalPositive: number;
   totalConcerning: number;
-  homePositiveRatio: number;
+  homePositiveRatio: number | null;
   homeConcernTrend: "improving" | "stable" | "worsening";
   mostEffectiveStrategies: StrategyResult[];
   highRiskTimeSlots: TimeSlot[];
@@ -125,25 +126,28 @@ function timeSlot(time: string): string {
 }
 
 function behaviourSignal(
-  positiveRatio: number,
+  positiveRatio: number | null,
   concernTrend: "improving" | "stable" | "worsening",
   severeEntries: number,
 ): BehaviourSignal {
   if (severeEntries >= 2 || concernTrend === "worsening") return "needs_support";
-  if (positiveRatio >= 0.6) return "strengths";
-  if (positiveRatio >= 0.4 || concernTrend === "improving") return "progressing";
+  if (meets(positiveRatio, 60)) return "strengths";
+  if (meets(positiveRatio, 40) || concernTrend === "improving") return "progressing";
   return "developing";
 }
 
 function buildSupervisionPrompt(
   name: string,
   signal: BehaviourSignal,
-  positiveRatio: number,
+  positiveRatio: number | null,
   concernTrend: "improving" | "stable" | "worsening",
   topStrategy: StrategyResult | undefined,
   severeEntries: number,
   highRiskSlot: TimeSlot | undefined,
 ): string {
+  if (positiveRatio === null) {
+    return `No behaviour entries have been recorded for ${name}, so there is no picture to read yet. In supervision: is this an accurate reflection of a settled placement, or is day-to-day behaviour support going unrecorded?`;
+  }
   if (signal === "needs_support") {
     if (severeEntries >= 2) {
       return `${name} has had ${severeEntries} severe behaviour entries. In supervision: review the pattern — is there an unmet need, an unresolved trauma trigger, or a systemic factor driving the intensity? Does the risk management plan reflect current presentations?`;
@@ -159,7 +163,7 @@ function buildSupervisionPrompt(
   if (highRiskSlot && highRiskSlot.concerningCount >= 3) {
     return `${name}'s concerning behaviours cluster during the ${highRiskSlot.slot.toLowerCase()} period. In supervision: what environmental or relational factors drive this? Is there adequate staffing and preparation during this time?`;
   }
-  return `${name}'s behaviour picture is broadly positive (${Math.round(positiveRatio * 100)}% positive entries). In supervision: what conditions support ${name.split(" ")[0]}'s best self? How can these be sustained and replicated?`;
+  return `${name}'s behaviour picture is broadly positive (${formatRate(positiveRatio)} positive entries). In supervision: what conditions support ${name.split(" ")[0]}'s best self? How can these be sustained and replicated?`;
 }
 
 // ── Route ──────────────────────────────────────────────────────────────────────
@@ -210,7 +214,8 @@ export async function GET() {
 
     const positiveCount = entries.filter((e) => e.direction === "positive").length;
     const concerningCount = entries.filter((e) => e.direction !== "positive").length;
-    const positiveRatio = entries.length > 0 ? positiveCount / entries.length : 1;
+    // An empty behaviour log is silence, not a wholly positive picture.
+    const positiveRatio = rate(positiveCount, entries.length);
 
     const last30d = entries.filter((e) => new Date(e.date) >= cutoff30d);
     const prior30d = entries.filter(
@@ -305,8 +310,7 @@ export async function GET() {
   const allEntries = behaviourLog;
   const totalPositive = allEntries.filter((e) => e.direction === "positive").length;
   const totalConcerning = allEntries.filter((e) => e.direction !== "positive").length;
-  const homePositiveRatio = allEntries.length > 0
-    ? Math.round((totalPositive / allEntries.length) * 100) : 100;
+  const homePositiveRatio = rate(totalPositive, allEntries.length);
 
   const homeLast30d = allEntries.filter((e) => new Date(e.date) >= cutoff30d);
   const homePrior30d = allEntries.filter(
@@ -380,13 +384,15 @@ export async function GET() {
 
   // Ofsted note
   const ofstedNote =
-    homeConcernTrend === "worsening"
+    homePositiveRatio === null
+      ? "No behaviour entries have been recorded across the home. An inspector will ask how everyday behaviour support and de-escalation are captured — an empty log is the finding, not evidence of a settled home."
+      : homeConcernTrend === "worsening"
       ? "Concerning behaviour frequency is increasing across the home. An inspector will ask whether each child's care plan reflects current presentations and whether staff are supported to understand and respond therapeutically."
       : childProfiles.some((p) => p.signal === "needs_support")
       ? "One or more children have a needs-support behaviour signal. An inspector will ask about the therapeutic response, whether risk management plans are current, and whether staff feel supported."
       : mostEffectiveStrategies.some((s) => s.resolutionRate < 40)
       ? "Some de-escalation strategies have low resolution rates. Review whether staff are using the agreed approaches and whether plans reflect what actually helps each child."
-      : `Home behaviour picture: ${homePositiveRatio}% positive entries. Trend: ${homeConcernTrend}. Demonstrate that the team understands each child's triggers and is applying person-centred, therapeutic responses consistently.`;
+      : `Home behaviour picture: ${formatRate(homePositiveRatio)} positive entries. Trend: ${homeConcernTrend}. Demonstrate that the team understands each child's triggers and is applying person-centred, therapeutic responses consistently.`;
 
   return NextResponse.json({
     data: {

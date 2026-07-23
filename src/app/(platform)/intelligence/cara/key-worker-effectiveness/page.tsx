@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { useKeyWorkerEffectivenessIntelligence } from "@/hooks/use-key-worker-effectiveness-intelligence";
 import type {
   EffectivenessSignal,
@@ -41,17 +42,28 @@ function MetricBar({
   warn,
 }: {
   label: string;
-  value: number;
+  value: number | null;
   good: number;
   warn: number;
 }) {
-  const colour = value >= good ? "bg-emerald-500" : value >= warn ? "bg-amber-400" : "bg-red-400";
+  if (value === null) {
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-0.5">
+          <span className="text-xs text-gray-600">{label}</span>
+          <span className="text-xs font-medium text-gray-400">Not yet measured</span>
+        </div>
+        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden" />
+      </div>
+    );
+  }
+  const colour = meets(value, good) ? "bg-emerald-500" : meets(value, warn) ? "bg-amber-400" : "bg-red-400";
   return (
     <div>
       <div className="flex justify-between items-center mb-0.5">
         <span className="text-xs text-gray-600">{label}</span>
-        <span className={`text-xs font-semibold ${value >= good ? "text-emerald-600" : value >= warn ? "text-amber-600" : "text-red-600"}`}>
-          {value}%
+        <span className={`text-xs font-semibold ${meets(value, good) ? "text-emerald-600" : meets(value, warn) ? "text-amber-600" : "text-red-600"}`}>
+          {formatRate(value)}
         </span>
       </div>
       <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
@@ -186,12 +198,20 @@ export default function KeyWorkerEffectivenessPage() {
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">Children not seen (30d)</p>
               </div>
-              <div className={`rounded-xl border p-4 ${summary.homeChildVoicePresenceRate >= 60 ? "border-violet-200 bg-violet-50" : "border-amber-200 bg-amber-50"}`}>
-                <p className="text-2xl font-bold text-gray-800">{summary.homeChildVoicePresenceRate}%</p>
+              <div className={`rounded-xl border p-4 ${
+                summary.homeChildVoicePresenceRate === null ? "border-gray-200 bg-gray-50"
+                : meets(summary.homeChildVoicePresenceRate, 60) ? "border-violet-200 bg-violet-50"
+                : "border-amber-200 bg-amber-50"
+              }`}>
+                <p className="text-2xl font-bold text-gray-800">{formatRate(summary.homeChildVoicePresenceRate)}</p>
                 <p className="text-xs text-gray-500 mt-0.5">Sessions with child voice</p>
               </div>
-              <div className={`rounded-xl border p-4 ${summary.homeFollowUpCompletionRate >= 75 ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}>
-                <p className="text-2xl font-bold text-gray-800">{summary.homeFollowUpCompletionRate}%</p>
+              <div className={`rounded-xl border p-4 ${
+                summary.homeFollowUpCompletionRate === null ? "border-gray-200 bg-gray-50"
+                : meets(summary.homeFollowUpCompletionRate, 75) ? "border-emerald-200 bg-emerald-50"
+                : "border-amber-200 bg-amber-50"
+              }`}>
+                <p className="text-2xl font-bold text-gray-800">{formatRate(summary.homeFollowUpCompletionRate)}</p>
                 <p className="text-xs text-gray-500 mt-0.5">Follow-up completion</p>
               </div>
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">

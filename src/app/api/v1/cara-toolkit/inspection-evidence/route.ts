@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { below, formatRate, meets, rate, rateOf } from "@/lib/metrics/rate";
 import type {
   EvidenceSection,
   InspectionEvidenceAnalysis,
@@ -15,9 +16,22 @@ function daysBetween(a: string, b: string): number {
   return Math.round(Math.abs(d1 - d2) / 86_400_000);
 }
 
-function sig(score: number): SignalColour {
-  if (score >= 3) return "green";
-  if (score >= 2) return "amber";
+/**
+ * A section's signal from its evidence criteria. A `null` criterion is one
+ * with nothing to test against — it is dropped from the denominator so an
+ * unmeasured criterion neither earns a pass nor manufactures a failure.
+ */
+function sig(criteria: readonly (boolean | null)[]): SignalColour {
+  const measured = criteria.filter((c): c is boolean => c !== null);
+  if (measured.length === 0) return "grey";
+  const passRate = rateOf(measured.filter(Boolean), measured);
+  // Green needs a clean sweep AND a majority of the section actually tested.
+  // Without the second condition a section with two of its three criteria
+  // unmeasured goes green on the strength of one passing check — which is the
+  // same over-claim as scoring an empty population, just one level up.
+  const majorityTested = measured.length * 2 >= criteria.length;
+  if (meets(passRate, 100)) return majorityTested ? "green" : "amber";
+  if (meets(passRate, 60)) return "amber";
   return "red";
 }
 
@@ -50,10 +64,15 @@ export async function GET() {
   const voiceCount = keyWorkingSessions.filter(
     (k: any) => k.child_voice && String(k.child_voice).trim().length > 10
   ).length;
-  let s1 = 0;
-  if (recentKW.length > 0) s1++;
-  if (voiceCount > 0) s1++;
-  if (activeChildren.length > 0 && new Set(recentKW.map((k: any) => k.child_id)).size >= activeChildren.length * 0.7) s1++;
+  // With no children resident there is nothing to cover — that criterion is not
+  // applicable rather than failed.
+  const s1 = [
+    recentKW.length > 0,
+    voiceCount > 0,
+    activeChildren.length > 0
+      ? new Set(recentKW.map((k: any) => k.child_id)).size >= activeChildren.length * 0.7
+      : null,
+  ];
   const section1: EvidenceSection = {
     id: "outcomes",
     title: "Children's outcomes and experiences",
@@ -83,11 +102,13 @@ export async function GET() {
     (m: any) => !m.current_missing && m.return_interview_completed === true
   ).length;
   const totalReturned = missingEpisodes.filter((m: any) => !m.current_missing).length;
-  const rhiRate = totalReturned > 0 ? Math.round((missingWithRHI / totalReturned) * 100) : 100;
-  let s2 = 0;
-  if (openCritical === 0) s2++;
-  if (rhiRate >= 80) s2++;
-  if (riskAssessments.filter((r: any) => r.status !== "closed").length > 0) s2++;
+  // No returned episodes means no return home interviews were due.
+  const rhiRate = rate(missingWithRHI, totalReturned);
+  const s2 = [
+    openCritical === 0,
+    totalReturned > 0 ? meets(rhiRate, 80) : null,
+    riskAssessments.filter((r: any) => r.status !== "closed").length > 0,
+  ];
   const section2: EvidenceSection = {
     id: "safeguarding",
     title: "Safeguarding",
@@ -95,31 +116,34 @@ export async function GET() {
     signal: sig(s2),
     keyFindings: [
       `${incidents.length} incidents on record`,
-      `Return home interview completion rate: ${rhiRate}%`,
+      `Return home interview completion rate: ${formatRate(rhiRate, "no returned episodes to interview")}`,
       `${riskAssessments.filter((r: any) => r.status !== "closed").length} active risk assessments`,
     ],
     evidenceStrengths: [
       openCritical === 0 ? "No open critical incidents" : "",
-      rhiRate === 100 && totalReturned > 0 ? "100% return home interview completion" : "",
+      meets(rhiRate, 100) ? "100% return home interview completion" : "",
     ].filter(Boolean),
     gaps: [
       openCritical > 0 ? `${openCritical} critical incident${openCritical > 1 ? "s" : ""} still open` : "",
-      rhiRate < 80 ? `Return home interview completion rate is ${rhiRate}% (below 80%)` : "",
+      below(rhiRate, 80) ? `Return home interview completion rate is ${rhiRate}% (below 80%)` : "",
     ].filter(Boolean),
   };
 
   // ── Section 3: Quality of care ─────────────────────────────────────────
-  const debriefRate = incidents.length > 0
-    ? Math.round((debriefs.filter((d: any) => d.linked_incident_id).length / incidents.length) * 100)
-    : 100;
+  // No incidents means no debriefs were due.
+  const debriefRate = rate(
+    debriefs.filter((d: any) => d.linked_incident_id).length,
+    incidents.length
+  );
   const latestReg44 = reg44.sort((a: any, b: any) =>
     (b.visit_date ?? "").localeCompare(a.visit_date ?? "")
   )[0];
   const reg44Age = latestReg44?.visit_date ? daysBetween(today, latestReg44.visit_date) : 999;
-  let s3 = 0;
-  if (reg44.length > 0 && reg44Age <= 28) s3++;
-  if (latestReg44?.overall_judgement === "good" || latestReg44?.overall_judgement === "outstanding") s3++;
-  if (debriefRate >= 60) s3++;
+  const s3 = [
+    reg44.length > 0 && reg44Age <= 28,
+    latestReg44?.overall_judgement === "good" || latestReg44?.overall_judgement === "outstanding",
+    incidents.length > 0 ? meets(debriefRate, 60) : null,
+  ];
   const section3: EvidenceSection = {
     id: "quality_of_care",
     title: "Quality of care",
@@ -127,57 +151,59 @@ export async function GET() {
     signal: sig(s3),
     keyFindings: [
       latestReg44 ? `Most recent Reg 44: ${latestReg44.visit_date} — ${latestReg44.overall_judgement ?? "no judgement"}` : "No Reg 44 visits recorded",
-      `Post-incident debrief completion: ${debriefRate}%`,
+      `Post-incident debrief completion: ${formatRate(debriefRate, "no incidents to debrief")}`,
     ],
     evidenceStrengths: [
       reg44Age <= 28 ? "Reg 44 visits are within the statutory 28-day requirement" : "",
       latestReg44?.overall_judgement === "good" ? "Most recent Reg 44 judgement is good" : "",
-      debriefRate >= 80 ? "Strong post-incident debrief completion rate" : "",
+      meets(debriefRate, 80) ? "Strong post-incident debrief completion rate" : "",
     ].filter(Boolean),
     gaps: [
       reg44Age > 28 ? `Reg 44 visit is overdue (${reg44Age < 999 ? `${reg44Age} days` : "no visits on record"})` : "",
-      debriefRate < 60 ? `Post-incident debrief rate is low (${debriefRate}%)` : "",
+      below(debriefRate, 60) ? `Post-incident debrief rate is low (${debriefRate}%)` : "",
     ].filter(Boolean),
   };
 
   // ── Section 4: Leadership, management and governance ──────────────────
-  const supCoverage = activeStaff.length > 0
-    ? Math.round(
-        (new Set(
-          reflectiveSupervisions
-            .filter((s: any) => (s.date ?? "") >= ninetyAgo)
-            .map((s: any) => s.staff_id)
-        ).size /
-          activeStaff.length) *
-          100
-      )
-    : 100;
+  const supCoverage = rate(
+    new Set(
+      reflectiveSupervisions
+        .filter((s: any) => (s.date ?? "") >= ninetyAgo)
+        .map((s: any) => s.staff_id)
+    ).size,
+    activeStaff.length
+  );
   const mandatory = trainingRecords.filter((t: any) => t.is_mandatory === true);
   const compliant = mandatory.filter(
     (t: any) => t.status === "completed" && (!t.expiry_date || t.expiry_date >= today)
   );
-  const trainingRate = mandatory.length > 0 ? Math.round((compliant.length / mandatory.length) * 100) : 100;
-  let s4 = 0;
-  if (supCoverage >= 80) s4++;
-  if (trainingRate >= 80) s4++;
-  if (activeStaff.length > 0) s4++;
+  // An empty mandatory training register is nothing recorded, not full compliance.
+  const trainingRate = rateOf(compliant, mandatory);
+  const s4 = [
+    activeStaff.length > 0 ? meets(supCoverage, 80) : null,
+    mandatory.length > 0 ? meets(trainingRate, 80) : null,
+    activeStaff.length > 0,
+  ];
   const section4: EvidenceSection = {
     id: "leadership",
     title: "Leadership, management and governance",
     regulatoryRef: "CHR 2015 Reg 32, 33, 34, 44; Ofsted SCCIF",
     signal: sig(s4),
     keyFindings: [
-      `Supervision coverage (90 days): ${supCoverage}%`,
-      `Mandatory training compliance: ${trainingRate}%`,
+      `Supervision coverage (90 days): ${formatRate(supCoverage, "no active staff on record")}`,
+      `Mandatory training compliance: ${formatRate(trainingRate, "no mandatory training recorded")}`,
       `Active workforce: ${activeStaff.length} staff`,
     ],
     evidenceStrengths: [
-      supCoverage >= 80 ? `${supCoverage}% of staff have had supervision in the last 90 days` : "",
-      trainingRate === 100 ? "Full mandatory training compliance across the workforce" : "",
+      meets(supCoverage, 80) ? `${supCoverage}% of staff have had supervision in the last 90 days` : "",
+      meets(trainingRate, 100) ? "Full mandatory training compliance across the workforce" : "",
     ].filter(Boolean),
     gaps: [
-      supCoverage < 80 ? `Only ${supCoverage}% of staff have had supervision in the last 90 days` : "",
-      trainingRate < 80 ? `Mandatory training compliance is ${trainingRate}% — below 80%` : "",
+      below(supCoverage, 80) ? `Only ${supCoverage}% of staff have had supervision in the last 90 days` : "",
+      trainingRate === null && activeStaff.length > 0
+        ? "No mandatory training records — compliance cannot be evidenced for inspection"
+        : "",
+      below(trainingRate, 80) ? `Mandatory training compliance is ${trainingRate}% — below 80%` : "",
     ].filter(Boolean),
   };
 
@@ -190,10 +216,12 @@ export async function GET() {
       .filter((k: any) => k.child_voice && String(k.child_voice).trim().length > 20)
       .map((k: any) => k.child_id)
   ).size;
-  let s5 = 0;
-  if (wishesFeelings > 0) s5++;
-  if (childrenWithVoice >= Math.ceil(activeChildren.length * 0.5)) s5++;
-  if (childrenWithVoice >= activeChildren.length) s5++;
+  // Coverage of children's voice is meaningless with no children resident.
+  const s5 = [
+    wishesFeelings > 0,
+    activeChildren.length > 0 ? childrenWithVoice >= Math.ceil(activeChildren.length * 0.5) : null,
+    activeChildren.length > 0 ? childrenWithVoice >= activeChildren.length : null,
+  ];
   const section5: EvidenceSection = {
     id: "wishes_feelings",
     title: "Children's wishes and feelings",
@@ -222,10 +250,20 @@ export async function GET() {
   const amberSections = sections.filter((s) => s.signal === "amber").length;
   const redSections = sections.filter((s) => s.signal === "red").length;
 
+  const measuredSections = greenSections + amberSections + redSections;
+
   const overallReadiness: SignalColour =
-    redSections >= 2 ? "red" : redSections > 0 || amberSections >= 3 ? "amber" : "green";
+    measuredSections === 0
+      ? "grey"
+      : redSections >= 2
+      ? "red"
+      : redSections > 0 || amberSections >= 3
+      ? "amber"
+      : "green";
   const readinessLabel =
-    overallReadiness === "green"
+    overallReadiness === "grey"
+      ? "Not yet measured — no records to evidence readiness"
+      : overallReadiness === "green"
       ? "Good evidence base — continue building"
       : overallReadiness === "amber"
       ? "Some gaps identified — action needed before inspection"

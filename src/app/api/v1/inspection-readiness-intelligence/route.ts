@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { rate, rateOf, meanOf } from "@/lib/metrics/rate";
 import {
   computeInspectionReadiness,
   type InspectionReadinessInput,
@@ -56,7 +57,7 @@ export async function GET() {
   const escalated = complaints.filter((c: any) => c.ofsted_notified || c.escalated).length;
 
   const dbsCompliant = staff.filter((s) => s.dbs_number && s.dbs_issue_date).length;
-  const dbsRate = staff.length > 0 ? Math.round((dbsCompliant / staff.length) * 100) : 100;
+  const dbsRate = rate(dbsCompliant, staff.length);
   const dbsOverdue = staff.length - dbsCompliant;
 
   const supervisions = store.supervisions ?? [];
@@ -69,12 +70,12 @@ export async function GET() {
     const daysSince = Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86_400_000);
     return daysSince > 42;
   });
-  const supRate = staff.length > 0 ? Math.round(((staff.length - supervisionsDue.length) / staff.length) * 100) : 100;
+  const supRate = rate(staff.length - supervisionsDue.length, staff.length);
 
   const training = store.trainingRecords ?? [];
   const mandatoryTraining = training.filter((t: any) => t.is_mandatory);
   const completedTraining = mandatoryTraining.filter((t: any) => t.status === "completed" || t.status === "current").length;
-  const trainingRate = mandatoryTraining.length > 0 ? Math.round((completedTraining / mandatoryTraining.length) * 100) : 100;
+  const trainingRate = rate(completedTraining, mandatoryTraining.length);
   const trainingOverdue = mandatoryTraining.filter((t: any) => t.status === "expired" || t.status === "overdue").length;
 
   const careForms = store.careForms ?? [];
@@ -102,15 +103,16 @@ export async function GET() {
   ).length;
 
   const pepRecords = store.educationRecords?.filter((r: any) => r.record_type === "pep") ?? [];
-  const pepCompletion = children.length > 0
-    ? Math.round((children.filter((c) => pepRecords.some((p: any) => p.child_id === c.id)).length / children.length) * 100)
-    : 100;
+  const pepCompletion = rateOf(
+    children.filter((c) => pepRecords.some((p: any) => p.child_id === c.id)),
+    children,
+  );
 
   const missingEpisodes = store.missingEpisodes ?? [];
   const missingThisQ = missingEpisodes.filter((m: any) => (m.date_missing ?? "") >= quarterStart).length;
   const returnInterviews = missingEpisodes.filter((m: any) => m.status !== "active");
   const riCompleted = returnInterviews.filter((m: any) => m.return_interview_completed).length;
-  const riRate = returnInterviews.length > 0 ? Math.round((riCompleted / returnInterviews.length) * 100) : 100;
+  const riRate = rate(riCompleted, returnInterviews.length);
 
   const exploitationScreenings = store.exploitationScreenings ?? [];
   const currentScreenings = children.filter((c) =>
@@ -192,89 +194,131 @@ function addDays(date: string, days: number): string {
 
 function buildDomainMetrics(store: any, today: string): DomainMetric[] {
   const metrics: DomainMetric[] = [];
+  const daysSince = (d: string) =>
+    Math.floor((new Date(today).getTime() - new Date(d).getTime()) / 86_400_000);
 
+  // Every compliance_rate below is derived from the records themselves and is
+  // null when there are none. These were previously literals — safeguarding was
+  // `criticalIncidents === 0 ? 85 : 60`, behaviour `85 : 70`, workforce
+  // `staff.length >= 8 ? 88 : 70` — so an empty home still produced a readiness
+  // position, and no amount of real recording could move the number.
+
+  // ── Safeguarding: are incidents being kept on top of? ───────────────────────
   const incidents = store.incidents ?? [];
   const openIncidents = incidents.filter((i: any) => i.status !== "closed");
   const criticalIncidents = openIncidents.filter((i: any) => i.severity === "critical").length;
   const highIncidents = openIncidents.filter((i: any) => i.severity === "high").length;
+  const staleIncidents = openIncidents.filter((i: any) => daysSince(i.date) > 7);
   metrics.push({
     domain: "safeguarding",
     domain_label: "Safeguarding",
-    compliance_rate: criticalIncidents === 0 ? 85 : 60,
+    compliance_rate: rate(incidents.length - staleIncidents.length, incidents.length),
     critical_alerts: criticalIncidents,
     high_alerts: highIncidents,
-    overdue_count: openIncidents.filter((i: any) => {
-      const days = Math.floor((new Date(today).getTime() - new Date(i.date).getTime()) / 86_400_000);
-      return days > 7;
-    }).length,
+    overdue_count: staleIncidents.length,
     evidence_count: incidents.length,
     last_updated: incidents.length > 0 ? incidents[incidents.length - 1].date?.slice(0, 10) : null,
   });
 
+  // ── Behaviour: ABC recording completeness ───────────────────────────────────
+  // A behaviour entry evidences practice only when it captures what came
+  // before, what was tried, and what happened after.
   const behaviourLog = store.behaviourLog ?? [];
+  const fullyRecorded = behaviourLog.filter(
+    (b: any) => b.antecedent && b.behaviour && b.consequence && b.strategy_used && b.outcome,
+  );
   metrics.push({
     domain: "behaviour",
     domain_label: "Behaviour Management",
-    compliance_rate: behaviourLog.length > 0 ? 85 : 70,
+    compliance_rate: rateOf(fullyRecorded, behaviourLog),
     critical_alerts: 0,
     high_alerts: behaviourLog.filter((b: any) => b.intensity === "severe" || b.intensity === "critical").length,
-    overdue_count: 0,
+    overdue_count: behaviourLog.length - fullyRecorded.length,
     evidence_count: behaviourLog.length,
     last_updated: behaviourLog.length > 0 ? behaviourLog[behaviourLog.length - 1].date?.slice(0, 10) : null,
   });
 
+  // ── Education: children with a PEP on file ─────────────────────────────────
   const educationRecords = store.educationRecords ?? [];
+  const currentChildren = store.youngPeople?.filter((yp: any) => yp.status === "current") ?? [];
+  const childrenWithPep = currentChildren.filter((c: any) =>
+    educationRecords.some((r: any) => r.child_id === c.id && r.record_type === "pep"),
+  );
   metrics.push({
     domain: "education",
     domain_label: "Education & Learning",
-    compliance_rate: educationRecords.length > 0 ? 90 : 70,
+    compliance_rate: rateOf(childrenWithPep, currentChildren),
     critical_alerts: 0,
     high_alerts: 0,
-    overdue_count: 0,
+    overdue_count: currentChildren.length - childrenWithPep.length,
     evidence_count: educationRecords.length,
     last_updated: educationRecords.length > 0 ? educationRecords[educationRecords.length - 1].date?.slice(0, 10) : null,
   });
 
+  // ── Medication: doses given as scheduled ───────────────────────────────────
   const medications = store.medications ?? [];
   const medAdmin = store.medicationAdministrations ?? [];
-  const activeMeds = medications.filter((m: any) => m.is_active);
   const recentAdmin = medAdmin.filter((a: any) => {
-    const d = Math.floor((new Date(today).getTime() - new Date(a.scheduled_time).getTime()) / 86_400_000);
+    const d = daysSince(a.scheduled_time);
     return d >= 0 && d <= 7;
   });
   const given = recentAdmin.filter((a: any) => a.status === "given" || a.status === "administered").length;
-  const medCompliance = recentAdmin.length > 0 ? Math.round((given / recentAdmin.length) * 100) : (activeMeds.length > 0 ? 70 : 100);
+  const missed = recentAdmin.filter((a: any) => a.status === "missed");
   metrics.push({
     domain: "medication",
     domain_label: "Medication Management",
-    compliance_rate: medCompliance,
+    // Unmeasured when no dose was due in the window — an unused MAR chart is
+    // not a 100% administration record, and active meds with no administrations
+    // recorded is a recording gap rather than a score.
+    compliance_rate: rate(given, recentAdmin.length),
     critical_alerts: 0,
-    high_alerts: recentAdmin.filter((a: any) => a.status === "missed").length > 3 ? 1 : 0,
-    overdue_count: 0,
+    high_alerts: missed.length > 3 ? 1 : 0,
+    overdue_count: missed.length,
     evidence_count: medAdmin.length,
     last_updated: medAdmin.length > 0 ? medAdmin[medAdmin.length - 1].scheduled_time?.slice(0, 10) : null,
   });
 
+  // ── Workforce: the staff-file checks that actually exist ───────────────────
   const staff = store.staff?.filter((s: any) => s.is_active) ?? [];
+  const supervisions = store.supervisions ?? [];
+  const training = store.trainingRecords ?? [];
+  const mandatory = training.filter((t: any) => t.is_mandatory);
+  const dbsOk = staff.filter((s: any) => s.dbs_number && s.dbs_issue_date);
+  const supervisedRecently = staff.filter((s: any) =>
+    supervisions.some(
+      (sv: any) => sv.staff_id === s.id && sv.status === "completed" && daysSince(sv.actual_date ?? "") <= 42,
+    ),
+  );
+  const trainingCurrent = mandatory.filter((t: any) => t.status === "completed" || t.status === "current");
+  const workforceRate = meanOf([
+    rateOf(dbsOk, staff),
+    rateOf(supervisedRecently, staff),
+    rateOf(trainingCurrent, mandatory),
+  ]);
   metrics.push({
     domain: "workforce",
     domain_label: "Workforce & Staffing",
-    compliance_rate: staff.length >= 8 ? 88 : 70,
-    critical_alerts: 0,
+    compliance_rate: workforceRate,
+    critical_alerts: staff.length - dbsOk.length,
     high_alerts: 0,
-    overdue_count: 0,
+    overdue_count: (staff.length - supervisedRecently.length) + (mandatory.length - trainingCurrent.length),
     evidence_count: staff.length,
-    last_updated: today,
+    last_updated: staff.length > 0 ? today : null,
   });
 
+  // ── Quality assurance: the audits' own scores ──────────────────────────────
   const qaAudits = store.qaAuditRecords ?? [];
+  const qaScores = qaAudits
+    .map((a: any) => (typeof a.score === "number" ? a.score : null))
+    .filter((n: number | null) => n !== null);
+  const openQaActions = qaAudits.flatMap((a: any) => a.actions ?? []).filter((a: any) => a.status !== "completed");
   metrics.push({
     domain: "quality_assurance",
     domain_label: "Quality Assurance",
-    compliance_rate: qaAudits.length > 0 ? 85 : 60,
+    compliance_rate: meanOf(qaScores),
     critical_alerts: 0,
     high_alerts: 0,
-    overdue_count: 0,
+    overdue_count: openQaActions.length,
     evidence_count: qaAudits.length,
     last_updated: qaAudits.length > 0 ? (qaAudits[qaAudits.length - 1] as any).date?.slice(0, 10) : null,
   });

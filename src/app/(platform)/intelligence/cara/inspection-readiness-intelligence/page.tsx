@@ -7,12 +7,18 @@ import { Search, CheckCircle, AlertTriangle, Clock, Star, TrendingUp, ShieldAler
 import { useInspectionReadinessIntelligence } from "@/hooks/use-inspection-readiness-intelligence";
 import type { ReadinessGrade } from "@/lib/engines/inspection-readiness-intelligence-engine";
 
+import { formatRate } from "@/lib/metrics/rate";
+
 const GRADE_META: Record<ReadinessGrade, { label: string; color: string; bg: string; border: string }> = {
   outstanding:          { label: "Outstanding",          color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
   good:                 { label: "Good",                 color: "text-blue-700",    bg: "bg-blue-50",    border: "border-blue-200" },
   requires_improvement: { label: "Requires Improvement", color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200" },
   inadequate:           { label: "Inadequate",           color: "text-red-700",     bg: "bg-red-50",     border: "border-red-200" },
 };
+
+// A home with nothing recorded has no grade. It must not borrow one — least of
+// all a reassuring one — so it gets its own neutral treatment.
+const UNGRADED = { label: "Not yet measured", color: "text-slate-600", bg: "bg-slate-50", border: "border-slate-200" };
 
 const STRENGTH_META: Record<string, { label: string; color: string; bg: string }> = {
   strong:   { label: "Strong",   color: "text-emerald-700", bg: "bg-emerald-50" },
@@ -49,7 +55,7 @@ export default function InspectionReadinessIntelligencePage() {
     );
   }
 
-  const grade = GRADE_META[d.overall_grade];
+  const grade = d.overall_grade === null ? UNGRADED : GRADE_META[d.overall_grade];
   const criticalGaps = d.regulatory_gaps.filter(g => g.severity === "critical");
   const criticalActions = d.action_priorities.filter(a => a.severity === "critical");
 
@@ -98,7 +104,7 @@ export default function InspectionReadinessIntelligencePage() {
         {/* Judgment areas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {d.judgment_areas.map((ja) => {
-            const g = GRADE_META[ja.grade] ?? GRADE_META.requires_improvement;
+            const g = ja.grade === null ? UNGRADED : (GRADE_META[ja.grade] ?? UNGRADED);
             return (
               <Card key={ja.area} className={`border ${g.border}`}>
                 <CardHeader className="pb-2">
@@ -110,9 +116,9 @@ export default function InspectionReadinessIntelligencePage() {
                 <CardContent>
                   <div className="flex items-center gap-2 mb-3">
                     <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                      <div className={`h-full rounded-full ${ja.score >= 80 ? "bg-emerald-500" : ja.score >= 60 ? "bg-amber-400" : "bg-red-400"}`} style={{ width: `${ja.score}%` }} />
+                      <div className={`h-full rounded-full ${ja.score === null ? "bg-transparent" : ja.score >= 80 ? "bg-emerald-500" : ja.score >= 60 ? "bg-amber-400" : "bg-red-400"}`} style={{ width: `${ja.score ?? 0}%` }} />
                     </div>
-                    <span className="text-sm font-bold">{ja.score}</span>
+                    <span className="text-sm font-bold">{ja.score ?? "—"}</span>
                   </div>
                   {ja.strengths.length > 0 && (
                     <div className="mb-2">
@@ -275,7 +281,7 @@ export default function InspectionReadinessIntelligencePage() {
                   <div key={i} className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">{item.area}</span>
                     <div className="flex items-center gap-2">
-                      <span className={`font-medium ${item.rate >= 90 ? "text-emerald-600" : item.rate >= 70 ? "text-amber-600" : "text-red-500"}`}>{Math.round(item.rate)}%</span>
+                      <span className={`font-medium ${item.rate === null ? "text-muted-foreground" : item.rate >= 90 ? "text-emerald-600" : item.rate >= 70 ? "text-amber-600" : "text-red-500"}`}>{formatRate(item.rate)}</span>
                       {item.compliant ? <CheckCircle className="h-3 w-3 text-emerald-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />}
                     </div>
                   </div>

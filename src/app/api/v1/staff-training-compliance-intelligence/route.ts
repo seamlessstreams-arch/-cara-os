@@ -17,6 +17,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
+import { formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // Read a dal collection defensively: on a live tenant a transient query failure
 // must degrade to an empty section, never 500 the whole route.
@@ -32,7 +33,9 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type TrainingSignal = "non_compliant" | "expiring" | "compliant";
+// "not_recorded" is distinct from "compliant": a staff member with no
+// mandatory training records has not passed a check, they have not had one.
+type TrainingSignal = "non_compliant" | "expiring" | "compliant" | "not_recorded";
 
 interface TrainingIssue {
   courseName: string;
@@ -52,7 +55,7 @@ interface StaffTrainingProfile {
   mandatoryExpiringSoon: number;
   mandatoryExpired: number;
   mandatoryNotStarted: number;
-  complianceRate: number;
+  complianceRate: number | null;
   issues: TrainingIssue[];
   signal: TrainingSignal;
   supervisionPrompt: string;
@@ -67,9 +70,10 @@ interface CategoryRisk {
 interface TrainingComplianceSummary {
   totalStaff: number;
   compliantStaff: number;
+  notRecordedStaff: number;
   expiringStaff: number;
   nonCompliantStaff: number;
-  overallMandatoryComplianceRate: number;
+  overallMandatoryComplianceRate: number | null;
   totalMandatoryRecords: number;
   compliantMandatoryRecords: number;
   expiringSoonRecords: number;
@@ -85,7 +89,9 @@ function trainingSignal(
   mandatoryExpired: number,
   mandatoryNotStarted: number,
   mandatoryExpiringSoon: number,
+  mandatoryTotal: number,
 ): TrainingSignal {
+  if (mandatoryTotal === 0) return "not_recorded";
   if (mandatoryExpired > 0 || mandatoryNotStarted > 0) return "non_compliant";
   if (mandatoryExpiringSoon > 0) return "expiring";
   return "compliant";
@@ -95,7 +101,11 @@ function buildSupervisionPrompt(
   name: string,
   signal: TrainingSignal,
   issues: TrainingIssue[],
+  mandatoryTotal: number,
 ): string {
+  if (mandatoryTotal === 0) {
+    return `No mandatory training records are held for ${name}. Nothing has been evidenced either way — this is a recording gap, not a clean record. In supervision: establish what ${name.split(" ")[0]} has actually completed and get it onto the training register with renewal dates.`;
+  }
   if (signal === "non_compliant") {
     const expired = issues.filter((i) => i.status === "expired" || i.status === "not_started");
     const courseList = expired.map((i) => i.courseName).join(", ");
@@ -155,9 +165,9 @@ export async function GET() {
     const mandatoryExpired = mandatory.filter((r) => r.status === "expired").length;
     const mandatoryNotStarted = mandatory.filter((r) => r.status === "not_started").length;
 
-    const complianceRate = mandatory.length > 0
-      ? Math.round((mandatoryCompliant / mandatory.length) * 100)
-      : 100;
+    // Every role in a children's home carries mandatory training, so an empty
+    // set means the register has not been populated — not that nothing applies.
+    const complianceRate = rate(mandatoryCompliant, mandatory.length);
 
     // Build issues: only non-compliant and expiring mandatory records
     const issues: TrainingIssue[] = mandatory
@@ -170,7 +180,7 @@ export async function GET() {
         notes: r.notes,
       }));
 
-    const signal = trainingSignal(mandatoryExpired, mandatoryNotStarted, mandatoryExpiringSoon);
+    const signal = trainingSignal(mandatoryExpired, mandatoryNotStarted, mandatoryExpiringSoon, mandatoryRecords.length);
 
     return {
       staffId: s.id,
@@ -185,13 +195,15 @@ export async function GET() {
       complianceRate,
       issues,
       signal,
-      supervisionPrompt: buildSupervisionPrompt(s.full_name, signal, issues),
+      supervisionPrompt: buildSupervisionPrompt(s.full_name, signal, issues, mandatory.length),
     };
   });
 
   // Sort: non_compliant → expiring → compliant
+  // Unrecorded sits alongside non-compliant at the top: an unknown is as
+  // actionable for a manager as a known breach.
   const SIGNAL_ORDER: Record<TrainingSignal, number> = {
-    non_compliant: 0, expiring: 1, compliant: 2,
+    non_compliant: 0, not_recorded: 1, expiring: 2, compliant: 3,
   };
   staffProfiles.sort((a, b) => SIGNAL_ORDER[a.signal] - SIGNAL_ORDER[b.signal]);
 
@@ -199,6 +211,7 @@ export async function GET() {
   const compliantStaff = staffProfiles.filter((p) => p.signal === "compliant").length;
   const expiringStaff = staffProfiles.filter((p) => p.signal === "expiring").length;
   const nonCompliantStaff = staffProfiles.filter((p) => p.signal === "non_compliant").length;
+  const notRecordedStaff = staffProfiles.filter((p) => p.signal === "not_recorded").length;
 
   const mandatoryRecords = trainingRecords.filter((r) => r.is_mandatory);
   const totalMandatoryRecords = mandatoryRecords.length;
@@ -207,9 +220,7 @@ export async function GET() {
   const expiredRecords = mandatoryRecords.filter((r) => r.status === "expired").length;
   const notStartedRecords = mandatoryRecords.filter((r) => r.status === "not_started").length;
 
-  const overallMandatoryComplianceRate = totalMandatoryRecords > 0
-    ? Math.round((compliantMandatoryRecords / totalMandatoryRecords) * 100)
-    : 100;
+  const overallMandatoryComplianceRate = rate(compliantMandatoryRecords, totalMandatoryRecords);
 
   // Category risk: which categories have the most non-compliant staff?
   const categoryStaffMap = new Map<string, { statuses: string[]; staffSet: Set<string> }>();
@@ -231,19 +242,22 @@ export async function GET() {
 
   // Ofsted note
   const ofstedNote =
-    nonCompliantStaff > 0
+    overallMandatoryComplianceRate === null
+      ? "No mandatory training records are held for the team. Ofsted judges on evidence, so an empty training register is itself the finding — it cannot be read as compliance. Record what each staff member has completed and when it expires."
+      : nonCompliantStaff > 0
       ? `${nonCompliantStaff} staff member${nonCompliantStaff > 1 ? "s" : ""} with expired or not-started mandatory training. Ofsted will ask whether staff are suitably qualified and whether deployment decisions consider current training status.`
       : expiringStaff > 0
       ? `${expiringSoonRecords} mandatory training record${expiringSoonRecords > 1 ? "s are" : " is"} expiring soon across ${expiringStaff} staff member${expiringStaff > 1 ? "s" : ""}. An inspector will look for evidence that refreshers are booked and planned.`
-      : overallMandatoryComplianceRate === 100
+      : meets(overallMandatoryComplianceRate, 100)
       ? "All mandatory training records are compliant. Maintain this by ensuring renewal dates are tracked and refreshers are booked at least 6 weeks before expiry."
-      : `Overall mandatory training compliance: ${overallMandatoryComplianceRate}%. Continue monitoring to ensure this remains above 95%.`;
+      : `Overall mandatory training compliance: ${formatRate(overallMandatoryComplianceRate)}. Continue monitoring to ensure this remains above 95%.`;
 
   const summary: TrainingComplianceSummary = {
     totalStaff: activeStaff.length,
     compliantStaff,
     expiringStaff,
     nonCompliantStaff,
+    notRecordedStaff,
     overallMandatoryComplianceRate,
     totalMandatoryRecords,
     compliantMandatoryRecords,
