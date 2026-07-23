@@ -18,6 +18,7 @@ import {
   Search, BarChart3, Heart, ArrowUpDown,
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
+import { demoSeed } from "@/lib/demo/demo-seed";
 import { useStaff } from "@/hooks/use-staff";
 import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
 import { useSupervisions, useCreateSupervision, useUpdateSupervision } from "@/hooks/use-supervision";
@@ -48,13 +49,19 @@ const SUPERVISION_EXPORT_COLS: ExportColumn<Supervision>[] = [
 
 // ── Static reference data (uses real staff IDs from seed) ────────────────────
 
-const APPRAISALS = [
+// Seeded demo fixtures. These are page-local literals referencing invented staff
+// ids (staff_diane, staff_mirela…), so on a live tenant they rendered people who
+// do not exist — a fiction leak the store-level gate never reached. demoSeed()
+// returns [] on a live tenant, so a real home sees its own empty state and only
+// the demo shows the fixtures.
+const APPRAISALS_SEED = [
   { staffId: "staff_ryan",     date: daysFromNow(-90),  rating: "effective",   completedBy: "staff_darren", nextDue: daysFromNow(275), objectives: 4, achieved: 3 },
   { staffId: "staff_anna",     date: daysFromNow(-180), rating: "developing",  completedBy: "staff_ryan",   nextDue: daysFromNow(185), objectives: 3, achieved: 2 },
   { staffId: "staff_chervelle",date: null,              rating: null,          completedBy: null,           nextDue: daysFromNow(30),  objectives: 0, achieved: 0 },
   { staffId: "staff_edward",   date: daysFromNow(-200), rating: "exceptional", completedBy: "staff_darren", nextDue: daysFromNow(165), objectives: 5, achieved: 5 },
   { staffId: "staff_diane",    date: null,              rating: null,          completedBy: null,           nextDue: daysFromNow(150), objectives: 0, achieved: 0 },
 ];
+const APPRAISALS = demoSeed(APPRAISALS_SEED);
 
 const GOALS = [
   { id: "g1", staffId: "staff_ryan",      title: "Complete Level 4 Diploma Unit 5",                        targetDate: daysFromNow(60),  progress: 65,  status: "in_progress" },
@@ -67,11 +74,12 @@ const GOALS = [
   { id: "g8", staffId: "staff_mirela",    title: "Lead a risk assessment review independently",             targetDate: daysFromNow(28),  progress: 50,  status: "in_progress" },
 ];
 
-const PROBATION = [
+const PROBATION_SEED = [
   { staffId: "staff_diane",    startDate: daysFromNow(-90), endDate: daysFromNow(90),   status: "active", reviews: 1, nextReview: daysFromNow(30), concerns: ["Timekeeping — discussed 14 March"] },
   { staffId: "staff_mirela",   startDate: daysFromNow(-60), endDate: daysFromNow(120),  status: "active", reviews: 1, nextReview: daysFromNow(60), concerns: [] },
   { staffId: "staff_anna",     startDate: daysFromNow(-400), endDate: daysFromNow(-220), status: "passed", reviews: 2, nextReview: null, concerns: [] },
 ];
+const PROBATION = demoSeed(PROBATION_SEED);
 
 const RATING_COLORS: Record<string, string> = {
   exceptional: "bg-[--cs-success-bg] text-[--cs-success]",
@@ -449,7 +457,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
 
 // ── Schedule Supervision Modal ────────────────────────────────────────────────
 
-function ScheduleModal({ onClose }: { onClose: () => void }) {
+function ScheduleModal({ onClose, prefill }: { onClose: () => void; prefill?: { staff_id?: string; type?: Supervision["type"] } }) {
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const createSupervision = useCreateSupervision();
@@ -459,9 +467,9 @@ function ScheduleModal({ onClose }: { onClose: () => void }) {
   const supervisors = modalAllStaff.filter((s) => s.role === "registered_manager" || s.role === "deputy_manager" || s.role === "team_leader");
 
   const [form, setForm] = useState({
-    staff_id: "",
+    staff_id: prefill?.staff_id ?? "",
     supervisor_id: currentUser?.id ?? "staff_darren",
-    type: "formal" as Supervision["type"],
+    type: (prefill?.type ?? "formal") as Supervision["type"],
     scheduled_date: daysFromNow(7),
   });
   const [error, setError] = useState("");
@@ -598,7 +606,15 @@ type StatusFilter = "all" | "scheduled" | "completed" | "overdue";
 
 export default function SupervisionPage() {
   const [tab, setTab] = useState<Tab>("supervision");
+  const pageRouter = useRouter();
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  // Prefill for the Schedule modal when opened from a staff row (appraisal due,
+  // probation review) rather than the toolbar.
+  const [schedulePrefill, setSchedulePrefill] = useState<{ staff_id?: string; type?: Supervision["type"] } | undefined>(undefined);
+  function openScheduleFor(staffId: string, type: Supervision["type"] = "formal") {
+    setSchedulePrefill({ staff_id: staffId, type });
+    setScheduleOpen(true);
+  }
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<"date" | "staff" | "type" | "status">("date");
@@ -689,7 +705,7 @@ export default function SupervisionPage() {
 
   return (
     <>
-    {scheduleOpen && <ScheduleModal onClose={() => setScheduleOpen(false)} />}
+    {scheduleOpen && <ScheduleModal prefill={schedulePrefill} onClose={() => { setScheduleOpen(false); setSchedulePrefill(undefined); }} />}
     <PageShell
       title="Supervision & Performance"
       subtitle="Supervision records, probation, appraisals, and individual goal tracking"
@@ -916,6 +932,11 @@ export default function SupervisionPage() {
         {/* Probation tab */}
         {tab === "probation" && (
           <div className="space-y-5">
+            {PROBATION.length === 0 && (
+              <div className="py-8 text-center text-sm text-[var(--cs-text-muted)]">
+                No staff are currently on probation. Probation periods appear here once a new starter is added with a probation end date.
+              </div>
+            )}
             {PROBATION.map((prob) => {
               const staff = allActiveStaff.find((s) => s.id === prob.staffId);
               const daysLeft = prob.endDate ? Math.max(0, Math.ceil((new Date(prob.endDate).getTime() - Date.now()) / 86400000)) : 0;
@@ -978,8 +999,8 @@ export default function SupervisionPage() {
                           </div>
                         )}
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="h-8 text-xs" disabled title="Probation history is stored in the staff member's HR file.">View history</Button>
-                          {prob.status === "active" && <Button size="sm" className="h-8 text-xs" disabled title="Schedule probation reviews through your HR system.">Schedule review</Button>}
+                          <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => pageRouter.push(`/staff/${prob.staffId}`)}>View history</Button>
+                          {prob.status === "active" && <Button size="sm" className="h-8 text-xs" onClick={() => openScheduleFor(prob.staffId, "probation_review")}>Schedule review</Button>}
                           {prob.status === "active" && daysLeft === 0 && (
                             <Button size="sm" className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700" disabled title="Probation sign-off must be recorded in the staff HR file and confirmed with your RI.">Confirm passed</Button>
                           )}
@@ -1039,9 +1060,9 @@ export default function SupervisionPage() {
                     )}
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    {isOverdue && <Button size="sm" className="h-8 text-xs bg-red-600 hover:bg-red-700" disabled title="Book the appraisal and record it in the Documents section when complete.">Start Appraisal</Button>}
-                    {isDueSoon && !isOverdue && <Button size="sm" className="h-8 text-xs" disabled title="Schedule this appraisal through your HR system.">Schedule</Button>}
-                    {!isDueSoon && !isOverdue && <Button size="sm" variant="outline" className="h-8 text-xs" disabled title="Appraisal records are stored in the Documents section.">View</Button>}
+                    {isOverdue && <Button size="sm" className="h-8 text-xs bg-red-600 hover:bg-red-700" onClick={() => openScheduleFor(staff.id)}>Start Appraisal</Button>}
+                    {isDueSoon && !isOverdue && <Button size="sm" className="h-8 text-xs" onClick={() => openScheduleFor(staff.id)}>Schedule</Button>}
+                    {!isDueSoon && !isOverdue && <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => pageRouter.push(`/staff/${staff.id}`)}>View</Button>}
                   </div>
                 </div>
               );

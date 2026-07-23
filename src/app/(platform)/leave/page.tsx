@@ -15,7 +15,7 @@ import {
   SunMedium, RotateCcw, Ban, Info, Loader2, ArrowUpDown,
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
-import { useLeave } from "@/hooks/use-leave";
+import { useLeave, useCreateLeave } from "@/hooks/use-leave";
 import { useStaff } from "@/hooks/use-staff";
 import { cn, todayStr, formatDate, daysFromNow } from "@/lib/utils";
 import { LEAVE_TYPE_LABELS } from "@/lib/constants";
@@ -130,6 +130,122 @@ function LeaveRow({ req, onClick }: { req: LeaveRequest; onClick: () => void }) 
   );
 }
 
+// ── Request Leave dialog ──────────────────────────────────────────────────────
+// The "Request Leave" action was disabled with a tooltip saying staff submit
+// their own requests — but a live home has no other route in, so leave could
+// never be recorded. Persists via useCreateLeave → POST /api/v1/leave →
+// dal.leave.create (the leave_requests table on a live tenant).
+function RequestLeaveDialog({
+  staff,
+  onClose,
+}: {
+  staff: { id: string; full_name: string }[];
+  onClose: () => void;
+}) {
+  const create = useCreateLeave();
+  const [form, setForm] = useState({
+    staff_id: "",
+    leave_type: "annual_leave",
+    start_date: todayStr(),
+    end_date: todayStr(),
+    reason: "",
+  });
+  const [error, setError] = useState("");
+
+  // Inclusive day count — a one-day booking is 1 day, not 0.
+  const totalDays = useMemo(() => {
+    const start = new Date(form.start_date + "T00:00:00Z").getTime();
+    const end = new Date(form.end_date + "T00:00:00Z").getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return 0;
+    return Math.round((end - start) / 86_400_000) + 1;
+  }, [form.start_date, form.end_date]);
+
+  function submit() {
+    if (!form.staff_id) { setError("Please choose a staff member."); return; }
+    if (totalDays < 1) { setError("The end date must be on or after the start date."); return; }
+    setError("");
+    create.mutate(
+      { ...form, total_days: totalDays, status: "pending" } as Parameters<typeof create.mutate>[0],
+      { onSuccess: () => onClose(), onError: () => setError("Could not save the request. Please try again.") },
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-lg p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-[var(--cs-navy)]">Request Leave</h2>
+            <p className="text-sm text-[var(--cs-text-muted)]">Record a leave request for approval.</p>
+          </div>
+          <button onClick={onClose} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] text-xl font-bold">×</button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Staff member</label>
+            <select
+              value={form.staff_id}
+              onChange={(e) => setForm((f) => ({ ...f, staff_id: e.target.value }))}
+              className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select a staff member…</option>
+              {staff.map((s) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Leave type</label>
+            <select
+              value={form.leave_type}
+              onChange={(e) => setForm((f) => ({ ...f, leave_type: e.target.value }))}
+              className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {Object.entries(LEAVE_TYPE_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{String(label)}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">From</label>
+              <Input type="date" value={form.start_date} onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))} className="text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">To</label>
+              <Input type="date" value={form.end_date} onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))} className="text-sm" />
+            </div>
+          </div>
+
+          <p className="text-xs text-[var(--cs-text-muted)]">
+            {totalDays > 0 ? `${totalDays} day${totalDays === 1 ? "" : "s"} requested.` : "Choose a valid date range."}
+          </p>
+
+          <div>
+            <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1">Reason <span className="text-[var(--cs-text-muted)]">(optional)</span></label>
+            <textarea
+              className="w-full rounded-xl border border-[var(--cs-border)] p-3 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Any context that helps the approver…"
+              value={form.reason}
+              onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
+            />
+          </div>
+
+          {error && <p className="text-xs text-[--cs-risk]">{error}</p>}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button onClick={submit} disabled={create.isPending} className="flex-1">
+            {create.isPending ? "Saving…" : "Submit request"}
+          </Button>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RTWPanel({ req, onClose }: { req: LeaveRequest; onClose: () => void }) {
   const [notes, setNotes] = useState("");
   const [signed, setSigned] = useState(false);
@@ -180,6 +296,7 @@ export default function LeavePage() {
   const [sortBy, setSortBy] = useState<"date" | "staff" | "type">("date");
   const [selectedReq, setSelectedReq] = useState<LeaveRequest | null>(null);
   const [showRTW, setShowRTW] = useState(false);
+  const [showRequest, setShowRequest] = useState(false);
   // Local status overrides — applied on top of API data for approve/decline actions
   const [statusOverrides, setStatusOverrides] = useState<Record<string, "approved" | "declined">>({});
   const today = todayStr();
@@ -252,7 +369,7 @@ export default function LeavePage() {
           <PrintButton title="Leave Management" subtitle="Staff Leave Records" targetId="leave-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Leave — supporting document upload" />
           <ExportButton<LeaveRequest> filename="leave-export" data={filteredRequests} columns={LEAVE_EXPORT_COLS} label="Export" />
-          <Button size="sm" disabled title="Leave requests are submitted directly by staff. Approve requests from the Leave Requests tab.">
+          <Button size="sm" onClick={() => setShowRequest(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Request Leave
           </Button>
           <CaraStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
@@ -262,6 +379,10 @@ export default function LeavePage() {
       {/* RTW dialog */}
       {showRTW && selectedReq && (
         <RTWPanel req={selectedReq} onClose={() => { setShowRTW(false); setSelectedReq(null); }} />
+      )}
+
+      {showRequest && (
+        <RequestLeaveDialog staff={activeStaff} onClose={() => setShowRequest(false)} />
       )}
 
       <div id="leave-content" className="space-y-6">

@@ -25,6 +25,7 @@ import type { ExportColumn } from "@/components/common/export-button";
 import type { Shift } from "@/types";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
+import { api } from "@/hooks/use-api";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -68,6 +69,8 @@ export default function RotaPage() {
 
   // Add shift modal state
   const [addShift, setAddShift] = useState<{ staffId: string; staffName: string; date: string } | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [offeringShift, setOfferingShift] = useState<string | null>(null);
   const [shiftType, setShiftType] = useState<string>("day");
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
@@ -196,6 +199,65 @@ export default function RotaPage() {
     setFillError(null);
   }
 
+  // Offer an open shift to the bank team — one notification per bank worker, so
+  // the offer is a real record rather than a toast. Persists via
+  // POST /api/v1/notifications → dal.notifications.create.
+  async function handleOfferToBank(s: { date: string; start: string; end: string; type: string }) {
+    const key = `${s.date}-${s.start}`;
+    const bankStaff = activeStaff.filter((m) => m.employment_type === "bank" && m.is_active);
+    if (bankStaff.length === 0) {
+      toast.error("No bank staff on the team to offer this shift to.");
+      return;
+    }
+    setOfferingShift(key);
+    try {
+      await Promise.all(
+        bankStaff.map((m) =>
+          api.post<{ data: unknown }>("/notifications", {
+            recipient_id: m.id,
+            title: "Open shift available",
+            body: `${formatDate(s.date)} · ${s.start}–${s.end} (${SHIFT_TYPE_LABELS[s.type as keyof typeof SHIFT_TYPE_LABELS] || s.type}). Let the manager know if you can cover it.`,
+            type: "shift_offer",
+            priority: "normal",
+            entity_type: "shift",
+            read: false,
+          }),
+        ),
+      );
+      toast.success(`Offered to ${bankStaff.length} bank team member${bankStaff.length === 1 ? "" : "s"}.`);
+    } catch {
+      toast.error("Could not send the offer. Please try again.");
+    } finally {
+      setOfferingShift(null);
+    }
+  }
+
+  // Open shifts still to cover this week — gates rota publication.
+  const openShiftCount = shifts.filter((s) => s.is_open_shift || !s.staff_id).length;
+
+  // Publish = confirm every scheduled shift in the week, so the team sees a
+  // settled rota. Uses the same PATCH the rest of the page uses (id + fields).
+  async function handlePublishRota() {
+    if (openShiftCount > 0 || publishing) return;
+    // Anything not already settled (confirmed / worked / cancelled) gets confirmed.
+    const toConfirm = shifts.filter(
+      (s) => s.status !== "confirmed" && s.status !== "completed" && s.status !== "cancelled",
+    );
+    if (toConfirm.length === 0) { toast.success("Rota is already published — every shift is confirmed."); return; }
+    setPublishing(true);
+    try {
+      await Promise.all(
+        toConfirm.map((s) => api.patch<{ data: unknown }>("/rota", { id: s.id, status: "confirmed" })),
+      );
+      await rotaQuery.refetch();
+      toast.success(`Rota published — ${toConfirm.length} shift${toConfirm.length === 1 ? "" : "s"} confirmed.`);
+    } catch {
+      toast.error("Could not publish the rota. Please try again.");
+    } finally {
+      setPublishing(false);
+    }
+  }
+
   async function handleFillShift() {
     if (!fillShift || !fillStaffId) { setFillError("Please select a staff member."); return; }
     setFillError(null);
@@ -260,6 +322,7 @@ export default function RotaPage() {
 
   async function handleSaveShift() {
     if (!addShift) return;
+    if (!addShift.staffId) { setSaveError("Please choose a staff member."); return; }
     setSaveError(null);
     try {
       await createShift.mutateAsync({
@@ -288,11 +351,18 @@ export default function RotaPage() {
           <ExportButton data={shifts} columns={SHIFT_EXPORT_COLS} filename={`rota-${weekStart}`} />
           <PrintButton title="Rota" subtitle="Staff Rota & Scheduling" targetId="rota-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Rota — rota or schedule upload" />
-          <Button variant="outline" size="sm" disabled title="Shifts are added through your scheduling system.">
+          <Button variant="outline" size="sm" onClick={() => openAddShift("", "", today)}>
             <Plus className="h-3.5 w-3.5" /> Add Shift
           </Button>
-          <Button size="sm" disabled title="Rota publication requires all open shifts to be filled.">
-            Publish Rota
+          <Button
+            size="sm"
+            onClick={handlePublishRota}
+            disabled={openShiftCount > 0 || publishing}
+            title={openShiftCount > 0
+              ? `${openShiftCount} open shift${openShiftCount === 1 ? "" : "s"} still to fill before this rota can be published.`
+              : "Publish this week's rota — confirms every scheduled shift."}
+          >
+            {publishing ? "Publishing…" : "Publish Rota"}
           </Button>
         </div>
       }
@@ -338,7 +408,15 @@ export default function RotaPage() {
                     <span className="text-[var(--cs-text-muted)] ml-2">({SHIFT_TYPE_LABELS[s.type as keyof typeof SHIFT_TYPE_LABELS] || s.type})</span>
                   </div>
                   <div className="flex gap-1.5">
-                    <Button size="sm" variant="outline" className="text-xs h-7" disabled>Offer to Bank</Button>
+                    <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-7"
+                    disabled={offeringShift === `${s.date}-${s.start}`}
+                    onClick={() => handleOfferToBank(s)}
+                  >
+                    {offeringShift === `${s.date}-${s.start}` ? "Offering…" : "Offer to Bank"}
+                  </Button>
                     <Button size="sm" className="text-xs h-7 bg-amber-600 hover:bg-amber-700" onClick={() => openFillShift(s)}>Fill Shift</Button>
                   </div>
                 </div>
@@ -660,7 +738,7 @@ export default function RotaPage() {
             <div>
               <div className="text-sm font-bold text-[var(--cs-navy)]">Add Shift</div>
               <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">
-                {addShift.staffName} · {new Date(addShift.date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+                {addShift.staffName || "Choose a staff member"} · {new Date(addShift.date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
               </div>
             </div>
             <button onClick={() => setAddShift(null)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]">
@@ -669,6 +747,35 @@ export default function RotaPage() {
           </div>
 
           <div className="p-6 space-y-4">
+            {/* Opened from the toolbar there is no staff member yet — pick one
+                here. Opened from a rota cell, staffId is already set. */}
+            {!addShift.staffId && (
+              <div>
+                <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Staff Member</label>
+                <select
+                  value={addShift.staffId}
+                  onChange={(e) => {
+                    const picked = activeStaff.find((s) => s.id === e.target.value);
+                    setAddShift((prev) => prev ? { ...prev, staffId: e.target.value, staffName: picked?.full_name ?? "" } : prev);
+                  }}
+                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
+                >
+                  <option value="">Select a staff member…</option>
+                  {activeStaff.map((s) => (
+                    <option key={s.id} value={s.id}>{s.full_name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div>
+              <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Date</label>
+              <input
+                type="date"
+                value={addShift.date}
+                onChange={(e) => setAddShift((prev) => prev ? { ...prev, date: e.target.value } : prev)}
+                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
+              />
+            </div>
             <div>
               <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1.5">Shift Type</label>
               <select
@@ -728,7 +835,7 @@ export default function RotaPage() {
             <Button
               className="flex-1 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90"
               onClick={handleSaveShift}
-              disabled={createShift.isPending}
+              disabled={createShift.isPending || !addShift.staffId}
             >
               {createShift.isPending ? (
                 <><Loader2 className="h-4 w-4 animate-spin" />Saving…</>
