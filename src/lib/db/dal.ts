@@ -194,13 +194,16 @@ export const dal = {
 
   // ── Shifts ────────────────────────────────────────────────────────────────
   shifts: {
-    async findAll() {
+    /** Shifts for the week beginning `weekStart` (defaults to the current week). */
+    async findAll(weekStart?: string) {
       const c = sb();
-      if (c) {
-        const today = todayStr();
-        return sq.getShiftsForWeek(c, homeId(), today);
-      }
-      return db.shifts.findAll();
+      if (c) return sq.getShiftsForWeek(c, homeId(), weekStart ?? todayStr());
+      const all = db.shifts.findAll();
+      if (!weekStart) return all;
+      const end = new Date(weekStart + "T00:00:00Z");
+      end.setUTCDate(end.getUTCDate() + 7);
+      const endStr = end.toISOString().slice(0, 10);
+      return all.filter((s) => s.date >= weekStart && s.date < endStr);
     },
     async findToday() {
       const c = sb();
