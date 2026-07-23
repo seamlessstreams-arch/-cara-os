@@ -794,3 +794,93 @@ export async function createGenericRecord(sb: SB, data: {
 export async function updateGenericRecord(sb: SB, id: string, data: Record<string, unknown>) {
   return unwrap(await sb.from("generic_records").update(data).eq("id", id).select().single());
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CORE ROSTER / ASSET CREATES
+// ─────────────────────────────────────────────────────────────────────────────
+// Each insert is filtered to the table's real columns. Postgres hard-rejects an
+// INSERT naming an unknown column, and client payloads legitimately carry extra
+// UI-only fields — that combination is exactly how "admit a child" silently
+// failed on the live tenant. Ids are deliberately excluded so the DB mints a
+// uuid (store-shaped ids like "yp_x" are not valid uuids).
+function pickColumns(data: Record<string, unknown>, cols: readonly string[]) {
+  const out: Record<string, unknown> = {};
+  for (const k of cols) if (data[k] !== undefined) out[k] = data[k];
+  return out;
+}
+
+const YOUNG_PERSON_COLS = [
+  "home_id", "first_name", "last_name", "preferred_name", "date_of_birth", "gender",
+  "ethnicity", "religion", "placement_start", "placement_end", "placement_type",
+  "local_authority", "social_worker_name", "social_worker_phone", "social_worker_email",
+  "iro_name", "iro_phone", "key_worker_id", "secondary_worker_id", "legal_status",
+  "risk_flags", "dietary_requirements", "allergies", "gp_name", "gp_phone",
+  "school_name", "school_contact", "photo_url", "status", "created_by", "updated_by",
+] as const;
+
+export async function createYoungPerson(sb: SB, data: Record<string, unknown>) {
+  return unwrap(await sb.from("young_people").insert(pickColumns(data, YOUNG_PERSON_COLS)).select().single());
+}
+
+// full_name is a GENERATED column (first + last) — never insert it.
+const STAFF_MEMBER_COLS = [
+  "home_id", "first_name", "last_name", "email", "phone", "role", "job_title",
+  "employment_type", "employment_status", "start_date", "end_date", "probation_end_date",
+  "contracted_hours", "hourly_rate", "annual_salary", "payroll_id", "dbs_number",
+  "dbs_issue_date", "dbs_update_service", "emergency_contact_name", "emergency_contact_phone",
+  "next_supervision_due", "next_appraisal_due", "avatar_url", "is_active",
+  "created_by", "updated_by", "auth_user_id",
+] as const;
+
+export async function createStaffMember(sb: SB, data: Record<string, unknown>) {
+  const row = pickColumns(data, STAFF_MEMBER_COLS);
+  // NOT NULL columns get working defaults so a minimal form can create a seat.
+  row.role ??= "residential_care_worker";
+  row.job_title ??= "Care Worker";
+  row.employment_type ??= "permanent";
+  row.employment_status ??= "active";
+  row.start_date ??= todayStr();
+  row.contracted_hours ??= 0;
+  row.dbs_update_service ??= false;
+  row.is_active ??= true;
+  return unwrap(await sb.from("staff_members").insert(row).select().single());
+}
+
+const MEDICATION_COLS = [
+  "home_id", "child_id", "name", "type", "dosage", "frequency", "route", "prescriber",
+  "pharmacy", "start_date", "end_date", "is_active", "stock_count", "stock_last_checked",
+  "side_effects", "special_instructions", "created_by",
+] as const;
+
+export async function createMedication(sb: SB, data: Record<string, unknown>) {
+  return unwrap(await sb.from("medications").insert(pickColumns(data, MEDICATION_COLS)).select().single());
+}
+
+const LEAVE_REQUEST_COLS = [
+  "home_id", "staff_id", "leave_type", "start_date", "end_date", "total_days", "reason",
+  "status", "approved_by", "approved_at", "return_to_work_required", "return_to_work_completed",
+  "return_to_work_date", "return_to_work_by", "return_to_work_notes", "created_by",
+] as const;
+
+export async function createLeaveRequest(sb: SB, data: Record<string, unknown>) {
+  return unwrap(await sb.from("leave_requests").insert(pickColumns(data, LEAVE_REQUEST_COLS)).select().single());
+}
+
+const BUILDING_COLS = [
+  "home_id", "name", "type", "address", "areas", "gas_cert_expiry", "electrical_cert_expiry",
+  "fire_risk_assessment_date", "epc_rating", "last_full_inspection", "next_inspection_due", "status",
+] as const;
+
+export async function createBuilding(sb: SB, data: Record<string, unknown>) {
+  return unwrap(await sb.from("buildings").insert(pickColumns(data, BUILDING_COLS)).select().single());
+}
+
+const VEHICLE_COLS = [
+  "home_id", "registration", "make", "model", "colour", "year", "seats", "mot_expiry",
+  "insurance_expiry", "tax_expiry", "last_service", "next_service_due", "mileage", "status",
+  "breakdown_cover", "breakdown_ref", "notes",
+] as const;
+
+export async function createVehicle(sb: SB, data: Record<string, unknown>) {
+  return unwrap(await sb.from("vehicles").insert(pickColumns(data, VEHICLE_COLS)).select().single());
+}

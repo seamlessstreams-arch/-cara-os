@@ -66,6 +66,12 @@ export const dal = {
       if (c) return sq.getStaff(c, homeId(), { status: "active" });
       return db.staff.findActive();
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      const c = sb();
+      if (c) return sq.createStaffMember(c, { ...data, home_id: homeId() });
+      return db.staff.create(data);
+    },
   },
 
   // ── Young People ──────────────────────────────────────────────────────────
@@ -84,6 +90,12 @@ export const dal = {
       const c = sb();
       if (c) return sq.getYoungPeople(c, homeId(), "current");
       return db.youngPeople.findCurrent();
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      const c = sb();
+      if (c) return sq.createYoungPerson(c, { ...data, home_id: homeId() });
+      return db.youngPeople.create(data);
     },
   },
 
@@ -236,6 +248,12 @@ export const dal = {
       if (c) return sq.getLeaveOnDate(c, homeId(), todayStr());
       return db.leave.findOnLeaveToday();
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      const c = sb();
+      if (c) return sq.createLeaveRequest(c, { ...data, home_id: homeId() });
+      return db.leave.create(data);
+    },
   },
 
   // ── Training ──────────────────────────────────────────────────────────────
@@ -279,6 +297,12 @@ export const dal = {
       const c = sb();
       if (c) return sq.getMedications(c, homeId(), childId);
       return db.medications.findByChild(childId);
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      const c = sb();
+      if (c) return sq.createMedication(c, { ...data, home_id: homeId() });
+      return db.medications.create(data);
     },
   },
 
@@ -545,6 +569,12 @@ export const dal = {
       }
       return db.buildings.findById(id);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      const c = sb();
+      if (c) return sq.createBuilding(c, { ...data, home_id: homeId() });
+      return db.buildings.create(data);
+    },
   },
 
   buildingChecks: {
@@ -574,6 +604,12 @@ export const dal = {
         return (await c.from("vehicles").select("*").eq("id", id).single()).data;
       }
       return db.vehicles.findById(id);
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) {
+      const c = sb();
+      if (c) return sq.createVehicle(c, { ...data, home_id: homeId() });
+      return db.vehicles.create(data);
     },
   },
 

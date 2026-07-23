@@ -11759,6 +11759,17 @@ export const db = {
     findAll: () => store.youngPeople,
     findById: (id: string) => store.youngPeople.find((yp) => yp.id === id),
     findCurrent: () => store.youngPeople.filter((yp) => yp.status === "current"),
+    create: (data: Partial<YoungPerson>): YoungPerson => {
+      const yp = {
+        status: "current",
+        ...data,
+        id: generateId("yp"),
+        home_id: data.home_id ?? "home_oak",
+        created_at: new Date().toISOString(),
+      } as YoungPerson;
+      store.youngPeople.push(yp);
+      return yp;
+    },
   },
 
   // ── Writing Assistant settings + audit ───────────────────────────────────
@@ -12088,6 +12099,17 @@ export const db = {
     findAll: () => store.medications,
     findActive: () => store.medications.filter((m) => m.is_active),
     findByChild: (childId: string) => store.medications.filter((m) => m.child_id === childId && m.is_active),
+    create: (data: Partial<Medication>): Medication => {
+      const med = {
+        is_active: true,
+        ...data,
+        id: generateId("med"),
+        home_id: data.home_id ?? "home_oak",
+        created_at: new Date().toISOString(),
+      } as Medication;
+      store.medications.push(med);
+      return med;
+    },
   },
   medicationAdministrations: {
     findAll: () => store.medicationAdministrations,
@@ -12149,6 +12171,16 @@ export const db = {
   buildings: {
     findAll: () => store.buildings,
     findById: (id: string) => store.buildings.find((b) => b.id === id),
+    create: (data: Partial<Building>): Building => {
+      const building = {
+        ...data,
+        id: generateId("bld"),
+        home_id: data.home_id ?? "home_oak",
+        created_at: new Date().toISOString(),
+      } as Building;
+      store.buildings.push(building);
+      return building;
+    },
   },
   buildingChecks: {
     findAll: () => store.buildingChecks,
@@ -12166,6 +12198,17 @@ export const db = {
     findAll: () => store.vehicles,
     findById: (id: string) => store.vehicles.find((v) => v.id === id),
     findAvailable: () => store.vehicles.filter((v) => v.status === "available"),
+    create: (data: Partial<Vehicle>): Vehicle => {
+      const vehicle = {
+        status: "available",
+        ...data,
+        id: generateId("veh"),
+        home_id: data.home_id ?? "home_oak",
+        created_at: new Date().toISOString(),
+      } as Vehicle;
+      store.vehicles.push(vehicle);
+      return vehicle;
+    },
   },
   vehicleChecks: {
     findAll: () => store.vehicleChecks,
@@ -12424,6 +12467,17 @@ export const db = {
     findOnLeaveToday: () => {
       const t = todayStr();
       return store.leaveRequests.filter((l) => l.status === "approved" && l.start_date <= t && l.end_date >= t);
+    },
+    create: (data: Partial<LeaveRequest>): LeaveRequest => {
+      const req = {
+        status: "pending",
+        ...data,
+        id: generateId("leave"),
+        home_id: data.home_id ?? "home_oak",
+        created_at: new Date().toISOString(),
+      } as LeaveRequest;
+      store.leaveRequests.push(req);
+      return req;
     },
   },
 

@@ -101,7 +101,7 @@ export default function StaffPage() {
           <ExportButton<StaffEnriched> filename="staff-export" data={filtered} columns={STAFF_EXPORT_COLS} label="Export" />
           <PrintButton title="Staff" subtitle="Staff Directory" targetId="staff-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Staff — HR document upload" />
-          <Button size="sm" disabled title="Staff records are managed in your HR system.">
+          <Button size="sm" onClick={() => router.push("/staff/new")}>
             <Plus className="h-3.5 w-3.5" /> Add Staff Member
           </Button>
           <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
