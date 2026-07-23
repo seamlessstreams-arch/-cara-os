@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCaraToolkitLessonsLearned } from "@/hooks/use-cara-toolkit-lessons-learned";
+import { formatRate } from "@/lib/metrics/rate";
 import type {
   LessonRecord,
   LessonTheme,
@@ -234,8 +235,10 @@ export default function LessonsLearnedPage() {
             <p className={`text-xl font-bold ${signal.text}`}>{signal.label}</p>
           </div>
           <div className="text-right">
-            <p className={`text-3xl font-black ${signal.text}`}>{data.actionCompletionRate}%</p>
-            <p className="text-xs text-slate-500">action completion rate</p>
+            <p className={`text-3xl font-black ${signal.text}`}>{formatRate(data.actionCompletionRate)}</p>
+            <p className="text-xs text-slate-500">
+              {data.actionCompletionRate === null ? "no actions to complete" : "action completion rate"}
+            </p>
           </div>
         </div>
       </div>

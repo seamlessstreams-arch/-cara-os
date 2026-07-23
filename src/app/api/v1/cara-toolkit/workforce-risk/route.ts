@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
 import type {
   WorkforceRiskAnalysis,
   WorkforceRiskLevel,
@@ -48,10 +49,9 @@ export async function GET() {
   const agencyStaff = activeStaff.filter(
     (s: any) => s.employment_type === "agency" || s.employment_type === "bank"
   );
-  const agencyPct =
-    activeStaff.length > 0
-      ? Math.round((agencyStaff.length / activeStaff.length) * 100)
-      : 0;
+  // With no active staff on record there is no workforce mix to report — 0%
+  // would read as "minimal agency reliance", which is a finding we have not earned.
+  const agencyPct = rateOf(agencyStaff, activeStaff);
 
   const recentSickLeave = leaveRequests.filter(
     (l: any) => l.leave_type === "sick" && l.status === "approved"
@@ -76,10 +76,11 @@ export async function GET() {
     },
     {
       label: "Agency / bank use",
-      value: `${agencyPct}%`,
-      signal: signal(agencyPct <= 10, agencyPct <= 25),
+      value: formatRate(agencyPct, "No data"),
+      signal:
+        agencyPct === null ? "grey" : signal(agencyPct <= 10, agencyPct <= 25),
       note:
-        agencyPct > 25
+        agencyPct !== null && agencyPct > 25
           ? "High agency reliance may affect consistency and relationships with children."
           : undefined,
     },
@@ -113,23 +114,24 @@ export async function GET() {
       String(b.date ?? "").localeCompare(String(a.date ?? ""))
     );
 
-  const avgWellbeing =
-    supervisions.length > 0
-      ? Math.round(
-          (supervisions.reduce((s: number, r: any) => s + (r.wellbeing_score ?? 3), 0) /
-            supervisions.length) *
-            10
-        ) / 10
+  // A supervision with no score recorded is excluded rather than counted as a
+  // neutral 3 — silence is not evidence of average wellbeing or confidence.
+  const meanTo1dp = (values: number[]): number | null =>
+    values.length > 0
+      ? Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 10) / 10
       : null;
 
-  const avgConfidence =
-    supervisions.length > 0
-      ? Math.round(
-          (supervisions.reduce((s: number, r: any) => s + (r.confidence_level ?? 3), 0) /
-            supervisions.length) *
-            10
-        ) / 10
-      : null;
+  const avgWellbeing = meanTo1dp(
+    supervisions
+      .filter((r: any) => r.wellbeing_score != null)
+      .map((r: any) => Number(r.wellbeing_score))
+  );
+
+  const avgConfidence = meanTo1dp(
+    supervisions
+      .filter((r: any) => r.confidence_level != null)
+      .map((r: any) => Number(r.confidence_level))
+  );
 
   const overdueFollowUps = supervisions.filter((r: any) => {
     if (!r.follow_up_date) return false;
@@ -152,10 +154,10 @@ export async function GET() {
     {
       label: "Average wellbeing score",
       value: avgWellbeing !== null ? `${avgWellbeing}/5` : "No data",
-      signal: signal(
-        avgWellbeing !== null && avgWellbeing >= 4,
-        avgWellbeing !== null && avgWellbeing >= 3
-      ),
+      signal:
+        avgWellbeing === null
+          ? "grey"
+          : signal(avgWellbeing >= 4, avgWellbeing >= 3),
       note:
         avgWellbeing !== null && avgWellbeing < 3
           ? "Staff wellbeing is below threshold. Consider urgent pastoral support and supervision."
@@ -164,10 +166,10 @@ export async function GET() {
     {
       label: "Average confidence score",
       value: avgConfidence !== null ? `${avgConfidence}/5` : "No data",
-      signal: signal(
-        avgConfidence !== null && avgConfidence >= 4,
-        avgConfidence !== null && avgConfidence >= 3
-      ),
+      signal:
+        avgConfidence === null
+          ? "grey"
+          : signal(avgConfidence >= 4, avgConfidence >= 3),
     },
     {
       label: "Overdue follow-up supervisions",
@@ -200,18 +202,21 @@ export async function GET() {
   const expiringSoon       = mandatoryTraining.filter((t: any) => t.status === "expiring_soon");
   const notStarted         = mandatoryTraining.filter((t: any) => t.status === "not_started");
   const compliant          = mandatoryTraining.filter((t: any) => t.status === "compliant");
-  const compliancePct =
-    mandatoryTraining.length > 0
-      ? Math.round((compliant.length / mandatoryTraining.length) * 100)
-      : 100;
+  // An empty mandatory training register is nothing recorded, not full compliance.
+  const compliancePct = rateOf(compliant, mandatoryTraining);
 
   const trainingIndicators: StaffingIndicator[] = [
     {
       label: "Mandatory training compliance",
-      value: `${compliancePct}%`,
-      signal: signal(compliancePct >= 90, compliancePct >= 70),
+      value: formatRate(compliancePct, "No data"),
+      signal:
+        compliancePct === null
+          ? "grey"
+          : signal(meets(compliancePct, 90), meets(compliancePct, 70)),
       note:
-        compliancePct < 70
+        compliancePct === null
+          ? "No mandatory training records — compliance cannot be evidenced."
+          : below(compliancePct, 70)
           ? "Training compliance is significantly below standard. Review urgently."
           : undefined,
     },
@@ -240,7 +245,7 @@ export async function GET() {
 
   const burnoutSignals: string[] = [];
 
-  if (agencyPct > 20) {
+  if (agencyPct !== null && agencyPct > 20) {
     burnoutSignals.push(
       `Agency and bank staff represent ${agencyPct}% of the workforce. High agency use can reduce consistency, relational continuity, and the emotional safety children experience.`
     );
@@ -280,10 +285,10 @@ export async function GET() {
   if (avgWellbeing !== null && avgWellbeing >= 4) {
     strengths.push(`Average staff wellbeing score of ${avgWellbeing}/5 indicates a broadly supportive working environment.`);
   }
-  if (compliancePct >= 90) {
+  if (meets(compliancePct, 90)) {
     strengths.push(`${compliancePct}% mandatory training compliance reflects strong workforce standards.`);
   }
-  if (openShifts.length === 0 && agencyPct <= 10) {
+  if (openShifts.length === 0 && agencyPct !== null && agencyPct <= 10) {
     strengths.push("Stable staffing with minimal agency reliance supports relational consistency for children.");
   }
 

@@ -21,6 +21,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { below, formatRate, meanOf, meets, rateOf } from "@/lib/metrics/rate";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -42,11 +43,13 @@ interface StaffKeyWorkerProfile {
   keyChildren: KeyChildSnapshot[];
   totalSessionsLast30d: number;
   avgSessionsPerKeyChildLast30d: number;
-  childVoiceScore: number;         // 0–100: richness of child_voice across sessions
-  childVoicePresenceRate: number;  // 0–100: % sessions with non-trivial child_voice
-  moodImprovementRate: number;     // 0–100: % sessions with mood_after > mood_before
-  followUpCompletionRate: number;  // 0–100: % completed follow-ups
-  therapeuticApproachRate: number; // 0–100: % behaviour entries using therapeutic language
+  // Each rate is null when its population is empty — no sessions, no follow-ups
+  // agreed, no behaviour entries. Nothing recorded is not the same as done well.
+  childVoiceScore: number | null;         // 0–100: richness of child_voice across sessions
+  childVoicePresenceRate: number | null;  // 0–100: % sessions with non-trivial child_voice
+  moodImprovementRate: number | null;     // 0–100: % sessions with mood_after > mood_before
+  followUpCompletionRate: number | null;  // 0–100: % completed follow-ups
+  therapeuticApproachRate: number | null; // 0–100: % behaviour entries using therapeutic language
   keyChildrenNotSeen: number;
   effectivenessSignal: EffectivenessSignal;
   supervisionPrompt: string;
@@ -59,8 +62,8 @@ interface KeyWorkerEffectivenessSummary {
   developing: number;
   needs_support: number;
   keyChildrenNotSeenIn30d: number;
-  homeFollowUpCompletionRate: number;
-  homeChildVoicePresenceRate: number;
+  homeFollowUpCompletionRate: number | null;
+  homeChildVoicePresenceRate: number | null;
   managerNote: string;
 }
 
@@ -96,16 +99,16 @@ function childVoiceRichness(text: string): number {
 function effectivenessSignal(
   keyChildCount: number,
   keyChildrenNotSeen: number,
-  followUpCompletion: number,
-  childVoicePresence: number,
-  moodImprovement: number,
+  followUpCompletion: number | null,
+  childVoicePresence: number | null,
+  moodImprovement: number | null,
 ): EffectivenessSignal {
   if (keyChildCount === 0) return "developing";
 
   const allSeen = keyChildrenNotSeen === 0;
-  const goodFollowUp = followUpCompletion >= 75;
-  const goodVoice = childVoicePresence >= 60;
-  const goodMood = moodImprovement >= 50;
+  const goodFollowUp = meets(followUpCompletion, 75);
+  const goodVoice = meets(childVoicePresence, 60);
+  const goodMood = meets(moodImprovement, 50);
 
   const strengths = [allSeen, goodFollowUp, goodVoice, goodMood].filter(Boolean).length;
 
@@ -122,9 +125,9 @@ function buildSupervisionPrompt(
   name: string,
   signal: EffectivenessSignal,
   keyChildrenNotSeen: number,
-  followUpRate: number,
-  childVoiceRate: number,
-  moodRate: number,
+  followUpRate: number | null,
+  childVoiceRate: number | null,
+  moodRate: number | null,
 ): string {
   if (signal === "exemplary") {
     return `${name} is showing exemplary key worker practice — regular contact, strong child voice, and excellent follow-through. In supervision, celebrate this and explore: what does ${name} do that creates this quality? What can the team learn from their approach?`;
@@ -132,13 +135,13 @@ function buildSupervisionPrompt(
   if (keyChildrenNotSeen > 0) {
     return `${name} has ${keyChildrenNotSeen} key child${keyChildrenNotSeen > 1 ? "ren" : ""} not seen in the last 30 days. This is a safeguarding concern. In supervision, explore: what's the barrier? Is the relationship struggling, or are there practical reasons? A key worker who isn't connecting with a key child needs immediate support.`;
   }
-  if (followUpRate < 50) {
-    return `${name}'s follow-up completion rate is low (${followUpRate}%). Agreed actions in key work sessions are commitments to the child. Explore in supervision: are sessions too aspirational? Does ${name} need help prioritising, or is there a capacity issue to address?`;
+  if (below(followUpRate, 50)) {
+    return `${name}'s follow-up completion rate is low (${formatRate(followUpRate)}). Agreed actions in key work sessions are commitments to the child. Explore in supervision: are sessions too aspirational? Does ${name} need help prioritising, or is there a capacity issue to address?`;
   }
-  if (childVoiceRate < 40) {
+  if (below(childVoiceRate, 40)) {
     return `Child voice is underdeveloped in ${name}'s key work sessions. In supervision, explore what the children are saying, and support ${name} to record it more richly — the child's own words are evidence of their experience and rights in care.`;
   }
-  if (moodRate < 30) {
+  if (below(moodRate, 30)) {
     return `Mood scores in ${name}'s sessions suggest children are not consistently feeling better after key work. Explore in supervision: what's the tone of the sessions? Does the child feel they have a genuine say, or is key work feeling transactional?`;
   }
   return `${name}'s key worker practice is developing. In supervision, review their recent sessions together and explore what would help build their confidence and consistency with their key children.`;
@@ -226,33 +229,31 @@ export async function GET() {
 
     const keyChildrenNotSeen = keyChildSnapshots.filter((c) => c.notSeenIn30d).length;
 
-    // Child voice metrics
+    // Child voice metrics — unmeasured when no sessions have been recorded
     const voiceScores = sessions30d.map((s) => childVoiceRichness(s.child_voice));
-    const avgVoiceScore = voiceScores.length > 0
-      ? Math.round(voiceScores.reduce((a, b) => a + b, 0) / voiceScores.length)
-      : 0;
-    const voicePresenceRate = sessions30d.length > 0
-      ? Math.round((voiceScores.filter((s) => s >= 15).length / sessions30d.length) * 100)
-      : 0;
+    const avgVoiceScore = meanOf(voiceScores);
+    const voicePresenceRate = rateOf(voiceScores.filter((s) => s >= 15), sessions30d);
 
     // Mood improvement
     const moodSessions = sessions30d.filter((s) => s.mood_before != null && s.mood_after != null);
-    const moodImprovementRate = moodSessions.length > 0
-      ? Math.round((moodSessions.filter((s) => s.mood_after > s.mood_before).length / moodSessions.length) * 100)
-      : 0;
+    const moodImprovementRate = rateOf(
+      moodSessions.filter((s) => s.mood_after > s.mood_before), moodSessions,
+    );
 
-    // Follow-up completion (all sessions, not just 30d — represents track record)
+    // Follow-up completion (all sessions, not just 30d — represents track record).
+    // No follow-ups agreed is nothing applicable, so there is no track record to
+    // report either way.
     const sessionsWithFollowUp = staffSessions.filter((s) => s.follow_up && s.follow_up.trim().length > 0);
-    const followUpCompletionRate = sessionsWithFollowUp.length > 0
-      ? Math.round((sessionsWithFollowUp.filter((s) => s.follow_up_completed).length / sessionsWithFollowUp.length) * 100)
-      : 100; // if no follow-ups expected, no concern
+    const followUpCompletionRate = rateOf(
+      sessionsWithFollowUp.filter((s) => s.follow_up_completed), sessionsWithFollowUp,
+    );
 
     // Therapeutic approach rate in behaviour log
     const behaviourEntries = behaviourByStaff.get(member.id) ?? [];
     const entriesWithStrategy = behaviourEntries.filter((e) => e.strategy_used && e.strategy_used.trim().length > 0);
-    const therapeuticApproachRate = entriesWithStrategy.length > 0
-      ? Math.round((entriesWithStrategy.filter((e) => isTherapeutic(e.strategy_used)).length / entriesWithStrategy.length) * 100)
-      : 50; // neutral when no behaviour entries
+    const therapeuticApproachRate = rateOf(
+      entriesWithStrategy.filter((e) => isTherapeutic(e.strategy_used)), entriesWithStrategy,
+    );
 
     const signal = effectivenessSignal(
       keyChildren.length, keyChildrenNotSeen, followUpCompletionRate, voicePresenceRate, moodImprovementRate,
@@ -293,15 +294,13 @@ export async function GET() {
   const allKeyChildrenNotSeen = staffProfiles.reduce((s, p) => s + p.keyChildrenNotSeen, 0);
 
   const totalSessionsWithFollowUp = sessions.filter((s) => s.follow_up && s.follow_up.trim().length > 0);
-  const homeFollowUpRate = totalSessionsWithFollowUp.length > 0
-    ? Math.round((totalSessionsWithFollowUp.filter((s) => s.follow_up_completed).length / totalSessionsWithFollowUp.length) * 100)
-    : 100;
+  const homeFollowUpRate = rateOf(
+    totalSessionsWithFollowUp.filter((s) => s.follow_up_completed), totalSessionsWithFollowUp,
+  );
 
   const sessions30dAll = sessions.filter((s) => new Date(s.date) >= cutoff30d);
   const allVoiceScores = sessions30dAll.map((s) => childVoiceRichness(s.child_voice));
-  const homeVoicePresenceRate = sessions30dAll.length > 0
-    ? Math.round((allVoiceScores.filter((v) => v >= 15).length / sessions30dAll.length) * 100)
-    : 0;
+  const homeVoicePresenceRate = rateOf(allVoiceScores.filter((v) => v >= 15), sessions30dAll);
 
   const signalCounts = staffProfiles.reduce(
     (acc, p) => { acc[p.effectivenessSignal]++; return acc; },
@@ -309,13 +308,15 @@ export async function GET() {
   );
 
   const managerNote =
-    allKeyChildrenNotSeen > 0
+    staffProfiles.length === 0
+      ? "No current child has an allocated key worker on record. Key worker effectiveness cannot be assessed until allocations are recorded — this is itself the finding."
+      : allKeyChildrenNotSeen > 0
       ? `${allKeyChildrenNotSeen} key child${allKeyChildrenNotSeen > 1 ? "ren" : ""} have not had a key work session in 30 days. This is a safeguarding and relational safety concern — review immediately in supervision.`
       : signalCounts.needs_support > 0
       ? `${signalCounts.needs_support} key worker${signalCounts.needs_support > 1 ? "s" : ""} may need supervision support. Review their session patterns this week.`
       : signalCounts.exemplary + signalCounts.strong >= staffProfiles.length - 1
-      ? `Key worker practice is strong across the home. ${homeVoicePresenceRate}% of sessions have meaningful child voice documented.`
-      : `Key worker practice is developing. Focus supervision on child voice quality and follow-up completion (currently ${homeFollowUpRate}%).`;
+      ? `Key worker practice is strong across the home. ${formatRate(homeVoicePresenceRate)} of sessions have meaningful child voice documented.`
+      : `Key worker practice is developing. Focus supervision on child voice quality and follow-up completion (currently ${formatRate(homeFollowUpRate)}).`;
 
   const summary: KeyWorkerEffectivenessSummary = {
     totalKeyWorkers: staffProfiles.length,

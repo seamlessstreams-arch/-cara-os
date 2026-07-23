@@ -863,9 +863,23 @@ function ShiftRow({ shift }: { shift: Shift }) {
 
 // ─── Health Check Gauge ────────────────────────────────────────────────────────
 
-function ScoreGauge({ score, size = 80 }: { score: number; size?: number }) {
+function ScoreGauge({ score, size = 80 }: { score: number | null; size?: number }) {
   const r = (size / 2) - 8;
   const circumference = 2 * Math.PI * r;
+
+  // Nothing measured — draw the empty track and a dash, never a number the
+  // records don't support.
+  if (score === null) {
+    return (
+      <svg width={size} height={size} className="shrink-0">
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={6} />
+        <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fill="#94a3b8" fontSize={size * 0.22} fontWeight="700">
+          —
+        </text>
+      </svg>
+    );
+  }
+
   const dash = (score / 100) * circumference;
 
   const scoreColor =
@@ -910,8 +924,12 @@ const PRIORITY_COLORS = {
   low: "text-[var(--cs-text-muted)]",
 };
 
-function SubScoreBar({ label, value, icon: Icon }: { label: string; value: number; icon: React.ElementType }) {
+function SubScoreBar({ label, value, icon: Icon }: { label: string; value: number | null; icon: React.ElementType }) {
+  // null = no source records for this domain. Show an empty track and "—", so
+  // an unmeasured domain never reads as a passing score.
+  const measured = value !== null;
   const color =
+    !measured ? "bg-[var(--cs-border)]" :
     value >= 80 ? "bg-[--cs-success]" :
     value >= 60 ? "bg-[--cs-warning]" :
     value >= 40 ? "bg-orange-500" :
@@ -924,9 +942,14 @@ function SubScoreBar({ label, value, icon: Icon }: { label: string; value: numbe
           <Icon className="h-3 w-3 text-[var(--cs-text-muted)]" />
           <span className="text-[11px] text-[var(--cs-text-muted)]">{label}</span>
         </div>
-        <span className="text-[11px] font-semibold text-[var(--cs-text-secondary)] tabular-nums">{value}</span>
+        <span
+          className="text-[11px] font-semibold text-[var(--cs-text-secondary)] tabular-nums"
+          title={measured ? undefined : "Not yet measured — no records for this area"}
+        >
+          {measured ? value : "—"}
+        </span>
       </div>
-      <Progress value={value} color={color} className="h-1.5" />
+      <Progress value={measured ? value : 0} color={color} className="h-1.5" />
     </div>
   );
 }
@@ -2120,8 +2143,8 @@ export default function DashboardPage() {
                           <Activity className="h-4 w-4 text-emerald-500" />
                           Home Health Check
                         </CardTitle>
-                        <Badge className={cn("text-[10px] rounded-full border", RISK_LEVEL_CONFIG[hc.risk_level]?.color || "bg-slate-100 text-[var(--cs-text-secondary)]")}>
-                          {RISK_LEVEL_CONFIG[hc.risk_level]?.label || hc.risk_level}
+                        <Badge className={cn("text-[10px] rounded-full border", (hc.risk_level && RISK_LEVEL_CONFIG[hc.risk_level]?.color) || "bg-slate-100 text-[var(--cs-text-secondary)]")}>
+                          {(hc.risk_level && RISK_LEVEL_CONFIG[hc.risk_level]?.label) || "Not yet rated"}
                         </Badge>
                       </div>
                     </CardHeader>
@@ -2135,6 +2158,13 @@ export default function DashboardPage() {
                           <SubScoreBar label="Compliance"   value={hc.compliance}   icon={GraduationCap} />
                         </div>
                       </div>
+                      {/* Say plainly which areas the score does NOT cover, so a
+                          partial score is never read as a whole-home verdict. */}
+                      {hc.note && (
+                        <p className="-mt-2 mb-3 text-[11px] leading-relaxed text-[var(--cs-text-muted)]">
+                          {hc.note}
+                        </p>
+                      )}
                       {hc.action_plan && hc.action_plan.length > 0 && (
                         <div className="space-y-1.5 pt-3 border-t border-[var(--cs-border-subtle)]">
                           <p className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-2">Priority actions</p>

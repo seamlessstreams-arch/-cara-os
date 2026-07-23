@@ -78,6 +78,9 @@ jobs:
       - name: Modal-viewport guard (centred panels capped to the viewport and scrollable)
         run: node scripts/check-modal-viewport.js
 
+      - name: Fabricated-score guard (an empty population must not score as compliant)
+        run: node scripts/check-fabricated-scores.js
+
   test:
     name: Test suite
     runs-on: ubuntu-latest

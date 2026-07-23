@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { below, formatRate, meanOf, meets, rateOf } from "@/lib/metrics/rate";
 import type {
   StaffSkillProfile,
   StaffSkillsAnalysis,
@@ -40,10 +41,9 @@ export async function GET() {
         (t.expiry_date && t.expiry_date < today)
     );
 
-    const complianceRate =
-      mandatory.length > 0
-        ? Math.round((compliant.length / mandatory.length) * 100)
-        : 100;
+    // No mandatory training on file means nothing has been evidenced for this
+    // person — not that they are fully compliant.
+    const complianceRate = rateOf(compliant, mandatory);
 
     // Most recent supervision
     const staffSups = supervisions
@@ -69,12 +69,14 @@ export async function GET() {
     }
 
     const signal: SignalColour =
-      complianceRate < 60 || (wellbeingScore !== null && wellbeingScore <= 2)
+      below(complianceRate, 60) || (wellbeingScore !== null && wellbeingScore <= 2)
         ? "red"
-        : complianceRate < 80 ||
+        : below(complianceRate, 80) ||
           overdue.length > 0 ||
           (wellbeingScore !== null && wellbeingScore <= 3)
         ? "amber"
+        : complianceRate === null
+        ? "grey"
         : "green";
 
     return {
@@ -95,7 +97,7 @@ export async function GET() {
     } satisfies StaffSkillProfile;
   });
 
-  const fullCompliance = staffProfiles.filter((p) => p.complianceRate === 100).length;
+  const fullCompliance = staffProfiles.filter((p) => meets(p.complianceRate, 100)).length;
   const overdueTotal = staffProfiles.reduce(
     (sum, p) => sum + p.overdueTraining.length,
     0
@@ -103,13 +105,7 @@ export async function GET() {
   const lowConfidence = staffProfiles.filter(
     (p) => p.supervisionScore !== null && p.supervisionScore <= 3
   ).length;
-  const avgRate =
-    staffProfiles.length > 0
-      ? Math.round(
-          staffProfiles.reduce((s, p) => s + p.complianceRate, 0) /
-            staffProfiles.length
-        )
-      : 100;
+  const avgRate = meanOf(staffProfiles.map((p) => p.complianceRate));
 
   const insights: string[] = [];
   if (overdueTotal > 0) {
@@ -122,9 +118,15 @@ export async function GET() {
       `${lowConfidence} staff member${lowConfidence > 1 ? "s have" : " has"} a wellbeing or confidence score of 3 or below in their most recent supervision. Consider whether additional support or supervision is needed.`
     );
   }
+  const unrecorded = staffProfiles.filter((p) => p.complianceRate === null).length;
+  if (unrecorded > 0) {
+    insights.push(
+      `${unrecorded} staff member${unrecorded > 1 ? "s have" : " has"} no mandatory training on record. Compliance cannot be evidenced for them — an empty training file is a gap, not a pass, and is excluded from the average below.`
+    );
+  }
   if (fullCompliance < staffProfiles.length) {
     insights.push(
-      `${staffProfiles.length - fullCompliance} staff member${staffProfiles.length - fullCompliance > 1 ? "s are" : " is"} not fully compliant with mandatory training. Average compliance rate: ${avgRate}%.`
+      `${staffProfiles.length - fullCompliance} staff member${staffProfiles.length - fullCompliance > 1 ? "s are" : " is"} not fully compliant with mandatory training. Average compliance rate: ${formatRate(avgRate, "not yet measured")}.`
     );
   }
   if (fullCompliance === staffProfiles.length && staffProfiles.length > 0) {
@@ -135,11 +137,11 @@ export async function GET() {
 
   const redProfiles = staffProfiles.filter((p) => p.signal === "red").length;
   const overallSignal: SignalColour =
-    redProfiles >= 2 || avgRate < 60
+    redProfiles >= 2 || below(avgRate, 60)
       ? "red"
       : redProfiles > 0 || overdueTotal > 0 || lowConfidence > 0
       ? "amber"
-      : staffProfiles.length === 0
+      : staffProfiles.length === 0 || avgRate === null
       ? "grey"
       : "green";
 
@@ -149,7 +151,13 @@ export async function GET() {
     avgComplianceRate: avgRate,
     overdueTrainingCount: overdueTotal,
     lowConfidenceCount: lowConfidence,
-    staffProfiles: staffProfiles.sort((a, b) => a.complianceRate - b.complianceRate),
+    // Lowest measured compliance first; staff with nothing recorded sort last
+    // rather than being presented as the worst performers.
+    staffProfiles: staffProfiles.sort(
+      (a, b) =>
+        (a.complianceRate ?? Number.POSITIVE_INFINITY) -
+        (b.complianceRate ?? Number.POSITIVE_INFINITY)
+    ),
     insights,
     overallSignal,
     regulatoryNote:

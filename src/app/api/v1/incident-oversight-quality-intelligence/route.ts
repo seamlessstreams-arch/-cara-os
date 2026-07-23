@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
+import { rateOf } from "@/lib/metrics/rate";
 import type { Incident, YoungPerson } from "@/types";
 
 type IncidentOversightSignal = "urgent" | "overdue" | "pending" | "compliant";
@@ -41,8 +42,8 @@ interface IncidentOversightSummary {
   criticalWithoutOversight: number;
   physicalInterventionsWithoutOversight: number;
   avgHoursToOversight: number | null;
-  lessonsLearnedRate: number;
-  notificationAcknowledgementRate: number;
+  lessonsLearnedRate: number | null;
+  notificationAcknowledgementRate: number | null;
   signal: HomeOversightSignal;
 }
 
@@ -167,27 +168,19 @@ export async function GET() {
         )
       : null;
 
+  // No closed incidents means no lessons have been recorded yet — that is an
+  // absence of evidence, not a complete lessons-learned record.
   const closedIncidents = incidents.filter((i) => i.status === "closed");
-  const lessonsLearnedRate =
-    closedIncidents.length > 0
-      ? Math.round(
-          (closedIncidents.filter(
-            (i) => i.lessons_learned && i.lessons_learned.trim() !== ""
-          ).length /
-            closedIncidents.length) *
-            100
-        )
-      : 100;
+  const lessonsLearnedRate = rateOf(
+    closedIncidents.filter((i) => i.lessons_learned && i.lessons_learned.trim() !== ""),
+    closedIncidents
+  );
 
   const allNotifications = incidents.flatMap((i) => i.notifications ?? []);
-  const notificationAcknowledgementRate =
-    allNotifications.length > 0
-      ? Math.round(
-          (allNotifications.filter((n) => n.acknowledged).length /
-            allNotifications.length) *
-            100
-        )
-      : 100;
+  const notificationAcknowledgementRate = rateOf(
+    allNotifications.filter((n) => n.acknowledged),
+    allNotifications
+  );
 
   let homeSignal: HomeOversightSignal = "good";
   if (criticalWithoutOversight > 0 || physicalInterventionsWithoutOversight > 0) {

@@ -12,6 +12,7 @@ import {
   Brain, Copy, Loader2, Sparkles, AlertCircle, Zap, ClipboardList,
 } from "lucide-react";
 import { HOME, getStaffName } from "@/lib/seed-data";
+import { demoSeed } from "@/lib/demo/demo-seed";
 import { useHealthCheck } from "@/hooks/use-dashboard";
 import { usePatternAlerts, useActionOutcomes, useHomeClimate, useUpdateActionOutcome } from "@/hooks/use-intelligence";
 import { useAnnexAReadiness, useReg45Evidence } from "@/hooks/use-compliance-evidence";
@@ -35,7 +36,13 @@ const GRADE_COLORS: Record<string, string> = {
   "Inadequate": "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
 };
 
-const READINESS_AREAS_FALLBACK = [
+type ReadinessArea = { area: string; score: number | null; status: "good" | "warn" | "unmeasured" };
+
+// Demo fixture only. These are invented percentages, so on a live tenant they
+// would present a fabricated Ofsted readiness position for a home that has
+// evidenced nothing — demoSeed() empties them and every area falls back to
+// "not yet measured" below.
+const READINESS_AREAS_SEED: ReadinessArea[] = [
   { area: "Outcomes for young people", score: 88, status: "good" },
   { area: "How well YP are helped & protected", score: 92, status: "good" },
   { area: "Leadership & management", score: 85, status: "good" },
@@ -45,6 +52,12 @@ const READINESS_AREAS_FALLBACK = [
   { area: "Staffing & rotas", score: 89, status: "good" },
   { area: "Policies current & signed", score: 72, status: "warn" },
 ];
+
+const READINESS_AREAS_FALLBACK: ReadinessArea[] = (() => {
+  const seeded = demoSeed(READINESS_AREAS_SEED);
+  if (seeded.length > 0) return seeded;
+  return READINESS_AREAS_SEED.map((a) => ({ area: a.area, score: null, status: "unmeasured" as const }));
+})();
 
 const CLIMATE_LEVEL_COLORS: Record<string, string> = {
   settled: "text-[--cs-success]",
@@ -798,24 +811,46 @@ export default function InspectionPage() {
   const inspHistoryQuery = useInspectionHistory();
   const inspectionRecords = inspHistoryQuery.data?.data ?? [];
 
-  // With no records yet the health-check reports assessed:false — its numeric
-  // fields are placeholders, so don't derive inspection-readiness from them.
-  const readinessAreas = hc && hc.assessed !== false
-    ? [
-        { area: "Outcomes for young people",           score: hc.overall,        status: hc.overall >= 85 ? "good" : "warn" },
-        { area: "How well YP are helped & protected",  score: hc.safeguarding,   status: hc.safeguarding >= 85 ? "good" : "warn" },
-        { area: "Leadership & management",             score: hc.staffing,       status: hc.staffing >= 85 ? "good" : "warn" },
-        { area: "Training compliance",                 score: hc.compliance,     status: hc.compliance >= 85 ? "good" : "warn" },
-        { area: "Supervision compliance",              score: hc.staffing,       status: hc.staffing >= 85 ? "good" : "warn" },
-        { area: "Record keeping",                      score: hc.operational,    status: hc.operational >= 85 ? "good" : "warn" },
-        { area: "Staffing & rotas",                    score: hc.staffing,       status: hc.staffing >= 85 ? "good" : "warn" },
-        { area: "Policies current & signed",           score: hc.compliance,     status: hc.compliance >= 85 ? "good" : "warn" },
-      ]
-    : READINESS_AREAS_FALLBACK;
+  // Each area shows the health-check signal that ACTUALLY measures it, or
+  // nothing at all.
+  //
+  // This list previously borrowed numbers across domains: "Leadership &
+  // management", "Supervision compliance" and "Staffing & rotas" all rendered
+  // hc.staffing — today's shift-fill rate — so a home with zero supervisions
+  // recorded showed "Supervision compliance 100%". "Policies current & signed"
+  // rendered hc.compliance (training expiry), and "Record keeping" rendered
+  // hc.operational, which this route never returns, so it printed undefined%.
+  // Presenting one measure under another measure's name is worse than showing
+  // nothing, and worst of all on the surface that gets shown to an inspector.
+  const readinessAreas: { area: string; score: number | null; status: "good" | "warn" | "unmeasured" }[] =
+    hc && hc.assessed !== false
+      ? [
+          { area: "Outcomes for young people",          score: hc.overall },
+          { area: "How well YP are helped & protected", score: hc.safeguarding },
+          { area: "Medication handling",                score: hc.medication },
+          { area: "Staffing & rotas",                   score: hc.staffing },
+          { area: "Training compliance",                score: hc.compliance },
+          // No health-check signal measures these yet — they need supervision,
+          // recording-quality and policy sources of their own.
+          { area: "Leadership & management",            score: null },
+          { area: "Supervision compliance",             score: null },
+          { area: "Record keeping",                     score: null },
+          { area: "Policies current & signed",          score: null },
+        ].map((a) => ({
+          ...a,
+          status: a.score === null ? "unmeasured" : a.score >= 85 ? "good" : "warn",
+        }))
+      : READINESS_AREAS_FALLBACK;
 
   const nextInspectionEstimate = daysFromNow(180);
-  const avgReadiness = Math.round(readinessAreas.reduce((a, r) => a + r.score, 0) / readinessAreas.length);
+  // Average across measured areas only — an unmeasured area must not drag the
+  // figure down (nor, as before, prop it up with a borrowed number).
+  const measuredAreas = readinessAreas.filter((r) => r.score !== null);
+  const avgReadiness = measuredAreas.length > 0
+    ? Math.round(measuredAreas.reduce((a, r) => a + (r.score as number), 0) / measuredAreas.length)
+    : null;
   const warnings = readinessAreas.filter((r) => r.status === "warn").length;
+  const unmeasuredAreas = readinessAreas.filter((r) => r.status === "unmeasured").length;
 
   return (
     <PageShell
@@ -883,10 +918,14 @@ export default function InspectionPage() {
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5">
             <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Readiness Score</div>
-            <div className={cn("mt-1 text-3xl font-bold", avgReadiness >= 85 ? "text-[--cs-success]" : avgReadiness >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {avgReadiness}%
+            <div className={cn("mt-1 text-3xl font-bold", avgReadiness === null ? "text-slate-400" : avgReadiness >= 85 ? "text-[--cs-success]" : avgReadiness >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {avgReadiness === null ? "—" : `${avgReadiness}%`}
             </div>
-            <div className="text-xs text-slate-400 mt-0.5">{warnings} areas need attention</div>
+            <div className="text-xs text-slate-400 mt-0.5">
+              {avgReadiness === null
+                ? "Not yet measured"
+                : `${warnings} area${warnings === 1 ? "" : "s"} need attention${unmeasuredAreas > 0 ? ` · ${unmeasuredAreas} unmeasured` : ""}`}
+            </div>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5">
             <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Est. Next Inspection</div>
@@ -965,11 +1004,17 @@ export default function InspectionPage() {
                   <div key={area} className="space-y-1">
                     <div className="flex justify-between text-xs">
                       <span className={cn("text-slate-700", status === "warn" ? "text-[--cs-warning] font-medium" : "")}>{area}</span>
-                      <span className={cn("font-semibold", score >= 85 ? "text-[--cs-success]" : score >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{score}%</span>
+                      {score === null ? (
+                        <span className="font-medium text-[var(--cs-text-muted)]" title="No records evidence this area yet">
+                          Not yet measured
+                        </span>
+                      ) : (
+                        <span className={cn("font-semibold", score >= 85 ? "text-[--cs-success]" : score >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{score}%</span>
+                      )}
                     </div>
                     <Progress
-                      value={score}
-                      color={score >= 85 ? "bg-[--cs-success]" : score >= 70 ? "bg-[--cs-warning]" : "bg-[--cs-risk]"}
+                      value={score ?? 0}
+                      color={score === null ? "bg-[var(--cs-border)]" : score >= 85 ? "bg-[--cs-success]" : score >= 70 ? "bg-[--cs-warning]" : "bg-[--cs-risk]"}
                       className="h-1.5"
                     />
                   </div>

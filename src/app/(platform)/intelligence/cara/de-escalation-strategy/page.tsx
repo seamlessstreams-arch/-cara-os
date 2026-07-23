@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, Star, Clock } from "lucide-react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import {
   useDeEscalationStrategyIntelligence,
   type ChildBehaviourProfile,
@@ -102,8 +103,6 @@ function TimeRiskRow({ slots }: { slots: TimeSlot[] }) {
 function ChildBehaviourCard({ profile }: { profile: ChildBehaviourProfile }) {
   const [expanded, setExpanded] = useState(false);
   const meta = SIGNAL_META[profile.signal];
-  const positivePercent = profile.totalEntries > 0
-    ? Math.round((profile.positiveCount / profile.totalEntries) * 100) : 0;
 
   return (
     <Card className={`border ${profile.signal === "needs_support" ? "border-red-300" : ""}`}>
@@ -128,7 +127,7 @@ function ChildBehaviourCard({ profile }: { profile: ChildBehaviourProfile }) {
           <div className="rounded-lg border bg-muted/30 p-2 text-center">
             <p className="text-xs text-muted-foreground">Positive</p>
             <p className="text-xl font-bold text-emerald-600">{profile.positiveCount}</p>
-            <p className="text-xs text-muted-foreground">{positivePercent}%</p>
+            <p className="text-xs text-muted-foreground">{formatRate(profile.positiveRatio)}</p>
           </div>
           <div className="rounded-lg border bg-muted/30 p-2 text-center">
             <p className="text-xs text-muted-foreground">Concerning</p>
@@ -244,8 +243,13 @@ export default function DeEscalationStrategyPage() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="rounded-lg border bg-card p-4">
             <p className="text-xs text-muted-foreground">Home positive rate</p>
-            <p className={`text-2xl font-bold mt-1 ${summary.homePositiveRatio >= 60 ? "text-emerald-600" : summary.homePositiveRatio >= 40 ? "text-amber-600" : "text-red-600"}`}>
-              {summary.homePositiveRatio}%
+            <p className={`text-2xl font-bold mt-1 ${
+              summary.homePositiveRatio === null ? "text-muted-foreground"
+              : meets(summary.homePositiveRatio, 60) ? "text-emerald-600"
+              : meets(summary.homePositiveRatio, 40) ? "text-amber-600"
+              : "text-red-600"
+            }`}>
+              {formatRate(summary.homePositiveRatio)}
             </p>
             <div className="flex items-center gap-1 mt-0.5">
               <TrendIcon trend={summary.homeConcernTrend} />

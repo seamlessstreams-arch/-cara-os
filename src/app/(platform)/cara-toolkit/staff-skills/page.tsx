@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCaraToolkitStaffSkills } from "@/hooks/use-cara-toolkit-staff-skills";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import type { StaffSkillProfile, SignalColour } from "@/lib/cara-visual-toolkit/types";
 
 const SIGNAL_STYLES: Record<SignalColour, { bg: string; border: string; text: string; dot: string }> = {
@@ -11,13 +12,13 @@ const SIGNAL_STYLES: Record<SignalColour, { bg: string; border: string; text: st
   grey:  { bg: "bg-slate-50",  border: "border-slate-200",  text: "text-slate-600",  dot: "bg-slate-300"  },
 };
 
-function ComplianceBar({ rate, height = "h-2" }: { rate: number; height?: string }) {
-  const colour = rate === 100 ? "bg-green-400" : rate >= 80 ? "bg-amber-400" : "bg-red-400";
+function ComplianceBar({ rate, height = "h-2" }: { rate: number | null; height?: string }) {
+  const colour = meets(rate, 100) ? "bg-green-400" : meets(rate, 80) ? "bg-amber-400" : rate === null ? "bg-slate-200" : "bg-red-400";
   return (
     <div className={`flex-1 ${height} rounded-full bg-slate-100 overflow-hidden`}>
       <div
         className={`${height} rounded-full ${colour}`}
-        style={{ width: `${rate}%` }}
+        style={{ width: `${rate ?? 0}%` }}
       />
     </div>
   );
@@ -57,10 +58,12 @@ function StaffCard({ profile }: { profile: StaffSkillProfile }) {
           <p className="text-xs text-slate-500 mt-0.5 ml-4">{profile.role}</p>
         </div>
         <div className="text-right shrink-0">
-          <p className={`text-xl font-bold ${profile.complianceRate === 100 ? "text-green-700" : profile.complianceRate < 70 ? "text-red-700" : "text-amber-700"}`}>
-            {profile.complianceRate}%
+          <p className={`text-xl font-bold ${meets(profile.complianceRate, 100) ? "text-green-700" : below(profile.complianceRate, 70) ? "text-red-700" : profile.complianceRate === null ? "text-slate-400" : "text-amber-700"}`}>
+            {formatRate(profile.complianceRate)}
           </p>
-          <p className="text-xs text-slate-400">training compliance</p>
+          <p className="text-xs text-slate-400">
+            {profile.complianceRate === null ? "no training recorded" : "training compliance"}
+          </p>
         </div>
       </div>
 
@@ -158,8 +161,8 @@ export default function StaffSkillsPage() {
             <p className="text-xs text-slate-500">Active staff</p>
           </div>
           <div>
-            <p className={`text-2xl font-bold ${data.avgComplianceRate === 100 ? "text-green-700" : data.avgComplianceRate < 70 ? "text-red-700" : "text-amber-700"}`}>
-              {data.avgComplianceRate}%
+            <p className={`text-2xl font-bold ${meets(data.avgComplianceRate, 100) ? "text-green-700" : below(data.avgComplianceRate, 70) ? "text-red-700" : data.avgComplianceRate === null ? "text-slate-400" : "text-amber-700"}`}>
+              {formatRate(data.avgComplianceRate)}
             </p>
             <p className="text-xs text-slate-500">Avg training compliance</p>
           </div>

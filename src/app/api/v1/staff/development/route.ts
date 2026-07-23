@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { intelligenceDb } from "@/lib/intelligence/store";
+import { below, meanOf, rateOf } from "@/lib/metrics/rate";
 import { todayStr } from "@/lib/utils";
 
 export async function GET(_req: NextRequest) {
@@ -49,10 +50,9 @@ export async function GET(_req: NextRequest) {
     const currentMandatory = mandatoryRecords.filter(
       (r) => r.status === "compliant" && (!r.expiry_date || r.expiry_date >= today)
     );
-    const trainingCompliancePct =
-      mandatoryRecords.length > 0
-        ? Math.round((currentMandatory.length / mandatoryRecords.length) * 100)
-        : 100;
+    // No mandatory training on file means nothing has been evidenced for this
+    // person — not that they are fully compliant.
+    const trainingCompliancePct = rateOf(currentMandatory, mandatoryRecords);
 
     // Appraisal status
     const appraisalDue = s.next_appraisal_due;
@@ -62,7 +62,7 @@ export async function GET(_req: NextRequest) {
     let status: "on_track" | "attention" | "at_risk";
     if (urgentNeeds.length > 0 || overdueSupervision || appraisalOverdue) {
       status = "at_risk";
-    } else if (openNeeds.length > 0 || trainingCompliancePct < 80) {
+    } else if (openNeeds.length > 0 || below(trainingCompliancePct, 80)) {
       status = "attention";
     } else {
       status = "on_track";
@@ -103,9 +103,7 @@ export async function GET(_req: NextRequest) {
     at_risk: profiles.filter((p) => p.status === "at_risk").length,
     supervision_overdue: profiles.filter((p) => p.supervision_overdue).length,
     appraisal_overdue: profiles.filter((p) => p.appraisal_overdue).length,
-    avg_training_compliance: Math.round(
-      profiles.reduce((sum, p) => sum + p.training_compliance_pct, 0) / profiles.length
-    ),
+    avg_training_compliance: meanOf(profiles.map((p) => p.training_compliance_pct)),
   };
 
   return NextResponse.json({ data: profiles, summary });

@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { below, meets, rateOf } from "@/lib/metrics/rate";
 import type {
   LessonsLearnedAnalysis,
   LessonRecord,
@@ -251,10 +252,8 @@ export async function GET() {
     (l) => l.actionStatus === "not_started" || l.actionStatus === "in_progress"
   );
 
-  const completionRate =
-    withActions.length > 0
-      ? Math.round((completed.length / withActions.length) * 100)
-      : 100;
+  // No lesson carries an action, so there is nothing to have completed.
+  const completionRate = rateOf(completed, withActions);
 
   // Theme breakdown
   const themeCount: Record<string, number> = {};
@@ -295,12 +294,12 @@ export async function GET() {
       `${open.length} action${open.length > 1 ? "s are" : " is"} yet to be started or completed. Add a target date, named owner, and evidence of completion to close the learning loop.`
     );
   }
-  if (completionRate < 50 && withActions.length >= 3) {
+  if (below(completionRate, 50) && withActions.length >= 3) {
     insights.push(
       `Action completion rate is ${completionRate}%. This suggests that learning is being identified but not consistently converted into change. Review whether actions are realistic, time-bound, and ownership is clear.`
     );
   }
-  if (completionRate >= 80 && withActions.length >= 3) {
+  if (meets(completionRate, 80) && withActions.length >= 3) {
     insights.push(
       `Action completion rate is ${completionRate}%. This is a positive indicator that learning from incidents and reviews is being followed through. Continue to document evidence of change alongside each completed action.`
     );
@@ -329,9 +328,9 @@ export async function GET() {
   }
 
   // Overall signal
-  let overallSignal: SignalColour = "green";
+  let overallSignal: SignalColour = completionRate === null ? "grey" : "green";
   if (overdue.length >= 3 || r44Overdue > 0) overallSignal = "red";
-  else if (overdue.length > 0 || open.length >= 3 || completionRate < 50) overallSignal = "amber";
+  else if (overdue.length > 0 || open.length >= 3 || below(completionRate, 50)) overallSignal = "amber";
 
   const result: LessonsLearnedAnalysis = {
     totalLessons: lessons.length,

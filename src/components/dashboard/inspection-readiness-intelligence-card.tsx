@@ -16,12 +16,18 @@ import { cn } from "@/lib/utils";
 import { useInspectionReadinessIntelligence } from "@/hooks/use-inspection-readiness-intelligence";
 import type { ReadinessGrade } from "@/lib/engines/inspection-readiness-intelligence-engine";
 
+import { formatRate } from "@/lib/metrics/rate";
+
 const GRADE_STYLES: Record<ReadinessGrade, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
   good: { bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-300", label: "GOOD" },
   requires_improvement: { bg: "bg-amber-100", text: "text-amber-800", border: "border-amber-300", label: "RI" },
   inadequate: { bg: "bg-red-100", text: "text-red-800", border: "border-red-300", label: "INADEQUATE" },
 };
+
+// No records = no grade. Falling back to GOOD, as this card used to, told a
+// manager their home was fine on the strength of nothing at all.
+const UNGRADED = { bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-300", label: "NOT YET MEASURED" };
 
 const EVIDENCE_STYLES: Record<string, string> = {
   strong: "bg-green-500",
@@ -59,7 +65,7 @@ export function InspectionReadinessIntelligenceCard() {
   const d = data?.data;
   if (!d) return null;
 
-  const gradeStyle = GRADE_STYLES[d.overall_grade] ?? GRADE_STYLES.good;
+  const gradeStyle = d.overall_grade === null ? UNGRADED : (GRADE_STYLES[d.overall_grade] ?? UNGRADED);
   const criticalGaps = d.regulatory_gaps.filter((g) => g.severity === "critical").length;
   const nonCompliant = d.compliance_matrix.filter((c) => !c.compliant).length;
 
@@ -73,7 +79,7 @@ export function InspectionReadinessIntelligenceCard() {
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", gradeStyle.bg, gradeStyle.text, gradeStyle.border)}>
               {gradeStyle.label}
             </span>
-            <span className="text-xs font-bold tabular-nums text-slate-600">{d.overall_readiness_score}%</span>
+            <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.overall_readiness_score)}</span>
           </CardTitle>
           <Link href="/inspection-readiness" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
             Full Report <ChevronRight className="h-3 w-3" />
@@ -85,13 +91,13 @@ export function InspectionReadinessIntelligenceCard() {
         {/* SCCIF Judgment Areas */}
         <div className="grid grid-cols-3 gap-2">
           {d.judgment_areas.map((ja) => {
-            const jaStyle = GRADE_STYLES[ja.grade] ?? GRADE_STYLES.good;
+            const jaStyle = ja.grade === null ? UNGRADED : (GRADE_STYLES[ja.grade] ?? UNGRADED);
             return (
               <div key={ja.area} className="rounded border p-2 text-center">
                 <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full border inline-block mb-1", jaStyle.bg, jaStyle.text, jaStyle.border)}>
                   {jaStyle.label}
                 </span>
-                <p className="text-lg font-bold tabular-nums text-slate-600">{ja.score}%</p>
+                <p className="text-lg font-bold tabular-nums text-slate-600">{formatRate(ja.score)}</p>
                 <p className="text-[10px] text-muted-foreground leading-tight">{ja.area_label.split(" ").slice(1, 4).join(" ")}</p>
               </div>
             );

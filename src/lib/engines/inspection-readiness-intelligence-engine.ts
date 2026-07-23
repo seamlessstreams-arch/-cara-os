@@ -7,6 +7,8 @@
 // CHR 2015 (all regulations). SCCIF: All three judgment areas.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meanOf, meets, below } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface InspectionReadinessInput {
@@ -30,7 +32,16 @@ export interface InspectionReadinessInput {
 export interface DomainMetric {
   domain: string;
   domain_label: string;
-  compliance_rate: number;
+  /**
+   * null = nothing recorded in this domain, so its compliance is UNKNOWN.
+   *
+   * This used to default to a flattering literal (safeguarding was
+   * `criticalIncidents === 0 ? 85 : 60`), which meant a home that had evidenced
+   * nothing still scored 85% on safeguarding readiness. Ofsted judges on
+   * evidence — an empty domain is a gap, not a pass — so an unmeasured domain
+   * now scores nothing and is reported under `gaps` instead.
+   */
+  compliance_rate: number | null;
   critical_alerts: number;
   high_alerts: number;
   overdue_count: number;
@@ -72,9 +83,11 @@ export interface ComplaintsSummary {
 }
 
 export interface StaffComplianceSummary {
-  dbs_compliance_rate: number;
-  training_compliance_rate: number;
-  supervision_compliance_rate: number;
+  // null when there are no staff / no mandatory-training records to measure
+  // against. An empty register is not 100% compliance.
+  dbs_compliance_rate: number | null;
+  training_compliance_rate: number | null;
+  supervision_compliance_rate: number | null;
   staff_with_overdue_dbs: number;
   staff_with_overdue_training: number;
   staff_with_overdue_supervision: number;
@@ -85,13 +98,13 @@ export interface ChildrenPlansSummary {
   children_with_current_risk_assessment: number;
   children_with_overdue_lac_review: number;
   children_with_health_assessment: number;
-  pep_completion_rate: number;
+  pep_completion_rate: number | null;
 }
 
 export interface SafeguardingSummary {
   open_referrals: number;
   lado_referrals_this_year: number;
-  return_interview_completion_rate: number;
+  return_interview_completion_rate: number | null;
   missing_episodes_this_quarter: number;
   exploitation_screenings_current: number;
 }
@@ -104,9 +117,14 @@ export type JudgmentArea = "overall_experiences" | "helped_and_protected" | "lea
 export interface InspectionReadinessResult {
   generated_at: string;
   home_name: string;
-  overall_readiness_score: number;
-  overall_grade: ReadinessGrade;
+  // null when not one judgment area could be measured — a home with no records
+  // has no readiness position, and inventing one is the failure mode this
+  // engine exists to avoid.
+  overall_readiness_score: number | null;
+  overall_grade: ReadinessGrade | null;
   headline: string;
+  /** Domains with no records at all, named so the UI can say what is missing. */
+  unmeasured_domains: string[];
 
   judgment_areas: JudgmentAreaScore[];
   regulatory_gaps: RegulatoryGap[];
@@ -120,8 +138,9 @@ export interface InspectionReadinessResult {
 export interface JudgmentAreaScore {
   area: JudgmentArea;
   area_label: string;
-  score: number;
-  grade: ReadinessGrade;
+  /** null when no contributing domain has any records. */
+  score: number | null;
+  grade: ReadinessGrade | null;
   contributing_domains: string[];
   strengths: string[];
   gaps: string[];
@@ -156,8 +175,9 @@ export interface ReadinessAction {
 export interface ComplianceItem {
   area: string;
   regulation: string;
+  /** Unmeasured is never compliant — absence of evidence is not evidence of compliance. */
   compliant: boolean;
-  rate: number;
+  rate: number | null;
   detail: string;
 }
 
@@ -218,11 +238,21 @@ export function computeInspectionReadiness(input: InspectionReadinessInput): Ins
   const actionPriorities = buildActionPriorities(input, regulatoryGaps, keyRisks);
   const insights = generateInsights(input, judgmentAreas, regulatoryGaps);
 
-  const overallScore = Math.round(
-    judgmentAreas.reduce((s, j) => s + j.score, 0) / judgmentAreas.length,
+  // Measured areas only. An area with no records contributes nothing rather
+  // than a default, so a single evidenced domain cannot be diluted — or
+  // flattered — by the silence around it.
+  const overallScore = meanOf(judgmentAreas.map((j) => j.score));
+  const overallGrade = overallScore === null ? null : scoreToGrade(overallScore);
+  const unmeasuredDomains = input.domain_metrics
+    .filter((d) => d.compliance_rate === null)
+    .map((d) => d.domain_label);
+  const headline = generateHeadline(
+    input.home_name,
+    overallGrade,
+    overallScore,
+    regulatoryGaps,
+    unmeasuredDomains,
   );
-  const overallGrade = scoreToGrade(overallScore);
-  const headline = generateHeadline(input.home_name, overallGrade, overallScore, regulatoryGaps);
 
   return {
     generated_at: input.today,
@@ -230,6 +260,7 @@ export function computeInspectionReadiness(input: InspectionReadinessInput): Ins
     overall_readiness_score: overallScore,
     overall_grade: overallGrade,
     headline,
+    unmeasured_domains: unmeasuredDomains,
     judgment_areas: judgmentAreas,
     regulatory_gaps: regulatoryGaps,
     evidence_strength: evidenceStrength,
@@ -251,45 +282,54 @@ function computeJudgmentAreas(input: InspectionReadinessInput): JudgmentAreaScor
     );
     const contributingDomains = domains.map((d) => d.domain_label);
 
-    let score = 70;
-    if (domains.length > 0) {
-      const avgCompliance = Math.round(domains.reduce((s, d) => s + d.compliance_rate, 0) / domains.length);
-      score = avgCompliance;
-    }
+    // Only domains that actually hold records can score the area. When none do,
+    // the area stays null all the way through: the deductions below would
+    // otherwise manufacture a precise-looking number (70 minus a few fives)
+    // out of an empty home.
+    let score = meanOf(domains.map((d) => d.compliance_rate));
 
-    // Adjust based on area-specific factors
-    if (area === "helped_and_protected") {
-      if (input.safeguarding_summary.open_referrals > 0) score -= 5;
-      if (input.safeguarding_summary.return_interview_completion_rate < 100) score -= 5;
-      if (input.safeguarding_summary.missing_episodes_this_quarter > 2) score -= 5;
-      if (input.children_plans.children_with_current_risk_assessment < input.total_children) score -= 5;
-    }
+    if (score !== null) {
+      // Adjust based on area-specific factors
+      if (area === "helped_and_protected") {
+        if (input.safeguarding_summary.open_referrals > 0) score -= 5;
+        if (below(input.safeguarding_summary.return_interview_completion_rate, 100)) score -= 5;
+        if (input.safeguarding_summary.missing_episodes_this_quarter > 2) score -= 5;
+        if (input.children_plans.children_with_current_risk_assessment < input.total_children) score -= 5;
+      }
 
-    if (area === "overall_experiences") {
-      if (input.children_plans.children_with_overdue_lac_review > 0) score -= 5;
-      if (input.children_plans.pep_completion_rate < 100) score -= 3;
-      const totalCritical = domains.reduce((s, d) => s + d.critical_alerts, 0);
-      if (totalCritical > 0) score -= totalCritical * 5;
-    }
+      if (area === "overall_experiences") {
+        if (input.children_plans.children_with_overdue_lac_review > 0) score -= 5;
+        if (below(input.children_plans.pep_completion_rate, 100)) score -= 3;
+        const totalCritical = domains.reduce((s, d) => s + d.critical_alerts, 0);
+        if (totalCritical > 0) score -= totalCritical * 5;
+      }
 
-    if (area === "leadership_and_management") {
-      if (!input.self_evaluation.has_current_sef) score -= 10;
-      if (input.staff_compliance.dbs_compliance_rate < 100) score -= 10;
-      if (input.staff_compliance.supervision_compliance_rate < 85) score -= 5;
-      if (input.reg44_status.actions_outstanding > 3) score -= 5;
-      if (!input.reg45_status.report_submitted_on_time) score -= 5;
-    }
+      if (area === "leadership_and_management") {
+        if (!input.self_evaluation.has_current_sef) score -= 10;
+        if (below(input.staff_compliance.dbs_compliance_rate, 100)) score -= 10;
+        if (below(input.staff_compliance.supervision_compliance_rate, 85)) score -= 5;
+        if (input.reg44_status.actions_outstanding > 3) score -= 5;
+        if (!input.reg45_status.report_submitted_on_time) score -= 5;
+      }
 
-    score = Math.max(0, Math.min(100, score));
+      score = Math.max(0, Math.min(100, score));
+    }
 
     const strengths: string[] = [];
     const gaps: string[] = [];
 
     for (const d of domains) {
-      if (d.compliance_rate >= 90 && d.critical_alerts === 0) {
+      // An unmeasured domain is an evidence gap, not a neutral omission —
+      // Ofsted judges on what a home can show, so "nothing recorded" is itself
+      // the finding and belongs in front of the manager.
+      if (d.compliance_rate === null) {
+        gaps.push(`${d.domain_label}: no records yet — nothing to evidence`);
+        continue;
+      }
+      if (meets(d.compliance_rate, 90) && d.critical_alerts === 0) {
         strengths.push(`${d.domain_label} at ${d.compliance_rate}% compliance`);
       }
-      if (d.compliance_rate < 80) {
+      if (below(d.compliance_rate, 80)) {
         gaps.push(`${d.domain_label} compliance at ${d.compliance_rate}%`);
       }
       if (d.overdue_count > 0) {
@@ -301,7 +341,7 @@ function computeJudgmentAreas(input: InspectionReadinessInput): JudgmentAreaScor
       area,
       area_label: JUDGMENT_LABELS[area],
       score,
-      grade: scoreToGrade(score),
+      grade: score === null ? null : scoreToGrade(score),
       contributing_domains: contributingDomains,
       strengths: strengths.slice(0, 5),
       gaps: gaps.slice(0, 5),
@@ -314,7 +354,7 @@ function computeJudgmentAreas(input: InspectionReadinessInput): JudgmentAreaScor
 function identifyRegulatoryGaps(input: InspectionReadinessInput): RegulatoryGap[] {
   const gaps: RegulatoryGap[] = [];
 
-  if (input.staff_compliance.dbs_compliance_rate < 100) {
+  if (below(input.staff_compliance.dbs_compliance_rate, 100)) {
     gaps.push({
       regulation: "Reg 32",
       regulation_label: "Fitness of workers",
@@ -325,7 +365,7 @@ function identifyRegulatoryGaps(input: InspectionReadinessInput): RegulatoryGap[
     });
   }
 
-  if (input.staff_compliance.supervision_compliance_rate < 85) {
+  if (below(input.staff_compliance.supervision_compliance_rate, 85)) {
     gaps.push({
       regulation: "Reg 33",
       regulation_label: "Employment of staff",
@@ -360,7 +400,7 @@ function identifyRegulatoryGaps(input: InspectionReadinessInput): RegulatoryGap[
     });
   }
 
-  if (input.safeguarding_summary.return_interview_completion_rate < 100) {
+  if (below(input.safeguarding_summary.return_interview_completion_rate, 100)) {
     gaps.push({
       regulation: "Reg 34",
       regulation_label: "Contact and access",
@@ -415,7 +455,7 @@ function identifyRegulatoryGaps(input: InspectionReadinessInput): RegulatoryGap[
     });
   }
 
-  if (input.staff_compliance.training_compliance_rate < 85) {
+  if (below(input.staff_compliance.training_compliance_rate, 85)) {
     gaps.push({
       regulation: "Reg 33",
       regulation_label: "Employment of staff",
@@ -467,7 +507,9 @@ function assessEvidenceStrength(input: InspectionReadinessInput): EvidenceStreng
       category: "staff_files",
       label: "Staff Safer Recruitment Files",
       check: () => {
-        const rate = input.staff_compliance.dbs_compliance_rate / 100;
+        const pct = input.staff_compliance.dbs_compliance_rate;
+        if (pct === null) return { strength: "missing", count: 0, updated: null };
+        const rate = pct / 100;
         return { strength: rate >= 1 ? "strong" : rate >= 0.9 ? "adequate" : rate > 0 ? "weak" : "missing", count: Math.round(rate * input.total_staff), updated: null };
       },
     },
@@ -506,10 +548,10 @@ function assessEvidenceStrength(input: InspectionReadinessInput): EvidenceStreng
       category: "supervision",
       label: "Staff Supervision Records",
       check: () => ({
-        strength: input.staff_compliance.supervision_compliance_rate >= 90 ? "strong" :
-                  input.staff_compliance.supervision_compliance_rate >= 75 ? "adequate" :
-                  input.staff_compliance.supervision_compliance_rate > 0 ? "weak" : "missing",
-        count: Math.round(input.staff_compliance.supervision_compliance_rate * input.total_staff / 100),
+        strength: meets(input.staff_compliance.supervision_compliance_rate, 90) ? "strong" :
+                  meets(input.staff_compliance.supervision_compliance_rate, 75) ? "adequate" :
+                  meets(input.staff_compliance.supervision_compliance_rate, 1) ? "weak" : "missing",
+        count: Math.round((input.staff_compliance.supervision_compliance_rate ?? 0) * input.total_staff / 100),
         updated: null,
       }),
     },
@@ -517,10 +559,10 @@ function assessEvidenceStrength(input: InspectionReadinessInput): EvidenceStreng
       category: "training",
       label: "Training Records",
       check: () => ({
-        strength: input.staff_compliance.training_compliance_rate >= 90 ? "strong" :
-                  input.staff_compliance.training_compliance_rate >= 75 ? "adequate" :
-                  input.staff_compliance.training_compliance_rate > 0 ? "weak" : "missing",
-        count: Math.round(input.staff_compliance.training_compliance_rate * input.total_staff / 100),
+        strength: meets(input.staff_compliance.training_compliance_rate, 90) ? "strong" :
+                  meets(input.staff_compliance.training_compliance_rate, 75) ? "adequate" :
+                  meets(input.staff_compliance.training_compliance_rate, 1) ? "weak" : "missing",
+        count: Math.round((input.staff_compliance.training_compliance_rate ?? 0) * input.total_staff / 100),
         updated: null,
       }),
     },
@@ -546,7 +588,7 @@ function buildComplianceMatrix(input: InspectionReadinessInput): ComplianceItem[
   items.push({
     area: "DBS Checks",
     regulation: "Reg 32",
-    compliant: input.staff_compliance.dbs_compliance_rate >= 100,
+    compliant: meets(input.staff_compliance.dbs_compliance_rate, 100),
     rate: input.staff_compliance.dbs_compliance_rate,
     detail: input.staff_compliance.staff_with_overdue_dbs > 0
       ? `${input.staff_compliance.staff_with_overdue_dbs} staff overdue`
@@ -556,7 +598,7 @@ function buildComplianceMatrix(input: InspectionReadinessInput): ComplianceItem[
   items.push({
     area: "Staff Supervision",
     regulation: "Reg 33",
-    compliant: input.staff_compliance.supervision_compliance_rate >= 85,
+    compliant: meets(input.staff_compliance.supervision_compliance_rate, 85),
     rate: input.staff_compliance.supervision_compliance_rate,
     detail: `${input.staff_compliance.staff_with_overdue_supervision} overdue`,
   });
@@ -564,7 +606,7 @@ function buildComplianceMatrix(input: InspectionReadinessInput): ComplianceItem[
   items.push({
     area: "Training",
     regulation: "Reg 33",
-    compliant: input.staff_compliance.training_compliance_rate >= 85,
+    compliant: meets(input.staff_compliance.training_compliance_rate, 85),
     rate: input.staff_compliance.training_compliance_rate,
     detail: `${input.staff_compliance.staff_with_overdue_training} staff need training`,
   });
@@ -619,7 +661,7 @@ function buildComplianceMatrix(input: InspectionReadinessInput): ComplianceItem[
 function identifyKeyRisks(input: InspectionReadinessInput): KeyRisk[] {
   const risks: KeyRisk[] = [];
 
-  if (input.staff_compliance.dbs_compliance_rate < 100) {
+  if (below(input.staff_compliance.dbs_compliance_rate, 100)) {
     risks.push({
       risk: "Staff working without current DBS",
       impact: "Immediate judgment of inadequate on leadership if discovered during inspection",
@@ -750,16 +792,28 @@ function buildActionPriorities(
 
 function generateHeadline(
   homeName: string,
-  grade: ReadinessGrade,
-  score: number,
+  grade: ReadinessGrade | null,
+  score: number | null,
   gaps: RegulatoryGap[],
+  unmeasuredDomains: string[],
 ): string {
   const criticalGaps = gaps.filter((g) => g.severity === "critical").length;
 
-  if (grade === "outstanding") return `${homeName} is well-prepared for inspection — ${score}% readiness across all SCCIF areas`;
-  if (grade === "good") return `${homeName} demonstrates good inspection readiness at ${score}% — ${criticalGaps > 0 ? `${criticalGaps} critical gap(s) to address` : "continue strengthening evidence"}`;
-  if (grade === "requires_improvement") return `${homeName} has significant gaps at ${score}% readiness — ${criticalGaps} critical regulatory gap(s) require immediate action`;
-  return `${homeName} has serious regulatory non-compliance at ${score}% readiness — urgent remediation required across multiple areas`;
+  // Nothing recorded anywhere. Say so plainly rather than reaching for the
+  // "inadequate" wording — a home that has not started recording is not the
+  // same as a home that is failing, and the manager needs the difference.
+  if (grade === null || score === null) {
+    return `${homeName} has no records yet to assess inspection readiness against — readiness appears once daily recording begins`;
+  }
+
+  const caveat = unmeasuredDomains.length > 0
+    ? ` (${unmeasuredDomains.length} domain${unmeasuredDomains.length === 1 ? "" : "s"} not yet evidenced: ${unmeasuredDomains.join(", ")})`
+    : "";
+
+  if (grade === "outstanding") return `${homeName} is well-prepared for inspection — ${score}% readiness across all SCCIF areas${caveat}`;
+  if (grade === "good") return `${homeName} demonstrates good inspection readiness at ${score}% — ${criticalGaps > 0 ? `${criticalGaps} critical gap(s) to address` : "continue strengthening evidence"}${caveat}`;
+  if (grade === "requires_improvement") return `${homeName} has significant gaps at ${score}% readiness — ${criticalGaps} critical regulatory gap(s) require immediate action${caveat}`;
+  return `${homeName} has serious regulatory non-compliance at ${score}% readiness — urgent remediation required across multiple areas${caveat}`;
 }
 
 // ── Insights ────────────────────────────────────────────────────────────────
@@ -781,7 +835,7 @@ function generateInsights(
     insights.push({ text: `${criticalGaps.length} critical regulatory gap(s) would likely result in requirements/actions during inspection.`, severity: "critical" });
   }
 
-  if (input.staff_compliance.dbs_compliance_rate < 100) {
+  if (below(input.staff_compliance.dbs_compliance_rate, 100)) {
     insights.push({ text: "DBS non-compliance is the single highest-risk finding in any Ofsted inspection — address immediately.", severity: "critical" });
   }
 
@@ -789,7 +843,7 @@ function generateInsights(
     insights.push({ text: "Strong self-evaluation with high action completion demonstrates reflective leadership practice.", severity: "positive" });
   }
 
-  if (input.safeguarding_summary.return_interview_completion_rate >= 100 && input.safeguarding_summary.missing_episodes_this_quarter > 0) {
+  if (meets(input.safeguarding_summary.return_interview_completion_rate, 100) && input.safeguarding_summary.missing_episodes_this_quarter > 0) {
     insights.push({ text: "All return interviews completed — evidence of strong safeguarding response to missing episodes.", severity: "positive" });
   }
 

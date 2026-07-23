@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle, Clock, GraduationCap } from "lucide-react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import {
   useStaffTrainingComplianceIntelligence,
   type StaffTrainingProfile,
@@ -19,6 +20,8 @@ const SIGNAL_META: Record<TrainingSignal, { label: string; color: string; bg: st
   non_compliant: { label: "Non-Compliant", color: "text-red-700",    bg: "bg-red-50 border-red-200" },
   expiring:      { label: "Expiring Soon", color: "text-amber-700",  bg: "bg-amber-50 border-amber-200" },
   compliant:     { label: "Compliant",     color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
+  // Neutral, not green: nothing has been checked, so nothing has passed.
+  not_recorded:  { label: "Not Recorded",  color: "text-slate-600",  bg: "bg-slate-50 border-slate-200" },
 };
 
 function SignalBadge({ signal }: { signal: TrainingSignal }) {
@@ -49,16 +52,18 @@ function StatusChip({ status }: { status: string }) {
 
 // ── Compliance bar ─────────────────────────────────────────────────────────────
 
-function ComplianceBar({ rate }: { rate: number }) {
-  const color = rate === 100 ? "bg-emerald-500" : rate >= 75 ? "bg-amber-400" : "bg-red-500";
+function ComplianceBar({ rate }: { rate: number | null }) {
+  const color = meets(rate, 100) ? "bg-emerald-500" : meets(rate, 75) ? "bg-amber-400" : "bg-red-500";
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>Mandatory compliance</span>
-        <span className="font-medium">{rate}%</span>
+        <span className="font-medium">{formatRate(rate)}</span>
       </div>
       <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-        <div className={`h-2 rounded-full ${color}`} style={{ width: `${rate}%` }} />
+        {rate !== null && (
+          <div className={`h-2 rounded-full ${color}`} style={{ width: `${rate}%` }} />
+        )}
       </div>
     </div>
   );
@@ -168,7 +173,14 @@ function StaffTrainingCard({ profile }: { profile: StaffTrainingProfile }) {
           </div>
         )}
 
-        {profile.issues.length === 0 && profile.signal === "compliant" && (
+        {profile.mandatoryTotal === 0 && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            No mandatory training records held — nothing evidenced either way
+          </div>
+        )}
+
+        {profile.mandatoryTotal > 0 && profile.issues.length === 0 && profile.signal === "compliant" && (
           <div className="flex items-center gap-2 text-xs text-emerald-700">
             <CheckCircle className="h-3.5 w-3.5 shrink-0" />
             All mandatory training records current
@@ -256,8 +268,13 @@ export default function StaffTrainingCompliancePage() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="rounded-lg border bg-card p-4">
             <p className="text-xs text-muted-foreground">Overall compliance</p>
-            <p className={`text-2xl font-bold mt-1 ${summary.overallMandatoryComplianceRate === 100 ? "text-emerald-600" : summary.overallMandatoryComplianceRate >= 75 ? "text-amber-600" : "text-red-600"}`}>
-              {summary.overallMandatoryComplianceRate}%
+            <p className={`text-2xl font-bold mt-1 ${
+              summary.overallMandatoryComplianceRate === null ? "text-muted-foreground"
+              : meets(summary.overallMandatoryComplianceRate, 100) ? "text-emerald-600"
+              : meets(summary.overallMandatoryComplianceRate, 75) ? "text-amber-600"
+              : "text-red-600"
+            }`}>
+              {formatRate(summary.overallMandatoryComplianceRate)}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">mandatory records</p>
           </div>
@@ -289,6 +306,14 @@ export default function StaffTrainingCompliancePage() {
             <p className="text-2xl font-bold text-emerald-600 mt-1">{summary.compliantStaff}</p>
             <p className="text-xs text-muted-foreground mt-0.5">staff members</p>
           </button>
+          <button
+            onClick={() => setFilter("not_recorded")}
+            className="rounded-lg border bg-card p-4 text-left hover:border-primary transition-colors"
+          >
+            <p className="text-xs text-muted-foreground">No records held</p>
+            <p className="text-2xl font-bold text-slate-600 mt-1">{summary.notRecordedStaff}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">staff members</p>
+          </button>
         </div>
 
         {/* Categories at risk */}
@@ -310,6 +335,7 @@ export default function StaffTrainingCompliancePage() {
               { key: "non_compliant", label: `Non-Compliant (${summary.nonCompliantStaff})` },
               { key: "expiring",      label: `Expiring Soon (${summary.expiringStaff})` },
               { key: "compliant",     label: `Compliant (${summary.compliantStaff})` },
+              { key: "not_recorded",  label: `Not Recorded (${summary.notRecordedStaff})` },
             ] as { key: Filter; label: string }[]
           ).map(({ key, label }) => (
             <Button

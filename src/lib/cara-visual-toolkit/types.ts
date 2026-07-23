@@ -188,7 +188,8 @@ export type LessonsLearnedAnalysis = {
   completedActions: number;
   overdueActions: number;
   openActions: number;
-  actionCompletionRate: number;
+  /** null when no lesson has an action attached — nothing to complete. */
+  actionCompletionRate: number | null;
   themeBreakdown: { theme: LessonTheme; label: string; count: number }[];
   sourceBreakdown: { source: LessonSource; label: string; count: number }[];
   lessons: LessonRecord[];
@@ -362,7 +363,8 @@ export type StaffSkillProfile = {
   role: string;
   mandatoryTotal: number;
   mandatoryCompliant: number;
-  complianceRate: number;
+  /** null when no mandatory training is recorded for this staff member. */
+  complianceRate: number | null;
   overdueTraining: string[];
   supervisionScore: number | null;
   confidenceLevel: string | null;
@@ -374,7 +376,7 @@ export type StaffSkillProfile = {
 export type StaffSkillsAnalysis = {
   totalStaff: number;
   fullCompliance: number;
-  avgComplianceRate: number;
+  avgComplianceRate: number | null;
   overdueTrainingCount: number;
   lowConfidenceCount: number;
   staffProfiles: StaffSkillProfile[];
@@ -388,14 +390,16 @@ export type StaffSkillsAnalysis = {
 export type QualityDimension = {
   id: string;
   label: string;
-  score: number;
+  /** null when the dimension has no records to score against. */
+  score: number | null;
   signal: SignalColour;
   evidence: string[];
   gaps: string[];
 };
 
 export type QualityOfCareAnalysis = {
-  overallScore: number;
+  /** Mean of the measured dimensions only; null when none are measured. */
+  overallScore: number | null;
   overallSignal: SignalColour;
   dimensions: QualityDimension[];
   strengths: string[];

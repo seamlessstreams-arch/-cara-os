@@ -11,14 +11,14 @@ const SIGNAL_STYLES: Record<SignalColour, { bg: string; border: string; text: st
   grey:  { bg: "bg-slate-50",  border: "border-slate-200",  text: "text-slate-600",  dot: "bg-slate-300",  label: "No data"  },
 };
 
-function ScoreDial({ score, signal }: { score: number; signal: SignalColour }) {
-  const colour = signal === "green" ? "text-green-700" : signal === "amber" ? "text-amber-700" : "text-red-700";
-  const ring = signal === "green" ? "border-green-300" : signal === "amber" ? "border-amber-300" : "border-red-300";
-  const bg   = signal === "green" ? "bg-green-50"    : signal === "amber" ? "bg-amber-50"    : "bg-red-50";
+function ScoreDial({ score, signal }: { score: number | null; signal: SignalColour }) {
+  const colour = signal === "green" ? "text-green-700" : signal === "amber" ? "text-amber-700" : signal === "grey" ? "text-slate-500" : "text-red-700";
+  const ring = signal === "green" ? "border-green-300" : signal === "amber" ? "border-amber-300" : signal === "grey" ? "border-slate-300" : "border-red-300";
+  const bg   = signal === "green" ? "bg-green-50"    : signal === "amber" ? "bg-amber-50"    : signal === "grey" ? "bg-slate-50"    : "bg-red-50";
   return (
     <div className={`w-20 h-20 rounded-full border-4 flex flex-col items-center justify-center shrink-0 ${ring} ${bg}`}>
-      <p className={`text-2xl font-black ${colour}`}>{score}</p>
-      <p className={`text-xs font-medium ${colour}`}>/100</p>
+      <p className={`text-2xl font-black ${colour}`}>{score ?? "—"}</p>
+      <p className={`text-xs font-medium ${colour}`}>{score === null ? "not measured" : "/100"}</p>
     </div>
   );
 }
@@ -37,8 +37,8 @@ function DimensionCard({ dim }: { dim: QualityDimension }) {
           {/* Score bar */}
           <div className="h-2 rounded-full bg-slate-200 overflow-hidden mb-2">
             <div
-              className={`h-2 rounded-full ${dim.signal === "green" ? "bg-green-400" : dim.signal === "amber" ? "bg-amber-400" : "bg-red-400"}`}
-              style={{ width: `${dim.score}%` }}
+              className={`h-2 rounded-full ${dim.signal === "green" ? "bg-green-400" : dim.signal === "amber" ? "bg-amber-400" : dim.signal === "grey" ? "bg-slate-300" : "bg-red-400"}`}
+              style={{ width: `${dim.score ?? 0}%` }}
             />
           </div>
           <div className="flex flex-col gap-1">
