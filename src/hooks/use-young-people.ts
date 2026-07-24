@@ -66,3 +66,33 @@ export function useCreateYoungPerson() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["young-people"] }),
   });
 }
+
+// ── Admit a child (referral-seeded intake) ────────────────────────────────────
+// One request: creates the young person, files the initial referral through the
+// smart-documents pipeline, seeds draft risk assessments from its extracted
+// risk factors, and instantiates the New Placement Admission workflow as dated
+// tasks. All deterministic — no AI credits involved.
+export interface AdmitChildPayload extends Partial<YoungPerson> {
+  referral_text?: string;
+  referral_file_name?: string;
+  referral_file_type?: string;
+}
+
+export interface AdmitChildResult {
+  young_person: YoungPerson;
+  tasks_created: { id: string; title: string; due_date: string; priority: string }[];
+  document: { id: string; category: string; status: string; suggested_tasks: number } | null;
+  risk_assessments: { id: string; domain: string }[];
+}
+
+export function useAdmitChild() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AdmitChildPayload) => api.post<{ data: AdmitChildResult }>("/admissions/admit", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["young-people"] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["doc-intelligence"] });
+    },
+  });
+}

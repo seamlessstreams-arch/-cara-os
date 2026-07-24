@@ -27,19 +27,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { db } from "@/lib/db/store";
 import { readJsonBody } from "@/lib/http/read-json";
-import { generateId, todayStr } from "@/lib/utils";
-import {
-  analyseDocumentText,
-  classifyTableCategory,
-  deriveUploadedDocument,
-  fileTypeFromMime,
-  statusForAnalysis,
-} from "@/lib/compliance/uploaded-document-bridge";
+import { todayStr } from "@/lib/utils";
+import { deriveUploadedDocument } from "@/lib/compliance/uploaded-document-bridge";
+import { performSmartUpload } from "@/lib/compliance/smart-upload";
 import type { UploadedDocument } from "@/types/documents";
-
-// Enough text for the date/action extraction to work with, while staying an
-// excerpt rather than an unbounded blob in the documents table.
-const TEXT_LIMIT = 20_000;
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -84,89 +75,16 @@ export async function POST(req: NextRequest) {
   if (!parsed.ok) return parsed.response;
   const b = parsed.data as Record<string, unknown>;
 
-  const name = (b.original_file_name as string) || "Uploaded document";
-  const ctx = (b.upload_context as string) || "";
-  const text = ((b.extracted_text as string) || "").slice(0, TEXT_LIMIT);
-  const actorId = (b.actor_id as string) || "staff_darren";
-  const now = new Date().toISOString();
-  const today = todayStr();
-
-  const tableCategory = classifyTableCategory(name, ctx);
-
-  // ── Deterministic analysis (no AI, no credits) ─────────────────────────────
-  const aiResult = analyseDocumentText({ text, fileName: name, title: name, tableCategory, today });
-
-  // ── Durable record: the documents table via the dual-mode dal ──────────────
-  const doc = await dal.documents.create({
-    title: name,
-    category: tableCategory,
-    description: text || null,
-    file_name: name,
-    file_size: (b.file_size as number) || 0,
-    mime_type: (b.file_type as string) || "",
-    file_url: "",
-    version: 1,
-    requires_read_sign: false,
-    linked_child_id: (b.linked_child_id as string) ?? null,
-    linked_staff_id: (b.linked_staff_id as string) ?? null,
-    linked_incident_id: (b.linked_incident_id as string) ?? null,
-    tags: ctx ? [ctx] : [],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const docId = (doc as any)?.id ?? generateId("doc");
-
-  // ── Smart record: full UploadedDocument powering review → approve ──────────
-  const uploaded: UploadedDocument = {
-    id: docId,
-    original_file_name: name,
-    stored_file_path: "",
-    file_type: fileTypeFromMime((b.file_type as string) || ""),
-    file_size: (b.file_size as number) || 0,
-    uploaded_by: actorId,
-    uploaded_at: now,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    linked_home_id: ((doc as any)?.home_id as string) || "",
-    linked_child_id: (b.linked_child_id as string) ?? null,
-    linked_staff_id: (b.linked_staff_id as string) ?? null,
-    linked_incident_id: (b.linked_incident_id as string) ?? null,
-    linked_task_id: null,
-    document_status: statusForAnalysis(aiResult),
-    document_category: aiResult.document_category,
-    classification_confidence: aiResult.confidence,
-    ai_summary: aiResult.ai_summary,
-    ai_risk_level: aiResult.ai_risk_level,
-    review_required: aiResult.review_required,
-    approved_by: null,
-    approved_at: null,
-    extracted_text: text,
-    ai_result: aiResult,
-    tasks_created: [],
-    evidence_linked: false,
-    chronology_created: false,
-    upload_context: ctx || null,
-    created_at: now,
-    updated_at: now,
-  };
-  db.uploadedDocuments.create(uploaded);
-
-  db.documentAuditLog.append({
-    id: generateId("dal"),
-    document_id: docId,
-    action: "document_uploaded",
-    actor_id: actorId,
-    timestamp: now,
-    details: `Uploaded "${name}" (${text.length} chars extracted)`,
-    ai_confidence: null,
-  });
-  db.documentAuditLog.append({
-    id: generateId("dal"),
-    document_id: docId,
-    action: "analysis_completed",
-    actor_id: "cara_deterministic",
-    timestamp: now,
-    details: `Deterministic analysis: ${aiResult.document_category_label}, ${aiResult.suggested_tasks.length} suggested task(s), risk ${aiResult.ai_risk_level}`,
-    ai_confidence: aiResult.confidence,
+  const uploaded = await performSmartUpload({
+    fileName: (b.original_file_name as string) || "Uploaded document",
+    text: (b.extracted_text as string) || "",
+    fileType: (b.file_type as string) || "",
+    fileSize: (b.file_size as number) || 0,
+    uploadContext: (b.upload_context as string) || "",
+    actorId: (b.actor_id as string) || undefined,
+    linkedChildId: (b.linked_child_id as string) ?? null,
+    linkedStaffId: (b.linked_staff_id as string) ?? null,
+    linkedIncidentId: (b.linked_incident_id as string) ?? null,
   });
 
   return NextResponse.json({ data: uploaded });
