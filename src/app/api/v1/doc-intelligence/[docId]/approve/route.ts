@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { createTaskRecord } from "@/lib/supabase/care-records";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
+import { ensureUploadedDocument } from "../../ensure";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ docId: string }> }) {
   const { docId } = await params;
@@ -20,7 +21,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ doc
     action = "approve",                    // "approve" | "reject" | "request_review"
   } = body;
 
-  const doc = db.uploadedDocuments.findById(docId);
+  // Rehydrates from the durable documents row when this lambda never saw the
+  // upload (live cold start) — the deterministic analysis re-derives with it.
+  const doc = await ensureUploadedDocument(docId);
   if (!doc) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!doc.ai_result) return NextResponse.json({ error: "Document has not been analysed yet" }, { status: 400 });
 

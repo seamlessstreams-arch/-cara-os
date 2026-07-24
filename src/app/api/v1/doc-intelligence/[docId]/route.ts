@@ -2,11 +2,12 @@ import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
+import { ensureUploadedDocument } from "../ensure";
 
 // GET /api/v1/doc-intelligence/:docId
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ docId: string }> }) {
   const { docId } = await params;
-  const doc = db.uploadedDocuments.findById(docId);
+  const doc = await ensureUploadedDocument(docId);
   if (!doc) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const auditLog = db.documentAuditLog.findByDocument(docId);
   return NextResponse.json({ data: doc, audit_log: auditLog });
@@ -20,6 +21,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ do
   const body = __parsed.data;
   const { actor_id = "staff_darren", ...updates } = body;
 
+  // Rehydrate first so a patch works on a lambda that never saw the upload.
+  if (!(await ensureUploadedDocument(docId))) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   const updated = db.uploadedDocuments.patch(docId, updates);
   if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
