@@ -60,6 +60,11 @@ const CASEY = "yp_casey";
 const JORDAN = "yp_jordan";
 const HOME = "home_oak";
 
+// ── Generic seed factory (consolidates template factories) ────────────────────
+function seedRecord<T>(defaults: T, overrides: Partial<T> & { id: string }): T {
+  return { ...defaults, ...overrides };
+}
+
 // ── A. Behaviour log (powers trigger patterns, trajectory, ABC, de-escalation) ─
 
 const beh = (
@@ -71,24 +76,26 @@ const beh = (
   intensity: BehaviourEntry["intensity"],
   title: string,
   fields: Partial<BehaviourEntry>,
-): BehaviourEntry => ({
-  id,
-  child_id,
-  date: daysAgo(agoDays),
-  time,
-  direction,
-  intensity,
-  title,
-  antecedent: "",
-  behaviour: "",
-  consequence: "",
-  trigger: "",
-  strategy_used: "",
-  outcome: "",
-  recorded_by: "staff_edward",
-  created_at: iso(agoDays, time),
-  ...fields,
-});
+): BehaviourEntry => {
+  const defaults: BehaviourEntry = {
+    id,
+    child_id,
+    date: daysAgo(agoDays),
+    time,
+    direction,
+    intensity,
+    title,
+    antecedent: "",
+    behaviour: "",
+    consequence: "",
+    trigger: "",
+    strategy_used: "",
+    outcome: "",
+    recorded_by: "staff_edward",
+    created_at: iso(agoDays, time),
+  };
+  return seedRecord(defaults, { id, ...fields });
+};
 
 export const PRACTICE_OS_BEHAVIOUR_LOG: BehaviourEntry[] = [
   // ── Alex: evening cluster, family-contact trigger, RISING intensity ────────
@@ -702,46 +709,52 @@ const ypfb = (
   sentiment: YPFeedbackEntry["sentiment"],
   feedback: string,
   responded: boolean,
-): YPFeedbackEntry => ({
-  id,
-  child_id,
-  date: daysAgo(agoDays),
-  category,
-  method: "verbal",
-  sentiment,
-  feedback,
-  action_taken: responded ? "Discussed in key work and fed back to the child." : "",
-  action_by: responded ? "staff_darren" : "",
-  response_given_to_child: responded,
-  response_date: responded ? daysAgo(Math.max(0, agoDays - 2)) : null,
-  response_details: responded ? "We told them what we changed and why." : "",
-  child_satisfied: responded ? true : null,
-  collected_by: "staff_edward",
-  notes: "",
-});
+): YPFeedbackEntry => {
+  const defaults: YPFeedbackEntry = {
+    id,
+    child_id,
+    date: daysAgo(agoDays),
+    category,
+    method: "verbal",
+    sentiment,
+    feedback,
+    action_taken: responded ? "Discussed in key work and fed back to the child." : "",
+    action_by: responded ? "staff_darren" : "",
+    response_given_to_child: responded,
+    response_date: responded ? daysAgo(Math.max(0, agoDays - 2)) : null,
+    response_details: responded ? "We told them what we changed and why." : "",
+    child_satisfied: responded ? true : null,
+    collected_by: "staff_edward",
+    notes: "",
+  };
+  return seedRecord(defaults, { id });
+};
 
-const kw = (id: string, child_id: string, agoDays: number, child_voice: string, staff_id = "staff_edward"): KeyWorkingSession => ({
-  id,
-  child_id,
-  staff_id,
-  date: daysAgo(agoDays),
-  type: "one_to_one",
-  duration: 45,
-  location: "Quiet lounge",
-  topics: ["wishes_and_feelings"],
-  child_voice,
-  worker_observations: "",
-  actions_agreed: [],
-  mood_before: 3,
-  mood_after: 4,
-  follow_up: "",
-  follow_up_date: daysAgo(agoDays - 7),
-  follow_up_completed: false,
-  linked_goals: [],
-  confidential: false,
-  home_id: "home_oak",
-  created_at: iso(agoDays),
-});
+const kw = (id: string, child_id: string, agoDays: number, child_voice: string, staff_id = "staff_edward"): KeyWorkingSession => {
+  const defaults: KeyWorkingSession = {
+    id,
+    child_id,
+    staff_id,
+    date: daysAgo(agoDays),
+    type: "one_to_one",
+    duration: 45,
+    location: "Quiet lounge",
+    topics: ["wishes_and_feelings"],
+    child_voice,
+    worker_observations: "",
+    actions_agreed: [],
+    mood_before: 3,
+    mood_after: 4,
+    follow_up: "",
+    follow_up_date: daysAgo(agoDays - 7),
+    follow_up_completed: false,
+    linked_goals: [],
+    confidential: false,
+    home_id: "home_oak",
+    created_at: iso(agoDays),
+  };
+  return seedRecord(defaults, { id });
+};
 
 const loop = (
   id: string,
@@ -753,7 +766,7 @@ const loop = (
   accepts: boolean,
 ): ChildFeedbackLoop => {
   const open = decision === "pending_consideration";
-  return {
+  const defaults: ChildFeedbackLoop = {
     id,
     child_id,
     feedback_date: daysAgo(agoDays),
@@ -778,52 +791,59 @@ const loop = (
     recorded_by: "staff_edward",
     created_at: iso(agoDays),
   };
+  return seedRecord(defaults, { id });
 };
 
-const lac = (id: string, child_id: string, agoDays: number, participation: LACReview["child_participation"], views: string): LACReview => ({
-  id,
-  child_id,
-  date: daysAgo(agoDays),
-  review_type: "subsequent",
-  iro: "R. Okafor",
-  venue: "Oak House",
-  attendees: [{ name: "R. Okafor", role: "IRO" }],
-  child_participation: participation,
-  child_views: views,
-  key_discussions: [],
-  recommendations: [],
-  outcome: "placement_continues",
-  actions_agreed: [],
-  next_review_date: daysAgo(agoDays - 180),
-  placement_stability: "some_concerns",
-  care_plan_updated: true,
-  notes: "",
-  recorded_by: "staff_darren",
-  home_id: "home_oak",
-  created_at: iso(agoDays),
-});
+const lac = (id: string, child_id: string, agoDays: number, participation: LACReview["child_participation"], views: string): LACReview => {
+  const defaults: LACReview = {
+    id,
+    child_id,
+    date: daysAgo(agoDays),
+    review_type: "subsequent",
+    iro: "R. Okafor",
+    venue: "Oak House",
+    attendees: [{ name: "R. Okafor", role: "IRO" }],
+    child_participation: participation,
+    child_views: views,
+    key_discussions: [],
+    recommendations: [],
+    outcome: "placement_continues",
+    actions_agreed: [],
+    next_review_date: daysAgo(agoDays - 180),
+    placement_stability: "some_concerns",
+    care_plan_updated: true,
+    notes: "",
+    recorded_by: "staff_darren",
+    home_id: "home_oak",
+    created_at: iso(agoDays),
+  };
+  return seedRecord(defaults, { id });
+};
 
-const adv = (id: string, child_id: string, agoRef: number, status: AdvocacyRecord["status"], visitAgo: number | null): AdvocacyRecord => ({
-  id,
-  child_id,
-  advocacy_type: "independent",
-  status,
-  provider: "Coram Voice",
-  advocate_name: "J. Adeyemi",
-  referral_date: daysAgo(agoRef),
-  start_date: daysAgo(Math.max(0, agoRef - 3)),
-  reason: "Independent support for wishes and feelings.",
-  issues_raised: ["Contact arrangements", "Being listened to about the routine"],
-  visits:
-    visitAgo != null
-      ? [{ date: daysAgo(visitAgo), visit_type: "face_to_face", summary: "Private session; issues raised with the home.", private_session: true, actions_raised: ["Contact review"] }]
-      : [],
-  child_view: "",
-  home_response: status === "active" ? "Home responded to the issues the advocate raised." : "",
-  review_date: daysAgo(agoRef - 30),
-  notes: "",
-  created_at: iso(agoRef),
-});
+const adv = (id: string, child_id: string, agoRef: number, status: AdvocacyRecord["status"], visitAgo: number | null): AdvocacyRecord => {
+  const defaults: AdvocacyRecord = {
+    id,
+    child_id,
+    advocacy_type: "independent",
+    status,
+    provider: "Coram Voice",
+    advocate_name: "J. Adeyemi",
+    referral_date: daysAgo(agoRef),
+    start_date: daysAgo(Math.max(0, agoRef - 3)),
+    reason: "Independent support for wishes and feelings.",
+    issues_raised: ["Contact arrangements", "Being listened to about the routine"],
+    visits:
+      visitAgo != null
+        ? [{ date: daysAgo(visitAgo), visit_type: "face_to_face", summary: "Private session; issues raised with the home.", private_session: true, actions_raised: ["Contact review"] }]
+        : [],
+    child_view: "",
+    home_response: status === "active" ? "Home responded to the issues the advocate raised." : "",
+    review_date: daysAgo(agoRef - 30),
+    notes: "",
+    created_at: iso(agoRef),
+  };
+  return seedRecord(defaults, { id });
+};
 
 // ── ALEX: recorded but not heard; declining; open loops; no advocate ──────────
 export const PRACTICE_OS_YP_FEEDBACK: YPFeedbackEntry[] = [

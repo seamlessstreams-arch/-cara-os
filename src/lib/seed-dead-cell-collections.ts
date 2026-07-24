@@ -35,27 +35,34 @@ const DAY = 864e5;
 const ago = (d: number) => new Date(Date.now() - d * DAY).toISOString().slice(0, 10);
 const ahead = (d: number) => new Date(Date.now() + d * DAY).toISOString().slice(0, 10);
 
+// ── Generic seed factory (consolidates 15+ template factories) ──────────────────
+function seedRecord<T>(defaults: T, overrides: Partial<T> & { id: string }): T {
+  return { ...defaults, ...overrides };
+}
+
 // ── Fire equipment checks ─────────────────────────────────────────────────────
+const DEFAULT_FIRE_CHECK: FireEquipmentCheck = {
+  equipment_type: "smoke_detector",
+  location: "Ground floor hallway",
+  identifier_tag: "FE-000",
+  last_inspected_date: ago(18),
+  inspection_type: "monthly_test",
+  inspector: "Sam Okafor (RM)",
+  external_contractor: "",
+  result: "pass",
+  defect_noted: "",
+  action_taken: "",
+  certificate_ref: "",
+  next_inspection_due: ahead(12),
+  compliance_status: "compliant",
+  last_battery_change_date: ago(150),
+  notes: "",
+  created_at: ago(18),
+  id: "",
+};
+
 function fire(o: Partial<FireEquipmentCheck> & { id: string }): FireEquipmentCheck {
-  return {
-    equipment_type: "smoke_detector",
-    location: "Ground floor hallway",
-    identifier_tag: "FE-000",
-    last_inspected_date: ago(18),
-    inspection_type: "monthly_test",
-    inspector: "Sam Okafor (RM)",
-    external_contractor: "",
-    result: "pass",
-    defect_noted: "",
-    action_taken: "",
-    certificate_ref: "",
-    next_inspection_due: ahead(12),
-    compliance_status: "compliant",
-    last_battery_change_date: ago(150),
-    notes: "",
-    created_at: ago(18),
-    ...o,
-  };
+  return seedRecord(DEFAULT_FIRE_CHECK, o);
 }
 
 export function seedFireEquipmentChecks(): FireEquipmentCheck[] {
@@ -75,24 +82,26 @@ export function seedFireEquipmentChecks(): FireEquipmentCheck[] {
 }
 
 // ── Water hygiene records (HSE L8 / legionella) ───────────────────────────────
+const DEFAULT_WATER_RECORD: WaterHygieneRecord = {
+  date: ago(10),
+  time: "09:00",
+  checked_by: "Sam Okafor (RM)",
+  check_type: "hot_temp",
+  location: "kitchen_hot",
+  temperature: 55,
+  target_min: 50,
+  target_max: 60,
+  compliance: "compliant",
+  notes: "",
+  action_required: "",
+  action_completed: false,
+  action_completed_date: null,
+  next_due_date: ahead(20),
+  id: "",
+};
+
 function water(o: Partial<WaterHygieneRecord> & { id: string }): WaterHygieneRecord {
-  return {
-    date: ago(10),
-    time: "09:00",
-    checked_by: "Sam Okafor (RM)",
-    check_type: "hot_temp",
-    location: "kitchen_hot",
-    temperature: 55,
-    target_min: 50,
-    target_max: 60,
-    compliance: "compliant",
-    notes: "",
-    action_required: "",
-    action_completed: false,
-    action_completed_date: null,
-    next_due_date: ahead(20),
-    ...o,
-  };
+  return seedRecord(DEFAULT_WATER_RECORD, o);
 }
 
 export function seedWaterHygieneRecords(): WaterHygieneRecord[] {
@@ -110,28 +119,30 @@ export function seedWaterHygieneRecords(): WaterHygieneRecord[] {
 }
 
 // ── Window restrictor checks (CHR Reg 25 / 100mm rule) ────────────────────────
+const DEFAULT_WINDOW_CHECK: WindowCheck = {
+  inspection_date: ago(14),
+  window_location: "Bedroom",
+  window_type: "casement",
+  floor_level: "first",
+  restrictor_present: true,
+  restrictor_type: "cable_key",
+  restrictor_working: true,
+  opening_maximum_cm: 9,
+  opening_compliance_with_100mm_rule: true,
+  signage_in_place: true,
+  child_aware: true,
+  damage_noted: [],
+  remedial_actions: [],
+  outcome: "pass",
+  inspected_by: "Sam Okafor (RM)",
+  flags_concerns: [],
+  next_due_date: ahead(75),
+  created_at: ago(14),
+  id: "",
+};
+
 function window(o: Partial<WindowCheck> & { id: string }): WindowCheck {
-  return {
-    inspection_date: ago(14),
-    window_location: "Bedroom",
-    window_type: "casement",
-    floor_level: "first",
-    restrictor_present: true,
-    restrictor_type: "cable_key",
-    restrictor_working: true,
-    opening_maximum_cm: 9,
-    opening_compliance_with_100mm_rule: true,
-    signage_in_place: true,
-    child_aware: true,
-    damage_noted: [],
-    remedial_actions: [],
-    outcome: "pass",
-    inspected_by: "Sam Okafor (RM)",
-    flags_concerns: [],
-    next_due_date: ahead(75),
-    created_at: ago(14),
-    ...o,
-  };
+  return seedRecord(DEFAULT_WINDOW_CHECK, o);
 }
 
 export function seedWindowChecks(): WindowCheck[] {
@@ -148,26 +159,28 @@ export function seedWindowChecks(): WindowCheck[] {
 }
 
 // ── Pest control records ──────────────────────────────────────────────────────
+const DEFAULT_PEST_RECORD: PestRecord = {
+  record_date: ago(30),
+  record_type: "routine_preventive_treatment",
+  pest_category: "none_preventive_only",
+  affected_areas: [],
+  contractor: "GreenShield Pest Control",
+  contractor_accreditation: "BPCA member",
+  treatment_method: ["Inspection", "Bait station check"],
+  chemicals_used: [],
+  child_safety_measures: ["Treatment outside child areas", "Tamper-proof bait stations only"],
+  child_informed_and_paced: true,
+  prevention_advice: ["Keep food sealed", "Report sightings promptly"],
+  follow_up_required: false,
+  outcome_evidence: "No activity found; preventive measures in place",
+  recorded_by: "Sam Okafor (RM)",
+  flags_concerns: [],
+  created_at: ago(30),
+  id: "",
+};
+
 function pest(o: Partial<PestRecord> & { id: string }): PestRecord {
-  return {
-    record_date: ago(30),
-    record_type: "routine_preventive_treatment",
-    pest_category: "none_preventive_only",
-    affected_areas: [],
-    contractor: "GreenShield Pest Control",
-    contractor_accreditation: "BPCA member",
-    treatment_method: ["Inspection", "Bait station check"],
-    chemicals_used: [],
-    child_safety_measures: ["Treatment outside child areas", "Tamper-proof bait stations only"],
-    child_informed_and_paced: true,
-    prevention_advice: ["Keep food sealed", "Report sightings promptly"],
-    follow_up_required: false,
-    outcome_evidence: "No activity found; preventive measures in place",
-    recorded_by: "Sam Okafor (RM)",
-    flags_concerns: [],
-    created_at: ago(30),
-    ...o,
-  };
+  return seedRecord(DEFAULT_PEST_RECORD, o);
 }
 
 export function seedPestRecords(): PestRecord[] {
@@ -180,36 +193,38 @@ export function seedPestRecords(): PestRecord[] {
 }
 
 // ── Agency staff shifts (CHR Reg 32 / safe staffing) ──────────────────────────
+const DEFAULT_AGENCY_SHIFT: AgencyStaffRecord = {
+  agency_name: "BrightCare Staffing",
+  worker_name: "Worker",
+  worker_ref: "BC-000",
+  date_of_shift: ago(7),
+  shift_type: "long_day",
+  shift_hours: 12,
+  booking_reason: "sickness_cover",
+  covering_for_id: null,
+  vetting_status: "fully_vetted",
+  dbs_number: "001234567890",
+  dbs_date: ago(200),
+  dbs_enhanced: true,
+  induction_completed: true,
+  induction_date: ago(7),
+  induction_by: "Sam Okafor (RM)",
+  safeguarding_briefing: true,
+  young_people_briefing: true,
+  medication_trained: false,
+  price_trained_level: null,
+  feedback_score: 4,
+  feedback_notes: "Settled well, followed routines.",
+  concerns: "",
+  authorised_by_id: "staff_sam_rm",
+  cost_per_hour: 28,
+  notes: "",
+  created_at: ago(7),
+  id: "",
+};
+
 function agencyShift(o: Partial<AgencyStaffRecord> & { id: string }): AgencyStaffRecord {
-  return {
-    agency_name: "BrightCare Staffing",
-    worker_name: "Worker",
-    worker_ref: "BC-000",
-    date_of_shift: ago(7),
-    shift_type: "long_day",
-    shift_hours: 12,
-    booking_reason: "sickness_cover",
-    covering_for_id: null,
-    vetting_status: "fully_vetted",
-    dbs_number: "001234567890",
-    dbs_date: ago(200),
-    dbs_enhanced: true,
-    induction_completed: true,
-    induction_date: ago(7),
-    induction_by: "Sam Okafor (RM)",
-    safeguarding_briefing: true,
-    young_people_briefing: true,
-    medication_trained: false,
-    price_trained_level: null,
-    feedback_score: 4,
-    feedback_notes: "Settled well, followed routines.",
-    concerns: "",
-    authorised_by_id: "staff_sam_rm",
-    cost_per_hour: 28,
-    notes: "",
-    created_at: ago(7),
-    ...o,
-  };
+  return seedRecord(DEFAULT_AGENCY_SHIFT, o);
 }
 
 export function seedAgencyStaffLog(): AgencyStaffRecord[] {
@@ -226,38 +241,41 @@ export function seedAgencyStaffLog(): AgencyStaffRecord[] {
 }
 
 // ── Agency inductions ─────────────────────────────────────────────────────────
+const DEFAULT_INDUCTION_TOPICS = [
+  { topic: "Safeguarding & reporting", covered: true, notes: "" },
+  { topic: "Behaviour support plans", covered: true, notes: "" },
+  { topic: "Fire & emergency procedures", covered: true, notes: "" },
+  { topic: "Medication protocols", covered: true, notes: "" },
+  { topic: "Recording standards", covered: true, notes: "" },
+];
+
+const DEFAULT_AGENCY_INDUCTION: AgencyInduction = {
+  agency_staff_name: "Worker",
+  agency: "BrightCare Staffing",
+  date_inducted: ago(21),
+  inducted_by: "Sam Okafor (RM)",
+  induction_duration: 90,
+  induction_type: "half_day_full_induction",
+  children_informed_about_agency_arrival: true,
+  agency_dbs_verified: true,
+  agency_training_verified: true,
+  agency_references_verified: true,
+  induction_topics: DEFAULT_INDUCTION_TOPICS,
+  child_information_shared: "Need-to-know summaries shared; full plans available on shift.",
+  key_policies_shared: ["Safeguarding", "Behaviour support", "Missing from care"],
+  photo_taken_and_verified: true,
+  behaviour_support_plans_briefed: true,
+  agency_staff_signed_induction_pack: true,
+  shifts_booked: 3,
+  agency_staff_feedback: "Clear and thorough induction.",
+  home_feedback_on_agency: "Reliable, well-prepared worker.",
+  repeat_booking_approved: true,
+  created_at: ago(21),
+  id: "",
+};
+
 function agencyInduction(o: Partial<AgencyInduction> & { id: string }): AgencyInduction {
-  const topics = [
-    { topic: "Safeguarding & reporting", covered: true, notes: "" },
-    { topic: "Behaviour support plans", covered: true, notes: "" },
-    { topic: "Fire & emergency procedures", covered: true, notes: "" },
-    { topic: "Medication protocols", covered: true, notes: "" },
-    { topic: "Recording standards", covered: true, notes: "" },
-  ];
-  return {
-    agency_staff_name: "Worker",
-    agency: "BrightCare Staffing",
-    date_inducted: ago(21),
-    inducted_by: "Sam Okafor (RM)",
-    induction_duration: 90,
-    induction_type: "half_day_full_induction",
-    children_informed_about_agency_arrival: true,
-    agency_dbs_verified: true,
-    agency_training_verified: true,
-    agency_references_verified: true,
-    induction_topics: topics,
-    child_information_shared: "Need-to-know summaries shared; full plans available on shift.",
-    key_policies_shared: ["Safeguarding", "Behaviour support", "Missing from care"],
-    photo_taken_and_verified: true,
-    behaviour_support_plans_briefed: true,
-    agency_staff_signed_induction_pack: true,
-    shifts_booked: 3,
-    agency_staff_feedback: "Clear and thorough induction.",
-    home_feedback_on_agency: "Reliable, well-prepared worker.",
-    repeat_booking_approved: true,
-    created_at: ago(21),
-    ...o,
-  };
+  return seedRecord(DEFAULT_AGENCY_INDUCTION, o);
 }
 
 export function seedAgencyInductions(): AgencyInduction[] {
@@ -284,33 +302,35 @@ export function seedAgencyInductions(): AgencyInduction[] {
 }
 
 // ── Agency feedback ───────────────────────────────────────────────────────────
+const DEFAULT_AGENCY_FEEDBACK: AgencyFeedback = {
+  agency_staff_name: "Worker",
+  agency: "BrightCare Staffing",
+  shift_date: ago(7),
+  shift_type: "long_day",
+  induction_recorded: true,
+  permanent_staff_on_shift: "Sam Okafor",
+  children_interacted_with: [],
+  observations_positive: ["Warm, attuned interactions", "Followed routines without prompting"],
+  observations_constructive: [],
+  child_feedback: "Children responded well.",
+  follows_routines: true,
+  follows_behaviour_support_plans: true,
+  follows_sensory_protocols: true,
+  recording_quality: "good",
+  professionalism_rating: 4,
+  relational_skills_rating: 4,
+  overall_verdict: "approved_for_repeat",
+  feedback_to_agency_date: ago(6),
+  feedback_summary: "Strong shift; approved for repeat booking.",
+  follow_up_action: "",
+  reviewed_by: "Sam Okafor (RM)",
+  notes: "",
+  created_at: ago(6),
+  id: "",
+};
+
 function agencyFeedback(o: Partial<AgencyFeedback> & { id: string }): AgencyFeedback {
-  return {
-    agency_staff_name: "Worker",
-    agency: "BrightCare Staffing",
-    shift_date: ago(7),
-    shift_type: "long_day",
-    induction_recorded: true,
-    permanent_staff_on_shift: "Sam Okafor",
-    children_interacted_with: [],
-    observations_positive: ["Warm, attuned interactions", "Followed routines without prompting"],
-    observations_constructive: [],
-    child_feedback: "Children responded well.",
-    follows_routines: true,
-    follows_behaviour_support_plans: true,
-    follows_sensory_protocols: true,
-    recording_quality: "good",
-    professionalism_rating: 4,
-    relational_skills_rating: 4,
-    overall_verdict: "approved_for_repeat",
-    feedback_to_agency_date: ago(6),
-    feedback_summary: "Strong shift; approved for repeat booking.",
-    follow_up_action: "",
-    reviewed_by: "Sam Okafor (RM)",
-    notes: "",
-    created_at: ago(6),
-    ...o,
-  };
+  return seedRecord(DEFAULT_AGENCY_FEEDBACK, o);
 }
 
 export function seedAgencyFeedback(): AgencyFeedback[] {
@@ -330,25 +350,27 @@ export function seedAgencyFeedback(): AgencyFeedback[] {
 }
 
 // ── Community engagements (CHR Reg 9 — enjoyment & achievement) ────────────────
+const DEFAULT_COMMUNITY_ENGAGEMENT: CommunityEngagement = {
+  date: ago(7),
+  young_people: ["yp_alex"],
+  activity_type: "sports_fitness",
+  activity: "Community football club",
+  location: "Local leisure centre",
+  organisation: "Riverside FC Juniors",
+  duration_minutes: 90,
+  staff_present: ["Sam Okafor"],
+  outcomes: ["Built peer friendships", "Improved confidence"],
+  child_feedback: "Really enjoyed it — wants to keep going.",
+  builds_connections: true,
+  ongoing_commitment: true,
+  recorded_by: "Sam Okafor (RM)",
+  notes: "",
+  created_at: ago(7),
+  id: "",
+};
+
 function engagement(o: Partial<CommunityEngagement> & { id: string }): CommunityEngagement {
-  return {
-    date: ago(7),
-    young_people: ["yp_alex"],
-    activity_type: "sports_fitness",
-    activity: "Community football club",
-    location: "Local leisure centre",
-    organisation: "Riverside FC Juniors",
-    duration_minutes: 90,
-    staff_present: ["Sam Okafor"],
-    outcomes: ["Built peer friendships", "Improved confidence"],
-    child_feedback: "Really enjoyed it — wants to keep going.",
-    builds_connections: true,
-    ongoing_commitment: true,
-    recorded_by: "Sam Okafor (RM)",
-    notes: "",
-    created_at: ago(7),
-    ...o,
-  };
+  return seedRecord(DEFAULT_COMMUNITY_ENGAGEMENT, o);
 }
 
 export function seedCommunityEngagements(): CommunityEngagement[] {
@@ -363,27 +385,30 @@ export function seedCommunityEngagements(): CommunityEngagement[] {
 }
 
 // ── Independent travel training (CHR Reg 12 — independence) ────────────────────
+const DEFAULT_TRAVEL_RECORD: IndependentTravelRecord = {
+  last_updated: ago(20),
+  current_stage: "stage_3_solo_familiar",
+  routes_mastered: [{ from: "Home", to: "School", mode: "Bus", achieved_date: ago(60) }],
+  routes_learning: [],
+  travel_cards_held: ["Local bus pass"],
+  monthly_travel_budget: 40,
+  phone_and_charger_check: true,
+  what_if_lost_plan: "Call home; staff number saved; knows safe places en route.",
+  check_in_protocol: "Text on arrival and departure.",
+  risk_factors: [],
+  protective_factors: ["Knows route well", "Confident asking for help"],
+  child_confidence: "confident",
+  staff_observation: "Travels the familiar route reliably and safely.",
+  child_voice: "I like getting myself to school.",
+  review_date: ahead(60),
+  key_worker: "Sam Okafor",
+  created_at: ago(60),
+  id: "",
+  child_id: "",
+};
+
 function travel(o: Partial<IndependentTravelRecord> & { id: string; child_id: string }): IndependentTravelRecord {
-  return {
-    last_updated: ago(20),
-    current_stage: "stage_3_solo_familiar",
-    routes_mastered: [{ from: "Home", to: "School", mode: "Bus", achieved_date: ago(60) }],
-    routes_learning: [],
-    travel_cards_held: ["Local bus pass"],
-    monthly_travel_budget: 40,
-    phone_and_charger_check: true,
-    what_if_lost_plan: "Call home; staff number saved; knows safe places en route.",
-    check_in_protocol: "Text on arrival and departure.",
-    risk_factors: [],
-    protective_factors: ["Knows route well", "Confident asking for help"],
-    child_confidence: "confident",
-    staff_observation: "Travels the familiar route reliably and safely.",
-    child_voice: "I like getting myself to school.",
-    review_date: ahead(60),
-    key_worker: "Sam Okafor",
-    created_at: ago(60),
-    ...o,
-  };
+  return seedRecord(DEFAULT_TRAVEL_RECORD, o);
 }
 
 export function seedIndependentTravelRecords(): IndependentTravelRecord[] {
