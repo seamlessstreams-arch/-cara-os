@@ -23,11 +23,18 @@ import type { UploadedDocument } from "@/types/documents";
 // excerpt rather than an unbounded blob in the documents table.
 export const SMART_UPLOAD_TEXT_LIMIT = 20_000;
 
+// A base64 data URL over this length is refused (kept under the serverless
+// request-body limit; ~8M chars ≈ a ~5.9MB file). Larger files need real object
+// storage — a follow-up.
+const MAX_DATA_URL_CHARS = 8_000_000;
+
 export interface SmartUploadInput {
   fileName: string;
   text: string;
   fileType?: string;
   fileSize?: number;
+  /** The file's bytes as a base64 data URL, so the actual file is stored. */
+  fileDataUrl?: string | null;
   uploadContext?: string;
   actorId?: string;
   linkedChildId?: string | null;
@@ -45,6 +52,13 @@ export async function performSmartUpload(input: SmartUploadInput): Promise<Uploa
 
   const tableCategory = classifyTableCategory(name, ctx);
 
+  // The actual uploaded file, retained as a base64 data URL so it is genuinely
+  // stored and downloadable (not just its extracted text). Guarded by size.
+  const storedFileUrl =
+    input.fileDataUrl && input.fileDataUrl.startsWith("data:") && input.fileDataUrl.length <= MAX_DATA_URL_CHARS
+      ? input.fileDataUrl
+      : "";
+
   // ── Deterministic analysis (no AI, no credits) ─────────────────────────────
   const aiResult = analyseDocumentText({ text, fileName: name, title: name, tableCategory, today });
 
@@ -56,7 +70,7 @@ export async function performSmartUpload(input: SmartUploadInput): Promise<Uploa
     file_name: name,
     file_size: input.fileSize || 0,
     mime_type: input.fileType || "",
-    file_url: "",
+    file_url: storedFileUrl,
     version: 1,
     requires_read_sign: false,
     linked_child_id: input.linkedChildId ?? null,
@@ -72,7 +86,7 @@ export async function performSmartUpload(input: SmartUploadInput): Promise<Uploa
   const uploaded: UploadedDocument = {
     id: docId,
     original_file_name: name,
-    stored_file_path: "",
+    stored_file_path: storedFileUrl,
     file_type: fileTypeFromMime(input.fileType || ""),
     file_size: input.fileSize || 0,
     uploaded_by: actorId,
