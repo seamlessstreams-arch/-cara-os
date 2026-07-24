@@ -19,10 +19,14 @@ import {
   Activity, Loader2, AlertCircle, ChevronRight, Clock,
   Brain, CheckCircle2, Sparkles, X, MessageCircle, Plus, Tag,
   MessageSquare, HeartHandshake, Target, BookOpen, CheckSquare,
+  Pencil, Archive,
 } from "lucide-react";
 import { ChildExperienceTab } from "@/components/intelligence/child-experience-tab";
 import { CaraQuickActions } from "@/components/intelligence/cara-quick-actions";
-import { useYoungPerson } from "@/hooks/use-young-people";
+import { useYoungPerson, useArchiveYoungPerson } from "@/hooks/use-young-people";
+import { YoungPersonEditDialog } from "@/components/young-people/young-person-edit-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { PrintButton } from "@/components/common/print-button";
 import { ChildCalendarTab } from "@/components/calendar/child-calendar-tab";
@@ -275,6 +279,10 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
   const related = query.data?.related;
   const meta    = query.data?.meta;
 
+  const [editOpen, setEditOpen]       = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const archive = useArchiveYoungPerson();
+
   const keyWorkQuery  = useKeyWorkSessions({ childId: id });
   const createSession = useCreateKeyWorkSession();
   const keyWorkSessions: KeyWorkSession[] = keyWorkQuery.data?.data ?? [];
@@ -430,12 +438,56 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
               <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold,#b45309)]" />Relationship Intelligence
             </Button>
           </Link>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setEditOpen(true)}>
+            <Pencil className="h-3.5 w-3.5" />Edit details
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-red-600 hover:text-red-700"
+            disabled={yp.status === "ended"}
+            onClick={() => setArchiveOpen(true)}
+          >
+            <Archive className="h-3.5 w-3.5" />{yp.status === "ended" ? "Archived" : "Archive"}
+          </Button>
           <Button variant="outline" size="sm" onClick={() => router.push("/young-people")}>
             <ArrowLeft className="h-3.5 w-3.5 mr-1" />All Young People
           </Button>
         </div>
       }
     >
+      <YoungPersonEditDialog child={yp} open={editOpen} onOpenChange={setEditOpen} />
+      <Dialog open={archiveOpen} onOpenChange={setArchiveOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>End placement & archive</DialogTitle>
+            <DialogDescription>
+              This ends {displayName}&apos;s placement — the status becomes “Ended” and they leave
+              the current roster. The record and its full history are preserved (this is not a
+              deletion) and can be reactivated by editing the status. The change is recorded in the
+              audit trail.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setArchiveOpen(false)} disabled={archive.isPending}>Cancel</Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={archive.isPending}
+              onClick={async () => {
+                try {
+                  await archive.mutateAsync(id);
+                  toast.success("Placement ended and archived.");
+                  setArchiveOpen(false);
+                } catch {
+                  toast.error("Could not archive the record. Please try again.");
+                }
+              }}
+            >
+              {archive.isPending ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Archiving…</> : "End placement"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div id="yp-detail-content" className="space-y-4 animate-fade-in">
 
         <CaraPanel

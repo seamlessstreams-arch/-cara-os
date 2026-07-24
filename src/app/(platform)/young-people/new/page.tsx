@@ -25,8 +25,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAdmitChild, type AdmitChildResult } from "@/hooks/use-young-people";
 import { useReferralExtraction } from "@/hooks/use-referral-extraction";
+import { YoungPersonEditDialog } from "@/components/young-people/young-person-edit-dialog";
+import { LEGAL_STATUSES } from "@/lib/young-people/field-options";
 import { useHomeName } from "@/hooks/use-home-profile";
-import { CheckCircle2, FileText, Sparkles, Upload } from "lucide-react";
+import { CheckCircle2, FileText, Sparkles, Upload, Pencil } from "lucide-react";
 
 const FIELD =
   "w-full rounded-md border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-teal)]";
@@ -38,16 +40,6 @@ function openPicker(e: { currentTarget: EventTarget & HTMLInputElement }) {
   const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
   try { el.showPicker?.(); } catch { /* not user-activated / unsupported */ }
 }
-
-const LEGAL_STATUSES = [
-  "Section 20 (voluntary accommodation)",
-  "Section 31 (care order)",
-  "Section 38 (interim care order)",
-  "Section 25 (secure accommodation)",
-  "Emergency protection order",
-  "Remand",
-  "Other",
-];
 
 export default function NewYoungPersonPage() {
   const router = useRouter();
@@ -72,6 +64,7 @@ export default function NewYoungPersonPage() {
   const [risks, setRisks] = useState<string[]>([]);
   const [extracted, setExtracted] = useState(false);
   const [result, setResult] = useState<AdmitChildResult | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -183,8 +176,18 @@ export default function NewYoungPersonPage() {
 
           <div className="flex items-center gap-2 pt-1">
             <Button onClick={() => router.push(`/young-people/${yp.id}`)}>Open {yp.first_name}&rsquo;s record</Button>
+            <Button variant="outline" className="gap-1.5" onClick={() => setEditOpen(true)}>
+              <Pencil className="h-3.5 w-3.5" />Correct details
+            </Button>
             <Link href="/tasks" className="text-sm text-[var(--cs-slate)] hover:underline">View tasks</Link>
           </div>
+
+          <YoungPersonEditDialog
+            child={yp}
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            onSaved={(updated) => setResult((r) => (r ? { ...r, young_person: updated } : r))}
+          />
         </div>
       </PageShell>
     );
