@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -15,7 +16,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useBoardReports } from "@/hooks/use-board-reports";
 import type { BoardReport, BoardAgreedAction, BoardReportType, RagRating } from "@/types/extended";
 import {
   BOARD_REPORT_TYPE_LABEL,
@@ -101,7 +101,10 @@ const exportCols: ExportColumn<BoardReport>[] = [
 
 /* ─── component ─── */
 export default function BoardReportingPage() {
-  const { data: res, isLoading } = useBoardReports();
+  const { data: res, isLoading } = useQuery<{ data: import("@/types/extended").BoardReport[] }>({
+    queryKey: ["board-reports"],
+    queryFn: () => fetch("/api/v1/board-reports").then((r) => r.json()),
+  });
   const reports = useMemo(() => res?.data ?? [], [res]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string>("all");

@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +15,12 @@ import {
   TrendingUp, TrendingDown, Minus, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useBehaviourTriggerPatterns } from "@/hooks/use-behaviour-trigger-patterns";
+import { api } from "@/hooks/use-api";
+import type { BehaviourTriggerPatternsResult } from "@/lib/behaviour-trigger-patterns/behaviour-trigger-patterns-engine";
+
+interface BehaviourTriggerPatternsResponse {
+  data: BehaviourTriggerPatternsResult;
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -41,7 +47,11 @@ const TRAJECTORY_ICON: Record<string, React.ReactNode> = {
 };
 
 export function BehaviourTriggerPatternsCard() {
-  const { data, isLoading } = useBehaviourTriggerPatterns();
+  const { data, isLoading } = useQuery({
+    queryKey: ["behaviour-trigger-patterns"],
+    queryFn: () => api.get<BehaviourTriggerPatternsResponse>("/behaviour-trigger-patterns"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

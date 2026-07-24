@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -25,9 +26,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
-import { useAfterCare, useCreateAfterCareRecord } from "@/hooks/use-after-care";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+
+/* ── inline hooks ──────────────────────────────────────────────────────────── */
+
+const AFTER_CARE_KEY = "after-care";
+const AFTER_CARE_API = "/api/v1/after-care";
 import type {
   AfterCareLeftReason,
   AfterCareAccomStatus,
@@ -61,8 +66,16 @@ const WB_CLR: Record<AfterCareWellbeing, string> = { good: "text-[--cs-success]"
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function AfterCarePage() {
-  const { data: result, isLoading } = useAfterCare();
-  const createRecord = useCreateAfterCareRecord();
+  const qc = useQueryClient();
+  const { data: result, isLoading } = useQuery<{ data: AfterCareRecord[] }>({
+    queryKey: [AFTER_CARE_KEY],
+    queryFn: () => fetch(AFTER_CARE_API).then((r) => r.json()),
+  });
+  const createRecord = useMutation({
+    mutationFn: (data: Partial<AfterCareRecord>) =>
+      fetch(AFTER_CARE_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [AFTER_CARE_KEY] }),
+  });
   const records = result?.data ?? [];
 
   const [search, setSearch] = useState("");

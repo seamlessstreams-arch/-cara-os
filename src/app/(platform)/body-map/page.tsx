@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,6 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useBodyMap, useCreateBodyMapEntry, useUpdateBodyMapEntry } from "@/hooks/use-body-map";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -98,9 +98,22 @@ export default function BodyMapPage() {
   const { currentUser } = useAuthContext();
 
   /* ── data ───────────────────────────────────────────────────────────────── */
-  const { data: result, isLoading } = useBodyMap();
-  const createEntry = useCreateBodyMapEntry();
-  const updateEntry = useUpdateBodyMapEntry();
+  const API = "/api/v1/body-map";
+  const qc = useQueryClient();
+  const { data: result, isLoading } = useQuery<{ data: import("@/types/extended").BodyMapEntry[] }>({
+    queryKey: ["body-map"],
+    queryFn: () => fetch(API).then((r) => r.json()),
+  });
+  const createEntry = useMutation({
+    mutationFn: (data: Partial<import("@/types/extended").BodyMapEntry>) =>
+      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["body-map"] }),
+  });
+  const updateEntry = useMutation({
+    mutationFn: (data: Partial<import("@/types/extended").BodyMapEntry> & { id: string }) =>
+      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["body-map"] }),
+  });
   const entries = result?.data ?? [];
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");

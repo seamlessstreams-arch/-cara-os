@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,7 +17,15 @@ import {
   BarChart3, Clock, Shield, FileWarning, Star, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuditQualityIntelligence } from "@/hooks/use-audit-quality-intelligence";
+import type { AuditQualityIntelligenceResult } from "@/lib/engines/audit-quality-intelligence-engine";
+
+// ── Query Config ────────────────────────────────────────────────────────────
+const AUDIT_QUALITY_INTELLIGENCE_KEY = "audit-quality-intelligence";
+const AUDIT_QUALITY_INTELLIGENCE_API = "/api/v1/audit-quality-intelligence";
+
+interface AuditQualityIntelligenceResponse {
+  data: AuditQualityIntelligenceResult;
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -40,7 +49,11 @@ function formatCategory(cat: string): string {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function AuditComplianceCard() {
-  const { data, isLoading } = useAuditQualityIntelligence();
+  const { data, isLoading } = useQuery<AuditQualityIntelligenceResponse>({
+    queryKey: [AUDIT_QUALITY_INTELLIGENCE_KEY],
+    queryFn: () => fetch(AUDIT_QUALITY_INTELLIGENCE_API).then((r) => r.json()),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

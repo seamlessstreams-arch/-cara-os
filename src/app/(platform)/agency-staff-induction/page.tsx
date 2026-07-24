@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -17,12 +18,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useAgencyInductions } from "@/hooks/use-agency-inductions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AgencyInduction, AgencyInductionType } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inline hooks ──────────────────────────────────────────────────────────── */
+
+const AGENCY_INDUCTIONS_KEY = "agency-inductions";
+const AGENCY_INDUCTIONS_API = "/api/v1/agency-inductions";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -47,7 +52,10 @@ const TYPE_LABEL: Record<AgencyInductionType, string> = {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function AgencyStaffInductionPage() {
-  const { data: result, isLoading } = useAgencyInductions();
+  const { data: result, isLoading } = useQuery<{ data: AgencyInduction[] }>({
+    queryKey: [AGENCY_INDUCTIONS_KEY],
+    queryFn: () => fetch(AGENCY_INDUCTIONS_API).then((r) => r.json()),
+  });
   const data = result?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);

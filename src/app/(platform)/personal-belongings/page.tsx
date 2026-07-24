@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -25,7 +26,6 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useBelongingsRecords, useCreateBelongingsRecord } from "@/hooks/use-belongings-records";
 import type { BelongingsRecord, BelongingCategory, BelongingCondition, BelongingItemStatus, BelongingItem } from "@/types/extended";
 import { BELONGING_CATEGORY_LABEL, BELONGING_CONDITION_LABEL, BELONGING_ITEM_STATUS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -81,8 +81,16 @@ function daysFromNow(n: number) {
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function PersonalBelongingsPage() {
-  const { data: res, isLoading } = useBelongingsRecords();
-  const createRecord = useCreateBelongingsRecord();
+  const qc = useQueryClient();
+  const { data: res, isLoading } = useQuery<{ data: BelongingsRecord[] }>({
+    queryKey: ["belongings-records"],
+    queryFn: () => fetch("/api/v1/belongings-records").then((r) => r.json()),
+  });
+  const createRecord = useMutation({
+    mutationFn: (data: Partial<BelongingsRecord>) =>
+      fetch("/api/v1/belongings-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["belongings-records"] }),
+  });
   const records: BelongingsRecord[] = res?.data ?? [];
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});

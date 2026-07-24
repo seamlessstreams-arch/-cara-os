@@ -10,9 +10,19 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { useAuditTrail } from "@/hooks/use-audit-trail";
+import type { AuditTrailEntry } from "@/lib/audit/audit-recorder";
 import { History, Loader2 } from "lucide-react";
+
+// ── Query Config ────────────────────────────────────────────────────────────
+const AUDIT_TRAIL_API = "/api/v1/audit-trail";
+
+interface AuditTrailData {
+  entries: AuditTrailEntry[];
+  count: number;
+  durable_persistence: boolean;
+}
 
 const ACTION_LABEL: Record<string, string> = {
   create: "Created",
@@ -43,7 +53,21 @@ export function ChangeHistoryFeed({
   entityId?: string;
   className?: string;
 }) {
-  const { data, isLoading } = useAuditTrail({ limit, entityType, entityId });
+  const params = new URLSearchParams();
+  if (entityType) params.set("entityType", entityType);
+  if (entityId) params.set("entityId", entityId);
+  if (limit) params.set("limit", String(limit));
+  const qs = params.toString();
+
+  const { data, isLoading } = useQuery<AuditTrailData>({
+    queryKey: ["audit-trail", { entityType, entityId, limit }],
+    queryFn: async () => {
+      const res = await fetch(`${AUDIT_TRAIL_API}${qs ? `?${qs}` : ""}`);
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+      return json.data as AuditTrailData;
+    },
+  });
   const entries = data?.entries ?? [];
 
   return (

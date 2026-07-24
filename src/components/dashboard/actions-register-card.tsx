@@ -1,10 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { ListChecks, ArrowRight } from "lucide-react";
-import { useActionsRegister } from "@/hooks/use-actions-register";
+import type { ActionsRegisterResult } from "@/lib/engines/actions-register-engine";
 import { cn } from "@/lib/utils";
+
+// Query config for actions register (inlined from use-actions-register hook)
+const ACTIONS_REGISTER_QUERY = {
+  queryKey: ["actions-register"],
+  queryFn: async () => {
+    const res = await fetch("/api/v1/actions-register");
+    if (!res.ok) throw new Error("Failed to fetch actions register");
+    const json = await res.json();
+    return json.data;
+  },
+  refetchInterval: 120_000,
+};
 
 /**
  * Command Centre entry card for the Unified Actions Register.
@@ -12,7 +25,7 @@ import { cn } from "@/lib/utils";
  * and overdue across every forum, a view that exists nowhere else.
  */
 export function ActionsRegisterCard() {
-  const { data } = useActionsRegister();
+  const { data } = useQuery<ActionsRegisterResult>(ACTIONS_REGISTER_QUERY);
   const s = data?.summary;
   const overdue = s?.overdue ?? 0;
   const hot = overdue > 0;

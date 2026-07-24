@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { facilityStore } from "@/lib/db/facility-store";
 import { todayStr } from "@/lib/utils";
 
 // Staff dashboard — shift-level operational view
@@ -63,20 +64,20 @@ export async function GET(req: NextRequest) {
   const medsDueNow = todayScheduled.slice(0, 5);
 
   // ── Home Checks ──────────────────────────────────────────────────────────────
-  const dueChecks = db.buildingChecks.findDue();
-  const overdueChecks = db.buildingChecks.findOverdue();
-  const buildings = db.buildings.findAll();
+  const dueChecks = facilityStore.buildingChecks.findDue();
+  const overdueChecks = facilityStore.buildingChecks.findOverdue();
+  const buildings = facilityStore.buildings.findAll();
 
   // ── Vehicle Checks ───────────────────────────────────────────────────────────
-  const vehicles = db.vehicles.findAll();
+  const vehicles = facilityStore.vehicles.findAll();
   // Check if a daily safety check has been done today for each vehicle
   const vehiclesNeedingCheck = vehicles.filter((v) => {
-    const todayChecks = db.vehicleChecks.findByVehicle(v.id).filter(
+    const todayChecks = facilityStore.vehicleChecks.findByVehicle(v.id).filter(
       (c) => c.check_date === today
     );
     return todayChecks.length === 0 && v.status !== "off_road";
   });
-  const vehicleDefects = db.vehicleChecks.findDefects();
+  const vehicleDefects = facilityStore.vehicleChecks.findDefects();
 
   // ── Incidents Needing Action ──────────────────────────────────────────────────
   const openIncidents = db.incidents.findOpen();

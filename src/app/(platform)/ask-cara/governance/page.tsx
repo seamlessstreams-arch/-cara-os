@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useAskCaraGovernance } from "@/hooks/use-ask-cara-governance";
+import type { GovernanceSummary } from "@/lib/ask-cara/governance-summary";
 import { ShieldCheck, Loader2, Lock, MessageSquare, AlertTriangle, ClipboardList, PoundSterling, Cpu, Server } from "lucide-react";
 
 const MANAGEMENT = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "area_manager", "platform_admin"]);
@@ -33,10 +33,17 @@ function Stat({ label, value, sub, tone = "slate", icon: Icon }: { label: string
   );
 }
 
+// Query config for governance summary (inlined from use-ask-cara-governance hook)
+const ASK_CARA_GOVERNANCE_QUERY = (role?: string) => ({
+  queryKey: ["ask-cara-governance", role],
+  queryFn: () => fetch("/api/v1/ask-cara/governance", { headers: { "x-user-role": String(role ?? "") } }).then((r) => r.json()),
+  staleTime: 60 * 1000,
+});
+
 export default function GovernancePage() {
   const { currentRole } = useAuthContext();
   const isManager = MANAGEMENT.has(String(currentRole));
-  const { data, isLoading } = useAskCaraGovernance(String(currentRole));
+  const { data, isLoading } = useQuery<{ data: GovernanceSummary }>(ASK_CARA_GOVERNANCE_QUERY(String(currentRole)));
   const g = data?.data;
 
   const { data: aiModeRes } = useQuery<{ data: { mode: string; externalAiEnabled: boolean; localConfigured: boolean; providerAvailable: boolean; provider: { kind: string; model: string }; summary: string } }>({

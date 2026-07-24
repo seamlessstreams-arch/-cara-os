@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -11,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useAgencyFeedback, useCreateAgencyFeedback } from "@/hooks/use-agency-feedback";
 import type { AgencyFeedback, AgencyShiftType, AgencyVerdict, RecordingQuality } from "@/types/extended";
 import {
   AGENCY_SHIFT_TYPE_LABEL,
@@ -43,9 +43,25 @@ const exportCols: ExportColumn<AgencyFeedback>[] = [
   { header: "Recording", accessor: (r: AgencyFeedback) => RECORDING_QUALITY_LABEL[r.recording_quality] },
 ];
 
+// Query config for agency feedback (inlined from use-agency-feedback hook)
+const AGENCY_FEEDBACK_KEY = "agency-feedback";
+const AGENCY_FEEDBACK_QUERY = {
+  queryKey: [AGENCY_FEEDBACK_KEY],
+  queryFn: () => fetch("/api/v1/agency-feedback").then((r) => r.json()),
+};
+
+function useCreateAgencyFeedbackInline() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<AgencyFeedback>) =>
+      fetch("/api/v1/agency-feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [AGENCY_FEEDBACK_KEY] }),
+  });
+}
+
 export default function AgencyStaffFeedbackPage() {
-  const { data: res, isLoading } = useAgencyFeedback();
-  const createFeedback = useCreateAgencyFeedback();
+  const { data: res, isLoading } = useQuery<{ data: AgencyFeedback[] }>(AGENCY_FEEDBACK_QUERY);
+  const createFeedback = useCreateAgencyFeedbackInline();
   const data = useMemo(() => res?.data ?? [], [res]);
   const [filterVerdict, setFilterVerdict] = useState("all");
   const [sortBy, setSortBy] = useState("date");

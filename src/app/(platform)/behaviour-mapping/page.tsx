@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -13,7 +14,6 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { BehaviourMappingType, BMIntensity, BMTimeOfDay, BehaviourMapEntry } from "@/types/extended";
-import { useBehaviourMapEntries } from "@/hooks/use-behaviour-map-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -49,7 +49,10 @@ const TOD_META: Record<BMTimeOfDay, { label: string }> = {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function BehaviourMappingPage() {
-  const { data: bmeData, isLoading } = useBehaviourMapEntries();
+  const { data: bmeData, isLoading } = useQuery<{ data: BehaviourMapEntry[] }>({
+    queryKey: ["behaviour-map-entries"],
+    queryFn: () => fetch("/api/v1/behaviour-map-entries").then((r) => r.json()),
+  });
   const data = bmeData?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"date" | "intensity" | "child">("date");

@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,8 +17,16 @@ import {
   Star, Loader2, UserCheck, Clock, FileWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAppraisalIntelligence } from "@/hooks/use-appraisal-intelligence";
+import type { AppraisalIntelligenceResult } from "@/lib/engines/appraisal-intelligence-engine";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
+
+// ── Query Config ────────────────────────────────────────────────────────────
+const APPRAISAL_INTELLIGENCE_KEY = "appraisal-intelligence";
+const APPRAISAL_INTELLIGENCE_API = "/api/v1/appraisal-intelligence";
+
+interface AppraisalIntelligenceResponse {
+  data: AppraisalIntelligenceResult;
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -58,7 +67,11 @@ const STATUS_BADGE: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function AppraisalsCard() {
-  const { data, isLoading } = useAppraisalIntelligence();
+  const { data, isLoading } = useQuery<AppraisalIntelligenceResponse>({
+    queryKey: [APPRAISAL_INTELLIGENCE_KEY],
+    queryFn: () => fetch(APPRAISAL_INTELLIGENCE_API).then((r) => r.json()),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

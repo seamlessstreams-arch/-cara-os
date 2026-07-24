@@ -7,13 +7,34 @@
 // the top-triggered rules. Follows Cara design patterns.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Zap, Loader2, CheckCircle2, AlertTriangle, XCircle,
   ChevronRight, ToggleLeft, ToggleRight, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAutomationRules } from "@/hooks/use-automation";
+import type {
+  AutomationRule,
+  AutomationTrigger,
+  AutomationRun,
+} from "@/lib/automation/types";
+
+// ── Types ───────────────────────────────────────────────────────────────────
+
+interface AutomationRulesResponse {
+  data: {
+    rules: AutomationRule[];
+    summary: {
+      total_rules: number;
+      enabled: number;
+      disabled: number;
+      total_runs: number;
+      triggers_covered: number;
+      trigger_counts: Record<string, number>;
+    };
+  };
+}
 
 // ── Status badge styles ────────────────────────────────────────────────────
 
@@ -34,7 +55,15 @@ function formatTrigger(trigger: string): string {
 // ── Component ──────────────────────────────────────────────────────────────
 
 export function AutomationDashboardCard() {
-  const { data, isLoading } = useAutomationRules();
+  const { data, isLoading } = useQuery<AutomationRulesResponse>({
+    queryKey: ["automation-rules"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/automation");
+      if (!res.ok) throw new Error("Failed to fetch automation rules");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

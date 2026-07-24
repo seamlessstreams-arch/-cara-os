@@ -1,14 +1,23 @@
 "use client";
 
-import { useAppraisalIntelligence } from "@/hooks/use-appraisal-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type {
   StaffAppraisalProfile,
   AppraisalAlert,
   CaraAppraisalInsight,
   CompetencyAnalysis,
   RatingBreakdown,
+  AppraisalIntelligenceResult,
 } from "@/lib/engines/appraisal-intelligence-engine";
 import { below, formatRate } from "@/lib/metrics/rate";
+
+// ── Query Config ────────────────────────────────────────────────────────────
+const APPRAISAL_INTELLIGENCE_KEY = "appraisal-intelligence";
+const APPRAISAL_INTELLIGENCE_API = "/api/v1/appraisal-intelligence";
+
+interface AppraisalIntelligenceResponse {
+  data: AppraisalIntelligenceResult;
+}
 
 const RATING_COLORS: Record<string, { text: string; bg: string; border: string }> = {
   outstanding:         { text: "text-green-700",  bg: "bg-green-100",  border: "border-green-300" },
@@ -117,7 +126,11 @@ function StaffCard({ p }: { p: StaffAppraisalProfile }) {
 }
 
 export default function AppraisalIntelligencePage() {
-  const { data, isLoading, isError } = useAppraisalIntelligence();
+  const { data, isLoading, isError } = useQuery<AppraisalIntelligenceResponse>({
+    queryKey: [APPRAISAL_INTELLIGENCE_KEY],
+    queryFn: () => fetch(APPRAISAL_INTELLIGENCE_API).then((r) => r.json()),
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

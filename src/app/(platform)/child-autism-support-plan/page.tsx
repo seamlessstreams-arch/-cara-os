@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Brain,
   Sparkles,
@@ -27,7 +28,6 @@ import {
 } from "@/components/ui/select";
 import type { AutismPlan, AutismDiagnosisStatus, AutismSensoryPattern } from "@/types/extended";
 import { AUTISM_DIAGNOSIS_STATUS_LABEL, AUTISM_SENSORY_PATTERN_LABEL } from "@/types/extended";
-import { useAutismPlans } from "@/hooks/use-autism-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -115,7 +115,10 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildAutismSupportPlanPage() {
-  const { data: resp, isLoading } = useAutismPlans();
+  const { data: resp, isLoading } = useQuery<{ data: AutismPlan[] }>({
+    queryKey: ["autism-plans"],
+    queryFn: () => fetch("/api/v1/autism-plans").then((r) => r.json()),
+  });
   const data = resp?.data ?? [];
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});

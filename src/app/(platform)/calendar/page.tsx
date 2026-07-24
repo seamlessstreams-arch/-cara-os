@@ -3,11 +3,11 @@
 // CARA — CALENDAR page: month + agenda views over the unified feed
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Plus, CalendarDays, List, ExternalLink, Send, Download, X, Ban } from "lucide-react";
 import Link from "next/link";
-import { useCalendarFeed, useEventDetail, useSendInvite, useCancelCalendarEvent } from "@/hooks/use-calendar";
 import { EventEditor } from "@/components/calendar/event-editor";
 import { MonthGrid } from "@/components/calendar/calendar-month";
 import { SourceFilter, SourceDot, formatTime, formatDayLabel } from "@/components/calendar/calendar-bits";
@@ -46,7 +46,25 @@ export default function CalendarPage() {
 
   const range = useMemo(() => gridRange(monthStart), [monthStart]);
   const sources = useMemo(() => [...active], [active]);
-  const feed = useCalendarFeed({ from: range.from, to: range.to, sources });
+
+  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+    const res = await fetch(url, {
+      ...init,
+      headers: { "content-type": "application/json", ...init?.headers },
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+    return json.data as T;
+  };
+
+  const feed = useQuery({
+    queryKey: ["calendar-feed", range.from, range.to, (sources ?? []).join(",")],
+    queryFn: () => {
+      const params = new URLSearchParams({ from: range.from, to: range.to });
+      if (sources && sources.length) params.set("sources", sources.join(","));
+      return jfetch(`/api/v1/calendar?${params.toString()}`);
+    },
+  });
 
   // Deep-link: /calendar?event=ID opens that editable event
   useEffect(() => {
@@ -86,7 +104,11 @@ export default function CalendarPage() {
       return next;
     });
 
-  const editingEvent = useEventDetail(editorOpen ? editingId : null);
+  const editingEvent = useQuery({
+    queryKey: ["calendar-event", editorOpen ? editingId : null],
+    queryFn: () => jfetch(`/api/v1/calendar/${editorOpen ? editingId : null}`),
+    enabled: Boolean(editorOpen ? editingId : null),
+  });
 
   const dayItems = selectedDay ? itemsByDay.get(selectedDay) ?? [] : [];
 
@@ -270,8 +292,30 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 /** Invite/cancel actions for an open editable event (rendered as a floating bar). */
 function EventActions({ eventId }: { eventId: string }) {
-  const invite = useSendInvite();
-  const cancel = useCancelCalendarEvent();
+  const qc = useQueryClient();
+  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+    const res = await fetch(url, {
+      ...init,
+      headers: { "content-type": "application/json", ...init?.headers },
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+    return json.data as T;
+  };
+  const invalidate = () =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: ["calendar-feed"] }),
+      qc.invalidateQueries({ queryKey: ["calendar-event"] }),
+    ]);
+
+  const invite = useMutation({
+    mutationFn: (id: string) => jfetch(`/api/v1/calendar/${id}/invite`, { method: "POST" }),
+    onSuccess: () => invalidate(),
+  });
+  const cancel = useMutation({
+    mutationFn: (id: string) => jfetch(`/api/v1/calendar/${id}`, { method: "DELETE" }),
+    onSuccess: () => invalidate(),
+  });
   const [msg, setMsg] = useState<string | null>(null);
 
   return (

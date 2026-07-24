@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -24,10 +25,6 @@ import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import {
-  useAnnualDevelopmentReviews,
-  useCreateAnnualDevelopmentReview,
-} from "@/hooks/use-annual-development-reviews";
 import type {
   AnnualDevelopmentReview,
   ADRReviewStatus,
@@ -37,6 +34,11 @@ import type {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inline hooks ──────────────────────────────────────────────────────────── */
+
+const ADR_KEY = "annual-development-reviews";
+const ADR_API = "/api/v1/annual-development-reviews";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -52,9 +54,17 @@ const RATING_CLR: Record<ADRPerformanceRating, string> = { outstanding: "bg-gree
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function AnnualDevelopmentReviewsPage() {
-  const { data: res, isLoading } = useAnnualDevelopmentReviews();
+  const qc = useQueryClient();
+  const { data: res, isLoading } = useQuery<{ data: AnnualDevelopmentReview[] }>({
+    queryKey: [ADR_KEY],
+    queryFn: () => fetch(ADR_API).then((r) => r.json()),
+  });
   const data = res?.data ?? [];
-  const createMutation = useCreateAnnualDevelopmentReview();
+  const createMutation = useMutation({
+    mutationFn: (data: Partial<AnnualDevelopmentReview>) =>
+      fetch(ADR_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [ADR_KEY] }),
+  });
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

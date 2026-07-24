@@ -5,6 +5,7 @@
 // Per-child triggers, intensity trajectory, de-escalation coverage, balance.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,12 @@ import {
   Activity, AlertTriangle, Brain, Loader2, Info, Zap, TrendingUp, TrendingDown, Minus, ListChecks,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useBehaviourTriggerPatterns } from "@/hooks/use-behaviour-trigger-patterns";
+import { api } from "@/hooks/use-api";
+import type { BehaviourTriggerPatternsResult } from "@/lib/behaviour-trigger-patterns/behaviour-trigger-patterns-engine";
+
+interface BehaviourTriggerPatternsResponse {
+  data: BehaviourTriggerPatternsResult;
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",
@@ -44,7 +50,11 @@ const TRAJECTORY_META: Record<string, { icon: React.ReactNode; label: string; cl
 };
 
 export default function BehaviourTriggerPatternsPage() {
-  const { data, isLoading } = useBehaviourTriggerPatterns();
+  const { data, isLoading } = useQuery({
+    queryKey: ["behaviour-trigger-patterns"],
+    queryFn: () => api.get<BehaviourTriggerPatternsResponse>("/behaviour-trigger-patterns"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   return (

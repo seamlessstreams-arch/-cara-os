@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -24,12 +25,16 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useAgencyStaffLog, useCreateAgencyStaffRecord } from "@/hooks/use-agency-staff-log";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AgencyVettingStatus, AgencyBookingReason, AgencyStaffRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inline hooks ──────────────────────────────────────────────────────────── */
+
+const AGENCY_STAFF_LOG_KEY = "agency-staff-log";
+const AGENCY_STAFF_LOG_API = "/api/v1/agency-staff-log";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -45,8 +50,16 @@ const REASON_LABEL: Record<AgencyBookingReason, string> = {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function AgencyStaffLogPage() {
-  const { data: result, isLoading } = useAgencyStaffLog();
-  const createRecord = useCreateAgencyStaffRecord();
+  const qc = useQueryClient();
+  const { data: result, isLoading } = useQuery<{ data: AgencyStaffRecord[] }>({
+    queryKey: [AGENCY_STAFF_LOG_KEY],
+    queryFn: () => fetch(AGENCY_STAFF_LOG_API).then((r) => r.json()),
+  });
+  const createRecord = useMutation({
+    mutationFn: (data: Partial<AgencyStaffRecord>) =>
+      fetch(AGENCY_STAFF_LOG_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [AGENCY_STAFF_LOG_KEY] }),
+  });
   const records = result?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);

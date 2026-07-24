@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,10 +30,6 @@ import {
   Pencil,
   Sparkles,
 } from "lucide-react";
-import {
-  useAuditActors,
-  useAuditTrail,
-} from "@/hooks/use-cara-audit-trail";
 import { CARA_AUDIT_ACTION_LABELS } from "@/lib/cara/cara-audit-trail";
 import type { CaraAuditAction, CaraStudioAuditLog } from "@/types/cara-studio";
 
@@ -99,11 +96,33 @@ export default function CaraAuditTrailPage() {
   const [action, setAction] = useState<CaraAuditAction | "">("");
   const [showDeniedOnly, setShowDeniedOnly] = useState(false);
 
-  const actors = useAuditActors(HOME_ID);
-  const trail = useAuditTrail(HOME_ID, {
-    actorId: actor || undefined,
-    actionType: action || undefined,
-    limit: 200,
+  const actors = useQuery({
+    queryKey: ["cara-audit-actors", HOME_ID],
+    queryFn: () =>
+      fetch(
+        `/api/v1/cara-studio/audit-trail?home_id=${encodeURIComponent(HOME_ID)}&actors=1`,
+      ).then((r) => r.json()),
+    refetchInterval: 60000,
+  });
+  const qs = new URLSearchParams({ home_id: HOME_ID });
+  if (actor) qs.set("actor_id", actor);
+  if (action) qs.set("action_type", action);
+  qs.set("limit", "200");
+  const trail = useQuery({
+    queryKey: [
+      "cara-audit-trail",
+      HOME_ID,
+      actor ?? "*",
+      action ?? "*",
+      "*",
+      "*",
+      200,
+    ],
+    queryFn: () =>
+      fetch(
+        `/api/v1/cara-studio/audit-trail?${qs.toString()}`,
+      ).then((r) => r.json()),
+    refetchInterval: 15000,
   });
 
   const entries = useMemo(() => {

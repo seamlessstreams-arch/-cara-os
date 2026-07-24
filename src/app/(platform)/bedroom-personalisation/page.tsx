@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useBedroomProfiles } from "@/hooks/use-bedroom-profiles";
 import type { BedroomProfile } from "@/types/extended";
 import {
   ChevronDown,
@@ -44,8 +44,14 @@ const exportCols: ExportColumn<BedroomProfile>[] = [
   { header: "Last Reviewed", accessor: (r: BedroomProfile) => r.review_date },
 ];
 
+// Query config for bedroom profiles (inlined from use-bedroom-profiles hook)
+const BEDROOM_PROFILES_QUERY = {
+  queryKey: ["bedroom-profiles", undefined],
+  queryFn: () => fetch("/api/v1/bedroom-profiles").then((r) => r.json()),
+};
+
 export default function BedroomPersonalisationPage() {
-  const { data: res, isLoading } = useBedroomProfiles();
+  const { data: res, isLoading } = useQuery<{ data: BedroomProfile[] }>(BEDROOM_PROFILES_QUERY);
   const data = useMemo(() => res?.data ?? [], [res]);
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("name");

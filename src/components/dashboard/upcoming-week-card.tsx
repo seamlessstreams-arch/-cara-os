@@ -6,10 +6,10 @@
 
 import React, { useMemo } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { CalendarDays, ArrowRight } from "lucide-react";
-import { useCalendarFeed } from "@/hooks/use-calendar";
 import { SOURCE_COLOR, formatTime } from "@/components/calendar/calendar-bits";
 import { CALENDAR_SOURCE_LABELS, type CalendarItem } from "@/lib/calendar/calendar-types";
 
@@ -48,10 +48,24 @@ function UpcomingWeekCardInner() {
   const toKey = keyOf(new Date(today.getTime() + 7 * 864e5));
 
   // Shifts excluded — high volume; this is a planning glance, not a rota.
-  const { data, isLoading } = useCalendarFeed({
-    from: todayKey,
-    to: toKey,
-    sources: ["calendar", "task", "appointment", "supervision", "lac_review", "family_time", "interview", "training", "key_working"],
+  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+    const res = await fetch(url, {
+      ...init,
+      headers: { "content-type": "application/json", ...init?.headers },
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+    return json.data as T;
+  };
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["calendar-feed", todayKey, toKey, "calendar,task,appointment,supervision,lac_review,family_time,interview,training,key_working"],
+    queryFn: () => {
+      const params = new URLSearchParams({ from: todayKey, to: toKey });
+      const sources = ["calendar", "task", "appointment", "supervision", "lac_review", "family_time", "interview", "training", "key_working"];
+      if (sources && sources.length) params.set("sources", sources.join(","));
+      return jfetch(`/api/v1/calendar?${params.toString()}`);
+    },
   });
 
   const upcoming = (data?.items ?? []).filter((i) => i.date >= todayKey);

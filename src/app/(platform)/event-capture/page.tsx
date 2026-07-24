@@ -7,13 +7,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FilePlus2, Brain, Loader2, Info, CheckCircle2, XCircle, Copy, Route, Archive, AlertTriangle, Send, Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEventCapture } from "@/hooks/use-event-capture";
-import { useCaptureEvent } from "@/hooks/use-capture-event";
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800", warning: "border-amber-200 bg-amber-50 text-amber-800", positive: "border-green-200 bg-green-50 text-green-800",
@@ -121,7 +121,20 @@ const CHILDREN = [{ id: "yp_alex", name: "Alex" }, { id: "yp_jordan", name: "Jor
 const RISKS = ["low", "medium", "high", "critical"] as const;
 
 function CaptureEventForm() {
-  const capture = useCaptureEvent();
+  const qc = useQueryClient();
+  const SPINE_VIEWS = [
+    "event-stream", "event-intelligence", "event-capture",
+    "duplicate-detection", "conflict-detection", "evidence-bank", "manager-inbox",
+  ];
+  const capture = useMutation({
+    mutationFn: (vars: { draft: any; force?: boolean }) => {
+      const res = fetch("/api/v1/event-capture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ draft: vars.draft, force: vars.force }) });
+      return res.then((r) => r.json());
+    },
+    onSuccess: () => {
+      for (const key of SPINE_VIEWS) qc.invalidateQueries({ queryKey: [key] });
+    },
+  });
   const [eventType, setEventType] = useState<string>("daily_log");
   const [childId, setChildId] = useState<string>("yp_alex");
   const [riskLevel, setRiskLevel] = useState<string>("low");

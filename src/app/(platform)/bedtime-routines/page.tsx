@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn, formatDate, todayStr } from "@/lib/utils";
-import { useBedtimeRoutines } from "@/hooks/use-bedtime-routines";
 import type { BedtimeRoutine } from "@/types/extended";
 import {
   AGE_BAND_LABEL,
@@ -55,8 +55,14 @@ const exportCols: ExportColumn<BedtimeRoutine>[] = [
   { header: "Last Reviewed", accessor: (r: BedtimeRoutine) => r.reviewed_date },
 ];
 
+// Query config for bedtime routines (inlined from use-bedtime-routines hook)
+const BEDTIME_ROUTINES_QUERY = {
+  queryKey: ["bedtime-routines", undefined],
+  queryFn: () => fetch("/api/v1/bedtime-routines").then((r) => r.json()),
+};
+
 export default function BedtimeRoutinesPage() {
-  const { data: res, isLoading } = useBedtimeRoutines();
+  const { data: res, isLoading } = useQuery<{ data: BedtimeRoutine[] }>(BEDTIME_ROUTINES_QUERY);
   const data = useMemo(() => res?.data ?? [], [res]);
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("name");

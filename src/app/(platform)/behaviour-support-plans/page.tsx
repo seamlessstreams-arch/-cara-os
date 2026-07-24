@@ -9,6 +9,7 @@
 // ==============================================================================
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -31,7 +32,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useBehaviourSupportPlans, useCreateBSP } from "@/hooks/use-behaviour-support-plans";
+import { api } from "@/hooks/use-api";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import Link from "next/link";
 import { getStaffName, getYPName } from "@/lib/seed-data";
@@ -39,6 +40,11 @@ import type { BehaviourSupportPlan, BSPPrimaryBehaviour, BSPKnownTrigger, BSPDeE
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+interface BSPResponse {
+  data: BehaviourSupportPlan[];
+  meta: { total: number; active: number; overdue_reviews: number };
+}
 
 // -- Helpers ------------------------------------------------------------------
 
@@ -117,9 +123,17 @@ const EXPORT_COLS: ExportColumn<BehaviourSupportPlan>[] = [
 // =============================================================================
 
 export default function BehaviourSupportPlansPage() {
-  const { data: bspData, isLoading } = useBehaviourSupportPlans();
-  const createBSP = useCreateBSP();
-  const plans = bspData?.data ?? [];
+  const qc = useQueryClient();
+  const { data: bspData, isLoading } = useQuery({
+    queryKey: ["behaviour-support-plans"],
+    queryFn: () => api.get<BSPResponse>("/behaviour-support-plans"),
+    staleTime: 30_000,
+  });
+  const createBSP = useMutation({
+    mutationFn: (data: Partial<BehaviourSupportPlan>) => api.post<{ data: BehaviourSupportPlan }>("/behaviour-support-plans", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["behaviour-support-plans"] }),
+  });
+  const plans = bspData?.data?.data ?? [];
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

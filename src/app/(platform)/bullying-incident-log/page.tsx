@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -25,7 +26,6 @@ import type {
   BullyingStatus,
   BullyingIncident,
 } from "@/types/extended";
-import { useBullyingIncidents } from "@/hooks/use-bullying-incidents";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -120,7 +120,10 @@ const STATUSES: BullyingStatus[] = ["open_investigating", "closed_resolved", "mo
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function BullyingIncidentLogPage() {
-  const { data: biData, isLoading } = useBullyingIncidents();
+  const { data: biData, isLoading } = useQuery<{ data: BullyingIncident[] }>({
+    queryKey: ["bullying-incidents"],
+    queryFn: () => fetch("/api/v1/bullying-incidents").then((r) => r.json()),
+  });
   const data = biData?.data ?? [];
 
   const [search, setSearch] = useState("");

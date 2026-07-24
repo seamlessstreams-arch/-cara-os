@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -19,11 +20,15 @@ import {
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { AnnualHealthAssessment, AHAHealthDomain } from "@/types/extended";
-import { useAnnualHealthAssessments } from "@/hooks/use-annual-health-assessments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inline hooks ──────────────────────────────────────────────────────────── */
+
+const AHA_KEY = "annual-health-assessments";
+const AHA_API = "/api/v1/annual-health-assessments";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -32,7 +37,10 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function AnnualHealthAssessmentPage() {
-  const { data: res, isLoading } = useAnnualHealthAssessments();
+  const { data: res, isLoading } = useQuery<{ data: AnnualHealthAssessment[] }>({
+    queryKey: [AHA_KEY],
+    queryFn: () => fetch(AHA_API).then((r) => r.json()),
+  });
   const data = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

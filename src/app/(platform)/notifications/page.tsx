@@ -13,8 +13,8 @@ import { cn, formatDate, todayStr } from "@/lib/utils";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useAlertNotifications } from "@/hooks/use-alert-notifications";
 import { useNotifications, useMarkNotificationRead } from "@/hooks/use-notifications";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/auth-context";
 import type {
   AlertNotification,
@@ -64,9 +64,19 @@ const SEVERITY_CONFIG: Record<AlertSeverity, { label: string; colour: string }> 
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+// Query config for alert notifications (inlined from use-alert-notifications hook)
+const ALERT_NOTIFICATIONS_QUERY = {
+  queryKey: ["alert-notifications"],
+  queryFn: async () => {
+    const res = await fetch("/api/v1/alert-notifications");
+    if (!res.ok) throw new Error("Failed to fetch alert notifications");
+    const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+  },
+};
+
 export default function NotificationsPage() {
   const { currentUser } = useAuthContext();
-  const { data: records = [], isLoading } = useAlertNotifications();
+  const { data: records = [], isLoading } = useQuery<AlertNotification[]>(ALERT_NOTIFICATIONS_QUERY);
   const { data: careEventNotifs = [] } = useNotifications({ recipientId: currentUser?.id });
   const markRead = useMarkNotificationRead();
 

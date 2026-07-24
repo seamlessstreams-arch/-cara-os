@@ -9,8 +9,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { useCaraActivity } from "@/hooks/use-cara-activity";
 import { Shield, TrendingUp, TrendingDown, Minus, Loader2 } from "lucide-react";
 
 interface CaraConfidenceBreakdownProps {
@@ -48,7 +48,20 @@ export function CaraConfidenceBreakdown({
   days = 30,
   className,
 }: CaraConfidenceBreakdownProps) {
-  const { data: stats, isLoading } = useCaraActivity({ homeId, days });
+  const query = new URLSearchParams();
+  if (homeId) query.set("homeId", homeId);
+  if (days) query.set("days", String(days));
+
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["cara-activity", { homeId, days }],
+    queryFn: async () => {
+      const res = await fetch(`/api/cara/activity?${query}`);
+      if (!res.ok) throw new Error("Failed to fetch Cara activity");
+      const data = await res.json();
+      return data.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   if (isLoading) {
     return (

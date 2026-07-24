@@ -7,13 +7,19 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Star, ChevronRight, AlertTriangle, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useBehaviourIntelligence } from "@/hooks/use-behaviour-intelligence";
+import { api } from "@/hooks/use-api";
+import type { BehaviourIntelligenceResult } from "@/lib/engines/behaviour-intelligence-engine";
+
+interface BehaviourIntelligenceResponse {
+  data: BehaviourIntelligenceResult;
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -29,7 +35,11 @@ const INSIGHT_STYLES: Record<string, string> = {
 };
 
 export function PositiveBehaviourReinforcementCard() {
-  const { data, isLoading } = useBehaviourIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["behaviour-intelligence"],
+    queryFn: () => api.get<BehaviourIntelligenceResponse>("/behaviour-intelligence"),
+    refetchInterval: 30_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

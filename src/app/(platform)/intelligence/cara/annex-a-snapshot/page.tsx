@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,11 +15,6 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card";
 import { Award, RefreshCw, Lock, AlertTriangle, CheckCircle2 } from "lucide-react";
-import {
-  useAnnexASnapshots,
-  useRunAnnexASnapshot,
-  useLockAnnexASnapshot,
-} from "@/hooks/use-cara-annex-a-snapshot";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type {
@@ -154,10 +150,36 @@ function SnapshotPanel({
 export default function AnnexASnapshotPage() {
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
+  const qc = useQueryClient();
 
-  const query = useAnnexASnapshots(HOME_ID);
-  const run = useRunAnnexASnapshot();
-  const lock = useLockAnnexASnapshot();
+  const query = useQuery({
+    queryKey: ["cara-annex-a-snapshot", HOME_ID ?? null],
+    queryFn: () => fetch(`/api/v1/cara-studio/annex-a-snapshot?home_id=${encodeURIComponent(HOME_ID)}`).then((r) => r.json()),
+    refetchInterval: 60000,
+  });
+  const run = useMutation({
+    mutationFn: (input: {
+      home_id: string;
+      period_start?: string;
+      period_end?: string;
+      actor_id?: string;
+      actor_role?: string;
+    }) => fetch("/api/v1/cara-studio/annex-a-snapshot", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) }).then((r) => r.json()),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-annex-a-snapshot"] });
+    },
+  });
+  const lock = useMutation({
+    mutationFn: (input: {
+      id: string;
+      lock_note?: string | null;
+      actor_id?: string;
+      actor_role?: string;
+    }) => fetch("/api/v1/cara-studio/annex-a-snapshot-lock", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) }).then((r) => r.json()),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-annex-a-snapshot"] });
+    },
+  });
   const [showHistory, setShowHistory] = useState(false);
 
   const snapshots = query.data?.data ?? [];

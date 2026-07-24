@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -27,7 +28,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { useAdvocacy, useCreateAdvocacyRecord } from "@/hooks/use-advocacy";
 import { YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
@@ -37,6 +37,11 @@ import type {
   AdvocacyRecord,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+/* ── inline hooks ──────────────────────────────────────────────────────────── */
+
+const ADVOCACY_KEY = "advocacy";
+const ADVOCACY_API = "/api/v1/advocacy";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -59,8 +64,16 @@ const VISIT_LABELS: Record<string, string> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function AdvocacyPage() {
-  const { data: result, isLoading } = useAdvocacy();
-  const createAdvocacy = useCreateAdvocacyRecord();
+  const qc = useQueryClient();
+  const { data: result, isLoading } = useQuery<{ data: AdvocacyRecord[] }>({
+    queryKey: [ADVOCACY_KEY],
+    queryFn: () => fetch(ADVOCACY_API).then((r) => r.json()),
+  });
+  const createAdvocacy = useMutation({
+    mutationFn: (data: Partial<AdvocacyRecord>) =>
+      fetch(ADVOCACY_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [ADVOCACY_KEY] }),
+  });
   const data = result?.data ?? [];
 
   const [expanded, setExpanded] = useState<string | null>(null);

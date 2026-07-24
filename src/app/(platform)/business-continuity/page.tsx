@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useBcpScenarios } from "@/hooks/use-bcp-scenarios";
 import type { BcpScenarioPlan } from "@/types/extended";
 import { BCP_SEVERITY_LABEL } from "@/types/extended";
 import {
@@ -70,8 +70,14 @@ const offsetDate = (n: number) => {
   return dt.toISOString().slice(0, 10);
 };
 
+// Query config for BCP scenarios (inlined from use-bcp-scenarios hook)
+const BCP_SCENARIOS_QUERY = {
+  queryKey: ["bcp-scenarios"],
+  queryFn: () => fetch("/api/v1/bcp-scenarios").then((r) => r.json()),
+};
+
 export default function BusinessContinuityPage() {
-  const { data: res, isLoading } = useBcpScenarios();
+  const { data: res, isLoading } = useQuery<{ data: BcpScenarioPlan[] }>(BCP_SCENARIOS_QUERY);
   const scenarios = useMemo(() => res?.data ?? [], [res]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     sc_fire: true,

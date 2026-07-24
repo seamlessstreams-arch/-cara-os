@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -8,7 +9,6 @@ import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/co
 import { CheckTile } from "@/components/ui/check-tile";
 import { getStaffName } from "@/lib/seed-data";
 import { cn, todayStr } from "@/lib/utils";
-import { useAsbestosRecords } from "@/hooks/use-asbestos-records";
 import type { AsbestosRecord } from "@/types/extended";
 import {
   ASBESTOS_SURVEY_TYPE_LABEL,
@@ -88,8 +88,14 @@ const exportCols: ExportColumn<AsbestosRecord>[] = [
   { header: "Flags / Concerns", accessor: (r) => r.flags_concerns.join("; ") },
 ];
 
+// Query config for asbestos records (inlined from use-asbestos-records hook)
+const ASBESTOS_RECORDS_QUERY = {
+  queryKey: ["asbestos-records"],
+  queryFn: () => fetch("/api/v1/asbestos-records").then((r) => r.json()),
+};
+
 export default function BuildingAsbestosRegisterPage() {
-  const { data: res, isLoading } = useAsbestosRecords();
+  const { data: res, isLoading } = useQuery<{ data: AsbestosRecord[] }>(ASBESTOS_RECORDS_QUERY);
   const data = useMemo(() => res?.data ?? [], [res]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");

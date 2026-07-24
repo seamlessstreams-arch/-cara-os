@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Heart,
   Flower,
@@ -23,7 +24,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import type { BereavementLossType, GriefStage, BereavementRecord } from "@/types/extended";
-import { useBereavementRecords } from "@/hooks/use-bereavement-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -110,7 +110,10 @@ const exportCols: ExportColumn<FlatRow>[] = [
 /* ── component ───────────────────────────────────────────────────────── */
 
 export default function BereavementLossSupportPage() {
-  const { data: brData, isLoading } = useBereavementRecords();
+  const { data: brData, isLoading } = useQuery<{ data: BereavementRecord[] }>({
+    queryKey: ["bereavement-records"],
+    queryFn: () => fetch("/api/v1/bereavement-records").then((r) => r.json()),
+  });
   const data = brData?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

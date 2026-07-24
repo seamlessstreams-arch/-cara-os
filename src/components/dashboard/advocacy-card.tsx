@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +16,8 @@ import {
   Heart, Scale, MessageSquare, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAdvocacyIntelligence } from "@/hooks/use-advocacy-intelligence";
+import { api } from "@/hooks/use-api";
+import type { AdvocacyIntelligenceResult } from "@/lib/engines/advocacy-intelligence-engine";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -35,7 +37,11 @@ const INSIGHT_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function AdvocacyCard() {
-  const { data, isLoading } = useAdvocacyIntelligence();
+  const { data, isLoading } = useQuery<{ data: AdvocacyIntelligenceResult }>({
+    queryKey: ["advocacy-intelligence"],
+    queryFn: () => api.get<{ data: AdvocacyIntelligenceResult }>("/advocacy-intelligence"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

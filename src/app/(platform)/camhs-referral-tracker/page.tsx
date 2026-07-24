@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -28,7 +29,6 @@ import type {
   CamhsEngagementLevel,
   CamhsReferral,
 } from "@/types/extended";
-import { useCamhsReferrals } from "@/hooks/use-camhs-referrals";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -99,7 +99,10 @@ const ENGAGEMENT_META: Record<CamhsEngagementLevel, { colour: string }> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function CamhsReferralTrackerPage() {
-  const { data: crData, isLoading } = useCamhsReferrals();
+  const { data: crData, isLoading } = useQuery<{ data: CamhsReferral[] }>({
+    queryKey: ["camhs-referrals"],
+    queryFn: () => fetch("/api/v1/camhs-referrals").then((r) => r.json()),
+  });
   const data = crData?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);

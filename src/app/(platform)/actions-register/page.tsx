@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -10,8 +11,8 @@ import {
   Loader2, RefreshCw, ListChecks, AlertOctagon, Clock, CheckCircle2, Circle,
   CalendarClock, User, ArrowUpRight, Filter,
 } from "lucide-react";
-import { useActionsRegister } from "@/hooks/use-actions-register";
 import type { RegisteredAction, ActionUrgency } from "@/lib/engines/actions-register-engine";
+import type { ActionsRegisterResult } from "@/lib/engines/actions-register-engine";
 
 const URGENCY_META: Record<ActionUrgency, { label: string; dot: string; badge: string; rag: string }> = {
   overdue: { label: "Overdue", dot: "bg-red-500", badge: "bg-red-100 text-red-800 border-red-200", rag: "cs-rag-red" },
@@ -60,8 +61,20 @@ function ActionRow({ a }: { a: RegisteredAction }) {
   );
 }
 
+// Query config for actions register (inlined from use-actions-register hook)
+const ACTIONS_REGISTER_QUERY = {
+  queryKey: ["actions-register"],
+  queryFn: async () => {
+    const res = await fetch("/api/v1/actions-register");
+    if (!res.ok) throw new Error("Failed to fetch actions register");
+    const json = await res.json();
+    return json.data;
+  },
+  refetchInterval: 120_000,
+};
+
 export default function ActionsRegisterPage() {
-  const { data, isLoading, isFetching, refetch } = useActionsRegister();
+  const { data, isLoading, isFetching, refetch } = useQuery<ActionsRegisterResult>(ACTIONS_REGISTER_QUERY);
   const [sourceFilter, setSourceFilter] = useState<string | null>(null);
   const [overdueOnly, setOverdueOnly] = useState(false);
 

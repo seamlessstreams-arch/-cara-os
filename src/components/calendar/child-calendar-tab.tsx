@@ -8,8 +8,8 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, Plus, ArrowRight } from "lucide-react";
-import { useCalendarFeed } from "@/hooks/use-calendar";
 import { EventEditor } from "@/components/calendar/event-editor";
 import { SOURCE_COLOR, formatTime } from "@/components/calendar/calendar-bits";
 import { CALENDAR_SOURCE_LABELS, type CalendarItem } from "@/lib/calendar/calendar-types";
@@ -49,7 +49,23 @@ export function ChildCalendarTab({ childId, childName }: { childId: string; chil
   const toKey = keyOf(new Date(today.getTime() + 90 * 864e5));
   const [editorOpen, setEditorOpen] = useState(false);
 
-  const { data, isLoading } = useCalendarFeed({ from: todayKey, to: toKey });
+  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+    const res = await fetch(url, {
+      ...init,
+      headers: { "content-type": "application/json", ...init?.headers },
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+    return json.data as T;
+  };
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["calendar-feed", todayKey, toKey, ""],
+    queryFn: () => {
+      const params = new URLSearchParams({ from: todayKey, to: toKey });
+      return jfetch(`/api/v1/calendar?${params.toString()}`);
+    },
+  });
   const items = (data?.items ?? []).filter((i) => i.child_id === childId && i.date >= todayKey);
 
   const grouped = useMemo(() => {

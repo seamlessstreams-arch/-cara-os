@@ -9,6 +9,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,8 +20,22 @@ import {
 import { cn, formatDate } from "@/lib/utils";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { useActivityFeed, type FeedItem } from "@/hooks/use-activity-feed";
+import { api } from "@/hooks/use-api";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+
+// Feed item interface (inlined from use-activity-feed hook)
+export interface FeedItem {
+  id: string;
+  type: "incident" | "task" | "daily_log" | "medication" | "handover" | "safeguarding" | "training" | "document" | "shift" | "form";
+  action: string;
+  title: string;
+  description: string;
+  timestamp: string;
+  actor_id?: string;
+  child_id?: string;
+  severity?: "critical" | "high" | "medium" | "low" | "info";
+  href: string;
+}
 import {
   Search, Filter, ArrowUpDown, X, RefreshCw, Loader2,
   AlertTriangle, CheckSquare, BookOpen, Pill, ArrowRightLeft,
@@ -138,8 +153,15 @@ function FeedRow({ item }: { item: FeedItem }) {
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 
+// Query config for activity feed (inlined from use-activity-feed hook)
+const ACTIVITY_FEED_QUERY = {
+  queryKey: ["activity-feed"],
+  queryFn: () => api.get<{ data: FeedItem[]; meta: { total: number } }>("/activity-feed"),
+  refetchInterval: 30_000, // Live refresh every 30s
+};
+
 export default function ActivityLogPage() {
-  const { data: res, isLoading, refetch } = useActivityFeed();
+  const { data: res, isLoading, refetch } = useQuery(ACTIVITY_FEED_QUERY);
   const feed = res?.data ?? [];
 
   // Filters

@@ -8,6 +8,7 @@
 // silently overwritten — the original is preserved (M13).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +16,11 @@ import { Button } from "@/components/ui/button";
 import {
   RefreshCw, Shield, FileWarning, BookOpen, Award, CheckCircle2, History,
 } from "lucide-react";
-import { useAmendmentReview } from "@/hooks/use-amendment-review";
+import { api } from "@/hooks/use-api";
 import type {
   AmendmentReviewRow,
   AmendmentSensitiveFlag,
+  AmendmentReviewSummary,
 } from "@/lib/care-events/amendment-review";
 
 const HOME_ID = "home_oak";
@@ -30,8 +32,19 @@ const FLAG_META: Record<AmendmentSensitiveFlag, { label: string; icon: React.Rea
   annex_a:      { label: "Annex A",      icon: <Award className="h-3 w-3" />, tone: "bg-blue-100 text-blue-800" },
 };
 
+interface Response {
+  data: AmendmentReviewSummary;
+}
+
 export default function AmendmentReviewPage() {
-  const { data, isLoading, refetch, isFetching } = useAmendmentReview(HOME_ID);
+  const { data, isLoading, refetch, isFetching } = useQuery<Response>({
+    queryKey: ["amendment-review", HOME_ID],
+    queryFn: () =>
+      api.get<Response>(
+        `/care-events/amendment-review?home_id=${encodeURIComponent(HOME_ID)}`,
+      ),
+    refetchInterval: 30000,
+  });
   const summary = data?.data;
 
   return (

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { AsthmaPlan, AsthmaDiagnosis } from "@/types/extended";
 import { ASTHMA_DIAGNOSIS_LABEL } from "@/types/extended";
-import { useAsthmaPlans } from "@/hooks/use-asthma-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -23,6 +23,10 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+/* ── Query Config ─────────────────────────────────────────────────────────── */
+const ASTHMA_PLANS_KEY = "asthma-plans";
+const ASTHMA_PLANS_API = "/api/v1/asthma-plans";
+
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 function addDays(n: number): string {
@@ -34,7 +38,10 @@ function addDays(n: number): string {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function ChildAsthmaActionPlanPage() {
-  const { data: resp, isLoading } = useAsthmaPlans();
+  const { data: resp, isLoading } = useQuery<{ data: AsthmaPlan[] }>({
+    queryKey: [ASTHMA_PLANS_KEY],
+    queryFn: () => fetch(ASTHMA_PLANS_API).then((r) => r.json()),
+  });
   const data = resp?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

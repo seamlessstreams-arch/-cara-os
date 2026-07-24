@@ -12,8 +12,8 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import type { Shift } from "@/types";
-import { useCalendarFeed } from "@/hooks/use-calendar";
 import { useManagerPriorityBriefing } from "@/hooks/use-manager-priority-briefing";
 import { useSystemHealth } from "@/hooks/use-system-health";
 import { getStaffName } from "@/lib/seed-data";
@@ -90,7 +90,23 @@ function OnNow({ shifts }: { shifts: Shift[] }) {
 
 function UpNext() {
   const today = todayStr();
-  const feed = useCalendarFeed({ from: today, to: today });
+  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+    const res = await fetch(url, {
+      ...init,
+      headers: { "content-type": "application/json", ...init?.headers },
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+    return json.data as T;
+  };
+
+  const feed = useQuery({
+    queryKey: ["calendar-feed", today, today, ""],
+    queryFn: () => {
+      const params = new URLSearchParams({ from: today, to: today });
+      return jfetch(`/api/v1/calendar?${params.toString()}`);
+    },
+  });
   const items = (feed.data?.items ?? [])
     .filter((i) => i.status !== "cancelled")
     .sort((a, b) => Number(a.all_day) - Number(b.all_day) || a.start.localeCompare(b.start))

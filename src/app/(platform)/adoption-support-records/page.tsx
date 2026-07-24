@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
@@ -18,12 +19,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useAdoptionRecords } from "@/hooks/use-adoption-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AdoptionStatus, AdoptionIntroductionPhase, AdoptionRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── constants ─────────────────────────────────────────────────────────────── */
+
+const ADOPTION_RECORDS_KEY = "adoption-records";
+const ADOPTION_RECORDS_API = "/api/v1/adoption-records";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -64,7 +69,10 @@ const STATUS_LABEL: Record<AdoptionStatus, string> = {
 
 export default function AdoptionSupportRecordsPage() {
   const homeName = useHomeName();
-  const { data: result, isLoading } = useAdoptionRecords();
+  const { data: result, isLoading } = useQuery<{ data: AdoptionRecord[] }>({
+    queryKey: [ADOPTION_RECORDS_KEY],
+    queryFn: () => fetch(ADOPTION_RECORDS_API).then((r) => r.json()),
+  });
   const records = result?.data ?? [];
 
   const [search, setSearch] = useState("");

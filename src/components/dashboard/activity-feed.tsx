@@ -8,10 +8,25 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useActivityFeed, type FeedItem } from "@/hooks/use-activity-feed";
+import { api } from "@/hooks/use-api";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+
+// Feed item interface (inlined from use-activity-feed hook)
+export interface FeedItem {
+  id: string;
+  type: "incident" | "task" | "daily_log" | "medication" | "handover" | "safeguarding" | "training" | "document" | "shift" | "form";
+  action: string;
+  title: string;
+  description: string;
+  timestamp: string;
+  actor_id?: string;
+  child_id?: string;
+  severity?: "critical" | "high" | "medium" | "low" | "info";
+  href: string;
+}
 import { cn, formatRelative } from "@/lib/utils";
 import {
   Activity, AlertTriangle, CheckCircle2, BookOpen, Pill,
@@ -129,8 +144,15 @@ function FeedItemRow({ item }: { item: FeedItem }) {
 
 // ── Main component ───────────────────────────────────────────────────────────
 
+// Query config for activity feed (inlined from use-activity-feed hook)
+const ACTIVITY_FEED_QUERY = {
+  queryKey: ["activity-feed"],
+  queryFn: () => api.get<{ data: FeedItem[]; meta: { total: number } }>("/activity-feed"),
+  refetchInterval: 30_000, // Live refresh every 30s
+};
+
 export function ActivityFeed({ limit = 12 }: { limit?: number }) {
-  const { data, isLoading } = useActivityFeed();
+  const { data, isLoading } = useQuery(ACTIVITY_FEED_QUERY);
   const items = (data?.data ?? []).slice(0, limit);
 
   return (

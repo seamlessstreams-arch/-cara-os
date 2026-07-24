@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -25,12 +26,15 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { useAttachmentProfiles, useCreateAttachmentProfile } from "@/hooks/use-attachment-profiles";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AttachmentProfile, AttachmentStyle, AttachmentProfileStatus, AttachmentBehaviour, AttachmentKeyRelationship } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Query Config ──────────────────────────────────────────────────────── */
+const ATTACHMENT_PROFILES_KEY = "attachment-profiles";
+const ATTACHMENT_PROFILES_API = "/api/v1/attachment-profiles";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -90,8 +94,19 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function AttachmentProfilesPage() {
-  const { data: apData, isLoading } = useAttachmentProfiles();
-  const createAP = useCreateAttachmentProfile();
+  const qc = useQueryClient();
+
+  const { data: apData, isLoading } = useQuery<{ data: AttachmentProfile[] }>({
+    queryKey: [ATTACHMENT_PROFILES_KEY],
+    queryFn: () => fetch(ATTACHMENT_PROFILES_API).then((r) => r.json()),
+  });
+
+  const createAP = useMutation({
+    mutationFn: (data: Partial<AttachmentProfile>) =>
+      fetch(ATTACHMENT_PROFILES_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [ATTACHMENT_PROFILES_KEY] }),
+  });
+
   const data = apData?.data ?? [];
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});

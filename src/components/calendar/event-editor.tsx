@@ -3,10 +3,10 @@
 // CARA — CALENDAR event editor (create / edit slide-over)
 
 import React, { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Plus, Trash2 } from "lucide-react";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useStaff } from "@/hooks/use-staff";
-import { useCreateCalendarEvent, useUpdateCalendarEvent, type CreateEventBody } from "@/hooks/use-calendar";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 
 const inputCls =
@@ -48,8 +48,34 @@ export function EventEditor({
 }) {
   const yp = useYoungPeople();
   const staff = useStaff();
-  const create = useCreateCalendarEvent();
-  const update = useUpdateCalendarEvent(editing?.id ?? "");
+  const qc = useQueryClient();
+
+  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+    const res = await fetch(url, {
+      ...init,
+      headers: { "content-type": "application/json", ...init?.headers },
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+    return json.data as T;
+  };
+
+  const invalidate = () =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: ["calendar-feed"] }),
+      qc.invalidateQueries({ queryKey: ["calendar-event"] }),
+    ]);
+
+  const create = useMutation({
+    mutationFn: (body: any) =>
+      jfetch(`/api/v1/calendar`, { method: "POST", body: JSON.stringify(body) }),
+    onSuccess: () => invalidate(),
+  });
+  const update = useMutation({
+    mutationFn: (patch: Record<string, unknown>) =>
+      jfetch(`/api/v1/calendar/${editing?.id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+    onSuccess: () => invalidate(),
+  });
 
   const [title, setTitle] = useState("");
   const [eventType, setEventType] = useState("meeting");

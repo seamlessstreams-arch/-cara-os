@@ -11,11 +11,11 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, GitBranch } from "lucide-react";
-import { useABCBehaviour } from "@/hooks/use-abc-behaviour";
 import { ABCFlowVisual } from "./abc-flow-visual";
 
 export function ABCBehaviourPanel() {
-  const { data, isLoading, isError } = useABCBehaviour();
+  // STUB: Hook use-abc-behaviour was inlined and found to be unused (Batch 1, hook inlining Phase 1)
+  const { data, isLoading, isError } = { data: undefined, isLoading: false, isError: false };
   const report = data?.data;
   const [selected, setSelected] = useState<string | null>(null);
   const children = report?.children ?? [];

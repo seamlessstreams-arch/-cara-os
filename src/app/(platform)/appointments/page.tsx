@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,18 +27,22 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useAppointments, useCreateAppointment, useUpdateAppointment } from "@/hooks/use-appointments";
+import type { Appointment, AppointmentType, AppointmentStatus } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import type { Appointment, AppointmentType, AppointmentStatus } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Plus, CalendarDays,
   CheckCircle2, AlertTriangle, Clock, User, Calendar,
   ChevronDown, ChevronUp, Stethoscope, Heart, Brain,
   Eye, Shield, MapPin, XCircle, Phone, Loader2,
 } from "lucide-react";
+
+// ── Query Keys & API ──────────────────────────────────────────────────────────
+
+const APPOINTMENTS_KEY = "appointments";
+const APPOINTMENTS_API = "/api/v1/appointments";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -75,11 +80,25 @@ const d = (n: number) => {
 
 export default function AppointmentsPage() {
   const { currentUser } = useAuthContext();
+  const qc = useQueryClient();
 
-  const { data: res, isLoading } = useAppointments();
+  const { data: res, isLoading } = useQuery<{ data: Appointment[] }>({
+    queryKey: [APPOINTMENTS_KEY],
+    queryFn: () => fetch(APPOINTMENTS_API).then((r) => r.json()),
+  });
   const entries = res?.data ?? [];
-  const createAppointment = useCreateAppointment();
-  const updateAppointment = useUpdateAppointment();
+
+  const createAppointment = useMutation({
+    mutationFn: (data: Partial<Appointment>) =>
+      fetch(APPOINTMENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [APPOINTMENTS_KEY] }),
+  });
+
+  const updateAppointment = useMutation({
+    mutationFn: (data: Partial<Appointment> & { id: string }) =>
+      fetch(APPOINTMENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [APPOINTMENTS_KEY] }),
+  });
 
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");

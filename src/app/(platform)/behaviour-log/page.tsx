@@ -10,6 +10,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useBehaviourLog, useCreateBehaviourEntry } from "@/hooks/use-behaviour-log";
+import type { BehaviourEntry } from "@/types/extended";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { InlinePracticeModules } from "@/components/intelligence/practice-module-panels";
@@ -59,10 +60,18 @@ const INTENSITY_CONFIG: Record<BehaviourIntensity, { label: string; colour: stri
 
 export default function BehaviourLogPage() {
   const { currentUser } = useAuthContext();
+  const qc = useQueryClient();
 
-  const { data: result, isLoading } = useBehaviourLog();
+  const { data: result, isLoading } = useQuery<{ data: BehaviourEntry[] }>({
+    queryKey: ["behaviour-log"],
+    queryFn: () => fetch("/api/v1/behaviour-log").then((r) => r.json()),
+  });
   const entries = result?.data ?? [];
-  const createEntry = useCreateBehaviourEntry();
+  const createEntry = useMutation({
+    mutationFn: (data: Partial<BehaviourEntry>) =>
+      fetch("/api/v1/behaviour-log", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["behaviour-log"] }),
+  });
 
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");

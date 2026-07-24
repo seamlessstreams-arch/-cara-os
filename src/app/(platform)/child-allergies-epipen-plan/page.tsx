@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -36,11 +37,15 @@ import {
 } from "lucide-react";
 import type { AllergyPlan, AllergySeverity } from "@/types/extended";
 import { ALLERGY_SEVERITY_LABEL, AAI_BRAND_LABEL } from "@/types/extended";
-import { useAllergyPlans } from "@/hooks/use-allergy-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inline hooks ───────────────────────────────────────────────────────────────
+
+const ALLERGY_PLANS_KEY = "allergy-plans";
+const ALLERGY_PLANS_API = "/api/v1/allergy-plans";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -89,7 +94,10 @@ export default function ChildAllergiesEpipenPlanPage() {
   const [sortBy, setSortBy] = useState("severity");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: resp, isLoading } = useAllergyPlans();
+  const { data: resp, isLoading } = useQuery<{ data: AllergyPlan[] }>({
+    queryKey: [ALLERGY_PLANS_KEY],
+    queryFn: () => fetch(ALLERGY_PLANS_API).then((r) => r.json()),
+  });
   const records = resp?.data ?? [];
 
   // ── Stats ───────────────────────────────────────────────────────────────────

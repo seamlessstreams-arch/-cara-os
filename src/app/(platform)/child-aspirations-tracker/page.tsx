@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Star,
   Compass,
@@ -26,11 +27,14 @@ import {
 } from "@/components/ui/select";
 import type { AspirationRecord, AspirationDomain, AspirationRealism } from "@/types/extended";
 import { ASPIRATION_DOMAIN_LABEL, ASPIRATION_REALISM_LABEL } from "@/types/extended";
-import { useAspirationRecords } from "@/hooks/use-aspiration-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Query Config ─────────────────────────────────────────────────────────── */
+const ASPIRATION_RECORDS_KEY = "aspiration-records";
+const ASPIRATION_RECORDS_API = "/api/v1/aspiration-records";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -64,7 +68,10 @@ const REALISM_ORDER: Record<AspirationRealism, number> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildAspirationsTrackerPage() {
-  const { data: resp, isLoading } = useAspirationRecords();
+  const { data: resp, isLoading } = useQuery<{ data: AspirationRecord[] }>({
+    queryKey: [ASPIRATION_RECORDS_KEY],
+    queryFn: () => fetch(ASPIRATION_RECORDS_API).then((r) => r.json()),
+  });
   const data = resp?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
