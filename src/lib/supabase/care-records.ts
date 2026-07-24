@@ -86,3 +86,42 @@ export function createTaskRecord(data: any) {
   void persistTask(task as unknown as Record<string, unknown>);
   return task;
 }
+
+/**
+ * Best-effort write-through of a risk assessment to the generic_records
+ * catch-all — the same durable table the /risk-assessments dispatcher POST
+ * writes to when Supabase is enabled. Without this, a risk assessment created
+ * directly against the in-memory store (e.g. the draft RAs seeded on admission)
+ * would be lost on the next live cold start.
+ */
+export async function persistRiskAssessment(ra: Record<string, unknown>): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { id: _id, child_id, created_by, assessed_by, home_id: _home, ...rest } = ra as any;
+    void _id; void _home;
+    await sq.createGenericRecord(c, {
+      home_id: homeId(),
+      record_type: "riskAssessments",
+      data: { ...rest, child_id: child_id ?? null, assessed_by: assessed_by ?? null },
+      child_id: (child_id as string) ?? undefined,
+      created_by: (created_by ?? assessed_by) as string | undefined,
+    });
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/**
+ * Create a risk assessment in the in-memory store AND best-effort persist it to
+ * Supabase (generic_records), so a directly-created RA survives on a live tenant
+ * exactly as one created through the /risk-assessments route does.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createRiskAssessmentRecord(data: any) {
+  const ra = db.riskAssessments.create(data);
+  void persistRiskAssessment(ra as unknown as Record<string, unknown>);
+  return ra;
+}
