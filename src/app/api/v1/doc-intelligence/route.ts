@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
     text: (b.extracted_text as string) || "",
     fileType: (b.file_type as string) || "",
     fileSize: (b.file_size as number) || 0,
+    fileDataUrl: (b.file_data_url as string) || null,
     uploadContext: (b.upload_context as string) || "",
     actorId: (b.actor_id as string) || undefined,
     linkedChildId: (b.linked_child_id as string) ?? null,

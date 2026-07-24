@@ -17,6 +17,8 @@ type UploadPayload = {
   file_type?: string;
   file_size?: number;
   extracted_text: string;
+  /** The file's bytes as a base64 data URL, so the actual file is stored. */
+  file_data_url?: string | null;
   linked_child_id?: string | null;
   linked_staff_id?: string | null;
   linked_incident_id?: string | null;

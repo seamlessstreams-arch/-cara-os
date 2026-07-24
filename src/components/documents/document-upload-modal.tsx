@@ -13,12 +13,18 @@ import type { UploadedDocument, DocumentRiskFlag } from "@/types/documents";
 import {
   X, Upload, FileText, Loader2, CheckCircle2, AlertTriangle,
   Shield, Sparkles, ChevronRight, TriangleAlert, Brain,
-  ClipboardList, Link, BookOpen, Info, ArrowRight,
+  ClipboardList, Link, BookOpen, Info, ArrowRight, Download,
 } from "lucide-react";
 
 type Step = "select" | "analysing" | "review";
 
 const ACCEPT_TYPES = ".pdf,.docx,.xlsx,.csv,.png,.jpg,.jpeg,.txt,.msg,.eml";
+
+// The selected file is attached inline (base64) so it is genuinely stored and
+// downloadable. Cap it so the JSON payload stays under the serverless request-
+// body limit (~4.5 MB) — larger files need object storage, a follow-up.
+const MAX_ATTACH_MB = 3;
+const MAX_ATTACH_BYTES = MAX_ATTACH_MB * 1024 * 1024;
 
 const FILE_TYPE_MAP: Record<string, string> = {
   "application/pdf": "pdf",
@@ -83,6 +89,8 @@ export function DocumentUploadModal({
   const [fileName, setFileName] = useState("");
   const [fileType, setFileType] = useState("txt");
   const [fileSize, setFileSize] = useState(0);
+  const [fileDataUrl, setFileDataUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState("");
   const [context, setContext] = useState(uploadContext ?? "");
   const [result, setResult] = useState<UploadedDocument | null>(null);
@@ -98,17 +106,28 @@ export function DocumentUploadModal({
   const handleFile = useCallback((file: File) => {
     setFileName(file.name);
     setFileSize(file.size);
+    setFileError(null);
+    setFileDataUrl(null);
     const detectedType = FILE_TYPE_MAP[file.type] ?? (file.name.endsWith(".docx") ? "docx" : file.name.endsWith(".xlsx") ? "xlsx" : "txt");
     setFileType(detectedType);
 
+    // Attach the actual file so it is stored and downloadable — not just its text.
+    if (file.size > MAX_ATTACH_BYTES) {
+      setFileError(`This file is ${(file.size / 1024 / 1024).toFixed(1)} MB — too large to attach here (max ${MAX_ATTACH_MB} MB). You can still paste its text below.`);
+    } else {
+      const dataReader = new FileReader();
+      dataReader.onload = (e) => setFileDataUrl((e.target?.result as string) ?? null);
+      dataReader.readAsDataURL(file);
+    }
+
+    // For text files, also pre-fill the content box so Cara can analyse it. For
+    // PDF/DOCX the file is stored above; paste the text to also get analysis
+    // (server-side extraction is a follow-up).
     if (file.type.startsWith("text/") || file.name.endsWith(".txt") || file.name.endsWith(".csv")) {
       const reader = new FileReader();
       reader.onload = (e) => setExtractedText((e.target?.result as string) ?? "");
       reader.readAsText(file);
     }
-    // For non-text files (PDF, DOCX etc.) in this demo system, the text area
-    // lets the user paste extracted content. In production, a server-side
-    // parser (pdf-parse, mammoth, etc.) would extract text automatically.
   }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -137,6 +156,7 @@ export function DocumentUploadModal({
         file_type: fileType,
         file_size: fileSize,
         extracted_text: extractedText,
+        file_data_url: fileDataUrl,
         linked_child_id: linkedChildId ?? null,
         linked_staff_id: linkedStaffId ?? null,
         linked_incident_id: linkedIncidentId ?? null,
@@ -279,6 +299,17 @@ export function DocumentUploadModal({
                 )}
               </div>
 
+              {fileError && (
+                <p className="flex items-start gap-1.5 text-xs text-amber-600">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />{fileError}
+                </p>
+              )}
+              {fileName && fileDataUrl && !fileError && (
+                <p className="flex items-center gap-1.5 text-xs text-emerald-600">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />File attached — it will be stored on the record and downloadable.
+                </p>
+              )}
+
               {/* Or manually enter file name */}
               {!fileName && (
                 <div>
@@ -296,9 +327,9 @@ export function DocumentUploadModal({
               {/* Document text */}
               <div>
                 <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">
-                  Document content <span className="text-red-500">*</span>
+                  Document text <span className="text-[var(--cs-text-muted)] font-normal">(optional)</span>
                   <span className="ml-2 text-[10px] font-normal text-[var(--cs-text-muted)]">
-                    (paste or type document text — PDF/DOCX content extracted automatically in production)
+                    The file itself is attached above. Paste the text of a PDF/scan so Cara can also analyse it.
                   </span>
                 </label>
                 <textarea
@@ -427,6 +458,18 @@ export function DocumentUploadModal({
                     </div>
                   </div>
                 </div>
+              )}
+
+              {/* The stored file — proof it actually uploaded, and downloadable */}
+              {result.stored_file_path?.startsWith("data:") && (
+                <a
+                  href={result.stored_file_path}
+                  download={result.original_file_name}
+                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-cara-gold-bg)]/40 transition-colors"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download the uploaded file — {result.original_file_name}
+                </a>
               )}
 
               {/* Critical + high flags */}
