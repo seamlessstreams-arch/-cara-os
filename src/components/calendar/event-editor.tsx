@@ -50,7 +50,7 @@ export function EventEditor({
   const staff = useStaff();
   const qc = useQueryClient();
 
-  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+  async function jfetch<T>(url: string, init?: RequestInit): Promise<T> {
     const res = await fetch(url, {
       ...init,
       headers: { "content-type": "application/json", ...init?.headers },
@@ -58,7 +58,7 @@ export function EventEditor({
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
     return json.data as T;
-  };
+  }
 
   const invalidate = () =>
     Promise.all([

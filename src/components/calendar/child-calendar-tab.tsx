@@ -49,7 +49,7 @@ export function ChildCalendarTab({ childId, childName }: { childId: string; chil
   const toKey = keyOf(new Date(today.getTime() + 90 * 864e5));
   const [editorOpen, setEditorOpen] = useState(false);
 
-  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+  async function jfetch<T>(url: string, init?: RequestInit): Promise<T> {
     const res = await fetch(url, {
       ...init,
       headers: { "content-type": "application/json", ...init?.headers },
@@ -57,7 +57,7 @@ export function ChildCalendarTab({ childId, childName }: { childId: string; chil
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
     return json.data as T;
-  };
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: ["calendar-feed", todayKey, toKey, ""],

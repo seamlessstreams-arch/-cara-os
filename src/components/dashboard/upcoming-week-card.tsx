@@ -48,7 +48,7 @@ function UpcomingWeekCardInner() {
   const toKey = keyOf(new Date(today.getTime() + 7 * 864e5));
 
   // Shifts excluded — high volume; this is a planning glance, not a rota.
-  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+  async function jfetch<T>(url: string, init?: RequestInit): Promise<T> {
     const res = await fetch(url, {
       ...init,
       headers: { "content-type": "application/json", ...init?.headers },
@@ -56,7 +56,7 @@ function UpcomingWeekCardInner() {
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
     return json.data as T;
-  };
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: ["calendar-feed", todayKey, toKey, "calendar,task,appointment,supervision,lac_review,family_time,interview,training,key_working"],

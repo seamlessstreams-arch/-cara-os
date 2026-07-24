@@ -47,7 +47,7 @@ export default function CalendarPage() {
   const range = useMemo(() => gridRange(monthStart), [monthStart]);
   const sources = useMemo(() => [...active], [active]);
 
-  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+  async function jfetch<T>(url: string, init?: RequestInit): Promise<T> {
     const res = await fetch(url, {
       ...init,
       headers: { "content-type": "application/json", ...init?.headers },
@@ -55,7 +55,7 @@ export default function CalendarPage() {
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
     return json.data as T;
-  };
+  }
 
   const feed = useQuery({
     queryKey: ["calendar-feed", range.from, range.to, (sources ?? []).join(",")],
@@ -293,7 +293,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 /** Invite/cancel actions for an open editable event (rendered as a floating bar). */
 function EventActions({ eventId }: { eventId: string }) {
   const qc = useQueryClient();
-  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+  async function jfetch<T>(url: string, init?: RequestInit): Promise<T> {
     const res = await fetch(url, {
       ...init,
       headers: { "content-type": "application/json", ...init?.headers },
@@ -301,7 +301,7 @@ function EventActions({ eventId }: { eventId: string }) {
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
     return json.data as T;
-  };
+  }
   const invalidate = () =>
     Promise.all([
       qc.invalidateQueries({ queryKey: ["calendar-feed"] }),

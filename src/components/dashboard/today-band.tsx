@@ -90,7 +90,7 @@ function OnNow({ shifts }: { shifts: Shift[] }) {
 
 function UpNext() {
   const today = todayStr();
-  const jfetch = async<T>(url: string, init?: RequestInit): Promise<T> => {
+  async function jfetch<T>(url: string, init?: RequestInit): Promise<T> {
     const res = await fetch(url, {
       ...init,
       headers: { "content-type": "application/json", ...init?.headers },
@@ -98,7 +98,7 @@ function UpNext() {
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
     return json.data as T;
-  };
+  }
 
   const feed = useQuery({
     queryKey: ["calendar-feed", today, today, ""],
