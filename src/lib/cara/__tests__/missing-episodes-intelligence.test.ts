@@ -588,7 +588,7 @@ describe("Missing Episodes Intelligence Engine", () => {
       }));
       const expected = Math.round(
         result.frequencyScore * 0.30 +
-        result.responseScore * 0.25 +
+        result.responseScore! * 0.25 +
         result.riskScore * 0.20 +
         result.complianceScore * 0.25
       );
@@ -622,7 +622,7 @@ describe("Missing Episodes Intelligence Engine", () => {
           returnHomeInterview: { offered: false, completed: false },
         })],
       }));
-      expect(goodResult.responseScore).toBeGreaterThan(badResult.responseScore);
+      expect(goodResult.responseScore!).toBeGreaterThan(badResult.responseScore!);
     });
   });
 

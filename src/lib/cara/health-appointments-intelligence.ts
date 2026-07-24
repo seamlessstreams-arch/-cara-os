@@ -20,6 +20,8 @@
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
+import { weightedMeanOf } from "@/lib/metrics/rate";
+
 export type AppointmentType =
   | "initial_health_assessment"  // IHA — within 20 working days of entering care
   | "review_health_assessment"   // RHA — annually
@@ -78,10 +80,10 @@ export interface HealthInput {
 
 export interface HealthAssessment {
   childName: string;
-  overallScore: number;
-  overallRating: "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate";
+  overallScore: number | null;
+  overallRating: "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" | null;
   statutoryComplianceScore: number;
-  attendanceScore: number;
+  attendanceScore: number | null;
   timelinessScore: number;
   coverageScore: number;
   statutoryChecks: StatutoryCheck[];
@@ -170,12 +172,12 @@ export function analyseHealthAppointments(input: HealthInput): HealthAssessment 
   const coverageScore = scoreCoverage(input);
 
   // ── Overall score ─────────────────────────────────────────────────────
-  const overallScore = Math.round(
-    statutoryComplianceScore * 0.35 +
-    attendanceScore * 0.20 +
-    timelinessScore * 0.25 +
-    coverageScore * 0.20
-  );
+  const overallScore = weightedMeanOf([
+    { score: statutoryComplianceScore, weight: 0.35 },
+    { score: attendanceScore, weight: 0.20 },
+    { score: timelinessScore, weight: 0.25 },
+    { score: coverageScore, weight: 0.20 },
+  ]);
 
   const overallRating = scoreToRating(overallScore);
 
@@ -541,8 +543,8 @@ function scoreStatutoryCompliance(checks: StatutoryCheck[]): number {
   return Math.min(100, Math.round(score));
 }
 
-function scoreAttendance(dna: DNAPattern, appointments: HealthAppointment[]): number {
-  if (dna.totalAppointments === 0) return 75; // no data isn't penalised heavily
+function scoreAttendance(dna: DNAPattern, appointments: HealthAppointment[]): number | null {
+  if (dna.totalAppointments === 0) return null; // no appointments — attendance is unmeasured, not 75
   const attendedRate = 1 - dna.dnaRate;
   return Math.round(attendedRate * 100);
 }
@@ -867,7 +869,7 @@ function buildRecommendations(
 
 function buildSummary(
   childName: string,
-  rating: string,
+  rating: string | null,
   overdueCount: number,
   concernCount: number,
 ): string {
@@ -879,12 +881,14 @@ function buildSummary(
     ? "No significant concerns."
     : `${concernCount} concern${concernCount > 1 ? "s" : ""} identified.`;
 
-  return `${childName}: Health appointments rated ${rating.replace(/_/g, " ")}. ${overdueDesc} ${concernDesc}`;
+  const ratingLabel = rating ? rating.replace(/_/g, " ") : "not yet rated";
+  return `${childName}: Health appointments rated ${ratingLabel}. ${overdueDesc} ${concernDesc}`;
 }
 
 // ── Utility ─────────────────────────────────────────────────────────────────
 
-function scoreToRating(score: number): "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" {
+function scoreToRating(score: number | null): "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" | null {
+  if (score === null) return null;
   if (score >= 85) return "excellent";
   if (score >= 70) return "good";
   if (score >= 55) return "adequate";

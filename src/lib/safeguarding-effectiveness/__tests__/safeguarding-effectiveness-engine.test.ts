@@ -413,12 +413,34 @@ describe("evaluateReferralQuality", () => {
     expect(result.concerns.some((c) => c.includes("NFA"))).toBe(true);
   });
 
-  it("handles empty referrals gracefully", () => {
+  it("handles empty referrals gracefully — rates are unmeasured (null), not a fabricated 100%", () => {
     const result = evaluateReferralQuality([]);
     expect(result.totalReferrals).toBe(0);
-    expect(result.timelinessRate).toBe(100);
+    // No referrals means nothing to rate: null ("not yet measured"), never 100%.
+    expect(result.timelinessRate).toBeNull();
+    expect(result.appropriateThresholdRate).toBeNull();
+    expect(result.multiAgencyEngagementRate).toBeNull();
+    expect(result.childInformedRate).toBeNull();
+    expect(result.progressedRate).toBeNull();
+    expect(result.nfaRate).toBeNull();
+    expect(result.lessonsLearnedRate).toBeNull();
+    // Absence of referrals is not itself a failing — the score stays a baseline 25.
     expect(result.score).toBe(25);
     expect(result.strengths.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("nulls the outcome rates when every referral is still ongoing (no completed cohort)", () => {
+    const ongoing = [
+      makeReferral({ id: "o1", outcome: "ongoing" }),
+      makeReferral({ id: "o2", outcome: "ongoing" }),
+    ];
+    const result = evaluateReferralQuality(ongoing);
+    expect(result.totalReferrals).toBe(2);
+    // Rates over the whole cohort are still measured...
+    expect(result.timelinessRate).toBe(100);
+    // ...but progressed / NFA have no completed referrals to divide by → null, not 0/100.
+    expect(result.progressedRate).toBeNull();
+    expect(result.nfaRate).toBeNull();
   });
 
   it("handles single referral", () => {
@@ -582,7 +604,14 @@ describe("evaluateTrainingCompliance", () => {
   it("handles empty training list", () => {
     const result = evaluateTrainingCompliance([], STAFF_IDS, REFERENCE_DATE);
     expect(result.staffWithCurrentTraining).toBe(0);
+    // Coverage IS measured (0 of 4 staff trained) — a genuine 0%, not null.
     expect(result.coverageRate).toBe(0);
+    // Record-based rates have no records to divide by → null, not a fabricated 100%.
+    expect(result.currencyRate).toBeNull();
+    expect(result.scenarioBasedRate).toBeNull();
+    expect(result.assessmentPassRate).toBeNull();
+    // No fabricated marks from empty rates: a fully untrained team scores 0.
+    expect(result.score).toBe(0);
   });
 
   it("detects low coverage", () => {
@@ -710,8 +739,18 @@ describe("evaluateAuditFindings", () => {
     expect(result.totalAudits).toBe(0);
     expect(result.averageRating).toBe(0);
     expect(result.improvementTrajectory).toBe("insufficient_data");
+    expect(result.actionCompletionRate).toBeNull();
     expect(result.score).toBe(0);
     expect(result.concerns.some((c) => c.includes("No safeguarding audits"))).toBe(true);
+  });
+
+  it("nulls action completion when audits raised no actions (not a fabricated 100%)", () => {
+    const noActions = [
+      makeAudit({ id: "na1", rating: "good", actionsRequired: [], actionsCompleted: 0 }),
+    ];
+    const result = evaluateAuditFindings(noActions);
+    expect(result.totalActionsRequired).toBe(0);
+    expect(result.actionCompletionRate).toBeNull();
   });
 
   it("detects declining trajectory", () => {
@@ -908,8 +947,14 @@ describe("evaluateSafeguardingSupervision", () => {
   it("handles empty supervision list", () => {
     const result = evaluateSafeguardingSupervision([], STAFF_IDS, PERIOD_START, PERIOD_END);
     expect(result.staffWithSupervision).toBe(0);
+    // Coverage IS measured (0 of 4 staff supervised) — a genuine 0%.
     expect(result.coverageRate).toBe(0);
     expect(result.totalSessions).toBe(0);
+    // Session-based rates have no sessions to divide by → null, not a fabricated 100%.
+    expect(result.safeguardingDiscussionRate).toBeNull();
+    expect(result.decisionsRecordedRate).toBeNull();
+    expect(result.reflectivePracticeRate).toBeNull();
+    expect(result.actionCompletionRate).toBeNull();
   });
 
   it("filters supervision to period", () => {

@@ -667,9 +667,9 @@ describe("analyseSelfAssessment — empty data", () => {
     expect(result.actionCompletionRate).toBe(0);
   });
 
-  it("returns 100% feedback integration with no feedback requiring action", () => {
+  it("returns null feedback integration with no feedback requiring action", () => {
     const result = analyseSelfAssessment([], [], [], HOME_ID);
-    expect(result.externalFeedbackIntegrationRate).toBe(100);
+    expect(result.externalFeedbackIntegrationRate).toBeNull();
   });
 
   it("returns 15 area breakdown entries even with no data", () => {
@@ -996,7 +996,7 @@ describe("analyseSelfAssessment — scoring edge cases", () => {
       addressed: false,
     });
     const result = analyseSelfAssessment([], [], [otherFeedback], HOME_ID);
-    expect(result.externalFeedbackIntegrationRate).toBe(100);
+    expect(result.externalFeedbackIntegrationRate).toBeNull();
   });
 
   it("evidence quality score rewards diverse evidence types", () => {
@@ -1050,12 +1050,12 @@ describe("analyseSelfAssessment — scoring edge cases", () => {
     expect(result.actionManagementScore).toBe(0);
   });
 
-  it("feedback integration rate is 100 when no feedback requires action", () => {
+  it("feedback integration rate is null when no feedback requires action", () => {
     const noActionFeedback = [
       makeFeedback({ actionRequired: false }),
     ];
     const result = analyseSelfAssessment([], [], noActionFeedback, HOME_ID);
-    expect(result.externalFeedbackIntegrationRate).toBe(100);
+    expect(result.externalFeedbackIntegrationRate).toBeNull();
   });
 
   it("feedback integration rate is 0 when all actionable feedback unaddressed", () => {

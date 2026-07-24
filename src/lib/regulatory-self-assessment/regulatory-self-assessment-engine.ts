@@ -20,6 +20,8 @@
 // No AI. No external calls. Pure input -> output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate, meets, below } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type RegulationArea =
@@ -117,7 +119,7 @@ export interface SelfAssessmentAnalysis {
   averageComplianceLevel: number;
   averageEvidenceSourcesPerAssessment: number;
   actionCompletionRate: number;
-  externalFeedbackIntegrationRate: number;
+  externalFeedbackIntegrationRate: number | null; // null when there is no actionable external feedback
   areaBreakdown: AreaBreakdownEntry[];
   strengths: string[];
   areasForImprovement: string[];
@@ -446,11 +448,11 @@ function computeActionCompletionRate(
 function computeExternalFeedbackIntegrationRate(
   feedback: ExternalFeedback[],
   homeId: string,
-): number {
+): number | null {
   const homeFeedback = feedback.filter((f) => f.homeId === homeId && f.actionRequired);
-  if (homeFeedback.length === 0) return 100;
+  if (homeFeedback.length === 0) return null; // no actionable feedback — integration is unmeasured, not perfect
   const addressed = homeFeedback.filter((f) => f.addressed).length;
-  return Math.round((addressed / homeFeedback.length) * 100);
+  return rate(addressed, homeFeedback.length);
 }
 
 // ── Area Breakdown ──────────────────────────────────────────────────────────
@@ -562,7 +564,7 @@ function generateStrengths(
 
   // External feedback integration
   const feedbackRate = computeExternalFeedbackIntegrationRate(feedback, homeId);
-  if (feedbackRate >= 80) {
+  if (meets(feedbackRate, 80)) {
     strengths.push(
       `External feedback is well-integrated: ${feedbackRate}% of actionable feedback addressed`,
     );
@@ -663,7 +665,7 @@ function generateAreasForImprovement(
 
   // Unaddressed external feedback
   const feedbackRate = computeExternalFeedbackIntegrationRate(feedback, homeId);
-  if (feedbackRate < 80) {
+  if (below(feedbackRate, 80)) {
     improvements.push(
       `Only ${feedbackRate}% of external feedback requiring action has been addressed`,
     );

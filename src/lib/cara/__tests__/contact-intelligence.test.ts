@@ -280,6 +280,14 @@ describe("Contact & Relationships Intelligence Engine", () => {
       }));
       expect(result.frequencyScore).toBeLessThan(20);
     });
+
+    it("null when contact exists but none maps to an agreed arrangement", () => {
+      const result = analyseContact(makeInput({
+        contactSessions: [makeSession({ personName: "Mum" })],
+        arrangements: [],
+      }));
+      expect(result.frequencyScore).toBeNull();
+    });
   });
 
   // ── Quality scoring ───────────────────────────────────────────────────
@@ -307,9 +315,9 @@ describe("Contact & Relationships Intelligence Engine", () => {
       expect(result.qualityScore).toBeLessThan(30);
     });
 
-    it("100 when no sessions (no data to indicate problems)", () => {
+    it("null when no sessions occurred (quality is unmeasured, not perfect)", () => {
       const result = analyseContact(makeInput());
-      expect(result.qualityScore).toBe(100);
+      expect(result.qualityScore).toBeNull();
     });
   });
 
@@ -338,6 +346,11 @@ describe("Contact & Relationships Intelligence Engine", () => {
       }));
       // 100 - 0.75*150 = -12.5 → clamped to 0
       expect(result.consistencyScore).toBe(0);
+    });
+
+    it("null when no sessions recorded (nothing to measure)", () => {
+      const result = analyseContact(makeInput());
+      expect(result.consistencyScore).toBeNull();
     });
   });
 

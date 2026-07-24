@@ -17,6 +17,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate, weightedMeanOf, meets, below } from "@/lib/metrics/rate";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ReferralType =
@@ -127,20 +129,20 @@ export interface SafeguardingSupervision {
 export interface ReferralQualityResult {
   totalReferrals: number;
   timelyReferrals: number;
-  timelinessRate: number;
+  timelinessRate: number | null;
   averageTimelinessHours: number;
   appropriateThresholdCount: number;
-  appropriateThresholdRate: number;
+  appropriateThresholdRate: number | null;
   multiAgencyEngagedCount: number;
-  multiAgencyEngagementRate: number;
+  multiAgencyEngagementRate: number | null;
   childInformedCount: number;
-  childInformedRate: number;
+  childInformedRate: number | null;
   outcomeBreakdown: Record<ReferralOutcome, number>;
   referralTypeBreakdown: Record<ReferralType, number>;
-  progressedRate: number;
-  nfaRate: number;
+  progressedRate: number | null;
+  nfaRate: number | null;
   lessonsLearnedCount: number;
-  lessonsLearnedRate: number;
+  lessonsLearnedRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -149,19 +151,19 @@ export interface ReferralQualityResult {
 export interface TrainingComplianceResult {
   totalStaff: number;
   staffWithCurrentTraining: number;
-  coverageRate: number;
+  coverageRate: number | null;
   totalTrainingRecords: number;
   currentTrainingRecords: number;
-  currencyRate: number;
+  currencyRate: number | null;
   dslCount: number;
   dslRequired: number;
-  dslCoverageRate: number;
+  dslCoverageRate: number | null;
   scenarioBasedCount: number;
-  scenarioBasedRate: number;
+  scenarioBasedRate: number | null;
   assessmentPassCount: number;
-  assessmentPassRate: number;
+  assessmentPassRate: number | null;
   completedOnTimeCount: number;
-  completedOnTimeRate: number;
+  completedOnTimeRate: number | null;
   levelBreakdown: Record<TrainingLevel, number>;
   score: number; // 0-25
   strengths: string[];
@@ -177,7 +179,7 @@ export interface AuditFindingsResult {
   criticalFindingsCount: number;
   totalActionsRequired: number;
   totalActionsCompleted: number;
-  actionCompletionRate: number;
+  actionCompletionRate: number | null;
   areaBreakdown: Record<SafeguardingAuditArea, { count: number; avgRating: number }>;
   score: number; // 0-25
   strengths: string[];
@@ -187,19 +189,19 @@ export interface AuditFindingsResult {
 export interface SupervisionResult {
   totalStaff: number;
   staffWithSupervision: number;
-  coverageRate: number;
+  coverageRate: number | null;
   totalSessions: number;
   safeguardingDiscussedCount: number;
-  safeguardingDiscussionRate: number;
+  safeguardingDiscussionRate: number | null;
   totalCasesReviewed: number;
   averageCasesPerSession: number;
   decisionsRecordedCount: number;
-  decisionsRecordedRate: number;
+  decisionsRecordedRate: number | null;
   reflectivePracticeCount: number;
-  reflectivePracticeRate: number;
+  reflectivePracticeRate: number | null;
   totalActionPoints: number;
   totalActionPointsCompleted: number;
-  actionCompletionRate: number;
+  actionCompletionRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -215,8 +217,8 @@ export interface StaffSafeguardingProfile {
   supervisionRecords: SafeguardingSupervision[];
   supervisionCount: number;
   lastSupervisionDate: string | null;
-  safeguardingDiscussionRate: number;
-  actionCompletionRate: number;
+  safeguardingDiscussionRate: number | null;
+  actionCompletionRate: number | null;
   overallCompliance: "compliant" | "partially_compliant" | "non_compliant";
 }
 
@@ -273,13 +275,22 @@ function isDateInRange(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
 
-function safePercent(numerator: number, denominator: number): number {
-  if (denominator === 0) return 100;
-  return Math.round((numerator / denominator) * 100);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+// Weighted score (0–`budget`) over the rate components that are actually measured.
+// weightedMeanOf drops the unmeasured (null) rates and renormalises the remaining
+// weights, so an unmeasured dimension neither adds nor removes marks: silence is
+// scored as neither a pass (the old safePercent === 100 bug) nor a failure. Reached
+// only once a layer's empty-population guard has passed — i.e. with its coverage /
+// timeliness anchor measured — so the null fallback below is defensive.
+function weightedScore(
+  components: { rate: number | null; weight: number }[],
+  budget: number,
+): number {
+  const mean = weightedMeanOf(components.map((c) => ({ score: c.rate, weight: c.weight })));
+  return mean === null ? 0 : (mean / 100) * budget;
 }
 
 // ── Core Function 1: Evaluate Referral Quality ────────────────────────────
@@ -290,17 +301,20 @@ export function evaluateReferralQuality(
   const totalReferrals = referrals.length;
 
   if (totalReferrals === 0) {
+    // Nothing referred means nothing to rate: every rate is unmeasured (null), not a
+    // fabricated 100%. The score stays 25 as a deliberate domain call — an absence of
+    // referrals is baseline-maintained, not a failing — while the rates stay honest.
     return {
       totalReferrals: 0,
       timelyReferrals: 0,
-      timelinessRate: 100,
+      timelinessRate: null,
       averageTimelinessHours: 0,
       appropriateThresholdCount: 0,
-      appropriateThresholdRate: 100,
+      appropriateThresholdRate: null,
       multiAgencyEngagedCount: 0,
-      multiAgencyEngagementRate: 100,
+      multiAgencyEngagementRate: null,
       childInformedCount: 0,
-      childInformedRate: 100,
+      childInformedRate: null,
       outcomeBreakdown: {
         progressed: 0, no_further_action: 0, stepped_up: 0,
         stepped_down: 0, ongoing: 0,
@@ -309,10 +323,10 @@ export function evaluateReferralQuality(
         child_protection: 0, child_in_need: 0, LADO: 0, police: 0,
         prevent: 0, CSE: 0, CCE: 0, modern_slavery: 0, FGM: 0, county_lines: 0,
       },
-      progressedRate: 100,
-      nfaRate: 0,
+      progressedRate: null,
+      nfaRate: null,
       lessonsLearnedCount: 0,
-      lessonsLearnedRate: 100,
+      lessonsLearnedRate: null,
       score: 25,
       strengths: ["No safeguarding referrals in period — baseline maintained"],
       concerns: [],
@@ -323,7 +337,7 @@ export function evaluateReferralQuality(
   const timelyReferrals = referrals.filter(
     (r) => r.timelinessHours <= TIMELY_REFERRAL_THRESHOLD_HOURS,
   ).length;
-  const timelinessRate = safePercent(timelyReferrals, totalReferrals);
+  const timelinessRate = rate(timelyReferrals, totalReferrals);
   const averageTimelinessHours =
     Math.round(
       (referrals.reduce((sum, r) => sum + r.timelinessHours, 0) / totalReferrals) * 10,
@@ -331,15 +345,15 @@ export function evaluateReferralQuality(
 
   // Threshold appropriateness
   const appropriateThresholdCount = referrals.filter((r) => r.appropriateThreshold).length;
-  const appropriateThresholdRate = safePercent(appropriateThresholdCount, totalReferrals);
+  const appropriateThresholdRate = rate(appropriateThresholdCount, totalReferrals);
 
   // Multi-agency engagement
   const multiAgencyEngagedCount = referrals.filter((r) => r.multiAgencyEngaged).length;
-  const multiAgencyEngagementRate = safePercent(multiAgencyEngagedCount, totalReferrals);
+  const multiAgencyEngagementRate = rate(multiAgencyEngagedCount, totalReferrals);
 
   // Child informed
   const childInformedCount = referrals.filter((r) => r.childInformed).length;
-  const childInformedRate = safePercent(childInformedCount, totalReferrals);
+  const childInformedRate = rate(childInformedCount, totalReferrals);
 
   // Outcome breakdown
   const outcomeBreakdown: Record<ReferralOutcome, number> = {
@@ -350,12 +364,9 @@ export function evaluateReferralQuality(
     outcomeBreakdown[r.outcome]++;
   }
   const completedReferrals = referrals.filter((r) => r.outcome !== "ongoing").length;
-  const progressedRate = completedReferrals > 0
-    ? safePercent(outcomeBreakdown.progressed + outcomeBreakdown.stepped_up, completedReferrals)
-    : 100;
-  const nfaRate = completedReferrals > 0
-    ? safePercent(outcomeBreakdown.no_further_action, completedReferrals)
-    : 0;
+  // Null when every referral is still ongoing — there is no completed cohort to rate.
+  const progressedRate = rate(outcomeBreakdown.progressed + outcomeBreakdown.stepped_up, completedReferrals);
+  const nfaRate = rate(outcomeBreakdown.no_further_action, completedReferrals);
 
   // Referral type breakdown
   const referralTypeBreakdown: Record<ReferralType, number> = {
@@ -370,59 +381,61 @@ export function evaluateReferralQuality(
   const lessonsLearnedCount = referrals.filter(
     (r) => r.lessonsLearned !== undefined && r.lessonsLearned.trim().length > 0,
   ).length;
-  const lessonsLearnedRate = safePercent(lessonsLearnedCount, totalReferrals);
+  const lessonsLearnedRate = rate(lessonsLearnedCount, totalReferrals);
 
-  // Score (out of 25)
-  let score = 0;
-  // Timeliness: max 7
-  score += (timelinessRate / 100) * 7;
-  // Threshold appropriateness: max 7
-  score += (appropriateThresholdRate / 100) * 7;
-  // Multi-agency engagement: max 5
-  score += (multiAgencyEngagementRate / 100) * 5;
-  // Child informed: max 3
-  score += (childInformedRate / 100) * 3;
-  // Outcome quality (low NFA = good): max 3
-  const outcomeQuality = nfaRate <= 20 ? 1.0 : nfaRate <= 40 ? 0.7 : nfaRate <= 60 ? 0.4 : 0.1;
-  score += outcomeQuality * 3;
-
+  // Score (out of 25) — timeliness 7, threshold 7, multi-agency 5, child informed 3,
+  // outcome quality 3. Outcome quality (low NFA = good) is unmeasured when no referral
+  // has yet completed; weightedScore then rates only the measured dimensions.
+  const outcomeQuality =
+    nfaRate === null ? null
+      : nfaRate <= 20 ? 1.0 : nfaRate <= 40 ? 0.7 : nfaRate <= 60 ? 0.4 : 0.1;
+  let score = weightedScore(
+    [
+      { rate: timelinessRate, weight: 7 },
+      { rate: appropriateThresholdRate, weight: 7 },
+      { rate: multiAgencyEngagementRate, weight: 5 },
+      { rate: childInformedRate, weight: 3 },
+      { rate: outcomeQuality === null ? null : outcomeQuality * 100, weight: 3 },
+    ],
+    25,
+  );
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
   // Insights
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (timelinessRate >= 90) {
+  if (meets(timelinessRate, 90)) {
     strengths.push("Excellent referral timeliness: " + timelinessRate + "% made within 24 hours");
-  } else if (timelinessRate < 70) {
+  } else if (below(timelinessRate, 70)) {
     concerns.push("Referral timeliness at " + timelinessRate + "% — below 70% threshold. Working Together 2023 requires timely referrals");
   }
 
-  if (appropriateThresholdRate >= 90) {
+  if (meets(appropriateThresholdRate, 90)) {
     strengths.push("Strong threshold decision-making: " + appropriateThresholdRate + "% of referrals at appropriate threshold");
-  } else if (appropriateThresholdRate < 75) {
+  } else if (below(appropriateThresholdRate, 75)) {
     concerns.push("Threshold appropriateness at " + appropriateThresholdRate + "% indicates potential training gap in threshold understanding");
   }
 
-  if (multiAgencyEngagementRate >= 90) {
+  if (meets(multiAgencyEngagementRate, 90)) {
     strengths.push("High multi-agency engagement rate of " + multiAgencyEngagementRate + "% demonstrates effective partnership working");
-  } else if (multiAgencyEngagementRate < 70) {
+  } else if (below(multiAgencyEngagementRate, 70)) {
     concerns.push("Multi-agency engagement at " + multiAgencyEngagementRate + "% — below expectations for effective safeguarding");
   }
 
-  if (childInformedRate >= 90) {
+  if (meets(childInformedRate, 90)) {
     strengths.push("Children's voice prioritised: " + childInformedRate + "% of children informed about referrals");
-  } else if (childInformedRate < 70) {
+  } else if (below(childInformedRate, 70)) {
     concerns.push("Child informed rate at " + childInformedRate + "% — children's participation in safeguarding processes needs improvement");
   }
 
-  if (nfaRate > 50) {
+  if (nfaRate !== null && nfaRate > 50) {
     concerns.push("High NFA rate (" + nfaRate + "%) may indicate over-referral or poor threshold calibration");
   }
 
-  if (lessonsLearnedRate >= 80) {
+  if (meets(lessonsLearnedRate, 80)) {
     strengths.push("Good reflective practice: lessons learned documented for " + lessonsLearnedRate + "% of referrals");
-  } else if (lessonsLearnedRate < 50) {
+  } else if (below(lessonsLearnedRate, 50)) {
     concerns.push("Lessons learned documented for only " + lessonsLearnedRate + "% of referrals — reflective practice needs strengthening");
   }
 
@@ -459,22 +472,24 @@ export function evaluateTrainingCompliance(
   const totalStaff = staffIds.length;
 
   if (totalStaff === 0) {
+    // No staff to assess: coverage/currency/etc. are unmeasured (null), not 100%.
+    // Score stays 0 — a home with no identified staff cannot evidence compliance.
     return {
       totalStaff: 0,
       staffWithCurrentTraining: 0,
-      coverageRate: 100,
+      coverageRate: null,
       totalTrainingRecords: training.length,
       currentTrainingRecords: 0,
-      currencyRate: 100,
+      currencyRate: null,
       dslCount: 0,
       dslRequired: 1,
-      dslCoverageRate: 0,
+      dslCoverageRate: null,
       scenarioBasedCount: 0,
-      scenarioBasedRate: 100,
+      scenarioBasedRate: null,
       assessmentPassCount: 0,
-      assessmentPassRate: 100,
+      assessmentPassRate: null,
       completedOnTimeCount: 0,
-      completedOnTimeRate: 100,
+      completedOnTimeRate: null,
       levelBreakdown: {
         basic_awareness: 0, level_1: 0, level_2: 0,
         level_3_dsl: 0, specialist: 0,
@@ -490,9 +505,8 @@ export function evaluateTrainingCompliance(
     (t) => t.expiryDate >= referenceDate,
   );
   const totalTrainingRecords = training.length;
-  const currencyRate = totalTrainingRecords > 0
-    ? safePercent(currentTrainingRecords.length, totalTrainingRecords)
-    : 0;
+  // Null when there are no training records to rate for currency.
+  const currencyRate = rate(currentTrainingRecords.length, totalTrainingRecords);
 
   // Staff coverage: each staff member has at least one current training
   const staffWithTrainingSet = new Set<string>();
@@ -502,7 +516,7 @@ export function evaluateTrainingCompliance(
     }
   }
   const staffWithCurrentTraining = staffWithTrainingSet.size;
-  const coverageRate = safePercent(staffWithCurrentTraining, totalStaff);
+  const coverageRate = rate(staffWithCurrentTraining, totalStaff);
 
   // DSL coverage: at least one staff member with level_3_dsl current
   const currentDslRecords = currentTrainingRecords.filter(
@@ -514,19 +528,19 @@ export function evaluateTrainingCompliance(
   }
   const dslCount = dslStaffSet.size;
   const dslRequired = Math.max(1, Math.ceil(totalStaff / 4));
-  const dslCoverageRate = safePercent(dslCount, dslRequired);
+  const dslCoverageRate = rate(dslCount, dslRequired);
 
-  // Scenario-based training
+  // Scenario-based training (null when there are no records to rate)
   const scenarioBasedCount = training.filter((t) => t.scenarioBasedElement).length;
-  const scenarioBasedRate = safePercent(scenarioBasedCount, totalTrainingRecords);
+  const scenarioBasedRate = rate(scenarioBasedCount, totalTrainingRecords);
 
   // Assessment pass rate
   const assessmentPassCount = training.filter((t) => t.assessmentPassed).length;
-  const assessmentPassRate = safePercent(assessmentPassCount, totalTrainingRecords);
+  const assessmentPassRate = rate(assessmentPassCount, totalTrainingRecords);
 
   // Completed on time
   const completedOnTimeCount = training.filter((t) => t.completedOnTime).length;
-  const completedOnTimeRate = safePercent(completedOnTimeCount, totalTrainingRecords);
+  const completedOnTimeRate = rate(completedOnTimeCount, totalTrainingRecords);
 
   // Level breakdown
   const levelBreakdown: Record<TrainingLevel, number> = {
@@ -537,19 +551,19 @@ export function evaluateTrainingCompliance(
     levelBreakdown[t.trainingLevel]++;
   }
 
-  // Score (out of 25)
-  let score = 0;
-  // Coverage: max 8
-  score += (coverageRate / 100) * 8;
-  // Currency: max 5
-  score += (currencyRate / 100) * 5;
-  // DSL coverage: max 4
-  score += (Math.min(dslCoverageRate, 100) / 100) * 4;
-  // Scenario-based: max 4
-  score += (scenarioBasedRate / 100) * 4;
-  // Assessment pass: max 4
-  score += (assessmentPassRate / 100) * 4;
-
+  // Score (out of 25) — coverage 8, currency 5, DSL 4, scenario 4, assessment 4.
+  // Rates with no records to measure (currency/scenario/assessment when the register
+  // is empty) are excluded by weightedScore rather than counted as pass or fail.
+  let score = weightedScore(
+    [
+      { rate: coverageRate, weight: 8 },
+      { rate: currencyRate, weight: 5 },
+      { rate: dslCoverageRate === null ? null : Math.min(dslCoverageRate, 100), weight: 4 },
+      { rate: scenarioBasedRate, weight: 4 },
+      { rate: assessmentPassRate, weight: 4 },
+    ],
+    25,
+  );
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
   // Insights
@@ -558,31 +572,31 @@ export function evaluateTrainingCompliance(
 
   if (coverageRate === 100) {
     strengths.push("100% staff safeguarding training coverage — all staff have current training");
-  } else if (coverageRate < 80) {
+  } else if (below(coverageRate, 80)) {
     concerns.push("Training coverage at " + coverageRate + "% — " + (totalStaff - staffWithCurrentTraining) + " staff member(s) lack current safeguarding training");
   }
 
-  if (currencyRate >= 95) {
+  if (meets(currencyRate, 95)) {
     strengths.push("Excellent training currency: " + currencyRate + "% of all training records current");
-  } else if (currencyRate < 80) {
+  } else if (below(currencyRate, 80)) {
     concerns.push("Training currency at " + currencyRate + "% — expired training records need renewal");
   }
 
-  if (dslCoverageRate >= 100) {
+  if (meets(dslCoverageRate, 100)) {
     strengths.push("Designated Safeguarding Lead coverage meets requirements (" + dslCount + " DSL-trained staff)");
-  } else if (dslCoverageRate < 100) {
+  } else if (below(dslCoverageRate, 100)) {
     concerns.push("DSL coverage below requirement: " + dslCount + " of " + dslRequired + " required DSL-trained staff");
   }
 
-  if (scenarioBasedRate >= 80) {
+  if (meets(scenarioBasedRate, 80)) {
     strengths.push("Strong use of scenario-based training (" + scenarioBasedRate + "%) supports practical application of safeguarding knowledge");
-  } else if (scenarioBasedRate < 50) {
+  } else if (below(scenarioBasedRate, 50)) {
     concerns.push("Only " + scenarioBasedRate + "% of training includes scenario-based elements — KCSIE 2024 emphasises practical training");
   }
 
-  if (assessmentPassRate >= 95) {
+  if (meets(assessmentPassRate, 95)) {
     strengths.push("High assessment pass rate (" + assessmentPassRate + "%) confirms staff understanding of safeguarding procedures");
-  } else if (assessmentPassRate < 80) {
+  } else if (below(assessmentPassRate, 80)) {
     concerns.push("Assessment pass rate at " + assessmentPassRate + "% — some staff may not fully understand safeguarding procedures");
   }
 
@@ -626,7 +640,7 @@ export function evaluateAuditFindings(
       criticalFindingsCount: 0,
       totalActionsRequired: 0,
       totalActionsCompleted: 0,
-      actionCompletionRate: 100,
+      actionCompletionRate: null,
       areaBreakdown: {
         policy: { count: 0, avgRating: 0 },
         procedures: { count: 0, avgRating: 0 },
@@ -689,7 +703,8 @@ export function evaluateAuditFindings(
   // Action completion
   const totalActionsRequired = audits.reduce((sum, a) => sum + a.actionsRequired.length, 0);
   const totalActionsCompleted = audits.reduce((sum, a) => sum + a.actionsCompleted, 0);
-  const actionCompletionRate = safePercent(totalActionsCompleted, totalActionsRequired);
+  // Null when the audits raised no actions — there is nothing to complete to rate.
+  const actionCompletionRate = rate(totalActionsCompleted, totalActionsRequired);
 
   // Area breakdown
   const areas: SafeguardingAuditArea[] = [
@@ -710,8 +725,11 @@ export function evaluateAuditFindings(
   let score = 0;
   // Average rating: max 10 (4.0 = 10, 3.0 = 7.5, 2.0 = 5, 1.0 = 2.5)
   score += (averageRating / 4) * 10;
-  // Action completion: max 6
-  score += (actionCompletionRate / 100) * 6;
+  // Action completion: max 6. Not scored when the audits raised no actions —
+  // silence is left unmeasured rather than counted as full (old bug) or zero marks.
+  if (actionCompletionRate !== null) {
+    score += (actionCompletionRate / 100) * 6;
+  }
   // Improvement trajectory: max 5
   if (improvementTrajectory === "improving") score += 5;
   else if (improvementTrajectory === "stable") score += 3;
@@ -747,9 +765,9 @@ export function evaluateAuditFindings(
     concerns.push("Declining audit ratings indicate deteriorating safeguarding practice");
   }
 
-  if (actionCompletionRate >= 90) {
+  if (meets(actionCompletionRate, 90)) {
     strengths.push("Strong audit action completion rate of " + actionCompletionRate + "%");
-  } else if (actionCompletionRate < 70) {
+  } else if (below(actionCompletionRate, 70)) {
     concerns.push("Audit action completion at " + actionCompletionRate + "% — outstanding actions create safeguarding risk");
   }
 
@@ -800,22 +818,23 @@ export function evaluateSafeguardingSupervision(
   );
 
   if (totalStaff === 0) {
+    // No staff to assess: every supervision rate is unmeasured (null), not 100%.
     return {
       totalStaff: 0,
       staffWithSupervision: 0,
-      coverageRate: 100,
+      coverageRate: null,
       totalSessions: 0,
       safeguardingDiscussedCount: 0,
-      safeguardingDiscussionRate: 100,
+      safeguardingDiscussionRate: null,
       totalCasesReviewed: 0,
       averageCasesPerSession: 0,
       decisionsRecordedCount: 0,
-      decisionsRecordedRate: 100,
+      decisionsRecordedRate: null,
       reflectivePracticeCount: 0,
-      reflectivePracticeRate: 100,
+      reflectivePracticeRate: null,
       totalActionPoints: 0,
       totalActionPointsCompleted: 0,
-      actionCompletionRate: 100,
+      actionCompletionRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff members identified for supervision assessment"],
@@ -830,13 +849,13 @@ export function evaluateSafeguardingSupervision(
     staffWithSupervisionSet.add(s.staffId);
   }
   const staffWithSupervision = staffWithSupervisionSet.size;
-  const coverageRate = safePercent(staffWithSupervision, totalStaff);
+  const coverageRate = rate(staffWithSupervision, totalStaff);
 
-  // Safeguarding discussion rate
+  // Safeguarding discussion rate (null when no sessions were held in the period)
   const safeguardingDiscussedCount = periodSupervision.filter(
     (s) => s.safeguardingDiscussed,
   ).length;
-  const safeguardingDiscussionRate = safePercent(safeguardingDiscussedCount, totalSessions);
+  const safeguardingDiscussionRate = rate(safeguardingDiscussedCount, totalSessions);
 
   // Cases reviewed
   const totalCasesReviewed = periodSupervision.reduce(
@@ -850,13 +869,13 @@ export function evaluateSafeguardingSupervision(
   const decisionsRecordedCount = periodSupervision.filter(
     (s) => s.decisionsRecorded,
   ).length;
-  const decisionsRecordedRate = safePercent(decisionsRecordedCount, totalSessions);
+  const decisionsRecordedRate = rate(decisionsRecordedCount, totalSessions);
 
   // Reflective practice
   const reflectivePracticeCount = periodSupervision.filter(
     (s) => s.reflectivePractice,
   ).length;
-  const reflectivePracticeRate = safePercent(reflectivePracticeCount, totalSessions);
+  const reflectivePracticeRate = rate(reflectivePracticeCount, totalSessions);
 
   // Action completion
   const totalActionPoints = periodSupervision.reduce(
@@ -865,21 +884,21 @@ export function evaluateSafeguardingSupervision(
   const totalActionPointsCompleted = periodSupervision.reduce(
     (sum, s) => sum + s.actionPointsCompleted, 0,
   );
-  const actionCompletionRate = safePercent(totalActionPointsCompleted, totalActionPoints);
+  const actionCompletionRate = rate(totalActionPointsCompleted, totalActionPoints);
 
-  // Score (out of 25)
-  let score = 0;
-  // Coverage: max 8
-  score += (coverageRate / 100) * 8;
-  // Safeguarding discussion: max 6
-  score += (safeguardingDiscussionRate / 100) * 6;
-  // Reflective practice: max 4
-  score += (reflectivePracticeRate / 100) * 4;
-  // Decisions recorded: max 4
-  score += (decisionsRecordedRate / 100) * 4;
-  // Action completion: max 3
-  score += (actionCompletionRate / 100) * 3;
-
+  // Score (out of 25) — coverage 8, safeguarding discussion 6, reflective 4,
+  // decisions 4, action completion 3. Rates with no sessions / no action points to
+  // measure are excluded by weightedScore rather than treated as pass or fail.
+  let score = weightedScore(
+    [
+      { rate: coverageRate, weight: 8 },
+      { rate: safeguardingDiscussionRate, weight: 6 },
+      { rate: reflectivePracticeRate, weight: 4 },
+      { rate: decisionsRecordedRate, weight: 4 },
+      { rate: actionCompletionRate, weight: 3 },
+    ],
+    25,
+  );
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
   // Insights
@@ -888,31 +907,31 @@ export function evaluateSafeguardingSupervision(
 
   if (coverageRate === 100) {
     strengths.push("100% supervision coverage — all staff received safeguarding supervision in period");
-  } else if (coverageRate < 80) {
+  } else if (below(coverageRate, 80)) {
     concerns.push("Supervision coverage at " + coverageRate + "% — " + (totalStaff - staffWithSupervision) + " staff member(s) without supervision");
   }
 
-  if (safeguardingDiscussionRate >= 90) {
+  if (meets(safeguardingDiscussionRate, 90)) {
     strengths.push("Safeguarding discussed in " + safeguardingDiscussionRate + "% of supervision sessions");
-  } else if (safeguardingDiscussionRate < 70) {
+  } else if (below(safeguardingDiscussionRate, 70)) {
     concerns.push("Safeguarding discussed in only " + safeguardingDiscussionRate + "% of sessions — must be a standing agenda item");
   }
 
-  if (reflectivePracticeRate >= 80) {
+  if (meets(reflectivePracticeRate, 80)) {
     strengths.push("Strong reflective practice: " + reflectivePracticeRate + "% of sessions include reflective elements");
-  } else if (reflectivePracticeRate < 50) {
+  } else if (below(reflectivePracticeRate, 50)) {
     concerns.push("Reflective practice in only " + reflectivePracticeRate + "% of sessions — important for continuous learning");
   }
 
-  if (decisionsRecordedRate >= 90) {
+  if (meets(decisionsRecordedRate, 90)) {
     strengths.push("Decisions consistently recorded (" + decisionsRecordedRate + "%) providing clear audit trail");
-  } else if (decisionsRecordedRate < 70) {
+  } else if (below(decisionsRecordedRate, 70)) {
     concerns.push("Decision recording at " + decisionsRecordedRate + "% — gaps in recording undermine accountability");
   }
 
-  if (actionCompletionRate >= 90) {
+  if (meets(actionCompletionRate, 90)) {
     strengths.push("Excellent supervision action completion rate of " + actionCompletionRate + "%");
-  } else if (actionCompletionRate < 70) {
+  } else if (below(actionCompletionRate, 70)) {
     concerns.push("Supervision action completion at " + actionCompletionRate + "% — outstanding actions may compromise safeguarding");
   }
 
@@ -981,18 +1000,19 @@ export function buildStaffSafeguardingProfiles(
     const lastSupervisionDate = sortedSupervision[0]?.date ?? null;
 
     const sgDiscussed = staffSupervision.filter((s) => s.safeguardingDiscussed).length;
-    const safeguardingDiscussionRate = safePercent(sgDiscussed, supervisionCount);
+    // Null when the staff member has no supervision / no action points on record.
+    const safeguardingDiscussionRate = rate(sgDiscussed, supervisionCount);
 
     const totalAp = staffSupervision.reduce((sum, s) => sum + s.actionPoints, 0);
     const completedAp = staffSupervision.reduce((sum, s) => sum + s.actionPointsCompleted, 0);
-    const actionCompletionRate = safePercent(completedAp, totalAp);
+    const actionCompletionRate = rate(completedAp, totalAp);
 
-    // Overall compliance
+    // Overall compliance — an unmeasured rate is never treated as meeting the bar.
     let overallCompliance: StaffSafeguardingProfile["overallCompliance"];
     const hasCurrentTraining = trainingCurrent;
     const hasRecentSupervision = supervisionCount > 0;
-    const goodDiscussionRate = safeguardingDiscussionRate >= 80;
-    const goodActionRate = actionCompletionRate >= 70;
+    const goodDiscussionRate = meets(safeguardingDiscussionRate, 80);
+    const goodActionRate = meets(actionCompletionRate, 70);
 
     if (hasCurrentTraining && hasRecentSupervision && goodDiscussionRate && goodActionRate) {
       overallCompliance = "compliant";
@@ -1185,35 +1205,35 @@ function generateImmediateActions(
   }
 
   // Low training coverage
-  if (training.coverageRate < 80) {
+  if (below(training.coverageRate, 80)) {
     actions.push(
       "HIGH: Training coverage at " + training.coverageRate + "% — schedule safeguarding training for all untrained staff immediately",
     );
   }
 
   // DSL gap
-  if (training.dslCoverageRate < 100) {
+  if (below(training.dslCoverageRate, 100)) {
     actions.push(
       "HIGH: Insufficient DSL-trained staff (" + training.dslCount + " of " + training.dslRequired + " required) — arrange Level 3 DSL training",
     );
   }
 
   // Low supervision coverage
-  if (supervision.coverageRate < 80) {
+  if (below(supervision.coverageRate, 80)) {
     actions.push(
       "HIGH: Supervision coverage at " + supervision.coverageRate + "% — schedule safeguarding supervision for uncovered staff",
     );
   }
 
   // Referral timeliness
-  if (referral.timelinessRate < 70) {
+  if (below(referral.timelinessRate, 70)) {
     actions.push(
       "MEDIUM: Referral timeliness at " + referral.timelinessRate + "% — review referral procedures and ensure staff understand urgency",
     );
   }
 
   // Audit action completion
-  if (audit.actionCompletionRate < 70) {
+  if (below(audit.actionCompletionRate, 70)) {
     actions.push(
       "MEDIUM: Audit action completion at " + audit.actionCompletionRate + "% — allocate resource to address outstanding actions",
     );
@@ -1251,16 +1271,16 @@ function generateRegulatoryLinks(
   if (referral.totalReferrals > 0) {
     links.add("Working Together 2023 — Multi-agency safeguarding arrangements and referral pathways");
   }
-  if (referral.multiAgencyEngagementRate < 90) {
+  if (below(referral.multiAgencyEngagementRate, 90)) {
     links.add("Working Together 2023 — Duty to cooperate with multi-agency partners");
   }
 
   // Training links
-  if (training.coverageRate < 100 || training.currencyRate < 100) {
+  if (below(training.coverageRate, 100) || below(training.currencyRate, 100)) {
     links.add("CHR 2015, Reg 33 — Fitness of workers: ongoing training requirement");
     links.add("KCSIE 2024 — All staff should receive regular safeguarding training");
   }
-  if (training.dslCoverageRate < 100) {
+  if (below(training.dslCoverageRate, 100)) {
     links.add("KCSIE 2024 — Designated Safeguarding Lead: role, training and responsibilities");
   }
 
@@ -1273,12 +1293,12 @@ function generateRegulatoryLinks(
   }
 
   // Supervision links
-  if (supervision.coverageRate < 100 || supervision.safeguardingDiscussionRate < 90) {
+  if (below(supervision.coverageRate, 100) || below(supervision.safeguardingDiscussionRate, 90)) {
     links.add("CHR 2015, Reg 33(4)(b) — Supervision of staff: safeguarding as standing item");
   }
 
   // Child voice
-  if (referral.childInformedRate < 80) {
+  if (below(referral.childInformedRate, 80)) {
     links.add("CHR 2015, Reg 7 — Children's views, wishes and feelings");
   }
 
