@@ -20,6 +20,8 @@ import {
 import { cn, localMonthKey } from "@/lib/utils";
 import { CaraDailyIntelligence } from "@/components/cara/cara-daily-intelligence";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
+import dynamic from "next/dynamic";
+import { CardSkeleton } from "@/components/dashboard/card-skeleton";
 import { SupervisionIntelligenceCard } from "@/components/dashboard/supervision-intelligence-card";
 import { RegulatoryReportingCard } from "@/components/dashboard/regulatory-reporting-card";
 import { RiskIntelligenceCard } from "@/components/dashboard/risk-intelligence-card";
@@ -33,300 +35,1479 @@ import { ContactEngagementCard } from "@/components/dashboard/contact-engagement
 import { EducationIntelligenceCard } from "@/components/dashboard/education-intelligence-card";
 import { HealthWellbeingCard } from "@/components/dashboard/health-wellbeing-card";
 import { MissingFromCareCard } from "@/components/dashboard/missing-from-care-card";
-import { ComplaintsNotificationsCard } from "@/components/dashboard/complaints-notifications-card";
-import { PlacementIntelligenceCard } from "@/components/dashboard/placement-intelligence-card";
-import { BehaviourIntelligenceCard } from "@/components/dashboard/behaviour-intelligence-card";
-import { RotaIntelligenceCard } from "@/components/dashboard/rota-intelligence-card";
-import { PremisesIntelligenceCard } from "@/components/dashboard/premises-intelligence-card";
-import { TrainingIntelligenceCard } from "@/components/dashboard/training-intelligence-card";
-import { FinanceIntelligenceCard } from "@/components/dashboard/finance-intelligence-card";
-import { LifeSkillsCard } from "@/components/dashboard/life-skills-card";
-import { NotifiableEventsCard } from "@/components/dashboard/notifiable-events-card";
-import { SCCIFEvaluationCard } from "@/components/dashboard/sccif-evaluation-card";
-import { VisitorsCard } from "@/components/dashboard/visitors-card";
-import { OutcomesCard } from "@/components/dashboard/outcomes-card";
-import { HandoverCard } from "@/components/dashboard/handover-card";
-import { AppraisalsCard } from "@/components/dashboard/appraisals-card";
-import { MeetingsCard } from "@/components/dashboard/meetings-card";
-import { RestraintCard } from "@/components/dashboard/restraint-card";
-import { QualityAssuranceCard } from "@/components/dashboard/quality-assurance-card";
-import { PossessionsCard } from "@/components/dashboard/possessions-card";
-import { EmergencyCard } from "@/components/dashboard/emergency-card";
-import { SaferRecruitmentCard } from "@/components/dashboard/safer-recruitment-card";
-import { LeavingCareCard } from "@/components/dashboard/leaving-care-card";
-import { StaffDisciplinaryCard } from "@/components/dashboard/staff-disciplinary-card";
-import { SanctionsRewardsCard } from "@/components/dashboard/sanctions-rewards-card";
-import { ContextualSafeguardingCard } from "@/components/dashboard/contextual-safeguarding-card";
-import { DeprivationOfLibertyCard } from "@/components/dashboard/deprivation-of-liberty-card";
-import { WhistleblowingCard } from "@/components/dashboard/whistleblowing-card";
-import { PoliciesRegisterCard } from "@/components/dashboard/policies-register-card";
-import { AdvocacyCard } from "@/components/dashboard/advocacy-card";
-import { MultiAgencyCard } from "@/components/dashboard/multi-agency-card";
-import { NightMonitoringCard } from "@/components/dashboard/night-monitoring-card";
-import { CulturalIdentityCard } from "@/components/dashboard/cultural-identity-card";
-import { SubstanceMisuseCard } from "@/components/dashboard/substance-misuse-card";
-import { IndependentVisitorsCard } from "@/components/dashboard/independent-visitors-card";
-import { BusinessContinuityCard } from "@/components/dashboard/business-continuity-card";
-import { StatementOfPurposeCard } from "@/components/dashboard/statement-of-purpose-card";
-import { Reg45ReportsCard } from "@/components/dashboard/reg45-reports-card";
-import { ChildrensGuideCard } from "@/components/dashboard/childrens-guide-card";
-import { TransitionPlanningCard } from "@/components/dashboard/transition-planning-card";
-import { ChildrensParticipationCard } from "@/components/dashboard/childrens-participation-card";
-import { FoodNutritionCard } from "@/components/dashboard/food-nutrition-card";
-import { PocketMoneyCard } from "@/components/dashboard/pocket-money-card";
-import { EnvironmentalSafetyCard } from "@/components/dashboard/environmental-safety-card";
-import { RecordsManagementCard } from "@/components/dashboard/records-management-card";
-import { SleepPatternsCard } from "@/components/dashboard/sleep-patterns-card";
-import { StakeholderEngagementCard } from "@/components/dashboard/stakeholder-engagement-card";
-import { ImpactRiskAssessmentCard } from "@/components/dashboard/impact-risk-assessment-card";
-import { StaffWellbeingCard } from "@/components/dashboard/staff-wellbeing-card";
-import { KpiTrackingCard } from "@/components/dashboard/kpi-tracking-card";
-import { ProfessionalDevelopmentCard } from "@/components/dashboard/professional-development-card";
-import { TherapeuticInterventionsCard } from "@/components/dashboard/therapeutic-interventions-card";
-import { WorkforcePlanningCard } from "@/components/dashboard/workforce-planning-card";
-import { CarePlanningCard } from "@/components/dashboard/care-planning-card";
-import { FamilyEngagementCard } from "@/components/dashboard/family-engagement-card";
-import { CommissioningReferralsCard } from "@/components/dashboard/commissioning-referrals-card";
-import { ChildrensRightsCard } from "@/components/dashboard/childrens-rights-card";
-import { PracticeLearningCard } from "@/components/dashboard/practice-learning-card";
-import { StaffAbsenceCard } from "@/components/dashboard/staff-absence-card";
-import { ActivityPlanningCard } from "@/components/dashboard/activity-planning-card";
-import { OnlineSafetyCard } from "@/components/dashboard/online-safety-card";
-import { LACReviewCard } from "@/components/dashboard/lac-review-card";
-import { StaffInductionCard } from "@/components/dashboard/staff-induction-card";
-import { DutyOfCandourCard } from "@/components/dashboard/duty-of-candour-card";
-import { AntiBullyingCard } from "@/components/dashboard/anti-bullying-card";
-import { ConsentManagementCard } from "@/components/dashboard/consent-management-card";
-import { SignificantEventsCard } from "@/components/dashboard/significant-events-card";
-import { LegalStatusCard } from "@/components/dashboard/legal-status-card";
-import { BodyMapCard } from "@/components/dashboard/body-map-card";
-import { KeyDocumentsCard } from "@/components/dashboard/key-documents-card";
-import { PlacementStabilityCard } from "@/components/dashboard/placement-stability-card";
-import { ProviderVisitsCard } from "@/components/dashboard/provider-visits-card";
-import { MatchingReferralCard } from "@/components/dashboard/matching-referral-card";
-import { IndependencePreparationCard } from "@/components/dashboard/independence-preparation-card";
-import { SensoryProfileCard } from "@/components/dashboard/sensory-profile-card";
-import { PeerMentoringCard } from "@/components/dashboard/peer-mentoring-card";
-import { ContactMonitoringCard } from "@/components/dashboard/contact-monitoring-card";
-import { AttachmentRelationshipsCard } from "@/components/dashboard/attachment-relationships-card";
-import { DiversityInclusionCard } from "@/components/dashboard/diversity-inclusion-card";
-import { EmergencyPlacementCard } from "@/components/dashboard/emergency-placement-card";
-import { CourtProceedingsCard } from "@/components/dashboard/court-proceedings-card";
-import { BehaviourSupportPlansCard } from "@/components/dashboard/behaviour-support-plans-card";
-import { DischargeTransitionCard } from "@/components/dashboard/discharge-transition-card";
-import { MedicationErrorsCard } from "@/components/dashboard/medication-errors-card";
-import { ChildrensAchievementsCard } from "@/components/dashboard/childrens-achievements-card";
-import { RiskRegisterCard } from "@/components/dashboard/risk-register-card";
-import { DelegatedAuthorityCard } from "@/components/dashboard/delegated-authority-card";
-import { LanguageCommunicationCard } from "@/components/dashboard/language-communication-card";
-import { IndividualRiskAssessmentCard } from "@/components/dashboard/individual-risk-assessment-card";
-import { ParentalResponsibilityCard } from "@/components/dashboard/parental-responsibility-card";
-import { ChildrensWishesFeelingsCard } from "@/components/dashboard/childrens-wishes-feelings-card";
-import { DailyRoutineCard } from "@/components/dashboard/daily-routine-card";
-import { ChildExploitationScreeningCard } from "@/components/dashboard/child-exploitation-screening-card";
-import { TraumaInformedCareCard } from "@/components/dashboard/trauma-informed-care-card";
-import { RespiteShortBreaksCard } from "@/components/dashboard/respite-short-breaks-card";
-import { MedicationAdministrationCard } from "@/components/dashboard/medication-administration-card";
-import { StaffSupervisionSessionsCard } from "@/components/dashboard/staff-supervision-sessions-card";
-import { FireSafetyCard } from "@/components/dashboard/fire-safety-card";
-import { SecureStorageCard } from "@/components/dashboard/secure-storage-card";
-import { ComplaintsInvestigationCard } from "@/components/dashboard/complaints-investigation-card";
-import { WorkforceDiversityCard } from "@/components/dashboard/workforce-diversity-card";
-import { VisitorManagementCard } from "@/components/dashboard/visitor-management-card";
-import { EmergencyAdmissionsCard } from "@/components/dashboard/emergency-admissions-card";
-import { StaffGrievanceCard } from "@/components/dashboard/staff-grievance-card";
-import { EqualityHumanRightsCard } from "@/components/dashboard/equality-human-rights-card";
-import { ChildrensFundManagementCard } from "@/components/dashboard/childrens-fund-management-card";
-import { StaffAttendanceCard } from "@/components/dashboard/staff-attendance-card";
-import { AllegationManagementCard } from "@/components/dashboard/allegation-management-card";
-import { TransportSafetyCard } from "@/components/dashboard/transport-safety-card";
-import { StaffTeamMeetingsCard } from "@/components/dashboard/staff-team-meetings-card";
-import { CctvSurveillanceCard } from "@/components/dashboard/cctv-surveillance-card";
-import { MealtimesNutritionCard } from "@/components/dashboard/mealtimes-nutrition-card";
-import { BuildingSecurityCard } from "@/components/dashboard/building-security-card";
-import { WaterSafetyCard } from "@/components/dashboard/water-safety-card";
-import { InfectionControlCard } from "@/components/dashboard/infection-control-card";
-import { MaintenanceRepairsCard } from "@/components/dashboard/maintenance-repairs-card";
-import { GiftsHospitalityCard } from "@/components/dashboard/gifts-hospitality-card";
-import { BedroomAuditCard } from "@/components/dashboard/bedroom-audit-card";
-import { LaundryClothingCard } from "@/components/dashboard/laundry-clothing-card";
-import { EmergencyDrillCard } from "@/components/dashboard/emergency-drill-card";
-import { HealthAppointmentsCard } from "@/components/dashboard/health-appointments-card";
-import { CommunalAreaAuditCard } from "@/components/dashboard/communal-area-audit-card";
-import { NotificationsRegisterCard } from "@/components/dashboard/notifications-register-card";
-import { StaffExitInterviewsCard } from "@/components/dashboard/staff-exit-interviews-card";
-import { ChildrensMeetingsCard } from "@/components/dashboard/childrens-meetings-card";
-import { HolidayTripsCard } from "@/components/dashboard/holiday-trips-card";
-import { DataProtectionCard } from "@/components/dashboard/data-protection-card";
-import { PanelDecisionsCard } from "@/components/dashboard/panel-decisions-card";
-import { VehicleManagementCard } from "@/components/dashboard/vehicle-management-card";
-import { PestControlCard } from "@/components/dashboard/pest-control-card";
-import { ChildrensFeedbackCard } from "@/components/dashboard/childrens-feedback-card";
-import { UtilityManagementCard } from "@/components/dashboard/utility-management-card";
-import { VolunteerManagementCard } from "@/components/dashboard/volunteer-management-card";
-import { RoomTemperatureCard } from "@/components/dashboard/room-temperature-card";
-import { MedicationAuditCard } from "@/components/dashboard/medication-audit-card";
-import { ChildrensAbsenceCard } from "@/components/dashboard/childrens-absence-card";
-import { HomeImprovementCard } from "@/components/dashboard/home-improvement-card";
-import { CleaningScheduleCard } from "@/components/dashboard/cleaning-schedule-card";
-import { KeyHoldingCard } from "@/components/dashboard/key-holding-card";
-import { PersonalHygieneCard } from "@/components/dashboard/personal-hygiene-card";
-import { MissingPersonRiskCard } from "@/components/dashboard/missing-person-risk-card";
-import { SafeguardingReferralCard } from "@/components/dashboard/safeguarding-referral-card";
-import { MedicationStorageCard } from "@/components/dashboard/medication-storage-card";
-import { AdmissionAssessmentCard } from "@/components/dashboard/admission-assessment-card";
-import { StaffCompetencyAssessmentCard } from "@/components/dashboard/staff-competency-assessment-card";
-import { EnvironmentalAuditCard } from "@/components/dashboard/environmental-audit-card";
-import { ProfessionalConsultationCard } from "@/components/dashboard/professional-consultation-card";
-import { OfstedActionPlanCard } from "@/components/dashboard/ofsted-action-plan-card";
-import { LifeStoryWorkCard } from "@/components/dashboard/life-story-work-card";
-import { PositiveHandlingCard } from "@/components/dashboard/positive-handling-card";
-import { ShiftHandoverQualityCard } from "@/components/dashboard/shift-handover-quality-card";
-import { ChildrensProgressTrackingCard } from "@/components/dashboard/childrens-progress-tracking-card";
-import { KeyworkerSessionsCard } from "@/components/dashboard/keyworker-sessions-card";
-import { RestraintDebriefCard } from "@/components/dashboard/restraint-debrief-card";
-import { StaffReflectivePracticeCard } from "@/components/dashboard/staff-reflective-practice-card";
-import { StaffHandoverNotesCard } from "@/components/dashboard/staff-handover-notes-card";
-import { ChildRiskAssessmentReviewCard } from "@/components/dashboard/child-risk-assessment-review-card";
-import { HomeDecorationPersonalisationCard } from "@/components/dashboard/home-decoration-personalisation-card";
-import { MedicationConsentCard } from "@/components/dashboard/medication-consent-card";
-import { StaffLoneWorkingCard } from "@/components/dashboard/staff-lone-working-card";
-import { ChildrensTherapySessionsCard } from "@/components/dashboard/childrens-therapy-sessions-card";
-import { NightWakingMonitoringCard } from "@/components/dashboard/night-waking-monitoring-card";
-import { CommunityLinksIntegrationCard } from "@/components/dashboard/community-links-integration-card";
-import { StaffMedicationCompetencyCard } from "@/components/dashboard/staff-medication-competency-card";
-import { BoundaryManagementCard } from "@/components/dashboard/boundary-management-card";
-import { InternetUsageMonitoringCard } from "@/components/dashboard/internet-usage-monitoring-card";
-import { SleepQualityAssessmentCard } from "@/components/dashboard/sleep-quality-assessment-card";
-import { CulturalIdentitySupportCard } from "@/components/dashboard/cultural-identity-support-card";
-import { PocketMoneyManagementCard } from "@/components/dashboard/pocket-money-management-card";
-import { ChildWellbeingCheckinCard } from "@/components/dashboard/child-wellbeing-checkin-card";
-import { StaffDebriefSupportCard } from "@/components/dashboard/staff-debrief-support-card";
-import { EducationAttendanceTrackingCard } from "@/components/dashboard/education-attendance-tracking-card";
-import { ContactSupervisionCard } from "@/components/dashboard/contact-supervision-card";
-import { SelfHarmRiskMonitoringCard } from "@/components/dashboard/self-harm-risk-monitoring-card";
-import { RoomSharingAssessmentCard } from "@/components/dashboard/room-sharing-assessment-card";
-import { MedicationSideEffectsCard } from "@/components/dashboard/medication-side-effects-card";
-import { PeerRelationshipAssessmentCard } from "@/components/dashboard/peer-relationship-assessment-card";
-import { HomeEnvironmentInspectionCard } from "@/components/dashboard/home-environment-inspection-card";
-import { ComplaintResolutionTrackingCard } from "@/components/dashboard/complaint-resolution-tracking-card";
-import { StaffSupervisionComplianceCard } from "@/components/dashboard/staff-supervision-compliance-card";
-import { ChildDevelopmentMilestoneCard } from "@/components/dashboard/child-development-milestone-card";
-import { VisitorFeedbackCollectionCard } from "@/components/dashboard/visitor-feedback-collection-card";
-import { StaffShiftPatternMonitoringCard } from "@/components/dashboard/staff-shift-pattern-monitoring-card";
-import { ChildDigitalWellbeingCard } from "@/components/dashboard/child-digital-wellbeing-card";
-import { FamilyEngagementTrackingCard } from "@/components/dashboard/family-engagement-tracking-card";
-import { TransitionPlanningReadinessCard } from "@/components/dashboard/transition-planning-readiness-card";
-import { KeyWorkerAllocationCard } from "@/components/dashboard/key-worker-allocation-card";
-import { ConsentCapacityMonitoringCard } from "@/components/dashboard/consent-capacity-monitoring-card";
-import { BehaviourPatternAnalysisCard } from "@/components/dashboard/behaviour-pattern-analysis-card";
-import { PhysicalActivityTrackingCard } from "@/components/dashboard/physical-activity-tracking-card";
-import { ReligiousCulturalObservanceCard } from "@/components/dashboard/religious-cultural-observance-card";
-import { SiblingContactQualityCard } from "@/components/dashboard/sibling-contact-quality-card";
-import { PrivacyDignityMonitoringCard } from "@/components/dashboard/privacy-dignity-monitoring-card";
-import { ChildrensAspirationsGoalsCard } from "@/components/dashboard/childrens-aspirations-goals-card";
-import { CreativeEnrichmentActivitiesCard } from "@/components/dashboard/creative-enrichment-activities-card";
-import { MedicationEffectivenessReviewCard } from "@/components/dashboard/medication-effectiveness-review-card";
-import { HealthScreeningImmunisationCard } from "@/components/dashboard/health-screening-immunisation-card";
-import { SocialSkillsDevelopmentCard } from "@/components/dashboard/social-skills-development-card";
-import { RestorativeJusticePracticeCard } from "@/components/dashboard/restorative-justice-practice-card";
-import { LeisureRecreationActivitiesCard } from "@/components/dashboard/leisure-recreation-activities-card";
-import { HomeworkAcademicSupportCard } from "@/components/dashboard/homework-academic-support-card";
-import { AdvocacyRepresentationCard } from "@/components/dashboard/advocacy-representation-card";
-import { CelebrationMilestonesCard } from "@/components/dashboard/celebration-milestones-card";
-import { WorkExperienceEmploymentCard } from "@/components/dashboard/work-experience-employment-card";
-import { DeviceScreenTimeMonitoringCard } from "@/components/dashboard/device-screen-time-monitoring-card";
-import { FinancialLiteracySavingsCard } from "@/components/dashboard/financial-literacy-savings-card";
-import { FirstAidMedicalEmergencyCard } from "@/components/dashboard/first-aid-medical-emergency-card";
-import { OutdoorSpacesPlayAreasCard } from "@/components/dashboard/outdoor-spaces-play-areas-card";
-import { PositiveBehaviourReinforcementCard } from "@/components/dashboard/positive-behaviour-reinforcement-card";
-import { DentalOpticalHealthCard } from "@/components/dashboard/dental-optical-health-card";
-import { SelfEsteemConfidenceBuildingCard } from "@/components/dashboard/self-esteem-confidence-building-card";
-import { ArrivalSettlingExperienceCard } from "@/components/dashboard/arrival-settling-experience-card";
-import { HealthyEatingCookingSkillsCard } from "@/components/dashboard/healthy-eating-cooking-skills-card";
-import { RelationshipEducationSafetyCard } from "@/components/dashboard/relationship-education-safety-card";
-import { PetCareResponsibilityCard } from "@/components/dashboard/pet-care-responsibility-card";
-import { GardenHorticultureActivitiesCard } from "@/components/dashboard/garden-horticulture-activities-card";
-import { FaithSpiritualObservanceCard } from "@/components/dashboard/faith-spiritual-observance-card";
-import { StaffPatternIntelligenceCard } from "@/components/dashboard/staff-pattern-intelligence-card";
-import { StaffPerformanceDipCard } from "@/components/dashboard/staff-performance-dip-card";
-import { StaffBurnoutIndicatorCard } from "@/components/dashboard/staff-burnout-indicator-card";
-import { StaffDevelopmentPlanCard } from "@/components/dashboard/staff-development-plan-card";
-import { StaffSupportPlanCard } from "@/components/dashboard/staff-support-plan-card";
-import { StaffPracticeRiskAssessmentCard } from "@/components/dashboard/staff-practice-risk-assessment-card";
-import { StaffTriggerMapCard } from "@/components/dashboard/staff-trigger-map-card";
-import { StaffSupportActionCard } from "@/components/dashboard/staff-support-action-card";
-import { StaffReviewOutcomeCard } from "@/components/dashboard/staff-review-outcome-card";
-import { StaffConfidenceIndicatorCard } from "@/components/dashboard/staff-confidence-indicator-card";
-import { StaffMandatoryTrainingCard } from "@/components/dashboard/staff-mandatory-training-card";
-import { YoungPersonDailyDiaryCard } from "@/components/dashboard/young-person-daily-diary-card";
-import { ProfessionalNetworkDirectoryCard } from "@/components/dashboard/professional-network-directory-card";
-import { MenuPlanningDietaryCard } from "@/components/dashboard/menu-planning-dietary-card";
-import { EhcpSendMonitoringCard } from "@/components/dashboard/ehcp-send-monitoring-card";
-import { PlacementMatchingAssessmentCard } from "@/components/dashboard/placement-matching-assessment-card";
-import { Reg44IndependentVisitorCard } from "@/components/dashboard/reg44-independent-visitor-card";
-import { EmotionalWellbeingOutcomeCard } from "@/components/dashboard/emotional-wellbeing-outcome-card";
-import { ComplianceCertificateCard } from "@/components/dashboard/compliance-certificate-card";
-import { HomeClosurePlanningCard } from "@/components/dashboard/home-closure-planning-card";
-import { ParentalContactArrangementCard } from "@/components/dashboard/parental-contact-arrangement-card";
-import { SafeguardingPartnershipCard } from "@/components/dashboard/safeguarding-partnership-card";
-import { LacHealthAssessmentCard } from "@/components/dashboard/lac-health-assessment-card";
-import { StaffWhistleblowingInvestigationCard } from "@/components/dashboard/staff-whistleblowing-investigation-card";
-import { HomeAtmosphereAssessmentCard } from "@/components/dashboard/home-atmosphere-assessment-card";
-import { QualityOfCareReviewCard } from "@/components/dashboard/quality-of-care-review-card";
-import { MedicationIncidentReportingCard } from "@/components/dashboard/medication-incident-reporting-card";
-import { StaffAnnualLeaveCard } from "@/components/dashboard/staff-annual-leave-card";
-import { ChildrensPocketMoneyAuditCard } from "@/components/dashboard/childrens-pocket-money-audit-card";
-import { StaffConflictOfInterestCard } from "@/components/dashboard/staff-conflict-of-interest-card";
-import { EnvironmentalImpactAssessmentCard } from "@/components/dashboard/environmental-impact-assessment-card";
-import { StaffRetentionExitAnalysisCard } from "@/components/dashboard/staff-retention-exit-analysis-card";
-import { ChildSexualExploitationRiskCard } from "@/components/dashboard/child-sexual-exploitation-risk-card";
-import { OfstedInspectionReadinessCard } from "@/components/dashboard/ofsted-inspection-readiness-card";
-import { YoungPersonEmploymentSupportCard } from "@/components/dashboard/young-person-employment-support-card";
-import { SleepDisturbanceInterventionCard } from "@/components/dashboard/sleep-disturbance-intervention-card";
-import { ChildCriminalExploitationRiskCard } from "@/components/dashboard/child-criminal-exploitation-risk-card";
-import { StaffSicknessManagementCard } from "@/components/dashboard/staff-sickness-management-card";
-import { HomeInsuranceComplianceCard } from "@/components/dashboard/home-insurance-compliance-card";
-import { ChildVoiceParticipationTrackingCard } from "@/components/dashboard/child-voice-participation-tracking-card";
-import { StaffCodeOfConductComplianceCard } from "@/components/dashboard/staff-code-of-conduct-compliance-card";
-import { HomeEnergyEfficiencyCard } from "@/components/dashboard/home-energy-efficiency-card";
-import { ChildRadicalisationPreventionCard } from "@/components/dashboard/child-radicalisation-prevention-card";
-import { StaffNvqQualificationTrackingCard } from "@/components/dashboard/staff-nvq-qualification-tracking-card";
-import { HomeAccessibilityAssessmentCard } from "@/components/dashboard/home-accessibility-assessment-card";
-import { ChildNutritionWeightMonitoringCard } from "@/components/dashboard/child-nutrition-weight-monitoring-card";
-import { StaffDbsRenewalTrackingCard } from "@/components/dashboard/staff-dbs-renewal-tracking-card";
-import { HomeFireRiskAssessmentCard } from "@/components/dashboard/home-fire-risk-assessment-card";
-import { ChildSubstanceMisuseScreeningCard } from "@/components/dashboard/child-substance-misuse-screening-card";
-import { StaffReturnToWorkInterviewCard } from "@/components/dashboard/staff-return-to-work-interview-card";
-import { HomeLegionellaRiskAssessmentCard } from "@/components/dashboard/home-legionella-risk-assessment-card";
-import { ChildBereavementSupportCard } from "@/components/dashboard/child-bereavement-support-card";
-import { StaffMandatoryRefresherTrainingCard } from "@/components/dashboard/staff-mandatory-refresher-training-card";
-import { HomeAsbestosManagementCard } from "@/components/dashboard/home-asbestos-management-card";
-import { ChildGangsAffiliationRiskCard } from "@/components/dashboard/child-gangs-affiliation-risk-card";
-import { StaffAgencyWorkerComplianceCard } from "@/components/dashboard/staff-agency-worker-compliance-card";
-import { HomeRadonTestingCard } from "@/components/dashboard/home-radon-testing-card";
-import { ChildFgmRiskAssessmentCard } from "@/components/dashboard/child-fgm-risk-assessment-card";
-import { StaffProfessionalRegistrationCard } from "@/components/dashboard/staff-professional-registration-card";
-import { HomeElectricalSafetyCard } from "@/components/dashboard/home-electrical-safety-card";
-import { ChildForcedMarriageRiskCard } from "@/components/dashboard/child-forced-marriage-risk-card";
-import { StaffSecondmentManagementCard } from "@/components/dashboard/staff-secondment-management-card";
-import { HomeGasSafetyCard } from "@/components/dashboard/home-gas-safety-card";
-import { ChildModernSlaveryRiskCard } from "@/components/dashboard/child-modern-slavery-risk-card";
-import { StaffPayrollComplianceCard } from "@/components/dashboard/staff-payroll-compliance-card";
-import { HomeLiftEquipmentSafetyCard } from "@/components/dashboard/home-lift-equipment-safety-card";
-import { ChildHonourBasedAbuseRiskCard } from "@/components/dashboard/child-honour-based-abuse-risk-card";
-import { StaffExitInterviewManagementCard } from "@/components/dashboard/staff-exit-interview-management-card";
-import { HomeWaterHygieneManagementCard } from "@/components/dashboard/home-water-hygiene-management-card";
-import { ChildRadicalisationRiskCard } from "@/components/dashboard/child-radicalisation-risk-card";
-import { StaffWhistleblowingManagementCard } from "@/components/dashboard/staff-whistleblowing-management-card";
-import { HomePestControlManagementCard } from "@/components/dashboard/home-pest-control-management-card";
-import { ChildTraffickingRiskCard } from "@/components/dashboard/child-trafficking-risk-card";
-import { StaffOvertimeManagementCard } from "@/components/dashboard/staff-overtime-management-card";
-import { HomeCctvComplianceCard } from "@/components/dashboard/home-cctv-compliance-card";
-import { ChildOnlineSafetyMonitoringCard } from "@/components/dashboard/child-online-safety-monitoring-card";
-import { StaffLoneWorkingRiskCard } from "@/components/dashboard/staff-lone-working-risk-card";
-import { HomeEmergencyLightingCard } from "@/components/dashboard/home-emergency-lighting-card";
-import {
+
+/* ── lazy-loaded dashboard cards (dynamic) ──────────────────────── */
+
+const MissingFromCareCardLazy = dynamic(
+  () => import("@/components/dashboard/missing-from-care-card")
+    .then(mod => ({ default: mod.MissingFromCareCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ComplaintsNotificationsCardLazy = dynamic(
+  () => import("@/components/dashboard/complaints-notifications-card")
+    .then(mod => ({ default: mod.ComplaintsNotificationsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PlacementIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/placement-intelligence-card")
+    .then(mod => ({ default: mod.PlacementIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const BehaviourIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/behaviour-intelligence-card")
+    .then(mod => ({ default: mod.BehaviourIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const RotaIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/rota-intelligence-card")
+    .then(mod => ({ default: mod.RotaIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PremisesIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/premises-intelligence-card")
+    .then(mod => ({ default: mod.PremisesIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const TrainingIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/training-intelligence-card")
+    .then(mod => ({ default: mod.TrainingIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const FinanceIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/finance-intelligence-card")
+    .then(mod => ({ default: mod.FinanceIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const LifeSkillsCardLazy = dynamic(
+  () => import("@/components/dashboard/life-skills-card")
+    .then(mod => ({ default: mod.LifeSkillsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const NotifiableEventsCardLazy = dynamic(
+  () => import("@/components/dashboard/notifiable-events-card")
+    .then(mod => ({ default: mod.NotifiableEventsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SCCIFEvaluationCardLazy = dynamic(
+  () => import("@/components/dashboard/s-c-c-i-f-evaluation-card")
+    .then(mod => ({ default: mod.SCCIFEvaluationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const VisitorsCardLazy = dynamic(
+  () => import("@/components/dashboard/visitors-card")
+    .then(mod => ({ default: mod.VisitorsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const OutcomesCardLazy = dynamic(
+  () => import("@/components/dashboard/outcomes-card")
+    .then(mod => ({ default: mod.OutcomesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HandoverCardLazy = dynamic(
+  () => import("@/components/dashboard/handover-card")
+    .then(mod => ({ default: mod.HandoverCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const AppraisalsCardLazy = dynamic(
+  () => import("@/components/dashboard/appraisals-card")
+    .then(mod => ({ default: mod.AppraisalsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MeetingsCardLazy = dynamic(
+  () => import("@/components/dashboard/meetings-card")
+    .then(mod => ({ default: mod.MeetingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const RestraintCardLazy = dynamic(
+  () => import("@/components/dashboard/restraint-card")
+    .then(mod => ({ default: mod.RestraintCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const QualityAssuranceCardLazy = dynamic(
+  () => import("@/components/dashboard/quality-assurance-card")
+    .then(mod => ({ default: mod.QualityAssuranceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PossessionsCardLazy = dynamic(
+  () => import("@/components/dashboard/possessions-card")
+    .then(mod => ({ default: mod.PossessionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EmergencyCardLazy = dynamic(
+  () => import("@/components/dashboard/emergency-card")
+    .then(mod => ({ default: mod.EmergencyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SaferRecruitmentCardLazy = dynamic(
+  () => import("@/components/dashboard/safer-recruitment-card")
+    .then(mod => ({ default: mod.SaferRecruitmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const LeavingCareCardLazy = dynamic(
+  () => import("@/components/dashboard/leaving-care-card")
+    .then(mod => ({ default: mod.LeavingCareCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffDisciplinaryCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-disciplinary-card")
+    .then(mod => ({ default: mod.StaffDisciplinaryCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SanctionsRewardsCardLazy = dynamic(
+  () => import("@/components/dashboard/sanctions-rewards-card")
+    .then(mod => ({ default: mod.SanctionsRewardsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ContextualSafeguardingCardLazy = dynamic(
+  () => import("@/components/dashboard/contextual-safeguarding-card")
+    .then(mod => ({ default: mod.ContextualSafeguardingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const DeprivationOfLibertyCardLazy = dynamic(
+  () => import("@/components/dashboard/deprivation-of-liberty-card")
+    .then(mod => ({ default: mod.DeprivationOfLibertyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const WhistleblowingCardLazy = dynamic(
+  () => import("@/components/dashboard/whistleblowing-card")
+    .then(mod => ({ default: mod.WhistleblowingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PoliciesRegisterCardLazy = dynamic(
+  () => import("@/components/dashboard/policies-register-card")
+    .then(mod => ({ default: mod.PoliciesRegisterCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const AdvocacyCardLazy = dynamic(
+  () => import("@/components/dashboard/advocacy-card")
+    .then(mod => ({ default: mod.AdvocacyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MultiAgencyCardLazy = dynamic(
+  () => import("@/components/dashboard/multi-agency-card")
+    .then(mod => ({ default: mod.MultiAgencyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const NightMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/night-monitoring-card")
+    .then(mod => ({ default: mod.NightMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CulturalIdentityCardLazy = dynamic(
+  () => import("@/components/dashboard/cultural-identity-card")
+    .then(mod => ({ default: mod.CulturalIdentityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SubstanceMisuseCardLazy = dynamic(
+  () => import("@/components/dashboard/substance-misuse-card")
+    .then(mod => ({ default: mod.SubstanceMisuseCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const IndependentVisitorsCardLazy = dynamic(
+  () => import("@/components/dashboard/independent-visitors-card")
+    .then(mod => ({ default: mod.IndependentVisitorsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const BusinessContinuityCardLazy = dynamic(
+  () => import("@/components/dashboard/business-continuity-card")
+    .then(mod => ({ default: mod.BusinessContinuityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StatementOfPurposeCardLazy = dynamic(
+  () => import("@/components/dashboard/statement-of-purpose-card")
+    .then(mod => ({ default: mod.StatementOfPurposeCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const Reg45ReportsCardLazy = dynamic(
+  () => import("@/components/dashboard/reg45reports-card")
+    .then(mod => ({ default: mod.Reg45ReportsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensGuideCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-guide-card")
+    .then(mod => ({ default: mod.ChildrensGuideCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const TransitionPlanningCardLazy = dynamic(
+  () => import("@/components/dashboard/transition-planning-card")
+    .then(mod => ({ default: mod.TransitionPlanningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensParticipationCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-participation-card")
+    .then(mod => ({ default: mod.ChildrensParticipationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const FoodNutritionCardLazy = dynamic(
+  () => import("@/components/dashboard/food-nutrition-card")
+    .then(mod => ({ default: mod.FoodNutritionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PocketMoneyCardLazy = dynamic(
+  () => import("@/components/dashboard/pocket-money-card")
+    .then(mod => ({ default: mod.PocketMoneyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EnvironmentalSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/environmental-safety-card")
+    .then(mod => ({ default: mod.EnvironmentalSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const RecordsManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/records-management-card")
+    .then(mod => ({ default: mod.RecordsManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SleepPatternsCardLazy = dynamic(
+  () => import("@/components/dashboard/sleep-patterns-card")
+    .then(mod => ({ default: mod.SleepPatternsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StakeholderEngagementCardLazy = dynamic(
+  () => import("@/components/dashboard/stakeholder-engagement-card")
+    .then(mod => ({ default: mod.StakeholderEngagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ImpactRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/impact-risk-assessment-card")
+    .then(mod => ({ default: mod.ImpactRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffWellbeingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-wellbeing-card")
+    .then(mod => ({ default: mod.StaffWellbeingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const KpiTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/kpi-tracking-card")
+    .then(mod => ({ default: mod.KpiTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ProfessionalDevelopmentCardLazy = dynamic(
+  () => import("@/components/dashboard/professional-development-card")
+    .then(mod => ({ default: mod.ProfessionalDevelopmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const TherapeuticInterventionsCardLazy = dynamic(
+  () => import("@/components/dashboard/therapeutic-interventions-card")
+    .then(mod => ({ default: mod.TherapeuticInterventionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const WorkforcePlanningCardLazy = dynamic(
+  () => import("@/components/dashboard/workforce-planning-card")
+    .then(mod => ({ default: mod.WorkforcePlanningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CarePlanningCardLazy = dynamic(
+  () => import("@/components/dashboard/care-planning-card")
+    .then(mod => ({ default: mod.CarePlanningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const FamilyEngagementCardLazy = dynamic(
+  () => import("@/components/dashboard/family-engagement-card")
+    .then(mod => ({ default: mod.FamilyEngagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CommissioningReferralsCardLazy = dynamic(
+  () => import("@/components/dashboard/commissioning-referrals-card")
+    .then(mod => ({ default: mod.CommissioningReferralsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensRightsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-rights-card")
+    .then(mod => ({ default: mod.ChildrensRightsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PracticeLearningCardLazy = dynamic(
+  () => import("@/components/dashboard/practice-learning-card")
+    .then(mod => ({ default: mod.PracticeLearningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffAbsenceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-absence-card")
+    .then(mod => ({ default: mod.StaffAbsenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ActivityPlanningCardLazy = dynamic(
+  () => import("@/components/dashboard/activity-planning-card")
+    .then(mod => ({ default: mod.ActivityPlanningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const OnlineSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/online-safety-card")
+    .then(mod => ({ default: mod.OnlineSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const LACReviewCardLazy = dynamic(
+  () => import("@/components/dashboard/l-a-c-review-card")
+    .then(mod => ({ default: mod.LACReviewCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffInductionCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-induction-card")
+    .then(mod => ({ default: mod.StaffInductionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const DutyOfCandourCardLazy = dynamic(
+  () => import("@/components/dashboard/duty-of-candour-card")
+    .then(mod => ({ default: mod.DutyOfCandourCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const AntiBullyingCardLazy = dynamic(
+  () => import("@/components/dashboard/anti-bullying-card")
+    .then(mod => ({ default: mod.AntiBullyingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ConsentManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/consent-management-card")
+    .then(mod => ({ default: mod.ConsentManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SignificantEventsCardLazy = dynamic(
+  () => import("@/components/dashboard/significant-events-card")
+    .then(mod => ({ default: mod.SignificantEventsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const LegalStatusCardLazy = dynamic(
+  () => import("@/components/dashboard/legal-status-card")
+    .then(mod => ({ default: mod.LegalStatusCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const BodyMapCardLazy = dynamic(
+  () => import("@/components/dashboard/body-map-card")
+    .then(mod => ({ default: mod.BodyMapCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const KeyDocumentsCardLazy = dynamic(
+  () => import("@/components/dashboard/key-documents-card")
+    .then(mod => ({ default: mod.KeyDocumentsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PlacementStabilityCardLazy = dynamic(
+  () => import("@/components/dashboard/placement-stability-card")
+    .then(mod => ({ default: mod.PlacementStabilityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ProviderVisitsCardLazy = dynamic(
+  () => import("@/components/dashboard/provider-visits-card")
+    .then(mod => ({ default: mod.ProviderVisitsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MatchingReferralCardLazy = dynamic(
+  () => import("@/components/dashboard/matching-referral-card")
+    .then(mod => ({ default: mod.MatchingReferralCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const IndependencePreparationCardLazy = dynamic(
+  () => import("@/components/dashboard/independence-preparation-card")
+    .then(mod => ({ default: mod.IndependencePreparationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SensoryProfileCardLazy = dynamic(
+  () => import("@/components/dashboard/sensory-profile-card")
+    .then(mod => ({ default: mod.SensoryProfileCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PeerMentoringCardLazy = dynamic(
+  () => import("@/components/dashboard/peer-mentoring-card")
+    .then(mod => ({ default: mod.PeerMentoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ContactMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/contact-monitoring-card")
+    .then(mod => ({ default: mod.ContactMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const AttachmentRelationshipsCardLazy = dynamic(
+  () => import("@/components/dashboard/attachment-relationships-card")
+    .then(mod => ({ default: mod.AttachmentRelationshipsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const DiversityInclusionCardLazy = dynamic(
+  () => import("@/components/dashboard/diversity-inclusion-card")
+    .then(mod => ({ default: mod.DiversityInclusionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EmergencyPlacementCardLazy = dynamic(
+  () => import("@/components/dashboard/emergency-placement-card")
+    .then(mod => ({ default: mod.EmergencyPlacementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CourtProceedingsCardLazy = dynamic(
+  () => import("@/components/dashboard/court-proceedings-card")
+    .then(mod => ({ default: mod.CourtProceedingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const BehaviourSupportPlansCardLazy = dynamic(
+  () => import("@/components/dashboard/behaviour-support-plans-card")
+    .then(mod => ({ default: mod.BehaviourSupportPlansCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const DischargeTransitionCardLazy = dynamic(
+  () => import("@/components/dashboard/discharge-transition-card")
+    .then(mod => ({ default: mod.DischargeTransitionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MedicationErrorsCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-errors-card")
+    .then(mod => ({ default: mod.MedicationErrorsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensAchievementsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-achievements-card")
+    .then(mod => ({ default: mod.ChildrensAchievementsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const RiskRegisterCardLazy = dynamic(
+  () => import("@/components/dashboard/riskregister-card")
+    .then(mod => ({ default: mod.RiskRegisterCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const DelegatedAuthorityCardLazy = dynamic(
+  () => import("@/components/dashboard/delegated-authority-card")
+    .then(mod => ({ default: mod.DelegatedAuthorityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const LanguageCommunicationCardLazy = dynamic(
+  () => import("@/components/dashboard/language-communication-card")
+    .then(mod => ({ default: mod.LanguageCommunicationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const IndividualRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/individual-risk-assessment-card")
+    .then(mod => ({ default: mod.IndividualRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ParentalResponsibilityCardLazy = dynamic(
+  () => import("@/components/dashboard/parental-responsibility-card")
+    .then(mod => ({ default: mod.ParentalResponsibilityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensWishesFeelingsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-wishes-feelings-card")
+    .then(mod => ({ default: mod.ChildrensWishesFeelingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const DailyRoutineCardLazy = dynamic(
+  () => import("@/components/dashboard/daily-routine-card")
+    .then(mod => ({ default: mod.DailyRoutineCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildExploitationScreeningCardLazy = dynamic(
+  () => import("@/components/dashboard/child-exploitation-screening-card")
+    .then(mod => ({ default: mod.ChildExploitationScreeningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const TraumaInformedCareCardLazy = dynamic(
+  () => import("@/components/dashboard/trauma-informed-care-card")
+    .then(mod => ({ default: mod.TraumaInformedCareCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const RespiteShortBreaksCardLazy = dynamic(
+  () => import("@/components/dashboard/respite-short-breaks-card")
+    .then(mod => ({ default: mod.RespiteShortBreaksCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MedicationAdministrationCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-administration-card")
+    .then(mod => ({ default: mod.MedicationAdministrationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffSupervisionSessionsCardLazy = dynamic(
+  () => import("@/components/dashboard/staffsupervisionsessions-card")
+    .then(mod => ({ default: mod.StaffSupervisionSessionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const FireSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/fire-safety-card")
+    .then(mod => ({ default: mod.FireSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SecureStorageCardLazy = dynamic(
+  () => import("@/components/dashboard/securestorage-card")
+    .then(mod => ({ default: mod.SecureStorageCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ComplaintsInvestigationCardLazy = dynamic(
+  () => import("@/components/dashboard/complaints-investigation-card")
+    .then(mod => ({ default: mod.ComplaintsInvestigationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const WorkforceDiversityCardLazy = dynamic(
+  () => import("@/components/dashboard/workforce-diversity-card")
+    .then(mod => ({ default: mod.WorkforceDiversityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const VisitorManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/visitor-management-card")
+    .then(mod => ({ default: mod.VisitorManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EmergencyAdmissionsCardLazy = dynamic(
+  () => import("@/components/dashboard/emergency-admissions-card")
+    .then(mod => ({ default: mod.EmergencyAdmissionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffGrievanceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-grievance-card")
+    .then(mod => ({ default: mod.StaffGrievanceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EqualityHumanRightsCardLazy = dynamic(
+  () => import("@/components/dashboard/equality-human-rights-card")
+    .then(mod => ({ default: mod.EqualityHumanRightsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensFundManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-fund-management-card")
+    .then(mod => ({ default: mod.ChildrensFundManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffAttendanceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-attendance-card")
+    .then(mod => ({ default: mod.StaffAttendanceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const AllegationManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/allegation-management-card")
+    .then(mod => ({ default: mod.AllegationManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const TransportSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/transport-safety-card")
+    .then(mod => ({ default: mod.TransportSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffTeamMeetingsCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-team-meetings-card")
+    .then(mod => ({ default: mod.StaffTeamMeetingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CctvSurveillanceCardLazy = dynamic(
+  () => import("@/components/dashboard/cctv-surveillance-card")
+    .then(mod => ({ default: mod.CctvSurveillanceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MealtimesNutritionCardLazy = dynamic(
+  () => import("@/components/dashboard/mealtimes-nutrition-card")
+    .then(mod => ({ default: mod.MealtimesNutritionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const BuildingSecurityCardLazy = dynamic(
+  () => import("@/components/dashboard/building-security-card")
+    .then(mod => ({ default: mod.BuildingSecurityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const WaterSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/water-safety-card")
+    .then(mod => ({ default: mod.WaterSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const InfectionControlCardLazy = dynamic(
+  () => import("@/components/dashboard/infection-control-card")
+    .then(mod => ({ default: mod.InfectionControlCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MaintenanceRepairsCardLazy = dynamic(
+  () => import("@/components/dashboard/maintenance-repairs-card")
+    .then(mod => ({ default: mod.MaintenanceRepairsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const GiftsHospitalityCardLazy = dynamic(
+  () => import("@/components/dashboard/gifts-hospitality-card")
+    .then(mod => ({ default: mod.GiftsHospitalityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const BedroomAuditCardLazy = dynamic(
+  () => import("@/components/dashboard/bedroom-audit-card")
+    .then(mod => ({ default: mod.BedroomAuditCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const LaundryClothingCardLazy = dynamic(
+  () => import("@/components/dashboard/laundry-clothing-card")
+    .then(mod => ({ default: mod.LaundryClothingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EmergencyDrillCardLazy = dynamic(
+  () => import("@/components/dashboard/emergency-drill-card")
+    .then(mod => ({ default: mod.EmergencyDrillCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HealthAppointmentsCardLazy = dynamic(
+  () => import("@/components/dashboard/health-appointments-card")
+    .then(mod => ({ default: mod.HealthAppointmentsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CommunalAreaAuditCardLazy = dynamic(
+  () => import("@/components/dashboard/communal-area-audit-card")
+    .then(mod => ({ default: mod.CommunalAreaAuditCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const NotificationsRegisterCardLazy = dynamic(
+  () => import("@/components/dashboard/notifications-register-card")
+    .then(mod => ({ default: mod.NotificationsRegisterCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffExitInterviewsCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-exit-interviews-card")
+    .then(mod => ({ default: mod.StaffExitInterviewsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensMeetingsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-meetings-card")
+    .then(mod => ({ default: mod.ChildrensMeetingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HolidayTripsCardLazy = dynamic(
+  () => import("@/components/dashboard/holiday-trips-card")
+    .then(mod => ({ default: mod.HolidayTripsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const DataProtectionCardLazy = dynamic(
+  () => import("@/components/dashboard/data-protection-card")
+    .then(mod => ({ default: mod.DataProtectionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PanelDecisionsCardLazy = dynamic(
+  () => import("@/components/dashboard/panel-decisions-card")
+    .then(mod => ({ default: mod.PanelDecisionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const VehicleManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/vehicle-management-card")
+    .then(mod => ({ default: mod.VehicleManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PestControlCardLazy = dynamic(
+  () => import("@/components/dashboard/pest-control-card")
+    .then(mod => ({ default: mod.PestControlCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensFeedbackCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-feedback-card")
+    .then(mod => ({ default: mod.ChildrensFeedbackCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const UtilityManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/utility-management-card")
+    .then(mod => ({ default: mod.UtilityManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const VolunteerManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/volunteer-management-card")
+    .then(mod => ({ default: mod.VolunteerManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const RoomTemperatureCardLazy = dynamic(
+  () => import("@/components/dashboard/room-temperature-card")
+    .then(mod => ({ default: mod.RoomTemperatureCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MedicationAuditCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-audit-card")
+    .then(mod => ({ default: mod.MedicationAuditCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensAbsenceCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-absence-card")
+    .then(mod => ({ default: mod.ChildrensAbsenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeImprovementCardLazy = dynamic(
+  () => import("@/components/dashboard/home-improvement-card")
+    .then(mod => ({ default: mod.HomeImprovementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CleaningScheduleCardLazy = dynamic(
+  () => import("@/components/dashboard/cleaning-schedule-card")
+    .then(mod => ({ default: mod.CleaningScheduleCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const KeyHoldingCardLazy = dynamic(
+  () => import("@/components/dashboard/key-holding-card")
+    .then(mod => ({ default: mod.KeyHoldingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PersonalHygieneCardLazy = dynamic(
+  () => import("@/components/dashboard/personal-hygiene-card")
+    .then(mod => ({ default: mod.PersonalHygieneCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MissingPersonRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/missing-person-risk-card")
+    .then(mod => ({ default: mod.MissingPersonRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SafeguardingReferralCardLazy = dynamic(
+  () => import("@/components/dashboard/safeguarding-referral-card")
+    .then(mod => ({ default: mod.SafeguardingReferralCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MedicationStorageCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-storage-card")
+    .then(mod => ({ default: mod.MedicationStorageCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const AdmissionAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/admissionassessment-card")
+    .then(mod => ({ default: mod.AdmissionAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffCompetencyAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-competency-assessment-card")
+    .then(mod => ({ default: mod.StaffCompetencyAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EnvironmentalAuditCardLazy = dynamic(
+  () => import("@/components/dashboard/environmental-audit-card")
+    .then(mod => ({ default: mod.EnvironmentalAuditCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ProfessionalConsultationCardLazy = dynamic(
+  () => import("@/components/dashboard/professional-consultation-card")
+    .then(mod => ({ default: mod.ProfessionalConsultationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const OfstedActionPlanCardLazy = dynamic(
+  () => import("@/components/dashboard/ofsted-action-plan-card")
+    .then(mod => ({ default: mod.OfstedActionPlanCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const LifeStoryWorkCardLazy = dynamic(
+  () => import("@/components/dashboard/life-story-work-card")
+    .then(mod => ({ default: mod.LifeStoryWorkCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PositiveHandlingCardLazy = dynamic(
+  () => import("@/components/dashboard/positive-handling-card")
+    .then(mod => ({ default: mod.PositiveHandlingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ShiftHandoverQualityCardLazy = dynamic(
+  () => import("@/components/dashboard/shift-handover-quality-card")
+    .then(mod => ({ default: mod.ShiftHandoverQualityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensProgressTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-progress-tracking-card")
+    .then(mod => ({ default: mod.ChildrensProgressTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const KeyworkerSessionsCardLazy = dynamic(
+  () => import("@/components/dashboard/keyworker-sessions-card")
+    .then(mod => ({ default: mod.KeyworkerSessionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const RestraintDebriefCardLazy = dynamic(
+  () => import("@/components/dashboard/restraint-debrief-card")
+    .then(mod => ({ default: mod.RestraintDebriefCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffReflectivePracticeCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-reflective-practice-card")
+    .then(mod => ({ default: mod.StaffReflectivePracticeCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffHandoverNotesCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-handover-notes-card")
+    .then(mod => ({ default: mod.StaffHandoverNotesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildRiskAssessmentReviewCardLazy = dynamic(
+  () => import("@/components/dashboard/child-risk-assessment-review-card")
+    .then(mod => ({ default: mod.ChildRiskAssessmentReviewCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeDecorationPersonalisationCardLazy = dynamic(
+  () => import("@/components/dashboard/home-decoration-personalisation-card")
+    .then(mod => ({ default: mod.HomeDecorationPersonalisationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MedicationConsentCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-consent-card")
+    .then(mod => ({ default: mod.MedicationConsentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffLoneWorkingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-lone-working-card")
+    .then(mod => ({ default: mod.StaffLoneWorkingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensTherapySessionsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-therapy-sessions-card")
+    .then(mod => ({ default: mod.ChildrensTherapySessionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const NightWakingMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/night-waking-monitoring-card")
+    .then(mod => ({ default: mod.NightWakingMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CommunityLinksIntegrationCardLazy = dynamic(
+  () => import("@/components/dashboard/community-links-integration-card")
+    .then(mod => ({ default: mod.CommunityLinksIntegrationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffMedicationCompetencyCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-medication-competency-card")
+    .then(mod => ({ default: mod.StaffMedicationCompetencyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const BoundaryManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/boundary-management-card")
+    .then(mod => ({ default: mod.BoundaryManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const InternetUsageMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/internet-usage-monitoring-card")
+    .then(mod => ({ default: mod.InternetUsageMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SleepQualityAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/sleep-quality-assessment-card")
+    .then(mod => ({ default: mod.SleepQualityAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CulturalIdentitySupportCardLazy = dynamic(
+  () => import("@/components/dashboard/cultural-identity-support-card")
+    .then(mod => ({ default: mod.CulturalIdentitySupportCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PocketMoneyManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/pocket-money-management-card")
+    .then(mod => ({ default: mod.PocketMoneyManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildWellbeingCheckinCardLazy = dynamic(
+  () => import("@/components/dashboard/child-wellbeingcheckin-card")
+    .then(mod => ({ default: mod.ChildWellbeingCheckinCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffDebriefSupportCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-debriefsupport-card")
+    .then(mod => ({ default: mod.StaffDebriefSupportCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EducationAttendanceTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/education-attendance-tracking-card")
+    .then(mod => ({ default: mod.EducationAttendanceTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ContactSupervisionCardLazy = dynamic(
+  () => import("@/components/dashboard/contact-supervision-card")
+    .then(mod => ({ default: mod.ContactSupervisionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SelfHarmRiskMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/self-harm-risk-monitoring-card")
+    .then(mod => ({ default: mod.SelfHarmRiskMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const RoomSharingAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/room-sharing-assessment-card")
+    .then(mod => ({ default: mod.RoomSharingAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MedicationSideEffectsCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-side-effects-card")
+    .then(mod => ({ default: mod.MedicationSideEffectsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PeerRelationshipAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/peer-relationship-assessment-card")
+    .then(mod => ({ default: mod.PeerRelationshipAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeEnvironmentInspectionCardLazy = dynamic(
+  () => import("@/components/dashboard/home-environment-inspection-card")
+    .then(mod => ({ default: mod.HomeEnvironmentInspectionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ComplaintResolutionTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/complaint-resolution-tracking-card")
+    .then(mod => ({ default: mod.ComplaintResolutionTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffSupervisionComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/staffsupervision-compliance-card")
+    .then(mod => ({ default: mod.StaffSupervisionComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildDevelopmentMilestoneCardLazy = dynamic(
+  () => import("@/components/dashboard/child-development-milestone-card")
+    .then(mod => ({ default: mod.ChildDevelopmentMilestoneCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const VisitorFeedbackCollectionCardLazy = dynamic(
+  () => import("@/components/dashboard/visitor-feedback-collection-card")
+    .then(mod => ({ default: mod.VisitorFeedbackCollectionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffShiftPatternMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/staffshift-pattern-monitoring-card")
+    .then(mod => ({ default: mod.StaffShiftPatternMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildDigitalWellbeingCardLazy = dynamic(
+  () => import("@/components/dashboard/child-digital-wellbeing-card")
+    .then(mod => ({ default: mod.ChildDigitalWellbeingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const FamilyEngagementTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/family-engagement-tracking-card")
+    .then(mod => ({ default: mod.FamilyEngagementTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const TransitionPlanningReadinessCardLazy = dynamic(
+  () => import("@/components/dashboard/transition-planning-readiness-card")
+    .then(mod => ({ default: mod.TransitionPlanningReadinessCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const KeyWorkerAllocationCardLazy = dynamic(
+  () => import("@/components/dashboard/key-worker-allocation-card")
+    .then(mod => ({ default: mod.KeyWorkerAllocationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ConsentCapacityMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/consentcapacity-monitoring-card")
+    .then(mod => ({ default: mod.ConsentCapacityMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const BehaviourPatternAnalysisCardLazy = dynamic(
+  () => import("@/components/dashboard/behaviour-pattern-analysis-card")
+    .then(mod => ({ default: mod.BehaviourPatternAnalysisCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PhysicalActivityTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/physical-activity-tracking-card")
+    .then(mod => ({ default: mod.PhysicalActivityTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ReligiousCulturalObservanceCardLazy = dynamic(
+  () => import("@/components/dashboard/religious-cultural-observance-card")
+    .then(mod => ({ default: mod.ReligiousCulturalObservanceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SiblingContactQualityCardLazy = dynamic(
+  () => import("@/components/dashboard/sibling-contact-quality-card")
+    .then(mod => ({ default: mod.SiblingContactQualityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PrivacyDignityMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/privacy-dignity-monitoring-card")
+    .then(mod => ({ default: mod.PrivacyDignityMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensAspirationsGoalsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-aspirations-goals-card")
+    .then(mod => ({ default: mod.ChildrensAspirationsGoalsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CreativeEnrichmentActivitiesCardLazy = dynamic(
+  () => import("@/components/dashboard/creative-enrichment-activities-card")
+    .then(mod => ({ default: mod.CreativeEnrichmentActivitiesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MedicationEffectivenessReviewCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-effectiveness-review-card")
+    .then(mod => ({ default: mod.MedicationEffectivenessReviewCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HealthScreeningImmunisationCardLazy = dynamic(
+  () => import("@/components/dashboard/health-screening-immunisation-card")
+    .then(mod => ({ default: mod.HealthScreeningImmunisationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SocialSkillsDevelopmentCardLazy = dynamic(
+  () => import("@/components/dashboard/socialskills-development-card")
+    .then(mod => ({ default: mod.SocialSkillsDevelopmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const RestorativeJusticePracticeCardLazy = dynamic(
+  () => import("@/components/dashboard/restorative-justice-practice-card")
+    .then(mod => ({ default: mod.RestorativeJusticePracticeCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const LeisureRecreationActivitiesCardLazy = dynamic(
+  () => import("@/components/dashboard/leisure-recreation-activities-card")
+    .then(mod => ({ default: mod.LeisureRecreationActivitiesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeworkAcademicSupportCardLazy = dynamic(
+  () => import("@/components/dashboard/homework-academic-support-card")
+    .then(mod => ({ default: mod.HomeworkAcademicSupportCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const AdvocacyRepresentationCardLazy = dynamic(
+  () => import("@/components/dashboard/advocacy-representation-card")
+    .then(mod => ({ default: mod.AdvocacyRepresentationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const CelebrationMilestonesCardLazy = dynamic(
+  () => import("@/components/dashboard/celebration-milestones-card")
+    .then(mod => ({ default: mod.CelebrationMilestonesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const WorkExperienceEmploymentCardLazy = dynamic(
+  () => import("@/components/dashboard/work-experience-employment-card")
+    .then(mod => ({ default: mod.WorkExperienceEmploymentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const DeviceScreenTimeMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/device-screen-time-monitoring-card")
+    .then(mod => ({ default: mod.DeviceScreenTimeMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const FinancialLiteracySavingsCardLazy = dynamic(
+  () => import("@/components/dashboard/financial-literacy-savings-card")
+    .then(mod => ({ default: mod.FinancialLiteracySavingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const FirstAidMedicalEmergencyCardLazy = dynamic(
+  () => import("@/components/dashboard/first-aid-medical-emergency-card")
+    .then(mod => ({ default: mod.FirstAidMedicalEmergencyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const OutdoorSpacesPlayAreasCardLazy = dynamic(
+  () => import("@/components/dashboard/outdoor-spaces-play-areas-card")
+    .then(mod => ({ default: mod.OutdoorSpacesPlayAreasCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PositiveBehaviourReinforcementCardLazy = dynamic(
+  () => import("@/components/dashboard/positive-behaviour-reinforcement-card")
+    .then(mod => ({ default: mod.PositiveBehaviourReinforcementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const DentalOpticalHealthCardLazy = dynamic(
+  () => import("@/components/dashboard/dental-optical-health-card")
+    .then(mod => ({ default: mod.DentalOpticalHealthCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SelfEsteemConfidenceBuildingCardLazy = dynamic(
+  () => import("@/components/dashboard/self-esteem-confidence-building-card")
+    .then(mod => ({ default: mod.SelfEsteemConfidenceBuildingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ArrivalSettlingExperienceCardLazy = dynamic(
+  () => import("@/components/dashboard/arrival-settling-experience-card")
+    .then(mod => ({ default: mod.ArrivalSettlingExperienceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HealthyEatingCookingSkillsCardLazy = dynamic(
+  () => import("@/components/dashboard/healthy-eating-cooking-skills-card")
+    .then(mod => ({ default: mod.HealthyEatingCookingSkillsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const RelationshipEducationSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/relationship-education-safety-card")
+    .then(mod => ({ default: mod.RelationshipEducationSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PetCareResponsibilityCardLazy = dynamic(
+  () => import("@/components/dashboard/pet-care-responsibility-card")
+    .then(mod => ({ default: mod.PetCareResponsibilityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const GardenHorticultureActivitiesCardLazy = dynamic(
+  () => import("@/components/dashboard/garden-horticulture-activities-card")
+    .then(mod => ({ default: mod.GardenHorticultureActivitiesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const FaithSpiritualObservanceCardLazy = dynamic(
+  () => import("@/components/dashboard/faith-spiritual-observance-card")
+    .then(mod => ({ default: mod.FaithSpiritualObservanceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffPatternIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-pattern-intelligence-card")
+    .then(mod => ({ default: mod.StaffPatternIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffPerformanceDipCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-performance-dip-card")
+    .then(mod => ({ default: mod.StaffPerformanceDipCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffBurnoutIndicatorCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-burnout-indicator-card")
+    .then(mod => ({ default: mod.StaffBurnoutIndicatorCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffDevelopmentPlanCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-development-plan-card")
+    .then(mod => ({ default: mod.StaffDevelopmentPlanCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffSupportPlanCardLazy = dynamic(
+  () => import("@/components/dashboard/staffsupport-plan-card")
+    .then(mod => ({ default: mod.StaffSupportPlanCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffPracticeRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-practice-risk-assessment-card")
+    .then(mod => ({ default: mod.StaffPracticeRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffTriggerMapCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-trigger-map-card")
+    .then(mod => ({ default: mod.StaffTriggerMapCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffSupportActionCardLazy = dynamic(
+  () => import("@/components/dashboard/staffsupport-action-card")
+    .then(mod => ({ default: mod.StaffSupportActionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffReviewOutcomeCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-review-outcome-card")
+    .then(mod => ({ default: mod.StaffReviewOutcomeCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffConfidenceIndicatorCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-confidence-indicator-card")
+    .then(mod => ({ default: mod.StaffConfidenceIndicatorCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffMandatoryTrainingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-mandatory-training-card")
+    .then(mod => ({ default: mod.StaffMandatoryTrainingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const YoungPersonDailyDiaryCardLazy = dynamic(
+  () => import("@/components/dashboard/young-person-daily-diary-card")
+    .then(mod => ({ default: mod.YoungPersonDailyDiaryCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ProfessionalNetworkDirectoryCardLazy = dynamic(
+  () => import("@/components/dashboard/professional-network-directory-card")
+    .then(mod => ({ default: mod.ProfessionalNetworkDirectoryCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MenuPlanningDietaryCardLazy = dynamic(
+  () => import("@/components/dashboard/menu-planning-dietary-card")
+    .then(mod => ({ default: mod.MenuPlanningDietaryCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EhcpSendMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/ehcp-send-monitoring-card")
+    .then(mod => ({ default: mod.EhcpSendMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const PlacementMatchingAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/placement-matching-assessment-card")
+    .then(mod => ({ default: mod.PlacementMatchingAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const Reg44IndependentVisitorCardLazy = dynamic(
+  () => import("@/components/dashboard/reg44-independent-visitor-card")
+    .then(mod => ({ default: mod.Reg44IndependentVisitorCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EmotionalWellbeingOutcomeCardLazy = dynamic(
+  () => import("@/components/dashboard/emotional-wellbeing-outcome-card")
+    .then(mod => ({ default: mod.EmotionalWellbeingOutcomeCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ComplianceCertificateCardLazy = dynamic(
+  () => import("@/components/dashboard/compliancecertificate-card")
+    .then(mod => ({ default: mod.ComplianceCertificateCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeClosurePlanningCardLazy = dynamic(
+  () => import("@/components/dashboard/home-closure-planning-card")
+    .then(mod => ({ default: mod.HomeClosurePlanningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ParentalContactArrangementCardLazy = dynamic(
+  () => import("@/components/dashboard/parental-contact-arrangement-card")
+    .then(mod => ({ default: mod.ParentalContactArrangementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SafeguardingPartnershipCardLazy = dynamic(
+  () => import("@/components/dashboard/safeguarding-partnership-card")
+    .then(mod => ({ default: mod.SafeguardingPartnershipCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const LacHealthAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/lac-health-assessment-card")
+    .then(mod => ({ default: mod.LacHealthAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffWhistleblowingInvestigationCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-whistleblowing-investigation-card")
+    .then(mod => ({ default: mod.StaffWhistleblowingInvestigationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeAtmosphereAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/home-atmosphere-assessment-card")
+    .then(mod => ({ default: mod.HomeAtmosphereAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const QualityOfCareReviewCardLazy = dynamic(
+  () => import("@/components/dashboard/quality-of-care-review-card")
+    .then(mod => ({ default: mod.QualityOfCareReviewCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const MedicationIncidentReportingCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-incident-reporting-card")
+    .then(mod => ({ default: mod.MedicationIncidentReportingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffAnnualLeaveCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-annual-leave-card")
+    .then(mod => ({ default: mod.StaffAnnualLeaveCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildrensPocketMoneyAuditCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-pocket-money-audit-card")
+    .then(mod => ({ default: mod.ChildrensPocketMoneyAuditCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffConflictOfInterestCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-conflict-of-interest-card")
+    .then(mod => ({ default: mod.StaffConflictOfInterestCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const EnvironmentalImpactAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/environmental-impact-assessment-card")
+    .then(mod => ({ default: mod.EnvironmentalImpactAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffRetentionExitAnalysisCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-retention-exit-analysis-card")
+    .then(mod => ({ default: mod.StaffRetentionExitAnalysisCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildSexualExploitationRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-sexual-exploitation-risk-card")
+    .then(mod => ({ default: mod.ChildSexualExploitationRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const OfstedInspectionReadinessCardLazy = dynamic(
+  () => import("@/components/dashboard/ofsted-inspection-readiness-card")
+    .then(mod => ({ default: mod.OfstedInspectionReadinessCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const YoungPersonEmploymentSupportCardLazy = dynamic(
+  () => import("@/components/dashboard/young-person-employment-support-card")
+    .then(mod => ({ default: mod.YoungPersonEmploymentSupportCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const SleepDisturbanceInterventionCardLazy = dynamic(
+  () => import("@/components/dashboard/sleep-disturbance-intervention-card")
+    .then(mod => ({ default: mod.SleepDisturbanceInterventionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildCriminalExploitationRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/childcriminal-exploitation-risk-card")
+    .then(mod => ({ default: mod.ChildCriminalExploitationRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffSicknessManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/staffsickness-management-card")
+    .then(mod => ({ default: mod.StaffSicknessManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeInsuranceComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/home-insurance-compliance-card")
+    .then(mod => ({ default: mod.HomeInsuranceComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildVoiceParticipationTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/child-voice-participation-tracking-card")
+    .then(mod => ({ default: mod.ChildVoiceParticipationTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffCodeOfConductComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-code-of-conduct-compliance-card")
+    .then(mod => ({ default: mod.StaffCodeOfConductComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeEnergyEfficiencyCardLazy = dynamic(
+  () => import("@/components/dashboard/home-energy-efficiency-card")
+    .then(mod => ({ default: mod.HomeEnergyEfficiencyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildRadicalisationPreventionCardLazy = dynamic(
+  () => import("@/components/dashboard/child-radicalisation-prevention-card")
+    .then(mod => ({ default: mod.ChildRadicalisationPreventionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffNvqQualificationTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-nvq-qualification-tracking-card")
+    .then(mod => ({ default: mod.StaffNvqQualificationTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeAccessibilityAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/home-accessibility-assessment-card")
+    .then(mod => ({ default: mod.HomeAccessibilityAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildNutritionWeightMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/child-nutrition-weight-monitoring-card")
+    .then(mod => ({ default: mod.ChildNutritionWeightMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffDbsRenewalTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-dbs-renewal-tracking-card")
+    .then(mod => ({ default: mod.StaffDbsRenewalTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeFireRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/home-fire-risk-assessment-card")
+    .then(mod => ({ default: mod.HomeFireRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildSubstanceMisuseScreeningCardLazy = dynamic(
+  () => import("@/components/dashboard/child-substance-misuse-screening-card")
+    .then(mod => ({ default: mod.ChildSubstanceMisuseScreeningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffReturnToWorkInterviewCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-return-to-work-interview-card")
+    .then(mod => ({ default: mod.StaffReturnToWorkInterviewCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeLegionellaRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/home-legionella-risk-assessment-card")
+    .then(mod => ({ default: mod.HomeLegionellaRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildBereavementSupportCardLazy = dynamic(
+  () => import("@/components/dashboard/child-bereavement-support-card")
+    .then(mod => ({ default: mod.ChildBereavementSupportCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffMandatoryRefresherTrainingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-mandatory-refresher-training-card")
+    .then(mod => ({ default: mod.StaffMandatoryRefresherTrainingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeAsbestosManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/home-asbestos-management-card")
+    .then(mod => ({ default: mod.HomeAsbestosManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildGangsAffiliationRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-gangs-affiliation-risk-card")
+    .then(mod => ({ default: mod.ChildGangsAffiliationRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffAgencyWorkerComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-agency-worker-compliance-card")
+    .then(mod => ({ default: mod.StaffAgencyWorkerComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeRadonTestingCardLazy = dynamic(
+  () => import("@/components/dashboard/home-radon-testing-card")
+    .then(mod => ({ default: mod.HomeRadonTestingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildFgmRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/child-fgm-risk-assessment-card")
+    .then(mod => ({ default: mod.ChildFgmRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffProfessionalRegistrationCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-professional-registration-card")
+    .then(mod => ({ default: mod.StaffProfessionalRegistrationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeElectricalSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/home-electrical-safety-card")
+    .then(mod => ({ default: mod.HomeElectricalSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildForcedMarriageRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-forced-marriage-risk-card")
+    .then(mod => ({ default: mod.ChildForcedMarriageRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffSecondmentManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/staffsecondment-management-card")
+    .then(mod => ({ default: mod.StaffSecondmentManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeGasSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/home-gas-safety-card")
+    .then(mod => ({ default: mod.HomeGasSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildModernSlaveryRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-modern-slavery-risk-card")
+    .then(mod => ({ default: mod.ChildModernSlaveryRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffPayrollComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-payroll-compliance-card")
+    .then(mod => ({ default: mod.StaffPayrollComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeLiftEquipmentSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/home-lift-equipment-safety-card")
+    .then(mod => ({ default: mod.HomeLiftEquipmentSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildHonourBasedAbuseRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-honour-based-abuse-risk-card")
+    .then(mod => ({ default: mod.ChildHonourBasedAbuseRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffExitInterviewManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-exit-interview-management-card")
+    .then(mod => ({ default: mod.StaffExitInterviewManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeWaterHygieneManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/home-waterhygiene-management-card")
+    .then(mod => ({ default: mod.HomeWaterHygieneManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildRadicalisationRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-radicalisation-risk-card")
+    .then(mod => ({ default: mod.ChildRadicalisationRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffWhistleblowingManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-whistleblowing-management-card")
+    .then(mod => ({ default: mod.StaffWhistleblowingManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomePestControlManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/home-pest-control-management-card")
+    .then(mod => ({ default: mod.HomePestControlManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildTraffickingRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-trafficking-risk-card")
+    .then(mod => ({ default: mod.ChildTraffickingRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffOvertimeManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-overtime-management-card")
+    .then(mod => ({ default: mod.StaffOvertimeManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeCctvComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/home-cctv-compliance-card")
+    .then(mod => ({ default: mod.HomeCctvComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const ChildOnlineSafetyMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/child-online-safety-monitoring-card")
+    .then(mod => ({ default: mod.ChildOnlineSafetyMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const StaffLoneWorkingRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-lone-working-risk-card")
+    .then(mod => ({ default: mod.StaffLoneWorkingRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+const HomeEmergencyLightingCardLazy = dynamic(
+  () => import("@/components/dashboard/home-emergency-lighting-card")
+    .then(mod => ({ default: mod.HomeEmergencyLightingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
   useAttentionItems,
   useUpdateAttentionItem,
   useLearningReviews,
@@ -1136,300 +2317,300 @@ export default function ManagerControlCentrePage() {
         <CardErrorBoundary><ContactEngagementCard /></CardErrorBoundary>
         <CardErrorBoundary><EducationIntelligenceCard /></CardErrorBoundary>
         <CardErrorBoundary><HealthWellbeingCard /></CardErrorBoundary>
-        <CardErrorBoundary><MissingFromCareCard /></CardErrorBoundary>
-        <CardErrorBoundary><ComplaintsNotificationsCard /></CardErrorBoundary>
-        <CardErrorBoundary><PlacementIntelligenceCard /></CardErrorBoundary>
-        <CardErrorBoundary><BehaviourIntelligenceCard /></CardErrorBoundary>
-        <CardErrorBoundary><RotaIntelligenceCard /></CardErrorBoundary>
-        <CardErrorBoundary><PremisesIntelligenceCard /></CardErrorBoundary>
-        <CardErrorBoundary><TrainingIntelligenceCard /></CardErrorBoundary>
-        <CardErrorBoundary><FinanceIntelligenceCard /></CardErrorBoundary>
-        <CardErrorBoundary><LifeSkillsCard /></CardErrorBoundary>
-        <CardErrorBoundary><NotifiableEventsCard /></CardErrorBoundary>
-        <CardErrorBoundary><SCCIFEvaluationCard /></CardErrorBoundary>
-        <CardErrorBoundary><VisitorsCard /></CardErrorBoundary>
-        <CardErrorBoundary><OutcomesCard /></CardErrorBoundary>
-        <CardErrorBoundary><HandoverCard /></CardErrorBoundary>
-        <CardErrorBoundary><AppraisalsCard /></CardErrorBoundary>
-        <CardErrorBoundary><MeetingsCard /></CardErrorBoundary>
-        <CardErrorBoundary><RestraintCard /></CardErrorBoundary>
-        <CardErrorBoundary><QualityAssuranceCard /></CardErrorBoundary>
-        <CardErrorBoundary><PossessionsCard /></CardErrorBoundary>
-        <CardErrorBoundary><EmergencyCard /></CardErrorBoundary>
-        <CardErrorBoundary><SaferRecruitmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><LeavingCareCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffDisciplinaryCard /></CardErrorBoundary>
-        <CardErrorBoundary><SanctionsRewardsCard /></CardErrorBoundary>
-        <CardErrorBoundary><ContextualSafeguardingCard /></CardErrorBoundary>
-        <CardErrorBoundary><DeprivationOfLibertyCard /></CardErrorBoundary>
-        <CardErrorBoundary><WhistleblowingCard /></CardErrorBoundary>
-        <CardErrorBoundary><PoliciesRegisterCard /></CardErrorBoundary>
-        <CardErrorBoundary><AdvocacyCard /></CardErrorBoundary>
-        <CardErrorBoundary><MultiAgencyCard /></CardErrorBoundary>
-        <CardErrorBoundary><NightMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><CulturalIdentityCard /></CardErrorBoundary>
-        <CardErrorBoundary><SubstanceMisuseCard /></CardErrorBoundary>
-        <CardErrorBoundary><IndependentVisitorsCard /></CardErrorBoundary>
-        <CardErrorBoundary><BusinessContinuityCard /></CardErrorBoundary>
-        <CardErrorBoundary><StatementOfPurposeCard /></CardErrorBoundary>
-        <CardErrorBoundary><Reg45ReportsCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensGuideCard /></CardErrorBoundary>
-        <CardErrorBoundary><TransitionPlanningCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensParticipationCard /></CardErrorBoundary>
-        <CardErrorBoundary><FoodNutritionCard /></CardErrorBoundary>
-        <CardErrorBoundary><PocketMoneyCard /></CardErrorBoundary>
-        <CardErrorBoundary><EnvironmentalSafetyCard /></CardErrorBoundary>
-        <CardErrorBoundary><RecordsManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><SleepPatternsCard /></CardErrorBoundary>
-        <CardErrorBoundary><StakeholderEngagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><ImpactRiskAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffWellbeingCard /></CardErrorBoundary>
-        <CardErrorBoundary><KpiTrackingCard /></CardErrorBoundary>
-        <CardErrorBoundary><ProfessionalDevelopmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><TherapeuticInterventionsCard /></CardErrorBoundary>
-        <CardErrorBoundary><WorkforcePlanningCard /></CardErrorBoundary>
-        <CardErrorBoundary><CarePlanningCard /></CardErrorBoundary>
-        <CardErrorBoundary><FamilyEngagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><CommissioningReferralsCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensRightsCard /></CardErrorBoundary>
-        <CardErrorBoundary><PracticeLearningCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffAbsenceCard /></CardErrorBoundary>
-        <CardErrorBoundary><ActivityPlanningCard /></CardErrorBoundary>
-        <CardErrorBoundary><OnlineSafetyCard /></CardErrorBoundary>
-        <CardErrorBoundary><LACReviewCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffInductionCard /></CardErrorBoundary>
-        <CardErrorBoundary><DutyOfCandourCard /></CardErrorBoundary>
-        <CardErrorBoundary><AntiBullyingCard /></CardErrorBoundary>
-        <CardErrorBoundary><ConsentManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><SignificantEventsCard /></CardErrorBoundary>
-        <CardErrorBoundary><LegalStatusCard /></CardErrorBoundary>
-        <CardErrorBoundary><BodyMapCard /></CardErrorBoundary>
-        <CardErrorBoundary><KeyDocumentsCard /></CardErrorBoundary>
-        <CardErrorBoundary><PlacementStabilityCard /></CardErrorBoundary>
-        <CardErrorBoundary><ProviderVisitsCard /></CardErrorBoundary>
-        <CardErrorBoundary><MatchingReferralCard /></CardErrorBoundary>
-        <CardErrorBoundary><IndependencePreparationCard /></CardErrorBoundary>
-        <CardErrorBoundary><SensoryProfileCard /></CardErrorBoundary>
-        <CardErrorBoundary><PeerMentoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><ContactMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><AttachmentRelationshipsCard /></CardErrorBoundary>
-        <CardErrorBoundary><DiversityInclusionCard /></CardErrorBoundary>
-        <CardErrorBoundary><EmergencyPlacementCard /></CardErrorBoundary>
-        <CardErrorBoundary><CourtProceedingsCard /></CardErrorBoundary>
-        <CardErrorBoundary><BehaviourSupportPlansCard /></CardErrorBoundary>
-        <CardErrorBoundary><DischargeTransitionCard /></CardErrorBoundary>
-        <CardErrorBoundary><MedicationErrorsCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensAchievementsCard /></CardErrorBoundary>
-        <CardErrorBoundary><RiskRegisterCard /></CardErrorBoundary>
-        <CardErrorBoundary><DelegatedAuthorityCard /></CardErrorBoundary>
-        <CardErrorBoundary><LanguageCommunicationCard /></CardErrorBoundary>
-        <CardErrorBoundary><IndividualRiskAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><ParentalResponsibilityCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensWishesFeelingsCard /></CardErrorBoundary>
-        <CardErrorBoundary><DailyRoutineCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildExploitationScreeningCard /></CardErrorBoundary>
-        <CardErrorBoundary><TraumaInformedCareCard /></CardErrorBoundary>
-        <CardErrorBoundary><RespiteShortBreaksCard /></CardErrorBoundary>
-        <CardErrorBoundary><MedicationAdministrationCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffSupervisionSessionsCard /></CardErrorBoundary>
-        <CardErrorBoundary><FireSafetyCard /></CardErrorBoundary>
-        <CardErrorBoundary><SecureStorageCard /></CardErrorBoundary>
-        <CardErrorBoundary><ComplaintsInvestigationCard /></CardErrorBoundary>
-        <CardErrorBoundary><WorkforceDiversityCard /></CardErrorBoundary>
-        <CardErrorBoundary><VisitorManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><EmergencyAdmissionsCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffGrievanceCard /></CardErrorBoundary>
-        <CardErrorBoundary><EqualityHumanRightsCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensFundManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffAttendanceCard /></CardErrorBoundary>
-        <CardErrorBoundary><AllegationManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><TransportSafetyCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffTeamMeetingsCard /></CardErrorBoundary>
-        <CardErrorBoundary><CctvSurveillanceCard /></CardErrorBoundary>
-        <CardErrorBoundary><MealtimesNutritionCard /></CardErrorBoundary>
-        <CardErrorBoundary><BuildingSecurityCard /></CardErrorBoundary>
-        <CardErrorBoundary><WaterSafetyCard /></CardErrorBoundary>
-        <CardErrorBoundary><InfectionControlCard /></CardErrorBoundary>
-        <CardErrorBoundary><MaintenanceRepairsCard /></CardErrorBoundary>
-        <CardErrorBoundary><GiftsHospitalityCard /></CardErrorBoundary>
-        <CardErrorBoundary><BedroomAuditCard /></CardErrorBoundary>
-        <CardErrorBoundary><LaundryClothingCard /></CardErrorBoundary>
-        <CardErrorBoundary><EmergencyDrillCard /></CardErrorBoundary>
-        <CardErrorBoundary><HealthAppointmentsCard /></CardErrorBoundary>
-        <CardErrorBoundary><CommunalAreaAuditCard /></CardErrorBoundary>
-        <CardErrorBoundary><NotificationsRegisterCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffExitInterviewsCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensMeetingsCard /></CardErrorBoundary>
-        <CardErrorBoundary><HolidayTripsCard /></CardErrorBoundary>
-        <CardErrorBoundary><DataProtectionCard /></CardErrorBoundary>
-        <CardErrorBoundary><PanelDecisionsCard /></CardErrorBoundary>
-        <CardErrorBoundary><VehicleManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><PestControlCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensFeedbackCard /></CardErrorBoundary>
-        <CardErrorBoundary><UtilityManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><VolunteerManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><RoomTemperatureCard /></CardErrorBoundary>
-        <CardErrorBoundary><MedicationAuditCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensAbsenceCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeImprovementCard /></CardErrorBoundary>
-        <CardErrorBoundary><CleaningScheduleCard /></CardErrorBoundary>
-        <CardErrorBoundary><KeyHoldingCard /></CardErrorBoundary>
-        <CardErrorBoundary><PersonalHygieneCard /></CardErrorBoundary>
-        <CardErrorBoundary><MissingPersonRiskCard /></CardErrorBoundary>
-        <CardErrorBoundary><SafeguardingReferralCard /></CardErrorBoundary>
-        <CardErrorBoundary><MedicationStorageCard /></CardErrorBoundary>
-        <CardErrorBoundary><AdmissionAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffCompetencyAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><EnvironmentalAuditCard /></CardErrorBoundary>
-        <CardErrorBoundary><ProfessionalConsultationCard /></CardErrorBoundary>
-        <CardErrorBoundary><OfstedActionPlanCard /></CardErrorBoundary>
-        <CardErrorBoundary><LifeStoryWorkCard /></CardErrorBoundary>
-        <CardErrorBoundary><PositiveHandlingCard /></CardErrorBoundary>
-        <CardErrorBoundary><ShiftHandoverQualityCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensProgressTrackingCard /></CardErrorBoundary>
-        <CardErrorBoundary><KeyworkerSessionsCard /></CardErrorBoundary>
-        <CardErrorBoundary><RestraintDebriefCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffReflectivePracticeCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffHandoverNotesCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildRiskAssessmentReviewCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeDecorationPersonalisationCard /></CardErrorBoundary>
-        <CardErrorBoundary><MedicationConsentCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffLoneWorkingCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensTherapySessionsCard /></CardErrorBoundary>
-        <CardErrorBoundary><NightWakingMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><CommunityLinksIntegrationCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffMedicationCompetencyCard /></CardErrorBoundary>
-        <CardErrorBoundary><BoundaryManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><InternetUsageMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><SleepQualityAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><CulturalIdentitySupportCard /></CardErrorBoundary>
-        <CardErrorBoundary><PocketMoneyManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildWellbeingCheckinCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffDebriefSupportCard /></CardErrorBoundary>
-        <CardErrorBoundary><EducationAttendanceTrackingCard /></CardErrorBoundary>
-        <CardErrorBoundary><ContactSupervisionCard /></CardErrorBoundary>
-        <CardErrorBoundary><SelfHarmRiskMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><RoomSharingAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><MedicationSideEffectsCard /></CardErrorBoundary>
-        <CardErrorBoundary><PeerRelationshipAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeEnvironmentInspectionCard /></CardErrorBoundary>
-        <CardErrorBoundary><ComplaintResolutionTrackingCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffSupervisionComplianceCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildDevelopmentMilestoneCard /></CardErrorBoundary>
-        <CardErrorBoundary><VisitorFeedbackCollectionCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffShiftPatternMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildDigitalWellbeingCard /></CardErrorBoundary>
-        <CardErrorBoundary><FamilyEngagementTrackingCard /></CardErrorBoundary>
-        <CardErrorBoundary><TransitionPlanningReadinessCard /></CardErrorBoundary>
-        <CardErrorBoundary><KeyWorkerAllocationCard /></CardErrorBoundary>
-        <CardErrorBoundary><ConsentCapacityMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><BehaviourPatternAnalysisCard /></CardErrorBoundary>
-        <CardErrorBoundary><PhysicalActivityTrackingCard /></CardErrorBoundary>
-        <CardErrorBoundary><ReligiousCulturalObservanceCard /></CardErrorBoundary>
-        <CardErrorBoundary><SiblingContactQualityCard /></CardErrorBoundary>
-        <CardErrorBoundary><PrivacyDignityMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensAspirationsGoalsCard /></CardErrorBoundary>
-        <CardErrorBoundary><CreativeEnrichmentActivitiesCard /></CardErrorBoundary>
-        <CardErrorBoundary><MedicationEffectivenessReviewCard /></CardErrorBoundary>
-        <CardErrorBoundary><HealthScreeningImmunisationCard /></CardErrorBoundary>
-        <CardErrorBoundary><SocialSkillsDevelopmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><RestorativeJusticePracticeCard /></CardErrorBoundary>
-        <CardErrorBoundary><LeisureRecreationActivitiesCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeworkAcademicSupportCard /></CardErrorBoundary>
-        <CardErrorBoundary><AdvocacyRepresentationCard /></CardErrorBoundary>
-        <CardErrorBoundary><CelebrationMilestonesCard /></CardErrorBoundary>
-        <CardErrorBoundary><WorkExperienceEmploymentCard /></CardErrorBoundary>
-        <CardErrorBoundary><DeviceScreenTimeMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><FinancialLiteracySavingsCard /></CardErrorBoundary>
-        <CardErrorBoundary><FirstAidMedicalEmergencyCard /></CardErrorBoundary>
-        <CardErrorBoundary><OutdoorSpacesPlayAreasCard /></CardErrorBoundary>
-        <CardErrorBoundary><PositiveBehaviourReinforcementCard /></CardErrorBoundary>
-        <CardErrorBoundary><DentalOpticalHealthCard /></CardErrorBoundary>
-        <CardErrorBoundary><SelfEsteemConfidenceBuildingCard /></CardErrorBoundary>
-        <CardErrorBoundary><ArrivalSettlingExperienceCard /></CardErrorBoundary>
-        <CardErrorBoundary><HealthyEatingCookingSkillsCard /></CardErrorBoundary>
-        <CardErrorBoundary><RelationshipEducationSafetyCard /></CardErrorBoundary>
-        <CardErrorBoundary><PetCareResponsibilityCard /></CardErrorBoundary>
-        <CardErrorBoundary><GardenHorticultureActivitiesCard /></CardErrorBoundary>
-        <CardErrorBoundary><FaithSpiritualObservanceCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffPatternIntelligenceCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffPerformanceDipCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffBurnoutIndicatorCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffDevelopmentPlanCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffSupportPlanCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffPracticeRiskAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffTriggerMapCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffSupportActionCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffReviewOutcomeCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffConfidenceIndicatorCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffMandatoryTrainingCard /></CardErrorBoundary>
-        <CardErrorBoundary><YoungPersonDailyDiaryCard /></CardErrorBoundary>
-        <CardErrorBoundary><ProfessionalNetworkDirectoryCard /></CardErrorBoundary>
-        <CardErrorBoundary><MenuPlanningDietaryCard /></CardErrorBoundary>
-        <CardErrorBoundary><EhcpSendMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><PlacementMatchingAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><Reg44IndependentVisitorCard /></CardErrorBoundary>
-        <CardErrorBoundary><EmotionalWellbeingOutcomeCard /></CardErrorBoundary>
-        <CardErrorBoundary><ComplianceCertificateCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeClosurePlanningCard /></CardErrorBoundary>
-        <CardErrorBoundary><ParentalContactArrangementCard /></CardErrorBoundary>
-        <CardErrorBoundary><SafeguardingPartnershipCard /></CardErrorBoundary>
-        <CardErrorBoundary><LacHealthAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffWhistleblowingInvestigationCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeAtmosphereAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><QualityOfCareReviewCard /></CardErrorBoundary>
-        <CardErrorBoundary><MedicationIncidentReportingCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffAnnualLeaveCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildrensPocketMoneyAuditCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffConflictOfInterestCard /></CardErrorBoundary>
-        <CardErrorBoundary><EnvironmentalImpactAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffRetentionExitAnalysisCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildSexualExploitationRiskCard /></CardErrorBoundary>
-        <CardErrorBoundary><OfstedInspectionReadinessCard /></CardErrorBoundary>
-        <CardErrorBoundary><YoungPersonEmploymentSupportCard /></CardErrorBoundary>
-        <CardErrorBoundary><SleepDisturbanceInterventionCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildCriminalExploitationRiskCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffSicknessManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeInsuranceComplianceCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildVoiceParticipationTrackingCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffCodeOfConductComplianceCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeEnergyEfficiencyCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildRadicalisationPreventionCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffNvqQualificationTrackingCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeAccessibilityAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildNutritionWeightMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffDbsRenewalTrackingCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeFireRiskAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildSubstanceMisuseScreeningCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffReturnToWorkInterviewCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeLegionellaRiskAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildBereavementSupportCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffMandatoryRefresherTrainingCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeAsbestosManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildGangsAffiliationRiskCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffAgencyWorkerComplianceCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeRadonTestingCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildFgmRiskAssessmentCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffProfessionalRegistrationCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeElectricalSafetyCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildForcedMarriageRiskCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffSecondmentManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeGasSafetyCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildModernSlaveryRiskCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffPayrollComplianceCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeLiftEquipmentSafetyCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildHonourBasedAbuseRiskCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffExitInterviewManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeWaterHygieneManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildRadicalisationRiskCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffWhistleblowingManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomePestControlManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildTraffickingRiskCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffOvertimeManagementCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeCctvComplianceCard /></CardErrorBoundary>
-        <CardErrorBoundary><ChildOnlineSafetyMonitoringCard /></CardErrorBoundary>
-        <CardErrorBoundary><StaffLoneWorkingRiskCard /></CardErrorBoundary>
-        <CardErrorBoundary><HomeEmergencyLightingCard /></CardErrorBoundary>
+        <CardErrorBoundary><MissingFromCareCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ComplaintsNotificationsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PlacementIntelligenceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><BehaviourIntelligenceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><RotaIntelligenceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PremisesIntelligenceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><TrainingIntelligenceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><FinanceIntelligenceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><LifeSkillsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><NotifiableEventsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SCCIFEvaluationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><VisitorsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><OutcomesCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HandoverCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><AppraisalsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MeetingsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><RestraintCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><QualityAssuranceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PossessionsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EmergencyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SaferRecruitmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><LeavingCareCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffDisciplinaryCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SanctionsRewardsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ContextualSafeguardingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><DeprivationOfLibertyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><WhistleblowingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PoliciesRegisterCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><AdvocacyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MultiAgencyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><NightMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CulturalIdentityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SubstanceMisuseCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><IndependentVisitorsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><BusinessContinuityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StatementOfPurposeCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><Reg45ReportsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensGuideCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><TransitionPlanningCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensParticipationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><FoodNutritionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PocketMoneyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EnvironmentalSafetyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><RecordsManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SleepPatternsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StakeholderEngagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ImpactRiskAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffWellbeingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><KpiTrackingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ProfessionalDevelopmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><TherapeuticInterventionsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><WorkforcePlanningCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CarePlanningCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><FamilyEngagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CommissioningReferralsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensRightsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PracticeLearningCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffAbsenceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ActivityPlanningCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><OnlineSafetyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><LACReviewCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffInductionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><DutyOfCandourCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><AntiBullyingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ConsentManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SignificantEventsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><LegalStatusCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><BodyMapCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><KeyDocumentsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PlacementStabilityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ProviderVisitsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MatchingReferralCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><IndependencePreparationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SensoryProfileCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PeerMentoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ContactMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><AttachmentRelationshipsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><DiversityInclusionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EmergencyPlacementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CourtProceedingsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><BehaviourSupportPlansCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><DischargeTransitionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MedicationErrorsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensAchievementsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><RiskRegisterCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><DelegatedAuthorityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><LanguageCommunicationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><IndividualRiskAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ParentalResponsibilityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensWishesFeelingsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><DailyRoutineCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildExploitationScreeningCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><TraumaInformedCareCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><RespiteShortBreaksCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MedicationAdministrationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffSupervisionSessionsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><FireSafetyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SecureStorageCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ComplaintsInvestigationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><WorkforceDiversityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><VisitorManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EmergencyAdmissionsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffGrievanceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EqualityHumanRightsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensFundManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffAttendanceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><AllegationManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><TransportSafetyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffTeamMeetingsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CctvSurveillanceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MealtimesNutritionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><BuildingSecurityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><WaterSafetyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><InfectionControlCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MaintenanceRepairsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><GiftsHospitalityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><BedroomAuditCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><LaundryClothingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EmergencyDrillCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HealthAppointmentsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CommunalAreaAuditCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><NotificationsRegisterCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffExitInterviewsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensMeetingsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HolidayTripsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><DataProtectionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PanelDecisionsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><VehicleManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PestControlCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensFeedbackCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><UtilityManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><VolunteerManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><RoomTemperatureCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MedicationAuditCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensAbsenceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeImprovementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CleaningScheduleCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><KeyHoldingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PersonalHygieneCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MissingPersonRiskCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SafeguardingReferralCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MedicationStorageCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><AdmissionAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffCompetencyAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EnvironmentalAuditCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ProfessionalConsultationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><OfstedActionPlanCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><LifeStoryWorkCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PositiveHandlingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ShiftHandoverQualityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensProgressTrackingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><KeyworkerSessionsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><RestraintDebriefCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffReflectivePracticeCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffHandoverNotesCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildRiskAssessmentReviewCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeDecorationPersonalisationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MedicationConsentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffLoneWorkingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensTherapySessionsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><NightWakingMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CommunityLinksIntegrationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffMedicationCompetencyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><BoundaryManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><InternetUsageMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SleepQualityAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CulturalIdentitySupportCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PocketMoneyManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildWellbeingCheckinCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffDebriefSupportCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EducationAttendanceTrackingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ContactSupervisionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SelfHarmRiskMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><RoomSharingAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MedicationSideEffectsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PeerRelationshipAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeEnvironmentInspectionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ComplaintResolutionTrackingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffSupervisionComplianceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildDevelopmentMilestoneCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><VisitorFeedbackCollectionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffShiftPatternMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildDigitalWellbeingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><FamilyEngagementTrackingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><TransitionPlanningReadinessCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><KeyWorkerAllocationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ConsentCapacityMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><BehaviourPatternAnalysisCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PhysicalActivityTrackingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ReligiousCulturalObservanceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SiblingContactQualityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PrivacyDignityMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensAspirationsGoalsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CreativeEnrichmentActivitiesCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MedicationEffectivenessReviewCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HealthScreeningImmunisationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SocialSkillsDevelopmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><RestorativeJusticePracticeCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><LeisureRecreationActivitiesCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeworkAcademicSupportCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><AdvocacyRepresentationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><CelebrationMilestonesCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><WorkExperienceEmploymentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><DeviceScreenTimeMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><FinancialLiteracySavingsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><FirstAidMedicalEmergencyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><OutdoorSpacesPlayAreasCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PositiveBehaviourReinforcementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><DentalOpticalHealthCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SelfEsteemConfidenceBuildingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ArrivalSettlingExperienceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HealthyEatingCookingSkillsCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><RelationshipEducationSafetyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PetCareResponsibilityCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><GardenHorticultureActivitiesCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><FaithSpiritualObservanceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffPatternIntelligenceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffPerformanceDipCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffBurnoutIndicatorCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffDevelopmentPlanCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffSupportPlanCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffPracticeRiskAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffTriggerMapCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffSupportActionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffReviewOutcomeCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffConfidenceIndicatorCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffMandatoryTrainingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><YoungPersonDailyDiaryCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ProfessionalNetworkDirectoryCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MenuPlanningDietaryCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EhcpSendMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><PlacementMatchingAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><Reg44IndependentVisitorCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EmotionalWellbeingOutcomeCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ComplianceCertificateCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeClosurePlanningCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ParentalContactArrangementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SafeguardingPartnershipCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><LacHealthAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffWhistleblowingInvestigationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeAtmosphereAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><QualityOfCareReviewCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><MedicationIncidentReportingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffAnnualLeaveCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildrensPocketMoneyAuditCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffConflictOfInterestCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><EnvironmentalImpactAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffRetentionExitAnalysisCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildSexualExploitationRiskCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><OfstedInspectionReadinessCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><YoungPersonEmploymentSupportCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><SleepDisturbanceInterventionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildCriminalExploitationRiskCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffSicknessManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeInsuranceComplianceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildVoiceParticipationTrackingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffCodeOfConductComplianceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeEnergyEfficiencyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildRadicalisationPreventionCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffNvqQualificationTrackingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeAccessibilityAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildNutritionWeightMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffDbsRenewalTrackingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeFireRiskAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildSubstanceMisuseScreeningCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffReturnToWorkInterviewCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeLegionellaRiskAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildBereavementSupportCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffMandatoryRefresherTrainingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeAsbestosManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildGangsAffiliationRiskCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffAgencyWorkerComplianceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeRadonTestingCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildFgmRiskAssessmentCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffProfessionalRegistrationCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeElectricalSafetyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildForcedMarriageRiskCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffSecondmentManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeGasSafetyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildModernSlaveryRiskCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffPayrollComplianceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeLiftEquipmentSafetyCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildHonourBasedAbuseRiskCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffExitInterviewManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeWaterHygieneManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildRadicalisationRiskCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffWhistleblowingManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomePestControlManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildTraffickingRiskCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffOvertimeManagementCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeCctvComplianceCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><ChildOnlineSafetyMonitoringCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><StaffLoneWorkingRiskCardLazy /></CardErrorBoundary>
+        <CardErrorBoundary><HomeEmergencyLightingCardLazy /></CardErrorBoundary>
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
