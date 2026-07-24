@@ -21,6 +21,8 @@
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
+import { meanOf } from "@/lib/metrics/rate";
+
 export type ComplaintStatus = "open" | "investigating" | "resolved" | "escalated" | "withdrawn";
 
 export type ComplaintCategory =
@@ -80,11 +82,11 @@ export interface ComplaintsInput {
 
 export interface ComplaintsAssessment {
   childName: string;
-  overallScore: number;
-  overallRating: "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate";
+  overallScore: number | null;
+  overallRating: "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" | null;
   accessibilityScore: number;
-  responsivenessScore: number;
-  resolutionScore: number;
+  responsivenessScore: number | null;
+  resolutionScore: number | null;
   voiceScore: number;
   totalComplaints: number;
   openComplaints: number;
@@ -166,12 +168,7 @@ export function analyseComplaints(input: ComplaintsInput): ComplaintsAssessment 
   const voiceScore = scoreVoice(input, complaints);
 
   // ── Overall ───────────────────────────────────────────────────────────
-  const overallScore = Math.round(
-    accessibilityScore * 0.25 +
-    responsivenessScore * 0.25 +
-    resolutionScore * 0.25 +
-    voiceScore * 0.25
-  );
+  const overallScore = meanOf([accessibilityScore, responsivenessScore, resolutionScore, voiceScore]);
   const overallRating = scoreToRating(overallScore);
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -255,8 +252,8 @@ function scoreAccessibility(input: ComplaintsInput): number {
   return Math.min(100, score);
 }
 
-function scoreResponsiveness(complaints: Complaint[]): number {
-  if (complaints.length === 0) return 100;
+function scoreResponsiveness(complaints: Complaint[]): number | null {
+  if (complaints.length === 0) return null;
 
   let total = 0;
   for (const c of complaints) {
@@ -269,8 +266,8 @@ function scoreResponsiveness(complaints: Complaint[]): number {
   return Math.round(total / complaints.length);
 }
 
-function scoreResolution(complaints: Complaint[], avgDays: number, satisfactionRate: number): number {
-  if (complaints.length === 0) return 100;
+function scoreResolution(complaints: Complaint[], avgDays: number, satisfactionRate: number): number | null {
+  if (complaints.length === 0) return null;
 
   let score = 100;
 
@@ -627,19 +624,21 @@ function buildSummary(
   total: number,
   open: number,
   avgDays: number,
-  rating: string,
+  rating: string | null,
 ): string {
   if (total === 0) {
     return `${childName}: No complaints recorded. Complaints process should remain accessible and child encouraged to raise concerns.`;
   }
   const openDesc = open > 0 ? `${open} currently open.` : "All resolved.";
   const timeDesc = avgDays > 0 ? `Average resolution: ${avgDays} days.` : "";
-  return `${childName}: ${total} complaint${total > 1 ? "s" : ""} recorded. ${openDesc} ${timeDesc} Rating: ${rating.replace(/_/g, " ")}.`.trim();
+  const ratingDesc = rating ? ` Rating: ${rating.replace(/_/g, " ")}.` : "";
+  return `${childName}: ${total} complaint${total > 1 ? "s" : ""} recorded. ${openDesc} ${timeDesc}${ratingDesc}`.trim();
 }
 
 // ── Utility ─────────────────────────────────────────────────────────────────
 
-function scoreToRating(score: number): "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" {
+function scoreToRating(score: number | null): "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" | null {
+  if (score === null) return null;
   if (score >= 85) return "excellent";
   if (score >= 70) return "good";
   if (score >= 55) return "adequate";

@@ -76,6 +76,61 @@ const ALLOWED = new Map([
     "src/lib/cara-practice/cara-practice-engine.ts:protective:100",
     "detectProtectiveFactors matches WEAK_PROTECTIVE, so zero hits means no unevidenced protective claims were made — guarded by the same empty-record null return",
   ],
+
+  // ── Statement-form leaves ───────────────────────────────────────────────────
+  // Sites the EMPTY_RETURN matcher flags that are NOT the bug: a score is only
+  // fabricated when it claims QUALITY/COMPLIANCE from an empty population. The
+  // entries below either measure adverse-event FREQUENCY (zero events is a real
+  // positive), guard a numeric divide-by-zero, apply a documented neutral
+  // default, mark a genuinely not-applicable case, or aren't a care score at
+  // all. Each was read and judged; the handling/compliance ones were converted
+  // to null in the same change rather than allowlisted.
+  [
+    "src/lib/cara/missing-episodes-intelligence.ts:total:100",
+    "scoreFrequency is inverse-frequency (fewer episodes = higher score); zero missing episodes is the safest real outcome, not absent data",
+  ],
+  [
+    "src/lib/cara/safeguarding-intelligence.ts:count:100",
+    "scoreMissing/scoreRestraint are inverse-frequency: zero missing/restraint events is a genuine positive, consistent with how Cara scores adverse-event frequency elsewhere",
+  ],
+  [
+    "src/lib/cara/health-appointments-intelligence.ts:overdue.length:100",
+    "scoreTimeliness: nothing overdue genuinely IS timely — inverse-frequency, not absence of data (attendance-rate, which IS handling, was converted to null)",
+  ],
+  [
+    "src/lib/cara/sanctions-rewards-intelligence.ts:sanctions.length:100",
+    "scoreProportionality: no sanctions issued means none were disproportionate — inverse-frequency",
+  ],
+  [
+    "src/lib/cara/emotional-wellbeing-intelligence.ts:needsTherapy:90",
+    "no therapeutic need identified (no referral, no abnormal SDQ, no self-harm) is a real clinical finding, not absent data",
+  ],
+  [
+    "src/lib/cara/family-contact-intelligence.ts:requirements.length:75",
+    "no contact-plan requirement recorded = nothing to comply against; neutral by design (a child may have no family-contact order)",
+  ],
+  [
+    "src/lib/cara/outcome-tracker.ts:ind.target:100",
+    "divide-by-zero guard on a numeric target (ind.target === 0), not an empty collection; a zero-target indicator is vacuously met",
+  ],
+  [
+    "src/lib/recording-quality/recording-quality-engine.ts:isRiskRelated:100",
+    "scoreRiskRelevance: a record that is not risk-related is not-applicable and must not be dragged down — not a fabricated quality claim",
+  ],
+  [
+    "src/lib/command-palette/rank.ts:wordStart:76",
+    "search-relevance ranking (word-boundary match scores 76), not a care-quality score",
+  ],
+  // oversight/scoring.ts: documented neutral defaults (no checks ⇒ 60), and a
+  // vacuously-complete referral score (nothing required ⇒ complete). 60 is a
+  // warn-band midpoint, not a flattering pass.
+  ["src/lib/oversight/scoring.ts:checks.length:60", "boolScore documented neutral default: no checks ⇒ 60 (warn midpoint, not a pass)"],
+  ["src/lib/oversight/scoring.ts:parts.length:60", "composite of neutral sub-scores ⇒ 60 when no parts measured"],
+  ["src/lib/oversight/scoring.ts:pa:60", "neutral 60 default when the sub-score input is absent"],
+  ["src/lib/oversight/scoring.ts:pc:60", "neutral 60 default when the sub-score input is absent"],
+  ["src/lib/oversight/scoring.ts:pr:60", "neutral 60 default when the sub-score input is absent"],
+  ["src/lib/oversight/scoring.ts:wf:60", "neutral 60 default when the sub-score input is absent"],
+  ["src/lib/oversight/scoring.ts:required.length:100", "referralCompletionScore: nothing required ⇒ vacuously complete"],
 ]);
 
 function walk(dir, out = []) {
@@ -98,13 +153,20 @@ function walk(dir, out = []) {
 const NON_EMPTY_TERNARY = /(\w+(?:\.\w+)*)\.length\s*(?:>\s*0\s*)?\?[\s\S]{0,220}?:\s*(\d{2,3})\b/g;
 // `xs.length === 0 ? 92 : <computed>`
 const EMPTY_TERNARY = /(\w+(?:\.\w+)*)\.length\s*===?\s*0\s*\?\s*(\d{2,3})\b/g;
+// Statement form of the same lie, which the ternary matchers miss:
+//   if (xs.length === 0) return 100;   /   if (!xs.length) return 90;
+// A score function that early-returns a flattering literal for an empty
+// population is fabricating exactly as `xs.length ? … : 100` does — it just
+// spells it with `if`/`return`. Bounded, single-line, so it cannot swallow an
+// unrelated later return.
+const EMPTY_RETURN = /if\s*\(\s*!?\s*(\w+(?:\.\w+)*)(?:\.length)?\s*(?:===?\s*0|<\s*1)?\s*\)\s*return\s+(\d{2,3})\s*;/g;
 
 const found = [];
 for (const dir of SCAN_DIRS) {
   for (const file of walk(dir)) {
     const src = fs.readFileSync(file, "utf8");
     const rel = path.relative(ROOT, file);
-    for (const re of [NON_EMPTY_TERNARY, EMPTY_TERNARY]) {
+    for (const re of [NON_EMPTY_TERNARY, EMPTY_TERNARY, EMPTY_RETURN]) {
       re.lastIndex = 0;
       let m;
       while ((m = re.exec(src)) !== null) {

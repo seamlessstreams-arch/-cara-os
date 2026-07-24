@@ -129,8 +129,10 @@ export default function GovernanceMeetingMinutesPage() {
     }
   };
 
-  const getActionCompletionRate = (actions: GovernanceAction[]) => {
-    if (actions.length === 0) return 100;
+  // null when a meeting raised no actions — there is nothing to have completed,
+  // so "100% actions done" would be an invented figure rather than a real one.
+  const getActionCompletionRate = (actions: GovernanceAction[]): number | null => {
+    if (actions.length === 0) return null;
     return Math.round((actions.filter((a) => a.status === "completed").length / actions.length) * 100);
   };
 
@@ -273,11 +275,11 @@ export default function GovernanceMeetingMinutesPage() {
                     <div className="text-right hidden sm:block">
                       <p className={cn(
                         "text-sm font-medium",
-                        completionRate === 100 ? "text-green-700" : completionRate >= 50 ? "text-blue-700" : "text-amber-700"
+                        completionRate === null ? "text-muted-foreground" : completionRate === 100 ? "text-green-700" : completionRate >= 50 ? "text-blue-700" : "text-amber-700"
                       )}>
-                        {completionRate}%
+                        {completionRate === null ? "—" : `${completionRate}%`}
                       </p>
-                      <p className="text-xs text-muted-foreground">actions done</p>
+                      <p className="text-xs text-muted-foreground">{completionRate === null ? "no actions" : "actions done"}</p>
                     </div>
                     {expanded ? (
                       <ChevronUp className="h-5 w-5 text-muted-foreground" />

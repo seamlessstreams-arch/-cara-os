@@ -15,15 +15,17 @@ import { useState, useEffect } from "react";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
+// Rates are number | null: null means "not yet measured" (empty population), which
+// the engine reports honestly instead of a fabricated 100%. Rendered as "—".
 interface ReferralQuality {
   totalReferrals: number;
-  timelinessRate: number;
-  appropriateThresholdRate: number;
-  multiAgencyEngagementRate: number;
-  childInformedRate: number;
-  progressedRate: number;
-  nfaRate: number;
-  lessonsLearnedRate: number;
+  timelinessRate: number | null;
+  appropriateThresholdRate: number | null;
+  multiAgencyEngagementRate: number | null;
+  childInformedRate: number | null;
+  progressedRate: number | null;
+  nfaRate: number | null;
+  lessonsLearnedRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -31,13 +33,13 @@ interface ReferralQuality {
 
 interface TrainingCompliance {
   totalStaff: number;
-  coverageRate: number;
-  currencyRate: number;
+  coverageRate: number | null;
+  currencyRate: number | null;
   dslCount: number;
   dslRequired: number;
-  dslCoverageRate: number;
-  scenarioBasedRate: number;
-  assessmentPassRate: number;
+  dslCoverageRate: number | null;
+  scenarioBasedRate: number | null;
+  assessmentPassRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -48,7 +50,7 @@ interface AuditFindings {
   averageRating: number;
   improvementTrajectory: string;
   criticalFindingsCount: number;
-  actionCompletionRate: number;
+  actionCompletionRate: number | null;
   ratingDistribution: Record<string, number>;
   score: number;
   strengths: string[];
@@ -57,11 +59,11 @@ interface AuditFindings {
 
 interface Supervision {
   totalStaff: number;
-  coverageRate: number;
-  safeguardingDiscussionRate: number;
-  reflectivePracticeRate: number;
-  decisionsRecordedRate: number;
-  actionCompletionRate: number;
+  coverageRate: number | null;
+  safeguardingDiscussionRate: number | null;
+  reflectivePracticeRate: number | null;
+  decisionsRecordedRate: number | null;
+  actionCompletionRate: number | null;
   totalSessions: number;
   score: number;
   strengths: string[];
@@ -76,8 +78,8 @@ interface StaffProfile {
   trainingExpiryDate: string | null;
   supervisionCount: number;
   lastSupervisionDate: string | null;
-  safeguardingDiscussionRate: number;
-  actionCompletionRate: number;
+  safeguardingDiscussionRate: number | null;
+  actionCompletionRate: number | null;
   overallCompliance: string;
 }
 
@@ -148,15 +150,22 @@ function LayerScoreCard({ label, score, max }: { label: string; score: number; m
 
 // ── Compliance Gauge ───────────────────────────────────────────────────────
 
-function ComplianceGauge({ label, value }: { label: string; value: number }) {
+// "—" when unmeasured (null): no population to rate, so no percentage and a neutral
+// tone — never a green/red judgement inferred from silence.
+function fmtPct(value: number | null): string {
+  return value === null ? "—" : `${value}%`;
+}
+
+function ComplianceGauge({ label, value }: { label: string; value: number | null }) {
   const color =
-    value >= 90 ? "text-green-700 bg-green-100"
-      : value >= 70 ? "text-yellow-700 bg-yellow-100"
-        : "text-red-700 bg-red-100";
+    value === null ? "text-gray-500 bg-gray-100"
+      : value >= 90 ? "text-green-700 bg-green-100"
+        : value >= 70 ? "text-yellow-700 bg-yellow-100"
+          : "text-red-700 bg-red-100";
 
   return (
     <div className={`rounded-lg p-2.5 text-center ${color}`}>
-      <div className="text-xl font-bold">{value}%</div>
+      <div className="text-xl font-bold">{value === null ? "—" : `${value}%`}</div>
       <div className="text-[10px] font-medium mt-0.5">{label}</div>
     </div>
   );
@@ -368,11 +377,11 @@ export function SafeguardingEffectivenessDashboardWidget() {
                   <div className="text-[10px] text-gray-500 uppercase">Total</div>
                 </div>
                 <div className="p-2 bg-green-50 rounded">
-                  <div className="text-lg font-bold text-green-700">{data.referralQuality.progressedRate}%</div>
+                  <div className="text-lg font-bold text-green-700">{fmtPct(data.referralQuality.progressedRate)}</div>
                   <div className="text-[10px] text-gray-500 uppercase">Progressed</div>
                 </div>
                 <div className="p-2 bg-yellow-50 rounded">
-                  <div className="text-lg font-bold text-yellow-700">{data.referralQuality.nfaRate}%</div>
+                  <div className="text-lg font-bold text-yellow-700">{fmtPct(data.referralQuality.nfaRate)}</div>
                   <div className="text-[10px] text-gray-500 uppercase">NFA Rate</div>
                 </div>
               </div>
@@ -477,7 +486,7 @@ export function SafeguardingEffectivenessDashboardWidget() {
                   <div className="text-[10px] text-gray-500 uppercase">Sessions</div>
                 </div>
                 <div className="p-2 bg-gray-50 rounded">
-                  <div className="text-lg font-bold text-gray-700">{data.supervision.decisionsRecordedRate}%</div>
+                  <div className="text-lg font-bold text-gray-700">{fmtPct(data.supervision.decisionsRecordedRate)}</div>
                   <div className="text-[10px] text-gray-500 uppercase">Decisions Recorded</div>
                 </div>
               </div>

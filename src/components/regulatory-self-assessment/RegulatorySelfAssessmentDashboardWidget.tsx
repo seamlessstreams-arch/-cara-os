@@ -5,6 +5,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local Interfaces ────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ interface Analysis {
   averageComplianceLevel: number;
   averageEvidenceSourcesPerAssessment: number;
   actionCompletionRate: number;
-  externalFeedbackIntegrationRate: number;
+  externalFeedbackIntegrationRate: number | null;
   areaBreakdown: AreaBreakdown[];
   strengths: string[];
   areasForImprovement: string[];
@@ -316,7 +317,7 @@ export function RegulatorySelfAssessmentDashboardWidget({
         </div>
         <div className="p-3 text-center">
           <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-            {analysis.externalFeedbackIntegrationRate}%
+            {formatRate(analysis.externalFeedbackIntegrationRate)}
           </p>
           <p className="text-[10px] text-muted-foreground">Feedback Addressed</p>
         </div>

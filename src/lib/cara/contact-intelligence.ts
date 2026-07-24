@@ -21,6 +21,8 @@
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
+import { weightedMeanOf } from "@/lib/metrics/rate";
+
 export type ContactType = "face_to_face" | "video_call" | "phone_call" | "letter" | "text_message" | "supervised" | "unsupervised";
 
 export type ContactPerson =
@@ -82,11 +84,11 @@ export interface ContactInput {
 
 export interface ContactAssessment {
   childName: string;
-  overallScore: number;
-  overallRating: "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate";
-  frequencyScore: number;
-  qualityScore: number;
-  consistencyScore: number;
+  overallScore: number | null;
+  overallRating: "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" | null;
+  frequencyScore: number | null;
+  qualityScore: number | null;
+  consistencyScore: number | null;
   voiceScore: number;
   totalSessions: number;
   occurredSessions: number;
@@ -182,12 +184,12 @@ export function analyseContact(input: ContactInput): ContactAssessment {
   const voiceScore = scoreVoice(input);
 
   // ── Overall ───────────────────────────────────────────────────────
-  const overallScore = Math.round(
-    frequencyScore * 0.30 +
-    qualityScore * 0.25 +
-    consistencyScore * 0.25 +
-    voiceScore * 0.20
-  );
+  const overallScore = weightedMeanOf([
+    { score: frequencyScore, weight: 0.30 },
+    { score: qualityScore, weight: 0.25 },
+    { score: consistencyScore, weight: 0.25 },
+    { score: voiceScore, weight: 0.20 },
+  ]);
   const overallRating = scoreToRating(overallScore);
 
   // ── Concerns ──────────────────────────────────────────────────────
@@ -328,7 +330,7 @@ function analyseCancellations(sessions: ContactSession[]): CancellationPattern[]
 
 // ── Scoring ─────────────────────────────────────────────────────────────────
 
-function scoreFrequency(personSummaries: PersonContactSummary[], arrangements: ContactArrangement[]): number {
+function scoreFrequency(personSummaries: PersonContactSummary[], arrangements: ContactArrangement[]): number | null {
   if (arrangements.length === 0 && personSummaries.length === 0) return 50;
 
   // Average compliance rate across all people with arrangements
@@ -336,15 +338,16 @@ function scoreFrequency(personSummaries: PersonContactSummary[], arrangements: C
     arrangements.some(a => a.personName === p.personName)
   );
 
-  if (withArrangements.length === 0) return 60;
+  // Contact happening, but none against an agreed arrangement — frequency-vs-plan is unmeasured.
+  if (withArrangements.length === 0) return null;
 
   const avgCompliance = withArrangements.reduce((sum, p) => sum + p.complianceRate, 0) / withArrangements.length;
   return Math.round(avgCompliance * 100);
 }
 
-function scoreQuality(sessions: ContactSession[]): number {
+function scoreQuality(sessions: ContactSession[]): number | null {
   const occurred = sessions.filter(s => s.occurred);
-  if (occurred.length === 0) return 100; // no data, assume OK
+  if (occurred.length === 0) return null; // no contact occurred — quality is unmeasured, not "OK"
 
   const outcomes = occurred.map(s => OUTCOME_VALUES[s.outcome]);
   const avgOutcome = outcomes.reduce((a, b) => a + b, 0) / outcomes.length;
@@ -353,8 +356,8 @@ function scoreQuality(sessions: ContactSession[]): number {
   return Math.max(0, Math.min(100, Math.round(((avgOutcome + 1) / 3) * 100)));
 }
 
-function scoreConsistency(sessions: ContactSession[], missedRate: number): number {
-  if (sessions.length === 0) return 100;
+function scoreConsistency(sessions: ContactSession[], missedRate: number): number | null {
+  if (sessions.length === 0) return null;
   // Low missed rate = high consistency
   return Math.max(0, Math.round(100 - missedRate * 150));
 }
@@ -669,7 +672,7 @@ function buildRecommendations(
 
 function buildSummary(
   childName: string,
-  rating: string,
+  rating: string | null,
   total: number,
   occurred: number,
   positiveRate: number,
@@ -678,12 +681,14 @@ function buildSummary(
     return `${childName}: No contact sessions recorded. Contact arrangements should be reviewed.`;
   }
   const pct = Math.round(positiveRate * 100);
-  return `${childName}: Contact rated ${rating.replace(/_/g, " ")}. ${occurred}/${total} sessions occurred, ${pct}% positive.`;
+  const ratingLabel = rating ? rating.replace(/_/g, " ") : "not yet rated";
+  return `${childName}: Contact rated ${ratingLabel}. ${occurred}/${total} sessions occurred, ${pct}% positive.`;
 }
 
 // ── Utility ─────────────────────────────────────────────────────────────────
 
-function scoreToRating(score: number): "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" {
+function scoreToRating(score: number | null): "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" | null {
+  if (score === null) return null;
   if (score >= 85) return "excellent";
   if (score >= 70) return "good";
   if (score >= 55) return "adequate";

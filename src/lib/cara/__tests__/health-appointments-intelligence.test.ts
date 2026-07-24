@@ -338,6 +338,11 @@ describe("Health Appointments Intelligence Engine", () => {
       expect(result.attendanceScore).toBe(50); // 50% DNA
     });
 
+    it("attendance score is null when there are no appointments (nothing to measure)", () => {
+      const result = analyseHealthAppointments(makeInput({ appointments: [] }));
+      expect(result.attendanceScore).toBeNull();
+    });
+
     it("full coverage score when all in place", () => {
       const result = analyseHealthAppointments(makeInput());
       expect(result.coverageScore).toBe(100);

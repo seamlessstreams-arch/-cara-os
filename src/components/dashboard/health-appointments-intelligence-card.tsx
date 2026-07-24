@@ -35,7 +35,7 @@ interface HealthData {
   overallScore: number;
   overallRating: string;
   statutoryComplianceScore: number;
-  attendanceScore: number;
+  attendanceScore: number | null;
   timelinessScore: number;
   coverageScore: number;
   statutoryChecks: StatutoryCheck[];
@@ -223,11 +223,15 @@ export function HealthAppointmentsIntelligenceCard({ childId }: HealthAppointmen
 
 // ── Sub-component ───────────────────────────────────────────────────────────
 
-function MiniScore({ label, score }: { label: string; score: number }) {
-  const color = score >= 75 ? "text-emerald-600" : score >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]";
+function MiniScore({ label, score }: { label: string; score: number | null }) {
+  const color = score === null
+    ? "text-[var(--cs-text-muted)]"
+    : score >= 75 ? "text-emerald-600" : score >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]";
   return (
     <div className="text-center">
-      <span className={cn("text-sm font-bold", color)}>{score}</span>
+      <span className={cn("text-sm font-bold", color)} title={score === null ? "Not yet measured" : undefined}>
+        {score === null ? "—" : score}
+      </span>
       <p className="text-[9px] text-[var(--cs-text-muted)] mt-0.5">{label}</p>
     </div>
   );

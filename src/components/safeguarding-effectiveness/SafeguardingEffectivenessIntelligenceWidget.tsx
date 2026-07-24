@@ -17,6 +17,12 @@ function ScoreBar({ label, value, max = 25 }: { label: string; value: number; ma
   );
 }
 
+// Rates arrive as number | null over JSON: null ("not yet measured", an empty
+// population) renders as "—", never "null%" and never a fabricated figure.
+function pct(value: unknown): string {
+  return typeof value === "number" ? `${value}%` : "—";
+}
+
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="bg-gray-50 rounded p-3 text-center">
@@ -101,18 +107,18 @@ export function SafeguardingEffectivenessIntelligenceWidget() {
       <Section title="Referral Quality Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
           <Stat label="Total Referrals" value={referralQuality.totalReferrals as number} />
-          <Stat label="Timeliness Rate" value={`${referralQuality.timelinessRate}%`} />
-          <Stat label="Threshold Appropriateness" value={`${referralQuality.appropriateThresholdRate}%`} />
-          <Stat label="Multi-Agency Engagement" value={`${referralQuality.multiAgencyEngagementRate}%`} />
+          <Stat label="Timeliness Rate" value={pct(referralQuality.timelinessRate)} />
+          <Stat label="Threshold Appropriateness" value={pct(referralQuality.appropriateThresholdRate)} />
+          <Stat label="Multi-Agency Engagement" value={pct(referralQuality.multiAgencyEngagementRate)} />
         </div>
       </Section>
 
       <Section title="Training Compliance Details">
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <Stat label="Staff Coverage" value={`${trainingCompliance.coverageRate}%`} />
-          <Stat label="Currency Rate" value={`${trainingCompliance.currencyRate}%`} />
-          <Stat label="DSL Coverage" value={`${trainingCompliance.dslCoverageRate}%`} />
-          <Stat label="Scenario-Based Rate" value={`${trainingCompliance.scenarioBasedRate}%`} />
+          <Stat label="Staff Coverage" value={pct(trainingCompliance.coverageRate)} />
+          <Stat label="Currency Rate" value={pct(trainingCompliance.currencyRate)} />
+          <Stat label="DSL Coverage" value={pct(trainingCompliance.dslCoverageRate)} />
+          <Stat label="Scenario-Based Rate" value={pct(trainingCompliance.scenarioBasedRate)} />
         </div>
       </Section>
 

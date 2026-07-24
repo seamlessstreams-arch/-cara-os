@@ -19,6 +19,8 @@
 // No AI calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { weightedMeanOf } from "@/lib/metrics/rate";
+
 // ── Types ───────────────────────────────────────────────────────────────────
 
 export type EpisodeCategory = "missing" | "absent" | "away_without_permission";
@@ -79,10 +81,10 @@ export interface MissingInput {
 
 export interface MissingAssessment {
   childName: string;
-  overallScore: number;
-  overallRating: "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate";
+  overallScore: number | null;
+  overallRating: "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" | null;
   frequencyScore: number;
-  responseScore: number;
+  responseScore: number | null; // null when there are no episodes to respond to (unmeasured)
   riskScore: number;
   complianceScore: number;
   totalEpisodes: number;
@@ -187,12 +189,14 @@ export function analyseMissingEpisodes(input: MissingInput): MissingAssessment {
   const complianceScore = scoreCompliance(rhi, input, episodes);
 
   // ── Overall ───────────────────────────────────────────────────────────
-  const overallScore = Math.round(
-    frequencyScore * 0.30 +
-    responseScore * 0.25 +
-    riskScore * 0.20 +
-    complianceScore * 0.25
-  );
+  // weightedMeanOf renormalises over the measured components, so an unmeasured
+  // responseScore (no episodes) neither flatters nor penalises the overall.
+  const overallScore = weightedMeanOf([
+    { score: frequencyScore, weight: 0.30 },
+    { score: responseScore, weight: 0.25 },
+    { score: riskScore, weight: 0.20 },
+    { score: complianceScore, weight: 0.25 },
+  ]);
   const overallRating = scoreToRating(overallScore);
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -457,8 +461,8 @@ function scoreFrequency(last30: number, last90: number, total: number): number {
   return 85;
 }
 
-function scoreResponse(episodes: MissingEpisode[]): number {
-  if (episodes.length === 0) return 100;
+function scoreResponse(episodes: MissingEpisode[]): number | null {
+  if (episodes.length === 0) return null; // no episodes to respond to — response quality is unmeasured
   let totalScore = 0;
   for (const ep of episodes) {
     let epScore = 100;
@@ -858,7 +862,7 @@ function buildNoEpisodesAssessment(input: MissingInput): MissingAssessment {
     overallScore: 100,
     overallRating: "excellent",
     frequencyScore: 100,
-    responseScore: 100,
+    responseScore: null, // no episodes to respond to — response quality is unmeasured, not perfect
     riskScore: 100,
     complianceScore: 100,
     totalEpisodes: 0,
@@ -898,7 +902,8 @@ function buildNoEpisodesAssessment(input: MissingInput): MissingAssessment {
 
 // ── Utility ─────────────────────────────────────────────────────────────────
 
-function scoreToRating(score: number): "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" {
+function scoreToRating(score: number | null): "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate" | null {
+  if (score === null) return null; // unmeasured overall — no rating
   if (score >= 85) return "excellent";
   if (score >= 70) return "good";
   if (score >= 55) return "adequate";

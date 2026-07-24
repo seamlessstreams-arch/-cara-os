@@ -89,7 +89,11 @@ describe("Complaints & Representations Intelligence Engine", () => {
       const result = analyseComplaints(makeInput());
       expect(result.totalComplaints).toBe(0);
       expect(result.openComplaints).toBe(0);
+      // Overall reflects only what is measurable (accessibility + voice from setup).
       expect(result.overallRating).toBe("excellent");
+      // Absence of complaints is unmeasured, NOT perfect handling.
+      expect(result.responsivenessScore).toBeNull();
+      expect(result.resolutionScore).toBeNull();
     });
   });
 
