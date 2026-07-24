@@ -57,6 +57,8 @@ export interface Medication {
   reviewDue: boolean;
 }
 
+import { meets } from "@/lib/metrics/rate";
+
 export interface HealthInput {
   childId: string;
   childName: string;
@@ -122,7 +124,7 @@ export interface HealthAssessmentResult {
 
   // Key metrics
   assessmentStatus: "current" | "due_soon" | "overdue";
-  immunisationRate: number;
+  immunisationRate: number | null;
   appointmentAttendanceRate: number;
   medicationCompliance: boolean;
   healthActionProgress: number; // percentage
@@ -160,9 +162,12 @@ export function analyseHealth(input: HealthInput): HealthAssessmentResult {
   // ── Key metrics ─────────────────────────────────────────────────
   const assessmentStatus = getAssessmentStatus(input);
 
+  // null when no immunisations are on record — "no data" must NOT read as
+  // "up to date". An unvaccinated child with an empty register is a health gap,
+  // not a child in full compliance.
   const immunisationRate = input.immunisations.length > 0
     ? Math.round((input.immunisations.filter(i => !i.due && !i.overdue).length / input.immunisations.length) * 100) / 100
-    : 1; // no data = assume up to date
+    : null;
 
   const totalAppts = input.appointments.length;
   const attendedAppts = input.appointments.filter(a => a.attended).length;
@@ -240,7 +245,7 @@ function getAssessmentStatus(input: HealthInput): "current" | "due_soon" | "over
 
 // ── Scoring ─────────────────────────────────────────────────────────────────
 
-function scoreAssessments(input: HealthInput, immunisationRate: number): number {
+function scoreAssessments(input: HealthInput, immunisationRate: number | null): number {
   let score = 0;
 
   // Health assessment status
@@ -258,8 +263,8 @@ function scoreAssessments(input: HealthInput, immunisationRate: number): number 
   if (input.healthActionPlanInPlace) score += 10;
   if (input.healthActionPlanReviewed) score += 10;
 
-  // Immunisations
-  score += Math.round(immunisationRate * 20);
+  // Immunisations — no evidence earns no credit (was a fabricated +20)
+  score += immunisationRate === null ? 0 : Math.round(immunisationRate * 20);
 
   // Health passport
   if (input.healthPassportUpToDate) score += 10;
@@ -327,7 +332,7 @@ function scoreLifestyle(input: HealthInput): number {
 function identifyConcerns(
   input: HealthInput,
   status: string,
-  immunisationRate: number,
+  immunisationRate: number | null,
   attendanceRate: number,
   medicationCompliance: boolean,
 ): HealthConcern[] {
@@ -352,7 +357,13 @@ function identifyConcerns(
   }
 
   // Immunisations
-  if (immunisationRate < 1) {
+  if (immunisationRate === null) {
+    concerns.push({
+      severity: "significant",
+      category: "immunisation",
+      description: "No immunisation records held — status cannot be evidenced",
+    });
+  } else if (immunisationRate < 1) {
     const overdue = input.immunisations.filter(i => i.overdue).length;
     if (overdue > 0) {
       concerns.push({
@@ -444,7 +455,7 @@ function identifyConcerns(
 function identifyStrengths(
   input: HealthInput,
   status: string,
-  immunisationRate: number,
+  immunisationRate: number | null,
   attendanceRate: number,
 ): HealthStrength[] {
   const strengths: HealthStrength[] = [];
@@ -453,7 +464,7 @@ function identifyStrengths(
     strengths.push({ category: "assessment", description: "Health assessment current — statutory requirements met" });
   }
 
-  if (immunisationRate >= 1) {
+  if (meets(immunisationRate, 1)) {
     strengths.push({ category: "immunisation", description: "All immunisations up to date" });
   }
 
@@ -489,7 +500,7 @@ function identifyStrengths(
 function assessRegulatory(
   input: HealthInput,
   status: string,
-  immunisationRate: number,
+  immunisationRate: number | null,
 ): RegulatoryFlag[] {
   const flags: RegulatoryFlag[] = [];
 
@@ -511,7 +522,7 @@ function assessRegulatory(
 
   // Promoting Health of LAC
   const promotingMet = status === "current" &&
-    immunisationRate >= 1 &&
+    meets(immunisationRate, 1) &&
     input.dentalCheckLast6Months &&
     input.opticalCheckLast12Months;
   flags.push({
@@ -564,7 +575,7 @@ function assessRegulatory(
 function buildRecommendations(
   input: HealthInput,
   status: string,
-  immunisationRate: number,
+  immunisationRate: number | null,
   attendanceRate: number,
 ): string[] {
   const recs: string[] = [];
@@ -589,7 +600,9 @@ function buildRecommendations(
     recs.push("Book eye test — annual requirement");
   }
 
-  if (immunisationRate < 1) {
+  if (immunisationRate === null) {
+    recs.push("Obtain and record the child's immunisation history from the GP");
+  } else if (immunisationRate < 1) {
     recs.push("Arrange catch-up immunisations with GP");
   }
 
@@ -633,12 +646,13 @@ function buildSummary(
   childName: string,
   rating: string,
   status: string,
-  immunisationRate: number,
+  immunisationRate: number | null,
 ): string {
   const assessDesc = status === "current" ? "assessment current"
     : status === "overdue" ? "assessment OVERDUE"
     : "assessment due soon";
-  const immunDesc = immunisationRate >= 1 ? "immunisations up to date" : "immunisations incomplete";
+  const immunDesc = immunisationRate === null ? "immunisation status not recorded"
+    : immunisationRate >= 1 ? "immunisations up to date" : "immunisations incomplete";
   return `${childName}: Health rated ${rating.replace(/_/g, " ")}. ${assessDesc}, ${immunDesc}.`;
 }
 

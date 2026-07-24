@@ -94,7 +94,7 @@ export interface ContactAssessment {
   occurredSessions: number;
   missedSessions: number;
   missedRate: number;
-  positiveRate: number;
+  positiveRate: number | null;
   distressingRate: number;
   contactByPerson: PersonContactSummary[];
   cancellationPatterns: CancellationPattern[];
@@ -164,9 +164,11 @@ export function analyseContact(input: ContactInput): ContactAssessment {
   const occurredWithOutcome = contactSessions.filter(s => s.occurred && s.outcome !== "not_recorded");
   const positiveCount = occurredWithOutcome.filter(s => s.outcome === "positive").length;
   const distressingCount = occurredWithOutcome.filter(s => s.outcome === "distressing").length;
+  // null when no occurred session has a recorded outcome — absence of an
+  // outcome is not a positive one.
   const positiveRate = occurredWithOutcome.length > 0
     ? Math.round((positiveCount / occurredWithOutcome.length) * 100) / 100
-    : 1;
+    : null;
   const distressingRate = occurredWithOutcome.length > 0
     ? Math.round((distressingCount / occurredWithOutcome.length) * 100) / 100
     : 0;
@@ -496,12 +498,12 @@ function identifyConcerns(
 function identifyStrengths(
   input: ContactInput,
   personSummaries: PersonContactSummary[],
-  positiveRate: number,
+  positiveRate: number | null,
   missedRate: number,
 ): ContactStrength[] {
   const strengths: ContactStrength[] = [];
 
-  if (positiveRate >= 0.8 && input.contactSessions.filter(s => s.occurred).length >= 3) {
+  if (positiveRate !== null && positiveRate >= 0.8 && input.contactSessions.filter(s => s.occurred).length >= 3) {
     strengths.push({
       category: "quality",
       description: "Majority of contacts positive experiences for child",
@@ -675,14 +677,16 @@ function buildSummary(
   rating: string | null,
   total: number,
   occurred: number,
-  positiveRate: number,
+  positiveRate: number | null,
 ): string {
   if (total === 0) {
     return `${childName}: No contact sessions recorded. Contact arrangements should be reviewed.`;
   }
-  const pct = Math.round(positiveRate * 100);
   const ratingLabel = rating ? rating.replace(/_/g, " ") : "not yet rated";
-  return `${childName}: Contact rated ${ratingLabel}. ${occurred}/${total} sessions occurred, ${pct}% positive.`;
+  const positiveClause = positiveRate === null
+    ? "outcomes not yet recorded"
+    : `${Math.round(positiveRate * 100)}% positive`;
+  return `${childName}: Contact rated ${ratingLabel}. ${occurred}/${total} sessions occurred, ${positiveClause}.`;
 }
 
 // ── Utility ─────────────────────────────────────────────────────────────────

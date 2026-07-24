@@ -164,13 +164,14 @@ describe("Complaints & Representations Intelligence Engine", () => {
       expect(result.satisfactionRate).toBeCloseTo(0.67, 1);
     });
 
-    it("1.0 when no satisfaction data", () => {
+    it("is null (not a fabricated 1.0) when no complaint carries a satisfaction rating", () => {
       const result = analyseComplaints(makeInput({
         complaints: [
           makeComplaint({ childSatisfied: undefined }),
         ],
       }));
-      expect(result.satisfactionRate).toBe(1);
+      // "no rating recorded" is not "satisfied".
+      expect(result.satisfactionRate).toBeNull();
     });
   });
 

@@ -92,7 +92,7 @@ export interface ComplaintsAssessment {
   openComplaints: number;
   resolvedComplaints: number;
   averageResolutionDays: number;
-  satisfactionRate: number;
+  satisfactionRate: number | null;
   complaintsLast30Days: number;
   complaintsLast90Days: number;
   themes: ComplaintTheme[];
@@ -154,9 +154,11 @@ export function analyseComplaints(input: ComplaintsInput): ComplaintsAssessment 
   // ── Satisfaction ──────────────────────────────────────────────────────
   const withSatisfaction = complaints.filter(c => c.childSatisfied !== undefined);
   const satisfiedCount = withSatisfaction.filter(c => c.childSatisfied).length;
+  // null when no complaint carries a satisfaction rating — "no rating" is not
+  // "satisfied". A count-guarded threshold below still only fires on real data.
   const satisfactionRate = withSatisfaction.length > 0
     ? satisfiedCount / withSatisfaction.length
-    : 1; // no complaints = assume fine
+    : null;
 
   // ── Themes ────────────────────────────────────────────────────────────
   const themes = analyseThemes(complaints);
@@ -198,7 +200,7 @@ export function analyseComplaints(input: ComplaintsInput): ComplaintsAssessment 
     openComplaints,
     resolvedComplaints,
     averageResolutionDays: avgResolutionDays,
-    satisfactionRate: Math.round(satisfactionRate * 100) / 100,
+    satisfactionRate: satisfactionRate === null ? null : Math.round(satisfactionRate * 100) / 100,
     complaintsLast30Days: complaintsLast30,
     complaintsLast90Days: complaintsLast90,
     themes,
@@ -266,7 +268,7 @@ function scoreResponsiveness(complaints: Complaint[]): number | null {
   return Math.round(total / complaints.length);
 }
 
-function scoreResolution(complaints: Complaint[], avgDays: number, satisfactionRate: number): number | null {
+function scoreResolution(complaints: Complaint[], avgDays: number, satisfactionRate: number | null): number | null {
   if (complaints.length === 0) return null;
 
   let score = 100;
@@ -285,7 +287,7 @@ function scoreResolution(complaints: Complaint[], avgDays: number, satisfactionR
   if (longOpen.length > 0) score -= longOpen.length * 10;
 
   // Satisfaction
-  score -= Math.round((1 - satisfactionRate) * 30);
+  if (satisfactionRate !== null) score -= Math.round((1 - satisfactionRate) * 30);
 
   return Math.max(0, Math.min(100, score));
 }
@@ -325,7 +327,7 @@ function identifyConcerns(
   input: ComplaintsInput,
   complaints: Complaint[],
   avgDays: number,
-  satisfactionRate: number,
+  satisfactionRate: number | null,
   openCount: number,
   themes: ComplaintTheme[],
 ): ComplaintConcern[] {
@@ -371,7 +373,7 @@ function identifyConcerns(
   }
 
   // Low satisfaction
-  if (satisfactionRate < 0.5 && complaints.filter(c => c.childSatisfied !== undefined).length >= 3) {
+  if (satisfactionRate !== null && satisfactionRate < 0.5 && complaints.filter(c => c.childSatisfied !== undefined).length >= 3) {
     concerns.push({
       severity: "significant",
       category: "satisfaction",
@@ -444,7 +446,7 @@ function identifyConcerns(
 function identifyStrengths(
   input: ComplaintsInput,
   complaints: Complaint[],
-  satisfactionRate: number,
+  satisfactionRate: number | null,
   avgDays: number,
 ): ComplaintStrength[] {
   const strengths: ComplaintStrength[] = [];
@@ -463,7 +465,7 @@ function identifyStrengths(
     });
   }
 
-  if (satisfactionRate >= 0.8 && complaints.filter(c => c.childSatisfied !== undefined).length >= 2) {
+  if (satisfactionRate !== null && satisfactionRate >= 0.8 && complaints.filter(c => c.childSatisfied !== undefined).length >= 2) {
     strengths.push({
       category: "satisfaction",
       description: "High satisfaction with complaint outcomes",
@@ -567,7 +569,7 @@ function buildRecommendations(
   input: ComplaintsInput,
   complaints: Complaint[],
   avgDays: number,
-  satisfactionRate: number,
+  satisfactionRate: number | null,
   openCount: number,
   themes: ComplaintTheme[],
 ): string[] {
@@ -597,7 +599,7 @@ function buildRecommendations(
     recs.push("Address open complaints as priority — ensure timely resolution");
   }
 
-  if (satisfactionRate < 0.6 && complaints.filter(c => c.childSatisfied !== undefined).length >= 2) {
+  if (satisfactionRate !== null && satisfactionRate < 0.6 && complaints.filter(c => c.childSatisfied !== undefined).length >= 2) {
     recs.push("Review why child is dissatisfied with outcomes — consider restorative approaches");
   }
 
