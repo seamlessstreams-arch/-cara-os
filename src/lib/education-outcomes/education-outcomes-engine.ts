@@ -346,16 +346,21 @@ export function evaluateAttendance(
     const firstHalf = childRecords.filter(r => new Date(r.date) <= midDate);
     const secondHalf = childRecords.filter(r => new Date(r.date) > midDate);
 
+    // A half with no attendance records can't be scored — defaulting it to 1
+    // (100%) invented a trend (an empty first half made any real second half
+    // look like a decline, and vice versa). A trend needs data in BOTH halves.
     const firstRate = firstHalf.length > 0
       ? firstHalf.filter(r => r.status === "present" || r.status === "late" || r.status === "EOTAS").length / firstHalf.length
-      : 1;
+      : null;
     const secondRate = secondHalf.length > 0
       ? secondHalf.filter(r => r.status === "present" || r.status === "late" || r.status === "EOTAS").length / secondHalf.length
-      : 1;
+      : null;
 
     let trend: "improving" | "stable" | "declining" = "stable";
-    if (secondRate - firstRate > 0.03) trend = "improving";
-    else if (firstRate - secondRate > 0.03) trend = "declining";
+    if (firstRate !== null && secondRate !== null) {
+      if (secondRate - firstRate > 0.03) trend = "improving";
+      else if (firstRate - secondRate > 0.03) trend = "declining";
+    }
 
     return {
       childId,

@@ -163,9 +163,10 @@ describe("Contact & Relationships Intelligence Engine", () => {
       expect(result.distressingRate).toBe(0.25);
     });
 
-    it("positive rate defaults to 1 with no sessions", () => {
+    it("positive rate is null (not a fabricated 1.0) with no recorded outcomes", () => {
       const result = analyseContact(makeInput());
-      expect(result.positiveRate).toBe(1);
+      // absence of a recorded outcome is not a positive one.
+      expect(result.positiveRate).toBeNull();
     });
   });
 

@@ -68,6 +68,32 @@ function makeInput(overrides: Partial<HealthInput> = {}): HealthInput {
 
 // ── Overall Structure ──────────────────────────────────────────────────────
 
+describe("analyseHealth — immunisation status is never fabricated from no data", () => {
+  it("reports immunisationRate as null, not 100%, when no immunisations are on record", () => {
+    const result = analyseHealth(makeInput({ immunisations: [] }));
+    // "no data" must NOT read as "up to date" — an unvaccinated child with an
+    // empty register is a health gap, not a child in full compliance.
+    expect(result.immunisationRate).toBeNull();
+  });
+
+  it("does not award an 'up to date' strength when immunisations are unrecorded", () => {
+    const result = analyseHealth(makeInput({ immunisations: [] }));
+    expect(result.strengths.some((s) => /immunisation/i.test(s.description) && /up to date/i.test(s.description))).toBe(false);
+  });
+
+  it("raises a concern that immunisation status cannot be evidenced when unrecorded", () => {
+    const result = analyseHealth(makeInput({ immunisations: [] }));
+    expect(result.concerns.some((c) => c.category === "immunisation")).toBe(true);
+    expect(result.summary).toMatch(/immunisation status not recorded/i);
+  });
+
+  it("still credits immunisations that ARE recorded and current", () => {
+    const result = analyseHealth(makeInput());
+    expect(result.immunisationRate).toBe(1);
+    expect(result.summary).toMatch(/immunisations up to date/i);
+  });
+});
+
 describe("analyseHealth", () => {
   it("returns all required fields", () => {
     const result = analyseHealth(makeInput());
