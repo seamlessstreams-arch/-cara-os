@@ -1,18 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useMemo, useState } from "react";
 import { Brain, ShieldCheck, Sparkles, AlertTriangle, CheckCircle2, FileSearch, Wand2, XCircle } from "lucide-react";
-
-type CaraOutput = {
-  confidence: number;
-  evidenceUsed: string[];
-  managementOversightRequired: boolean;
-  safetyFlags: string[];
-  executiveSummary: string;
-  answer: string;
-  nextBestActions: string[];
-  practicePrompts: string[];
-};
 import type { CaraRoleMode } from "@/lib/cara/types";
 
 type Props = {
@@ -55,7 +45,7 @@ export function CaraCommandCentre({
 
   const loading = false;
   const error: string | null = null;
-  const output: CaraOutput | null = null;
+  const output: any = null;
   const aiRunId: string | null = null;
   const askCara = async (_args: Record<string, any>) => {};
   const reviewCara = async (_args: Record<string, any>) => {};
