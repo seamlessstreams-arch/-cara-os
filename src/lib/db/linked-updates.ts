@@ -16,6 +16,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { facilityStore } from "@/lib/db/facility-store";
 import { todayStr, generateId } from "@/lib/utils";
 import { persistDailyLog, createTaskRecord } from "@/lib/supabase/care-records";
 import { sendPushToUser } from "@/lib/push/web-push";
@@ -367,7 +368,7 @@ export function processVehicleDefect(
 
   // 2. If fail, flag as restricted
   if (severity === "fail") {
-    const vehicle = db.vehicles.findById(vehicleId);
+    const vehicle = facilityStore.vehicles.findById(vehicleId);
     if (vehicle) vehicle.status = "restricted";
   }
 

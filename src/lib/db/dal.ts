@@ -15,6 +15,7 @@
  */
 
 import { db } from "./store";
+import { facilityStore } from "./facility-store";
 import { createServerClient } from "@/lib/supabase/server";
 import * as sq from "@/lib/supabase/queries";
 import { todayStr } from "@/lib/utils";
@@ -569,20 +570,20 @@ export const dal = {
     async findAll() {
       const c = sb();
       if (c) return sq.getBuildings(c, homeId());
-      return db.buildings.findAll();
+      return facilityStore.buildings.findAll();
     },
     async findById(id: string) {
       const c = sb();
       if (c) {
         return (await c.from("buildings").select("*").eq("id", id).single()).data;
       }
-      return db.buildings.findById(id);
+      return facilityStore.buildings.findById(id);
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(data: any) {
       const c = sb();
       if (c) return sq.createBuilding(c, { ...data, home_id: homeId() });
-      return db.buildings.create(data);
+      return facilityStore.buildings.create(data);
     },
   },
 
@@ -590,13 +591,13 @@ export const dal = {
     async findAll(buildingId?: string) {
       const c = sb();
       if (c) return sq.getBuildingChecks(c, homeId(), buildingId);
-      return db.buildingChecks.findAll();
+      return facilityStore.buildingChecks.findAll();
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(data: any) {
       const c = sb();
       if (c) return sq.createBuildingCheck(c, { ...data, home_id: homeId() });
-      return db.buildingChecks.create(data);
+      return facilityStore.buildingChecks.create(data);
     },
   },
 
@@ -605,20 +606,20 @@ export const dal = {
     async findAll() {
       const c = sb();
       if (c) return sq.getVehicles(c, homeId());
-      return db.vehicles.findAll();
+      return facilityStore.vehicles.findAll();
     },
     async findById(id: string) {
       const c = sb();
       if (c) {
         return (await c.from("vehicles").select("*").eq("id", id).single()).data;
       }
-      return db.vehicles.findById(id);
+      return facilityStore.vehicles.findById(id);
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(data: any) {
       const c = sb();
       if (c) return sq.createVehicle(c, { ...data, home_id: homeId() });
-      return db.vehicles.create(data);
+      return facilityStore.vehicles.create(data);
     },
   },
 
@@ -626,13 +627,13 @@ export const dal = {
     async findAll(vehicleId?: string) {
       const c = sb();
       if (c) return sq.getVehicleChecks(c, homeId(), vehicleId);
-      return db.vehicleChecks.findAll();
+      return facilityStore.vehicleChecks.findAll();
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(data: any) {
       const c = sb();
       if (c) return sq.createVehicleCheck(c, { ...data, home_id: homeId() });
-      return db.vehicleChecks.create(data);
+      return facilityStore.vehicleChecks.create(data);
     },
   },
 
