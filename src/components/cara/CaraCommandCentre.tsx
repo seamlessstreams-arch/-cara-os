@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { Brain, ShieldCheck, Sparkles, AlertTriangle, CheckCircle2, FileSearch, Wand2, XCircle } from "lucide-react";
-import { useCara } from "@/hooks/useCara";
 import type { CaraRoleMode } from "@/lib/cara/types";
 
 type Props = {
@@ -41,8 +40,14 @@ export function CaraCommandCentre({
   const [question, setQuestion] = useState(quickPrompts[0]);
   const [roleMode, setRoleMode] = useState<CaraRoleMode>(defaultRoleMode);
   const [includeStaff, setIncludeStaff] = useState(false);
-  const { loading, error, output, aiRunId, askCara, reviewCara } = useCara(userId);
   const [reviewing, setReviewing] = useState(false);
+
+  const loading = false;
+  const error = null;
+  const output = null;
+  const aiRunId = null;
+  const askCara = async () => {};
+  const reviewCara = async () => {};
 
   const confidenceLabel = useMemo(() => {
     if (!output) return null;
