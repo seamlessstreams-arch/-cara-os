@@ -12,10 +12,11 @@
 //   3. Paste this whole file and press Enter.
 //   4. Read the PASS/FAIL report it prints.
 //
-// It creates ONE obvious test child ("ZZ-Smoke Test-DELETE") and verifies the
-// whole chain persisted to live Postgres. It does NOT auto-clean-up (there is
-// no update/delete API for young people yet), so remove that child and its
-// referral document / tasks / draft risk assessments from the UI afterwards.
+// It creates ONE obvious test child ("ZZ-Smoke Test-DELETE"), verifies the whole
+// chain persisted to live Postgres, then ARCHIVES the child via DELETE
+// /young-people/:id (a soft archive → status "ended") so the current roster is
+// left clean. The referral document / tasks / draft risk assessments stay filed
+// against the now-ended placement; remove those from the UI if you want them gone.
 // ══════════════════════════════════════════════════════════════════════════════
 
 (async () => {
@@ -114,12 +115,16 @@
   ok("Referral document durable + analysed", !!smokeDoc && !!smokeDoc.ai_result,
      smokeDoc ? `category=${smokeDoc.document_category}` : "not found in list");
 
-  // ── Cleanup ─────────────────────────────────────────────────────────────────
-  // No automatic cleanup: young-people has no update/delete API path today (the
-  // /young-people/:id route is GET-only and the dispatcher upsert would create a
-  // DUPLICATE, not archive), so the harness deliberately leaves the record
-  // rather than pollute the roster with a copy. Remove "ZZ-Smoke Test-DELETE"
-  // and its referral document / tasks / draft RAs from the UI when you're done.
+  // ── Cleanup: archive the test child so it doesn't pollute the roster ─────────
+  // DELETE /young-people/:id is a SOFT archive (status → "ended"), so this
+  // updates the child in place rather than leaving a copy behind.
+  const archive = await j(`/young-people/${encodeURIComponent(childId)}`, { method: "DELETE" });
+  ok("Test child archived (soft delete)", archive.status === 200 && archive.body?.data?.status === "ended",
+     `DELETE /young-people/:id → ${archive.status}, status=${archive.body?.data?.status ?? "?"}`);
+  const rosterAfter = await j("/young-people?status=current");
+  const stillCurrent = (rosterAfter.body?.data ?? []).some((c) => c.id === childId);
+  ok("Archived child left the current roster", !stillCurrent,
+     stillCurrent ? "still shows as current" : "no longer current");
 
   return report();
 

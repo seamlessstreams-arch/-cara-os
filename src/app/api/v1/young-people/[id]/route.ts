@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
+import { readJsonBody } from "@/lib/http/read-json";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 
 export const dynamic = "force-dynamic";
@@ -61,7 +62,9 @@ async function getYoungPerson(
       active_tasks:          tasks.filter((t) => t.status !== "completed" && t.status !== "cancelled").length,
       active_medications:    medications.filter((m) => m.is_active).length,
       missing_episodes_total: missingEpisodes.length,
-      risk_flags_count:      yp.risk_flags.length,
+      // Defensive: a freshly-created child or a live Postgres row may carry null
+      // rather than an empty array — never 500 the record view over it.
+      risk_flags_count:      (yp.risk_flags ?? []).length,
       last_log_date:         dailyLog[0]?.date ?? null,
     },
     related: {
@@ -84,3 +87,69 @@ async function getYoungPerson(
 }
 
 export const GET = withShiftAccess("child_record", "view", getYoungPerson);
+
+// GET-computed / joined fields the response adds on the way out — a PATCH that
+// echoes the record back must never try to write these onto the row.
+const DERIVED_FIELDS = new Set([
+  "age", "key_worker", "secondary_worker", "open_incidents", "active_tasks",
+  "active_medications", "missing_episodes_total", "risk_flags_count", "last_log_date",
+]);
+// Identity + tenancy are fixed once a child is admitted.
+const IMMUTABLE_FIELDS = new Set(["id", "home_id", "created_at", "created_by"]);
+
+// PATCH /api/v1/young-people/:id — edit a child's record.
+// Dual-mode + durable on live: dal.youngPeople.update writes the real
+// young_people table when Supabase is enabled, the in-memory store otherwise.
+// Guarded by the permission engine (child_record / edit): general staff need an
+// active shift + assignment; managers keep access off shift.
+async function updateYoungPerson(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const existing = await dal.youngPeople.findById(id);
+  if (!existing) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
+
+  const parsed = await readJsonBody(req);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.data as Record<string, unknown>;
+
+  const patch: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (k === "actor_id" || DERIVED_FIELDS.has(k) || IMMUTABLE_FIELDS.has(k)) continue;
+    patch[k] = v;
+  }
+  if (Object.keys(patch).length === 0) {
+    return NextResponse.json({ error: "No editable fields supplied." }, { status: 400 });
+  }
+  patch.updated_by = req.headers.get("x-user-id") || (body.actor_id as string) || "staff_darren";
+
+  const updated = await dal.youngPeople.update(id, patch);
+  if (!updated) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
+  return NextResponse.json({ data: updated });
+}
+
+// DELETE /api/v1/young-people/:id — a SOFT archive, never a hard delete: a
+// looked-after child's record is not destroyed. It ends the placement (status
+// "ended", placement_end = today) so the child leaves the current roster while
+// the full history is preserved. Gated as an "edit" — ending a placement is a
+// status change on the record, not a privileged destroy no role is granted.
+async function archiveYoungPerson(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const existing = await dal.youngPeople.findById(id);
+  if (!existing) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
+
+  const updated = await dal.youngPeople.update(id, {
+    status: "ended",
+    placement_end: todayStr(),
+    updated_by: req.headers.get("x-user-id") || "staff_darren",
+  });
+  if (!updated) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
+  return NextResponse.json({ data: updated, archived: true });
+}
+
+export const PATCH = withShiftAccess("child_record", "edit", updateYoungPerson);
+export const DELETE = withShiftAccess("child_record", "edit", archiveYoungPerson);

@@ -96,3 +96,37 @@ export function useAdmitChild() {
     },
   });
 }
+
+/**
+ * Edit a child's record — PATCH /api/v1/young-people/:id. Durable via the
+ * dual-mode dal (the real young_people table on a live tenant). Identity and
+ * tenancy fields (id, home_id) are fixed server-side; only real columns are
+ * written. Permission-gated (child_record / edit).
+ */
+export function useUpdateYoungPerson(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<YoungPerson>) => api.patch<{ data: YoungPerson }>(`/young-people/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["young-people", id] });
+      qc.invalidateQueries({ queryKey: ["young-people"] });
+    },
+  });
+}
+
+/**
+ * Archive a child's record — DELETE /api/v1/young-people/:id. This is a SOFT
+ * archive: it ends the placement (status "ended", placement_end = today) so the
+ * child leaves the current roster, and never destroys the record. Permission-
+ * gated as an edit.
+ */
+export function useArchiveYoungPerson() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<{ data: YoungPerson; archived: boolean }>(`/young-people/${id}`),
+    onSuccess: (_res, id) => {
+      qc.invalidateQueries({ queryKey: ["young-people", id] });
+      qc.invalidateQueries({ queryKey: ["young-people"] });
+    },
+  });
+}

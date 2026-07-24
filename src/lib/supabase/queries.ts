@@ -822,6 +822,13 @@ export async function createYoungPerson(sb: SB, data: Record<string, unknown>) {
   return unwrap(await sb.from("young_people").insert(pickColumns(data, YOUNG_PERSON_COLS)).select().single());
 }
 
+export async function updateYoungPerson(sb: SB, id: string, data: Record<string, unknown>) {
+  // Column-allowlisted like the insert: id/home_id and any GET-computed fields
+  // (age, key_worker, …) are silently dropped, so only real young_people columns
+  // are written.
+  return unwrap(await sb.from("young_people").update(pickColumns(data, YOUNG_PERSON_COLS)).eq("id", id).select().single());
+}
+
 // full_name is a GENERATED column (first + last) — never insert it.
 const STAFF_MEMBER_COLS = [
   "home_id", "first_name", "last_name", "email", "phone", "role", "job_title",
