@@ -55,6 +55,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Operations Action Centre", href: "/action-center",   icon: "ListChecks",      module: "dashboard", badgeKey: "action_center" },
       { label: "Operations",     href: "/operations",      icon: "Building2",       module: "dashboard"  },
       { label: "Control Centre", href: "/control-centre",  icon: "Radar",           module: "dashboard"  },
+      { label: "Workforce",      href: "/workforce",       icon: "Users",           module: "staff"      },
       { label: "Operations Control Centre", href: "/operational-control", icon: "Radar",          module: "dashboard" },
       { label: "Notifications",  href: "/notifications",   icon: "Bell",            module: "dashboard",   badgeKey: "notifications" },
       { label: "Shift Notes",    href: "/shift-notes",     icon: "FileText",        module: "dashboard"  },
