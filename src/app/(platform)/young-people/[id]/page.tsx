@@ -431,7 +431,14 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title={`${displayName} ${yp.last_name}`} subtitle="Young Person Profile" targetId="yp-detail-content" />
-          <SmartUploadButton variant="icon" linkedChildId={id} uploadContext={`Young person profile — ${yp.first_name} ${yp.last_name}`} />
+          {/* Labelled (not icon-only) so the upload action is actually findable in this row. */}
+          <SmartUploadButton
+            variant="button"
+            label="Upload document"
+            linkedChildId={id}
+            uploadContext={`Young person profile — ${yp.first_name} ${yp.last_name}`}
+            className="px-3 py-1.5 text-sm rounded-lg shadow-none"
+          />
           <CaraStudioQuickActionButton context={{ record_type: "keywork", record_id: id, child_id: id, home_id: "home_oak" }} />
           <Link href={`/intelligence/cara/relationship-intelligence?child=${id}`}>
             <Button variant="outline" size="sm" className="gap-1.5">
