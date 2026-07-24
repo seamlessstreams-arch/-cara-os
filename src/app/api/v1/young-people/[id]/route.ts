@@ -4,6 +4,7 @@ import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
 import { readJsonBody } from "@/lib/http/read-json";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
+import { auditFromRequest, getRecordAuditTrail } from "@/lib/audit/audit-recorder";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +76,10 @@ async function getYoungPerson(
       chronology:      chronology,
       care_forms:      careForms.sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 5),
       recent_log:      dailyLog,
+      // Field-level change history for this child's record (edits + archive),
+      // newest first. Always-on in demo (in-memory trail); durable via
+      // cs_audit_log when Supabase is enabled.
+      audit_trail:     getRecordAuditTrail({ entityType: "young_person", entityId: id, limit: 25 }),
     },
     meta: {
       today,
@@ -122,10 +127,27 @@ async function updateYoungPerson(
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "No editable fields supplied." }, { status: 400 });
   }
-  patch.updated_by = req.headers.get("x-user-id") || (body.actor_id as string) || "staff_darren";
+  const actor = req.headers.get("x-user-id") || (body.actor_id as string) || "staff_darren";
+  patch.updated_by = actor;
 
   const updated = await dal.youngPeople.update(id, patch);
   if (!updated) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
+
+  // Audit the edit: who changed what on a child's record, field-level
+  // before→after. Fire-and-forget — never blocks or fails the edit. Captures
+  // the always-on in-memory trail now; writes the durable cs_audit_log when
+  // Supabase is enabled.
+  auditFromRequest(req, {
+    entityType: "young_person",
+    entityId: id,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    homeId: ((existing as any).home_id as string) ?? null,
+    action: "update",
+    before: existing as unknown as Record<string, unknown>,
+    after: updated as unknown as Record<string, unknown>,
+    performedBy: actor,
+  });
+
   return NextResponse.json({ data: updated });
 }
 
@@ -142,12 +164,29 @@ async function archiveYoungPerson(
   const existing = await dal.youngPeople.findById(id);
   if (!existing) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
 
+  const actor = req.headers.get("x-user-id") || "staff_darren";
   const updated = await dal.youngPeople.update(id, {
     status: "ended",
     placement_end: todayStr(),
-    updated_by: req.headers.get("x-user-id") || "staff_darren",
+    updated_by: actor,
   });
   if (!updated) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
+
+  // Audit the archive as a delete action on the record (before→after shows
+  // status current→ended). Ending a placement is a significant event on a
+  // looked-after child's record — it must leave a trail.
+  auditFromRequest(req, {
+    entityType: "young_person",
+    entityId: id,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    homeId: ((existing as any).home_id as string) ?? null,
+    action: "delete",
+    before: existing as unknown as Record<string, unknown>,
+    after: updated as unknown as Record<string, unknown>,
+    performedBy: actor,
+    metadata: { soft_archive: true, placement_end: todayStr() },
+  });
+
   return NextResponse.json({ data: updated, archived: true });
 }
 
