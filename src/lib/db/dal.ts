@@ -97,6 +97,12 @@ export const dal = {
       if (c) return sq.createYoungPerson(c, { ...data, home_id: homeId() });
       return db.youngPeople.create(data);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any) {
+      const c = sb();
+      if (c) return sq.updateYoungPerson(c, id, data);
+      return db.youngPeople.update(id, data);
+    },
   },
 
   // ── Tasks ─────────────────────────────────────────────────────────────────

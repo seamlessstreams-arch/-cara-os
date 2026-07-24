@@ -11768,12 +11768,32 @@ export const db = {
       const yp = {
         status: "current",
         ...data,
+        // The list/array columns are required arrays on YoungPerson: default
+        // them so a freshly-admitted child is shape-complete and every reader
+        // (e.g. the record view's `risk_flags.length`) is safe.
+        risk_flags: data.risk_flags ?? [],
+        allergies: data.allergies ?? [],
         id: generateId("yp"),
         home_id: data.home_id ?? "home_oak",
         created_at: new Date().toISOString(),
       } as YoungPerson;
       store.youngPeople.push(yp);
       return yp;
+    },
+    update: (id: string, patch: Partial<YoungPerson>): YoungPerson | null => {
+      const idx = store.youngPeople.findIndex((yp) => yp.id === id);
+      if (idx === -1) return null;
+      // Identity and tenancy are immutable through the update path: a PATCH must
+      // never rewrite the id, move a child to another home, or rewrite creation.
+      const { id: _id, home_id: _home, created_at: _created, created_by: _createdBy, ...rest } =
+        patch as Record<string, unknown>;
+      void _id; void _home; void _created; void _createdBy;
+      store.youngPeople[idx] = {
+        ...store.youngPeople[idx],
+        ...(rest as Partial<YoungPerson>),
+        updated_at: new Date().toISOString(),
+      };
+      return store.youngPeople[idx];
     },
   },
 
