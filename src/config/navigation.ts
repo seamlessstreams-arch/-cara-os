@@ -31,6 +31,7 @@ export const NAV_GROUPS: NavGroup[] = [
     href:   "/dashboard",
     module: "dashboard",
     children: [
+      { label: "Home",            href: "/home",            icon: "Home",            module: "dashboard"  },
       { label: "Command Centre",  href: "/dashboard",       icon: "LayoutDashboard", module: "dashboard"  },
       { label: "Plan My Day",     href: "/plan-my-day",     icon: "CalendarClock",   module: "dashboard"  },
       { label: "Calendar",        href: "/calendar",        icon: "CalendarDays",    module: "dashboard"  },
