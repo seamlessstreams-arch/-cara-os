@@ -213,7 +213,7 @@ export function CaraCommandCentre({
                     <AlertTriangle className="h-4 w-4" /> Safety flags
                   </div>
                   <ul className="mt-2 list-disc pl-5 text-sm text-amber-800">
-                    {output.safetyFlags.map((flag) => <li key={flag}>{flag}</li>)}
+                    {output.safetyFlags.map((flag: any) => <li key={flag}>{flag}</li>)}
                   </ul>
                 </div>
               )}
@@ -234,7 +234,7 @@ export function CaraCommandCentre({
                 <div className="rounded-2xl border p-5">
                   <h3 className="font-semibold">Next best actions</h3>
                   <div className="mt-3 space-y-2">
-                    {output.nextBestActions.map((action) => (
+                    {output.nextBestActions.map((action: any) => (
                       <div key={`${action.title}-${action.ownerRole}`} className="rounded-xl bg-slate-50 p-3">
                         <p className="text-sm font-medium">{action.title}</p>
                         <p className="text-xs text-slate-600">
@@ -251,7 +251,7 @@ export function CaraCommandCentre({
                 <div className="rounded-2xl border p-5">
                   <h3 className="font-semibold">Show me the evidence</h3>
                   <div className="mt-3 space-y-2">
-                    {output.evidenceUsed.slice(0, 10).map((item) => (
+                    {output.evidenceUsed.slice(0, 10).map((item: any) => (
                       <details key={`${item.sourceTable}-${item.sourceId}`} className="rounded-xl bg-slate-50 p-3">
                         <summary className="cursor-pointer text-sm font-medium">
                           {item.sourceTitle ?? item.sourceTable} &middot; {item.sourceDate ?? "No date"}
@@ -267,7 +267,7 @@ export function CaraCommandCentre({
                 <div className="rounded-2xl border border-green-200 bg-green-50 p-5">
                   <h3 className="font-semibold text-green-800">Practice prompts</h3>
                   <ul className="mt-2 list-disc pl-5 text-sm text-green-800">
-                    {output.practicePrompts.map((prompt) => <li key={prompt}>{prompt}</li>)}
+                    {output.practicePrompts.map((prompt: any) => <li key={prompt}>{prompt}</li>)}
                   </ul>
                 </div>
               )}
