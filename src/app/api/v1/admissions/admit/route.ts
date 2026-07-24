@@ -19,9 +19,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
-import { db } from "@/lib/db/store";
 import { readJsonBody } from "@/lib/http/read-json";
-import { createTaskRecord } from "@/lib/supabase/care-records";
+import { createTaskRecord, createRiskAssessmentRecord } from "@/lib/supabase/care-records";
 import { generateId, todayStr } from "@/lib/utils";
 import { performSmartUpload } from "@/lib/compliance/smart-upload";
 import { extractReferralDocument } from "@/lib/referral-extraction/referral-extraction-engine";
@@ -104,9 +103,12 @@ export async function POST(req: NextRequest) {
       today,
     });
     riskAssessments = drafts.map((d) => {
+      // Dual-mode: in-memory store + best-effort generic_records write-through,
+      // so the draft RAs survive on a live tenant (the same durable path the
+      // /risk-assessments route uses) rather than vanishing on cold start.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const created = db.riskAssessments.create(d as any);
-      return { id: created.id, domain: created.domain };
+      const created = createRiskAssessmentRecord(d as any) as any;
+      return { id: created.id as string, domain: created.domain as string };
     });
   }
 
