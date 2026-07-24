@@ -43,11 +43,11 @@ export function CaraCommandCentre({
   const [reviewing, setReviewing] = useState(false);
 
   const loading = false;
-  const error = null;
-  const output = null;
-  const aiRunId = null;
-  const askCara = async () => {};
-  const reviewCara = async () => {};
+  const error: string | null = null;
+  const output: { confidence: number; evidenceUsed: string[]; managementOversightRequired: boolean; safetyFlags: string[]; executiveSummary: string; answer: string; nextBestActions: string[]; practicePrompts: string[] } | null = null;
+  const aiRunId: string | null = null;
+  const askCara = async (_args: Record<string, any>) => {};
+  const reviewCara = async (_args: Record<string, any>) => {};
 
   const confidenceLabel = useMemo(() => {
     if (!output) return null;

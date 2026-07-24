@@ -1,8 +1,10 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, useMemo, useEffect } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
+import { CardSkeleton } from "@/components/dashboard/card-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -349,6 +351,1487 @@ import type {
   Urgency,
   AttentionStatus,
 } from "@/types/intelligence.layer";
+
+
+/* ─────────────────────────────────────────────────────────────────
+   LAZY: Below-fold cards (dynamic imports)
+   ───────────────────────────────────────────────────────────────── */
+
+const RecordingTrendCardLazy = dynamic(
+  () => import("@/components/dashboard/recording-trend-card").then(mod => ({ default: mod.RecordingTrendCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MissingFromCareCardLazy = dynamic(
+  () => import("@/components/dashboard/missing-from-care-card").then(mod => ({ default: mod.MissingFromCareCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ComplaintsNotificationsCardLazy = dynamic(
+  () => import("@/components/dashboard/complaints-notifications-card").then(mod => ({ default: mod.ComplaintsNotificationsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PlacementIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/placement-intelligence-card").then(mod => ({ default: mod.PlacementIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const BehaviourIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/behaviour-intelligence-card").then(mod => ({ default: mod.BehaviourIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const RotaIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/rota-intelligence-card").then(mod => ({ default: mod.RotaIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PremisesIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/premises-intelligence-card").then(mod => ({ default: mod.PremisesIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const TrainingIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/training-intelligence-card").then(mod => ({ default: mod.TrainingIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const FinanceIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/finance-intelligence-card").then(mod => ({ default: mod.FinanceIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const LifeSkillsCardLazy = dynamic(
+  () => import("@/components/dashboard/life-skills-card").then(mod => ({ default: mod.LifeSkillsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const NotifiableEventsCardLazy = dynamic(
+  () => import("@/components/dashboard/notifiable-events-card").then(mod => ({ default: mod.NotifiableEventsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SCCIFEvaluationCardLazy = dynamic(
+  () => import("@/components/dashboard/sccif-evaluation-card").then(mod => ({ default: mod.SCCIFEvaluationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const VisitorsCardLazy = dynamic(
+  () => import("@/components/dashboard/visitors-card").then(mod => ({ default: mod.VisitorsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const OutcomesCardLazy = dynamic(
+  () => import("@/components/dashboard/outcomes-card").then(mod => ({ default: mod.OutcomesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HandoverCardLazy = dynamic(
+  () => import("@/components/dashboard/handover-card").then(mod => ({ default: mod.HandoverCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const AppraisalsCardLazy = dynamic(
+  () => import("@/components/dashboard/appraisals-card").then(mod => ({ default: mod.AppraisalsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MeetingsCardLazy = dynamic(
+  () => import("@/components/dashboard/meetings-card").then(mod => ({ default: mod.MeetingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const RestraintCardLazy = dynamic(
+  () => import("@/components/dashboard/restraint-card").then(mod => ({ default: mod.RestraintCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const QualityAssuranceCardLazy = dynamic(
+  () => import("@/components/dashboard/quality-assurance-card").then(mod => ({ default: mod.QualityAssuranceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PossessionsCardLazy = dynamic(
+  () => import("@/components/dashboard/possessions-card").then(mod => ({ default: mod.PossessionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EmergencyCardLazy = dynamic(
+  () => import("@/components/dashboard/emergency-card").then(mod => ({ default: mod.EmergencyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SaferRecruitmentCardLazy = dynamic(
+  () => import("@/components/dashboard/safer-recruitment-card").then(mod => ({ default: mod.SaferRecruitmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const LeavingCareCardLazy = dynamic(
+  () => import("@/components/dashboard/leaving-care-card").then(mod => ({ default: mod.LeavingCareCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffDisciplinaryCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-disciplinary-card").then(mod => ({ default: mod.StaffDisciplinaryCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SanctionsRewardsCardLazy = dynamic(
+  () => import("@/components/dashboard/sanctions-rewards-card").then(mod => ({ default: mod.SanctionsRewardsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ContextualSafeguardingCardLazy = dynamic(
+  () => import("@/components/dashboard/contextual-safeguarding-card").then(mod => ({ default: mod.ContextualSafeguardingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const DeprivationOfLibertyCardLazy = dynamic(
+  () => import("@/components/dashboard/deprivation-of-liberty-card").then(mod => ({ default: mod.DeprivationOfLibertyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const WhistleblowingCardLazy = dynamic(
+  () => import("@/components/dashboard/whistleblowing-card").then(mod => ({ default: mod.WhistleblowingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PoliciesRegisterCardLazy = dynamic(
+  () => import("@/components/dashboard/policies-register-card").then(mod => ({ default: mod.PoliciesRegisterCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const AdvocacyCardLazy = dynamic(
+  () => import("@/components/dashboard/advocacy-card").then(mod => ({ default: mod.AdvocacyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MultiAgencyCardLazy = dynamic(
+  () => import("@/components/dashboard/multi-agency-card").then(mod => ({ default: mod.MultiAgencyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const NightMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/night-monitoring-card").then(mod => ({ default: mod.NightMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CulturalIdentityCardLazy = dynamic(
+  () => import("@/components/dashboard/cultural-identity-card").then(mod => ({ default: mod.CulturalIdentityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SubstanceMisuseCardLazy = dynamic(
+  () => import("@/components/dashboard/substance-misuse-card").then(mod => ({ default: mod.SubstanceMisuseCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const IndependentVisitorsCardLazy = dynamic(
+  () => import("@/components/dashboard/independent-visitors-card").then(mod => ({ default: mod.IndependentVisitorsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const BusinessContinuityCardLazy = dynamic(
+  () => import("@/components/dashboard/business-continuity-card").then(mod => ({ default: mod.BusinessContinuityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StatementOfPurposeCardLazy = dynamic(
+  () => import("@/components/dashboard/statement-of-purpose-card").then(mod => ({ default: mod.StatementOfPurposeCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const Reg45ReportsCardLazy = dynamic(
+  () => import("@/components/dashboard/reg45-reports-card").then(mod => ({ default: mod.Reg45ReportsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensGuideCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-guide-card").then(mod => ({ default: mod.ChildrensGuideCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const TransitionPlanningCardLazy = dynamic(
+  () => import("@/components/dashboard/transition-planning-card").then(mod => ({ default: mod.TransitionPlanningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensParticipationCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-participation-card").then(mod => ({ default: mod.ChildrensParticipationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const FoodNutritionCardLazy = dynamic(
+  () => import("@/components/dashboard/food-nutrition-card").then(mod => ({ default: mod.FoodNutritionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PocketMoneyCardLazy = dynamic(
+  () => import("@/components/dashboard/pocket-money-card").then(mod => ({ default: mod.PocketMoneyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EnvironmentalSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/environmental-safety-card").then(mod => ({ default: mod.EnvironmentalSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const RecordsManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/records-management-card").then(mod => ({ default: mod.RecordsManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SleepPatternsCardLazy = dynamic(
+  () => import("@/components/dashboard/sleep-patterns-card").then(mod => ({ default: mod.SleepPatternsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StakeholderEngagementCardLazy = dynamic(
+  () => import("@/components/dashboard/stakeholder-engagement-card").then(mod => ({ default: mod.StakeholderEngagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ImpactRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/impact-risk-assessment-card").then(mod => ({ default: mod.ImpactRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffWellbeingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-wellbeing-card").then(mod => ({ default: mod.StaffWellbeingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const KpiTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/kpi-tracking-card").then(mod => ({ default: mod.KpiTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ProfessionalDevelopmentCardLazy = dynamic(
+  () => import("@/components/dashboard/professional-development-card").then(mod => ({ default: mod.ProfessionalDevelopmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const TherapeuticInterventionsCardLazy = dynamic(
+  () => import("@/components/dashboard/therapeutic-interventions-card").then(mod => ({ default: mod.TherapeuticInterventionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const WorkforcePlanningCardLazy = dynamic(
+  () => import("@/components/dashboard/workforce-planning-card").then(mod => ({ default: mod.WorkforcePlanningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CarePlanningCardLazy = dynamic(
+  () => import("@/components/dashboard/care-planning-card").then(mod => ({ default: mod.CarePlanningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const FamilyEngagementCardLazy = dynamic(
+  () => import("@/components/dashboard/family-engagement-card").then(mod => ({ default: mod.FamilyEngagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CommissioningReferralsCardLazy = dynamic(
+  () => import("@/components/dashboard/commissioning-referrals-card").then(mod => ({ default: mod.CommissioningReferralsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensRightsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-rights-card").then(mod => ({ default: mod.ChildrensRightsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PracticeLearningCardLazy = dynamic(
+  () => import("@/components/dashboard/practice-learning-card").then(mod => ({ default: mod.PracticeLearningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffAbsenceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-absence-card").then(mod => ({ default: mod.StaffAbsenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ActivityPlanningCardLazy = dynamic(
+  () => import("@/components/dashboard/activity-planning-card").then(mod => ({ default: mod.ActivityPlanningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const OnlineSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/online-safety-card").then(mod => ({ default: mod.OnlineSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const LACReviewCardLazy = dynamic(
+  () => import("@/components/dashboard/lac-review-card").then(mod => ({ default: mod.LACReviewCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffInductionCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-induction-card").then(mod => ({ default: mod.StaffInductionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const DutyOfCandourCardLazy = dynamic(
+  () => import("@/components/dashboard/duty-of-candour-card").then(mod => ({ default: mod.DutyOfCandourCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const AntiBullyingCardLazy = dynamic(
+  () => import("@/components/dashboard/anti-bullying-card").then(mod => ({ default: mod.AntiBullyingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ConsentManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/consent-management-card").then(mod => ({ default: mod.ConsentManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SignificantEventsCardLazy = dynamic(
+  () => import("@/components/dashboard/significant-events-card").then(mod => ({ default: mod.SignificantEventsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const LegalStatusCardLazy = dynamic(
+  () => import("@/components/dashboard/legal-status-card").then(mod => ({ default: mod.LegalStatusCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const BodyMapCardLazy = dynamic(
+  () => import("@/components/dashboard/body-map-card").then(mod => ({ default: mod.BodyMapCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const KeyDocumentsCardLazy = dynamic(
+  () => import("@/components/dashboard/key-documents-card").then(mod => ({ default: mod.KeyDocumentsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PlacementStabilityCardLazy = dynamic(
+  () => import("@/components/dashboard/placement-stability-card").then(mod => ({ default: mod.PlacementStabilityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ProviderVisitsCardLazy = dynamic(
+  () => import("@/components/dashboard/provider-visits-card").then(mod => ({ default: mod.ProviderVisitsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MatchingReferralCardLazy = dynamic(
+  () => import("@/components/dashboard/matching-referral-card").then(mod => ({ default: mod.MatchingReferralCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const IndependencePreparationCardLazy = dynamic(
+  () => import("@/components/dashboard/independence-preparation-card").then(mod => ({ default: mod.IndependencePreparationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SensoryProfileCardLazy = dynamic(
+  () => import("@/components/dashboard/sensory-profile-card").then(mod => ({ default: mod.SensoryProfileCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PeerMentoringCardLazy = dynamic(
+  () => import("@/components/dashboard/peer-mentoring-card").then(mod => ({ default: mod.PeerMentoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ContactMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/contact-monitoring-card").then(mod => ({ default: mod.ContactMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const AttachmentRelationshipsCardLazy = dynamic(
+  () => import("@/components/dashboard/attachment-relationships-card").then(mod => ({ default: mod.AttachmentRelationshipsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const DiversityInclusionCardLazy = dynamic(
+  () => import("@/components/dashboard/diversity-inclusion-card").then(mod => ({ default: mod.DiversityInclusionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EmergencyPlacementCardLazy = dynamic(
+  () => import("@/components/dashboard/emergency-placement-card").then(mod => ({ default: mod.EmergencyPlacementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CourtProceedingsCardLazy = dynamic(
+  () => import("@/components/dashboard/court-proceedings-card").then(mod => ({ default: mod.CourtProceedingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const BehaviourSupportPlansCardLazy = dynamic(
+  () => import("@/components/dashboard/behaviour-support-plans-card").then(mod => ({ default: mod.BehaviourSupportPlansCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const DischargeTransitionCardLazy = dynamic(
+  () => import("@/components/dashboard/discharge-transition-card").then(mod => ({ default: mod.DischargeTransitionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MedicationErrorsCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-errors-card").then(mod => ({ default: mod.MedicationErrorsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensAchievementsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-achievements-card").then(mod => ({ default: mod.ChildrensAchievementsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const RiskRegisterCardLazy = dynamic(
+  () => import("@/components/dashboard/risk-register-card").then(mod => ({ default: mod.RiskRegisterCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const DelegatedAuthorityCardLazy = dynamic(
+  () => import("@/components/dashboard/delegated-authority-card").then(mod => ({ default: mod.DelegatedAuthorityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const LanguageCommunicationCardLazy = dynamic(
+  () => import("@/components/dashboard/language-communication-card").then(mod => ({ default: mod.LanguageCommunicationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const IndividualRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/individual-risk-assessment-card").then(mod => ({ default: mod.IndividualRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ParentalResponsibilityCardLazy = dynamic(
+  () => import("@/components/dashboard/parental-responsibility-card").then(mod => ({ default: mod.ParentalResponsibilityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensWishesFeelingsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-wishes-feelings-card").then(mod => ({ default: mod.ChildrensWishesFeelingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const DailyRoutineCardLazy = dynamic(
+  () => import("@/components/dashboard/daily-routine-card").then(mod => ({ default: mod.DailyRoutineCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildExploitationScreeningCardLazy = dynamic(
+  () => import("@/components/dashboard/child-exploitation-screening-card").then(mod => ({ default: mod.ChildExploitationScreeningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const TraumaInformedCareCardLazy = dynamic(
+  () => import("@/components/dashboard/trauma-informed-care-card").then(mod => ({ default: mod.TraumaInformedCareCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const RespiteShortBreaksCardLazy = dynamic(
+  () => import("@/components/dashboard/respite-short-breaks-card").then(mod => ({ default: mod.RespiteShortBreaksCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MedicationAdministrationCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-administration-card").then(mod => ({ default: mod.MedicationAdministrationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffSupervisionSessionsCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-supervision-sessions-card").then(mod => ({ default: mod.StaffSupervisionSessionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const FireSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/fire-safety-card").then(mod => ({ default: mod.FireSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SecureStorageCardLazy = dynamic(
+  () => import("@/components/dashboard/secure-storage-card").then(mod => ({ default: mod.SecureStorageCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ComplaintsInvestigationCardLazy = dynamic(
+  () => import("@/components/dashboard/complaints-investigation-card").then(mod => ({ default: mod.ComplaintsInvestigationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const WorkforceDiversityCardLazy = dynamic(
+  () => import("@/components/dashboard/workforce-diversity-card").then(mod => ({ default: mod.WorkforceDiversityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const VisitorManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/visitor-management-card").then(mod => ({ default: mod.VisitorManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EmergencyAdmissionsCardLazy = dynamic(
+  () => import("@/components/dashboard/emergency-admissions-card").then(mod => ({ default: mod.EmergencyAdmissionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffGrievanceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-grievance-card").then(mod => ({ default: mod.StaffGrievanceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EqualityHumanRightsCardLazy = dynamic(
+  () => import("@/components/dashboard/equality-human-rights-card").then(mod => ({ default: mod.EqualityHumanRightsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensFundManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-fund-management-card").then(mod => ({ default: mod.ChildrensFundManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffAttendanceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-attendance-card").then(mod => ({ default: mod.StaffAttendanceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const AllegationManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/allegation-management-card").then(mod => ({ default: mod.AllegationManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const TransportSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/transport-safety-card").then(mod => ({ default: mod.TransportSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffTeamMeetingsCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-team-meetings-card").then(mod => ({ default: mod.StaffTeamMeetingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CctvSurveillanceCardLazy = dynamic(
+  () => import("@/components/dashboard/cctv-surveillance-card").then(mod => ({ default: mod.CctvSurveillanceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MealtimesNutritionCardLazy = dynamic(
+  () => import("@/components/dashboard/mealtimes-nutrition-card").then(mod => ({ default: mod.MealtimesNutritionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const BuildingSecurityCardLazy = dynamic(
+  () => import("@/components/dashboard/building-security-card").then(mod => ({ default: mod.BuildingSecurityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const WaterSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/water-safety-card").then(mod => ({ default: mod.WaterSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const InfectionControlCardLazy = dynamic(
+  () => import("@/components/dashboard/infection-control-card").then(mod => ({ default: mod.InfectionControlCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MaintenanceRepairsCardLazy = dynamic(
+  () => import("@/components/dashboard/maintenance-repairs-card").then(mod => ({ default: mod.MaintenanceRepairsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const GiftsHospitalityCardLazy = dynamic(
+  () => import("@/components/dashboard/gifts-hospitality-card").then(mod => ({ default: mod.GiftsHospitalityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const BedroomAuditCardLazy = dynamic(
+  () => import("@/components/dashboard/bedroom-audit-card").then(mod => ({ default: mod.BedroomAuditCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const LaundryClothingCardLazy = dynamic(
+  () => import("@/components/dashboard/laundry-clothing-card").then(mod => ({ default: mod.LaundryClothingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EmergencyDrillCardLazy = dynamic(
+  () => import("@/components/dashboard/emergency-drill-card").then(mod => ({ default: mod.EmergencyDrillCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HealthAppointmentsCardLazy = dynamic(
+  () => import("@/components/dashboard/health-appointments-card").then(mod => ({ default: mod.HealthAppointmentsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CommunalAreaAuditCardLazy = dynamic(
+  () => import("@/components/dashboard/communal-area-audit-card").then(mod => ({ default: mod.CommunalAreaAuditCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const NotificationsRegisterCardLazy = dynamic(
+  () => import("@/components/dashboard/notifications-register-card").then(mod => ({ default: mod.NotificationsRegisterCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffExitInterviewsCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-exit-interviews-card").then(mod => ({ default: mod.StaffExitInterviewsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensMeetingsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-meetings-card").then(mod => ({ default: mod.ChildrensMeetingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HolidayTripsCardLazy = dynamic(
+  () => import("@/components/dashboard/holiday-trips-card").then(mod => ({ default: mod.HolidayTripsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const DataProtectionCardLazy = dynamic(
+  () => import("@/components/dashboard/data-protection-card").then(mod => ({ default: mod.DataProtectionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PanelDecisionsCardLazy = dynamic(
+  () => import("@/components/dashboard/panel-decisions-card").then(mod => ({ default: mod.PanelDecisionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const VehicleManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/vehicle-management-card").then(mod => ({ default: mod.VehicleManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PestControlCardLazy = dynamic(
+  () => import("@/components/dashboard/pest-control-card").then(mod => ({ default: mod.PestControlCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensFeedbackCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-feedback-card").then(mod => ({ default: mod.ChildrensFeedbackCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const UtilityManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/utility-management-card").then(mod => ({ default: mod.UtilityManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const VolunteerManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/volunteer-management-card").then(mod => ({ default: mod.VolunteerManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const RoomTemperatureCardLazy = dynamic(
+  () => import("@/components/dashboard/room-temperature-card").then(mod => ({ default: mod.RoomTemperatureCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MedicationAuditCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-audit-card").then(mod => ({ default: mod.MedicationAuditCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensAbsenceCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-absence-card").then(mod => ({ default: mod.ChildrensAbsenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeImprovementCardLazy = dynamic(
+  () => import("@/components/dashboard/home-improvement-card").then(mod => ({ default: mod.HomeImprovementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CleaningScheduleCardLazy = dynamic(
+  () => import("@/components/dashboard/cleaning-schedule-card").then(mod => ({ default: mod.CleaningScheduleCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const KeyHoldingCardLazy = dynamic(
+  () => import("@/components/dashboard/key-holding-card").then(mod => ({ default: mod.KeyHoldingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PersonalHygieneCardLazy = dynamic(
+  () => import("@/components/dashboard/personal-hygiene-card").then(mod => ({ default: mod.PersonalHygieneCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MissingPersonRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/missing-person-risk-card").then(mod => ({ default: mod.MissingPersonRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SafeguardingReferralCardLazy = dynamic(
+  () => import("@/components/dashboard/safeguarding-referral-card").then(mod => ({ default: mod.SafeguardingReferralCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MedicationStorageCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-storage-card").then(mod => ({ default: mod.MedicationStorageCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const AdmissionAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/admission-assessment-card").then(mod => ({ default: mod.AdmissionAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffCompetencyAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-competency-assessment-card").then(mod => ({ default: mod.StaffCompetencyAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EnvironmentalAuditCardLazy = dynamic(
+  () => import("@/components/dashboard/environmental-audit-card").then(mod => ({ default: mod.EnvironmentalAuditCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ProfessionalConsultationCardLazy = dynamic(
+  () => import("@/components/dashboard/professional-consultation-card").then(mod => ({ default: mod.ProfessionalConsultationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const OfstedActionPlanCardLazy = dynamic(
+  () => import("@/components/dashboard/ofsted-action-plan-card").then(mod => ({ default: mod.OfstedActionPlanCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const LifeStoryWorkCardLazy = dynamic(
+  () => import("@/components/dashboard/life-story-work-card").then(mod => ({ default: mod.LifeStoryWorkCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PositiveHandlingCardLazy = dynamic(
+  () => import("@/components/dashboard/positive-handling-card").then(mod => ({ default: mod.PositiveHandlingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ShiftHandoverQualityCardLazy = dynamic(
+  () => import("@/components/dashboard/shift-handover-quality-card").then(mod => ({ default: mod.ShiftHandoverQualityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensProgressTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-progress-tracking-card").then(mod => ({ default: mod.ChildrensProgressTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const KeyworkerSessionsCardLazy = dynamic(
+  () => import("@/components/dashboard/keyworker-sessions-card").then(mod => ({ default: mod.KeyworkerSessionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const RestraintDebriefCardLazy = dynamic(
+  () => import("@/components/dashboard/restraint-debrief-card").then(mod => ({ default: mod.RestraintDebriefCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffReflectivePracticeCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-reflective-practice-card").then(mod => ({ default: mod.StaffReflectivePracticeCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffHandoverNotesCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-handover-notes-card").then(mod => ({ default: mod.StaffHandoverNotesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildRiskAssessmentReviewCardLazy = dynamic(
+  () => import("@/components/dashboard/child-risk-assessment-review-card").then(mod => ({ default: mod.ChildRiskAssessmentReviewCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeDecorationPersonalisationCardLazy = dynamic(
+  () => import("@/components/dashboard/home-decoration-personalisation-card").then(mod => ({ default: mod.HomeDecorationPersonalisationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MedicationConsentCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-consent-card").then(mod => ({ default: mod.MedicationConsentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffLoneWorkingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-lone-working-card").then(mod => ({ default: mod.StaffLoneWorkingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensTherapySessionsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-therapy-sessions-card").then(mod => ({ default: mod.ChildrensTherapySessionsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const NightWakingMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/night-waking-monitoring-card").then(mod => ({ default: mod.NightWakingMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CommunityLinksIntegrationCardLazy = dynamic(
+  () => import("@/components/dashboard/community-links-integration-card").then(mod => ({ default: mod.CommunityLinksIntegrationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffMedicationCompetencyCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-medication-competency-card").then(mod => ({ default: mod.StaffMedicationCompetencyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const BoundaryManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/boundary-management-card").then(mod => ({ default: mod.BoundaryManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const InternetUsageMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/internet-usage-monitoring-card").then(mod => ({ default: mod.InternetUsageMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SleepQualityAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/sleep-quality-assessment-card").then(mod => ({ default: mod.SleepQualityAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CulturalIdentitySupportCardLazy = dynamic(
+  () => import("@/components/dashboard/cultural-identity-support-card").then(mod => ({ default: mod.CulturalIdentitySupportCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PocketMoneyManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/pocket-money-management-card").then(mod => ({ default: mod.PocketMoneyManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildWellbeingCheckinCardLazy = dynamic(
+  () => import("@/components/dashboard/child-wellbeing-checkin-card").then(mod => ({ default: mod.ChildWellbeingCheckinCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffDebriefSupportCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-debrief-support-card").then(mod => ({ default: mod.StaffDebriefSupportCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EducationAttendanceTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/education-attendance-tracking-card").then(mod => ({ default: mod.EducationAttendanceTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ContactSupervisionCardLazy = dynamic(
+  () => import("@/components/dashboard/contact-supervision-card").then(mod => ({ default: mod.ContactSupervisionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SelfHarmRiskMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/self-harm-risk-monitoring-card").then(mod => ({ default: mod.SelfHarmRiskMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const RoomSharingAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/room-sharing-assessment-card").then(mod => ({ default: mod.RoomSharingAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MedicationSideEffectsCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-side-effects-card").then(mod => ({ default: mod.MedicationSideEffectsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PeerRelationshipAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/peer-relationship-assessment-card").then(mod => ({ default: mod.PeerRelationshipAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeEnvironmentInspectionCardLazy = dynamic(
+  () => import("@/components/dashboard/home-environment-inspection-card").then(mod => ({ default: mod.HomeEnvironmentInspectionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ComplaintResolutionTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/complaint-resolution-tracking-card").then(mod => ({ default: mod.ComplaintResolutionTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffSupervisionComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-supervision-compliance-card").then(mod => ({ default: mod.StaffSupervisionComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildDevelopmentMilestoneCardLazy = dynamic(
+  () => import("@/components/dashboard/child-development-milestone-card").then(mod => ({ default: mod.ChildDevelopmentMilestoneCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const VisitorFeedbackCollectionCardLazy = dynamic(
+  () => import("@/components/dashboard/visitor-feedback-collection-card").then(mod => ({ default: mod.VisitorFeedbackCollectionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffShiftPatternMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-shift-pattern-monitoring-card").then(mod => ({ default: mod.StaffShiftPatternMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildDigitalWellbeingCardLazy = dynamic(
+  () => import("@/components/dashboard/child-digital-wellbeing-card").then(mod => ({ default: mod.ChildDigitalWellbeingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const FamilyEngagementTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/family-engagement-tracking-card").then(mod => ({ default: mod.FamilyEngagementTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const TransitionPlanningReadinessCardLazy = dynamic(
+  () => import("@/components/dashboard/transition-planning-readiness-card").then(mod => ({ default: mod.TransitionPlanningReadinessCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const KeyWorkerAllocationCardLazy = dynamic(
+  () => import("@/components/dashboard/key-worker-allocation-card").then(mod => ({ default: mod.KeyWorkerAllocationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ConsentCapacityMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/consent-capacity-monitoring-card").then(mod => ({ default: mod.ConsentCapacityMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const BehaviourPatternAnalysisCardLazy = dynamic(
+  () => import("@/components/dashboard/behaviour-pattern-analysis-card").then(mod => ({ default: mod.BehaviourPatternAnalysisCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PhysicalActivityTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/physical-activity-tracking-card").then(mod => ({ default: mod.PhysicalActivityTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ReligiousCulturalObservanceCardLazy = dynamic(
+  () => import("@/components/dashboard/religious-cultural-observance-card").then(mod => ({ default: mod.ReligiousCulturalObservanceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SiblingContactQualityCardLazy = dynamic(
+  () => import("@/components/dashboard/sibling-contact-quality-card").then(mod => ({ default: mod.SiblingContactQualityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PrivacyDignityMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/privacy-dignity-monitoring-card").then(mod => ({ default: mod.PrivacyDignityMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensAspirationsGoalsCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-aspirations-goals-card").then(mod => ({ default: mod.ChildrensAspirationsGoalsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CreativeEnrichmentActivitiesCardLazy = dynamic(
+  () => import("@/components/dashboard/creative-enrichment-activities-card").then(mod => ({ default: mod.CreativeEnrichmentActivitiesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MedicationEffectivenessReviewCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-effectiveness-review-card").then(mod => ({ default: mod.MedicationEffectivenessReviewCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HealthScreeningImmunisationCardLazy = dynamic(
+  () => import("@/components/dashboard/health-screening-immunisation-card").then(mod => ({ default: mod.HealthScreeningImmunisationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SocialSkillsDevelopmentCardLazy = dynamic(
+  () => import("@/components/dashboard/social-skills-development-card").then(mod => ({ default: mod.SocialSkillsDevelopmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const RestorativeJusticePracticeCardLazy = dynamic(
+  () => import("@/components/dashboard/restorative-justice-practice-card").then(mod => ({ default: mod.RestorativeJusticePracticeCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const LeisureRecreationActivitiesCardLazy = dynamic(
+  () => import("@/components/dashboard/leisure-recreation-activities-card").then(mod => ({ default: mod.LeisureRecreationActivitiesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeworkAcademicSupportCardLazy = dynamic(
+  () => import("@/components/dashboard/homework-academic-support-card").then(mod => ({ default: mod.HomeworkAcademicSupportCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const AdvocacyRepresentationCardLazy = dynamic(
+  () => import("@/components/dashboard/advocacy-representation-card").then(mod => ({ default: mod.AdvocacyRepresentationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const CelebrationMilestonesCardLazy = dynamic(
+  () => import("@/components/dashboard/celebration-milestones-card").then(mod => ({ default: mod.CelebrationMilestonesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const WorkExperienceEmploymentCardLazy = dynamic(
+  () => import("@/components/dashboard/work-experience-employment-card").then(mod => ({ default: mod.WorkExperienceEmploymentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const DeviceScreenTimeMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/device-screen-time-monitoring-card").then(mod => ({ default: mod.DeviceScreenTimeMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const FinancialLiteracySavingsCardLazy = dynamic(
+  () => import("@/components/dashboard/financial-literacy-savings-card").then(mod => ({ default: mod.FinancialLiteracySavingsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const FirstAidMedicalEmergencyCardLazy = dynamic(
+  () => import("@/components/dashboard/first-aid-medical-emergency-card").then(mod => ({ default: mod.FirstAidMedicalEmergencyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const OutdoorSpacesPlayAreasCardLazy = dynamic(
+  () => import("@/components/dashboard/outdoor-spaces-play-areas-card").then(mod => ({ default: mod.OutdoorSpacesPlayAreasCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PositiveBehaviourReinforcementCardLazy = dynamic(
+  () => import("@/components/dashboard/positive-behaviour-reinforcement-card").then(mod => ({ default: mod.PositiveBehaviourReinforcementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const DentalOpticalHealthCardLazy = dynamic(
+  () => import("@/components/dashboard/dental-optical-health-card").then(mod => ({ default: mod.DentalOpticalHealthCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SelfEsteemConfidenceBuildingCardLazy = dynamic(
+  () => import("@/components/dashboard/self-esteem-confidence-building-card").then(mod => ({ default: mod.SelfEsteemConfidenceBuildingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ArrivalSettlingExperienceCardLazy = dynamic(
+  () => import("@/components/dashboard/arrival-settling-experience-card").then(mod => ({ default: mod.ArrivalSettlingExperienceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HealthyEatingCookingSkillsCardLazy = dynamic(
+  () => import("@/components/dashboard/healthy-eating-cooking-skills-card").then(mod => ({ default: mod.HealthyEatingCookingSkillsCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const RelationshipEducationSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/relationship-education-safety-card").then(mod => ({ default: mod.RelationshipEducationSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PetCareResponsibilityCardLazy = dynamic(
+  () => import("@/components/dashboard/pet-care-responsibility-card").then(mod => ({ default: mod.PetCareResponsibilityCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const GardenHorticultureActivitiesCardLazy = dynamic(
+  () => import("@/components/dashboard/garden-horticulture-activities-card").then(mod => ({ default: mod.GardenHorticultureActivitiesCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const FaithSpiritualObservanceCardLazy = dynamic(
+  () => import("@/components/dashboard/faith-spiritual-observance-card").then(mod => ({ default: mod.FaithSpiritualObservanceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffPatternIntelligenceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-pattern-intelligence-card").then(mod => ({ default: mod.StaffPatternIntelligenceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffPerformanceDipCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-performance-dip-card").then(mod => ({ default: mod.StaffPerformanceDipCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffBurnoutIndicatorCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-burnout-indicator-card").then(mod => ({ default: mod.StaffBurnoutIndicatorCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffDevelopmentPlanCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-development-plan-card").then(mod => ({ default: mod.StaffDevelopmentPlanCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffSupportPlanCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-support-plan-card").then(mod => ({ default: mod.StaffSupportPlanCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffPracticeRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-practice-risk-assessment-card").then(mod => ({ default: mod.StaffPracticeRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffTriggerMapCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-trigger-map-card").then(mod => ({ default: mod.StaffTriggerMapCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffSupportActionCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-support-action-card").then(mod => ({ default: mod.StaffSupportActionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffReviewOutcomeCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-review-outcome-card").then(mod => ({ default: mod.StaffReviewOutcomeCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffConfidenceIndicatorCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-confidence-indicator-card").then(mod => ({ default: mod.StaffConfidenceIndicatorCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffMandatoryTrainingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-mandatory-training-card").then(mod => ({ default: mod.StaffMandatoryTrainingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const YoungPersonDailyDiaryCardLazy = dynamic(
+  () => import("@/components/dashboard/young-person-daily-diary-card").then(mod => ({ default: mod.YoungPersonDailyDiaryCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ProfessionalNetworkDirectoryCardLazy = dynamic(
+  () => import("@/components/dashboard/professional-network-directory-card").then(mod => ({ default: mod.ProfessionalNetworkDirectoryCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MenuPlanningDietaryCardLazy = dynamic(
+  () => import("@/components/dashboard/menu-planning-dietary-card").then(mod => ({ default: mod.MenuPlanningDietaryCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EhcpSendMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/ehcp-send-monitoring-card").then(mod => ({ default: mod.EhcpSendMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const PlacementMatchingAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/placement-matching-assessment-card").then(mod => ({ default: mod.PlacementMatchingAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const Reg44IndependentVisitorCardLazy = dynamic(
+  () => import("@/components/dashboard/reg44-independent-visitor-card").then(mod => ({ default: mod.Reg44IndependentVisitorCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EmotionalWellbeingOutcomeCardLazy = dynamic(
+  () => import("@/components/dashboard/emotional-wellbeing-outcome-card").then(mod => ({ default: mod.EmotionalWellbeingOutcomeCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ComplianceCertificateCardLazy = dynamic(
+  () => import("@/components/dashboard/compliance-certificate-card").then(mod => ({ default: mod.ComplianceCertificateCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeClosurePlanningCardLazy = dynamic(
+  () => import("@/components/dashboard/home-closure-planning-card").then(mod => ({ default: mod.HomeClosurePlanningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ParentalContactArrangementCardLazy = dynamic(
+  () => import("@/components/dashboard/parental-contact-arrangement-card").then(mod => ({ default: mod.ParentalContactArrangementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SafeguardingPartnershipCardLazy = dynamic(
+  () => import("@/components/dashboard/safeguarding-partnership-card").then(mod => ({ default: mod.SafeguardingPartnershipCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const LacHealthAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/lac-health-assessment-card").then(mod => ({ default: mod.LacHealthAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffWhistleblowingInvestigationCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-whistleblowing-investigation-card").then(mod => ({ default: mod.StaffWhistleblowingInvestigationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeAtmosphereAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/home-atmosphere-assessment-card").then(mod => ({ default: mod.HomeAtmosphereAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const QualityOfCareReviewCardLazy = dynamic(
+  () => import("@/components/dashboard/quality-of-care-review-card").then(mod => ({ default: mod.QualityOfCareReviewCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const MedicationIncidentReportingCardLazy = dynamic(
+  () => import("@/components/dashboard/medication-incident-reporting-card").then(mod => ({ default: mod.MedicationIncidentReportingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffAnnualLeaveCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-annual-leave-card").then(mod => ({ default: mod.StaffAnnualLeaveCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildrensPocketMoneyAuditCardLazy = dynamic(
+  () => import("@/components/dashboard/childrens-pocket-money-audit-card").then(mod => ({ default: mod.ChildrensPocketMoneyAuditCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffConflictOfInterestCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-conflict-of-interest-card").then(mod => ({ default: mod.StaffConflictOfInterestCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const EnvironmentalImpactAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/environmental-impact-assessment-card").then(mod => ({ default: mod.EnvironmentalImpactAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffRetentionExitAnalysisCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-retention-exit-analysis-card").then(mod => ({ default: mod.StaffRetentionExitAnalysisCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildSexualExploitationRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-sexual-exploitation-risk-card").then(mod => ({ default: mod.ChildSexualExploitationRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const OfstedInspectionReadinessCardLazy = dynamic(
+  () => import("@/components/dashboard/ofsted-inspection-readiness-card").then(mod => ({ default: mod.OfstedInspectionReadinessCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const YoungPersonEmploymentSupportCardLazy = dynamic(
+  () => import("@/components/dashboard/young-person-employment-support-card").then(mod => ({ default: mod.YoungPersonEmploymentSupportCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const SleepDisturbanceInterventionCardLazy = dynamic(
+  () => import("@/components/dashboard/sleep-disturbance-intervention-card").then(mod => ({ default: mod.SleepDisturbanceInterventionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildCriminalExploitationRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-criminal-exploitation-risk-card").then(mod => ({ default: mod.ChildCriminalExploitationRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffSicknessManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-sickness-management-card").then(mod => ({ default: mod.StaffSicknessManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeInsuranceComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/home-insurance-compliance-card").then(mod => ({ default: mod.HomeInsuranceComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildVoiceParticipationTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/child-voice-participation-tracking-card").then(mod => ({ default: mod.ChildVoiceParticipationTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffCodeOfConductComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-code-of-conduct-compliance-card").then(mod => ({ default: mod.StaffCodeOfConductComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeEnergyEfficiencyCardLazy = dynamic(
+  () => import("@/components/dashboard/home-energy-efficiency-card").then(mod => ({ default: mod.HomeEnergyEfficiencyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildRadicalisationPreventionCardLazy = dynamic(
+  () => import("@/components/dashboard/child-radicalisation-prevention-card").then(mod => ({ default: mod.ChildRadicalisationPreventionCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffNvqQualificationTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-nvq-qualification-tracking-card").then(mod => ({ default: mod.StaffNvqQualificationTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeAccessibilityAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/home-accessibility-assessment-card").then(mod => ({ default: mod.HomeAccessibilityAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildNutritionWeightMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/child-nutrition-weight-monitoring-card").then(mod => ({ default: mod.ChildNutritionWeightMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffDbsRenewalTrackingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-dbs-renewal-tracking-card").then(mod => ({ default: mod.StaffDbsRenewalTrackingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeFireRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/home-fire-risk-assessment-card").then(mod => ({ default: mod.HomeFireRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildSubstanceMisuseScreeningCardLazy = dynamic(
+  () => import("@/components/dashboard/child-substance-misuse-screening-card").then(mod => ({ default: mod.ChildSubstanceMisuseScreeningCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffReturnToWorkInterviewCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-return-to-work-interview-card").then(mod => ({ default: mod.StaffReturnToWorkInterviewCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeLegionellaRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/home-legionella-risk-assessment-card").then(mod => ({ default: mod.HomeLegionellaRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildBereavementSupportCardLazy = dynamic(
+  () => import("@/components/dashboard/child-bereavement-support-card").then(mod => ({ default: mod.ChildBereavementSupportCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffMandatoryRefresherTrainingCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-mandatory-refresher-training-card").then(mod => ({ default: mod.StaffMandatoryRefresherTrainingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeAsbestosManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/home-asbestos-management-card").then(mod => ({ default: mod.HomeAsbestosManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildGangsAffiliationRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-gangs-affiliation-risk-card").then(mod => ({ default: mod.ChildGangsAffiliationRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffAgencyWorkerComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-agency-worker-compliance-card").then(mod => ({ default: mod.StaffAgencyWorkerComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeRadonTestingCardLazy = dynamic(
+  () => import("@/components/dashboard/home-radon-testing-card").then(mod => ({ default: mod.HomeRadonTestingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildFgmRiskAssessmentCardLazy = dynamic(
+  () => import("@/components/dashboard/child-fgm-risk-assessment-card").then(mod => ({ default: mod.ChildFgmRiskAssessmentCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffProfessionalRegistrationCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-professional-registration-card").then(mod => ({ default: mod.StaffProfessionalRegistrationCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeElectricalSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/home-electrical-safety-card").then(mod => ({ default: mod.HomeElectricalSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildForcedMarriageRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-forced-marriage-risk-card").then(mod => ({ default: mod.ChildForcedMarriageRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffSecondmentManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-secondment-management-card").then(mod => ({ default: mod.StaffSecondmentManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeGasSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/home-gas-safety-card").then(mod => ({ default: mod.HomeGasSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildModernSlaveryRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-modern-slavery-risk-card").then(mod => ({ default: mod.ChildModernSlaveryRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffPayrollComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-payroll-compliance-card").then(mod => ({ default: mod.StaffPayrollComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeLiftEquipmentSafetyCardLazy = dynamic(
+  () => import("@/components/dashboard/home-lift-equipment-safety-card").then(mod => ({ default: mod.HomeLiftEquipmentSafetyCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildHonourBasedAbuseRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-honour-based-abuse-risk-card").then(mod => ({ default: mod.ChildHonourBasedAbuseRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffExitInterviewManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-exit-interview-management-card").then(mod => ({ default: mod.StaffExitInterviewManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeWaterHygieneManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/home-water-hygiene-management-card").then(mod => ({ default: mod.HomeWaterHygieneManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildRadicalisationRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-radicalisation-risk-card").then(mod => ({ default: mod.ChildRadicalisationRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffWhistleblowingManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-whistleblowing-management-card").then(mod => ({ default: mod.StaffWhistleblowingManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomePestControlManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/home-pest-control-management-card").then(mod => ({ default: mod.HomePestControlManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildTraffickingRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/child-trafficking-risk-card").then(mod => ({ default: mod.ChildTraffickingRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffOvertimeManagementCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-overtime-management-card").then(mod => ({ default: mod.StaffOvertimeManagementCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeCctvComplianceCardLazy = dynamic(
+  () => import("@/components/dashboard/home-cctv-compliance-card").then(mod => ({ default: mod.HomeCctvComplianceCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const ChildOnlineSafetyMonitoringCardLazy = dynamic(
+  () => import("@/components/dashboard/child-online-safety-monitoring-card").then(mod => ({ default: mod.ChildOnlineSafetyMonitoringCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const StaffLoneWorkingRiskCardLazy = dynamic(
+  () => import("@/components/dashboard/staff-lone-working-risk-card").then(mod => ({ default: mod.StaffLoneWorkingRiskCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
+const HomeEmergencyLightingCardLazy = dynamic(
+  () => import("@/components/dashboard/home-emergency-lighting-card").then(mod => ({ default: mod.HomeEmergencyLightingCard })),
+  { loading: () => <CardSkeleton />, ssr: false }
+);
+
 
 /* ══════════════════════════════════════════════════════════════════════════════
    CARA — MANAGER CONTROL CENTRE
