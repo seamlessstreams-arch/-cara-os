@@ -2,6 +2,7 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -10,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { WarmWelcomePack } from "@/types/extended";
-import { useWarmWelcomePacks } from "@/hooks/use-warm-welcome-packs";
 import {
   ChevronUp,
   ChevronDown,
@@ -57,7 +57,10 @@ export default function WarmWelcomePacksPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
 
-  const { data: result, isLoading } = useWarmWelcomePacks(undefined, "home_oak");
+  const { data: result, isLoading } = useQuery<{ data: WarmWelcomePack[] }>({
+    queryKey: ["warm-welcome-packs", undefined, "home_oak"],
+    queryFn: () => fetch("/api/v1/warm-welcome-packs?home_id=home_oak").then((r) => r.json()),
+  });
   const packs = result?.data ?? [];
 
   const filtered = useMemo(() => {

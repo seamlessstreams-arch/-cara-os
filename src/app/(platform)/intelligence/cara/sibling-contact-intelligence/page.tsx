@@ -4,7 +4,7 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Users, CheckCircle, AlertTriangle, Clock, Star } from "lucide-react";
-import { useHomeSiblingContactRelationshipsIntelligence } from "@/hooks/use-home-sibling-contact-relationships-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { SiblingContactRating, SiblingContactResult } from "@/lib/engines/home-sibling-contact-relationships-intelligence-engine";
 
 // ── Rating helpers ─────────────────────────────────────────────────────────────
@@ -41,7 +41,15 @@ function RateBar({ label, value, total, warn = 80 }: { label: string; value: num
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function SiblingContactIntelligencePage() {
-  const { data, isLoading, error } = useHomeSiblingContactRelationshipsIntelligence();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["home-sibling-contact-relationships-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-sibling-contact-relationships-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch sibling contact relationships intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
   const d = data?.data as SiblingContactResult | undefined;
 
   if (isLoading) {

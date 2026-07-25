@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +16,7 @@ import {
   UserPlus, CheckCircle2, XCircle, Clock, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAdmissionReferralIntelligence } from "@/hooks/use-admission-referral-intelligence";
+import { api } from "@/hooks/use-api";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -51,7 +52,11 @@ const URGENCY_STYLES: Record<string, string> = {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function MatchingReferralCard() {
-  const { data, isLoading } = useAdmissionReferralIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["admission-referral-intelligence"],
+    queryFn: () => api.get("/admission-referral-intelligence"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

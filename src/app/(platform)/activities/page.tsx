@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,6 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useActivities, useCreateActivity } from "@/hooks/use-activities";
 import { toast } from "sonner";
 import type { Activity, ActivityCategory, ActivityEngagement } from "@/types/extended";
 import {
@@ -341,8 +341,16 @@ function NewActivityDialog({
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ActivitiesPage() {
-  const { data: result, isLoading } = useActivities();
-  const createActivity = useCreateActivity();
+  const qc = useQueryClient();
+  const { data: result, isLoading } = useQuery<{ data: Activity[] }>({
+    queryKey: ["activities"],
+    queryFn: () => fetch("/api/v1/activities").then((r) => r.json()),
+  });
+  const createActivity = useMutation({
+    mutationFn: (data: Partial<Activity>) =>
+      fetch("/api/v1/activities", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["activities"] }),
+  });
 
   const activities: Activity[] = useMemo(() => result?.data ?? [], [result]);
 

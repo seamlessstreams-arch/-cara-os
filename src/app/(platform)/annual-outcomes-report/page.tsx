@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -17,7 +18,6 @@ import {
 import { cn } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
 import type { AnnualOutcome, AnnualOutcomeDomain } from "@/types/extended";
-import { useAnnualOutcomes } from "@/hooks/use-annual-outcomes";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -58,7 +58,10 @@ const RATING_BAR: Record<number, string> = {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function AnnualOutcomesReportPage() {
-  const { data: aoData, isLoading } = useAnnualOutcomes();
+  const { data: aoData, isLoading } = useQuery<{ data: AnnualOutcome[] }>({
+    queryKey: ["annual-outcomes"],
+    queryFn: () => fetch("/api/v1/annual-outcomes").then((r) => r.json()),
+  });
   const data = aoData?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");

@@ -16,7 +16,9 @@
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useVoiceFollowThrough } from "@/hooks/use-voice-follow-through";
+import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "@/hooks/use-api";
+import type { VoiceFollowThroughResult } from "@/lib/voice-of-child/voice-follow-through-engine";
 import { VOICE_LOOP_STAGES } from "@/lib/voice-of-child/voice-follow-through-engine";
 import { Ear, CheckCircle2, AlertTriangle, MessageCircleHeart, Loader2 } from "lucide-react";
 
@@ -32,7 +34,14 @@ const STAGE_LABEL: Record<string, string> = {
 };
 
 export default function VoiceFollowThroughPage() {
-  const q = useVoiceFollowThrough();
+  interface VoiceFollowThroughResponse {
+    data: VoiceFollowThroughResult & { writeEnabled: boolean };
+  }
+  const q = useQuery({
+    queryKey: ["voice-follow-through", "all"],
+    queryFn: async () =>
+      (await apiFetch<VoiceFollowThroughResponse>("/voice-follow-through")).data,
+  });
   const d = q.data;
 
   return (

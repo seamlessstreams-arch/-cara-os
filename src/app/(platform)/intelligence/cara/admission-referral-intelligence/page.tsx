@@ -1,6 +1,7 @@
 "use client";
 
-import { useAdmissionReferralIntelligence } from "@/hooks/use-admission-referral-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
 import type {
   ReferralProfile,
@@ -97,7 +98,11 @@ function SourceBar({ s }: { s: SourceAnalysis }) {
 }
 
 export default function AdmissionReferralIntelligencePage() {
-  const { data, isLoading, isError } = useAdmissionReferralIntelligence();
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["admission-referral-intelligence"],
+    queryFn: () => api.get("/admission-referral-intelligence"),
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return <div className="flex items-center justify-center p-12 text-slate-500">Loading admission intelligence…</div>;

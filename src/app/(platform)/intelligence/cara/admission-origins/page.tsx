@@ -2,13 +2,15 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useAdmissionOrigins, useEmergencyFollowUps } from "@/hooks/use-admission-origins";
-import type { OriginStory, EmergencyFollowUps } from "@/hooks/use-admission-origins";
+import { api } from "@/hooks/use-api";
+import type { OriginStory } from "@/lib/admission-retro-link/admission-retro-link-engine";
+import type { EmergencyFollowUps } from "@/lib/admission-retro-link/emergency-followups-engine";
 import type { MatchConfidence } from "@/lib/admission-retro-link/admission-retro-link-engine";
 // Design tokens used below: --cs-text (primary), --cs-text-secondary,
 // --cs-text-gentle (tertiary), --cs-surface-subtle, --cs-navy (accent),
@@ -225,9 +227,27 @@ function Empty({ icon, text }: { icon: React.ReactNode; text: string }) {
 
 // ══════════════════════════════════════════════════════════════════════════════
 
+type OriginsResponse = {
+  data: { linked: number; young_people_total: number; stories: OriginStory[] };
+};
+
+type EmergencyResponse = {
+  data: { emergency_admissions: number; total_overdue: number; boards: EmergencyFollowUps[] };
+};
+
 export default function AdmissionOriginsPage() {
-  const emergency = useEmergencyFollowUps();
-  const origins = useAdmissionOrigins();
+  const emergency = useQuery({
+    queryKey: ["emergency-followups"],
+    queryFn: () => api.get<EmergencyResponse>("/emergency-followups"),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+  });
+  const origins = useQuery({
+    queryKey: ["admission-origins"],
+    queryFn: () => api.get<OriginsResponse>("/admission-retro-link"),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+  });
   const [search, setSearch] = useState("");
 
   const boards = emergency.data?.data.boards ?? [];

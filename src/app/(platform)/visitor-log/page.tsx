@@ -31,7 +31,7 @@ import {
   ChevronDown, ChevronUp, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useVisitors, useCreateVisitor } from "@/hooks/use-visitors";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { VisitorCategory, VisitStatus, VisitorEntry } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -258,8 +258,16 @@ function NewVisitorDialog({
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function VisitorLogPage() {
-  const { data: visData, isLoading } = useVisitors();
-  const createVisitor = useCreateVisitor();
+  const qc = useQueryClient();
+  const { data: visData, isLoading } = useQuery<{ data: VisitorEntry[] }>({
+    queryKey: ["visitors"],
+    queryFn: () => fetch("/api/v1/visitors").then((r) => r.json()),
+  });
+  const createVisitor = useMutation({
+    mutationFn: (data: Partial<VisitorEntry>) =>
+      fetch("/api/v1/visitors", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["visitors"] }),
+  });
   const visitors = visData?.data ?? [];
   const [showNew, setShowNew] = useState(false);
 

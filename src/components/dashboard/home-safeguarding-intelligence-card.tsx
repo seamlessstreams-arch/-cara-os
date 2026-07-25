@@ -7,6 +7,7 @@
 // CHR 2015 Reg 12, 13, 34. SCCIF: "Safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,11 @@ import {
   Eye, Globe, Users, Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeSafeguardingIntelligence } from "@/hooks/use-home-safeguarding-intelligence";
-import type { SafeguardingRating } from "@/lib/engines/home-safeguarding-intelligence-engine";
+import type { HomeSafeguardingResult, SafeguardingRating } from "@/lib/engines/home-safeguarding-intelligence-engine";
+
+interface HomeSafeguardingResponse {
+  data: HomeSafeguardingResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +47,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeSafeguardingIntelligenceCard() {
-  const { data, isLoading } = useHomeSafeguardingIntelligence();
+  const { data, isLoading } = useQuery<HomeSafeguardingResponse>({
+    queryKey: ["home-safeguarding-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-safeguarding-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home safeguarding intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

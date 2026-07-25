@@ -7,6 +7,7 @@
 // CHR 2015 Reg 32. SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,11 @@ import {
   Users, ClipboardCheck, FileCheck, UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeSaferRecruitmentIntelligence } from "@/hooks/use-home-safer-recruitment-intelligence";
-import type { RecruitmentRating } from "@/lib/engines/home-safer-recruitment-intelligence-engine";
+import type { HomeSaferRecruitmentResult, RecruitmentRating } from "@/lib/engines/home-safer-recruitment-intelligence-engine";
+
+interface HomeSaferRecruitmentResponse {
+  data: HomeSaferRecruitmentResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +47,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeSaferRecruitmentIntelligenceCard() {
-  const { data, isLoading } = useHomeSaferRecruitmentIntelligence();
+  const { data, isLoading } = useQuery<HomeSaferRecruitmentResponse>({
+    queryKey: ["home-safer-recruitment-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-safer-recruitment-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home safer recruitment intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

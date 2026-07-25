@@ -6,6 +6,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -30,7 +31,6 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { WakeUpRoutine } from "@/types/extended";
-import { useWakeUpRoutines } from "@/hooks/use-wake-up-routines";
 
 // ── export columns ──────────────────────────────────────────────────────────
 function ratingColour(r: number): string {
@@ -58,7 +58,10 @@ const exportCols: ExportColumn<WakeUpRoutine>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function WakeUpRoutinesPage() {
-  const { data: result, isLoading } = useWakeUpRoutines(undefined, "home_oak");
+  const { data: result, isLoading } = useQuery<{ data: WakeUpRoutine[] }>({
+    queryKey: ["wake-up-routines", undefined, "home_oak"],
+    queryFn: () => fetch("/api/v1/wake-up-routines?home_id=home_oak").then((r) => r.json()),
+  });
   const data = result?.data ?? [];
 
   const [filterYP, setFilterYP] = useState("all");

@@ -14,8 +14,8 @@ import {
   Clock, Users, Timer, ArrowLeftRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeShiftPatternIntelligence } from "@/hooks/use-home-shift-pattern-intelligence";
-import type { ShiftPatternRating } from "@/lib/engines/home-shift-pattern-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ShiftPatternRating, HomeShiftPatternResult } from "@/lib/engines/home-shift-pattern-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -39,10 +39,22 @@ const REC_STYLES: Record<string, string> = {
   planned: "border-[--cs-info-soft] bg-[--cs-info-bg] text-[--cs-info]",
 };
 
+interface HomeShiftPatternResponse {
+  data: HomeShiftPatternResult;
+}
+
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeShiftPatternIntelligenceCard() {
-  const { data, isLoading } = useHomeShiftPatternIntelligence();
+  const { data, isLoading } = useQuery<HomeShiftPatternResponse>({
+    queryKey: ["home-shift-pattern-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-shift-pattern-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home shift pattern intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

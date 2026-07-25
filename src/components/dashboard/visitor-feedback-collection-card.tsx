@@ -14,9 +14,11 @@ import {
   MessageCircle, ChevronRight, AlertTriangle, Brain,
   Clock, UserCheck, Loader2,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useVisitorsIntelligence } from "@/hooks/use-visitors-intelligence";
+import { apiFetch } from "@/hooks/use-api";
+import type { VisitorsIntelligenceResult } from "@/lib/engines/visitors-intelligence-engine";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -36,7 +38,14 @@ const INSIGHT_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function VisitorFeedbackCollectionCard() {
-  const { data, isLoading } = useVisitorsIntelligence();
+  interface VisitorsIntelligenceResponse {
+    data: VisitorsIntelligenceResult;
+  }
+  const { data, isLoading } = useQuery({
+    queryKey: ["visitors-intelligence"],
+    queryFn: () => apiFetch<VisitorsIntelligenceResponse>("/visitors-intelligence"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

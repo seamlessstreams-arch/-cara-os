@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Zap,
   Sparkles,
@@ -30,7 +31,6 @@ import type {
   ADHDPresentation,
   ADHDPlan,
 } from "@/types/extended";
-import { useADHDPlans } from "@/hooks/use-adhd-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -98,7 +98,10 @@ const EXPORT_COLS: ExportColumn<ADHDPlan>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function ChildADHDSupportPlanPage() {
-  const { data: apData, isLoading } = useADHDPlans();
+  const { data: apData, isLoading } = useQuery<{ data: ADHDPlan[] }>({
+    queryKey: ["adhd-plans"],
+    queryFn: () => fetch("/api/v1/adhd-plans").then((r) => r.json()),
+  });
   const data = apData?.data ?? [];
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});

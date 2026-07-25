@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import { useAdmissions, useCreateReferral, useUpdateReferral } from "@/hooks/use-admissions";
+import { api } from "@/hooks/use-api";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getStaffName } from "@/lib/seed-data";
 import type { AdmissionReferral, AdmissionReferralStatus } from "@/types/extended";
@@ -46,10 +47,34 @@ const BORDER_COLOR: Record<string, string> = {
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
+
+type ListResponse = { data: AdmissionReferral[]; meta: { total: number; active: number; placed_this_year: number } };
+type SingleResponse = { data: AdmissionReferral };
+
 export default function AdmissionsPage() {
-  const { data: response, isLoading } = useAdmissions();
-  const createReferral = useCreateReferral();
-  const updateReferral = useUpdateReferral();
+  const qc = useQueryClient();
+  const { data: response, isLoading } = useQuery({
+    queryKey: ["admissions", undefined],
+    queryFn: () => api.get<ListResponse>("/admissions"),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+  const createReferral = useMutation({
+    mutationFn: (data: Partial<AdmissionReferral>) =>
+      api.post<SingleResponse>("/admissions", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admissions"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+  const updateReferral = useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<AdmissionReferral>) =>
+      api.patch<SingleResponse>(`/admissions/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admissions"] });
+    },
+  });
 
   const records = response?.data ?? [];
 

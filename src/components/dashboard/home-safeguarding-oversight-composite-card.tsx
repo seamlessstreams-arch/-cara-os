@@ -1,10 +1,12 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeSafeguardingOversightComposite } from "@/hooks/use-home-safeguarding-oversight-composite";
-import type { SafeguardingCompositeRating } from "@/lib/engines/home-safeguarding-oversight-composite-engine";
+import type { SafeguardingCompositeResult, SafeguardingCompositeRating } from "@/lib/engines/home-safeguarding-oversight-composite-engine";
+
+interface SafeguardingOversightCompositeResponse { data: SafeguardingCompositeResult; }
 
 const RATING_STYLES: Record<SafeguardingCompositeRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -23,7 +25,15 @@ const DOMAIN_LABELS: Record<string, string> = {
 };
 
 export function HomeSafeguardingOversightCompositeCard() {
-  const { data, isLoading } = useHomeSafeguardingOversightComposite();
+  const { data, isLoading } = useQuery<SafeguardingOversightCompositeResponse>({
+    queryKey: ["home-safeguarding-oversight-composite"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-safeguarding-oversight-composite");
+      if (!res.ok) throw new Error("Failed to fetch safeguarding oversight composite");
+      return res.json();
+    },
+    refetchInterval: 120_000,
+  });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
   const d = data?.data;
   if (!d) return null;

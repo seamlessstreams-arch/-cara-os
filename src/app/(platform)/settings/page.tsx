@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -20,12 +21,29 @@ import { useStaff } from "@/hooks/use-staff";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import {
-  useSystemBranding, useOrganisationBranding, useHomeBranding,
-  useUpdateSystemBranding, useUpdateOrganisationBranding, useUpdateHomeBranding,
-  useUploadBrandingLogo, useBrandingAuditLog,
-} from "@/hooks/use-branding";
+import type {
+  SystemBranding,
+  OrganisationBranding,
+  HomeBranding,
+  BrandingAuditEntry,
+  SystemBrandingUpdate,
+  OrganisationBrandingUpdate,
+  HomeBrandingUpdate,
+  LogoUploadResult,
+} from "@/types/branding";
 import { toast } from "sonner";
+
+// ── Branding query keys ────────────────────────────────────────────────────────
+
+const BRANDING_KEYS = {
+  system:             () => ["branding", "system"] as const,
+  organisation:       (orgId: string) => ["branding", "organisation", orgId] as const,
+  home:               (homeId: string) => ["branding", "home", homeId] as const,
+  resolve:            (orgId?: string, homeId?: string) =>
+    ["branding", "resolve", orgId, homeId] as const,
+  audit:              (targetType?: string, targetId?: string) =>
+    ["branding", "audit", targetType, targetId] as const,
+};
 
 type SettingsTab = "profile" | "home" | "notifications" | "security" | "roles" | "integrations" | "branding";
 
@@ -148,7 +166,18 @@ function ColourField({ label, value, onChange }: { label: string; value: string;
 
 function LogoUploadField({ label, currentUrl, onUpload }: { label: string; currentUrl?: string | null; onUpload: (url: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const uploadMutation = useUploadBrandingLogo();
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File): Promise<LogoUploadResult> => {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/v1/branding/upload", { method: "POST", body: form });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Upload failed" }));
+        throw new Error((err as { error?: string }).error ?? "Upload failed");
+      }
+      return (await res.json()).data as LogoUploadResult;
+    },
+  });
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -218,16 +247,115 @@ function DocumentPreview({ primaryColour, secondaryColour, companyName, homeName
 
 function BrandingTab() {
   const { currentUser } = useAuthContext();
+  const qc = useQueryClient();
   const isSuperAdmin = currentUser?.role === "super_admin";
 
-  const systemQ = useSystemBranding();
-  const orgQ = useOrganisationBranding("org_oak");
-  const homeQ = useHomeBranding("home_oak");
-  const auditQ = useBrandingAuditLog();
+  const systemQ = useQuery<SystemBranding>({
+    queryKey: BRANDING_KEYS.system(),
+    queryFn: async () => {
+      const res = await fetch("/api/v1/branding/system");
+      if (!res.ok) throw new Error("Failed to load system branding");
+      const json = await res.json();
+      return json.data as SystemBranding;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const updateSystem = useUpdateSystemBranding();
-  const updateOrg    = useUpdateOrganisationBranding();
-  const updateHome   = useUpdateHomeBranding();
+  const orgQ = useQuery<OrganisationBranding | null>({
+    queryKey: BRANDING_KEYS.organisation("org_oak"),
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/branding/organisation?organisation_id=org_oak`);
+      if (!res.ok) throw new Error("Failed to load organisation branding");
+      const json = await res.json();
+      return json.data as OrganisationBranding | null;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const homeQ = useQuery<HomeBranding | null>({
+    queryKey: BRANDING_KEYS.home("home_oak"),
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/branding/home?home_id=home_oak`);
+      if (!res.ok) throw new Error("Failed to load home branding");
+      const json = await res.json();
+      return json.data as HomeBranding | null;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const auditQ = useQuery<BrandingAuditEntry[]>({
+    queryKey: BRANDING_KEYS.audit(undefined, undefined),
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/branding/audit`);
+      if (!res.ok) throw new Error("Failed to load branding audit log");
+      return (await res.json()).data as BrandingAuditEntry[];
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const updateSystem = useMutation({
+    mutationFn: async (updates: SystemBrandingUpdate & { updated_by?: string }) => {
+      const res = await fetch("/api/v1/branding/system", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) throw new Error("Failed to update system branding");
+      return (await res.json()).data as SystemBranding;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: BRANDING_KEYS.system() });
+      qc.invalidateQueries({ queryKey: ["branding", "resolve"] });
+    },
+  });
+
+  const updateOrg = useMutation({
+    mutationFn: async ({
+      organisation_id,
+      ...updates
+    }: OrganisationBrandingUpdate & { organisation_id: string; updated_by?: string }) => {
+      const res = await fetch("/api/v1/branding/organisation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...updates,
+          organisation_id,
+          updated_by: currentUser?.id ?? "unknown",
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to update organisation branding");
+      return (await res.json()).data as OrganisationBranding;
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: BRANDING_KEYS.organisation(vars.organisation_id) });
+      qc.invalidateQueries({ queryKey: ["branding", "resolve"] });
+    },
+  });
+
+  const updateHome = useMutation({
+    mutationFn: async ({
+      home_id,
+      organisation_id,
+      ...updates
+    }: HomeBrandingUpdate & { home_id: string; organisation_id?: string; updated_by?: string }) => {
+      const res = await fetch("/api/v1/branding/home", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...updates,
+          home_id,
+          organisation_id: organisation_id ?? "org_oak",
+          updated_by: currentUser?.id ?? "unknown",
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to update home branding");
+      return (await res.json()).data as HomeBranding;
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: BRANDING_KEYS.home(vars.home_id) });
+      qc.invalidateQueries({ queryKey: ["branding", "resolve"] });
+    },
+  });
 
   const [sysForm, setSysForm] = useState({ primary_colour: "#1e3a5f", secondary_colour: "#2dd4bf", accent_colour: "#3b82f6", default_footer_text: "Generated securely through Cara", support_email: "support@cara.care" });
   const [orgForm, setOrgForm] = useState({ company_name: "", trading_name: "", registered_provider_name: "", company_registration_number: "", ofsted_provider_reference: "", address: "", phone: "", email: "", website: "", responsible_individual_name: "", primary_colour: "", secondary_colour: "", logo_url: "", document_logo_url: "", confidentiality_notice: "" });

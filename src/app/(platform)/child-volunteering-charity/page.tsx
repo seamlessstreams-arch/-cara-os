@@ -7,7 +7,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useVolunteerRecords } from "@/hooks/use-volunteer-records";
+import { useQuery } from "@tanstack/react-query";
 import type { VolunteerRecord } from "@/types/extended";
 import { VOLUNTEER_CATEGORY_LABEL } from "@/types/extended";
 import {
@@ -68,7 +68,10 @@ const categoryColour: Record<string, string> = {
 };
 
 export default function ChildVolunteeringCharityPage() {
-  const { data: res, isLoading } = useVolunteerRecords();
+  const { data: res, isLoading } = useQuery<{ data: VolunteerRecord[] }>({
+    queryKey: ["volunteer-records"],
+    queryFn: () => fetch("/api/v1/volunteer-records").then((r) => r.json()),
+  });
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");

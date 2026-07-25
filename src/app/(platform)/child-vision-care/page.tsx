@@ -24,7 +24,7 @@ import {
   VISION_STATUS_LABEL,
   GLASSES_WEAR_CONSISTENCY_LABEL,
 } from "@/types/extended";
-import { useVisionCareRecords } from "@/hooks/use-vision-care-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -71,7 +71,10 @@ const daysUntil = (dateStr?: string) => {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function ChildVisionCarePage() {
-  const { data: res, isLoading } = useVisionCareRecords();
+  const { data: res, isLoading } = useQuery<{ data: VisionCareRecord[] }>({
+    queryKey: ["vision-care-records"],
+    queryFn: () => fetch("/api/v1/vision-care-records").then((r) => r.json()),
+  });
   const items = res?.data ?? [];
 
   const [search, setSearch] = useState("");

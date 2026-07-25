@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarX, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, CheckCircle2, Clock, TrendingDown,
@@ -24,7 +25,6 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useAbsenceTracking, useCreateAbsence } from "@/hooks/use-absence-tracking";
 import type { AbsenceType, AbsenceSetting, AbsenceRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -56,8 +56,16 @@ const SETTING_LABELS: Record<AbsenceSetting, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function AbsenceTrackingPage() {
-  const { data: result, isLoading } = useAbsenceTracking();
-  const createAbsence = useCreateAbsence();
+  const qc = useQueryClient();
+  const { data: result, isLoading } = useQuery<{ data: AbsenceRecord[] }>({
+    queryKey: ["absence-tracking"],
+    queryFn: () => fetch("/api/v1/absence-tracking").then((r) => r.json()),
+  });
+  const createAbsence = useMutation({
+    mutationFn: (data: Partial<AbsenceRecord>) =>
+      fetch("/api/v1/absence-tracking", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["absence-tracking"] }),
+  });
   const records = result?.data ?? [];
 
   const [search, setSearch] = useState("");

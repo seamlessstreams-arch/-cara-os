@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -23,7 +24,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
-import { useWaterHygieneRecords, useCreateWaterHygieneRecord } from "@/hooks/use-water-hygiene-records";
 import { toast } from "sonner";
 import type {
   WaterHygieneRecord,
@@ -52,8 +52,27 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 /* ── page ──────────────────────────────────────────────────────────────── */
 
 export default function WaterHygienePage() {
-  const { data: records = [], isLoading } = useWaterHygieneRecords();
-  const createCheck = useCreateWaterHygieneRecord();
+  const qc = useQueryClient();
+  const { data: records = [], isLoading } = useQuery<WaterHygieneRecord[]>({
+    queryKey: ["water-hygiene-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/water-hygiene-records");
+      if (!res.ok) throw new Error("Failed to fetch water hygiene records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+  const createCheck = useMutation({
+    mutationFn: async (data: Omit<WaterHygieneRecord, "id">) => {
+      const res = await fetch("/api/v1/water-hygiene-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create water hygiene record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["water-hygiene-records"] }),
+  });
   const [search, setSearch] = useState("");
   const [filterCompliance, setFilterCompliance] = useState("all");
   const [filterCheckType, setFilterCheckType] = useState("all");

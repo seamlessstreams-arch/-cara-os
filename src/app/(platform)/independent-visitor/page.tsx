@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useVisitorReports } from "@/hooks/use-visitor-reports";
+import { useQuery } from "@tanstack/react-query";
 import type { VisitorReport, VisitorRecommendation, VisitorChildView } from "@/types/extended";
 import { VISITOR_VISIT_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -26,7 +26,10 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function IndependentVisitorPage() {
-  const { data: res, isLoading } = useVisitorReports();
+  const { data: res, isLoading } = useQuery<{ data: VisitorReport[] }>({
+    queryKey: ["visitor-reports"],
+    queryFn: () => fetch("/api/v1/visitor-reports").then((r) => r.json()),
+  });
   const reports: VisitorReport[] = res?.data ?? [];
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("date");

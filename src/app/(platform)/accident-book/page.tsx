@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -24,7 +25,6 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useAccidentBook, useCreateAccident } from "@/hooks/use-accident-book";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -49,8 +49,16 @@ const BORDER_SEV: Record<AccidentSeverity, string> = { minor: "border-l-green-40
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function AccidentBookPage() {
-  const { data: result, isLoading } = useAccidentBook();
-  const createAccident = useCreateAccident();
+  const qc = useQueryClient();
+  const { data: result, isLoading } = useQuery<{ data: AccidentRecord[] }>({
+    queryKey: ["accident-book"],
+    queryFn: () => fetch("/api/v1/accident-book").then((r) => r.json()),
+  });
+  const createAccident = useMutation({
+    mutationFn: (data: Partial<AccidentRecord>) =>
+      fetch("/api/v1/accident-book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["accident-book"] }),
+  });
   const data = result?.data ?? [];
 
   const [search, setSearch] = useState("");

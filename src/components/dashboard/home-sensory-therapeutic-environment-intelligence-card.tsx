@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Flower2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeSensoryTherapeuticEnvironmentIntelligence } from "@/hooks/use-home-sensory-therapeutic-environment-intelligence";
-import type { SensoryTherapeuticRating } from "@/lib/engines/home-sensory-therapeutic-environment-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { SensoryTherapeuticRating, SensoryTherapeuticResult } from "@/lib/engines/home-sensory-therapeutic-environment-intelligence-engine";
 
 const RATING_STYLES: Record<SensoryTherapeuticRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -17,8 +17,18 @@ const RATING_STYLES: Record<SensoryTherapeuticRating, { bg: string; text: string
 const REC_STYLES: Record<string, string> = { immediate: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", soon: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", planned: "border-[--cs-info-soft] bg-[--cs-info-bg] text-[--cs-info]" };
 const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]" };
 
+interface SensoryTherapeuticResponse { data: SensoryTherapeuticResult; }
+
 export function HomeSensoryTherapeuticEnvironmentIntelligenceCard() {
-  const { data, isLoading } = useHomeSensoryTherapeuticEnvironmentIntelligence();
+  const { data, isLoading } = useQuery<SensoryTherapeuticResponse>({
+    queryKey: ["home-sensory-therapeutic-environment-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-sensory-therapeutic-environment-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch sensory & therapeutic environment intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
   let d = data?.data;
   if (!d) return null;

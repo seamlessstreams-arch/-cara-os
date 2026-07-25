@@ -6,6 +6,7 @@
 // CHR 2015 Reg 12/13.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -13,8 +14,11 @@ import {
   Sparkles, Brain, ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeSafeguardingDepthIntelligence } from "@/hooks/use-home-safeguarding-depth-intelligence";
-import type { SafeguardingDepthRating } from "@/lib/engines/home-safeguarding-depth-intelligence-engine";
+import type { HomeSafeguardingDepthResult, SafeguardingDepthRating } from "@/lib/engines/home-safeguarding-depth-intelligence-engine";
+
+interface HomeSafeguardingDepthResponse {
+  data: HomeSafeguardingDepthResult;
+}
 
 const RATING_STYLES: Record<SafeguardingDepthRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding:       { bg: "bg-green-100",  text: "text-green-800",  border: "border-green-300",  label: "OUTSTANDING" },
@@ -37,7 +41,15 @@ const INSIGHT_STYLES: Record<string, string> = {
 };
 
 export function HomeSafeguardingDepthIntelligenceCard() {
-  const { data, isLoading } = useHomeSafeguardingDepthIntelligence();
+  const { data, isLoading } = useQuery<HomeSafeguardingDepthResponse>({
+    queryKey: ["home-safeguarding-depth-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-safeguarding-depth-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home safeguarding depth intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (
