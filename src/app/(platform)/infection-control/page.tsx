@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -22,7 +23,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
-import { useInfectionRecords, useCreateInfectionRecord } from "@/hooks/use-infection-records";
 import { toast } from "sonner";
 import type { InfectionRecord, InfectionType, InfectionSeverity, InfectionStatus } from "@/types/extended";
 import { INFECTION_TYPE_LABEL, INFECTION_SEVERITY_LABEL, INFECTION_STATUS_LABEL } from "@/types/extended";
@@ -39,8 +39,17 @@ const STATUS_CLR: Record<InfectionStatus, string> = { active: "bg-red-100 text-r
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function InfectionControlPage() {
-  const { data: res, isLoading } = useInfectionRecords();
-  const createInfection = useCreateInfectionRecord();
+  const KEY = "infection-records";
+  const { data: res, isLoading } = useQuery<{ data: InfectionRecord[] }>({
+    queryKey: [KEY],
+    queryFn: () => fetch("/api/v1/infection-records").then((r) => r.json()),
+  });
+  const qc = useQueryClient();
+  const createInfection = useMutation({
+    mutationFn: (data: Partial<InfectionRecord>) =>
+      fetch("/api/v1/infection-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
   const data: InfectionRecord[] = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

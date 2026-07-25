@@ -20,8 +20,7 @@ import {
 import { cn, formatDate } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
-import { usePIDebriefs, useUpdatePIDebrief } from "@/hooks/use-incidents";
-import { useIncidents } from "@/hooks/use-incidents";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { PIDebrief, PIDebriefStatus, PITechnique } from "@/types/extended";
 import type { Incident } from "@/types";
@@ -433,9 +432,32 @@ function PIDebriefCard({
 
 export default function PIDebriefsPage() {
   const { currentUser } = useAuthContext();
-  const debriefsQuery   = usePIDebriefs({ homeId: "home_oak" });
-  const incidentsQuery  = useIncidents();
-  const updateDebrief   = useUpdatePIDebrief();
+
+  // Inlined usePIDebriefs
+  const debriefsQuery = useQuery({
+    queryKey: ["pi-debriefs", "home_oak"],
+    queryFn: () =>
+      api.get<{ data: PIDebrief[]; meta: { total: number; pending: number; incomplete: number; overdue: number } }>(
+        `/pi-debriefs?home_id=home_oak`
+      ),
+  });
+
+  // Inlined useIncidents
+  const queryStr = new URLSearchParams();
+  const incidentsQuery = useQuery({
+    queryKey: ["incidents", { status: undefined, child_id: undefined, needs_oversight: undefined }],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${queryStr}`),
+  });
+
+  // Inlined useUpdatePIDebrief
+  const qc = useQueryClient();
+  const updateDebrief = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<PIDebrief> }) =>
+      api.patch<{ data: PIDebrief }>(`/pi-debriefs/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["pi-debriefs"] });
+    },
+  });
 
   const debriefs  = debriefsQuery.data?.data ?? [];
   const incidents = incidentsQuery.data?.data ?? [];

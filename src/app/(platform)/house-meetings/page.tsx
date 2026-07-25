@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ import {
   Users, Calendar, Clock, MessageSquare, CheckCircle2,
   AlertTriangle, ClipboardList, Mic, Star, Home, Loader2
 } from "lucide-react";
-import { useHouseMeetings, useCreateHouseMeeting } from "@/hooks/use-house-meetings";
+import { api } from "@/hooks/use-api";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import type { HouseMeeting, HouseMeetingType } from "@/types/extended";
@@ -55,8 +56,22 @@ const EXPORT_COLS: ExportColumn<HouseMeeting>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function HouseMeetingsPage() {
-  const { data: hmData, isLoading } = useHouseMeetings();
-  const createMeeting = useCreateHouseMeeting();
+  const { data: hmData, isLoading } = useQuery({
+    queryKey: ["house-meetings"],
+    queryFn: () => api.get<{ data: HouseMeeting[]; meta: { total: number } }>("/house-meetings"),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+  const qc = useQueryClient();
+  const createMeeting = useMutation({
+    mutationFn: (data: Partial<HouseMeeting>) =>
+      api.post<{ data: HouseMeeting }>("/house-meetings", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["house-meetings"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
   const [hmForm, setHmForm] = useState({ date: new Date().toISOString().slice(0, 10), meeting_type: "regular" as HouseMeetingType, chair_person: "", minutes_taker: "", duration: "60", general_comments: "", next_meeting_date: "" });
   const setHM = (k: string, v: unknown) => setHmForm((p) => ({ ...p, [k]: v }));
 

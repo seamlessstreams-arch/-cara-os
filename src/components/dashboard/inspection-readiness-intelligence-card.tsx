@@ -7,14 +7,14 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, CheckCircle2, ChevronRight, ClipboardCheck,
   Loader2, Shield, TrendingDown, TrendingUp, XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useInspectionReadinessIntelligence } from "@/hooks/use-inspection-readiness-intelligence";
-import type { ReadinessGrade } from "@/lib/engines/inspection-readiness-intelligence-engine";
+import type { ReadinessGrade, InspectionReadinessResult } from "@/lib/engines/inspection-readiness-intelligence-engine";
 
 import { formatRate } from "@/lib/metrics/rate";
 
@@ -50,7 +50,11 @@ const ACTION_STYLES: Record<string, string> = {
 };
 
 export function InspectionReadinessIntelligenceCard() {
-  const { data, isLoading } = useInspectionReadinessIntelligence();
+  const { data, isLoading } = useQuery<{ data: InspectionReadinessResult }>({
+    queryKey: ["inspection-readiness-intelligence"],
+    queryFn: () => fetch("/api/v1/inspection-readiness-intelligence").then((r) => r.json()),
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

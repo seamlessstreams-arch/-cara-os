@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useCompetenceRecords, useCreateCompetenceRecord } from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -32,6 +33,30 @@ import {
   Ban,
   ThumbsUp,
 } from "lucide-react";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useCompetenceRecords(params?: { homeId?: string; staffId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.staffId) query.set("staffId", params.staffId);
+
+  return useQuery({
+    queryKey: ["il", "competence", params],
+    queryFn: () => ilFetch<{ ok: boolean; records: unknown[]; persisted: boolean }>(`/competence?${query}`),
+  });
+}
+
+function useCreateCompetenceRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/competence", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "competence"] });
+    },
+  });
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

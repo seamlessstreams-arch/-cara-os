@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -24,7 +25,6 @@ import {
 } from "lucide-react";
 import type { HouseRule, HouseRuleCategory } from "@/types/extended";
 import { HOUSE_RULE_STATUS_LABEL } from "@/types/extended";
-import { useHouseRules } from "@/hooks/use-house-rules";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -56,7 +56,13 @@ const exportCols: ExportColumn<HouseRule>[] = [
 
 /* ─── component ─── */
 export default function HouseRulesPage() {
-  const { data: raw, isLoading } = useHouseRules();
+  const { data: raw, isLoading } = useQuery<{ data: HouseRule[] }>({
+    queryKey: ["house-rules"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/house-rules");
+      return res.json();
+    },
+  });
   const rules = useMemo(() => raw?.data ?? [], [raw]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState("all");

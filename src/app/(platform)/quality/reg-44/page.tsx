@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReg44Visits, useCreateReg44Visit, useReg44Actions } from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -43,6 +44,42 @@ import type {
   Reg44ActionStatus,
   Reg44ActionPriority,
 } from "@/types/intelligence.layer";
+
+/* ── inlined intelligence layer hooks ──────────────────────────────────────── */
+
+function useReg44Visits(params?: { homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "reg44", params],
+    queryFn: () => ilFetch<{ ok: boolean; visits: unknown[]; persisted: boolean }>(`/reg44?${query}`),
+  });
+}
+
+function useCreateReg44Visit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/reg44", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "reg44"] });
+    },
+  });
+}
+
+function useReg44Actions(params?: { homeId?: string; visitId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.visitId) query.set("visitId", params.visitId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "reg44-actions", params],
+    queryFn: () => ilFetch<{ ok: boolean; actions: unknown[]; persisted: boolean }>(`/reg44-actions?${query}`),
+  });
+}
 
 /* Seeded actions reference staff by roster id; Supabase rows may carry free
  * text, so fall back to the raw value rather than "Unknown". */

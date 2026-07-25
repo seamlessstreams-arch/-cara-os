@@ -7,17 +7,43 @@
 import React, { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
-import {
-  useKeyWorkSessions,
-  useUpdateKeyWorkSession,
-} from "@/hooks/use-intelligence";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { cn, formatDate } from "@/lib/utils";
 import type { KeyWorkSession, KeyWorkSessionPlan, KeyWorkSessionStatus } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+// ── Inlined intelligence hooks ───────────────────────────────────────────────
+
+function useKeyWorkSessions(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["cara-intelligence", "keywork", params],
+    queryFn: () =>
+      api.get<ListResponse<KeyWorkSession>>(`/cara-intelligence/keywork?${query}`),
+  });
+}
+
+function useUpdateKeyWorkSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<KeyWorkSession>) =>
+      api.patch<SingleResponse<KeyWorkSession>>(`/cara-intelligence/keywork/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "keywork"] });
+    },
+  });
+}
 import {
   BookOpen, Sparkles, Loader2, AlertTriangle, CheckCircle2,
   ArrowLeft, User, Shield, Brain, ChevronRight,

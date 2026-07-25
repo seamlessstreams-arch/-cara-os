@@ -10,14 +10,26 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus, LineChart, BellRing } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useInspectionTrajectory } from "@/hooks/use-inspection-trajectory";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useTrajectoryAlerts, useAckTrajectoryAlert } from "@/hooks/use-trajectory-alerts";
 import type { TrajectoryAlert } from "@/lib/care-events/inspection-trajectory";
+import type { TrajectorySummary } from "@/lib/care-events/inspection-trajectory";
 
 const HOME_ID = "home_oak";
 
+interface TrajectoryResponse { data: TrajectorySummary }
+
 export default function InspectionTrajectoryPage() {
-  const q = useInspectionTrajectory(HOME_ID);
+  const q = useQuery({
+    queryKey: ["inspection-trajectory", HOME_ID ?? ""],
+    enabled: !!HOME_ID,
+    refetchInterval: 60_000,
+    queryFn: () =>
+      api.get<TrajectoryResponse>(
+        `/care-events/inspection-bundle/trajectory?home_id=${encodeURIComponent(HOME_ID!)}`,
+      ),
+  });
   const t = q.data?.data;
   const alertsQ = useTrajectoryAlerts(HOME_ID);
   const alerts = alertsQ.data?.data.alerts ?? [];

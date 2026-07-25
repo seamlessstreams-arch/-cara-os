@@ -2,14 +2,16 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ManagerIntelligenceNav } from "@/components/intelligence/manager-intelligence-nav";
 import { Card, CardContent } from "@/components/ui/card";
-import { useInspectionIntelligence } from "@/hooks/use-inspection-intelligence";
+import { api } from "@/hooks/use-api";
 import type {
   EvidenceStrength,
   SccifArea,
   ChildRef,
+  InspectionReadiness,
 } from "@/lib/inspection-intelligence/inspection-intelligence-engine";
 import { cn } from "@/lib/utils";
 import {
@@ -135,7 +137,11 @@ function AreaCard({ area }: { area: SccifArea }) {
 }
 
 export default function InspectionIntelligencePage() {
-  const { data, isLoading } = useInspectionIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["inspection-intelligence"],
+    queryFn: async () =>
+      (await api.get<{ data: InspectionReadiness }>(`/inspection-intelligence`)).data,
+  });
 
   return (
     <PageShell

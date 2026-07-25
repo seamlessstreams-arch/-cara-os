@@ -10,14 +10,38 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DictationButton } from "@/components/common/dictation-button";
-import {
-  useCaraAssessments,
-  useCreateCaraAssessment,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn, formatDate } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import type { CaraAssessment, CaraRiskLevel, CaraConfidenceLevel, CaraRecommendedAction } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useCaraAssessments(params?: { childId?: string; homeId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  return useQuery({
+    queryKey: ["cara-intelligence", "assessments", params],
+    queryFn: () =>
+      api.get<ListResponse<CaraAssessment>>(`/cara-intelligence/assessments?${query}`),
+  });
+}
+
+function useCreateCaraAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<CaraAssessment>) =>
+      api.post<SingleResponse<CaraAssessment>>("/cara-intelligence/assessments", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "assessments"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
+    },
+  });
+}
 import {
   Sparkles, Loader2, AlertTriangle, CheckCircle2, Shield,
   Brain, User, Info, Clock, MessageSquare, Heart,

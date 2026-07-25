@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useProgressGoals, useProgressEntries, useProgressSnapshots, useCreateProgressRecord } from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -33,6 +34,49 @@ import {
   ChevronRight,
   MessageSquare,
 } from "lucide-react";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useProgressGoals(childId?: string) {
+  const query = new URLSearchParams({ type: "goals" });
+  if (childId) query.set("childId", childId);
+
+  return useQuery({
+    queryKey: ["il", "progress", "goals", childId],
+    queryFn: () => ilFetch<{ ok: boolean; data: unknown[]; persisted: boolean }>(`/progress?${query}`),
+  });
+}
+
+function useProgressEntries(childId?: string) {
+  const query = new URLSearchParams({ type: "entries" });
+  if (childId) query.set("childId", childId);
+
+  return useQuery({
+    queryKey: ["il", "progress", "entries", childId],
+    queryFn: () => ilFetch<{ ok: boolean; data: unknown[]; persisted: boolean }>(`/progress?${query}`),
+  });
+}
+
+function useProgressSnapshots(childId?: string) {
+  const query = new URLSearchParams({ type: "snapshots" });
+  if (childId) query.set("childId", childId);
+
+  return useQuery({
+    queryKey: ["il", "progress", "snapshots", childId],
+    queryFn: () => ilFetch<{ ok: boolean; data: unknown[]; persisted: boolean }>(`/progress?${query}`),
+  });
+}
+
+function useCreateProgressRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/progress", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "progress"] });
+    },
+  });
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

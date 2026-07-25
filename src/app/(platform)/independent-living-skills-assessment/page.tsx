@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useIndependenceLivingAssessments } from "@/hooks/use-independence-living-assessments";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependenceLivingAssessment, LivingSkillLevel, LivingSkillsReadiness } from "@/types/extended";
 import { LIVING_SKILL_LEVEL_LABEL, LIVING_SKILLS_READINESS_LABEL } from "@/types/extended";
@@ -68,7 +68,13 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 /* ── component ───────────────────────────────────────────────────────── */
 
 export default function IndependentLivingSkillsAssessmentPage() {
-  const { data: res, isLoading } = useIndependenceLivingAssessments();
+  // Inlined useIndependenceLivingAssessments
+  const assessmentsQuery = useQuery<{ data: IndependenceLivingAssessment[] }>({
+    queryKey: ["independence-living-assessments"],
+    queryFn: () =>
+      fetch("/api/v1/independence-living-assessments").then((r) => r.json()),
+  });
+  const { data: res, isLoading } = assessmentsQuery;
   const data: IndependenceLivingAssessment[] = res?.data ?? [];
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("name");

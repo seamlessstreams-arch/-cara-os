@@ -16,7 +16,13 @@ import {
   CheckCircle2, XCircle, CircleDashed, RefreshCw, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useIntegrationHub } from "@/hooks/use-integration-hub";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { IntegrationHubResult } from "@/lib/integration-hub/integration-hub-engine";
+
+interface IntegrationHubResponse {
+  data: IntegrationHubResult;
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -52,7 +58,11 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
 };
 
 export function IntegrationHubCard() {
-  const { data, isLoading } = useIntegrationHub();
+  const { data, isLoading } = useQuery({
+    queryKey: ["integration-hub"],
+    queryFn: () => api.get<IntegrationHubResponse>("/integration-hub"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

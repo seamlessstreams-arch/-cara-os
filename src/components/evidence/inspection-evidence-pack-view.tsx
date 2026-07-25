@@ -7,7 +7,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useInspectionEvidencePack } from "@/hooks/use-inspection-evidence-pack";
+import { useQuery } from "@tanstack/react-query";
 import type {
   InspectionEvidencePack,
   EvidenceSection,
@@ -55,7 +55,12 @@ function scoreBarColor(score: number | undefined): string {
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function InspectionEvidencePackView() {
-  const { data, isLoading, error } = useInspectionEvidencePack();
+  const { data, isLoading, error } = useQuery<{ data: InspectionEvidencePack }>({
+    queryKey: ["inspection-evidence-pack"],
+    queryFn: () =>
+      fetch("/api/v1/inspection-evidence-pack").then((r) => r.json()),
+    refetchInterval: 60_000,
+  });
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
   );

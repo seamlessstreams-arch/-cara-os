@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useRiChallengeLogs, useRiAlerts, useRiReg45Evidence, useTrainingNeeds } from "@/hooks/use-ri-learning";
-import { useIncidents } from "@/hooks/use-incidents";
+import { useIncidents } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useSupervisions } from "@/hooks/use-supervision";
 import { useTraining } from "@/hooks/use-training";
 

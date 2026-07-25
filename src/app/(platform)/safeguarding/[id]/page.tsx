@@ -19,7 +19,8 @@ import {
   Clock, User, MapPin, Loader2, AlertCircle, ChevronRight,
   Brain, Sparkles, Heart, Library, Phone, UserCheck, Gavel,
 } from "lucide-react";
-import { useIncident, useUpdateIncident } from "@/hooks/use-incidents";
+import { useIncident, useUpdateIncident } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PERMISSIONS } from "@/lib/permissions";

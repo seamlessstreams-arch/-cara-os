@@ -24,9 +24,34 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import {
-  useVoiceRecords, useCreateVoiceRecord,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { VoiceRecord } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useVoiceRecords(childId: string, theme?: string) {
+  const query = new URLSearchParams({ child_id: childId });
+  if (theme) query.set("theme", theme);
+  return useQuery({
+    queryKey: ["intelligence", "voice", childId, theme],
+    queryFn: () =>
+      api.get<ListResponse<VoiceRecord>>(`/intelligence/voice?${query}`),
+    enabled: !!childId,
+  });
+}
+
+function useCreateVoiceRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<VoiceRecord>) =>
+      api.post<SingleResponse<VoiceRecord>>("/intelligence/voice", data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "voice", vars.child_id] });
+    },
+  });
+}
 import type { VoiceRecord, VoiceTheme } from "@/types/extended";
 import {
   MessageSquare, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,

@@ -25,9 +25,34 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import {
-  useRelationalRecords, useCreateRelationalRecord,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { RelationalRecord } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useRelationalRecords(childId: string, type?: string) {
+  const query = new URLSearchParams({ child_id: childId });
+  if (type) query.set("type", type);
+  return useQuery({
+    queryKey: ["intelligence", "relational", childId, type],
+    queryFn: () =>
+      api.get<ListResponse<RelationalRecord>>(`/intelligence/relational?${query}`),
+    enabled: !!childId,
+  });
+}
+
+function useCreateRelationalRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<RelationalRecord>) =>
+      api.post<SingleResponse<RelationalRecord>>("/intelligence/relational", data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "relational", vars.child_id] });
+    },
+  });
+}
 import type { RelationalRecord, RelationalRecordType } from "@/types/extended";
 import {
   Heart, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,

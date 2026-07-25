@@ -24,10 +24,43 @@ import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import {
-  usePatternAlerts,
-  useAcknowledgePattern,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { PatternAlert } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function usePatternAlerts(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["intelligence", "patterns", params],
+    queryFn: () =>
+      api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
+  });
+}
+
+function useAcknowledgePattern() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      status: PatternAlert["status"];
+      acknowledged_by?: string;
+      resolved_by?: string;
+    }) => api.patch<SingleResponse<PatternAlert>>(`/intelligence/patterns/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "patterns"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { PatternAlert, PatternSeverity, PatternStatus } from "@/types/extended";
 import {

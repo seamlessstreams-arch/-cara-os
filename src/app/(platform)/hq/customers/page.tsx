@@ -4,10 +4,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HqBoundaryNote, HqStatusBadge } from "@/components/hq/hq-bits";
-import { useHqCustomers, useProvisionCustomer } from "@/hooks/use-hq";
+import type { HqOrganisation, HqHome } from "@/lib/hq/hq-types";
+
+const HQ_HEADERS = {
+  "content-type": "application/json",
+  "x-user-role": "platform_admin",
+  "x-user-id": "hq_owner",
+};
+
+async function hqFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, { ...init, headers: { ...HQ_HEADERS, ...init?.headers } });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  return json.data as T;
+}
 
 const PLANS = ["pilot", "essentials", "professional", "group"] as const;
 
@@ -16,8 +30,32 @@ const inputCls =
 const labelCls = "mb-1 block text-xs font-semibold text-[var(--cs-text-secondary)]";
 
 export default function HqCustomersPage() {
-  const { data, isLoading } = useHqCustomers();
-  const provision = useProvisionCustomer();
+  const { data, isLoading } = useQuery({
+    queryKey: ["hq-customers"],
+    queryFn: () => hqFetch<{ customers: HqOrganisation[]; homes: HqHome[] }>("/api/v1/hq/customers"),
+  });
+  const qc = useQueryClient();
+  const provision = useMutation({
+    mutationFn: (input: {
+      org_name: string;
+      first_home_name: string;
+      first_home_address: string;
+      first_home_ofsted_urn?: string;
+      first_home_max_beds?: string | number;
+      plan: string;
+      manager_name: string;
+      manager_email: string;
+    }) =>
+      hqFetch<{ customer: HqOrganisation; home: HqHome }>("/api/v1/hq/customers", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["hq-overview"] });
+      qc.invalidateQueries({ queryKey: ["hq-customers"] });
+      qc.invalidateQueries({ queryKey: ["hq-customer"] });
+    },
+  });
   const EMPTY = {
     org_name: "",
     first_home_name: "",

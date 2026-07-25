@@ -1,5 +1,5 @@
 "use client";
-import type { DashboardData } from "@/types/extended";
+import type { DashboardData, PatternAlert } from "@/types/extended";
 import { api } from "@/hooks/use-api";
 
 import { useQuery } from "@tanstack/react-query";
@@ -15,7 +15,20 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { cn, formatRelative } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { usePatternAlerts } from "@/hooks/use-intelligence";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function usePatternAlerts(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["intelligence", "patterns", params],
+    queryFn: () =>
+      api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
+  });
+}
 import { useNotifications, useMarkNotificationRead } from "@/hooks/use-notifications";
 import { useAuthContext } from "@/contexts/auth-context";
 import {

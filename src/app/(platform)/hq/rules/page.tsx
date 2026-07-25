@@ -2,10 +2,24 @@
 
 // CARA HQ — Rule catalog (governance view of every rule Cara applies)
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HqBoundaryNote, HqStat } from "@/components/hq/hq-bits";
-import { useHqRuleCatalog } from "@/hooks/use-hq";
+import type { RuleCatalogEntry, RuleCatalogSummary } from "@/lib/rules-catalog/rules-catalog";
+
+const HQ_HEADERS = {
+  "content-type": "application/json",
+  "x-user-role": "platform_admin",
+  "x-user-id": "hq_owner",
+};
+
+async function hqFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, { ...init, headers: { ...HQ_HEADERS, ...init?.headers } });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  return json.data as T;
+}
 
 const SOURCE_LABEL: Record<string, string> = {
   automation: "Automation",
@@ -16,7 +30,10 @@ const SOURCE_LABEL: Record<string, string> = {
 const SOURCE_ORDER = ["compliance", "automation", "cara_rules"] as const;
 
 export default function HqRulesPage() {
-  const { data, isLoading } = useHqRuleCatalog();
+  const { data, isLoading } = useQuery({
+    queryKey: ["hq-rule-catalog"],
+    queryFn: () => hqFetch<{ catalog: RuleCatalogEntry[]; summary: RuleCatalogSummary }>("/api/v1/hq/rule-catalog"),
+  });
   const s = data?.summary;
   const catalog = data?.catalog ?? [];
 

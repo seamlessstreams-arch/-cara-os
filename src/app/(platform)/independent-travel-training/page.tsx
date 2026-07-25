@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -25,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useIndependentTravelRecords } from "@/hooks/use-independent-travel-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependentTravelRecord, TravelTrainingStage, TravelConfidence } from "@/types/extended";
 import { TRAVEL_TRAINING_STAGE_LABEL, TRAVEL_CONFIDENCE_LABEL } from "@/types/extended";
@@ -78,7 +78,12 @@ const confidenceChip = (c: TravelConfidence) => {
 /* ── page ────────────────────────────────────────────────────────────────────── */
 
 export default function IndependentTravelTrainingPage() {
-  const { data: res, isLoading } = useIndependentTravelRecords();
+  const KEY = "independent-travel-records";
+  const { data: res, isLoading } = useQuery<{ data: IndependentTravelRecord[] }>({
+    queryKey: [KEY],
+    queryFn: () =>
+      fetch("/api/v1/independent-travel-records").then((r) => r.json()),
+  });
   const records: IndependentTravelRecord[] = res?.data ?? [];
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");

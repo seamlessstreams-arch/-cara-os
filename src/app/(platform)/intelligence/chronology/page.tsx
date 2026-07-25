@@ -12,7 +12,28 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DictationButton } from "@/components/common/dictation-button";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { usePatternAlerts } from "@/hooks/use-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { PatternAlert } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function usePatternAlerts(params?: {
+  childId?: string;
+  homeId?: string;
+  status?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["intelligence", "patterns", params],
+    queryFn: () =>
+      api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
+  });
+}
 import { cn } from "@/lib/utils";
 import {
   Brain,

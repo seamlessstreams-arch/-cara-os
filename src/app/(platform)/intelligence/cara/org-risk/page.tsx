@@ -2,11 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { api } from "@/hooks/use-api";
-import { useImprovementObjectives, useCreateImprovementObjective } from "@/hooks/use-improvement-objectives";
+import type { ImprovementObjective } from "@/types/extended";
 import {
   draftObjectiveFromIndicator,
   draftObjectiveFromCorrelation,
@@ -48,6 +48,11 @@ function ActionPlanButton({ created, pending, onCreate }: { created: boolean; pe
 }
 
 export default function OrgRiskPage() {
+  const qc = useQueryClient();
+
+  const KEY = "improvement-objectives";
+  const API = "/api/v1/improvement-objectives";
+
   const { data, isLoading } = useQuery({
     queryKey: ["org-risk"],
     queryFn: async () => (await api.get<{ data: OrgRiskDashboard }>(`/org-risk`)).data,
@@ -55,9 +60,16 @@ export default function OrgRiskPage() {
   const overall = data ? LEVEL[data.overallLevel] : null;
   const maxIncidents = data ? Math.max(1, ...data.trend.map((t) => t.incidents)) : 1;
 
-  const { data: objData } = useImprovementObjectives();
+  const { data: objData } = useQuery<{ data: ImprovementObjective[] }>({
+    queryKey: [KEY],
+    queryFn: () => fetch(API).then((r) => r.json()),
+  });
   const objectives = objData?.data ?? [];
-  const createObjective = useCreateImprovementObjective();
+  const createObjective = useMutation({
+    mutationFn: (data: Partial<ImprovementObjective>) =>
+      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
   const orgRiskObjectives = objectives.filter((o) => o.source === "org_risk");
   const hasPlan = (ref: string) => objectives.some((o) => (o.notes ?? "").includes(ref));
   const createPlan = (draft: OrgRiskObjectiveDraft) => {

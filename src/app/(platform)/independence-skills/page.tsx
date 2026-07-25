@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -26,7 +27,6 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useIndependenceSkillsRecords, useCreateIndependenceSkillsRecord } from "@/hooks/use-independence-skills-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependenceSkillsRecord, IndependenceSkillProficiency, IndependenceSkillCategory } from "@/types/extended";
 import { INDEPENDENCE_SKILL_PROFICIENCY_LABEL, INDEPENDENCE_SKILL_CATEGORY_LABEL } from "@/types/extended";
@@ -47,7 +47,12 @@ const PROF_META: Record<IndependenceSkillProficiency, { label: string; colour: s
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function IndependenceSkillsPage() {
-  const { data: res, isLoading } = useIndependenceSkillsRecords();
+  const KEY = "independence-skills-records";
+  const { data: res, isLoading } = useQuery<{ data: IndependenceSkillsRecord[] }>({
+    queryKey: [KEY],
+    queryFn: () =>
+      fetch("/api/v1/independence-skills-records").then((r) => r.json()),
+  });
   const data: IndependenceSkillsRecord[] = res?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -56,7 +61,16 @@ export default function IndependenceSkillsPage() {
   const [sortBy, setSortBy] = useState("name");
   const [showDialog, setShowDialog] = useState(false);
 
-  const createRecord = useCreateIndependenceSkillsRecord();
+  const qc = useQueryClient();
+  const createRecord = useMutation({
+    mutationFn: (data: Partial<IndependenceSkillsRecord>) =>
+      fetch("/api/v1/independence-skills-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
   const [isForm, setIsForm] = useState({ child_id: "", skill_name: "", category: "cooking" as IndependenceSkillCategory, proficiency: "not_started" as IndependenceSkillProficiency, date: new Date().toISOString().slice(0, 10), evidence: "", next_step: "" });
   const setIS = (k: string, v: unknown) => setIsForm((p) => ({ ...p, [k]: v }));
 

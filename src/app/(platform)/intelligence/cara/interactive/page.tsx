@@ -5,19 +5,66 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  useInteractiveSessions,
-  useKeyWorkSessions,
-  useCreateInteractiveSession,
-  useUpdateInteractiveSession,
-} from "@/hooks/use-intelligence";
 import { cn, formatDate } from "@/lib/utils";
 import type {
-  InteractiveSession, InteractiveSessionStatus, InteractiveSessionResponse,
+  InteractiveSession, InteractiveSessionStatus, InteractiveSessionResponse, KeyWorkSession,
 } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+// ── Inlined intelligence hooks ───────────────────────────────────────────────
+
+function useInteractiveSessions(childId: string) {
+  return useQuery({
+    queryKey: ["cara-intelligence", "interactive", childId],
+    queryFn: () =>
+      api.get<ListResponse<InteractiveSession>>(
+        `/cara-intelligence/interactive?child_id=${childId}`
+      ),
+    enabled: !!childId,
+  });
+}
+
+function useKeyWorkSessions(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["cara-intelligence", "keywork", params],
+    queryFn: () =>
+      api.get<ListResponse<KeyWorkSession>>(`/cara-intelligence/keywork?${query}`),
+  });
+}
+
+function useCreateInteractiveSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<InteractiveSession>) =>
+      api.post<SingleResponse<InteractiveSession>>("/cara-intelligence/interactive", data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "interactive", vars.child_id] });
+    },
+  });
+}
+
+function useUpdateInteractiveSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, childId, ...data }: { id: string; childId: string } & Partial<InteractiveSession>) =>
+      api.patch<SingleResponse<InteractiveSession>>(`/cara-intelligence/interactive/${id}`, data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "interactive", vars.childId] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
+    },
+  });
+}
 import {
   Users, Plus, Sparkles, Loader2, AlertTriangle, CheckCircle2,
   X, Shield, Brain, ChevronRight, ChevronLeft,

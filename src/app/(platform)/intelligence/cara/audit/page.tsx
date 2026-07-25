@@ -5,10 +5,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useCaraAuditTrail } from "@/hooks/use-intelligence";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getYPName } from "@/lib/seed-data";
@@ -19,6 +20,21 @@ import {
   ClipboardList, BookOpen, ChevronDown, ChevronUp, Lightbulb,
 } from "lucide-react";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+// ── Inlined intelligence hooks ───────────────────────────────────────────────
+
+function useCaraAuditTrail(params?: { childId?: string; homeId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  return useQuery({
+    queryKey: ["cara-intelligence", "audit", params],
+    queryFn: () =>
+      api.get<ListResponse<CaraAuditEntry>>(`/cara-intelligence/audit?${query}`),
+  });
+}
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 

@@ -16,19 +16,92 @@ import {
 } from "lucide-react";
 import { HOME, getStaffName } from "@/lib/seed-data";
 import { demoSeed } from "@/lib/demo/demo-seed";
-import { usePatternAlerts, useActionOutcomes, useHomeClimate, useUpdateActionOutcome } from "@/hooks/use-intelligence";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AnnexAEvidenceItem, Reg45EvidenceItem, ManagerDecision } from "@/types/care-events";
 import { useManagementOversight, useReg40Triage } from "@/hooks/use-oversight-queues";
-import { useInspectionHistory } from "@/hooks/use-inspection-history";
-import type { ActionOutcome , HealthCheckScore } from "@/types/extended";
+import type { ActionOutcome, HealthCheckScore, InspectionRecord, PatternAlert, HomeClimateSnapshot } from "@/types/extended";
 import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined intelligence hooks ───────────────────────────────────────────────
+
+function usePatternAlerts(params?: {
+  childId?: string;
+  homeId?: string;
+  status?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["intelligence", "patterns", params],
+    queryFn: () =>
+      api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
+  });
+}
+
+function useActionOutcomes(params?: {
+  childId?: string;
+  homeId?: string;
+  status?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["intelligence", "action-outcomes", params],
+    queryFn: () =>
+      api.get<ListResponse<ActionOutcome>>(`/intelligence/action-outcomes?${query}`),
+  });
+}
+
+function useHomeClimate(homeId = "home_oak") {
+  return useQuery({
+    queryKey: ["intelligence", "home-climate", homeId],
+    queryFn: () =>
+      api.get<{
+        data: { latest: HomeClimateSnapshot | null; history: HomeClimateSnapshot[] };
+        meta: { weeks_of_history: number; trend: string };
+      }>(`/intelligence/home-climate?home_id=${homeId}`),
+    refetchInterval: 60_000,
+  });
+}
+
+function useUpdateActionOutcome() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      status?: ActionOutcome["status"];
+      what_was_done?: string;
+      what_changed?: string;
+      effectiveness?: ActionOutcome["effectiveness"];
+      effectiveness_notes?: string;
+      should_continue?: boolean;
+      completed_at?: string;
+      due_date?: string;
+      owner_id?: string;
+    }) => api.patch<SingleResponse<ActionOutcome>>(`/intelligence/action-outcomes/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "action-outcomes"] });
+    },
+  });
+}
 
 // ── Static data ───────────────────────────────────────────────────────────────
 
@@ -827,7 +900,12 @@ export default function InspectionPage() {
   const reg40Active = reg40Query.data?.meta?.active ?? 0;
 
   // Live inspection history
-  const inspHistoryQuery = useInspectionHistory();
+  const inspHistoryQuery = useQuery({
+    queryKey: ["inspection-history"],
+    queryFn: () =>
+      api.get<{ data: InspectionRecord[]; meta: { total: number } }>("/inspection-history"),
+    staleTime: 60_000,
+  });
   const inspectionRecords = inspHistoryQuery.data?.data ?? [];
 
   // Each area shows the health-check signal that ACTUALLY measures it, or

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -29,7 +30,6 @@ import {
 } from "@/components/ui/select";
 import type { HouseholdTask, TaskCategory, SupportLevel } from "@/types/extended";
 import { TASK_CATEGORY_LABEL, TASK_FREQUENCY_LABEL, SUPPORT_LEVEL_LABEL } from "@/types/extended";
-import { useHouseholdTasks } from "@/hooks/use-household-tasks";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -91,7 +91,14 @@ const exportCols: ExportColumn<HouseholdTask>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function HouseholdTasksRotaPage() {
-  const { data: raw, isLoading } = useHouseholdTasks();
+  const { data: raw, isLoading } = useQuery<{ data: HouseholdTask[] }>({
+    queryKey: ["household-tasks"],
+    queryFn: async () => {
+      const params = "";
+      const res = await fetch(`/api/v1/household-tasks${params}`);
+      return res.json();
+    },
+  });
   const data = useMemo(() => raw?.data ?? [], [raw]);
   const [filterYP, setFilterYP] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");

@@ -10,17 +10,17 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, FolderArchive, Download } from "lucide-react";
 import Link from "next/link";
-import { apiFetch } from "@/hooks/use-api";
+import { apiFetch, api } from "@/hooks/use-api";
 import type { ExportHistoryEntry } from "@/lib/db/store";
 import type { InspectionBundle } from "@/lib/care-events/inspection-bundle";
-import { useInspectionBundles } from "@/hooks/use-inspection-bundles";
+import type { PersistedInspectionBundleRow } from "@/lib/care-events/inspection-bundle";
 import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
 import { formatRate } from "@/lib/metrics/rate";
 
@@ -39,7 +39,14 @@ export default function InspectionBundlePage() {
       ),
   });
   const [lastBundleId, setLastBundleId] = useState<string | null>(null);
-  const list = useInspectionBundles(HOME_ID);
+  const list = useQuery({
+    queryKey: ["inspection-bundles", HOME_ID],
+    queryFn: () =>
+      api.get<{ data: PersistedInspectionBundleRow[] }>(
+        `/care-events/inspection-bundle?home_id=${encodeURIComponent(HOME_ID)}`,
+      ),
+    refetchInterval: 60000,
+  });
 
   const handleBuild = async () => {
     const reason = window.prompt(

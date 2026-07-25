@@ -14,7 +14,8 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraHealthPanel } from "@/components/cara/cara-health-panel";
-import { useCaraSuggestions, useUpdateCaraSuggestion } from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,30 @@ import {
   ChevronRight,
   MinusCircle,
 } from "lucide-react";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useCaraSuggestions(params?: { homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["il", "cara-suggestions", params],
+    queryFn: () => ilFetch<{ ok: boolean; items: unknown[]; persisted: boolean }>(`/cara-suggestions?${query}`),
+  });
+}
+
+function useUpdateCaraSuggestion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/cara-suggestions", { method: "PATCH", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "cara-suggestions"] });
+      qc.invalidateQueries({ queryKey: ["il", "cara-suggestion"] });
+    },
+  });
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { IncidentTrendRecord, TrendActionStatus } from "@/types/extended";
 import { TREND_ACTION_STATUS_LABEL } from "@/types/extended";
-import { useIncidentTrends } from "@/hooks/use-incident-trends";
+import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -88,7 +88,15 @@ function MiniBarChart({
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function IncidentTrendAnalysisPage() {
-  const { data: raw, isLoading } = useIncidentTrends();
+  // Inlined useIncidentTrends
+  const trendsQuery = useQuery<{ data: IncidentTrendRecord[] }>({
+    queryKey: ["incident-trends"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/incident-trends");
+      return res.json();
+    },
+  });
+  const { data: raw, isLoading } = trendsQuery;
   const allData = useMemo(() => raw?.data ?? [], [raw]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

@@ -13,12 +13,14 @@ import {
   CheckCircle2, Activity, FileText, Target,
   ArrowUp, ArrowDown, Minus, Loader2,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useTasks } from "@/hooks/use-tasks";
-import { useIncidents } from "@/hooks/use-incidents";
+import { api } from "@/hooks/use-api";
 import { useTraining } from "@/hooks/use-training";
 import { useStaff } from "@/hooks/use-staff";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useLeave } from "@/hooks/use-leave";
+import type { Incident } from "@/types";
 import { cn, todayStr } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -63,7 +65,10 @@ export default function ReportsPage() {
 
   // Live data hooks
   const allTasksQuery = useTasks();
-  const incidentsQuery = useIncidents();
+  const incidentsQuery = useQuery({
+    queryKey: ["incidents"],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents`),
+  });
   const trainingQuery = useTraining();
   const staffQuery = useStaff();
   const ypQuery = useYoungPeople();

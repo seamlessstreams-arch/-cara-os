@@ -15,7 +15,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { PageShell } from "@/components/ui/page-shell";
-import { useHrRisk } from "@/hooks/use-intelligence-layer";
+import { useQuery } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,22 @@ import type {
   HrCaseStatus,
   HrSafeguardingStatus,
 } from "@/lib/hr/types";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useHrRisk() {
+  return useQuery({
+    queryKey: ["il", "hr-risk"],
+    queryFn: () =>
+      ilFetch<{
+        ok: boolean;
+        cases: unknown[];
+        overdueTasks: unknown[];
+        recruitment: unknown[];
+        persisted: boolean;
+      }>(`/hr-risk`),
+  });
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

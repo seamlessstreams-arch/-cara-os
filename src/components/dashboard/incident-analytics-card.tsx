@@ -16,7 +16,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useIncidentAnalytics } from "@/hooks/use-incident-analytics";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { IncidentAnalyticsResult } from "@/lib/engines/incident-analytics-engine";
 
 // ── Styling maps ────────────────────────────────────────────────────────────
 
@@ -42,7 +44,16 @@ const INSIGHT_STYLES: Record<string, string> = {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function IncidentAnalyticsCard() {
-  const { data, isLoading } = useIncidentAnalytics();
+  // Inlined useIncidentAnalytics
+  interface IncidentAnalyticsResponse {
+    data: IncidentAnalyticsResult;
+  }
+  const analyticsQuery = useQuery({
+    queryKey: ["incident-analytics"],
+    queryFn: () => api.get<IncidentAnalyticsResponse>("/incident-analytics"),
+    refetchInterval: 30_000, // 30 second refresh (incidents are critical)
+  });
+  const { data, isLoading } = analyticsQuery;
   const intel = data?.data;
 
   if (isLoading || !intel) {

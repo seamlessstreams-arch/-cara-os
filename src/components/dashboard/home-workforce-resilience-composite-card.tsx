@@ -1,10 +1,10 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeWorkforceResilienceComposite } from "@/hooks/use-home-workforce-resilience-composite";
-import type { WorkforceResilienceRating } from "@/lib/engines/home-workforce-resilience-composite-engine";
+import type { WorkforceResilienceRating, WorkforceResilienceResult } from "@/lib/engines/home-workforce-resilience-composite-engine";
 
 const RATING_STYLES: Record<WorkforceResilienceRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -17,7 +17,15 @@ const REC_STYLES: Record<string, string> = { immediate: "border-[--cs-risk-soft]
 const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]" };
 
 export function HomeWorkforceResilienceCompositeCard() {
-  const { data, isLoading } = useHomeWorkforceResilienceComposite();
+  const { data, isLoading } = useQuery<{ data: WorkforceResilienceResult }>({
+    queryKey: ["home-workforce-resilience-composite"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-workforce-resilience-composite");
+      if (!res.ok) throw new Error("Failed to fetch workforce resilience composite");
+      return res.json();
+    },
+    refetchInterval: 120_000,
+  });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
   const d = data?.data;
   if (!d) return null;

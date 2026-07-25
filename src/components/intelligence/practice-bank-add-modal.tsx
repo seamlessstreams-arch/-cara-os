@@ -10,9 +10,24 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Plus, X, Loader2, CheckCircle2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
-import { useCreatePracticeBankEntry } from "@/hooks/use-intelligence";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { EntryAssist } from "@/components/forms/entry-assist";
+import type { PracticeBankEntry } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useCreatePracticeBankEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<PracticeBankEntry>) =>
+      api.post<SingleResponse<PracticeBankEntry>>("/intelligence/practice-bank", data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "practice-bank", vars.child_id] });
+    },
+  });
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

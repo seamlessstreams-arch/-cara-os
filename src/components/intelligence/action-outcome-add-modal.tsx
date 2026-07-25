@@ -10,7 +10,22 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Plus, X, Loader2, CheckCircle2, Target, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EntryAssist } from "@/components/forms/entry-assist";
-import { useCreateActionOutcome } from "@/hooks/use-intelligence";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ActionOutcome } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateActionOutcome() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<ActionOutcome>) =>
+      api.post<SingleResponse<ActionOutcome>>("/intelligence/action-outcomes", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "action-outcomes"] });
+    },
+  });
+}
 import { cn } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────

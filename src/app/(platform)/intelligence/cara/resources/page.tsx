@@ -8,11 +8,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  useChildResources,
-  useCreateChildResource,
-  useUpdateChildResource,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn, formatDate } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
@@ -24,6 +21,46 @@ import {
   FileText, Plus, Sparkles, Loader2, AlertTriangle,
   CheckCircle2, X, Star, Printer,
 } from "lucide-react";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+// ── Inlined intelligence hooks ───────────────────────────────────────────────
+
+function useChildResources(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["cara-intelligence", "resources", params],
+    queryFn: () =>
+      api.get<ListResponse<ChildResource>>(`/cara-intelligence/resources?${query}`),
+  });
+}
+
+function useCreateChildResource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<ChildResource>) =>
+      api.post<SingleResponse<ChildResource>>("/cara-intelligence/resources", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "resources"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
+    },
+  });
+}
+
+function useUpdateChildResource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<ChildResource>) =>
+      api.patch<SingleResponse<ChildResource>>(`/cara-intelligence/resources/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "resources"] });
+    },
+  });
+}
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 
 // ── Constants ─────────────────────────────────────────────────────────────────

@@ -21,7 +21,7 @@ import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { ImpactAssessment, ImpactAssessmentStatus, ImpactRecommendation, ImpactArea } from "@/types/extended";
 import { IMPACT_ASSESSMENT_STATUS_LABEL, IMPACT_RECOMMENDATION_LABEL } from "@/types/extended";
-import { useImpactAssessments, useCreateImpactAssessment } from "@/hooks/use-impact-assessments";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,12 +45,33 @@ const REC_COLORS: Record<ImpactRecommendation, string> = {
 
 /* ── component ───────────────────────────────────────────────── */
 export default function ImpactAssessmentsPage() {
-  const { data: raw, isLoading } = useImpactAssessments();
+  // Inlined useImpactAssessments
+  const assessmentsQuery = useQuery<{ data: ImpactAssessment[] }>({
+    queryKey: ["impact-assessments"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/impact-assessments");
+      return res.json();
+    },
+  });
+  const { data: raw, isLoading } = assessmentsQuery;
   const assessments = useMemo(() => raw?.data ?? [], [raw]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [showNew, setShowNew] = useState(false);
-  const createAssessment = useCreateImpactAssessment();
+
+  // Inlined useCreateImpactAssessment
+  const qc = useQueryClient();
+  const createAssessment = useMutation({
+    mutationFn: async (data: Partial<ImpactAssessment>) => {
+      const res = await fetch("/api/v1/impact-assessments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["impact-assessments"] }),
+  });
   const [iaForm, setIaForm] = useState({ referral_name: "", referral_age: "", referral_gender: "male", referral_authority: "", rationale: "", recommendation: "proceed" as ImpactRecommendation });
   const setIA = (k: string, v: unknown) => setIaForm((p) => ({ ...p, [k]: v }));
 

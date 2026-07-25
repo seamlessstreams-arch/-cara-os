@@ -8,10 +8,8 @@ import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  useCaraRecommendations,
-  useUpdateCaraRecommendation,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatDate } from "@/lib/utils";
@@ -19,6 +17,34 @@ import type { CaraRecommendation } from "@/types/extended";
 import {
   Lightbulb, CheckCircle2, X, AlertTriangle, Loader2, ClipboardList,
 } from "lucide-react";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+// ── Inlined intelligence hooks ───────────────────────────────────────────────
+
+function useCaraRecommendations(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["cara-intelligence", "recommendations", params],
+    queryFn: () =>
+      api.get<ListResponse<CaraRecommendation>>(`/cara-intelligence/recommendations?${query}`),
+  });
+}
+
+function useUpdateCaraRecommendation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<CaraRecommendation>) =>
+      api.patch<SingleResponse<CaraRecommendation>>(`/cara-intelligence/recommendations/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "recommendations"] });
+    },
+  });
+}
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 
 // ── Constants ─────────────────────────────────────────────────────────────────

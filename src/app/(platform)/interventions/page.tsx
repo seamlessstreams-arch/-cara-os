@@ -25,11 +25,54 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import {
-  useAllInterventions,
-  useCreateIntervention,
-  useUpdateIntervention,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { Intervention } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useAllInterventions(homeId = "home_oak") {
+  return useQuery({
+    queryKey: ["intelligence", "interventions", "home", homeId],
+    queryFn: () =>
+      api.get<ListResponse<Intervention>>(
+        `/intelligence/interventions?home_id=${homeId}`
+      ),
+  });
+}
+
+function useCreateIntervention() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Intervention>) =>
+      api.post<SingleResponse<Intervention>>("/intelligence/interventions", data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "interventions", vars.child_id] });
+      qc.invalidateQueries({ queryKey: ["intelligence", "interventions"] });
+    },
+  });
+}
+
+function useUpdateIntervention() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      status?: Intervention["status"];
+      outcome?: Intervention["outcome"];
+      outcome_notes?: string;
+      ended_at?: string;
+      review_date?: string;
+    }) => api.patch<SingleResponse<Intervention>>(`/intelligence/interventions/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "interventions"] });
+    },
+  });
+}
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { Intervention, InterventionStatus, InterventionOutcome } from "@/types/extended";
 import {

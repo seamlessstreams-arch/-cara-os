@@ -12,8 +12,48 @@ import {
   Brain, Sparkles, X, Loader2, AlertTriangle, TrendingDown, CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePatternAlerts, useActionOutcomes, useHomeClimate } from "@/hooks/use-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
+import type { PatternAlert, ActionOutcome, HomeClimateSnapshot } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function usePatternAlerts(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["intelligence", "patterns", params],
+    queryFn: () =>
+      api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
+  });
+}
+
+function useActionOutcomes(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["intelligence", "action-outcomes", params],
+    queryFn: () =>
+      api.get<ListResponse<ActionOutcome>>(`/intelligence/action-outcomes?${query}`),
+  });
+}
+
+function useHomeClimate(homeId = "home_oak") {
+  return useQuery({
+    queryKey: ["intelligence", "home-climate", homeId],
+    queryFn: () =>
+      api.get<{
+        data: { latest: HomeClimateSnapshot | null; history: HomeClimateSnapshot[] };
+        meta: { weeks_of_history: number; trend: string };
+      }>(`/intelligence/home-climate?home_id=${homeId}`),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Climate helpers ───────────────────────────────────────────────────────────
 

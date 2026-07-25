@@ -7,14 +7,15 @@
 // inspection-ready right now. All numbers come from the live store.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { RefreshCw, AlertTriangle, CheckCircle2, ShieldCheck, HelpCircle } from "lucide-react";
-import { useInspectionReadiness } from "@/hooks/use-inspection-readiness";
-import type { ReadinessSeverity } from "@/lib/care-events/inspection-readiness";
+import { api } from "@/hooks/use-api";
+import type { ReadinessSeverity, InspectionReadinessReport } from "@/lib/care-events/inspection-readiness";
 
 const HOME_ID = "home_oak";
 
@@ -27,7 +28,14 @@ const SEVERITY_META: Record<ReadinessSeverity, { label: string; tone: string; ic
 };
 
 export default function InspectionReadinessPage() {
-  const { data, isLoading, refetch, isFetching } = useInspectionReadiness(HOME_ID);
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["inspection-readiness", HOME_ID],
+    queryFn: () =>
+      api.get<{ data: InspectionReadinessReport }>(
+        `/care-events/inspection-readiness?home_id=${encodeURIComponent(HOME_ID)}`,
+      ),
+    refetchInterval: 30000,
+  });
   const report = data?.data;
 
   return (

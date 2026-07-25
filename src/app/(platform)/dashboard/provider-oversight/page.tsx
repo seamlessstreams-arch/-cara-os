@@ -2,16 +2,8 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useEffect, useMemo } from "react";
-import {
-  useProviderSummaries,
-  useCreateProviderSummary,
-  useAttentionItems,
-  useReg44Visits,
-  useReg45Reviews,
-  useCompetenceRecords,
-  useVoiceEntries,
-  useEvidenceItems,
-} from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +36,113 @@ import {
   Calendar,
   Sparkles,
 } from "lucide-react";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useProviderSummaries(params?: { homeId?: string; providerId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.providerId) query.set("providerId", params.providerId);
+
+  return useQuery({
+    queryKey: ["il", "oversight", params],
+    queryFn: () => ilFetch<{ ok: boolean; summaries: unknown[]; persisted: boolean }>(`/oversight?${query}`),
+  });
+}
+
+function useCreateProviderSummary() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/oversight", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "oversight"] });
+    },
+  });
+}
+
+function useAttentionItems(params?: {
+  homeId?: string;
+  status?: string;
+  urgency?: string;
+  category?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  if (params?.urgency) query.set("urgency", params.urgency);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["il", "attention-items", params],
+    queryFn: () => ilFetch<{ ok: boolean; items: unknown[]; persisted: boolean }>(`/attention-items?${query}`),
+  });
+}
+
+function useReg44Visits(params?: { homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "reg44", params],
+    queryFn: () => ilFetch<{ ok: boolean; visits: unknown[]; persisted: boolean }>(`/reg44?${query}`),
+  });
+}
+
+function useReg45Reviews(params?: { homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "reg45", params],
+    queryFn: () => ilFetch<{ ok: boolean; reviews: unknown[]; persisted: boolean }>(`/reg45?${query}`),
+  });
+}
+
+function useCompetenceRecords(params?: { homeId?: string; staffId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.staffId) query.set("staffId", params.staffId);
+
+  return useQuery({
+    queryKey: ["il", "competence", params],
+    queryFn: () => ilFetch<{ ok: boolean; records: unknown[]; persisted: boolean }>(`/competence?${query}`),
+  });
+}
+
+function useVoiceEntries(params?: {
+  childId?: string;
+  homeId?: string;
+  category?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("childId", params.childId);
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["il", "voice", params],
+    queryFn: () => ilFetch<{ ok: boolean; entries: unknown[]; persisted: boolean }>(`/voice?${query}`),
+  });
+}
+
+function useEvidenceItems(params?: {
+  homeId?: string;
+  judgementArea?: string;
+  category?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.judgementArea) query.set("judgementArea", params.judgementArea);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["il", "evidence", params],
+    queryFn: () => ilFetch<{ ok: boolean; items: unknown[]; persisted: boolean }>(`/evidence?${query}`),
+  });
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

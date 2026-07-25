@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,14 +9,31 @@ import { cn } from "@/lib/utils";
 import {
   Loader2, ListChecks, ShieldAlert, Sparkles, Heart, Target, AlertTriangle, CheckCircle2,
 } from "lucide-react";
-import { useInterviewPack } from "@/hooks/use-interview-pack";
+import type { InterviewPack } from "@/lib/engines/interview-pack-engine";
+
+export interface InterviewPackResponse {
+  pack: InterviewPack;
+  candidate_name: string | null;
+  roles: { key: string; label: string; senior: boolean }[];
+  candidates: { id: string; name: string; preferred_role: string }[];
+  has_values_profile: boolean;
+}
 
 const SELECT = "rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-text)] focus:border-[var(--cs-teal)] focus:outline-none focus:ring-1 focus:ring-[var(--cs-teal)]";
 
 export default function InterviewBuilderPage() {
   const [role, setRole] = useState("residential_care_worker");
   const [candidateId, setCandidateId] = useState<string>("");
-  const { data, isLoading } = useInterviewPack(role, candidateId || null);
+  const { data, isLoading } = useQuery<InterviewPackResponse>({
+    queryKey: ["interview-pack", role, candidateId ?? ""],
+    queryFn: async () => {
+      const params = new URLSearchParams({ role });
+      if (candidateId) params.set("candidateId", candidateId);
+      const res = await fetch(`/api/v1/interview-pack?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch interview pack");
+      return (await res.json()).data;
+    },
+  });
 
   // Cara extra-questions (optional, human-in-the-loop)
   const [aiState, setAiState] = useState<"idle" | "loading" | "done">("idle");

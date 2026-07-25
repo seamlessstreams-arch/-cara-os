@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge }        from "@/components/ui/badge";
 import { cn }           from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { useIndependencePathways } from "@/hooks/use-independence-pathways";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependencePathway, IndependencePathwayStatus } from "@/types/extended";
 import { INDEPENDENCE_PATHWAY_STATUS_LABEL } from "@/types/extended";
@@ -40,7 +40,13 @@ const STATUS_COLOURS: Record<IndependencePathwayStatus, string> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function IndependencePathwayPage() {
-  const { data: res, isLoading } = useIndependencePathways();
+  // Inlined useIndependencePathways
+  const pathwaysQuery = useQuery<{ data: IndependencePathway[] }>({
+    queryKey: ["independence-pathways"],
+    queryFn: () =>
+      fetch("/api/v1/independence-pathways").then((r) => r.json()),
+  });
+  const { data: res, isLoading } = pathwaysQuery;
   const data: IndependencePathway[] = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");

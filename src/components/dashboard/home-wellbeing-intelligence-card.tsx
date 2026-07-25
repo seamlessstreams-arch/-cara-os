@@ -7,6 +7,7 @@
 // CHR 2015 Reg 6, 7, 34. SCCIF: "Experiences and progress of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, Loader2, Heart, AlertCircle,
@@ -14,9 +15,12 @@ import {
   Moon, ShieldCheck, Activity, User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeWellbeingIntelligence } from "@/hooks/use-home-wellbeing-intelligence";
-import type { HomeTemperature } from "@/lib/engines/home-wellbeing-intelligence-engine";
+import type { HomeTemperature, HomeWellbeingResult } from "@/lib/engines/home-wellbeing-intelligence-engine";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
+
+interface HomeWellbeingResponse {
+  data: HomeWellbeingResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -83,7 +87,15 @@ function wellbeingBg(score: number): string {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeWellbeingIntelligenceCard() {
-  const { data, isLoading } = useHomeWellbeingIntelligence();
+  const { data, isLoading } = useQuery<HomeWellbeingResponse>({
+    queryKey: ["home-wellbeing-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-wellbeing-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home wellbeing intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

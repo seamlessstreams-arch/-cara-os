@@ -11,9 +11,23 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { MessageCircle, X, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
-import { useCreateVoiceRecord } from "@/hooks/use-intelligence";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
-import type { VoiceTheme } from "@/types/extended";
+import type { VoiceTheme, VoiceRecord } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateVoiceRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<VoiceRecord>) =>
+      api.post<SingleResponse<VoiceRecord>>("/intelligence/voice", data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "voice", vars.child_id] });
+    },
+  });
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

@@ -12,11 +12,46 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  useSmartLinks,
-  useSmartLinkSuggestions,
-  useCreateSmartLink,
-} from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useSmartLinks(params?: {
+  sourceType?: string;
+  sourceId?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.sourceType) query.set("sourceType", params.sourceType);
+  if (params?.sourceId) query.set("sourceId", params.sourceId);
+
+  return useQuery({
+    queryKey: ["il", "smart-links", params],
+    queryFn: () => ilFetch<{ ok: boolean; links: unknown[]; persisted: boolean }>(`/smart-links?${query}`),
+    enabled: !!params?.sourceId,
+  });
+}
+
+function useSmartLinkSuggestions() {
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch<{ ok: boolean; suggestions: unknown[] }>("/smart-links", {
+        method: "POST",
+        body: JSON.stringify({ ...data, action: "suggest" }),
+      }),
+  });
+}
+
+function useCreateSmartLink() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/smart-links", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "smart-links"] });
+    },
+  });
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

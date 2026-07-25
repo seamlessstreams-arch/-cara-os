@@ -15,7 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useCaraSuggestions } from "@/hooks/use-intelligence-layer";
+import { useQuery } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import {
   Sparkles,
   ChevronRight,
@@ -29,6 +30,18 @@ import {
   CircleDot,
   Loader2,
 } from "lucide-react";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useCaraSuggestions(params?: { homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["il", "cara-suggestions", params],
+    queryFn: () => ilFetch<{ ok: boolean; items: unknown[]; persisted: boolean }>(`/cara-suggestions?${query}`),
+  });
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

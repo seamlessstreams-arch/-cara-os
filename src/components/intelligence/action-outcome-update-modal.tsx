@@ -9,7 +9,35 @@ import React, { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useUpdateActionOutcome } from "@/hooks/use-intelligence";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ActionOutcome } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useUpdateActionOutcome() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      status?: ActionOutcome["status"];
+      what_was_done?: string;
+      what_changed?: string;
+      effectiveness?: ActionOutcome["effectiveness"];
+      effectiveness_notes?: string;
+      should_continue?: boolean;
+      completed_at?: string;
+      due_date?: string;
+      owner_id?: string;
+    }) => api.patch<SingleResponse<ActionOutcome>>(`/intelligence/action-outcomes/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "action-outcomes"] });
+    },
+  });
+}
 import { cn } from "@/lib/utils";
 import type { ActionOutcome } from "@/types/extended";
 import { Pencil, X, Loader2, CheckCircle2 } from "lucide-react";

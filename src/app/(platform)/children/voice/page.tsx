@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useVoiceEntries, useCreateVoiceEntry } from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -38,6 +39,35 @@ import {
   Smile,
   Palette,
 } from "lucide-react";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useVoiceEntries(params?: {
+  childId?: string;
+  homeId?: string;
+  category?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("childId", params.childId);
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["il", "voice", params],
+    queryFn: () => ilFetch<{ ok: boolean; entries: unknown[]; persisted: boolean }>(`/voice?${query}`),
+  });
+}
+
+function useCreateVoiceEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/voice", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "voice"] });
+    },
+  });
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

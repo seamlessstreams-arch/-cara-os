@@ -14,7 +14,22 @@ import {
   FileText, ShieldAlert,
 } from "lucide-react";
 import { useYoungPeople, type YPEnriched } from "@/hooks/use-young-people";
-import { useChildExperienceLatest } from "@/hooks/use-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ChildExperienceSnapshot } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useChildExperienceLatest(childId: string) {
+  return useQuery({
+    queryKey: ["intelligence", "child-experience", childId, "latest"],
+    queryFn: () =>
+      api.get<SingleResponse<ChildExperienceSnapshot>>(
+        `/intelligence/child-experience?child_id=${childId}&latest=true`
+      ),
+    enabled: !!childId,
+  });
+}
 import { useCarePlans } from "@/hooks/use-care-plans";
 import { useOutcomes } from "@/hooks/use-outcomes";
 import { useKeyWorkingSessions } from "@/hooks/use-key-working";

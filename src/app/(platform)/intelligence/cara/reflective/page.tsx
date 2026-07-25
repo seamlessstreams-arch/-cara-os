@@ -12,12 +12,38 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
-import {
-  useCaraAssessments,
-  useCreateCaraAssessment,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn, formatDate } from "@/lib/utils";
 import type { CaraAssessment } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+// ── Inlined intelligence hooks ───────────────────────────────────────────────
+
+function useCaraAssessments(params?: { childId?: string; homeId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  return useQuery({
+    queryKey: ["cara-intelligence", "assessments", params],
+    queryFn: () =>
+      api.get<ListResponse<CaraAssessment>>(`/cara-intelligence/assessments?${query}`),
+  });
+}
+
+function useCreateCaraAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<CaraAssessment>) =>
+      api.post<SingleResponse<CaraAssessment>>("/cara-intelligence/assessments", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "assessments"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
+    },
+  });
+}
 import {
   Brain, Sparkles, Loader2, AlertTriangle, CheckCircle2,
   Heart, Users, Lightbulb, HelpCircle, Star, Info,

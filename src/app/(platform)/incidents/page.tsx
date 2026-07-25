@@ -22,7 +22,9 @@ import {
   UserCheck, X, ChevronRight, Bell, ClipboardList, Loader2,
   TrendingUp, ArrowUpRight, Brain, Link as LinkIcon, ArrowUpDown,
 } from "lucide-react";
-import { useIncidents, useAddOversight, useCreateIncident } from "@/hooks/use-incidents";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import { careToast } from "@/lib/toast";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { InlinePracticeModules } from "@/components/intelligence/practice-module-panels";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
@@ -341,8 +343,26 @@ function AllIncidentsTab() {
   const [oversightNote, setOversightNote] = useState("");
   const router = useRouter();
 
-  const query = useIncidents();
-  const addOversight = useAddOversight();
+  // Inlined useIncidents
+  const query = useQuery({
+    queryKey: ["incidents", { status: undefined, child_id: undefined, needs_oversight: undefined }],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?`),
+  });
+
+  // Inlined useAddOversight
+  const qc = useQueryClient();
+  const addOversight = useMutation({
+    mutationFn: ({ id, note, by, cara_assisted }: { id: string; note: string; by: string; cara_assisted?: boolean }) =>
+      api.post(`/incidents/${id}/oversight`, { oversight_note: note, oversight_by: by, cara_assisted }),
+    onSuccess: () => {
+      careToast.oversightAdded();
+      qc.invalidateQueries({ queryKey: ["incidents"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["health-check"] });
+    },
+    onError: () => careToast.actionFailed("Add oversight"),
+  });
+
   const ypQuery = useYoungPeople();
   const allYP = ypQuery.data?.data ?? [];
 
@@ -637,8 +657,30 @@ function AllIncidentsTab() {
 
 function OversightQueueTab() {
   const { currentUser } = useAuthContext();
-  const query = useIncidents({ needs_oversight: true });
-  const addOversight = useAddOversight();
+
+  // Inlined useIncidents with params
+  const queryParams = { needs_oversight: true };
+  const queryStr = new URLSearchParams();
+  if (queryParams?.needs_oversight) queryStr.set("needs_oversight", "true");
+  const query = useQuery({
+    queryKey: ["incidents", queryParams],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${queryStr}`),
+  });
+
+  // Inlined useAddOversight (reuse from above context)
+  const qc = useQueryClient();
+  const addOversight = useMutation({
+    mutationFn: ({ id, note, by, cara_assisted }: { id: string; note: string; by: string; cara_assisted?: boolean }) =>
+      api.post(`/incidents/${id}/oversight`, { oversight_note: note, oversight_by: by, cara_assisted }),
+    onSuccess: () => {
+      careToast.oversightAdded();
+      qc.invalidateQueries({ queryKey: ["incidents"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["health-check"] });
+    },
+    onError: () => careToast.actionFailed("Add oversight"),
+  });
+
   const [notesById, setNotesById] = useState<Record<string, string>>({});
   const [submittedIds, setSubmittedIds] = useState<Set<string>>(new Set());
   const [caraPanelId, setCaraPanelId] = useState<string | null>(null);
@@ -898,7 +940,19 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
   const [successResult, setSuccessResult] = useState<{ ref: string; links: string[] } | null>(null);
   const [caraOpen, setCaraOpen] = useState(false);
 
-  const createIncident = useCreateIncident();
+  // Inlined useCreateIncident
+  const qcLog = useQueryClient();
+  const createIncident = useMutation({
+    mutationFn: (data: Partial<Incident>) => api.post<{ data: Incident; linked_updates: string[] }>("/incidents", data),
+    onSuccess: (_res, data) => {
+      careToast.incidentLogged(data.reference ?? "New incident");
+      qcLog.invalidateQueries({ queryKey: ["incidents"] });
+      qcLog.invalidateQueries({ queryKey: ["dashboard"] });
+      qcLog.invalidateQueries({ queryKey: ["health-check"] });
+    },
+    onError: () => careToast.actionFailed("Log incident"),
+  });
+
   const logYpQuery = useYoungPeople();
   const logAllYP = logYpQuery.data?.data ?? [];
 

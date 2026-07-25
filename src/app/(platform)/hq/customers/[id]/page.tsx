@@ -4,16 +4,26 @@
 
 import { use, useState } from "react";
 import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HqBoundaryNote, HqStat, HqStatusBadge } from "@/components/hq/hq-bits";
-import {
-  useHqCustomer,
-  useRecordBreakGlass,
-  useRevokeBreakGlass,
-  useSetCustomerStatus,
-} from "@/hooks/use-hq";
+import type { HqOrganisation, HqBreakGlassGrant } from "@/lib/hq/hq-types";
+import type { HqUsageSummary, HqAiSummary, HqBreakGlassSummary } from "@/lib/engines/platform-hq-engine";
 import { ArrowLeft } from "lucide-react";
+
+const HQ_HEADERS = {
+  "content-type": "application/json",
+  "x-user-role": "platform_admin",
+  "x-user-id": "hq_owner",
+};
+
+async function hqFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, { ...init, headers: { ...HQ_HEADERS, ...init?.headers } });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  return json.data as T;
+}
 
 const inputCls =
   "w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-3 py-2 text-sm text-[var(--cs-navy)] outline-none focus-visible:border-[var(--cs-teal)]";
@@ -21,10 +31,48 @@ const labelCls = "mb-1 block text-xs font-semibold text-[var(--cs-text-secondary
 
 export default function HqCustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { data, isLoading, error } = useHqCustomer(id);
-  const setStatus = useSetCustomerStatus(id);
-  const breakGlass = useRecordBreakGlass(id);
-  const revoke = useRevokeBreakGlass(id);
+  const qc = useQueryClient();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["hq-customer", id],
+    queryFn: () => hqFetch<{ customer: HqOrganisation; usage: HqUsageSummary; ai: HqAiSummary; break_glass: HqBreakGlassSummary }>(`/api/v1/hq/customers/${id}`),
+    enabled: Boolean(id),
+  });
+  const setStatus = useMutation({
+    mutationFn: (status: "active" | "suspended" | "churned") =>
+      hqFetch<{ customer: HqOrganisation }>(`/api/v1/hq/customers/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["hq-overview"] });
+      qc.invalidateQueries({ queryKey: ["hq-customers"] });
+      qc.invalidateQueries({ queryKey: ["hq-customer"] });
+    },
+  });
+  const breakGlass = useMutation({
+    mutationFn: (input: { reason: string; hours: number }) =>
+      hqFetch<{ grant: HqBreakGlassGrant }>(`/api/v1/hq/customers/${id}/break-glass`, {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["hq-overview"] });
+      qc.invalidateQueries({ queryKey: ["hq-customers"] });
+      qc.invalidateQueries({ queryKey: ["hq-customer"] });
+    },
+  });
+  const revoke = useMutation({
+    mutationFn: (grantId: string) =>
+      hqFetch<{ grant: HqBreakGlassGrant }>(`/api/v1/hq/customers/${id}/break-glass`, {
+        method: "PATCH",
+        body: JSON.stringify({ grant_id: grantId }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["hq-overview"] });
+      qc.invalidateQueries({ queryKey: ["hq-customers"] });
+      qc.invalidateQueries({ queryKey: ["hq-customer"] });
+    },
+  });
   const [reason, setReason] = useState("");
   const [hours, setHours] = useState(4);
 

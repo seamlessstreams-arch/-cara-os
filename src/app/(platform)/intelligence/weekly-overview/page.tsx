@@ -9,23 +9,124 @@
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useMemo, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import {
-  useHomeClimate,
-  usePatternAlerts,
-  useActionOutcomes,
-  useChildExperienceLatest,
-  useInterventions,
-  usePracticeBank,
-  useVoiceRecords,
-  useAcknowledgePattern,
-  useCreateChildExperienceSnapshot,
-} from "@/hooks/use-intelligence";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ChildExperienceSnapshot, HomeClimateSnapshot, PatternAlert, ActionOutcome, Intervention, PracticeBankEntry, VoiceRecord } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useHomeClimate(homeId = "home_oak") {
+  return useQuery({
+    queryKey: ["intelligence", "home-climate", homeId],
+    queryFn: () =>
+      api.get<{ data: { latest: HomeClimateSnapshot | null; history: HomeClimateSnapshot[] }; meta: { weeks_of_history: number; trend: string } }>(`/intelligence/home-climate?home_id=${homeId}`),
+    refetchInterval: 60_000,
+  });
+}
+
+function usePatternAlerts(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["intelligence", "patterns", params],
+    queryFn: () => api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
+  });
+}
+
+function useActionOutcomes(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["intelligence", "action-outcomes", params],
+    queryFn: () =>
+      api.get<ListResponse<ActionOutcome>>(`/intelligence/action-outcomes?${query}`),
+  });
+}
+
+function useChildExperienceLatest(childId: string) {
+  return useQuery({
+    queryKey: ["intelligence", "child-experience", childId, "latest"],
+    queryFn: () =>
+      api.get<SingleResponse<ChildExperienceSnapshot>>(
+        `/intelligence/child-experience?child_id=${childId}&latest=true`
+      ),
+    enabled: !!childId,
+  });
+}
+
+function useInterventions(childId: string) {
+  return useQuery({
+    queryKey: ["intelligence", "interventions", childId],
+    queryFn: () =>
+      api.get<ListResponse<Intervention>>(
+        `/intelligence/interventions?child_id=${childId}`
+      ),
+    enabled: !!childId,
+  });
+}
+
+function usePracticeBank(childId: string, activeOnly = true) {
+  const query = new URLSearchParams({ child_id: childId });
+  if (!activeOnly) query.set("active", "false");
+  return useQuery({
+    queryKey: ["intelligence", "practice-bank", childId, activeOnly],
+    queryFn: () =>
+      api.get<ListResponse<PracticeBankEntry>>(`/intelligence/practice-bank?${query}`),
+    enabled: !!childId,
+  });
+}
+
+function useVoiceRecords(childId: string, theme?: string) {
+  const query = new URLSearchParams({ child_id: childId });
+  if (theme) query.set("theme", theme);
+  return useQuery({
+    queryKey: ["intelligence", "voice", childId, theme],
+    queryFn: () =>
+      api.get<ListResponse<VoiceRecord>>(`/intelligence/voice?${query}`),
+    enabled: !!childId,
+  });
+}
+
+function useAcknowledgePattern() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      status: PatternAlert["status"];
+      acknowledged_by?: string;
+      resolved_by?: string;
+    }) => api.patch<SingleResponse<PatternAlert>>(`/intelligence/patterns/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "patterns"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+function useCreateChildExperienceSnapshot() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<ChildExperienceSnapshot>) =>
+      api.post<SingleResponse<ChildExperienceSnapshot>>("/intelligence/child-experience", data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "child-experience", vars.child_id] });
+    },
+  });
+}
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { cn, formatDate, formatRelative } from "@/lib/utils";

@@ -3,12 +3,26 @@
 // CARA HQ — overview (platform-owner cockpit)
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { HqBoundaryNote, HqModeChip, HqStat } from "@/components/hq/hq-bits";
-import { useHqOverview } from "@/hooks/use-hq";
+import type { HqOverview, HqOverviewData } from "@/lib/engines/platform-hq-engine";
 import { ArrowRight, ExternalLink } from "lucide-react";
+
+const HQ_HEADERS = {
+  "content-type": "application/json",
+  "x-user-role": "platform_admin",
+  "x-user-id": "hq_owner",
+};
+
+async function hqFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, { ...init, headers: { ...HQ_HEADERS, ...init?.headers } });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  return json.data as T;
+}
 
 const OPS_LINKS: [string, string][] = [
   ["Vercel dashboard / logs", "https://vercel.com/dashboard"],
@@ -18,7 +32,10 @@ const OPS_LINKS: [string, string][] = [
 ];
 
 export default function HqOverviewPage() {
-  const { data, isLoading, error } = useHqOverview();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["hq-overview"],
+    queryFn: () => hqFetch<{ overview: HqOverview; mode: { durable: boolean; ai_configured: boolean } }>("/api/v1/hq/overview"),
+  });
   const o = data?.overview;
 
   return (

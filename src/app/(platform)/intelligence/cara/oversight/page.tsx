@@ -9,19 +9,44 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
-import {
-  useCreateCaraOversight,
-  useUpdateCaraOversight,
-} from "@/hooks/use-intelligence";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { cn } from "@/lib/utils";
-import type { CaraOversightStyle } from "@/types/extended";
+import type { CaraOversightStyle, CaraOversight } from "@/types/extended";
 import {
   Sparkles, Loader2, AlertTriangle, CheckCircle2,
   ClipboardList, Edit3, Brain, Shield, Eye, FileText,
   TrendingUp, Target, BookOpen, Scale, ScanSearch,
 } from "lucide-react";
+
+type SingleResponse<T> = { data: T };
+
+// ── Inlined intelligence hooks ───────────────────────────────────────────────
+
+function useCreateCaraOversight() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<CaraOversight>) =>
+      api.post<SingleResponse<CaraOversight>>("/cara-intelligence/oversight", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "oversight"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
+    },
+  });
+}
+
+function useUpdateCaraOversight() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<CaraOversight>) =>
+      api.patch<SingleResponse<CaraOversight>>(`/cara-intelligence/oversight/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "oversight"] });
+    },
+  });
+}
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";

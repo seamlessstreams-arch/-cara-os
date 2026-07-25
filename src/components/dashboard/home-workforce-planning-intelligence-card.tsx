@@ -7,6 +7,7 @@
 // CHR 2015 Reg 33. SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,11 @@ import {
   UserCheck, Briefcase, GraduationCap, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeWorkforcePlanningIntelligence } from "@/hooks/use-home-workforce-planning-intelligence";
-import type { WorkforcePlanningRating } from "@/lib/engines/home-workforce-planning-intelligence-engine";
+import type { WorkforcePlanningRating, HomeWorkforcePlanningResult } from "@/lib/engines/home-workforce-planning-intelligence-engine";
+
+interface HomeWorkforcePlanningResponse {
+  data: HomeWorkforcePlanningResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +47,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeWorkforcePlanningIntelligenceCard() {
-  const { data, isLoading } = useHomeWorkforcePlanningIntelligence();
+  const { data, isLoading } = useQuery<HomeWorkforcePlanningResponse>({
+    queryKey: ["home-workforce-planning-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-workforce-planning-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home workforce planning intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

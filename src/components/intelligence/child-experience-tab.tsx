@@ -10,16 +10,115 @@ import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  useChildExperienceLatest,
-  usePatternAlerts,
-  useInterventions,
-  usePracticeBank,
-  useVoiceRecords,
-  useRelationalRecords,
-  useCreateChildExperienceSnapshot,
-  useUpdatePracticeBankEntry,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type {
+  ChildExperienceSnapshot, PatternAlert, Intervention, PracticeBankEntry,
+  VoiceRecord, RelationalRecord
+} from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useChildExperienceLatest(childId: string) {
+  return useQuery({
+    queryKey: ["intelligence", "child-experience", childId, "latest"],
+    queryFn: () =>
+      api.get<SingleResponse<ChildExperienceSnapshot>>(
+        `/intelligence/child-experience?child_id=${childId}&latest=true`
+      ),
+    enabled: !!childId,
+  });
+}
+
+function usePatternAlerts(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["intelligence", "patterns", params],
+    queryFn: () =>
+      api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
+  });
+}
+
+function useInterventions(childId: string) {
+  return useQuery({
+    queryKey: ["intelligence", "interventions", childId],
+    queryFn: () =>
+      api.get<ListResponse<Intervention>>(
+        `/intelligence/interventions?child_id=${childId}`
+      ),
+    enabled: !!childId,
+  });
+}
+
+function usePracticeBank(childId: string, activeOnly = true) {
+  const query = new URLSearchParams({ child_id: childId });
+  if (!activeOnly) query.set("active", "false");
+  return useQuery({
+    queryKey: ["intelligence", "practice-bank", childId, activeOnly],
+    queryFn: () =>
+      api.get<ListResponse<PracticeBankEntry>>(`/intelligence/practice-bank?${query}`),
+    enabled: !!childId,
+  });
+}
+
+function useVoiceRecords(childId: string, theme?: string) {
+  const query = new URLSearchParams({ child_id: childId });
+  if (theme) query.set("theme", theme);
+  return useQuery({
+    queryKey: ["intelligence", "voice", childId, theme],
+    queryFn: () =>
+      api.get<ListResponse<VoiceRecord>>(`/intelligence/voice?${query}`),
+    enabled: !!childId,
+  });
+}
+
+function useRelationalRecords(childId: string, type?: string) {
+  const query = new URLSearchParams({ child_id: childId });
+  if (type) query.set("type", type);
+  return useQuery({
+    queryKey: ["intelligence", "relational", childId, type],
+    queryFn: () =>
+      api.get<ListResponse<RelationalRecord>>(`/intelligence/relational?${query}`),
+    enabled: !!childId,
+  });
+}
+
+function useCreateChildExperienceSnapshot() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<ChildExperienceSnapshot>) =>
+      api.post<SingleResponse<ChildExperienceSnapshot>>("/intelligence/child-experience", data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "child-experience", vars.child_id] });
+    },
+  });
+}
+
+function useUpdatePracticeBankEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      childId,
+      ...data
+    }: {
+      id: string;
+      childId: string;
+      title?: string;
+      description?: string;
+      evidence?: string;
+      is_active?: boolean;
+      reviewed_by?: string;
+    }) => api.patch<SingleResponse<PracticeBankEntry>>(`/intelligence/practice-bank/${id}`, data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "practice-bank", vars.childId] });
+    },
+  });
+}
 import { cn, formatDate } from "@/lib/utils";
 import {
   Shield, Heart, Brain, Zap, Users, Mic, Activity, GraduationCap,

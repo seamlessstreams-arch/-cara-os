@@ -10,8 +10,34 @@ import { Star, User, ChevronRight, BookOpen, AlertTriangle, Loader2, CheckCircle
 import { Input } from "@/components/ui/input";
 import { cn, formatDate } from "@/lib/utils";
 import { useYoungPeople, type YPEnriched } from "@/hooks/use-young-people";
-import { usePracticeBank, useCreatePracticeBankEntry } from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
+import type { PracticeBankEntry as PBEntry } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function usePracticeBank(childId: string, activeOnly = true) {
+  const query = new URLSearchParams({ child_id: childId });
+  if (!activeOnly) query.set("active", "false");
+  return useQuery({
+    queryKey: ["intelligence", "practice-bank", childId, activeOnly],
+    queryFn: () =>
+      api.get<ListResponse<PBEntry>>(`/intelligence/practice-bank?${query}`),
+    enabled: !!childId,
+  });
+}
+
+function useCreatePracticeBankEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<PBEntry>) =>
+      api.post<SingleResponse<PBEntry>>("/intelligence/practice-bank", data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "practice-bank", vars.child_id] });
+    },
+  });
+}
 import { useAuthContext } from "@/contexts/auth-context";
 import type { PracticeBankEntry } from "@/types/extended";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";

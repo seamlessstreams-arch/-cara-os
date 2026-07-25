@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -25,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useInsurancePolicies } from "@/hooks/use-insurance-policies";
 import type { InsurancePolicy, InsurancePolicyStatus } from "@/types/extended";
 import { INSURANCE_POLICY_TYPE_LABEL, INSURANCE_POLICY_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -45,7 +45,10 @@ const statusColour: Record<InsurancePolicyStatus, string> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function InsuranceTrackerPage() {
-  const { data: res, isLoading } = useInsurancePolicies();
+  const { data: res, isLoading } = useQuery<{ data: InsurancePolicy[] }>({
+    queryKey: ["insurance-policies"],
+    queryFn: () => fetch("/api/v1/insurance-policies").then((r) => r.json()),
+  });
   const data: InsurancePolicy[] = res?.data ?? [];
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");

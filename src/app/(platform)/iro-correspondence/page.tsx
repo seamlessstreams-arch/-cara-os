@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -14,7 +15,6 @@ import {
   ChevronDown, ChevronUp, Mail, Inbox, Send, Shield, FileText,
   CheckCircle2, Paperclip, User, Calendar, Scale, Eye, Loader2,
 } from "lucide-react";
-import { useIroCorrespondences } from "@/hooks/use-iro-correspondences";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IroCorrespondence, IroCorrespondenceType, IroActionStatus, IroRequiredAction } from "@/types/extended";
 import { IRO_CORRESPONDENCE_TYPE_LABEL, IRO_ACTION_STATUS_LABEL, IRO_DIRECTION_LABEL } from "@/types/extended";
@@ -48,7 +48,11 @@ const STATUS_COLOUR: Record<IroActionStatus, string> = {
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function IroCorrespondencePage() {
-  const { data: res, isLoading } = useIroCorrespondences();
+  const { data: res, isLoading } = useQuery<{ data: IroCorrespondence[] }>({
+    queryKey: ["iro-correspondences"],
+    queryFn: () =>
+      fetch("/api/v1/iro-correspondences").then((r) => r.json()),
+  });
   const records: IroCorrespondence[] = res?.data ?? [];
   const [ypFilter, setYpFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");

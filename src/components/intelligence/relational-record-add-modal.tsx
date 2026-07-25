@@ -12,9 +12,23 @@ import { Heart, X, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
 import { EntryAssist } from "@/components/forms/entry-assist";
-import { useCreateRelationalRecord } from "@/hooks/use-intelligence";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
-import type { RelationalRecordType } from "@/types/extended";
+import type { RelationalRecordType, RelationalRecord } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateRelationalRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<RelationalRecord>) =>
+      api.post<SingleResponse<RelationalRecord>>("/intelligence/relational", data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "relational", vars.child_id] });
+    },
+  });
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

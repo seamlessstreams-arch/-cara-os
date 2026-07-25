@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useLearningReviews, useUpdateLearningReview } from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -33,6 +34,35 @@ import {
   Search,
   Brain,
 } from "lucide-react";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useLearningReviews(params?: {
+  homeId?: string;
+  incidentId?: string;
+  status?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.incidentId) query.set("incidentId", params.incidentId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "learning-review", params],
+    queryFn: () => ilFetch<{ ok: boolean; reviews: unknown[]; persisted: boolean }>(`/learning-review?${query}`),
+  });
+}
+
+function useUpdateLearningReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/learning-review", { method: "PATCH", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "learning-review"] });
+    },
+  });
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

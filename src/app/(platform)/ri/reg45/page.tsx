@@ -18,7 +18,8 @@ import {
   useRiReg45Evidence, useCreateRiReg45Evidence, useUpdateRiReg45Evidence,
   useTrainingNeeds, useRiAlerts, useRiChallengeLogs,
 } from "@/hooks/use-ri-learning";
-import { useIncidents } from "@/hooks/use-incidents";
+import { useIncidents } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useSupervisions } from "@/hooks/use-supervision";
 import type { RiReg45Evidence } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";

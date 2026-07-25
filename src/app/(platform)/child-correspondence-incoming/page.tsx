@@ -32,7 +32,7 @@ import {
   CORRESPONDENCE_SENDER_TYPE_LABEL,
   CORRESPONDENCE_ITEM_TYPE_LABEL,
 } from "@/types/extended";
-import { useIncomingCorrespondence } from "@/hooks/use-incoming-correspondence";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -66,7 +66,12 @@ const exportCols: ExportColumn<IncomingCorrespondence>[] = [
 ];
 
 export default function ChildCorrespondenceIncomingPage() {
-  const { data: res, isLoading } = useIncomingCorrespondence();
+  // Inlined useIncomingCorrespondence
+  const correspondenceQuery = useQuery<{ data: IncomingCorrespondence[] }>({
+    queryKey: ["incoming-correspondence"],
+    queryFn: () => fetch("/api/v1/incoming-correspondence").then((r) => r.json()),
+  });
+  const { data: res, isLoading } = correspondenceQuery;
   const data = res?.data ?? [];
 
   const [filterYP, setFilterYP] = useState("all");

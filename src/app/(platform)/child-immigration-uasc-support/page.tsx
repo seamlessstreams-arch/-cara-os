@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -18,7 +19,6 @@ import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { ImmigrationUascRecord, ImmigrationStatus } from "@/types/extended";
 import { IMMIGRATION_STATUS_LABEL, ENGLISH_LANGUAGE_LEVEL_LABEL } from "@/types/extended";
-import { useImmigrationUascRecords } from "@/hooks/use-immigration-uasc-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -59,7 +59,10 @@ const STATUS_BORDER: Record<ImmigrationStatus, string> = {
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function ChildImmigrationUascSupportPage() {
-  const { data: queryData, isLoading } = useImmigrationUascRecords();
+  const { data: queryData, isLoading } = useQuery<{ data: ImmigrationUascRecord[] }>({
+    queryKey: ["immigration-uasc-records"],
+    queryFn: () => fetch("/api/v1/immigration-uasc-records").then((r) => r.json()),
+  });
   const items = queryData?.data ?? [];
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

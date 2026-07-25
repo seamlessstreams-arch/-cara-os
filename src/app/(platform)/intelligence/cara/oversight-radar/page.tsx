@@ -9,18 +9,68 @@ import React, { useState, useMemo, useEffect } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  useCaraAssessments,
-  useKeyWorkSessions,
-  useCaraSafeguardingFlags,
-  useCaraRecommendations,
-} from "@/hooks/use-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useCreateTask } from "@/hooks/use-tasks";
-import type { OversightRadarItem, OversightRadarSeverity } from "@/types/extended";
+import type { OversightRadarItem, OversightRadarSeverity, CaraAssessment, KeyWorkSession, CaraSafeguardingFlag, CaraRecommendation } from "@/types/extended";
 import type { TaskCategory, TaskPriority } from "@/lib/constants";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+// ── Inlined intelligence hooks ───────────────────────────────────────────────
+
+function useCaraAssessments(params?: { childId?: string; homeId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  return useQuery({
+    queryKey: ["cara-intelligence", "assessments", params],
+    queryFn: () =>
+      api.get<ListResponse<CaraAssessment>>(`/cara-intelligence/assessments?${query}`),
+  });
+}
+
+function useKeyWorkSessions(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["cara-intelligence", "keywork", params],
+    queryFn: () =>
+      api.get<ListResponse<KeyWorkSession>>(`/cara-intelligence/keywork?${query}`),
+  });
+}
+
+function useCaraSafeguardingFlags(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["cara-intelligence", "safeguarding-flags", params],
+    queryFn: () =>
+      api.get<ListResponse<CaraSafeguardingFlag> & { meta: { open: number; critical: number } }>(
+        `/cara-intelligence/safeguarding-flags?${query}`
+      ),
+  });
+}
+
+function useCaraRecommendations(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["cara-intelligence", "recommendations", params],
+    queryFn: () =>
+      api.get<ListResponse<CaraRecommendation>>(`/cara-intelligence/recommendations?${query}`),
+  });
+}
+
 import {
   ScanSearch, Loader2, AlertTriangle, CheckCircle2,
   User, BookOpen, ClipboardList, Lightbulb, Info,

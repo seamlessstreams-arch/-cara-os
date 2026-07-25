@@ -19,7 +19,8 @@ import {
   Brain, Sparkles, Library,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useIncident, useUpdateIncident } from "@/hooks/use-incidents";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
@@ -63,7 +64,16 @@ interface OversightPanelProps {
 
 function OversightPanel({ incidentId, onSaved }: OversightPanelProps) {
   const currentUser = useAuthContext().currentUser;
-  const updateIncident = useUpdateIncident();
+  // Inlined useUpdateIncident
+  const qc = useQueryClient();
+  const updateIncident = useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Record<string, unknown>) =>
+      api.patch<{ data: Incident }>(`/incidents/${id}`, data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["incidents"] });
+      qc.invalidateQueries({ queryKey: ["incidents", vars.id] });
+    },
+  });
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
 
@@ -115,7 +125,16 @@ interface OutcomePanelProps {
 
 function OutcomePanel({ incidentId, currentOutcome, currentLessons, onSaved }: OutcomePanelProps) {
   const currentUser = useAuthContext().currentUser;
-  const updateIncident = useUpdateIncident();
+  // Inlined useUpdateIncident
+  const qc2 = useQueryClient();
+  const updateIncident = useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Record<string, unknown>) =>
+      api.patch<{ data: Incident }>(`/incidents/${id}`, data),
+    onSuccess: (_, vars) => {
+      qc2.invalidateQueries({ queryKey: ["incidents"] });
+      qc2.invalidateQueries({ queryKey: ["incidents", vars.id] });
+    },
+  });
   const [outcome, setOutcome] = useState(currentOutcome ?? "");
   const [lessons, setLessons] = useState(currentLessons ?? "");
   const [error, setError] = useState("");
@@ -184,7 +203,12 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
   const canManage    = can(PERMISSIONS.MANAGE_INCIDENTS);
   const canOversight = can(PERMISSIONS.MANAGE_SAFEGUARDING) || canManage;
 
-  const incidentQ = useIncident(id);
+  // Inlined useIncident
+  const incidentQ = useQuery({
+    queryKey: ["incidents", id],
+    queryFn: () => api.get<{ data: Incident }>(`/incidents/${id}`),
+    enabled: !!id,
+  });
   const incident  = incidentQ.data?.data;
 
   const [showOversight, setShowOversight] = useState(false);

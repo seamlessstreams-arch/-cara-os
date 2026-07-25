@@ -1,11 +1,11 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, CheckCircle, AlertTriangle, Clock, Star, TrendingUp, ShieldAlert } from "lucide-react";
-import { useInspectionReadinessIntelligence } from "@/hooks/use-inspection-readiness-intelligence";
-import type { ReadinessGrade } from "@/lib/engines/inspection-readiness-intelligence-engine";
+import type { ReadinessGrade, InspectionReadinessResult } from "@/lib/engines/inspection-readiness-intelligence-engine";
 
 import { formatRate } from "@/lib/metrics/rate";
 
@@ -37,7 +37,11 @@ const SEV_META: Record<string, string> = {
 };
 
 export default function InspectionReadinessIntelligencePage() {
-  const { data, isLoading, error } = useInspectionReadinessIntelligence();
+  const { data, isLoading, error } = useQuery<{ data: InspectionReadinessResult }>({
+    queryKey: ["inspection-readiness-intelligence"],
+    queryFn: () => fetch("/api/v1/inspection-readiness-intelligence").then((r) => r.json()),
+    refetchInterval: 60_000,
+  });
   const d = data?.data;
 
   if (isLoading) {

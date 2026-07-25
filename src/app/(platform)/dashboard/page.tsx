@@ -17,7 +17,8 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar } from "@/components/ui/avatar";
 import { PriorityCard } from "@/components/ui/priority-card";
 import { useCareEvents } from "@/hooks/use-care-events";
-import { useAddOversight } from "@/hooks/use-incidents";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { careToast } from "@/lib/toast";
 import { useCompleteTask } from "@/hooks/use-tasks";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { cn, todayStr, formatRelative, isOverdue, isDueToday } from "@/lib/utils";
@@ -1236,7 +1237,19 @@ export default function DashboardPage() {
     queryFn: () => api.get<{ data: TimeSavedSummary; formatted: Record<string, string> }>("/time-saved"),
   });
   const careEvents  = useCareEvents({ days: 1, limit: 5 });
-  const addOversight = useAddOversight();
+  // Inlined useAddOversight
+  const qc = useQueryClient();
+  const addOversight = useMutation({
+    mutationFn: ({ id, note, by, cara_assisted }: { id: string; note: string; by: string; cara_assisted?: boolean }) =>
+      api.post(`/incidents/${id}/oversight`, { oversight_note: note, oversight_by: by, cara_assisted }),
+    onSuccess: () => {
+      careToast.oversightAdded();
+      qc.invalidateQueries({ queryKey: ["incidents"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["health-check"] });
+    },
+    onError: () => careToast.actionFailed("Add oversight"),
+  });
   const completeTask = useCompleteTask();
 
   const [oversightTarget, setOversightTarget] = useState<string | null>(null);

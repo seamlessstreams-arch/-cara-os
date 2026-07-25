@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -16,7 +17,6 @@ import {
 } from "lucide-react";
 import type { ImmunisationRecord, VaccineStatus } from "@/types/extended";
 import { VACCINE_STATUS_LABEL } from "@/types/extended";
-import { useImmunisationRecords } from "@/hooks/use-immunisation-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -32,7 +32,14 @@ const STATUS_COLOUR: Record<VaccineStatus, string> = {
 };
 
 export default function ImmunisationRecordPage() {
-  const { data: raw, isLoading } = useImmunisationRecords();
+  const { data: raw, isLoading } = useQuery<{ data: ImmunisationRecord[] }>({
+    queryKey: ["immunisation-records"],
+    queryFn: async () => {
+      const params = "";
+      const res = await fetch(`/api/v1/immunisation-records${params}`);
+      return res.json();
+    },
+  });
   const records = useMemo(() => raw?.data ?? [], [raw]);
   const [ypFilter, setYpFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");

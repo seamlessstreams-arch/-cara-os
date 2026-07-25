@@ -50,7 +50,8 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { useIncidents } from "@/hooks/use-incidents";
+import { useIncidents } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useKeyWorkingSessions } from "@/hooks/use-key-working";
 import {

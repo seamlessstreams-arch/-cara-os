@@ -8,19 +8,26 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, GitCompare } from "lucide-react";
-import {
-  useInspectionBundles,
-  useInspectionBundleDiff,
-} from "@/hooks/use-inspection-bundles";
+import { api } from "@/hooks/use-api";
+import type { PersistedInspectionBundleRow } from "@/lib/care-events/inspection-bundle";
+import type { InspectionBundleDiff } from "@/lib/care-events/inspection-bundle-diff";
 
 const HOME_ID = "home_oak";
 
 export default function InspectionBundleDiffPage() {
-  const list = useInspectionBundles(HOME_ID);
+  const list = useQuery({
+    queryKey: ["inspection-bundles", HOME_ID],
+    queryFn: () =>
+      api.get<{ data: PersistedInspectionBundleRow[] }>(
+        `/care-events/inspection-bundle?home_id=${encodeURIComponent(HOME_ID)}`,
+      ),
+    refetchInterval: 60000,
+  });
   const rows = useMemo(() => list.data?.data ?? [], [list.data]);
   const [currentId, setCurrentId] = useState<string>("");
   const [previousId, setPreviousId] = useState<string>("");
@@ -32,7 +39,16 @@ export default function InspectionBundleDiffPage() {
     if (!previousId && rows.length >= 2) setPreviousId(rows[1].id);
   }, [rows, currentId, previousId]);
 
-  const diff = useInspectionBundleDiff(currentId, previousId || null);
+  const diff = useQuery({
+    queryKey: ["inspection-bundle-diff", currentId ?? "", previousId ?? ""],
+    enabled: !!currentId,
+    queryFn: () => {
+      const qs = new URLSearchParams();
+      qs.set("current_id", currentId!);
+      if (previousId) qs.set("previous_id", previousId);
+      return api.get<{ data: InspectionBundleDiff }>(`/care-events/inspection-bundle/diff?${qs.toString()}`);
+    },
+  });
   const d = diff.data?.data;
 
   return (

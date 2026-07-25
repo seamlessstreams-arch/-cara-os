@@ -19,11 +19,21 @@ import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useInstitutionalSelfCheck } from "@/hooks/use-institutional-self-check";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { ScanEye, EyeOff, CheckCircle2, HelpCircle, Loader2, ArrowUpRight } from "lucide-react";
+import type { InstitutionalSelfCheck, SelfCheckStrand } from "@/lib/theory-lens/institutional-self-check-engine";
+
+export interface InstitutionalSelfCheckData extends InstitutionalSelfCheck {
+  sources: Record<SelfCheckStrand, string>;
+}
 
 export default function InstitutionalSelfCheckPage() {
-  const q = useInstitutionalSelfCheck();
+  const q = useQuery({
+    queryKey: ["institutional-self-check"],
+    queryFn: async () =>
+      (await api.get<{ data: InstitutionalSelfCheckData }>("/institutional-self-check")).data,
+  });
   const d = q.data;
 
   return (

@@ -20,7 +20,8 @@ import {
   useRiGovernanceReports,
   useTrainingNeeds,
 } from "@/hooks/use-ri-learning";
-import { useIncidents } from "@/hooks/use-incidents";
+import { useIncidents } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useSupervisions } from "@/hooks/use-supervision";
 import { useTraining } from "@/hooks/use-training";
 
@@ -122,7 +123,12 @@ export default function RiHubPage() {
   const { data: reg45Data } = useRiReg45Evidence({ homeId: homeId });
   const { data: reportsData } = useRiGovernanceReports({ homeId: homeId });
   const { data: trainingData } = useTrainingNeeds({ homeId: homeId });
-  const { data: incidentsData } = useIncidents();
+  // Inlined useIncidents
+  const queryStr = new URLSearchParams();
+  const { data: incidentsData } = useQuery({
+    queryKey: ["incidents", { status: undefined, child_id: undefined, needs_oversight: undefined }],
+    queryFn: () => api.get<{ data: any[]; meta: Record<string, number> }>(`/incidents?${queryStr}`),
+  });
   const { data: supervisionData } = useSupervisions();
   const { data: trainingRecordsData } = useTraining();
   // Inlined: useAudits (2x with different params)

@@ -11,9 +11,32 @@ import { Pencil, X, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
 import { EntryAssist } from "@/components/forms/entry-assist";
-import { useUpdateIntervention } from "@/hooks/use-intelligence";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import type { Intervention, InterventionStatus, InterventionOutcome } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useUpdateIntervention() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      status?: Intervention["status"];
+      outcome?: Intervention["outcome"];
+      outcome_notes?: string;
+      ended_at?: string;
+      review_date?: string;
+    }) => api.patch<SingleResponse<Intervention>>(`/intelligence/interventions/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "interventions"] });
+    },
+  });
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

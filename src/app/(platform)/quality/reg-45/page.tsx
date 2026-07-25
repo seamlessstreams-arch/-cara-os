@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReg45Reviews, useUpdateReg45Review, useReg45Evidence } from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -42,6 +43,40 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Reg45Review, Reg45Status } from "@/types/intelligence.layer";
+
+/* ── inlined intelligence layer hooks ──────────────────────────────────────── */
+
+function useReg45Reviews(params?: { homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "reg45", params],
+    queryFn: () => ilFetch<{ ok: boolean; reviews: unknown[]; persisted: boolean }>(`/reg45?${query}`),
+  });
+}
+
+function useUpdateReg45Review() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/reg45", { method: "PATCH", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "reg45"] });
+    },
+  });
+}
+
+function useReg45Evidence(params?: { homeId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+
+  return useQuery({
+    queryKey: ["il", "reg45-evidence", params],
+    queryFn: () => ilFetch<{ ok: boolean; evidence: unknown[]; persisted: boolean }>(`/reg45-evidence?${query}`),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

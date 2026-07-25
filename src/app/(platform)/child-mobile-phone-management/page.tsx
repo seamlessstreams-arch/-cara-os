@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useChildPhoneRecords } from "@/hooks/use-child-phone-records";
 import type {
   ChildPhoneRecord,
   PhoneContractType,
@@ -69,7 +69,12 @@ const categoryTone: Record<PhoneAppCategory, string> = {
 };
 
 export default function ChildMobilePhoneManagementPage() {
-  const { data: raw, isLoading } = useChildPhoneRecords();
+  const KEY = "child-phone-records";
+  const API = "/api/v1/child-phone-records";
+  const { data: raw, isLoading } = useQuery<{ data: ChildPhoneRecord[] }>({
+    queryKey: [KEY],
+    queryFn: () => fetch(API).then((r) => r.json()),
+  });
   const items = raw?.data ?? [];
 
   const [search, setSearch] = useState("");

@@ -328,18 +328,11 @@ import { HomeCctvComplianceCard } from "@/components/dashboard/home-cctv-complia
 import { ChildOnlineSafetyMonitoringCard } from "@/components/dashboard/child-online-safety-monitoring-card";
 import { StaffLoneWorkingRiskCard } from "@/components/dashboard/staff-lone-working-risk-card";
 import { HomeEmergencyLightingCard } from "@/components/dashboard/home-emergency-lighting-card";
-import {
-  useAttentionItems,
-  useUpdateAttentionItem,
-  useLearningReviews,
-  useReg44Visits,
-  useReg45Reviews,
-  useCompetenceRecords,
-  useVoiceEntries,
-  useEvidenceItems,
-} from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
-import { useIncidents } from "@/hooks/use-incidents";
+import { useIncidents } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useKeyWorkingSessions } from "@/hooks/use-key-working";
 import { runProactiveAlertScan, type ProactiveAlert } from "@/lib/cara/cara-proactive-alerts";
@@ -352,6 +345,117 @@ import type {
   AttentionStatus,
 } from "@/types/intelligence.layer";
 
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useAttentionItems(params?: {
+  homeId?: string;
+  status?: string;
+  urgency?: string;
+  category?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  if (params?.urgency) query.set("urgency", params.urgency);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["il", "attention-items", params],
+    queryFn: () => ilFetch<{ ok: boolean; items: unknown[]; persisted: boolean }>(`/attention-items?${query}`),
+  });
+}
+
+function useUpdateAttentionItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/attention-items", { method: "PATCH", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "attention-items"] });
+    },
+  });
+}
+
+function useLearningReviews(params?: {
+  homeId?: string;
+  incidentId?: string;
+  status?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.incidentId) query.set("incidentId", params.incidentId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "learning-review", params],
+    queryFn: () => ilFetch<{ ok: boolean; reviews: unknown[]; persisted: boolean }>(`/learning-review?${query}`),
+  });
+}
+
+function useReg44Visits(params?: { homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "reg44", params],
+    queryFn: () => ilFetch<{ ok: boolean; visits: unknown[]; persisted: boolean }>(`/reg44?${query}`),
+  });
+}
+
+function useReg45Reviews(params?: { homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "reg45", params],
+    queryFn: () => ilFetch<{ ok: boolean; reviews: unknown[]; persisted: boolean }>(`/reg45?${query}`),
+  });
+}
+
+function useCompetenceRecords(params?: { homeId?: string; staffId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.staffId) query.set("staffId", params.staffId);
+
+  return useQuery({
+    queryKey: ["il", "competence", params],
+    queryFn: () => ilFetch<{ ok: boolean; records: unknown[]; persisted: boolean }>(`/competence?${query}`),
+  });
+}
+
+function useVoiceEntries(params?: {
+  childId?: string;
+  homeId?: string;
+  category?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("childId", params.childId);
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["il", "voice", params],
+    queryFn: () => ilFetch<{ ok: boolean; entries: unknown[]; persisted: boolean }>(`/voice?${query}`),
+  });
+}
+
+function useEvidenceItems(params?: {
+  homeId?: string;
+  judgementArea?: string;
+  category?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.judgementArea) query.set("judgementArea", params.judgementArea);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["il", "evidence", params],
+    queryFn: () => ilFetch<{ ok: boolean; items: unknown[]; persisted: boolean }>(`/evidence?${query}`),
+  });
+}
 
 /* ─────────────────────────────────────────────────────────────────
    LAZY: Below-fold cards (dynamic imports)

@@ -8,11 +8,8 @@ import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  useCaraSafeguardingFlags,
-  useCreateCaraSafeguardingFlag,
-  useUpdateCaraSafeguardingFlag,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn, formatDate } from "@/lib/utils";
 import type {
   CaraSafeguardingFlag, SafeguardingFlagType, SafeguardingFlagSeverity,

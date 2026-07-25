@@ -20,7 +20,13 @@ import {
   Clock, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useIntegrationHub } from "@/hooks/use-integration-hub";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { IntegrationHubResult } from "@/lib/integration-hub/integration-hub-engine";
+
+interface IntegrationHubResponse {
+  data: IntegrationHubResult;
+}
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; border: string }> = {
   connected: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
@@ -65,7 +71,11 @@ const FRAMEWORK_GUARANTEES: { icon: React.ReactNode; title: string; body: string
 ];
 
 export default function IntegrationHubPage() {
-  const { data, isLoading } = useIntegrationHub();
+  const { data, isLoading } = useQuery({
+    queryKey: ["integration-hub"],
+    queryFn: () => api.get<IntegrationHubResponse>("/integration-hub"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
   const intel = data?.data;
 
   return (
@@ -87,7 +97,7 @@ export default function IntegrationHubPage() {
   );
 }
 
-function IntegrationHubBody({ intel }: { intel: NonNullable<ReturnType<typeof useIntegrationHub>["data"]>["data"] }) {
+function IntegrationHubBody({ intel }: { intel: IntegrationHubResult }) {
   const o = intel.overview;
   const adapters = intel.adapters ?? [];
   const alerts = intel.alerts ?? [];

@@ -2,10 +2,25 @@
 
 // CARA HQ — AI usage & cost (30 days)
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HqBoundaryNote, HqStat } from "@/components/hq/hq-bits";
-import { useHqAiUsage, useHqAiGateway } from "@/hooks/use-hq";
+import type { HqAiSummary, HqAiUsageRow } from "@/lib/engines/platform-hq-engine";
+import type { GatewayAuditSummary, AiGatewayAuditEntry } from "@/lib/cara/ai-gateway/audit-summary";
+
+const HQ_HEADERS = {
+  "content-type": "application/json",
+  "x-user-role": "platform_admin",
+  "x-user-id": "hq_owner",
+};
+
+async function hqFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, { ...init, headers: { ...HQ_HEADERS, ...init?.headers } });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  return json.data as T;
+}
 
 const REFUSAL_LABEL: Record<string, string> = {
   no_provider: "No AI provider configured",
@@ -18,11 +33,17 @@ const REFUSAL_LABEL: Record<string, string> = {
 };
 
 export default function HqAiUsagePage() {
-  const { data, isLoading } = useHqAiUsage();
+  const { data, isLoading } = useQuery({
+    queryKey: ["hq-ai-usage"],
+    queryFn: () => hqFetch<{ summary: HqAiSummary; org_names: Record<string, string>; recent: HqAiUsageRow[] }>("/api/v1/hq/ai-usage"),
+  });
   const s = data?.summary;
   const orgName = (id: string) => data?.org_names[id] ?? "—";
 
-  const { data: gw, isLoading: gLoading } = useHqAiGateway();
+  const { data: gw, isLoading: gLoading } = useQuery({
+    queryKey: ["hq-ai-gateway"],
+    queryFn: () => hqFetch<{ summary: GatewayAuditSummary; recent: AiGatewayAuditEntry[] }>("/api/v1/hq/ai-gateway"),
+  });
   const g = gw?.summary;
 
   return (

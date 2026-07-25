@@ -14,19 +14,120 @@ import { FiveLayersStrip } from "@/components/intelligence/five-layers-strip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  useHomeClimate,
-  usePatternAlerts,
-  useInterventions,
-  useAllInterventions,
-  useVoiceRecords,
-  useAcknowledgePattern,
-  useActionOutcomes,
-  useCreatePatternAlert,
-  useCreateHomeClimate,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import type { HomeClimateSnapshot, PatternAlert, Intervention, VoiceRecord, ActionOutcome } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useHomeClimate(homeId = "home_oak") {
+  return useQuery({
+    queryKey: ["intelligence", "home-climate", homeId],
+    queryFn: () =>
+      api.get<{
+        data: { latest: HomeClimateSnapshot | null; history: HomeClimateSnapshot[] };
+        meta: { weeks_of_history: number; trend: string };
+      }>(`/intelligence/home-climate?home_id=${homeId}`),
+    refetchInterval: 60_000,
+  });
+}
+
+function usePatternAlerts(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["intelligence", "patterns", params],
+    queryFn: () => api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
+  });
+}
+
+function useInterventions(childId: string) {
+  return useQuery({
+    queryKey: ["intelligence", "interventions", childId],
+    queryFn: () =>
+      api.get<ListResponse<Intervention>>(`/intelligence/interventions?child_id=${childId}`),
+    enabled: !!childId,
+  });
+}
+
+function useAllInterventions(homeId = "home_oak") {
+  return useQuery({
+    queryKey: ["intelligence", "interventions", "home", homeId],
+    queryFn: () =>
+      api.get<ListResponse<Intervention>>(`/intelligence/interventions?home_id=${homeId}`),
+  });
+}
+
+function useVoiceRecords(childId: string, theme?: string) {
+  const query = new URLSearchParams({ child_id: childId });
+  if (theme) query.set("theme", theme);
+  return useQuery({
+    queryKey: ["intelligence", "voice", childId, theme],
+    queryFn: () =>
+      api.get<ListResponse<VoiceRecord>>(`/intelligence/voice?${query}`),
+    enabled: !!childId,
+  });
+}
+
+function useAcknowledgePattern() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      status: PatternAlert["status"];
+      acknowledged_by?: string;
+      resolved_by?: string;
+    }) => api.patch<SingleResponse<PatternAlert>>(`/intelligence/patterns/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "patterns"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+function useActionOutcomes(params?: {
+  childId?: string;
+  homeId?: string;
+  status?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["intelligence", "action-outcomes", params],
+    queryFn: () =>
+      api.get<ListResponse<ActionOutcome>>(`/intelligence/action-outcomes?${query}`),
+  });
+}
+
+function useCreatePatternAlert() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<PatternAlert>) =>
+      api.post<SingleResponse<PatternAlert>>("/intelligence/patterns", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "patterns"] });
+    },
+  });
+}
+
+function useCreateHomeClimate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<HomeClimateSnapshot>) =>
+      api.post<SingleResponse<HomeClimateSnapshot>>("/intelligence/home-climate", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intelligence", "home-climate"] });
+    },
+  });
+}
 import {
   Users, AlertTriangle, TrendingUp, TrendingDown, Minus,
   CheckCircle2, Activity, MessageSquareQuote, Brain,

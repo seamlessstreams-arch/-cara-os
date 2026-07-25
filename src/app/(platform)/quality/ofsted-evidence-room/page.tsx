@@ -2,7 +2,8 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo, useEffect } from "react";
-import { useEvidenceItems, useCreateEvidence, useEvidenceGaps } from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -51,6 +52,53 @@ import type {
    CARA — OFSTED EVIDENCE ROOM
    Organised evidence for inspection readiness. Calm, professional interface.
    ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── inlined intelligence layer hooks ──────────────────────────────────────── */
+
+function useEvidenceItems(params?: {
+  homeId?: string;
+  judgementArea?: string;
+  category?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.judgementArea) query.set("judgementArea", params.judgementArea);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["il", "evidence", params],
+    queryFn: () => ilFetch<{ ok: boolean; items: unknown[]; persisted: boolean }>(`/evidence?${query}`),
+  });
+}
+
+function useCreateEvidence() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/evidence", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "evidence"] });
+    },
+  });
+}
+
+function useEvidenceGaps(params?: { homeId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  return useQuery({
+    queryKey: ["il", "evidence-gaps", params],
+    queryFn: () =>
+      ilFetch<{
+        ok: boolean;
+        gaps: unknown[];
+        totalGaps: number;
+        criticalCount: number;
+        highCount: number;
+        gapsByType: Record<string, number>;
+        persisted: boolean;
+      }>(`/evidence-gaps?${query}`),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

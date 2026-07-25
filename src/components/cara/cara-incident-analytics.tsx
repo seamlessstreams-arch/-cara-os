@@ -15,7 +15,8 @@ import {
   TrendingDown, Minus, Users, ChevronDown,
   ChevronUp, Zap, Target,
 } from "lucide-react";
-import { useIncidents } from "@/hooks/use-incidents";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 import { getYPName } from "@/lib/seed-data";
@@ -199,7 +200,12 @@ export function CaraIncidentAnalytics() {
   const [showInsights, setShowInsights] = useState(true);
   const [showChildren, setShowChildren] = useState(false);
 
-  const incQuery = useIncidents();
+  // Inlined useIncidents
+  const queryStr = new URLSearchParams();
+  const incQuery = useQuery({
+    queryKey: ["incidents", { status: undefined, child_id: undefined, needs_oversight: undefined }],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${queryStr}`),
+  });
   const allIncidents = incQuery.data?.data ?? [];
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const data   = useMemo(() => computeIncidentAnalytics(allIncidents, today), [allIncidents, today]);

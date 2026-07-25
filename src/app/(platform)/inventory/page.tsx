@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Package, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, CheckCircle2, Clock, Wrench,
@@ -22,7 +23,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useInventoryItems, useCreateInventoryItem } from "@/hooks/use-inventory-items";
 import type { InventoryItem, InventoryCategory, InventoryCondition, InventoryLocation } from "@/types/extended";
 import { INVENTORY_CATEGORY_LABEL, INVENTORY_CONDITION_LABEL, INVENTORY_LOCATION_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -51,9 +51,20 @@ const LOCATIONS: InventoryLocation[] = [
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function InventoryPage() {
-  const { data: res, isLoading } = useInventoryItems();
+  const KEY = "inventory-items";
+  const qc = useQueryClient();
+
+  const { data: res, isLoading } = useQuery<{ data: InventoryItem[] }>({
+    queryKey: [KEY],
+    queryFn: () => fetch("/api/v1/inventory-items").then((r) => r.json()),
+  });
   const items: InventoryItem[] = res?.data ?? [];
-  const createItem = useCreateInventoryItem();
+
+  const createItem = useMutation({
+    mutationFn: (data: Partial<InventoryItem>) =>
+      fetch("/api/v1/inventory-items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterCondition, setFilterCondition] = useState("all");

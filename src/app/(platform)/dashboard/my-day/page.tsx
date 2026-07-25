@@ -15,12 +15,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useTasks, useCompleteTask } from "@/hooks/use-tasks";
-import { useIncidents } from "@/hooks/use-incidents";
+import { useIncidents } from "@tanstack/react-query";
 import { useStaff } from "@/hooks/use-staff";
 import { useLeave } from "@/hooks/use-leave";
-import { usePatternAlerts, useActionOutcomes } from "@/hooks/use-intelligence";
-import type { PatternAlert } from "@/types/extended";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PatternAlert, ActionOutcome } from "@/types/extended";
 import type { Shift, LeaveRequest } from "@/types";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 import { cn, todayStr, daysFromNow, formatDate, isOverdue, isDueToday } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
@@ -41,6 +43,42 @@ export interface RotaResponse {
   shifts: Shift[];
   leave: LeaveRequest[];
   meta: RotaMeta;
+}
+
+// ── inlined intelligence hooks ────────────────────────────────────────────────
+
+function usePatternAlerts(params?: {
+  childId?: string;
+  homeId?: string;
+  status?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["intelligence", "patterns", params],
+    queryFn: () =>
+      api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
+  });
+}
+
+function useActionOutcomes(params?: {
+  childId?: string;
+  homeId?: string;
+  status?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["intelligence", "action-outcomes", params],
+    queryFn: () =>
+      api.get<ListResponse<ActionOutcome>>(`/intelligence/action-outcomes?${query}`),
+  });
 }
 
 function getMondayOfThisWeek(): string {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -32,7 +33,6 @@ import {
   STAFF_FEEDBACK_SENTIMENT_LABEL,
   STAFF_FEEDBACK_TOPIC_LABEL,
 } from "@/types/extended";
-import { useChildStaffFeedback } from "@/hooks/use-child-staff-feedback";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -57,7 +57,12 @@ const exportCols: ExportColumn<ChildStaffFeedback>[] = [
 ];
 
 export default function ChildFeedbackOnStaffPage() {
-  const { data: res, isLoading } = useChildStaffFeedback();
+  const KEY = "child-staff-feedback";
+  const API = "/api/v1/child-staff-feedback";
+  const { data: res, isLoading } = useQuery<{ data: ChildStaffFeedback[] }>({
+    queryKey: [KEY],
+    queryFn: () => fetch(API).then((r) => r.json()),
+  });
   const items = res?.data ?? [];
 
   const [filterSentiment, setFilterSentiment] = useState("all");

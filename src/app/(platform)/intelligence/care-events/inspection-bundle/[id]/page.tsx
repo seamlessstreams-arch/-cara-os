@@ -5,11 +5,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { use } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FolderArchive } from "lucide-react";
-import { useInspectionBundle } from "@/hooks/use-inspection-bundles";
+import { api } from "@/hooks/use-api";
+import type { PersistedInspectionBundle } from "@/lib/db/store";
 import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
 
 export default function InspectionBundleDetailPage({
@@ -18,7 +20,14 @@ export default function InspectionBundleDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data, isLoading, error } = useInspectionBundle(id);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["inspection-bundle", id ?? ""],
+    enabled: !!id,
+    queryFn: () =>
+      api.get<{ data: PersistedInspectionBundle }>(
+        `/care-events/inspection-bundle/${encodeURIComponent(id!)}`,
+      ),
+  });
   const row = data?.data;
 
   return (

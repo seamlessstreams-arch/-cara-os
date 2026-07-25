@@ -23,7 +23,8 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { useHrInspection } from "@/hooks/use-intelligence-layer";
+import { useQuery } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,27 @@ import type {
   HrCaseStatus,
   HrSafeguardingStatus,
 } from "@/lib/hr/types";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useHrInspection() {
+  return useQuery({
+    queryKey: ["il", "hr-inspection"],
+    queryFn: () =>
+      ilFetch<{
+        ok: boolean;
+        workforce: unknown;
+        recruitment: unknown[];
+        cases: unknown[];
+        chronology: unknown[];
+        suspensions: unknown[];
+        lado: unknown[];
+        compliance: unknown[];
+        oversight: unknown[];
+        persisted: boolean;
+      }>(`/hr-inspection`),
+  });
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

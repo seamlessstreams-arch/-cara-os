@@ -8,13 +8,19 @@
 // pending / processing / completed / failed / retry-required states.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Activity, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
-import { useJobQueueStatus } from "@/hooks/use-job-queue-status";
 import type { JobStatus } from "@/types/care-events";
+import type { JobQueueStatus } from "@/lib/care-events/job-queue-status";
+
+interface Response {
+  data: JobQueueStatus;
+}
 
 const HOME_ID = "home_oak";
 
@@ -40,7 +46,14 @@ function pretty(s: string): string {
 const JOB_STATUS_ORDER: JobStatus[] = ["pending", "processing", "completed", "failed", "retry_required"];
 
 export default function JobQueuePage() {
-  const { data, refetch, isFetching, isLoading } = useJobQueueStatus(HOME_ID);
+  const { data, refetch, isFetching, isLoading } = useQuery({
+    queryKey: ["job-queue-status", HOME_ID],
+    queryFn: () =>
+      api.get<Response>(
+        `/care-events/job-queue?home_id=${encodeURIComponent(HOME_ID)}`,
+      ),
+    refetchInterval: 15000,
+  });
   const q = data?.data;
 
   return (

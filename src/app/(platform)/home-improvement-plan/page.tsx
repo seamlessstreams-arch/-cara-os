@@ -24,7 +24,7 @@ import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/co
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useImprovementObjectives, useCreateImprovementObjective } from "@/hooks/use-improvement-objectives";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,7 +65,12 @@ const SOURCE_LABELS = OBJECTIVE_SOURCE_LABEL;
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function HomeImprovementPlanPage() {
-  const { data: raw, isLoading } = useImprovementObjectives();
+  // Inlined useImprovementObjectives
+  const objectivesQuery = useQuery<{ data: ImprovementObjective[] }>({
+    queryKey: ["improvement-objectives"],
+    queryFn: () => fetch("/api/v1/improvement-objectives").then((r) => r.json()),
+  });
+  const { data: raw, isLoading } = objectivesQuery;
   const entries = useMemo(() => raw?.data ?? [], [raw]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -74,7 +79,14 @@ export default function HomeImprovementPlanPage() {
   const [sortBy, setSortBy] = useState<"priority" | "status" | "target">("priority");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
-  const createObjective = useCreateImprovementObjective();
+
+  // Inlined useCreateImprovementObjective
+  const qc = useQueryClient();
+  const createObjective = useMutation({
+    mutationFn: (data: Partial<ImprovementObjective>) =>
+      fetch("/api/v1/improvement-objectives", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["improvement-objectives"] }),
+  });
   const [objForm, setObjForm] = useState({ title: "", source: "self" as ObjectiveSource, priority: "medium" as ObjectivePriority, owner: "", target_date: "", notes: "" });
   const setObj = (k: string, v: unknown) => setObjForm((p) => ({ ...p, [k]: v }));
 

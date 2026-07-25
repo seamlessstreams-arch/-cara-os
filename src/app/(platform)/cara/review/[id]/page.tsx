@@ -21,7 +21,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useCaraSuggestion, useUpdateCaraSuggestion } from "@/hooks/use-intelligence-layer";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { cn } from "@/lib/utils";
 import {
   Sparkles,
@@ -47,6 +48,28 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { demoSeedOne } from "@/lib/demo/demo-seed";
+
+// ── inlined intelligence layer hooks ──────────────────────────────────────────
+
+function useCaraSuggestion(id?: string) {
+  return useQuery({
+    queryKey: ["il", "cara-suggestion", id],
+    queryFn: () => ilFetch<{ ok: boolean; item: unknown; persisted: boolean }>(`/cara-suggestions?id=${id}`),
+    enabled: !!id,
+  });
+}
+
+function useUpdateCaraSuggestion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/cara-suggestions", { method: "PATCH", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "cara-suggestions"] });
+      qc.invalidateQueries({ queryKey: ["il", "cara-suggestion"] });
+    },
+  });
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

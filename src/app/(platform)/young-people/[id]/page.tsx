@@ -46,7 +46,35 @@ import type {
   ChronologyEntry, KeyWorkSession, KeyWorkTheme,
   ContactArrangement, ContactLog, MissingEpisode,
 } from "@/types/extended";
-import { useKeyWorkSessions, useCreateKeyWorkSession } from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useKeyWorkSessions(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["cara-intelligence", "keywork", params],
+    queryFn: () =>
+      api.get<ListResponse<KeyWorkSession>>(`/cara-intelligence/keywork?${query}`),
+  });
+}
+
+function useCreateKeyWorkSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<KeyWorkSession>) =>
+      api.post<SingleResponse<KeyWorkSession>>("/cara-intelligence/keywork", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "keywork"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
+    },
+  });
+}
 import { EmptyState } from "@/components/ui/empty-state";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { Child360IntelligenceCard } from "@/components/intelligence/child-360-intelligence-card";

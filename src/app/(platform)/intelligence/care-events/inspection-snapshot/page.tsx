@@ -9,20 +9,15 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Camera, Download, Loader2, Eye, History, Share2 } from "lucide-react";
-import {
-  usePersistedSnapshots,
-  useGenerateAndPersistSnapshot,
-  useFetchPersistedSnapshot,
-} from "@/hooks/use-inspection-snapshot";
-import { apiFetch } from "@/hooks/use-api";
-import type { InspectionSnapshot } from "@/lib/care-events/inspection-snapshot";
-import type { ExportHistoryEntry } from "@/lib/db/store";
+import { apiFetch, api } from "@/hooks/use-api";
+import type { InspectionSnapshot, PersistedSnapshotRow } from "@/lib/care-events/inspection-snapshot";
+import type { PersistedInspectionSnapshot, ExportHistoryEntry } from "@/lib/db/store";
 import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
 
 interface SnapshotExportResponse {
@@ -32,9 +27,28 @@ interface SnapshotExportResponse {
 const HOME_ID = "home_oak";
 
 export default function InspectionSnapshotPage() {
-  const list = usePersistedSnapshots(HOME_ID);
-  const gen  = useGenerateAndPersistSnapshot(HOME_ID);
-  const fetchOne = useFetchPersistedSnapshot();
+  const qc = useQueryClient();
+  const list = useQuery({
+    queryKey: ["inspection-snapshots", HOME_ID],
+    queryFn: () =>
+      api.get<{ data: PersistedSnapshotRow[] }>(
+        `/care-events/inspection-snapshot?home_id=${encodeURIComponent(HOME_ID)}`,
+      ),
+    refetchInterval: 60000,
+  });
+  const gen = useMutation({
+    mutationFn: () =>
+      api.post<{ data: InspectionSnapshot }>(`/care-events/inspection-snapshot`, { home_id: HOME_ID }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["inspection-snapshots", HOME_ID] });
+    },
+  });
+  const fetchOne = useMutation({
+    mutationFn: (id: string) =>
+      api.get<{ data: PersistedInspectionSnapshot }>(
+        `/care-events/inspection-snapshot/${encodeURIComponent(id)}`,
+      ),
+  });
   const exportSnap = useMutation({
     mutationFn: (input: { id: string; reason?: string }) =>
       apiFetch<SnapshotExportResponse>(

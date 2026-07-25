@@ -12,16 +12,43 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
-import {
-  useKeyWorkSessions,
-  useCreateKeyWorkSession,
-} from "@/hooks/use-intelligence";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn, formatDate } from "@/lib/utils";
 import type { KeyWorkTheme, KeyWorkSession, KeyWorkSessionPlan, KeyWorkSessionStatus } from "@/types/extended";
 import {
   BookOpen, Plus, Sparkles, Loader2, AlertTriangle,
   CheckCircle2, ChevronRight, X,
 } from "lucide-react";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+// ── Inlined intelligence hooks ───────────────────────────────────────────────
+
+function useKeyWorkSessions(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["cara-intelligence", "keywork", params],
+    queryFn: () =>
+      api.get<ListResponse<KeyWorkSession>>(`/cara-intelligence/keywork?${query}`),
+  });
+}
+
+function useCreateKeyWorkSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<KeyWorkSession>) =>
+      api.post<SingleResponse<KeyWorkSession>>("/cara-intelligence/keywork", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "keywork"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
+    },
+  });
+}
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 
