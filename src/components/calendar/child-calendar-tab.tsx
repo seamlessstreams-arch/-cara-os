@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, Plus, ArrowRight } from "lucide-react";
 import { EventEditor } from "@/components/calendar/event-editor";
 import { SOURCE_COLOR, formatTime } from "@/components/calendar/calendar-bits";
-import { CALENDAR_SOURCE_LABELS, type CalendarItem } from "@/lib/calendar/calendar-types";
+import { CALENDAR_SOURCE_LABELS, type CalendarItem, type CalendarFeed } from "@/lib/calendar/calendar-types";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -63,7 +63,7 @@ export function ChildCalendarTab({ childId, childName }: { childId: string; chil
     queryKey: ["calendar-feed", todayKey, toKey, ""],
     queryFn: () => {
       const params = new URLSearchParams({ from: todayKey, to: toKey });
-      return jfetch(`/api/v1/calendar?${params.toString()}`);
+      return jfetch<CalendarFeed>(`/api/v1/calendar?${params.toString()}`);
     },
   });
   const items = (data?.items ?? []).filter((i) => i.child_id === childId && i.date >= todayKey);

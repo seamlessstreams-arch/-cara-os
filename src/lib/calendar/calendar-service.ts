@@ -194,6 +194,12 @@ export const CreateEventSchema = z.object({
   tasks: z.array(z.object({ title: z.string().trim().min(2), due_date: z.string().nullable().optional() })).default([]),
 });
 export type CreateEventInput = z.infer<typeof CreateEventSchema>;
+/**
+ * What a CLIENT sends. z.infer is the OUTPUT type (defaults already applied), so
+ * it wrongly demands fields the schema fills in itself — organiser_id, tasks,
+ * attendees. z.input is the pre-parse shape, which is what a request body is.
+ */
+export type CreateEventBody = z.input<typeof CreateEventSchema>;
 
 export const UpdateEventSchema = z.object({
   title: z.string().trim().min(2).optional(),

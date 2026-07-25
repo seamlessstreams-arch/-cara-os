@@ -21,6 +21,7 @@ import { todayStr } from "@/lib/utils";
 import {
   Users, CalendarDays, Radar, ArrowRight, CircleDot, Clock,
 } from "lucide-react";
+import type { CalendarFeed } from "@/lib/calendar/calendar-types";
 
 // ── Data hook (inlined from the former use-manager-priority-briefing hook) ─────
 function useManagerPriorityBriefing() {
@@ -118,7 +119,7 @@ function UpNext() {
     queryKey: ["calendar-feed", today, today, ""],
     queryFn: () => {
       const params = new URLSearchParams({ from: today, to: today });
-      return jfetch(`/api/v1/calendar?${params.toString()}`);
+      return jfetch<CalendarFeed>(`/api/v1/calendar?${params.toString()}`);
     },
   });
   const items = (feed.data?.items ?? [])

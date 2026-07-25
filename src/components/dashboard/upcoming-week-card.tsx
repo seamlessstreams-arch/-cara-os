@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { CalendarDays, ArrowRight } from "lucide-react";
 import { SOURCE_COLOR, formatTime } from "@/components/calendar/calendar-bits";
-import { CALENDAR_SOURCE_LABELS, type CalendarItem } from "@/lib/calendar/calendar-types";
+import { CALENDAR_SOURCE_LABELS, type CalendarItem, type CalendarFeed } from "@/lib/calendar/calendar-types";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -64,7 +64,7 @@ function UpcomingWeekCardInner() {
       const params = new URLSearchParams({ from: todayKey, to: toKey });
       const sources = ["calendar", "task", "appointment", "supervision", "lac_review", "family_time", "interview", "training", "key_working"];
       if (sources && sources.length) params.set("sources", sources.join(","));
-      return jfetch(`/api/v1/calendar?${params.toString()}`);
+      return jfetch<CalendarFeed>(`/api/v1/calendar?${params.toString()}`);
     },
   });
 

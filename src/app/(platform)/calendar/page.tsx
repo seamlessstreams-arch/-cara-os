@@ -11,7 +11,7 @@ import Link from "next/link";
 import { EventEditor } from "@/components/calendar/event-editor";
 import { MonthGrid } from "@/components/calendar/calendar-month";
 import { SourceFilter, SourceDot, formatTime, formatDayLabel } from "@/components/calendar/calendar-bits";
-import { ALL_CALENDAR_SOURCES, CALENDAR_SOURCE_LABELS, type CalendarItem, type CalendarSource } from "@/lib/calendar/calendar-types";
+import { ALL_CALENDAR_SOURCES, CALENDAR_SOURCE_LABELS, type CalendarItem, type CalendarSource, type CalendarFeed, type CalendarEvent } from "@/lib/calendar/calendar-types";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -62,7 +62,7 @@ export default function CalendarPage() {
     queryFn: () => {
       const params = new URLSearchParams({ from: range.from, to: range.to });
       if (sources && sources.length) params.set("sources", sources.join(","));
-      return jfetch(`/api/v1/calendar?${params.toString()}`);
+      return jfetch<CalendarFeed>(`/api/v1/calendar?${params.toString()}`);
     },
   });
 
@@ -106,7 +106,7 @@ export default function CalendarPage() {
 
   const editingEvent = useQuery({
     queryKey: ["calendar-event", editorOpen ? editingId : null],
-    queryFn: () => jfetch(`/api/v1/calendar/${editorOpen ? editingId : null}`),
+    queryFn: () => jfetch<{ event: CalendarEvent }>(`/api/v1/calendar/${editorOpen ? editingId : null}`),
     enabled: Boolean(editorOpen ? editingId : null),
   });
 
@@ -309,7 +309,11 @@ function EventActions({ eventId }: { eventId: string }) {
     ]);
 
   const invite = useMutation({
-    mutationFn: (id: string) => jfetch(`/api/v1/calendar/${id}/invite`, { method: "POST" }),
+    mutationFn: (id: string) =>
+      jfetch<{ event: CalendarEvent; notified_staff: number; mailto: string; ics_url: string }>(
+        `/api/v1/calendar/${id}/invite`,
+        { method: "POST" },
+      ),
     onSuccess: () => invalidate(),
   });
   const cancel = useMutation({

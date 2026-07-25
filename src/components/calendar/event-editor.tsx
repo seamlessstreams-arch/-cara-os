@@ -8,12 +8,14 @@ import { X, Plus, Trash2 } from "lucide-react";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useStaff } from "@/hooks/use-staff";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
+import type { CreateEventBody } from "@/lib/calendar/calendar-service";
 
 const inputCls =
   "w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-3 py-2 text-sm text-[var(--cs-navy)] outline-none focus-visible:border-[var(--cs-teal)]";
 const labelCls = "mb-1 block text-xs font-semibold text-[var(--cs-text-secondary)]";
 
-const EVENT_TYPES = ["meeting", "appointment", "review", "training", "visit", "deadline", "other"];
+const EVENT_TYPES = ["meeting", "appointment", "review", "training", "visit", "deadline", "other"] as const;
+type EventType = (typeof EVENT_TYPES)[number];
 const REMINDERS: { label: string; value: number | null }[] = [
   { label: "No reminder", value: null },
   { label: "15 minutes before", value: 15 },
@@ -67,18 +69,18 @@ export function EventEditor({
     ]);
 
   const create = useMutation({
-    mutationFn: (body: any) =>
-      jfetch(`/api/v1/calendar`, { method: "POST", body: JSON.stringify(body) }),
+    mutationFn: (body: CreateEventBody) =>
+      jfetch<{ event: CalendarEvent }>(`/api/v1/calendar`, { method: "POST", body: JSON.stringify(body) }),
     onSuccess: () => invalidate(),
   });
   const update = useMutation({
     mutationFn: (patch: Record<string, unknown>) =>
-      jfetch(`/api/v1/calendar/${editing?.id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+      jfetch<{ event: CalendarEvent }>(`/api/v1/calendar/${editing?.id}`, { method: "PATCH", body: JSON.stringify(patch) }),
     onSuccess: () => invalidate(),
   });
 
   const [title, setTitle] = useState("");
-  const [eventType, setEventType] = useState("meeting");
+  const [eventType, setEventType] = useState<EventType>("meeting");
   const [date, setDate] = useState(defaultDate ?? "");
   const [startTime, setStartTime] = useState("10:00");
   const [endTime, setEndTime] = useState("11:00");
@@ -210,7 +212,7 @@ export function EventEditor({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Type</label>
-              <select value={eventType} onChange={(e) => setEventType(e.target.value)} className={`${inputCls} capitalize`}>
+              <select value={eventType} onChange={(e) => setEventType(e.target.value as EventType)} className={`${inputCls} capitalize`}>
                 {EVENT_TYPES.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
               </select>
             </div>
