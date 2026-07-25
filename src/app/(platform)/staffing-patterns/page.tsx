@@ -7,6 +7,8 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
@@ -15,9 +17,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useShiftPatterns, useCreatePattern, useUpdatePattern, useDeletePattern, type ShiftPatternRow } from "@/hooks/use-shift-patterns";
-import { patternWorksOn, type ShiftPattern } from "@/lib/rota/shift-patterns";
+import type { ShiftPattern } from "@/lib/rota/shift-patterns";
+import { patternWorksOn } from "@/lib/rota/shift-patterns";
 import { CalendarRange, Plus, Pencil, Trash2, Sun, Moon, CalendarCheck } from "lucide-react";
+
+// Types from use-shift-patterns
+export interface ShiftPatternRow extends ShiftPattern {
+  staff_name: string;
+  description: string;
+}
+export interface PatternsData {
+  patterns: ShiftPatternRow[];
+  staff: { id: string; name: string; role: string | null }[];
+}
+export interface PatternInput {
+  id?: string;
+  staff_id: string;
+  name?: string;
+  kind: "weekly" | "rotating";
+  weekdays?: number[];
+  cycle_on?: number;
+  cycle_off?: number;
+  anchor_date?: string | null;
+  shift_type: string;
+  start_time: string;
+  end_time: string;
+  active: boolean;
+}
 
 // Display Mon-first; values follow JS getUTCDay (0=Sun … 6=Sat).
 const WEEKDAYS: { v: number; label: string }[] = [
@@ -98,11 +124,39 @@ function PatternPreview({ form }: { form: FormState }) {
 }
 
 export default function ShiftPatternsPage() {
-  const { data: resp, isLoading, error } = useShiftPatterns();
+  const qc = useQueryClient();
+
+  // Helper: invalidate patterns & cover
+  const invalidatePatterns = () => {
+    qc.invalidateQueries({ queryKey: ["shift-patterns"] });
+    qc.invalidateQueries({ queryKey: ["staffing-cover"] }); // patterns drive the cover view
+  };
+
+  // Inlined: useShiftPatterns
+  const { data: resp, isLoading, error } = useQuery({
+    queryKey: ["shift-patterns"],
+    queryFn: () => api.get<{ data: PatternsData }>("/rota/patterns"),
+    staleTime: 30_000,
+  });
   const data = resp?.data;
-  const create = useCreatePattern();
-  const update = useUpdatePattern();
-  const del = useDeletePattern();
+
+  // Inlined: useCreatePattern
+  const create = useMutation({
+    mutationFn: (input: PatternInput) => api.post<{ data: ShiftPatternRow }>("/rota/patterns", input),
+    onSuccess: invalidatePatterns,
+  });
+
+  // Inlined: useUpdatePattern
+  const update = useMutation({
+    mutationFn: (input: PatternInput & { id: string }) => api.patch<{ data: ShiftPatternRow }>("/rota/patterns", input),
+    onSuccess: invalidatePatterns,
+  });
+
+  // Inlined: useDeletePattern
+  const del = useMutation({
+    mutationFn: (id: string) => api.delete<{ data: { id: string; deleted: boolean } }>(`/rota/patterns?id=${encodeURIComponent(id)}`),
+    onSuccess: invalidatePatterns,
+  });
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(blankForm());

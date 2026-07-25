@@ -1,13 +1,14 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, AlertTriangle, Clock } from "lucide-react";
 import { meets, formatRate } from "@/lib/metrics/rate";
-import {
-  useRepairCycleIntelligence,
-  type IncidentRepairProfile,
-  type CycleStatus,
+import type {
+  IncidentRepairProfile,
+  CycleStatus,
+  RepairCycleIntelligenceResponse,
 } from "@/hooks/use-repair-cycle-intelligence";
 
 const STATUS_CONFIG: Record<CycleStatus, { label: string; bg: string; border: string; text: string }> = {
@@ -46,7 +47,15 @@ function IncidentCard({ profile }: { profile: IncidentRepairProfile }) {
 }
 
 export default function RepairCycleIntelligencePage() {
-  const { data, isLoading, error } = useRepairCycleIntelligence();
+  const { data, isLoading, error } = useQuery<RepairCycleIntelligenceResponse>({
+    queryKey: ["repair-cycle-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/repair-cycle-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch repair cycle intelligence");
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
 
   if (isLoading) {
     return (

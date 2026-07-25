@@ -1,9 +1,10 @@
 "use client";
 
-import {
-  useStaffComplianceTimelineIntelligence,
-  type StaffComplianceProfile,
-  type StaffComplianceSignal,
+import { useQuery } from "@tanstack/react-query";
+import type {
+  StaffComplianceProfile,
+  StaffComplianceSignal,
+  StaffComplianceTimelineResponse,
 } from "@/hooks/use-staff-compliance-timeline-intelligence";
 
 const SIGNAL_CONFIG: Record<
@@ -184,7 +185,15 @@ function StaffCard({ profile }: { profile: StaffComplianceProfile }) {
 }
 
 export default function StaffComplianceTimelinePage() {
-  const { data, isLoading, error } = useStaffComplianceTimelineIntelligence();
+  const { data, isLoading, error } = useQuery<StaffComplianceTimelineResponse>({
+    queryKey: ["staff-compliance-timeline-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-compliance-timeline-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch staff compliance timeline intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
 
   if (isLoading) {
     return (

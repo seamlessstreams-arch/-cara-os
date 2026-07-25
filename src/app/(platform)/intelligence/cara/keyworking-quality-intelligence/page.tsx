@@ -1,12 +1,21 @@
 "use client";
 
-import {
-  useKeyworkingQualityIntelligence,
-  type ChildKeyworkProfile,
-  type SessionSummary,
-  type KeyworkSignal,
-  type OverallSignal,
-} from "@/hooks/use-keyworking-quality-intelligence";
+import { useQuery } from "@tanstack/react-query";
+
+// Types from use-keyworking-quality-intelligence
+export interface KeyworkingQualityResponse {
+  data: {
+    profiles: ChildKeyworkProfile[];
+    summary: {
+      totalSessions: number;
+      totalChildren: number;
+      avgMoodImprovement: number;
+      childVoiceRate: number;
+      overdueFollowUpCount: number;
+      overallSignal: OverallSignal;
+    };
+  };
+}
 
 const SIGNAL_CONFIG: Record<KeyworkSignal, { label: string; bg: string; border: string; text: string; dot: string }> = {
   concern: { label: "Concern", bg: "bg-red-50", border: "border-red-200", text: "text-red-700", dot: "bg-red-500" },
@@ -159,7 +168,16 @@ function ChildKeyworkCard({ profile }: { profile: ChildKeyworkProfile }) {
 }
 
 export default function KeyworkingQualityIntelligencePage() {
-  const { data, isLoading, error } = useKeyworkingQualityIntelligence();
+  // Inlined: useKeyworkingQualityIntelligence
+  const { data, isLoading, error } = useQuery<KeyworkingQualityResponse>({
+    queryKey: ["keyworking-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/keyworking-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch keyworking quality intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
 
   if (isLoading) {
     return (

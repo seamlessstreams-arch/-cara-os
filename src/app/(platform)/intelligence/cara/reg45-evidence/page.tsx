@@ -6,6 +6,7 @@
 // outputs. Managers decide what becomes part of the official Reg 45 report.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,18 +14,21 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card";
 import { ClipboardCheck, RefreshCw, CheckCircle2, XCircle, Clock, FilePlus2 } from "lucide-react";
-import {
-  useReg45Evidence,
-  useRunReg45EvidenceBuild,
-  useUpdateReg45EvidenceItem,
-} from "@/hooks/use-cara-reg45-evidence";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import {
   CARA_REG45_THEME_LABELS,
   type CaraReg45EvidenceItem,
   type CaraReg45Theme,
+  type CaraReg45Snapshot,
 } from "@/types/cara-studio";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface SnapshotResponse {
+  data: CaraReg45Snapshot;
+}
 
 const HOME_ID = "home_oak";
 
@@ -110,10 +114,52 @@ function EvidenceCard({
 export default function Reg45EvidencePage() {
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
+  const qc = useQueryClient();
 
-  const query = useReg45Evidence(HOME_ID);
-  const run = useRunReg45EvidenceBuild();
-  const update = useUpdateReg45EvidenceItem();
+  // useReg45Evidence inline
+  const search = new URLSearchParams();
+  if (HOME_ID) search.set("home_id", HOME_ID);
+  const qs = search.toString();
+  const query = useQuery({
+    queryKey: ["cara-reg45-evidence", HOME_ID ?? null, null, null],
+    queryFn: () =>
+      api.get<SnapshotResponse>(
+        `/cara-studio/reg45-evidence${qs ? `?${qs}` : ""}`,
+      ),
+    refetchInterval: 60000,
+  });
+
+  // useRunReg45EvidenceBuild inline
+  const run = useMutation({
+    mutationFn: (input: {
+      home_id: string;
+      period_start?: string;
+      period_end?: string;
+      actor_id?: string;
+      actor_role?: string;
+    }) => api.post<SnapshotResponse>("/cara-studio/reg45-evidence", input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-reg45-evidence"] });
+    },
+  });
+
+  // useUpdateReg45EvidenceItem inline
+  const update = useMutation({
+    mutationFn: (input: {
+      id: string;
+      status: CaraReg45EvidenceItem["status"];
+      decision_note?: string | null;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.patch<{ data: CaraReg45EvidenceItem }>(
+        "/cara-studio/reg45-evidence-items",
+        input,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-reg45-evidence"] });
+    },
+  });
 
   const snapshot = query.data?.data;
 

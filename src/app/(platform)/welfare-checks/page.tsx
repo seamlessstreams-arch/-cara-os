@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar } from "@/components/ui/avatar";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { useWelfareChecks, useCreateWelfareCheckRound } from "@/hooks/use-welfare-checks";
+import { api } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getStaffName, getYPName } from "@/lib/seed-data";
@@ -34,6 +35,20 @@ import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface WelfareChecksResponse {
+  data: WelfareCheckRound[];
+  checks: any[];
+  meta: {
+    total_rounds: number;
+    today_rounds: number;
+    total_checks: number;
+    concerns_flagged: number;
+    consecutive_days: number;
+  };
+}
 
 // ── Status config ───────────────────────────────────────────────────────────
 
@@ -62,7 +77,35 @@ function NewCheckForm({
 }) {
   const { currentUser } = useAuthContext();
   const { data: ypData } = useYoungPeople("current");
-  const createRound = useCreateWelfareCheckRound();
+  const qc = useQueryClient();
+
+  // useCreateWelfareCheckRound inline
+  const createRound = useMutation({
+    mutationFn: (data: {
+      staff_id: string;
+      round_date: string;
+      round_time: string;
+      shift_type?: string;
+      children_checks: Array<{
+        child_id: string;
+        status: string;
+        location?: string;
+        mood?: string;
+        notes?: string;
+        concern_details?: string;
+        physical_marks_noted?: boolean;
+        marks_description?: string;
+      }>;
+      building_secure?: boolean;
+      fire_exits_clear?: boolean;
+      external_doors_locked?: boolean;
+      alarm_set?: boolean;
+      additional_notes?: string;
+    }) => api.post<{ data: WelfareCheckRound }>("/welfare-checks", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["welfare-checks"] });
+    },
+  });
 
   const children = ypData?.data ?? [];
   const now = new Date();
@@ -482,7 +525,16 @@ export default function WelfareChecksPage() {
   const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState("");
 
-  const { data, isLoading, refetch } = useWelfareChecks(selectedDate ? { date: selectedDate } : undefined);
+  // useWelfareChecks inline
+  const searchParams = new URLSearchParams();
+  if (selectedDate) searchParams.set("date", selectedDate);
+  const qs = searchParams.toString();
+  const { data, isLoading, refetch } = useQuery<WelfareChecksResponse>({
+    queryKey: ["welfare-checks", { date: selectedDate }],
+    queryFn: () => api.get<WelfareChecksResponse>(`/welfare-checks${qs ? `?${qs}` : ""}`).then((r) => r),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
 
   const rounds = data?.data ?? [];
   const meta = data?.meta;

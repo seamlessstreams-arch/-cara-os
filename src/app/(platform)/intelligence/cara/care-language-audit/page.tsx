@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,13 +17,58 @@ import {
   AlertTriangle, CheckCircle2, ChevronDown, ChevronUp,
   FileText, User, Users, Sparkles, AlertCircle,
 } from "lucide-react";
-import {
-  useCareLanguageAudit,
-  type PatternCategory,
-  type StaffLanguageProfile,
-  type ChildLanguageProfile,
-  type CategorySummary,
-} from "@/hooks/use-care-language-audit";
+import { api } from "@/hooks/use-api";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type PatternCategory =
+  | "criminalising"
+  | "moralising"
+  | "power_control"
+  | "minimising_trauma"
+  | "character_labelling";
+
+interface StaffLanguageProfile {
+  staffId: string;
+  name: string;
+  totalHits: number;
+  hitsByCategory: Partial<Record<PatternCategory, number>>;
+  mostCommonPhrase: string | null;
+  supervisionNote: string;
+}
+
+interface ChildLanguageProfile {
+  childId: string;
+  name: string;
+  totalHits: number;
+  hitsByCategory: Partial<Record<PatternCategory, number>>;
+  mostAffectedCategory: PatternCategory | null;
+}
+
+interface CategorySummary {
+  category: PatternCategory;
+  label: string;
+  totalHits: number;
+  topPhrase: string | null;
+  topStaffId: string | null;
+}
+
+interface LanguageAuditSummary {
+  totalHits: number;
+  totalRecordsScanned: number;
+  hitRate: number;
+  categoryCounts: Partial<Record<PatternCategory, number>>;
+  staffWithHits: number;
+  childrenAffected: number;
+  mostFlaggedPhrase: string | null;
+}
+
+interface CareLanguageAuditResponse {
+  staffProfiles: StaffLanguageProfile[];
+  childProfiles: ChildLanguageProfile[];
+  categorySummary: CategorySummary[];
+  summary: LanguageAuditSummary;
+}
 
 // ── Category styling ──────────────────────────────────────────────────────────
 
@@ -158,7 +204,12 @@ function SummaryTile({ label, value, sub, warn }: { label: string; value: string
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function CareLanguageAuditPage() {
-  const { data: res, isLoading, isError } = useCareLanguageAudit();
+  const { data: res, isLoading, isError } = useQuery({
+    queryKey: ["care-language-audit"],
+    queryFn: () =>
+      api.get<{ data: CareLanguageAuditResponse }>("/care-language-audit"),
+    staleTime: 120_000,
+  });
   const [showAllStaff, setShowAllStaff] = useState(false);
   const [showAllChildren, setShowAllChildren] = useState(false);
 

@@ -2,6 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,12 +18,30 @@ import { useTasks, useCompleteTask } from "@/hooks/use-tasks";
 import { useIncidents } from "@/hooks/use-incidents";
 import { useStaff } from "@/hooks/use-staff";
 import { useLeave } from "@/hooks/use-leave";
-import { useRota } from "@/hooks/use-rota";
 import { usePatternAlerts, useActionOutcomes } from "@/hooks/use-intelligence";
 import type { PatternAlert } from "@/types/extended";
+import type { Shift, LeaveRequest } from "@/types";
 import { cn, todayStr, daysFromNow, formatDate, isOverdue, isDueToday } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
+
+// Types from use-rota
+export interface RotaMeta {
+  week_start: string;
+  week_end: string;
+  on_shift_today: number;
+  sleep_ins_tonight: number;
+  open_shifts: number;
+  on_leave_today: number;
+  late_arrivals: number;
+  open_shift_dates: { date: string; start: string; end: string; type: string }[];
+}
+
+export interface RotaResponse {
+  shifts: Shift[];
+  leave: LeaveRequest[];
+  meta: RotaMeta;
+}
 
 function getMondayOfThisWeek(): string {
   const d = new Date();
@@ -45,7 +65,14 @@ export default function MyDayPage() {
   const incidentsQuery = useIncidents();
   const staffQuery = useStaff();
   const leaveQuery = useLeave({ staff_id: ME });
-  const rotaQuery = useRota(weekStart);
+
+  // Inlined: useRota
+  const rotaQuery = useQuery({
+    queryKey: ["rota", weekStart],
+    queryFn: () => api.get<RotaResponse>(`/rota?week_start=${weekStart}`),
+    enabled: !!weekStart,
+  });
+
   const patternsQuery = usePatternAlerts({ status: 'active' });
   const overdueActionsQuery = useActionOutcomes({ status: 'overdue' });
 

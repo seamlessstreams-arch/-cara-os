@@ -8,6 +8,7 @@
 // source care event is always preserved.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +16,11 @@ import { Button } from "@/components/ui/button";
 import {
   AlertTriangle, RefreshCw, RotateCcw, Activity, CheckCircle2,
 } from "lucide-react";
-import {
-  useRoutingHealth,
-  useRetryRoutes,
-  useRetryJob,
+import { api } from "@/hooks/use-api";
+import type { CareEventJob } from "@/types/care-events";
+import type {
+  RoutingHealthRow,
+  RoutingHealthSummary,
 } from "@/hooks/use-routing-health";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
@@ -28,9 +30,48 @@ const HOME_ID = "home_oak";
 export default function RoutingHealthPage() {
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
-  const { data, isLoading, refetch, isFetching } = useRoutingHealth(HOME_ID);
-  const retryRoutes = useRetryRoutes();
-  const retryJob = useRetryJob();
+  const qc = useQueryClient();
+
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["routing-health", HOME_ID],
+    queryFn: () =>
+      api.get<{ data: RoutingHealthSummary }>(
+        `/care-events/routing-health?home_id=${encodeURIComponent(HOME_ID)}`,
+      ),
+    refetchInterval: 30000,
+  });
+
+  const retryRoutes = useMutation({
+    mutationFn: (input: {
+      care_event_id: string;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.post<{ data: unknown }>("/care-events/routing-health", {
+        ...input,
+        action: "retry_routes",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["routing-health"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
+    },
+  });
+
+  const retryJob = useMutation({
+    mutationFn: (input: {
+      job_id: string;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.post<{ data: CareEventJob }>("/care-events/routing-health", {
+        ...input,
+        action: "retry_job",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["routing-health"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
+    },
+  });
 
   const summary = data?.data;
 

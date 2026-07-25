@@ -8,6 +8,8 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,12 +22,40 @@ import {
   FolderOpen, BarChart3, TrendingUp, TrendingDown, Minus, ArrowUpDown,
 } from "lucide-react";
 import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
-import { useAudits, useCreateAudit, useUpdateAudit } from "@/hooks/use-audits";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import type { Audit } from "@/types/extended";
+
+// Types from use-audits
+export interface AuditsResponse {
+  data: Audit[];
+  meta: { total: number; completed: number; scheduled: number; in_progress: number; overdue: number };
+}
+
+export interface AuditFinding {
+  id: string;
+  area: string;
+  description: string;
+  severity: "critical" | "high" | "medium" | "low";
+  standard_ref?: string;
+  action_required: string;
+  owner: string;
+  due_date: string;
+  status: "open" | "in_progress" | "resolved";
+}
+
+export interface AuditDetail extends Audit {
+  completed_by_name: string | null;
+  findings_detail: AuditFinding[];
+  linked_training_needs: Array<{
+    id: string;
+    title: string;
+    priority: string;
+    status: string;
+  }>;
+}
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -79,10 +109,31 @@ const AUDIT_EXPORT_COLS: ExportColumn<Audit>[] = [
 
 export default function AuditsPage() {
   const router = useRouter();
-  const auditsQuery = useAudits();
+  const qc = useQueryClient();
+
+  // Inlined: useAudits
+  const auditsQuery = useQuery({
+    queryKey: ["audits", undefined],
+    queryFn: () => {
+      const query = new URLSearchParams();
+      return api.get<AuditsResponse>(`/audits?${query}`);
+    },
+  });
   const audits: Audit[] = auditsQuery.data?.data ?? [];
-  const createAudit = useCreateAudit();
-  const updateAudit = useUpdateAudit();
+
+  // Inlined: useCreateAudit
+  const createAudit = useMutation({
+    mutationFn: (data: Partial<Audit>) => api.post<{ data: Audit }>("/audits", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["audits"] }),
+  });
+
+  // Inlined: useUpdateAudit
+  const updateAudit = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Audit> }) =>
+      api.patch<{ data: Audit }>(`/audits/${id}`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["audits"] }),
+  });
+
   const createNeed = useCreateTrainingNeed();
 
   const [filter, setFilter] = useState<"all" | "completed" | "scheduled" | "in_progress">("all");

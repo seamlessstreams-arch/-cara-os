@@ -6,6 +6,8 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
@@ -15,13 +17,34 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DictationButton } from "@/components/common/dictation-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  useComplianceOversight, useComplianceDocuments, useIngestComplianceDoc, useTrackComplianceActions,
-} from "@/hooks/use-compliance";
+import type { ComplianceOversightResult } from "@/lib/compliance/compliance-oversight-engine";
+import type { DocumentAiResult, DocumentIntelCategory, DocumentIntelRisk, DocumentIntelStatus } from "@/types/documents";
 import { COMPLIANCE_CATEGORIES } from "@/lib/compliance/compliance-oversight-engine";
 import { extractFileText } from "@/lib/compliance/extract-file-text";
-import { DOCUMENT_CATEGORY_LABELS, type DocumentIntelCategory } from "@/types/documents";
+import { DOCUMENT_CATEGORY_LABELS } from "@/types/documents";
 import { FileText, Sparkles, CalendarClock, AlertTriangle, CheckCircle2, ListChecks, ShieldCheck, Clock, Upload } from "lucide-react";
+
+// Types from use-compliance
+export interface ComplianceDocRow {
+  id: string;
+  original_file_name: string;
+  upload_context: string | null;
+  document_category: DocumentIntelCategory | null;
+  category_label?: string;
+  document_status: DocumentIntelStatus;
+  ai_risk_level: DocumentIntelRisk | null;
+  ai_summary: string | null;
+  ai_result: DocumentAiResult | null;
+  tasks_created: string[];
+  uploaded_at: string;
+}
+
+export interface IngestInput {
+  text: string;
+  title?: string;
+  fileName?: string;
+  category?: DocumentIntelCategory | null;
+}
 
 const CATEGORY_OPTIONS = [...COMPLIANCE_CATEGORIES]
   .map((c) => ({ value: c as DocumentIntelCategory, label: DOCUMENT_CATEGORY_LABELS[c] }))
@@ -51,10 +74,41 @@ function fmt(d: string): string {
 }
 
 export default function ComplianceDocumentsPage() {
-  const oversight = useComplianceOversight();
-  const docs = useComplianceDocuments();
-  const ingest = useIngestComplianceDoc();
-  const track = useTrackComplianceActions();
+  const qc = useQueryClient();
+
+  // Inlined: useComplianceOversight
+  const oversight = useQuery({
+    queryKey: ["compliance-oversight"],
+    queryFn: () => api.get<{ data: ComplianceOversightResult }>("/compliance-oversight"),
+    staleTime: 30_000,
+  });
+
+  // Inlined: useComplianceDocuments
+  const docs = useQuery({
+    queryKey: ["compliance-documents"],
+    queryFn: () => api.get<{ data: { documents: ComplianceDocRow[] } }>("/compliance-documents"),
+    staleTime: 30_000,
+  });
+
+  // Helper: invalidate both queries
+  const invalidateCompliance = () => {
+    qc.invalidateQueries({ queryKey: ["compliance-documents"] });
+    qc.invalidateQueries({ queryKey: ["compliance-oversight"] });
+  };
+
+  // Inlined: useIngestComplianceDoc
+  const ingest = useMutation({
+    mutationFn: (input: IngestInput) => api.post<{ data: ComplianceDocRow }>("/compliance-documents", input),
+    onSuccess: invalidateCompliance,
+  });
+
+  // Inlined: useTrackComplianceActions
+  const track = useMutation({
+    mutationFn: (vars: { documentId: string; taskIds?: string[] }) =>
+      api.post<{ data: { created_count: number; created_task_ids: string[]; all_tracked: boolean } }>(`/compliance-documents/${vars.documentId}/track`, { taskIds: vars.taskIds }),
+    onSuccess: invalidateCompliance,
+  });
+
   const o = oversight.data?.data;
 
   const [title, setTitle] = useState("");

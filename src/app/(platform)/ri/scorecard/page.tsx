@@ -2,6 +2,7 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -13,7 +14,12 @@ import { useRiChallengeLogs, useRiAlerts, useRiReg45Evidence, useTrainingNeeds }
 import { useIncidents } from "@/hooks/use-incidents";
 import { useSupervisions } from "@/hooks/use-supervision";
 import { useTraining } from "@/hooks/use-training";
-import { useAudits } from "@/hooks/use-audits";
+
+// Types from use-audits
+export interface AuditsResponse {
+  data: any[];
+  meta: { total: number; completed: number; scheduled: number; in_progress: number; overdue: number };
+}
 import { useForms } from "@/hooks/use-forms";
 import { useDailyLog } from "@/hooks/use-daily-log";
 import { useRecruitment } from "@/hooks/use-recruitment";
@@ -126,8 +132,22 @@ export default function ScorecardPage() {
   const { data: incidentsData } = useIncidents();
   const { data: supervisionData } = useSupervisions();
   const { data: trainingRecordsData } = useTraining();
-  const { data: auditsData } = useAudits();
-  const { data: medicationAuditsData } = useAudits({ category: "medication" });
+  // Inlined: useAudits (2x with different params)
+  const { data: auditsData } = useQuery({
+    queryKey: ["audits", undefined],
+    queryFn: () => {
+      const query = new URLSearchParams();
+      return api.get<AuditsResponse>(`/audits?${query}`);
+    },
+  });
+  const { data: medicationAuditsData } = useQuery({
+    queryKey: ["audits", { category: "medication" }],
+    queryFn: () => {
+      const query = new URLSearchParams();
+      query.set("category", "medication");
+      return api.get<AuditsResponse>(`/audits?${query}`);
+    },
+  });
   const { data: formsData } = useForms();
   const { data: dailyLogData } = useDailyLog({ days: 30 });
   const { data: recruitmentData } = useRecruitment();

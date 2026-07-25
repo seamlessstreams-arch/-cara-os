@@ -1,11 +1,23 @@
 "use client";
 
-import {
-  useStaffWellbeingSupervisionIntelligence,
-  type StaffWellbeingProfile,
-  type WellbeingSignal,
-  type TeamSignal,
-} from "@/hooks/use-staff-wellbeing-supervision-intelligence";
+import { useQuery } from "@tanstack/react-query";
+
+// Types from use-staff-wellbeing-supervision-intelligence
+export interface StaffWellbeingSupervisionResponse {
+  data: {
+    supervisions: StaffWellbeingProfile[];
+    summary: {
+      totalSupervisions: number;
+      avgWellbeingScore: number;
+      avgConfidenceLevel: number;
+      supportNeededCount: number;
+      overdueFollowUps: number;
+      overdueActionsTotal: number;
+      topTrainingNeeds: Array<{ need: string; count: number }>;
+      teamSignal: TeamSignal;
+    };
+  };
+}
 
 const SIGNAL_CONFIG: Record<
   WellbeingSignal,
@@ -158,7 +170,16 @@ function StaffSupervisionCard({ profile }: { profile: StaffWellbeingProfile }) {
 }
 
 export default function StaffWellbeingSupervisionPage() {
-  const { data, isLoading, error } = useStaffWellbeingSupervisionIntelligence();
+  // Inlined: useStaffWellbeingSupervisionIntelligence
+  const { data, isLoading, error } = useQuery<StaffWellbeingSupervisionResponse>({
+    queryKey: ["staff-wellbeing-supervision-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-wellbeing-supervision-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch staff wellbeing supervision intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
 
   if (isLoading) {
     return (

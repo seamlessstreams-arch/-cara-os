@@ -2,6 +2,8 @@
 
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,8 +15,32 @@ import {
   ShieldAlert, Clock, ArrowRight,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
-import { useAudit, useUpdateAudit, type AuditFinding } from "@/hooks/use-audits";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
+import type { Audit } from "@/types/extended";
+
+// Types from use-audits
+export interface AuditFinding {
+  id: string;
+  area: string;
+  description: string;
+  severity: "critical" | "high" | "medium" | "low";
+  standard_ref?: string;
+  action_required: string;
+  owner: string;
+  due_date: string;
+  status: "open" | "in_progress" | "resolved";
+}
+
+export interface AuditDetail extends Audit {
+  completed_by_name: string | null;
+  findings_detail: AuditFinding[];
+  linked_training_needs: Array<{
+    id: string;
+    title: string;
+    priority: string;
+    status: string;
+  }>;
+}
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import { PrintButton } from "@/components/common/print-button";
@@ -165,8 +191,22 @@ export default function AuditDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { data, isLoading } = useAudit(id);
-  const updateAudit = useUpdateAudit();
+  const qc = useQueryClient();
+
+  // Inlined: useAudit
+  const { data, isLoading } = useQuery({
+    queryKey: ["audit", id],
+    queryFn: () => api.get<{ data: AuditDetail }>(`/audits/${id}`),
+    enabled: !!id,
+  });
+
+  // Inlined: useUpdateAudit
+  const updateAudit = useMutation({
+    mutationFn: ({ id, data: auditData }: { id: string; data: Partial<Audit> }) =>
+      api.patch<{ data: Audit }>(`/audits/${id}`, auditData),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["audits"] }),
+  });
+
   const [showCara, setShowCara] = useState(false);
   const [needsCreated, setNeedsCreated] = useState<Set<string>>(new Set());
 

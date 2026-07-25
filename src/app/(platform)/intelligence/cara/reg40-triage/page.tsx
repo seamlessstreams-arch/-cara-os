@@ -10,6 +10,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,15 +21,23 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   ShieldAlert, RefreshCw, Send, XCircle, ArrowUpRight, FileWarning,
 } from "lucide-react";
-import {
-  useReg40Queue,
-  useScanReg40,
-  useDecideReg40,
-} from "@/hooks/use-cara-reg40-triage";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import { reg40Label } from "@/lib/cara/cara-reg40-triage";
 import type { CaraReg40Triage, Reg40TriageStatus } from "@/types/cara-studio";
+
+// Types from use-cara-reg40-triage
+interface ListResponse {
+  data: CaraReg40Triage[];
+}
+
+interface DecisionResponse {
+  data: CaraReg40Triage;
+}
+
+interface ScanResponse {
+  data: { created: CaraReg40Triage[] };
+}
 
 const HOME_ID = "home_oak";
 
@@ -50,7 +60,24 @@ function PendingTriageCard({
   const [notifyRef, setNotifyRef] = useState("");
   const [note, setNote] = useState("");
   const [mode, setMode] = useState<"notify" | "dismiss" | "escalate" | null>(null);
-  const decide = useDecideReg40();
+  const qc = useQueryClient();
+
+  // Inlined: useDecideReg40
+  const decide = useMutation({
+    mutationFn: (input: {
+      triage_id: string;
+      action: "notify" | "dismiss" | "escalate";
+      note?: string;
+      notification_ref?: string;
+      actor_id?: string;
+      actor_role?: string;
+    }) => api.post<DecisionResponse>("/cara-studio/reg40-triage", input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-reg40-queue"] });
+      qc.invalidateQueries({ queryKey: ["cara-management-oversight"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
+    },
+  });
 
   const submit = () => {
     if (mode === "notify" && !notifyRef.trim()) return;
@@ -184,10 +211,46 @@ function DecidedCard({ rec }: { rec: CaraReg40Triage }) {
 
 export default function Reg40TriagePage() {
   const { currentUser } = useAuthContext();
+  const qc = useQueryClient();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
-  const pending = useReg40Queue(HOME_ID, "pending");
-  const all = useReg40Queue(HOME_ID);
-  const scan = useScanReg40();
+
+  // Inlined: useReg40Queue (2x)
+  const pending = useQuery({
+    queryKey: ["cara-reg40-queue", HOME_ID, "pending"],
+    queryFn: () => {
+      const qs = new URLSearchParams({ home_id: HOME_ID });
+      qs.set("status", "pending");
+      return api.get<ListResponse>(
+        `/cara-studio/reg40-triage?${qs.toString()}`,
+      );
+    },
+    refetchInterval: 30000,
+  });
+
+  const all = useQuery({
+    queryKey: ["cara-reg40-queue", HOME_ID, "all"],
+    queryFn: () => {
+      const qs = new URLSearchParams({ home_id: HOME_ID });
+      return api.get<ListResponse>(
+        `/cara-studio/reg40-triage?${qs.toString()}`,
+      );
+    },
+    refetchInterval: 30000,
+  });
+
+  // Inlined: useScanReg40
+  const scan = useMutation({
+    mutationFn: (input: { home_id: string; actor_id?: string; actor_role?: string }) =>
+      api.post<ScanResponse>("/cara-studio/reg40-triage", {
+        ...input,
+        action: "scan",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-reg40-queue"] });
+      qc.invalidateQueries({ queryKey: ["cara-management-oversight"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
+    },
+  });
 
   const decided = (all.data?.data ?? []).filter((r) => r.status !== "pending");
 

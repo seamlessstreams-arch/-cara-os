@@ -9,16 +9,29 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useIncidents } from "@/hooks/use-incidents";
-import { useWelfareChecks } from "@/hooks/use-welfare-checks";
+import { api } from "@/hooks/use-api";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn, formatRelative } from "@/lib/utils";
 import {
   AlertTriangle, CheckCircle2, Loader2, Shield, Eye,
   ChevronRight, Clock, ArrowUpRight, Flame,
 } from "lucide-react";
+
+interface WelfareChecksResponse {
+  data: any[];
+  checks: any[];
+  meta: {
+    total_rounds: number;
+    today_rounds: number;
+    total_checks: number;
+    concerns_flagged: number;
+    consecutive_days: number;
+  };
+}
 
 interface ConcernItem {
   id: string;
@@ -40,7 +53,14 @@ const SEVERITY_CONFIG = {
 
 export function ConcernEscalation() {
   const { data: incidentsData, isLoading: incLoading } = useIncidents();
-  const { data: welfareData, isLoading: wcLoading } = useWelfareChecks();
+
+  // useWelfareChecks inline (no params)
+  const { data: welfareData, isLoading: wcLoading } = useQuery<WelfareChecksResponse>({
+    queryKey: ["welfare-checks", {}],
+    queryFn: () => api.get<WelfareChecksResponse>("/welfare-checks").then((r) => r),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
 
   const isLoading = incLoading || wcLoading;
 

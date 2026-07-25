@@ -1,10 +1,11 @@
 "use client";
 
-import { usePeerSafeguardingMap } from "@/hooks/use-peer-safeguarding-map";
+import { useQuery } from "@tanstack/react-query";
 import type {
   PeerPairProfile,
   PairEntry,
   GroupAssessment,
+  PeerSafeguardingMapResponse,
 } from "@/hooks/use-peer-safeguarding-map";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -304,7 +305,16 @@ function GroupAssessmentPanel({ ga }: { ga: GroupAssessment }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PeerSafeguardingMapPage() {
-  const { data, isLoading, error } = usePeerSafeguardingMap();
+  const { data, isLoading, error } = useQuery<PeerSafeguardingMapResponse>({
+    queryKey: ["peer-safeguarding-map"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/peer-safeguarding-map");
+      if (!res.ok) throw new Error("Failed to fetch peer safeguarding map");
+      const json = await res.json();
+      return json.data as PeerSafeguardingMapResponse;
+    },
+    staleTime: 120_000,
+  });
 
   if (isLoading) {
     return (

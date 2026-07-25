@@ -1,17 +1,64 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Pill, CheckCircle, Clock } from "lucide-react";
-import {
-  useMedicationErrorPatternIntelligence,
-  type ChildErrorProfile,
-  type ErrorSignal,
-  type HomePattern,
-} from "@/hooks/use-medication-error-pattern-intelligence";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type ErrorSignal = "alert" | "attention" | "monitoring" | "safe";
+
+interface PendingAction {
+  action: string;
+  owner: string;
+  dueDate: string;
+  overdue: boolean;
+}
+
+interface ChildErrorProfile {
+  childId: string;
+  childName: string;
+  totalErrors: number;
+  last30dErrors: number;
+  severityBreakdown: Record<string, number>;
+  mostCommonErrorType: string | null;
+  openDoC: boolean;
+  docCompletionDate: string | null;
+  pendingActions: PendingAction[];
+  openOrActiveErrors: number;
+  recentMedications: string[];
+  signal: ErrorSignal;
+  supervisionPrompt: string;
+}
+
+interface HomePattern {
+  factorLabel: string;
+  count: number;
+}
+
+interface MedicationErrorSummary {
+  totalErrors: number;
+  last30dErrors: number;
+  openErrors: number;
+  moderateOrSevereCount: number;
+  openDoCCount: number;
+  overdueActionsCount: number;
+  topContributingFactors: HomePattern[];
+  recurringErrorTypes: HomePattern[];
+  eveningRoundRisk: boolean;
+  ofstedNote: string;
+}
+
+interface MedicationErrorPatternResponse {
+  data: {
+    childProfiles: ChildErrorProfile[];
+    summary: MedicationErrorSummary;
+  };
+}
 
 // ── Signal helpers ─────────────────────────────────────────────────────────────
 
@@ -229,7 +276,15 @@ type Filter = "all" | ErrorSignal;
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function MedicationErrorPatternsPage() {
-  const { data, isLoading, error } = useMedicationErrorPatternIntelligence();
+  const { data, isLoading, error } = useQuery<MedicationErrorPatternResponse>({
+    queryKey: ["medication-error-pattern-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/medication-error-pattern-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch medication error pattern intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
   const [filter, setFilter] = useState<Filter>("all");
 
   if (isLoading) {

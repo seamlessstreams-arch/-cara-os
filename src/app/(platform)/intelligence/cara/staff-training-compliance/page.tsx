@@ -1,18 +1,69 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle, Clock, GraduationCap } from "lucide-react";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import {
-  useStaffTrainingComplianceIntelligence,
-  type StaffTrainingProfile,
-  type TrainingSignal,
-  type CategoryRisk,
-} from "@/hooks/use-staff-training-compliance-intelligence";
+
+// Types from use-staff-training-compliance-intelligence
+export type TrainingSignalInline = "non_compliant" | "expiring" | "compliant" | "not_recorded";
+
+export interface TrainingIssue {
+  courseName: string;
+  category: string;
+  status: string;
+  expiryDate: string | null;
+  notes: string | null;
+}
+
+export interface StaffTrainingProfileInline {
+  staffId: string;
+  staffName: string;
+  role: string;
+  totalRecords: number;
+  mandatoryTotal: number;
+  mandatoryCompliant: number;
+  mandatoryExpiringSoon: number;
+  mandatoryExpired: number;
+  mandatoryNotStarted: number;
+  complianceRate: number | null;
+  issues: TrainingIssue[];
+  signal: TrainingSignalInline;
+  supervisionPrompt: string;
+}
+
+export interface CategoryRiskInline {
+  category: string;
+  affectedStaff: number;
+  statuses: string[];
+}
+
+export interface TrainingComplianceSummary {
+  totalStaff: number;
+  compliantStaff: number;
+  notRecordedStaff: number;
+  expiringStaff: number;
+  nonCompliantStaff: number;
+  overallMandatoryComplianceRate: number | null;
+  totalMandatoryRecords: number;
+  compliantMandatoryRecords: number;
+  expiringSoonRecords: number;
+  expiredRecords: number;
+  notStartedRecords: number;
+  categoriesAtRisk: CategoryRiskInline[];
+  ofstedNote: string;
+}
+
+export interface StaffTrainingComplianceResponse {
+  data: {
+    staffProfiles: StaffTrainingProfile[];
+    summary: TrainingComplianceSummary;
+  };
+}
 
 // ── Signal helpers ─────────────────────────────────────────────────────────────
 
@@ -214,7 +265,17 @@ type Filter = "all" | TrainingSignal;
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function StaffTrainingCompliancePage() {
-  const { data, isLoading, error } = useStaffTrainingComplianceIntelligence();
+  // Inlined: useStaffTrainingComplianceIntelligence
+  const { data, isLoading, error } = useQuery<StaffTrainingComplianceResponse>({
+    queryKey: ["staff-training-compliance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-training-compliance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch staff training compliance intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+
   const [filter, setFilter] = useState<Filter>("all");
 
   if (isLoading) {

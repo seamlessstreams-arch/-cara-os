@@ -6,6 +6,7 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -18,7 +19,6 @@ import {
   useTrainingNeeds, useRiAlerts, useRiChallengeLogs,
 } from "@/hooks/use-ri-learning";
 import { useIncidents } from "@/hooks/use-incidents";
-import { useAudits } from "@/hooks/use-audits";
 import { useSupervisions } from "@/hooks/use-supervision";
 import type { RiReg45Evidence } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
@@ -28,6 +28,12 @@ import {
   Users, Zap, Copy, ChevronRight,
 } from "lucide-react";
 import { api } from "@/hooks/use-api";
+
+// Types from use-audits
+export interface AuditsResponse {
+  data: any[];
+  meta: { total: number; completed: number; scheduled: number; in_progress: number; overdue: number };
+}
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -191,7 +197,14 @@ function LiveEvidencePanel({ onUseContext }: { onUseContext: (text: string) => v
   const { data: needsData } = useTrainingNeeds({ homeId: homeId });
   const { data: alertData } = useRiAlerts({ homeId: homeId });
   const { data: incidentsData } = useIncidents();
-  const { data: auditsData } = useAudits();
+  // Inlined: useAudits
+  const { data: auditsData } = useQuery({
+    queryKey: ["audits", undefined],
+    queryFn: () => {
+      const query = new URLSearchParams();
+      return api.get<AuditsResponse>(`/audits?${query}`);
+    },
+  });
   const { data: supervisionData } = useSupervisions();
   const { data: challengeData } = useRiChallengeLogs({ homeId: homeId });
 

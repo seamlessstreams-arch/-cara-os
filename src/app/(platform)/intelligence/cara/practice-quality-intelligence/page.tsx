@@ -1,11 +1,55 @@
 "use client";
 
-import { usePracticeQualityIntelligence } from "@/hooks/use-practice-quality-intelligence";
-import type {
-  ChildPracticeProfile,
-  PracticeAssessment,
-  DomainScore,
-} from "@/hooks/use-practice-quality-intelligence";
+import { useQuery } from "@tanstack/react-query";
+
+// Types from use-practice-quality-intelligence
+type PracticeSignal = "concern" | "attention" | "good";
+
+export type DomainScoreInline = {
+  domain: string;
+  label: string;
+  score: number;
+  signal: PracticeSignal;
+};
+
+export type PracticeAssessmentInline = {
+  id: string;
+  sourceType: string;
+  status: string;
+  overallScore: number;
+  createdBy: string;
+  createdAt: string;
+  summary: string;
+  domainScores: DomainScoreInline[];
+  hasManagerDecision: boolean;
+  managerDecision: string | null;
+};
+
+export type ChildPracticeProfileInline = {
+  childId: string;
+  childName: string;
+  signal: PracticeSignal;
+  assessmentCount: number;
+  openCount: number;
+  latestOverallScore: number | null;
+  weakestDomains: DomainScoreInline[];
+  assessments: PracticeAssessmentInline[];
+};
+
+export type PracticeQualitySummary = {
+  totalAssessments: number;
+  openAssessments: number;
+  awaitingManagerReview: number;
+  avgOverallScore: number | null;
+  childrenAtConcern: number;
+  childrenAtAttention: number;
+  overallSignal: PracticeSignal;
+};
+
+export type PracticeQualityResponse = {
+  profiles: ChildPracticeProfileInline[];
+  summary: PracticeQualitySummary;
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -214,7 +258,18 @@ function ChildPracticeCard({ profile }: { profile: ChildPracticeProfile }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PracticeQualityIntelligencePage() {
-  const { data, isLoading, error } = usePracticeQualityIntelligence();
+  // Inlined: usePracticeQualityIntelligence
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["practice-quality-intelligence"],
+    queryFn: async (): Promise<PracticeQualityResponse> => {
+      const res = await fetch("/api/v1/practice-quality-intelligence");
+      if (!res.ok)
+        throw new Error("Failed to fetch practice quality intelligence");
+      const json = await res.json();
+      return json.data as PracticeQualityResponse;
+    },
+    staleTime: 120_000,
+  });
 
   if (isLoading) {
     return (

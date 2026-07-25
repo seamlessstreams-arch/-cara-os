@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PageGuidance } from "@/components/ui/page-guidance";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,6 @@ import {
   Sun, AlertTriangle, UserX, CheckCircle2, Loader2, X,
   Search, BarChart3, Timer, ArrowLeftRight, ShieldAlert, Ban,
 } from "lucide-react";
-import { useRota, useCreateShift, useAssignShift } from "@/hooks/use-rota";
 import { useStaff } from "@/hooks/use-staff";
 import { useShiftSwaps, useCreateSwapRequest } from "@/hooks/use-shift-swaps";
 import { cn, todayStr, formatDate } from "@/lib/utils";
@@ -22,10 +22,44 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton } from "@/components/common/export-button";
 import type { ExportColumn } from "@/components/common/export-button";
-import type { Shift } from "@/types";
+import type { Shift, LeaveRequest } from "@/types";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { api } from "@/hooks/use-api";
+
+// Types from use-rota
+export interface RotaMeta {
+  week_start: string;
+  week_end: string;
+  on_shift_today: number;
+  sleep_ins_tonight: number;
+  open_shifts: number;
+  on_leave_today: number;
+  late_arrivals: number;
+  open_shift_dates: { date: string; start: string; end: string; type: string }[];
+}
+
+export interface RotaResponse {
+  shifts: Shift[];
+  leave: LeaveRequest[];
+  meta: RotaMeta;
+}
+
+export interface CreateShiftInput {
+  staff_id: string;
+  date: string;
+  shift_type: string;
+  start_time: string;
+  end_time: string;
+  notes?: string;
+  home_id?: string;
+}
+
+export interface AssignShiftInput {
+  shift_date: string;
+  start_time: string;
+  staff_id: string;
+}
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -110,10 +144,35 @@ export default function RotaPage() {
   const [absenceReason, setAbsenceReason] = useState<"sick" | "emergency" | "no-show" | "other">("sick");
   const [absenceNotes, setAbsenceNotes] = useState("");
 
-  const rotaQuery = useRota(weekStart);
+  const qc = useQueryClient();
+
+  // Inlined: useRota
+  const rotaQuery = useQuery({
+    queryKey: ["rota", weekStart],
+    queryFn: () => api.get<RotaResponse>(`/rota?week_start=${weekStart}`),
+    enabled: !!weekStart,
+  });
+
   const staffQuery = useStaff();
-  const createShift = useCreateShift(weekStart);
-  const assignShift = useAssignShift(weekStart);
+
+  // Inlined: useCreateShift
+  const createShift = useMutation({
+    mutationFn: (data: CreateShiftInput) =>
+      api.post<{ data: Shift }>("/rota", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["rota", weekStart] });
+    },
+  });
+
+  // Inlined: useAssignShift
+  const assignShift = useMutation({
+    mutationFn: (data: AssignShiftInput) =>
+      api.patch<{ data: Shift }>("/rota", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["rota", weekStart] });
+    },
+  });
+
   const swapsQuery = useShiftSwaps();
   const createSwap = useCreateSwapRequest();
 

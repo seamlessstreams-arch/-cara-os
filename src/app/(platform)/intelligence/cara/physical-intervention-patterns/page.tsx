@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
-import { usePhysicalInterventionPatternIntelligence } from "@/hooks/use-physical-intervention-pattern-intelligence";
 import type {
   ChildPISignal,
   PITrend,
   ChildPIProfile,
   StaffPIProfile,
+  PhysicalInterventionPatternResponse,
 } from "@/hooks/use-physical-intervention-pattern-intelligence";
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
@@ -184,7 +185,15 @@ type ViewMode = "children" | "staff";
 type Filter = ChildPISignal | "all";
 
 export default function PhysicalInterventionPatternsPage() {
-  const { data, isLoading, isError } = usePhysicalInterventionPatternIntelligence();
+  const { data, isLoading, isError } = useQuery<PhysicalInterventionPatternResponse>({
+    queryKey: ["physical-intervention-pattern-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/physical-intervention-pattern-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch physical intervention pattern intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
   const [viewMode, setViewMode] = useState<ViewMode>("children");
   const [filter, setFilter] = useState<Filter>("all");
 

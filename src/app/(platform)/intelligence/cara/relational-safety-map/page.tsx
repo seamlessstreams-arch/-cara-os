@@ -1,14 +1,61 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
-import { useRelationalSafetyMap } from "@/hooks/use-relational-safety-map";
-import type {
-  RelationalStatus,
-  KeyWorkFrequency,
-  ChildRelationalProfile,
-  RelationalSafetyMapSummary,
-} from "@/hooks/use-relational-safety-map";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type RelationalStatus = "secure" | "developing" | "fragile";
+type KeyWorkFrequency = "regular" | "intermittent" | "absent";
+
+interface StaffSnapshot {
+  id: string;
+  fullName: string;
+  jobTitle: string;
+}
+
+interface ChildRelationalProfile {
+  childId: string;
+  childName: string;
+  placementStatus: string;
+  keyWorkerAssigned: boolean;
+  keyWorker: StaffSnapshot | null;
+  secondaryWorker: StaffSnapshot | null;
+  totalKeyWorkSessions: number;
+  sessionsLast30d: number;
+  sessionsLast90d: number;
+  lastKeyWorkDate: string | null;
+  keyWorkFrequency: KeyWorkFrequency;
+  keyWorkStaffIds: string[];
+  hasPaceProfile: boolean;
+  trustedAdultCount: number;
+  trustedAdults: string[];
+  incidentsLast30d: number;
+  incidentsLast90d: number;
+  status: RelationalStatus;
+  statusReason: string;
+  supervisionPrompt: string;
+}
+
+interface RelationalSafetyMapSummary {
+  totalChildren: number;
+  secureCount: number;
+  developingCount: number;
+  fragileCount: number;
+  noKeyWorkerAssigned: number;
+  noKeyWorkLast30d: number;
+  noPaceProfile: number;
+  fragileWithElevatedIncidents: number;
+  overallStatus: "positive" | "mixed" | "concern";
+}
+
+interface RelationalSafetyMapResponse {
+  data: {
+    childProfiles: ChildRelationalProfile[];
+    summary: RelationalSafetyMapSummary;
+  };
+}
 
 // ── Visual constants ──────────────────────────────────────────────────────────
 
@@ -180,7 +227,15 @@ function OverallBanner({ summary }: { summary: RelationalSafetyMapSummary }) {
 type Filter = "all" | "fragile" | "developing" | "secure";
 
 export default function RelationalSafetyMapPage() {
-  const { data, isLoading, isError } = useRelationalSafetyMap();
+  const { data, isLoading, isError } = useQuery<RelationalSafetyMapResponse>({
+    queryKey: ["relational-safety-map"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/relational-safety-map");
+      if (!res.ok) throw new Error("Failed to fetch relational safety map");
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
   const [filter, setFilter] = useState<Filter>("all");
 
   return (

@@ -9,9 +9,10 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useWelfareChecks } from "@/hooks/use-welfare-checks";
+import { api } from "@/hooks/use-api";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn, daysFromNow } from "@/lib/utils";
 import {
@@ -19,6 +20,18 @@ import {
   Shield, BedDouble, Sun, Clock,
 } from "lucide-react";
 import type { WelfareCheckRound, WelfareCheckStatus } from "@/types/extended";
+
+interface WelfareChecksResponse {
+  data: WelfareCheckRound[];
+  checks: any[];
+  meta: {
+    total_rounds: number;
+    today_rounds: number;
+    total_checks: number;
+    concerns_flagged: number;
+    consecutive_days: number;
+  };
+}
 
 const STATUS_EMOJI: Record<WelfareCheckStatus, { icon: React.ElementType; color: string }> = {
   ok:          { icon: CheckCircle2,  color: "text-emerald-500" },
@@ -31,7 +44,17 @@ const STATUS_EMOJI: Record<WelfareCheckStatus, { icon: React.ElementType; color:
 
 export function NightSummary() {
   const yesterday = daysFromNow(-1);
-  const { data, isLoading } = useWelfareChecks({ date: yesterday });
+
+  // useWelfareChecks inline with date param
+  const searchParams = new URLSearchParams();
+  searchParams.set("date", yesterday);
+  const qs = searchParams.toString();
+  const { data, isLoading } = useQuery<WelfareChecksResponse>({
+    queryKey: ["welfare-checks", { date: yesterday }],
+    queryFn: () => api.get<WelfareChecksResponse>(`/welfare-checks${qs ? `?${qs}` : ""}`).then((r) => r),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
 
   const rounds = data?.data ?? [];
   const meta = data?.meta;

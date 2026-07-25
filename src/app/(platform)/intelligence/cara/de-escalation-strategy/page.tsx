@@ -1,19 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, Star, Clock } from "lucide-react";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import {
-  useDeEscalationStrategyIntelligence,
-  type ChildBehaviourProfile,
-  type BehaviourSignal,
-  type StrategyResult,
-  type TimeSlot,
-  type StaffEngagementProfile,
+import type {
+  ChildBehaviourProfile,
+  BehaviourSignal,
+  StrategyResult,
+  TimeSlot,
+  StaffEngagementProfile,
+  DeEscalationStrategyResponse,
 } from "@/hooks/use-de-escalation-strategy-intelligence";
 
 // ── Signal helpers ─────────────────────────────────────────────────────────────
@@ -190,7 +191,15 @@ type Filter = "all" | BehaviourSignal;
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function DeEscalationStrategyPage() {
-  const { data, isLoading, error } = useDeEscalationStrategyIntelligence();
+  const { data, isLoading, error } = useQuery<DeEscalationStrategyResponse>({
+    queryKey: ["de-escalation-strategy-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/de-escalation-strategy-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch de-escalation strategy intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
   const [filter, setFilter] = useState<Filter>("all");
 
   if (isLoading) {

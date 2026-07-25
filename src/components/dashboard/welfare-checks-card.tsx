@@ -9,10 +9,25 @@
 
 import React, { useMemo } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useWelfareChecks } from "@/hooks/use-welfare-checks";
+import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface WelfareChecksResponse {
+  data: any[];
+  checks: any[];
+  meta: {
+    total_rounds: number;
+    today_rounds: number;
+    total_checks: number;
+    concerns_flagged: number;
+    consecutive_days: number;
+  };
+}
 import {
   Eye, Loader2, AlertTriangle, CheckCircle2,
   Clock, Shield, Flame,
@@ -21,7 +36,13 @@ import {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function WelfareChecksCard() {
-  const { data, isPending } = useWelfareChecks();
+  // useWelfareChecks inline (no params)
+  const { data, isPending } = useQuery<WelfareChecksResponse>({
+    queryKey: ["welfare-checks", {}],
+    queryFn: () => api.get<WelfareChecksResponse>("/welfare-checks").then((r) => r),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
   const meta = data?.meta;
   const rounds = data?.data ?? [];
   const checks = data?.checks ?? [];

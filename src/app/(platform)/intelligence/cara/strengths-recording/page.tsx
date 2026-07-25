@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,13 +18,61 @@ import {
   Star, TrendingUp, ChevronDown, ChevronUp, Sparkles,
   AlertCircle, CheckCircle2, Award, User, Users,
 } from "lucide-react";
-import {
-  useStrengthsRecordingIndex,
-  type StrengthCategory,
-  type StaffStrengthsProfile,
-  type ChildStrengthsProfile,
-  type CategoryResult,
-} from "@/hooks/use-strengths-recording-index";
+import { api } from "@/hooks/use-api";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type StrengthCategory =
+  | "achievement"
+  | "positive_connection"
+  | "resilience_coping"
+  | "voice_agency"
+  | "positive_mood";
+
+interface StaffStrengthsProfile {
+  staffId: string;
+  name: string;
+  totalRecords: number;
+  recordsWithStrengths: number;
+  strengthsRate: number | null;
+  markerCount: number;
+  topCategory: StrengthCategory | null;
+  topCategoryLabel: string | null;
+  recognitionNote: string;
+}
+
+interface ChildStrengthsProfile {
+  childId: string;
+  name: string;
+  totalRecords: number;
+  recordsWithStrengths: number;
+  strengthsRate: number | null;
+  topStrengthPhrase: string | null;
+}
+
+interface CategoryResult {
+  category: StrengthCategory;
+  label: string;
+  totalCount: number;
+  topPhrase: string | null;
+}
+
+interface StrengthsRecordingSummary {
+  overallRate: number;
+  totalRecords: number;
+  totalWithStrengths: number;
+  topPractitioner: { staffId: string; name: string; rate: number | null } | null;
+  mostDocumentedChild: { childId: string; name: string; rate: number | null } | null;
+  topStrengthsCategory: StrengthCategory | null;
+  topStrengthsCategoryLabel: string | null;
+}
+
+interface StrengthsRecordingIndexResponse {
+  staffProfiles: StaffStrengthsProfile[];
+  childProfiles: ChildStrengthsProfile[];
+  categoryResults: CategoryResult[];
+  summary: StrengthsRecordingSummary;
+}
 
 // ── Category styling ──────────────────────────────────────────────────────────
 
@@ -157,7 +206,12 @@ function SummaryTile({ label, value, sub }: { label: string; value: string | num
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function StrengthsRecordingPage() {
-  const { data: res, isLoading, isError } = useStrengthsRecordingIndex();
+  const { data: res, isLoading, isError } = useQuery({
+    queryKey: ["strengths-recording-index"],
+    queryFn: () =>
+      api.get<{ data: StrengthsRecordingIndexResponse }>("/strengths-recording-index"),
+    staleTime: 120_000,
+  });
   const [showAll, setShowAll] = useState(false);
 
   const payload  = res?.data;

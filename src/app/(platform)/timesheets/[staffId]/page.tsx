@@ -2,6 +2,8 @@
 
 import { use, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,12 +16,29 @@ import {
 } from "lucide-react";
 import { cn, formatDate, daysFromNow } from "@/lib/utils";
 import { useStaff } from "@/hooks/use-staff";
-import { useRota } from "@/hooks/use-rota";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
-import type { Shift } from "@/types";
+import type { Shift, LeaveRequest } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+
+// Types from use-rota
+export interface RotaMeta {
+  week_start: string;
+  week_end: string;
+  on_shift_today: number;
+  sleep_ins_tonight: number;
+  open_shifts: number;
+  on_leave_today: number;
+  late_arrivals: number;
+  open_shift_dates: { date: string; start: string; end: string; type: string }[];
+}
+
+export interface RotaResponse {
+  shifts: Shift[];
+  leave: LeaveRequest[];
+  meta: RotaMeta;
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -152,9 +171,22 @@ export default function TimesheetDetailPage({
   );
 
   // 3-week window matching timesheets list logic
-  const rotaThisWeek = useRota(daysFromNow(0));
-  const rotaLastWeek = useRota(daysFromNow(-7));
-  const rotaPrevWeek = useRota(daysFromNow(-14));
+  // Inlined: useRota (3x)
+  const rotaThisWeek = useQuery({
+    queryKey: ["rota", daysFromNow(0)],
+    queryFn: () => api.get<RotaResponse>(`/rota?week_start=${daysFromNow(0)}`),
+    enabled: !!daysFromNow(0),
+  });
+  const rotaLastWeek = useQuery({
+    queryKey: ["rota", daysFromNow(-7)],
+    queryFn: () => api.get<RotaResponse>(`/rota?week_start=${daysFromNow(-7)}`),
+    enabled: !!daysFromNow(-7),
+  });
+  const rotaPrevWeek = useQuery({
+    queryKey: ["rota", daysFromNow(-14)],
+    queryFn: () => api.get<RotaResponse>(`/rota?week_start=${daysFromNow(-14)}`),
+    enabled: !!daysFromNow(-14),
+  });
 
   const allShifts = useMemo<Shift[]>(
     () => [

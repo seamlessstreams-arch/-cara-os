@@ -1,11 +1,63 @@
 "use client";
 
-import { useContactSafeguardingIntelligence } from "@/hooks/use-contact-safeguarding-intelligence";
-import type {
-  ChildContactSafeguardingProfile,
-  ContactLinkedBehaviour,
-  ConcernedContactSession,
-} from "@/hooks/use-contact-safeguarding-intelligence";
+import { useQuery } from "@tanstack/react-query";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type IncidentIntensity = "low" | "medium" | "high" | "severe";
+type LinkType = "direct_trigger" | "post_contact_window";
+type ContactSafeguardingSignal = "concern" | "attention" | "stable";
+
+type ContactLinkedBehaviour = {
+  id: string;
+  date: string;
+  title: string;
+  direction: string;
+  intensity: IncidentIntensity;
+  trigger: string;
+  antecedent: string;
+  outcome: string;
+  linkType: LinkType;
+};
+
+type ConcernedContactSession = {
+  id: string;
+  date: string;
+  familyMember: string;
+  concerns: string[];
+  wasSafe: boolean;
+};
+
+type ChildContactSafeguardingProfile = {
+  childId: string;
+  childName: string;
+  signal: ContactSafeguardingSignal;
+  contactLinkedBehaviours: ContactLinkedBehaviour[];
+  concernedContactSessions: ConcernedContactSession[];
+  daysSinceLastContact: number | null;
+  dominantPattern: string | null;
+  highestSeverity: IncidentIntensity | null;
+};
+
+type ContactSafeguardingSummary = {
+  totalChildrenInScope: number;
+  totalContactLinkedIncidents: number;
+  childrenWithConcern: number;
+  childrenWithAttention: number;
+  overallSignal: ContactSafeguardingSignal;
+};
+
+type ContactSafeguardingResponse = {
+  profiles: ChildContactSafeguardingProfile[];
+  summary: ContactSafeguardingSummary;
+};
+
+async function fetchContactSafeguardingIntelligence(): Promise<ContactSafeguardingResponse> {
+  const res = await fetch("/api/v1/contact-safeguarding-intelligence");
+  if (!res.ok) throw new Error("Failed to fetch contact safeguarding intelligence");
+  const json = await res.json();
+  return json.data as ContactSafeguardingResponse;
+}
 
 // ── Signal helpers ────────────────────────────────────────────────────────────
 
@@ -225,7 +277,11 @@ function ChildContactCard({ profile }: { profile: ChildContactSafeguardingProfil
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ContactSafeguardingIntelligencePage() {
-  const { data, isLoading, error } = useContactSafeguardingIntelligence();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["contact-safeguarding-intelligence"],
+    queryFn: fetchContactSafeguardingIntelligence,
+    staleTime: 120_000,
+  });
 
   if (isLoading) {
     return (

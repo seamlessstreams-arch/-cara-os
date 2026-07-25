@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,16 +16,36 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, Activity, AlertTriangle, ShieldCheck } from "lucide-react";
-import {
-  useLatestHomeDynamicsSnapshot,
-  useHomeDynamicsSnapshots,
-  useGenerateHomeDynamicsSnapshot,
-} from "@/hooks/use-cara-home-dynamics";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import type {
   CaraHomeDynamicsIndicator,
   CaraIndicatorStatus,
+  CaraHomeDynamicsSnapshot,
 } from "@/types/cara-studio";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface ListResponse {
+  data: CaraHomeDynamicsSnapshot[];
+  meta: { total: number };
+}
+
+interface LatestResponse {
+  data: CaraHomeDynamicsSnapshot | null;
+}
+
+interface SingleResponse {
+  data: CaraHomeDynamicsSnapshot;
+}
+
+interface GenerateInput {
+  home_id?: string;
+  window_days?: number;
+  as_of?: string;
+  actor_id?: string;
+  actor_role?: string;
+}
 
 const HOME_ID = "home_oak";
 
@@ -59,10 +80,42 @@ function IndicatorTile({ ind }: { ind: CaraHomeDynamicsIndicator }) {
 
 export default function HomeDynamicsPage() {
   const auth = useAuthContext();
-  const { data: latest, isLoading } = useLatestHomeDynamicsSnapshot(HOME_ID);
-  const { data: history } = useHomeDynamicsSnapshots(HOME_ID);
-  const generate = useGenerateHomeDynamicsSnapshot();
+  const qc = useQueryClient();
   const [windowDays, setWindowDays] = useState(28);
+
+  // useLatestHomeDynamicsSnapshot inline
+  const search1 = new URLSearchParams({ latest: "1" });
+  if (HOME_ID) search1.set("home_id", HOME_ID);
+  const { data: latest, isLoading } = useQuery({
+    queryKey: ["cara-home-dynamics", "latest", HOME_ID ?? null],
+    queryFn: () =>
+      api.get<LatestResponse>(
+        `/cara-studio/home-dynamics?${search1.toString()}`,
+      ),
+    refetchInterval: 60000,
+  });
+
+  // useHomeDynamicsSnapshots inline
+  const search2 = new URLSearchParams();
+  if (HOME_ID) search2.set("home_id", HOME_ID);
+  const qs = search2.toString();
+  const { data: history } = useQuery({
+    queryKey: ["cara-home-dynamics", "list", HOME_ID ?? null],
+    queryFn: () =>
+      api.get<ListResponse>(
+        `/cara-studio/home-dynamics${qs ? `?${qs}` : ""}`,
+      ),
+    refetchInterval: 60000,
+  });
+
+  // useGenerateHomeDynamicsSnapshot inline
+  const generate = useMutation({
+    mutationFn: (input: GenerateInput) =>
+      api.post<SingleResponse>("/cara-studio/home-dynamics", input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-home-dynamics"] });
+    },
+  });
 
   const snapshot = latest?.data ?? null;
   const historyItems = (history?.data ?? []).slice(0, 10);

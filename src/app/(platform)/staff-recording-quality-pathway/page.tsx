@@ -12,14 +12,64 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import {
-  useStaffRecordingQualityPathway,
-  type StaffRecordingProfile,
-  type KBSignal,
-} from "@/hooks/use-staff-recording-quality-pathway";
+import { api } from "@/hooks/use-api";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type KBSignal = "progressing" | "developing" | "needs_support";
+
+interface IssueStat {
+  type: string;
+  total: number;
+  accepted: number;
+  ignored: number;
+}
+
+interface KBAlignment {
+  frameworkId: string;
+  frameworkTitle: string;
+  signal: KBSignal;
+  reason: string;
+  supervisionPrompt: string;
+}
+
+interface StaffRecordingProfile {
+  staffId: string;
+  name: string;
+  jobTitle: string | null;
+  role: string | null;
+  totalFlagged: number;
+  accepted: number;
+  ignored: number;
+  acceptanceRate: number | null;
+  firstEntry: string | null;
+  latestEntry: string | null;
+  hasData: boolean;
+  issueBreakdown: IssueStat[];
+  topIssueType: string | null;
+  kbAlignment: KBAlignment[];
+  overallSignal: KBSignal;
+}
+
+interface StaffRecordingQualitySummary {
+  totalStaff: number;
+  staffWithData: number;
+  progressing: number;
+  developing: number;
+  needsSupport: number;
+  topTeamIssueType: string | null;
+  avgAcceptanceRate: number | null;
+  frameworks: Array<{ id: string; title: string; shortDesc: string }>;
+}
+
+interface StaffRecordingQualityPathwayResponse {
+  profiles: StaffRecordingProfile[];
+  summary: StaffRecordingQualitySummary;
+}
 import {
   BookOpen,
   ChevronDown,
@@ -220,7 +270,12 @@ function ProfileCard({ profile }: { profile: StaffRecordingProfile }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function StaffRecordingQualityPathwayPage() {
-  const { data, isLoading, isError } = useStaffRecordingQualityPathway();
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["staff-recording-quality-pathway"],
+    queryFn: () =>
+      api.get<{ data: StaffRecordingQualityPathwayResponse }>("/staff-recording-quality-pathway"),
+    staleTime: 60_000,
+  });
   const result = data?.data;
 
   const [filterSignal, setFilterSignal] = useState<KBSignal | "all">("all");

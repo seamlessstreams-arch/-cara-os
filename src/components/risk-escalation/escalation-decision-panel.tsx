@@ -14,16 +14,38 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2, ShieldAlert } from "lucide-react";
-import {
-  useDecideEscalation,
-  useEscalationDecisions,
-  useSuggestEscalation,
-} from "@/hooks/use-escalation-decisions";
 import { BiasReflectionPanel } from "@/components/cognitive-bias/bias-reflection-panel";
-import type { EscalationDecision, EscalationLevel } from "@/lib/risk-escalation/types";
+import type {
+  EscalationDecision,
+  EscalationLevel,
+  EscalationLevelDefinition,
+} from "@/lib/risk-escalation/types";
 import { cn } from "@/lib/utils";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+const KEY = "escalation-decisions";
+const URL = "/api/v1/escalations/decisions";
+
+interface ListResponse {
+  data: EscalationDecision[];
+  meta: { total: number };
+  levels: Record<EscalationLevel, EscalationLevelDefinition>;
+}
+
+async function postJson<T>(body: unknown): Promise<T> {
+  const res = await fetch(URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const json = (await res.json()) as T & { error?: string };
+  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  return json;
+}
 
 const LEVEL_STYLES: Record<EscalationLevel, string> = {
   low_concern: "border-[var(--cs-border,#e2e8ec)] bg-[var(--cs-surface-subtle,#f5f8f9)] text-[var(--cs-text,#14202a)]",
@@ -48,7 +70,13 @@ const FLAGS: Array<{ key: string; label: string; tier: "immediate" | "high" | "e
 
 function DecisionRow({ decision }: { decision: EscalationDecision }) {
   const [open, setOpen] = useState(false);
-  const decide = useDecideEscalation();
+  const qc = useQueryClient();
+
+  // useDecideEscalation inline
+  const decide = useMutation({
+    mutationFn: (input: Record<string, unknown>) => postJson<{ data: EscalationDecision }>({ kind: "decide", ...input }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
   const [decisionMaker, setDecisionMaker] = useState("");
   const [agreement, setAgreement] = useState<"confirmed" | "amended" | "rejected">("confirmed");
   const [amendedLevel, setAmendedLevel] = useState<EscalationLevel>("high_concern");
@@ -182,8 +210,23 @@ function DecisionRow({ decision }: { decision: EscalationDecision }) {
 }
 
 export function EscalationDecisionPanel({ childId, childName }: { childId?: string; childName?: string }) {
-  const { data, isLoading } = useEscalationDecisions({ childId });
-  const suggest = useSuggestEscalation();
+  const qc = useQueryClient();
+
+  // useEscalationDecisions inline
+  const params = new URLSearchParams();
+  if (childId) params.set("childId", childId);
+  const qs = params.toString();
+  const { data, isLoading } = useQuery<ListResponse>({
+    queryKey: [KEY, childId ?? "", ""],
+    queryFn: () => fetch(`${URL}${qs ? `?${qs}` : ""}`).then((r) => r.json()),
+    staleTime: 15 * 1000,
+  });
+
+  // useSuggestEscalation inline
+  const suggest = useMutation({
+    mutationFn: (input: Record<string, unknown>) => postJson<{ data: EscalationDecision }>({ kind: "suggest", ...input }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
   const [assessing, setAssessing] = useState(false);
   const [summary, setSummary] = useState("");
   const [sourceType, setSourceType] = useState("incidents");

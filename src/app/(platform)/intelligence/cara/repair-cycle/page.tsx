@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { meets, formatRate } from "@/lib/metrics/rate";
-import { useRepairCycleIntelligence } from "@/hooks/use-repair-cycle-intelligence";
 import type {
   CycleStatus,
   RepairStep,
   ChildRepairSummary,
+  RepairCycleIntelligenceResponse,
 } from "@/hooks/use-repair-cycle-intelligence";
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
@@ -134,7 +135,15 @@ function ChildCard({ summary }: { summary: ChildRepairSummary }) {
 type View = "children" | "incidents";
 
 export default function RepairCycleIntelligencePage() {
-  const { data, isLoading, isError } = useRepairCycleIntelligence();
+  const { data, isLoading, isError } = useQuery<RepairCycleIntelligenceResponse>({
+    queryKey: ["repair-cycle-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/repair-cycle-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch repair cycle intelligence");
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
   const [view, setView] = useState<View>("children");
   const [statusFilter, setStatusFilter] = useState<CycleStatus | "all">("all");
 

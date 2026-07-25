@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -15,7 +17,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Users, Clock, MessageCircle, ChevronUp, ChevronDown, ArrowUpDown, Search, Heart, CheckCircle, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useKeyworkSessions, useCreateKeyworkSession, type KeyworkSession } from "@/hooks/use-keywork-sessions";
+
+// Types from use-keywork-sessions
+export interface KeyworkSession {
+  id: string;
+  child_id: string;
+  staff_id: string;
+  session_date: string;
+  duration_minutes: number;
+  format: string;
+  child_chose_format: boolean;
+  themes_covered: string[];
+  child_went_in_with: string;
+  child_walked_out_with: string;
+  what_child_brought_up: string;
+  what_staff_brought_up: string;
+  agreed_actions_staff: string[];
+  agreed_actions_child: string[];
+  child_satisfaction: number;
+  follow_up_date: string;
+  flags_raised: string[];
+  notes?: string;
+  home_id?: string;
+  created_at?: string;
+}
+
+type ListResponse = { data: KeyworkSession[]; meta: { total: number; this_month: number } };
+type SingleResponse = { data: KeyworkSession };
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { type KeyworkerSessionFormat, KEYWORKER_SESSION_FORMAT_LABEL } from "@/types/extended";
@@ -41,8 +69,30 @@ const FORMAT_CLR: Record<string, string> = {
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function ChildKeyworker1to1SessionsPage() {
-  const createSession = useCreateKeyworkSession();
-  const { data: queryData, isLoading } = useKeyworkSessions();
+  const qc = useQueryClient();
+
+  // Inlined: useCreateKeyworkSession
+  const createSession = useMutation({
+    mutationFn: (data: Partial<KeyworkSession>) =>
+      api.post<SingleResponse>("/keywork-sessions", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["keywork-sessions"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+
+  // Inlined: useKeyworkSessions
+  const { data: queryData, isLoading } = useQuery({
+    queryKey: ["keywork-sessions", undefined],
+    queryFn: () => {
+      const qs = new URLSearchParams();
+      return api.get<ListResponse>(`/keywork-sessions?${qs.toString()}`);
+    },
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+
   const items = queryData?.data ?? [];
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
