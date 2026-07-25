@@ -19,8 +19,9 @@ import {
   Clock, User, MapPin, Loader2, AlertCircle, ChevronRight,
   Brain, Sparkles, Heart, Library, Phone, UserCheck, Gavel,
 } from "lucide-react";
-import { useIncident, useUpdateIncident } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
+import type { Incident } from "@/types";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -38,6 +39,28 @@ import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { DOCUMENT_CATEGORY_LABELS } from "@/types/documents";
 import type { DocumentIntelRisk } from "@/types/documents";
+
+// ── Incident queries (inlined from use-incidents) ─────────────────────────────
+
+function useIncident(id: string) {
+  return useQuery({
+    queryKey: ["incidents", id],
+    queryFn: () => api.get<{ data: Incident }>(`/incidents/${id}`),
+    enabled: !!id,
+  });
+}
+
+function useUpdateIncident() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Record<string, unknown>) =>
+      api.patch<{ data: Incident }>(`/incidents/${id}`, data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["incidents"] });
+      qc.invalidateQueries({ queryKey: ["incidents", vars.id] });
+    },
+  });
+}
 
 // ── Severity config ───────────────────────────────────────────────────────────
 

@@ -50,7 +50,7 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { useIncidents } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useKeyWorkingSessions } from "@/hooks/use-key-working";
@@ -60,6 +60,21 @@ import {
 } from "@/lib/cara/cara-proactive-alerts";
 import type { IncidentRecord } from "@/lib/cara/cara-pattern-engine";
 import type { ChildRecord, IncidentSummary } from "@/lib/cara/cara-voice-gap-analysis";
+import type { Incident } from "@/types";
+
+// ── Incidents query (inlined from use-incidents) ──────────────────────────────
+
+function useIncidents(params?: { status?: string; child_id?: string; needs_oversight?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.child_id) query.set("child_id", params.child_id);
+  if (params?.needs_oversight) query.set("needs_oversight", "true");
+
+  return useQuery({
+    queryKey: ["incidents", params],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${query}`),
+  });
+}
 
 // ── Demo fallback data (shown when no live incidents are available) ────────────
 

@@ -23,6 +23,46 @@ import { useYoungPeople } from "@/hooks/use-young-people";
 import { getYPName } from "@/lib/seed-data";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 
+// ── Safeguarding-flag queries (inlined from use-cara-intelligence) ────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useCaraSafeguardingFlags(params?: { childId?: string; homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.childId) query.set("child_id", params.childId);
+  if (params?.homeId) query.set("home_id", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["cara-intelligence", "safeguarding-flags", params],
+    queryFn: () =>
+      api.get<ListResponse<CaraSafeguardingFlag> & { meta: { open: number; critical: number } }>(
+        `/cara-intelligence/safeguarding-flags?${query}`
+      ),
+  });
+}
+
+function useCreateCaraSafeguardingFlag() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<CaraSafeguardingFlag>) =>
+      api.post<{ data: CaraSafeguardingFlag }>("/cara-intelligence/safeguarding-flags", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "safeguarding-flags"] });
+    },
+  });
+}
+
+function useUpdateCaraSafeguardingFlag() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<CaraSafeguardingFlag>) =>
+      api.patch<{ data: CaraSafeguardingFlag }>(`/cara-intelligence/safeguarding-flags/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "safeguarding-flags"] });
+    },
+  });
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const FLAG_TYPES: SafeguardingFlagType[] = [

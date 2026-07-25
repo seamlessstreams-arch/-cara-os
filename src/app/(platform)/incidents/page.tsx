@@ -47,6 +47,20 @@ import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
 import type { Incident, IncidentNotification } from "@/types";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
+// ── Incidents query (inlined from use-incidents) ──────────────────────────────
+
+function useIncidents(params?: { status?: string; child_id?: string; needs_oversight?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.child_id) query.set("child_id", params.child_id);
+  if (params?.needs_oversight) query.set("needs_oversight", "true");
+
+  return useQuery({
+    queryKey: ["incidents", params],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${query}`),
+  });
+}
+
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const SEV_CONFIG = {

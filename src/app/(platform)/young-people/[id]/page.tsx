@@ -39,15 +39,13 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
 import type { Incident, Medication, CareForm, DailyLogEntry } from "@/types";
 import type {
   ChronologyEntry, KeyWorkSession, KeyWorkTheme,
   ContactArrangement, ContactLog, MissingEpisode,
 } from "@/types/extended";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/hooks/use-api";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };

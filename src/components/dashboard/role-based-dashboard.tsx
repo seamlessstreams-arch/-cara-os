@@ -46,6 +46,19 @@ import { CalmStatusBadge, type CalmStatus } from "@/components/ui/calm-status-ba
 import { RiskBadge } from "@/components/ui/risk-badge";
 import { CalmEmptyState } from "@/components/ui/empty-state-calm";
 import { cn, todayStr, isOverdue, pluralise } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { DashboardData } from "@/types/extended";
+
+// ── Dashboard query (inlined from use-dashboard) ─────────────────────────────
+
+function useDashboard() {
+  return useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => api.get<{ data: DashboardData }>("/dashboard"),
+    refetchInterval: 30_000,
+  });
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

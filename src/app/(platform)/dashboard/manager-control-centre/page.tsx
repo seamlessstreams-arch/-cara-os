@@ -331,7 +331,6 @@ import { HomeEmergencyLightingCard } from "@/components/dashboard/home-emergency
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
-import { useIncidents } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useKeyWorkingSessions } from "@/hooks/use-key-working";
@@ -344,6 +343,20 @@ import type {
   Urgency,
   AttentionStatus,
 } from "@/types/intelligence.layer";
+
+// ── Incidents query (inlined from use-incidents) ──────────────────────────────
+
+function useIncidents(params?: { status?: string; child_id?: string; needs_oversight?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.child_id) query.set("child_id", params.child_id);
+  if (params?.needs_oversight) query.set("needs_oversight", "true");
+
+  return useQuery({
+    queryKey: ["incidents", params],
+    queryFn: () => api.get<{ data: unknown[]; meta: Record<string, number> }>(`/incidents?${query}`),
+  });
+}
 
 // ── inlined intelligence layer hooks ──────────────────────────────────────────
 

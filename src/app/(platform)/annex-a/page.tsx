@@ -54,18 +54,30 @@ import { cn, formatDate } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
 import type { AnnexAEvidenceEnriched, AnnexAEvidenceItem, ManagerDecision } from "@/types/care-events";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useIncidents } from "@tanstack/react-query";
-import { api } from "@/hooks/use-api";
 import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
 import { useRestraints } from "@/hooks/use-restraints";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useStaff } from "@/hooks/use-staff";
 import { useReg45Evidence } from "@/hooks/use-compliance-evidence";
 import { toast } from "sonner";
-import type { ManagerDecision } from "@/types/care-events";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import type { Incident } from "@/types";
+
+// ── Incidents query (inlined from use-incidents) ──────────────────────────────
+
+function useIncidents(params?: { status?: string; child_id?: string; needs_oversight?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.child_id) query.set("child_id", params.child_id);
+  if (params?.needs_oversight) query.set("needs_oversight", "true");
+
+  return useQuery({
+    queryKey: ["incidents", params],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${query}`),
+  });
+}
 
 // ── Period activity stat tile ─────────────────────────────────────────────────
 

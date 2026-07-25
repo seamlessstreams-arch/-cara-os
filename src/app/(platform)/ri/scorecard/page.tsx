@@ -11,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useRiChallengeLogs, useRiAlerts, useRiReg45Evidence, useTrainingNeeds } from "@/hooks/use-ri-learning";
-import { useIncidents } from "@tanstack/react-query";
-import { api } from "@/hooks/use-api";
 import { useSupervisions } from "@/hooks/use-supervision";
 import { useTraining } from "@/hooks/use-training";
 
@@ -54,7 +52,21 @@ import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+import type { Incident } from "@/types";
 
+// ── Incidents query (inlined from use-incidents) ──────────────────────────────
+
+function useIncidents(params?: { status?: string; child_id?: string; needs_oversight?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.child_id) query.set("child_id", params.child_id);
+  if (params?.needs_oversight) query.set("needs_oversight", "true");
+
+  return useQuery({
+    queryKey: ["incidents", params],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${query}`),
+  });
+}
 
 type StrategicResult = {
   overall_governance_narrative: string;

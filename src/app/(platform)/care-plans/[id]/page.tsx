@@ -15,8 +15,6 @@ import { Button } from "@/components/ui/button";
 import { cn, formatDate } from "@/lib/utils";
 import { useCarePlan, useUpdateCarePlan } from "@/hooks/use-care-plans";
 import { useStaff } from "@/hooks/use-staff";
-import { useIncidents } from "@tanstack/react-query";
-import { api } from "@/hooks/use-api";
 import { getYPName } from "@/lib/seed-data";
 import { api } from "@/hooks/use-api";
 import { PrintButton } from "@/components/common/print-button";
@@ -31,6 +29,21 @@ import {
 import Link from "next/link";
 import { ProgressiveSection } from "@/components/ui/progressive-section";
 import { PageGuidance } from "@/components/ui/page-guidance";
+import type { Incident } from "@/types";
+
+// ── Incidents query (inlined from use-incidents) ──────────────────────────────
+
+function useIncidents(params?: { status?: string; child_id?: string; needs_oversight?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.child_id) query.set("child_id", params.child_id);
+  if (params?.needs_oversight) query.set("needs_oversight", "true");
+
+  return useQuery({
+    queryKey: ["incidents", params],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${query}`),
+  });
+}
 
 // ── Domain config ─────────────────────────────────────────────────────────────
 

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,11 +18,10 @@ import { api } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
-import { api } from "@/hooks/use-api";
-import type { ChronologyEntry } from "@/types/extended";
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { careToast } from "@/lib/toast";
 import type { Incident } from "@/types";
 import type { MissingEpisode, ChronologyEntry, ChronologyCategory } from "@/types/extended";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -33,6 +31,35 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import NextLink from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+// ── Incidents + oversight queries (inlined from use-incidents) ────────────────
+
+function useIncidents(params?: { status?: string; child_id?: string; needs_oversight?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.child_id) query.set("child_id", params.child_id);
+  if (params?.needs_oversight) query.set("needs_oversight", "true");
+
+  return useQuery({
+    queryKey: ["incidents", params],
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${query}`),
+  });
+}
+
+function useAddOversight() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, note, by, cara_assisted }: { id: string; note: string; by: string; cara_assisted?: boolean }) =>
+      api.post(`/incidents/${id}/oversight`, { oversight_note: note, oversight_by: by, cara_assisted }),
+    onSuccess: () => {
+      careToast.oversightAdded();
+      qc.invalidateQueries({ queryKey: ["incidents"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["health-check"] });
+    },
+    onError: () => careToast.actionFailed("Add oversight"),
+  });
+}
 
 // ── Static seed data (display only) ──────────────────────────────────────────
 

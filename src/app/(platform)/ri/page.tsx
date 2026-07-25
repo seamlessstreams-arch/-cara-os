@@ -20,8 +20,6 @@ import {
   useRiGovernanceReports,
   useTrainingNeeds,
 } from "@/hooks/use-ri-learning";
-import { useIncidents } from "@tanstack/react-query";
-import { api } from "@/hooks/use-api";
 import { useSupervisions } from "@/hooks/use-supervision";
 import { useTraining } from "@/hooks/use-training";
 
