@@ -14,12 +14,27 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useMediaPublicityConsents } from "@/hooks/use-media-publicity-consents";
+import { useQuery } from "@tanstack/react-query";
 import type { MediaPublicityConsent, MediaConsentCategory, ChildConsentResponse } from "@/types/extended";
 import { MEDIA_CONSENT_CATEGORY_LABEL, CHILD_CONSENT_RESPONSE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const MEDIA_PUBLICITY_CONSENTS_KEY = "media-publicity-consents";
+const MEDIA_PUBLICITY_CONSENTS_API = "/api/v1/media-publicity-consents";
+
+function useMediaPublicityConsents(childId?: string) {
+  return useQuery<{ data: MediaPublicityConsent[] }>({
+    queryKey: childId ? [MEDIA_PUBLICITY_CONSENTS_KEY, childId] : [MEDIA_PUBLICITY_CONSENTS_KEY],
+    queryFn: () =>
+      fetch(
+        childId
+          ? `${MEDIA_PUBLICITY_CONSENTS_API}?child_id=${childId}`
+          : MEDIA_PUBLICITY_CONSENTS_API,
+      ).then((r) => r.json()),
+  });
+}
 
 const consentColour: Record<ChildConsentResponse, string> = {
   yes_explicit: "bg-green-100 text-green-800",

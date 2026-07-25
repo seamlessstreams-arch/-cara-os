@@ -18,13 +18,22 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useLessonsLearned } from "@/hooks/use-lessons-learned";
+import { useQuery } from "@tanstack/react-query";
 import type { LessonLearned, LessonSource, LessonThemeArea, LessonStatus } from "@/types/extended";
 import { LESSON_SOURCE_LABEL, LESSON_THEME_AREA_LABEL, LESSON_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { OrgLearningReportPanel } from "@/components/org-learning/org-learning-report-panel";
+
+/* ── inlined from @/hooks/use-lessons-learned ────────────────────────────── */
+
+function useLessonsLearned() {
+  return useQuery<{ data: LessonLearned[] }>({
+    queryKey: ["lessons-learned"],
+    queryFn: () => fetch("/api/v1/lessons-learned").then((r) => r.json()),
+  });
+}
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 

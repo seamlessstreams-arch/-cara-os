@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,12 +16,67 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RefreshCw, ShieldAlert, ExternalLink, CheckCircle2, RotateCcw } from "lucide-react";
-import {
-  useManagerVerifyQueue,
-  useManagerBulkVerify,
-  useManagerBulkReturn,
-} from "@/hooks/use-manager-verify-queue";
-import type { ManagerVerifyPriority, ManagerVerifyRow } from "@/lib/care-events/manager-verify-queue";
+import { api } from "@/hooks/use-api";
+import type { ManagerVerifyPriority, ManagerVerifyRow, ManagerVerifyQueue } from "@/lib/care-events/manager-verify-queue";
+import type { BulkActionResult } from "@/lib/care-events/manager-bulk-actions";
+
+// ── Data hooks (inlined from the former use-manager-verify-queue hook) ────────
+
+interface QueueResponse { data: ManagerVerifyQueue }
+interface ActionResponse { data: BulkActionResult }
+
+function useManagerVerifyQueue(homeId: string) {
+  return useQuery({
+    queryKey: ["manager-verify-queue", homeId],
+    queryFn: () =>
+      api.get<QueueResponse>(
+        `/care-events/manager-verify-queue?home_id=${encodeURIComponent(homeId)}`,
+      ),
+    refetchInterval: 30000,
+  });
+}
+
+interface BulkVerifyInput {
+  home_id: string;
+  care_event_ids: string[];
+  manager_signature: true;
+  manager_notes?: string | null;
+}
+
+interface BulkReturnInput {
+  home_id: string;
+  care_event_ids: string[];
+  return_reason: string;
+  manager_notes?: string | null;
+}
+
+function useManagerBulkVerify(homeId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: BulkVerifyInput) =>
+      api.post<ActionResponse>(
+        "/care-events/manager-verify-queue",
+        { action: "verify", ...input },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["manager-verify-queue", homeId] });
+    },
+  });
+}
+
+function useManagerBulkReturn(homeId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: BulkReturnInput) =>
+      api.post<ActionResponse>(
+        "/care-events/manager-verify-queue",
+        { action: "return", ...input },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["manager-verify-queue", homeId] });
+    },
+  });
+}
 
 const HOME_ID = "home_oak";
 

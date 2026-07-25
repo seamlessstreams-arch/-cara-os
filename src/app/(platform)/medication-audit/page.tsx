@@ -26,11 +26,37 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
-import { useMedicationAudits, useCreateMedicationAudit } from "@/hooks/use-medication-audits";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { MedicationAuditRecord, MedAuditType, MedAuditResult, MedAuditMedicationType } from "@/types/extended";
 import { MED_AUDIT_TYPE_LABEL, MED_AUDIT_RESULT_LABEL, MED_AUDIT_MEDICATION_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+const MEDICATION_AUDITS_KEY = "medication-audits";
+const MEDICATION_AUDITS_API = "/api/v1/medication-audits";
+
+function useMedicationAudits(childId?: string) {
+  return useQuery<{ data: MedicationAuditRecord[] }>({
+    queryKey: childId ? [MEDICATION_AUDITS_KEY, childId] : [MEDICATION_AUDITS_KEY],
+    queryFn: () =>
+      fetch(
+        childId ? `${MEDICATION_AUDITS_API}?child_id=${childId}` : MEDICATION_AUDITS_API,
+      ).then((r) => r.json()),
+  });
+}
+
+function useCreateMedicationAudit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MedicationAuditRecord>) =>
+      fetch(MEDICATION_AUDITS_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [MEDICATION_AUDITS_KEY] }),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

@@ -25,12 +25,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useKitchenHygieneChecks } from "@/hooks/use-kitchen-hygiene-checks";
+import { useQuery } from "@tanstack/react-query";
 import type { KitchenHygieneCheck, HygieneShiftType, HygieneVerdict, FridgeOrganisation } from "@/types/extended";
 import { HYGIENE_SHIFT_TYPE_LABEL, HYGIENE_VERDICT_LABEL, FRIDGE_ORGANISATION_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Kitchen hygiene checks query (inlined from the former hook wrapper) ─────
+function useKitchenHygieneChecks() {
+  return useQuery<{ data: KitchenHygieneCheck[] }>({
+    queryKey: ["kitchen-hygiene-checks"],
+    queryFn: () =>
+      fetch("/api/v1/kitchen-hygiene-checks").then((r) => r.json()),
+  });
+}
 
 const verdictColour: Record<HygieneVerdict, string> = {
   pass: "bg-green-100 text-green-800",

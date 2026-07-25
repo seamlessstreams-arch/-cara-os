@@ -13,12 +13,21 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useLoneWorkingRiskAssessments } from "@/hooks/use-lone-working-risk-assessments";
+import { useQuery } from "@tanstack/react-query";
 import type { LoneWorkingRiskAssessment, LWRAOverallRisk, LWRAScenario, LWRATraining } from "@/types/extended";
 import { LWRA_OVERALL_RISK_LABEL, LWRA_APPROVED_SHIFT_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hook (inlined from the former use-lone-working-risk-assessments) ─ */
+
+function useLoneWorkingRiskAssessments() {
+  return useQuery<{ data: LoneWorkingRiskAssessment[] }>({
+    queryKey: ["lone-working-risk-assessments"],
+    queryFn: () => fetch("/api/v1/lone-working-risk-assessments").then((r) => r.json()),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

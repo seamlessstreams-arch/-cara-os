@@ -15,7 +15,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useLACReviews, useCreateLACReview } from "@/hooks/use-lac-reviews";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { toast } from "sonner";
 import type { LACReview, LACReviewType, LACReviewOutcome, LACChildParticipation, LACPlacementStability } from "@/types/extended";
 import {
@@ -26,6 +27,30 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── inlined from @/hooks/use-lac-reviews ────────────────────────────────────
+interface LACResponse {
+  data: LACReview[];
+  meta: { total: number; overdue: number; next_due_date: string | null };
+}
+
+function useLACReviews(params?: { childId?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  return useQuery({
+    queryKey: ["lac-reviews", params?.childId],
+    queryFn: () => api.get<LACResponse>(`/lac-reviews?${qs.toString()}`),
+    staleTime: 30_000,
+  });
+}
+
+function useCreateLACReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<LACReview>) => api.post<{ data: LACReview }>("/lac-reviews", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lac-reviews"] }),
+  });
+}
 
 const TYPE_META: Record<LACReviewType, { label: string; color: string }> = {
   initial:       { label: "Initial (20 days)",  color: "bg-blue-100 text-blue-800" },

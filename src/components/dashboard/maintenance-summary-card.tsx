@@ -10,12 +10,31 @@ import React from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useMaintenance } from "@/hooks/use-maintenance";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { MaintenanceItem } from "@/types/extended";
 import { cn } from "@/lib/utils";
 import {
   Wrench, Loader2, AlertTriangle, CheckCircle2,
   Clock, CircleDot, CalendarClock,
 } from "lucide-react";
+
+// ── Data hook (inlined from the former use-maintenance wrapper) ─────────────
+
+interface MaintenanceResponse {
+  data: MaintenanceItem[];
+  meta: { total: number; open: number; scheduled: number; completed: number; urgent: number };
+}
+
+function useMaintenance(params?: { status?: string; priority?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.priority) query.set("priority", params.priority);
+  return useQuery({
+    queryKey: ["maintenance", params],
+    queryFn: () => api.get<MaintenanceResponse>(`/maintenance?${query}`),
+  });
+}
 
 // ── Component ───────────────────────────────────────────────────────────────
 

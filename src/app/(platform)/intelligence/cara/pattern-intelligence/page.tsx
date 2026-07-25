@@ -50,10 +50,10 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { useKeyWorkingSessions } from "@/hooks/use-key-working";
+import type { KeyWorkingSession } from "@/types/extended";
 import {
   runProactiveAlertScan,
   type ProactiveAlert,
@@ -101,6 +101,22 @@ const SOURCE_CONFIG: Record<PatternItem["source"], { label: string; icon: React.
   compliance: { label: "Compliance", icon: Calendar, colour: "bg-amber-100 text-amber-800" },
   regulatory: { label: "Regulatory", icon: Shield, colour: "bg-red-100 text-red-800" },
 };
+
+// ── Key-working sessions query (inlined from the former hook wrapper) ───────
+type KeyWorkingListResponse = { data: KeyWorkingSession[]; meta: { total: number; this_week: number } };
+
+function useKeyWorkingSessions(params?: { childId?: string; staffId?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  if (params?.staffId) qs.set("staff_id", params.staffId);
+  return useQuery({
+    queryKey: ["key-working-sessions", params],
+    queryFn: () => api.get<KeyWorkingListResponse>(`/key-working?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
 
 const SEVERITY_CONFIG: Record<PatternItem["severity"], { label: string; dot: string; border: string; bg: string }> = {
   urgent: { label: "Urgent", dot: "bg-red-500", border: "border-l-red-500", bg: "bg-red-50" },

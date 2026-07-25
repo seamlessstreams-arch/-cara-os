@@ -22,9 +22,26 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { useMaintenance } from "@/hooks/use-maintenance";
+import { api } from "@/hooks/use-api";
 import type { MaintenanceItem } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+// ── Data hook (inlined from the former use-maintenance wrapper) ───────────────
+
+interface MaintenanceResponse {
+  data: MaintenanceItem[];
+  meta: { total: number; open: number; scheduled: number; completed: number; urgent: number };
+}
+
+function useMaintenance(params?: { status?: string; priority?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.priority) query.set("priority", params.priority);
+  return useQuery({
+    queryKey: ["maintenance", params],
+    queryFn: () => api.get<MaintenanceResponse>(`/maintenance?${query}`),
+  });
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -18,12 +19,24 @@ import {
 import { cn } from "@/lib/utils";
 import { formatRate, rateOf } from "@/lib/metrics/rate";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useMarEntries } from "@/hooks/use-mar-entries";
 import type { MarEntry, MarRoute, MarScheduleType } from "@/types/extended";
 import { MAR_ROUTE_LABEL, MAR_SCHEDULE_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hook (inlined from the former use-mar-entries hook) ─────────── */
+
+const MAR_ENTRIES_KEY = "mar-entries";
+const MAR_ENTRIES_API = "/api/v1/mar-entries";
+
+function useMarEntries(childId?: string) {
+  return useQuery<{ data: MarEntry[] }>({
+    queryKey: childId ? [MAR_ENTRIES_KEY, childId] : [MAR_ENTRIES_KEY],
+    queryFn: () =>
+      fetch(childId ? `${MAR_ENTRIES_API}?child_id=${childId}` : MAR_ENTRIES_API).then((r) => r.json()),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

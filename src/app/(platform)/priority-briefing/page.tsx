@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,10 +12,24 @@ import {
   AlertOctagon, AlertTriangle, Eye, CheckCircle2, Loader2, ShieldAlert,
   ThumbsUp, Activity, RefreshCw, FileQuestion, ChevronRight,
 } from "lucide-react";
-import { useManagerPriorityBriefing } from "@/hooks/use-manager-priority-briefing";
 import type {
   PriorityBriefingResult, PrioritySignal, SignalSeverity, OverallStatus, DomainRollup,
 } from "@/lib/engines/manager-priority-briefing-engine";
+
+/* ── Data hook (inlined from the former use-manager-priority-briefing hook) ──── */
+
+function useManagerPriorityBriefing() {
+  return useQuery<PriorityBriefingResult>({
+    queryKey: ["manager-priority-briefing"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/manager-priority-briefing");
+      if (!res.ok) throw new Error("Failed to fetch manager priority briefing");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 /* ── visual helpers ──────────────────────────────────────────────────────────── */
 

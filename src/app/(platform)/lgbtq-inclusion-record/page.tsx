@@ -30,12 +30,26 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useLgbtqInclusionRecords } from "@/hooks/use-lgbtq-inclusion-records";
+import { useQuery } from "@tanstack/react-query";
 import type { LgbtqInclusionRecord, OutStatus } from "@/types/extended";
 import { OUT_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from @/hooks/use-lgbtq-inclusion-records ─────────────────────── */
+
+function useLgbtqInclusionRecords(childId?: string) {
+  return useQuery<{ data: LgbtqInclusionRecord[] }>({
+    queryKey: childId ? ["lgbtq-inclusion-records", childId] : ["lgbtq-inclusion-records"],
+    queryFn: () =>
+      fetch(
+        childId
+          ? `/api/v1/lgbtq-inclusion-records?child_id=${childId}`
+          : "/api/v1/lgbtq-inclusion-records"
+      ).then((r) => r.json()),
+  });
+}
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 

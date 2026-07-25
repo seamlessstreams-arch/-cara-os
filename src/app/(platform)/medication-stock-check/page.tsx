@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useMedicationStockChecks, useCreateMedicationStockCheck } from "@/hooks/use-medication-stock-checks";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,29 @@ import { Textarea } from "@/components/ui/textarea";
 import type { MedicationStockCheck, StockCheckType, StockCheckStatus, StockCheckItem } from "@/types/extended";
 import { STOCK_CHECK_TYPE_LABEL, STOCK_CHECK_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+const MEDICATION_STOCK_CHECKS_KEY = "medication-stock-checks";
+const MEDICATION_STOCK_CHECKS_API = "/api/v1/medication-stock-checks";
+
+function useMedicationStockChecks() {
+  return useQuery<{ data: MedicationStockCheck[] }>({
+    queryKey: [MEDICATION_STOCK_CHECKS_KEY],
+    queryFn: () => fetch(MEDICATION_STOCK_CHECKS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateMedicationStockCheck() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MedicationStockCheck>) =>
+      fetch(MEDICATION_STOCK_CHECKS_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [MEDICATION_STOCK_CHECKS_KEY] }),
+  });
+}
 
 const CHECK_TYPE_CLR: Record<StockCheckType, string> = {
   weekly: "bg-blue-100 text-blue-800",

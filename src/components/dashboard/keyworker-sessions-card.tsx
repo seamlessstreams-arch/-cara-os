@@ -16,8 +16,24 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useKeyworkingIntelligence } from "@/hooks/use-keyworking-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { NO_SESSION_RECORDED } from "@/lib/engines/keyworking-intelligence-engine";
+import type { KeyworkingIntelligenceResult } from "@/lib/engines/keyworking-intelligence-engine";
+
+// ── Keyworking intelligence query (inlined from the former hook wrapper) ────
+// React Query wrapper for /api/v1/keyworking-intelligence
+interface KeyworkingIntelligenceResponse {
+  data: KeyworkingIntelligenceResult;
+}
+
+function useKeyworkingIntelligence() {
+  return useQuery({
+    queryKey: ["keyworking-intelligence"],
+    queryFn: () => api.get<KeyworkingIntelligenceResponse>("/keyworking-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

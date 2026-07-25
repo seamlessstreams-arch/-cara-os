@@ -328,13 +328,14 @@ import { HomeCctvComplianceCard } from "@/components/dashboard/home-cctv-complia
 import { ChildOnlineSafetyMonitoringCard } from "@/components/dashboard/child-online-safety-monitoring-card";
 import { StaffLoneWorkingRiskCard } from "@/components/dashboard/staff-lone-working-risk-card";
 import { HomeEmergencyLightingCard } from "@/components/dashboard/home-emergency-lighting-card";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
 import { api } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { useKeyWorkingSessions } from "@/hooks/use-key-working";
+import type { KeyWorkingSession } from "@/types/extended";
 import { runProactiveAlertScan, type ProactiveAlert } from "@/lib/cara/cara-proactive-alerts";
+import type { Incident } from "@/types";
 import type { IncidentRecord } from "@/lib/cara/cara-pattern-engine";
 import type { ChildRecord, IncidentSummary } from "@/lib/cara/cara-voice-gap-analysis";
 import Link from "next/link";
@@ -343,6 +344,23 @@ import type {
   Urgency,
   AttentionStatus,
 } from "@/types/intelligence.layer";
+
+// ── Key-working sessions query (inlined from the former hook wrapper) ────────
+
+type KeyWorkingListResponse = { data: KeyWorkingSession[]; meta: { total: number; this_week: number } };
+
+function useKeyWorkingSessions(params?: { childId?: string; staffId?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  if (params?.staffId) qs.set("staff_id", params.staffId);
+  return useQuery({
+    queryKey: ["key-working-sessions", params],
+    queryFn: () => api.get<KeyWorkingListResponse>(`/key-working?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────
 
@@ -354,7 +372,7 @@ function useIncidents(params?: { status?: string; child_id?: string; needs_overs
 
   return useQuery({
     queryKey: ["incidents", params],
-    queryFn: () => api.get<{ data: unknown[]; meta: Record<string, number> }>(`/incidents?${query}`),
+    queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${query}`),
   });
 }
 

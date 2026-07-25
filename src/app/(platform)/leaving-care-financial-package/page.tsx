@@ -28,12 +28,26 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useLeavingCarePackages } from "@/hooks/use-leaving-care-packages";
+import { useQuery } from "@tanstack/react-query";
 import type { LeavingCarePackage, TransitionStage } from "@/types/extended";
 import { TRANSITION_STAGE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from @/hooks/use-leaving-care-packages ───────────────────────── */
+
+function useLeavingCarePackages(childId?: string) {
+  return useQuery<{ data: LeavingCarePackage[] }>({
+    queryKey: childId ? ["leaving-care-packages", childId] : ["leaving-care-packages"],
+    queryFn: () =>
+      fetch(
+        childId
+          ? `/api/v1/leaving-care-packages?child_id=${childId}`
+          : "/api/v1/leaving-care-packages"
+      ).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ──────────────────────────────────────────────────────────────── */
 

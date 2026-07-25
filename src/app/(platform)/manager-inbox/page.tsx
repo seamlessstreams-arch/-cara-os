@@ -6,12 +6,27 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Inbox, Brain, Loader2, Info, ShieldAlert, Clock, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useManagerInbox } from "@/hooks/use-manager-inbox";
+import { api } from "@/hooks/use-api";
+import type { ManagerInboxResult } from "@/lib/manager-inbox/manager-inbox-engine";
+
+// ── Data hook (inlined from the former use-manager-inbox hook) ───────────────
+interface ManagerInboxResponse {
+  data: ManagerInboxResult;
+}
+
+function useManagerInbox() {
+  return useQuery({
+    queryKey: ["manager-inbox"],
+    queryFn: () => api.get<ManagerInboxResponse>("/manager-inbox"),
+    refetchInterval: 60_000,
+  });
+}
 
 const PRIORITY_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
   critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-[var(--cs-risk-soft)]" },

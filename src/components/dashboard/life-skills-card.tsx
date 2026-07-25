@@ -14,7 +14,23 @@ import {
   Brain, Target, Star, MapPin, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLifeSkillsIntelligence } from "@/hooks/use-life-skills-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { LifeSkillsIntelligenceResult } from "@/lib/engines/life-skills-intelligence-engine";
+
+// ── inlined from @/hooks/use-life-skills-intelligence ───────────────────────
+
+interface LifeSkillsIntelligenceResponse {
+  data: LifeSkillsIntelligenceResult;
+}
+
+function useLifeSkillsIntelligence() {
+  return useQuery({
+    queryKey: ["life-skills-intelligence"],
+    queryFn: () => api.get<LifeSkillsIntelligenceResponse>("/life-skills-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

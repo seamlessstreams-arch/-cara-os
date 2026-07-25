@@ -12,12 +12,25 @@ import {
   Palette, BookOpen, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLocalOfferSections } from "@/hooks/use-local-offer-sections";
+import { useQuery } from "@tanstack/react-query";
 import type { LocalOfferSection, LocalOfferCategory } from "@/types/extended";
 import { LOCAL_OFFER_CATEGORY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hook (inlined from the former use-local-offer-sections wrapper) ──── */
+
+function useLocalOfferSections() {
+  return useQuery<LocalOfferSection[]>({
+    queryKey: ["local-offer-sections"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/local-offer-sections");
+      if (!res.ok) throw new Error("Failed to fetch local offer sections");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

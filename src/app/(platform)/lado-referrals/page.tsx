@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useLadoReferrals, useCreateLadoReferral } from "@/hooks/use-lado-referrals";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LadoReferral, LadoAllegationType, LadoOutcome, LadoReferralStatus, LadoStaffAction } from "@/types/extended";
 import {
   LADO_ALLEGATION_TYPE_LABEL,
@@ -35,6 +35,28 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from @/hooks/use-lado-referrals ─────────────────────────────── */
+
+function useLadoReferrals() {
+  return useQuery<{ data: LadoReferral[] }>({
+    queryKey: ["lado-referrals"],
+    queryFn: () => fetch("/api/v1/lado-referrals").then((r) => r.json()),
+  });
+}
+
+function useCreateLadoReferral() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<LadoReferral>) =>
+      fetch("/api/v1/lado-referrals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lado-referrals"] }),
+  });
+}
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 

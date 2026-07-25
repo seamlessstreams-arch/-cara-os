@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -13,7 +14,6 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useManagementWalkrounds } from "@/hooks/use-management-walkrounds";
 import type {
   ManagementWalkround, WalkroundType,
   WalkroundObservation, WalkroundImprovement,
@@ -24,6 +24,17 @@ import { WALKROUND_TYPE_LABEL, ENVIRONMENTAL_CHECK_STATUS_LABEL } from "@/types/
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hook (inlined from the former use-management-walkrounds hook) ── */
+
+const MANAGEMENT_WALKROUNDS_KEY = "management-walkrounds";
+
+function useManagementWalkrounds() {
+  return useQuery<{ data: ManagementWalkround[] }>({
+    queryKey: [MANAGEMENT_WALKROUNDS_KEY],
+    queryFn: () => fetch("/api/v1/management-walkrounds").then((r) => r.json()),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

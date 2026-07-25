@@ -12,12 +12,25 @@ import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useLocationAssessmentAreas } from "@/hooks/use-location-assessment-areas";
+import { useQuery } from "@tanstack/react-query";
 import type { LocationAssessmentArea, LocationRiskLevel } from "@/types/extended";
 import { LOCATION_RISK_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hook (inlined from the former use-location-assessment-areas hook) ─ */
+
+function useLocationAssessmentAreas() {
+  return useQuery<LocationAssessmentArea[]>({
+    queryKey: ["location-assessment-areas"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/location-assessment-areas");
+      if (!res.ok) throw new Error("Failed to fetch location assessment areas");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 

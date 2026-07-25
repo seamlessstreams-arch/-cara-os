@@ -142,6 +142,16 @@ for (const file of files) {
     if (called.has(name)) continue;
     called.set(name, code.slice(0, m.index).split("\n").length);
   }
+  // TYPE POSITION — `ReturnType<typeof useDashboard>["data"]`. A deleted hook
+  // referenced only in a type still fails the build (ignoreBuildErrors:true
+  // lets the tsc error through to Turbopack), and the call regex above never
+  // sees it because there are no parens. Found in what-needs-doing-today.tsx
+  // after a concurrent session inlined use-dashboard.
+  for (const m of code.matchAll(/\btypeof\s+(use[A-Z][A-Za-z0-9_$]*)/g)) {
+    const name = m[1];
+    if (called.has(name)) continue;
+    called.set(name, code.slice(0, m.index).split("\n").length);
+  }
   if (called.size === 0) continue;
 
   const bound = new Set();

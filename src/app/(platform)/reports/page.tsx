@@ -19,14 +19,45 @@ import { api } from "@/hooks/use-api";
 import { useTraining } from "@/hooks/use-training";
 import { useStaff } from "@/hooks/use-staff";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { useLeave } from "@/hooks/use-leave";
-import type { Incident } from "@/types";
+import type { Incident, LeaveRequest } from "@/types";
 import { cn, todayStr } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Leave query (inlined from use-leave) ─────────────────────────────────────
+
+interface LeaveMeta {
+  total: number;
+  approved: number;
+  pending: number;
+  on_leave_today: number;
+  sick_last_30_days: number;
+  sick_instances_last_30: number;
+  annual_days_last_30: number;
+  toil_days_last_30: number;
+}
+
+function useLeave(params?: {
+  staff_id?: string;
+  status?: string;
+  leave_type?: string;
+  since?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.staff_id) query.set("staff_id", params.staff_id);
+  if (params?.status) query.set("status", params.status);
+  if (params?.leave_type) query.set("leave_type", params.leave_type);
+  if (params?.since) query.set("since", params.since);
+
+  return useQuery({
+    queryKey: ["leave", params],
+    queryFn: () =>
+      api.get<{ data: LeaveRequest[]; meta: LeaveMeta }>(`/leave?${query}`),
+  });
+}
 
 type ReportView = "overview" | "workforce" | "compliance" | "incidents" | "finance";
 

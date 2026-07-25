@@ -33,11 +33,24 @@ import {
   LAUNDRY_STAGE_LABEL,
   LAUNDRY_SKILL_LEVEL_LABEL,
 } from "@/types/extended";
-import { useLaundrySelfCareRecords } from "@/hooks/use-laundry-self-care-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── inlined from @/hooks/use-laundry-self-care-records ──────────────────────
+function useLaundrySelfCareRecords(childId?: string) {
+  return useQuery<{ data: LaundrySelfCareRecord[] }>({
+    queryKey: childId ? ["laundry-self-care-records", childId] : ["laundry-self-care-records"],
+    queryFn: () =>
+      fetch(
+        childId
+          ? `/api/v1/laundry-self-care-records?child_id=${childId}`
+          : "/api/v1/laundry-self-care-records"
+      ).then((r) => r.json()),
+  });
+}
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 function stageColour(stage: LaundryStage): string {

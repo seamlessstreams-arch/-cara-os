@@ -16,12 +16,43 @@ import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, ArrowUpDown, Pill, AlertTriangle, CheckCircle, Heart, Lightbulb, Loader2, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useMedicationErrorInvestigations, useCreateMedicationErrorInvestigation } from "@/hooks/use-medication-error-investigations";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { MedicationErrorInvestigation, MedInvSeverity, MedInvStatus, MedInvErrorType } from "@/types/extended";
 import { MED_INV_ERROR_TYPE_LABEL, MED_INV_SEVERITY_LABEL, MED_INV_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { toast } from "sonner";
+
+const MEDICATION_ERROR_INVESTIGATIONS_KEY = "medication-error-investigations";
+const MEDICATION_ERROR_INVESTIGATIONS_API = "/api/v1/medication-error-investigations";
+
+function useMedicationErrorInvestigations(childId?: string) {
+  return useQuery<{ data: MedicationErrorInvestigation[] }>({
+    queryKey: childId
+      ? [MEDICATION_ERROR_INVESTIGATIONS_KEY, childId]
+      : [MEDICATION_ERROR_INVESTIGATIONS_KEY],
+    queryFn: () =>
+      fetch(
+        childId
+          ? `${MEDICATION_ERROR_INVESTIGATIONS_API}?child_id=${childId}`
+          : MEDICATION_ERROR_INVESTIGATIONS_API,
+      ).then((r) => r.json()),
+  });
+}
+
+function useCreateMedicationErrorInvestigation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MedicationErrorInvestigation>) =>
+      fetch(MEDICATION_ERROR_INVESTIGATIONS_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: [MEDICATION_ERROR_INVESTIGATIONS_KEY] }),
+  });
+}
 
 const statusColour: Record<MedInvStatus, string> = {
   investigating: "bg-[--cs-info-bg] text-[--cs-info]",

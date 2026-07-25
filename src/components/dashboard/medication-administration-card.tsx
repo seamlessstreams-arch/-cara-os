@@ -17,7 +17,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useMedicationIntelligence } from "@/hooks/use-medication-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { MedicationIntelligenceResult } from "@/lib/engines/medication-intelligence-engine";
+
+interface MedicationIntelligenceResponse {
+  data: MedicationIntelligenceResult;
+}
+
+function useMedicationIntelligence() {
+  return useQuery({
+    queryKey: ["medication-intelligence"],
+    queryFn: () => api.get<MedicationIntelligenceResponse>("/medication-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

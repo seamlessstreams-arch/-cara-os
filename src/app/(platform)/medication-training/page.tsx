@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -23,12 +24,32 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useMedTrainingRecords, useCreateMedTrainingRecord } from "@/hooks/use-med-training-records";
 import type { MedTrainingRecord, MedCompetencyType, MedCompetencyStatus } from "@/types/extended";
 import { MED_COMPETENCY_TYPE_LABEL, MED_COMPETENCY_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hooks (inlined from the former use-med-training-records hook) ─ */
+
+const MED_TRAINING_RECORDS_KEY = "med-training-records";
+const MED_TRAINING_RECORDS_API = "/api/v1/med-training-records";
+
+function useMedTrainingRecords() {
+  return useQuery<{ data: MedTrainingRecord[] }>({
+    queryKey: [MED_TRAINING_RECORDS_KEY],
+    queryFn: () => fetch(MED_TRAINING_RECORDS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateMedTrainingRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MedTrainingRecord>) =>
+      fetch(MED_TRAINING_RECORDS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [MED_TRAINING_RECORDS_KEY] }),
+  });
+}
 
 const STATUS_CLR: Record<MedCompetencyStatus, string> = { competent: "bg-green-100 text-green-800", not_yet_competent: "bg-red-100 text-red-800", expired: "bg-amber-100 text-amber-800", in_training: "bg-blue-100 text-blue-800", supervised_only: "bg-purple-100 text-purple-800" };
 const BORDER_ST: Record<MedCompetencyStatus, string> = { competent: "border-l-green-400", not_yet_competent: "border-l-red-500", expired: "border-l-amber-400", in_training: "border-l-blue-400", supervised_only: "border-l-purple-400" };

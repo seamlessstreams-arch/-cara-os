@@ -13,9 +13,28 @@
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useKnowledgeGovernance } from "@/hooks/use-knowledge-governance";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { AUTHORITATIVE } from "@/lib/knowledge-governance/knowledge-governance-engine";
+import type {
+  KnowledgeGovernanceSummary,
+  EvidenceStatus,
+} from "@/lib/knowledge-governance/knowledge-governance-engine";
 import { BookMarked, AlertTriangle, CheckCircle2, ShieldQuestion, Loader2 } from "lucide-react";
+
+// ── Knowledge governance query (inlined from the former hook wrapper) ──────
+interface KnowledgeGovernanceData extends KnowledgeGovernanceSummary {
+  evidenceLabels: Record<EvidenceStatus, string>;
+  writeEnabled: boolean;
+}
+
+/** Governance over the practice KB: evidence weight, review status, §6 alerts. */
+function useKnowledgeGovernance() {
+  return useQuery({
+    queryKey: ["knowledge-governance"],
+    queryFn: async () => (await api.get<{ data: KnowledgeGovernanceData }>(`/knowledge-governance`)).data,
+  });
+}
 
 export default function KnowledgeGovernancePage() {
   const q = useKnowledgeGovernance();

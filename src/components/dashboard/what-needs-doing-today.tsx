@@ -79,7 +79,7 @@ const URGENCY_CONFIG = {
 // ── Build action items from dashboard data ───────────────────────────────────
 
 function buildActionItems(
-  dashboardData: ReturnType<typeof useDashboard>["data"],
+  dashboardData: { data: DashboardData } | undefined,
   userId: string,
 ): ActionItem[] {
   const items: ActionItem[] = [];

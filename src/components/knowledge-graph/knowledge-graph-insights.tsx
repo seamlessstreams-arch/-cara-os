@@ -11,8 +11,23 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Network } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useKnowledgeGraph } from "@/hooks/use-knowledge-graph";
-import type { InsightSeverity } from "@/lib/knowledge-graph/types";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { InsightSeverity, KnowledgeGraph } from "@/lib/knowledge-graph/types";
+
+// ── Knowledge Graph query (inlined from the former hook wrapper) ─────────────
+// GET /api/v1/knowledge-graph → the home's cross-entity graph + insights.
+interface KnowledgeGraphResponse {
+  data: { graph: KnowledgeGraph };
+}
+
+function useKnowledgeGraph() {
+  return useQuery({
+    queryKey: ["knowledge-graph"],
+    queryFn: () => api.get<KnowledgeGraphResponse>("/knowledge-graph"),
+    staleTime: 60 * 1000,
+  });
+}
 
 const SEVERITY: Record<InsightSeverity, { label: string; cls: string }> = {
   priority: { label: "Priority", cls: "bg-red-50 text-red-700 border-red-200" },

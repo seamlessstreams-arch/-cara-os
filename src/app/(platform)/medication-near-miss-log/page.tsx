@@ -21,10 +21,25 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useMedicationNearMisses } from "@/hooks/use-medication-near-misses";
+import { useQuery } from "@tanstack/react-query";
 import type { MedicationNearMiss, NearMissType, NearMissRiskGrade } from "@/types/extended";
 import { NEAR_MISS_TYPE_LABEL, NEAR_MISS_RISK_GRADE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+const MEDICATION_NEAR_MISSES_KEY = "medication-near-misses";
+const MEDICATION_NEAR_MISSES_API = "/api/v1/medication-near-misses";
+
+function useMedicationNearMisses(childId?: string) {
+  return useQuery<{ data: MedicationNearMiss[] }>({
+    queryKey: childId ? [MEDICATION_NEAR_MISSES_KEY, childId] : [MEDICATION_NEAR_MISSES_KEY],
+    queryFn: () =>
+      fetch(
+        childId
+          ? `${MEDICATION_NEAR_MISSES_API}?child_id=${childId}`
+          : MEDICATION_NEAR_MISSES_API,
+      ).then((r) => r.json()),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

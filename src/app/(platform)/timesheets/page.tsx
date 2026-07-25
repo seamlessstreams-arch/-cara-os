@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,17 @@ import { useStaff } from "@/hooks/use-staff";
 import type { StaffEnriched } from "@/hooks/use-staff";
 import { cn, daysFromNow } from "@/lib/utils";
 import type { Shift, LeaveRequest } from "@/types";
-import { useCreateLeave } from "@/hooks/use-leave";
+// ── Create-leave mutation (inlined from use-leave) ───────────────────────────
+
+function useCreateLeave() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<LeaveRequest>) => api.post<{ data: LeaveRequest }>("/leave", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leave"] });
+    },
+  });
+}
 
 // Types from use-rota
 export interface RotaMeta {

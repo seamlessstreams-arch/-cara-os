@@ -13,12 +13,20 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useKpiEntries } from "@/hooks/use-kpi-entries";
+import { useQuery } from "@tanstack/react-query";
 import type { KpiEntry, KpiRag, KpiTrend, KpiCategory } from "@/types/extended";
 import { KPI_RAG_LABEL, KPI_TREND_LABEL, KPI_CATEGORY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── KPI entries query (inlined from the former hook wrapper) ───────────────
+function useKpiEntries() {
+  return useQuery<{ data: KpiEntry[] }>({
+    queryKey: ["kpi-entries"],
+    queryFn: () => fetch("/api/v1/kpi-entries").then((r) => r.json()),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

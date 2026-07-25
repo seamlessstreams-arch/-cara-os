@@ -15,7 +15,8 @@ import {
   SunMedium, RotateCcw, Ban, Info, Loader2, ArrowUpDown,
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
-import { useLeave, useCreateLeave } from "@/hooks/use-leave";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useStaff } from "@/hooks/use-staff";
 import { cn, todayStr, formatDate, daysFromNow } from "@/lib/utils";
 import { LEAVE_TYPE_LABELS } from "@/lib/constants";
@@ -26,6 +27,48 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Leave queries (inlined from use-leave) ───────────────────────────────────
+
+interface LeaveMeta {
+  total: number;
+  approved: number;
+  pending: number;
+  on_leave_today: number;
+  sick_last_30_days: number;
+  sick_instances_last_30: number;
+  annual_days_last_30: number;
+  toil_days_last_30: number;
+}
+
+function useLeave(params?: {
+  staff_id?: string;
+  status?: string;
+  leave_type?: string;
+  since?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.staff_id) query.set("staff_id", params.staff_id);
+  if (params?.status) query.set("status", params.status);
+  if (params?.leave_type) query.set("leave_type", params.leave_type);
+  if (params?.since) query.set("since", params.since);
+
+  return useQuery({
+    queryKey: ["leave", params],
+    queryFn: () =>
+      api.get<{ data: LeaveRequest[]; meta: LeaveMeta }>(`/leave?${query}`),
+  });
+}
+
+function useCreateLeave() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<LeaveRequest>) => api.post<{ data: LeaveRequest }>("/leave", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leave"] });
+    },
+  });
+}
 
 type Tab = "overview" | "requests" | "calendar" | "sickness";
 type StatusFilter = "all" | "pending" | "approved" | "declined";

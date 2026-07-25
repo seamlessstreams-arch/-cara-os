@@ -11,9 +11,19 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, BookMarked, PlusCircle, RefreshCw, EyeOff, CheckCircle2 } from "lucide-react";
-import { useKnowledgeEvolution } from "@/hooks/use-knowledge-evolution";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import type { EvolutionProposal, ProposalKind, ProposalSeverity } from "@/lib/knowledge-evolution/types";
+import type { EvolutionProposal, ProposalKind, ProposalSeverity, KnowledgeEvolutionReport } from "@/lib/knowledge-evolution/types";
+
+// ── Knowledge Evolution query (inlined from the former hook wrapper) ─────────
+// GET /api/v1/knowledge-evolution → per-entry lifecycle + evolution proposals
+function useKnowledgeEvolution() {
+  return useQuery<{ data: KnowledgeEvolutionReport }>({
+    queryKey: ["knowledge-evolution"],
+    queryFn: () => fetch("/api/v1/knowledge-evolution").then((r) => r.json()),
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 const KIND_META: Record<ProposalKind, { icon: React.ElementType; label: string; fg: string; border: string }> = {
   codify_gap: { icon: PlusCircle, label: "Coverage gap", fg: "text-[var(--cs-risk)]", border: "border-[var(--cs-risk-soft)]" },

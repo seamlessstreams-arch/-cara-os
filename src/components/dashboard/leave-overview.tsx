@@ -11,13 +11,47 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
-import { useLeave } from "@/hooks/use-leave";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { LeaveRequest } from "@/types";
 import { getStaffName } from "@/lib/seed-data";
 import { cn, formatRelative, todayStr } from "@/lib/utils";
 import {
   CalendarOff, Loader2, CheckCircle2, Palmtree, Stethoscope,
   BookOpen, Clock, ChevronRight,
 } from "lucide-react";
+
+// ── Leave query (inlined from use-leave) ─────────────────────────────────────
+
+interface LeaveMeta {
+  total: number;
+  approved: number;
+  pending: number;
+  on_leave_today: number;
+  sick_last_30_days: number;
+  sick_instances_last_30: number;
+  annual_days_last_30: number;
+  toil_days_last_30: number;
+}
+
+function useLeave(params?: {
+  staff_id?: string;
+  status?: string;
+  leave_type?: string;
+  since?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.staff_id) query.set("staff_id", params.staff_id);
+  if (params?.status) query.set("status", params.status);
+  if (params?.leave_type) query.set("leave_type", params.leave_type);
+  if (params?.since) query.set("since", params.since);
+
+  return useQuery({
+    queryKey: ["leave", params],
+    queryFn: () =>
+      api.get<{ data: LeaveRequest[]; meta: LeaveMeta }>(`/leave?${query}`),
+  });
+}
 
 // ── Leave type config ───────────────────────────────────────────────────────
 

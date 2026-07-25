@@ -30,12 +30,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useLacReviewPreps } from "@/hooks/use-lac-review-preps";
+import { useQuery } from "@tanstack/react-query";
 import type { LacReviewPrep, LacPrepStatus } from "@/types/extended";
 import { LAC_REVIEW_TYPE_LABEL, LAC_PREP_STATUS_LABEL, CHILD_PREP_STATUS_LABEL, CHILD_ATTENDANCE_CHOICE_LABEL, LAC_PREP_ACTION_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── inlined from @/hooks/use-lac-review-preps ───────────────────────────────
+function useLacReviewPreps(childId?: string) {
+  return useQuery<{ data: LacReviewPrep[] }>({
+    queryKey: childId ? ["lac-review-preps", childId] : ["lac-review-preps"],
+    queryFn: () =>
+      fetch(
+        childId
+          ? `/api/v1/lac-review-preps?child_id=${childId}`
+          : "/api/v1/lac-review-preps"
+      ).then((r) => r.json()),
+  });
+}
 
 const prepStatusRow: Record<LacPrepStatus, RowSeverity> = {
   not_started: "neutral", in_progress: "warning", ready_for_review: "info", review_held: "success", post_review_actions: "neutral",

@@ -12,7 +12,23 @@ import {
   AlertTriangle, Brain, ChevronRight, Loader2, PiggyBank,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLeavingCareIntelligence } from "@/hooks/use-leaving-care-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { LeavingCareIntelligenceResult } from "@/lib/engines/leaving-care-intelligence-engine";
+
+// ── inlined from @/hooks/use-leaving-care-intelligence ──────────────────────
+
+interface LeavingCareIntelligenceResponse {
+  data: LeavingCareIntelligenceResult;
+}
+
+function useLeavingCareIntelligence() {
+  return useQuery({
+    queryKey: ["leaving-care-intelligence"],
+    queryFn: () => api.get<LeavingCareIntelligenceResponse>("/leaving-care-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",

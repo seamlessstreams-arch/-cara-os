@@ -20,11 +20,8 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { InlineRelationalPanel } from "@/components/relational-timeline/inline-relational-panel";
 import { toast } from "sonner";
-import {
-  useKeyWorkingSessions,
-  useCreateKeyWorkingSession,
-  useUpdateKeyWorkingSession,
-} from "@/hooks/use-key-working";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import type { KeyWorkingSession } from "@/types/extended";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
@@ -36,6 +33,47 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
+
+// ── Key-working queries (inlined from the former hook wrapper) ──────────────
+
+type KeyWorkingListResponse = { data: KeyWorkingSession[]; meta: { total: number; this_week: number } };
+type KeyWorkingSingleResponse = { data: KeyWorkingSession };
+
+function useKeyWorkingSessions(params?: { childId?: string; staffId?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  if (params?.staffId) qs.set("staff_id", params.staffId);
+  return useQuery({
+    queryKey: ["key-working-sessions", params],
+    queryFn: () => api.get<KeyWorkingListResponse>(`/key-working?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+function useCreateKeyWorkingSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<KeyWorkingSession>) =>
+      api.post<KeyWorkingSingleResponse>("/key-working", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["key-working-sessions"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+function useUpdateKeyWorkingSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<KeyWorkingSession>) =>
+      api.patch<KeyWorkingSingleResponse>("/key-working", { id, ...data }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["key-working-sessions"] });
+    },
+  });
+}
 
 // ── Local view-model type (camelCase for the page) ──────────────────────────
 interface SessionView {

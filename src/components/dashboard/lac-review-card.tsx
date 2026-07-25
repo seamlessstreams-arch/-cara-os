@@ -16,7 +16,23 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useLACReviewIntelligence } from "@/hooks/use-lac-review-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { LACReviewResult } from "@/lib/engines/lac-review-engine";
+
+// ── LAC review intelligence query (inlined from the former hook wrapper) ────
+// React Query wrapper for /api/v1/lac-review-intelligence
+interface LACReviewIntelligenceResponse {
+  data: LACReviewResult;
+}
+
+function useLACReviewIntelligence() {
+  return useQuery({
+    queryKey: ["lac-review-intelligence"],
+    queryFn: () => api.get<LACReviewIntelligenceResponse>("/lac-review-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

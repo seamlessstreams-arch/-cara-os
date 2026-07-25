@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,6 @@ import {
   UtensilsCrossed, Calendar, Clock, Leaf,
   Heart, ThumbsUp, ThumbsDown, Star, Loader2,
 } from "lucide-react";
-import { useMealPlans, useCreateMealPlan } from "@/hooks/use-meal-plans";
 import { toast } from "sonner";
 import { STAFF } from "@/lib/seed-data";
 import type { MealPlan, MealType, DietaryFlag, MealChildPreference } from "@/types/extended";
@@ -27,6 +27,27 @@ import { MEAL_TYPE_LABEL, DIETARY_FLAG_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hooks (inlined from the former use-meal-plans hook) ─────────── */
+
+const MEAL_PLANS_KEY = "meal-plans";
+const MEAL_PLANS_API = "/api/v1/meal-plans";
+
+function useMealPlans() {
+  return useQuery<{ data: MealPlan[] }>({
+    queryKey: [MEAL_PLANS_KEY],
+    queryFn: () => fetch(MEAL_PLANS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateMealPlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MealPlan>) =>
+      fetch(MEAL_PLANS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [MEAL_PLANS_KEY] }),
+  });
+}
 
 const MEAL_META: Record<MealType, { label: string; icon: React.ReactNode; time: string }> = {
   breakfast: { label: "Breakfast", icon: <Clock className="h-4 w-4" />,               time: "7:30 AM" },

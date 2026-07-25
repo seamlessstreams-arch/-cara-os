@@ -20,7 +20,8 @@ import {
   FolderOpen, BarChart3, Loader2, RefreshCw, ArrowUpDown,
 } from "lucide-react";
 import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
-import { useMaintenance, useCreateMaintenanceItem, useUpdateMaintenanceItem } from "@/hooks/use-maintenance";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import type { MaintenanceItem } from "@/types/extended";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -28,6 +29,41 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Data hooks (inlined from the former use-maintenance wrapper) ──────────────
+
+interface MaintenanceResponse {
+  data: MaintenanceItem[];
+  meta: { total: number; open: number; scheduled: number; completed: number; urgent: number };
+}
+
+function useMaintenance(params?: { status?: string; priority?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.priority) query.set("priority", params.priority);
+  return useQuery({
+    queryKey: ["maintenance", params],
+    queryFn: () => api.get<MaintenanceResponse>(`/maintenance?${query}`),
+  });
+}
+
+function useCreateMaintenanceItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MaintenanceItem>) =>
+      api.post<{ data: MaintenanceItem }>("/maintenance", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["maintenance"] }),
+  });
+}
+
+function useUpdateMaintenanceItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<MaintenanceItem> }) =>
+      api.patch<{ data: MaintenanceItem }>(`/maintenance/${id}`, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["maintenance"] }),
+  });
+}
 
 type MaintenanceStatus = "open" | "scheduled" | "completed";
 type MaintenancePriority = "urgent" | "high" | "medium" | "low";

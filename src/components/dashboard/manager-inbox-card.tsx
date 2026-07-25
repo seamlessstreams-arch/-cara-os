@@ -8,11 +8,26 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Inbox, ChevronRight, Loader2, Brain, ShieldAlert, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useManagerInbox } from "@/hooks/use-manager-inbox";
+import { api } from "@/hooks/use-api";
+import type { ManagerInboxResult } from "@/lib/manager-inbox/manager-inbox-engine";
+
+// ── Data hook (inlined from the former use-manager-inbox hook) ───────────────
+interface ManagerInboxResponse {
+  data: ManagerInboxResult;
+}
+
+function useManagerInbox() {
+  return useQuery({
+    queryKey: ["manager-inbox"],
+    queryFn: () => api.get<ManagerInboxResponse>("/manager-inbox"),
+    refetchInterval: 60_000,
+  });
+}
 
 const PRIORITY_STYLES: Record<string, { bg: string; text: string }> = {
   critical: { bg: "bg-red-100", text: "text-red-700" },

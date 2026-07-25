@@ -14,13 +14,27 @@ import React from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { Shift } from "@/types";
-import { useManagerPriorityBriefing } from "@/hooks/use-manager-priority-briefing";
+import type { PriorityBriefingResult } from "@/lib/engines/manager-priority-briefing-engine";
 import { useSystemHealth } from "@/hooks/use-system-health";
 import { getStaffName } from "@/lib/seed-data";
 import { todayStr } from "@/lib/utils";
 import {
   Users, CalendarDays, Radar, ArrowRight, CircleDot, Clock,
 } from "lucide-react";
+
+// ── Data hook (inlined from the former use-manager-priority-briefing hook) ─────
+function useManagerPriorityBriefing() {
+  return useQuery<PriorityBriefingResult>({
+    queryKey: ["manager-priority-briefing"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/manager-priority-briefing");
+      if (!res.ok) throw new Error("Failed to fetch manager priority briefing");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 export interface TodayBandChild {
   id: string;

@@ -3,12 +3,68 @@
 import { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useKeyWorkerEffectivenessIntelligence } from "@/hooks/use-key-worker-effectiveness-intelligence";
-import type {
-  EffectivenessSignal,
-  StaffKeyWorkerProfile,
-  KeyChildSnapshot,
-} from "@/hooks/use-key-worker-effectiveness-intelligence";
+import { useQuery } from "@tanstack/react-query";
+
+// ── Key worker effectiveness query (inlined from the former hook wrapper) ────
+
+type EffectivenessSignal = "exemplary" | "strong" | "developing" | "needs_support";
+
+interface KeyChildSnapshot {
+  childId: string;
+  childName: string;
+  sessionsLast30d: number;
+  daysSinceLastSession: number | null;
+  notSeenIn30d: boolean;
+}
+
+interface StaffKeyWorkerProfile {
+  staffId: string;
+  staffName: string;
+  jobTitle: string;
+  keyChildCount: number;
+  keyChildren: KeyChildSnapshot[];
+  totalSessionsLast30d: number;
+  avgSessionsPerKeyChildLast30d: number;
+  childVoiceScore: number | null;
+  childVoicePresenceRate: number | null;
+  moodImprovementRate: number | null;
+  followUpCompletionRate: number | null;
+  therapeuticApproachRate: number | null;
+  keyChildrenNotSeen: number;
+  effectivenessSignal: EffectivenessSignal;
+  supervisionPrompt: string;
+}
+
+interface KeyWorkerEffectivenessSummary {
+  totalKeyWorkers: number;
+  exemplary: number;
+  strong: number;
+  developing: number;
+  needs_support: number;
+  keyChildrenNotSeenIn30d: number;
+  homeFollowUpCompletionRate: number | null;
+  homeChildVoicePresenceRate: number | null;
+  managerNote: string;
+}
+
+interface KeyWorkerEffectivenessResponse {
+  data: {
+    staffProfiles: StaffKeyWorkerProfile[];
+    summary: KeyWorkerEffectivenessSummary;
+  };
+}
+
+function useKeyWorkerEffectivenessIntelligence() {
+  return useQuery<KeyWorkerEffectivenessResponse>({
+    queryKey: ["key-worker-effectiveness-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/key-worker-effectiveness-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch key worker effectiveness intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+}
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
 

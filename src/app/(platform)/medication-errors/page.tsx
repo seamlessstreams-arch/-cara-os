@@ -33,7 +33,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
-import { useMedicationErrors, useCreateMedicationError } from "@/hooks/use-medication-errors";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   MedErrorType,
   MedErrorSeverity,
@@ -43,6 +43,32 @@ import type {
   MedicationError,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+const MEDICATION_ERRORS_KEY = "medication-errors";
+const MEDICATION_ERRORS_API = "/api/v1/medication-errors";
+
+function useMedicationErrors(childId?: string) {
+  return useQuery<{ data: MedicationError[] }>({
+    queryKey: childId ? [MEDICATION_ERRORS_KEY, childId] : [MEDICATION_ERRORS_KEY],
+    queryFn: () =>
+      fetch(
+        childId ? `${MEDICATION_ERRORS_API}?child_id=${childId}` : MEDICATION_ERRORS_API,
+      ).then((r) => r.json()),
+  });
+}
+
+function useCreateMedicationError() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MedicationError>) =>
+      fetch(MEDICATION_ERRORS_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [MEDICATION_ERRORS_KEY] }),
+  });
+}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 

@@ -23,12 +23,36 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useLoneWorkingRecords, useCreateLoneWorkingRecord } from "@/hooks/use-lone-working-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LoneWorkingRecord, LoneWorkingScenario, LoneWorkingRiskLevel, LoneWorkingAssessmentStatus } from "@/types/extended";
 import { LONE_WORKING_SCENARIO_LABEL, LONE_WORKING_RISK_LEVEL_LABEL, LONE_WORKING_ASSESSMENT_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hooks (inlined from the former use-lone-working-records wrapper) ─ */
+
+const LONE_WORKING_RECORDS_KEY = "lone-working-records";
+
+function useLoneWorkingRecords() {
+  return useQuery<{ data: LoneWorkingRecord[] }>({
+    queryKey: [LONE_WORKING_RECORDS_KEY],
+    queryFn: () => fetch("/api/v1/lone-working-records").then((r) => r.json()),
+  });
+}
+
+function useCreateLoneWorkingRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<LoneWorkingRecord>) =>
+      fetch("/api/v1/lone-working-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [LONE_WORKING_RECORDS_KEY] }),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

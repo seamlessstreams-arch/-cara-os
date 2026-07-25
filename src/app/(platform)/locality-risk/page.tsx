@@ -17,12 +17,36 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useLocalityRisks, useUpdateLocalityRisk } from "@/hooks/use-locality-risks";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LocalityRisk, LocalityRiskCategory, LocalityRiskLevel, LocalityMitigation } from "@/types/extended";
 import { LOCALITY_RISK_CATEGORY_LABEL, LOCALITY_RISK_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hooks (inlined from the former use-locality-risks wrapper) ───── */
+
+const LOCALITY_RISKS_KEY = "locality-risks";
+
+function useLocalityRisks() {
+  return useQuery<{ data: LocalityRisk[] }>({
+    queryKey: [LOCALITY_RISKS_KEY],
+    queryFn: () => fetch("/api/v1/locality-risks").then((r) => r.json()),
+  });
+}
+
+function useUpdateLocalityRisk() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<LocalityRisk> & { id: string }) =>
+      fetch("/api/v1/locality-risks", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [LOCALITY_RISKS_KEY] }),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

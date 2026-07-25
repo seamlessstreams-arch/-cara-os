@@ -15,7 +15,23 @@ import {
   Home, Target, BookOpen, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLeavingCareIntelligence } from "@/hooks/use-leaving-care-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { LeavingCareIntelligenceResult } from "@/lib/engines/leaving-care-intelligence-engine";
+
+// ── inlined from @/hooks/use-leaving-care-intelligence ──────────────────────
+
+interface LeavingCareIntelligenceResponse {
+  data: LeavingCareIntelligenceResult;
+}
+
+function useLeavingCareIntelligence() {
+  return useQuery({
+    queryKey: ["leaving-care-intelligence"],
+    queryFn: () => api.get<LeavingCareIntelligenceResponse>("/leaving-care-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

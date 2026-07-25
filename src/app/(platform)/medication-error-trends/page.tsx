@@ -13,7 +13,21 @@ import {
   Repeat, GraduationCap, Info, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMedicationErrorTrends } from "@/hooks/use-medication-error-trends";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { MedicationErrorTrendResult } from "@/lib/medication-error-trends/medication-error-trends-engine";
+
+interface MedicationErrorTrendsResponse {
+  data: MedicationErrorTrendResult;
+}
+
+function useMedicationErrorTrends() {
+  return useQuery({
+    queryKey: ["medication-error-trends"],
+    queryFn: () => api.get<MedicationErrorTrendsResponse>("/medication-error-trends"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",

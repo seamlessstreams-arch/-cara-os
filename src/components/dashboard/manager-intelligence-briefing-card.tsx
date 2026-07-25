@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Brain, ChevronRight, Loader2, Shield, AlertTriangle,
@@ -16,7 +17,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate } from "@/lib/metrics/rate";
-import { useManagerBriefing } from "@/hooks/use-manager-briefing";
+import type { ManagerBriefingResult } from "@/lib/engines/manager-briefing-intelligence-engine";
+
+// ── Data hook (inlined from the former use-manager-briefing hook) ────────────
+function useManagerBriefing() {
+  return useQuery<{ data: ManagerBriefingResult }>({
+    queryKey: ["manager-briefing-intelligence"],
+    queryFn: () => fetch("/api/v1/manager-briefing-intelligence").then((r) => r.json()),
+    refetchInterval: 60_000,
+  });
+}
 
 const RISK_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
   critical: { bg: "bg-red-100", text: "text-red-800", border: "border-red-300", label: "CRITICAL" },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown, ChevronUp, UserPlus, CheckCircle2, XCircle,
   Clock, AlertTriangle, Plus, ArrowUpDown, Search, Scale, Loader2,
@@ -17,12 +18,32 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useMatchingReferrals, useCreateMatchingReferral } from "@/hooks/use-matching-referrals";
 import type { MatchingReferral, ReferralStatus, MatchScore, ImpactOnCurrent, MatchDomain } from "@/types/extended";
 import { REFERRAL_STATUS_LABEL, MATCH_SCORE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hooks (inlined from the former use-matching-referrals hook) ─── */
+
+const MATCHING_REFERRALS_KEY = "matching-referrals";
+const MATCHING_REFERRALS_API = "/api/v1/matching-referrals";
+
+function useMatchingReferrals() {
+  return useQuery<{ data: MatchingReferral[] }>({
+    queryKey: [MATCHING_REFERRALS_KEY],
+    queryFn: () => fetch(MATCHING_REFERRALS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateMatchingReferral() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MatchingReferral>) =>
+      fetch(MATCHING_REFERRALS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [MATCHING_REFERRALS_KEY] }),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

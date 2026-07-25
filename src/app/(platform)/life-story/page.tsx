@@ -24,12 +24,41 @@ import {
   Camera, Palette, MapPin,
   Loader2,
 } from "lucide-react";
-import { useLifeStoryEntries, useCreateLifeStoryEntry } from "@/hooks/use-life-story-entries";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LifeStoryEntry, LifeStoryEntryType, LifeStoryEntryStatus } from "@/types/extended";
 import { LIFE_STORY_ENTRY_TYPE_LABEL, LIFE_STORY_ENTRY_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hooks (inlined from the former use-life-story-entries wrapper) ───── */
+
+const LIFE_STORY_ENTRIES_KEY = "life-story-entries";
+
+function useLifeStoryEntries(childId?: string) {
+  return useQuery<{ data: LifeStoryEntry[] }>({
+    queryKey: childId ? [LIFE_STORY_ENTRIES_KEY, childId] : [LIFE_STORY_ENTRIES_KEY],
+    queryFn: () =>
+      fetch(
+        childId
+          ? `/api/v1/life-story-entries?child_id=${childId}`
+          : "/api/v1/life-story-entries"
+      ).then((r) => r.json()),
+  });
+}
+
+function useCreateLifeStoryEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<LifeStoryEntry>) =>
+      fetch("/api/v1/life-story-entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [LIFE_STORY_ENTRIES_KEY] }),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────────── */
 

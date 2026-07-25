@@ -13,7 +13,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useMedicationStorageAudits } from "@/hooks/use-medication-storage-audits";
+import { useQuery } from "@tanstack/react-query";
 import type {
   MedicationStorageAudit, StorageAuditCabinetType, StorageAuditVerdict,
   CleanlinessRating, StorageAuditCheckItem, StorageAuditExpiringItem,
@@ -27,6 +27,16 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
+
+const MEDICATION_STORAGE_AUDITS_KEY = "medication-storage-audits";
+const MEDICATION_STORAGE_AUDITS_API = "/api/v1/medication-storage-audits";
+
+function useMedicationStorageAudits() {
+  return useQuery<{ data: MedicationStorageAudit[] }>({
+    queryKey: [MEDICATION_STORAGE_AUDITS_KEY],
+    queryFn: () => fetch(MEDICATION_STORAGE_AUDITS_API).then((r) => r.json()),
+  });
+}
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 

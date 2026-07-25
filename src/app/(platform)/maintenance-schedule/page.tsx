@@ -14,12 +14,21 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useMaintenanceScheduleItems } from "@/hooks/use-maintenance-schedule-items";
+import { useQuery } from "@tanstack/react-query";
 import type { MaintenanceScheduleItem, MaintenanceScheduleCategory, MaintenanceComplianceStatus, MaintenanceDefect } from "@/types/extended";
 import { MAINTENANCE_SCHEDULE_CATEGORY_LABEL, MAINTENANCE_FREQUENCY_LABEL, MAINTENANCE_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── Data hook (inlined from the former use-maintenance-schedule-items) ──── */
+
+function useMaintenanceScheduleItems() {
+  return useQuery<{ data: MaintenanceScheduleItem[] }>({
+    queryKey: ["maintenance-schedule-items"],
+    queryFn: () => fetch("/api/v1/maintenance-schedule-items").then((r) => r.json()),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

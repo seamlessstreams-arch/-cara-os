@@ -10,13 +10,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useManagerPracticePatterns } from "@/hooks/use-manager-practice-patterns";
-import type { ChildPatternSummary, PatternInsightItem } from "@/hooks/use-manager-practice-patterns";
+import { api } from "@/hooks/use-api";
 import {
   AlertTriangle,
   ChevronDown,
@@ -33,6 +33,62 @@ import {
   ClipboardCheck,
   HeartHandshake,
 } from "lucide-react";
+
+// ── Types + data hook (inlined from the former use-manager-practice-patterns hook)
+
+interface PatternTypeBreakdown {
+  patternType: string;
+  count: number;
+  affectedChildren: string[];
+  highRiskCount: number;
+}
+
+interface PatternInsightItem {
+  patternType: string;
+  childId: string;
+  riskLevel: "low" | "medium" | "high";
+  evidence: string[];
+  recommendedManagerActions: string[];
+  supervisionPrompts: string[];
+  planReviewNeeded: boolean;
+  dateRange: { from: string; to: string };
+  staffIds?: string[];
+}
+
+interface ChildPatternSummary {
+  childId: string;
+  childName: string;
+  totalRecords: number;
+  patternInsights: PatternInsightItem[];
+  patternTypes: string[];
+  highRiskCount: number;
+  planReviewNeeded: boolean;
+}
+
+interface ManagerPracticePatternsSummary {
+  totalRecordsAnalysed: number;
+  totalInsights: number;
+  childrenWithPatterns: number;
+  planReviewsNeeded: number;
+  highRiskInsights: number;
+  periodDays: number;
+}
+
+interface ManagerPracticePatternsResponse {
+  summary: ManagerPracticePatternsSummary;
+  childSummaries: ChildPatternSummary[];
+  patternBreakdown: PatternTypeBreakdown[];
+  disclaimer: string;
+}
+
+function useManagerPracticePatterns() {
+  return useQuery({
+    queryKey: ["manager-practice-patterns"],
+    queryFn: () =>
+      api.get<{ data: ManagerPracticePatternsResponse }>("/manager-practice-patterns"),
+    staleTime: 60_000,
+  });
+}
 
 // ── Pattern type config ───────────────────────────────────────────────────────
 
