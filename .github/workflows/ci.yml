@@ -81,6 +81,12 @@ jobs:
       - name: Fabricated-score guard (an empty population must not score as compliant)
         run: node scripts/check-fabricated-scores.js
 
+      # tsc reports 0 errors on both shapes this catches — only `next build`
+      # does, and it exits at the FIRST prerender crash so it reports one at a
+      # time. This runs in ~2s and reports the complete set.
+      - name: Hook-ref guard (every useXxx() resolves; no phantom react-query imports)
+        run: node scripts/check-hook-refs.js
+
   test:
     name: Test suite
     runs-on: ubuntu-latest

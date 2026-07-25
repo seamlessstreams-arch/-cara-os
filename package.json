@@ -22,7 +22,9 @@
     "check:seed-refs": "node scripts/check-seed-refs.js",
     "check:dal-persistence": "node scripts/check-dal-persistence.js",
     "check:api-contracts": "node scripts/check-api-contracts.js",
-    "check:modal-viewport": "node scripts/check-modal-viewport.js"
+    "check:modal-viewport": "node scripts/check-modal-viewport.js",
+    "check:hook-refs": "node scripts/check-hook-refs.js",
+    "verify:batch": "node scripts/check-hook-refs.js && node scripts/check-api-contracts.js && npx tsc --noEmit && next build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.89.0",

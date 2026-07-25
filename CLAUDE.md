@@ -427,6 +427,38 @@ Example: *"This entry updated 5 records, created 3 tasks, added 2 Regulation 45 
 
 ---
 
+### VERIFICATION GATE — `tsc` IS NOT A BUILD
+
+`tsc --noEmit` returning zero errors does **not** mean the app builds. It has
+reported clean on code that failed the production build with 29 Turbopack
+errors and a prerender crash. Two shapes it silently accepts:
+
+```ts
+import { useIncidents } from "@tanstack/react-query";  // module never exported this
+const q = useCaraSafeguardingFlags({ homeId });        // not imported, not defined
+```
+
+Both ship a broken deploy. Neither is a type error.
+
+**Before committing any change that deletes, moves, or inlines a hook, module,
+or export — and before any deploy — run:**
+
+```bash
+npm run verify:batch
+```
+
+That is `check-hook-refs` → `check-api-contracts` → `tsc --noEmit` → `next build`,
+in that order: the cheap structural guards fail in ~2 seconds and report the
+*complete* set of offenders, where `next build` costs ~3 minutes and exits at the
+first prerender crash — one offender per run.
+
+**Never accept "tsc passed" as evidence that a deletion was safe.** The only
+proof a hook was genuinely inlined is a green `next build` — compile *and*
+prerender of every page. If a subagent reports "tsc PASS, deleting the file",
+that report is not evidence; re-verify it yourself.
+
+---
+
 ### FINAL STANDARD
 
 The finished system must be safe enough for live operational use in a children's home.
