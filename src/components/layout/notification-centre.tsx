@@ -8,13 +8,35 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { cn, formatRelative } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useDashboard } from "@/hooks/use-dashboard";
+import { apiFetch } from "@/hooks/use-api";
 import { usePatternAlerts } from "@/hooks/use-intelligence";
 import { useNotifications, useMarkNotificationRead } from "@/hooks/use-notifications";
 import { useAuthContext } from "@/contexts/auth-context";
+
+// ── Inlined hook from use-dashboard ─────────────────────────────────────────────
+interface DashboardData {
+  care_events?: Record<string, any>;
+  handover?: Record<string, any>;
+  incidents?: Record<string, any>;
+  tasks?: Record<string, any>;
+  medication?: Record<string, any>;
+  compliance?: Record<string, any>;
+  safeguarding?: Record<string, any>;
+  staffing?: Record<string, any>;
+  environment?: Record<string, any>;
+}
+
+function useDashboard() {
+  return useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => apiFetch<{ data: DashboardData }>("/dashboard"),
+    refetchInterval: 30_000,
+  });
+}
 import {
   Bell, AlertTriangle, Pill, MapPin, Eye, Shield,
   CheckCircle2, GraduationCap, Clock, ChevronRight,

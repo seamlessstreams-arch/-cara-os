@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -29,8 +30,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, formatRelative, isOverdue, isDueToday, todayStr } from "@/lib/utils";
-import { useDashboard } from "@/hooks/use-dashboard";
+import { apiFetch } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
+
+// ── Inlined hook from use-dashboard ─────────────────────────────────────────────
+interface DashboardData {
+  tasks: Record<string, any>;
+  incidents: Record<string, any>;
+  safeguarding: Record<string, any>;
+}
+
+function useDashboard() {
+  return useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => apiFetch<{ data: DashboardData }>("/dashboard"),
+    refetchInterval: 30_000,
+  });
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

@@ -7,6 +7,7 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,15 +58,29 @@ import { useIncidents } from "@/hooks/use-incidents";
 import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
 import { useRestraints } from "@/hooks/use-restraints";
 import { useComplaints } from "@/hooks/use-complaints";
-import { useReg44Visits } from "@/hooks/use-reg44";
+import { apiFetch } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useStaff } from "@/hooks/use-staff";
 import { useReg45Evidence } from "@/hooks/use-compliance-evidence";
 import { toast } from "sonner";
 import type { ManagerDecision } from "@/types/care-events";
+import type { Reg44VisitReport } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined hook from use-reg44 ─────────────────────────────────────────────────
+
+interface Reg44Response {
+  data: Reg44VisitReport[];
+}
+
+function useReg44Visits() {
+  return useQuery({
+    queryKey: ["reg44"],
+    queryFn: () => apiFetch<Reg44Response>("/reg44"),
+  });
+}
 
 // ── Period activity stat tile ─────────────────────────────────────────────────
 

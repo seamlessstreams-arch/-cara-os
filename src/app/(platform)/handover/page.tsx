@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CaraQuickActions } from "@/components/intelligence/cara-quick-actions";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -20,7 +21,8 @@ import {
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { YoungPerson } from "@/types";
 import { cn, formatDate, formatDateTime, todayStr } from "@/lib/utils";
-import { useHandover, useCreateHandover, useSignOffHandover } from "@/hooks/use-handover";
+import { careToast, toastSuccess } from "@/lib/toast";
+import { apiFetch } from "@/hooks/use-api";
 import { useHandoverContext } from "@/hooks/use-handover-context";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { HandoverEntry, HandoverChildUpdate } from "@/types/extended";
@@ -33,6 +35,63 @@ import { CaraHandoverBuilder } from "@/components/handover/cara-handover-builder
 import { HandoverPrintContext } from "@/components/handover/handover-print-context";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
+
+// ── Inlined hooks from use-handover ──────────────────────────────────────────────
+
+interface CreateHandoverPayload {
+  home_id?: string;
+  shift_date?: string;
+  shift_from: HandoverEntry["shift_from"];
+  shift_to: HandoverEntry["shift_to"];
+  handover_time?: string;
+  completed_at?: string | null;
+  outgoing_staff?: string[];
+  incoming_staff?: string[];
+  created_by?: string;
+  signed_off_by?: string | null;
+  child_updates?: HandoverChildUpdate[];
+  general_notes?: string;
+  flags?: string[];
+  linked_incident_ids?: string[];
+}
+
+interface SignOffPayload {
+  handover_id: string;
+  staff_id: string;
+  notes?: string;
+}
+
+function useCreateHandover() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateHandoverPayload) =>
+      apiFetch<{ data: HandoverEntry }>("/handover", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      careToast.handoverCreated();
+      qc.invalidateQueries({ queryKey: ["handover"] });
+    },
+    onError: () => careToast.actionFailed("Create handover"),
+  });
+}
+
+function useSignOffHandover() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: SignOffPayload) =>
+      apiFetch<{ data: HandoverEntry }>("/handover", {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      toastSuccess("Handover acknowledged", "Your sign-off has been recorded.");
+      qc.invalidateQueries({ queryKey: ["handover"] });
+    },
+    onError: () => careToast.actionFailed("Sign off handover"),
+  });
+}
 
 const HANDOVER_EXPORT_COLS: ExportColumn<HandoverEntry>[] = [
   { header: "Shift Date", accessor: (h) => h.shift_date },
