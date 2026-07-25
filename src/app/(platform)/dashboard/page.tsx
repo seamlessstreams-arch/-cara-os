@@ -2,7 +2,6 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -13,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar } from "@/components/ui/avatar";
 import { PriorityCard } from "@/components/ui/priority-card";
-import { apiFetch } from "@/hooks/use-api";
+import { useDashboard, useHealthCheck, useTimeSaved } from "@/hooks/use-dashboard";
 import { useCareEvents } from "@/hooks/use-care-events";
 import { useAddOversight } from "@/hooks/use-incidents";
 import { useCompleteTask } from "@/hooks/use-tasks";
@@ -34,51 +33,6 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { TaskSlaCard } from "@/components/dashboard/task-sla-card";
 import { CommandCentreHero } from "@/components/dashboard/command-centre-hero";
 import { TodayBand } from "@/components/dashboard/today-band";
-
-// ── Inlined hooks from use-dashboard ────────────────────────────────────────────
-interface DashboardData {
-  tasks: Record<string, any>;
-  incidents: Record<string, any>;
-  safeguarding: Record<string, any>;
-  staffing: Record<string, any>;
-  medication: Record<string, any>;
-  compliance: Record<string, any>;
-  environment: Record<string, any>;
-  young_people: Record<string, any>;
-  care_events?: Record<string, any>;
-  handover?: Record<string, any>;
-}
-
-interface HealthCheckScore {
-  [key: string]: any;
-}
-
-interface TimeSavedSummary {
-  [key: string]: any;
-}
-
-function useDashboard() {
-  return useQuery({
-    queryKey: ["dashboard"],
-    queryFn: () => apiFetch<{ data: DashboardData }>("/dashboard"),
-    refetchInterval: 30_000,
-  });
-}
-
-function useHealthCheck() {
-  return useQuery({
-    queryKey: ["health-check"],
-    queryFn: () => apiFetch<{ data: HealthCheckScore }>("/health-check"),
-    refetchInterval: 60_000,
-  });
-}
-
-function useTimeSaved() {
-  return useQuery({
-    queryKey: ["time-saved"],
-    queryFn: () => apiFetch<{ data: TimeSavedSummary; formatted: Record<string, string> }>("/time-saved"),
-  });
-}
 
 // ── Dynamic imports — loaded on demand to prevent browser memory crash ────────
 

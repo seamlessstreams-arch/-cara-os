@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -23,89 +22,13 @@ import {
   BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { apiFetch } from "@/hooks/use-api";
-import { toastSuccess, toastError } from "@/lib/toast";
+import { useReg44Visits, useUpdateRecommendation, useCreateVisit } from "@/hooks/use-reg44";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { Reg44VisitReport, Reg44Recommendation } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Reg44ReportIntelligencePanel } from "@/components/reg44/reg44-report-intelligence-panel";
-
-// ── Inlined types and functions from use-reg44 ──────────────────────────────────
-
-interface Reg44Response {
-  data: Reg44VisitReport[];
-}
-
-interface UpdateRecommendationPayload {
-  visit_id: string;
-  recommendation_id: string;
-  status: "completed" | "in_progress" | "outstanding";
-  evidence_notes?: string;
-}
-
-interface CreateVisitPayload {
-  visit_date: string;
-  visitor: string;
-  duration: string;
-  children_spoken: string;
-  staff_spoken: number;
-  overall_judgement: string;
-  notes: string;
-  records_reviewed?: string[];
-  strengths?: string[];
-  areas_for_development?: string[];
-  recommendations?: Reg44Recommendation[];
-  report_sent_to_ofsted?: boolean;
-  report_sent_date?: string;
-  previous_actions_status?: string;
-}
-
-function useReg44Visits() {
-  return useQuery({
-    queryKey: ["reg44"],
-    queryFn: () => apiFetch<Reg44Response>("/reg44"),
-  });
-}
-
-function useUpdateRecommendation() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: UpdateRecommendationPayload) =>
-      apiFetch<{ data: Reg44Recommendation }>("/reg44", {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: (_res, variables) => {
-      const label =
-        variables.status === "completed"
-          ? "Completed"
-          : variables.status === "in_progress"
-            ? "In Progress"
-            : "Outstanding";
-      toastSuccess("Recommendation updated", `Status set to ${label}.`);
-      qc.invalidateQueries({ queryKey: ["reg44"] });
-    },
-    onError: () => toastError("Update failed", "Could not update recommendation status."),
-  });
-}
-
-function useCreateVisit() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: CreateVisitPayload) =>
-      apiFetch<{ data: Reg44VisitReport }>("/reg44", {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      toastSuccess("Visit recorded", "New Reg 44 visit report has been saved.");
-      qc.invalidateQueries({ queryKey: ["reg44"] });
-    },
-    onError: () => toastError("Create failed", "Could not save visit report."),
-  });
-}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

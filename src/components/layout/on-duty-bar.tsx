@@ -9,27 +9,11 @@
 
 import React from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
 import { Avatar } from "@/components/ui/avatar";
-import { apiFetch } from "@/hooks/use-api";
+import { useDashboard } from "@/hooks/use-dashboard";
 import { getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import { Users, Circle } from "lucide-react";
-
-// ── Inlined hook from use-dashboard ─────────────────────────────────────────────
-interface DashboardData {
-  staffing: {
-    today_shifts: any[];
-  };
-}
-
-function useDashboard() {
-  return useQuery({
-    queryKey: ["dashboard"],
-    queryFn: () => apiFetch<{ data: DashboardData }>("/dashboard"),
-    refetchInterval: 30_000,
-  });
-}
 
 const SHIFT_LABEL: Record<string, string> = {
   day: "Day",

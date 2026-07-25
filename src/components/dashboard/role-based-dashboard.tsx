@@ -11,7 +11,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -42,32 +41,12 @@ import {
   UserCheck,
   Zap,
 } from "lucide-react";
-import { apiFetch } from "@/hooks/use-api";
+import { useDashboard } from "@/hooks/use-dashboard";
 import { useAuthContext } from "@/contexts/auth-context";
 import { CalmStatusBadge, type CalmStatus } from "@/components/ui/calm-status-badge";
 import { RiskBadge } from "@/components/ui/risk-badge";
 import { CalmEmptyState } from "@/components/ui/empty-state-calm";
 import { cn, todayStr, isOverdue, pluralise } from "@/lib/utils";
-
-// ── Inlined hook from use-dashboard ─────────────────────────────────────────────
-interface DashboardData {
-  tasks: Record<string, any>;
-  incidents: Record<string, any>;
-  safeguarding: Record<string, any>;
-  staffing: Record<string, any>;
-  medication: Record<string, any>;
-  compliance: Record<string, any>;
-  environment: Record<string, any>;
-  young_people: Record<string, any>;
-}
-
-function useDashboard() {
-  return useQuery({
-    queryKey: ["dashboard"],
-    queryFn: () => apiFetch<{ data: DashboardData }>("/dashboard"),
-    refetchInterval: 30_000,
-  });
-}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

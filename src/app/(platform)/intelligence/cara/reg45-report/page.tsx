@@ -8,7 +8,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,91 +18,15 @@ import {
 import {
   FileText, RefreshCw, Lock, CheckCircle2, ClipboardList, Send, Save,
 } from "lucide-react";
-import { apiFetch } from "@/hooks/use-api";
+import {
+  useReg45Reports,
+  useBuildReg45Report,
+  useEditReg45Report,
+  useSetReg45ReportStatus,
+} from "@/hooks/use-cara-reg45-report";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type { CaraReg45Report, CaraReg45Theme } from "@/types/cara-studio";
-
-// ── Inlined types from use-cara-reg45-report ───────────────────────────────────
-interface ListResponse {
-  data: CaraReg45Report[];
-}
-interface OneResponse {
-  data: CaraReg45Report;
-}
-
-// ── Inlined hook functions ──────────────────────────────────────────────────────
-
-function useReg45Reports(homeId?: string) {
-  const qs = homeId ? `?home_id=${encodeURIComponent(homeId)}` : "";
-  return useQuery({
-    queryKey: ["cara-reg45-report", homeId ?? null],
-    queryFn: () => apiFetch<ListResponse>(`/cara-studio/reg45-reports${qs}`),
-    refetchInterval: 60000,
-  });
-}
-
-function useBuildReg45Report() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: {
-      home_id: string;
-      period_start?: string;
-      period_end?: string;
-      title?: string;
-      actor_id?: string;
-      actor_role?: string;
-    }) => apiFetch<OneResponse>("/cara-studio/reg45-reports", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["cara-reg45-report"] });
-    },
-  });
-}
-
-function useEditReg45Report() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: {
-      id: string;
-      title?: string;
-      executive_summary?: string;
-      section_narratives?: Partial<Record<CaraReg45Theme, string>>;
-      actor_id?: string;
-      actor_role?: string;
-    }) => apiFetch<OneResponse>("/cara-studio/reg45-reports", {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["cara-reg45-report"] });
-    },
-  });
-}
-
-function useSetReg45ReportStatus() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: {
-      id: string;
-      status: CaraReg45Report["status"];
-      note?: string | null;
-      actor_id?: string;
-      actor_role?: string;
-    }) => apiFetch<OneResponse>("/cara-studio/reg45-reports", {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["cara-reg45-report"] });
-      // a lock promotes evidence chips to included_in_report
-      qc.invalidateQueries({ queryKey: ["cara-reg45-evidence"] });
-      qc.invalidateQueries({ queryKey: ["cara-annex-a-snapshot"] });
-    },
-  });
-}
 
 const HOME_ID = "home_oak";
 

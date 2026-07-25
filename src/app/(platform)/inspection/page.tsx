@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useRef, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -14,19 +13,8 @@ import {
 } from "lucide-react";
 import { HOME, getStaffName } from "@/lib/seed-data";
 import { demoSeed } from "@/lib/demo/demo-seed";
-import { apiFetch } from "@/hooks/use-api";
-import type { HealthCheckScore } from "@/types/extended";
+import { useHealthCheck } from "@/hooks/use-dashboard";
 import { usePatternAlerts, useActionOutcomes, useHomeClimate, useUpdateActionOutcome } from "@/hooks/use-intelligence";
-
-// ── Inlined hook from use-dashboard ─────────────────────────────────────────────
-
-function useHealthCheck() {
-  return useQuery({
-    queryKey: ["health-check"],
-    queryFn: () => apiFetch<{ data: HealthCheckScore }>("/health-check"),
-    refetchInterval: 60_000,
-  });
-}
 import { useAnnexAReadiness, useReg45Evidence } from "@/hooks/use-compliance-evidence";
 import { useManagementOversight, useReg40Triage } from "@/hooks/use-oversight-queues";
 import { useInspectionHistory } from "@/hooks/use-inspection-history";
