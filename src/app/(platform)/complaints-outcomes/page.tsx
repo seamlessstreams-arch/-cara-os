@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ClipboardCheck, Plus, Search, ArrowUpDown, Filter,
   CheckCircle2, AlertTriangle, Clock, BookOpen, ChevronDown, ChevronUp,
@@ -33,10 +34,6 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import {
-  useComplaintOutcomeRecords,
-  useCreateComplaintOutcomeRecord,
-} from "@/hooks/use-complaint-outcome-records";
 import type {
   ComplaintOutcomeRecord,
   ComplaintOutcome,
@@ -70,9 +67,17 @@ const OUTCOME_CARD_BORDER: Record<ComplaintOutcome, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function ComplaintsOutcomesPage() {
-  const { data, isLoading } = useComplaintOutcomeRecords();
+  const qc = useQueryClient();
+  const { data, isLoading } = useQuery<{ data: ComplaintOutcomeRecord[] }>({
+    queryKey: ["complaint-outcome-records"],
+    queryFn: () => fetch("/api/v1/complaint-outcome-records").then((r) => r.json()),
+  });
   const entries = data?.data ?? [];
-  const createMutation = useCreateComplaintOutcomeRecord();
+  const createMutation = useMutation({
+    mutationFn: (data: Partial<ComplaintOutcomeRecord>) =>
+      fetch("/api/v1/complaint-outcome-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["complaint-outcome-records"] }),
+  });
 
   const [search, setSearch] = useState("");
   const [filterOutcome, setFilterOutcome] = useState("all");

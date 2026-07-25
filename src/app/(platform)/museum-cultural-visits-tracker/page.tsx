@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -15,7 +16,6 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useCulturalVisits } from "@/hooks/use-cultural-visits";
 import type { CulturalVisit, CulturalVisitVenueType } from "@/types/extended";
 import { CULTURAL_VISIT_VENUE_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -53,7 +53,15 @@ const venueColour: Record<CulturalVisitVenueType, string> = {
 };
 
 export default function MuseumCulturalVisitsTrackerPage() {
-  const { data: res, isLoading } = useCulturalVisits();
+  const { data: res, isLoading } = useQuery<{ data: CulturalVisit[] }>({
+    queryKey: ["cultural-visits"],
+    queryFn: async () => {
+      const url = "/api/v1/cultural-visits";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch cultural visits");
+      return res.json();
+    },
+  });
   const data: CulturalVisit[] = res?.data ?? [];
 
   const [filterYP, setFilterYP] = useState("all");

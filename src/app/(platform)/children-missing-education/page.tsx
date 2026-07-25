@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -23,7 +24,6 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useCMERecords, useCreateCMERecord } from "@/hooks/use-cme-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   CMERecord, CMEStatus, AttendanceLevel,
@@ -57,9 +57,17 @@ const BORDER_STATUS: Record<CMEStatus, string> = {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function ChildrenMissingEducationPage() {
-  const { data: res, isLoading } = useCMERecords();
+  const qc = useQueryClient();
+  const { data: res, isLoading } = useQuery<{ data: CMERecord[] }>({
+    queryKey: ["cme-records"],
+    queryFn: () => fetch("/api/v1/cme-records").then((r) => r.json()),
+  });
   const items = res?.data ?? [];
-  const createMut = useCreateCMERecord();
+  const createMut = useMutation({
+    mutationFn: (data: Partial<CMERecord>) =>
+      fetch("/api/v1/cme-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["cme-records"] }),
+  });
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");

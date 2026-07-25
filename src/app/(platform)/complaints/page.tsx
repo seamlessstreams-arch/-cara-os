@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,6 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { useComplaints, useCreateComplaint, useUpdateComplaint } from "@/hooks/use-complaints";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { getYPName } from "@/lib/seed-data";
@@ -514,9 +514,25 @@ function NewComplaintDialog({
 
 export default function ComplaintsPage() {
   const { currentUser } = useAuthContext();
-  const complaintsQuery = useComplaints({ homeId: "home_oak" });
-  const createComplaint = useCreateComplaint();
-  const updateComplaint = useUpdateComplaint();
+  const qc = useQueryClient();
+  const complaintsQuery = useQuery({
+    queryKey: ["complaints", "home_oak", false],
+    queryFn:  () => api.get<{ data: Complaint[]; meta: Record<string, number> }>(`/complaints?home_id=home_oak`),
+  });
+  const createComplaint = useMutation({
+    mutationFn: (data: Partial<Complaint>) =>
+      api.post<{ data: Complaint }>("/complaints", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["complaints"] });
+    },
+  });
+  const updateComplaint = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Complaint> }) =>
+      api.patch<{ data: Complaint }>(`/complaints/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["complaints"] });
+    },
+  });
 
   const complaints = complaintsQuery.data?.data ?? [];
   const meta       = complaintsQuery.data?.meta;

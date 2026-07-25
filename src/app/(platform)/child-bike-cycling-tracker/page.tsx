@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -34,7 +35,6 @@ import {
   HELMET_CONDITION_LABEL,
   BIKE_MAINTENANCE_COMPETENCE_LABEL,
 } from "@/types/extended";
-import { useCyclingBikeRecords } from "@/hooks/use-cycling-bike-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -81,7 +81,10 @@ const exportCols: ExportColumn<CyclingBikeRecord>[] = [
 ];
 
 export default function ChildBikeCyclingTrackerPage() {
-  const { data: res, isLoading } = useCyclingBikeRecords();
+  const { data: res, isLoading } = useQuery<{ data: CyclingBikeRecord[] }>({
+    queryKey: ["cycling-bike-records"],
+    queryFn: () => fetch("/api/v1/cycling-bike-records").then((r) => r.json()),
+  });
   const data = res?.data ?? [];
 
   const [search, setSearch] = useState("");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -39,10 +40,6 @@ import {
   CONTEXTUAL_CONTEXT_TYPE_LABEL,
   CONTEXTUAL_SAFEGUARDING_STATUS_LABEL,
 } from "@/types/extended";
-import {
-  useContextualSafeguardingRisks,
-  useCreateContextualSafeguardingRisk,
-} from "@/hooks/use-contextual-safeguarding-risks";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour / border maps (kept local) ────────────────────────────────────── */
@@ -66,9 +63,20 @@ const EMPTY_FORM = {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function ContextualSafeguardingPage() {
-  const { data: queryData, isLoading } = useContextualSafeguardingRisks();
+  const qc = useQueryClient();
+  const KEY = "contextual-safeguarding-risks";
+  const API = "/api/v1/contextual-safeguarding-risks";
+
+  const { data: queryData, isLoading } = useQuery<{ data: ContextualSafeguardingRisk[] }>({
+    queryKey: [KEY],
+    queryFn: () => fetch(API).then((r) => r.json()),
+  });
   const records = queryData?.data ?? [];
-  const createMutation = useCreateContextualSafeguardingRisk();
+  const createMutation = useMutation({
+    mutationFn: (data: Partial<ContextualSafeguardingRisk>) =>
+      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
 
   const [search, setSearch] = useState("");
   const [filterRisk, setFilterRisk] = useState("all");

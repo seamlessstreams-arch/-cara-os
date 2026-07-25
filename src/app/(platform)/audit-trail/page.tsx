@@ -7,6 +7,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +24,34 @@ import {
   Lock,
   List,
 } from "lucide-react";
-import { useCareEventAuditLog, type AuditLogEntryEnriched } from "@/hooks/use-daily-summaries";
 import type { AuditAction } from "@/types/care-events";
+import { api } from "@/hooks/use-api";
+
+// ── Types (moved from hook) ───────────────────────────────────────────────────
+
+export interface AuditLogEntryEnriched {
+  id: string;
+  care_event_id?: string;
+  action: AuditAction;
+  actor_staff_id: string;
+  actor_staff_name: string | null;
+  timestamp: string;
+  care_event?: {
+    id: string;
+    title: string;
+    category: string;
+    status: string;
+    child_id: string | null;
+  } | null;
+}
+
+export interface AuditLogMeta {
+  total: number;
+  returned: number;
+  action_counts: Record<string, number>;
+  unique_events: number;
+  unique_actors: number;
+}
 import { formatDate } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { RecordActivityFeed } from "@/components/audit/record-activity-feed";
@@ -134,9 +161,15 @@ function AuditEntryRow({ entry }: { entry: AuditLogEntryEnriched }) {
 export default function AuditTrailPage() {
   const [actionFilter, setActionFilter] = useState<AuditAction | "all">("all");
 
-  const { data, isLoading } = useCareEventAuditLog({
-    action: actionFilter !== "all" ? actionFilter : undefined,
-    limit: 200,
+  const params = { action: actionFilter !== "all" ? actionFilter : undefined, limit: 200 };
+  const qs = new URLSearchParams();
+  if (params?.action) qs.set("action", params.action);
+  if (params?.limit) qs.set("limit", String(params.limit));
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+
+  const { data, isLoading } = useQuery<{ entries: AuditLogEntryEnriched[]; meta: AuditLogMeta }>({
+    queryKey: ["care-event-audit", params],
+    queryFn: () => api.get(`/care-event-audit${query}`),
   });
 
   const entries = data?.entries ?? [];

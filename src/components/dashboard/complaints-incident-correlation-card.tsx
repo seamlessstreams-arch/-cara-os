@@ -8,13 +8,15 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Link2, ChevronRight, AlertTriangle, Brain, Loader2, MessageSquareWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useComplaintsIncidentCorrelation } from "@/hooks/use-complaints-incident-correlation";
+import type { ComplaintsIncidentCorrelationResult } from "@/lib/complaints-incident-correlation/complaints-incident-correlation-engine";
+import { api } from "@/hooks/use-api";
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -37,7 +39,12 @@ const TYPE_META: Record<string, { label: string; bg: string; text: string }> = {
 };
 
 export function ComplaintsIncidentCorrelationCard() {
-  const { data, isLoading } = useComplaintsIncidentCorrelation();
+  const { data, isLoading } = useQuery({
+    queryKey: ["complaints-incident-correlation"],
+    queryFn: () =>
+      api.get<{ data: ComplaintsIncidentCorrelationResult }>("/complaints-incident-correlation"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

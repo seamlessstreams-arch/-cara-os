@@ -21,7 +21,6 @@ export interface AuditsResponse {
   meta: { total: number; completed: number; scheduled: number; in_progress: number; overdue: number };
 }
 import { useForms } from "@/hooks/use-forms";
-import { useDailyLog } from "@/hooks/use-daily-log";
 import { useRecruitment } from "@/hooks/use-recruitment";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { computeRiScores } from "@/lib/ri/compute-scores";
@@ -149,7 +148,10 @@ export default function ScorecardPage() {
     },
   });
   const { data: formsData } = useForms();
-  const { data: dailyLogData } = useDailyLog({ days: 30 });
+  const { data: dailyLogData } = useQuery({
+    queryKey: ["daily-log", { days: 30 }],
+    queryFn: () => api.get<{ data: any[]; meta: { total: number; by_type: Record<string, number> } }>(`/daily-log?days=30`),
+  });
   const { data: recruitmentData } = useRecruitment();
   const { data: ypData } = useYoungPeople("current");
 

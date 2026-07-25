@@ -8,6 +8,7 @@
 import React, { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,8 +57,8 @@ import {
   useCareEventJobs,
   useRunCareEventJobs,
 } from "@/hooks/use-care-events";
-import { useCareEventAuditLog } from "@/hooks/use-daily-summaries";
 import { toast } from "sonner";
+import { api } from "@/hooks/use-api";
 import type { CareEventRoute, CareEventAuditLog, RouteStatus, CareEventJob, JobStatus } from "@/types/care-events";
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
@@ -593,7 +594,15 @@ export default function CareEventDetailPage({
   const router = useRouter();
 
   const { data, isLoading, isError } = useCareEvent(id);
-  const { data: auditData } = useCareEventAuditLog({ care_event_id: id, limit: 50 });
+  const auditParams = { care_event_id: id, limit: 50 };
+  const qs = new URLSearchParams();
+  if (auditParams?.care_event_id) qs.set("care_event_id", auditParams.care_event_id);
+  if (auditParams?.limit) qs.set("limit", String(auditParams.limit));
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  const { data: auditData } = useQuery<{ entries: any[]; meta: any }>({
+    queryKey: ["care-event-audit", auditParams],
+    queryFn: () => api.get(`/care-event-audit${query}`),
+  });
 
   const event = data?.data;
   const routes: CareEventRoute[] = (data?.data as { routes?: CareEventRoute[] })?.routes ?? [];

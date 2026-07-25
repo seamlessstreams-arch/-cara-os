@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { useContactPlans } from "@/hooks/use-contact-plans";
+import { useQuery } from "@tanstack/react-query";
 import type { ContactPlan, ContactPlanArrangement } from "@/types/extended";
 import {
   CONTACT_METHOD_TYPE_LABEL,
@@ -49,7 +49,10 @@ const exportCols: ExportColumn<ContactPlan>[] = [
 
 /* ─── component ─── */
 export default function ContactPlansPage() {
-  const { data: res, isLoading } = useContactPlans();
+  const { data: res, isLoading } = useQuery<{ data: ContactPlan[] }>({
+    queryKey: ["contact-plans"],
+    queryFn: () => fetch("/api/v1/contact-plans").then((r) => r.json()),
+  });
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);

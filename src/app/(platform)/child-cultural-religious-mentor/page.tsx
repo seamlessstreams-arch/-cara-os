@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -25,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCulturalReligiousMentors } from "@/hooks/use-cultural-religious-mentors";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   CulturalReligiousMentor,
@@ -80,7 +80,10 @@ const roleColour: Record<CulturalMentorRole, string> = {
 };
 
 export default function ChildCulturalReligiousMentorPage() {
-  const { data: response, isLoading } = useCulturalReligiousMentors();
+  const { data: response, isLoading } = useQuery<{ data: CulturalReligiousMentor[] }>({
+    queryKey: ["cultural-religious-mentors"],
+    queryFn: () => fetch("/api/v1/cultural-religious-mentors").then((r) => r.json()),
+  });
   const records = response?.data ?? [];
 
   const [search, setSearch] = useState("");

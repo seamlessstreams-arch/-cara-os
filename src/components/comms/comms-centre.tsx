@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Megaphone, Users, MoonStar, Pill, ShieldAlert, CalendarClock, HardHat, Wrench,
   GraduationCap, HeartHandshake, Siren, Hash, Send, Check, CheckCheck, Trash2, AlertTriangle,
@@ -11,10 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthContext } from "@/contexts/auth-context";
 import { isManagerRole } from "@/lib/comms/comms-access";
-import {
-  useCommsChannels, useChannelMessages, useSendMessage, useMarkReceipt, useDeleteMessage,
-  useAnalyseLanguage, type MessageGovernanceAnalysis,
-} from "@/hooks/use-comms";
+import { api } from "@/hooks/use-api";
+import type { MessageGovernanceAnalysis } from "@/lib/comms/comms-governance";
 import { LanguageNudge, MessageActionMenu } from "@/components/comms/message-governance";
 import { EntryAssist } from "@/components/forms/entry-assist";
 import { ProtectedContent } from "@/components/privacy/protected-content";
@@ -33,25 +32,68 @@ function timeLabel(iso: string): string {
 }
 
 export function CommsCentre() {
+  const qc = useQueryClient();
   const { currentUser } = useAuthContext();
   const userId = currentUser?.id ?? "staff_darren";
   const isManager = isManagerRole(currentUser?.role ?? "residential_care_worker");
 
-  const { data: channels = [], isLoading } = useCommsChannels();
+  const { data: channels = [], isLoading } = useQuery({
+    queryKey: ["comms", "channels"],
+    queryFn: async () => (await api.get<{ data: CommsChannelSummary[] }>("/comms/channels")).data ?? [],
+    staleTime: 10_000,
+    refetchInterval: 20_000,
+    refetchIntervalInBackground: false,
+  });
   const [activeId, setActiveId] = useState<string | null>(null);
   const active = useMemo(() => channels.find((c) => c.id === activeId) ?? channels[0] ?? null, [channels, activeId]);
   const channelId = active?.id ?? null;
 
-  const { data: messages = [] } = useChannelMessages(channelId);
-  const send = useSendMessage();
-  const mark = useMarkReceipt();
-  const del = useDeleteMessage();
+  const { data: messages = [] } = useQuery({
+    queryKey: ["comms", "messages", channelId],
+    queryFn: async () =>
+      (await api.get<{ data: CommsMessageEnriched[] }>(`/comms/messages?channel_id=${channelId}`)).data ?? [],
+    enabled: !!channelId,
+    staleTime: 3_000,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: false,
+  });
+  const send = useMutation({
+    mutationFn: (payload: {
+      channel_id: string;
+      body: string;
+      priority?: "normal" | "urgent" | "emergency";
+      requires_acknowledgement?: boolean;
+      linked_child_id?: string | null;
+      linked_incident_id?: string | null;
+      linked_record_type?: string | null;
+      linked_record_id?: string | null;
+    }) => api.post<{ data: CommsMessageEnriched }>("/comms/messages", payload),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["comms", "messages", vars.channel_id] });
+      qc.invalidateQueries({ queryKey: ["comms", "channels"] });
+    },
+  });
+  const mark = useMutation({
+    mutationFn: ({ messageId, channelId, acknowledge }: { messageId: string; channelId: string; acknowledge?: boolean }) =>
+      api.post(`/comms/messages/${messageId}/receipt`, { acknowledge: !!acknowledge }),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["comms", "messages", vars.channelId] });
+      qc.invalidateQueries({ queryKey: ["comms", "channels"] });
+    },
+  });
+  const del = useMutation({
+    mutationFn: ({ messageId }: { messageId: string; channelId: string }) => api.delete(`/comms/messages/${messageId}`),
+    onSuccess: (_d, vars) => qc.invalidateQueries({ queryKey: ["comms", "messages", vars.channelId] }),
+  });
 
   const [draft, setDraft] = useState("");
   const [priority, setPriority] = useState<"normal" | "urgent" | "emergency">("normal");
 
   // Advisory language + recordable-content nudge — debounced, non-blocking.
-  const analyse = useAnalyseLanguage();
+  const analyse = useMutation({
+    mutationFn: async (payload: { text: string; has_linked_child?: boolean; has_linked_incident?: boolean }) =>
+      (await api.post<{ data: MessageGovernanceAnalysis }>("/comms/analyse-language", payload)).data,
+  });
   const [analysis, setAnalysis] = useState<MessageGovernanceAnalysis | null>(null);
   useEffect(() => {
     const text = draft.trim();

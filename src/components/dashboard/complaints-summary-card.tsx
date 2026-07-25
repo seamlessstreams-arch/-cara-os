@@ -9,10 +9,12 @@
 
 import React, { useMemo } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useComplaints } from "@/hooks/use-complaints";
 import { cn, formatRelative } from "@/lib/utils";
+import type { Complaint } from "@/types/extended";
+import { api } from "@/hooks/use-api";
 import {
   MessageCircleWarning, Loader2, AlertTriangle, CheckCircle2,
   Clock, Scale, ShieldAlert, ArrowUpRight,
@@ -36,7 +38,10 @@ const STATUS_LABELS: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function ComplaintsSummaryCard() {
-  const { data, isPending } = useComplaints({ homeId: "home_oak" });
+  const { data, isPending } = useQuery({
+    queryKey: ["complaints", "home_oak", false],
+    queryFn:  () => api.get<{ data: Complaint[]; meta: Record<string, number> }>(`/complaints?home_id=home_oak`),
+  });
   const complaints = data?.data ?? [];
 
   const {

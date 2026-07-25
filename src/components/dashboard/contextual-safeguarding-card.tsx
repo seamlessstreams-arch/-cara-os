@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +15,8 @@ import {
   MapPin, Eye, Users, Radio, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useContextualSafeguardingIntelligence } from "@/hooks/use-contextual-safeguarding-intelligence";
+import { apiFetch } from "@/hooks/use-api";
+import type { ContextualSafeguardingIntelligenceResult } from "@/lib/engines/contextual-safeguarding-intelligence-engine";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -40,7 +42,15 @@ const RISK_LEVEL_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function ContextualSafeguardingCard() {
-  const { data, isLoading } = useContextualSafeguardingIntelligence();
+  interface ContextualSafeguardingIntelligenceResponse {
+    data: ContextualSafeguardingIntelligenceResult;
+  }
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["contextual-safeguarding-intelligence"],
+    queryFn: () => apiFetch<ContextualSafeguardingIntelligenceResponse>("/contextual-safeguarding-intelligence"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

@@ -40,6 +40,12 @@ export interface MessageLanguageAnalysis {
   strengths: string[];
 }
 
+/** Advisory draft analysis combining professional-language nudge + recordable detection. */
+export interface MessageGovernanceAnalysis {
+  language: MessageLanguageAnalysis;
+  recordable: RecordableDetection;
+}
+
 /**
  * Only nudge once a message is substantial enough to judge. Very short operational
  * pings ("running 5 min late", "kettle's broken") are not records and must not be

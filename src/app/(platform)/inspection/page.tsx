@@ -17,7 +17,8 @@ import {
 import { HOME, getStaffName } from "@/lib/seed-data";
 import { demoSeed } from "@/lib/demo/demo-seed";
 import { usePatternAlerts, useActionOutcomes, useHomeClimate, useUpdateActionOutcome } from "@/hooks/use-intelligence";
-import { useAnnexAReadiness, useReg45Evidence } from "@/hooks/use-compliance-evidence";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { AnnexAEvidenceItem, Reg45EvidenceItem, ManagerDecision } from "@/types/care-events";
 import { useManagementOversight, useReg40Triage } from "@/hooks/use-oversight-queues";
 import { useInspectionHistory } from "@/hooks/use-inspection-history";
 import type { ActionOutcome , HealthCheckScore } from "@/types/extended";
@@ -802,8 +803,20 @@ export default function InspectionPage() {
   const hc = hcQuery.data?.data;
 
   // Live compliance data
-  const annexAQuery = useAnnexAReadiness();
-  const reg45Query = useReg45Evidence({ decision: "pending" });
+  const annexAQuery = useQuery({
+    queryKey: ["annex-a-readiness", {}],
+    queryFn: () =>
+      api.get<{ data: AnnexAEvidenceItem[]; meta: { readiness_score: number | null; total_evidence: number; pending_decisions: number; approved_count: number; rejected_count: number; sections: any[]; gaps: string[]; stale_count: number } }>(
+        `/annex-a-readiness`
+      ),
+  });
+  const reg45Query = useQuery({
+    queryKey: ["reg45-evidence", { decision: "pending" }],
+    queryFn: () =>
+      api.get<{ data: Reg45EvidenceItem[]; meta: { counts: { pending: number; approved: number; rejected: number; deferred: number; total: number } } }>(
+        `/reg45-evidence?decision=pending`
+      ),
+  });
   const oversightQuery = useManagementOversight({ status: "pending" });
   const reg40Query = useReg40Triage({ status: "active" });
 

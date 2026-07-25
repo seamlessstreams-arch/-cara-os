@@ -7,6 +7,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +22,40 @@ import {
   Smile,
   Star,
 } from "lucide-react";
-import { useChildDailySummaries, type ChildDailySummaryEnriched } from "@/hooks/use-daily-summaries";
 import { CARE_EVENT_CATEGORY_LABEL } from "@/types/care-events";
+import { api } from "@/hooks/use-api";
+
+// ── Types (moved from hook) ───────────────────────────────────────────────────
+
+export interface ChildDailySummaryEnriched {
+  id: string;
+  child_id: string;
+  summary_date: string;
+  summary_text?: string;
+  child?: {
+    id: string;
+    name: string;
+    date_of_birth: string;
+  } | null;
+  care_events: Array<{
+    id: string;
+    title: string;
+    category: string;
+    status: string;
+    mood_score: number | null;
+    is_significant: boolean;
+    event_time: string | null;
+  }>;
+}
+
+export interface DailySummariesMeta {
+  total: number;
+  children_count: number;
+  dates_count: number;
+  significant_events: number;
+  total_events: number;
+  require_followup: number;
+}
 import { formatDate } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -146,8 +179,14 @@ function SummaryCard({ summary }: { summary: ChildDailySummaryEnriched }) {
 export default function ChildDailySummariesPage() {
   const [selectedChild, setSelectedChild] = useState<string | undefined>(undefined);
 
-  const { data, isLoading } = useChildDailySummaries({
-    child_id: selectedChild,
+  const params = { child_id: selectedChild };
+  const qs = new URLSearchParams();
+  if (params?.child_id) qs.set("child_id", params.child_id);
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+
+  const { data, isLoading } = useQuery<{ summaries: ChildDailySummaryEnriched[]; meta: DailySummariesMeta }>({
+    queryKey: ["child-daily-summaries", params],
+    queryFn: () => api.get(`/child-daily-summaries${query}`),
   });
 
   const summaries = data?.summaries ?? [];

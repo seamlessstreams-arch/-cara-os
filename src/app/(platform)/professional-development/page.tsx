@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -29,7 +30,6 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useCpdRecords } from "@/hooks/use-cpd-records";
 import type { CPDRecord, CPDType, CPDStatus } from "@/types/extended";
 import { CPD_TYPE_LABEL, CPD_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -58,7 +58,14 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function ProfessionalDevelopmentPage() {
-  const { data: records = [], isLoading } = useCpdRecords();
+  const { data: records = [], isLoading } = useQuery<CPDRecord[]>({
+    queryKey: ["cpd-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/cpd-records");
+      if (!res.ok) throw new Error("Failed to fetch CPD records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [staffFilter, setStaffFilter] = useState("all");

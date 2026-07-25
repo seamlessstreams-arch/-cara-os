@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Building2, Star, ArrowUpDown, Filter, Search,
   AlertTriangle, CheckCircle2, ChevronDown, ChevronUp,
@@ -18,7 +19,6 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { CommissioningFeedbackRecord, CommissioningFeedbackType } from "@/types/extended";
 import { COMMISSIONING_FEEDBACK_TYPE_LABEL } from "@/types/extended";
-import { useCommissioningFeedbackRecords } from "@/hooks/use-commissioning-feedback-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -35,7 +35,10 @@ const TYPE_COLORS: Record<CommissioningFeedbackType, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function CommissioningFeedbackPage() {
-  const { data: res, isLoading } = useCommissioningFeedbackRecords();
+  const { data: res, isLoading } = useQuery<{ data: CommissioningFeedbackRecord[] }>({
+    queryKey: ["commissioning-feedback-records"],
+    queryFn: () => fetch("/api/v1/commissioning-feedback-records").then((r) => r.json()),
+  });
   const entries = res?.data ?? [];
 
   const [search, setSearch] = useState("");

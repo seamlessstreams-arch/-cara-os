@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -32,7 +33,6 @@ import {
   COOKING_COMPETENCY_LABEL,
   COOKING_OUTCOME_LABEL,
 } from "@/types/extended";
-import { useCookingBakingRecords } from "@/hooks/use-cooking-baking-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -73,7 +73,10 @@ const outcomeColour: Record<CookingOutcome, string> = {
 };
 
 export default function ChildCookingBakingSkillsPage() {
-  const { data: res, isLoading } = useCookingBakingRecords();
+  const { data: res, isLoading } = useQuery<{ data: CookingBakingRecord[] }>({
+    queryKey: ["cooking-baking-records"],
+    queryFn: () => fetch("/api/v1/cooking-baking-records").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
 
   const [search, setSearch] = useState("");

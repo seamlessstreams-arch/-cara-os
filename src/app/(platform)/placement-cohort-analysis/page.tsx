@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -26,7 +27,6 @@ import {
 } from "@/components/ui/select";
 import type { CohortAnalysis, CohortPairDynamic } from "@/types/extended";
 import { COHORT_PAIR_DYNAMIC_LABEL } from "@/types/extended";
-import { useCohortAnalyses } from "@/hooks/use-cohort-analyses";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -62,7 +62,10 @@ const EXPORT_COLS: ExportColumn<CohortAnalysis>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function PlacementCohortAnalysisPage() {
-  const { data: res, isLoading } = useCohortAnalyses();
+  const { data: res, isLoading } = useQuery<{ data: CohortAnalysis[] }>({
+    queryKey: ["cohort-analyses"],
+    queryFn: () => fetch("/api/v1/cohort-analyses").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);

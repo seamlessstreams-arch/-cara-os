@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { CivicRecord } from "@/types/extended";
-import { useCivicRecords } from "@/hooks/use-civic-records";
 import { cn } from "@/lib/utils";
 import {
   Vote,
@@ -70,7 +70,13 @@ export default function VoterRegistrationCivicPage() {
   const [sortBy, setSortBy] = useState<"date" | "name" | "age" | "status">("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: result, isLoading } = useCivicRecords(undefined, "home_oak");
+  const childId = undefined;
+  const homeId = "home_oak";
+  const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
+  const { data: result, isLoading } = useQuery<{ data: CivicRecord[] }>({
+    queryKey: ["civic-records", childId, homeId],
+    queryFn: () => fetch(`/api/v1/civic-records${qs}`).then((r) => r.json()),
+  });
   const records = result?.data ?? [];
 
   const filtered = useMemo(() => {

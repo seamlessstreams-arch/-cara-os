@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -26,7 +27,6 @@ import {
 } from "@/components/ui/select";
 import type { ClothingAllowanceRecord, ClothingPurchaseCategory, ClothingPurchase } from "@/types/extended";
 import { CLOTHING_PURCHASE_CATEGORY_LABEL } from "@/types/extended";
-import { useClothingAllowanceRecords, useCreateClothingAllowanceRecord } from "@/hooks/use-clothing-allowance-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -35,9 +35,17 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ClothingAllowancesPage() {
-  const { data: res, isLoading } = useClothingAllowanceRecords();
+  const qc = useQueryClient();
+  const { data: res, isLoading } = useQuery<{ data: ClothingAllowanceRecord[] }>({
+    queryKey: ["clothing-allowance-records"],
+    queryFn: () => fetch("/api/v1/clothing-allowance-records").then((r) => r.json()),
+  });
   const items = res?.data ?? [];
-  const createMut = useCreateClothingAllowanceRecord();
+  const createMut = useMutation({
+    mutationFn: (data: Partial<ClothingAllowanceRecord>) =>
+      fetch("/api/v1/clothing-allowance-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["clothing-allowance-records"] }),
+  });
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");

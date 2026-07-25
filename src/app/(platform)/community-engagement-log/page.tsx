@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useCommunityEngagements } from "@/hooks/use-community-engagements";
 import type { CommunityEngagement } from "@/types/extended";
 import { COMMUNITY_ACTIVITY_TYPE_LABEL } from "@/types/extended";
 import {
@@ -70,7 +70,10 @@ const exportCols: ExportColumn<CommunityEngagement>[] = [
 ];
 
 export default function CommunityEngagementLogPage() {
-  const { data: res, isLoading } = useCommunityEngagements();
+  const { data: res, isLoading } = useQuery<{ data: CommunityEngagement[] }>({
+    queryKey: ["community-engagements"],
+    queryFn: () => fetch("/api/v1/community-engagements").then((r) => r.json()),
+  });
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterType, setFilterType] = useState("all");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -9,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { useDailyRoutinePlans } from "@/hooks/use-daily-routine-plans";
 import type { DailyRoutinePlan } from "@/types/extended";
 import { ROUTINE_PLAN_STATUS_LABEL } from "@/types/extended";
 import {
@@ -41,7 +41,10 @@ const exportCols: ExportColumn<DailyRoutinePlan>[] = [
 
 /* ─── component ─── */
 export default function DailyRoutinePlansPage() {
-  const { data: res, isLoading } = useDailyRoutinePlans();
+  const { data: res, isLoading } = useQuery<{ data: DailyRoutinePlan[] }>({
+    queryKey: ["daily-routine-plans"],
+    queryFn: () => fetch("/api/v1/daily-routine-plans").then((r) => r.json()),
+  });
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);

@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, use, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { InlineOutcomePanel } from "@/components/outcome-intelligence/inline-outcome-panel";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { cn, formatDate } from "@/lib/utils";
 import { useCarePlan, useUpdateCarePlan } from "@/hooks/use-care-plans";
 import { useStaff } from "@/hooks/use-staff";
-import { useDailyLog } from "@/hooks/use-daily-log";
 import { useIncidents } from "@/hooks/use-incidents";
 import { getYPName } from "@/lib/seed-data";
 import { api } from "@/hooks/use-api";
@@ -319,7 +319,10 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
 
   // Always call hooks unconditionally — filter client-side once data loads
   const allIncidentsQuery = useIncidents();
-  const allLogsQuery      = useDailyLog({ days: 30 });
+  const allLogsQuery      = useQuery({
+    queryKey: ["daily-log", { days: 30 }],
+    queryFn: () => api.get<{ data: any[]; meta: { total: number; by_type: Record<string, number> } }>(`/daily-log?days=30`),
+  });
 
   const plan      = planQuery.data?.data;
   const staffList = staffQuery.data?.data ?? [];

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   MessageSquare, Search, ArrowUpDown, Filter, Users, Home,
   AlertCircle, ThumbsUp, ChevronDown, ChevronUp, Building2,
@@ -25,7 +26,6 @@ import {
   COMMUNITY_FEEDBACK_SOURCE_LABEL,
   COMMUNITY_FEEDBACK_TYPE_LABEL,
 } from "@/types/extended";
-import { useCommunityFeedbackRecords } from "@/hooks/use-community-feedback-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -53,7 +53,10 @@ const SOURCE_ICON: Record<CommunityFeedbackSource, typeof Home> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function CommunityFeedbackPage() {
-  const { data, isLoading } = useCommunityFeedbackRecords();
+  const { data, isLoading } = useQuery<{ data: CommunityFeedbackRecord[] }>({
+    queryKey: ["community-feedback-records"],
+    queryFn: () => fetch("/api/v1/community-feedback-records").then((r) => r.json()),
+  });
   const records = data?.data ?? [];
 
   const [search, setSearch] = useState("");

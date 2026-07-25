@@ -12,7 +12,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Scale, ChevronRight, Loader2, Brain, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useConflictDetection } from "@/hooks/use-conflict-detection";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ConflictDetectionResult } from "@/lib/conflict-detection/conflict-detection-engine";
+
+interface ConflictDetectionResponse {
+  data: ConflictDetectionResult;
+}
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -35,7 +41,11 @@ const CATEGORY_LABEL: Record<string, string> = {
 };
 
 export function ConflictDetectionCard() {
-  const { data, isLoading } = useConflictDetection();
+  const { data, isLoading } = useQuery({
+    queryKey: ["conflict-detection"],
+    queryFn: () => api.get<ConflictDetectionResponse>("/conflict-detection"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

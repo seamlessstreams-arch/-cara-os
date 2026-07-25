@@ -11,7 +11,8 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useContactArrangements, useContactLogs } from "@/hooks/use-contact";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import {
   Heart, Loader2, AlertTriangle, CheckCircle2,
@@ -21,8 +22,18 @@ import {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function FamilyContactCard() {
-  const arrangementsQuery = useContactArrangements({ homeId: "home_oak" });
-  const logsQuery = useContactLogs({ homeId: "home_oak" });
+  const arrangementsQuery = useQuery({
+    queryKey: ["contact-arrangements", "home_oak"],
+    queryFn: () =>
+      api.get<{ data: unknown[]; meta?: Record<string, number> }>("/contact-arrangements?home_id=home_oak"),
+    enabled: true,
+  });
+  const logsQuery = useQuery({
+    queryKey: ["contact-logs", "home_oak"],
+    queryFn: () =>
+      api.get<{ data: unknown[]; meta?: Record<string, number> }>("/contact-logs?home_id=home_oak"),
+    enabled: true,
+  });
 
   const arrangements = arrangementsQuery.data?.data ?? [];
   const logs = logsQuery.data?.data ?? [];

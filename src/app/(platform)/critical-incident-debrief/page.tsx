@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -26,7 +27,6 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { CriticalIncidentDebriefRecord, DebriefIncidentCategory, IncidentDebriefStatus, DebriefImpactLevel } from "@/types/extended";
 import { DEBRIEF_INCIDENT_CATEGORY_LABEL, INCIDENT_DEBRIEF_STATUS_LABEL, DEBRIEF_IMPACT_LEVEL_LABEL } from "@/types/extended";
 import { toast } from "sonner";
-import { useCriticalIncidentDebriefRecords, useCreateCriticalIncidentDebriefRecord } from "@/hooks/use-critical-incident-debrief-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -40,9 +40,20 @@ const STATUS_CLR: Record<IncidentDebriefStatus, string> = { scheduled: "bg-blue-
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function CriticalIncidentDebriefPage() {
-  const { data: raw, isLoading } = useCriticalIncidentDebriefRecords();
+  const qc = useQueryClient();
+  const KEY = "critical-incident-debrief-records";
+  const API = "/api/v1/critical-incident-debrief-records";
+
+  const { data: raw, isLoading } = useQuery<{ data: CriticalIncidentDebriefRecord[] }>({
+    queryKey: [KEY],
+    queryFn: () => fetch(API).then((r) => r.json()),
+  });
   const records = raw?.data ?? [];
-  const createRecord = useCreateCriticalIncidentDebriefRecord();
+  const createRecord = useMutation({
+    mutationFn: (data: Partial<CriticalIncidentDebriefRecord>) =>
+      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
   const [cidForm, setCidForm] = useState({ incident_date: "", debrief_date: "", incident_category: "other" as DebriefIncidentCategory, impact_level: "medium" as DebriefImpactLevel, incident_summary: "" });
   const setCID = (k: string, v: unknown) => setCidForm((p) => ({ ...p, [k]: v }));
 

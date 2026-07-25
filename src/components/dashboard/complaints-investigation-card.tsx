@@ -7,12 +7,14 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, ChevronRight, Loader2, Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useComplaintsIntelligence } from "@/hooks/use-complaints-intelligence";
+import type { ComplaintsIntelligenceResult } from "@/lib/engines/complaints-intelligence-engine";
+import { api } from "@/hooks/use-api";
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -28,7 +30,11 @@ const INSIGHT_STYLES: Record<string, string> = {
 };
 
 export function ComplaintsInvestigationCard() {
-  const { data, isLoading } = useComplaintsIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["complaints-intelligence"],
+    queryFn: () => api.get<{ data: ComplaintsIntelligenceResult }>("/complaints-intelligence"),
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

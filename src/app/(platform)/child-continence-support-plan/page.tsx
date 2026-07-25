@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -17,14 +18,16 @@ import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { ContinencePlan, ContinencePresentation } from "@/types/extended";
 import { CONTINENCE_PRESENTATION_LABEL } from "@/types/extended";
-import { useContinencePlans } from "@/hooks/use-continence-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 export default function ChildContinenceSupportPlanPage() {
-  const { data: res, isLoading } = useContinencePlans();
+  const { data: res, isLoading } = useQuery<{ data: ContinencePlan[] }>({
+    queryKey: ["continence-plans"],
+    queryFn: () => fetch("/api/v1/continence-plans").then((r) => r.json()),
+  });
   const data = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

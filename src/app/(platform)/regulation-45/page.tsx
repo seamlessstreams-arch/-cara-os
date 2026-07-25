@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -48,11 +49,8 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
-import {
-  useReg45Evidence,
-  useDecideReg45Evidence,
-  type Reg45EvidenceEnriched,
-} from "@/hooks/use-compliance-evidence";
+import type { Reg45EvidenceEnriched, Reg45EvidenceItem, ManagerDecision } from "@/types/care-events";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -233,7 +231,19 @@ function ReviewDialog({
   onClose: () => void;
 }) {
   const { currentUser } = useAuthContext();
-  const decideMutation = useDecideReg45Evidence();
+  const queryClient = useQueryClient();
+  const decideMutation = useMutation({
+    mutationFn: (payload: {
+      id: string;
+      manager_decision: ManagerDecision;
+      manager_approved_text?: string;
+      review_notes?: string;
+      reviewed_by: string;
+    }) => api.patch<{ data: Reg45EvidenceItem }>("/reg45-evidence", payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reg45-evidence"] });
+    },
+  });
   const [approvedText, setApprovedText] = useState(
     item.manager_approved_text ?? item.suggested_text
   );
@@ -440,8 +450,20 @@ function ReportBuilderTab({
 }: {
   onDecide: (item: Reg45EvidenceEnriched) => void;
 }) {
-  const { data: approvedData, isLoading } = useReg45Evidence({ decision: "approved" });
-  const { data: allData } = useReg45Evidence({});
+  const { data: approvedData, isLoading } = useQuery({
+    queryKey: ["reg45-evidence", { decision: "approved" }],
+    queryFn: () =>
+      api.get<{ data: Reg45EvidenceEnriched[]; meta: { counts: { pending: number; approved: number; rejected: number; deferred: number; total: number } } }>(
+        `/reg45-evidence?decision=approved`
+      ),
+  });
+  const { data: allData } = useQuery({
+    queryKey: ["reg45-evidence", {}],
+    queryFn: () =>
+      api.get<{ data: Reg45EvidenceEnriched[]; meta: { counts: { pending: number; approved: number; rejected: number; deferred: number; total: number } } }>(
+        `/reg45-evidence`
+      ),
+  });
   const [narratives, setNarratives] = useState<Record<string, string>>({});
   const [expandedTheme, setExpandedTheme] = useState<string | null>(null);
 
@@ -678,7 +700,13 @@ const MANAGEMENT_SUGGESTIONS: Array<{
 ];
 
 function PatternsTab() {
-  const { data, isLoading } = useReg45Evidence({});
+  const { data, isLoading } = useQuery({
+    queryKey: ["reg45-evidence", {}],
+    queryFn: () =>
+      api.get<{ data: Reg45EvidenceEnriched[]; meta: { counts: { pending: number; approved: number; rejected: number; deferred: number; total: number } } }>(
+        `/reg45-evidence`
+      ),
+  });
   const [copied, setCopied] = useState(false);
 
   const allItems: Reg45EvidenceEnriched[] = data?.data ?? [];
@@ -990,7 +1018,16 @@ export default function Regulation45EvidencePage() {
   const [reviewingItem, setReviewingItem] = useState<Reg45EvidenceEnriched | null>(null);
 
   const decisionParam = filter === "all" ? undefined : filter;
-  const { data, isLoading } = useReg45Evidence({ decision: decisionParam });
+  const searchParams = new URLSearchParams();
+  if (decisionParam) searchParams.set("decision", decisionParam);
+  const qs = searchParams.toString();
+  const { data, isLoading } = useQuery({
+    queryKey: ["reg45-evidence", { decision: decisionParam }],
+    queryFn: () =>
+      api.get<{ data: Reg45EvidenceEnriched[]; meta: { counts: { pending: number; approved: number; rejected: number; deferred: number; total: number } } }>(
+        `/reg45-evidence${qs ? `?${qs}` : ""}`
+      ),
+  });
 
   const items = data?.data ?? [];
   const counts = data?.meta?.counts;

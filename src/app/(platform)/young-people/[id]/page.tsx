@@ -39,7 +39,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
-import { useContactArrangements, useContactLogs } from "@/hooks/use-contact";
+import { useQuery } from "@tanstack/react-query";
 import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
 import type { Incident, Medication, CareForm, DailyLogEntry } from "@/types";
 import type {
@@ -287,8 +287,18 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
   const createSession = useCreateKeyWorkSession();
   const keyWorkSessions: KeyWorkSession[] = keyWorkQuery.data?.data ?? [];
 
-  const contactArrangementsQuery = useContactArrangements({ childId: id });
-  const contactLogsQuery         = useContactLogs({ childId: id });
+  const contactArrangementsQuery = useQuery({
+    queryKey: ["contact-arrangements", id],
+    queryFn: () =>
+      api.get<{ data: (ContactArrangement & { contact_person?: unknown })[] }>(`/contact-arrangements?child_id=${id}`),
+    enabled: !!id,
+  });
+  const contactLogsQuery = useQuery({
+    queryKey: ["contact-logs", id],
+    queryFn: () =>
+      api.get<{ data: (ContactLog & { contact_person?: unknown })[] }>(`/contact-logs?child_id=${id}`),
+    enabled: !!id,
+  });
   const arrangements: ContactArrangement[] = contactArrangementsQuery.data?.data ?? [];
   const contactLogs: ContactLog[]          = contactLogsQuery.data?.data ?? [];
 

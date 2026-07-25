@@ -7,7 +7,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useConsequenceRecords } from "@/hooks/use-consequence-records";
+import { useQuery } from "@tanstack/react-query";
 import type { ConsequenceRecord } from "@/types/extended";
 import { BEHAVIOUR_LEVEL_LABEL, CONSEQUENCE_APPROACH_LABEL } from "@/types/extended";
 import {
@@ -64,7 +64,10 @@ const exportCols: ExportColumn<ConsequenceRecord>[] = [
 ];
 
 export default function ConsequenceFrameworkPage() {
-  const { data: res, isLoading } = useConsequenceRecords();
+  const { data: res, isLoading } = useQuery<{ data: ConsequenceRecord[] }>({
+    queryKey: ["consequence-records"],
+    queryFn: () => fetch("/api/v1/consequence-records").then((r) => r.json()),
+  });
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterYP, setFilterYP] = useState("all");

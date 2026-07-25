@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +15,8 @@ import {
   Brain, Clock, Send, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useComplaintsIntelligence } from "@/hooks/use-complaints-intelligence";
+import type { ComplaintsIntelligenceResult } from "@/lib/engines/complaints-intelligence-engine";
+import { api } from "@/hooks/use-api";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -43,7 +45,11 @@ const SOURCE_COLOURS: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function ComplaintsNotificationsCard() {
-  const { data, isLoading } = useComplaintsIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["complaints-intelligence"],
+    queryFn: () => api.get<{ data: ComplaintsIntelligenceResult }>("/complaints-intelligence"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

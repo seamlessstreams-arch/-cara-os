@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,8 +10,7 @@ import {
   Loader2, RefreshCw, Clock, AlertOctagon, CheckCircle2, Circle, Hourglass,
   User, MessageSquareWarning, ArrowUpRight,
 } from "lucide-react";
-import { useComplaintsClock } from "@/hooks/use-complaints-clock";
-import type { ComplaintClock, ClockUrgency, StageClock } from "@/lib/engines/complaints-clock-engine";
+import type { ComplaintClock, ClockUrgency, StageClock, ComplaintsClockResult } from "@/lib/engines/complaints-clock-engine";
 
 const URGENCY_META: Record<ClockUrgency, { label: string; dot: string; badge: string; rag: string; border: string }> = {
   breached: { label: "Past deadline", dot: "bg-red-500", badge: "bg-red-100 text-red-800 border-red-200", rag: "cs-rag-red", border: "border-l-red-500" },
@@ -85,7 +85,16 @@ function ComplaintCard({ c }: { c: ComplaintClock }) {
 }
 
 export default function ComplaintsClockPage() {
-  const { data, isLoading, isFetching, refetch } = useComplaintsClock();
+  const { data, isLoading, isFetching, refetch } = useQuery<ComplaintsClockResult>({
+    queryKey: ["complaints-clock"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/complaints-clock");
+      if (!res.ok) throw new Error("Failed to fetch complaints clock");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 120_000,
+  });
   const s = data?.summary;
 
   return (

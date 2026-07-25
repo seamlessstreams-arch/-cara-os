@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -26,7 +27,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useCuriosityLogEntries } from "@/hooks/use-curiosity-log-entries";
 import type { CuriosityLogEntry, CuriosityFocusArea } from "@/types/extended";
 import { CURIOSITY_FOCUS_AREA_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -64,7 +64,14 @@ const d = (n: number) => {
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function ProfessionalCuriosityLogPage() {
-  const { data: records = [], isLoading } = useCuriosityLogEntries();
+  const { data: records = [], isLoading } = useQuery<CuriosityLogEntry[]>({
+    queryKey: ["curiosity-log-entries"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/curiosity-log-entries");
+      if (!res.ok) throw new Error("Failed to fetch curiosity log entries");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
   const [search, setSearch] = useState("");
   const [focusFilter, setFocusFilter] = useState("all");
   const [staffFilter, setStaffFilter] = useState("all");

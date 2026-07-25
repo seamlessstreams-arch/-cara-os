@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useCommunicationProfiles } from "@/hooks/use-communication-profiles";
 import type { CommunicationProfile, CommLevel, CommSupportLevel, CommEffectiveness, SendStatus } from "@/types/extended";
 import { COMM_LEVEL_LABEL, COMM_SUPPORT_LEVEL_LABEL, COMM_EFFECTIVENESS_LABEL, SEND_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -43,7 +43,11 @@ const EFFECT_CLR: Record<CommEffectiveness, string> = {
 };
 
 export default function LanguageCommunicationPage() {
-  const { data: res, isLoading } = useCommunicationProfiles();
+  const { data: res, isLoading } = useQuery<{ data: CommunicationProfile[] }>({
+    queryKey: ["communication-profiles"],
+    queryFn: () =>
+      fetch("/api/v1/communication-profiles").then((r) => r.json()),
+  });
   const data: CommunicationProfile[] = res?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);

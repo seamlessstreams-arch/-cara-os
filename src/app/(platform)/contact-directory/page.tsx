@@ -26,10 +26,7 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { ContactDirectoryEntry, ContactCategory } from "@/types/extended";
-import {
-  useContactDirectoryEntries,
-  useCreateContactDirectoryEntry,
-} from "@/hooks/use-contact-directory-entries";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search, ArrowUpDown, X, Plus, Phone, Mail, User,
   ChevronDown, ChevronUp, Shield, Building2,
@@ -62,8 +59,16 @@ const CATEGORY_CONFIG: Record<ContactCategory, { label: string; colour: string }
 export default function ContactDirectoryPage() {
   const { currentUser } = useAuthContext();
 
-  const { data, isLoading } = useContactDirectoryEntries();
-  const createMutation = useCreateContactDirectoryEntry();
+  const { data, isLoading } = useQuery<{ data: ContactDirectoryEntry[] }>({
+    queryKey: ["contact-directory-entries"],
+    queryFn: () => fetch("/api/v1/contact-directory-entries").then((r) => r.json()),
+  });
+  const qc = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: (data: Partial<ContactDirectoryEntry>) =>
+      fetch("/api/v1/contact-directory-entries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["contact-directory-entries"] }),
+  });
   const contacts: ContactDirectoryEntry[] = data?.data ?? [];
 
   const [search, setSearch] = useState("");

@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
 import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
@@ -19,7 +20,6 @@ import {
 } from "lucide-react";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { cn, formatDate } from "@/lib/utils";
-import { useDailyLog, useCreateDailyLog } from "@/hooks/use-daily-log";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { InlineRelationalPanel } from "@/components/relational-timeline/inline-relational-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
@@ -114,7 +114,19 @@ interface NewEntryFormProps {
 function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
   const ypQuery = useYoungPeople();
   const currentYP = ypQuery.data?.data ?? [];
-  const createMutation = useCreateDailyLog();
+  const qc = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: (data: { child_id: string; entry_type: DailyLogEntry["entry_type"]; content: string; mood_score?: number | null; is_significant?: boolean; requires_action?: boolean; action_notes?: string | null }) =>
+      api.post<{ data: DailyLogEntry }>("/daily-log", data),
+    onSuccess: () => {
+      // careToast.dailyLogSaved();
+      qc.invalidateQueries({ queryKey: ["daily-log"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: () => {
+      // careToast.actionFailed("Save daily log");
+    },
+  });
   const { currentUser, currentRole } = useAuthContext();
 
   const [childId, setChildId] = useState(currentYP[0]?.id ?? "");
@@ -524,7 +536,14 @@ export default function DailyLogPage() {
   const ypQuery = useYoungPeople();
   const currentYP = ypQuery.data?.data ?? [];
 
-  // Build params for useDailyLog
+  // Build params for query
+  const query = new URLSearchParams();
+  if (selectedYP !== "all") query.set("child_id", selectedYP);
+  if (dateFilter === "today") query.set("date", new Date().toISOString().slice(0, 10));
+  if (dateFilter === "yesterday") query.set("date", new Date(Date.now() - 86400000).toISOString().slice(0, 10));
+  if (dateFilter === "7days") query.set("days", String(7));
+  if (typeFilter !== "all") query.set("entry_type", typeFilter);
+
   const queryParams = {
     ...(selectedYP !== "all" ? { child_id: selectedYP } : {}),
     ...(dateFilter === "today" ? { date: new Date().toISOString().slice(0, 10) } : {}),
@@ -533,7 +552,10 @@ export default function DailyLogPage() {
     ...(typeFilter !== "all" ? { entry_type: typeFilter } : {}),
   };
 
-  const { data, isLoading, isError, error } = useDailyLog(queryParams);
+  const { data, isLoading, isError, error } = useQuery<{ data: DailyLogEntry[]; meta: { total: number; by_type: Record<string, number> } }>({
+    queryKey: ["daily-log", queryParams],
+    queryFn: () => api.get<{ data: DailyLogEntry[]; meta: { total: number; by_type: Record<string, number> } }>(`/daily-log?${query}`),
+  });
 
   const allEntries = data?.data ?? [];
   const typeCounts = data?.meta.by_type ?? {};

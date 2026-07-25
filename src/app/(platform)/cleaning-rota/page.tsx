@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useCleaningEntries } from "@/hooks/use-cleaning-entries";
 import type { CleaningEntry } from "@/types/extended";
 import { CLEANING_SHIFT_LABEL, CLEANING_AREA_LABEL, CLEANING_TYPE_LABEL, CLEANING_CHILD_INVOLVEMENT_LABEL } from "@/types/extended";
 import {
@@ -51,7 +51,10 @@ const exportCols: ExportColumn<CleaningEntry>[] = [
 ];
 
 export default function CleaningRotaPage() {
-  const { data: res, isLoading } = useCleaningEntries();
+  const { data: res, isLoading } = useQuery<{ data: CleaningEntry[] }>({
+    queryKey: ["cleaning-entries"],
+    queryFn: () => fetch("/api/v1/cleaning-entries").then((r) => r.json()),
+  });
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterType, setFilterType] = useState("all");

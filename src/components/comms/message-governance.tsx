@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   FileText, Lock, Unlock, AlertTriangle, Sparkles, CheckCircle2, ChevronDown, ChevronUp, Loader2, ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import {
-  useConvertMessage, useSetInvestigationHold, type MessageGovernanceAnalysis,
-} from "@/hooks/use-comms";
+import { api } from "@/hooks/use-api";
+import type { MessageGovernanceAnalysis } from "@/lib/comms/comms-governance";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { CONVERSION_ACTIONS, ACTION_EVENT_MAP, RETENTION_CATEGORIES } from "@/lib/comms/comms-governance";
 import type { CommsMessageEnriched, CommsMessageActionType, CommsLinkedRecordType } from "@/types/comms";
@@ -64,12 +64,48 @@ export function MessageActionMenu({
   channelId: string;
   isManager: boolean;
 }) {
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [showRetention, setShowRetention] = useState(false);
   const [childPickerFor, setChildPickerFor] = useState<CommsMessageActionType | null>(null);
   const [heldReason, setHeldReason] = useState<string | null>(null);
-  const convert = useConvertMessage();
-  const hold = useSetInvestigationHold();
+  const convert = useMutation({
+    mutationFn: ({
+      messageId,
+      ...payload
+    }: {
+      messageId: string;
+      channelId: string;
+      action_type: CommsMessageActionType;
+      child_id?: string | null;
+      summary?: string;
+      task_title?: string;
+      task_priority?: "low" | "medium" | "high" | "urgent";
+      due_date?: string | null;
+    }) => api.post<{ data: { converted: boolean; action_type: CommsMessageActionType; reason?: string; target_record_id?: string | null } }>(`/comms/messages/${messageId}/convert`, payload),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["comms", "messages", vars.channelId] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["event-stream"] });
+      qc.invalidateQueries({ queryKey: ["event-intelligence"] });
+    },
+  });
+  const hold = useMutation({
+    mutationFn: ({
+      messageId,
+      ...payload
+    }: {
+      messageId: string;
+      channelId: string;
+      hold: boolean;
+      retention_category?: string;
+      reason?: string;
+    }) => api.post(`/comms/messages/${messageId}/hold`, payload),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["comms", "messages", vars.channelId] });
+      qc.invalidateQueries({ queryKey: ["comms", "channels"] });
+    },
+  });
   const { data: ypEnvelope } = useYoungPeople("current");
   const youngPeople = ypEnvelope?.data ?? [];
 

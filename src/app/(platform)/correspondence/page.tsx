@@ -10,8 +10,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CorrespondenceEntry, CorrespondenceDirection, CorrespondenceMethod, CorrespondencePriority, CorrespondenceStatus } from "@/types/extended";
-import { useCorrespondenceEntries, useCreateCorrespondenceEntry, useUpdateCorrespondenceEntry } from "@/hooks/use-correspondence-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import { PageShell } from "@/components/layout/page-shell";
@@ -68,11 +68,25 @@ const STATUS_CONFIG: Record<CorrespondenceStatus, { label: string; colour: strin
 
 export default function CorrespondencePage() {
   const { currentUser } = useAuthContext();
+  const qc = useQueryClient();
+  const KEY = "correspondence-entries";
+  const API = "/api/v1/correspondence-entries";
 
-  const { data: raw, isLoading } = useCorrespondenceEntries();
+  const { data: raw, isLoading } = useQuery<{ data: CorrespondenceEntry[] }>({
+    queryKey: [KEY],
+    queryFn: () => fetch(API).then((r) => r.json()),
+  });
   const entries = raw?.data ?? [];
-  const createEntry = useCreateCorrespondenceEntry();
-  const updateEntry = useUpdateCorrespondenceEntry();
+  const createEntry = useMutation({
+    mutationFn: (data: Partial<CorrespondenceEntry>) =>
+      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
+  const updateEntry = useMutation({
+    mutationFn: (data: Partial<CorrespondenceEntry> & { id: string }) =>
+      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
   const [search, setSearch] = useState("");
   const [dirFilter, setDirFilter] = useState("all");
   const [methodFilter, setMethodFilter] = useState("all");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Globe, Search, ChevronDown, ChevronUp,
   CheckCircle2, AlertTriangle, Heart, Star,
@@ -15,7 +16,6 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { CulturalIdentityPlan, CulturalIdentityArea, CulturalIdentityAreaStatus } from "@/types/extended";
 import { CULTURAL_IDENTITY_AREA_STATUS_LABEL } from "@/types/extended";
-import { useCulturalIdentityPlans } from "@/hooks/use-cultural-identity-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -23,7 +23,10 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function CulturalIdentityPage() {
-  const { data: raw, isLoading } = useCulturalIdentityPlans();
+  const { data: raw, isLoading } = useQuery<{ data: CulturalIdentityPlan[] }>({
+    queryKey: ["cultural-identity-plans"],
+    queryFn: () => fetch("/api/v1/cultural-identity-plans").then((r) => r.json()),
+  });
   const plans = raw?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
 

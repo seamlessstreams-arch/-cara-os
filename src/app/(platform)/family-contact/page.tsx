@@ -24,13 +24,8 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import {
-  useContactArrangements,
-  useContactLogs,
-  useUpdateContactArrangement,
-  useUpdateContactLog,
-  useCreateContactLog,
-} from "@/hooks/use-contact";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import Link from "next/link";
 import { getYPName } from "@/lib/seed-data";
 import type {
@@ -833,12 +828,41 @@ function UnapprovedPersonsBanner({ arrangements }: { arrangements: EnrichedArran
 export default function FamilyContactPage() {
   const { currentUser } = useAuthContext();
   const homeId = "home_oak";
+  const qc = useQueryClient();
 
-  const arrangementsQuery = useContactArrangements({ homeId });
-  const logsQuery         = useContactLogs({ homeId });
-  const updateArrangement = useUpdateContactArrangement();
-  const updateLog         = useUpdateContactLog();
-  const createLog         = useCreateContactLog();
+  const arrangementsQuery = useQuery({
+    queryKey: ["contact-arrangements", homeId],
+    queryFn: () =>
+      api.get<{ data: (ContactArrangement & { contact_person: ContactPerson | null })[] }>(`/contact-arrangements?home_id=${homeId}`),
+    enabled: !!homeId,
+  });
+  const logsQuery = useQuery({
+    queryKey: ["contact-logs", homeId],
+    queryFn: () =>
+      api.get<{ data: (ContactLog & { contact_person: ContactPerson | null })[] }>(`/contact-logs?home_id=${homeId}`),
+    enabled: !!homeId,
+  });
+  const updateArrangement = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<ContactArrangement> }) =>
+      api.patch<{ data: ContactArrangement }>(`/contact-arrangements/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["contact-arrangements"] });
+    },
+  });
+  const updateLog = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<ContactLog> }) =>
+      api.patch<{ data: ContactLog }>(`/contact-logs/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["contact-logs"] });
+    },
+  });
+  const createLog = useMutation({
+    mutationFn: (data: Partial<ContactLog>) =>
+      api.post<{ data: ContactLog }>("/contact-logs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["contact-logs"] });
+    },
+  });
 
   const [filterYp, setFilterYp] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");

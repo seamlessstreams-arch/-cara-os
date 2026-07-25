@@ -14,7 +14,13 @@ import {
   ShieldCheck, ChevronRight, Brain, Loader2, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useComplianceRules } from "@/hooks/use-compliance-rules";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ComplianceRulesResult } from "@/lib/compliance-rules/compliance-rules-engine";
+
+interface ComplianceRulesResponse {
+  data: ComplianceRulesResult;
+}
 
 const SEVERITY_STYLES: Record<string, { bg: string; text: string }> = {
   critical: { bg: "bg-red-100", text: "text-red-700" },
@@ -29,7 +35,11 @@ const INSIGHT_STYLES: Record<string, string> = {
 };
 
 export function ComplianceRulesCard() {
-  const { data, isLoading } = useComplianceRules();
+  const { data, isLoading } = useQuery({
+    queryKey: ["compliance-rules"],
+    queryFn: () => api.get<ComplianceRulesResponse>("/compliance-rules"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

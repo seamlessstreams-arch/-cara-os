@@ -13,7 +13,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate } from "@/lib/metrics/rate";
-import { useContactEngagement } from "@/hooks/use-contact-engagement";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ContactEngagementResult } from "@/lib/engines/contact-engagement-engine";
+
+interface ContactEngagementResponse {
+  data: ContactEngagementResult;
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -29,7 +35,11 @@ const INSIGHT_STYLES: Record<string, string> = {
 };
 
 export function ChildrensWishesFeelingsCard() {
-  const { data, isLoading } = useContactEngagement();
+  const { data, isLoading } = useQuery({
+    queryKey: ["contact-engagement"],
+    queryFn: () => api.get<ContactEngagementResponse>("/contact-engagement"),
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

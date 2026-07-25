@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Scale,
   Shield,
@@ -34,7 +35,6 @@ import {
   COURT_ATTENDANCE_TYPE_LABEL,
   COURT_CHILD_ROLE_LABEL,
 } from "@/types/extended";
-import { useCourtAttendanceRecords } from "@/hooks/use-court-attendance-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -64,7 +64,10 @@ const ROLE_COLOURS: Record<CourtChildRole, string> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildCourtAttendanceSupportPage() {
-  const { data: response, isLoading } = useCourtAttendanceRecords();
+  const { data: response, isLoading } = useQuery<{ data: CourtAttendanceRecord[] }>({
+    queryKey: ["court-attendance-records"],
+    queryFn: () => fetch("/api/v1/court-attendance-records").then((r) => r.json()),
+  });
   const data = response?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");

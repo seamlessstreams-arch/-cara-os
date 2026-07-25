@@ -5,6 +5,7 @@
 // Cross-dataset early-warning view linking children's complaints to incidents.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,8 @@ import {
   ListChecks, ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useComplaintsIncidentCorrelation } from "@/hooks/use-complaints-incident-correlation";
+import type { ComplaintsIncidentCorrelationResult } from "@/lib/complaints-incident-correlation/complaints-incident-correlation-engine";
+import { api } from "@/hooks/use-api";
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",
@@ -41,7 +43,12 @@ const TYPE_META: Record<string, { label: string; bg: string; text: string; ring:
 };
 
 export default function ComplaintsIncidentCorrelationPage() {
-  const { data, isLoading } = useComplaintsIncidentCorrelation();
+  const { data, isLoading } = useQuery({
+    queryKey: ["complaints-incident-correlation"],
+    queryFn: () =>
+      api.get<{ data: ComplaintsIncidentCorrelationResult }>("/complaints-incident-correlation"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   return (

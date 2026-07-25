@@ -15,11 +15,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
-import {
-  useConsentRecords,
-  useCreateConsentRecord,
-  useUpdateConsentRecord,
-} from "@/hooks/use-consent-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   ConsentRecord,
   ConsentCategory,
@@ -78,10 +74,22 @@ const EXPORT_COLS: ExportColumn<ConsentRecord>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function ConsentRecordsPage() {
-  const { data, isLoading } = useConsentRecords();
+  const { data, isLoading } = useQuery<{ data: ConsentRecord[] }>({
+    queryKey: ["consent-records"],
+    queryFn: () => fetch("/api/v1/consent-records").then((r) => r.json()),
+  });
   const records = data?.data ?? [];
-  const createMutation = useCreateConsentRecord();
-  const updateMutation = useUpdateConsentRecord();
+  const qc = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: (data: Partial<ConsentRecord>) =>
+      fetch("/api/v1/consent-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["consent-records"] }),
+  });
+  const updateMutation = useMutation({
+    mutationFn: (data: Partial<ConsentRecord> & { id: string }) =>
+      fetch("/api/v1/consent-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["consent-records"] }),
+  });
 
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");

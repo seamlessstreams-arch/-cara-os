@@ -14,7 +14,13 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useContactEngagement } from "@/hooks/use-contact-engagement";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ContactEngagementResult } from "@/lib/engines/contact-engagement-engine";
+
+interface ContactEngagementResponse {
+  data: ContactEngagementResult;
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -34,7 +40,11 @@ const INSIGHT_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function FamilyEngagementTrackingCard() {
-  const { data, isLoading } = useContactEngagement();
+  const { data, isLoading } = useQuery({
+    queryKey: ["contact-engagement"],
+    queryFn: () => api.get<ContactEngagementResponse>("/contact-engagement"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

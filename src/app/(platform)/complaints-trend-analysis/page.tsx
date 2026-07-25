@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -28,12 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useComplaintTrends } from "@/hooks/use-complaint-trends";
 import type { ComplaintTrend } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 export default function ComplaintsTrendAnalysisPage() {
-  const { data: res, isLoading } = useComplaintTrends();
+  const { data: res, isLoading } = useQuery<{ data: ComplaintTrend[] }>({
+    queryKey: ["complaint-trends"],
+    queryFn: () => fetch("/api/v1/complaint-trends").then((r) => r.json()),
+  });
   const data: ComplaintTrend[] = res?.data ?? [];
 
   const [sortBy, setSortBy] = useState("period");

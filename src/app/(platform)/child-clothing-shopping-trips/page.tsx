@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -26,7 +27,6 @@ import {
 } from "@/components/ui/select";
 import type { ClothingShoppingTrip, ClothingShopType, ShoppingMood } from "@/types/extended";
 import { CLOTHING_SHOP_TYPE_LABEL, SHOPPING_MOOD_LABEL } from "@/types/extended";
-import { useClothingShoppingTrips } from "@/hooks/use-clothing-shopping-trips";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -52,7 +52,10 @@ const exportCols: ExportColumn<ClothingShoppingTrip>[] = [
 ];
 
 export default function ChildClothingShoppingTripsPage() {
-  const { data: res, isLoading } = useClothingShoppingTrips();
+  const { data: res, isLoading } = useQuery<{ data: ClothingShoppingTrip[] }>({
+    queryKey: ["clothing-shopping-trips"],
+    queryFn: () => fetch("/api/v1/clothing-shopping-trips").then((r) => r.json()),
+  });
   const data = res?.data ?? [];
 
   const [filterYP, setFilterYP] = useState("all");

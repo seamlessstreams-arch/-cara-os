@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -38,7 +39,6 @@ import {
   CREATIVE_PROJECT_STATUS_LABEL,
   CREATIVE_PROJECT_FUNDING_LABEL,
 } from "@/types/extended";
-import { useCreativeProjectRecords } from "@/hooks/use-creative-project-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -79,7 +79,10 @@ export default function ChildCreativeProjectsPage() {
   const [sortBy, setSortBy] = useState("recent");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: response, isLoading } = useCreativeProjectRecords();
+  const { data: response, isLoading } = useQuery<{ data: CreativeProjectRecord[] }>({
+    queryKey: ["creative-project-records"],
+    queryFn: () => fetch("/api/v1/creative-project-records").then((r) => r.json()),
+  });
   const data = response?.data ?? [];
 
   const filtered = useMemo(() => {

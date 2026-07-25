@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   MessageSquare,
   Plus,
@@ -27,10 +28,6 @@ import type {
   CommunicationPriority,
   CommunicationCategory,
 } from "@/types/extended";
-import {
-  useCommunicationBookEntries,
-  useCreateCommunicationBookEntry,
-} from "@/hooks/use-communication-book-entries";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -54,9 +51,17 @@ const CAT_LABELS: Record<CommunicationCategory, string> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function CommunicationBookPage() {
-  const { data: res, isLoading } = useCommunicationBookEntries();
+  const qc = useQueryClient();
+  const { data: res, isLoading } = useQuery<{ data: CommunicationBookEntry[] }>({
+    queryKey: ["communication-book-entries"],
+    queryFn: () => fetch("/api/v1/communication-book-entries").then((r) => r.json()),
+  });
   const items = res?.data ?? [];
-  const createMut = useCreateCommunicationBookEntry();
+  const createMut = useMutation({
+    mutationFn: (data: Partial<CommunicationBookEntry>) =>
+      fetch("/api/v1/communication-book-entries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["communication-book-entries"] }),
+  });
 
   const [search, setSearch] = useState("");
   const [filterPriority, setFilterPriority] = useState("all");

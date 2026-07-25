@@ -28,6 +28,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type {
   ContactSupervisionSession,
@@ -42,11 +43,6 @@ import {
   CONTACT_SESSION_OUTCOME_LABEL,
   CONTACT_SESSION_PERSON_LABEL,
 } from "@/types/extended";
-
-import {
-  useContactSupervisionSessions,
-  useCreateContactSupervisionSession,
-} from "@/hooks/use-contact-supervision-sessions";
 
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -94,9 +90,17 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 
 export default function ContactSupervisionPage() {
   const homeName = useHomeName();
-  const { data, isLoading } = useContactSupervisionSessions();
+  const { data, isLoading } = useQuery<{ data: ContactSupervisionSession[] }>({
+    queryKey: ["contact-supervision-sessions"],
+    queryFn: () => fetch("/api/v1/contact-supervision-sessions").then((r) => r.json()),
+  });
   const sessions = data?.data ?? [];
-  const createSession = useCreateContactSupervisionSession();
+  const qc = useQueryClient();
+  const createSession = useMutation({
+    mutationFn: (data: Partial<ContactSupervisionSession>) =>
+      fetch("/api/v1/contact-supervision-sessions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["contact-supervision-sessions"] }),
+  });
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");

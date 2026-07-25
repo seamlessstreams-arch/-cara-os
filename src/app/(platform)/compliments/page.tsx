@@ -22,10 +22,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useCompliments, useCreateCompliment } from "@/hooks/use-compliments";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import type { Compliment, ComplimentSource, ComplimentCategory } from "@/types/extended";
+
+type ListResponse = { data: Compliment[]; meta: { total: number } };
+type SingleResponse = { data: Compliment };
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -58,8 +62,22 @@ const CATEGORY_LABELS: Record<ComplimentCategory, string> = {
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function ComplimentsPage() {
-  const { data: cmpData, isLoading } = useCompliments();
-  const createCompliment = useCreateCompliment();
+  const { data: cmpData, isLoading } = useQuery({
+    queryKey: ["compliments"],
+    queryFn: () => api.get<ListResponse>("/compliments"),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+  const qc = useQueryClient();
+  const createCompliment = useMutation({
+    mutationFn: (data: Partial<Compliment>) =>
+      api.post<SingleResponse>("/compliments", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["compliments"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
   const entries = cmpData?.data ?? [];
   const [search, setSearch] = useState("");
   const [filterSource, setFilterSource] = useState("all");

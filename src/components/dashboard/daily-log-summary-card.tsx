@@ -9,9 +9,9 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useDailyLog } from "@/hooks/use-daily-log";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import type { YPEnriched } from "@/hooks/use-young-people";
 import { cn, todayStr } from "@/lib/utils";
@@ -45,7 +45,15 @@ function MoodIcon({ score }: { score: number | null }) {
 
 export function DailyLogSummaryCard() {
   const today = todayStr();
-  const { data: logData, isLoading: logLoading } = useDailyLog({ date: today });
+  const { data: logData, isLoading: logLoading } = useQuery({
+    queryKey: ["daily-log", { date: today }],
+    queryFn: async () => {
+      const query = new URLSearchParams();
+      query.set("date", today);
+      const res = await fetch(`/api/v1/daily-log?${query}`);
+      return res.json() as Promise<{ data: any[]; meta: { total: number; by_type: Record<string, number> } }>;
+    },
+  });
   const { data: ypData, isLoading: ypLoading }   = useYoungPeople();
 
   const isLoading = logLoading || ypLoading;

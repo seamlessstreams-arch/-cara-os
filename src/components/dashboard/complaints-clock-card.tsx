@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, ArrowRight } from "lucide-react";
-import { useComplaintsClock } from "@/hooks/use-complaints-clock";
 import { cn } from "@/lib/utils";
+import type { ComplaintsClockResult } from "@/lib/engines/complaints-clock-engine";
 
 /**
  * Command Centre entry card for the Complaints Clock.
@@ -12,7 +13,16 @@ import { cn } from "@/lib/utils";
  * deadline, turning red when a timescale has been breached.
  */
 export function ComplaintsClockCard() {
-  const { data } = useComplaintsClock();
+  const { data } = useQuery<ComplaintsClockResult>({
+    queryKey: ["complaints-clock"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/complaints-clock");
+      if (!res.ok) throw new Error("Failed to fetch complaints clock");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 120_000,
+  });
   const s = data?.summary;
   const breached = s?.breached ?? 0;
   const hot = breached > 0;

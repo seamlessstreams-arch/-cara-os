@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { PrintButton } from "@/components/ui/print-button";
@@ -12,7 +13,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useDailyRiskBriefings } from "@/hooks/use-daily-risk-briefings";
 import type { DailyRiskBriefing, ChildRiskEntry, DailyAlert, DailyContact, DailyRiskLevel } from "@/types/extended";
 import { DAILY_RISK_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -35,7 +35,10 @@ const AlertIconComponent = ({ severity }: { severity: string }) =>
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function DailyRiskBriefingPage() {
-  const { data: res, isLoading } = useDailyRiskBriefings();
+  const { data: res, isLoading } = useQuery<{ data: DailyRiskBriefing[] }>({
+    queryKey: ["daily-risk-briefings"],
+    queryFn: () => fetch("/api/v1/daily-risk-briefings").then((r) => r.json()),
+  });
   const briefings = res?.data ?? [];
   const [shift, setShift] = useState<"day" | "night">("day");
 

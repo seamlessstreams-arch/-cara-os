@@ -1,15 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Info } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CommsCentre } from "@/components/comms/comms-centre";
 import { StaffTrustNoticePanel } from "@/components/comms/staff-trust-notice-panel";
 import { SensitiveSurface } from "@/components/security/capture-deterrence";
-import { useTrustNotice } from "@/hooks/use-comms";
+import { api } from "@/hooks/use-api";
 
 export default function CommsCentrePage() {
-  const { data: notice, isLoading } = useTrustNotice();
+  const { data: notice, isLoading } = useQuery({
+    queryKey: ["comms", "trust-notice"],
+    queryFn: async () =>
+      (await api.get<{ data: { version: string; acknowledged: boolean; acknowledged_at: string | null } }>("/comms/trust-notice")).data,
+    staleTime: 60_000,
+  });
   const [showNotice, setShowNotice] = useState(false);
 
   const mustAcknowledge = !isLoading && notice && !notice.acknowledged;

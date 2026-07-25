@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useClubRecords } from "@/hooks/use-club-records";
 import type { ClubRecord } from "@/types/extended";
 import {
   CLUB_TYPE_LABEL,
@@ -58,7 +58,10 @@ const exportCols: ExportColumn<ClubRecord>[] = [
 ];
 
 export default function AfterSchoolClubTrackerPage() {
-  const { data: res, isLoading } = useClubRecords();
+  const { data: res, isLoading } = useQuery<{ data: ClubRecord[] }>({
+    queryKey: ["club-records"],
+    queryFn: () => fetch("/api/v1/club-records").then((r) => r.json()),
+  });
   const data = useMemo(() => res?.data ?? [], [res]);
   const [filterYP, setFilterYP] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");

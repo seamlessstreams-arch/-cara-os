@@ -1,8 +1,9 @@
 "use client";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTrustNotice, useAcknowledgeTrustNotice } from "@/hooks/use-comms";
+import { api } from "@/hooks/use-api";
 
 const POINTS: Array<{ heading: string; body: string }> = [
   { heading: "Why Cara Comms replaces WhatsApp & personal email", body: "Keeping communication about children inside Cara protects them, protects you, and keeps records safe, lawful and auditable. Personal apps are not safe places for information about children." },
@@ -16,8 +17,17 @@ const POINTS: Array<{ heading: string; body: string }> = [
 ];
 
 export function StaffTrustNoticePanel({ onAcknowledged, compact = false }: { onAcknowledged?: () => void; compact?: boolean }) {
-  const { data } = useTrustNotice();
-  const ack = useAcknowledgeTrustNotice();
+  const qc = useQueryClient();
+  const { data } = useQuery({
+    queryKey: ["comms", "trust-notice"],
+    queryFn: async () =>
+      (await api.get<{ data: { version: string; acknowledged: boolean; acknowledged_at: string | null } }>("/comms/trust-notice")).data,
+    staleTime: 60_000,
+  });
+  const ack = useMutation({
+    mutationFn: () => api.post("/comms/trust-notice", {}),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["comms", "trust-notice"] }),
+  });
 
   return (
     <div className="max-w-2xl mx-auto rounded-2xl border border-[var(--cs-border)] bg-white p-6 space-y-4">

@@ -52,16 +52,11 @@ import {
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import {
-  useAnnexAReadiness,
-  useDecideAnnexAEvidence,
-  type AnnexAEvidenceEnriched,
-} from "@/hooks/use-compliance-evidence";
+import type { AnnexAEvidenceEnriched, AnnexAEvidenceItem, ManagerDecision } from "@/types/care-events";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useIncidents } from "@/hooks/use-incidents";
 import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
 import { useRestraints } from "@/hooks/use-restraints";
-import { useComplaints } from "@/hooks/use-complaints";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useStaff } from "@/hooks/use-staff";
 import { useReg45Evidence } from "@/hooks/use-compliance-evidence";
@@ -340,7 +335,18 @@ function ReviewDialog({
   onClose: () => void;
 }) {
   const { currentUser } = useAuthContext();
-  const decideMutation = useDecideAnnexAEvidence();
+  const queryClient = useQueryClient();
+  const decideMutation = useMutation({
+    mutationFn: (payload: {
+      id: string;
+      manager_decision: ManagerDecision;
+      manager_approved_text?: string;
+      reviewed_by: string;
+    }) => api.patch<{ data: AnnexAEvidenceItem }>("/annex-a-readiness", payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["annex-a-readiness"] });
+    },
+  });
   const [approvedText, setApprovedText] = useState(item.manager_approved_text ?? item.suggested_text);
   const [decision, setDecision] = useState<ManagerDecision>(
     item.manager_decision === "pending" ? "approved" : item.manager_decision
@@ -466,7 +472,16 @@ export default function AnnexAReadinessPage() {
   const snapshotDate = new Date().toISOString();
 
   // Evidence data
-  const { data, isLoading } = useAnnexAReadiness({ section: selectedSection ?? undefined });
+  const searchParams = new URLSearchParams();
+  if (selectedSection) searchParams.set("section", selectedSection);
+  const qs = searchParams.toString();
+  const { data, isLoading } = useQuery({
+    queryKey: ["annex-a-readiness", { section: selectedSection }],
+    queryFn: () =>
+      api.get<{ data: AnnexAEvidenceEnriched[]; meta: { readiness_score: number | null; total_evidence: number; pending_decisions: number; approved_count: number; rejected_count: number; sections: any[]; gaps: string[]; stale_count: number } }>(
+        `/annex-a-readiness${qs ? `?${qs}` : ""}`
+      ),
+  });
   const items = data?.data ?? [];
   const meta = data?.meta;
   const sections = meta?.sections ?? [];
@@ -475,14 +490,23 @@ export default function AnnexAReadinessPage() {
   const incidentsQ = useIncidents();
   const missingQ = useMissingEpisodes({ homeId });
   const restraintsQ = useRestraints();
-  const complaintsQ = useComplaints({ homeId });
+  const complaintsQ = useQuery({
+    queryKey: ["complaints", homeId, false],
+    queryFn: () => api.get<{ data: Complaint[]; meta: Record<string, number> }>(`/complaints?home_id=${homeId}`),
+  });
   const reg44Q = useQuery({
     queryKey: ["reg44"],
     queryFn: () => api.get<{ data: Reg44VisitReport[] }>("/reg44"),
   });
   const youngPeopleQ = useYoungPeople("current");
   const staffQ = useStaff({ status: "active" });
-  const reg45Q = useReg45Evidence();
+  const reg45Q = useQuery({
+    queryKey: ["reg45-evidence"],
+    queryFn: () =>
+      api.get<{ data: Reg45EvidenceItem[]; meta: { counts: { pending: number; approved: number; rejected: number; deferred: number; total: number } } }>(
+        `/reg45-evidence`
+      ),
+  });
 
   const incidents = incidentsQ.data?.data ?? [];
   const missingEpisodes = missingQ.data?.data ?? [];
