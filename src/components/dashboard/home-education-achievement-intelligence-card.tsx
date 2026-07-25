@@ -7,6 +7,7 @@
 // CHR 2015 Reg 8, 29. SCCIF: "Education", "Experiences and progress."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -16,8 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
-import { useHomeEducationAchievementIntelligence } from "@/hooks/use-home-education-achievement-intelligence";
-import type { EducationRating } from "@/lib/engines/home-education-achievement-intelligence-engine";
+import type { EducationRating, HomeEducationResult } from "@/lib/engines/home-education-achievement-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -44,7 +44,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeEducationAchievementIntelligenceCard() {
-  const { data, isLoading } = useHomeEducationAchievementIntelligence();
+  const { data, isLoading } = useQuery<{ data: HomeEducationResult }>({
+    queryKey: ["home-education-achievement-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-education-achievement-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home education achievement intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

@@ -15,8 +15,9 @@ import {
   BookOpen, Church, Languages,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeCulturalIdentityIntelligence } from "@/hooks/use-home-cultural-identity-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { CulturalIdentityRating } from "@/lib/engines/home-cultural-identity-intelligence-engine";
+import type { HomeCulturalIdentityResult } from "@/lib/engines/home-cultural-identity-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,8 +43,20 @@ const INSIGHT_STYLES: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeCulturalIdentityResponse {
+  data: HomeCulturalIdentityResult;
+}
+
 export function HomeCulturalIdentityIntelligenceCard() {
-  const { data, isLoading } = useHomeCulturalIdentityIntelligence();
+  const { data, isLoading } = useQuery<HomeCulturalIdentityResponse>({
+    queryKey: ["home-cultural-identity-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-cultural-identity-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home cultural identity intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

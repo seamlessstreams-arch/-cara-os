@@ -10,6 +10,7 @@
 // All contacts reviewed monthly — Reg 44 visitor should check accuracy.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
@@ -37,7 +38,6 @@ import {
   useCreateEmergencyChildContact,
   useUpdateEmergencyChildContact,
 } from "@/hooks/use-emergency-child-contacts";
-import { useHomeEmergencyContacts } from "@/hooks/use-home-emergency-contacts";
 import type { HomeEmergencyContact } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -122,7 +122,10 @@ export default function EmergencyContactsPage() {
   const contacts = query.data?.data ?? [];
   const childIds = [...new Set(contacts.map((c) => c.child_id))];
 
-  const { data: homeContactsResult } = useHomeEmergencyContacts("home_oak");
+  const { data: homeContactsResult } = useQuery<{ data: HomeEmergencyContact[] }>({
+    queryKey: ["home-emergency-contacts", "home_oak"],
+    queryFn: () => fetch("/api/v1/home-emergency-contacts?home_id=home_oak").then((r) => r.json()),
+  });
   const HOME_CONTACTS = homeContactsResult?.data ?? [];
 
   const [editingContact, setEditingContact] = useState<EmergencyChildContact | null>(null);

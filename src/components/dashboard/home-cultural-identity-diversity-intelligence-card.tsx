@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeCulturalIdentityDiversityIntelligence } from "@/hooks/use-home-cultural-identity-diversity-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { CulturalIdentityRating } from "@/lib/engines/home-cultural-identity-diversity-intelligence-engine";
 
 const RATING_STYLES: Record<CulturalIdentityRating, { bg: string; text: string; border: string; label: string }> = {
@@ -17,7 +17,15 @@ const REC_STYLES: Record<string, string> = { immediate: "border-[--cs-risk-soft]
 const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]" };
 
 export function HomeCulturalIdentityDiversityIntelligenceCard() {
-  const { data, isLoading } = useHomeCulturalIdentityDiversityIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["home-cultural-identity-diversity-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-cultural-identity-diversity-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch cultural identity diversity intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
   let d = data?.data ?? data;
   if (!d) return null;

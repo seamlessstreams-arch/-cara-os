@@ -7,6 +7,7 @@
 // SCCIF: "Staff understand what decisions they can make day to day."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,7 @@ import {
   ShieldCheck, Users, ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeDelegatedAuthorityIntelligence } from "@/hooks/use-home-delegated-authority-intelligence";
-import type { DelegatedAuthorityRating } from "@/lib/engines/home-delegated-authority-intelligence-engine";
+import type { DelegatedAuthorityRating, HomeDelegatedAuthorityResult } from "@/lib/engines/home-delegated-authority-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +43,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeDelegatedAuthorityIntelligenceCard() {
-  const { data, isLoading } = useHomeDelegatedAuthorityIntelligence();
+  const { data, isLoading } = useQuery<{ data: HomeDelegatedAuthorityResult }>({
+    queryKey: ["home-delegated-authority-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-delegated-authority-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home delegated authority intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

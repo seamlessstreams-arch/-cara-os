@@ -7,6 +7,7 @@
 // CHR 2015 Reg 13. SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,7 @@ import {
   BookOpen, PenLine, Timer, Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeDocumentGovernanceIntelligence } from "@/hooks/use-home-document-governance-intelligence";
-import type { DocumentRating } from "@/lib/engines/home-document-governance-intelligence-engine";
+import type { DocumentRating, HomeDocumentResult } from "@/lib/engines/home-document-governance-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +43,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeDocumentGovernanceIntelligenceCard() {
-  const { data, isLoading } = useHomeDocumentGovernanceIntelligence();
+  const { data, isLoading } = useQuery<{ data: HomeDocumentResult }>({
+    queryKey: ["home-document-governance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-document-governance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home document governance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

@@ -7,6 +7,7 @@
 // CHR 2015 Reg 12/13: "Protection of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,7 @@ import {
   FileCheck, Smartphone, MonitorSmartphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeDigitalSafetyIntelligence } from "@/hooks/use-home-digital-safety-intelligence";
-import type { DigitalSafetyRating } from "@/lib/engines/home-digital-safety-intelligence-engine";
+import type { DigitalSafetyRating, HomeDigitalSafetyResult } from "@/lib/engines/home-digital-safety-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +43,15 @@ const INSIGHT_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeDigitalSafetyIntelligenceCard() {
-  const { data, isLoading } = useHomeDigitalSafetyIntelligence();
+  const { data, isLoading } = useQuery<{ data: HomeDigitalSafetyResult }>({
+    queryKey: ["home-digital-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-digital-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home digital safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

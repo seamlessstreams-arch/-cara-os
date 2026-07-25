@@ -14,8 +14,9 @@ import {
   ShieldCheck, Eye, FileSearch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeDataGovernanceIntelligence } from "@/hooks/use-home-data-governance-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { DataGovernanceRating } from "@/lib/engines/home-data-governance-intelligence-engine";
+import type { HomeDataGovernanceResult } from "@/lib/engines/home-data-governance-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -41,8 +42,20 @@ const INSIGHT_STYLES: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeDataGovernanceResponse {
+  data: HomeDataGovernanceResult;
+}
+
 export function HomeDataGovernanceIntelligenceCard() {
-  const { data, isLoading } = useHomeDataGovernanceIntelligence();
+  const { data, isLoading } = useQuery<HomeDataGovernanceResponse>({
+    queryKey: ["home-data-governance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-data-governance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home data governance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

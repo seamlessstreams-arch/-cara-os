@@ -15,8 +15,9 @@ import {
   Users, SmilePlus, CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeDailyLogIntelligence } from "@/hooks/use-home-daily-log-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { DailyLogRating } from "@/lib/engines/home-daily-log-intelligence-engine";
+import type { HomeDailyLogResult } from "@/lib/engines/home-daily-log-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,8 +43,20 @@ const REC_STYLES: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeDailyLogResponse {
+  data: HomeDailyLogResult;
+}
+
 export function HomeDailyLogIntelligenceCard() {
-  const { data, isLoading } = useHomeDailyLogIntelligence();
+  const { data, isLoading } = useQuery<HomeDailyLogResponse>({
+    queryKey: ["home-daily-log-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-daily-log-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home daily log intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

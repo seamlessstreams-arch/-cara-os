@@ -1,10 +1,10 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Phone, CheckCircle, AlertTriangle, Clock, Star, ShieldCheck } from "lucide-react";
-import { useHomeEmergencyContactNextOfKinIntelligence } from "@/hooks/use-home-emergency-contact-next-of-kin-intelligence";
 import type { EmergencyContactRating, EmergencyContactResult } from "@/lib/engines/home-emergency-contact-next-of-kin-intelligence-engine";
 
 const RATING_META: Record<EmergencyContactRating, { label: string; color: string; bg: string; border: string }> = {
@@ -32,8 +32,16 @@ function RateBar({ label, value, warn = 100 }: { label: string; value: number; w
 }
 
 export default function EmergencyContactNokIntelligencePage() {
-  const { data, isLoading, error } = useHomeEmergencyContactNextOfKinIntelligence();
-  const d = data?.data as EmergencyContactResult | undefined;
+  const { data, isLoading, error } = useQuery<{ data: EmergencyContactResult }>({
+    queryKey: ["home-emergency-contact-next-of-kin-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-emergency-contact-next-of-kin-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch emergency contact next of kin intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+  const d = data?.data;
 
   if (isLoading) {
     return (

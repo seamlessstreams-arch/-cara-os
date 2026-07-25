@@ -6,6 +6,7 @@
 // CHR 2015 Reg 8.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -14,8 +15,7 @@ import {
   BookOpen, ClipboardCheck, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeEducationEngagementIntelligence } from "@/hooks/use-home-education-engagement-intelligence";
-import type { EducationRating } from "@/lib/engines/home-education-engagement-intelligence-engine";
+import type { EducationRating, HomeEducationEngagementResult } from "@/lib/engines/home-education-engagement-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,7 +42,15 @@ const INSIGHT_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeEducationEngagementIntelligenceCard() {
-  const { data, isLoading } = useHomeEducationEngagementIntelligence();
+  const { data, isLoading } = useQuery<{ data: HomeEducationEngagementResult }>({
+    queryKey: ["home-education-engagement-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-education-engagement-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home education engagement intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

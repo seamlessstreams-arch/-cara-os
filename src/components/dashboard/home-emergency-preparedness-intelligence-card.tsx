@@ -7,6 +7,7 @@
 // CHR 2015 Reg 25, 22. SCCIF: "Safe", "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,7 @@ import {
   FileCheck, ShieldAlert, Timer, BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeEmergencyPreparednessIntelligence } from "@/hooks/use-home-emergency-preparedness-intelligence";
-import type { EmergencyRating } from "@/lib/engines/home-emergency-preparedness-intelligence-engine";
+import type { EmergencyRating, HomeEmergencyResult } from "@/lib/engines/home-emergency-preparedness-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +43,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeEmergencyPreparednessIntelligenceCard() {
-  const { data, isLoading } = useHomeEmergencyPreparednessIntelligence();
+  const { data, isLoading } = useQuery<{ data: HomeEmergencyResult }>({
+    queryKey: ["home-emergency-preparedness-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-emergency-preparedness-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home emergency preparedness intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (
