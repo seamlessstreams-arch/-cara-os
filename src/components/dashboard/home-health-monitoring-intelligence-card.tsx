@@ -7,6 +7,7 @@
 // CHR 2015 Reg 10/15. SCCIF: "Health & Wellbeing."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,12 @@ import {
   Syringe, SmilePlus, FileHeart, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeHealthMonitoringIntelligence } from "@/hooks/use-home-health-monitoring-intelligence";
+import type { HomeHealthMonitoringResult } from "@/lib/engines/home-health-monitoring-intelligence-engine";
 import type { HomeHealthMonitoringRating } from "@/lib/engines/home-health-monitoring-intelligence-engine";
+
+interface HomeHealthMonitoringResponse {
+  data: HomeHealthMonitoringResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +48,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeHealthMonitoringIntelligenceCard() {
-  const { data, isLoading } = useHomeHealthMonitoringIntelligence();
+  const { data, isLoading } = useQuery<HomeHealthMonitoringResponse>({
+    queryKey: ["home-health-monitoring-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-health-monitoring-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home health monitoring intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

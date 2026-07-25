@@ -7,6 +7,7 @@
 // CHR 2015 Reg 12, 34. SCCIF: "Safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -16,8 +17,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useHomeMissingEpisodesIntelligence } from "@/hooks/use-home-missing-episodes-intelligence";
 import type { MissingEpisodesRating } from "@/lib/engines/home-missing-episodes-intelligence-engine";
+import type { HomeMissingEpisodesResult } from "@/lib/engines/home-missing-episodes-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,8 +44,20 @@ const REC_STYLES: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeMissingEpisodesResponse {
+  data: HomeMissingEpisodesResult;
+}
+
 export function HomeMissingEpisodesIntelligenceCard() {
-  const { data, isLoading } = useHomeMissingEpisodesIntelligence();
+  const { data, isLoading } = useQuery<HomeMissingEpisodesResponse>({
+    queryKey: ["home-missing-episodes-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-missing-episodes-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home missing episodes intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

@@ -7,6 +7,7 @@
 // CHR 2015 Reg 45. SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,8 @@ import {
   Users, CheckCircle2, MessageSquare, Timer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeMeetingGovernanceIntelligence } from "@/hooks/use-home-meeting-governance-intelligence";
 import type { MeetingRating } from "@/lib/engines/home-meeting-governance-intelligence-engine";
+import type { HomeMeetingGovernanceResult } from "@/lib/engines/home-meeting-governance-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,8 +43,20 @@ const REC_STYLES: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeMeetingGovernanceResponse {
+  data: HomeMeetingGovernanceResult;
+}
+
 export function HomeMeetingGovernanceIntelligenceCard() {
-  const { data, isLoading } = useHomeMeetingGovernanceIntelligence();
+  const { data, isLoading } = useQuery<HomeMeetingGovernanceResponse>({
+    queryKey: ["home-meeting-governance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-meeting-governance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home meeting governance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

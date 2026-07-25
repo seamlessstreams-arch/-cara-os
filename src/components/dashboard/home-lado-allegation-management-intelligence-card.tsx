@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeLadoAllegationManagementIntelligence } from "@/hooks/use-home-lado-allegation-management-intelligence";
-import type { LadoAllegationRating } from "@/lib/engines/home-lado-allegation-management-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { LadoAllegationRating, LadoAllegationResult } from "@/lib/engines/home-lado-allegation-management-intelligence-engine";
+
+interface LadoAllegationResponse { data: LadoAllegationResult; }
 
 const RATING_STYLES: Record<LadoAllegationRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -18,7 +20,15 @@ const REC_STYLES: Record<string, string> = { immediate: "border-[--cs-risk-soft]
 const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]" };
 
 export function HomeLadoAllegationManagementIntelligenceCard() {
-  const { data, isLoading } = useHomeLadoAllegationManagementIntelligence();
+  const { data, isLoading } = useQuery<LadoAllegationResponse>({
+    queryKey: ["home-lado-allegation-management-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-lado-allegation-management-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch LADO & allegation management intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
   let d = data?.data;
   if (!d) return null;

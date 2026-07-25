@@ -1,9 +1,9 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Syringe } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeImmunisationVaccinationComplianceIntelligence } from "@/hooks/use-home-immunisation-vaccination-compliance-intelligence";
 import type { ImmunisationRating } from "@/lib/engines/home-immunisation-vaccination-compliance-intelligence-engine";
 
 const RATING_STYLES: Record<ImmunisationRating, { bg: string; text: string; border: string; label: string }> = {
@@ -17,7 +17,15 @@ const REC_STYLES: Record<string, string> = { immediate: "border-[--cs-risk-soft]
 const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]" };
 
 export function HomeImmunisationVaccinationComplianceIntelligenceCard() {
-  const { data, isLoading } = useHomeImmunisationVaccinationComplianceIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["home-immunisation-vaccination-compliance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-immunisation-vaccination-compliance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch immunisation vaccination compliance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
   let d = data?.data ?? data;
   if (!d) return null;

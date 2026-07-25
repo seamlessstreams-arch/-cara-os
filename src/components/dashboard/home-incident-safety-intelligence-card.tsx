@@ -7,6 +7,7 @@
 // CHR 2015 Reg 12, 13, 35, 40. SCCIF: "Safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -16,8 +17,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
-import { useHomeIncidentSafetyIntelligence } from "@/hooks/use-home-incident-safety-intelligence";
 import type { IncidentSafetyRating } from "@/lib/engines/home-incident-safety-intelligence-engine";
+import type { HomeIncidentSafetyResult } from "@/lib/engines/home-incident-safety-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -57,8 +58,20 @@ const TREND_COLOR: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeIncidentSafetyResponse {
+  data: HomeIncidentSafetyResult;
+}
+
 export function HomeIncidentSafetyIntelligenceCard() {
-  const { data, isLoading } = useHomeIncidentSafetyIntelligence();
+  const { data, isLoading } = useQuery<HomeIncidentSafetyResponse>({
+    queryKey: ["home-incident-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-incident-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home incident safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

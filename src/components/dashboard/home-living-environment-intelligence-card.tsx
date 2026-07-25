@@ -14,8 +14,8 @@ import {
   BedDouble, PawPrint, TreePine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeLivingEnvironmentIntelligence } from "@/hooks/use-home-living-environment-intelligence";
-import type { LivingEnvironmentRating } from "@/lib/engines/home-living-environment-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { LivingEnvironmentRating, HomeLivingEnvironmentResult } from "@/lib/engines/home-living-environment-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,7 +42,16 @@ const INSIGHT_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeLivingEnvironmentIntelligenceCard() {
-  const { data, isLoading } = useHomeLivingEnvironmentIntelligence();
+  const { data: queryData, isLoading } = useQuery<{ data: HomeLivingEnvironmentResult }>({
+    queryKey: ["home-living-environment-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-living-environment-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home living environment intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+  const data = queryData;
 
   if (isLoading) {
     return (

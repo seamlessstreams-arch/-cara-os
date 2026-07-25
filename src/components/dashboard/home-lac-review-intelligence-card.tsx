@@ -16,8 +16,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
-import { useHomeLACReviewIntelligence } from "@/hooks/use-home-lac-review-intelligence";
-import type { LACReviewRating } from "@/lib/engines/home-lac-review-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { LACReviewRating, HomeLACReviewResult } from "@/lib/engines/home-lac-review-intelligence-engine";
+
+interface HomeLACReviewResponse {
+  data: HomeLACReviewResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -44,7 +48,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeLACReviewIntelligenceCard() {
-  const { data, isLoading } = useHomeLACReviewIntelligence();
+  const { data, isLoading } = useQuery<HomeLACReviewResponse>({
+    queryKey: ["home-lac-review-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-lac-review-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home LAC review intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

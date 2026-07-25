@@ -1,9 +1,9 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeIndependenceLifeSkillsDevelopmentIntelligence } from "@/hooks/use-home-independence-life-skills-development-intelligence";
 import type { IndependenceLifeSkillsRating } from "@/lib/engines/home-independence-life-skills-development-intelligence-engine";
 
 const RATING_STYLES: Record<IndependenceLifeSkillsRating, { bg: string; text: string; border: string; label: string }> = {
@@ -17,7 +17,15 @@ const REC_STYLES: Record<string, string> = { immediate: "border-[--cs-risk-soft]
 const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]" };
 
 export function HomeIndependenceLifeSkillsDevelopmentIntelligenceCard() {
-  const { data, isLoading } = useHomeIndependenceLifeSkillsDevelopmentIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["home-independence-life-skills-development-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-independence-life-skills-development-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch independence life skills development intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
   let d = data?.data ?? data;
   if (!d) return null;

@@ -6,6 +6,7 @@
 // CHR 2015 Reg 7/10: "Welfare — promote physical/mental health."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -14,8 +15,8 @@ import {
   SmilePlus, ShieldCheck, CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeMentalHealthIntelligence } from "@/hooks/use-home-mental-health-intelligence";
 import type { MentalHealthRating } from "@/lib/engines/home-mental-health-intelligence-engine";
+import type { HomeMentalHealthResult } from "@/lib/engines/home-mental-health-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -41,8 +42,20 @@ const INSIGHT_STYLES: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeMentalHealthResponse {
+  data: HomeMentalHealthResult;
+}
+
 export function HomeMentalHealthIntelligenceCard() {
-  const { data, isLoading } = useHomeMentalHealthIntelligence();
+  const { data, isLoading } = useQuery<HomeMentalHealthResponse>({
+    queryKey: ["home-mental-health-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-mental-health-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home mental health intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

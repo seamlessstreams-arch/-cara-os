@@ -3,8 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeLivingEnvironmentStandardsIntelligence } from "@/hooks/use-home-living-environment-standards-intelligence";
-import type { LivingEnvironmentRating } from "@/lib/engines/home-living-environment-standards-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+
+type LivingEnvironmentRating = "outstanding" | "good" | "adequate" | "inadequate" | "insufficient_data";
 
 const RATING_STYLES: Record<LivingEnvironmentRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -17,7 +18,16 @@ const REC_STYLES: Record<string, string> = { immediate: "border-[--cs-risk-soft]
 const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]" };
 
 export function HomeLivingEnvironmentStandardsIntelligenceCard() {
-  const { data, isLoading } = useHomeLivingEnvironmentStandardsIntelligence();
+  const { data: queryData, isLoading } = useQuery({
+    queryKey: ["home-living-environment-standards-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-living-environment-standards-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch living environment standards intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+  const data = queryData;
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
   let d = data?.data ?? data;
   if (!d) return null;

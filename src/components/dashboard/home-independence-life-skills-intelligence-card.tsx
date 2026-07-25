@@ -7,6 +7,7 @@
 // CHR 2015 Reg 12.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,8 @@ import {
   ChefHat, WashingMachine, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeIndependenceLifeSkillsIntelligence } from "@/hooks/use-home-independence-life-skills-intelligence";
 import type { IndependenceLifeSkillsRating } from "@/lib/engines/home-independence-life-skills-intelligence-engine";
+import type { HomeIndependenceLifeSkillsResult } from "@/lib/engines/home-independence-life-skills-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,8 +43,20 @@ const INSIGHT_STYLES: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeIndependenceLifeSkillsResponse {
+  data: HomeIndependenceLifeSkillsResult;
+}
+
 export function HomeIndependenceLifeSkillsIntelligenceCard() {
-  const { data, isLoading } = useHomeIndependenceLifeSkillsIntelligence();
+  const { data, isLoading } = useQuery<HomeIndependenceLifeSkillsResponse>({
+    queryKey: ["home-independence-life-skills-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-independence-life-skills-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home independence life skills intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

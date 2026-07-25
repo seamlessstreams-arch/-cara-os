@@ -15,8 +15,12 @@ import {
   Users, Smile, TrendingUp, Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeKeyworkerIntelligence } from "@/hooks/use-home-keyworker-intelligence";
-import type { KeyworkerRating } from "@/lib/engines/home-keyworker-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { KeyworkerRating, HomeKeyworkerResult } from "@/lib/engines/home-keyworker-intelligence-engine";
+
+interface HomeKeyworkerResponse {
+  data: HomeKeyworkerResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +47,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeKeyworkerIntelligenceCard() {
-  const { data, isLoading } = useHomeKeyworkerIntelligence();
+  const { data, isLoading } = useQuery<HomeKeyworkerResponse>({
+    queryKey: ["home-keyworker-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-keyworker-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home keyworker intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

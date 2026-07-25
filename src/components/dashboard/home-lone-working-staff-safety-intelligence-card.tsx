@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeLoneWorkingStaffSafetyIntelligence } from "@/hooks/use-home-lone-working-staff-safety-intelligence";
-import type { LoneWorkingSafetyRating } from "@/lib/engines/home-lone-working-staff-safety-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { LoneWorkingSafetyRating, LoneWorkingSafetyResult } from "@/lib/engines/home-lone-working-staff-safety-intelligence-engine";
 
 const RATING_STYLES: Record<LoneWorkingSafetyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -18,7 +18,16 @@ const REC_STYLES: Record<string, string> = { immediate: "border-[--cs-risk-soft]
 const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]" };
 
 export function HomeLoneWorkingStaffSafetyIntelligenceCard() {
-  const { data, isLoading } = useHomeLoneWorkingStaffSafetyIntelligence();
+  const { data: queryData, isLoading } = useQuery<{ data: LoneWorkingSafetyResult }>({
+    queryKey: ["home-lone-working-staff-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-lone-working-staff-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch lone working & staff safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+  const data = queryData;
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
   let d = data?.data;
   if (!d) return null;

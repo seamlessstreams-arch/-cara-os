@@ -7,6 +7,7 @@
 // SCCIF: "Children's medication is managed safely."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,8 @@ import {
   ShieldCheck, Clock, Eye, Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeMedicationManagementIntelligence } from "@/hooks/use-home-medication-management-intelligence";
 import type { MedicationManagementRating } from "@/lib/engines/home-medication-management-intelligence-engine";
+import type { HomeMedicationManagementResult } from "@/lib/engines/home-medication-management-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,8 +43,20 @@ const REC_STYLES: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeMedicationManagementResponse {
+  data: HomeMedicationManagementResult;
+}
+
 export function HomeMedicationManagementIntelligenceCard() {
-  const { data, isLoading } = useHomeMedicationManagementIntelligence();
+  const { data, isLoading } = useQuery<HomeMedicationManagementResponse>({
+    queryKey: ["home-medication-management-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-medication-management-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home medication management intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

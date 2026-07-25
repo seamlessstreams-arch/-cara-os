@@ -1,6 +1,6 @@
 "use client";
 
-import { useHomeHouseMeetingGovernanceIntelligence } from "@/hooks/use-home-house-meeting-governance-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type {
   HouseMeetingGovernanceResult,
   HouseMeetingRating,
@@ -44,8 +44,18 @@ function RateBar({ label, rate, alertBelow }: { label: string; rate: number; ale
   );
 }
 
+interface HouseMeetingGovernanceResponse { data: HouseMeetingGovernanceResult; }
+
 export default function HouseMeetingGovernancePage() {
-  const { data, isLoading, isError } = useHomeHouseMeetingGovernanceIntelligence();
+  const { data, isLoading, isError } = useQuery<HouseMeetingGovernanceResponse>({
+    queryKey: ["home-house-meeting-governance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-house-meeting-governance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch house meeting governance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return <div className="flex items-center justify-center p-12 text-slate-500">Loading house meeting governance intelligence…</div>;

@@ -17,8 +17,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
-import { useHomeKeyWorkingIntelligence } from "@/hooks/use-home-key-working-intelligence";
-import type { KeyWorkingRating } from "@/lib/engines/home-key-working-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { KeyWorkingRating, HomeKeyWorkingResult } from "@/lib/engines/home-key-working-intelligence-engine";
+
+interface HomeKeyWorkingResponse {
+  data: HomeKeyWorkingResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -59,7 +63,15 @@ const TREND_COLOR: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeKeyWorkingIntelligenceCard() {
-  const { data, isLoading } = useHomeKeyWorkingIntelligence();
+  const { data, isLoading } = useQuery<HomeKeyWorkingResponse>({
+    queryKey: ["home-key-working-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-key-working-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home key working intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

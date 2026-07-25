@@ -8,6 +8,7 @@
 // NICE guidelines on safe medication practices in children's homes.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -16,8 +17,8 @@ import {
   ShieldCheck, ClipboardCheck, Thermometer, Siren,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeMedicationGovernanceIntelligence } from "@/hooks/use-home-medication-governance-intelligence";
 import type { MedicationGovernanceRating } from "@/lib/engines/home-medication-governance-intelligence-engine";
+import type { HomeMedicationGovernanceResult } from "@/lib/engines/home-medication-governance-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,8 +44,20 @@ const REC_STYLES: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeMedicationGovernanceResponse {
+  data: HomeMedicationGovernanceResult;
+}
+
 export function HomeMedicationGovernanceIntelligenceCard() {
-  const { data, isLoading } = useHomeMedicationGovernanceIntelligence();
+  const { data, isLoading } = useQuery<HomeMedicationGovernanceResponse>({
+    queryKey: ["home-medication-governance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-medication-governance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home medication governance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

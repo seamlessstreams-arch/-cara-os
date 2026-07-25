@@ -7,6 +7,7 @@
 // CHR 2015 Reg 7, 8. SCCIF: "Outcomes", "Experiences and progress."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,8 @@ import {
   Target, CheckCheck, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeIndependenceIntelligence } from "@/hooks/use-home-independence-intelligence";
 import type { IndependenceRating } from "@/lib/engines/home-independence-intelligence-engine";
+import type { HomeIndependenceResult } from "@/lib/engines/home-independence-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,8 +43,20 @@ const REC_STYLES: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+interface HomeIndependenceResponse {
+  data: HomeIndependenceResult;
+}
+
 export function HomeIndependenceIntelligenceCard() {
-  const { data, isLoading } = useHomeIndependenceIntelligence();
+  const { data, isLoading } = useQuery<HomeIndependenceResponse>({
+    queryKey: ["home-independence-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-independence-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home independence intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

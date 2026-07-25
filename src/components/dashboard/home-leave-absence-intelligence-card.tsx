@@ -14,8 +14,9 @@ import {
   HeartPulse, Clock, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeLeaveAbsenceIntelligence } from "@/hooks/use-home-leave-absence-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { LeaveAbsenceRating } from "@/lib/engines/home-leave-absence-intelligence-engine";
+import type { HomeLeaveAbsenceResult } from "@/lib/engines/home-leave-absence-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,7 +43,16 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeLeaveAbsenceIntelligenceCard() {
-  const { data, isLoading } = useHomeLeaveAbsenceIntelligence();
+  const { data: queryData, isLoading } = useQuery<{ data: HomeLeaveAbsenceResult }>({
+    queryKey: ["home-leave-absence-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-leave-absence-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home leave absence intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+  const data = queryData;
 
   if (isLoading) {
     return (
