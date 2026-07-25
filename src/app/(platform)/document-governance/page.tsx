@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useDocumentGovernance } from "@/hooks/use-document-governance";
-import type { GovernanceBoard } from "@/hooks/use-document-governance";
-import { GOV_DOC_TYPE_LABEL } from "@/lib/doc-governance/doc-governance-engine";
+import { api } from "@/hooks/use-api";
+import { GOV_DOC_TYPE_LABEL, type GovernanceBoard } from "@/lib/doc-governance/doc-governance-engine";
 import { FileCheck, AlertTriangle, Clock, CheckCircle2, HelpCircle, Loader2, Info, Database } from "lucide-react";
 
 type Row = GovernanceBoard["rows"][number];
@@ -60,7 +60,12 @@ function GovLine({ r }: { r: Row }) {
 }
 
 export default function DocumentGovernancePage() {
-  const { data, isLoading } = useDocumentGovernance();
+  const { data, isLoading } = useQuery({
+    queryKey: ["document-governance"],
+    queryFn: () => api.get<{ data: GovernanceBoard }>("/document-governance"),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+  });
   const board = data?.data;
 
   return (

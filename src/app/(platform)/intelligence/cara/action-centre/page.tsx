@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
-import { useActionCentre } from "@/hooks/use-action-centre";
-import type { ActionItem } from "@/lib/action-centre/action-centre-engine";
+import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { ListChecks, Loader2, Clock, AlertTriangle, CheckCircle2, CircleDot, User, CalendarClock } from "lucide-react";
+import type { ActionItem, ActionCentre } from "@/lib/action-centre/action-centre-engine";
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   open: { label: "Open", cls: "bg-slate-100 text-slate-600" },
@@ -50,7 +51,10 @@ function Row({ item }: { item: ActionItem }) {
 }
 
 export default function ActionCentrePage() {
-  const { data, isLoading } = useActionCentre();
+  const { data, isLoading } = useQuery({
+    queryKey: ["action-centre"],
+    queryFn: async () => (await api.get<{ data: ActionCentre }>(`/action-centre`)).data,
+  });
   const [source, setSource] = useState<string>("all");
 
   const filtered = useMemo(() => (data ? (source === "all" ? data.items : data.items.filter((i) => i.source === source)) : []), [data, source]);

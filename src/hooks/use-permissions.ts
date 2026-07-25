@@ -1,6 +1,6 @@
 "use client";
 
-import { useCurrentRole } from "@/hooks/use-auth";
+import { useAuthContext } from "@/contexts/auth-context";
 import {
   hasPermission,
   hasAnyPermission,
@@ -24,7 +24,7 @@ export interface PermissionHelpers {
 }
 
 export function usePermissions(): PermissionHelpers {
-  const role = useCurrentRole();
+  const role = useAuthContext().currentRole;
   return {
     can: (p: Permission) => hasPermission(role, p),
     canAny: (ps: Permission[]) => hasAnyPermission(role, ps),

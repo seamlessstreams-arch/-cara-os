@@ -11,11 +11,12 @@
 // and the only one anybody can change.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useRoutineActivity } from "@/hooks/use-routine-activity";
-import { bandLabel, type Band } from "@/lib/theory-lens/routine-activity-engine";
+import { api } from "@/hooks/use-api";
+import { bandLabel, type Band, type RoutineActivityView } from "@/lib/theory-lens/routine-activity-engine";
 import { MapPin, Users, Clock, HelpCircle, Loader2, Split } from "lucide-react";
 
 const BAND_TINT: Record<Band, string> = {
@@ -27,7 +28,10 @@ const BAND_TINT: Record<Band, string> = {
 };
 
 export default function RoutineActivityPage() {
-  const q = useRoutineActivity();
+  const q = useQuery({
+    queryKey: ["routine-activity", 90],
+    queryFn: async () => (await api.get<{ data: RoutineActivityView }>(`/routine-activity`)).data,
+  });
   const d = q.data;
 
   return (

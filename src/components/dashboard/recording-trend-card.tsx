@@ -7,11 +7,12 @@
 // to-the-Child readability. Cara advises; managers decide. Reg 36 / SCCIF.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Minus, Loader2, LineChart } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePracticeTrends } from "@/hooks/use-practice-trends";
-import type { TrendSeries, TrendDirection } from "@/lib/practice-history/types";
+import { api } from "@/hooks/use-api";
+import type { TrendSeries, TrendDirection, PracticeTrendsResult } from "@/lib/practice-history/types";
 
 function DirIcon({ d }: { d: TrendDirection }) {
   if (d === "improving") return <TrendingUp className="h-4 w-4 text-green-600" />;
@@ -49,7 +50,11 @@ function TrendBlock({ label, s }: { label: string; s: TrendSeries }) {
 }
 
 export function RecordingTrendCard() {
-  const { data, isLoading } = usePracticeTrends();
+  const { data, isLoading } = useQuery({
+    queryKey: ["practice-trends"],
+    queryFn: () => api.get<{ data: PracticeTrendsResult }>("/practice-trends"),
+    staleTime: 5 * 60_000,
+  });
   const t = data?.data;
   return (
     <Card>

@@ -1,11 +1,12 @@
 "use client";
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { PrintButton } from "@/components/ui/print-button";
-import { useSopRealityCheck } from "@/hooks/use-sop-reality-check";
-import type { EvidenceStrength, SopArea } from "@/lib/sop-reality-check/sop-reality-check-engine";
+import { api } from "@/hooks/use-api";
+import type { EvidenceStrength, SopArea, SopRealityCheck } from "@/lib/sop-reality-check/sop-reality-check-engine";
 import { cn } from "@/lib/utils";
 import { FileCheck2, Loader2, CheckCircle2, AlertTriangle, CircleDot, ShieldAlert, FileText } from "lucide-react";
 
@@ -58,7 +59,10 @@ function AreaCard({ a }: { a: SopArea }) {
 }
 
 export default function SopRealityCheckPage() {
-  const { data, isLoading } = useSopRealityCheck();
+  const { data, isLoading } = useQuery({
+    queryKey: ["sop-reality-check"],
+    queryFn: async () => (await api.get<{ data: SopRealityCheck }>(`/sop-reality-check`)).data,
+  });
   const overall = data ? STRENGTH[data.overallConfidence] : null;
 
   return (

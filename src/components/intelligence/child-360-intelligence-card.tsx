@@ -13,9 +13,11 @@ import {
   Pill, Shield, Target, TrendingDown, TrendingUp, Minus,
   User, XCircle,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { useChild360 } from "@/hooks/use-child-360";
 import type { DomainRAG, DomainScore, OverallWellbeingLevel } from "@/lib/engines/child-360-intelligence-engine";
+import type { Child360Result } from "@/lib/engines/child-360-intelligence-engine";
+import type { Cpie360Spine } from "@/lib/cpie/child-360-spine";
 
 const WELLBEING_STYLES: Record<OverallWellbeingLevel, { bg: string; text: string; border: string; label: string }> = {
   thriving: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "THRIVING" },
@@ -61,7 +63,13 @@ function TrendIcon({ direction }: { direction: string }) {
 }
 
 export function Child360IntelligenceCard({ childId }: { childId: string }) {
-  const { data, isLoading } = useChild360(childId);
+  // Query config inlined from use-child-360 hook
+  const { data, isLoading } = useQuery<{ data: Child360Result; cpie?: Cpie360Spine | null }>({
+    queryKey: ["child-360-intelligence", childId],
+    queryFn: () => fetch(`/api/v1/child-360-intelligence?childId=${childId}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

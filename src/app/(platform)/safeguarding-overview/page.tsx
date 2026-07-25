@@ -4,13 +4,15 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { PrintButton } from "@/components/common/print-button";
-import { useSafeguardingOverview } from "@/hooks/use-safeguarding-overview";
+import { api } from "@/hooks/use-api";
 import { ShieldAlert, ShieldCheck, ArrowRight, CheckCircle2, AlertTriangle } from "lucide-react";
 import type { SafeguardingSection, SafeguardingSeverity } from "@/lib/engines/safeguarding-overview-engine";
+import type { SafeguardingOverviewResult } from "@/lib/engines/safeguarding-overview-engine";
 
 const SECTION_TONE: Record<SafeguardingSeverity, string> = {
   critical: "border-l-[var(--cs-risk)]",
@@ -72,7 +74,12 @@ function SectionCard({ s }: { s: SafeguardingSection }) {
 }
 
 export default function SafeguardingOverviewPage() {
-  const { data: resp, isLoading, error } = useSafeguardingOverview();
+  // Query config inlined from use-safeguarding-overview hook
+  const { data: resp, isLoading, error } = useQuery({
+    queryKey: ["safeguarding-overview"],
+    queryFn: () => api.get<{ data: SafeguardingOverviewResult }>("/safeguarding-overview"),
+    staleTime: 30_000,
+  });
   const o = resp?.data;
 
   return (

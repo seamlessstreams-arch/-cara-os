@@ -4,13 +4,14 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { PrintButton } from "@/components/common/print-button";
-import { useWorkforceAbsence } from "@/hooks/use-workforce-absence";
+import { api } from "@/hooks/use-api";
 import { Activity, AlertTriangle, CheckCircle2 } from "lucide-react";
-import type { AbsenceLevel, AbsenceStaffRow } from "@/lib/engines/workforce-absence-engine";
+import type { AbsenceLevel, AbsenceStaffRow, WorkforceAbsenceResult } from "@/lib/engines/workforce-absence-engine";
 
 const LEVEL_BAR: Record<AbsenceLevel, string> = {
   critical: "border-l-[var(--cs-risk)]",
@@ -63,7 +64,11 @@ function Row({ r }: { r: AbsenceStaffRow }) {
 }
 
 export default function WorkforceAbsencePage() {
-  const { data: resp, isLoading, error } = useWorkforceAbsence();
+  const { data: resp, isLoading, error } = useQuery({
+    queryKey: ["workforce-absence"],
+    queryFn: () => api.get<{ data: WorkforceAbsenceResult }>("/workforce-absence"),
+    staleTime: 30_000,
+  });
   const o = resp?.data;
   const concern = (o?.rows ?? []).filter((r) => r.level !== "ok");
   const clear = (o?.rows ?? []).filter((r) => r.level === "ok");

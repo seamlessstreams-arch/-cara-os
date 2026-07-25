@@ -9,11 +9,12 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { ShieldAlert, ShieldCheck, ArrowRight } from "lucide-react";
-import { useChildSafeguarding } from "@/hooks/use-child-safeguarding";
-import type { SafeguardingItem } from "@/lib/engines/safeguarding-overview-engine";
+import { api } from "@/hooks/use-api";
+import type { SafeguardingItem, SafeguardingOverviewResult } from "@/lib/engines/safeguarding-overview-engine";
 
 const ITEM_BAR: Record<SafeguardingItem["severity"], string> = {
   critical: "border-l-[var(--cs-risk)]",
@@ -23,7 +24,12 @@ const ITEM_BAR: Record<SafeguardingItem["severity"], string> = {
 };
 
 function Inner({ childId, childName }: { childId: string; childName: string }) {
-  const { data, isLoading } = useChildSafeguarding(childId);
+  const { data, isLoading } = useQuery({
+    queryKey: ["child-safeguarding", childId],
+    queryFn: () => api.get<{ data: SafeguardingOverviewResult }>(`/safeguarding-overview?childId=${encodeURIComponent(childId)}`),
+    enabled: !!childId,
+    staleTime: 30_000,
+  });
   const o = data?.data;
   const openSections = (o?.sections ?? []).filter((s) => s.count > 0);
   const critical = o?.overall === "critical";

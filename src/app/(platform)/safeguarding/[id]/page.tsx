@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { useIncident, useUpdateIncident } from "@/hooks/use-incidents";
 import { usePermissions } from "@/hooks/use-permissions";
-import { useCurrentUser } from "@/hooks/use-auth";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PERMISSIONS } from "@/lib/permissions";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
@@ -89,7 +88,7 @@ function NotificationRow({ n }: { n: { role: string; name: string; method: strin
 // ── Oversight panel ───────────────────────────────────────────────────────────
 
 function OversightPanel({ concernId, onSaved }: { concernId: string; onSaved: () => void }) {
-  const currentUser = useCurrentUser();
+  const currentUser = useAuthContext().currentUser;
   const updateIncident = useUpdateIncident();
   const [note, setNote] = useState("");
   const [error, setError] = useState("");

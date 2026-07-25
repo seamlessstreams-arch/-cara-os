@@ -21,7 +21,6 @@ import {
 import { useAuthContext } from "@/contexts/auth-context";
 import { useIncident, useUpdateIncident } from "@/hooks/use-incidents";
 import { usePermissions } from "@/hooks/use-permissions";
-import { useCurrentUser } from "@/hooks/use-auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
@@ -63,7 +62,7 @@ interface OversightPanelProps {
 }
 
 function OversightPanel({ incidentId, onSaved }: OversightPanelProps) {
-  const currentUser = useCurrentUser();
+  const currentUser = useAuthContext().currentUser;
   const updateIncident = useUpdateIncident();
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
@@ -115,7 +114,7 @@ interface OutcomePanelProps {
 }
 
 function OutcomePanel({ incidentId, currentOutcome, currentLessons, onSaved }: OutcomePanelProps) {
-  const currentUser = useCurrentUser();
+  const currentUser = useAuthContext().currentUser;
   const updateIncident = useUpdateIncident();
   const [outcome, setOutcome] = useState(currentOutcome ?? "");
   const [lessons, setLessons] = useState(currentLessons ?? "");

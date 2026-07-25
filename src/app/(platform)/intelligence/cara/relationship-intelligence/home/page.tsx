@@ -2,11 +2,13 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ManagerIntelligenceNav } from "@/components/intelligence/manager-intelligence-nav";
 import { Card, CardContent } from "@/components/ui/card";
-import { useHomeRelationshipOverview } from "@/hooks/use-home-relationship-overview";
+import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
+import type { HomeRelationshipOverview } from "@/lib/relationship-intelligence/home-overview";
 import {
   Home,
   Loader2,
@@ -42,7 +44,11 @@ function Count({ label, n, cls }: { label: string; n: number; cls: string }) {
 }
 
 export default function HomeRelationshipsPage() {
-  const { data, isLoading } = useHomeRelationshipOverview();
+  const { data, isLoading } = useQuery({
+    queryKey: ["relationship-intelligence-home"],
+    queryFn: async () =>
+      (await api.get<{ data: HomeRelationshipOverview }>("/relationship-intelligence/home")).data,
+  });
 
   return (
     <PageShell

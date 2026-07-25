@@ -23,7 +23,7 @@ import {
   useTask, useUpdateTask, useCompleteTask,
   useSignOffTask, useEscalateTask, useCancelTask,
 } from "@/hooks/use-tasks";
-import { useCurrentUser } from "@/hooks/use-auth";
+import { useAuthContext } from "@/contexts/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import { cn, todayStr, formatRelative, isOverdue, isDueToday, formatDate } from "@/lib/utils";
@@ -187,7 +187,7 @@ export default function TaskDetailPage() {
   const taskId = params.taskId;
 
   const { data: task, isLoading, isError } = useTask(taskId);
-  const currentUser = useCurrentUser();
+  const currentUser = useAuthContext().currentUser;
   const { can } = usePermissions();
   const updateTask = useUpdateTask();
   const signOff = useSignOffTask();

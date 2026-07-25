@@ -8,16 +8,18 @@
 // content is leaving the home in unusual patterns.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertTriangle, ShieldAlert, Clock, MessageCircle } from "lucide-react";
-import { useExportAbuse } from "@/hooks/use-export-abuse";
+import { api } from "@/hooks/use-api";
 import type {
   ExportAbuseFlag,
   ExportAbuseFlagKind,
   ExportAbuseSeverity,
+  ExportAbuseReport,
 } from "@/lib/care-events/export-abuse";
 
 const HOME_ID = "home_oak";
@@ -43,7 +45,15 @@ const SEVERITY_BADGE: Record<ExportAbuseSeverity, string> = {
 };
 
 export default function ExportAbusePage() {
-  const { data, refetch, isFetching, isLoading } = useExportAbuse(HOME_ID);
+  interface Response { data: ExportAbuseReport }
+  const { data, refetch, isFetching, isLoading } = useQuery({
+    queryKey: ["export-abuse", HOME_ID],
+    queryFn: () =>
+      api.get<Response>(
+        `/care-events/export-abuse?home_id=${encodeURIComponent(HOME_ID)}`,
+      ),
+    refetchInterval: 60000,
+  });
   const r = data?.data;
 
   return (

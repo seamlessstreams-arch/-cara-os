@@ -2,15 +2,17 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
-import { useOrgRisk } from "@/hooks/use-org-risk";
+import { api } from "@/hooks/use-api";
 import { useImprovementObjectives, useCreateImprovementObjective } from "@/hooks/use-improvement-objectives";
 import {
   draftObjectiveFromIndicator,
   draftObjectiveFromCorrelation,
   type RiskLevel,
   type OrgRiskObjectiveDraft,
+  type OrgRiskDashboard,
 } from "@/lib/org-risk/org-risk-engine";
 import { OBJECTIVE_STATUS_LABEL } from "@/types/extended";
 import { cn, daysFromNow } from "@/lib/utils";
@@ -46,7 +48,10 @@ function ActionPlanButton({ created, pending, onCreate }: { created: boolean; pe
 }
 
 export default function OrgRiskPage() {
-  const { data, isLoading } = useOrgRisk();
+  const { data, isLoading } = useQuery({
+    queryKey: ["org-risk"],
+    queryFn: async () => (await api.get<{ data: OrgRiskDashboard }>(`/org-risk`)).data,
+  });
   const overall = data ? LEVEL[data.overallLevel] : null;
   const maxIncidents = data ? Math.max(1, ...data.trend.map((t) => t.incidents)) : 1;
 

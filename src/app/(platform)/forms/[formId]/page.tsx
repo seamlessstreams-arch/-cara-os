@@ -24,7 +24,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useForm, useUpdateForm, useSubmitForm, useApproveForm } from "@/hooks/use-forms";
 import { useStaff } from "@/hooks/use-staff";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { useCurrentUser } from "@/hooks/use-auth";
+import { useAuthContext } from "@/contexts/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
@@ -154,7 +154,7 @@ function ApprovePanel({
 export default function FormDetailPage() {
   const { formId } = useParams<{ formId: string }>();
   const router = useRouter();
-  const currentUser = useCurrentUser();
+  const currentUser = useAuthContext().currentUser;
   const { can } = usePermissions();
   const [editing, setEditing] = useState(false);
   const [editDraft, setEditDraft] = useState<Partial<CareForm>>({});

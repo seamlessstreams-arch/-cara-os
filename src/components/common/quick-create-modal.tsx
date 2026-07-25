@@ -20,7 +20,7 @@ import { useStaff } from "@/hooks/use-staff";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTask } from "@/hooks/use-tasks";
 import { useCreateForm } from "@/hooks/use-forms";
-import { useCurrentUser } from "@/hooks/use-auth";
+import { useAuthContext } from "@/contexts/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import {
@@ -127,7 +127,7 @@ export function QuickCreateModal({
   context = {},
   defaultTab = "task",
 }: QuickCreateModalProps) {
-  const currentUser = useCurrentUser();
+  const currentUser = useAuthContext().currentUser;
   const { can } = usePermissions();
   const createTask = useCreateTask();
   const createForm = useCreateForm();

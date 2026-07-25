@@ -10,11 +10,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileCheck, Activity, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSopRealityCheck } from "@/hooks/use-sop-reality-check";
-import { useOrgRisk } from "@/hooks/use-org-risk";
+import { api } from "@/hooks/use-api";
+import type { SopRealityCheck } from "@/lib/sop-reality-check/sop-reality-check-engine";
+import type { OrgRiskDashboard } from "@/lib/org-risk/org-risk-engine";
 
 const RISK_LEVEL: Record<string, { label: string; accent: string }> = {
   low: { label: "Low", accent: "text-green-700" },
@@ -69,7 +71,10 @@ function Panel({
 }
 
 function SopPanel() {
-  const { data, isLoading } = useSopRealityCheck();
+  const { data, isLoading } = useQuery({
+    queryKey: ["sop-reality-check"],
+    queryFn: async () => (await api.get<{ data: SopRealityCheck }>(`/sop-reality-check`)).data,
+  });
   const conf = data ? EVIDENCE[data.overallConfidence] : undefined;
   return (
     <Panel href="/intelligence/cara/sop-reality-check" icon={FileCheck} title="SOP Reality Check" loading={isLoading}>
@@ -95,7 +100,10 @@ function SopPanel() {
 }
 
 function OrgRiskPanel() {
-  const { data, isLoading } = useOrgRisk();
+  const { data, isLoading } = useQuery({
+    queryKey: ["org-risk"],
+    queryFn: async () => (await api.get<{ data: OrgRiskDashboard }>(`/org-risk`)).data,
+  });
   const level = data ? RISK_LEVEL[data.overallLevel] : undefined;
   const open = data ? data.indicators.filter((i) => i.level === "high" || i.level === "critical").length : 0;
   return (

@@ -4,13 +4,15 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { PrintButton } from "@/components/common/print-button";
-import { useStaffCompliance } from "@/hooks/use-staff-compliance";
+import { api } from "@/hooks/use-api";
 import { ShieldCheck, MessageCircle, Star, GraduationCap, Fingerprint, ArrowRight, AlertTriangle } from "lucide-react";
 import type { StaffComplianceLevel, StaffComplianceRow } from "@/lib/engines/staff-compliance-engine";
+import type { StaffComplianceResult } from "@/lib/engines/staff-compliance-engine";
 
 const LEVEL_BAR: Record<StaffComplianceLevel, string> = {
   critical: "border-l-[var(--cs-risk)]",
@@ -64,7 +66,12 @@ function StaffRow({ r }: { r: StaffComplianceRow }) {
 }
 
 export default function StaffCompliancePage() {
-  const { data: resp, isLoading, error } = useStaffCompliance();
+  // Query config inlined from use-staff-compliance hook
+  const { data: resp, isLoading, error } = useQuery({
+    queryKey: ["staff-compliance"],
+    queryFn: () => api.get<{ data: StaffComplianceResult }>("/staff-compliance"),
+    staleTime: 30_000,
+  });
   const o = resp?.data;
 
   return (

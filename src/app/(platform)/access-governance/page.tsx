@@ -17,10 +17,12 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAbacDivergence } from "@/hooks/use-abac-divergence";
+import { api } from "@/hooks/use-api";
 import { ShieldCheck, AlertTriangle, Info, Users, Clock } from "lucide-react";
+import type { AbacDivergenceSummary } from "@/lib/permissions/abac-divergence";
 
 function Stat({ label, value, tone, hint }: { label: string; value: number | string; tone: "risk" | "neutral" | "muted"; hint: string }) {
   const colour =
@@ -37,7 +39,12 @@ function Stat({ label, value, tone, hint }: { label: string; value: number | str
 }
 
 export default function AccessGovernancePage() {
-  const { data, isLoading, error } = useAbacDivergence();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["abac-divergence"],
+    queryFn: () => api.get<{ data: AbacDivergenceSummary }>("/abac-divergence"),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+  });
   const s = data?.data;
 
   return (

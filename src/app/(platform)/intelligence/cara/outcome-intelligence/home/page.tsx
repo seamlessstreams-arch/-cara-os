@@ -2,15 +2,16 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ManagerIntelligenceNav } from "@/components/intelligence/manager-intelligence-nav";
 import { Card, CardContent } from "@/components/ui/card";
-import { useHomeOutcomeOverview } from "@/hooks/use-home-outcome-overview";
+import { api } from "@/hooks/use-api";
 import type {
   OutcomeStatus,
   OutcomeDirection,
 } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
-import type { HomeOutcomeChild } from "@/lib/outcome-intelligence/home-outcome-overview";
+import type { HomeOutcomeChild, HomeOutcomeOverview } from "@/lib/outcome-intelligence/home-outcome-overview";
 import { cn } from "@/lib/utils";
 import {
   Target,
@@ -95,7 +96,11 @@ function ChildRow({ child }: { child: HomeOutcomeChild }) {
 }
 
 export default function HomeOutcomeOverviewPage() {
-  const { data, isLoading } = useHomeOutcomeOverview();
+  const { data, isLoading } = useQuery({
+    queryKey: ["home-outcome-overview"],
+    queryFn: async () =>
+      (await api.get<{ data: HomeOutcomeOverview }>(`/outcome-intelligence/home`)).data,
+  });
 
   return (
     <PageShell

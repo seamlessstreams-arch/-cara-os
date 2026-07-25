@@ -7,11 +7,9 @@ vi.mock("next/link", () => ({
     React.createElement("a", { href }, children),
 }));
 
-vi.mock("@/hooks/use-sop-reality-check", () => ({ useSopRealityCheck: vi.fn() }));
-vi.mock("@/hooks/use-org-risk", () => ({ useOrgRisk: vi.fn() }));
+vi.mock("@tanstack/react-query", () => ({ useQuery: vi.fn() }));
 
-import { useSopRealityCheck } from "@/hooks/use-sop-reality-check";
-import { useOrgRisk } from "@/hooks/use-org-risk";
+import { useQuery } from "@tanstack/react-query";
 import { ManagerPracticeOversightCard } from "../manager-practice-oversight-card";
 
 const m = (fn: unknown) => fn as unknown as Mock;
@@ -19,8 +17,7 @@ const html = () => renderToStaticMarkup(React.createElement(ManagerPracticeOvers
 const loading = { data: undefined, isLoading: true };
 
 beforeEach(() => {
-  m(useSopRealityCheck).mockReturnValue(loading);
-  m(useOrgRisk).mockReturnValue(loading);
+  m(useQuery).mockReturnValue(loading);
 });
 
 describe("ManagerPracticeOversightCard", () => {
@@ -29,7 +26,7 @@ describe("ManagerPracticeOversightCard", () => {
   });
 
   it("SOP: surfaces evidence strength + inspection-risk count", () => {
-    m(useSopRealityCheck).mockReturnValue({
+    m(useQuery).mockReturnValue({
       isLoading: false,
       data: { headline: "h", overallConfidence: "limited", areasStrong: 3, areasDeveloping: 2, areasLimited: 2, inspectionRisks: [{ area: "a", label: "l", detail: "d" }], areas: [] },
     });
@@ -39,7 +36,7 @@ describe("ManagerPracticeOversightCard", () => {
   });
 
   it("Org Risk: maps the engine level to its label (critical)", () => {
-    m(useOrgRisk).mockReturnValue({
+    m(useQuery).mockReturnValue({
       isLoading: false,
       data: { generatedAt: "", overallLevel: "critical", headline: "supporting the team", indicators: [{ key: "k", label: "l", value: "v", level: "critical", detail: "d" }], correlations: [], trend: [] },
     });
@@ -49,8 +46,7 @@ describe("ManagerPracticeOversightCard", () => {
   });
 
   it("empty states are neutral, not red", () => {
-    m(useSopRealityCheck).mockReturnValue({ isLoading: false, data: undefined });
-    m(useOrgRisk).mockReturnValue({ isLoading: false, data: undefined });
+    m(useQuery).mockReturnValue({ isLoading: false, data: undefined });
     const out = html();
     expect(out).toContain("No SOP data yet");
     expect(out).toContain("No risk data yet");

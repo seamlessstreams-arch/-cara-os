@@ -9,11 +9,12 @@
 // amend-down pattern always carries BOTH readings, never a verdict.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useEscalationQuality } from "@/hooks/use-escalation-quality";
-import { DECISION_WINDOW_HOURS } from "@/lib/risk-escalation/escalation-quality-engine";
+import { api } from "@/hooks/use-api";
+import { DECISION_WINDOW_HOURS, type EscalationQualityResult } from "@/lib/risk-escalation/escalation-quality-engine";
 import { Gauge, AlertTriangle, Loader2 } from "lucide-react";
 
 const LEVEL_LABEL: Record<string, string> = {
@@ -32,7 +33,11 @@ const DIRECTION_LABEL: Record<string, string> = {
 };
 
 export default function EscalationQualityPage() {
-  const q = useEscalationQuality();
+  const q = useQuery({
+    queryKey: ["escalation-quality"],
+    queryFn: async () =>
+      (await api.get<{ data: EscalationQualityResult }>(`/escalation-quality`)).data,
+  });
   const d = q.data;
 
   return (

@@ -28,7 +28,7 @@ import { getFormById } from "@/config/form-registry";
 import { useCreateForm } from "@/hooks/use-forms";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useStaff } from "@/hooks/use-staff";
-import { useCurrentUser } from "@/hooks/use-auth";
+import { useAuthContext } from "@/contexts/auth-context";
 import { CARE_FORM_TYPE_LABELS, type CareFormType } from "@/lib/constants";
 import type { CareForm } from "@/types";
 
@@ -64,7 +64,7 @@ const FIELD =
 export default function NewFormPage() {
   const router = useRouter();
   const params = useSearchParams();
-  const currentUser = useCurrentUser();
+  const currentUser = useAuthContext().currentUser;
   const createForm = useCreateForm();
 
   const formId = params.get("formId") ?? "";

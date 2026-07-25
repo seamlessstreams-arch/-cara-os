@@ -6,13 +6,14 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/common/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
-import { useShiftPlan } from "@/hooks/use-shift-plan";
+import { api } from "@/hooks/use-api";
 import { Sun, Moon, Clock, Users, Pill, ShieldAlert, CheckCircle2, Sparkles, AlertTriangle, Eye } from "lucide-react";
-import type { ShiftPlanMustDo } from "@/lib/engines/shift-plan-engine";
+import type { ShiftPlanMustDo, ShiftPlanResult } from "@/lib/engines/shift-plan-engine";
 
 function todayKey() {
   const d = new Date();
@@ -37,7 +38,15 @@ const STAFFING_STYLE: Record<"ok" | "high" | "critical", string> = {
 export default function ShiftPlanPage() {
   const [date, setDate] = useState(todayKey());
   const [period, setPeriod] = useState<"day" | "night">(defaultPeriod());
-  const { data: resp, isLoading, error } = useShiftPlan(date, period);
+  const qs = new URLSearchParams();
+  if (date) qs.set("date", date);
+  if (period) qs.set("period", period);
+  const q = qs.toString();
+  const { data: resp, isLoading, error } = useQuery({
+    queryKey: ["shift-plan", date, period],
+    queryFn: () => api.get<{ data: ShiftPlanResult }>(`/shift-plan${q ? `?${q}` : ""}`),
+    staleTime: 30_000,
+  });
   const plan = resp?.data;
 
   const periodBtn = useMemo(

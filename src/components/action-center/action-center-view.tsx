@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import {
   Siren, ShieldAlert, MessageSquare, ClipboardCheck, CheckCircle2, ChevronRight, Loader2, Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useActionCenter, type ActionItem } from "@/hooks/use-action-center";
+import { api } from "@/hooks/use-api";
+import type { ActionCenter, ActionItem } from "@/lib/action-center/action-center";
 
 const CATEGORY_ICON = {
   emergency: Siren,
@@ -21,7 +23,12 @@ const SEV_STYLE: Record<string, { dot: string; border: string }> = {
 };
 
 export function ActionCenterView() {
-  const { data, isLoading } = useActionCenter();
+  const { data, isLoading } = useQuery({
+    queryKey: ["action-center"],
+    queryFn: async () => (await api.get<{ data: ActionCenter }>("/action-center")).data,
+    staleTime: 10_000,
+    refetchInterval: 30_000,
+  });
 
   if (isLoading || !data) {
     return <div className="p-10 text-center"><Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)] mx-auto" /></div>;
