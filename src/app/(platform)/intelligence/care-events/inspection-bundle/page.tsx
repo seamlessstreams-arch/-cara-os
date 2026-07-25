@@ -10,21 +10,34 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, FolderArchive, Download } from "lucide-react";
 import Link from "next/link";
-import { useExportInspectionBundle } from "@/hooks/use-export-history";
+import { apiFetch } from "@/hooks/use-api";
+import type { ExportHistoryEntry } from "@/lib/db/store";
+import type { InspectionBundle } from "@/lib/care-events/inspection-bundle";
 import { useInspectionBundles } from "@/hooks/use-inspection-bundles";
 import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
 import { formatRate } from "@/lib/metrics/rate";
 
+interface InspectionBundleExportResponse {
+  data: { export: ExportHistoryEntry; bundle: InspectionBundle };
+}
+
 const HOME_ID = "home_oak";
 
 export default function InspectionBundlePage() {
-  const exportBundle = useExportInspectionBundle();
+  const exportBundle = useMutation({
+    mutationFn: (input: { homeId: string; reason?: string }) =>
+      apiFetch<InspectionBundleExportResponse>(
+        `/care-events/inspection-bundle/export`,
+        { method: "POST", body: JSON.stringify({ home_id: input.homeId, reason: input.reason ?? null }) },
+      ),
+  });
   const [lastBundleId, setLastBundleId] = useState<string | null>(null);
   const list = useInspectionBundles(HOME_ID);
 

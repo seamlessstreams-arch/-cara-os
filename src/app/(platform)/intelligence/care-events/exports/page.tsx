@@ -8,13 +8,15 @@
 // export permissions" — the immutable trail an inspector can ask for.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Share2, AlertTriangle } from "lucide-react";
-import { useExportHistory } from "@/hooks/use-export-history";
+import { apiFetch } from "@/hooks/use-api";
 import type { ExportHistoryEntry, ExportHistoryKind } from "@/lib/db/store";
+import type { ExportHistorySummary } from "@/lib/care-events/export-history";
 
 const HOME_ID = "home_oak";
 
@@ -25,8 +27,17 @@ const KIND_LABEL: Record<ExportHistoryKind, string> = {
   inspection_bundle: "Inspection Bundle",
 };
 
+interface SummaryResponse { data: ExportHistorySummary }
+
 export default function ExportHistoryPage() {
-  const { data, refetch, isFetching, isLoading } = useExportHistory(HOME_ID);
+  const { data, refetch, isFetching, isLoading } = useQuery({
+    queryKey: ["export-history", HOME_ID],
+    queryFn: () =>
+      apiFetch<SummaryResponse>(
+        `/care-events/exports?home_id=${encodeURIComponent(HOME_ID)}`,
+      ),
+    refetchInterval: 60000,
+  });
   const summary = data?.data;
 
   return (

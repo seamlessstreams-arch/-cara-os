@@ -32,7 +32,8 @@ import {
   XCircle, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useFireDrills, useCreateFireDrill } from "@/hooks/use-fire-drills";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { FireDrill } from "@/types/extended";
 import { FireDrillType, FireDrillResult, FireDrill } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -61,9 +62,17 @@ const RESULT_CONFIG: Record<FireDrillResult, { label: string; colour: string }> 
 
 export default function FireDrillsPage() {
   const { currentUser } = useAuthContext();
+  const qc = useQueryClient();
 
-  const { data: fdData, isLoading } = useFireDrills();
-  const createDrill = useCreateFireDrill();
+  const { data: fdData, isLoading } = useQuery<{ data: FireDrill[] }>({
+    queryKey: ["fire-drills"],
+    queryFn: () => fetch("/api/v1/fire-drills").then((r) => r.json()),
+  });
+  const createDrill = useMutation({
+    mutationFn: (data: Partial<FireDrill>) =>
+      fetch("/api/v1/fire-drills", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["fire-drills"] }),
+  });
   const entries = fdData?.data ?? [];
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");

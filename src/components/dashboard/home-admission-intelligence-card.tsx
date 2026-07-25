@@ -15,8 +15,12 @@ import {
   FileCheck, Clock, Users, BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeAdmissionIntelligence } from "@/hooks/use-home-admission-intelligence";
-import type { AdmissionRating } from "@/lib/engines/home-admission-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { AdmissionRating, HomeAdmissionResult } from "@/lib/engines/home-admission-intelligence-engine";
+
+interface HomeAdmissionResponse {
+  data: HomeAdmissionResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +47,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeAdmissionIntelligenceCard() {
-  const { data, isLoading } = useHomeAdmissionIntelligence();
+  const { data, isLoading } = useQuery<HomeAdmissionResponse>({
+    queryKey: ["home-admission-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-admission-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home admission intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

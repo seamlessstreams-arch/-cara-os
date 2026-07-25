@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useHealthRecords, useCreateHealthRecord } from "@/hooks/use-health-records";
+import { api } from "@/hooks/use-api";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -65,10 +66,27 @@ const STATUS_CONFIG: Record<HealthRecordStatus, { label: string; colour: string 
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+type ListResponse = { data: HealthRecordEntry[]; meta: { total: number; overdue: number; upcoming_7d: number } };
+type SingleResponse = { data: HealthRecordEntry };
+
 export default function HealthRecordsPage() {
   const { currentUser } = useAuthContext();
-  const { data: response, isLoading } = useHealthRecords();
-  const createRecord = useCreateHealthRecord();
+  const qc = useQueryClient();
+  const { data: response, isLoading } = useQuery({
+    queryKey: ["health-records", {}],
+    queryFn: () => api.get<ListResponse>(`/health-records?`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+  const createRecord = useMutation({
+    mutationFn: (data: Partial<HealthRecordEntry>) =>
+      api.post<SingleResponse>("/health-records", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["health-records"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
 
   const records = response?.data ?? [];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -34,7 +35,6 @@ import {
   HERITAGE_LANGUAGE_STATUS_LABEL,
   LANGUAGE_IDENTITY_IMPORTANCE_LABEL,
 } from "@/types/extended";
-import { useHeritageLanguageRecords } from "@/hooks/use-heritage-language-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -134,7 +134,10 @@ function SkillBar({ level, label }: { level: HeritageSkillLevel; label: string }
 }
 
 export default function ChildHeritageLanguageTrackerPage() {
-  const { data: res, isLoading } = useHeritageLanguageRecords();
+  const { data: res, isLoading } = useQuery<{ data: HeritageLanguageRecord[] }>({
+    queryKey: ["heritage-language-records"],
+    queryFn: () => fetch("/api/v1/heritage-language-records").then((r) => r.json()),
+  });
   const items = res?.data ?? [];
 
   const [search, setSearch] = useState("");

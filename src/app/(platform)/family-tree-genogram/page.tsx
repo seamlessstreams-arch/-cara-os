@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -34,7 +35,6 @@ import {
   FAMILY_CONTACT_STATUS_LABEL,
   FAMILY_MEMBER_STATUS_LABEL,
 } from "@/types/extended";
-import { useGenogramEntries } from "@/hooks/use-genogram-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -59,7 +59,10 @@ const contactColour: Record<FamilyContactStatus, string> = {
 };
 
 export default function FamilyTreeGenogramPage() {
-  const { data: res, isLoading } = useGenogramEntries();
+  const { data: res, isLoading } = useQuery<{ data: GenogramEntry[] }>({
+    queryKey: ["genogram-entries"],
+    queryFn: () => fetch("/api/v1/genogram-entries").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
 
   const [filterYP, setFilterYP] = useState("all");

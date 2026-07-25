@@ -15,7 +15,9 @@ import {
   Receipt, Wallet, Clock, Users, BarChart3, TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFinancialManagementIntelligence } from "@/hooks/use-financial-management-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { FinancialManagementIntelligenceResult } from "@/lib/engines/financial-management-intelligence-engine";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -49,7 +51,11 @@ function formatCurrency(amount: number): string {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function ExpensesSummaryCard() {
-  const { data, isLoading } = useFinancialManagementIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["financial-management-intelligence"],
+    queryFn: () => api.get<{ data: FinancialManagementIntelligenceResult }>("/financial-management-intelligence"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

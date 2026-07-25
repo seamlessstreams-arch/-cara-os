@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -18,10 +19,38 @@ import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import type { HateIncident, HateTargetType, HatePerpetratorType, HateIncidentType, HateIncidentStatus } from "@/types/extended";
 import { HATE_TARGET_TYPE_LABEL, HATE_PERPETRATOR_TYPE_LABEL, HATE_INCIDENT_TYPE_LABEL, HATE_INCIDENT_STATUS_LABEL } from "@/types/extended";
-import { useHateIncidents } from "@/hooks/use-hate-incidents";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inline hooks ───────────────────────────────────────────────────── */
+const HATE_INCIDENTS_KEY = "hate-incidents";
+const HATE_INCIDENTS_API = "/api/v1/hate-incidents";
+
+function useHateIncidents() {
+  return useQuery<{ data: HateIncident[] }>({
+    queryKey: [HATE_INCIDENTS_KEY],
+    queryFn: () => fetch(HATE_INCIDENTS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateHateIncident() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<HateIncident>) =>
+      fetch(HATE_INCIDENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [HATE_INCIDENTS_KEY] }),
+  });
+}
+
+function useUpdateHateIncident() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<HateIncident> & { id: string }) =>
+      fetch(HATE_INCIDENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [HATE_INCIDENTS_KEY] }),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

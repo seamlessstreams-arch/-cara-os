@@ -14,8 +14,11 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { RefreshCw, FolderOpen, CheckCircle2, AlertCircle, Share2, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useFilingCabinetIndex } from "@/hooks/use-filing-cabinet-index";
-import { useExportFilingCabinet } from "@/hooks/use-export-history";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiFetch } from "@/hooks/use-api";
+import type { FilingCabinetIndex } from "@/lib/care-events/filing-cabinet-index";
+import type { FilingCategory } from "@/types/care-events";
+import type { ExportHistoryEntry } from "@/lib/db/store";
 
 const HOME_ID = "home_oak";
 
@@ -23,9 +26,36 @@ function pretty(category: string): string {
   return category.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+interface FilingExportResponse {
+  data: {
+    export: ExportHistoryEntry;
+    payload: FilingCabinetIndex & { filtered_to_category?: FilingCategory };
+  };
+}
+
 export default function FilingCabinetIndexPage() {
-  const { data, refetch, isFetching, isLoading } = useFilingCabinetIndex(HOME_ID);
-  const exportCabinet = useExportFilingCabinet();
+  const { data, refetch, isFetching, isLoading } = useQuery({
+    queryKey: ["filing-cabinet-index", HOME_ID],
+    queryFn: () =>
+      apiFetch<{ data: FilingCabinetIndex }>(
+        `/care-events/filing-cabinet?home_id=${encodeURIComponent(HOME_ID)}`,
+      ),
+    refetchInterval: 30000,
+  });
+  const exportCabinet = useMutation({
+    mutationFn: (input: { homeId: string; category?: FilingCategory; reason?: string }) =>
+      apiFetch<FilingExportResponse>(
+        `/care-events/filing-cabinet/export`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            home_id: input.homeId,
+            category: input.category ?? null,
+            reason: input.reason ?? null,
+          }),
+        },
+      ),
+  });
   const idx = data?.data;
 
   async function exportNow() {

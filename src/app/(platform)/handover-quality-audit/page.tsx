@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -41,11 +42,21 @@ import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import type { HandoverAudit, HandoverDomainScore, RagRating } from "@/types/extended";
 import { RAG_RATING_LABEL } from "@/types/extended";
-import { useHandoverAudits } from "@/hooks/use-handover-audits";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inline hooks ───────────────────────────────────────────────────── */
+const HANDOVER_AUDITS_KEY = "handover-audits";
+const HANDOVER_AUDITS_API = "/api/v1/handover-audits";
+
+function useHandoverAudits() {
+  return useQuery<{ data: HandoverAudit[] }>({
+    queryKey: [HANDOVER_AUDITS_KEY],
+    queryFn: () => fetch(HANDOVER_AUDITS_API).then((r) => r.json()),
+  });
+}
 
 // ── RAG colour helpers ───────────────────────────────────────────────────────
 const ragRow: Record<RagRating, RowSeverity> = { green: "success", amber: "warning", red: "risk" };

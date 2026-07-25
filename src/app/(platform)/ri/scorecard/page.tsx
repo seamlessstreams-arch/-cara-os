@@ -20,8 +20,31 @@ export interface AuditsResponse {
   data: any[];
   meta: { total: number; completed: number; scheduled: number; in_progress: number; overdue: number };
 }
-import { useForms } from "@/hooks/use-forms";
+
+interface FormsListResponse {
+  data: any[];
+  meta: {
+    total: number;
+    draft: number;
+    pending_review: number;
+    approved: number;
+    overdue: number;
+    urgent: number;
+  };
+}
+
+const FORM_KEYS = {
+  all:   ["forms"] as const,
+  list:  (params?: Record<string, string>) => ["forms", "list", params] as const,
+  detail: (id: string) => ["forms", "detail", id] as const,
+};
+
+function authHeaders() {
+  return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
+}
+
 import { useRecruitment } from "@/hooks/use-recruitment";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { computeRiScores } from "@/lib/ri/compute-scores";
 import { below, meanOf, meets } from "@/lib/metrics/rate";
@@ -147,7 +170,14 @@ export default function ScorecardPage() {
       return api.get<AuditsResponse>(`/audits?${query}`);
     },
   });
-  const { data: formsData } = useForms();
+  const { data: formsData } = useQuery<FormsListResponse>({
+    queryKey: FORM_KEYS.list(),
+    queryFn: async () => {
+      const res = await fetch("/api/v1/forms", { headers: authHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch forms");
+      return res.json();
+    },
+  });
   const { data: dailyLogData } = useQuery({
     queryKey: ["daily-log", { days: 30 }],
     queryFn: () => api.get<{ data: any[]; meta: { total: number; by_type: Record<string, number> } }>(`/daily-log?days=30`),

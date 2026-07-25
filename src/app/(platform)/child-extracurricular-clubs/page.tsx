@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -28,7 +29,6 @@ import {
 import type { ExtracurricularClubRecord } from "@/types/extended";
 import { EXTRACURRICULAR_CATEGORY_LABEL, CLUB_SOCIAL_FIT_LABEL } from "@/types/extended";
 import type { ExtracurricularCategory, ClubSocialFit } from "@/types/extended";
-import { useExtracurricularClubRecords } from "@/hooks/use-extracurricular-club-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -88,7 +88,10 @@ const parseFreqHours = (frequency: string): number => {
 };
 
 export default function ChildExtracurricularClubsPage() {
-  const { data: res, isLoading } = useExtracurricularClubRecords();
+  const { data: res, isLoading } = useQuery<{ data: ExtracurricularClubRecord[] }>({
+    queryKey: ["extracurricular-club-records"],
+    queryFn: () => fetch("/api/v1/extracurricular-club-records").then((r) => r.json()),
+  });
   const items = res?.data ?? [];
 
   const [search, setSearch] = useState("");

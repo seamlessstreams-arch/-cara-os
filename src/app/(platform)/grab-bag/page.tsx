@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Briefcase, Plus, Search, ArrowUpDown,
   AlertTriangle, CheckCircle2, XCircle, Clock,
@@ -23,7 +24,6 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import type { GrabBag, GrabBagItem, GrabBagStatus } from "@/types/extended";
 import { GRAB_BAG_STATUS_LABEL } from "@/types/extended";
-import { useGrabBags, useUpdateGrabBag, useCreateGrabBag } from "@/hooks/use-grab-bags";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -52,6 +52,35 @@ const DEFAULT_ITEMS: Omit<GrabBagItem, "present" | "expiry_date" | "notes">[] = 
   { name: "Allergy / Dietary Info Card", required: true },
   { name: "EHCP / PEP Summary (copy)", required: false },
 ];
+
+/* ── inline hooks ───────────────────────────────────────────────────── */
+const GRAB_BAGS_KEY = "grab-bags";
+const GRAB_BAGS_API = "/api/v1/grab-bags";
+
+function useGrabBags(childId?: string) {
+  return useQuery<{ data: GrabBag[] }>({
+    queryKey: childId ? [GRAB_BAGS_KEY, childId] : [GRAB_BAGS_KEY],
+    queryFn: () => fetch(childId ? `${GRAB_BAGS_API}?child_id=${childId}` : GRAB_BAGS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateGrabBag() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<GrabBag>) =>
+      fetch(GRAB_BAGS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [GRAB_BAGS_KEY] }),
+  });
+}
+
+function useUpdateGrabBag() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<GrabBag> & { id: string }) =>
+      fetch(GRAB_BAGS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [GRAB_BAGS_KEY] }),
+  });
+}
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function GrabBagPage() {

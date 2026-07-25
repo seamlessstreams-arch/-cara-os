@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -22,7 +23,6 @@ import {
 } from "@/components/ui/select";
 import type { GriefRecord, LossType } from "@/types/extended";
 import { LOSS_TYPE_LABEL } from "@/types/extended";
-import { useGriefRecords } from "@/hooks/use-grief-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -65,6 +65,17 @@ const EXPORT_COLS: ExportColumn<GriefRecord>[] = [
   { header: "Reviewed By",          accessor: (r: GriefRecord) => getStaffName(r.reviewed_by) },
   { header: "Next Review",          accessor: (r: GriefRecord) => r.next_review_date },
 ];
+
+/* ── inline hooks ───────────────────────────────────────────────────── */
+const GRIEF_RECORDS_KEY = "grief-records";
+const GRIEF_RECORDS_API = "/api/v1/grief-records";
+
+function useGriefRecords(childId?: string) {
+  return useQuery<{ data: GriefRecord[] }>({
+    queryKey: childId ? [GRIEF_RECORDS_KEY, childId] : [GRIEF_RECORDS_KEY],
+    queryFn: () => fetch(childId ? `${GRIEF_RECORDS_API}?child_id=${childId}` : GRIEF_RECORDS_API).then((r) => r.json()),
+  });
+}
 
 /* ── component ─────────────────────────────────────────────────────────── */
 

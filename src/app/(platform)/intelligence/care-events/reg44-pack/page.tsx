@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +20,14 @@ import {
   usePersistedReg44Packs,
   useFetchPersistedReg44Pack,
 } from "@/hooks/use-reg44-pack";
-import { useExportReg44Pack } from "@/hooks/use-export-history";
-import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
+import { apiFetch } from "@/hooks/use-api";
+import type { ExportHistoryEntry } from "@/lib/db/store";
 import type { Reg44Pack } from "@/lib/care-events/reg44-pack";
+import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
+
+interface Reg44ExportResponse {
+  data: { export: ExportHistoryEntry; payload: Reg44Pack };
+}
 
 const HOME_ID = "home_oak";
 const WINDOW_OPTIONS = [7, 30, 90] as const;
@@ -30,7 +36,13 @@ export default function Reg44PackPage() {
   const gen = useGenerateAndPersistReg44Pack(HOME_ID);
   const history = usePersistedReg44Packs(HOME_ID);
   const fetchOne = useFetchPersistedReg44Pack();
-  const exportPack = useExportReg44Pack();
+  const exportPack = useMutation({
+    mutationFn: (input: { id: string; reason?: string }) =>
+      apiFetch<Reg44ExportResponse>(
+        `/care-events/reg44-pack/${encodeURIComponent(input.id)}/export`,
+        { method: "POST", body: JSON.stringify({ reason: input.reason ?? null }) },
+      ),
+  });
   const [days, setDays] = useState<number>(30);
   const [pack, setPack] = useState<Reg44Pack | null>(null);
 

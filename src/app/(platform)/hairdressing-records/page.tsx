@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -24,11 +25,21 @@ import {
 } from "@/components/ui/select";
 import type { HairAppointment, SalonType } from "@/types/extended";
 import { SALON_TYPE_LABEL } from "@/types/extended";
-import { useHairAppointments } from "@/hooks/use-hair-appointments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inline hooks ───────────────────────────────────────────────────── */
+const HAIR_APPOINTMENTS_KEY = "hair-appointments";
+const HAIR_APPOINTMENTS_API = "/api/v1/hair-appointments";
+
+function useHairAppointments(childId?: string) {
+  return useQuery<{ data: HairAppointment[] }>({
+    queryKey: childId ? [HAIR_APPOINTMENTS_KEY, childId] : [HAIR_APPOINTMENTS_KEY],
+    queryFn: () => fetch(childId ? `${HAIR_APPOINTMENTS_API}?child_id=${childId}` : HAIR_APPOINTMENTS_API).then((r) => r.json()),
+  });
+}
 
 const salonColour: Record<SalonType, string> = {
   high_street_barber: "bg-blue-100 text-blue-800",

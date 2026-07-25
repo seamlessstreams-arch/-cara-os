@@ -8,18 +8,30 @@
 // whether the record has already left the home, and to whom / when / why.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Share2, AlertTriangle } from "lucide-react";
-import { useArtifactExportHistory } from "@/hooks/use-export-history";
+import { apiFetch } from "@/hooks/use-api";
+import type { ExportHistoryEntry } from "@/lib/db/store";
 
 interface Props {
   homeId: string;
   artifactId: string | null;
 }
 
+interface ArtifactHistoryResponse { data: ExportHistoryEntry[] }
+
 export function ArtifactExportHistoryPanel({ homeId, artifactId }: Props) {
-  const { data, isLoading } = useArtifactExportHistory(homeId, artifactId);
+  const { data, isLoading } = useQuery({
+    queryKey: ["export-history", "by-artifact", homeId, artifactId ?? ""],
+    enabled: !!artifactId,
+    queryFn: () =>
+      apiFetch<ArtifactHistoryResponse>(
+        `/care-events/exports/by-artifact?home_id=${encodeURIComponent(homeId)}&artifact_id=${encodeURIComponent(artifactId!)}`,
+      ),
+    refetchInterval: 30000,
+  });
   if (!artifactId) return null;
   const rows = data?.data ?? [];
 

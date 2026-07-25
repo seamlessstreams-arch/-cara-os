@@ -23,7 +23,35 @@ import {
   Zap,
   FileText,
 } from "lucide-react";
-import { useFilingCabinet, useVerifyFilingItem, type FilingCabinetItemEnriched } from "@/hooks/use-filing-cabinet";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { FilingCabinetItem } from "@/types/care-events";
+
+interface FilingParams {
+  category?: string;
+  child_id?: string;
+  verified?: boolean;
+  search?: string;
+}
+
+interface FilingCabinetItemEnriched extends FilingCabinetItem {
+  care_event: {
+    id: string;
+    title: string;
+    category: string;
+    status: string;
+    event_date: string;
+    staff_id: string;
+  } | null;
+  child_name: string | null;
+}
+
+interface FilingCabinetMeta {
+  total: number;
+  verified: number;
+  unverified: number;
+  category_counts: Record<string, number>;
+}
 import { useAuthContext } from "@/contexts/auth-context";
 import { formatDate } from "@/lib/utils";
 import { FILING_CATEGORY_LABEL, type FilingCategory } from "@/types/care-events";
@@ -169,16 +197,30 @@ function FilingItemCard({
 
 export default function FilingCabinetPage() {
   const { currentUser } = useAuthContext();
+  const qc = useQueryClient();
   const [activeCategory, setActiveCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
 
-  const { data, isLoading } = useFilingCabinet({
+  const params = {
     category: activeCategory !== "all" ? activeCategory : undefined,
     search: search || undefined,
+  };
+  const qs = new URLSearchParams();
+  if (params.category !== undefined) qs.set("category", params.category);
+  if (params.search) qs.set("search", params.search);
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+
+  const { data, isLoading } = useQuery<{ items: FilingCabinetItemEnriched[]; meta: FilingCabinetMeta }>({
+    queryKey: ["filing-cabinet", params],
+    queryFn: () => api.get(`/filing-cabinet${query}`),
   });
 
-  const verifyMutation = useVerifyFilingItem();
+  const verifyMutation = useMutation({
+    mutationFn: (vars: { id: string; verified_by: string }) =>
+      api.patch("/filing-cabinet", { ...vars, action: "verify" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["filing-cabinet"] }),
+  });
 
   function handleVerify(id: string) {
     verifyMutation.mutate(

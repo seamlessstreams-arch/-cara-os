@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -17,7 +18,6 @@ import {
   Loader2,
 } from "lucide-react";
 import type { FoodBudgetWeekRecord, FoodBudgetSpendItem, FoodBudgetTreatItem } from "@/types/extended";
-import { useFoodBudgetWeekRecords } from "@/hooks/use-food-budget-week-records";
 import {
   Select,
   SelectContent,
@@ -40,7 +40,10 @@ const exportCols: ExportColumn<FoodBudgetWeekRecord>[] = [
 ];
 
 export default function FoodBudgetTrackerPage() {
-  const { data: res, isLoading } = useFoodBudgetWeekRecords();
+  const { data: res, isLoading } = useQuery<{ data: FoodBudgetWeekRecord[] }>({
+    queryKey: ["food-budget-week-records"],
+    queryFn: () => fetch("/api/v1/food-budget-week-records").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);

@@ -7,6 +7,7 @@
 // SCCIF: How well children are helped and protected.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, CheckCircle2, ChevronRight, Heart,
@@ -14,8 +15,7 @@ import {
   MapPin, Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFamilyRelationships } from "@/hooks/use-family-relationships";
-import type { RelationshipHealth } from "@/lib/engines/family-relationships-intelligence-engine";
+import type { FamilyRelationshipsResult, RelationshipHealth } from "@/lib/engines/family-relationships-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,7 +42,13 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function FamilyRelationshipsCard({ childId }: { childId: string }) {
-  const { data, isLoading } = useFamilyRelationships(childId);
+  const { data, isLoading } = useQuery<{ data: FamilyRelationshipsResult }>({
+    queryKey: ["family-relationships-intelligence", childId],
+    queryFn: () =>
+      fetch(`/api/v1/family-relationships-intelligence?childId=${encodeURIComponent(childId)}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -19,8 +20,8 @@ import { EntryAssist } from "@/components/forms/entry-assist";
 import { useStaff } from "@/hooks/use-staff";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTask } from "@/hooks/use-tasks";
-import { useCreateForm } from "@/hooks/use-forms";
 import { useAuthContext } from "@/contexts/auth-context";
+import { currentUserId } from "@/lib/auth/current-user";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import {
@@ -113,6 +114,20 @@ function emptyCareFormValues(ctx: QuickCreateContext): CareFormValues {
 
 // ── Modal component ───────────────────────────────────────────────────────────
 
+interface FormResponse {
+  data: CareForm;
+}
+
+const FORM_KEYS = {
+  all:   ["forms"] as const,
+  list:  (params?: Record<string, string>) => ["forms", "list", params] as const,
+  detail: (id: string) => ["forms", "detail", id] as const,
+};
+
+function authHeaders() {
+  return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
+}
+
 interface QuickCreateModalProps {
   open: boolean;
   onClose: () => void;
@@ -129,8 +144,21 @@ export function QuickCreateModal({
 }: QuickCreateModalProps) {
   const currentUser = useAuthContext().currentUser;
   const { can } = usePermissions();
+  const qc = useQueryClient();
   const createTask = useCreateTask();
-  const createForm = useCreateForm();
+  const createForm = useMutation<CareForm, Error, Partial<CareForm>>({
+    mutationFn: async (data) => {
+      const res = await fetch("/api/v1/forms", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create form");
+      const json: FormResponse = await res.json();
+      return json.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: FORM_KEYS.all }),
+  });
 
   const canCreateTask = can(PERMISSIONS.CREATE_TASKS);
   const canCreateForm = can(PERMISSIONS.CREATE_FORMS);

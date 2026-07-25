@@ -15,8 +15,12 @@ import {
   User, BarChart3, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeActivityEnrichmentIntelligence } from "@/hooks/use-home-activity-enrichment-intelligence";
-import type { EnrichmentRating } from "@/lib/engines/home-activity-enrichment-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { EnrichmentRating, HomeActivityEnrichmentResult } from "@/lib/engines/home-activity-enrichment-intelligence-engine";
+
+interface HomeActivityEnrichmentResponse {
+  data: HomeActivityEnrichmentResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -68,7 +72,15 @@ function scoreBg(score: number): string {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeActivityEnrichmentIntelligenceCard() {
-  const { data, isLoading } = useHomeActivityEnrichmentIntelligence();
+  const { data, isLoading } = useQuery<HomeActivityEnrichmentResponse>({
+    queryKey: ["home-activity-enrichment-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-activity-enrichment-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home activity enrichment intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

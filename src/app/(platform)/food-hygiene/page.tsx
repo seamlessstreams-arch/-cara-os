@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -25,7 +26,6 @@ import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { FoodHygieneRecord, FoodHygieneCheckType, FoodHygieneCompliance } from "@/types/extended";
 import { FOOD_HYGIENE_CHECK_TYPE_LABEL, FOOD_HYGIENE_COMPLIANCE_LABEL } from "@/types/extended";
-import { useFoodHygieneRecords, useCreateFoodHygieneRecord } from "@/hooks/use-food-hygiene-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -38,9 +38,17 @@ const BORDER_COMP: Record<FoodHygieneCompliance, string> = { pass: "border-l-gre
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function FoodHygienePage() {
-  const { data: res, isLoading } = useFoodHygieneRecords();
+  const qc = useQueryClient();
+  const { data: res, isLoading } = useQuery<{ data: FoodHygieneRecord[] }>({
+    queryKey: ["food-hygiene-records"],
+    queryFn: () => fetch("/api/v1/food-hygiene-records").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
-  const createMutation = useCreateFoodHygieneRecord();
+  const createMutation = useMutation({
+    mutationFn: (data: Partial<FoodHygieneRecord>) =>
+      fetch("/api/v1/food-hygiene-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["food-hygiene-records"] }),
+  });
 
   const [search, setSearch] = useState("");
   const [filterCompliance, setFilterCompliance] = useState("all");

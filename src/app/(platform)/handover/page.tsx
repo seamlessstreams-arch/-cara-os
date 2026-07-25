@@ -23,9 +23,8 @@ import {
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { YoungPerson, Task, Incident, Shift } from "@/types";
 import { cn, formatDate, formatDateTime, todayStr } from "@/lib/utils";
-import { useHandoverContext } from "@/hooks/use-handover-context";
 import { useAuthContext } from "@/contexts/auth-context";
-import type { HandoverEntry, HandoverChildUpdate } from "@/types/extended";
+import type { HandoverEntry, HandoverChildUpdate, StaffHandoverContext } from "@/types/extended";
 import { useShiftSummary } from "@/hooks/use-shift-summary";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -115,6 +114,21 @@ function MoodIcon({ score }: { score: number | null }) {
   if (score >= 7) return <Smile className="h-3 w-3" />;
   if (score >= 4) return <Meh className="h-3 w-3" />;
   return <Frown className="h-3 w-3" />;
+}
+
+/* ── inline hook ───────────────────────────────────────────────────── */
+function useHandoverContext(staffIds: string[]) {
+  const idsParam = staffIds.join(",");
+
+  return useQuery({
+    queryKey: ["handover-context", idsParam],
+    queryFn: () =>
+      api.get<{ data: StaffHandoverContext[] }>(
+        `/handover/staff-context?staff_ids=${idsParam}`
+      ),
+    enabled: staffIds.length > 0,
+    staleTime: 60_000,
+  });
 }
 
 // ── Handover child entry with Cara toggle ─────────────────────────────────────

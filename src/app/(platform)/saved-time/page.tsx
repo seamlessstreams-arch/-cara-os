@@ -18,7 +18,35 @@ import {
   PoundSterling,
   BarChart3,
 } from "lucide-react";
-import { useSavedTime } from "@/hooks/use-filing-cabinet";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { SavedTimeMetric } from "@/types/care-events";
+
+interface SavedTimeMetricEnriched extends SavedTimeMetric {
+  care_event: {
+    id: string;
+    title: string;
+    category: string;
+    event_date: string;
+  } | null;
+}
+
+interface SavedTimeMeta {
+  total_minutes: number;
+  total_hours: number;
+  total_entries: number;
+  by_route: Record<string, { minutes: number; count: number }>;
+  by_staff: Record<string, { minutes: number; count: number; name: string }>;
+  daily: Array<{ date: string; minutes: number }>;
+  estimated_value_gbp: number;
+}
+
+interface SavedTimeParams {
+  staff_id?: string;
+  route_type?: string;
+  from_date?: string;
+  to_date?: string;
+}
 import { ROUTE_TYPE_LABEL } from "@/types/care-events";
 import { formatDate } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -89,7 +117,18 @@ function DailyChart({ daily }: { daily: Array<{ date: string; minutes: number }>
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function SavedTimePage() {
-  const { data, isLoading } = useSavedTime();
+  const params: SavedTimeParams = {};
+  const qs = new URLSearchParams();
+  if (params.staff_id) qs.set("staff_id", params.staff_id);
+  if (params.route_type) qs.set("route_type", params.route_type);
+  if (params.from_date) qs.set("from_date", params.from_date);
+  if (params.to_date) qs.set("to_date", params.to_date);
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+
+  const { data, isLoading } = useQuery<{ metrics: SavedTimeMetricEnriched[]; meta: SavedTimeMeta }>({
+    queryKey: ["saved-time", params],
+    queryFn: () => api.get(`/saved-time${query}`),
+  });
   const meta = data?.meta;
   const metrics = data?.metrics ?? [];
 

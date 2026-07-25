@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { EntryAssist } from "@/components/forms/entry-assist";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,7 @@ import {
   Shield, UserCheck, Send,
 } from "lucide-react";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useForm, useUpdateForm, useSubmitForm, useApproveForm } from "@/hooks/use-forms";
+import { currentUserId } from "@/lib/auth/current-user";
 import { useStaff } from "@/hooks/use-staff";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -53,6 +54,20 @@ const PRIORITY_CONFIG: Record<string, { label: string; color: string; border: st
   low:    { label: "Low",    color: "bg-slate-100 text-[var(--cs-text-secondary)]",   border: "border-l-slate-300"  },
 };
 
+interface FormResponse {
+  data: CareForm;
+}
+
+const FORM_KEYS = {
+  all:   ["forms"] as const,
+  list:  (params?: Record<string, string>) => ["forms", "list", params] as const,
+  detail: (id: string) => ["forms", "detail", id] as const,
+};
+
+function authHeaders() {
+  return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
+}
+
 // ── Submit panel ──────────────────────────────────────────────────────────────
 
 function SubmitPanel({
@@ -60,13 +75,29 @@ function SubmitPanel({
   currentUserId,
   onSuccess,
 }: { formId: string; currentUserId: string; onSuccess: () => void }) {
-  const submitForm = useSubmitForm();
+  const qc = useQueryClient();
+  const submitForm = useMutation<CareForm, Error, { id: string; submitted_by?: string }>({
+    mutationFn: async ({ id, ...rest }) => {
+      const res = await fetch(`/api/v1/forms/${id}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify({ action: "submit", ...rest }),
+      });
+      if (!res.ok) throw new Error("Failed to submit form");
+      const json: FormResponse = await res.json();
+      return json.data;
+    },
+    onSuccess: (form) => {
+      qc.invalidateQueries({ queryKey: FORM_KEYS.all });
+      qc.setQueryData(FORM_KEYS.detail(form.id), form);
+      onSuccess();
+    },
+  });
   const [confirm, setConfirm] = useState(false);
 
   function handleSubmit() {
     submitForm.mutate(
       { id: formId, submitted_by: currentUserId },
-      { onSuccess },
     );
   }
 
@@ -108,13 +139,29 @@ function ApprovePanel({
   currentUserId,
   onSuccess,
 }: { formId: string; currentUserId: string; onSuccess: () => void }) {
-  const approveForm = useApproveForm();
+  const qc = useQueryClient();
+  const approveForm = useMutation<CareForm, Error, { id: string; approved_by?: string; review_notes?: string }>({
+    mutationFn: async ({ id, ...rest }) => {
+      const res = await fetch(`/api/v1/forms/${id}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify({ action: "approve", ...rest }),
+      });
+      if (!res.ok) throw new Error("Failed to approve form");
+      const json: FormResponse = await res.json();
+      return json.data;
+    },
+    onSuccess: (form) => {
+      qc.invalidateQueries({ queryKey: FORM_KEYS.all });
+      qc.setQueryData(FORM_KEYS.detail(form.id), form);
+      onSuccess();
+    },
+  });
   const [reviewNotes, setReviewNotes] = useState("");
 
   function handleApprove() {
     approveForm.mutate(
       { id: formId, approved_by: currentUserId, review_notes: reviewNotes || undefined },
-      { onSuccess },
     );
   }
 
@@ -156,12 +203,37 @@ export default function FormDetailPage() {
   const router = useRouter();
   const currentUser = useAuthContext().currentUser;
   const { can } = usePermissions();
+  const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [editDraft, setEditDraft] = useState<Partial<CareForm>>({});
   const [actionSuccess, setActionSuccess] = useState("");
 
-  const { data: form, isLoading, isError } = useForm(formId ?? "");
-  const updateForm = useUpdateForm();
+  const { data: form, isLoading, isError } = useQuery<CareForm>({
+    queryKey: FORM_KEYS.detail(formId ?? ""),
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/forms/${formId}`, { headers: authHeaders() });
+      if (!res.ok) throw new Error("Form not found");
+      const json: FormResponse = await res.json();
+      return json.data;
+    },
+    enabled: !!formId,
+  });
+  const updateForm = useMutation<CareForm, Error, { id: string } & Partial<CareForm>>({
+    mutationFn: async ({ id, ...data }) => {
+      const res = await fetch(`/api/v1/forms/${id}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to update form");
+      const json: FormResponse = await res.json();
+      return json.data;
+    },
+    onSuccess: (form) => {
+      qc.invalidateQueries({ queryKey: FORM_KEYS.all });
+      qc.setQueryData(FORM_KEYS.detail(form.id), form);
+    },
+  });
 
   // Seed the edit draft ONCE per edit session — when entering edit mode (and once the
   // form has loaded). Critically NOT on every background refetch of `form` (queries

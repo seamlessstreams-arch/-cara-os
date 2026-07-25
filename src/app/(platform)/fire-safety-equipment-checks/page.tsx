@@ -36,7 +36,7 @@ import {
   FIRE_CHECK_RESULT_LABEL,
   FIRE_COMPLIANCE_STATUS_LABEL,
 } from "@/types/extended";
-import { useFireEquipmentChecks } from "@/hooks/use-fire-equipment-checks";
+import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -60,7 +60,10 @@ const exportCols: ExportColumn<FireEquipmentCheck>[] = [
 ];
 
 export default function FireSafetyEquipmentChecksPage() {
-  const { data: res, isLoading } = useFireEquipmentChecks();
+  const { data: res, isLoading } = useQuery<{ data: FireEquipmentCheck[] }>({
+    queryKey: ["fire-equipment-checks"],
+    queryFn: () => fetch("/api/v1/fire-equipment-checks").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
 
   const [filterType, setFilterType] = useState("all");

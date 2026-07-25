@@ -12,7 +12,9 @@ import {
   AlertTriangle, Brain, ChevronRight, Loader2, PiggyBank,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFinanceIntelligence } from "@/hooks/use-finance-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { FinanceIntelligenceResult } from "@/lib/engines/finance-intelligence-engine";
 import { formatRate } from "@/lib/metrics/rate";
 
 const ALERT_STYLES: Record<string, string> = {
@@ -29,7 +31,11 @@ const INSIGHT_STYLES: Record<string, string> = {
 };
 
 export function PocketMoneyManagementCard() {
-  const { data, isLoading } = useFinanceIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["finance-intelligence"],
+    queryFn: () => api.get<{ data: FinanceIntelligenceResult }>("/finance-intelligence"),
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -13,7 +14,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useHealthPassports } from "@/hooks/use-health-passports";
 import type { HealthPassport, AllergySeverity } from "@/types/extended";
 import { ALLERGY_SEVERITY_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -32,7 +32,10 @@ const SEVERITY_META: Record<AllergySeverity, { label: string; color: string }> =
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function HealthPassportsPage() {
-  const { data: raw, isLoading } = useHealthPassports();
+  const { data: raw, isLoading } = useQuery<{ data: HealthPassport[] }>({
+    queryKey: ["health-passports"],
+    queryFn: () => fetch("/api/v1/health-passports").then((r) => r.json()),
+  });
   const data = useMemo(() => raw?.data ?? [], [raw]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 

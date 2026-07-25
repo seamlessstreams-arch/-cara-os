@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -33,7 +34,6 @@ import {
   FUNERAL_ATTENDANCE_DECISION_LABEL,
   FUNERAL_DECISION_MAKER_LABEL,
 } from "@/types/extended";
-import { useFuneralRecords } from "@/hooks/use-funeral-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -66,7 +66,10 @@ const decisionColour: Record<FuneralAttendanceDecision, string> = {
 };
 
 export default function FuneralAttendanceRecordsPage() {
-  const { data: res, isLoading } = useFuneralRecords();
+  const { data: res, isLoading } = useQuery<{ data: FuneralRecord[] }>({
+    queryKey: ["funeral-records"],
+    queryFn: () => fetch("/api/v1/funeral-records").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
 
   const [search, setSearch] = useState("");

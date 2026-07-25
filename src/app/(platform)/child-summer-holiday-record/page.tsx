@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useHolidayRecords } from "@/hooks/use-holiday-records";
+import { useQuery } from "@tanstack/react-query";
 import type { HolidayRecord, HolidayPeriod } from "@/types/extended";
 import { HOLIDAY_PERIOD_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -45,7 +45,10 @@ const periodColour: Record<HolidayPeriod, string> = {
 };
 
 export default function ChildSummerHolidayRecordPage() {
-  const { data: res, isLoading } = useHolidayRecords();
+  const { data: res, isLoading } = useQuery<{ data: HolidayRecord[] }>({
+    queryKey: ["holiday-records"],
+    queryFn: () => fetch("/api/v1/holiday-records").then((r) => r.json()),
+  });
   const data: HolidayRecord[] = res?.data ?? [];
 
   const [search, setSearch] = useState("");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -37,7 +38,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { useHealthcarePlans } from "@/hooks/use-healthcare-plans";
 import type { HealthcarePlan } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -66,7 +66,10 @@ const exportCols: ExportColumn<HealthcarePlan>[] = [
 
 /* ─── component ─── */
 export default function HealthcarePlansPage() {
-  const { data: raw, isLoading } = useHealthcarePlans();
+  const { data: raw, isLoading } = useQuery<{ data: HealthcarePlan[] }>({
+    queryKey: ["healthcare-plans"],
+    queryFn: () => fetch("/api/v1/healthcare-plans").then((r) => r.json()),
+  });
   const plans = useMemo(() => raw?.data ?? [], [raw]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);

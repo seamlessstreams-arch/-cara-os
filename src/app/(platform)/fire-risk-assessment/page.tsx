@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useFireRiskItems } from "@/hooks/use-fire-risk-items";
+import { useQuery } from "@tanstack/react-query";
 import type {
   FireRiskItem, FireRiskCategory, FireRiskLevel, FireRiskStatus,
 } from "@/types/extended";
@@ -62,7 +62,10 @@ const CATEGORY_CONFIG: Record<FireRiskCategory, string> = {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function FireRiskAssessmentPage() {
-  const { data: res, isLoading } = useFireRiskItems();
+  const { data: res, isLoading } = useQuery<{ data: FireRiskItem[] }>({
+    queryKey: ["fire-risk-items"],
+    queryFn: () => fetch("/api/v1/fire-risk-items").then((r) => r.json()),
+  });
   const items = res?.data ?? [];
 
   const [areaFilter, setAreaFilter] = useState<string>("all");

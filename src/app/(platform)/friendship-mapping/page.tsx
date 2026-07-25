@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -37,7 +38,6 @@ import {
   FRIEND_CONTACT_TYPE_LABEL,
   ISOLATION_RISK_LABEL,
 } from "@/types/extended";
-import { useFriendshipMaps } from "@/hooks/use-friendship-maps";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -92,7 +92,10 @@ const EXPORT_COLS: ExportColumn<FriendshipMap>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function FriendshipMappingPage() {
-  const { data: res, isLoading } = useFriendshipMaps();
+  const { data: res, isLoading } = useQuery<{ data: FriendshipMap[] }>({
+    queryKey: ["friendship-maps"],
+    queryFn: () => fetch("/api/v1/friendship-maps").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

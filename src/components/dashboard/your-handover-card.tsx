@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,25 @@ import {
   ArrowRightLeft, Clock, AlertTriangle, BookOpen,
   CheckSquare, Loader2, ChevronRight, Sparkles,
 } from "lucide-react";
-import { useHandoverContext } from "@/hooks/use-handover-context";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
+import type { StaffHandoverContext } from "@/types/extended";
+
+/* ── inline hook ───────────────────────────────────────────────────── */
+function useHandoverContext(staffIds: string[]) {
+  const idsParam = staffIds.join(",");
+
+  return useQuery({
+    queryKey: ["handover-context", idsParam],
+    queryFn: () =>
+      api.get<{ data: StaffHandoverContext[] }>(
+        `/handover/staff-context?staff_ids=${idsParam}`
+      ),
+    enabled: staffIds.length > 0,
+    staleTime: 60_000,
+  });
+}
 
 const DEPTH_BADGE = {
   brief: { label: "Up to date", color: "bg-emerald-100 text-emerald-700" },

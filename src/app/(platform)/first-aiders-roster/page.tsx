@@ -21,7 +21,7 @@ import type {
 import {
   FIRST_AID_CERT_TYPE_LABEL, FIRST_AID_CERT_STATUS_LABEL,
 } from "@/types/extended";
-import { useFirstAiderRecords } from "@/hooks/use-first-aider-records";
+import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -40,7 +40,10 @@ const CERT_TYPES = Object.keys(FIRST_AID_CERT_TYPE_LABEL) as FirstAidCertType[];
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function FirstAidersRosterPage() {
-  const { data: res, isLoading } = useFirstAiderRecords();
+  const { data: res, isLoading } = useQuery<{ data: FirstAiderRecord[] }>({
+    queryKey: ["first-aider-records"],
+    queryFn: () => fetch("/api/v1/first-aider-records").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
   const [search, setSearch] = useState("");
   const [filterCert, setFilterCert] = useState<string>("all");

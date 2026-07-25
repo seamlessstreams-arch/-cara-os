@@ -1,8 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useGoalsAspirations } from "@/hooks/use-goals-aspirations";
-import type { ChildVoiceProfile, EnrichedVoiceEntry } from "@/hooks/use-goals-aspirations";
+import { useQuery } from "@tanstack/react-query";
+
+export type VoiceEntry = {
+  source: "outcome_target" | "key_work";
+  date: string;
+  domain: string | null;
+  domainLabel: string | null;
+  text: string;
+  targetDescription: string | null;
+};
+
+export type EnrichedVoiceEntry = VoiceEntry & {
+  childName: string;
+  childId: string;
+};
+
+export type ChildVoiceProfile = {
+  childId: string;
+  childName: string;
+  totalVoices: number;
+  targetVoiceCount: number;
+  kwVoiceCount: number;
+  hasVoice: boolean;
+  allVoices: VoiceEntry[];
+  mostRecentVoice: VoiceEntry | null;
+  domainsMissingVoice: string[];
+  coveredDomainCount: number;
+  totalDomainCount: number;
+};
+
+export type GoalsAspirationsData = {
+  totalChildren: number;
+  childrenWithVoice: number;
+  childrenWithoutVoice: number;
+  totalVoices: number;
+  overallSignal: "green" | "amber" | "red" | "grey";
+  childVoiceProfiles: ChildVoiceProfile[];
+  recentVoices: EnrichedVoiceEntry[];
+  insights: string[];
+  regulatoryNote: string;
+};
 
 type Signal = "green" | "amber" | "red" | "grey";
 
@@ -100,7 +139,16 @@ function ChildVoiceRow({ profile }: { profile: ChildVoiceProfile }) {
 }
 
 export default function GoalsAspirationsPage() {
-  const { data, isLoading, error } = useGoalsAspirations();
+  const { data, isLoading, error } = useQuery<GoalsAspirationsData>({
+    queryKey: ["goals-aspirations"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/goals-aspirations");
+      if (!res.ok) throw new Error("Failed to fetch goals and aspirations data");
+      const json = await res.json();
+      return json.data as GoalsAspirationsData;
+    },
+    staleTime: 120_000,
+  });
 
   if (isLoading) return <div className="p-8 text-slate-500 text-sm">Gathering voice and aspirations…</div>;
   if (error || !data) return <div className="p-8 text-red-600 text-sm">Unable to load goals and aspirations data.</div>;

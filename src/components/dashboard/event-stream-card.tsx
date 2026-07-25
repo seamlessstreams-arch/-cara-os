@@ -9,13 +9,15 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Layers, ChevronRight, Loader2, ShieldCheck, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEventStream } from "@/hooks/use-event-stream";
+import { apiFetch } from "@/hooks/use-api";
 import { eventTypeLabel } from "@/lib/event-stream/event-type-meta";
 import { eventTypeIcon, eventTypeIconClass } from "@/lib/event-stream/event-type-icons";
+import type { EventStreamResult } from "@/lib/event-stream/event-projector";
 
 const RISK_STYLES: Record<string, { bg: string; text: string }> = {
   low: { bg: "bg-gray-100", text: "text-gray-600" },
@@ -29,8 +31,16 @@ function timeAgo(iso: string): string {
   return (iso ?? "").slice(0, 10);
 }
 
+interface EventStreamResponse {
+  data: EventStreamResult;
+}
+
 export function EventStreamCard() {
-  const { data, isLoading } = useEventStream();
+  const { data, isLoading } = useQuery({
+    queryKey: ["event-stream"],
+    queryFn: () => apiFetch<EventStreamResponse>("/event-stream"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

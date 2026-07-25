@@ -14,7 +14,9 @@ import {
   Brain, PiggyBank, Receipt, TrendingUp, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFinanceIntelligence } from "@/hooks/use-finance-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { FinanceIntelligenceResult } from "@/lib/engines/finance-intelligence-engine";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
@@ -35,7 +37,11 @@ const INSIGHT_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function FinanceIntelligenceCard() {
-  const { data, isLoading } = useFinanceIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["finance-intelligence"],
+    queryFn: () => api.get<{ data: FinanceIntelligenceResult }>("/finance-intelligence"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

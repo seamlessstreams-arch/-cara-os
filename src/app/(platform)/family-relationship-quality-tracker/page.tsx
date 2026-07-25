@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -17,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { useFamilyRelationshipRecords } from "@/hooks/use-family-relationship-records";
 import type { FamilyRelationshipRecord, FamilyRelationshipQuality, FamilyRelationshipTrajectory } from "@/types/extended";
 import {
   FAMILY_RELATIONSHIP_TYPE_LABEL,
@@ -62,7 +62,10 @@ function TrajectoryIcon({ t }: { t: FamilyRelationshipTrajectory }) {
 type SortKey = "date" | "quality" | "review" | "child";
 
 export default function FamilyRelationshipQualityTrackerPage() {
-  const { data: res, isLoading } = useFamilyRelationshipRecords();
+  const { data: res, isLoading } = useQuery<{ data: FamilyRelationshipRecord[] }>({
+    queryKey: ["family-relationship-records"],
+    queryFn: () => fetch("/api/v1/family-relationship-records").then((r) => r.json()),
+  });
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [filterChild, setFilterChild]       = useState<string>("all");

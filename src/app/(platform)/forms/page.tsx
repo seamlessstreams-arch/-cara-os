@@ -8,6 +8,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +21,7 @@ import {
   Pencil, Loader2, AlertCircle, ClipboardList, CircleDot,
   LayoutList, Calendar, FolderOpen, ArrowUpDown,
 } from "lucide-react";
-import { useForms } from "@/hooks/use-forms";
+import { currentUserId } from "@/lib/auth/current-user";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -99,6 +100,18 @@ function getTimelineBucket(dateStr: string | null, today: string): string {
 }
 
 const TIMELINE_ORDER = ["Today", "Yesterday", "This week", "This month", "Due this week", "Upcoming", "Older", "No date"];
+
+interface FormsListResponse {
+  data: CareForm[];
+  meta: {
+    total: number;
+    draft: number;
+    pending_review: number;
+    approved: number;
+    overdue: number;
+    urgent: number;
+  };
+}
 
 // ── Form card ────────────────────────────────────────────────────────────────
 
@@ -246,7 +259,14 @@ export default function FormsPage() {
   const [sortBy, setSortBy] = useState<"date" | "title" | "priority" | "status">("date");
   const today = todayStr();
 
-  const formsQuery = useForms();
+  const formsQuery = useQuery<FormsListResponse>({
+    queryKey: ["forms", "list"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/forms", { headers: { "Content-Type": "application/json", "X-User-Id": currentUserId() } });
+      if (!res.ok) throw new Error("Failed to fetch forms");
+      return res.json();
+    },
+  });
   const forms: CareForm[] = formsQuery.data?.data ?? [];
   const meta = formsQuery.data?.meta;
 

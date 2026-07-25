@@ -9,13 +9,30 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useExperienceOfHelp, useRecordReflection } from "@/hooks/use-experience-of-help";
+import { apiFetch } from "@/hooks/use-api";
 import { lensDefinition } from "@/lib/experience-of-help/experience-of-help-engine";
 import { DoorOpen, Quote, CheckCircle2, HelpCircle, Loader2, Lock, ShieldQuestion } from "lucide-react";
+import type { ExperienceOfHelpView, LensDefinition, HelpReflection } from "@/lib/experience-of-help/experience-of-help-engine";
+
+export interface ExperienceOfHelpData extends ExperienceOfHelpView {
+  lenses: LensDefinition[];
+  writeEnabled: boolean;
+}
+
+export interface RecordReflectionPayload {
+  child_id: string;
+  source: string;
+  lens: string;
+  their_words: string;
+  one_change: string;
+  safety_consideration: string;
+  system_barriers_named?: string[];
+}
 
 const SOURCE_LABEL: Record<string, string> = {
   child: "In their words",
@@ -24,8 +41,18 @@ const SOURCE_LABEL: Record<string, string> = {
 };
 
 export default function ExperienceOfHelpPage() {
-  const q = useExperienceOfHelp();
-  const record = useRecordReflection();
+  const qc = useQueryClient();
+  const q = useQuery({
+    queryKey: ["experience-of-help", "all"],
+    queryFn: async () => (await apiFetch<{ data: ExperienceOfHelpData }>("/experience-of-help")).data,
+  });
+  const record = useMutation({
+    mutationFn: async (vars: RecordReflectionPayload) =>
+      apiFetch<{ data: { reflection: HelpReflection; note: string } }>("/experience-of-help", { method: "POST", body: JSON.stringify(vars) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["experience-of-help", "all"] });
+    },
+  });
   const [open, setOpen] = useState<string | null>(null);
   const [form, setForm] = useState({ source: "child", lens: "door", their_words: "", one_change: "", safety_consideration: "" });
   const [msg, setMsg] = useState<string | null>(null);

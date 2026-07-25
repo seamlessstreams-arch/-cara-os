@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -29,7 +30,6 @@ import {
 } from "lucide-react";
 import type { GovernanceMeeting, GovernanceAction } from "@/types/extended";
 import { GOVERNANCE_ACTION_STATUS_LABEL } from "@/types/extended";
-import { useGovernanceMeetings } from "@/hooks/use-governance-meetings";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -59,7 +59,10 @@ const exportCols: ExportColumn<GovernanceMeeting>[] = [
 
 /* ─── component ─── */
 export default function GovernanceMeetingMinutesPage() {
-  const { data: res, isLoading } = useGovernanceMeetings();
+  const { data: res, isLoading } = useQuery<{ data: GovernanceMeeting[] }>({
+    queryKey: ["governance-meetings"],
+    queryFn: () => fetch("/api/v1/governance-meetings").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);

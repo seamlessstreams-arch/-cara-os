@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -29,7 +30,6 @@ import type {
 import {
   GIFT_DIRECTION_LABEL, GIFT_RECIPIENT_TYPE_LABEL, GIFT_SOURCE_LABEL, GIFT_APPROVAL_STATUS_LABEL,
 } from "@/types/extended";
-import { useGiftRecords, useCreateGiftRecord } from "@/hooks/use-gift-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -43,8 +43,16 @@ const BORDER_DIR: Record<GiftDirection, string> = { received: "border-l-green-40
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function GiftsRegisterPage() {
-  const { data: queryData, isLoading } = useGiftRecords();
-  const createMutation = useCreateGiftRecord();
+  const qc = useQueryClient();
+  const { data: queryData, isLoading } = useQuery<{ data: GiftRecord[] }>({
+    queryKey: ["gift-records"],
+    queryFn: () => fetch("/api/v1/gift-records").then((r) => r.json()),
+  });
+  const createMutation = useMutation({
+    mutationFn: (data: Partial<GiftRecord>) =>
+      fetch("/api/v1/gift-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["gift-records"] }),
+  });
   const data = queryData?.data ?? [];
 
   const [search, setSearch] = useState("");

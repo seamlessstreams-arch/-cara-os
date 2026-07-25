@@ -13,7 +13,11 @@ import {
   FlaskConical, ChevronRight, AlertTriangle, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHealthWellbeing } from "@/hooks/use-health-wellbeing";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { HealthWellbeingResult } from "@/lib/engines/health-wellbeing-engine";
+
+interface HealthWellbeingResponse { data: HealthWellbeingResult; }
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -29,7 +33,11 @@ const INSIGHT_STYLES: Record<string, string> = {
 };
 
 export function ChildSubstanceMisuseScreeningCard() {
-  const { data, isLoading } = useHealthWellbeing();
+  const { data, isLoading } = useQuery<HealthWellbeingResponse>({
+    queryKey: ["health-wellbeing"],
+    queryFn: () => api.get<HealthWellbeingResponse>("/health-wellbeing"),
+    refetchInterval: 45_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

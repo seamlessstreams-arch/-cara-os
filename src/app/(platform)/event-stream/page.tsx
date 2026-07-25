@@ -6,14 +6,16 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Layers, Loader2, Info, ShieldCheck, AlertTriangle, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEventStream } from "@/hooks/use-event-stream";
+import { apiFetch } from "@/hooks/use-api";
 import { eventTypeLabel } from "@/lib/event-stream/event-type-meta";
 import { eventTypeIcon, eventTypeIconClass } from "@/lib/event-stream/event-type-icons";
+import type { EventStreamResult } from "@/lib/event-stream/event-projector";
 
 const RISK_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
   low: { bg: "bg-gray-100", text: "text-gray-600", ring: "ring-gray-200" },
@@ -22,8 +24,16 @@ const RISK_STYLES: Record<string, { bg: string; text: string; ring: string }> = 
   critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-[var(--cs-risk-soft)]" },
 };
 
+interface EventStreamResponse {
+  data: EventStreamResult;
+}
+
 export default function EventStreamPage() {
-  const { data, isLoading } = useEventStream();
+  const { data, isLoading } = useQuery({
+    queryKey: ["event-stream"],
+    queryFn: () => apiFetch<EventStreamResponse>("/event-stream"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [riskFilter, setRiskFilter] = useState<string>("all");

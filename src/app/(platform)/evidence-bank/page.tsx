@@ -5,12 +5,14 @@
 // Coverage across the 14 Ofsted evidence categories, built from the event stream.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Archive, Brain, Loader2, Info, AlertTriangle, CheckCircle2, CircleDashed } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEvidenceBank } from "@/hooks/use-evidence-bank";
+import { apiFetch } from "@/hooks/use-api";
+import type { EvidenceBankResult } from "@/lib/evidence-bank/evidence-bank-engine";
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string; ring: string; icon: React.ReactNode }> = {
   well_evidenced: { label: "well evidenced", bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200", icon: <CheckCircle2 className="h-4 w-4 text-green-600" /> },
@@ -25,8 +27,16 @@ const ALERT_STYLES: Record<string, string> = {
   medium: "border-amber-200 bg-amber-50 text-amber-800", low: "border-blue-200 bg-blue-50 text-blue-800",
 };
 
+interface EvidenceBankResponse {
+  data: EvidenceBankResult;
+}
+
 export default function EvidenceBankPage() {
-  const { data, isLoading } = useEvidenceBank();
+  const { data, isLoading } = useQuery({
+    queryKey: ["evidence-bank"],
+    queryFn: () => apiFetch<EvidenceBankResponse>("/evidence-bank"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   return (

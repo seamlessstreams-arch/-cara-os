@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,25 @@ import {
   Sparkles, Clock, ChevronDown, ChevronUp, Loader2,
   AlertTriangle, BookOpen, CheckSquare, User,
 } from "lucide-react";
-import { useHandoverContext, type StaffHandoverContext } from "@/hooks/use-handover-context";
+import { api } from "@/hooks/use-api";
 import { getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
+import type { StaffHandoverContext } from "@/types/extended";
+
+/* ── inline hook ───────────────────────────────────────────────────── */
+function useHandoverContext(staffIds: string[]) {
+  const idsParam = staffIds.join(",");
+
+  return useQuery({
+    queryKey: ["handover-context", idsParam],
+    queryFn: () =>
+      api.get<{ data: StaffHandoverContext[] }>(
+        `/handover/staff-context?staff_ids=${idsParam}`
+      ),
+    enabled: staffIds.length > 0,
+    staleTime: 60_000,
+  });
+}
 
 const DEPTH_CONFIG = {
   brief: { label: "Brief", color: "bg-emerald-100 text-emerald-700", description: "Was on shift recently" },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -35,7 +36,6 @@ import {
   VISITOR_TYPE_LABEL,
   VISIT_PURPOSE_CATEGORY_LABEL,
 } from "@/types/extended";
-import { useExternalVisitors } from "@/hooks/use-external-visitors";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -65,7 +65,10 @@ const exportCols: ExportColumn<ExternalVisitor>[] = [
 ];
 
 export default function ExternalVisitorLogPage() {
-  const { data: queryData, isLoading } = useExternalVisitors();
+  const { data: queryData, isLoading } = useQuery<{ data: ExternalVisitor[] }>({
+    queryKey: ["external-visitors"],
+    queryFn: () => fetch("/api/v1/external-visitors").then((r) => r.json()),
+  });
   const data = queryData?.data ?? [];
 
   const [filterType, setFilterType] = useState("all");

@@ -7,7 +7,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useFirstRelationshipRecords } from "@/hooks/use-first-relationship-records";
+import { useQuery } from "@tanstack/react-query";
 import type { FirstRelationshipRecord } from "@/types/extended";
 import {
   FIRST_RELATIONSHIP_STATUS_LABEL,
@@ -79,7 +79,10 @@ const exportCols: ExportColumn<FirstRelationshipRecord>[] = [
 ];
 
 export default function FirstRelationshipSupportPage() {
-  const { data: res, isLoading } = useFirstRelationshipRecords();
+  const { data: res, isLoading } = useQuery<{ data: FirstRelationshipRecord[] }>({
+    queryKey: ["first-relationship-records"],
+    queryFn: () => fetch("/api/v1/first-relationship-records").then((r) => r.json()),
+  });
   const records = useMemo(() => res?.data ?? [], [res]);
 
   const [search, setSearch] = useState("");

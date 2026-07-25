@@ -14,7 +14,11 @@ import {
   TrendingUp, TrendingDown, Minus, ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHealthWellbeing } from "@/hooks/use-health-wellbeing";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { HealthWellbeingResult } from "@/lib/engines/health-wellbeing-engine";
+
+interface HealthWellbeingResponse { data: HealthWellbeingResult; }
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -80,7 +84,11 @@ function moodColor(score: number): string {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function EmotionalWellbeingIntelligenceCard() {
-  const { data, isLoading } = useHealthWellbeing();
+  const { data, isLoading } = useQuery<HealthWellbeingResponse>({
+    queryKey: ["health-wellbeing"],
+    queryFn: () => api.get<HealthWellbeingResponse>("/health-wellbeing"),
+    refetchInterval: 45_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

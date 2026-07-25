@@ -7,11 +7,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Archive, ChevronRight, Loader2, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEvidenceBank } from "@/hooks/use-evidence-bank";
+import { apiFetch } from "@/hooks/use-api";
+import type { EvidenceBankResult } from "@/lib/evidence-bank/evidence-bank-engine";
 
 const STATUS_STYLES: Record<string, { dot: string; text: string }> = {
   well_evidenced: { dot: "bg-green-500", text: "text-green-700" },
@@ -22,8 +24,16 @@ const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]",
 };
 
+interface EvidenceBankResponse {
+  data: EvidenceBankResult;
+}
+
 export function EvidenceBankCard() {
-  const { data, isLoading } = useEvidenceBank();
+  const { data, isLoading } = useQuery({
+    queryKey: ["evidence-bank"],
+    queryFn: () => apiFetch<EvidenceBankResponse>("/evidence-bank"),
+    refetchInterval: 60_000,
+  });
   const intel = data?.data;
 
   if (isLoading || !intel) {

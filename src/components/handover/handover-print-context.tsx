@@ -1,11 +1,28 @@
 "use client";
 
 import React from "react";
-import { useHandoverContext } from "@/hooks/use-handover-context";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { getStaffName } from "@/lib/seed-data";
+import type { StaffHandoverContext } from "@/types/extended";
 
 interface Props {
   incomingStaffIds: string[];
+}
+
+/* ── inline hook ───────────────────────────────────────────────────── */
+function useHandoverContext(staffIds: string[]) {
+  const idsParam = staffIds.join(",");
+
+  return useQuery({
+    queryKey: ["handover-context", idsParam],
+    queryFn: () =>
+      api.get<{ data: StaffHandoverContext[] }>(
+        `/handover/staff-context?staff_ids=${idsParam}`
+      ),
+    enabled: staffIds.length > 0,
+    staleTime: 60_000,
+  });
 }
 
 export function HandoverPrintContext({ incomingStaffIds }: Props) {

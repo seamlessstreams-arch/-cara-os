@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -30,7 +31,6 @@ import {
 } from "@/components/ui/select";
 import type { GardenPlotRecord, GardenPlanting, GardenPlotLocation, CropStatus } from "@/types/extended";
 import { GARDEN_PLOT_LOCATION_LABEL, CROP_STATUS_LABEL } from "@/types/extended";
-import { useGardenPlotRecords } from "@/hooks/use-garden-plot-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -67,7 +67,10 @@ const seasonOf = (m: number) => {
 const currentSeason = seasonOf(monthIndex);
 
 export default function GardenCultivationTrackerPage() {
-  const { data: res, isLoading } = useGardenPlotRecords();
+  const { data: res, isLoading } = useQuery<{ data: GardenPlotRecord[] }>({
+    queryKey: ["garden-plot-records"],
+    queryFn: () => fetch("/api/v1/garden-plot-records").then((r) => r.json()),
+  });
   const records = res?.data ?? [];
 
   const [search, setSearch] = useState("");

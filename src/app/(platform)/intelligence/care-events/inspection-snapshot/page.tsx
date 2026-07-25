@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +20,14 @@ import {
   useGenerateAndPersistSnapshot,
   useFetchPersistedSnapshot,
 } from "@/hooks/use-inspection-snapshot";
-import { useExportInspectionSnapshot } from "@/hooks/use-export-history";
-import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
+import { apiFetch } from "@/hooks/use-api";
 import type { InspectionSnapshot } from "@/lib/care-events/inspection-snapshot";
+import type { ExportHistoryEntry } from "@/lib/db/store";
+import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
+
+interface SnapshotExportResponse {
+  data: { export: ExportHistoryEntry; payload: InspectionSnapshot };
+}
 
 const HOME_ID = "home_oak";
 
@@ -29,7 +35,13 @@ export default function InspectionSnapshotPage() {
   const list = usePersistedSnapshots(HOME_ID);
   const gen  = useGenerateAndPersistSnapshot(HOME_ID);
   const fetchOne = useFetchPersistedSnapshot();
-  const exportSnap = useExportInspectionSnapshot();
+  const exportSnap = useMutation({
+    mutationFn: (input: { id: string; reason?: string }) =>
+      apiFetch<SnapshotExportResponse>(
+        `/care-events/inspection-snapshot/${encodeURIComponent(input.id)}/export`,
+        { method: "POST", body: JSON.stringify({ reason: input.reason ?? null }) },
+      ),
+  });
   const [snap, setSnap] = useState<InspectionSnapshot | null>(null);
 
   async function generate() {

@@ -35,7 +35,7 @@ import {
   FAMILY_TIME_SUPERVISION_LEVEL_LABEL,
   FAMILY_TIME_PRESENTATION_LABEL,
 } from "@/types/extended";
-import { useFamilyTimeSessions } from "@/hooks/use-family-time-sessions";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
@@ -82,7 +82,10 @@ const EXPORT_COLS: ExportColumn<FamilyTimeSession>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function FamilyTimeSupervisionPage() {
-  const { data: queryData, isLoading } = useFamilyTimeSessions();
+  const { data: queryData, isLoading } = useQuery<{ data: FamilyTimeSession[] }>({
+    queryKey: ["family-time-sessions"],
+    queryFn: () => fetch("/api/v1/family-time-sessions").then((r) => r.json()),
+  });
   const records = queryData?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

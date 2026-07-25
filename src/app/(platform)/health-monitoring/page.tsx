@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -24,7 +25,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useHealthMonitoring, useCreateHealthMonitoring } from "@/hooks/use-health-monitoring";
 import type { HealthMonitoringEntry, HealthMonitoringType, HealthMonitoringStatus } from "@/types/extended";
 import { HEALTH_MONITORING_TYPE_LABEL, HEALTH_MONITORING_STATUS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -44,8 +44,16 @@ const STAT_CLR: Record<HealthMonitoringStatus, string> = { completed: "bg-green-
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function HealthMonitoringPage() {
-  const { data: raw, isLoading } = useHealthMonitoring();
-  const createMut = useCreateHealthMonitoring();
+  const qc = useQueryClient();
+  const { data: raw, isLoading } = useQuery<{ data: HealthMonitoringEntry[] }>({
+    queryKey: ["health-monitoring"],
+    queryFn: () => fetch("/api/v1/health-monitoring").then((r) => r.json()),
+  });
+  const createMut = useMutation({
+    mutationFn: (data: Partial<HealthMonitoringEntry>) =>
+      fetch("/api/v1/health-monitoring", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["health-monitoring"] }),
+  });
   const records = useMemo(() => raw?.data ?? [], [raw]);
 
   const [search, setSearch] = useState("");

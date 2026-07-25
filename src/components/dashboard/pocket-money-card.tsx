@@ -12,7 +12,9 @@ import {
   AlertTriangle, Brain, ChevronRight, Coins, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFinanceIntelligence } from "@/hooks/use-finance-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { FinanceIntelligenceResult } from "@/lib/engines/finance-intelligence-engine";
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
@@ -28,7 +30,11 @@ const INSIGHT_STYLES: Record<string, string> = {
 };
 
 export function PocketMoneyCard() {
-  const { data, isLoading } = useFinanceIntelligence();
+  const { data, isLoading } = useQuery({
+    queryKey: ["finance-intelligence"],
+    queryFn: () => api.get<{ data: FinanceIntelligenceResult }>("/finance-intelligence"),
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

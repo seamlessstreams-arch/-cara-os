@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,7 +18,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useHandoverContinuityIntelligence } from "@/hooks/use-handover-continuity-intelligence";
+import { api } from "@/hooks/use-api";
+import type { HandoverContinuityIntelligenceResult } from "@/lib/engines/handover-continuity-intelligence-engine";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -46,6 +48,15 @@ function moodBg(score: number | null): string {
   if (score >= 7) return "bg-green-50";
   if (score >= 5) return "bg-amber-50";
   return "bg-red-50";
+}
+
+/* ── inline hook ───────────────────────────────────────────────────── */
+function useHandoverContinuityIntelligence() {
+  return useQuery({
+    queryKey: ["handover-continuity-intelligence"],
+    queryFn: () => api.get<{ data: HandoverContinuityIntelligenceResult }>("/handover-continuity-intelligence"),
+    refetchInterval: 60_000,
+  });
 }
 
 // ── Component ───────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,7 @@ import { useStaff } from "@/hooks/use-staff";
 import { cn, formatDate, daysFromNow } from "@/lib/utils";
 import type { Expense } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/lib/constants";
-import { useExpenses, useCreateExpense, useUpdateExpense } from "@/hooks/use-expenses";
+import { apiFetch } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -26,6 +27,11 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+interface ExpensesResponse {
+  data: Expense[];
+  meta: { total_count: number; pending_count: number; total_amount: number; pending_amount: number };
+}
 
 const CAT_LABELS: Record<string, string> = {
   petty_cash: "Petty Cash", young_person_activities: "YP Activities",
@@ -140,10 +146,21 @@ export default function ExpensesPage() {
   const homeId = currentUser?.home_id ?? "home_oak";
   const staffQuery = useStaff();
   const allActiveStaff = (staffQuery.data?.data ?? []).filter((s) => s.is_active);
-  const expensesQuery = useExpenses();
+  const qc = useQueryClient();
+  const expensesQuery = useQuery({
+    queryKey: ["expenses", {}],
+    queryFn: () => apiFetch<ExpensesResponse>("/expenses"),
+  });
   const expenses: Expense[] = expensesQuery.data?.data ?? [];
-  const createExpense = useCreateExpense();
-  const updateExpense = useUpdateExpense();
+  const createExpense = useMutation({
+    mutationFn: (data: Partial<Expense>) => apiFetch<{ data: Expense }>("/expenses", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["expenses"] }),
+  });
+  const updateExpense = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Expense> }) =>
+      apiFetch<{ data: Expense }>(`/expenses/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["expenses"] }),
+  });
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");

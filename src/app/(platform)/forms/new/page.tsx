@@ -21,14 +21,15 @@
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getFormById } from "@/config/form-registry";
-import { useCreateForm } from "@/hooks/use-forms";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useStaff } from "@/hooks/use-staff";
 import { useAuthContext } from "@/contexts/auth-context";
+import { currentUserId } from "@/lib/auth/current-user";
 import { CARE_FORM_TYPE_LABELS, type CareFormType } from "@/lib/constants";
 import type { CareForm } from "@/types";
 
@@ -61,11 +62,38 @@ function inferType(formId: string, hay: string): CareFormType {
 const FIELD =
   "w-full rounded-md border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-teal)]";
 
+interface FormResponse {
+  data: CareForm;
+}
+
+const FORM_KEYS = {
+  all:   ["forms"] as const,
+  list:  (params?: Record<string, string>) => ["forms", "list", params] as const,
+  detail: (id: string) => ["forms", "detail", id] as const,
+};
+
+function authHeaders() {
+  return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
+}
+
 export default function NewFormPage() {
   const router = useRouter();
   const params = useSearchParams();
   const currentUser = useAuthContext().currentUser;
-  const createForm = useCreateForm();
+  const qc = useQueryClient();
+  const createForm = useMutation<CareForm, Error, Partial<CareForm>>({
+    mutationFn: async (data) => {
+      const res = await fetch("/api/v1/forms", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create form");
+      const json: FormResponse = await res.json();
+      return json.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: FORM_KEYS.all }),
+  });
 
   const formId = params.get("formId") ?? "";
   const def = formId ? getFormById(formId) : undefined;

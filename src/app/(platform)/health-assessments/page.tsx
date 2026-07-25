@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -29,10 +30,38 @@ import {
 import { toast } from "sonner";
 import type { HealthAssessment, HealthAssessmentType, HealthAssessmentStatus, SdqScores, SdqBand, HealthFollowUp, HealthNeed } from "@/types/extended";
 import { HEALTH_ASSESSMENT_TYPE_LABEL, HEALTH_ASSESSMENT_STATUS_LABEL, SDQ_BAND_LABEL, HEALTH_FOLLOW_UP_STATUS_LABEL } from "@/types/extended";
-import { useHealthAssessments, useCreateHealthAssessment } from "@/hooks/use-health-assessments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
+
+/* ── inline hooks ───────────────────────────────────────────────────── */
+const HEALTH_ASSESSMENTS_KEY = "health-assessments";
+const HEALTH_ASSESSMENTS_API = "/api/v1/health-assessments";
+
+function useHealthAssessments(childId?: string) {
+  return useQuery<{ data: HealthAssessment[] }>({
+    queryKey: childId ? [HEALTH_ASSESSMENTS_KEY, childId] : [HEALTH_ASSESSMENTS_KEY],
+    queryFn: () => fetch(childId ? `${HEALTH_ASSESSMENTS_API}?child_id=${childId}` : HEALTH_ASSESSMENTS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateHealthAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<HealthAssessment>) =>
+      fetch(HEALTH_ASSESSMENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [HEALTH_ASSESSMENTS_KEY] }),
+  });
+}
+
+function useUpdateHealthAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<HealthAssessment> & { id: string }) =>
+      fetch(HEALTH_ASSESSMENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [HEALTH_ASSESSMENTS_KEY] }),
+  });
+}
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
