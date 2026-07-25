@@ -1,4 +1,8 @@
 "use client";
+import type { DashboardData } from "@/types/extended";
+import { api } from "@/hooks/use-api";
+
+import { useQuery } from "@tanstack/react-query";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — NOTIFICATION CENTRE
@@ -11,7 +15,6 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { cn, formatRelative } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useDashboard } from "@/hooks/use-dashboard";
 import { usePatternAlerts } from "@/hooks/use-intelligence";
 import { useNotifications, useMarkNotificationRead } from "@/hooks/use-notifications";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -64,7 +67,11 @@ export function NotificationCentre() {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const { currentUser } = useAuthContext();
-  const dashboard = useDashboard();
+  const dashboard = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => api.get<{ data: DashboardData }>("/dashboard"),
+    refetchInterval: 30_000,
+  });
   const patterns  = usePatternAlerts({ status: "active" });
   const { data: apiNotifs = [] } = useNotifications({ recipientId: currentUser?.id, unreadOnly: true });
   const markRead = useMarkNotificationRead();

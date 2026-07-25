@@ -41,7 +41,6 @@ import {
   UserCheck,
   Zap,
 } from "lucide-react";
-import { useDashboard } from "@/hooks/use-dashboard";
 import { useAuthContext } from "@/contexts/auth-context";
 import { CalmStatusBadge, type CalmStatus } from "@/components/ui/calm-status-badge";
 import { RiskBadge } from "@/components/ui/risk-badge";

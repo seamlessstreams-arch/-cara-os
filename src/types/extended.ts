@@ -22255,3 +22255,83 @@ export interface VisitorLogRecord {
   log_review_date: string | null;
   created_at: string;
 }
+
+// Dashboard types
+export interface DashboardData {
+  tasks: {
+    active: number; overdue: number; due_today: number;
+    urgent: number; my_tasks: number; awaiting_sign_off: number;
+    completed_today: number;
+    priority_queue: Task[];
+  };
+  incidents: {
+    open: number; awaiting_oversight: number; critical: number;
+    this_week: number;
+    list: Incident[];
+    oversight_queue: Incident[];
+  };
+  safeguarding: {
+    missing_active: number; contextual_risk: number;
+    missing_episodes: MissingEpisode[];
+    high_risk_yp: YoungPerson[];
+  };
+  staffing: {
+    on_shift: number; open_shifts: number; on_leave: number;
+    pending_leave_requests: number; supervision_overdue: number;
+    today_shifts: Shift[];
+  };
+  medication: {
+    exceptions_this_week: number; missed_today: number;
+    scheduled_today: number; stock_alerts: number; oversight_needed: number;
+  };
+  compliance: {
+    training_expired: number; training_expiring: number;
+    cert_warnings: number; cert_warnings_list: string[];
+  };
+  environment: {
+    building_checks_due: number; building_checks_overdue: number;
+    vehicle_defects: number; vehicles_restricted: number;
+  };
+  young_people: {
+    current: YoungPerson[];
+    missing_episodes_total: number;
+  };
+  care_events?: {
+    awaiting_manager_review: number;
+    routing_failed: number;
+  };
+  handover?: {
+    latest: unknown;
+    child_updates: unknown[];
+    flags: unknown[];
+    pending_sign_off: boolean;
+  };
+}
+
+export interface CreateHandoverPayload {
+  home_id?: string;
+  shift_date?: string;
+  shift_from: HandoverEntry["shift_from"];
+  shift_to: HandoverEntry["shift_to"];
+  handover_time?: string;
+  completed_at?: string | null;
+  outgoing_staff?: string[];
+  incoming_staff?: string[];
+  created_by?: string;
+  signed_off_by?: string | null;
+  child_updates?: HandoverChildUpdate[];
+  general_notes?: string;
+  flags?: string[];
+  linked_incident_ids?: string[];
+}
+
+export interface HandoverResponse {
+  data: {
+    latest: HandoverEntry | null;
+    history: HandoverEntry[];
+    today_shifts: Shift[];
+    pending_tasks: Task[];
+    open_incidents: Incident[];
+    young_people: YoungPerson[];
+  };
+}

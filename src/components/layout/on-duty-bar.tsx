@@ -1,4 +1,8 @@
 "use client";
+import type { DashboardData } from "@/types/extended";
+
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — ON-DUTY STATUS BAR
@@ -10,7 +14,6 @@
 import React from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { useDashboard } from "@/hooks/use-dashboard";
 import { getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import { Users, Circle } from "lucide-react";
@@ -28,7 +31,11 @@ const SHIFT_LABEL: Record<string, string> = {
 };
 
 export function OnDutyBar({ collapsed }: { collapsed: boolean }) {
-  const { data } = useDashboard();
+  const { data } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => api.get<{ data: DashboardData }>("/dashboard"),
+    refetchInterval: 30_000,
+  });
   const shifts = data?.data?.staffing.today_shifts ?? [];
   const onDuty = shifts.filter((s) => s.status === "in_progress");
   const scheduled = shifts.filter((s) => s.status === "scheduled");

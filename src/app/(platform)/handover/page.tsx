@@ -1,5 +1,8 @@
 "use client";
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import { careToast, toastSuccess } from "@/lib/toast";
 import React, { useState, useMemo } from "react";
 import { CaraQuickActions } from "@/components/intelligence/cara-quick-actions";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -18,9 +21,8 @@ import {
   Search, ArrowUpDown, BarChart3, FileCheck, Heart,
 } from "lucide-react";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import type { YoungPerson } from "@/types";
+import type { YoungPerson, Task, Incident, Shift } from "@/types";
 import { cn, formatDate, formatDateTime, todayStr } from "@/lib/utils";
-import { useHandover, useCreateHandover, useSignOffHandover } from "@/hooks/use-handover";
 import { useHandoverContext } from "@/hooks/use-handover-context";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { HandoverEntry, HandoverChildUpdate } from "@/types/extended";
@@ -33,6 +35,42 @@ import { CaraHandoverBuilder } from "@/components/handover/cara-handover-builder
 import { HandoverPrintContext } from "@/components/handover/handover-print-context";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+interface HandoverResponse {
+  data: {
+    latest: HandoverEntry | null;
+    history: HandoverEntry[];
+    today_shifts: Shift[];
+    pending_tasks: Task[];
+    open_incidents: Incident[];
+    young_people: YoungPerson[];
+  };
+}
+
+interface CreateHandoverPayload {
+  home_id?: string;
+  shift_date?: string;
+  shift_from: HandoverEntry["shift_from"];
+  shift_to: HandoverEntry["shift_to"];
+  handover_time?: string;
+  completed_at?: string | null;
+  outgoing_staff?: string[];
+  incoming_staff?: string[];
+  created_by?: string;
+  signed_off_by?: string | null;
+  child_updates?: HandoverChildUpdate[];
+  general_notes?: string;
+  flags?: string[];
+  linked_incident_ids?: string[];
+}
+
+interface SignOffPayload {
+  handover_id: string;
+  staff_id: string;
+  notes?: string;
+}
 
 const HANDOVER_EXPORT_COLS: ExportColumn<HandoverEntry>[] = [
   { header: "Shift Date", accessor: (h) => h.shift_date },
@@ -239,7 +277,16 @@ function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
 
 function HandoverSignOffSection({ handover }: { handover: HandoverEntry }) {
   const { currentUser } = useAuthContext();
-  const signOff = useSignOffHandover();
+  const qc = useQueryClient();
+  const signOff = useMutation({
+    mutationFn: (data: { handover_id: string; staff_id: string; notes?: string }) =>
+      api.patch<{ data: HandoverEntry }>("/handover", data),
+    onSuccess: () => {
+      toastSuccess("Handover acknowledged", "Your sign-off has been recorded.");
+      qc.invalidateQueries({ queryKey: ["handover"] });
+    },
+    onError: () => careToast.actionFailed("Sign off handover"),
+  });
   const [signOffNotes, setSignOffNotes] = useState("");
   const [showNotes, setShowNotes] = useState(false);
 
@@ -427,7 +474,16 @@ type ShiftTo = HandoverEntry["shift_to"];
 
 function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) {
   const { currentUser } = useAuthContext();
-  const createMutation = useCreateHandover();
+  const qc = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: (data: CreateHandoverPayload) =>
+      api.post<{ data: HandoverEntry }>("/handover", data),
+    onSuccess: () => {
+      careToast.handoverCreated();
+      qc.invalidateQueries({ queryKey: ["handover"] });
+    },
+    onError: () => careToast.actionFailed("Create handover"),
+  });
   const currentYP = youngPeople.filter((y) => y.status === "current");
 
   const [shiftFrom, setShiftFrom] = useState<ShiftFrom>("day");
@@ -771,7 +827,10 @@ export default function HandoverPage() {
   const [search, setSearch] = useState("");
   const [shiftFilter, setShiftFilter] = useState<ShiftFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("newest");
-  const { data, isLoading, isError, error } = useHandover();
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["handover"],
+    queryFn: () => api.get<HandoverResponse>("/handover"),
+  });
 
   const latest = data?.data.latest ?? null;
   const history = data?.data.history ?? [];

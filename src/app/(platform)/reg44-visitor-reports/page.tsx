@@ -1,5 +1,9 @@
 "use client";
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import { toastSuccess, toastError } from "@/lib/toast";
+
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
@@ -22,7 +26,6 @@ import {
   BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useReg44Visits, useUpdateRecommendation, useCreateVisit } from "@/hooks/use-reg44";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { Reg44VisitReport, Reg44Recommendation } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -70,7 +73,32 @@ const JUDGEMENT_TEXT: Record<string, string> = {
 
 function NewVisitDialog({ onCreated }: { onCreated?: () => void }) {
   const [open, setOpen] = useState(false);
-  const createVisit = useCreateVisit();
+  
+  const qc = useQueryClient();
+  const createVisit = useMutation({
+    mutationFn: (data: {
+      visit_date: string;
+      visitor: string;
+      duration: string;
+      children_spoken: string;
+      staff_spoken: number;
+      overall_judgement: string;
+      notes: string;
+      records_reviewed?: string[];
+      strengths?: string[];
+      areas_for_development?: string[];
+      recommendations?: Reg44Recommendation[];
+      report_sent_to_ofsted?: boolean;
+      report_sent_date?: string;
+      previous_actions_status?: string;
+    }) =>
+      api.post<{ data: import("@/types/extended").Reg44VisitReport }>("/reg44", data),
+    onSuccess: () => {
+      toastSuccess("Visit recorded", "New Reg 44 visit report has been saved.");
+      qc.invalidateQueries({ queryKey: ["reg44"] });
+    },
+    onError: () => toastError("Create failed", "Could not save visit report."),
+  });
 
   const [form, setForm] = useState({
     visit_date: "",
@@ -377,8 +405,32 @@ function RecommendationRow({
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function Reg44VisitorReportsPage() {
-  const { data: queryData, isLoading } = useReg44Visits();
-  const updateRecommendation = useUpdateRecommendation();
+  const { data: queryData, isLoading } = useQuery({
+    queryKey: ["reg44"],
+    queryFn: () => api.get<{ data: Reg44VisitReport[] }>("/reg44"),
+  });
+  
+  const qc = useQueryClient();
+  const updateRecommendation = useMutation({
+    mutationFn: (data: {
+      visit_id: string;
+      recommendation_id: string;
+      status: "completed" | "in_progress" | "outstanding";
+      evidence_notes?: string;
+    }) =>
+      api.patch<{ data: Reg44Recommendation }>("/reg44", data),
+    onSuccess: (_res, variables) => {
+      const label =
+        variables.status === "completed"
+          ? "Completed"
+          : variables.status === "in_progress"
+            ? "In Progress"
+            : "Outstanding";
+      toastSuccess("Recommendation updated", `Status set to ${label}.`);
+      qc.invalidateQueries({ queryKey: ["reg44"] });
+    },
+    onError: () => toastError("Update failed", "Could not update recommendation status."),
+  });
 
   const data: Reg44VisitReport[] = queryData?.data ?? [];
 

@@ -1,4 +1,9 @@
 "use client";
+import type { Reg44VisitReport, Reg44Recommendation } from "@/types/extended";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import { toastSuccess, toastError } from "@/lib/toast";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — ANNEX A READINESS DASHBOARD
@@ -57,7 +62,6 @@ import { useIncidents } from "@/hooks/use-incidents";
 import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
 import { useRestraints } from "@/hooks/use-restraints";
 import { useComplaints } from "@/hooks/use-complaints";
-import { useReg44Visits } from "@/hooks/use-reg44";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useStaff } from "@/hooks/use-staff";
 import { useReg45Evidence } from "@/hooks/use-compliance-evidence";
@@ -472,7 +476,10 @@ export default function AnnexAReadinessPage() {
   const missingQ = useMissingEpisodes({ homeId });
   const restraintsQ = useRestraints();
   const complaintsQ = useComplaints({ homeId });
-  const reg44Q = useReg44Visits();
+  const reg44Q = useQuery({
+    queryKey: ["reg44"],
+    queryFn: () => api.get<{ data: Reg44VisitReport[] }>("/reg44"),
+  });
   const youngPeopleQ = useYoungPeople("current");
   const staffQ = useStaff({ status: "active" });
   const reg45Q = useReg45Evidence();

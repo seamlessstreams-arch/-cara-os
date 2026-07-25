@@ -1,4 +1,7 @@
 "use client";
+import { api } from "@/hooks/use-api";
+
+import { useQuery } from "@tanstack/react-query";
 import React, { useState, useRef, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,12 +16,11 @@ import {
 } from "lucide-react";
 import { HOME, getStaffName } from "@/lib/seed-data";
 import { demoSeed } from "@/lib/demo/demo-seed";
-import { useHealthCheck } from "@/hooks/use-dashboard";
 import { usePatternAlerts, useActionOutcomes, useHomeClimate, useUpdateActionOutcome } from "@/hooks/use-intelligence";
 import { useAnnexAReadiness, useReg45Evidence } from "@/hooks/use-compliance-evidence";
 import { useManagementOversight, useReg40Triage } from "@/hooks/use-oversight-queues";
 import { useInspectionHistory } from "@/hooks/use-inspection-history";
-import type { ActionOutcome } from "@/types/extended";
+import type { ActionOutcome , HealthCheckScore } from "@/types/extended";
 import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -792,7 +794,11 @@ type InspectionTab = "readiness" | "actions";
 
 export default function InspectionPage() {
   const [activeTab, setActiveTab] = useState<InspectionTab>("readiness");
-  const hcQuery = useHealthCheck();
+  const hcQuery = useQuery({
+    queryKey: ["health-check"],
+    queryFn: () => api.get<{ data: HealthCheckScore }>("/health-check"),
+    refetchInterval: 60_000,
+  });
   const hc = hcQuery.data?.data;
 
   // Live compliance data

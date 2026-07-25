@@ -1,4 +1,8 @@
 "use client";
+import type { DashboardData } from "@/types/extended";
+
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — WHAT NEEDS DOING TODAY PANEL
@@ -29,7 +33,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, formatRelative, isOverdue, isDueToday, todayStr } from "@/lib/utils";
-import { useDashboard } from "@/hooks/use-dashboard";
 import { useAuthContext } from "@/contexts/auth-context";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -297,7 +300,11 @@ export function WhatNeedsDoingToday({
   compact = false,
   className,
 }: WhatNeedsDoingTodayProps) {
-  const { data, isLoading } = useDashboard();
+  const { data, isLoading } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => api.get<{ data: DashboardData }>("/dashboard"),
+    refetchInterval: 30_000,
+  });
   const { currentUser } = useAuthContext();
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     urgent: true,

@@ -1,5 +1,8 @@
 "use client";
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — Cara REG 45 REPORT BUILDER
 // Composes a draft Regulation 45 report from manager-accepted evidence.
@@ -18,12 +21,6 @@ import {
 import {
   FileText, RefreshCw, Lock, CheckCircle2, ClipboardList, Send, Save,
 } from "lucide-react";
-import {
-  useReg45Reports,
-  useBuildReg45Report,
-  useEditReg45Report,
-  useSetReg45ReportStatus,
-} from "@/hooks/use-cara-reg45-report";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type { CaraReg45Report, CaraReg45Theme } from "@/types/cara-studio";
@@ -41,10 +38,52 @@ export default function Reg45ReportPage() {
   const { currentUser } = useAuthContext();
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
 
-  const query = useReg45Reports(HOME_ID);
-  const build = useBuildReg45Report();
-  const edit = useEditReg45Report();
-  const setStatus = useSetReg45ReportStatus();
+  const query = useQuery({
+    queryKey: ["cara-reg45-report", HOME_ID ?? null],
+    queryFn: () => api.get<{ data: CaraReg45Report[] }>(`/cara-studio/reg45-reports${HOME_ID ? `?home_id=${encodeURIComponent(HOME_ID)}` : ""}`),
+    refetchInterval: 60000,
+  });
+  const qc = useQueryClient();
+  const build = useMutation({
+    mutationFn: (input: {
+      home_id: string;
+      period_start?: string;
+      period_end?: string;
+      title?: string;
+      actor_id?: string;
+      actor_role?: string;
+    }) => api.post<{ data: CaraReg45Report }>("/cara-studio/reg45-reports", input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-reg45-report"] });
+    },
+  });
+  const edit = useMutation({
+    mutationFn: (input: {
+      id: string;
+      title?: string;
+      executive_summary?: string;
+      section_narratives?: Partial<Record<CaraReg45Theme, string>>;
+      actor_id?: string;
+      actor_role?: string;
+    }) => api.patch<{ data: CaraReg45Report }>("/cara-studio/reg45-reports", input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-reg45-report"] });
+    },
+  });
+  const setStatus = useMutation({
+    mutationFn: (input: {
+      id: string;
+      status: CaraReg45Report["status"];
+      note?: string | null;
+      actor_id?: string;
+      actor_role?: string;
+    }) => api.patch<{ data: CaraReg45Report }>("/cara-studio/reg45-reports", input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-reg45-report"] });
+      qc.invalidateQueries({ queryKey: ["cara-reg45-evidence"] });
+      qc.invalidateQueries({ queryKey: ["cara-annex-a-snapshot"] });
+    },
+  });
 
   const reports = query.data?.data ?? [];
   const [selectedId, setSelectedId] = useState<string | null>(null);

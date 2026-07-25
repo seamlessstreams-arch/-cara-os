@@ -1,4 +1,8 @@
 "use client";
+import type { DashboardData , HealthCheckScore , TimeSavedSummary } from "@/types/extended";
+import { api } from "@/hooks/use-api";
+
+import { useQuery } from "@tanstack/react-query";
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
@@ -12,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar } from "@/components/ui/avatar";
 import { PriorityCard } from "@/components/ui/priority-card";
-import { useDashboard, useHealthCheck, useTimeSaved } from "@/hooks/use-dashboard";
 import { useCareEvents } from "@/hooks/use-care-events";
 import { useAddOversight } from "@/hooks/use-incidents";
 import { useCompleteTask } from "@/hooks/use-tasks";
@@ -1218,9 +1221,20 @@ export default function DashboardPage() {
   const { currentUser } = useAuthContext();
   const { role }        = usePermissions();
   const config          = getDashboardConfig(role);
-  const dashboard   = useDashboard();
-  const healthCheck = useHealthCheck();
-  const timeSaved   = useTimeSaved();
+  const dashboard = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => api.get<{ data: DashboardData }>("/dashboard"),
+    refetchInterval: 30_000,
+  });
+  const healthCheck = useQuery({
+    queryKey: ["health-check"],
+    queryFn: () => api.get<{ data: HealthCheckScore }>("/health-check"),
+    refetchInterval: 60_000,
+  });
+  const timeSaved = useQuery({
+    queryKey: ["time-saved"],
+    queryFn: () => api.get<{ data: TimeSavedSummary; formatted: Record<string, string> }>("/time-saved"),
+  });
   const careEvents  = useCareEvents({ days: 1, limit: 5 });
   const addOversight = useAddOversight();
   const completeTask = useCompleteTask();
