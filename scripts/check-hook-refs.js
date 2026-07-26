@@ -115,11 +115,39 @@ const isLikelyRqType = (n) =>
 
 const offenders = [];
 const badImports = [];
+const deadModules = [];
 const files = walk(ROOT, []);
+
+/** Does a local `@/…` specifier resolve to a real file? */
+function resolvesLocally(spec) {
+  const rel = spec.replace(/^@\//, "");
+  const base = path.join(ROOT, rel);
+  for (const cand of [`${base}.ts`, `${base}.tsx`, path.join(base, "index.ts"), path.join(base, "index.tsx"), base]) {
+    if (fs.existsSync(cand)) return true;
+  }
+  return false;
+}
 
 for (const file of files) {
   const raw = fs.readFileSync(file, "utf8");
   const code = stripNonCode(raw);
+
+  /*
+   * Shape 3: importing from a local module that does not exist.
+   * A TYPE-ONLY import of a deleted module is erased before resolution, so
+   * Turbopack never fails — but the types silently become error-types and every
+   * use of them degrades to implicit-any. Eight of these survived in main since
+   * the batch-101 inlining, quietly costing ~70 tsc errors while the build
+   * stayed green. Only checks `@/…` specifiers; packages are not our business.
+   */
+  for (const m of raw.matchAll(/from\s*["'](@\/[^"']+)["']/g)) {
+    const spec = m[1];
+    if (resolvesLocally(spec)) continue;
+    deadModules.push({
+      loc: `${path.relative(REPO, file)}:${raw.slice(0, m.index).split("\n").length}`,
+      spec,
+    });
+  }
 
   // ── Shape 1: symbol imported from @tanstack/react-query that it never exports
   for (const m of raw.matchAll(/import[^;]*?\{([^}]*)\}[^;]*?from\s*["']@tanstack\/react-query["']/gs)) {
@@ -186,6 +214,19 @@ for (const file of files) {
 }
 
 let failed = false;
+
+if (deadModules.length > 0) {
+  failed = true;
+  console.error(
+    `check-hook-refs: ${deadModules.length} import(s) from a local module that does not exist.\n` +
+      `A TYPE-ONLY import of a deleted module is erased before resolution, so the build stays\n` +
+      `GREEN while the types silently become error-types and every use degrades to implicit-any.\n` +
+      `Re-point at where the type lives now (usually the matching API route or the engine), or\n` +
+      `delete the import if it is unused:\n`,
+  );
+  for (const o of deadModules) console.error(`  ✖ ${o.loc}  from "${o.spec}"`);
+  console.error("");
+}
 
 if (badImports.length > 0) {
   failed = true;
