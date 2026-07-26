@@ -17,17 +17,49 @@ import { Input } from "@/components/ui/input";
 import {
   Activity, AlertTriangle, RefreshCw, TrendingUp, Users, Clock, Sparkles, CheckCircle2, Send,
 } from "lucide-react";
-import {
-  useCareEventPatterns,
-} from "@/hooks/use-care-event-patterns";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { usePromotePatternsToReg45 } from "@/hooks/use-promote-patterns-to-reg45";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type {
   CareEventPattern,
   CareEventPatternSeverity,
+  CareEventPatternSummary,
   CareEventPatternType,
 } from "@/lib/care-events/pattern-detection";
+
+interface CareEventPatternsResponse {
+  data: CareEventPatternSummary;
+}
+
+interface UseCareEventPatternsOptions {
+  lookbackDays?: number;
+  minCluster?: number;
+  timeBandHours?: number;
+}
+
+function useCareEventPatterns(
+  homeId: string,
+  options: UseCareEventPatternsOptions = {},
+) {
+  const search = new URLSearchParams({ home_id: homeId });
+  if (options.lookbackDays) search.set("lookback_days", String(options.lookbackDays));
+  if (options.minCluster) search.set("min_cluster", String(options.minCluster));
+  if (options.timeBandHours) search.set("time_band_hours", String(options.timeBandHours));
+  return useQuery({
+    queryKey: [
+      "care-event-patterns",
+      homeId,
+      options.lookbackDays ?? null,
+      options.minCluster ?? null,
+      options.timeBandHours ?? null,
+    ],
+    queryFn: () =>
+      api.get<CareEventPatternsResponse>(`/care-events/patterns?${search.toString()}`),
+    refetchInterval: 60000,
+  });
+}
 
 const HOME_ID = "home_oak";
 

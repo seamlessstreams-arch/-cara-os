@@ -15,16 +15,55 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, Bell, ExternalLink, AlertTriangle, AlertCircle, Info, Check, EyeOff, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  useCareEventsNotifications,
-  useNotificationAction,
-} from "@/hooks/use-care-events-notifications";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import type {
   NotificationItem,
   NotificationSeverity,
   NotificationSource,
+  NotificationStream,
   NotificationAudience,
 } from "@/lib/care-events/notifications";
+
+interface CareEventsNotificationsResponse {
+  data: NotificationStream;
+}
+
+function useCareEventsNotifications(
+  homeId: string,
+  opts?: { includeDismissed?: boolean },
+) {
+  const includeDismissed = opts?.includeDismissed ?? false;
+  return useQuery({
+    queryKey: ["care-events-notifications", homeId, includeDismissed],
+    queryFn: () => {
+      const qs = new URLSearchParams({ home_id: homeId });
+      if (includeDismissed) qs.set("include_dismissed", "true");
+      return api.get<CareEventsNotificationsResponse>(`/care-events/notifications?${qs}`);
+    },
+    refetchInterval: 15000,
+  });
+}
+
+type NotificationAction = "read" | "unread" | "dismiss" | "undismiss";
+
+function useNotificationAction(homeId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { notificationIds: string[]; action: NotificationAction }) =>
+      api.post<{ data: { updated: string[]; action: NotificationAction } }>(
+        "/care-events/notifications",
+        {
+          home_id: homeId,
+          notification_ids: input.notificationIds,
+          action: input.action,
+        },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["care-events-notifications", homeId] });
+    },
+  });
+}
 
 const HOME_ID = "home_oak";
 

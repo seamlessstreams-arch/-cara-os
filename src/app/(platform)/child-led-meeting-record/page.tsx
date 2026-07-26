@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -28,10 +29,22 @@ import {
 } from "@/components/ui/select";
 import type { ChildLedMeetingRecord, ChildLedMeetingType } from "@/types/extended";
 import { CHILD_LED_MEETING_TYPE_LABEL } from "@/types/extended";
-import { useChildLedMeetings } from "@/hooks/use-child-led-meetings";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── data (inlined from the former use-child-led-meetings hook) ───────────────
+
+const CHILD_LED_MEETINGS_KEY = "child-led-meetings";
+const CHILD_LED_MEETINGS_API = "/api/v1/child-led-meetings";
+
+function useChildLedMeetings(childId?: string) {
+  return useQuery<{ data: ChildLedMeetingRecord[] }>({
+    queryKey: childId ? [CHILD_LED_MEETINGS_KEY, childId] : [CHILD_LED_MEETINGS_KEY],
+    queryFn: () =>
+      fetch(childId ? `${CHILD_LED_MEETINGS_API}?child_id=${childId}` : CHILD_LED_MEETINGS_API).then((r) => r.json()),
+  });
+}
 
 const exportCols: ExportColumn<ChildLedMeetingRecord>[] = [
   { header: "Date", accessor: (r: ChildLedMeetingRecord) => r.date },

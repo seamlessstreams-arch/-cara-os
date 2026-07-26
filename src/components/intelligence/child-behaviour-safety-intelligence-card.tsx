@@ -14,8 +14,20 @@ import {
   ThumbsUp, ThumbsDown, FileText, Clock, UserX, Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildBehaviourSafetyIntelligence } from "@/hooks/use-child-behaviour-safety-intelligence";
-import type { SafetyStatus } from "@/lib/engines/child-behaviour-safety-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { SafetyStatus, ChildBehaviourSafetyResult } from "@/lib/engines/child-behaviour-safety-intelligence-engine";
+
+// ── Data (inlined from the former use-child-behaviour-safety-intelligence hook) ──
+
+function useChildBehaviourSafetyIntelligence(childId: string | null) {
+  return useQuery<{ data: ChildBehaviourSafetyResult }>({
+    queryKey: ["child-behaviour-safety-intelligence", childId],
+    queryFn: () =>
+      fetch(`/api/v1/child-behaviour-safety-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

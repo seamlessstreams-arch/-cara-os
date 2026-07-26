@@ -24,12 +24,33 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useCCTVAccesses, useCreateCCTVAccess } from "@/hooks/use-cctv-accesses";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { CCTVAccess, CCTVAccessReason, CCTVCamera } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data (inlined from the former use-cctv-accesses hook) ─────────────── */
+
+const CCTV_ACCESSES_KEY = "cctv-accesses";
+const CCTV_ACCESSES_API = "/api/v1/cctv-accesses";
+
+function useCCTVAccesses() {
+  return useQuery<{ data: CCTVAccess[] }>({
+    queryKey: [CCTV_ACCESSES_KEY],
+    queryFn: () => fetch(CCTV_ACCESSES_API).then((r) => r.json()),
+  });
+}
+
+function useCreateCCTVAccess() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<CCTVAccess>) =>
+      fetch(CCTV_ACCESSES_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [CCTV_ACCESSES_KEY] }),
+  });
+}
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 

@@ -6,6 +6,8 @@
 // Managers accept, modify, defer or reject before any record is updated.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,20 +15,93 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card";
 import { Brain, RefreshCw, CheckCircle2, XCircle, Clock, Edit3 } from "lucide-react";
-import {
-  useDecisionSupport,
-  useRunDecisionSupport,
-  useUpdateRecommendation,
-  useUpdateFormulation,
-} from "@/hooks/use-cara-decision-support";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type {
   CaraFormulation,
   CaraDecisionRecommendation,
   CaraDecisionPriority,
+  CaraDecisionSupportSnapshot,
   CaraFormulationFactorType,
 } from "@/types/cara-studio";
+
+// ─── Inlined from the former use-cara-decision-support hook ──────────────────
+
+interface SnapshotResponse {
+  data: CaraDecisionSupportSnapshot;
+}
+
+function useDecisionSupport(homeId?: string, childId?: string | null) {
+  const search = new URLSearchParams();
+  if (homeId) search.set("home_id", homeId);
+  if (childId) search.set("child_id", childId);
+  const qs = search.toString();
+  return useQuery({
+    queryKey: ["cara-decision-support", homeId ?? null, childId ?? null],
+    queryFn: () =>
+      api.get<SnapshotResponse>(
+        `/cara-studio/decision-support${qs ? `?${qs}` : ""}`,
+      ),
+    refetchInterval: 60000,
+  });
+}
+
+function useRunDecisionSupport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      home_id: string;
+      child_id?: string | null;
+      lookback_days?: number;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.post<SnapshotResponse>("/cara-studio/decision-support", input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-decision-support"] });
+    },
+  });
+}
+
+function useUpdateRecommendation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      id: string;
+      status: CaraDecisionRecommendation["status"];
+      decision_note?: string | null;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.patch<{ data: CaraDecisionRecommendation }>(
+        "/cara-studio/decision-recommendations",
+        input,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-decision-support"] });
+    },
+  });
+}
+
+function useUpdateFormulation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      id: string;
+      status: CaraFormulation["status"];
+      reviewer_note?: string | null;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.patch<{ data: CaraFormulation }>(
+        "/cara-studio/formulations",
+        input,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-decision-support"] });
+    },
+  });
+}
 
 const HOME_ID = "home_oak";
 

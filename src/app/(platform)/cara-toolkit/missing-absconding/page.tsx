@@ -1,8 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useCaraToolkitMissingAbsconding } from "@/hooks/use-cara-toolkit-missing-absconding";
-import type { MissingEpisodeSummary, SignalColour } from "@/lib/cara-visual-toolkit/types";
+import { useQuery } from "@tanstack/react-query";
+import type { MissingAbscondingAnalysis, MissingEpisodeSummary, SignalColour } from "@/lib/cara-visual-toolkit/types";
+
+async function fetchMissingAbsconding(): Promise<MissingAbscondingAnalysis> {
+  const res = await fetch("/api/v1/cara-toolkit/missing-absconding");
+  if (!res.ok) throw new Error("Failed to fetch missing/absconding data");
+  const json = await res.json();
+  return json.data as MissingAbscondingAnalysis;
+}
+
+function useCaraToolkitMissingAbsconding() {
+  return useQuery({
+    queryKey: ["cara-toolkit-missing-absconding"],
+    queryFn: fetchMissingAbsconding,
+    staleTime: 120_000,
+  });
+}
 
 const SIGNAL_STYLES: Record<SignalColour, { bg: string; border: string; text: string }> = {
   green: { bg: "bg-green-50",  border: "border-green-200",  text: "text-green-800"  },

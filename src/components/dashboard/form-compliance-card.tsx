@@ -16,8 +16,24 @@ import {
   Clock, FileWarning, FileCheck2, BarChart3, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCareFormIntelligence } from "@/hooks/use-care-form-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { CareFormIntelligenceResult } from "@/lib/engines/care-form-intelligence-engine";
 import { formatRate } from "@/lib/metrics/rate";
+
+// ── Data (inlined from the former use-care-form-intelligence hook) ──────────
+
+interface CareFormIntelligenceResponse {
+  data: CareFormIntelligenceResult;
+}
+
+function useCareFormIntelligence() {
+  return useQuery({
+    queryKey: ["care-form-intelligence"],
+    queryFn: () => api.get<CareFormIntelligenceResponse>("/care-form-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -31,12 +32,24 @@ import {
   FEEDBACK_DECISION_LABEL,
 } from "@/types/extended";
 import type { FeedbackDecision } from "@/types/extended";
-import { useChildFeedbackLoops } from "@/hooks/use-child-feedback-loops";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ChildVoiceDimensionsPanel } from "@/components/child-voice/child-voice-dimensions-panel";
+
+// ── data (inlined from the former use-child-feedback-loops hook) ─────────────
+
+const CHILD_FEEDBACK_LOOPS_KEY = "child-feedback-loops";
+const CHILD_FEEDBACK_LOOPS_API = "/api/v1/child-feedback-loops";
+
+function useChildFeedbackLoops(childId?: string) {
+  return useQuery<{ data: ChildFeedbackLoop[] }>({
+    queryKey: childId ? [CHILD_FEEDBACK_LOOPS_KEY, childId] : [CHILD_FEEDBACK_LOOPS_KEY],
+    queryFn: () =>
+      fetch(childId ? `${CHILD_FEEDBACK_LOOPS_API}?child_id=${childId}` : CHILD_FEEDBACK_LOOPS_API).then((r) => r.json()),
+  });
+}
 
 const decisionColour: Record<string, string> = {
   acted_on_in_full: "bg-green-100 text-green-800",

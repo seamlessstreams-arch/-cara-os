@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -8,8 +9,45 @@ import {
   Loader2, RefreshCw, Eye, AlertOctagon, AlertTriangle, Info, CheckCircle2,
   FileCheck, TrendingUp, Sparkles, ArrowRight, Undo2,
 } from "lucide-react";
-import { useCaraOversight, useOversightAction } from "@/hooks/use-cara-oversight";
-import type { AlertPriority } from "@/lib/cara-incident/manager-oversight-engine";
+import type {
+  AlertPriority,
+  ManagerAlert,
+  PatternInsight,
+} from "@/lib/cara-incident/manager-oversight-engine";
+import type { CaraRecordingReview } from "@/lib/cara-incident/cara-incident-engine";
+
+// ─── Inlined from the former use-cara-oversight hook ─────────────────────────
+
+interface OversightData {
+  summary: { open_alerts: number; urgent: number; reviews_awaiting: number; patterns: number; headline: string };
+  alerts: (ManagerAlert & { child_name: string | null })[];
+  patterns: (PatternInsight & { child_name: string | null })[];
+  awaiting_review: (CaraRecordingReview & { child_name: string; staff_name: string })[];
+  disclaimer: string;
+}
+
+const oversightJson = async (res: Response) => {
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(j.error || "Request failed");
+  return j.data ?? j;
+};
+
+function useCaraOversight() {
+  return useQuery<OversightData>({
+    queryKey: ["cara-oversight"],
+    queryFn: () => fetch("/api/v1/cara-manager-oversight").then(oversightJson),
+    refetchInterval: 60_000,
+  });
+}
+
+function useOversightAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { action: "set_alert_status"; key: string; status: "resolved" | "dismissed" | "open" } | { action: "mark_reviewed"; review_id: string }) =>
+      fetch("/api/v1/cara-manager-oversight", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(oversightJson),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["cara-oversight"] }),
+  });
+}
 
 const PRIORITY_META: Record<AlertPriority, { chip: string; border: string }> = {
   urgent: { chip: "bg-red-100 text-red-800 border-red-200", border: "border-l-red-500" },

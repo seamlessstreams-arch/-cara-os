@@ -8,6 +8,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,15 +17,53 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card";
 import { Network, RefreshCw, AlertTriangle, Sparkles } from "lucide-react";
-import { useCareGraph, useRebuildCareGraph } from "@/hooks/use-cara-care-graph";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type {
   CaraCareGraphNode,
   CaraCareGraphEdge,
   CaraCareGraphNodeType,
+  CaraCareGraphSnapshot,
   CaraPatternSeverity,
 } from "@/types/cara-studio";
+
+// ─── Inlined from the former use-cara-care-graph hook ────────────────────────
+
+interface CareGraphResponse {
+  data: CaraCareGraphSnapshot;
+}
+
+function useCareGraph(homeId?: string, childId?: string | null) {
+  const search = new URLSearchParams();
+  if (homeId) search.set("home_id", homeId);
+  if (childId) search.set("child_id", childId);
+  const qs = search.toString();
+  return useQuery({
+    queryKey: ["cara-care-graph", homeId ?? null, childId ?? null],
+    queryFn: () =>
+      api.get<CareGraphResponse>(
+        `/cara-studio/care-graph${qs ? `?${qs}` : ""}`,
+      ),
+    refetchInterval: 60000,
+  });
+}
+
+function useRebuildCareGraph() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      home_id: string;
+      child_id?: string | null;
+      lookback_days?: number;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.post<CareGraphResponse>("/cara-studio/care-graph", input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-care-graph"] });
+    },
+  });
+}
 
 const HOME_ID = "home_oak";
 

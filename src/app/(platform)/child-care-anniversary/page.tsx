@@ -21,11 +21,24 @@ import {
 } from "@/components/ui/select";
 import type { CareAnniversaryRecord, CareAnniversaryType, CareAnniversaryAttitude } from "@/types/extended";
 import { CARE_ANNIVERSARY_TYPE_LABEL, CARE_ANNIVERSARY_ATTITUDE_LABEL } from "@/types/extended";
-import { useCareAnniversaryRecords } from "@/hooks/use-care-anniversary-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const CARE_ANNIVERSARY_KEY = "care-anniversary-records";
+const CARE_ANNIVERSARY_API = "/api/v1/care-anniversary-records";
+
+function useCareAnniversaryRecords(childId?: string) {
+  return useQuery<{ data: CareAnniversaryRecord[] }>({
+    queryKey: childId ? [CARE_ANNIVERSARY_KEY, childId] : [CARE_ANNIVERSARY_KEY],
+    queryFn: () =>
+      fetch(
+        childId ? `${CARE_ANNIVERSARY_API}?child_id=${childId}` : CARE_ANNIVERSARY_API,
+      ).then((r) => r.json()),
+  });
+}
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 

@@ -1,8 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useCaraToolkitShowingImpact } from "@/hooks/use-cara-toolkit-showing-impact";
-import type { ChildImpactSummary, SignalColour } from "@/lib/cara-visual-toolkit/types";
+import { useQuery } from "@tanstack/react-query";
+import type { ChildImpactSummary, ShowingImpactAnalysis, SignalColour } from "@/lib/cara-visual-toolkit/types";
+
+async function fetchShowingImpact(): Promise<ShowingImpactAnalysis> {
+  const res = await fetch("/api/v1/cara-toolkit/showing-impact");
+  if (!res.ok) throw new Error("Failed to fetch showing impact data");
+  const json = await res.json();
+  return json.data as ShowingImpactAnalysis;
+}
+
+function useCaraToolkitShowingImpact() {
+  return useQuery({
+    queryKey: ["cara-toolkit-showing-impact"],
+    queryFn: fetchShowingImpact,
+    staleTime: 120_000,
+  });
+}
 
 const SIGNAL_STYLES: Record<SignalColour, { bg: string; border: string; text: string; dot: string }> = {
   green: { bg: "bg-green-50",  border: "border-green-200",  text: "text-green-800",  dot: "bg-green-400"  },

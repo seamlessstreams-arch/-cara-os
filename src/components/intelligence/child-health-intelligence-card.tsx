@@ -8,6 +8,7 @@
 // CHR 2015 Reg 23, 7. SCCIF: Health and well-being.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, Loader2, Heart, Pill, Stethoscope,
@@ -15,8 +16,19 @@ import {
   Eye, Smile, ShieldCheck, CalendarCheck, Syringe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildHealthIntelligence } from "@/hooks/use-child-health-intelligence";
-import type { HealthStatus } from "@/lib/engines/child-health-intelligence-engine";
+import type { ChildHealthIntelligenceResult, HealthStatus } from "@/lib/engines/child-health-intelligence-engine";
+
+// ── Data (inlined from the former use-child-health-intelligence hook) ────────
+
+function useChildHealthIntelligence(childId: string | null) {
+  return useQuery<{ data: ChildHealthIntelligenceResult }>({
+    queryKey: ["child-health-intelligence", childId],
+    queryFn: () =>
+      fetch(`/api/v1/child-health-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

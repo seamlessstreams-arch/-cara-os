@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -19,11 +20,23 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { ChildInjuryRecord, ChildInjuryType, InjurySeverity } from "@/types/extended";
 import { CHILD_INJURY_TYPE_LABEL, INJURY_SEVERITY_LABEL } from "@/types/extended";
-import { useChildInjuryRecords } from "@/hooks/use-child-injury-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data (inlined from the former use-child-injury-records hook) ──────────── */
+
+const CHILD_INJURY_RECORDS_KEY = "child-injury-records";
+const CHILD_INJURY_RECORDS_API = "/api/v1/child-injury-records";
+
+function useChildInjuryRecords(childId?: string) {
+  return useQuery<{ data: ChildInjuryRecord[] }>({
+    queryKey: childId ? [CHILD_INJURY_RECORDS_KEY, childId] : [CHILD_INJURY_RECORDS_KEY],
+    queryFn: () =>
+      fetch(childId ? `${CHILD_INJURY_RECORDS_API}?child_id=${childId}` : CHILD_INJURY_RECORDS_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

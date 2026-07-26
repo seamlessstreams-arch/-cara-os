@@ -8,6 +8,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,26 +22,216 @@ import {
   Inbox, CheckCircle2, XCircle, FileSignature, Save, Sparkles,
   History, Pencil, ShieldAlert,
 } from "lucide-react";
-import {
-  useSuggestedRecords,
-  useCommittedRecords,
-  useEditSuggestedRecord,
-  useRejectSuggestedRecord,
-  useCommitSuggestedRecord,
-  useProposeSuggestedRecord,
-} from "@/hooks/use-cara-suggested-records";
-import { useBridgeCareEvents } from "@/hooks/use-cara-care-event-bridge";
-import {
-  useAmendCommittedRecord,
-  useCommittedVersionHistory,
-} from "@/hooks/use-cara-committed-amendments";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import {
   CARA_SUGGESTED_RECORD_LABELS,
   type CaraCommittedRecord,
   type CaraSuggestedRecord,
+  type CaraSuggestedRecordStatus,
+  type CaraSuggestedRecordType,
+  type CaraSuggestedSourceRef,
 } from "@/types/cara-studio";
+
+// ─── Inlined from the former use-cara-suggested-records hook ─────────────────
+
+interface SuggestedListResponse<T> { data: T[] }
+interface SuggestedOneResponse<T> { data: T }
+
+function useSuggestedRecords(
+  homeId: string,
+  status?: CaraSuggestedRecordStatus,
+) {
+  const qs = new URLSearchParams({ home_id: homeId });
+  if (status) qs.set("status", status);
+  return useQuery({
+    queryKey: ["cara-suggested-records", homeId, status ?? "all"],
+    queryFn: () =>
+      api.get<SuggestedListResponse<CaraSuggestedRecord>>(
+        `/cara-studio/suggested-records?${qs.toString()}`,
+      ),
+    refetchInterval: 60000,
+  });
+}
+
+function useCommittedRecords(homeId: string) {
+  return useQuery({
+    queryKey: ["cara-committed-records", homeId],
+    queryFn: () =>
+      api.get<SuggestedListResponse<CaraCommittedRecord>>(
+        `/cara-studio/suggested-records?home_id=${encodeURIComponent(
+          homeId,
+        )}&committed=1`,
+      ),
+    refetchInterval: 60000,
+  });
+}
+
+function useProposeSuggestedRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      home_id: string;
+      child_id?: string | null;
+      record_type: CaraSuggestedRecordType;
+      target_label?: string;
+      suggested_title: string;
+      suggested_body: string;
+      suggested_fields?: Record<string, string | number | boolean | null>;
+      source_evidence?: CaraSuggestedSourceRef[];
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.post<SuggestedOneResponse<CaraSuggestedRecord>>(
+        "/cara-studio/suggested-records",
+        input,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-suggested-records"] });
+    },
+  });
+}
+
+function useEditSuggestedRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      id: string;
+      suggested_title?: string;
+      suggested_body?: string;
+      suggested_fields?: Record<string, string | number | boolean | null>;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.patch<SuggestedOneResponse<CaraSuggestedRecord>>(
+        "/cara-studio/suggested-records",
+        { ...input, action: "edit" },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-suggested-records"] });
+    },
+  });
+}
+
+function useRejectSuggestedRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: string; note?: string; actor_id?: string; actor_role?: string }) =>
+      api.patch<SuggestedOneResponse<CaraSuggestedRecord>>(
+        "/cara-studio/suggested-records",
+        { ...input, action: "reject" },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-suggested-records"] });
+    },
+  });
+}
+
+function useCommitSuggestedRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: string; note?: string; actor_id?: string; actor_role?: string }) =>
+      api.patch<
+        SuggestedOneResponse<{ suggestion: CaraSuggestedRecord; committed: CaraCommittedRecord }>
+      >("/cara-studio/suggested-records", { ...input, action: "commit" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-suggested-records"] });
+      qc.invalidateQueries({ queryKey: ["cara-committed-records"] });
+    },
+  });
+}
+
+// ─── Inlined from the former use-cara-care-event-bridge hook ─────────────────
+
+interface BridgeResult {
+  careEventId: string;
+  proposed: CaraSuggestedRecord[];
+  reused: CaraSuggestedRecord[];
+  skipped: boolean;
+  reason?: string;
+}
+
+interface BridgeResponse {
+  data: {
+    totals: { proposed: number; reused: number; skipped: number };
+    results: BridgeResult[];
+  };
+}
+
+function useBridgeCareEvents() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      home_id: string;
+      care_event_id?: string;
+      limit?: number;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.post<BridgeResponse>("/cara-studio/care-event-bridge", input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-suggested-records"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
+    },
+  });
+}
+
+// ─── Inlined from the former use-cara-committed-amendments hook ──────────────
+
+interface ListResponse<T> {
+  data: T[];
+}
+
+interface AmendResponse {
+  data: {
+    previous: CaraCommittedRecord;
+    current: CaraCommittedRecord;
+    diff: {
+      title_changed: boolean;
+      body_changed: boolean;
+      field_keys_changed: string[];
+    };
+  };
+}
+
+function useCommittedVersionHistory(recordId: string | null) {
+  return useQuery({
+    enabled: !!recordId,
+    queryKey: ["cara-committed-versions", recordId],
+    queryFn: () =>
+      api.get<ListResponse<CaraCommittedRecord>>(
+        `/cara-studio/committed-amendments?record_id=${encodeURIComponent(
+          recordId ?? "",
+        )}`,
+      ),
+    refetchInterval: 60000,
+  });
+}
+
+function useAmendCommittedRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      record_id: string;
+      amendment_reason: string;
+      new_title?: string;
+      new_body?: string;
+      new_fields?: Record<string, string | number | boolean | null>;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.post<AmendResponse>(
+        "/cara-studio/committed-amendments",
+        input,
+      ),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ["cara-committed-records"] });
+      qc.invalidateQueries({ queryKey: ["cara-committed-versions", vars.record_id] });
+      qc.invalidateQueries({ queryKey: ["cara-suggested-records"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
+    },
+  });
+}
 
 const HOME_ID = "home_oak";
 

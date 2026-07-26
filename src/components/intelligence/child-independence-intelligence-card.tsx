@@ -8,6 +8,7 @@
 // SCCIF: "Outcomes for children" — preparation for adulthood.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -16,8 +17,19 @@ import {
   FileText, Target, Quote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildIndependenceIntelligence } from "@/hooks/use-child-independence-intelligence";
-import type { ReadinessStatus, SkillProficiency } from "@/lib/engines/child-independence-intelligence-engine";
+import type { ChildIndependenceResult, ReadinessStatus, SkillProficiency } from "@/lib/engines/child-independence-intelligence-engine";
+
+// ── Data (inlined from the former use-child-independence-intelligence hook) ──
+
+function useChildIndependenceIntelligence(childId: string | null) {
+  return useQuery<{ data: ChildIndependenceResult }>({
+    queryKey: ["child-independence-intelligence", childId],
+    queryFn: () =>
+      fetch(`/api/v1/child-independence-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

@@ -1,8 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useCaraToolkitIncidentTiming } from "@/hooks/use-cara-toolkit-incident-timing";
-import type { PeriodCount, TimePeriod } from "@/lib/cara-visual-toolkit/types";
+import { useQuery } from "@tanstack/react-query";
+import type { IncidentTimingAnalysis, PeriodCount, TimePeriod } from "@/lib/cara-visual-toolkit/types";
+
+async function fetchIncidentTiming(): Promise<IncidentTimingAnalysis> {
+  const res = await fetch("/api/v1/cara-toolkit/incident-timing");
+  if (!res.ok) throw new Error("Failed to fetch incident timing data");
+  const json = await res.json();
+  return json.data as IncidentTimingAnalysis;
+}
+
+function useCaraToolkitIncidentTiming() {
+  return useQuery({
+    queryKey: ["cara-toolkit-incident-timing"],
+    queryFn: fetchIncidentTiming,
+    staleTime: 120_000,
+  });
+}
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
 

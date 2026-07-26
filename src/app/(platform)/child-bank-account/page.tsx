@@ -34,11 +34,24 @@ import {
   CHILD_BANK_SUPPORT_LEVEL_LABEL,
   CHILD_BANK_TRANSACTION_TYPE_LABEL,
 } from "@/types/extended";
-import { useChildBankAccounts } from "@/hooks/use-child-bank-accounts";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data (inlined from the former use-child-bank-accounts hook) ───────── */
+
+const CHILD_BANK_ACCOUNTS_KEY = "child-bank-accounts";
+const CHILD_BANK_ACCOUNTS_API = "/api/v1/child-bank-accounts";
+
+function useChildBankAccounts(childId?: string) {
+  return useQuery<{ data: ChildBankAccount[] }>({
+    queryKey: childId ? [CHILD_BANK_ACCOUNTS_KEY, childId] : [CHILD_BANK_ACCOUNTS_KEY],
+    queryFn: () =>
+      fetch(childId ? `${CHILD_BANK_ACCOUNTS_API}?child_id=${childId}` : CHILD_BANK_ACCOUNTS_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 

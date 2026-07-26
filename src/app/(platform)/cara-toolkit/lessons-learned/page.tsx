@@ -1,15 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useCaraToolkitLessonsLearned } from "@/hooks/use-cara-toolkit-lessons-learned";
+import { useQuery } from "@tanstack/react-query";
 import { formatRate } from "@/lib/metrics/rate";
 import type {
+  LessonsLearnedAnalysis,
   LessonRecord,
   LessonTheme,
   LessonSource,
   ActionStatus,
   SignalColour,
 } from "@/lib/cara-visual-toolkit/types";
+
+async function fetchLessonsLearned(): Promise<LessonsLearnedAnalysis> {
+  const res = await fetch("/api/v1/cara-toolkit/lessons-learned");
+  if (!res.ok) throw new Error("Failed to fetch lessons learned data");
+  const json = await res.json();
+  return json.data as LessonsLearnedAnalysis;
+}
+
+function useCaraToolkitLessonsLearned() {
+  return useQuery({
+    queryKey: ["cara-toolkit-lessons-learned"],
+    queryFn: fetchLessonsLearned,
+    staleTime: 120_000,
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

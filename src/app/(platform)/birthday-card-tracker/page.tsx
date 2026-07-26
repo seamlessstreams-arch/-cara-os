@@ -7,7 +7,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useCardRecords } from "@/hooks/use-card-records";
+import { useQuery } from "@tanstack/react-query";
 import type { CardRecord } from "@/types/extended";
 import {
   CARD_OCCASION_LABEL,
@@ -35,6 +35,16 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const CARD_RECORDS_KEY = "card-records";
+
+function useCardRecords(childId?: string) {
+  const qs = childId ? `?child_id=${childId}` : "";
+  return useQuery<{ data: CardRecord[] }>({
+    queryKey: [CARD_RECORDS_KEY, childId],
+    queryFn: () => fetch(`/api/v1/card-records${qs}`).then((r) => r.json()),
+  });
+}
 
 const occasionColour: Record<string, string> = {
   birthday: "bg-pink-100 text-pink-800",

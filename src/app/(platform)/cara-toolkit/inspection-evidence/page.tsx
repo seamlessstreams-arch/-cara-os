@@ -1,8 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useCaraToolkitInspectionEvidence } from "@/hooks/use-cara-toolkit-inspection-evidence";
-import type { EvidenceSection, SignalColour } from "@/lib/cara-visual-toolkit/types";
+import { useQuery } from "@tanstack/react-query";
+import type { InspectionEvidenceAnalysis, EvidenceSection, SignalColour } from "@/lib/cara-visual-toolkit/types";
+
+async function fetchInspectionEvidence(): Promise<InspectionEvidenceAnalysis> {
+  const res = await fetch("/api/v1/cara-toolkit/inspection-evidence");
+  if (!res.ok) throw new Error("Failed to fetch inspection evidence data");
+  const json = await res.json();
+  return json.data as InspectionEvidenceAnalysis;
+}
+
+function useCaraToolkitInspectionEvidence() {
+  return useQuery({
+    queryKey: ["cara-toolkit-inspection-evidence"],
+    queryFn: fetchInspectionEvidence,
+    staleTime: 120_000,
+  });
+}
 
 const SIGNAL_STYLES: Record<SignalColour, { bg: string; border: string; text: string; dot: string; badge: string; label: string }> = {
   green: { bg: "bg-green-50",  border: "border-green-200",  text: "text-green-800",  dot: "bg-green-400",  badge: "bg-green-100 text-green-700",  label: "Good evidence"  },

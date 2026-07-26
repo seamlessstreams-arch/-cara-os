@@ -15,8 +15,27 @@ import {
   TrendingUp, TrendingDown, Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildEmotionalWellbeingIntelligence } from "@/hooks/use-child-emotional-wellbeing-intelligence";
-import type { EmotionalWellbeingRating } from "@/lib/engines/child-emotional-wellbeing-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { EmotionalWellbeingRating, ChildEmotionalWellbeingResult } from "@/lib/engines/child-emotional-wellbeing-intelligence-engine";
+
+// ── Data (inlined from the former use-child-emotional-wellbeing-intelligence hook) ──
+
+interface ChildEmotionalWellbeingResponse {
+  data: ChildEmotionalWellbeingResult;
+}
+
+function useChildEmotionalWellbeingIntelligence(childId: string) {
+  return useQuery<ChildEmotionalWellbeingResponse>({
+    queryKey: ["child-emotional-wellbeing-intelligence", childId],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/child-emotional-wellbeing-intelligence?childId=${childId}`);
+      if (!res.ok) throw new Error("Failed to fetch child emotional wellbeing intelligence");
+      return res.json();
+    },
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

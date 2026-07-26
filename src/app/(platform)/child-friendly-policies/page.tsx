@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -29,10 +30,21 @@ import {
 import type { ChildFriendlyPolicy } from "@/types/extended";
 import { POLICY_AREA_LABEL, POLICY_AUDIENCE_AGE_LABEL, POLICY_FORMAT_LABEL } from "@/types/extended";
 import type { PolicyArea, PolicyFormat } from "@/types/extended";
-import { useChildFriendlyPolicies } from "@/hooks/use-child-friendly-policies";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── data (inlined from the former use-child-friendly-policies hook) ──────────
+
+const CHILD_FRIENDLY_POLICIES_KEY = "child-friendly-policies";
+const CHILD_FRIENDLY_POLICIES_API = "/api/v1/child-friendly-policies";
+
+function useChildFriendlyPolicies() {
+  return useQuery<{ data: ChildFriendlyPolicy[] }>({
+    queryKey: [CHILD_FRIENDLY_POLICIES_KEY],
+    queryFn: () => fetch(CHILD_FRIENDLY_POLICIES_API).then((r) => r.json()),
+  });
+}
 
 // ── config ──────────────────────────────────────────────────────────────────
 const areaIcons: Record<string, typeof BookOpen> = {

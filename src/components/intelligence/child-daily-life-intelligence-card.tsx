@@ -14,8 +14,27 @@ import {
   TrendingUp, TrendingDown, Minus, BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildDailyLifeIntelligence } from "@/hooks/use-child-daily-life-intelligence";
-import type { DailyLifeRating } from "@/lib/engines/child-daily-life-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { DailyLifeRating, ChildDailyLifeResult } from "@/lib/engines/child-daily-life-intelligence-engine";
+
+// ── Data (inlined from the former use-child-daily-life-intelligence hook) ───
+
+interface ChildDailyLifeResponse {
+  data: ChildDailyLifeResult;
+}
+
+function useChildDailyLifeIntelligence(childId: string) {
+  return useQuery<ChildDailyLifeResponse>({
+    queryKey: ["child-daily-life-intelligence", childId],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/child-daily-life-intelligence?childId=${childId}`);
+      if (!res.ok) throw new Error("Failed to fetch child daily life intelligence");
+      return res.json();
+    },
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

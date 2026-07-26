@@ -7,6 +7,7 @@
 // CHR 2015 Reg 45, Reg 5. IRO Handbook. SCCIF: "Impact of leaders."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, Loader2, AlertCircle,
@@ -14,8 +15,26 @@ import {
   Clock, UserCheck, FileCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildLACReviewIntelligence } from "@/hooks/use-child-lac-review-intelligence";
-import type { ReviewComplianceRating } from "@/lib/engines/child-lac-review-intelligence-engine";
+import type { ChildLACReviewResult, ReviewComplianceRating } from "@/lib/engines/child-lac-review-intelligence-engine";
+
+// ── Data (inlined from the former use-child-lac-review-intelligence hook) ────
+
+interface ChildLACReviewResponse {
+  data: ChildLACReviewResult;
+}
+
+function useChildLACReviewIntelligence(childId: string) {
+  return useQuery<ChildLACReviewResponse>({
+    queryKey: ["child-lac-review-intelligence", childId],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/child-lac-review-intelligence?childId=${childId}`);
+      if (!res.ok) throw new Error("Failed to fetch child LAC review intelligence");
+      return res.json();
+    },
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

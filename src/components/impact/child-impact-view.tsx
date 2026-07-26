@@ -11,12 +11,12 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
-import { useChildImpact } from "@/hooks/use-child-impact";
 import type { ChildImpactDomain, ChildImpactView as ChildImpactViewType } from "@/lib/impact/types";
 import {
   Activity,
@@ -45,6 +45,18 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+
+// ── Data (inlined from the former use-child-impact hook) ────────────────────
+
+function useChildImpact(childId: string) {
+  return useQuery<{ data: ChildImpactViewType }>({
+    queryKey: ["child-impact", childId],
+    queryFn: () =>
+      fetch(`/api/v1/child-impact/${childId}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

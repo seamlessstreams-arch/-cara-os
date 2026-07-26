@@ -8,11 +8,12 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useCaraKnowledgeBase } from "@/hooks/use-cara-knowledge-base";
-import type { KBEntry, KBEntryType } from "@/lib/cara/knowledge-base";
+import { api } from "@/hooks/use-api";
+import type { KBEntry, KBEntryType, KBHeart } from "@/lib/cara/knowledge-base";
 import {
   Brain,
   Lightbulb,
@@ -30,6 +31,43 @@ import {
   ClipboardCheck,
   ExternalLink,
 } from "lucide-react";
+
+// ─── Inlined from the former use-cara-knowledge-base hook ────────────────────
+
+interface KBMeta {
+  total: number;
+  totalApproved: number;
+  totalPendingReview: number;
+  typeCounts: Record<KBEntryType, number>;
+  tags: string[];
+  schemaVersion: string;
+}
+
+interface KBResponse {
+  heart: KBHeart;
+  entries: KBEntry[];
+  meta: KBMeta;
+}
+
+function useCaraKnowledgeBase(params?: {
+  type?: KBEntryType;
+  status?: "approved" | "pending_review" | "all";
+  tag?: string;
+}) {
+  const query = new URLSearchParams();
+  if (params?.type) query.set("type", params.type);
+  if (params?.status) query.set("status", params.status);
+  if (params?.tag) query.set("tag", params.tag);
+
+  const qs = query.toString();
+
+  return useQuery({
+    queryKey: ["cara-knowledge-base", params],
+    queryFn: () =>
+      api.get<{ data: KBResponse }>(`/cara-knowledge-base${qs ? `?${qs}` : ""}`),
+    staleTime: 300_000,
+  });
+}
 
 // ── Type configuration ────────────────────────────────────────────────────────
 

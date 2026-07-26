@@ -1,8 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useCaraToolkitQualityEvaluation } from "@/hooks/use-cara-toolkit-quality-evaluation";
-import type { QualityDimension, SignalColour } from "@/lib/cara-visual-toolkit/types";
+import { useQuery } from "@tanstack/react-query";
+import type { QualityDimension, QualityOfCareAnalysis, SignalColour } from "@/lib/cara-visual-toolkit/types";
+
+async function fetchQualityEvaluation(): Promise<QualityOfCareAnalysis> {
+  const res = await fetch("/api/v1/cara-toolkit/quality-evaluation");
+  if (!res.ok) throw new Error("Failed to fetch quality evaluation data");
+  const json = await res.json();
+  return json.data as QualityOfCareAnalysis;
+}
+
+function useCaraToolkitQualityEvaluation() {
+  return useQuery({
+    queryKey: ["cara-toolkit-quality-evaluation"],
+    queryFn: fetchQualityEvaluation,
+    staleTime: 120_000,
+  });
+}
 
 const SIGNAL_STYLES: Record<SignalColour, { bg: string; border: string; text: string; dot: string; label: string }> = {
   green: { bg: "bg-green-50",  border: "border-green-200",  text: "text-green-800",  dot: "bg-green-400",  label: "Good"     },

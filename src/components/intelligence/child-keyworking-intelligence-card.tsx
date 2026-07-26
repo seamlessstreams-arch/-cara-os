@@ -7,6 +7,7 @@
 // CHR 2015 Reg 5, 6, 7, 10. SCCIF: "Quality of care."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, Loader2, AlertCircle,
@@ -14,8 +15,26 @@ import {
   CheckCircle2, Calendar, TrendingUp, TrendingDown, Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildKeyworkingIntelligence } from "@/hooks/use-child-keyworking-intelligence";
-import type { KeyworkingQualityRating } from "@/lib/engines/child-keyworking-intelligence-engine";
+import type { ChildKeyworkingResult, KeyworkingQualityRating } from "@/lib/engines/child-keyworking-intelligence-engine";
+
+// ── Data (inlined from the former use-child-keyworking-intelligence hook) ────
+
+interface ChildKeyworkingResponse {
+  data: ChildKeyworkingResult;
+}
+
+function useChildKeyworkingIntelligence(childId: string) {
+  return useQuery<ChildKeyworkingResponse>({
+    queryKey: ["child-keyworking-intelligence", childId],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/child-keyworking-intelligence?childId=${childId}`);
+      if (!res.ok) throw new Error("Failed to fetch child keyworking intelligence");
+      return res.json();
+    },
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

@@ -1,9 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useCaraToolkitStaffSkills } from "@/hooks/use-cara-toolkit-staff-skills";
+import { useQuery } from "@tanstack/react-query";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
-import type { StaffSkillProfile, SignalColour } from "@/lib/cara-visual-toolkit/types";
+import type { StaffSkillProfile, StaffSkillsAnalysis, SignalColour } from "@/lib/cara-visual-toolkit/types";
+
+async function fetchStaffSkills(): Promise<StaffSkillsAnalysis> {
+  const res = await fetch("/api/v1/cara-toolkit/staff-skills");
+  if (!res.ok) throw new Error("Failed to fetch staff skills data");
+  const json = await res.json();
+  return json.data as StaffSkillsAnalysis;
+}
+
+function useCaraToolkitStaffSkills() {
+  return useQuery({
+    queryKey: ["cara-toolkit-staff-skills"],
+    queryFn: fetchStaffSkills,
+    staleTime: 120_000,
+  });
+}
 
 const SIGNAL_STYLES: Record<SignalColour, { bg: string; border: string; text: string; dot: string }> = {
   green: { bg: "bg-green-50",  border: "border-green-200",  text: "text-green-800",  dot: "bg-green-400"  },

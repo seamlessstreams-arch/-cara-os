@@ -15,8 +15,20 @@ import {
   Minus, Award, ClipboardCheck, Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildEducationIntelligence } from "@/hooks/use-child-education-intelligence";
-import type { EducationHealth, AttendanceBand } from "@/lib/engines/child-education-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { EducationHealth, AttendanceBand, ChildEducationIntelligenceResult } from "@/lib/engines/child-education-intelligence-engine";
+
+// ── Data (inlined from the former use-child-education-intelligence hook) ────
+
+function useChildEducationIntelligence(childId: string | null) {
+  return useQuery<{ data: ChildEducationIntelligenceResult }>({
+    queryKey: ["child-education-intelligence", childId],
+    queryFn: () =>
+      fetch(`/api/v1/child-education-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

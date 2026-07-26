@@ -33,11 +33,24 @@ import {
   CHARITY_GRANT_CATEGORY_LABEL,
   CHARITY_GRANT_STATUS_LABEL,
 } from "@/types/extended";
-import { useCharityGrantRecords } from "@/hooks/use-charity-grant-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data (inlined from the former use-charity-grant-records hook) ─────── */
+
+const CHARITY_GRANT_RECORDS_KEY = "charity-grant-records";
+const CHARITY_GRANT_RECORDS_API = "/api/v1/charity-grant-records";
+
+function useCharityGrantRecords(childId?: string) {
+  return useQuery<{ data: CharityGrantRecord[] }>({
+    queryKey: childId ? [CHARITY_GRANT_RECORDS_KEY, childId] : [CHARITY_GRANT_RECORDS_KEY],
+    queryFn: () =>
+      fetch(childId ? `${CHARITY_GRANT_RECORDS_API}?child_id=${childId}` : CHARITY_GRANT_RECORDS_API).then((r) => r.json()),
+  });
+}
 
 const STATUS_META: Record<CharityGrantStatus, { label: string; colour: string }> = {
   drafted: { label: "Drafted", colour: "bg-gray-100 text-gray-700" },

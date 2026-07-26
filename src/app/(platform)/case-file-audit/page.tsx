@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { useCaseFileAudits } from "@/hooks/use-case-file-audits";
+import { useQuery } from "@tanstack/react-query";
 import type { CaseFileAudit } from "@/types/extended";
 import {
   CASE_FILE_AUDIT_TYPE_LABEL,
@@ -43,6 +43,17 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data (inlined from the former use-case-file-audits hook) ──────────── */
+
+const CASE_FILE_AUDITS_KEY = "case-file-audits";
+
+function useCaseFileAudits() {
+  return useQuery<{ data: CaseFileAudit[] }>({
+    queryKey: [CASE_FILE_AUDITS_KEY],
+    queryFn: () => fetch("/api/v1/case-file-audits").then((r) => r.json()),
+  });
+}
 
 const ragClasses = (r: RagRating) => {
   switch (r) {

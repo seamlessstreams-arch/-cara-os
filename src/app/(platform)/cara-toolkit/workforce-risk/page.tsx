@@ -1,8 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useCaraToolkitWorkforceRisk } from "@/hooks/use-cara-toolkit-workforce-risk";
-import type { StaffingIndicator, WorkforceRiskLevel, SignalColour } from "@/lib/cara-visual-toolkit/types";
+import { useQuery } from "@tanstack/react-query";
+import type { StaffingIndicator, WorkforceRiskAnalysis, WorkforceRiskLevel, SignalColour } from "@/lib/cara-visual-toolkit/types";
+
+async function fetchWorkforceRisk(): Promise<WorkforceRiskAnalysis> {
+  const res = await fetch("/api/v1/cara-toolkit/workforce-risk");
+  if (!res.ok) throw new Error("Failed to fetch workforce risk data");
+  const json = await res.json();
+  return json.data as WorkforceRiskAnalysis;
+}
+
+function useCaraToolkitWorkforceRisk() {
+  return useQuery({
+    queryKey: ["cara-toolkit-workforce-risk"],
+    queryFn: fetchWorkforceRisk,
+    staleTime: 120_000,
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

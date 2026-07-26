@@ -1,8 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useCaraToolkitMySafetyPlan } from "@/hooks/use-cara-toolkit-my-safety-plan";
-import type { ChildSafetyPlan, SignalColour } from "@/lib/cara-visual-toolkit/types";
+import { useQuery } from "@tanstack/react-query";
+import type { MySafetyPlanAnalysis, ChildSafetyPlan, SignalColour } from "@/lib/cara-visual-toolkit/types";
+
+async function fetchMySafetyPlan(): Promise<MySafetyPlanAnalysis> {
+  const res = await fetch("/api/v1/cara-toolkit/my-safety-plan");
+  if (!res.ok) throw new Error("Failed to fetch safety plan data");
+  const json = await res.json();
+  return json.data as MySafetyPlanAnalysis;
+}
+
+function useCaraToolkitMySafetyPlan() {
+  return useQuery({
+    queryKey: ["cara-toolkit-my-safety-plan"],
+    queryFn: fetchMySafetyPlan,
+    staleTime: 120_000,
+  });
+}
 
 const SIGNAL_STYLES: Record<SignalColour, { bg: string; border: string; text: string; dot: string }> = {
   green: { bg: "bg-green-50",  border: "border-green-200",  text: "text-green-800",  dot: "bg-green-400"  },

@@ -12,6 +12,7 @@
 // ═════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,14 +22,138 @@ import {
   FileText, Shield, RefreshCw, ChevronDown, ChevronUp, Sparkles,
   Info, Activity, BookOpen, Users,
 } from "lucide-react";
-import {
-  useCaraHealth,
-  useCaraHealthDeepTest,
-  type CaraHealthStatus,
-  type CaraOverallStatus,
-  type ProviderHealth,
-  type ProviderTestStatus,
-} from "@/hooks/use-cara-health";
+
+// ─── Inlined from the former use-cara-health hook ────────────────────────────
+//
+// Fetches from GET /api/v1/cara/health.
+// Results are stale after 5 minutes; refetch manually for deep tests.
+
+// Types the UI needs (client-safe — they contain no server code)
+type CaraOverallStatus =
+  | "full_capacity"
+  | "partial"
+  | "not_configured"
+  | "degraded"
+  | "error";
+
+type ProviderTestStatus = "ok" | "failed" | "skipped" | "not_configured";
+
+interface ProviderHealth {
+  configured: boolean;
+  keyEnvVar: string;
+  testCallStatus: ProviderTestStatus;
+  latencyMs?: number;
+  model?: string;
+  errorMessage?: string;
+  lastUsedAt?: string;
+  requestsToday?: number;
+}
+
+interface PersistenceHealth {
+  connected: boolean;
+  tablesPresent: boolean;
+  missingTables: string[];
+  errorMessage?: string;
+  lastWriteAt?: string;
+}
+
+interface AuditHealth {
+  writable: boolean;
+  lastEventAt?: string;
+  totalEventsToday?: number;
+  errorMessage?: string;
+}
+
+interface ApprovalHealth {
+  pendingCount: number;
+  oldestPendingAt?: string;
+  overdueCount: number;
+  recentRejectionCount: number;
+}
+
+interface CommandRegistryHealth {
+  totalCommands: number;
+  commandsByModule: Record<string, number>;
+  hasGeneralCommands: boolean;
+}
+
+interface ModuleCoverageHealth {
+  totalModules: number;
+  modulesWithCommands: number;
+  coveragePercent: number;
+  modulesWithoutDedicatedCommands: string[];
+}
+
+interface CaraHealthStatus {
+  overallStatus: CaraOverallStatus;
+  anthropic: ProviderHealth;
+  supabase: PersistenceHealth;
+  audit: AuditHealth;
+  approvals: ApprovalHealth;
+  commandRegistry: CommandRegistryHealth;
+  moduleCoverage: ModuleCoverageHealth;
+  lastGeneratedAt?: string;
+  lastFailedAt?: string;
+  failedPersistenceCount?: number;
+  lastCheckedAt: string;
+  recommendations: string[];
+}
+
+const CARA_HEALTH_QUERY_KEY = ["cara", "health"] as const;
+const CARA_HEALTH_STALE_TIME = 5 * 60 * 1000; // 5 minutes
+
+async function fetchCaraHealth(deep = false): Promise<CaraHealthStatus> {
+  const url = `/api/v1/cara/health${deep ? "?deep=true" : ""}`;
+  const res = await fetch(url, {
+    headers: {
+      // These headers are populated from the auth context in the UI wrapper.
+      // The component must pass them or the route returns 403.
+      // Read the cara_* keys; fall back to the legacy cara_* keys for any
+      // session that set them before the rename (graceful, transient).
+      "x-cara-role": sessionStorage.getItem("cara_role") ?? sessionStorage.getItem("cara_role") ?? "",
+      "x-cara-user-id": sessionStorage.getItem("cara_user_id") ?? sessionStorage.getItem("cara_user_id") ?? "",
+    },
+    cache: "no-store",
+  });
+
+  if (res.status === 403) {
+    throw new Error("Access denied: insufficient role for Cara health diagnostics");
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Health check failed" }));
+    throw new Error(err.error ?? `Health check failed with status ${res.status}`);
+  }
+
+  return res.json() as Promise<CaraHealthStatus>;
+}
+
+function useCaraHealth(role?: string, userId?: string) {
+  // Store credentials so the fetch helper can read them
+  if (typeof window !== "undefined" && role && userId) {
+    sessionStorage.setItem("cara_role", role);
+    sessionStorage.setItem("cara_user_id", userId);
+  }
+
+  return useQuery({
+    queryKey: CARA_HEALTH_QUERY_KEY,
+    queryFn: () => fetchCaraHealth(false),
+    staleTime: CARA_HEALTH_STALE_TIME,
+    retry: 1,
+    // Don't auto-fetch if we clearly don't have auth
+    enabled: Boolean(role && userId),
+  });
+}
+
+function useCaraHealthDeepTest() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => fetchCaraHealth(true),
+    onSuccess: (data) => {
+      qc.setQueryData(CARA_HEALTH_QUERY_KEY, data);
+    },
+  });
+}
 
 // ─── Status colour helpers ───────────────────────────────────────────────────
 

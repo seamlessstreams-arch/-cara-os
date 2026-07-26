@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,11 +29,23 @@ import {
 } from "lucide-react";
 import type { ChildKeyDocument, KeyDocStatus, KeyDocOriginalOrCopy } from "@/types/extended";
 import { KEY_DOC_STATUS_LABEL, KEY_DOC_ORIGINAL_OR_COPY_LABEL } from "@/types/extended";
-import { useChildKeyDocuments } from "@/hooks/use-child-key-documents";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Data (inlined from the former use-child-key-documents hook) ───────────────
+
+const CHILD_KEY_DOCUMENTS_KEY = "child-key-documents";
+const CHILD_KEY_DOCUMENTS_API = "/api/v1/child-key-documents";
+
+function useChildKeyDocuments(childId?: string) {
+  return useQuery<{ data: ChildKeyDocument[] }>({
+    queryKey: childId ? [CHILD_KEY_DOCUMENTS_KEY, childId] : [CHILD_KEY_DOCUMENTS_KEY],
+    queryFn: () =>
+      fetch(childId ? `${CHILD_KEY_DOCUMENTS_API}?child_id=${childId}` : CHILD_KEY_DOCUMENTS_API).then((r) => r.json()),
+  });
+}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
