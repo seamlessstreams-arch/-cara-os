@@ -13,8 +13,8 @@ import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import type { YoungPerson } from "@/types";
 
-type KeyworkSignal = "concern" | "attention" | "positive" | "strong";
-type OverallSignal = "concern" | "attention" | "positive";
+export type KeyworkSignal = "concern" | "attention" | "positive" | "strong";
+export type OverallSignal = "concern" | "attention" | "positive";
 
 function daysBetween(from: string, to: string): number {
   return Math.round(
@@ -22,7 +22,7 @@ function daysBetween(from: string, to: string): number {
   );
 }
 
-interface SessionSummary {
+export interface SessionSummary {
   sessionId: string;
   sessionDate: string;
   daysAgo: number;
@@ -40,7 +40,7 @@ interface SessionSummary {
   confidential: boolean;
 }
 
-interface ChildKeyworkProfile {
+export interface ChildKeyworkProfile {
   childId: string;
   childName: string;
   sessionCount: number;
@@ -57,13 +57,21 @@ interface ChildKeyworkProfile {
   sessions: SessionSummary[];
 }
 
-interface KeyworkSummary {
+export interface KeyworkSummary {
   totalSessions: number;
   totalChildren: number;
   avgMoodImprovement: number;
   childVoiceRate: number;
   overdueFollowUpCount: number;
   overallSignal: OverallSignal;
+}
+
+/** Wire shape of GET /api/v1/keyworking-quality-intelligence. */
+export interface KeyworkingQualityResponse {
+  data: {
+    profiles: ChildKeyworkProfile[];
+    summary: KeyworkSummary;
+  };
 }
 
 const SESSION_TYPE_LABELS: Record<string, string> = {
@@ -233,5 +241,7 @@ export async function GET() {
     overallSignal,
   };
 
-  return NextResponse.json({ data: { profiles, summary } });
+  const payload: KeyworkingQualityResponse = { data: { profiles, summary } };
+
+  return NextResponse.json(payload);
 }

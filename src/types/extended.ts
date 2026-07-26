@@ -1,3 +1,5 @@
+import type { Task, Incident, YoungPerson, Shift } from "./index";
+
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — EXTENDED TYPES
 // New entities: buildings, vehicles, H&S, missing episodes, chronology, etc.

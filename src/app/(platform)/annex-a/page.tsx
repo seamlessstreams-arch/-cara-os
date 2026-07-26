@@ -52,7 +52,9 @@ import {
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import type { AnnexAEvidenceEnriched, AnnexAEvidenceItem, ManagerDecision } from "@/types/care-events";
+import type { AnnexAEvidenceItem, Reg45EvidenceItem, ManagerDecision } from "@/types/care-events";
+import type { AnnexAEvidenceEnriched } from "@/lib/care-events/compliance-queues";
+import type { Complaint } from "@/types/extended";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
 import { useRestraints } from "@/hooks/use-restraints";

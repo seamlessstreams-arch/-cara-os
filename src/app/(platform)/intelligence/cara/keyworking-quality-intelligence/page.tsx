@@ -1,21 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-
-// Types from use-keyworking-quality-intelligence
-export interface KeyworkingQualityResponse {
-  data: {
-    profiles: ChildKeyworkProfile[];
-    summary: {
-      totalSessions: number;
-      totalChildren: number;
-      avgMoodImprovement: number;
-      childVoiceRate: number;
-      overdueFollowUpCount: number;
-      overallSignal: OverallSignal;
-    };
-  };
-}
+import type {
+  ChildKeyworkProfile,
+  KeyworkingQualityResponse,
+  KeyworkSignal,
+  OverallSignal,
+  SessionSummary,
+} from "@/app/api/v1/keyworking-quality-intelligence/route";
 
 const SIGNAL_CONFIG: Record<KeyworkSignal, { label: string; bg: string; border: string; text: string; dot: string }> = {
   concern: { label: "Concern", bg: "bg-red-50", border: "border-red-200", text: "text-red-700", dot: "bg-red-500" },

@@ -27,7 +27,6 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import type { RelationalRecord } from "@/types/extended";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };

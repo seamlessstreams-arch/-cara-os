@@ -21,6 +21,7 @@ import {
 import { useAuthContext } from "@/contexts/auth-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
+import type { Incident } from "@/types";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";

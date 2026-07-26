@@ -12,10 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import type {
-  ChildExperienceSnapshot, PatternAlert, Intervention, PracticeBankEntry,
-  VoiceRecord, RelationalRecord
-} from "@/types/extended";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };

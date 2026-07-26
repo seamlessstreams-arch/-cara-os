@@ -13,6 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
+import type { ContactArrangementsResponse } from "@/app/api/v1/contact-arrangements/route";
+import type { ContactLogsResponse } from "@/app/api/v1/contact-logs/route";
 import { cn } from "@/lib/utils";
 import {
   Heart, Loader2, AlertTriangle, CheckCircle2,
@@ -25,13 +27,13 @@ export function FamilyContactCard() {
   const arrangementsQuery = useQuery({
     queryKey: ["contact-arrangements", "home_oak"],
     queryFn: () =>
-      api.get<{ data: unknown[]; meta?: Record<string, number> }>("/contact-arrangements?home_id=home_oak"),
+      api.get<ContactArrangementsResponse>("/contact-arrangements?home_id=home_oak"),
     enabled: true,
   });
   const logsQuery = useQuery({
     queryKey: ["contact-logs", "home_oak"],
     queryFn: () =>
-      api.get<{ data: unknown[]; meta?: Record<string, number> }>("/contact-logs?home_id=home_oak"),
+      api.get<ContactLogsResponse>("/contact-logs?home_id=home_oak"),
     enabled: true,
   });
 

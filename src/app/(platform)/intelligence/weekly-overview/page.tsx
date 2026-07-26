@@ -130,10 +130,6 @@ function useCreateChildExperienceSnapshot() {
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
-import type {
-  PatternAlert,
-  ActionOutcome,
-} from "@/types/extended";
 import {
   Brain,
   Sparkles,

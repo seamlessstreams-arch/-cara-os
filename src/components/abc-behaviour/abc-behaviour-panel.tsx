@@ -9,13 +9,19 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, GitBranch } from "lucide-react";
+import { api } from "@/hooks/use-api";
+import type { ABCReport } from "@/lib/abc-behaviour/types";
 import { ABCFlowVisual } from "./abc-flow-visual";
 
 export function ABCBehaviourPanel() {
-  // STUB: Hook use-abc-behaviour was inlined and found to be unused (Batch 1, hook inlining Phase 1)
-  const { data, isLoading, isError } = { data: undefined, isLoading: false, isError: false };
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["abc-behaviour"],
+    queryFn: () => api.get<{ data: ABCReport }>("/abc-behaviour"),
+    staleTime: 60_000,
+  });
   const report = data?.data;
   const [selected, setSelected] = useState<string | null>(null);
   const children = report?.children ?? [];

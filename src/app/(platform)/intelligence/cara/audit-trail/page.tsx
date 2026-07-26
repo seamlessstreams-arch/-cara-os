@@ -96,7 +96,7 @@ export default function CaraAuditTrailPage() {
   const [action, setAction] = useState<CaraAuditAction | "">("");
   const [showDeniedOnly, setShowDeniedOnly] = useState(false);
 
-  const actors = useQuery({
+  const actors = useQuery<{ data: string[] }>({
     queryKey: ["cara-audit-actors", HOME_ID],
     queryFn: () =>
       fetch(
@@ -108,7 +108,7 @@ export default function CaraAuditTrailPage() {
   if (actor) qs.set("actor_id", actor);
   if (action) qs.set("action_type", action);
   qs.set("limit", "200");
-  const trail = useQuery({
+  const trail = useQuery<{ data: CaraStudioAuditLog[] }>({
     queryKey: [
       "cara-audit-trail",
       HOME_ID,

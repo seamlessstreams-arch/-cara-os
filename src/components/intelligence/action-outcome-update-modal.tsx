@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import type { ActionOutcome } from "@/types/extended";
 
 type SingleResponse<T> = { data: T };
 

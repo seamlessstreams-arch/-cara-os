@@ -35,9 +35,9 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 
 // "not_recorded" is distinct from "compliant": a staff member with no
 // mandatory training records has not passed a check, they have not had one.
-type TrainingSignal = "non_compliant" | "expiring" | "compliant" | "not_recorded";
+export type TrainingSignal = "non_compliant" | "expiring" | "compliant" | "not_recorded";
 
-interface TrainingIssue {
+export interface TrainingIssue {
   courseName: string;
   category: string;
   status: string;
@@ -45,7 +45,7 @@ interface TrainingIssue {
   notes: string | null;
 }
 
-interface StaffTrainingProfile {
+export interface StaffTrainingProfile {
   staffId: string;
   staffName: string;
   role: string;
@@ -61,13 +61,13 @@ interface StaffTrainingProfile {
   supervisionPrompt: string;
 }
 
-interface CategoryRisk {
+export interface CategoryRisk {
   category: string;
   affectedStaff: number;
   statuses: string[];
 }
 
-interface TrainingComplianceSummary {
+export interface TrainingComplianceSummary {
   totalStaff: number;
   compliantStaff: number;
   notRecordedStaff: number;
@@ -81,6 +81,14 @@ interface TrainingComplianceSummary {
   notStartedRecords: number;
   categoriesAtRisk: CategoryRisk[];
   ofstedNote: string;
+}
+
+/** Wire shape of GET /api/v1/staff-training-compliance-intelligence. */
+export interface StaffTrainingComplianceResponse {
+  data: {
+    staffProfiles: StaffTrainingProfile[];
+    summary: TrainingComplianceSummary;
+  };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -268,5 +276,9 @@ export async function GET() {
     ofstedNote,
   };
 
-  return NextResponse.json({ data: { staffProfiles, summary } });
+  const payload: StaffTrainingComplianceResponse = {
+    data: { staffProfiles, summary },
+  };
+
+  return NextResponse.json(payload);
 }

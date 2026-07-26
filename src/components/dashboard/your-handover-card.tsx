@@ -13,7 +13,7 @@ import {
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
-import type { StaffHandoverContext } from "@/types/extended";
+import type { StaffHandoverContext } from "@/app/api/v1/handover/staff-context/route";
 
 /* ── inline hook ───────────────────────────────────────────────────── */
 function useHandoverContext(staffIds: string[]) {

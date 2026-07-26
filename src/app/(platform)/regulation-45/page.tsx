@@ -49,12 +49,12 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
-import type { Reg45EvidenceEnriched, Reg45EvidenceItem, ManagerDecision } from "@/types/care-events";
+import type { Reg45EvidenceItem, ManagerDecision } from "@/types/care-events";
+import type { Reg45EvidenceEnriched } from "@/lib/care-events/compliance-queues";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import Link from "next/link";
-import type { ManagerDecision } from "@/types/care-events";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Decision colours ──────────────────────────────────────────────────────────

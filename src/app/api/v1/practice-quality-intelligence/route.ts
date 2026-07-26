@@ -15,16 +15,16 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 
-type PracticeSignal = "concern" | "attention" | "good";
+export type PracticeSignal = "concern" | "attention" | "good";
 
-type DomainScore = {
+export type DomainScore = {
   domain: string;
   label: string;
   score: number;
   signal: PracticeSignal;
 };
 
-type PracticeAssessment = {
+export type PracticeAssessment = {
   id: string;
   sourceType: string;
   status: string;
@@ -37,7 +37,7 @@ type PracticeAssessment = {
   managerDecision: string | null;
 };
 
-type ChildPracticeProfile = {
+export type ChildPracticeProfile = {
   childId: string;
   childName: string;
   signal: PracticeSignal;
@@ -48,7 +48,7 @@ type ChildPracticeProfile = {
   assessments: PracticeAssessment[];
 };
 
-type PracticeQualitySummary = {
+export type PracticeQualitySummary = {
   totalAssessments: number;
   openAssessments: number;
   awaitingManagerReview: number;
@@ -58,9 +58,14 @@ type PracticeQualitySummary = {
   overallSignal: PracticeSignal;
 };
 
-type PracticeQualityResponse = {
+export type PracticeQualityResponse = {
   profiles: ChildPracticeProfile[];
   summary: PracticeQualitySummary;
+};
+
+/** Wire shape of GET /api/v1/practice-quality-intelligence. */
+export type PracticeQualityEnvelope = {
+  data: PracticeQualityResponse;
 };
 
 const DOMAIN_LABELS: Record<string, string> = {
@@ -255,5 +260,7 @@ export async function GET() {
     },
   };
 
-  return NextResponse.json({ data: response });
+  const payload: PracticeQualityEnvelope = { data: response };
+
+  return NextResponse.json(payload);
 }

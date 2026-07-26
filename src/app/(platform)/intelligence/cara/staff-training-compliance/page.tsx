@@ -8,62 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle, Clock, GraduationCap } from "lucide-react";
 import { formatRate, meets } from "@/lib/metrics/rate";
-
-// Types from use-staff-training-compliance-intelligence
-export type TrainingSignalInline = "non_compliant" | "expiring" | "compliant" | "not_recorded";
-
-export interface TrainingIssue {
-  courseName: string;
-  category: string;
-  status: string;
-  expiryDate: string | null;
-  notes: string | null;
-}
-
-export interface StaffTrainingProfileInline {
-  staffId: string;
-  staffName: string;
-  role: string;
-  totalRecords: number;
-  mandatoryTotal: number;
-  mandatoryCompliant: number;
-  mandatoryExpiringSoon: number;
-  mandatoryExpired: number;
-  mandatoryNotStarted: number;
-  complianceRate: number | null;
-  issues: TrainingIssue[];
-  signal: TrainingSignalInline;
-  supervisionPrompt: string;
-}
-
-export interface CategoryRiskInline {
-  category: string;
-  affectedStaff: number;
-  statuses: string[];
-}
-
-export interface TrainingComplianceSummary {
-  totalStaff: number;
-  compliantStaff: number;
-  notRecordedStaff: number;
-  expiringStaff: number;
-  nonCompliantStaff: number;
-  overallMandatoryComplianceRate: number | null;
-  totalMandatoryRecords: number;
-  compliantMandatoryRecords: number;
-  expiringSoonRecords: number;
-  expiredRecords: number;
-  notStartedRecords: number;
-  categoriesAtRisk: CategoryRiskInline[];
-  ofstedNote: string;
-}
-
-export interface StaffTrainingComplianceResponse {
-  data: {
-    staffProfiles: StaffTrainingProfile[];
-    summary: TrainingComplianceSummary;
-  };
-}
+import type {
+  CategoryRisk,
+  StaffTrainingComplianceResponse,
+  StaffTrainingProfile,
+  TrainingSignal,
+} from "@/app/api/v1/staff-training-compliance-intelligence/route";
 
 // ── Signal helpers ─────────────────────────────────────────────────────────────
 

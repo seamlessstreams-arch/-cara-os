@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
 import type {
+  AdmissionReferralIntelligenceResult,
   ReferralProfile,
   SourceAnalysis,
   AdmissionAlert,
@@ -100,7 +101,7 @@ function SourceBar({ s }: { s: SourceAnalysis }) {
 export default function AdmissionReferralIntelligencePage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["admission-referral-intelligence"],
-    queryFn: () => api.get("/admission-referral-intelligence"),
+    queryFn: () => api.get<{ data: AdmissionReferralIntelligenceResult }>("/admission-referral-intelligence"),
     refetchInterval: 60_000,
   });
 

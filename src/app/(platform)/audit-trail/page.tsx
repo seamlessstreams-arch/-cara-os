@@ -24,18 +24,18 @@ import {
   Lock,
   List,
 } from "lucide-react";
-import type { AuditAction } from "@/types/care-events";
+import type { AuditAction, CareEventAuditLog } from "@/types/care-events";
 import { api } from "@/hooks/use-api";
 
 // ── Types (moved from hook) ───────────────────────────────────────────────────
 
-export interface AuditLogEntryEnriched {
-  id: string;
-  care_event_id?: string;
-  action: AuditAction;
-  actor_staff_id: string;
+/**
+ * An audit row as the API returns it: the stored `CareEventAuditLog` record
+ * (composed by reference so the fields can never drift from the payload) plus
+ * the actor / care-event joins the feed renders.
+ */
+export type AuditLogEntryEnriched = CareEventAuditLog & {
   actor_staff_name: string | null;
-  timestamp: string;
   care_event?: {
     id: string;
     title: string;
@@ -43,7 +43,7 @@ export interface AuditLogEntryEnriched {
     status: string;
     child_id: string | null;
   } | null;
-}
+};
 
 export interface AuditLogMeta {
   total: number;

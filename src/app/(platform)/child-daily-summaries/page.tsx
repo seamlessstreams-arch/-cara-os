@@ -23,16 +23,16 @@ import {
   Star,
 } from "lucide-react";
 import { CARE_EVENT_CATEGORY_LABEL } from "@/types/care-events";
+import type { ChildDailySummary } from "@/types/care-events";
 import { api } from "@/hooks/use-api";
 
 // ── Types (moved from hook) ───────────────────────────────────────────────────
+// Composed BY REFERENCE from the stored record so the enriched shape can never
+// drift from ChildDailySummary (event_count, significant_count, avg_mood_score,
+// categories, requires_followup all live there).
 
-export interface ChildDailySummaryEnriched {
-  id: string;
-  child_id: string;
-  summary_date: string;
-  summary_text?: string;
-  child?: {
+export interface ChildDailySummaryEnriched extends ChildDailySummary {
+  child: {
     id: string;
     name: string;
     date_of_birth: string;

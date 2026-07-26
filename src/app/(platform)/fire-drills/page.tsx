@@ -33,8 +33,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { FireDrill } from "@/types/extended";
-import { FireDrillType, FireDrillResult, FireDrill } from "@/types/extended";
+import type { FireDrill, FireDrillType, FireDrillResult } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

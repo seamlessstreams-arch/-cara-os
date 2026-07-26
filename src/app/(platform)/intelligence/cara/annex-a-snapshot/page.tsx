@@ -152,7 +152,7 @@ export default function AnnexASnapshotPage() {
   const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
   const qc = useQueryClient();
 
-  const query = useQuery({
+  const query = useQuery<{ data: CaraAnnexASnapshot[] }>({
     queryKey: ["cara-annex-a-snapshot", HOME_ID ?? null],
     queryFn: () => fetch(`/api/v1/cara-studio/annex-a-snapshot?home_id=${encodeURIComponent(HOME_ID)}`).then((r) => r.json()),
     refetchInterval: 60000,

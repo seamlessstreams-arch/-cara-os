@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
+import type { AdmissionReferralIntelligenceResult } from "@/lib/engines/admission-referral-intelligence-engine";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -54,7 +55,7 @@ const URGENCY_STYLES: Record<string, string> = {
 export function MatchingReferralCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["admission-referral-intelligence"],
-    queryFn: () => api.get("/admission-referral-intelligence"),
+    queryFn: () => api.get<{ data: AdmissionReferralIntelligenceResult }>("/admission-referral-intelligence"),
     refetchInterval: 60_000,
   });
   const intel = data?.data;

@@ -68,6 +68,9 @@ export interface Reg45Filters {
   theme?: string | null;
 }
 
+/** A queue item as the API returns it: the stored row plus its care-event join. */
+export type Reg45EvidenceEnriched = Reg45EvidenceItem & { care_event: CareEventRef | null };
+
 export function buildReg45Queue(
   items: Reg45EvidenceItem[],
   findCareEvent: (id: string) => CareEvent | undefined,
@@ -77,7 +80,7 @@ export function buildReg45Queue(
   if (filters.decision) filtered = filtered.filter((i) => i.manager_decision === filters.decision);
   if (filters.theme) filtered = filtered.filter((i) => i.suggested_theme === filters.theme);
 
-  const data = filtered.map((i) => ({
+  const data: Reg45EvidenceEnriched[] = filtered.map((i) => ({
     ...i,
     care_event: careEventRef(findCareEvent(i.care_event_id)),
   }));
@@ -101,6 +104,9 @@ export interface AnnexAFilters {
   decision?: string | null;
 }
 
+/** A queue item as the API returns it: the stored row plus its care-event join. */
+export type AnnexAEvidenceEnriched = AnnexAEvidenceItem & { care_event: CareEventRef | null };
+
 export function buildAnnexAQueue(
   items: AnnexAEvidenceItem[],
   findCareEvent: (id: string) => CareEvent | undefined,
@@ -110,7 +116,7 @@ export function buildAnnexAQueue(
   if (filters.section) filtered = filtered.filter((i) => i.annex_section === filters.section);
   if (filters.decision) filtered = filtered.filter((i) => i.manager_decision === filters.decision);
 
-  const data = filtered.map((i) => ({
+  const data: AnnexAEvidenceEnriched[] = filtered.map((i) => ({
     ...i,
     care_event: careEventRef(findCareEvent(i.care_event_id)),
   }));

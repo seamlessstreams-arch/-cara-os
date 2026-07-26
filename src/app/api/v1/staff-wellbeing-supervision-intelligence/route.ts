@@ -11,10 +11,10 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 
-type WellbeingSignal = "support_needed" | "attention" | "positive" | "thriving";
-type TeamSignal = "concern" | "attention" | "positive" | "thriving";
+export type WellbeingSignal = "support_needed" | "attention" | "positive" | "thriving";
+export type TeamSignal = "concern" | "attention" | "positive" | "thriving";
 
-interface SupervisionAction {
+export interface SupervisionAction {
   action: string;
   owner: string;
   due: string;
@@ -22,7 +22,7 @@ interface SupervisionAction {
   overdue: boolean;
 }
 
-interface StaffWellbeingProfile {
+export interface StaffWellbeingProfile {
   staffId: string;
   staffName: string;
   supervisorName: string;
@@ -42,12 +42,12 @@ interface StaffWellbeingProfile {
   signal: WellbeingSignal;
 }
 
-interface TrainingNeedCount {
+export interface TrainingNeedCount {
   need: string;
   count: number;
 }
 
-interface WellbeingSummary {
+export interface WellbeingSummary {
   totalSupervisions: number;
   avgWellbeingScore: number;
   avgConfidenceLevel: number;
@@ -56,6 +56,14 @@ interface WellbeingSummary {
   overdueActionsTotal: number;
   topTrainingNeeds: TrainingNeedCount[];
   teamSignal: TeamSignal;
+}
+
+/** Wire shape of GET /api/v1/staff-wellbeing-supervision-intelligence. */
+export interface StaffWellbeingSupervisionResponse {
+  data: {
+    supervisions: StaffWellbeingProfile[];
+    summary: WellbeingSummary;
+  };
 }
 
 function daysBetween(from: string, to: string): number {
@@ -193,5 +201,9 @@ export async function GET() {
     teamSignal,
   };
 
-  return NextResponse.json({ data: { supervisions: profiles, summary } });
+  const payload: StaffWellbeingSupervisionResponse = {
+    data: { supervisions: profiles, summary },
+  };
+
+  return NextResponse.json(payload);
 }

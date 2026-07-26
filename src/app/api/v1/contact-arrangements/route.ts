@@ -3,6 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
+import type { ContactArrangement, ContactPerson } from "@/types/extended";
+
+/** An arrangement as GET returns it: the stored row plus its contact-person join. */
+export type ContactArrangementEnriched = ContactArrangement & {
+  contact_person: ContactPerson | null;
+};
+
+export type ContactArrangementsResponse = {
+  data: ContactArrangementEnriched[];
+  meta: { total: number };
+};
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -19,7 +30,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Enrich with contact person details
-  const enriched = records.map((arr) => ({
+  const enriched: ContactArrangementEnriched[] = records.map((arr) => ({
     ...arr,
     contact_person: intelligenceDb.contactPersons.findById(arr.contact_person_id),
   }));

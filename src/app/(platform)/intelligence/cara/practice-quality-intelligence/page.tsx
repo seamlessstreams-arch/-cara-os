@@ -2,78 +2,35 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-// Types from use-practice-quality-intelligence
-type PracticeSignal = "concern" | "attention" | "good";
-
-export type DomainScoreInline = {
-  domain: string;
-  label: string;
-  score: number;
-  signal: PracticeSignal;
-};
-
-export type PracticeAssessmentInline = {
-  id: string;
-  sourceType: string;
-  status: string;
-  overallScore: number;
-  createdBy: string;
-  createdAt: string;
-  summary: string;
-  domainScores: DomainScoreInline[];
-  hasManagerDecision: boolean;
-  managerDecision: string | null;
-};
-
-export type ChildPracticeProfileInline = {
-  childId: string;
-  childName: string;
-  signal: PracticeSignal;
-  assessmentCount: number;
-  openCount: number;
-  latestOverallScore: number | null;
-  weakestDomains: DomainScoreInline[];
-  assessments: PracticeAssessmentInline[];
-};
-
-export type PracticeQualitySummary = {
-  totalAssessments: number;
-  openAssessments: number;
-  awaitingManagerReview: number;
-  avgOverallScore: number | null;
-  childrenAtConcern: number;
-  childrenAtAttention: number;
-  overallSignal: PracticeSignal;
-};
-
-export type PracticeQualityResponse = {
-  profiles: ChildPracticeProfileInline[];
-  summary: PracticeQualitySummary;
-};
+import type {
+  ChildPracticeProfile,
+  DomainScore,
+  PracticeAssessment,
+  PracticeQualityEnvelope,
+  PracticeSignal,
+} from "@/app/api/v1/practice-quality-intelligence/route";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-type Signal = "concern" | "attention" | "good";
-
-const SIGNAL_STYLES: Record<Signal, string> = {
+const SIGNAL_STYLES: Record<PracticeSignal, string> = {
   concern: "bg-red-100 text-red-800 border border-red-200",
   attention: "bg-amber-100 text-amber-800 border border-amber-200",
   good: "bg-green-100 text-green-800 border border-green-200",
 };
 
-const SIGNAL_LABELS: Record<Signal, string> = {
+const SIGNAL_LABELS: Record<PracticeSignal, string> = {
   concern: "Concern",
   attention: "Attention",
   good: "Good",
 };
 
-const DOMAIN_BAR_COLOURS: Record<Signal, string> = {
+const DOMAIN_BAR_COLOURS: Record<PracticeSignal, string> = {
   concern: "bg-red-500",
   attention: "bg-amber-400",
   good: "bg-green-500",
 };
 
-function SignalBadge({ signal }: { signal: Signal }) {
+function SignalBadge({ signal }: { signal: PracticeSignal }) {
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${SIGNAL_STYLES[signal]}`}
@@ -94,7 +51,7 @@ const SOURCE_LABELS: Record<string, string> = {
 // ── Domain score bar ──────────────────────────────────────────────────────────
 
 function DomainScoreBar({ d }: { d: DomainScore }) {
-  const barColour = DOMAIN_BAR_COLOURS[d.signal as Signal] ?? "bg-slate-400";
+  const barColour = DOMAIN_BAR_COLOURS[d.signal];
   return (
     <div className="flex items-center gap-3">
       <div className="w-40 text-xs text-slate-600 shrink-0 truncate">
@@ -224,7 +181,7 @@ function ChildPracticeCard({ profile }: { profile: ChildPracticeProfile }) {
               {profile.latestOverallScore}/100
             </span>
           )}
-          <SignalBadge signal={profile.signal as Signal} />
+          <SignalBadge signal={profile.signal} />
         </div>
       </div>
 
@@ -259,14 +216,13 @@ function ChildPracticeCard({ profile }: { profile: ChildPracticeProfile }) {
 
 export default function PracticeQualityIntelligencePage() {
   // Inlined: usePracticeQualityIntelligence
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<PracticeQualityEnvelope>({
     queryKey: ["practice-quality-intelligence"],
-    queryFn: async (): Promise<PracticeQualityResponse> => {
+    queryFn: async () => {
       const res = await fetch("/api/v1/practice-quality-intelligence");
       if (!res.ok)
         throw new Error("Failed to fetch practice quality intelligence");
-      const json = await res.json();
-      return json.data as PracticeQualityResponse;
+      return res.json();
     },
     staleTime: 120_000,
   });
@@ -279,7 +235,7 @@ export default function PracticeQualityIntelligencePage() {
     );
   }
 
-  if (error || !data) {
+  if (error || !data?.data) {
     return (
       <div className="p-8 text-red-600 text-sm">
         Unable to load practice quality intelligence.
@@ -287,7 +243,7 @@ export default function PracticeQualityIntelligencePage() {
     );
   }
 
-  const { profiles, summary } = data;
+  const { profiles, summary } = data.data;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
@@ -302,7 +258,7 @@ export default function PracticeQualityIntelligencePage() {
             scores, weakest practice areas, and manager review status.
           </p>
         </div>
-        <SignalBadge signal={summary.overallSignal as Signal} />
+        <SignalBadge signal={summary.overallSignal} />
       </div>
 
       {/* Regulatory callout */}

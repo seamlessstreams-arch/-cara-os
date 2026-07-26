@@ -9,6 +9,7 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import type { ActivityStats } from "@/app/api/cara/activity/route";
 import { cn } from "@/lib/utils";
 import {
   Sparkles,
@@ -44,12 +45,12 @@ export function CaraActivityCard({
   if (homeId) query.set("homeId", homeId);
   if (days) query.set("days", String(days));
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery<ActivityStats>({
     queryKey: ["cara-activity", { homeId, days }],
     queryFn: async () => {
       const res = await fetch(`/api/cara/activity?${query}`);
       if (!res.ok) throw new Error("Failed to fetch Cara activity");
-      const data = await res.json();
+      const data: { data: ActivityStats } = await res.json();
       return data.data;
     },
     staleTime: 5 * 60 * 1000,

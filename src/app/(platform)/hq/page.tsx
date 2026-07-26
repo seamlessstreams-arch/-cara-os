@@ -8,7 +8,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { HqBoundaryNote, HqModeChip, HqStat } from "@/components/hq/hq-bits";
-import type { HqOverview, HqOverviewData } from "@/lib/engines/platform-hq-engine";
+import type { HqOverview } from "@/lib/engines/platform-hq-engine";
 import { ArrowRight, ExternalLink } from "lucide-react";
 
 const HQ_HEADERS = {

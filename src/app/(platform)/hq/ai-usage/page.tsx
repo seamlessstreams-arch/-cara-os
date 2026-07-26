@@ -6,7 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HqBoundaryNote, HqStat } from "@/components/hq/hq-bits";
-import type { HqAiSummary, HqAiUsageRow } from "@/lib/engines/platform-hq-engine";
+import type { HqAiSummary } from "@/lib/engines/platform-hq-engine";
+import type { HqAiUsageRow } from "@/lib/hq/hq-types";
 import type { GatewayAuditSummary, AiGatewayAuditEntry } from "@/lib/cara/ai-gateway/audit-summary";
 
 const HQ_HEADERS = {

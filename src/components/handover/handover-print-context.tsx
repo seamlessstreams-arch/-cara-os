@@ -4,7 +4,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { getStaffName } from "@/lib/seed-data";
-import type { StaffHandoverContext } from "@/types/extended";
+import type { StaffHandoverContext } from "@/app/api/v1/handover/staff-context/route";
 
 interface Props {
   incomingStaffIds: string[];

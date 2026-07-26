@@ -1,23 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-
-// Types from use-staff-wellbeing-supervision-intelligence
-export interface StaffWellbeingSupervisionResponse {
-  data: {
-    supervisions: StaffWellbeingProfile[];
-    summary: {
-      totalSupervisions: number;
-      avgWellbeingScore: number;
-      avgConfidenceLevel: number;
-      supportNeededCount: number;
-      overdueFollowUps: number;
-      overdueActionsTotal: number;
-      topTrainingNeeds: Array<{ need: string; count: number }>;
-      teamSignal: TeamSignal;
-    };
-  };
-}
+import type {
+  StaffWellbeingProfile,
+  StaffWellbeingSupervisionResponse,
+  TeamSignal,
+  WellbeingSignal,
+} from "@/app/api/v1/staff-wellbeing-supervision-intelligence/route";
 
 const SIGNAL_CONFIG: Record<
   WellbeingSignal,
