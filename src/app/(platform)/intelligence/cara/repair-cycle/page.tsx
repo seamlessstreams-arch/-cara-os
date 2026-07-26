@@ -5,11 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { meets, formatRate } from "@/lib/metrics/rate";
 import type {
-  CycleStatus,
+  RepairCycleStatus as CycleStatus,
+  RepairCycleData,
   RepairStep,
   ChildRepairSummary,
-  RepairCycleIntelligenceResponse,
-} from "@/hooks/use-repair-cycle-intelligence";
+} from "@/lib/repair-cycle-intelligence/repair-cycle-engine";
+type RepairCycleIntelligenceResponse = { data: RepairCycleData };
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
 

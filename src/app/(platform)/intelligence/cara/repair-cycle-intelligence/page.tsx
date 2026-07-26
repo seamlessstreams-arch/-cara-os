@@ -7,9 +7,10 @@ import { CheckCircle, AlertTriangle, Clock } from "lucide-react";
 import { meets, formatRate } from "@/lib/metrics/rate";
 import type {
   IncidentRepairProfile,
-  CycleStatus,
-  RepairCycleIntelligenceResponse,
-} from "@/hooks/use-repair-cycle-intelligence";
+  RepairCycleStatus as CycleStatus,
+  RepairCycleData,
+} from "@/lib/repair-cycle-intelligence/repair-cycle-engine";
+type RepairCycleIntelligenceResponse = { data: RepairCycleData };
 
 const STATUS_CONFIG: Record<CycleStatus, { label: string; bg: string; border: string; text: string }> = {
   complete: { label: "Complete",  bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-700" },

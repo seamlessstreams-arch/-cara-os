@@ -15,7 +15,7 @@ import type {
   TimeSlot,
   StaffEngagementProfile,
   DeEscalationStrategyResponse,
-} from "@/hooks/use-de-escalation-strategy-intelligence";
+} from "@/app/api/v1/de-escalation-strategy-intelligence/route";
 
 // ── Signal helpers ─────────────────────────────────────────────────────────────
 

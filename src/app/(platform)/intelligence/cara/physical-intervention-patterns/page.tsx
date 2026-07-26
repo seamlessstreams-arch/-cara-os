@@ -9,7 +9,7 @@ import type {
   ChildPIProfile,
   StaffPIProfile,
   PhysicalInterventionPatternResponse,
-} from "@/hooks/use-physical-intervention-pattern-intelligence";
+} from "@/app/api/v1/physical-intervention-pattern-intelligence/route";
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
 

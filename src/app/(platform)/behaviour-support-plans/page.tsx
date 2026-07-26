@@ -133,7 +133,7 @@ export default function BehaviourSupportPlansPage() {
     mutationFn: (data: Partial<BehaviourSupportPlan>) => api.post<{ data: BehaviourSupportPlan }>("/behaviour-support-plans", data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["behaviour-support-plans"] }),
   });
-  const plans = bspData?.data?.data ?? [];
+  const plans = bspData?.data ?? [];
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

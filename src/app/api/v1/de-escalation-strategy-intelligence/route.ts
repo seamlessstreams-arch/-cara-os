@@ -27,15 +27,15 @@ import { formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type BehaviourSignal = "strengths" | "progressing" | "developing" | "needs_support";
+export type BehaviourSignal = "strengths" | "progressing" | "developing" | "needs_support";
 
-interface TimeSlot {
+export interface TimeSlot {
   slot: string;
   concerningCount: number;
   positiveCount: number;
 }
 
-interface StrategyResult {
+export interface StrategyResult {
   strategy: string;
   usageCount: number;
   resolvedCount: number;
@@ -43,7 +43,7 @@ interface StrategyResult {
   resolutionRate: number;
 }
 
-interface StaffEngagementProfile {
+export interface StaffEngagementProfile {
   staffId: string;
   staffName: string;
   totalEntries: number;
@@ -51,7 +51,7 @@ interface StaffEngagementProfile {
   positiveRate: number;
 }
 
-interface ChildBehaviourProfile {
+export interface ChildBehaviourProfile {
   childId: string;
   childName: string;
   totalEntries: number;
@@ -68,7 +68,7 @@ interface ChildBehaviourProfile {
   supervisionPrompt: string;
 }
 
-interface DeEscalationSummary {
+export interface DeEscalationSummary {
   totalEntries: number;
   totalPositive: number;
   totalConcerning: number;
@@ -410,4 +410,11 @@ export async function GET() {
       },
     },
   });
+}
+
+export interface DeEscalationStrategyResponse {
+  data: {
+    childProfiles: ChildBehaviourProfile[];
+    summary: DeEscalationSummary;
+  };
 }

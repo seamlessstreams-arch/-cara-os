@@ -24,7 +24,7 @@ type EntryType =
   | "mediation"
   | "review";
 
-type PairEntry = {
+export type PairEntry = {
   id: string;
   date: string;
   type: EntryType;
@@ -34,7 +34,7 @@ type PairEntry = {
   outcome: string;
 };
 
-type PeerPairProfile = {
+export type PeerPairProfile = {
   id: string;
   child1Name: string;
   child2Name: string;
@@ -53,7 +53,7 @@ type PeerPairProfile = {
   notes: string;
 };
 
-type GroupAssessment = {
+export type GroupAssessment = {
   id: string;
   assessmentDate: string;
   assessedBy: string;
@@ -72,7 +72,7 @@ type PeerSafeguardingMapSummary = {
   overallSignal: PairSignal;
 };
 
-type PeerSafeguardingMapResponse = {
+export type PeerSafeguardingMapResponse = {
   pairs: PeerPairProfile[];
   latestGroupAssessment: GroupAssessment | null;
   summary: PeerSafeguardingMapSummary;

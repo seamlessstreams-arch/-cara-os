@@ -5,7 +5,7 @@ import type {
   StaffComplianceProfile,
   StaffComplianceSignal,
   StaffComplianceTimelineResponse,
-} from "@/hooks/use-staff-compliance-timeline-intelligence";
+} from "@/app/api/v1/staff-compliance-timeline-intelligence/route";
 
 const SIGNAL_CONFIG: Record<
   StaffComplianceSignal,

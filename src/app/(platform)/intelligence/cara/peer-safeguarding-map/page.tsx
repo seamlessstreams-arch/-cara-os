@@ -6,7 +6,7 @@ import type {
   PairEntry,
   GroupAssessment,
   PeerSafeguardingMapResponse,
-} from "@/hooks/use-peer-safeguarding-map";
+} from "@/app/api/v1/peer-safeguarding-map/route";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

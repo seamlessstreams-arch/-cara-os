@@ -24,7 +24,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
   }
 }
 
-type StaffComplianceSignal = "urgent" | "attention" | "due_soon" | "good";
+export type StaffComplianceSignal = "urgent" | "attention" | "due_soon" | "good";
 
 interface DbsStatus {
   ageMonths: number;
@@ -54,7 +54,7 @@ interface ProbationStatus {
   endingSoon: boolean; // within 14 days
 }
 
-interface StaffComplianceProfile {
+export interface StaffComplianceProfile {
   staffId: string;
   name: string;
   role: string;
@@ -69,7 +69,7 @@ interface StaffComplianceProfile {
   signal: StaffComplianceSignal;
 }
 
-interface StaffComplianceSummary {
+export interface StaffComplianceSummary {
   totalActiveStaff: number;
   supervisionOverdue: number;
   supervisionDueWithinWeek: number;
@@ -244,4 +244,11 @@ export async function GET() {
   };
 
   return NextResponse.json({ data: { staff: profiles, summary } });
+}
+
+export interface StaffComplianceTimelineResponse {
+  data: {
+    staff: StaffComplianceProfile[];
+    summary: StaffComplianceSummary;
+  };
 }

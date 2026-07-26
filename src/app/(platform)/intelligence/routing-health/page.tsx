@@ -21,7 +21,7 @@ import type { CareEventJob } from "@/types/care-events";
 import type {
   RoutingHealthRow,
   RoutingHealthSummary,
-} from "@/hooks/use-routing-health";
+} from "@/lib/care-events/routing-health";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 

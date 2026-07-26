@@ -26,9 +26,10 @@ import { getStore } from "@/lib/db/store";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type ChildPISignal = "concerning" | "monitoring" | "stable" | "improving";
+export type PITrend = "increasing" | "stable" | "decreasing";
+export type ChildPISignal = "concerning" | "monitoring" | "stable" | "improving";
 
-interface ChildPIProfile {
+export interface ChildPIProfile {
   childId: string;
   childName: string;
   totalRestraints: number;
@@ -47,7 +48,7 @@ interface ChildPIProfile {
   supervisionPrompt: string;
 }
 
-interface StaffPIProfile {
+export interface StaffPIProfile {
   staffId: string;
   staffName: string;
   leadCount: number;
@@ -57,16 +58,16 @@ interface StaffPIProfile {
   deEscalationRateOnLeads: number;  // 0–100
 }
 
-interface AntecedentFrequency {
+export interface AntecedentFrequency {
   antecedent: string;
   count: number;
 }
 
-interface PhysicalInterventionSummary {
+export interface PhysicalInterventionSummary {
   totalRestraints: number;
   totalLast30d: number;
   totalPrior30d: number;
-  homeTrend: "increasing" | "stable" | "decreasing";
+  homeTrend: PITrend;
   pendingReviews: number;
   childrenWithPendingDebrief: number;
   totalInjuries: number;
@@ -351,4 +352,12 @@ export async function GET() {
   };
 
   return NextResponse.json({ data: { childProfiles, staffProfiles, summary } });
+}
+
+export interface PhysicalInterventionPatternResponse {
+  data: {
+    childProfiles: ChildPIProfile[];
+    staffProfiles: StaffPIProfile[];
+    summary: PhysicalInterventionSummary;
+  };
 }
