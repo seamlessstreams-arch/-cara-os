@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, PawPrint } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePetAnimalTherapyIntelligence } from "@/hooks/use-home-pet-animal-therapy-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { PetAnimalTherapyRating } from "@/lib/engines/home-pet-animal-therapy-intelligence-engine";
+
+function useHomePetAnimalTherapyIntelligence() {
+  return useQuery({
+    queryKey: ["home-pet-animal-therapy-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-pet-animal-therapy-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch pet and animal therapy intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PetAnimalTherapyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

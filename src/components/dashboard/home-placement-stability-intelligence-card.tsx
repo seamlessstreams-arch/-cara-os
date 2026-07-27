@@ -8,6 +8,7 @@
 // "How well children are helped and protected."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -16,8 +17,23 @@ import {
   Clock, Flame, MapPin, BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePlacementStabilityIntelligence } from "@/hooks/use-home-placement-stability-intelligence";
-import type { PlacementStabilityRating } from "@/lib/engines/home-placement-stability-intelligence-engine";
+import type { PlacementStabilityRating, HomePlacementStabilityResult } from "@/lib/engines/home-placement-stability-intelligence-engine";
+
+interface HomePlacementStabilityResponse {
+  data: HomePlacementStabilityResult;
+}
+
+function useHomePlacementStabilityIntelligence() {
+  return useQuery<HomePlacementStabilityResponse>({
+    queryKey: ["home-placement-stability-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-placement-stability-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home placement stability intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

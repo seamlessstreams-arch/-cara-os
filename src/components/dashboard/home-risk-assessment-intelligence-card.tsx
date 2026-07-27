@@ -15,8 +15,24 @@ import {
   TrendingDown, TrendingUp, CheckCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeRiskAssessmentIntelligence } from "@/hooks/use-home-risk-assessment-intelligence";
-import type { RiskAssessmentRating } from "@/lib/engines/home-risk-assessment-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { RiskAssessmentRating, HomeRiskAssessmentResult } from "@/lib/engines/home-risk-assessment-intelligence-engine";
+
+interface HomeRiskAssessmentResponse {
+  data: HomeRiskAssessmentResult;
+}
+
+function useHomeRiskAssessmentIntelligence() {
+  return useQuery<HomeRiskAssessmentResponse>({
+    queryKey: ["home-risk-assessment-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-risk-assessment-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home risk assessment intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

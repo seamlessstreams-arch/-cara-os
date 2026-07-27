@@ -1,11 +1,25 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePlacementJourneyIntelligence } from "@/hooks/use-home-placement-journey-intelligence";
-import type { PlacementJourneyRating } from "@/lib/engines/home-placement-journey-intelligence-engine";
+import type { PlacementJourneyRating, HomePlacementJourneyResult } from "@/lib/engines/home-placement-journey-intelligence-engine";
+
+interface HomePlacementJourneyResponse { data: HomePlacementJourneyResult; }
+
+function useHomePlacementJourneyIntelligence() {
+  return useQuery<HomePlacementJourneyResponse>({
+    queryKey: ["home-placement-journey-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-placement-journey-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home placement journey intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PlacementJourneyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

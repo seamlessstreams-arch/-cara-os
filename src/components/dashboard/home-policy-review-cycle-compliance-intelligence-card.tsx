@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ScrollText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePolicyReviewCycleComplianceIntelligence } from "@/hooks/use-home-policy-review-cycle-compliance-intelligence";
 import type { PolicyReviewRating } from "@/lib/engines/home-policy-review-cycle-compliance-intelligence-engine";
+
+function useHomePolicyReviewCycleComplianceIntelligence() {
+  return useQuery({
+    queryKey: ["home-policy-review-cycle-compliance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-policy-review-cycle-compliance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch policy review cycle compliance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PolicyReviewRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

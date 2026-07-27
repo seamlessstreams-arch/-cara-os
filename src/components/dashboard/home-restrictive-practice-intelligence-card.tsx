@@ -15,8 +15,24 @@ import {
   Clock, CheckCheck, UserCheck, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeRestrictivePracticeIntelligence } from "@/hooks/use-home-restrictive-practice-intelligence";
-import type { RestrictivePracticeRating } from "@/lib/engines/home-restrictive-practice-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { RestrictivePracticeRating, HomeRestrictivePracticeResult } from "@/lib/engines/home-restrictive-practice-intelligence-engine";
+
+interface HomeRestrictivePracticeResponse {
+  data: HomeRestrictivePracticeResult;
+}
+
+function useHomeRestrictivePracticeIntelligence() {
+  return useQuery<HomeRestrictivePracticeResponse>({
+    queryKey: ["home-restrictive-practice-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-restrictive-practice-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home restrictive practice intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

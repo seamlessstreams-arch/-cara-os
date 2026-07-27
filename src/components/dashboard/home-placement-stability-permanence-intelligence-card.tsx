@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePlacementStabilityPermanenceIntelligence } from "@/hooks/use-home-placement-stability-permanence-intelligence";
 import type { PlacementStabilityRating } from "@/lib/engines/home-placement-stability-permanence-intelligence-engine";
+
+function useHomePlacementStabilityPermanenceIntelligence() {
+  return useQuery({
+    queryKey: ["home-placement-stability-permanence-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-placement-stability-permanence-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch placement stability permanence intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PlacementStabilityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -14,8 +14,24 @@ import {
   ShieldCheck, Eye, Handshake,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePeerDynamicsIntelligence } from "@/hooks/use-home-peer-dynamics-intelligence";
-import type { PeerDynamicsRating } from "@/lib/engines/home-peer-dynamics-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { PeerDynamicsRating, HomePeerDynamicsResult } from "@/lib/engines/home-peer-dynamics-intelligence-engine";
+
+interface HomePeerDynamicsResponse {
+  data: HomePeerDynamicsResult;
+}
+
+function useHomePeerDynamicsIntelligence() {
+  return useQuery<HomePeerDynamicsResponse>({
+    queryKey: ["home-peer-dynamics-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-peer-dynamics-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home peer dynamics intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

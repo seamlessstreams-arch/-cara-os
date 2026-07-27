@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeParentPartnershipEngagementIntelligence } from "@/hooks/use-home-parent-partnership-engagement-intelligence";
-import type { ParentPartnershipRating } from "@/lib/engines/home-parent-partnership-engagement-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ParentPartnershipRating, ParentPartnershipResult } from "@/lib/engines/home-parent-partnership-engagement-intelligence-engine";
+
+interface ParentPartnershipResponse { data: ParentPartnershipResult; }
+
+function useHomeParentPartnershipEngagementIntelligence() {
+  return useQuery<ParentPartnershipResponse>({
+    queryKey: ["home-parent-partnership-engagement-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-parent-partnership-engagement-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch parent partnership engagement intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<ParentPartnershipRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

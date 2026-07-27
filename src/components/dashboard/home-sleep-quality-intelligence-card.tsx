@@ -15,8 +15,24 @@ import {
   ShieldCheck, Clock, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeSleepQualityIntelligence } from "@/hooks/use-home-sleep-quality-intelligence";
-import type { SleepQualityRating } from "@/lib/engines/home-sleep-quality-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { SleepQualityRating, HomeSleepQualityResult } from "@/lib/engines/home-sleep-quality-intelligence-engine";
+
+interface HomeSleepQualityResponse {
+  data: HomeSleepQualityResult;
+}
+
+function useHomeSleepQualityIntelligence() {
+  return useQuery<HomeSleepQualityResponse>({
+    queryKey: ["home-sleep-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-sleep-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home sleep quality intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

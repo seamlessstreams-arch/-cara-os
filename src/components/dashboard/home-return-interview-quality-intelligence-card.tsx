@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeReturnInterviewQualityIntelligence } from "@/hooks/use-home-return-interview-quality-intelligence";
-import type { ReturnInterviewRating } from "@/lib/engines/home-return-interview-quality-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ReturnInterviewRating, ReturnInterviewQualityResult } from "@/lib/engines/home-return-interview-quality-intelligence-engine";
+
+interface ReturnInterviewResponse { data: ReturnInterviewQualityResult; }
+
+function useHomeReturnInterviewQualityIntelligence() {
+  return useQuery<ReturnInterviewResponse>({
+    queryKey: ["home-return-interview-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-return-interview-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch return interview quality intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<ReturnInterviewRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

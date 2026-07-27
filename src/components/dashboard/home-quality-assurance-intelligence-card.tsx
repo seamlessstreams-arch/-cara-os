@@ -7,6 +7,7 @@
 // CHR 2015 Reg 35. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,23 @@ import {
   BarChart3, CheckCircle2, Star, Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeQualityAssuranceIntelligence } from "@/hooks/use-home-quality-assurance-intelligence";
-import type { QARating } from "@/lib/engines/home-quality-assurance-intelligence-engine";
+import type { HomeQAResult, QARating } from "@/lib/engines/home-quality-assurance-intelligence-engine";
+
+interface HomeQualityAssuranceIntelligenceResponse {
+  data: HomeQAResult;
+}
+
+function useHomeQualityAssuranceIntelligence() {
+  return useQuery<HomeQualityAssuranceIntelligenceResponse>({
+    queryKey: ["home-quality-assurance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-quality-assurance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home quality assurance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

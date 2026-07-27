@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeRecordKeepingDocumentationQualityIntelligence } from "@/hooks/use-home-record-keeping-documentation-quality-intelligence";
 import type { RecordKeepingRating } from "@/lib/engines/home-record-keeping-documentation-quality-intelligence-engine";
+
+function useHomeRecordKeepingDocumentationQualityIntelligence() {
+  return useQuery({
+    queryKey: ["home-record-keeping-documentation-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-record-keeping-documentation-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch record keeping documentation quality intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<RecordKeepingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

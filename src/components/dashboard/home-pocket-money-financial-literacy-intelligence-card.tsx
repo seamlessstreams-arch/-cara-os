@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePocketMoneyFinancialLiteracyIntelligence } from "@/hooks/use-home-pocket-money-financial-literacy-intelligence";
 import type { FinancialLiteracyRating } from "@/lib/engines/home-pocket-money-financial-literacy-intelligence-engine";
+
+function useHomePocketMoneyFinancialLiteracyIntelligence() {
+  return useQuery({
+    queryKey: ["home-pocket-money-financial-literacy-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-pocket-money-financial-literacy-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch pocket money financial literacy intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<FinancialLiteracyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

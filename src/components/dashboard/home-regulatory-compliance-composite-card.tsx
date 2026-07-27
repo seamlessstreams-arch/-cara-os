@@ -1,10 +1,24 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeRegulatoryComplianceComposite } from "@/hooks/use-home-regulatory-compliance-composite";
-import type { RegulatoryComplianceRating } from "@/lib/engines/home-regulatory-compliance-composite-engine";
+import type { RegulatoryComplianceRating, RegulatoryComplianceResult } from "@/lib/engines/home-regulatory-compliance-composite-engine";
+
+interface RegulatoryComplianceCompositeResponse { data: RegulatoryComplianceResult; }
+
+function useHomeRegulatoryComplianceComposite() {
+  return useQuery<RegulatoryComplianceCompositeResponse>({
+    queryKey: ["home-regulatory-compliance-composite"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-regulatory-compliance-composite");
+      if (!res.ok) throw new Error("Failed to fetch regulatory compliance composite");
+      return res.json();
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 const RATING_STYLES: Record<RegulatoryComplianceRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -7,6 +7,7 @@
 // CHR 2015 Reg 36. SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,23 @@ import {
   Send, Eye, BadgeCheck, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeRecordingQualityIntelligence } from "@/hooks/use-home-recording-quality-intelligence";
-import type { RecordingRating } from "@/lib/engines/home-recording-quality-intelligence-engine";
+import type { HomeRecordingResult, RecordingRating } from "@/lib/engines/home-recording-quality-intelligence-engine";
+
+interface HomeRecordingResponse {
+  data: HomeRecordingResult;
+}
+
+function useHomeRecordingQualityIntelligence() {
+  return useQuery<HomeRecordingResponse>({
+    queryKey: ["home-recording-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-recording-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home recording quality intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

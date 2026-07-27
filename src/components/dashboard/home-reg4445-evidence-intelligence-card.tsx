@@ -1,11 +1,25 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeReg4445EvidenceIntelligence } from "@/hooks/use-home-reg4445-evidence-intelligence";
-import type { Reg4445Rating } from "@/lib/engines/home-reg4445-evidence-intelligence-engine";
+import type { HomeReg4445EvidenceResult, Reg4445Rating } from "@/lib/engines/home-reg4445-evidence-intelligence-engine";
+
+interface HomeReg4445EvidenceResponse { data: HomeReg4445EvidenceResult; }
+
+function useHomeReg4445EvidenceIntelligence() {
+  return useQuery<HomeReg4445EvidenceResponse>({
+    queryKey: ["home-reg4445-evidence-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-reg4445-evidence-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home reg 44/45 evidence intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<Reg4445Rating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

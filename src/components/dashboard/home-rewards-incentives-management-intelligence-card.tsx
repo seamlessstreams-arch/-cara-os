@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeRewardsIncentivesManagementIntelligence } from "@/hooks/use-home-rewards-incentives-management-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { RewardsIncentivesRating } from "@/lib/engines/home-rewards-incentives-management-intelligence-engine";
+
+function useHomeRewardsIncentivesManagementIntelligence() {
+  return useQuery({
+    queryKey: ["home-rewards-incentives-management-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-rewards-incentives-management-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch rewards incentives management intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<RewardsIncentivesRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

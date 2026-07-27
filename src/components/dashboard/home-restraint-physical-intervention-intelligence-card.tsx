@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HandMetal } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeRestraintPhysicalInterventionIntelligence } from "@/hooks/use-home-restraint-physical-intervention-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { RestraintPhysicalInterventionRating } from "@/lib/engines/home-restraint-physical-intervention-intelligence-engine";
+
+function useHomeRestraintPhysicalInterventionIntelligence() {
+  return useQuery({
+    queryKey: ["home-restraint-physical-intervention-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-restraint-physical-intervention-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch restraint physical intervention intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<RestraintPhysicalInterventionRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

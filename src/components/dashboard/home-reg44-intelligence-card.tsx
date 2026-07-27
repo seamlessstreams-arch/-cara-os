@@ -7,6 +7,7 @@
 // CHR 2015 Reg 44. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,23 @@ import {
   CalendarCheck, CheckCircle, ClipboardList, TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeReg44Intelligence } from "@/hooks/use-home-reg44-intelligence";
-import type { Reg44Rating } from "@/lib/engines/home-reg44-intelligence-engine";
+import type { HomeReg44Result, Reg44Rating } from "@/lib/engines/home-reg44-intelligence-engine";
+
+interface HomeReg44Response {
+  data: HomeReg44Result;
+}
+
+function useHomeReg44Intelligence() {
+  return useQuery<HomeReg44Response>({
+    queryKey: ["home-reg44-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-reg44-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home Reg 44 intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

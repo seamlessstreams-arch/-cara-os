@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,6 @@ import { getStaffName } from "@/lib/seed-data";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { useHomePolicies } from "@/hooks/use-home-policies";
 import type { HomePolicy, HomePolicyCategory, HomePolicyStatus } from "@/types/extended";
 import { HOME_POLICY_CATEGORY_LABEL, HOME_POLICY_STATUS_LABEL } from "@/types/extended";
 import {
@@ -31,6 +31,17 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { PolicyVersionHistory } from "@/components/policies/policy-version-history";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useHomePolicies() {
+  return useQuery<HomePolicy[]>({
+    queryKey: ["home-policies"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-policies");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 // ── Constants ────────────────────────────────────────────────────────────────
 

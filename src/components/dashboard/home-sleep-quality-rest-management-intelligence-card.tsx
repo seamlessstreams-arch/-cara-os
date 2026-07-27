@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, BedDouble } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeSleepQualityRestManagementIntelligence } from "@/hooks/use-home-sleep-quality-rest-management-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { SleepQualityRating } from "@/lib/engines/home-sleep-quality-rest-management-intelligence-engine";
+
+function useHomeSleepQualityRestManagementIntelligence() {
+  return useQuery({
+    queryKey: ["home-sleep-quality-rest-management-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-sleep-quality-rest-management-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch sleep quality rest management intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<SleepQualityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

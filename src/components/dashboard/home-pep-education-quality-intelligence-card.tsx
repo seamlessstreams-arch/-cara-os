@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePepEducationQualityIntelligence } from "@/hooks/use-home-pep-education-quality-intelligence";
-import type { PepEducationRating } from "@/lib/engines/home-pep-education-quality-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { PepEducationRating, PepEducationResult } from "@/lib/engines/home-pep-education-quality-intelligence-engine";
+
+interface PepEducationResponse { data: PepEducationResult; }
+
+function useHomePepEducationQualityIntelligence() {
+  return useQuery<PepEducationResponse>({
+    queryKey: ["home-pep-education-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-pep-education-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch PEP education quality intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PepEducationRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

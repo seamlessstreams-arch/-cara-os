@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePrivacyDignityIntelligence } from "@/hooks/use-home-privacy-dignity-intelligence";
 import type { PrivacyDignityRating } from "@/lib/engines/home-privacy-dignity-intelligence-engine";
+
+function useHomePrivacyDignityIntelligence() {
+  return useQuery({
+    queryKey: ["home-privacy-dignity-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-privacy-dignity-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch privacy dignity intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PrivacyDignityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

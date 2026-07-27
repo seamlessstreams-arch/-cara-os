@@ -6,6 +6,7 @@
 // CHR 2015 Reg 36.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -14,8 +15,23 @@ import {
   ShieldCheck, Users, ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePlacementStabilityDepthIntelligence } from "@/hooks/use-home-placement-stability-depth-intelligence";
-import type { PlacementStabilityDepthRating } from "@/lib/engines/home-placement-stability-depth-intelligence-engine";
+import type { PlacementStabilityDepthRating, HomePlacementStabilityDepthResult } from "@/lib/engines/home-placement-stability-depth-intelligence-engine";
+
+interface HomePlacementStabilityDepthResponse {
+  data: HomePlacementStabilityDepthResult;
+}
+
+function useHomePlacementStabilityDepthIntelligence() {
+  return useQuery<HomePlacementStabilityDepthResponse>({
+    queryKey: ["home-placement-stability-depth-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-placement-stability-depth-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home placement stability depth intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

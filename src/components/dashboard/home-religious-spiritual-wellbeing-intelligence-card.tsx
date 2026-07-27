@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Church } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeReligiousSpiritualWellbeingIntelligence } from "@/hooks/use-home-religious-spiritual-wellbeing-intelligence";
 import type { SpiritualWellbeingRating } from "@/lib/engines/home-religious-spiritual-wellbeing-intelligence-engine";
+
+function useHomeReligiousSpiritualWellbeingIntelligence() {
+  return useQuery({
+    queryKey: ["home-religious-spiritual-wellbeing-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-religious-spiritual-wellbeing-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch religious spiritual wellbeing intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<SpiritualWellbeingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePositiveIdentitySelfEsteemIntelligence } from "@/hooks/use-home-positive-identity-self-esteem-intelligence";
 import type { PositiveIdentityRating } from "@/lib/engines/home-positive-identity-self-esteem-intelligence-engine";
+
+function useHomePositiveIdentitySelfEsteemIntelligence() {
+  return useQuery({
+    queryKey: ["home-positive-identity-self-esteem-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-positive-identity-self-esteem-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch positive identity self-esteem intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PositiveIdentityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

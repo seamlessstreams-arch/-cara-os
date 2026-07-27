@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Network } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeProfessionalNetworkIntelligence } from "@/hooks/use-home-professional-network-intelligence";
 import type { ProfessionalNetworkRating } from "@/lib/engines/home-professional-network-intelligence-engine";
+
+function useHomeProfessionalNetworkIntelligence() {
+  return useQuery({
+    queryKey: ["home-professional-network-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-professional-network-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch professional network intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<ProfessionalNetworkRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

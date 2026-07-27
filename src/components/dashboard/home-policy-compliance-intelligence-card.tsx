@@ -7,6 +7,7 @@
 // CHR 2015 Reg 35, Reg 16. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,23 @@ import {
   Users, ShieldCheck, BookOpen, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePolicyComplianceIntelligence } from "@/hooks/use-home-policy-compliance-intelligence";
-import type { PolicyRating } from "@/lib/engines/home-policy-compliance-intelligence-engine";
+import type { PolicyRating, HomePolicyResult } from "@/lib/engines/home-policy-compliance-intelligence-engine";
+
+interface HomePolicyResponse {
+  data: HomePolicyResult;
+}
+
+function useHomePolicyComplianceIntelligence() {
+  return useQuery<HomePolicyResponse>({
+    queryKey: ["home-policy-compliance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-policy-compliance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home policy compliance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

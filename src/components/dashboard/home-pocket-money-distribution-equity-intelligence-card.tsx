@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePocketMoneyDistributionEquityIntelligence } from "@/hooks/use-home-pocket-money-distribution-equity-intelligence";
 import type { PocketMoneyEquityRating } from "@/lib/engines/home-pocket-money-distribution-equity-intelligence-engine";
+
+function useHomePocketMoneyDistributionEquityIntelligence() {
+  return useQuery({
+    queryKey: ["home-pocket-money-distribution-equity-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-pocket-money-distribution-equity-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch pocket money distribution equity intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PocketMoneyEquityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

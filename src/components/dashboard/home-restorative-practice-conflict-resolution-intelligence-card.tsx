@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Handshake } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeRestorativePracticeConflictResolutionIntelligence } from "@/hooks/use-home-restorative-practice-conflict-resolution-intelligence";
 import type { RestorativePracticeRating } from "@/lib/engines/home-restorative-practice-conflict-resolution-intelligence-engine";
+
+function useHomeRestorativePracticeConflictResolutionIntelligence() {
+  return useQuery({
+    queryKey: ["home-restorative-practice-conflict-resolution-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-restorative-practice-conflict-resolution-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch restorative practice conflict resolution intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<RestorativePracticeRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

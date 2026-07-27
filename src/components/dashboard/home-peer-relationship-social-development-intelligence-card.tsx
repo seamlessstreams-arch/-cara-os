@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HandHeart } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePeerRelationshipSocialDevelopmentIntelligence } from "@/hooks/use-home-peer-relationship-social-development-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { PeerRelationshipRating } from "@/lib/engines/home-peer-relationship-social-development-intelligence-engine";
+
+function useHomePeerRelationshipSocialDevelopmentIntelligence() {
+  return useQuery({
+    queryKey: ["home-peer-relationship-social-development-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-peer-relationship-social-development-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch peer relationship social development intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PeerRelationshipRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

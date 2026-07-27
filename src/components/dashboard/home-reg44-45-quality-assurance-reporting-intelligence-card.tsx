@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, FileCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeReg4445QualityAssuranceReportingIntelligence } from "@/hooks/use-home-reg44-45-quality-assurance-reporting-intelligence";
 import type { Reg4445QualityRating } from "@/lib/engines/home-reg44-45-quality-assurance-reporting-intelligence-engine";
+
+function useHomeReg4445QualityAssuranceReportingIntelligence() {
+  return useQuery({
+    queryKey: ["home-reg44-45-quality-assurance-reporting-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-reg44-45-quality-assurance-reporting-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch Reg 44/45 quality assurance reporting intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<Reg4445QualityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -15,8 +15,24 @@ import {
   Users, CheckCheck, HandHeart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeParticipationIntelligence } from "@/hooks/use-home-participation-intelligence";
-import type { ParticipationRating } from "@/lib/engines/home-participation-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ParticipationRating, HomeParticipationResult } from "@/lib/engines/home-participation-intelligence-engine";
+
+interface HomeParticipationResponse {
+  data: HomeParticipationResult;
+}
+
+function useHomeParticipationIntelligence() {
+  return useQuery<HomeParticipationResponse>({
+    queryKey: ["home-participation-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-participation-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home participation intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

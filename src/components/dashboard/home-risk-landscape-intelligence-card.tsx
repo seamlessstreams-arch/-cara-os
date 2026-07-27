@@ -17,8 +17,24 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeRiskLandscapeIntelligence } from "@/hooks/use-home-risk-landscape-intelligence";
-import type { RiskLandscapeRating } from "@/lib/engines/home-risk-landscape-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { RiskLandscapeRating, HomeRiskLandscapeResult } from "@/lib/engines/home-risk-landscape-intelligence-engine";
+
+interface HomeRiskLandscapeResponse {
+  data: HomeRiskLandscapeResult;
+}
+
+function useHomeRiskLandscapeIntelligence() {
+  return useQuery<HomeRiskLandscapeResponse>({
+    queryKey: ["home-risk-landscape-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-risk-landscape-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home risk landscape intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

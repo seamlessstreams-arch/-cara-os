@@ -7,6 +7,7 @@
 // CHR 2015 Reg 44, 45, 46. SCCIF: "Leadership and management."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -17,8 +18,23 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
-import { useHomeRegulatoryComplianceIntelligence } from "@/hooks/use-home-regulatory-compliance-intelligence";
-import type { RegulatoryComplianceRating } from "@/lib/engines/home-regulatory-compliance-intelligence-engine";
+import type { HomeRegulatoryComplianceResult, RegulatoryComplianceRating } from "@/lib/engines/home-regulatory-compliance-intelligence-engine";
+
+interface HomeRegulatoryComplianceResponse {
+  data: HomeRegulatoryComplianceResult;
+}
+
+function useHomeRegulatoryComplianceIntelligence() {
+  return useQuery<HomeRegulatoryComplianceResponse>({
+    queryKey: ["home-regulatory-compliance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-regulatory-compliance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home regulatory compliance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

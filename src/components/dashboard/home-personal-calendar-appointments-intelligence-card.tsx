@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePersonalCalendarAppointmentsIntelligence } from "@/hooks/use-home-personal-calendar-appointments-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { PersonalCalendarRating } from "@/lib/engines/home-personal-calendar-appointments-intelligence-engine";
+
+function useHomePersonalCalendarAppointmentsIntelligence() {
+  return useQuery({
+    queryKey: ["home-personal-calendar-appointments-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-personal-calendar-appointments-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch personal calendar appointments intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PersonalCalendarRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -7,6 +7,7 @@
 // CHR 2015 Reg 25. SCCIF: "Safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,23 @@ import {
   ShieldCheck, Car, Wrench, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePremisesSafetyIntelligence } from "@/hooks/use-home-premises-safety-intelligence";
-import type { PremisesRating } from "@/lib/engines/home-premises-safety-intelligence-engine";
+import type { HomePremisesResult, PremisesRating } from "@/lib/engines/home-premises-safety-intelligence-engine";
+
+interface HomePremisesSafetyIntelligenceResponse {
+  data: HomePremisesResult;
+}
+
+function useHomePremisesSafetyIntelligence() {
+  return useQuery<HomePremisesSafetyIntelligenceResponse>({
+    queryKey: ["home-premises-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-premises-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home premises safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
