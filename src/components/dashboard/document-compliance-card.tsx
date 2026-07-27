@@ -15,7 +15,23 @@ import {
   FileCheck, FileWarning, Shield, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useDocumentComplianceIntelligence } from "@/hooks/use-document-compliance-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { DocumentComplianceIntelligenceResult } from "@/lib/engines/document-compliance-intelligence-engine";
+
+// ── Data hook (inlined from use-document-compliance-intelligence) ───────────
+
+interface DocumentComplianceIntelligenceResponse {
+  data: DocumentComplianceIntelligenceResult;
+}
+
+function useDocumentComplianceIntelligence() {
+  return useQuery({
+    queryKey: ["document-compliance-intelligence"],
+    queryFn: () => api.get<DocumentComplianceIntelligenceResponse>("/document-compliance-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

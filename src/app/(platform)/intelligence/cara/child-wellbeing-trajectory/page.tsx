@@ -2,13 +2,61 @@
 
 import { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { useChildWellbeingTrajectory } from "@/hooks/use-child-wellbeing-trajectory";
-import type {
-  OverallTrajectory,
-  DomainTrajectory,
-  WellbeingDomain,
-  ChildWellbeingProfile,
-} from "@/hooks/use-child-wellbeing-trajectory";
+import { useQuery } from "@tanstack/react-query";
+
+type DomainTrajectory = "improving" | "stable" | "declining";
+type OverallTrajectory = "thriving" | "progressing" | "holding" | "struggling" | "crisis";
+
+interface WellbeingDomain {
+  name: string;
+  trajectory: DomainTrajectory;
+  detail: string;
+  numerator: number;
+  denominator: number;
+}
+
+interface ChildWellbeingProfile {
+  childId: string;
+  childName: string;
+  placementDays: number;
+  domains: WellbeingDomain[];
+  improvingDomains: number;
+  decliningDomains: number;
+  overallTrajectory: OverallTrajectory;
+  narrativeSummary: string;
+  supervisionPrompt: string;
+}
+
+interface WellbeingTrajectorySummary {
+  totalChildren: number;
+  thriving: number;
+  progressing: number;
+  holding: number;
+  struggling: number;
+  crisis: number;
+  homeTrend: "positive" | "mixed" | "concerning";
+  priorityChildren: string[];
+  ofstedNote: string;
+}
+
+interface ChildWellbeingTrajectoryResponse {
+  data: {
+    childProfiles: ChildWellbeingProfile[];
+    summary: WellbeingTrajectorySummary;
+  };
+}
+
+function useChildWellbeingTrajectory() {
+  return useQuery<ChildWellbeingTrajectoryResponse>({
+    queryKey: ["child-wellbeing-trajectory"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/child-wellbeing-trajectory");
+      if (!res.ok) throw new Error("Failed to fetch child wellbeing trajectory");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+}
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
 

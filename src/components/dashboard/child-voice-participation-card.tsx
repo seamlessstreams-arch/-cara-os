@@ -15,8 +15,17 @@ import {
   Megaphone, UserCheck, Target, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildVoiceParticipation } from "@/hooks/use-child-voice-participation";
-import type { VoiceHealth } from "@/lib/engines/child-voice-participation-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ChildVoiceParticipationResult, VoiceHealth } from "@/lib/engines/child-voice-participation-engine";
+
+function useChildVoiceParticipation() {
+  return useQuery<{ data: ChildVoiceParticipationResult }>({
+    queryKey: ["child-voice-participation"],
+    queryFn: () =>
+      fetch("/api/v1/child-voice-participation").then((r) => r.json()),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

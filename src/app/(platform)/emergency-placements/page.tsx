@@ -25,10 +25,20 @@ import {
   EMERGENCY_PLACEMENT_STATUS_LABEL,
   EMERGENCY_PLACEMENT_URGENCY_LABEL,
 } from "@/types/extended";
-import { useEmergencyReferrals } from "@/hooks/use-emergency-referrals";
+import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const EMERGENCY_REFERRALS_KEY = "emergency-referrals";
+const EMERGENCY_REFERRALS_API = "/api/v1/emergency-referrals";
+
+function useEmergencyReferrals() {
+  return useQuery<{ data: EmergencyReferral[] }>({
+    queryKey: [EMERGENCY_REFERRALS_KEY],
+    queryFn: () => fetch(EMERGENCY_REFERRALS_API).then((r) => r.json()),
+  });
+}
 
 // ── Meta maps ───────────────────────────────────────────────────────────────
 const STATUS_META: Record<EmergencyPlacementStatus, { label: string; color: string }> = {

@@ -9,8 +9,26 @@ import { cn } from "@/lib/utils";
 import {
   Loader2, FileText, Quote, CheckCircle2, ListChecks, CalendarDays, UserSquare2, Sparkles,
 } from "lucide-react";
-import { useChildReviewPack } from "@/hooks/use-child-review-pack";
-import type { PackRag, ReviewSection, ReviewDomainScore } from "@/lib/engines/child-review-pack-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ChildReviewPackResult, PackRag, ReviewSection, ReviewDomainScore } from "@/lib/engines/child-review-pack-engine";
+
+interface ChildReviewPackResponse {
+  children: { id: string; name: string }[];
+  pack: ChildReviewPackResult | null;
+}
+
+function useChildReviewPack(childId: string | null) {
+  return useQuery<ChildReviewPackResponse>({
+    queryKey: ["child-review-pack", childId ?? "none"],
+    queryFn: async () => {
+      const qs = childId ? `?childId=${encodeURIComponent(childId)}` : "";
+      const res = await fetch(`/api/v1/child-review-pack${qs}`);
+      if (!res.ok) throw new Error("Failed to fetch child review pack");
+      const json = await res.json();
+      return json.data;
+    },
+  });
+}
 
 const RAG: Record<PackRag, { dot: string; badge: string; label: string; rag: string; pdot: string }> = {
   green: { dot: "bg-[--cs-success]", badge: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]", label: "Good", rag: "cs-rag-green", pdot: "cs-dot-green" },

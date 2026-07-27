@@ -22,9 +22,19 @@ import { cn, daysFromNow } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { EduAttendanceRecord, EduProvision, EduSession, EduAttendanceCode } from "@/types/extended";
 import { EDU_PROVISION_LABEL, EDU_SESSION_LABEL } from "@/types/extended";
-import { useEduAttendanceRecords } from "@/hooks/use-edu-attendance-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+const EDU_ATTENDANCE_RECORDS_KEY = "edu-attendance-records";
+const EDU_ATTENDANCE_RECORDS_API = "/api/v1/edu-attendance-records";
+
+function useEduAttendanceRecords(childId?: string) {
+  return useQuery<{ data: EduAttendanceRecord[] }>({
+    queryKey: childId ? [EDU_ATTENDANCE_RECORDS_KEY, childId] : [EDU_ATTENDANCE_RECORDS_KEY],
+    queryFn: () => fetch(childId ? `${EDU_ATTENDANCE_RECORDS_API}?child_id=${childId}` : EDU_ATTENDANCE_RECORDS_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

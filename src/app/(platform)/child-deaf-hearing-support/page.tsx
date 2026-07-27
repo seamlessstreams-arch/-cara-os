@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDeafHearingSupportRecords } from "@/hooks/use-deaf-hearing-support-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   DeafHearingSupportRecord,
@@ -40,6 +40,18 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── deaf/hearing support records hook (inlined from use-deaf-hearing-support-records) ── */
+
+const DEAF_HEARING_KEY = "deaf-hearing-support-records";
+const DEAF_HEARING_API = "/api/v1/deaf-hearing-support-records";
+
+function useDeafHearingSupportRecords(childId?: string) {
+  return useQuery<{ data: DeafHearingSupportRecord[] }>({
+    queryKey: childId ? [DEAF_HEARING_KEY, childId] : [DEAF_HEARING_KEY],
+    queryFn: () => fetch(childId ? `${DEAF_HEARING_API}?child_id=${childId}` : DEAF_HEARING_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

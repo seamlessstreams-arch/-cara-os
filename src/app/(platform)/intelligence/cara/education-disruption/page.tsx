@@ -12,8 +12,26 @@
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useEducationDisruption } from "@/hooks/use-education-disruption";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type {
+  EducationDisruptionOverview,
+  STATUTORY_BASIS,
+} from "@/lib/education-disruption/education-disruption-engine";
 import { GraduationCap, AlertTriangle, Scale, Loader2, BookOpen } from "lucide-react";
+
+type EducationDisruptionData = EducationDisruptionOverview & {
+  statutoryBasis: typeof STATUTORY_BASIS;
+};
+
+/** Whole-home education-disruption rollup with triggers. */
+function useEducationDisruption() {
+  return useQuery({
+    queryKey: ["education-disruption", "home"],
+    queryFn: async () =>
+      (await api.get<{ data: EducationDisruptionData }>(`/education-disruption`)).data,
+  });
+}
 
 const TYPE_LABEL: Record<string, string> = {
   suspension: "Suspension",

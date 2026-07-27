@@ -30,12 +30,23 @@ import {
 } from "@/components/ui/select";
 import type { ChildPhotoEntry, PhotoCategory } from "@/types/extended";
 import { PHOTO_CATEGORY_LABEL, PHOTO_CONSENT_METHOD_LABEL } from "@/types/extended";
-import { useChildPhotoEntries } from "@/hooks/use-child-photo-entries";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useState } from "react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const CHILD_PHOTO_ENTRIES_KEY = "child-photo-entries";
+const CHILD_PHOTO_ENTRIES_API = "/api/v1/child-photo-entries";
+
+function useChildPhotoEntries(childId?: string) {
+  return useQuery<{ data: ChildPhotoEntry[] }>({
+    queryKey: childId ? [CHILD_PHOTO_ENTRIES_KEY, childId] : [CHILD_PHOTO_ENTRIES_KEY],
+    queryFn: () =>
+      fetch(childId ? `${CHILD_PHOTO_ENTRIES_API}?child_id=${childId}` : CHILD_PHOTO_ENTRIES_API).then((r) => r.json()),
+  });
+}
 
 const categoryColours: Record<PhotoCategory, string> = {
   birthday: "bg-pink-100 text-pink-800",

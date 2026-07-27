@@ -1,10 +1,27 @@
 "use client";
 
-import { useDevelopmentPlanIntelligence } from "@/hooks/use-development-plan-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import type {
+  DevelopmentPlanIntelligenceData,
   DevPlanStaffProfile,
   DevPlanAction,
 } from "@/app/api/v1/development-plan-intelligence/route";
+
+/* ── development-plan intelligence hook (inlined from use-development-plan-intelligence) ── */
+
+interface DevPlanIntelligenceResponse {
+  data: DevelopmentPlanIntelligenceData;
+}
+
+function useDevelopmentPlanIntelligence() {
+  return useQuery({
+    queryKey: ["development-plan-intelligence"],
+    queryFn: () =>
+      api.get<DevPlanIntelligenceResponse>("/development-plan-intelligence"),
+    staleTime: 120_000,
+  });
+}
 
 const SIGNAL_DOT: Record<string, string> = {
   green: "bg-green-500",

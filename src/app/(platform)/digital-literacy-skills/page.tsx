@@ -31,10 +31,22 @@ import {
   DIGITAL_LITERACY_DOMAIN_LABEL,
   DIGITAL_LITERACY_COMPETENCY_LABEL,
 } from "@/types/extended";
-import { useDigitalLiteracySkillRecords } from "@/hooks/use-digital-literacy-skill-records";
+import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── digital-literacy skill records hook (inlined from use-digital-literacy-skill-records) ── */
+
+const DIGITAL_LITERACY_KEY = "digital-literacy-skill-records";
+const DIGITAL_LITERACY_API = "/api/v1/digital-literacy-skill-records";
+
+function useDigitalLiteracySkillRecords(childId?: string) {
+  return useQuery<{ data: DigitalLiteracySkillRecord[] }>({
+    queryKey: childId ? [DIGITAL_LITERACY_KEY, childId] : [DIGITAL_LITERACY_KEY],
+    queryFn: () => fetch(childId ? `${DIGITAL_LITERACY_API}?child_id=${childId}` : DIGITAL_LITERACY_API).then((r) => r.json()),
+  });
+}
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 

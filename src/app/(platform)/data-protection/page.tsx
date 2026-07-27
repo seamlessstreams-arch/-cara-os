@@ -37,10 +37,31 @@ import {
   DATA_PROTECTION_RECORD_STATUS_LABEL,
   DATA_PROTECTION_BREACH_SEVERITY_LABEL,
 } from "@/types/extended";
-import { useDataProtectionRecords, useCreateDataProtectionRecord } from "@/hooks/use-data-protection-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data-protection record hooks (inlined from use-data-protection-records) ── */
+
+const DATA_PROTECTION_KEY = "data-protection-records";
+const DATA_PROTECTION_API = "/api/v1/data-protection-records";
+
+function useDataProtectionRecords() {
+  return useQuery<{ data: DataProtectionRecord[] }>({
+    queryKey: [DATA_PROTECTION_KEY],
+    queryFn: () => fetch(DATA_PROTECTION_API).then((r) => r.json()),
+  });
+}
+
+function useCreateDataProtectionRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<DataProtectionRecord>) =>
+      fetch(DATA_PROTECTION_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [DATA_PROTECTION_KEY] }),
+  });
+}
 
 /* ── types ─────────────────────────────────────────────────────────────── */
 

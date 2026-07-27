@@ -22,11 +22,23 @@ import {
   INSULIN_REGIME_TYPE_LABEL,
 } from "@/types/extended";
 import type { DiabetesType } from "@/types/extended";
-import { useDiabeticCarePlans } from "@/hooks/use-diabetic-care-plans";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── diabetic care plans hook (inlined from use-diabetic-care-plans) ───────── */
+
+const DIABETIC_CARE_KEY = "diabetic-care-plans";
+const DIABETIC_CARE_API = "/api/v1/diabetic-care-plans";
+
+function useDiabeticCarePlans(childId?: string) {
+  return useQuery<{ data: DiabeticCarePlan[] }>({
+    queryKey: childId ? [DIABETIC_CARE_KEY, childId] : [DIABETIC_CARE_KEY],
+    queryFn: () => fetch(childId ? `${DIABETIC_CARE_API}?child_id=${childId}` : DIABETIC_CARE_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

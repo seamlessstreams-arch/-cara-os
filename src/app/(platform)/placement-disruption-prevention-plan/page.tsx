@@ -20,11 +20,22 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { DisruptionPreventionPlan, DisruptionRiskLevel } from "@/types/extended";
 import { DISRUPTION_RISK_LEVEL_LABEL } from "@/types/extended";
-import { useDisruptionPreventionPlans } from "@/hooks/use-disruption-prevention-plans";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hook (inlined from use-disruption-prevention-plans) ────────── */
+const DISRUPTION_PREVENTION_PLANS_KEY = "disruption-prevention-plans";
+const DISRUPTION_PREVENTION_PLANS_API = "/api/v1/disruption-prevention-plans";
+
+function useDisruptionPreventionPlans(childId?: string) {
+  return useQuery<{ data: DisruptionPreventionPlan[] }>({
+    queryKey: childId ? [DISRUPTION_PREVENTION_PLANS_KEY, childId] : [DISRUPTION_PREVENTION_PLANS_KEY],
+    queryFn: () => fetch(childId ? `${DISRUPTION_PREVENTION_PLANS_API}?child_id=${childId}` : DISRUPTION_PREVENTION_PLANS_API).then((r) => r.json()),
+  });
+}
 
 /* ── constants ──────────────────────────────────────────────────────── */
 const RISK_LEVEL_ORDER: DisruptionRiskLevel[] = ["low", "building", "heightened", "acute"];

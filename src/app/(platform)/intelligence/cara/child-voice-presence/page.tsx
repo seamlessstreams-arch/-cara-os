@@ -16,13 +16,60 @@ import {
   Quote, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp,
   AlertCircle, Sparkles, CheckCircle2, AlertTriangle, BarChart3,
 } from "lucide-react";
-import {
-  useChildVoicePresenceIntelligence,
-  type RecordTypeStats,
-  type ChildVoiceProfile,
-  type VoiceTrend,
-  type RecordType,
-} from "@/hooks/use-child-voice-presence-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+
+type VoiceTrend = "improving" | "stable" | "declining";
+type RecordType = "incidents" | "dailyLog" | "keyWorkingSessions" | "ypFeedback" | "lacReviews";
+
+interface RecordTypeStats {
+  type: RecordType;
+  label: string;
+  total: number;
+  withVoice: number;
+  presenceRate: number | null;
+  recentRate: number | null;
+  priorRate: number | null;
+  trend: VoiceTrend;
+  supervisionPrompt: string;
+}
+
+interface ChildVoiceProfile {
+  childId: string;
+  name: string;
+  overallScore: number | null;
+  totalRecords: number;
+  recordsWithVoice: number;
+  byType: Partial<Record<RecordType, { total: number; withVoice: number; rate: number | null }>>;
+  topGapType: RecordType | null;
+  topStrengthType: RecordType | null;
+  hasData: boolean;
+}
+
+interface ChildVoicePresenceSummary {
+  overallPresenceRate: number | null;
+  totalRecords: number;
+  totalWithVoice: number;
+  childrenWithData: number;
+  worstType: { type: RecordType; label: string; rate: number | null } | null;
+  bestType:  { type: RecordType; label: string; rate: number | null } | null;
+  lacParticipationRate: number | null;
+}
+
+interface ChildVoicePresenceResponse {
+  typeStats: RecordTypeStats[];
+  childProfiles: ChildVoiceProfile[];
+  summary: ChildVoicePresenceSummary;
+}
+
+function useChildVoicePresenceIntelligence() {
+  return useQuery({
+    queryKey: ["child-voice-presence-intelligence"],
+    queryFn: () =>
+      api.get<{ data: ChildVoicePresenceResponse }>("/child-voice-presence-intelligence"),
+    staleTime: 60_000,
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

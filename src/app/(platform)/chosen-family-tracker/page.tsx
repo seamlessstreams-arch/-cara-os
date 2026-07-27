@@ -7,7 +7,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useChosenFamilyRecords } from "@/hooks/use-chosen-family-records";
+import { useQuery } from "@tanstack/react-query";
 import type { ChosenFamilyRecord } from "@/types/extended";
 import {
   CHOSEN_FAMILY_RELATIONSHIP_LABEL,
@@ -36,6 +36,15 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const CHOSEN_FAMILY_RECORDS_KEY = "chosen-family-records";
+
+function useChosenFamilyRecords() {
+  return useQuery<{ data: ChosenFamilyRecord[] }>({
+    queryKey: [CHOSEN_FAMILY_RECORDS_KEY],
+    queryFn: () => fetch("/api/v1/chosen-family-records").then((r) => r.json()),
+  });
+}
 
 const relationshipColour: Record<string, string> = {
   mentor: "bg-purple-100 text-purple-800",

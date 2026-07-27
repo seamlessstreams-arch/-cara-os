@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useEducationRecords, useCreateEducationRecord } from "@/hooks/use-education";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -39,6 +40,34 @@ import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+type ListResponse = { data: EducationRecord[]; meta: { total: number; exclusions_term: number; attendance_pct: number } };
+type SingleResponse = { data: EducationRecord };
+
+function useEducationRecords(params?: { childId?: string; type?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  if (params?.type) qs.set("type", params.type);
+  return useQuery({
+    queryKey: ["education-records", params],
+    queryFn: () => api.get<ListResponse>(`/education-records?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+function useCreateEducationRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<EducationRecord>) =>
+      api.post<SingleResponse>("/education-records", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["education-records"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 

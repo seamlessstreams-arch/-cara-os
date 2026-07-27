@@ -29,10 +29,20 @@ import {
   DATA_BREACH_TYPE_LABEL, DATA_BREACH_SEVERITY_LABEL,
   DATA_BREACH_RISK_LEVEL_LABEL, DATA_BREACH_STATUS_LABEL,
 } from "@/types/extended";
-import { useDataBreachRecords } from "@/hooks/use-data-breach-records";
+import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const DATA_BREACH_RECORDS_KEY = "data-breach-records";
+const DATA_BREACH_RECORDS_API = "/api/v1/data-breach-records";
+
+function useDataBreachRecords() {
+  return useQuery<{ data: DataBreachRecord[] }>({
+    queryKey: [DATA_BREACH_RECORDS_KEY],
+    queryFn: () => fetch(DATA_BREACH_RECORDS_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 

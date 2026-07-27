@@ -14,8 +14,25 @@ import {
   TrendingUp, TrendingDown, Minus, Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildMedicationIntelligence } from "@/hooks/use-child-medication-intelligence";
-import type { MedicationSafetyRating } from "@/lib/engines/child-medication-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ChildMedicationResult, MedicationSafetyRating } from "@/lib/engines/child-medication-intelligence-engine";
+
+interface ChildMedicationResponse {
+  data: ChildMedicationResult;
+}
+
+function useChildMedicationIntelligence(childId: string) {
+  return useQuery<ChildMedicationResponse>({
+    queryKey: ["child-medication-intelligence", childId],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/child-medication-intelligence?childId=${childId}`);
+      if (!res.ok) throw new Error("Failed to fetch child medication intelligence");
+      return res.json();
+    },
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

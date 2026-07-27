@@ -25,7 +25,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useChildVoiceDimensions } from "@/hooks/use-child-voice-dimensions";
+import { useQuery } from "@tanstack/react-query";
 import type {
   ChildVoiceDimensionProfile,
   VoiceDimension,
@@ -34,6 +34,19 @@ import type {
   VoiceHighlightSeverity,
   VoiceTrend,
 } from "@/lib/child-voice-dimensions/types";
+
+const CHILD_VOICE_DIMENSIONS_KEY = "child-voice-dimensions";
+const CHILD_VOICE_DIMENSIONS_URL = "/api/v1/child-voice-dimensions";
+
+/** One child's voice dimensions, trends and highlights. */
+function useChildVoiceDimensions(childId?: string) {
+  return useQuery<{ data: ChildVoiceDimensionProfile }>({
+    queryKey: [CHILD_VOICE_DIMENSIONS_KEY, childId ?? ""],
+    queryFn: () => fetch(`${CHILD_VOICE_DIMENSIONS_URL}?child_id=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+    enabled: !!childId,
+    staleTime: 30 * 1000,
+  });
+}
 
 const STATUS_STYLE: Record<VoiceDimensionStatus, { label: string; bg: string; fg: string }> = {
   strong: { label: "Strong", bg: "#e6f7f2", fg: "#0d9488" },

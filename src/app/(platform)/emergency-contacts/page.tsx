@@ -10,7 +10,7 @@
 // All contacts reviewed monthly — Reg 44 visitor should check accuracy.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
@@ -33,15 +33,38 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { EmergencyChildContact, EmergencyContactRole } from "@/types/extended";
 import { EMERGENCY_CONTACT_ROLE_LABEL } from "@/types/extended";
-import {
-  useEmergencyChildContacts,
-  useCreateEmergencyChildContact,
-  useUpdateEmergencyChildContact,
-} from "@/hooks/use-emergency-child-contacts";
 import type { HomeEmergencyContact } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const EMERGENCY_CHILD_CONTACTS_KEY = "emergency-child-contacts";
+const EMERGENCY_CHILD_CONTACTS_API = "/api/v1/emergency-child-contacts";
+
+function useEmergencyChildContacts(childId?: string) {
+  return useQuery<{ data: EmergencyChildContact[] }>({
+    queryKey: childId ? [EMERGENCY_CHILD_CONTACTS_KEY, childId] : [EMERGENCY_CHILD_CONTACTS_KEY],
+    queryFn: () => fetch(childId ? `${EMERGENCY_CHILD_CONTACTS_API}?child_id=${childId}` : EMERGENCY_CHILD_CONTACTS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateEmergencyChildContact() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<EmergencyChildContact>) =>
+      fetch(EMERGENCY_CHILD_CONTACTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [EMERGENCY_CHILD_CONTACTS_KEY] }),
+  });
+}
+
+function useUpdateEmergencyChildContact() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<EmergencyChildContact> & { id: string }) =>
+      fetch(EMERGENCY_CHILD_CONTACTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [EMERGENCY_CHILD_CONTACTS_KEY] }),
+  });
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

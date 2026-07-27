@@ -16,8 +16,18 @@ import {
   Minus, Clock, Target, UserX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildSafeguardingIntelligence } from "@/hooks/use-child-safeguarding-intelligence";
-import type { SafeguardingStatus, RiskLevel, RiskTrend } from "@/lib/engines/child-safeguarding-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ChildSafeguardingResult, SafeguardingStatus, RiskLevel, RiskTrend } from "@/lib/engines/child-safeguarding-intelligence-engine";
+
+function useChildSafeguardingIntelligence(childId: string | null) {
+  return useQuery<{ data: ChildSafeguardingResult }>({
+    queryKey: ["child-safeguarding-intelligence", childId],
+    queryFn: () =>
+      fetch(`/api/v1/child-safeguarding-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

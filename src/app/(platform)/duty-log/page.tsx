@@ -25,12 +25,33 @@ import {
 import { toast } from "sonner";
 import { cn, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useDutyLogEntries, useCreateDutyLogEntry } from "@/hooks/use-duty-log-entries";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { DutyLogEntry, DutyLogShift, DutyLogCategory, DutyLogPriority } from "@/types/extended";
 import { DUTY_LOG_SHIFT_LABEL, DUTY_LOG_CATEGORY_LABEL, DUTY_LOG_PRIORITY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hooks (inlined from use-duty-log-entries) ────────────────────────── */
+
+const DUTY_LOG_ENTRIES_KEY = "duty-log-entries";
+const DUTY_LOG_ENTRIES_API = "/api/v1/duty-log-entries";
+
+function useDutyLogEntries() {
+  return useQuery<{ data: DutyLogEntry[] }>({
+    queryKey: [DUTY_LOG_ENTRIES_KEY],
+    queryFn: () => fetch(DUTY_LOG_ENTRIES_API).then((r) => r.json()),
+  });
+}
+
+function useCreateDutyLogEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<DutyLogEntry>) =>
+      fetch(DUTY_LOG_ENTRIES_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [DUTY_LOG_ENTRIES_KEY] }),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

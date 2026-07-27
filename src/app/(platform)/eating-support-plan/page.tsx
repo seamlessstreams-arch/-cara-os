@@ -27,11 +27,21 @@ import {
 } from "@/components/ui/select";
 import type { EatingSupportPlan, EatingPresentation } from "@/types/extended";
 import { EATING_PRESENTATION_LABEL } from "@/types/extended";
-import { useEatingSupportPlans } from "@/hooks/use-eating-support-plans";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const EATING_SUPPORT_PLANS_KEY = "eating-support-plans";
+const EATING_SUPPORT_PLANS_API = "/api/v1/eating-support-plans";
+
+function useEatingSupportPlans(childId?: string) {
+  return useQuery<{ data: EatingSupportPlan[] }>({
+    queryKey: childId ? [EATING_SUPPORT_PLANS_KEY, childId] : [EATING_SUPPORT_PLANS_KEY],
+    queryFn: () => fetch(childId ? `${EATING_SUPPORT_PLANS_API}?child_id=${childId}` : EATING_SUPPORT_PLANS_API).then((r) => r.json()),
+  });
+}
 
 const exportCols: ExportColumn<EatingSupportPlan>[] = [
   { header: "Young Person", accessor: (r: EatingSupportPlan) => getYPName(r.child_id) },

@@ -7,7 +7,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useChildPledges } from "@/hooks/use-child-pledges";
+import { useQuery } from "@tanstack/react-query";
 import type { ChildPledge } from "@/types/extended";
 import { PLEDGE_CATEGORY_LABEL, PLEDGE_STATUS_LABEL } from "@/types/extended";
 import {
@@ -32,6 +32,15 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const CHILD_PLEDGES_KEY = "child-pledges";
+
+function useChildPledges() {
+  return useQuery<{ data: ChildPledge[] }>({
+    queryKey: [CHILD_PLEDGES_KEY],
+    queryFn: () => fetch("/api/v1/child-pledges").then((r) => r.json()),
+  });
+}
 
 const statusColour: Record<string, string> = {
   consistently_met: "bg-green-100 text-green-800",

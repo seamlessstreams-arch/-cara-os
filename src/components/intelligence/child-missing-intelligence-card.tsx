@@ -14,8 +14,25 @@ import {
   Clock, Shield, FileCheck, AlertOctagon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildMissingIntelligence } from "@/hooks/use-child-missing-intelligence";
-import type { MissingRiskLevel } from "@/lib/engines/child-missing-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ChildMissingResult, MissingRiskLevel } from "@/lib/engines/child-missing-intelligence-engine";
+
+interface ChildMissingResponse {
+  data: ChildMissingResult;
+}
+
+function useChildMissingIntelligence(childId: string) {
+  return useQuery<ChildMissingResponse>({
+    queryKey: ["child-missing-intelligence", childId],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/child-missing-intelligence?childId=${childId}`);
+      if (!res.ok) throw new Error("Failed to fetch child missing intelligence");
+      return res.json();
+    },
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

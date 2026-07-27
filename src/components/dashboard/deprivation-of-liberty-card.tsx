@@ -16,7 +16,23 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { meets, formatRate } from "@/lib/metrics/rate";
-import { useDoLIntelligence } from "@/hooks/use-dol-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { DoLIntelligenceResult } from "@/lib/engines/dol-intelligence-engine";
+
+// ── Data hook (inlined from use-dol-intelligence) ───────────────────────────
+
+interface DoLIntelligenceResponse {
+  data: DoLIntelligenceResult;
+}
+
+function useDoLIntelligence() {
+  return useQuery({
+    queryKey: ["dol-intelligence"],
+    queryFn: () => api.get<DoLIntelligenceResponse>("/dol-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

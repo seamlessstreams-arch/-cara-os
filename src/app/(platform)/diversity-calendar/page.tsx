@@ -21,7 +21,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useDiversityCalendarEvents } from "@/hooks/use-diversity-calendar-events";
+import { useQuery } from "@tanstack/react-query";
 import type {
   DiversityCalendarEvent,
   DiversityEventCategory,
@@ -34,6 +34,17 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hook (inlined from use-diversity-calendar-events) ──────────── */
+const DIVERSITY_CALENDAR_EVENTS_KEY = "diversity-calendar-events";
+const DIVERSITY_CALENDAR_EVENTS_API = "/api/v1/diversity-calendar-events";
+
+function useDiversityCalendarEvents() {
+  return useQuery<{ data: DiversityCalendarEvent[] }>({
+    queryKey: [DIVERSITY_CALENDAR_EVENTS_KEY],
+    queryFn: () => fetch(DIVERSITY_CALENDAR_EVENTS_API).then((r) => r.json()),
+  });
+}
 
 /* ── constants ───────────────────────────────────────────────────────── */
 const CATEGORY_COLOURS: Record<DiversityEventCategory, string> = {

@@ -22,10 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
-import {
-  useDevicePolicyRecords,
-  useCreateDevicePolicyRecord,
-} from "@/hooks/use-device-policy-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type {
   DevicePolicyRecord,
@@ -40,6 +37,27 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── device-policy record hooks (inlined from use-device-policy-records) ───── */
+
+const DEVICE_POLICY_KEY = "device-policy-records";
+const DEVICE_POLICY_API = "/api/v1/device-policy-records";
+
+function useDevicePolicyRecords(childId?: string) {
+  return useQuery<{ data: DevicePolicyRecord[] }>({
+    queryKey: childId ? [DEVICE_POLICY_KEY, childId] : [DEVICE_POLICY_KEY],
+    queryFn: () => fetch(childId ? `${DEVICE_POLICY_API}?child_id=${childId}` : DEVICE_POLICY_API).then((r) => r.json()),
+  });
+}
+
+function useCreateDevicePolicyRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<DevicePolicyRecord>) =>
+      fetch(DEVICE_POLICY_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [DEVICE_POLICY_KEY] }),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

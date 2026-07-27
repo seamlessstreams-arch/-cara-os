@@ -22,7 +22,7 @@ import {
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn, todayStr } from "@/lib/utils";
-import { useEmergencyMedicationProtocols } from "@/hooks/use-emergency-medication-protocols";
+import { useQuery } from "@tanstack/react-query";
 import type { EmergencyMedicationProtocol } from "@/types/extended";
 import { EMERGENCY_MED_TRIGGER_LABEL } from "@/types/extended";
 import type { EmergencyMedTrigger } from "@/types/extended";
@@ -48,6 +48,16 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const EMERGENCY_MEDICATION_PROTOCOLS_KEY = "emergency-medication-protocols";
+const EMERGENCY_MEDICATION_PROTOCOLS_API = "/api/v1/emergency-medication-protocols";
+
+function useEmergencyMedicationProtocols(childId?: string) {
+  return useQuery<{ data: EmergencyMedicationProtocol[] }>({
+    queryKey: childId ? [EMERGENCY_MEDICATION_PROTOCOLS_KEY, childId] : [EMERGENCY_MEDICATION_PROTOCOLS_KEY],
+    queryFn: () => fetch(childId ? `${EMERGENCY_MEDICATION_PROTOCOLS_API}?child_id=${childId}` : EMERGENCY_MEDICATION_PROTOCOLS_API).then((r) => r.json()),
+  });
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

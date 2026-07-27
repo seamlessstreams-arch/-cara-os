@@ -13,11 +13,21 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-import type { EmergencyPlanType } from "@/types/extended";
-import { useEmergencyPlans } from "@/hooks/use-emergency-plans";
+import type { EmergencyPlan, EmergencyPlanType } from "@/types/extended";
+import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const EMERGENCY_PLANS_KEY = "emergency-plans";
+const EMERGENCY_PLANS_API = "/api/v1/emergency-plans";
+
+function useEmergencyPlans() {
+  return useQuery<{ data: EmergencyPlan[] }>({
+    queryKey: [EMERGENCY_PLANS_KEY],
+    queryFn: () => fetch(EMERGENCY_PLANS_API).then((r) => r.json()),
+  });
+}
 
 /* ── local icon mapping (plan_type → icon) ──────────────────────────── */
 const PLAN_TYPE_ICON: Record<EmergencyPlanType, React.ElementType> = {

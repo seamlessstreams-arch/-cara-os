@@ -33,11 +33,21 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { EhcpRecord, EhcpPlanStatus } from "@/types/extended";
-import { useEhcpRecords } from "@/hooks/use-ehcp-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const EHCP_RECORDS_KEY = "ehcp-records";
+const EHCP_RECORDS_API = "/api/v1/ehcp-records";
+
+function useEhcpRecords(childId?: string) {
+  return useQuery<{ data: EhcpRecord[] }>({
+    queryKey: childId ? [EHCP_RECORDS_KEY, childId] : [EHCP_RECORDS_KEY],
+    queryFn: () => fetch(childId ? `${EHCP_RECORDS_API}?child_id=${childId}` : EHCP_RECORDS_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

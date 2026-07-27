@@ -18,11 +18,23 @@ import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { DrivingRecord, DrivingStage, DrivingFundingSource, DrivingTheoryAttempt, DrivingPracticalAttempt } from "@/types/extended";
 import { DRIVING_STAGE_LABEL, DRIVING_FUNDING_SOURCE_LABEL } from "@/types/extended";
-import { useDrivingRecords } from "@/hooks/use-driving-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hook (inlined from use-driving-records) ──────────────────────────── */
+
+const DRIVING_RECORDS_KEY = "driving-records";
+const DRIVING_RECORDS_API = "/api/v1/driving-records";
+
+function useDrivingRecords(childId?: string) {
+  return useQuery<{ data: DrivingRecord[] }>({
+    queryKey: childId ? [DRIVING_RECORDS_KEY, childId] : [DRIVING_RECORDS_KEY],
+    queryFn: () => fetch(childId ? `${DRIVING_RECORDS_API}?child_id=${childId}` : DRIVING_RECORDS_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

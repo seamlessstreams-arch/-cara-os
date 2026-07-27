@@ -6,11 +6,62 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, AlertTriangle, TrendingUp, Star, School } from "lucide-react";
-import {
-  useEducationStabilityIntelligence,
-  type ChildEducationProfile,
-  type EducationSignal,
-} from "@/hooks/use-education-stability-intelligence";
+import { useQuery } from "@tanstack/react-query";
+
+type EducationSignal = "thriving" | "engaged" | "vulnerable" | "crisis";
+
+interface ChildEducationProfile {
+  childId: string;
+  childName: string;
+  currentSchool: string | null;
+  schoolChanges: number;
+  attendanceRecords: number;
+  presentCount: number;
+  absentCount: number;
+  excludedCount: number;
+  attendanceRate: number;
+  exclusionCount: number;
+  hasPEPInLast6Months: boolean;
+  lastPEPDate: string | null;
+  achievementCount: number;
+  openConcernCount: number;
+  monitoringCount: number;
+  staffAttendedMeetings: boolean;
+  signal: EducationSignal;
+  supervisionPrompt: string;
+}
+
+interface EducationStabilitySummary {
+  totalChildren: number;
+  thriving: number;
+  engaged: number;
+  vulnerable: number;
+  crisis: number;
+  homeAttendanceRate: number;
+  childrenWithCurrentPEP: number;
+  childrenWithExclusions: number;
+  totalAchievements: number;
+  ofstedNote: string;
+}
+
+interface EducationStabilityResponse {
+  data: {
+    childProfiles: ChildEducationProfile[];
+    summary: EducationStabilitySummary;
+  };
+}
+
+function useEducationStabilityIntelligence() {
+  return useQuery<EducationStabilityResponse>({
+    queryKey: ["education-stability-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/education-stability-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch education stability intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+}
 
 // ── Signal helpers ─────────────────────────────────────────────────────────────
 

@@ -22,11 +22,32 @@ import {
 } from "lucide-react";
 import type { DebriefRecord, ReflectiveDebriefType, DebriefFollowUpAction } from "@/types/extended";
 import { REFLECTIVE_DEBRIEF_TYPE_LABEL } from "@/types/extended";
-import { useDebriefRecords, useCreateDebriefRecord } from "@/hooks/use-debrief-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── debrief record hooks (inlined from use-debrief-records) ─────────────── */
+
+const DEBRIEF_KEY = "debrief-records";
+const DEBRIEF_API = "/api/v1/debrief-records";
+
+function useDebriefRecords(childId?: string) {
+  return useQuery<{ data: DebriefRecord[] }>({
+    queryKey: childId ? [DEBRIEF_KEY, childId] : [DEBRIEF_KEY],
+    queryFn: () => fetch(childId ? `${DEBRIEF_API}?child_id=${childId}` : DEBRIEF_API).then((r) => r.json()),
+  });
+}
+
+function useCreateDebriefRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<DebriefRecord>) =>
+      fetch(DEBRIEF_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [DEBRIEF_KEY] }),
+  });
+}
 
 const TYPE_META: Record<ReflectiveDebriefType, { label: string; color: string }> = {
   post_incident:   { label: "Post-Incident",    color: "bg-red-100 text-red-800" },

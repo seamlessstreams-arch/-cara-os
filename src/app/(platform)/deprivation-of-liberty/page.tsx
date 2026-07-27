@@ -27,12 +27,33 @@ import {
   DoLReviewHistoryEntry,
   DOL_RESTRICTION_TYPE_LABEL, DOL_LEGAL_BASIS_LABEL, DOL_REVIEW_STATUS_LABEL,
 } from "@/types/extended";
-import { useDoLRecords, useCreateDoLRecord } from "@/hooks/use-dol-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hooks (inlined from use-dol-records) ─────────────────────────────── */
+
+const DOL_RECORDS_KEY = "dol-records";
+const DOL_RECORDS_API = "/api/v1/dol-records";
+
+function useDoLRecords(childId?: string) {
+  return useQuery<{ data: DoLRecord[] }>({
+    queryKey: childId ? [DOL_RECORDS_KEY, childId] : [DOL_RECORDS_KEY],
+    queryFn: () => fetch(childId ? `${DOL_RECORDS_API}?child_id=${childId}` : DOL_RECORDS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateDoLRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<DoLRecord>) =>
+      fetch(DOL_RECORDS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [DOL_RECORDS_KEY] }),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

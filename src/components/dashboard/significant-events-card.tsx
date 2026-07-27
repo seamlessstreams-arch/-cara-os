@@ -15,7 +15,21 @@ import {
   Loader2, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChronologyIntelligence } from "@/hooks/use-chronology-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ChronologyIntelligenceResult } from "@/lib/engines/chronology-intelligence-engine";
+
+interface ChronologyIntelligenceResponse {
+  data: ChronologyIntelligenceResult;
+}
+
+function useChronologyIntelligence() {
+  return useQuery({
+    queryKey: ["chronology-intelligence"],
+    queryFn: () => api.get<ChronologyIntelligenceResponse>("/chronology-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

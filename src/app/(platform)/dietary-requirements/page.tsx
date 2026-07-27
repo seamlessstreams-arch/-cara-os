@@ -8,7 +8,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useDietaryPlans } from "@/hooks/use-dietary-plans";
+import { useQuery } from "@tanstack/react-query";
 import type { DietaryPlan } from "@/types/extended";
 import { DIETARY_ALLERGY_SEVERITY_LABEL } from "@/types/extended";
 import {
@@ -33,6 +33,17 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── dietary plans hook (inlined from use-dietary-plans) ───────────────────── */
+
+const DIETARY_PLANS_KEY = "dietary-plans";
+
+function useDietaryPlans() {
+  return useQuery<{ data: DietaryPlan[] }>({
+    queryKey: [DIETARY_PLANS_KEY],
+    queryFn: () => fetch("/api/v1/dietary-plans").then((r) => r.json()),
+  });
+}
 
 const severityColour: Record<string, string> = {
   life_threatening: "bg-[--cs-risk-bg] text-[--cs-risk]",

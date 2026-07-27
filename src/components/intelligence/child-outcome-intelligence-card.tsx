@@ -14,8 +14,25 @@ import {
   Award, BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildOutcomeIntelligence } from "@/hooks/use-child-outcome-intelligence";
-import type { OutcomeProgressRating, DomainProfile } from "@/lib/engines/child-outcome-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ChildOutcomeResult, OutcomeProgressRating, DomainProfile } from "@/lib/engines/child-outcome-intelligence-engine";
+
+interface ChildOutcomeResponse {
+  data: ChildOutcomeResult;
+}
+
+function useChildOutcomeIntelligence(childId: string) {
+  return useQuery<ChildOutcomeResponse>({
+    queryKey: ["child-outcome-intelligence", childId],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/child-outcome-intelligence?childId=${childId}`);
+      if (!res.ok) throw new Error("Failed to fetch child outcome intelligence");
+      return res.json();
+    },
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

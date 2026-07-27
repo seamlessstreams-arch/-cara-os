@@ -8,7 +8,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useDisclosures } from "@/hooks/use-disclosures";
+import { useQuery } from "@tanstack/react-query";
 import type { Disclosure } from "@/types/extended";
 import {
   DISCLOSURE_TYPE_LABEL,
@@ -43,6 +43,16 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── data hook (inlined from use-disclosures) ────────────────────────────────
+const DISCLOSURES_KEY = "disclosures";
+
+function useDisclosures() {
+  return useQuery<{ data: Disclosure[] }>({
+    queryKey: [DISCLOSURES_KEY],
+    queryFn: () => fetch("/api/v1/disclosures").then((r) => r.json()),
+  });
+}
 
 // ── config ──────────────────────────────────────────────────────────────────
 const severityColour: Record<string, string> = {

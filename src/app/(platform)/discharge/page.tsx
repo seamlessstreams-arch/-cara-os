@@ -35,11 +35,32 @@ import {
   DISCHARGE_REASON_LABEL,
   DISCHARGE_PLAN_STATUS_LABEL,
 } from "@/types/extended";
-import { useDischargeRecords, useCreateDischargeRecord } from "@/hooks/use-discharge-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hooks (inlined from use-discharge-records) ───────────────────── */
+
+const DISCHARGE_RECORDS_KEY = "discharge-records";
+const DISCHARGE_RECORDS_API = "/api/v1/discharge-records";
+
+function useDischargeRecords(childId?: string) {
+  return useQuery<{ data: DischargeRecord[] }>({
+    queryKey: childId ? [DISCHARGE_RECORDS_KEY, childId] : [DISCHARGE_RECORDS_KEY],
+    queryFn: () => fetch(childId ? `${DISCHARGE_RECORDS_API}?child_id=${childId}` : DISCHARGE_RECORDS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateDischargeRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<DischargeRecord>) =>
+      fetch(DISCHARGE_RECORDS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [DISCHARGE_RECORDS_KEY] }),
+  });
+}
 
 /* ── local helpers ─────────────────────────────────────────────────────── */
 

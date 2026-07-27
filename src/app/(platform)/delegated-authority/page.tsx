@@ -17,12 +17,29 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
-import { useDelegatedAuthority } from "@/hooks/use-delegated-authority";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { DelegatedAuthority, DelegatedAuthorityItem, DelegatedAuthStatus, DelegatedAuthCategory } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── delegated-authority query hook (inlined from use-delegated-authority) ── */
+
+type ListResponse = { data: DelegatedAuthority[]; meta: { total: number } };
+
+function useDelegatedAuthority(params?: { childId?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  return useQuery({
+    queryKey: ["delegated-authority", params],
+    queryFn: () => api.get<ListResponse>(`/delegated-authority?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const STATUS_COLORS: Record<DelegatedAuthStatus, string> = {

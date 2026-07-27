@@ -37,13 +37,29 @@ import {
   MEETING_MOOD_LABEL,
   MEETING_ACTION_STATUS_LABEL,
 } from "@/types/extended";
-import {
-  useChildrensMeetingRecords,
-  useCreateChildrensMeetingRecord,
-} from "@/hooks/use-childrens-meeting-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const CHILDRENS_MEETING_RECORDS_KEY = "childrens-meeting-records";
+const CHILDRENS_MEETING_RECORDS_API = "/api/v1/childrens-meeting-records";
+
+function useChildrensMeetingRecords() {
+  return useQuery<{ data: ChildrensMeetingRecord[] }>({
+    queryKey: [CHILDRENS_MEETING_RECORDS_KEY],
+    queryFn: () => fetch(CHILDRENS_MEETING_RECORDS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateChildrensMeetingRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<ChildrensMeetingRecord>) =>
+      fetch(CHILDRENS_MEETING_RECORDS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [CHILDRENS_MEETING_RECORDS_KEY] }),
+  });
+}
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 
