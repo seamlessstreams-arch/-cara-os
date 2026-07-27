@@ -15,8 +15,24 @@ import {
   ShieldCheck, Clock, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeOnCallGovernanceIntelligence } from "@/hooks/use-home-on-call-governance-intelligence";
-import type { OnCallRating } from "@/lib/engines/home-on-call-governance-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { HomeOnCallGovernanceResult, OnCallRating } from "@/lib/engines/home-on-call-governance-intelligence-engine";
+
+interface HomeOnCallGovernanceResponse {
+  data: HomeOnCallGovernanceResult;
+}
+
+function useHomeOnCallGovernanceIntelligence() {
+  return useQuery<HomeOnCallGovernanceResponse>({
+    queryKey: ["home-on-call-governance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-on-call-governance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home on-call governance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

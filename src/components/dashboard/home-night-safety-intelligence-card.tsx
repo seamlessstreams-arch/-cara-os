@@ -15,8 +15,24 @@ import {
   AlertOctagon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeNightSafetyIntelligence } from "@/hooks/use-home-night-safety-intelligence";
-import type { NightSafetyRating } from "@/lib/engines/home-night-safety-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { NightSafetyRating, HomeNightSafetyResult } from "@/lib/engines/home-night-safety-intelligence-engine";
+
+interface HomeNightSafetyResponse {
+  data: HomeNightSafetyResult;
+}
+
+function useHomeNightSafetyIntelligence() {
+  return useQuery<HomeNightSafetyResponse>({
+    queryKey: ["home-night-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-night-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home night safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

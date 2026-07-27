@@ -4,8 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeOutcomeStarAssessmentIntelligence } from "@/hooks/use-home-outcome-star-assessment-intelligence";
-import type { OutcomeStarRating } from "@/lib/engines/home-outcome-star-assessment-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { OutcomeStarRating, OutcomeStarResult } from "@/lib/engines/home-outcome-star-assessment-intelligence-engine";
+
+function useHomeOutcomeStarAssessmentIntelligence() {
+  return useQuery<OutcomeStarResult>({
+    queryKey: ["home-outcome-star-assessment-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-outcome-star-assessment-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch Outcome Star intelligence");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<OutcomeStarRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

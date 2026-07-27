@@ -7,6 +7,7 @@
 // CHR 2015 Reg 7, Reg 8. SCCIF: "Experiences and progress of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,23 @@ import {
   PiggyBank, Receipt, ShirtIcon, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeFinancialWellbeingIntelligence } from "@/hooks/use-home-financial-wellbeing-intelligence";
-import type { FinancialRating } from "@/lib/engines/home-financial-wellbeing-intelligence-engine";
+import type { FinancialRating, HomeFinancialResult } from "@/lib/engines/home-financial-wellbeing-intelligence-engine";
+
+interface HomeFinancialResponse {
+  data: HomeFinancialResult;
+}
+
+function useHomeFinancialWellbeingIntelligence() {
+  return useQuery<HomeFinancialResponse>({
+    queryKey: ["home-financial-wellbeing-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-financial-wellbeing-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home financial wellbeing intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

@@ -14,8 +14,24 @@ import {
   BookOpen, TrendingUp, CheckCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeOrganizationalLearningIntelligence } from "@/hooks/use-home-organizational-learning-intelligence";
-import type { OrgLearningRating } from "@/lib/engines/home-organizational-learning-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { HomeOrganizationalLearningResult, OrgLearningRating } from "@/lib/engines/home-organizational-learning-intelligence-engine";
+
+interface HomeOrganizationalLearningResponse {
+  data: HomeOrganizationalLearningResult;
+}
+
+function useHomeOrganizationalLearningIntelligence() {
+  return useQuery<HomeOrganizationalLearningResponse>({
+    queryKey: ["home-organizational-learning-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-organizational-learning-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home organizational learning intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

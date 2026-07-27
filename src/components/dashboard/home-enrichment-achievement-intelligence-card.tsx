@@ -6,6 +6,7 @@
 // CHR 2015 Reg 9.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -14,8 +15,23 @@ import {
   Palette, Users2, Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeEnrichmentAchievementIntelligence } from "@/hooks/use-home-enrichment-achievement-intelligence";
-import type { EnrichmentRating } from "@/lib/engines/home-enrichment-achievement-intelligence-engine";
+import type { EnrichmentRating, HomeEnrichmentAchievementResult } from "@/lib/engines/home-enrichment-achievement-intelligence-engine";
+
+interface HomeEnrichmentAchievementResponse {
+  data: HomeEnrichmentAchievementResult;
+}
+
+function useHomeEnrichmentAchievementIntelligence() {
+  return useQuery<HomeEnrichmentAchievementResponse>({
+    queryKey: ["home-enrichment-achievement-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-enrichment-achievement-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home enrichment achievement intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

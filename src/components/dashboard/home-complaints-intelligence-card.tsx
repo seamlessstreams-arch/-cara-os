@@ -14,9 +14,13 @@ import {
   Sparkles, Brain, MessageSquareWarning,
   Clock, ThumbsUp, FileSearch, GraduationCap,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { useHomeComplaintsIntelligence } from "@/hooks/use-home-complaints-intelligence";
-import type { ComplaintsRating } from "@/lib/engines/home-complaints-intelligence-engine";
+import type { ComplaintsRating, HomeComplaintsResult } from "@/lib/engines/home-complaints-intelligence-engine";
+
+interface HomeComplaintsResponse {
+  data: HomeComplaintsResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +47,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeComplaintsIntelligenceCard() {
-  const { data, isLoading } = useHomeComplaintsIntelligence();
+  const { data, isLoading } = useQuery<HomeComplaintsResponse>({
+    queryKey: ["home-complaints-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-complaints-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home complaints intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

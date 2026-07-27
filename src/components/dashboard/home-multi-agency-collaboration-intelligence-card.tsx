@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Network } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeMultiAgencyCollaborationIntelligence } from "@/hooks/use-home-multi-agency-collaboration-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { MultiAgencyRating } from "@/lib/engines/home-multi-agency-collaboration-intelligence-engine";
+
+function useHomeMultiAgencyCollaborationIntelligence() {
+  return useQuery({
+    queryKey: ["home-multi-agency-collaboration-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-multi-agency-collaboration-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch multi-agency collaboration intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<MultiAgencyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

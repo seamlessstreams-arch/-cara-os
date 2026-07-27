@@ -6,6 +6,7 @@
 // CHR 2015 Reg 36. SCCIF: "The arrangements for the financial management."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -14,8 +15,23 @@ import {
   TrendingUp, Receipt, Clock, PieChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeExpenseGovernanceIntelligence } from "@/hooks/use-home-expense-governance-intelligence";
-import type { ExpenseGovernanceRating } from "@/lib/engines/home-expense-governance-intelligence-engine";
+import type { ExpenseGovernanceRating, HomeExpenseGovernanceResult } from "@/lib/engines/home-expense-governance-intelligence-engine";
+
+interface HomeExpenseGovernanceResponse {
+  data: HomeExpenseGovernanceResult;
+}
+
+function useHomeExpenseGovernanceIntelligence() {
+  return useQuery<HomeExpenseGovernanceResponse>({
+    queryKey: ["home-expense-governance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-expense-governance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home expense governance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

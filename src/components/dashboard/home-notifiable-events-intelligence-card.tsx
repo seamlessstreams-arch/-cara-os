@@ -15,8 +15,24 @@ import {
   Clock, CheckCheck, FileWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeNotifiableEventsIntelligence } from "@/hooks/use-home-notifiable-events-intelligence";
-import type { NotifiableEventsRating } from "@/lib/engines/home-notifiable-events-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { HomeNotifiableEventsResult, NotifiableEventsRating } from "@/lib/engines/home-notifiable-events-intelligence-engine";
+
+interface HomeNotifiableEventsResponse {
+  data: HomeNotifiableEventsResult;
+}
+
+function useHomeNotifiableEventsIntelligence() {
+  return useQuery<HomeNotifiableEventsResponse>({
+    queryKey: ["home-notifiable-events-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-notifiable-events-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home notifiable events intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 /** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
 function pct(value: number | null | undefined): string {

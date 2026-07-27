@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeMobilePhoneScreenTimeIntelligence } from "@/hooks/use-home-mobile-phone-screen-time-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { MobilePhoneScreenTimeRating } from "@/lib/engines/home-mobile-phone-screen-time-intelligence-engine";
+
+function useHomeMobilePhoneScreenTimeIntelligence() {
+  return useQuery({
+    queryKey: ["home-mobile-phone-screen-time-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-mobile-phone-screen-time-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch mobile phone screen time intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<MobilePhoneScreenTimeRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

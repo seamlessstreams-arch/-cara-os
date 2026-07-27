@@ -15,8 +15,24 @@ import {
   Sunrise, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeNightCareSafetyIntelligence } from "@/hooks/use-home-night-care-safety-intelligence";
-import type { NightCareRating } from "@/lib/engines/home-night-care-safety-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { NightCareRating, HomeNightCareSafetyResult } from "@/lib/engines/home-night-care-safety-intelligence-engine";
+
+interface HomeNightCareSafetyResponse {
+  data: HomeNightCareSafetyResult;
+}
+
+function useHomeNightCareSafetyIntelligence() {
+  return useQuery<HomeNightCareSafetyResponse>({
+    queryKey: ["home-night-care-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-night-care-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home night care safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

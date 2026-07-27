@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Flower } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeGardenOutdoorSpaceMaintenanceIntelligence } from "@/hooks/use-home-garden-outdoor-space-maintenance-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { GardenOutdoorRating } from "@/lib/engines/home-garden-outdoor-space-maintenance-intelligence-engine";
+
+function useHomeGardenOutdoorSpaceMaintenanceIntelligence() {
+  return useQuery({
+    queryKey: ["home-garden-outdoor-space-maintenance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-garden-outdoor-space-maintenance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch garden outdoor space maintenance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<GardenOutdoorRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

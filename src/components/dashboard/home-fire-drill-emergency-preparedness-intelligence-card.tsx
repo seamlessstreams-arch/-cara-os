@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeFireDrillEmergencyPreparednessIntelligence } from "@/hooks/use-home-fire-drill-emergency-preparedness-intelligence";
-import type { FireDrillRating } from "@/lib/engines/home-fire-drill-emergency-preparedness-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { FireDrillPreparednessResult, FireDrillRating } from "@/lib/engines/home-fire-drill-emergency-preparedness-intelligence-engine";
+
+interface FireDrillResponse { data: FireDrillPreparednessResult; }
+
+function useHomeFireDrillEmergencyPreparednessIntelligence() {
+  return useQuery<FireDrillResponse>({
+    queryKey: ["home-fire-drill-emergency-preparedness-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-fire-drill-emergency-preparedness-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch fire drill emergency preparedness intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<FireDrillRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

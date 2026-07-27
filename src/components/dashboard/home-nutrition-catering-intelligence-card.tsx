@@ -14,8 +14,24 @@ import {
   Thermometer, ShieldCheck, Salad,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeNutritionCateringIntelligence } from "@/hooks/use-home-nutrition-catering-intelligence";
-import type { NutritionRating } from "@/lib/engines/home-nutrition-catering-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { HomeNutritionCateringResult, NutritionRating } from "@/lib/engines/home-nutrition-catering-intelligence-engine";
+
+interface HomeNutritionCateringResponse {
+  data: HomeNutritionCateringResult;
+}
+
+function useHomeNutritionCateringIntelligence() {
+  return useQuery<HomeNutritionCateringResponse>({
+    queryKey: ["home-nutrition-catering-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-nutrition-catering-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home nutrition catering intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeNightHandoverQualityIntelligence } from "@/hooks/use-home-night-handover-quality-intelligence";
-import type { NightHandoverRating } from "@/lib/engines/home-night-handover-quality-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { NightHandoverRating, NightHandoverQualityResult } from "@/lib/engines/home-night-handover-quality-intelligence-engine";
+
+interface NightHandoverQualityResponse { data: NightHandoverQualityResult; }
+
+function useHomeNightHandoverQualityIntelligence() {
+  return useQuery<NightHandoverQualityResponse>({
+    queryKey: ["home-night-handover-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-night-handover-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch night handover quality intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<NightHandoverRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

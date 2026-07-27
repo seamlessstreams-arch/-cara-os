@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeGovernanceManagementOversightIntelligence } from "@/hooks/use-home-governance-management-oversight-intelligence";
-import type { GovernanceRating } from "@/lib/engines/home-governance-management-oversight-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { GovernanceOversightResult, GovernanceRating } from "@/lib/engines/home-governance-management-oversight-intelligence-engine";
+
+interface GovernanceOversightResponse { data: GovernanceOversightResult; }
+
+function useHomeGovernanceManagementOversightIntelligence() {
+  return useQuery<GovernanceOversightResponse>({
+    queryKey: ["home-governance-management-oversight-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-governance-management-oversight-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch governance & management oversight intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<GovernanceRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

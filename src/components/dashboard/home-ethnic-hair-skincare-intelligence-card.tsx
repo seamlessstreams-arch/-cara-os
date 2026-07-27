@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Scissors } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeEthnicHairSkincareIntelligence } from "@/hooks/use-home-ethnic-hair-skincare-intelligence";
 import type { EthnicHairSkincareRating } from "@/lib/engines/home-ethnic-hair-skincare-intelligence-engine";
+
+function useHomeEthnicHairSkincareIntelligence() {
+  return useQuery({
+    queryKey: ["home-ethnic-hair-skincare-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-ethnic-hair-skincare-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch ethnic hair & skincare intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<EthnicHairSkincareRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

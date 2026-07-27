@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Refrigerator } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeFoodStorageRefrigerationSafetyIntelligence } from "@/hooks/use-home-food-storage-refrigeration-safety-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { FoodStorageRating } from "@/lib/engines/home-food-storage-refrigeration-safety-intelligence-engine";
+
+function useHomeFoodStorageRefrigerationSafetyIntelligence() {
+  return useQuery({
+    queryKey: ["home-food-storage-refrigeration-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-food-storage-refrigeration-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch food storage refrigeration safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<FoodStorageRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

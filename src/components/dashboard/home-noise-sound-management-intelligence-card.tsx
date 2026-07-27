@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeNoiseSoundManagementIntelligence } from "@/hooks/use-home-noise-sound-management-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { NoiseSoundRating } from "@/lib/engines/home-noise-sound-management-intelligence-engine";
+
+function useHomeNoiseSoundManagementIntelligence() {
+  return useQuery({
+    queryKey: ["home-noise-sound-management-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-noise-sound-management-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch noise and sound management intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<NoiseSoundRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

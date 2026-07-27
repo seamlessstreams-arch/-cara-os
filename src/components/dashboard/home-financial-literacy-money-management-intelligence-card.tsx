@@ -1,11 +1,25 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, PiggyBank } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeFinancialLiteracyMoneyManagementIntelligence } from "@/hooks/use-home-financial-literacy-money-management-intelligence";
-import type { FinancialLiteracyRating } from "@/lib/engines/home-financial-literacy-money-management-intelligence-engine";
+import type { FinancialLiteracyRating, FinancialLiteracyResult } from "@/lib/engines/home-financial-literacy-money-management-intelligence-engine";
+
+interface FinancialLiteracyResponse { data: FinancialLiteracyResult; }
+
+function useHomeFinancialLiteracyMoneyManagementIntelligence() {
+  return useQuery<FinancialLiteracyResponse>({
+    queryKey: ["home-financial-literacy-money-management-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-financial-literacy-money-management-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch financial literacy & money management intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<FinancialLiteracyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

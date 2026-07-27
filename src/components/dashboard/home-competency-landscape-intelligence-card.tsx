@@ -13,9 +13,13 @@ import {
   Sparkles, Brain, GraduationCap,
   TrendingUp, Users, Award, Layers,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { useHomeCompetencyLandscapeIntelligence } from "@/hooks/use-home-competency-landscape-intelligence";
-import type { CompetencyLandscapeRating } from "@/lib/engines/home-competency-landscape-intelligence-engine";
+import type { CompetencyLandscapeRating, HomeCompetencyLandscapeResult } from "@/lib/engines/home-competency-landscape-intelligence-engine";
+
+interface HomeCompetencyLandscapeResponse {
+  data: HomeCompetencyLandscapeResult;
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -42,7 +46,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeCompetencyLandscapeIntelligenceCard() {
-  const { data, isLoading } = useHomeCompetencyLandscapeIntelligence();
+  const { data, isLoading } = useQuery<HomeCompetencyLandscapeResponse>({
+    queryKey: ["home-competency-landscape-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-competency-landscape-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home competency landscape intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

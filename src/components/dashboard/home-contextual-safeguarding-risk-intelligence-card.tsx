@@ -3,9 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Eye } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { useHomeContextualSafeguardingRiskIntelligence } from "@/hooks/use-home-contextual-safeguarding-risk-intelligence";
-import type { ContextualSafeguardingRating } from "@/lib/engines/home-contextual-safeguarding-risk-intelligence-engine";
+import type { ContextualSafeguardingRating, ContextualSafeguardingResult } from "@/lib/engines/home-contextual-safeguarding-risk-intelligence-engine";
 
 const RATING_STYLES: Record<ContextualSafeguardingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -18,7 +18,16 @@ const REC_STYLES: Record<string, string> = { immediate: "border-[--cs-risk-soft]
 const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]" };
 
 export function HomeContextualSafeguardingRiskIntelligenceCard() {
-  const { data, isLoading } = useHomeContextualSafeguardingRiskIntelligence();
+  const { data, isLoading } = useQuery<ContextualSafeguardingResult>({
+    queryKey: ["home-contextual-safeguarding-risk-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-contextual-safeguarding-risk-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch contextual safeguarding intelligence");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 60_000,
+  });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
   let d = data;
   if (!d) return null;

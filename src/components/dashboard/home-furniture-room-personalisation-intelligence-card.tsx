@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Armchair } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeFurnitureRoomPersonalisationIntelligence } from "@/hooks/use-home-furniture-room-personalisation-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { FurnitureRoomRating } from "@/lib/engines/home-furniture-room-personalisation-intelligence-engine";
+
+function useHomeFurnitureRoomPersonalisationIntelligence() {
+  return useQuery({
+    queryKey: ["home-furniture-room-personalisation-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-furniture-room-personalisation-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch furniture room personalisation intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<FurnitureRoomRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -4,8 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Shapes } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeMultidisciplinaryFormulationIntelligence } from "@/hooks/use-home-multidisciplinary-formulation-intelligence";
-import type { FormulationRating } from "@/lib/engines/home-multidisciplinary-formulation-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { FormulationRating, FormulationResult } from "@/lib/engines/home-multidisciplinary-formulation-intelligence-engine";
+
+function useHomeMultidisciplinaryFormulationIntelligence() {
+  return useQuery<{ data: FormulationResult }>({
+    queryKey: ["home-multidisciplinary-formulation-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-multidisciplinary-formulation-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch multidisciplinary formulation intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<FormulationRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

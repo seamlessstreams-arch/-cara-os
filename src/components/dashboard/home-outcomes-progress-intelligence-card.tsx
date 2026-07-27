@@ -16,8 +16,24 @@ import {
   Users, MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeOutcomesProgressIntelligence } from "@/hooks/use-home-outcomes-progress-intelligence";
-import type { OutcomesRating } from "@/lib/engines/home-outcomes-progress-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { HomeOutcomesProgressResult, OutcomesRating } from "@/lib/engines/home-outcomes-progress-intelligence-engine";
+
+interface HomeOutcomesProgressResponse {
+  data: HomeOutcomesProgressResult;
+}
+
+function useHomeOutcomesProgressIntelligence() {
+  return useQuery<HomeOutcomesProgressResponse>({
+    queryKey: ["home-outcomes-progress-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-outcomes-progress-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home outcomes progress intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

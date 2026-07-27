@@ -3,8 +3,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeNightCareQualityIntelligence } from "@/hooks/use-home-night-care-quality-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { NightCareRating } from "@/lib/engines/home-night-care-quality-intelligence-engine";
+
+function useHomeNightCareQualityIntelligence() {
+  return useQuery({
+    queryKey: ["home-night-care-quality-intelligence"],
+    queryFn: () => fetch("/api/v1/home-night-care-quality-intelligence").then(r => r.json()),
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<NightCareRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

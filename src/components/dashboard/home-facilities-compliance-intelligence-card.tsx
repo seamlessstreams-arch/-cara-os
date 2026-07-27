@@ -7,6 +7,7 @@
 // CHR 2015 Reg 25. Fire Safety Order 2005. HSE L8.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -15,8 +16,23 @@ import {
   Flame, Droplets, SquareStack, Bug,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeFacilitiesComplianceIntelligence } from "@/hooks/use-home-facilities-compliance-intelligence";
-import type { FacilitiesRating } from "@/lib/engines/home-facilities-compliance-intelligence-engine";
+import type { FacilitiesRating, HomeFacilitiesComplianceResult } from "@/lib/engines/home-facilities-compliance-intelligence-engine";
+
+interface HomeFacilitiesComplianceResponse {
+  data: HomeFacilitiesComplianceResult;
+}
+
+function useHomeFacilitiesComplianceIntelligence() {
+  return useQuery<HomeFacilitiesComplianceResponse>({
+    queryKey: ["home-facilities-compliance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-facilities-compliance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home facilities compliance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

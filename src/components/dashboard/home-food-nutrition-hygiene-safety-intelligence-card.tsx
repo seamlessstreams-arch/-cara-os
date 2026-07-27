@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeFoodNutritionHygieneSafetyIntelligence } from "@/hooks/use-home-food-nutrition-hygiene-safety-intelligence";
-import type { FoodHygieneSafetyRating } from "@/lib/engines/home-food-nutrition-hygiene-safety-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { FoodHygieneSafetyRating, FoodHygieneSafetyResult } from "@/lib/engines/home-food-nutrition-hygiene-safety-intelligence-engine";
+
+interface FoodHygieneSafetyResponse { data: FoodHygieneSafetyResult; }
+
+function useHomeFoodNutritionHygieneSafetyIntelligence() {
+  return useQuery<FoodHygieneSafetyResponse>({
+    queryKey: ["home-food-nutrition-hygiene-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-food-nutrition-hygiene-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch food, nutrition & hygiene safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<FoodHygieneSafetyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
