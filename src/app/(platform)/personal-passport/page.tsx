@@ -28,11 +28,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { PersonalPassport } from "@/types/extended";
-import { usePersonalPassports } from "@/hooks/use-personal-passports";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const PERSONAL_PASS_KEY = "personal-passports";
+const PERSONAL_PASS_API = "/api/v1/personal-passports";
+
+function usePersonalPassports(childId?: string) {
+  return useQuery<{ data: PersonalPassport[] }>({
+    queryKey: childId ? [PERSONAL_PASS_KEY, childId] : [PERSONAL_PASS_KEY],
+    queryFn: () => fetch(childId ? `${PERSONAL_PASS_API}?child_id=${childId}` : PERSONAL_PASS_API).then((r) => r.json()),
+  });
+}
 
 const exportCols: ExportColumn<PersonalPassport>[] = [
   { header: "Young Person", accessor: (r: PersonalPassport) => getYPName(r.child_id) },

@@ -26,8 +26,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useOnlineSafetyIncidents, useCreateOnlineSafetyIncident } from "@/hooks/use-online-safety-incidents";
-import { useOnlineSafetyAgreements } from "@/hooks/use-online-safety-agreements";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   OnlineSafetyIncident,
   OnlineSafetyAgreement,
@@ -40,6 +39,44 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const ONLINE_SAFETY_INCIDENTS_KEY = "online-safety-incidents";
+
+async function fetchOnlineSafetyIncidents(childId?: string): Promise<{ data: OnlineSafetyIncident[] }> {
+  const url = childId ? `/api/v1/online-safety-incidents?child_id=${childId}` : "/api/v1/online-safety-incidents";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOnlineSafetyIncidents(childId?: string) {
+  return useQuery({ queryKey: childId ? [ONLINE_SAFETY_INCIDENTS_KEY, childId] : [ONLINE_SAFETY_INCIDENTS_KEY], queryFn: () => fetchOnlineSafetyIncidents(childId) });
+}
+
+function useCreateOnlineSafetyIncident() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<OnlineSafetyIncident>) => {
+      const res = await fetch("/api/v1/online-safety-incidents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error("Failed to create");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: [ONLINE_SAFETY_INCIDENTS_KEY] }),
+  });
+}
+
+const ONLINE_SAFETY_AGREEMENTS_KEY = "online-safety-agreements";
+
+async function fetchOnlineSafetyAgreements(childId?: string): Promise<{ data: OnlineSafetyAgreement[] }> {
+  const url = childId ? `/api/v1/online-safety-agreements?child_id=${childId}` : "/api/v1/online-safety-agreements";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOnlineSafetyAgreements(childId?: string) {
+  return useQuery({ queryKey: childId ? [ONLINE_SAFETY_AGREEMENTS_KEY, childId] : [ONLINE_SAFETY_AGREEMENTS_KEY], queryFn: () => fetchOnlineSafetyAgreements(childId) });
+}
 
 /* ── display maps ─────────────────────────────────────────────────────── */
 

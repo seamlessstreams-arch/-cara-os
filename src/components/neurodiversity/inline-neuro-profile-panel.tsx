@@ -12,9 +12,27 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronUp, Brain, AlertTriangle, Info } from "lucide-react";
-import { useNeurodiversityProfile } from "@/hooks/use-neurodiversity-profile";
-import type { NeuroPromptPriority, NeuroRecordingContext } from "@/lib/neurodiversity-profile/types";
+import type { NeuroPrompt, NeuroPromptPriority, NeuroRecordingContext, UnifiedNeuroProfile } from "@/lib/neurodiversity-profile/types";
+
+interface NeuroProfileResponse {
+  profile: UnifiedNeuroProfile;
+  context: NeuroRecordingContext;
+  prompts: NeuroPrompt[];
+}
+
+const NEURODIVERSITY_PROFILE_KEY = "neurodiversity-profile";
+const NEURODIVERSITY_PROFILE_URL = "/api/v1/neurodiversity-profile";
+
+function useNeurodiversityProfile(childId?: string, context: NeuroRecordingContext = "overview") {
+  return useQuery<{ data: NeuroProfileResponse }>({
+    queryKey: [NEURODIVERSITY_PROFILE_KEY, childId ?? "", context],
+    queryFn: () => fetch(`${NEURODIVERSITY_PROFILE_URL}?child_id=${encodeURIComponent(childId!)}&context=${context}`).then((r) => r.json()),
+    enabled: !!childId,
+    staleTime: 60 * 1000,
+  });
+}
 
 const PRIORITY_STYLE: Record<NeuroPromptPriority, { border: string; bg: string; fg: string }> = {
   critical: { border: "#f0b8b2", bg: "#fdeceb", fg: "#c0392b" },

@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useParentalResponsibilityRecords } from "@/hooks/use-parental-responsibility-records";
+import { useQuery } from "@tanstack/react-query";
 import type {
   ParentalResponsibilityRecord,
   PrPartyType,
@@ -34,6 +34,19 @@ import type {
   PrDelegatedTo,
   PrLegalStatus,
 } from "@/types/extended";
+
+const PARENTAL_RR_KEY = "parental-responsibility-records";
+
+async function prrFetchRecords(childId?: string): Promise<{ data: ParentalResponsibilityRecord[] }> {
+  const prrUrl = childId ? `/api/v1/parental-responsibility-records?child_id=${childId}` : "/api/v1/parental-responsibility-records";
+  const res = await fetch(prrUrl);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useParentalResponsibilityRecords(childId?: string) {
+  return useQuery({ queryKey: childId ? [PARENTAL_RR_KEY, childId] : [PARENTAL_RR_KEY], queryFn: () => prrFetchRecords(childId) });
+}
 import {
   PR_PARTY_TYPE_LABEL,
   PR_ACQUIRED_METHOD_LABEL,

@@ -16,12 +16,24 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { useOutcomeMetrics } from "@/hooks/use-outcome-metrics";
+import { useQuery } from "@tanstack/react-query";
 import type { OutcomeMetric, OutcomeSCCIFArea, OutcomeDashboardDomain, OutcomeTrend, OutcomeRAG } from "@/types/extended";
 import { OUTCOME_SCCIF_AREA_LABEL, OUTCOME_DASHBOARD_DOMAIN_LABEL, OUTCOME_TREND_LABEL, OUTCOME_RAG_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const OUTCOME_METRICS_KEY = "outcome-metrics";
+
+async function fetchOutcomeMetrics(): Promise<{ data: OutcomeMetric[] }> {
+  const res = await fetch("/api/v1/outcome-metrics");
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOutcomeMetrics() {
+  return useQuery({ queryKey: [OUTCOME_METRICS_KEY], queryFn: fetchOutcomeMetrics });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

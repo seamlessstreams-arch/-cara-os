@@ -10,11 +10,24 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useMonitoringBoard } from "@/hooks/use-monitoring-plans";
-import type { MonitoringBoard } from "@/hooks/use-monitoring-plans";
+import { api } from "@/hooks/use-api";
+import type { MonitoringBoard } from "@/lib/monitoring-plans/monitoring-plans-engine";
 import { Eye, Loader2, ArrowRight, CalendarClock, AlertTriangle, Users, Moon, Info } from "lucide-react";
+
+type MonitoringBoardResponse = { data: MonitoringBoard };
+
+/** The individual monitoring-plans board (read-only). */
+function useMonitoringBoard() {
+  return useQuery({
+    queryKey: ["monitoring-plans-board"],
+    queryFn: () => api.get<MonitoringBoardResponse>("/monitoring-plans"),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+  });
+}
 
 type Row = MonitoringBoard["rows"][number];
 

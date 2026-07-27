@@ -24,13 +24,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useOnlineGamingRecords } from "@/hooks/use-online-gaming-records";
+import { useQuery } from "@tanstack/react-query";
 import type { OnlineGamingRecord, PegiRating } from "@/types/extended";
 import { PEGI_RATING_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const ONLINE_GAMING_RECORDS_KEY = "online-gaming-records";
+
+async function fetchOnlineGamingRecords(childId?: string): Promise<{ data: OnlineGamingRecord[] }> {
+  const url = childId ? `/api/v1/online-gaming-records?child_id=${childId}` : "/api/v1/online-gaming-records";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOnlineGamingRecords(childId?: string) {
+  return useQuery({ queryKey: childId ? [ONLINE_GAMING_RECORDS_KEY, childId] : [ONLINE_GAMING_RECORDS_KEY], queryFn: () => fetchOnlineGamingRecords(childId) });
+}
 
 const pegiColour: Record<string, string> = {
   "3": "bg-green-100 text-green-800",

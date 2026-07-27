@@ -21,12 +21,22 @@ import { cn } from "@/lib/utils";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { usePetRecords } from "@/hooks/use-pet-records";
+import { useQuery } from "@tanstack/react-query";
 import type { PetRecord, PetSpecies } from "@/types/extended";
 import { PET_SPECIES_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const PET_KEY = "pet-records";
+const PET_API = "/api/v1/pet-records";
+
+function usePetRecords() {
+  return useQuery<{ data: PetRecord[] }>({
+    queryKey: [PET_KEY],
+    queryFn: () => fetch(PET_API).then((r) => r.json()),
+  });
+}
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 

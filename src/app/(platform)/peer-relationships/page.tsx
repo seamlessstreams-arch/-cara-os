@@ -26,10 +26,9 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { usePeerDynamics, useCreatePeerDynamic } from "@/hooks/use-peer-dynamics";
 import { toast } from "sonner";
 import { YOUNG_PEOPLE } from "@/lib/seed-data";
-import { usePeerGroupDynamics } from "@/hooks/use-peer-group-dynamics";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   PeerDynamic,
   PeerGroupDynamic,
@@ -47,6 +46,35 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const PEER_GROUP_DYN_KEY = "peer-group-dynamics";
+const PEER_GROUP_DYN_API = "/api/v1/peer-group-dynamics";
+
+function usePeerGroupDynamics() {
+  return useQuery<{ data: PeerGroupDynamic[] }>({
+    queryKey: [PEER_GROUP_DYN_KEY],
+    queryFn: () => fetch(PEER_GROUP_DYN_API).then((r) => r.json()),
+  });
+}
+
+const PEER_DYNAMICS_KEY = "peer-dynamics";
+const PEER_DYNAMICS_API = "/api/v1/peer-dynamics";
+
+function usePeerDynamics() {
+  return useQuery<{ data: PeerDynamic[] }>({
+    queryKey: [PEER_DYNAMICS_KEY],
+    queryFn: () => fetch(PEER_DYNAMICS_API).then((r) => r.json()),
+  });
+}
+
+function useCreatePeerDynamic() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<PeerDynamic>) =>
+      fetch(PEER_DYNAMICS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [PEER_DYNAMICS_KEY] }),
+  });
+}
 
 /* ── colour maps ──────────────────────────────────────────────────────── */
 

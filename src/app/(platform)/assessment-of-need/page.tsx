@@ -27,9 +27,19 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useNeedsAssessments } from "@/hooks/use-needs-assessments";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NeedsAssessment, NeedsDomain, NeedsComplexity, NeedsDomainAssessment } from "@/types/extended";
+
+const NEEDS_ASSESSMENTS_KEY = "needs-assessments";
+const NEEDS_ASSESSMENTS_API = "/api/v1/needs-assessments";
+
+function useNeedsAssessments(childId?: string) {
+  return useQuery<{ data: NeedsAssessment[] }>({
+    queryKey: childId ? [NEEDS_ASSESSMENTS_KEY, childId] : [NEEDS_ASSESSMENTS_KEY],
+    queryFn: () => fetch(childId ? `${NEEDS_ASSESSMENTS_API}?child_id=${childId}` : NEEDS_ASSESSMENTS_API).then((r) => r.json()),
+  });
+}
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";

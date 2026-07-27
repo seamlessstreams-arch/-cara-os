@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
-import { usePepRecords, useCreatePepRecord } from "@/hooks/use-pep-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,25 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const PEP_KEY = "pep-records";
+const PEP_API = "/api/v1/pep-records";
+
+function usePepRecords(childId?: string) {
+  return useQuery<{ data: PepRecord[] }>({
+    queryKey: childId ? [PEP_KEY, childId] : [PEP_KEY],
+    queryFn: () => fetch(childId ? `${PEP_API}?child_id=${childId}` : PEP_API).then((r) => r.json()),
+  });
+}
+
+function useCreatePepRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<PepRecord>) =>
+      fetch(PEP_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [PEP_KEY] }),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

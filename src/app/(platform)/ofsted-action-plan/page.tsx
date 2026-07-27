@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ClipboardCheck, Search, ArrowUpDown, Filter,
   CheckCircle2, AlertTriangle, Clock, TrendingUp,
@@ -22,7 +23,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useOfstedActionPlan, useCreateOfstedActionItem } from "@/hooks/use-ofsted-action-plan";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +43,32 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from ex-hook use-ofsted-action-plan ─────────────────────── */
+
+const OFSTED_ACTION_ITEMS_KEY = "ofsted-action-items";
+
+async function fetchOfstedActionItems(): Promise<{ data: OfstedActionItem[] }> {
+  const res = await fetch("/api/v1/ofsted-action-items");
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOfstedActionPlan() {
+  return useQuery({ queryKey: [OFSTED_ACTION_ITEMS_KEY], queryFn: fetchOfstedActionItems });
+}
+
+function useCreateOfstedActionItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<OfstedActionItem>) => {
+      const res = await fetch("/api/v1/ofsted-action-items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error("Failed to create");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: [OFSTED_ACTION_ITEMS_KEY] }),
+  });
+}
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 const d = (n: number) => {

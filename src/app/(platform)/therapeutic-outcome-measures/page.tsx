@@ -29,8 +29,18 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import { useQuery } from "@tanstack/react-query";
 import type { OutcomeMeasure } from "@/types/extended";
-import { useOutcomeMeasures } from "@/hooks/use-outcome-measures";
+
+const OUTCOME_MEASURES_KEY = "outcome-measures";
+
+function useOutcomeMeasures(childId?: string, homeId?: string) {
+  const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: OutcomeMeasure[] }>({
+    queryKey: [OUTCOME_MEASURES_KEY, childId, homeId],
+    queryFn: () => fetch(`/api/v1/outcome-measures${qs}`).then((r) => r.json()),
+  });
+}
 
 const trendIcon: Record<string, typeof TrendingUp> = {
   Improving: TrendingDown, // SDQ scores: lower = better

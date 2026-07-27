@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -24,13 +25,27 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useOccupationalTherapyRecords } from "@/hooks/use-occupational-therapy-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { OccupationalTherapyRecord, OtSessionType, OtRecommendation } from "@/types/extended";
 import { OT_SESSION_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from ex-hook use-occupational-therapy-records ─────────────── */
+
+const OCCUPATIONAL_THERAPY_RECORDS_KEY = "occupational-therapy-records";
+
+async function fetchOccupationalTherapyRecords(childId?: string): Promise<{ data: OccupationalTherapyRecord[] }> {
+  const url = childId ? `/api/v1/occupational-therapy-records?child_id=${childId}` : "/api/v1/occupational-therapy-records";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOccupationalTherapyRecords(childId?: string) {
+  return useQuery({ queryKey: childId ? [OCCUPATIONAL_THERAPY_RECORDS_KEY, childId] : [OCCUPATIONAL_THERAPY_RECORDS_KEY], queryFn: () => fetchOccupationalTherapyRecords(childId) });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 

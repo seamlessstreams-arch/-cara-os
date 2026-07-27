@@ -11,8 +11,19 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, TrendingUp, BookOpen } from "lucide-react";
-import { useOrgLearningReport } from "@/hooks/use-org-learning-report";
-import type { ReportPeriod, ThemeWeight } from "@/lib/org-learning-report/types";
+import { useQuery } from "@tanstack/react-query";
+import type { OrgLearningReport, ReportPeriod, ThemeWeight } from "@/lib/org-learning-report/types";
+
+const ORG_LEARNING_REPORT_KEY = "org-learning-report";
+const ORG_LEARNING_REPORT_URL = "/api/v1/org-learning-report";
+
+function useOrgLearningReport(period: ReportPeriod = "quarter") {
+  return useQuery<{ data: OrgLearningReport }>({
+    queryKey: [ORG_LEARNING_REPORT_KEY, period],
+    queryFn: () => fetch(`${ORG_LEARNING_REPORT_URL}?period=${period}`).then((r) => r.json()),
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 const WEIGHT_STYLE: Record<ThemeWeight, { bg: string; fg: string; border: string }> = {
   priority: { bg: "#fdeceb", fg: "#c0392b", border: "#f0b8b2" },

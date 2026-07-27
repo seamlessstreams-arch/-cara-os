@@ -10,7 +10,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useOperationalMeetings } from "@/hooks/use-operational-meetings";
+import { useQuery } from "@tanstack/react-query";
 import type { OperationalMeeting, OperationalMeetingType, OperationalActionStatus } from "@/types/extended";
 import { OPERATIONAL_MEETING_TYPE_LABEL, OPERATIONAL_ACTION_STATUS_LABEL } from "@/types/extended";
 import {
@@ -22,6 +22,18 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const OPERATIONAL_MEETINGS_KEY = "operational-meetings";
+
+async function fetchOperationalMeetings(): Promise<{ data: OperationalMeeting[] }> {
+  const res = await fetch("/api/v1/operational-meetings");
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOperationalMeetings() {
+  return useQuery({ queryKey: [OPERATIONAL_MEETINGS_KEY], queryFn: fetchOperationalMeetings });
+}
 
 // ── Meta maps ───────────────────────────────────────────────────────────────
 

@@ -7,7 +7,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
 import { cn, todayStr } from "@/lib/utils";
-import { usePestRecords } from "@/hooks/use-pest-records";
+import { useQuery } from "@tanstack/react-query";
 import type { PestRecord } from "@/types/extended";
 import { PEST_RECORD_TYPE_LABEL, PEST_CATEGORY_LABEL } from "@/types/extended";
 import {
@@ -33,6 +33,15 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const PEST_KEY = "pest-records";
+
+function usePestRecords() {
+  return useQuery<{ data: PestRecord[] }>({
+    queryKey: [PEST_KEY],
+    queryFn: () => fetch("/api/v1/pest-records").then((r) => r.json()),
+  });
+}
 
 const typeColour: Record<string, string> = {
   routine_preventive_treatment: "bg-teal-100 text-teal-800 border-teal-200",

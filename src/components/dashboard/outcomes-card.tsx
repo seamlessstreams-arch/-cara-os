@@ -15,7 +15,21 @@ import {
   TrendingDown, Brain, Loader2, CheckCircle2, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useOutcomesProgress } from "@/hooks/use-outcomes-progress";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { OutcomesProgressResult } from "@/lib/engines/outcomes-progress-engine";
+
+interface OutcomesProgressResponse {
+  data: OutcomesProgressResult;
+}
+
+function useOutcomesProgress() {
+  return useQuery({
+    queryKey: ["outcomes-progress"],
+    queryFn: () => api.get<OutcomesProgressResponse>("/outcomes-progress"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

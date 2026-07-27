@@ -24,9 +24,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useNightAnxietySupport } from "@/hooks/use-night-anxiety-support";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NightAnxietySupportRecord, AnxietyLevel, NightmareFrequency } from "@/types/extended";
+
+const NIGHT_ANXIETY_SUPPORT_KEY = "night-anxiety-support-records";
+
+async function nightAnxietySupportFetchRecords(childId?: string): Promise<{ data: NightAnxietySupportRecord[] }> {
+  const url = childId ? `/api/v1/night-anxiety-support-records?child_id=${childId}` : "/api/v1/night-anxiety-support-records";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useNightAnxietySupport(childId?: string) {
+  return useQuery({ queryKey: childId ? [NIGHT_ANXIETY_SUPPORT_KEY, childId] : [NIGHT_ANXIETY_SUPPORT_KEY], queryFn: () => nightAnxietySupportFetchRecords(childId) });
+}
 import { ANXIETY_LEVEL_LABEL, NIGHTMARE_FREQUENCY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

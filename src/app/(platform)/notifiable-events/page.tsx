@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Bell, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, CheckCircle2, Clock, Send,
@@ -24,12 +25,32 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF, YOUNG_PEOPLE } from "@/lib/seed-data";
-import { useNotifiableEvents, useCreateNotifiableEvent } from "@/hooks/use-notifiable-events";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import type { NotifiableEventType, NotifiableStatus, NotifiableNotification, NotifiableEvent } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { toast } from "sonner";
+
+// ── Inlined from ex-hook use-notifiable-events ─────────────────────────────
+
+const NOTIFIABLE_EVENTS_KEY = "notifiable-events";
+const NOTIFIABLE_EVENTS_API = "/api/v1/notifiable-events";
+
+function useNotifiableEvents(childId?: string) {
+  return useQuery<{ data: NotifiableEvent[] }>({
+    queryKey: childId ? [NOTIFIABLE_EVENTS_KEY, childId] : [NOTIFIABLE_EVENTS_KEY],
+    queryFn: () => fetch(childId ? `${NOTIFIABLE_EVENTS_API}?child_id=${childId}` : NOTIFIABLE_EVENTS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateNotifiableEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<NotifiableEvent>) =>
+      fetch(NOTIFIABLE_EVENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [NOTIFIABLE_EVENTS_KEY] }),
+  });
+}
 
 /* ── create form ─────────────────────────────────────────────────────── */
 

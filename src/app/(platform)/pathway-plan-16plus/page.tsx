@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
-import { usePathwayPlans, useCreatePathwayPlan } from "@/hooks/use-pathway-plans";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,6 +31,31 @@ import type { PathwayPlan, PathwayPlanStatus, PathwaySkillLevel } from "@/types/
 import { PATHWAY_PLAN_STATUS_LABEL, PATHWAY_SKILL_LEVEL_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+const PATHWAY_PLANS_KEY = "pathway-plans";
+
+async function pathwayFetchRecords(childId?: string): Promise<{ data: PathwayPlan[] }> {
+  const pathwayUrl = childId ? `/api/v1/pathway-plans?child_id=${childId}` : "/api/v1/pathway-plans";
+  const res = await fetch(pathwayUrl);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function usePathwayPlans(childId?: string) {
+  return useQuery({ queryKey: childId ? [PATHWAY_PLANS_KEY, childId] : [PATHWAY_PLANS_KEY], queryFn: () => pathwayFetchRecords(childId) });
+}
+
+function useCreatePathwayPlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<PathwayPlan>) => {
+      const res = await fetch("/api/v1/pathway-plans", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error("Failed to create");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: [PATHWAY_PLANS_KEY] }),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

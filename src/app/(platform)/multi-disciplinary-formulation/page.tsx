@@ -16,8 +16,21 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { useMultiDisciplinaryFormulations } from "@/hooks/use-multi-disciplinary-formulations";
+import { useQuery } from "@tanstack/react-query";
 import type { MultiDisciplinaryFormulation, FormulationModel } from "@/types/extended";
+
+const MULTI_DISCIPLINARY_FORMULATIONS_BASE = "/api/v1/multi-disciplinary-formulations";
+
+async function multiDisciplinaryFormulationsFetchAll(childId?: string) {
+  const url = childId ? `${MULTI_DISCIPLINARY_FORMULATIONS_BASE}?child_id=${childId}` : MULTI_DISCIPLINARY_FORMULATIONS_BASE;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch formulations");
+  return res.json() as Promise<{ data: MultiDisciplinaryFormulation[] }>;
+}
+
+function useMultiDisciplinaryFormulations(childId?: string) {
+  return useQuery({ queryKey: ["multi-disciplinary-formulations", childId], queryFn: () => multiDisciplinaryFormulationsFetchAll(childId) });
+}
 import { FORMULATION_MODEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

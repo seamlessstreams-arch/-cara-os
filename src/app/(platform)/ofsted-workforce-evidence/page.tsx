@@ -1,12 +1,26 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Loader2, RefreshCw, ClipboardCheck, CheckCircle2, AlertTriangle, FileText } from "lucide-react";
-import { useOfstedWorkforceEvidence } from "@/hooks/use-ofsted-workforce-evidence";
-import type { EvidenceStatus } from "@/lib/engines/ofsted-workforce-evidence-engine";
+import type { EvidenceStatus, OfstedWorkforceEvidence } from "@/lib/engines/ofsted-workforce-evidence-engine";
+
+// ── Inlined from ex-hook use-ofsted-workforce-evidence ─────────────────────
+
+function useOfstedWorkforceEvidence() {
+  return useQuery<OfstedWorkforceEvidence>({
+    queryKey: ["ofsted-workforce-evidence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/ofsted-workforce-evidence");
+      if (!res.ok) throw new Error("Failed to fetch workforce evidence");
+      return (await res.json()).data;
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 const STATUS_META: Record<EvidenceStatus, { label: string; chip: string; bar: string; rag: string; border: string }> = {
   green: { label: "Strong", chip: "bg-green-100 text-green-800 border-green-200", bar: "bg-green-500", rag: "cs-rag-green", border: "border-l-green-500" },

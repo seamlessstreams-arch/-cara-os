@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Send, Search, ArrowUpDown, Filter,
   AlertTriangle, CheckCircle2, Clock, Phone,
@@ -19,11 +20,24 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useNotificationLog } from "@/hooks/use-notification-log";
 import type { NotificationLogEntry } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined from ex-hook use-notification-log ──────────────────────────────
+
+const NOTIFICATION_LOG_KEY = "notification-log-entries";
+
+async function fetchNotificationLog(): Promise<{ data: NotificationLogEntry[] }> {
+  const res = await fetch("/api/v1/notification-log-entries");
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useNotificationLog() {
+  return useQuery({ queryKey: [NOTIFICATION_LOG_KEY], queryFn: fetchNotificationLog });
+}
 
 const RECIPIENTS = ["Ofsted", "Placing Authority", "LADO", "Police"] as const;
 

@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +16,22 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useNotifiableEventsIntelligence } from "@/hooks/use-notifiable-events-intelligence";
+import { api } from "@/hooks/use-api";
+import type { NotifiableEventsIntelligenceResult } from "@/lib/engines/notifiable-events-intelligence-engine";
+
+// ── Inlined from ex-hook use-notifiable-events-intelligence ────────────────
+
+interface NotifiableEventsIntelligenceResponse {
+  data: NotifiableEventsIntelligenceResult;
+}
+
+function useNotifiableEventsIntelligence() {
+  return useQuery({
+    queryKey: ["notifiable-events-intelligence"],
+    queryFn: () => api.get<NotifiableEventsIntelligenceResponse>("/notifiable-events-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

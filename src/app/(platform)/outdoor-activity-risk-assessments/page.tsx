@@ -12,8 +12,32 @@ import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, ArrowUpDown, MapPin, Shield, AlertTriangle, CheckCircle, Users, Loader2, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useOutdoorActivityRiskAssessments, useCreateOutdoorActivityRiskAssessment } from "@/hooks/use-outdoor-activity-risk-assessments";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { OutdoorActivityRiskAssessment, OutdoorActivityType, OutdoorRiskLevel } from "@/types/extended";
+
+const OARA_KEY = "outdoor-activity-risk-assessments";
+
+async function oaraFetchRecords(): Promise<{ data: OutdoorActivityRiskAssessment[] }> {
+  const res = await fetch("/api/v1/outdoor-activity-risk-assessments");
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOutdoorActivityRiskAssessments() {
+  return useQuery({ queryKey: [OARA_KEY], queryFn: oaraFetchRecords });
+}
+
+function useCreateOutdoorActivityRiskAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<OutdoorActivityRiskAssessment>) => {
+      const res = await fetch("/api/v1/outdoor-activity-risk-assessments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error("Failed to create");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: [OARA_KEY] }),
+  });
+}
 import { OUTDOOR_ACTIVITY_TYPE_LABEL, OUTDOOR_RISK_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

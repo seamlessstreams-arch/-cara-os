@@ -8,8 +8,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp, Moon, Shield, Phone, Clock, AlertTriangle, CheckCircle2, Flame, Heart, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useNightStaffGuidance } from "@/hooks/use-night-staff-guidance";
+import { useQuery } from "@tanstack/react-query";
 import type { NightStaffGuidanceSection, GuidancePriority, GuidanceSectionKey } from "@/types/extended";
+
+const NIGHT_STAFF_GUIDANCE_BASE = "/api/v1/night-staff-guidance-sections";
+
+async function nightStaffGuidanceFetchAll() {
+  const res = await fetch(NIGHT_STAFF_GUIDANCE_BASE);
+  if (!res.ok) throw new Error("Failed to fetch night staff guidance");
+  return res.json() as Promise<{ data: NightStaffGuidanceSection[] }>;
+}
+
+function useNightStaffGuidance() {
+  return useQuery({ queryKey: ["night-staff-guidance"], queryFn: nightStaffGuidanceFetchAll });
+}
 import { GUIDANCE_PRIORITY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

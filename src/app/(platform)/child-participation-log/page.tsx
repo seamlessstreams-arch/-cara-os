@@ -9,8 +9,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { useParticipationEntries } from "@/hooks/use-participation-entries";
+import { useQuery } from "@tanstack/react-query";
 import type { ParticipationEntry } from "@/types/extended";
+
+const PARTICIPATION_KEY = "participation-entries";
+
+function useParticipationEntries() {
+  return useQuery<{ data: ParticipationEntry[] }>({
+    queryKey: [PARTICIPATION_KEY],
+    queryFn: () => fetch("/api/v1/participation-entries").then((r) => r.json()),
+  });
+}
 import { PARTICIPATION_CATEGORY_LABEL, PARTICIPATION_EVIDENCE_TYPE_LABEL } from "@/types/extended";
 import {
   ChevronUp,

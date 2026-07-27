@@ -7,7 +7,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useOrthoRecords } from "@/hooks/use-ortho-records";
+import { useQuery } from "@tanstack/react-query";
 import type { OrthoRecord, OrthoStage, OrthoHygieneCompliance, OrthoMotivation } from "@/types/extended";
 import {
   ORTHO_STAGE_LABEL,
@@ -36,6 +36,15 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const ORTHO_RECORDS_KEY = "ortho-records";
+
+function useOrthoRecords() {
+  return useQuery<{ data: OrthoRecord[] }>({
+    queryKey: [ORTHO_RECORDS_KEY],
+    queryFn: () => fetch("/api/v1/ortho-records").then((r) => r.json()),
+  });
+}
 
 const exportCols: ExportColumn<OrthoRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },

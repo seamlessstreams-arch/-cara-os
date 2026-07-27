@@ -25,11 +25,21 @@ import {
 } from "@/components/ui/select";
 import type { PhotoAlbumRecord, PhotoAlbumType } from "@/types/extended";
 import { PHOTO_ALBUM_TYPE_LABEL, PHOTO_ALBUM_FORMAT_LABEL } from "@/types/extended";
-import { usePhotoAlbumRecords } from "@/hooks/use-photo-album-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const PHOTO_ALBUM_KEY = "photo-album-records";
+const PHOTO_ALBUM_API = "/api/v1/photo-album-records";
+
+function usePhotoAlbumRecords(childId?: string) {
+  return useQuery<{ data: PhotoAlbumRecord[] }>({
+    queryKey: childId ? [PHOTO_ALBUM_KEY, childId] : [PHOTO_ALBUM_KEY],
+    queryFn: () => fetch(childId ? `${PHOTO_ALBUM_API}?child_id=${childId}` : PHOTO_ALBUM_API).then((r) => r.json()),
+  });
+}
 
 const albumTypeColour: Record<PhotoAlbumType, string> = {
   life_story_book: "bg-pink-100 text-pink-800",

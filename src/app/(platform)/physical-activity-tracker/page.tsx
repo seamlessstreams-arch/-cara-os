@@ -32,11 +32,21 @@ import {
   PHYSICAL_ACTIVITY_INITIATOR_LABEL,
   PHYSICAL_ACTIVITY_SOCIAL_ASPECT_LABEL,
 } from "@/types/extended";
-import { usePhysicalActivityEntries } from "@/hooks/use-physical-activity-entries";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const PHYSICAL_ACTIVITY_KEY = "physical-activity-entries";
+const PHYSICAL_ACTIVITY_API = "/api/v1/physical-activity-entries";
+
+function usePhysicalActivityEntries(childId?: string) {
+  return useQuery<{ data: PhysicalActivityEntry[] }>({
+    queryKey: childId ? [PHYSICAL_ACTIVITY_KEY, childId] : [PHYSICAL_ACTIVITY_KEY],
+    queryFn: () => fetch(childId ? `${PHYSICAL_ACTIVITY_API}?child_id=${childId}` : PHYSICAL_ACTIVITY_API).then((r) => r.json()),
+  });
+}
 
 const categoryColour: Record<string, string> = {
   sport: "bg-red-100 text-red-800",

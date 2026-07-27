@@ -11,15 +11,67 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import {
-  useOperationalSpine,
-  useRecurringChecks,
-  type SpineItem,
-} from "@/hooks/use-operational-control";
+import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle, ArrowRight, ShieldCheck, CircleAlert, Bell, ListChecks,
   CalendarClock, CheckCircle2, Circle, Radar,
 } from "lucide-react";
+
+interface SpineItem {
+  id: string;
+  source: string;
+  severity: "critical" | "high" | "medium" | "low";
+  title: string;
+  detail?: string;
+  href: string;
+  child_id?: string | null;
+  created_at?: string | null;
+}
+interface SpineResult {
+  view: string;
+  items: SpineItem[];
+  sources: { source: string; ok: boolean; count: number }[];
+  totals: Record<"critical" | "high" | "medium" | "low", number>;
+}
+
+function useOperationalSpine(view: "alerts" | "escalations") {
+  return useQuery({
+    queryKey: ["operational-spine", view],
+    queryFn: async (): Promise<SpineResult> => {
+      const res = await fetch(`/api/v1/operational-spine?view=${view}`);
+      if (!res.ok) throw new Error(`Spine returned ${res.status}`);
+      return (await res.json()).data;
+    },
+    refetchInterval: 60_000,
+  });
+}
+
+interface RecurringCheck {
+  template_id: string;
+  name: string;
+  cadence: "daily" | "weekly" | "monthly";
+  period: string;
+  status: "done" | "pending" | "not_created";
+  task_id?: string;
+  due_date: string;
+  regulatory_ref?: string;
+}
+interface RecurringChecksResult {
+  materialiser_enabled: boolean;
+  checks: RecurringCheck[];
+  summary: { done: number; pending: number; not_created: number };
+}
+
+function useRecurringChecks() {
+  return useQuery({
+    queryKey: ["recurring-checks"],
+    queryFn: async (): Promise<RecurringChecksResult> => {
+      const res = await fetch("/api/v1/recurring-checks");
+      if (!res.ok) throw new Error(`Recurring checks returned ${res.status}`);
+      return (await res.json()).data;
+    },
+  });
+}
 
 const SEV_TONE: Record<SpineItem["severity"], { stripe: string; chip: string; pill: string }> = {
   critical: { stripe: "bg-rose-400", chip: "bg-rose-400/15 text-rose-300", pill: "bg-rose-400/15 text-rose-200" },

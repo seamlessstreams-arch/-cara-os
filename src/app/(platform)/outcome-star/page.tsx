@@ -12,8 +12,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useOutcomeStarAssessments } from "@/hooks/use-outcome-star-assessments";
+import { useQuery } from "@tanstack/react-query";
 import type { OutcomeStarAssessment, OutcomeStarDomain } from "@/types/extended";
+
+const OSA_KEY = "outcome-star-assessments";
+
+async function osaFetchRecords(childId?: string): Promise<{ data: OutcomeStarAssessment[] }> {
+  const osaUrl = childId ? `/api/v1/outcome-star-assessments?child_id=${childId}` : "/api/v1/outcome-star-assessments";
+  const res = await fetch(osaUrl);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOutcomeStarAssessments(childId?: string) {
+  return useQuery({ queryKey: childId ? [OSA_KEY, childId] : [OSA_KEY], queryFn: () => osaFetchRecords(childId) });
+}
 import { OUTCOME_STAR_DOMAIN_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

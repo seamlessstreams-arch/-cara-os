@@ -23,8 +23,33 @@ import {
   Eye, CloudMoon, BedDouble,
   Loader2, ChevronDown, ChevronUp,
 } from "lucide-react";
-import { useNightChecks, useCreateNightCheck } from "@/hooks/use-night-checks";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { NightCheck, NightCheckSleepStatus, NightCheckType, DoorPosition } from "@/types/extended";
+
+const NIGHT_CHECKS_BASE = "/api/v1/night-checks";
+
+async function nightChecksFetchAll(childId?: string) {
+  const url = childId ? `${NIGHT_CHECKS_BASE}?child_id=${childId}` : NIGHT_CHECKS_BASE;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch night checks");
+  return res.json() as Promise<{ data: NightCheck[] }>;
+}
+
+function useNightChecks(childId?: string) {
+  return useQuery({ queryKey: ["night-checks", childId], queryFn: () => nightChecksFetchAll(childId) });
+}
+
+function useCreateNightCheck() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<NightCheck>) => {
+      const res = await fetch(NIGHT_CHECKS_BASE, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error("Failed to create night check");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["night-checks"] }),
+  });
+}
 import { NIGHT_CHECK_SLEEP_STATUS_LABEL, NIGHT_CHECK_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

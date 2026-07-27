@@ -21,11 +21,36 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useMultiAgencyMeetings, useCreateMultiAgencyMeeting } from "@/hooks/use-multi-agency-meetings";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   MultiAgencyMeeting, MultiAgencyMeetingType, MultiAgencyMeetingStatus,
   MeetingAttendee, MultiAgencyActionItem, MeetingActionStatus,
 } from "@/types/extended";
+
+const MULTI_AGENCY_MEETINGS_BASE = "/api/v1/multi-agency-meetings";
+
+async function multiAgencyMeetingsFetchAll(childId?: string) {
+  const url = childId ? `${MULTI_AGENCY_MEETINGS_BASE}?child_id=${childId}` : MULTI_AGENCY_MEETINGS_BASE;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch multi-agency meetings");
+  return res.json() as Promise<{ data: MultiAgencyMeeting[] }>;
+}
+
+function useMultiAgencyMeetings(childId?: string) {
+  return useQuery({ queryKey: ["multi-agency-meetings", childId], queryFn: () => multiAgencyMeetingsFetchAll(childId) });
+}
+
+function useCreateMultiAgencyMeeting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<MultiAgencyMeeting>) => {
+      const res = await fetch(MULTI_AGENCY_MEETINGS_BASE, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error("Failed to create multi-agency meeting");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["multi-agency-meetings"] }),
+  });
+}
 import {
   MULTI_AGENCY_MEETING_TYPE_LABEL, MULTI_AGENCY_MEETING_STATUS_LABEL,
   MEETING_ACTION_STATUS_LABEL,

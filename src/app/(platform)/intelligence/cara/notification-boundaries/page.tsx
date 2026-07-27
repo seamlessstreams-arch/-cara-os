@@ -9,12 +9,37 @@
 // out-of-hours noise or guilt — this page is where that promise is checkable.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useNotificationBoundaries } from "@/hooks/use-notification-boundaries";
+import { api } from "@/hooks/use-api";
 import { BREAKTHROUGH_TYPES } from "@/lib/notifications/delivery-boundaries";
+import type {
+  DeliveryPlan,
+  DeliverableNotification,
+} from "@/lib/notifications/delivery-boundaries";
 import { BellOff, Moon, ShieldAlert, Loader2, CheckCircle2 } from "lucide-react";
+
+// ── Inlined from ex-hook use-notification-boundaries ───────────────────────
+
+interface NotificationBoundariesData extends DeliveryPlan {
+  staffId: string;
+  staffName: string;
+  onShift: boolean;
+  notifications: DeliverableNotification[];
+}
+
+/** What would reach this person now, and what is being held. Own plan by
+ *  default; a manager may pass a staffId. */
+function useNotificationBoundaries(staffId?: string) {
+  const qs = staffId ? `?staff_id=${encodeURIComponent(staffId)}` : "";
+  return useQuery({
+    queryKey: ["notification-boundaries", staffId ?? "me"],
+    queryFn: async () =>
+      (await api.get<{ data: NotificationBoundariesData }>(`/notification-boundaries${qs}`)).data,
+  });
+}
 
 const label = (s: string) => s.replace(/_/g, " ");
 

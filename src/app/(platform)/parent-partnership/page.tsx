@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useParentPartnershipRecords, useCreateParentPartnershipRecord } from "@/hooks/use-parent-partnership-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { YOUNG_PEOPLE } from "@/lib/seed-data";
 import type {
@@ -33,6 +33,31 @@ import type {
   ParentRelationshipType,
   ParentContactInitiator,
 } from "@/types/extended";
+
+const PARENT_PARTNERSHIP_KEY = "parent-partnership-records";
+
+async function ppFetchRecords(childId?: string): Promise<{ data: ParentPartnershipRecord[] }> {
+  const ppUrl = childId ? `/api/v1/parent-partnership-records?child_id=${childId}` : "/api/v1/parent-partnership-records";
+  const res = await fetch(ppUrl);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useParentPartnershipRecords(childId?: string) {
+  return useQuery({ queryKey: childId ? [PARENT_PARTNERSHIP_KEY, childId] : [PARENT_PARTNERSHIP_KEY], queryFn: () => ppFetchRecords(childId) });
+}
+
+function useCreateParentPartnershipRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<ParentPartnershipRecord>) => {
+      const res = await fetch("/api/v1/parent-partnership-records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error("Failed to create");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: [PARENT_PARTNERSHIP_KEY] }),
+  });
+}
 import {
   PARENT_CONTACT_TYPE_LABEL,
   PARENT_ENGAGEMENT_LEVEL_LABEL,

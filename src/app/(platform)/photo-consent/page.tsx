@@ -25,11 +25,30 @@ import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import type { PhotoConsentRecord, PhotoConsentCategory, PhotoConsentStatus } from "@/types/extended";
 import { PHOTO_CONSENT_CATEGORY_LABEL, PHOTO_CONSENT_STATUS_LABEL } from "@/types/extended";
-import { usePhotoConsentRecords, useCreatePhotoConsentRecord } from "@/hooks/use-photo-consent-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const PHOTO_CONSENT_KEY = "photo-consent-records";
+const PHOTO_CONSENT_API = "/api/v1/photo-consent-records";
+
+function usePhotoConsentRecords(childId?: string) {
+  return useQuery<{ data: PhotoConsentRecord[] }>({
+    queryKey: childId ? [PHOTO_CONSENT_KEY, childId] : [PHOTO_CONSENT_KEY],
+    queryFn: () => fetch(childId ? `${PHOTO_CONSENT_API}?child_id=${childId}` : PHOTO_CONSENT_API).then((r) => r.json()),
+  });
+}
+
+function useCreatePhotoConsentRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<PhotoConsentRecord>) =>
+      fetch(PHOTO_CONSENT_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [PHOTO_CONSENT_KEY] }),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -21,12 +22,37 @@ import {
   AlertTriangle, CheckCircle2, Clock, Users, Pill, ShieldAlert,
   Phone, BedDouble, Eye, FileText, Sparkles, Bell, Loader2,
 } from "lucide-react";
-import { useNightStaffHandovers, useCreateNightStaffHandover } from "@/hooks/use-night-staff-handovers";
 import type { NightStaffHandover } from "@/types/extended";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+// ── Inlined from ex-hook use-night-staff-handovers ─────────────────────────
+
+const NIGHT_STAFF_HANDOVERS_KEY = "night-staff-handovers";
+
+async function fetchNightStaffHandovers(): Promise<{ data: NightStaffHandover[] }> {
+  const res = await fetch("/api/v1/night-staff-handovers");
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useNightStaffHandovers() {
+  return useQuery({ queryKey: [NIGHT_STAFF_HANDOVERS_KEY], queryFn: fetchNightStaffHandovers });
+}
+
+function useCreateNightStaffHandover() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<NightStaffHandover>) => {
+      const res = await fetch("/api/v1/night-staff-handovers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error("Failed to create");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: [NIGHT_STAFF_HANDOVERS_KEY] }),
+  });
+}
 
 // ── Date helper (relative) ─────────────────────────────────────────────────
 

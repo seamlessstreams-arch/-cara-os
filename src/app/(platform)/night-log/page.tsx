@@ -12,9 +12,19 @@ import {
   Moon, Clock, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp,
   Eye, ShieldAlert, Pill, ArrowUpDown, Users, Loader2,
 } from "lucide-react";
-import { useNightLogs } from "@/hooks/use-night-logs";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NightCheckStatus, NightLogEntry } from "@/types/extended";
+
+const NIGHT_LOGS_KEY = "night-logs";
+const NIGHT_LOGS_API = "/api/v1/night-logs";
+
+function useNightLogs() {
+  return useQuery<{ data: NightLogEntry[] }>({
+    queryKey: [NIGHT_LOGS_KEY],
+    queryFn: () => fetch(NIGHT_LOGS_API).then((r) => r.json()),
+  });
+}
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";

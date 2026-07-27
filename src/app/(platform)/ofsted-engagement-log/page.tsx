@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Search, ArrowUpDown, Filter, Building2, Phone, Mail, FileText,
   ClipboardCheck, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2,
@@ -17,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useOfstedEngagementLog } from "@/hooks/use-ofsted-engagement-log";
 import type {
   OfstedEngagementRecord,
   OfstedEngagementType,
@@ -31,6 +31,20 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from ex-hook use-ofsted-engagement-log ────────────────── */
+
+const OFSTED_ENGAGEMENT_RECORDS_KEY = "ofsted-engagement-records";
+
+async function fetchOfstedEngagementRecords(): Promise<{ data: OfstedEngagementRecord[] }> {
+  const res = await fetch("/api/v1/ofsted-engagement-records");
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOfstedEngagementLog() {
+  return useQuery({ queryKey: [OFSTED_ENGAGEMENT_RECORDS_KEY], queryFn: fetchOfstedEngagementRecords });
+}
 
 /* ── derived constants ──────────────────────────────────────────────── */
 const ENGAGEMENT_TYPES = Object.entries(OFSTED_ENGAGEMENT_TYPE_LABEL) as [OfstedEngagementType, string][];

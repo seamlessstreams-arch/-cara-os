@@ -24,13 +24,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useOpticiansRecords } from "@/hooks/use-opticians-records";
+import { useQuery } from "@tanstack/react-query";
 import type { OpticiansRecord, OpticalStatus, OpticalRecallInterval } from "@/types/extended";
 import { OPTICAL_STATUS_LABEL, OPTICAL_RECALL_INTERVAL_LABEL, GLASSES_TYPE_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const OPTICIANS_RECORDS_KEY = "opticians-records";
+
+async function fetchOpticiansRecords(childId?: string): Promise<{ data: OpticiansRecord[] }> {
+  const url = childId ? `/api/v1/opticians-records?child_id=${childId}` : "/api/v1/opticians-records";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+function useOpticiansRecords(childId?: string) {
+  return useQuery({ queryKey: childId ? [OPTICIANS_RECORDS_KEY, childId] : [OPTICIANS_RECORDS_KEY], queryFn: () => fetchOpticiansRecords(childId) });
+}
 
 const statusColour: Record<OpticalStatus, string> = {
   active_nhs: "bg-green-100 text-green-800",

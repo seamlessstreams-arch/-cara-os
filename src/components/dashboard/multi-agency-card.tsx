@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +16,20 @@ import {
   Users, Calendar, FileText, CheckCircle, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMultiAgencyIntelligence } from "@/hooks/use-multi-agency-intelligence";
+import { api } from "@/hooks/use-api";
+import type { MultiAgencyIntelligenceResult } from "@/lib/engines/multi-agency-intelligence-engine";
+
+interface MultiAgencyIntelligenceResponse {
+  data: MultiAgencyIntelligenceResult;
+}
+
+function useMultiAgencyIntelligence() {
+  return useQuery({
+    queryKey: ["multi-agency-intelligence"],
+    queryFn: () => api.get<MultiAgencyIntelligenceResponse>("/multi-agency-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

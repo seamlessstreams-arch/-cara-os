@@ -15,12 +15,29 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Inbox, Shield, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useOversightInbox } from "@/hooks/use-oversight-inbox";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import type {
   OversightItem,
   OversightItemSource,
   OversightPriority,
+  OversightSummary,
 } from "@/lib/care-events/oversight-inbox";
+
+interface OversightInboxResponse {
+  data: OversightSummary;
+}
+
+function useOversightInbox(homeId: string) {
+  return useQuery({
+    queryKey: ["oversight-inbox", homeId],
+    queryFn: () =>
+      api.get<OversightInboxResponse>(
+        `/care-events/oversight-inbox?home_id=${encodeURIComponent(homeId)}`,
+      ),
+    refetchInterval: 30000,
+  });
+}
 
 const HOME_ID = "home_oak";
 
