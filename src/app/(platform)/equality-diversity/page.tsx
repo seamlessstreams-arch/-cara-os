@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -25,8 +26,6 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useEqualityInitiatives, useCreateEqualityInitiative } from "@/hooks/use-equality-initiatives";
-import { useEqualityTraining } from "@/hooks/use-equality-training";
 import type {
   EqualityInitiative,
   EqualityTrainingRecord,
@@ -41,6 +40,41 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from @/hooks/use-equality-initiatives ─────────────────────── */
+
+const EQUALITY_INITIATIVES_KEY = "equality-initiatives";
+
+function useEqualityInitiatives() {
+  return useQuery<{ data: EqualityInitiative[] }>({
+    queryKey: [EQUALITY_INITIATIVES_KEY],
+    queryFn: () => fetch("/api/v1/equality-initiatives").then((r) => r.json()),
+  });
+}
+
+function useCreateEqualityInitiative() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<EqualityInitiative>) =>
+      fetch("/api/v1/equality-initiatives", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [EQUALITY_INITIATIVES_KEY] }),
+  });
+}
+
+/* ── inlined from @/hooks/use-equality-training ────────────────────────── */
+
+const EQUALITY_TRAINING_KEY = "equality-training";
+
+function useEqualityTraining() {
+  return useQuery<{ data: EqualityTrainingRecord[] }>({
+    queryKey: [EQUALITY_TRAINING_KEY],
+    queryFn: () => fetch("/api/v1/equality-training").then((r) => r.json()),
+  });
+}
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 

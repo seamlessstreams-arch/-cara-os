@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Accessibility } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeBathroomAccessibilityAdaptationsIntelligence } from "@/hooks/use-home-bathroom-accessibility-adaptations-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { BathroomAccessibilityRating } from "@/lib/engines/home-bathroom-accessibility-adaptations-intelligence-engine";
+
+function useHomeBathroomAccessibilityAdaptationsIntelligence() {
+  return useQuery({
+    queryKey: ["home-bathroom-accessibility-adaptations-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-bathroom-accessibility-adaptations-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch bathroom accessibility adaptations intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<BathroomAccessibilityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -10,9 +10,29 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ShieldOff, Copy, AlertTriangle, KeyRound } from "lucide-react";
-import { useRedactDocuments } from "@/hooks/use-entity-redaction";
+import type { Codebook, RedactionOutcome } from "@/lib/entity-redaction/types";
+
+/* ── inlined from @/hooks/use-entity-redaction ─────────────────────────── */
+
+const ENTITY_REDACTION_URL = "/api/v1/entity-redaction";
+
+function useRedactDocuments() {
+  return useMutation<
+    { data: RedactionOutcome | { codebook: Codebook; documents: { id: string; text: string }[] } },
+    Error,
+    { documents: { id: string; text: string }[]; mode?: "redact" | "rehydrate" }
+  >({
+    mutationFn: (payload) =>
+      fetch(ENTITY_REDACTION_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, useHomeEntities: true }),
+      }).then((r) => r.json()),
+  });
+}
 
 const SAMPLE =
   "Alex Smith became distressed after a phone call and was supported by Edward. Casey Jones helped settle the group. Later, Alex asked to speak to their key worker.";

@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeAllergyManagementFoodSafetyIntelligence } from "@/hooks/use-home-allergy-management-food-safety-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { AllergyManagementRating } from "@/lib/engines/home-allergy-management-food-safety-intelligence-engine";
+
+function useHomeAllergyManagementFoodSafetyIntelligence() {
+  return useQuery({
+    queryKey: ["home-allergy-management-food-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-allergy-management-food-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch allergy management food safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<AllergyManagementRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

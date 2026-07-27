@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HeartPulse } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeCamhsSpecialistReferralIntelligence } from "@/hooks/use-home-camhs-specialist-referral-intelligence";
-import type { CamhsSpecialistRating } from "@/lib/engines/home-camhs-specialist-referral-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { CamhsSpecialistRating, CamhsSpecialistResult } from "@/lib/engines/home-camhs-specialist-referral-intelligence-engine";
+
+interface CamhsSpecialistResponse { data: CamhsSpecialistResult; }
+
+function useHomeCamhsSpecialistReferralIntelligence() {
+  return useQuery<CamhsSpecialistResponse>({
+    queryKey: ["home-camhs-specialist-referral-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-camhs-specialist-referral-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch CAMHS & specialist referral intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<CamhsSpecialistRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

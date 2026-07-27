@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, FolderSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeCaseFileAuditQualityIntelligence } from "@/hooks/use-home-case-file-audit-quality-intelligence";
-import type { CaseFileAuditRating } from "@/lib/engines/home-case-file-audit-quality-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { CaseFileAuditRating, CaseFileAuditResult } from "@/lib/engines/home-case-file-audit-quality-intelligence-engine";
+
+interface CaseFileAuditResponse { data: CaseFileAuditResult; }
+
+function useHomeCaseFileAuditQualityIntelligence() {
+  return useQuery<CaseFileAuditResponse>({
+    queryKey: ["home-case-file-audit-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-case-file-audit-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch case file audit quality intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<CaseFileAuditRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

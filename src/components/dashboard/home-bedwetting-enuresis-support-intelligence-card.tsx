@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeBedwettingEnuresisSupportIntelligence } from "@/hooks/use-home-bedwetting-enuresis-support-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { BedwettingEnuresisRating } from "@/lib/engines/home-bedwetting-enuresis-support-intelligence-engine";
+
+function useHomeBedwettingEnuresisSupportIntelligence() {
+  return useQuery({
+    queryKey: ["home-bedwetting-enuresis-support-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-bedwetting-enuresis-support-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch bedwetting enuresis support intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<BedwettingEnuresisRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

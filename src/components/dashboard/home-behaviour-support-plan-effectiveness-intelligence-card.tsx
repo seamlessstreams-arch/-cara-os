@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeBehaviourSupportPlanEffectivenessIntelligence } from "@/hooks/use-home-behaviour-support-plan-effectiveness-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { BehaviourSupportRating } from "@/lib/engines/home-behaviour-support-plan-effectiveness-intelligence-engine";
+
+function useHomeBehaviourSupportPlanEffectivenessIntelligence() {
+  return useQuery({
+    queryKey: ["home-behaviour-support-plan-effectiveness-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-behaviour-support-plan-effectiveness-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch behaviour support plan effectiveness intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<BehaviourSupportRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

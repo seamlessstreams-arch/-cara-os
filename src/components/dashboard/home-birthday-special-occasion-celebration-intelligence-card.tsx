@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Cake } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeBirthdaySpecialOccasionCelebrationIntelligence } from "@/hooks/use-home-birthday-special-occasion-celebration-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { BirthdayCelebrationRating } from "@/lib/engines/home-birthday-special-occasion-celebration-intelligence-engine";
+
+function useHomeBirthdaySpecialOccasionCelebrationIntelligence() {
+  return useQuery({
+    queryKey: ["home-birthday-special-occasion-celebration-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-birthday-special-occasion-celebration-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch birthday special occasion celebration intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<BirthdayCelebrationRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

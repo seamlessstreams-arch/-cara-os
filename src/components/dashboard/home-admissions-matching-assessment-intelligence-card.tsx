@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeAdmissionsMatchingAssessmentIntelligence } from "@/hooks/use-home-admissions-matching-assessment-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { AdmissionsMatchingRating } from "@/lib/engines/home-admissions-matching-assessment-intelligence-engine";
+
+function useHomeAdmissionsMatchingAssessmentIntelligence() {
+  return useQuery({
+    queryKey: ["home-admissions-matching-assessment-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-admissions-matching-assessment-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch admissions matching assessment intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<AdmissionsMatchingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

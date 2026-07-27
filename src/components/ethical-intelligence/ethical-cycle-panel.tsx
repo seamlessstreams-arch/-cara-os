@@ -14,10 +14,36 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, CircleCheck, Circle, Link2, Loader2, RefreshCcw } from "lucide-react";
-import { useEthicalIntelligence, type EthicalEventWithStatus } from "@/hooks/use-ethical-intelligence";
+import { api } from "@/hooks/use-api";
+import type { EthicalCycleStatus, EthicalIntelligenceEvent } from "@/lib/ethical-intelligence/types";
 import { cn } from "@/lib/utils";
+
+/* ── inlined from @/hooks/use-ethical-intelligence ─────────────────────── */
+
+interface EthicalEventWithStatus {
+  event: EthicalIntelligenceEvent;
+  status: EthicalCycleStatus;
+}
+interface EthicalIntelligenceResponse {
+  data: EthicalEventWithStatus[];
+  meta: { total: number };
+}
+
+function useEthicalIntelligence(filter?: { childId?: string; triggerRecordId?: string }) {
+  const params = new URLSearchParams();
+  if (filter?.childId) params.set("childId", filter.childId);
+  if (filter?.triggerRecordId) params.set("triggerRecordId", filter.triggerRecordId);
+  const qs = params.toString();
+
+  return useQuery({
+    queryKey: ["ethical-intelligence", filter?.childId ?? "", filter?.triggerRecordId ?? ""],
+    queryFn: () => api.get<EthicalIntelligenceResponse>(`/ethical-intelligence${qs ? `?${qs}` : ""}`),
+    staleTime: 30 * 1000,
+  });
+}
 
 function StageDots({ item }: { item: EthicalEventWithStatus }) {
   return (

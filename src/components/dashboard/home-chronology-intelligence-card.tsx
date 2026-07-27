@@ -15,8 +15,24 @@ import {
   Calendar, FolderOpen, FileText, Timer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeChronologyIntelligence } from "@/hooks/use-home-chronology-intelligence";
-import type { ChronologyRating } from "@/lib/engines/home-chronology-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ChronologyRating, HomeChronologyResult } from "@/lib/engines/home-chronology-intelligence-engine";
+
+interface HomeChronologyResponse {
+  data: HomeChronologyResult;
+}
+
+function useHomeChronologyIntelligence() {
+  return useQuery<HomeChronologyResponse>({
+    queryKey: ["home-chronology-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-chronology-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home chronology intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

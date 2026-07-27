@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeCareEventQualityIntelligence } from "@/hooks/use-home-care-event-quality-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { CareEventQualityRating } from "@/lib/engines/home-care-event-quality-intelligence-engine";
+
+function useHomeCareEventQualityIntelligence() {
+  return useQuery({
+    queryKey: ["home-care-event-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-care-event-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch care event quality intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<CareEventQualityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

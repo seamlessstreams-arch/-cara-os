@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeBoilerHeatingSystemServicingIntelligence } from "@/hooks/use-home-boiler-heating-system-servicing-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { BoilerHeatingRating } from "@/lib/engines/home-boiler-heating-system-servicing-intelligence-engine";
+
+function useHomeBoilerHeatingSystemServicingIntelligence() {
+  return useQuery({
+    queryKey: ["home-boiler-heating-system-servicing-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-boiler-heating-system-servicing-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch boiler heating system servicing intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<BoilerHeatingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

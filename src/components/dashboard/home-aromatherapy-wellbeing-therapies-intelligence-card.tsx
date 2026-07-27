@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Leaf } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeAromatherapyWellbeingTherapiesIntelligence } from "@/hooks/use-home-aromatherapy-wellbeing-therapies-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { AromatherapyWellbeingRating } from "@/lib/engines/home-aromatherapy-wellbeing-therapies-intelligence-engine";
+
+function useHomeAromatherapyWellbeingTherapiesIntelligence() {
+  return useQuery({
+    queryKey: ["home-aromatherapy-wellbeing-therapies-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-aromatherapy-wellbeing-therapies-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch aromatherapy wellbeing therapies intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<AromatherapyWellbeingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

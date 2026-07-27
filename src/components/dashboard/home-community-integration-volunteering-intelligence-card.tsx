@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HandHelping } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeCommunityIntegrationVolunteeringIntelligence } from "@/hooks/use-home-community-integration-volunteering-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { CommunityIntegrationRating } from "@/lib/engines/home-community-integration-volunteering-intelligence-engine";
+
+function useHomeCommunityIntegrationVolunteeringIntelligence() {
+  return useQuery({
+    queryKey: ["home-community-integration-volunteering-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-community-integration-volunteering-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch community integration volunteering intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<CommunityIntegrationRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

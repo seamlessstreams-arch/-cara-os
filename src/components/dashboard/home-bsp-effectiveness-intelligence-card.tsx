@@ -14,8 +14,24 @@ import {
   ThumbsUp, ShieldOff, Target, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeBSPEffectivenessIntelligence } from "@/hooks/use-home-bsp-effectiveness-intelligence";
-import type { BSPEffectivenessRating } from "@/lib/engines/home-bsp-effectiveness-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { BSPEffectivenessRating, HomeBSPEffectivenessResult } from "@/lib/engines/home-bsp-effectiveness-intelligence-engine";
+
+interface HomeBSPEffectivenessResponse {
+  data: HomeBSPEffectivenessResult;
+}
+
+function useHomeBSPEffectivenessIntelligence() {
+  return useQuery<HomeBSPEffectivenessResponse>({
+    queryKey: ["home-bsp-effectiveness-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-bsp-effectiveness-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home BSP effectiveness intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

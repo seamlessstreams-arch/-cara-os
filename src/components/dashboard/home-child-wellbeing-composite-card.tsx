@@ -3,8 +3,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeChildWellbeingComposite } from "@/hooks/use-home-child-wellbeing-composite";
-import type { WellbeingCompositeRating } from "@/lib/engines/home-child-wellbeing-composite-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { WellbeingCompositeRating, HomeChildWellbeingCompositeResult } from "@/lib/engines/home-child-wellbeing-composite-engine";
+
+interface HomeChildWellbeingCompositeResponse { data: HomeChildWellbeingCompositeResult; }
+
+function useHomeChildWellbeingComposite() {
+  return useQuery<HomeChildWellbeingCompositeResponse>({
+    queryKey: ["home-child-wellbeing-composite"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-child-wellbeing-composite");
+      if (!res.ok) throw new Error("Failed to fetch child wellbeing composite");
+      return res.json();
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 const RATING_STYLES: Record<WellbeingCompositeRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

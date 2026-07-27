@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Wind } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeAsthmaRespiratoryManagementIntelligence } from "@/hooks/use-home-asthma-respiratory-management-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { AsthmaRespiratoryRating } from "@/lib/engines/home-asthma-respiratory-management-intelligence-engine";
+
+function useHomeAsthmaRespiratoryManagementIntelligence() {
+  return useQuery({
+    queryKey: ["home-asthma-respiratory-management-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-asthma-respiratory-management-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch asthma respiratory management intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<AsthmaRespiratoryRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

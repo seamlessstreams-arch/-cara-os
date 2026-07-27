@@ -15,8 +15,24 @@ import {
   ThumbsUp, Scale, BookOpen, Repeat,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeBehaviourIntelligence } from "@/hooks/use-home-behaviour-intelligence";
-import type { BehaviourRating } from "@/lib/engines/home-behaviour-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { BehaviourRating, HomeBehaviourResult } from "@/lib/engines/home-behaviour-intelligence-engine";
+
+interface HomeBehaviourResponse {
+  data: HomeBehaviourResult;
+}
+
+function useHomeBehaviourIntelligence() {
+  return useQuery<HomeBehaviourResponse>({
+    queryKey: ["home-behaviour-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-behaviour-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home behaviour intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

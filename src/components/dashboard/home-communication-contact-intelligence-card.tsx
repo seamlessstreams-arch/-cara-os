@@ -14,8 +14,24 @@ import {
   ClipboardCheck, BookOpen, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeCommunicationContactIntelligence } from "@/hooks/use-home-communication-contact-intelligence";
-import type { CommunicationRating } from "@/lib/engines/home-communication-contact-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { CommunicationRating, HomeCommunicationContactResult } from "@/lib/engines/home-communication-contact-intelligence-engine";
+
+interface HomeCommunicationContactResponse {
+  data: HomeCommunicationContactResult;
+}
+
+function useHomeCommunicationContactIntelligence() {
+  return useQuery<HomeCommunicationContactResponse>({
+    queryKey: ["home-communication-contact-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-communication-contact-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home communication contact intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

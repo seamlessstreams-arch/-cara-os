@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -27,11 +28,23 @@ import {
 } from "lucide-react";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { EpilepsySeizurePlan } from "@/types/extended";
-import { useEpilepsySeizurePlans } from "@/hooks/use-epilepsy-seizure-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from @/hooks/use-epilepsy-seizure-plans ───────────────────── */
+
+const EPILEPSY_PLANS_KEY = "epilepsy-seizure-plans";
+const EPILEPSY_PLANS_API = "/api/v1/epilepsy-seizure-plans";
+
+function useEpilepsySeizurePlans(childId?: string) {
+  return useQuery<{ data: EpilepsySeizurePlan[] }>({
+    queryKey: childId ? [EPILEPSY_PLANS_KEY, childId] : [EPILEPSY_PLANS_KEY],
+    queryFn: () =>
+      fetch(childId ? `${EPILEPSY_PLANS_API}?child_id=${childId}` : EPILEPSY_PLANS_API).then((r) => r.json()),
+  });
+}
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<EpilepsySeizurePlan>[] = [

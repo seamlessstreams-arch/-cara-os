@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -37,10 +38,30 @@ import {
   ENV_RISK_LEVEL_LABEL,
   ENV_ASSESSMENT_STATUS_LABEL,
 } from "@/types/extended";
-import { useEnvironmentalRisks, useCreateEnvironmentalRisk } from "@/hooks/use-environmental-risks";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from @/hooks/use-environmental-risks ──────────────────────── */
+
+const ENVIRONMENTAL_RISKS_KEY = "environmental-risks";
+const ENVIRONMENTAL_RISKS_API = "/api/v1/environmental-risks";
+
+function useEnvironmentalRisks() {
+  return useQuery<{ data: EnvironmentalRisk[] }>({
+    queryKey: [ENVIRONMENTAL_RISKS_KEY],
+    queryFn: () => fetch(ENVIRONMENTAL_RISKS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateEnvironmentalRisk() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<EnvironmentalRisk>) =>
+      fetch(ENVIRONMENTAL_RISKS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [ENVIRONMENTAL_RISKS_KEY] }),
+  });
+}
 
 /* ── label / colour maps ──────────────────────────────────────────────── */
 

@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Shirt } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeClothingPersonalPossessionsIntelligence } from "@/hooks/use-home-clothing-personal-possessions-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { ClothingPossessionsRating } from "@/lib/engines/home-clothing-personal-possessions-intelligence-engine";
+
+function useHomeClothingPersonalPossessionsIntelligence() {
+  return useQuery({
+    queryKey: ["home-clothing-personal-possessions-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-clothing-personal-possessions-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch clothing personal possessions intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<ClothingPossessionsRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -16,8 +16,24 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
-import { useHomeChildVoiceIntelligence } from "@/hooks/use-home-child-voice-intelligence";
-import type { ChildVoiceRating } from "@/lib/engines/home-child-voice-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ChildVoiceRating, HomeChildVoiceResult } from "@/lib/engines/home-child-voice-intelligence-engine";
+
+interface HomeChildVoiceResponse {
+  data: HomeChildVoiceResult;
+}
+
+function useHomeChildVoiceIntelligence() {
+  return useQuery<HomeChildVoiceResponse>({
+    queryKey: ["home-child-voice-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-child-voice-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home child voice intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

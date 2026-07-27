@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -9,7 +10,6 @@ import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/co
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { useEscalations } from "@/hooks/use-escalations";
 import type { Escalation } from "@/types/extended";
 import {
   ESCALATION_CATEGORY_LABEL,
@@ -29,6 +29,17 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { EscalationDecisionPanel } from "@/components/risk-escalation/escalation-decision-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from @/hooks/use-escalations ──────────────────────────────── */
+
+const ESCALATIONS_KEY = "escalations";
+
+function useEscalations() {
+  return useQuery<{ data: Escalation[] }>({
+    queryKey: [ESCALATIONS_KEY],
+    queryFn: () => fetch("/api/v1/escalations").then((r) => r.json()),
+  });
+}
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<Escalation>[] = [

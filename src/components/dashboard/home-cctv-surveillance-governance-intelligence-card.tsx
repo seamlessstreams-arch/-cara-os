@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeCctvSurveillanceGovernanceIntelligence } from "@/hooks/use-home-cctv-surveillance-governance-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { CctvGovernanceRating } from "@/lib/engines/home-cctv-surveillance-governance-intelligence-engine";
+
+function useHomeCctvSurveillanceGovernanceIntelligence() {
+  return useQuery({
+    queryKey: ["home-cctv-surveillance-governance-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-cctv-surveillance-governance-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch CCTV surveillance governance intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<CctvGovernanceRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

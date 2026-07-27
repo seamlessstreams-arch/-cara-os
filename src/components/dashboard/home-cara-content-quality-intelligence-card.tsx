@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, PenTool } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeCaraContentQualityIntelligence } from "@/hooks/use-home-cara-content-quality-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { CaraContentRating } from "@/lib/engines/home-cara-content-quality-intelligence-engine";
+
+function useHomeCaraContentQualityIntelligence() {
+  return useQuery({
+    queryKey: ["home-cara-content-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-cara-content-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch Cara content quality intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<CaraContentRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

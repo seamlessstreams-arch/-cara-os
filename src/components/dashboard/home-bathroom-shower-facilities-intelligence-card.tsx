@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShowerHead } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeBathroomShowerFacilitiesIntelligence } from "@/hooks/use-home-bathroom-shower-facilities-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { BathroomShowerRating } from "@/lib/engines/home-bathroom-shower-facilities-intelligence-engine";
+
+function useHomeBathroomShowerFacilitiesIntelligence() {
+  return useQuery({
+    queryKey: ["home-bathroom-shower-facilities-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-bathroom-shower-facilities-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch bathroom shower facilities intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<BathroomShowerRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
