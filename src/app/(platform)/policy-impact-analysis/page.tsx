@@ -6,8 +6,21 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { usePolicyImpactAnalyses } from "@/hooks/use-policy-impact-analyses";
+import { useQuery } from "@tanstack/react-query";
 import type { PolicyImpactAnalysis, PolicyImpactArea, PolicyReviewVerdict } from "@/types/extended";
+
+// ── Inlined from use-policy-impact-analyses ──────────────────────────────────
+
+function usePolicyImpactAnalyses() {
+  return useQuery<PolicyImpactAnalysis[]>({
+    queryKey: ["policy-impact-analyses"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/policy-impact-analyses");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 import {
   POLICY_IMPACT_AREA_LABEL,
   POLICY_CHANGE_TYPE_LABEL,

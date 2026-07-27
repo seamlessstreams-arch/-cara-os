@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -24,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useProfessionalFeeRecords } from "@/hooks/use-professional-fee-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   ProfessionalFeeRecord,
@@ -42,6 +42,20 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useProfessionalFeeRecords(childId?: string) {
+  return useQuery<ProfessionalFeeRecord[]>({
+    queryKey: ["professional-fee-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/professional-fee-records?child_id=${childId}`
+        : "/api/v1/professional-fee-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch professional fee records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 const STATUS_COLOUR: Record<FeeStatus, string> = {
   pending_approval: "bg-amber-100 text-amber-800",

@@ -14,7 +14,23 @@ import {
   ShieldCheck, Archive, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePossessionsIntelligence } from "@/hooks/use-possessions-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { PossessionsIntelligenceResult } from "@/lib/engines/possessions-intelligence-engine";
+
+// ── Inlined from use-possessions-intelligence ────────────────────────────────
+
+interface PossessionsIntelligenceResponse {
+  data: PossessionsIntelligenceResult;
+}
+
+function usePossessionsIntelligence() {
+  return useQuery({
+    queryKey: ["possessions-intelligence"],
+    queryFn: () => api.get<PossessionsIntelligenceResponse>("/possessions-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ���─ Styling ─────────────────────────────────────────────────────────────────
 

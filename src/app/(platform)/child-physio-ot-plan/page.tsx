@@ -28,11 +28,21 @@ import {
   PHYSIO_OT_THERAPY_TYPE_LABEL,
   PHYSIO_OT_GOAL_STATUS_LABEL,
 } from "@/types/extended";
-import { usePhysioOtPlans } from "@/hooks/use-physio-ot-plans";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const PHYSIO_OT_PLAN_KEY = "physio-ot-plans";
+const PHYSIO_OT_PLAN_API = "/api/v1/physio-ot-plans";
+
+function usePhysioOtPlans(childId?: string) {
+  return useQuery<{ data: PhysioOtPlan[] }>({
+    queryKey: childId ? [PHYSIO_OT_PLAN_KEY, childId] : [PHYSIO_OT_PLAN_KEY],
+    queryFn: () => fetch(childId ? `${PHYSIO_OT_PLAN_API}?child_id=${childId}` : PHYSIO_OT_PLAN_API).then((r) => r.json()),
+  });
+}
 
 /* ── colour maps ──────────────────────────────────────────────────────── */
 

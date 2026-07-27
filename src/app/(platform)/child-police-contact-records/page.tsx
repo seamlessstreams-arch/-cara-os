@@ -29,11 +29,23 @@ import {
   POLICE_CONTACT_REPORTED_BY_LABEL,
   POLICE_CONTACT_OUTCOME_LABEL,
 } from "@/types/extended";
-import { usePoliceContactRecords } from "@/hooks/use-police-contact-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined from use-police-contact-records ──────────────────────────────────
+
+const PCR_KEY = "police-contact-records";
+const PCR_API = "/api/v1/police-contact-records";
+
+function usePoliceContactRecords(childId?: string) {
+  return useQuery<{ data: PoliceContactRecord[] }>({
+    queryKey: childId ? [PCR_KEY, childId] : [PCR_KEY],
+    queryFn: () => fetch(childId ? `${PCR_API}?child_id=${childId}` : PCR_API).then((r) => r.json()),
+  });
+}
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 

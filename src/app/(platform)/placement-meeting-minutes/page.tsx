@@ -28,11 +28,21 @@ import {
 } from "@/components/ui/select";
 import type { PlacementMeeting, PlacementMeetingType, PlacementMeetingActionStatus } from "@/types/extended";
 import { PLACEMENT_MEETING_TYPE_LABEL, PLACEMENT_MEETING_ACTION_STATUS_LABEL } from "@/types/extended";
-import { usePlacementMeetings } from "@/hooks/use-placement-meetings";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const MEETING_KEY = "placement-meetings";
+const MEETING_API = "/api/v1/placement-meetings";
+
+function usePlacementMeetings(childId?: string) {
+  return useQuery<{ data: PlacementMeeting[] }>({
+    queryKey: childId ? [MEETING_KEY, childId] : [MEETING_KEY],
+    queryFn: () => fetch(childId ? `${MEETING_API}?child_id=${childId}` : MEETING_API).then((r) => r.json()),
+  });
+}
 
 const typeColour: Record<PlacementMeetingType, string> = {
   weekly_review: "bg-blue-100 text-blue-800",

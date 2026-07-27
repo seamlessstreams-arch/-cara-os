@@ -29,9 +29,29 @@ import { toast } from "sonner";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useReferralTrackerRecords, useCreateReferralTrackerRecord } from "@/hooks/use-referral-tracker-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ReferralTrackerRecord, ReferralTrackerStatus } from "@/types/extended";
 import { REFERRAL_TRACKER_STATUS_LABEL } from "@/types/extended";
+
+function useReferralTrackerRecords() {
+  return useQuery<ReferralTrackerRecord[]>({
+    queryKey: ["referral-tracker-records"],
+    queryFn: () => fetch("/api/v1/referral-tracker-records").then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
+  });
+}
+
+function useCreateReferralTrackerRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<ReferralTrackerRecord>) =>
+      fetch("/api/v1/referral-tracker-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["referral-tracker-records"] }),
+  });
+}
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { usePreventRecords, useCreatePreventRecord } from "@/hooks/use-prevent-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import type { PreventRecord, PreventReferralType, PreventRiskLevel, PreventStatus } from "@/types/extended";
@@ -35,6 +35,36 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function usePreventRecords(childId?: string) {
+  return useQuery<PreventRecord[]>({
+    queryKey: ["prevent-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/prevent-records?child_id=${childId}`
+        : "/api/v1/prevent-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch prevent records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreatePreventRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<PreventRecord>) => {
+      const res = await fetch("/api/v1/prevent-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create prevent record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["prevent-records"] }),
+  });
+}
 
 /* ── label / colour maps ───────────────────────────────────────────── */
 const REFERRAL_TYPE_COLOURS: Record<PreventReferralType, string> = {

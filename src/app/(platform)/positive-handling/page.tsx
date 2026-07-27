@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
-import { usePositiveHandling, useCreatePositiveHandlingPlan } from "@/hooks/use-positive-handling";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +30,27 @@ import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-r
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined from use-positive-handling ───────────────────────────────────────
+
+const PH_KEY = "positive-handling";
+const PH_API = "/api/v1/positive-handling";
+
+function usePositiveHandling(childId?: string) {
+  return useQuery<{ data: PositiveHandlingPlan[] }>({
+    queryKey: childId ? [PH_KEY, childId] : [PH_KEY],
+    queryFn: () => fetch(childId ? `${PH_API}?child_id=${childId}` : PH_API).then((r) => r.json()),
+  });
+}
+
+function useCreatePositiveHandlingPlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<PositiveHandlingPlan>) =>
+      fetch(PH_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [PH_KEY] }),
+  });
+}
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function PositiveHandlingPage() {

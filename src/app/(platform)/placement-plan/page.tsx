@@ -26,7 +26,7 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
-import { usePlacementObjectives, useCreatePlacementObjective } from "@/hooks/use-placement-objectives";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PlacementObjective, ObjectiveArea, PlacementObjectiveStatus } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Plus, Target, CheckCircle2,
@@ -37,6 +37,25 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const OBJECTIVE_KEY = "placement-objectives";
+const OBJECTIVE_API = "/api/v1/placement-objectives";
+
+function usePlacementObjectives(childId?: string) {
+  return useQuery<{ data: PlacementObjective[] }>({
+    queryKey: childId ? [OBJECTIVE_KEY, childId] : [OBJECTIVE_KEY],
+    queryFn: () => fetch(childId ? `${OBJECTIVE_API}?child_id=${childId}` : OBJECTIVE_API).then((r) => r.json()),
+  });
+}
+
+function useCreatePlacementObjective() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<PlacementObjective>) =>
+      fetch(OBJECTIVE_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [OBJECTIVE_KEY] }),
+  });
+}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 

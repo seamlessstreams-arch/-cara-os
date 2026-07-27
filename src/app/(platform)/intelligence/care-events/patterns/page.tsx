@@ -17,9 +17,8 @@ import { Input } from "@/components/ui/input";
 import {
   Activity, AlertTriangle, RefreshCw, TrendingUp, Users, Clock, Sparkles, CheckCircle2, Send,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import { usePromotePatternsToReg45 } from "@/hooks/use-promote-patterns-to-reg45";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type {
@@ -28,6 +27,32 @@ import type {
   CareEventPatternSummary,
   CareEventPatternType,
 } from "@/lib/care-events/pattern-detection";
+import type { PromotionResult } from "@/lib/care-events/pattern-reg45-bridge";
+
+interface PromotePatternsResponse {
+  data: PromotionResult;
+}
+
+function usePromotePatternsToReg45() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      home_id: string;
+      lookback_days?: number;
+      min_cluster?: number;
+      time_band_hours?: number;
+      period_start?: string;
+      period_end?: string;
+      actor_id?: string;
+      actor_role?: string;
+    }) =>
+      api.post<PromotePatternsResponse>("/care-events/patterns/promote", input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-reg45-evidence"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
+    },
+  });
+}
 
 interface CareEventPatternsResponse {
   data: CareEventPatternSummary;

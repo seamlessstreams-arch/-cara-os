@@ -17,8 +17,21 @@ import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { usePolicyReviewRecords } from "@/hooks/use-policy-review-records";
+import { useQuery } from "@tanstack/react-query";
 import type { PolicyReviewRecord, PolicyReviewCycle, PolicyReviewStatus } from "@/types/extended";
+
+// ── Inlined from use-policy-review-records ───────────────────────────────────
+
+function usePolicyReviewRecords() {
+  return useQuery<PolicyReviewRecord[]>({
+    queryKey: ["policy-review-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/policy-review-records");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 import { POLICY_REVIEW_CYCLE_LABEL, POLICY_REVIEW_STATUS_LABEL } from "@/types/extended";
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,

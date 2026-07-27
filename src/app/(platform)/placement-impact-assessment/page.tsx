@@ -17,7 +17,7 @@ import type {
   ImpactRiskLevel,
 } from "@/types/extended";
 import { PLACEMENT_IMPACT_STATUS_LABEL, IMPACT_RISK_LEVEL_LABEL } from "@/types/extended";
-import { usePlacementImpactAssessments } from "@/hooks/use-placement-impact-assessments";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronUp,
   ChevronDown,
@@ -34,6 +34,16 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const IMPACT_KEY = "placement-impact-assessments";
+const IMPACT_API = "/api/v1/placement-impact-assessments";
+
+function usePlacementImpactAssessments() {
+  return useQuery<{ data: PlacementImpactAssessment[] }>({
+    queryKey: [IMPACT_KEY],
+    queryFn: () => fetch(IMPACT_API).then((r) => r.json()),
+  });
+}
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<PlacementImpactAssessment>[] = [

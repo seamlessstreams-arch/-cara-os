@@ -27,13 +27,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { usePreAdmissionChecklists } from "@/hooks/use-pre-admission-checklists";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { PreAdmissionChecklist, PreAdmissionStatus } from "@/types/extended";
 import { PRE_ADMISSION_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function usePreAdmissionChecklists(childId?: string) {
+  return useQuery<PreAdmissionChecklist[]>({
+    queryKey: ["pre-admission-checklists", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/pre-admission-checklists?child_id=${childId}`
+        : "/api/v1/pre-admission-checklists";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch pre-admission checklists");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 // ── export columns ──────────────────────────────────────────────────────────
 const exportCols: ExportColumn<PreAdmissionChecklist>[] = [

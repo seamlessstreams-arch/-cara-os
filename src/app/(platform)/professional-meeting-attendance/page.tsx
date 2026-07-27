@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -24,7 +25,6 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useProfessionalMeetingAttendances } from "@/hooks/use-professional-meeting-attendances";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   ProfessionalMeetingAttendance,
@@ -40,6 +40,20 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useProfessionalMeetingAttendances(childId?: string) {
+  return useQuery<ProfessionalMeetingAttendance[]>({
+    queryKey: ["professional-meeting-attendances", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/professional-meeting-attendances?child_id=${childId}`
+        : "/api/v1/professional-meeting-attendances";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch professional meeting attendances");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local colour maps ─────────────────────────────────────────────────── */
 

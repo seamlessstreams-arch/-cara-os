@@ -1,8 +1,51 @@
 "use client";
 
 import { PageShell } from "@/components/layout/page-shell";
-import { usePracticeCultureScorecard } from "@/hooks/use-practice-culture-scorecard";
-import type { RAGStatus, ScorecardDimension } from "@/hooks/use-practice-culture-scorecard";
+import { useQuery } from "@tanstack/react-query";
+
+type RAGStatus = "progressing" | "developing" | "needs_support";
+
+interface ScorecardDimension {
+  id: string;
+  label: string;
+  description: string;
+  score: number;
+  status: RAGStatus;
+  dataPoints: number;
+  improvementPrompt: string;
+}
+
+interface ScorecardSummary {
+  priorityDimension: string;
+  priorityLabel: string;
+  priorityPrompt: string;
+  strongestDimension: string;
+  strongestLabel: string;
+  totalRecordsAnalysed: number;
+  frameworksEngaged: number;
+  totalFrameworks: number;
+}
+
+interface PracticeCultureScorecardResponse {
+  data: {
+    overallScore: number;
+    overallStatus: RAGStatus;
+    dimensions: ScorecardDimension[];
+    summary: ScorecardSummary;
+  };
+}
+
+function usePracticeCultureScorecard() {
+  return useQuery<PracticeCultureScorecardResponse>({
+    queryKey: ["practice-culture-scorecard"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/practice-culture-scorecard");
+      if (!res.ok) throw new Error("Failed to fetch practice culture scorecard");
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
+}
 
 // ── RAG helpers ──────────────────────────────────────────────────────────────
 

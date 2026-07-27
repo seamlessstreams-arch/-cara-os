@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +15,23 @@ import {
   FileText, TrendingUp, CheckCircle2, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRecordingQualityIntelligence } from "@/hooks/use-recording-quality-intelligence";
+import { api } from "@/hooks/use-api";
+import type { RecordingQualityIntelligenceResult } from "@/lib/engines/recording-quality-intelligence-engine";
+
+interface RecordingQualityIntelligenceResponse {
+  data: RecordingQualityIntelligenceResult;
+}
+
+function useRecordingQualityIntelligence() {
+  return useQuery({
+    queryKey: ["recording-quality-intelligence"],
+    queryFn: () =>
+      api.get<RecordingQualityIntelligenceResponse>(
+        "/recording-quality-intelligence",
+      ),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

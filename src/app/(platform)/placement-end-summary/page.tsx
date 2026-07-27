@@ -28,10 +28,20 @@ import {
 } from "@/components/ui/select";
 import type { PlacementEndSummary, PlacementEndReason } from "@/types/extended";
 import { PLACEMENT_END_REASON_LABEL } from "@/types/extended";
-import { usePlacementEndSummaries } from "@/hooks/use-placement-end-summaries";
+import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const END_SUMMARY_KEY = "placement-end-summaries";
+const END_SUMMARY_API = "/api/v1/placement-end-summaries";
+
+function usePlacementEndSummaries() {
+  return useQuery<{ data: PlacementEndSummary[] }>({
+    queryKey: [END_SUMMARY_KEY],
+    queryFn: () => fetch(END_SUMMARY_API).then((r) => r.json()),
+  });
+}
 
 // ── config ──────────────────────────────────────────────────────────────────
 const reasonColour: Record<PlacementEndReason, string> = {

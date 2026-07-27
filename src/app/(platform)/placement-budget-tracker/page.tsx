@@ -22,11 +22,21 @@ import {
 } from "@/components/ui/select";
 import type { PlacementBudgetTracker, PlacementBudgetCategory } from "@/types/extended";
 import { PLACEMENT_BUDGET_CATEGORY_LABEL } from "@/types/extended";
-import { usePlacementBudgetTrackers } from "@/hooks/use-placement-budget-trackers";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const BUDGET_KEY = "placement-budget-trackers";
+const BUDGET_API = "/api/v1/placement-budget-trackers";
+
+function usePlacementBudgetTrackers(childId?: string) {
+  return useQuery<{ data: PlacementBudgetTracker[] }>({
+    queryKey: childId ? [BUDGET_KEY, childId] : [BUDGET_KEY],
+    queryFn: () => fetch(childId ? `${BUDGET_API}?child_id=${childId}` : BUDGET_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 

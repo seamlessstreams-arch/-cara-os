@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -22,12 +23,22 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useQaAuditRecords } from "@/hooks/use-qa-audit-records";
 import type { QAAuditRecord, QAAuditRating, QAAuditActionStatus } from "@/types/extended";
 import { QA_AUDIT_RATING_LABEL, QA_AUDIT_ACTION_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useQaAuditRecords() {
+  return useQuery<QAAuditRecord[]>({
+    queryKey: ["qa-audit-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/qa-audit-records");
+      if (!res.ok) throw new Error("Failed to fetch QA audit records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local colour maps ───────────────────────────────────────────────────── */
 

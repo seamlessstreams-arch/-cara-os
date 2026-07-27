@@ -9,10 +9,21 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ShieldCheck, Lock, CheckCircle2 } from "lucide-react";
-import { useQualityGateBoard } from "@/hooks/use-quality-gates";
-import type { GateBoardEntry, GateKind } from "@/lib/quality-gates/types";
+import type { GateBoard, GateBoardEntry, GateKind } from "@/lib/quality-gates/types";
+
+const QUALITY_GATE_KEY = "quality-gate";
+const QUALITY_GATE_URL = "/api/v1/quality-gate";
+
+function useQualityGateBoard() {
+  return useQuery<{ data: GateBoard }>({
+    queryKey: [QUALITY_GATE_KEY],
+    queryFn: () => fetch(QUALITY_GATE_URL).then((r) => r.json()),
+    staleTime: 60 * 1000,
+  });
+}
 
 const GATE_LABEL: Record<GateKind, string> = {
   incident_close: "Incident close",

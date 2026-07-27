@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ClipboardCheck, Search, ArrowUpDown, Filter,
   CheckCircle2, AlertTriangle, ChevronDown, ChevronUp,
@@ -18,12 +19,20 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useReadinessItems } from "@/hooks/use-readiness-items";
 import type { ReadinessItem, SccifJudgementArea, ReadinessCategory, InPackStatus } from "@/types/extended";
 import { SCCIF_JUDGEMENT_AREA_LABEL, READINESS_CATEGORY_LABEL, IN_PACK_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const READINESS_ITEMS_KEY = "readiness-items";
+
+function useReadinessItems() {
+  return useQuery<{ data: ReadinessItem[] }>({
+    queryKey: [READINESS_ITEMS_KEY],
+    queryFn: () => fetch("/api/v1/readiness-items").then((r) => r.json()),
+  });
+}
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 

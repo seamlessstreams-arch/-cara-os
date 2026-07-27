@@ -17,9 +17,23 @@ import {
 } from "lucide-react";
 import { cn, localMonthKey } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { usePostIncidentChildDebriefs } from "@/hooks/use-post-incident-child-debriefs";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { PostIncidentChildDebrief, ChildDebriefMethod } from "@/types/extended";
+
+// ── Inlined from use-post-incident-child-debriefs ────────────────────────────
+
+function usePostIncidentChildDebriefs(childId?: string) {
+  return useQuery<PostIncidentChildDebrief[]>({
+    queryKey: ["post-incident-child-debriefs", childId],
+    queryFn: async () => {
+      const params = childId ? `?child_id=${childId}` : "";
+      const res = await fetch(`/api/v1/post-incident-child-debriefs${params}`);
+      if (!res.ok) throw new Error("Failed to fetch post-incident child debriefs");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 import { CHILD_DEBRIEF_METHOD_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

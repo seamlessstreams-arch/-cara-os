@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useReg35Notifications, useCreateReg35Notification } from "@/hooks/use-reg35-notifications";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -40,6 +40,31 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useReg35Notifications(childId?: string) {
+  return useQuery<Reg35Notification[]>({
+    queryKey: ["reg35-notifications", childId],
+    queryFn: () => {
+      const url = childId
+        ? `/api/v1/reg35-notifications?child_id=${childId}`
+        : "/api/v1/reg35-notifications";
+      return fetch(url).then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? []));
+    },
+  });
+}
+
+function useCreateReg35Notification() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Reg35Notification>) =>
+      fetch("/api/v1/reg35-notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["reg35-notifications"] }),
+  });
+}
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 

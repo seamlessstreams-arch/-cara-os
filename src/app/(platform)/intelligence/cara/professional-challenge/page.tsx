@@ -12,9 +12,30 @@
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useProfessionalChallenges } from "@/hooks/use-professional-challenge";
-import { RUNG_LABEL, CHALLENGE_LADDER } from "@/lib/professional-challenge/professional-challenge-engine";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import {
+  RUNG_LABEL,
+  CHALLENGE_LADDER,
+  type ChallengeSummary,
+  type ChallengeRung,
+} from "@/lib/professional-challenge/professional-challenge-engine";
 import { Scale, AlertTriangle, CheckCircle2, FileText, Loader2 } from "lucide-react";
+
+interface ProfessionalChallengeData extends ChallengeSummary {
+  ladder: readonly ChallengeRung[];
+  writeEnabled: boolean;
+}
+
+/** Professional challenges + detections, whole home or one child. */
+function useProfessionalChallenges(childId?: string) {
+  const qs = childId ? `?child_id=${encodeURIComponent(childId)}` : "";
+  return useQuery({
+    queryKey: ["professional-challenge", childId ?? "all"],
+    queryFn: async () =>
+      (await api.get<{ data: ProfessionalChallengeData }>(`/professional-challenge${qs}`)).data,
+  });
+}
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   open: { label: "Open", cls: "border-amber-300 bg-amber-50 text-amber-900" },

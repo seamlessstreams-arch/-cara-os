@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Star, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, CheckCircle2, TrendingUp, TrendingDown,
@@ -23,7 +24,6 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useQualityOfCareReviews, useCreateQualityOfCareReview } from "@/hooks/use-quality-of-care-reviews";
 import type {
   QualityOfCareReview,
   QocReviewType,
@@ -42,6 +42,33 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useQualityOfCareReviews() {
+  return useQuery<QualityOfCareReview[]>({
+    queryKey: ["quality-of-care-reviews"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/quality-of-care-reviews");
+      if (!res.ok) throw new Error("Failed to fetch quality of care reviews");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateQualityOfCareReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<QualityOfCareReview>) => {
+      const res = await fetch("/api/v1/quality-of-care-reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create quality of care review");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["quality-of-care-reviews"] }),
+  });
+}
 
 /* ── local colour maps ─────────────────────────────────────────────────── */
 

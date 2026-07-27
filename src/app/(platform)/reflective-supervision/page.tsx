@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,9 +10,45 @@ import {
   Loader2, RefreshCw, MessageSquare, CheckCircle2, AlertTriangle,
   HeartPulse, GraduationCap, Sparkles, Plus, Save, ShieldAlert,
 } from "lucide-react";
-import { useReflectiveSupervision, useCreateSupervision } from "@/hooks/use-reflective-supervision";
 import { StaffPracticeSkillsPanel } from "@/components/staff-skills/staff-practice-skills-panel";
-import type { SupervisionStatus, ReflectiveSupervisionRecord } from "@/lib/engines/supervision-engine";
+import type { SupervisionStatus, ReflectiveSupervisionRecord, SupervisionOverview, StaffLite } from "@/lib/engines/supervision-engine";
+
+interface ReflectiveSupervisionResponse {
+  overview: SupervisionOverview;
+  records: ReflectiveSupervisionRecord[];
+  staff: StaffLite[];
+}
+
+function useReflectiveSupervision() {
+  return useQuery<ReflectiveSupervisionResponse>({
+    queryKey: ["reflective-supervision"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/reflective-supervision");
+      if (!res.ok) throw new Error("Failed to fetch supervision");
+      return (await res.json()).data;
+    },
+    refetchInterval: 120_000,
+  });
+}
+
+function useCreateSupervision() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<ReflectiveSupervisionRecord>) => {
+      const res = await fetch("/api/v1/reflective-supervision", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || "Failed to save supervision");
+      }
+      return (await res.json()).data as ReflectiveSupervisionRecord;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["reflective-supervision"] }),
+  });
+}
 
 const STATUS_META: Record<SupervisionStatus, { label: string; chip: string; dot: string }> = {
   current: { label: "Current", chip: "bg-green-100 text-green-800 border-green-200", dot: "bg-green-500" },

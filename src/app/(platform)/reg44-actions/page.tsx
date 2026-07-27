@@ -24,7 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useReg44ActionRecords, useCreateReg44ActionRecord } from "@/hooks/use-reg44-action-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   Reg44ActionRecord,
   Reg44ActionPriority,
@@ -39,6 +39,26 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useReg44ActionRecords() {
+  return useQuery<Reg44ActionRecord[]>({
+    queryKey: ["reg44-action-records"],
+    queryFn: () => fetch("/api/v1/reg44-action-records").then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
+  });
+}
+
+function useCreateReg44ActionRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Reg44ActionRecord>) =>
+      fetch("/api/v1/reg44-action-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["reg44-action-records"] }),
+  });
+}
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 

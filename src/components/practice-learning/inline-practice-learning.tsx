@@ -10,8 +10,25 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BookOpen, Loader2, ChevronDown, ChevronUp, Repeat, Lightbulb, Eye } from "lucide-react";
-import { usePracticeLearning } from "@/hooks/use-practice-learning";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { LearningRecord } from "@/lib/practice-learning/types";
 import { ConfidencePill } from "@/components/cara-reasoning/confidence-pill";
+
+interface PracticeLearningResponse {
+  data: { learning: LearningRecord };
+}
+
+function usePracticeLearning(childId?: string) {
+  return useQuery({
+    queryKey: ["practice-learning", childId ?? "home"],
+    queryFn: () =>
+      api.get<PracticeLearningResponse>(
+        `/practice-learning${childId ? `?childId=${encodeURIComponent(childId)}` : ""}`,
+      ),
+    staleTime: 60 * 1000,
+  });
+}
 
 function Mini({ icon: Icon, label, children }: { icon: React.ComponentType<{ className?: string }>; label: string; children: React.ReactNode }) {
   return (

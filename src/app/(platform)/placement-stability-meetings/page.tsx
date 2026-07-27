@@ -32,11 +32,21 @@ import {
   STABILITY_MEETING_STATUS_LABEL,
   STABILITY_MEETING_RISK_LEVEL_LABEL,
 } from "@/types/extended";
-import { usePlacementStabilityMeetings } from "@/hooks/use-placement-stability-meetings";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const STABILITY_MEETING_KEY = "placement-stability-meetings";
+const STABILITY_MEETING_API = "/api/v1/placement-stability-meetings";
+
+function usePlacementStabilityMeetings(childId?: string) {
+  return useQuery<{ data: PlacementStabilityMeeting[] }>({
+    queryKey: childId ? [STABILITY_MEETING_KEY, childId] : [STABILITY_MEETING_KEY],
+    queryFn: () => fetch(childId ? `${STABILITY_MEETING_API}?child_id=${childId}` : STABILITY_MEETING_API).then((r) => r.json()),
+  });
+}
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<PlacementStabilityMeeting>[] = [

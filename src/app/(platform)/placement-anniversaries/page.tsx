@@ -27,11 +27,21 @@ import {
 } from "@/components/ui/select";
 import type { PlacementAnniversaryEntry } from "@/types/extended";
 import { ANNIVERSARY_SIGNIFICANCE_TYPE_LABEL, ANNIVERSARY_EMOTIONAL_SIGNIFICANCE_LABEL, ANNIVERSARY_RECURRENCE_LABEL } from "@/types/extended";
-import { usePlacementAnniversaryEntries } from "@/hooks/use-placement-anniversary-entries";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const ANNIVERSARY_KEY = "placement-anniversary-entries";
+const ANNIVERSARY_API = "/api/v1/placement-anniversary-entries";
+
+function usePlacementAnniversaryEntries(childId?: string) {
+  return useQuery<{ data: PlacementAnniversaryEntry[] }>({
+    queryKey: childId ? [ANNIVERSARY_KEY, childId] : [ANNIVERSARY_KEY],
+    queryFn: () => fetch(childId ? `${ANNIVERSARY_API}?child_id=${childId}` : ANNIVERSARY_API).then((r) => r.json()),
+  });
+}
 
 const significanceColour: Record<string, string> = {
   celebratory: "bg-green-100 text-green-800",

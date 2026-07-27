@@ -14,7 +14,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useProfessionalConsultations, useCreateProfessionalConsultation } from "@/hooks/use-professional-consultations";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { ProfessionalConsultation, ProfConsultationType, ProfConsultationMethod } from "@/types/extended";
 import { PROF_CONSULTATION_TYPE_LABEL, PROF_CONSULTATION_METHOD_LABEL } from "@/types/extended";
@@ -25,6 +25,36 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useProfessionalConsultations(childId?: string) {
+  return useQuery<ProfessionalConsultation[]>({
+    queryKey: ["professional-consultations", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/professional-consultations?child_id=${childId}`
+        : "/api/v1/professional-consultations";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch professional consultations");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateProfessionalConsultation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<ProfessionalConsultation>) => {
+      const res = await fetch("/api/v1/professional-consultations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create professional consultation");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["professional-consultations"] }),
+  });
+}
 
 // ── local colour maps ───────────────────────────────────────────────────────
 const TYPE_COLOR: Record<ProfConsultationType, string> = {

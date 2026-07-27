@@ -1,14 +1,68 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
-import { useRecordingGapIntelligence } from "@/hooks/use-recording-gap-intelligence";
-import type {
-  GapSeverity,
-  DomainGap,
-  ChildRecordingProfile,
-  DomainSummary,
-} from "@/hooks/use-recording-gap-intelligence";
+
+type GapSeverity = "critical" | "warning" | "current";
+type RecordingDomain = "daily_log" | "key_working" | "lac_review" | "welfare_check";
+
+interface DomainGap {
+  domain: RecordingDomain;
+  domainLabel: string;
+  severity: GapSeverity;
+  daysSinceLastRecord: number | null;
+  lastRecordDate: string | null;
+  overdueMessage: string;
+}
+
+interface ChildRecordingProfile {
+  childId: string;
+  childName: string;
+  placementDays: number;
+  gaps: DomainGap[];
+  criticalGapCount: number;
+  warningGapCount: number;
+  overallSeverity: GapSeverity;
+  supervisionPrompt: string;
+}
+
+interface DomainSummary {
+  domain: RecordingDomain;
+  domainLabel: string;
+  childrenWithCritical: number;
+  childrenWithWarning: number;
+  totalChildrenAffected: number;
+}
+
+interface RecordingGapSummary {
+  totalCurrentChildren: number;
+  childrenWithCriticalGap: number;
+  childrenWithAnyGap: number;
+  totalCriticalGaps: number;
+  totalWarningGaps: number;
+  domainSummaries: DomainSummary[];
+  ofstedNote: string;
+}
+
+interface RecordingGapIntelligenceResponse {
+  data: {
+    childProfiles: ChildRecordingProfile[];
+    summary: RecordingGapSummary;
+  };
+}
+
+function useRecordingGapIntelligence() {
+  return useQuery<RecordingGapIntelligenceResponse>({
+    queryKey: ["recording-gap-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/recording-gap-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch recording gap intelligence");
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
+}
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
 

@@ -17,12 +17,61 @@ import {
   TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp, BookOpen,
   Sparkles, AlertCircle, CheckCircle2,
 } from "lucide-react";
-import {
-  usePracticeFrameworkUsage,
-  type FrameworkUsage,
-  type FrameworkSignal,
-  type FrameworkTrend,
-} from "@/hooks/use-practice-framework-usage";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+
+type FrameworkSignal = "active" | "emerging" | "dormant";
+type FrameworkTrend = "increasing" | "stable" | "declining";
+
+interface SourceBreakdown {
+  writingAssistant: number;
+  reflectiveSupervision: number;
+  incidentMode: number;
+  paceProfiles: number;
+  practiceObservations: number;
+}
+
+interface TopEngager {
+  staffId: string;
+  name: string;
+  count: number;
+}
+
+interface FrameworkUsage {
+  frameworkId: string;
+  title: string;
+  shortDesc: string;
+  icon: string;
+  totalEngagements: number;
+  sources: SourceBreakdown;
+  signal: FrameworkSignal;
+  trend: FrameworkTrend;
+  topEngagers: TopEngager[];
+  supervisionPrompt: string;
+}
+
+interface FrameworkUsageSummary {
+  totalEngagements: number;
+  activeFrameworks: number;
+  mostActiveFramework: { id: string; title: string } | null;
+  needsAttentionFramework: { id: string; title: string } | null;
+  topPractitioner: TopEngager | null;
+  sourceBreakdown: SourceBreakdown;
+}
+
+interface PracticeFrameworkUsageResponse {
+  frameworks: FrameworkUsage[];
+  summary: FrameworkUsageSummary;
+}
+
+function usePracticeFrameworkUsage() {
+  return useQuery({
+    queryKey: ["practice-framework-usage"],
+    queryFn: () =>
+      api.get<{ data: PracticeFrameworkUsageResponse }>("/practice-framework-usage"),
+    staleTime: 60_000,
+  });
+}
 
 // ── Icon map ──────────────────────────────────────────────────────────────────
 

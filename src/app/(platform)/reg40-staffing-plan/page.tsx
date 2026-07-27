@@ -29,9 +29,16 @@ import { Badge }        from "@/components/ui/badge";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { cn }           from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useReg40StaffEntries } from "@/hooks/use-reg40-staff-entries";
+import { useQuery } from "@tanstack/react-query";
 import type { Reg40StaffEntry, Reg40QualStatus } from "@/types/extended";
 import { REG40_QUAL_STATUS_LABEL } from "@/types/extended";
+
+function useReg40StaffEntries() {
+  return useQuery<Reg40StaffEntry[]>({
+    queryKey: ["reg40-staff-entries"],
+    queryFn: () => fetch("/api/v1/reg40-staff-entries").then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
+  });
+}
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";

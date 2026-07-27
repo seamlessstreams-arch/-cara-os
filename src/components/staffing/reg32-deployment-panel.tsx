@@ -9,12 +9,28 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { SHIFT_TYPE_LABELS } from "@/lib/constants";
-import { useReg32Deployment } from "@/hooks/use-reg32-deployment";
-import type { Reg32DeploymentBoard } from "@/hooks/use-reg32-deployment";
+import { api } from "@/hooks/use-api";
+import type { Reg32DeploymentBoard } from "@/lib/reg32-deployment/reg32-deployment-engine";
 import { ShieldCheck, Ban, AlertTriangle, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
+
+type Reg32DeploymentResponse = { data: Reg32DeploymentBoard };
+
+/** The Reg 32 deployment-suitability board (read-only). Optional staff filter. */
+function useReg32Deployment(params?: { staffId?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.staffId) qs.set("staff_id", params.staffId);
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
+  return useQuery({
+    queryKey: ["reg32-deployment", params ?? null],
+    queryFn: () => api.get<Reg32DeploymentResponse>(`/reg32-deployment${suffix}`),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+  });
+}
 
 type ShiftRow = Reg32DeploymentBoard["shifts"][number];
 type Suitability = ShiftRow["suitability"];

@@ -1,13 +1,88 @@
 "use client";
 
-import {
-  usePracticeFlagIntelligence,
-  type PracticeFlagEntry,
-  type ThresholdConsultationEntry,
-  type StaffWellbeingSignalEntry,
-  type FlagSeverity,
-  type OverallSignal,
-} from "@/hooks/use-practice-flag-intelligence";
+import { useQuery } from "@tanstack/react-query";
+
+type FlagSeverity = "high" | "medium" | "low";
+type OverallSignal = "urgent" | "attention" | "good";
+
+interface PracticeFlagEntry {
+  id: string;
+  childId: string | null;
+  staffId: string | null;
+  childName: string | null;
+  flagType: string;
+  title: string;
+  description: string;
+  evidence: string;
+  recommendedAction: string;
+  severity: FlagSeverity;
+  requiresManagerReview: boolean;
+  requiresRiReview: boolean;
+  sourceType: string;
+  sourceId: string | null;
+  createdAt: string;
+}
+
+interface ThresholdConsultationEntry {
+  id: string;
+  childId: string | null;
+  childName: string | null;
+  concernType: string;
+  summary: string;
+  recommendedNextStep: string;
+  strategyDiscussionRecommended: boolean;
+  ladoConsultationRecommended: boolean;
+  emergencyActionRecommended: boolean;
+  managerDecision: string | null;
+  createdAt: string;
+}
+
+interface StaffWellbeingSignalEntry {
+  id: string;
+  staffId: string;
+  staffName: string;
+  signalType: string;
+  severity: FlagSeverity;
+  evidence: string;
+  supportRecommendation: string;
+  managerAction: string | null;
+  resolved: boolean;
+}
+
+interface PracticeFlagSummary {
+  totalFlags: number;
+  unresolvedFlags: number;
+  highSeverityCount: number;
+  managerReviewRequiredCount: number;
+  riReviewRequiredCount: number;
+  thresholdConsultationCount: number;
+  staffWellbeingSignalCount: number;
+  overallSignal: OverallSignal;
+  flagTypeBreakdown: { type: string; count: number }[];
+  childrenWithFlags: { childId: string; childName: string; flagCount: number; highSeverityCount: number }[];
+}
+
+interface PracticeFlagIntelligenceResponse {
+  data: {
+    priorityFlags: PracticeFlagEntry[];
+    allFlags: PracticeFlagEntry[];
+    thresholdConsultations: ThresholdConsultationEntry[];
+    staffWellbeingSignals: StaffWellbeingSignalEntry[];
+    summary: PracticeFlagSummary;
+  };
+}
+
+function usePracticeFlagIntelligence() {
+  return useQuery<PracticeFlagIntelligenceResponse>({
+    queryKey: ["practice-flag-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/practice-flag-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch practice flag intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+}
 
 const SEVERITY_CONFIG: Record<FlagSeverity, { label: string; bg: string; border: string; text: string; dot: string }> = {
   high: { label: "High", bg: "bg-red-50", border: "border-red-200", text: "text-red-700", dot: "bg-red-500" },

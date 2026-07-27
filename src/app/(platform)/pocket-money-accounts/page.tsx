@@ -33,12 +33,42 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { usePocketMoneyAccounts, useCreatePocketMoneyAccount } from "@/hooks/use-pocket-money-accounts";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PocketMoneyAccount, PocketMoneyAccountTxType, PocketMoneyAccountCategory } from "@/types/extended";
 import { POCKET_MONEY_ACCOUNT_CATEGORY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function usePocketMoneyAccounts(childId?: string) {
+  return useQuery<PocketMoneyAccount[]>({
+    queryKey: ["pocket-money-accounts", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/pocket-money-accounts?child_id=${childId}`
+        : "/api/v1/pocket-money-accounts";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreatePocketMoneyAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<PocketMoneyAccount>) => {
+      const res = await fetch("/api/v1/pocket-money-accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["pocket-money-accounts"] }),
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

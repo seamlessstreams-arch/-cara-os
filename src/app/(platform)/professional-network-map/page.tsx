@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -20,13 +21,26 @@ import { getYPName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useProfessionalNetworkContacts } from "@/hooks/use-professional-network-contacts";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { ProfessionalNetworkContact, NetworkContactFrequency } from "@/types/extended";
 import { NETWORK_CONTACT_FREQUENCY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useProfessionalNetworkContacts(childId?: string) {
+  return useQuery<ProfessionalNetworkContact[]>({
+    queryKey: ["professional-network-contacts", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/professional-network-contacts?child_id=${childId}`
+        : "/api/v1/professional-network-contacts";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch professional network contacts");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 

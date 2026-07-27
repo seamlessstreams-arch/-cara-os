@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -38,10 +39,19 @@ import {
   DRILL_SCENARIO_TYPE_LABEL,
   DRILL_OUTCOME_LABEL,
 } from "@/types/extended";
-import { useProtocolDrills } from "@/hooks/use-protocol-drills";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const PROTOCOL_DRILLS_KEY = "protocol-drills";
+const PROTOCOL_DRILLS_API = "/api/v1/protocol-drills";
+
+function useProtocolDrills() {
+  return useQuery<{ data: ProtocolDrill[] }>({
+    queryKey: [PROTOCOL_DRILLS_KEY],
+    queryFn: () => fetch(PROTOCOL_DRILLS_API).then((r) => r.json()),
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

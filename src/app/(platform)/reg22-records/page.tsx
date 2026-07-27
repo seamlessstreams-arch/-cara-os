@@ -13,9 +13,16 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useReg22Records } from "@/hooks/use-reg22-records";
+import { useQuery } from "@tanstack/react-query";
 import type { Reg22Record, Reg22ComplianceStatus } from "@/types/extended";
 import { REG22_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
+
+function useReg22Records() {
+  return useQuery<Reg22Record[]>({
+    queryKey: ["reg22-records"],
+    queryFn: () => fetch("/api/v1/reg22-records").then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
+  });
+}
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";

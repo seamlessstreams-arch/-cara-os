@@ -14,7 +14,23 @@ import {
   CheckCircle, Clock, BookOpen, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePoliciesIntelligence } from "@/hooks/use-policies-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { PoliciesIntelligenceResult } from "@/lib/engines/policies-intelligence-engine";
+
+// ── Inlined from use-policies-intelligence ────────────────────────────────────
+
+interface PoliciesIntelligenceResponse {
+  data: PoliciesIntelligenceResult;
+}
+
+function usePoliciesIntelligence() {
+  return useQuery({
+    queryKey: ["policies-intelligence"],
+    queryFn: () => api.get<PoliciesIntelligenceResponse>("/policies-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

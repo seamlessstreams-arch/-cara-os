@@ -20,11 +20,21 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { PlacementStabilityRecord, StabilityFactor, PlacementEvent, StabilityRiskLevel, StabilityTrend } from "@/types/extended";
 import { STABILITY_RISK_LEVEL_LABEL } from "@/types/extended";
-import { usePlacementStabilityRecords } from "@/hooks/use-placement-stability-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const STABILITY_RECORD_KEY = "placement-stability-records";
+const STABILITY_RECORD_API = "/api/v1/placement-stability-records";
+
+function usePlacementStabilityRecords(childId?: string) {
+  return useQuery<{ data: PlacementStabilityRecord[] }>({
+    queryKey: childId ? [STABILITY_RECORD_KEY, childId] : [STABILITY_RECORD_KEY],
+    queryFn: () => fetch(childId ? `${STABILITY_RECORD_API}?child_id=${childId}` : STABILITY_RECORD_API).then((r) => r.json()),
+  });
+}
 
 /* ── constants ──────────────────────────────────────────────────────── */
 const RISK_LEVELS: StabilityRiskLevel[] = ["low", "medium", "high", "critical"];

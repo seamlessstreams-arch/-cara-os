@@ -4,9 +4,29 @@ import React from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
-import { usePracticeFollowUps } from "@/hooks/use-practice-follow-ups";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { PracticeFollowUp } from "@/lib/practice-intelligence/workflow-suggestion-engine";
 import { cn } from "@/lib/utils";
 import { Loader2, Brain, ArrowRight, Sparkles } from "lucide-react";
+
+interface PracticeFollowUpsResult {
+  generated_at: string;
+  total: number;
+  follow_ups: PracticeFollowUp[];
+}
+
+/**
+ * Cara's suggested follow-ups from recent records (incidents, missing episodes,
+ * restraints, safeguarding, complaints) — each actionable in Cara Studio.
+ */
+function usePracticeFollowUps() {
+  return useQuery({
+    queryKey: ["practice-follow-ups"],
+    queryFn: async () =>
+      (await api.get<{ data: PracticeFollowUpsResult }>(`/practice-follow-ups`)).data,
+  });
+}
 
 const PRIORITY: Record<string, { label: string; cls: string }> = {
   urgent: { label: "Urgent", cls: "bg-red-100 text-red-800 border-red-200" },

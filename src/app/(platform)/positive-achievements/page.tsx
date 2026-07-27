@@ -11,9 +11,23 @@ import { cn, formatDate } from "@/lib/utils";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { usePositiveAchievements } from "@/hooks/use-positive-achievements";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { PositiveAchievement, PositiveAchievementCategory } from "@/types/extended";
+
+// ── Inlined from use-positive-achievements ───────────────────────────────────
+
+function usePositiveAchievements(childId?: string) {
+  return useQuery<PositiveAchievement[]>({
+    queryKey: ["positive-achievements", childId],
+    queryFn: async () => {
+      const params = childId ? `?child_id=${childId}` : "";
+      const res = await fetch(`/api/v1/positive-achievements${params}`);
+      if (!res.ok) throw new Error("Failed to fetch positive achievements");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 import { POSITIVE_ACHIEVEMENT_CATEGORY_LABEL } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Star, Trophy, Sparkles,
