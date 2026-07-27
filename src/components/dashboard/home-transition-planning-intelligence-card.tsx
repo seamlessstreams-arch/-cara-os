@@ -15,8 +15,24 @@ import {
   Target, CheckCircle, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeTransitionPlanningIntelligence } from "@/hooks/use-home-transition-planning-intelligence";
-import type { TransitionRating } from "@/lib/engines/home-transition-planning-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { TransitionRating, HomeTransitionPlanningResult } from "@/lib/engines/home-transition-planning-intelligence-engine";
+
+interface HomeTransitionPlanningResponse {
+  data: HomeTransitionPlanningResult;
+}
+
+function useHomeTransitionPlanningIntelligence() {
+  return useQuery<HomeTransitionPlanningResponse>({
+    queryKey: ["home-transition-planning-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-transition-planning-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home transition planning intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

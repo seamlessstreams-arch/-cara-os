@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Gavel } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStaffDisciplinaryConductIntelligence } from "@/hooks/use-home-staff-disciplinary-conduct-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { StaffDisciplinaryRating } from "@/lib/engines/home-staff-disciplinary-conduct-intelligence-engine";
+
+function useHomeStaffDisciplinaryConductIntelligence() {
+  return useQuery({
+    queryKey: ["home-staff-disciplinary-conduct-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-staff-disciplinary-conduct-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch staff disciplinary conduct intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<StaffDisciplinaryRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

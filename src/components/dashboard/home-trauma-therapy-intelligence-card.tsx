@@ -4,8 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HeartPulse } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeTraumaTherapyIntelligence } from "@/hooks/use-home-trauma-therapy-intelligence";
-import type { TraumaTherapyRating } from "@/lib/engines/home-trauma-therapy-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { TraumaTherapyRating, TraumaTherapyResult } from "@/lib/engines/home-trauma-therapy-intelligence-engine";
+
+function useHomeTraumaTherapyIntelligence() {
+  return useQuery<TraumaTherapyResult>({
+    queryKey: ["home-trauma-therapy-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-trauma-therapy-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch trauma therapy intelligence");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<TraumaTherapyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -16,8 +16,10 @@ import {
   ThumbsUp, ShieldOff, Flame, Smile,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeTherapeuticClimateIntelligence } from "@/hooks/use-home-therapeutic-climate-intelligence";
-import type { TherapeuticClimateRating } from "@/lib/engines/home-therapeutic-climate-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { TherapeuticClimateRating, HomeTherapeuticClimateResult } from "@/lib/engines/home-therapeutic-climate-intelligence-engine";
+
+interface HomeTherapeuticClimateResponse { data: HomeTherapeuticClimateResult; }
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -44,7 +46,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeTherapeuticClimateIntelligenceCard() {
-  const { data, isLoading } = useHomeTherapeuticClimateIntelligence();
+  const { data, isLoading } = useQuery<HomeTherapeuticClimateResponse>({
+    queryKey: ["home-therapeutic-climate-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-therapeutic-climate-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home therapeutic climate intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

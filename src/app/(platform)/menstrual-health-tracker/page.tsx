@@ -18,8 +18,18 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useMenstrualHealthPlans } from "@/hooks/use-menstrual-health-plans";
+import { useQuery } from "@tanstack/react-query";
 import type { MenstrualHealthPlan, MenstrualStage, MenstrualComfortLevel } from "@/types/extended";
+
+const MENSTRUAL_HEALTH_PLANS_KEY = "menstrual-health-plans";
+const MENSTRUAL_HEALTH_PLANS_API = "/api/v1/menstrual-health-plans";
+
+function useMenstrualHealthPlans(childId?: string) {
+  return useQuery<{ data: MenstrualHealthPlan[] }>({
+    queryKey: childId ? [MENSTRUAL_HEALTH_PLANS_KEY, childId] : [MENSTRUAL_HEALTH_PLANS_KEY],
+    queryFn: () => fetch(childId ? `${MENSTRUAL_HEALTH_PLANS_API}?child_id=${childId}` : MENSTRUAL_HEALTH_PLANS_API).then((r) => r.json()),
+  });
+}
 import { MENSTRUAL_STAGE_LABEL, MENSTRUAL_COMFORT_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

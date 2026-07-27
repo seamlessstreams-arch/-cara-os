@@ -17,8 +17,24 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
-import { useHomeStaffDevelopmentIntelligence } from "@/hooks/use-home-staff-development-intelligence";
-import type { StaffDevelopmentRating } from "@/lib/engines/home-staff-development-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { StaffDevelopmentRating, HomeStaffDevelopmentResult } from "@/lib/engines/home-staff-development-intelligence-engine";
+
+interface HomeStaffDevelopmentResponse {
+  data: HomeStaffDevelopmentResult;
+}
+
+function useHomeStaffDevelopmentIntelligence() {
+  return useQuery<HomeStaffDevelopmentResponse>({
+    queryKey: ["home-staff-development-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-staff-development-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home staff development intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

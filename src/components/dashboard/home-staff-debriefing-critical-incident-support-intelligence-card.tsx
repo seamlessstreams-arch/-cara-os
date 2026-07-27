@@ -3,8 +3,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HeartHandshake } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStaffDebriefingCriticalIncidentSupportIntelligence } from "@/hooks/use-home-staff-debriefing-critical-incident-support-intelligence";
-import type { StaffDebriefingRating } from "@/lib/engines/home-staff-debriefing-critical-incident-support-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { StaffDebriefingRating, StaffDebriefingResult } from "@/lib/engines/home-staff-debriefing-critical-incident-support-intelligence-engine";
+
+interface StaffDebriefingCriticalIncidentSupportResponse { data: StaffDebriefingResult; }
+
+function useHomeStaffDebriefingCriticalIncidentSupportIntelligence() {
+  return useQuery<StaffDebriefingCriticalIncidentSupportResponse>({
+    queryKey: ["home-staff-debriefing-critical-incident-support-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-staff-debriefing-critical-incident-support-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch staff debriefing & critical incident support intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<StaffDebriefingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

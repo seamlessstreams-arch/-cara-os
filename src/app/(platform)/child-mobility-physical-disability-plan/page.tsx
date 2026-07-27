@@ -32,7 +32,17 @@ import {
   MOBILITY_STATUS_LABEL,
   ENERGY_ENVELOPE_STATUS_LABEL,
 } from "@/types/extended";
-import { useMobilityDisabilityPlans } from "@/hooks/use-mobility-disability-plans";
+import { useQuery } from "@tanstack/react-query";
+
+const MOBILITY_DISABILITY_PLANS_KEY = "mobility-disability-plans";
+const MOBILITY_DISABILITY_PLANS_API = "/api/v1/mobility-disability-plans";
+
+function useMobilityDisabilityPlans(childId?: string) {
+  return useQuery<{ data: MobilityDisabilityPlan[] }>({
+    queryKey: childId ? [MOBILITY_DISABILITY_PLANS_KEY, childId] : [MOBILITY_DISABILITY_PLANS_KEY],
+    queryFn: () => fetch(childId ? `${MOBILITY_DISABILITY_PLANS_API}?child_id=${childId}` : MOBILITY_DISABILITY_PLANS_API).then((r) => r.json()),
+  });
+}
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

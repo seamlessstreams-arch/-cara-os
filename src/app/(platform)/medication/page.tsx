@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import { useMedication, useAdminister } from "@/hooks/use-medication";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import { careToast } from "@/lib/toast";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { useStaff } from "@/hooks/use-staff";
@@ -28,6 +30,39 @@ import { Input } from "@/components/ui/input";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import Link from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+function useMedication(childId?: string) {
+  const query = childId ? `?child_id=${childId}` : "";
+  return useQuery({
+    queryKey: ["medication", childId],
+    queryFn: () => api.get<{
+      data: {
+        medications: Medication[];
+        mar: { medication: Medication; administrations: MedicationAdministration[] }[];
+        today_schedule: MedicationAdministration[];
+        exceptions: MedicationAdministration[];
+        scheduled: MedicationAdministration[];
+        stock_alerts: Medication[];
+      };
+      meta: Record<string, number>;
+    }>(`/medication${query}`),
+  });
+}
+
+function useAdminister() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<MedicationAdministration>) =>
+      api.post(`/medication/${id}/administer`, data),
+    onSuccess: () => {
+      careToast.medicationRecorded();
+      qc.invalidateQueries({ queryKey: ["medication"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["health-check"] });
+    },
+    onError: () => careToast.actionFailed("Record medication"),
+  });
+}
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 

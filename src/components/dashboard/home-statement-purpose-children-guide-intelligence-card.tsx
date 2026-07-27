@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, BookMarked } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStatementPurposeChildrenGuideIntelligence } from "@/hooks/use-home-statement-purpose-children-guide-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { StatementPurposeRating } from "@/lib/engines/home-statement-purpose-children-guide-intelligence-engine";
+
+function useHomeStatementPurposeChildrenGuideIntelligence() {
+  return useQuery({
+    queryKey: ["home-statement-purpose-children-guide-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-statement-purpose-children-guide-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch statement of purpose children guide intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<StatementPurposeRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

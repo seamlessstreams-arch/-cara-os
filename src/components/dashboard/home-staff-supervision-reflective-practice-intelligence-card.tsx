@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStaffSupervisionReflectivePracticeIntelligence } from "@/hooks/use-home-staff-supervision-reflective-practice-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { SupervisionRating } from "@/lib/engines/home-staff-supervision-reflective-practice-intelligence-engine";
+
+function useHomeStaffSupervisionReflectivePracticeIntelligence() {
+  return useQuery({
+    queryKey: ["home-staff-supervision-reflective-practice-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-staff-supervision-reflective-practice-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch staff supervision reflective practice intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<SupervisionRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

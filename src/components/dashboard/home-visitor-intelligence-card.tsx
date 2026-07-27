@@ -16,8 +16,24 @@ import {
   ShieldCheck, UserCheck, LogOut, FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeVisitorIntelligence } from "@/hooks/use-home-visitor-intelligence";
-import type { VisitorRating } from "@/lib/engines/home-visitor-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { VisitorRating, HomeVisitorResult } from "@/lib/engines/home-visitor-intelligence-engine";
+
+interface HomeVisitorResponse {
+  data: HomeVisitorResult;
+}
+
+function useHomeVisitorIntelligence() {
+  return useQuery<HomeVisitorResponse>({
+    queryKey: ["home-visitor-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-visitor-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home visitor intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

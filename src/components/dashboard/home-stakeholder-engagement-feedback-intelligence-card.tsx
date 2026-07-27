@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStakeholderEngagementFeedbackIntelligence } from "@/hooks/use-home-stakeholder-engagement-feedback-intelligence";
-import type { StakeholderEngagementRating } from "@/lib/engines/home-stakeholder-engagement-feedback-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { StakeholderEngagementRating, StakeholderEngagementResult } from "@/lib/engines/home-stakeholder-engagement-feedback-intelligence-engine";
+
+interface StakeholderEngagementResponse { data: StakeholderEngagementResult; }
+
+function useHomeStakeholderEngagementFeedbackIntelligence() {
+  return useQuery<StakeholderEngagementResponse>({
+    queryKey: ["home-stakeholder-engagement-feedback-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-stakeholder-engagement-feedback-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch stakeholder engagement & feedback intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<StakeholderEngagementRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

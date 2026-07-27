@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +15,20 @@ import {
   Brain, Users, ClipboardCheck, Loader2, FileWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMeetingsIntelligence } from "@/hooks/use-meetings-intelligence";
+import { api } from "@/hooks/use-api";
+import type { MeetingsIntelligenceResult } from "@/lib/engines/meetings-intelligence-engine";
+
+interface MeetingsIntelligenceResponse {
+  data: MeetingsIntelligenceResult;
+}
+
+function useMeetingsIntelligence() {
+  return useQuery({
+    queryKey: ["meetings-intelligence"],
+    queryFn: () => api.get<MeetingsIntelligenceResponse>("/meetings-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

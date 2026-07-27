@@ -14,8 +14,24 @@ import {
   Users, Activity, TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStaffWellbeingIntelligence } from "@/hooks/use-home-staff-wellbeing-intelligence";
-import type { StaffWellbeingRating } from "@/lib/engines/home-staff-wellbeing-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { StaffWellbeingRating, HomeStaffWellbeingResult } from "@/lib/engines/home-staff-wellbeing-intelligence-engine";
+
+interface HomeStaffWellbeingResponse {
+  data: HomeStaffWellbeingResult;
+}
+
+function useHomeStaffWellbeingIntelligence() {
+  return useQuery<HomeStaffWellbeingResponse>({
+    queryKey: ["home-staff-wellbeing-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-staff-wellbeing-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home staff wellbeing intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

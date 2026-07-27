@@ -15,8 +15,10 @@ import {
   Users, CheckCheck, Eye, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeSupervisionIntelligence } from "@/hooks/use-home-supervision-intelligence";
-import type { SupervisionRating } from "@/lib/engines/home-supervision-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { SupervisionRating, HomeSupervisionResult } from "@/lib/engines/home-supervision-intelligence-engine";
+
+interface HomeSupervisionResponse { data: HomeSupervisionResult; }
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -43,7 +45,15 @@ const REC_STYLES: Record<string, string> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export function HomeSupervisionIntelligenceCard() {
-  const { data, isLoading } = useHomeSupervisionIntelligence();
+  const { data, isLoading } = useQuery<HomeSupervisionResponse>({
+    queryKey: ["home-supervision-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-supervision-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home supervision intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
 
   if (isLoading) {
     return (

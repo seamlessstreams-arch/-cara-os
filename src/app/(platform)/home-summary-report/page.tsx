@@ -8,7 +8,7 @@ import {
   Loader2, RefreshCw, FileText, ShieldCheck, AlertTriangle, AlertOctagon,
   CheckCircle2, MinusCircle, ThumbsUp, Sparkles,
 } from "lucide-react";
-import { useHomeSummaryReport } from "@/hooks/use-home-summary-report";
+import { useQuery } from "@tanstack/react-query";
 import type {
   HomeSummaryReportResult, ReportSection, SectionStatus, OverallStatus,
 } from "@/lib/engines/home-summary-report-engine";
@@ -82,7 +82,16 @@ function SectionBlock({ s }: { s: ReportSection }) {
 }
 
 export default function HomeSummaryReportPage() {
-  const { data, isLoading, isFetching, refetch } = useHomeSummaryReport();
+  const { data, isLoading, isFetching, refetch } = useQuery<HomeSummaryReportResult>({
+    queryKey: ["home-summary-report"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-summary-report");
+      if (!res.ok) throw new Error("Failed to fetch home summary report");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 300_000,
+  });
 
   if (isLoading) {
     return (

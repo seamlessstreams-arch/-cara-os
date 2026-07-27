@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStaffRecognitionMoraleIntelligence } from "@/hooks/use-home-staff-recognition-morale-intelligence";
-import type { StaffRecognitionRating } from "@/lib/engines/home-staff-recognition-morale-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { StaffRecognitionRating, StaffRecognitionMoraleResult } from "@/lib/engines/home-staff-recognition-morale-intelligence-engine";
+
+interface StaffRecognitionMoraleResponse { data: StaffRecognitionMoraleResult; }
+
+function useHomeStaffRecognitionMoraleIntelligence() {
+  return useQuery<StaffRecognitionMoraleResponse>({
+    queryKey: ["home-staff-recognition-morale-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-staff-recognition-morale-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch staff recognition & morale intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<StaffRecognitionRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -15,8 +15,24 @@ import {
   ClipboardCheck, School, User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeSpecializedHealthPlansIntelligence } from "@/hooks/use-home-specialized-health-plans-intelligence";
-import type { SpecializedHealthRating } from "@/lib/engines/home-specialized-health-plans-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { SpecializedHealthRating, HomeSpecializedHealthPlansResult } from "@/lib/engines/home-specialized-health-plans-intelligence-engine";
+
+interface HomeSpecializedHealthPlansResponse {
+  data: HomeSpecializedHealthPlansResult;
+}
+
+function useHomeSpecializedHealthPlansIntelligence() {
+  return useQuery<HomeSpecializedHealthPlansResponse>({
+    queryKey: ["home-specialized-health-plans-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-specialized-health-plans-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home specialized health plans intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

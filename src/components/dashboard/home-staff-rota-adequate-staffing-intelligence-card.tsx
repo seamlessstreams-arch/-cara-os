@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStaffRotaAdequateStaffingIntelligence } from "@/hooks/use-home-staff-rota-adequate-staffing-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { StaffRotaRating } from "@/lib/engines/home-staff-rota-adequate-staffing-intelligence-engine";
+
+function useHomeStaffRotaAdequateStaffingIntelligence() {
+  return useQuery({
+    queryKey: ["home-staff-rota-adequate-staffing-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-staff-rota-adequate-staffing-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch staff rota adequate staffing intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<StaffRotaRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

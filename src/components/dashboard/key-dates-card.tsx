@@ -9,15 +9,38 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useKeyDates, type KeyDate } from "@/hooks/use-key-dates";
+import { api } from "@/hooks/use-api";
 import { cn, formatRelative } from "@/lib/utils";
 import {
   Calendar, Cake, GraduationCap, Users, Clock,
   Award, FileText, Heart, Loader2, ChevronRight,
   AlertTriangle,
 } from "lucide-react";
+
+interface KeyDate {
+  id: string;
+  type: "birthday" | "training_expiry" | "supervision" | "probation_end" | "placement_review" | "document_expiry" | "care_review";
+  title: string;
+  date: string;
+  entity_type: "young_person" | "staff" | "document" | "home";
+  entity_id: string;
+  entity_name: string;
+  severity: "info" | "low" | "medium" | "high" | "critical";
+  href: string;
+  notes?: string;
+}
+
+function useKeyDates() {
+  return useQuery({
+    queryKey: ["key-dates"],
+    queryFn: () =>
+      api.get<{ data: KeyDate[]; meta: { total: number; today: string } }>("/key-dates"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Type icons and colours ──────────────────────────────────────────────────
 

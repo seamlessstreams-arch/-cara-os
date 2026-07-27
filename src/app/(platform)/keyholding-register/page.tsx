@@ -24,8 +24,30 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useKeyRecords, useCreateKeyRecord } from "@/hooks/use-key-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { KeyRecord, KeyType, KeyholdingStatus } from "@/types/extended";
+
+const KEY_RECORDS_KEY = "key-records";
+
+function useKeyRecords() {
+  return useQuery<{ data: KeyRecord[] }>({
+    queryKey: [KEY_RECORDS_KEY],
+    queryFn: () => fetch("/api/v1/key-records").then((r) => r.json()),
+  });
+}
+
+function useCreateKeyRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<KeyRecord>) =>
+      fetch("/api/v1/key-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY_RECORDS_KEY] }),
+  });
+}
 import { KEY_TYPE_LABEL, KEYHOLDING_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

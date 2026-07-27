@@ -14,8 +14,24 @@ import {
   ClipboardCheck, Thermometer, DoorOpen, Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStaffLifecycleIntelligence } from "@/hooks/use-home-staff-lifecycle-intelligence";
-import type { StaffLifecycleRating } from "@/lib/engines/home-staff-lifecycle-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { StaffLifecycleRating, HomeStaffLifecycleResult } from "@/lib/engines/home-staff-lifecycle-intelligence-engine";
+
+interface HomeStaffLifecycleResponse {
+  data: HomeStaffLifecycleResult;
+}
+
+function useHomeStaffLifecycleIntelligence() {
+  return useQuery<HomeStaffLifecycleResponse>({
+    queryKey: ["home-staff-lifecycle-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-staff-lifecycle-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home staff lifecycle intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

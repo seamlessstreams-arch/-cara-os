@@ -15,8 +15,24 @@ import {
   Moon, Puzzle, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeTherapeuticProgressIntelligence } from "@/hooks/use-home-therapeutic-progress-intelligence";
-import type { TherapeuticRating } from "@/lib/engines/home-therapeutic-progress-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { TherapeuticRating, HomeTherapeuticProgressResult } from "@/lib/engines/home-therapeutic-progress-intelligence-engine";
+
+interface HomeTherapeuticProgressResponse {
+  data: HomeTherapeuticProgressResult;
+}
+
+function useHomeTherapeuticProgressIntelligence() {
+  return useQuery<HomeTherapeuticProgressResponse>({
+    queryKey: ["home-therapeutic-progress-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-therapeutic-progress-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch home therapeutic progress intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

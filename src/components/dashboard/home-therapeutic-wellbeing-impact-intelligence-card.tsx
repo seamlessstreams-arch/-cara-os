@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HeartPulse } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeTherapeuticWellbeingImpactIntelligence } from "@/hooks/use-home-therapeutic-wellbeing-impact-intelligence";
-import type { TherapeuticWellbeingRating } from "@/lib/engines/home-therapeutic-wellbeing-impact-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { TherapeuticWellbeingRating, TherapeuticWellbeingResult } from "@/lib/engines/home-therapeutic-wellbeing-impact-intelligence-engine";
+
+interface TherapeuticWellbeingResponse { data: TherapeuticWellbeingResult; }
+
+function useHomeTherapeuticWellbeingImpactIntelligence() {
+  return useQuery<TherapeuticWellbeingResponse>({
+    queryKey: ["home-therapeutic-wellbeing-impact-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-therapeutic-wellbeing-impact-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch therapeutic wellbeing & impact intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<TherapeuticWellbeingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

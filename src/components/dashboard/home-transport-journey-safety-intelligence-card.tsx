@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Car } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeTransportJourneySafetyIntelligence } from "@/hooks/use-home-transport-journey-safety-intelligence";
-import type { TransportSafetyRating } from "@/lib/engines/home-transport-journey-safety-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { TransportSafetyRating, TransportJourneySafetyResult } from "@/lib/engines/home-transport-journey-safety-intelligence-engine";
+
+interface TransportJourneySafetyResponse { data: TransportJourneySafetyResult; }
+
+function useHomeTransportJourneySafetyIntelligence() {
+  return useQuery<TransportJourneySafetyResponse>({
+    queryKey: ["home-transport-journey-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-transport-journey-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch transport & journey safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<TransportSafetyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -3,8 +3,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStaffLoneWorkingSafetyIntelligence } from "@/hooks/use-home-staff-lone-working-safety-intelligence";
-import type { StaffLoneWorkingRating } from "@/lib/engines/home-staff-lone-working-safety-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { StaffLoneWorkingRating, StaffLoneWorkingResult } from "@/lib/engines/home-staff-lone-working-safety-intelligence-engine";
+
+interface StaffLoneWorkingSafetyResponse {
+  data: StaffLoneWorkingResult;
+}
+
+function useHomeStaffLoneWorkingSafetyIntelligence() {
+  return useQuery<StaffLoneWorkingSafetyResponse>({
+    queryKey: ["home-staff-lone-working-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-staff-lone-working-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch staff lone working safety intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<StaffLoneWorkingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

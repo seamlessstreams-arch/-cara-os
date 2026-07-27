@@ -7,8 +7,17 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useMoneyRecords } from "@/hooks/use-money-records";
+import { useQuery } from "@tanstack/react-query";
 import type { MoneyRecord, MoneyCompetency } from "@/types/extended";
+
+const MONEY_RECORDS_KEY = "money-records";
+
+function useMoneyRecords() {
+  return useQuery<{ data: MoneyRecord[] }>({
+    queryKey: [MONEY_RECORDS_KEY],
+    queryFn: () => fetch("/api/v1/money-records").then((r) => r.json()),
+  });
+}
 import { MONEY_SKILL_CATEGORY_LABEL, MONEY_COMPETENCY_LABEL } from "@/types/extended";
 import {
   PoundSterling,

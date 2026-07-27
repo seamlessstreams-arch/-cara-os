@@ -14,8 +14,18 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useMemorialOccasionRecords } from "@/hooks/use-memorial-occasion-records";
+import { useQuery } from "@tanstack/react-query";
 import type { MemorialOccasionRecord, MemorialOccasionType } from "@/types/extended";
+
+const MEMORIAL_OCCASION_KEY = "memorial-occasion-records";
+const MEMORIAL_OCCASION_API = "/api/v1/memorial-occasion-records";
+
+function useMemorialOccasionRecords(childId?: string) {
+  return useQuery<{ data: MemorialOccasionRecord[] }>({
+    queryKey: childId ? [MEMORIAL_OCCASION_KEY, childId] : [MEMORIAL_OCCASION_KEY],
+    queryFn: () => fetch(childId ? `${MEMORIAL_OCCASION_API}?child_id=${childId}` : MEMORIAL_OCCASION_API).then((r) => r.json()),
+  });
+}
 import { MEMORIAL_OCCASION_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";

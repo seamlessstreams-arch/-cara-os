@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeStaffReflectivePracticeIntelligence } from "@/hooks/use-home-staff-reflective-practice-intelligence";
-import type { ReflectivePracticeRating } from "@/lib/engines/home-staff-reflective-practice-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { ReflectivePracticeRating, ReflectivePracticeResult } from "@/lib/engines/home-staff-reflective-practice-intelligence-engine";
+
+interface ReflectivePracticeResponse { data: ReflectivePracticeResult; }
+
+function useHomeStaffReflectivePracticeIntelligence() {
+  return useQuery<ReflectivePracticeResponse>({
+    queryKey: ["home-staff-reflective-practice-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-staff-reflective-practice-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch staff reflective practice intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<ReflectivePracticeRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

@@ -1,10 +1,22 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeVisitorManagementSecurityIntelligence } from "@/hooks/use-home-visitor-management-security-intelligence";
 import type { VisitorSecurityRating } from "@/lib/engines/home-visitor-management-security-intelligence-engine";
+
+function useHomeVisitorManagementSecurityIntelligence() {
+  return useQuery({
+    queryKey: ["home-visitor-management-security-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-visitor-management-security-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch visitor management security intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<VisitorSecurityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
