@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse, type NextRequest } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
 import { createTaskRecord } from "@/lib/supabase/care-records";
 import { computeSaferRecruitmentCommand } from "@/lib/engines/safer-recruitment-command-engine";
@@ -24,11 +24,26 @@ export async function POST(req: NextRequest) {
 
   const command = computeSaferRecruitmentCommand({ today, candidates: assembleCommandCandidates() });
   const specs = deriveReminderSpecs(command);
-  const openDescriptions = db.tasks.findActive().map((t) => t.description);
+  // dal.tasks.findActive on live filters to status="not_started" only, but the
+  // in-memory equivalent returns everything not-completed/not-cancelled (incl.
+  // in_progress/paused). Preserve exact dedupe behavior with a client-side filter
+  // over findAll() instead of accepting the narrower live semantics.
+  const allTasks = await dal.tasks.findAll();
+  const openDescriptions = allTasks
+    .filter((t) => t.status !== "completed" && t.status !== "cancelled")
+    .map((t) => t.description);
   const plan = planReminderSync(specs, openDescriptions);
 
+  // Pre-fetch candidate profiles for the reminders we're about to create + index
+  // by id, so the createTaskRecord .map() stays sync.
+  const profilesById = new Map(
+    await Promise.all(
+      plan.to_create.map(async (s) => [s.candidate_id, await dal.candidateProfiles.findById(s.candidate_id)] as const),
+    ),
+  );
+
   const created = plan.to_create.map((s) => {
-    const profile = db.candidateProfiles.findById(s.candidate_id);
+    const profile = profilesById.get(s.candidate_id);
     return createTaskRecord({
       title: s.title,
       description: s.description,

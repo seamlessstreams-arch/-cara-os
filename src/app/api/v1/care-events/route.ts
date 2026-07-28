@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { careEventsDb } from "@/lib/db";
 import { classifyCareEvent } from "@/lib/care-events/routing-engine";
 import { getUserIdFromRequest } from "@/lib/auth-guard";
@@ -85,9 +85,18 @@ export async function GET(req: NextRequest) {
   const paged = limit > 0 ? list.slice(start, start + effLimit) : list;
 
   // Enrich with display names (the card falls back to raw ids otherwise).
+  // Pre-fetch once + index by id, so the enrichment .map() stays sync and doesn't
+  // fire N awaits per event (fetch is O(1) — one query per collection, not per row).
+  const [allStaff, allYoungPeople] = await Promise.all([
+    dal.staff.findAll(),
+    dal.youngPeople.findAll(),
+  ]);
+  const staffById = new Map(allStaff.map((s) => [s.id, s]));
+  const youngPeopleById = new Map(allYoungPeople.map((yp) => [yp.id, yp]));
+
   const data = paged.map((e) => {
-    const staffMember = e.staff_id ? db.staff.findById(e.staff_id) : null;
-    const youngPerson = e.child_id ? db.youngPeople.findById(e.child_id) : null;
+    const staffMember = e.staff_id ? staffById.get(e.staff_id) : null;
+    const youngPerson = e.child_id ? youngPeopleById.get(e.child_id) : null;
     return {
       ...e,
       staff_name: staffMember ? `${staffMember.first_name} ${staffMember.last_name}` : e.staff_id,
