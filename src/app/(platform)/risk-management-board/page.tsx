@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -40,7 +41,6 @@ import {
   Info,
   Loader2,
 } from "lucide-react";
-import { useStrategicRiskRecords } from "@/hooks/use-strategic-risk-records";
 import type {
   StrategicRiskRecord,
   StrategicRiskCategory,
@@ -59,6 +59,18 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const STRATEGIC_RISK_KEY = ["strategic-risk-records"];
+
+async function fetchAll(): Promise<StrategicRiskRecord[]> {
+  const res = await fetch("/api/v1/strategic-risk-records");
+  if (!res.ok) throw new Error("Failed to fetch strategic risk records");
+  const __j = await res.json(); return Array.isArray(__j) ? __j : (__j?.data ?? []);
+}
+
+function useStrategicRiskRecords() {
+  return useQuery<StrategicRiskRecord[]>({ queryKey: STRATEGIC_RISK_KEY, queryFn: fetchAll });
+}
 
 /* ── local config (icons cannot be serialized) ────────────────────── */
 

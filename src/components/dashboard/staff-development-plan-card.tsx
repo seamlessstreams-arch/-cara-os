@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,8 +16,23 @@ import {
   GraduationCap, TrendingUp, FileWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useStaffDevelopmentIntelligence } from "@/hooks/use-staff-development-intelligence";
+import { api } from "@/hooks/use-api";
+import type { StaffDevelopmentIntelligenceResult } from "@/lib/engines/staff-development-intelligence-engine";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
+
+// ── data hook (inlined from use-staff-development-intelligence) ─────────────
+
+interface StaffDevelopmentIntelligenceResponse {
+  data: StaffDevelopmentIntelligenceResult;
+}
+
+function useStaffDevelopmentIntelligence() {
+  return useQuery({
+    queryKey: ["staff-development-intelligence"],
+    queryFn: () => api.get<StaffDevelopmentIntelligenceResponse>("/staff-development-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

@@ -7,6 +7,7 @@
 // SCCIF: Overall experiences and progress of children.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, CheckCircle2, ChevronRight, Heart,
@@ -14,12 +15,22 @@ import {
   AlertCircle, Sparkles, Stethoscope, BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTherapeuticProgress } from "@/hooks/use-therapeutic-progress";
 import type {
   TrajectoryDirection,
   EngagementLevel,
   TherapeuticConcernLevel,
+  TherapeuticProgressResult,
 } from "@/lib/engines/therapeutic-progress-intelligence-engine";
+
+function useTherapeuticProgress(childId: string | null) {
+  return useQuery<{ data: TherapeuticProgressResult }>({
+    queryKey: ["therapeutic-progress-intelligence", childId],
+    queryFn: () =>
+      fetch(`/api/v1/therapeutic-progress-intelligence?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

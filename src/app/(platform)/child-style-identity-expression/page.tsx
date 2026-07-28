@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -25,11 +26,20 @@ import {
 } from "@/components/ui/select";
 import type { StyleIdentityRecord, BodyConfidence } from "@/types/extended";
 import { BODY_CONFIDENCE_LABEL } from "@/types/extended";
-import { useStyleIdentityRecords } from "@/hooks/use-style-identity-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const STYLE_IDENTITY_KEY = "style-identity-records";
+const STYLE_IDENTITY_API = "/api/v1/style-identity-records";
+
+function useStyleIdentityRecords(childId?: string) {
+  return useQuery<{ data: StyleIdentityRecord[] }>({
+    queryKey: childId ? [STYLE_IDENTITY_KEY, childId] : [STYLE_IDENTITY_KEY],
+    queryFn: () => fetch(childId ? `${STYLE_IDENTITY_API}?child_id=${childId}` : STYLE_IDENTITY_API).then((r) => r.json()),
+  });
+}
 
 const exportCols: ExportColumn<StyleIdentityRecord>[] = [
   { header: "Young Person", accessor: (r: StyleIdentityRecord) => getYPName(r.child_id) },

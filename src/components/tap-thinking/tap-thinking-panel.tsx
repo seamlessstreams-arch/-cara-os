@@ -12,11 +12,65 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, CircleCheck, Circle, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { useTapMutation, useTapSessions, type TapSessionWithStatus } from "@/hooks/use-tap-thinking";
-import { TAP_CONTEXT_LABELS, TAP_STAGES, type TapContext, type TapStage } from "@/lib/tap-thinking/types";
+import {
+  TAP_CONTEXT_LABELS,
+  TAP_STAGES,
+  type TapContext,
+  type TapSession,
+  type TapSessionStatus,
+  type TapStage,
+  type TapStageDefinition,
+} from "@/lib/tap-thinking/types";
 import { cn } from "@/lib/utils";
+
+const TAP_THINKING_KEY = "tap-thinking";
+const TAP_THINKING_URL = "/api/v1/tap-thinking";
+
+interface TapSessionWithStatus {
+  session: TapSession;
+  status: TapSessionStatus;
+}
+interface ListResponse {
+  data: TapSessionWithStatus[];
+  meta: { total: number };
+  stages: Record<TapStage, TapStageDefinition>;
+  contexts: Record<TapContext, string>;
+}
+
+async function postJson<T>(body: unknown): Promise<T> {
+  const res = await fetch(TAP_THINKING_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const json = (await res.json()) as T & { error?: string };
+  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  return json;
+}
+
+function useTapSessions(filter?: { childId?: string; context?: string; status?: string }) {
+  const params = new URLSearchParams();
+  if (filter?.childId) params.set("childId", filter.childId);
+  if (filter?.context) params.set("context", filter.context);
+  if (filter?.status) params.set("status", filter.status);
+  const qs = params.toString();
+  return useQuery<ListResponse>({
+    queryKey: [TAP_THINKING_KEY, filter?.childId ?? "", filter?.context ?? "", filter?.status ?? ""],
+    queryFn: () => fetch(`${TAP_THINKING_URL}${qs ? `?${qs}` : ""}`).then((r) => r.json()),
+    staleTime: 15 * 1000,
+  });
+}
+
+function useTapMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Record<string, unknown>) => postJson<{ data: TapSessionWithStatus }>(input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [TAP_THINKING_KEY] }),
+  });
+}
 
 function SessionRow({ item, stages }: { item: TapSessionWithStatus; stages: Record<TapStage, { label: string; questions: string[] }> }) {
   const { session, status } = item;

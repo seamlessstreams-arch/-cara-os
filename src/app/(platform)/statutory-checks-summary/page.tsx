@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -18,7 +19,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useStatutoryCheckRecords } from "@/hooks/use-statutory-check-records";
 import type {
   StatutoryCheckRecord,
   StatutoryCheckComplianceStatus,
@@ -32,6 +32,17 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useStatutoryCheckRecords() {
+  return useQuery<StatutoryCheckRecord[]>({
+    queryKey: ["statutory-check-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/statutory-check-records");
+      if (!res.ok) throw new Error("Failed to fetch statutory check records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config (colours / icons not serializable) ────────────────────── */
 

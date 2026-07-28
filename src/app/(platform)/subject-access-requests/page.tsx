@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -22,7 +23,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useSubjectAccessRequestRecords, useCreateSubjectAccessRequestRecord } from "@/hooks/use-subject-access-request-records";
 import { toast } from "sonner";
 import type {
   SubjectAccessRequestRecord,
@@ -38,6 +38,33 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useSubjectAccessRequestRecords() {
+  return useQuery<SubjectAccessRequestRecord[]>({
+    queryKey: ["subject-access-request-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/subject-access-request-records");
+      if (!res.ok) throw new Error("Failed to fetch subject access request records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateSubjectAccessRequestRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<SubjectAccessRequestRecord, "id">) => {
+      const res = await fetch("/api/v1/subject-access-request-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create subject access request record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["subject-access-request-records"] }),
+  });
+}
 
 /* ── local config (colours not serializable) ────────────────────────────── */
 

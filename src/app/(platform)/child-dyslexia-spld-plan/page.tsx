@@ -26,6 +26,7 @@ import {
 import type {
   SpldCondition,
   SpldDiagnosisStatus,
+  SpldSupportPlan,
   SpldTechOutcome,
 } from "@/types/extended";
 import {
@@ -33,11 +34,21 @@ import {
   SPLD_DIAGNOSIS_STATUS_LABEL,
   SPLD_TECH_OUTCOME_LABEL,
 } from "@/types/extended";
-import { useSpldSupportPlans } from "@/hooks/use-spld-support-plans";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const SPLD_SUPPORT_PLANS_KEY = "spld-support-plans";
+const SPLD_SUPPORT_PLANS_API = "/api/v1/spld-support-plans";
+
+function useSpldSupportPlans(childId?: string) {
+  return useQuery<{ data: SpldSupportPlan[] }>({
+    queryKey: childId ? [SPLD_SUPPORT_PLANS_KEY, childId] : [SPLD_SUPPORT_PLANS_KEY],
+    queryFn: () => fetch(childId ? `${SPLD_SUPPORT_PLANS_API}?child_id=${childId}` : SPLD_SUPPORT_PLANS_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 

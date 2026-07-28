@@ -10,15 +10,61 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, FileText, Loader2, ShieldQuestion } from "lucide-react";
 import {
-  useStrategyMutation,
-  useStrategyRequests,
-  type StrategyRequestWithStatus,
-} from "@/hooks/use-strategy-discussion";
-import { EVIDENCE_KIND_LABELS, type EvidenceKind } from "@/lib/strategy-discussion/types";
+  EVIDENCE_KIND_LABELS,
+  type EvidenceKind,
+  type StrategyDiscussionRequest,
+  type StrategyDraftStatus,
+} from "@/lib/strategy-discussion/types";
 import { BiasReflectionPanel } from "@/components/cognitive-bias/bias-reflection-panel";
+
+const STRATEGY_DISCUSSION_KEY = "strategy-discussion";
+const STRATEGY_DISCUSSION_URL = "/api/v1/strategy-discussion";
+
+interface StrategyRequestWithStatus {
+  request: StrategyDiscussionRequest;
+  status: StrategyDraftStatus;
+}
+interface ListResponse {
+  data: StrategyRequestWithStatus[];
+  meta: { total: number };
+  sections: Record<string, string>;
+  questions: string[];
+}
+
+async function postJson<T>(body: unknown): Promise<T> {
+  const res = await fetch(STRATEGY_DISCUSSION_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const json = (await res.json()) as T & { error?: string };
+  if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+  return json;
+}
+
+function useStrategyRequests(filter?: { childId?: string; status?: string }) {
+  const params = new URLSearchParams();
+  if (filter?.childId) params.set("childId", filter.childId);
+  if (filter?.status) params.set("status", filter.status);
+  const qs = params.toString();
+  return useQuery<ListResponse>({
+    queryKey: [STRATEGY_DISCUSSION_KEY, filter?.childId ?? "", filter?.status ?? ""],
+    queryFn: () => fetch(`${STRATEGY_DISCUSSION_URL}${qs ? `?${qs}` : ""}`).then((r) => r.json()),
+    staleTime: 15 * 1000,
+  });
+}
+
+function useStrategyMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Record<string, unknown>) => postJson<{ data: StrategyRequestWithStatus }>(input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [STRATEGY_DISCUSSION_KEY] }),
+  });
+}
 
 const KIND_ORDER: EvidenceKind[] = ["direct", "reported", "observed", "pattern"];
 

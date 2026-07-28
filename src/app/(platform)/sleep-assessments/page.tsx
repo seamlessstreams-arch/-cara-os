@@ -22,7 +22,7 @@ import {
   Home,
   Loader2,
 } from "lucide-react";
-import { useSleepAssessmentRecords } from "@/hooks/use-sleep-assessment-records";
+import { useQuery } from "@tanstack/react-query";
 import type { SleepAssessmentRecord, SleepAssessmentStatus, SleepAssessmentQuality, SleepAssessmentTrend } from "@/types/extended";
 import {
   SLEEP_ASSESSMENT_STATUS_LABEL,
@@ -32,6 +32,20 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useSleepAssessmentRecords(childId?: string) {
+  return useQuery<SleepAssessmentRecord[]>({
+    queryKey: ["sleep-assessment-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/sleep-assessment-records?child_id=${childId}`
+        : "/api/v1/sleep-assessment-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch sleep assessment records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ─── local config ─── */
 

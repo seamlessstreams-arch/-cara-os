@@ -46,11 +46,21 @@ import {
   STEROID_POTENCY_LABEL,
   DERM_REFERRAL_STATUS_LABEL,
 } from "@/types/extended";
-import { useSkinConditionPlans } from "@/hooks/use-skin-condition-plans";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const SKIN_CONDITION_PLANS_KEY = "skin-condition-plans";
+const SKIN_CONDITION_PLANS_API = "/api/v1/skin-condition-plans";
+
+function useSkinConditionPlans(childId?: string) {
+  return useQuery<{ data: SkinConditionPlan[] }>({
+    queryKey: childId ? [SKIN_CONDITION_PLANS_KEY, childId] : [SKIN_CONDITION_PLANS_KEY],
+    queryFn: () => fetch(childId ? `${SKIN_CONDITION_PLANS_API}?child_id=${childId}` : SKIN_CONDITION_PLANS_API).then((r) => r.json()),
+  });
+}
 
 // ── Colour Maps ──────────────────────────────────────────────────────────────
 

@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useStaffShadowingRecords } from "@/hooks/use-staff-shadowing-records";
+import { useQuery } from "@tanstack/react-query";
 import type { StaffShadowingRecord, StaffShadowingShiftType, StaffShadowingReadyStatus } from "@/types/extended";
 import {
   STAFF_SHADOWING_SHIFT_TYPE_LABEL,
@@ -35,6 +35,19 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hook (inlined from use-staff-shadowing-records) ─────────────────── */
+
+function useStaffShadowingRecords() {
+  return useQuery<StaffShadowingRecord[]>({
+    queryKey: ["staff-shadowing-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-shadowing-records");
+      if (!res.ok) throw new Error("Failed to fetch staff shadowing records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 

@@ -2,6 +2,7 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -12,7 +13,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useSuccessFactors } from "@/hooks/use-success-factors";
 import type {
   SuccessFactor,
   SuccessFactorDomain,
@@ -49,6 +49,17 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useSuccessFactors() {
+  return useQuery<SuccessFactor[]>({
+    queryKey: ["success-factors"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/success-factors");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ─── domain icon ─── */
 const domainIcon = (domain: SuccessFactorDomain) => {

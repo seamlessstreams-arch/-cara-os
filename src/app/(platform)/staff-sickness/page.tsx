@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
-import { useStaffSicknessRecords, useCreateStaffSicknessRecord } from "@/hooks/use-staff-sickness-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type {
   StaffSicknessRecord,
@@ -38,6 +38,35 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hooks (inlined from use-staff-sickness-records) ────────────────── */
+
+function useStaffSicknessRecords() {
+  return useQuery<StaffSicknessRecord[]>({
+    queryKey: ["staff-sickness-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-sickness-records");
+      if (!res.ok) throw new Error("Failed to fetch staff sickness records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateStaffSicknessRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<StaffSicknessRecord, "id">) => {
+      const res = await fetch("/api/v1/staff-sickness-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create staff sickness record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["staff-sickness-records"] }),
+  });
+}
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 

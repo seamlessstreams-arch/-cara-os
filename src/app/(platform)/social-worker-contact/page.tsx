@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
-import { useSocialWorkerContactRecords, useCreateSocialWorkerContactRecord } from "@/hooks/use-social-worker-contact-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type {
   SocialWorkerContactRecord,
@@ -39,6 +39,36 @@ import {
   SOCIAL_WORKER_CONTACT_URGENCY_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+function useSocialWorkerContactRecords(childId?: string) {
+  return useQuery<SocialWorkerContactRecord[]>({
+    queryKey: ["social-worker-contact-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/social-worker-contact-records?child_id=${childId}`
+        : "/api/v1/social-worker-contact-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch social worker contact records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateSocialWorkerContactRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<SocialWorkerContactRecord, "id">) => {
+      const res = await fetch("/api/v1/social-worker-contact-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create social worker contact record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["social-worker-contact-records"] }),
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────── */
 

@@ -11,9 +11,9 @@ import {
   Heart, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Clock,
   Users, ArrowUpDown, Brain, Loader2,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useStaffDebriefRecords } from "@/hooks/use-staff-debrief-records";
 import type {
   StaffDebriefRecord,
   StaffDebriefType,
@@ -28,6 +28,20 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hook (inlined from use-staff-debrief-records) ──────────────── */
+/* useCreateStaffDebriefRecord had zero call sites outside the hook — dropped. */
+
+function useStaffDebriefRecords() {
+  return useQuery<StaffDebriefRecord[]>({
+    queryKey: ["staff-debrief-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-debrief-records");
+      if (!res.ok) throw new Error("Failed to fetch staff debrief records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────── */
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -20,11 +21,20 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { SubstanceScreening, ScreeningTool, SubstanceRiskLevel } from "@/types/extended";
 import { SCREENING_TOOL_LABEL, SUBSTANCE_RISK_LEVEL_LABEL } from "@/types/extended";
-import { useSubstanceScreenings } from "@/hooks/use-substance-screenings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const SUBSTANCE_SCREENINGS_KEY = "substance-screenings";
+const SUBSTANCE_SCREENINGS_API = "/api/v1/substance-screenings";
+
+function useSubstanceScreenings(childId?: string) {
+  return useQuery<{ data: SubstanceScreening[] }>({
+    queryKey: childId ? [SUBSTANCE_SCREENINGS_KEY, childId] : [SUBSTANCE_SCREENINGS_KEY],
+    queryFn: () => fetch(childId ? `${SUBSTANCE_SCREENINGS_API}?child_id=${childId}` : SUBSTANCE_SCREENINGS_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 

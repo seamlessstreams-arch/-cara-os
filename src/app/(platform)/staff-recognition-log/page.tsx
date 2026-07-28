@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useStaffRecognitionRecords } from "@/hooks/use-staff-recognition-records";
+import { useQuery } from "@tanstack/react-query";
 import type { StaffRecognitionRecord, StaffRecognitionType, StaffRecognitionRecognisedBy } from "@/types/extended";
 import {
   STAFF_RECOGNITION_TYPE_LABEL,
@@ -34,6 +34,19 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hook (inlined from use-staff-recognition-records) ──────────────── */
+
+function useStaffRecognitionRecords() {
+  return useQuery<StaffRecognitionRecord[]>({
+    queryKey: ["staff-recognition-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-recognition-records");
+      if (!res.ok) throw new Error("Failed to fetch staff recognition records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 

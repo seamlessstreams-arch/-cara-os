@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   MessageSquare, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, Star, ThumbsUp, ThumbsDown,
@@ -22,7 +23,6 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useStakeholderFeedbackRecords, useCreateStakeholderFeedbackRecord } from "@/hooks/use-stakeholder-feedback-records";
 import type {
   StakeholderFeedbackRecord,
   StakeholderFeedbackSource,
@@ -39,6 +39,33 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useStakeholderFeedbackRecords() {
+  return useQuery<StakeholderFeedbackRecord[]>({
+    queryKey: ["stakeholder-feedback-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/stakeholder-feedback-records");
+      if (!res.ok) throw new Error("Failed to fetch stakeholder feedback records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateStakeholderFeedbackRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<StakeholderFeedbackRecord, "id">) => {
+      const res = await fetch("/api/v1/stakeholder-feedback-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create stakeholder feedback record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["stakeholder-feedback-records"] }),
+  });
+}
 
 /* ── local config ───────────────────────────────────────────────────── */
 

@@ -20,10 +20,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useStaffExitInterviewRecords, useCreateStaffExitInterviewRecord } from "@/hooks/use-staff-exit-interview-records";
 import type { StaffExitInterviewRecord, StaffExitInterviewReason, StaffExitInterviewStatus } from "@/types/extended";
 import {
   STAFF_EXIT_INTERVIEW_REASON_LABEL,
@@ -32,6 +32,35 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hooks (inlined from use-staff-exit-interview-records) ──────── */
+
+function useStaffExitInterviewRecords() {
+  return useQuery<StaffExitInterviewRecord[]>({
+    queryKey: ["staff-exit-interview-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-exit-interview-records");
+      if (!res.ok) throw new Error("Failed to fetch staff exit interview records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateStaffExitInterviewRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<StaffExitInterviewRecord, "id">) => {
+      const res = await fetch("/api/v1/staff-exit-interview-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create staff exit interview record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["staff-exit-interview-records"] }),
+  });
+}
 
 /* ── local colour maps ─────────────────────────────────────────────── */
 

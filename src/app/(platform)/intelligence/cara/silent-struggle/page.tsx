@@ -12,9 +12,18 @@
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useSilentStruggle } from "@/hooks/use-silent-struggle";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { EarOff, HeartHandshake, Loader2 } from "lucide-react";
-import type { WithdrawalStatus } from "@/lib/silent-struggle/silent-struggle-engine";
+import type { SilentStruggleOverview, WithdrawalStatus } from "@/lib/silent-struggle/silent-struggle-engine";
+
+/** Whole-home withdrawal rollup — who is going quiet. */
+function useSilentStruggle() {
+  return useQuery({
+    queryKey: ["silent-struggle", "home"],
+    queryFn: async () => (await api.get<{ data: SilentStruggleOverview }>(`/silent-struggle`)).data,
+  });
+}
 
 const STATUS_META: Record<WithdrawalStatus, { label: string; cls: string }> = {
   concern: { label: "Worth a check-in", cls: "border-rose-300 bg-rose-50 text-rose-900" },

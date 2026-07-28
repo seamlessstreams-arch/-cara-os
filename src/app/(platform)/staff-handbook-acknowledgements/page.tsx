@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
@@ -20,12 +21,26 @@ import {
   CheckCircle2, Clock, AlertTriangle, FileText, BookOpen,
   Shield, Users, ClipboardCheck, Calendar, User, Loader2,
 } from "lucide-react";
-import { useStaffHandbookAcknowledgementRecords } from "@/hooks/use-staff-handbook-acknowledgement-records";
 import type { StaffHandbookAcknowledgementRecord, StaffHandbookDocumentCategory } from "@/types/extended";
 import { STAFF_HANDBOOK_DOCUMENT_CATEGORY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── data hook (inlined from use-staff-handbook-acknowledgement-records) ─────
+// useCreateStaffHandbookAcknowledgementRecord had zero call sites outside the
+// hook — dropped.
+
+function useStaffHandbookAcknowledgementRecords() {
+  return useQuery<StaffHandbookAcknowledgementRecord[]>({
+    queryKey: ["staff-handbook-acknowledgement-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-handbook-acknowledgement-records");
+      if (!res.ok) throw new Error("Failed to fetch staff handbook acknowledgement records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 // ── Config (icon not serializable — kept local) ─────────────────────────────
 

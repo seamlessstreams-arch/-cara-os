@@ -12,12 +12,23 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useSupervisionMatrixRecords } from "@/hooks/use-supervision-matrix-records";
+import { useQuery } from "@tanstack/react-query";
 import type { SupervisionMatrixRecord, SupervisionMatrixStatus } from "@/types/extended";
 import { SUPERVISION_MATRIX_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useSupervisionMatrixRecords() {
+  return useQuery<SupervisionMatrixRecord[]>({
+    queryKey: ["supervision-matrix-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/supervision-matrix-records");
+      if (!res.ok) throw new Error("Failed to fetch supervision matrix records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 

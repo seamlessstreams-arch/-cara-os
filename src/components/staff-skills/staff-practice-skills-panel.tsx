@@ -14,8 +14,24 @@ import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, GraduationCap, Loader2, Sparkles, Compass, Heart } from "lucide-react";
-import { useStaffPracticeSkills } from "@/hooks/use-staff-practice-skills";
-import type { SkillSignal, StaffSupervisionPrompt } from "@/lib/staff-practice-skills/types";
+import { useQuery } from "@tanstack/react-query";
+import type { SkillSignal, StaffSupervisionPrompt, StaffPracticeSkillsProfile } from "@/lib/staff-practice-skills/types";
+
+// ── data hook (inlined from use-staff-practice-skills) ─────────────────────
+// GET /api/v1/staff-practice-skills?staff_id=… — one practitioner's unified
+// practice picture.
+
+const STAFF_PRACTICE_SKILLS_KEY = "staff-practice-skills";
+const STAFF_PRACTICE_SKILLS_URL = "/api/v1/staff-practice-skills";
+
+function useStaffPracticeSkills(staffId?: string) {
+  return useQuery<{ data: StaffPracticeSkillsProfile }>({
+    queryKey: [STAFF_PRACTICE_SKILLS_KEY, staffId ?? ""],
+    queryFn: () => fetch(`${STAFF_PRACTICE_SKILLS_URL}?staff_id=${encodeURIComponent(staffId!)}`).then((r) => r.json()),
+    enabled: !!staffId,
+    staleTime: 60 * 1000,
+  });
+}
 
 const SIGNAL_STYLE: Record<SkillSignal, { label: string; cls: string }> = {
   strong: { label: "Strong", cls: "bg-[var(--cs-success-bg)] text-[var(--cs-success)]" },

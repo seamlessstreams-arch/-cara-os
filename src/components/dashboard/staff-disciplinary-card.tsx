@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +16,22 @@ import {
   FileWarning, Clock, Shield, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useStaffDisciplinaryIntelligence } from "@/hooks/use-staff-disciplinary-intelligence";
+import { api } from "@/hooks/use-api";
+import type { StaffDisciplinaryIntelligenceResult } from "@/lib/engines/staff-disciplinary-intelligence-engine";
+
+// ── data hook (inlined from use-staff-disciplinary-intelligence) ────────────
+
+interface StaffDisciplinaryIntelligenceResponse {
+  data: StaffDisciplinaryIntelligenceResult;
+}
+
+function useStaffDisciplinaryIntelligence() {
+  return useQuery({
+    queryKey: ["staff-disciplinary-intelligence"],
+    queryFn: () => api.get<StaffDisciplinaryIntelligenceResponse>("/staff-disciplinary-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

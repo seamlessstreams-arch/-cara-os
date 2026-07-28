@@ -1,14 +1,64 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
-import { useTeamApproachConsistency } from "@/hooks/use-team-approach-consistency";
-import type {
-  ApproachType,
-  ConsistencyLevel,
-  StaffApproachProfile,
-  ChildConsistencyProfile,
-} from "@/hooks/use-team-approach-consistency";
+
+type ApproachType = "therapeutic" | "boundary" | "physical" | "undocumented";
+type ConsistencyLevel = "consistent" | "mixed" | "divergent";
+
+interface StaffApproachProfile {
+  staffId: string;
+  staffName: string;
+  totalEntries: number;
+  therapeuticCount: number;
+  boundaryCount: number;
+  physicalCount: number;
+  undocumentedCount: number;
+  therapeuticRate: number;
+  dominantApproach: ApproachType;
+}
+
+interface ChildConsistencyProfile {
+  childId: string;
+  childName: string;
+  totalEntries: number;
+  staffProfiles: StaffApproachProfile[];
+  consistencyLevel: ConsistencyLevel;
+  overallTherapeuticRate: number;
+  therapeuticRateVariance: number;
+  mostTherapeuticStaff: string | null;
+  leastTherapeuticStaff: string | null;
+  supervisionPrompt: string;
+}
+
+interface ApproachSummary {
+  totalChildren: number;
+  consistentCount: number;
+  mixedCount: number;
+  divergentCount: number;
+  overallTherapeuticRate: number;
+  mostCommonDivergencePattern: string;
+}
+
+interface TeamApproachConsistencyResponse {
+  data: {
+    childProfiles: ChildConsistencyProfile[];
+    summary: ApproachSummary;
+  };
+}
+
+function useTeamApproachConsistency() {
+  return useQuery<TeamApproachConsistencyResponse>({
+    queryKey: ["team-approach-consistency"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/team-approach-consistency");
+      if (!res.ok) throw new Error("Failed to fetch team approach consistency");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+}
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
 

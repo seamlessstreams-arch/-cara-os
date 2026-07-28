@@ -15,8 +15,18 @@ import {
   AlertCircle, CheckCircle2, Activity, Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useStaffWellbeingIntelligence } from "@/hooks/use-staff-wellbeing-intelligence";
-import type { BurnoutRisk, ResilienceLevel } from "@/lib/engines/staff-wellbeing-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { BurnoutRisk, ResilienceLevel, StaffWellbeingResult } from "@/lib/engines/staff-wellbeing-intelligence-engine";
+
+// ── data hook (inlined from use-staff-wellbeing-intelligence) ─────────────
+
+function useStaffWellbeingIntelligence() {
+  return useQuery<{ data: StaffWellbeingResult }>({
+    queryKey: ["staff-wellbeing-intelligence"],
+    queryFn: () => fetch("/api/v1/staff-wellbeing-intelligence").then((r) => r.json()),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

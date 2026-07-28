@@ -7,10 +7,29 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { ShieldCheck, MessageCircle, Star, GraduationCap, Fingerprint, Activity, ArrowRight } from "lucide-react";
-import { useStaffComplianceSummary } from "@/hooks/use-staff-compliance-summary";
+import { api } from "@/hooks/use-api";
+import type { StaffComplianceRow } from "@/lib/engines/staff-compliance-engine";
+import type { AbsenceStaffRow } from "@/lib/engines/workforce-absence-engine";
+
+/* ── data hook (inlined from use-staff-compliance-summary) ───────────── */
+
+interface StaffComplianceSummary {
+  compliance: StaffComplianceRow | null;
+  absence: AbsenceStaffRow | null;
+}
+
+function useStaffComplianceSummary(staffId: string) {
+  return useQuery({
+    queryKey: ["staff-compliance-summary", staffId],
+    queryFn: () => api.get<{ data: StaffComplianceSummary }>(`/staff/${encodeURIComponent(staffId)}/compliance-summary`),
+    enabled: !!staffId,
+    staleTime: 30_000,
+  });
+}
 
 const LEVEL_CHIP: Record<string, string> = {
   critical: "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]",

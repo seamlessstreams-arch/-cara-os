@@ -22,12 +22,38 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useSleepLog, useCreateSleepLogEntry } from "@/hooks/use-sleep-log";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { toast } from "sonner";
 import type { SleepLogEntry, SleepShiftType, SleepDisturbanceLevel, SleepDisturbance } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+type ListResponse = { data: SleepLogEntry[]; meta: { total: number } };
+type SingleResponse = { data: SleepLogEntry };
+
+function useSleepLog() {
+  return useQuery({
+    queryKey: ["sleep-log"],
+    queryFn: () => api.get<ListResponse>("/sleep-log"),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+function useCreateSleepLogEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<SleepLogEntry>) =>
+      api.post<SingleResponse>("/sleep-log", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sleep-log"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const SHIFT_TYPES: SleepShiftType[] = ["sleep_in", "waking_night"];

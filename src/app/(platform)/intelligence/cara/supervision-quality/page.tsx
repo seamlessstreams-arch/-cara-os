@@ -1,14 +1,69 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
-import { useSupervisionQualityIntelligence } from "@/hooks/use-supervision-quality-intelligence";
-import type {
-  SupervisionSignal,
-  SupervisionStatus,
-  WellbeingTrend,
-  StaffSupervisionProfile,
-} from "@/hooks/use-supervision-quality-intelligence";
+
+type SupervisionStatus = "current" | "due_soon" | "overdue" | "never";
+type SupervisionSignal = "excellent" | "good" | "developing" | "at_risk";
+type WellbeingTrend = "improving" | "stable" | "declining";
+
+interface OverdueAction {
+  action: string;
+  due: string;
+  owner: string;
+}
+
+interface StaffSupervisionProfile {
+  staffId: string;
+  staffName: string;
+  jobTitle: string;
+  supervisionCount: number;
+  daysSinceLastSupervision: number | null;
+  supervisionStatus: SupervisionStatus;
+  latestWellbeingScore: number | null;
+  wellbeingTrend: WellbeingTrend | null;
+  latestConfidenceScore: number | null;
+  paceEngagementRate: number;
+  overdueActions: OverdueAction[];
+  overdueActionCount: number;
+  trainingNeeds: string[];
+  followUpOverdue: boolean;
+  signal: SupervisionSignal;
+  supervisionPrompt: string;
+}
+
+interface SupervisionQualitySummary {
+  totalActiveStaff: number;
+  staffWithCurrentSupervision: number;
+  staffDueSoon: number;
+  staffOverdue: number;
+  staffNeverSupervised: number;
+  currentSupervisionRate: number;
+  averageWellbeingScore: number | null;
+  totalOverdueActions: number;
+  staffAtRisk: number;
+  ofstedNote: string;
+}
+
+interface SupervisionQualityResponse {
+  data: {
+    staffProfiles: StaffSupervisionProfile[];
+    summary: SupervisionQualitySummary;
+  };
+}
+
+function useSupervisionQualityIntelligence() {
+  return useQuery<SupervisionQualityResponse>({
+    queryKey: ["supervision-quality-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/supervision-quality-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch supervision quality intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+}
 
 // ── Visual helpers ────────────────────────────────────────────────────────────
 

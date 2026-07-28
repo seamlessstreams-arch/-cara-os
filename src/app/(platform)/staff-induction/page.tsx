@@ -26,7 +26,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useStaffInductionRecords, useCreateStaffInductionRecord } from "@/hooks/use-staff-induction-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { StaffInductionRecord, StaffInductionPhase, StaffInductionTaskStatus } from "@/types/extended";
 import {
   STAFF_INDUCTION_PHASE_LABEL,
@@ -35,6 +35,35 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hooks (inlined from use-staff-induction-records) ───────────── */
+
+function useStaffInductionRecords() {
+  return useQuery<StaffInductionRecord[]>({
+    queryKey: ["staff-induction-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-induction-records");
+      if (!res.ok) throw new Error("Failed to fetch staff induction records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateStaffInductionRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<StaffInductionRecord, "id">) => {
+      const res = await fetch("/api/v1/staff-induction-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create staff induction record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["staff-induction-records"] }),
+  });
+}
 
 /* ── local config (icons not serializable) ────────────────────────────── */
 

@@ -17,12 +17,41 @@ import { Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp, CheckCircle2
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useStaffReflectionRecords, useCreateStaffReflectionRecord } from "@/hooks/use-staff-reflection-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { StaffReflectionRecord, StaffReflectionType, StaffReflectionMood } from "@/types/extended";
 import { STAFF_REFLECTION_TYPE_LABEL, STAFF_REFLECTION_MOOD_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hooks (inlined from use-staff-reflection-records) ──────────────── */
+
+function useStaffReflectionRecords() {
+  return useQuery<StaffReflectionRecord[]>({
+    queryKey: ["staff-reflection-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-reflection-records");
+      if (!res.ok) throw new Error("Failed to fetch staff reflection records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateStaffReflectionRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<StaffReflectionRecord, "id">) => {
+      const res = await fetch("/api/v1/staff-reflection-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create staff reflection record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["staff-reflection-records"] }),
+  });
+}
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 

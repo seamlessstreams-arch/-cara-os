@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useStaffCommunicationPreferenceRecords } from "@/hooks/use-staff-communication-preference-records";
+import { useQuery } from "@tanstack/react-query";
 import type { StaffCommunicationPreferenceRecord, StaffCommsContactMethod, StaffCommsFeedbackStyle } from "@/types/extended";
 import {
   STAFF_COMMS_CONTACT_METHOD_LABEL,
@@ -26,6 +26,17 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useStaffCommunicationPreferenceRecords() {
+  return useQuery<StaffCommunicationPreferenceRecord[]>({
+    queryKey: ["staff-communication-preference-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-communication-preference-records");
+      if (!res.ok) throw new Error("Failed to fetch staff communication preference records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config ───────────────────────────────────────────────────── */
 

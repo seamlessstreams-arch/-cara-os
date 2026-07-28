@@ -23,12 +23,41 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useStaffWellbeingRecords, useCreateStaffWellbeingRecord } from "@/hooks/use-staff-wellbeing-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { StaffWellbeingRecord, StaffWellbeingCheckType } from "@/types/extended";
 import { STAFF_WELLBEING_CHECK_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hooks (inlined from use-staff-wellbeing-records) ───────────────── */
+
+function useStaffWellbeingRecords() {
+  return useQuery<StaffWellbeingRecord[]>({
+    queryKey: ["staff-wellbeing-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-wellbeing-records");
+      if (!res.ok) throw new Error("Failed to fetch staff wellbeing records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateStaffWellbeingRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<StaffWellbeingRecord, "id">) => {
+      const res = await fetch("/api/v1/staff-wellbeing-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create staff wellbeing record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["staff-wellbeing-records"] }),
+  });
+}
 
 /* ── local config ───────────────────────────────────────────────────── */
 

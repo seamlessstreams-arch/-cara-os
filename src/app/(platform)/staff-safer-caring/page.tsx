@@ -17,12 +17,25 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useStaffSaferCaringRecords } from "@/hooks/use-staff-safer-caring-records";
+import { useQuery } from "@tanstack/react-query";
 import type { StaffSaferCaringRecord, StaffSaferCaringPlanStatus } from "@/types/extended";
 import { STAFF_SAFER_CARING_PLAN_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hook (inlined from use-staff-safer-caring-records) ─────────────── */
+
+function useStaffSaferCaringRecords() {
+  return useQuery<StaffSaferCaringRecord[]>({
+    queryKey: ["staff-safer-caring-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-safer-caring-records");
+      if (!res.ok) throw new Error("Failed to fetch staff safer caring records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 

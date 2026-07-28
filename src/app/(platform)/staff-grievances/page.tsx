@@ -26,7 +26,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useStaffGrievanceRecords, useCreateStaffGrievanceRecord } from "@/hooks/use-staff-grievance-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { StaffGrievanceRecord, StaffGrievanceCategory, StaffGrievanceSeverity } from "@/types/extended";
 import {
   STAFF_GRIEVANCE_CATEGORY_LABEL,
@@ -36,6 +36,35 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── data hooks (inlined from use-staff-grievance-records) ───────────── */
+
+function useStaffGrievanceRecords() {
+  return useQuery<StaffGrievanceRecord[]>({
+    queryKey: ["staff-grievance-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/staff-grievance-records");
+      if (!res.ok) throw new Error("Failed to fetch staff grievance records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateStaffGrievanceRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<StaffGrievanceRecord, "id">) => {
+      const res = await fetch("/api/v1/staff-grievance-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create staff grievance record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["staff-grievance-records"] }),
+  });
+}
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 

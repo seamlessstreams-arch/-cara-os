@@ -2,6 +2,7 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -23,10 +24,19 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { TherapeuticStaffTraining, TherapeuticChildImpact, TherapeuticCompetencyLevel } from "@/types/extended";
 import { useTherapeuticStaffTraining } from "@/hooks/use-therapeutic-staff-training";
-import { useTherapeuticChildImpact } from "@/hooks/use-therapeutic-child-impact";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const THERAPEUTIC_CHILD_IMPACT_KEY = "therapeutic-child-impact";
+
+function useTherapeuticChildImpact(childId?: string, homeId?: string) {
+  const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: TherapeuticChildImpact[] }>({
+    queryKey: [THERAPEUTIC_CHILD_IMPACT_KEY, childId, homeId],
+    queryFn: () => fetch(`/api/v1/therapeutic-child-impact${qs}`).then((r) => r.json()),
+  });
+}
 
 /* ── types ─────────────────────────────────────────────────────────────── */
 

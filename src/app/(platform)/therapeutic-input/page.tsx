@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -26,7 +27,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useTherapeuticInputRecords, useCreateTherapeuticInputRecord } from "@/hooks/use-therapeutic-input-records";
 import { toast } from "sonner";
 import { YOUNG_PEOPLE } from "@/lib/seed-data";
 import type {
@@ -39,6 +39,36 @@ import { THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useTherapeuticInputRecords(childId?: string) {
+  return useQuery<TherapeuticInputRecord[]>({
+    queryKey: ["therapeutic-input-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/therapeutic-input-records?child_id=${childId}`
+        : "/api/v1/therapeutic-input-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch therapeutic input records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateTherapeuticInputRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<TherapeuticInputRecord, "id">) => {
+      const res = await fetch("/api/v1/therapeutic-input-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create therapeutic input record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["therapeutic-input-records"] }),
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
