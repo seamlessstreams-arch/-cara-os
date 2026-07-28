@@ -8,7 +8,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect, use, Suspense } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,19 +28,136 @@ import {
   Wand2, Plus, Search, Filter, AlertTriangle, CheckCircle,
   Clock, Eye, Layers, Cpu, Zap, RefreshCw,
 } from "lucide-react";
-import {
-  useCaraArtifacts, useGenerateCaraArtifact, useUpdateCaraArtifact,
-  useDeleteCaraArtifact, useCaraGaps,
-} from "@/hooks/use-cara-studio";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { CaraStudioArtifactCard } from "@/components/cara/studio-artifact-card";
 import type {
   CaraArtifactType, CaraFramework, CaraTone, CaraCreativeMode, CaraGenerationRequest,
+  CaraArtifactListResponse, CaraArtifact, CaraQualityCheck, CaraGapListResponse,
 } from "@/types/cara-studio";
 import {
   CARA_ARTIFACT_TYPE_LABELS, CARA_FRAMEWORK_LABELS,
   CARA_TONE_LABELS, CARA_CREATIVE_MODE_LABELS,
 } from "@/types/cara-studio";
+
+// ── Cara Studio hooks (inlined from deleted src/hooks/use-cara-studio.ts) ────
+// useCaraArtifacts, useGenerateCaraArtifact, useDeleteCaraArtifact and useCaraGaps
+// are single-call-site here. useUpdateCaraArtifact is also used in
+// intelligence/cara/studio/[id]/page.tsx — kept byte-identical there.
+
+interface StudioArtifactListParams {
+  home_id?: string;
+  status?: string;
+  artifact_type?: string;
+  child_id?: string;
+  limit?: number;
+  offset?: number;
+}
+
+function useCaraArtifacts(params: StudioArtifactListParams = {}) {
+  const search = new URLSearchParams();
+  if (params.home_id) search.set("home_id", params.home_id);
+  if (params.status) search.set("status", params.status);
+  if (params.artifact_type) search.set("artifact_type", params.artifact_type);
+  if (params.child_id) search.set("child_id", params.child_id);
+  if (params.limit) search.set("limit", String(params.limit));
+  if (params.offset) search.set("offset", String(params.offset));
+
+  const query = search.toString();
+
+  return useQuery({
+    queryKey: ["cara-studio-artifacts", params],
+    queryFn: () => api.get<CaraArtifactListResponse>(`/cara-studio/artifacts${query ? `?${query}` : ""}`),
+    refetchInterval: 30000,
+  });
+}
+
+interface StudioGenerateResult {
+  data: CaraArtifact;
+  meta: {
+    sources_used: number;
+    gaps_detected: number;
+    model_used: string;
+    is_stub: boolean;
+  };
+}
+
+function useGenerateCaraArtifact() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: CaraGenerationRequest) =>
+      api.post<StudioGenerateResult>("/cara-studio/generate", request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cara-studio-artifacts"] });
+      queryClient.invalidateQueries({ queryKey: ["cara-studio-gaps"] });
+    },
+  });
+}
+
+interface ArtifactUpdatePayload {
+  id: string;
+  action?: "submit" | "approve" | "request_changes" | "reject" | "commit" | "archive" | "recover" | "quality_check" | "edit";
+  actor_id?: string;
+  generated_content?: string;
+  change_summary?: string;
+  comment?: string;
+  changes?: string;
+  reason?: string;
+  title?: string;
+  framework?: string;
+  tone?: string;
+  creative_mode?: string;
+}
+
+function useUpdateCaraArtifact() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: ArtifactUpdatePayload) =>
+      api.patch<{ data: CaraArtifact; qualityCheck?: CaraQualityCheck }>(
+        `/cara-studio/artifacts/${id}`,
+        data
+      ),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["cara-studio-artifacts"] });
+      queryClient.invalidateQueries({ queryKey: ["cara-studio-artifact", variables.id] });
+    },
+  });
+}
+
+function useDeleteCaraArtifact() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.delete<{ data: CaraArtifact }>(`/cara-studio/artifacts/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cara-studio-artifacts"] });
+    },
+  });
+}
+
+interface StudioGapListParams {
+  home_id?: string;
+  child_id?: string;
+  status?: string;
+  severity?: string;
+  refresh?: boolean;
+}
+
+function useCaraGaps(params: StudioGapListParams = {}) {
+  const search = new URLSearchParams();
+  if (params.home_id) search.set("home_id", params.home_id);
+  if (params.child_id) search.set("child_id", params.child_id);
+  if (params.status) search.set("status", params.status);
+  if (params.severity) search.set("severity", params.severity);
+  if (params.refresh) search.set("refresh", "true");
+
+  const query = search.toString();
+
+  return useQuery({
+    queryKey: ["cara-studio-gaps", params],
+    queryFn: () => api.get<CaraGapListResponse>(`/cara-studio/gaps${query ? `?${query}` : ""}`),
+    refetchInterval: 60000,
+  });
+}
 
 // ── Artifact type groups ───────────────────────────────────────────────────
 

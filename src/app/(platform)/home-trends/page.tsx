@@ -5,8 +5,22 @@ import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import { Loader2, RefreshCw, Users } from "lucide-react";
-import { useHomeTrends } from "@/hooks/use-home-trends";
+import { useQuery } from "@tanstack/react-query";
+import type { HomeTrendsResult } from "@/lib/engines/home-trends-engine";
 import { TrendView } from "@/components/trends/trend-view";
+
+function useHomeTrends() {
+  return useQuery<HomeTrendsResult>({
+    queryKey: ["home-trends"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-trends");
+      if (!res.ok) throw new Error("Failed to fetch home trends");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 export default function HomeTrendsPage() {
   const { data, isLoading, isFetching, refetch } = useHomeTrends();

@@ -13,7 +13,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PenLine, ChevronRight, Loader2, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRecordingQuality } from "@/hooks/use-recording-quality";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { RecordingQualityResult } from "@/lib/recording-quality/recording-quality-engine";
+
+interface RecordingQualityResponse {
+  data: RecordingQualityResult;
+}
+
+function useRecordingQuality() {
+  return useQuery({
+    queryKey: ["recording-quality"],
+    queryFn: () => api.get<RecordingQualityResponse>("/recording-quality"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const BAND_STYLES: Record<string, { bg: string; text: string }> = {
   strong: { bg: "bg-green-100", text: "text-green-700" },

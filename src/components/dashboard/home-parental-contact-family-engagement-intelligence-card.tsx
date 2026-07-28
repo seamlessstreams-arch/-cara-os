@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeParentalContactFamilyEngagementIntelligence } from "@/hooks/use-home-parental-contact-family-engagement-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { FamilyEngagementRating } from "@/lib/engines/home-parental-contact-family-engagement-intelligence-engine";
+
+function useHomeParentalContactFamilyEngagementIntelligence() {
+  return useQuery({
+    queryKey: ["home-parental-contact-family-engagement-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-parental-contact-family-engagement-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch parental contact family engagement intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<FamilyEngagementRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

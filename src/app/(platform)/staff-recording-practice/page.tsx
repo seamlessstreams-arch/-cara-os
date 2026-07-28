@@ -5,12 +5,26 @@
 // Record quality rolled up by staff member — concrete supervision targets.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UsersRound, Brain, Loader2, Info, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useStaffRecordingPractice } from "@/hooks/use-staff-recording-practice";
+import { api } from "@/hooks/use-api";
+import type { StaffRecordingPracticeResult } from "@/lib/staff-recording-practice/staff-recording-practice-engine";
+
+interface StaffRecordingPracticeResponse {
+  data: StaffRecordingPracticeResult;
+}
+
+function useStaffRecordingPractice() {
+  return useQuery({
+    queryKey: ["staff-recording-practice"],
+    queryFn: () => api.get<StaffRecordingPracticeResponse>("/staff-recording-practice"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const BAND_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
   strong: { bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200" },

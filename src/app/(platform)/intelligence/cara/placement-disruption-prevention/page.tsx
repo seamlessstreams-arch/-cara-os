@@ -4,8 +4,22 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShieldAlert, TrendingDown, CheckCircle, AlertTriangle, Users, Clock, BarChart2, Star } from "lucide-react";
-import { useHomePlacementDisruptionPreventionIntelligence } from "@/hooks/use-home-placement-disruption-prevention-intelligence";
-import type { DisruptionPreventionRating } from "@/lib/engines/home-placement-disruption-prevention-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { DisruptionPreventionRating, DisruptionPreventionResult } from "@/lib/engines/home-placement-disruption-prevention-intelligence-engine";
+
+interface DisruptionPreventionResponse { data: DisruptionPreventionResult; }
+
+function useHomePlacementDisruptionPreventionIntelligence() {
+  return useQuery<DisruptionPreventionResponse>({
+    queryKey: ["home-placement-disruption-prevention-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-placement-disruption-prevention-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch placement disruption prevention intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Rating helpers ─────────────────────────────────────────────────────────────
 

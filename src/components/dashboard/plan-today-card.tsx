@@ -9,8 +9,18 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { CalendarClock, ArrowRight, Coffee, Sunrise, ShieldAlert } from "lucide-react";
-import { usePlanMyDay } from "@/hooks/use-plan-my-day";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import type { ScheduleBlock } from "@/lib/engines/day-schedule";
+import type { ManagerPlanDayResult } from "@/lib/engines/manager-plan-my-day-engine";
+
+function usePlanMyDay() {
+  return useQuery({
+    queryKey: ["plan-my-day"],
+    queryFn: () => api.get<{ data: ManagerPlanDayResult }>("/manager-plan-my-day"),
+    staleTime: 30_000,
+  });
+}
 
 const DOT: Record<ScheduleBlock["kind"], string> = {
   anchor: "bg-[var(--cs-teal)]",

@@ -26,7 +26,6 @@ import { cn, formatDate, formatDateTime, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { HandoverEntry, HandoverChildUpdate } from "@/types/extended";
 import type { StaffHandoverContext } from "@/app/api/v1/handover/staff-context/route";
-import { useShiftSummary } from "@/hooks/use-shift-summary";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -37,6 +36,46 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 
 // ── Types ────────────────────────────────────────────────────────────────────
+
+interface ShiftSummaryEvent {
+  type: "incident" | "medication" | "daily_log" | "task" | "missing" | "handover_flag";
+  time: string;
+  title: string;
+  description: string;
+  severity: "info" | "low" | "medium" | "high" | "critical";
+  child_id?: string;
+  child_name?: string;
+  staff_name?: string;
+}
+
+interface ShiftSummary {
+  date: string;
+  shift_type: string;
+  staff_on_shift: { id: string; name: string; role: string; start: string; end: string }[];
+  young_people: { id: string; name: string; mood_score?: number; entries_count: number }[];
+  events: ShiftSummaryEvent[];
+  stats: {
+    total_events: number;
+    incidents_logged: number;
+    medications_given: number;
+    medications_missed: number;
+    daily_log_entries: number;
+    tasks_completed: number;
+    missing_episodes: number;
+  };
+  auto_notes: string;
+}
+
+function useShiftSummary(date?: string, shiftType: string = "day") {
+  const query = new URLSearchParams();
+  if (date) query.set("date", date);
+  query.set("shift", shiftType);
+
+  return useQuery({
+    queryKey: ["shift-summary", date, shiftType],
+    queryFn: () => api.get<{ data: ShiftSummary }>(`/shift-summary?${query}`),
+  });
+}
 
 interface HandoverResponse {
   data: {

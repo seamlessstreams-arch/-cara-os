@@ -7,16 +7,33 @@
 // the Event Capture orchestrator.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FilePlus2, ChevronRight, Loader2, Brain, CheckCircle2, XCircle, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEventCapture } from "@/hooks/use-event-capture";
+import { api } from "@/hooks/use-api";
+import type { EventCaptureResult } from "@/lib/event-capture/event-capture-engine";
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]",
 };
+
+// ── useEventCapture (inlined from deleted src/hooks/use-event-capture.ts) ────
+// Also used, byte-identical, in app/(platform)/event-capture/page.tsx.
+
+interface EventCaptureResponse {
+  data: EventCaptureResult;
+}
+
+function useEventCapture() {
+  return useQuery({
+    queryKey: ["event-capture"],
+    queryFn: () => api.get<EventCaptureResponse>("/event-capture"),
+    refetchInterval: 60_000,
+  });
+}
 
 export function EventCaptureCard() {
   const { data, isLoading } = useEventCapture();

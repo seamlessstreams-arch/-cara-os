@@ -7,6 +7,7 @@
 // CHR 2015 Reg 5, 6, 7, 9. SCCIF: "Experiences and progress of children."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle, Brain, Loader2, Home, AlertCircle,
@@ -14,8 +15,21 @@ import {
   Users, Calendar, Smile, Target, ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildPlacementQuality } from "@/hooks/use-child-placement-quality";
-import type { PlacementQuality } from "@/lib/engines/child-placement-quality-engine";
+import type { PlacementQuality, ChildPlacementQualityResult } from "@/lib/engines/child-placement-quality-engine";
+
+// ── useChildPlacementQuality (inlined from deleted
+// src/hooks/use-child-placement-quality.ts). Also used, byte-identical, in
+// app/(platform)/intelligence/cara/child-placement-quality/page.tsx.
+
+function useChildPlacementQuality(childId: string | null) {
+  return useQuery<{ data: ChildPlacementQualityResult }>({
+    queryKey: ["child-placement-quality", childId],
+    queryFn: () =>
+      fetch(`/api/v1/child-placement-quality?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 

@@ -6,9 +6,24 @@ import {
   CheckCircle2, ArrowRight, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useShiftAccess } from "@/hooks/use-shift-access";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ShiftAccessOverview } from "@/lib/permissions/shift-enforcement";
 import { useSafeStaffing } from "@/hooks/use-safe-staffing";
 import { useAuthContext } from "@/contexts/auth-context";
+
+/**
+ * The acting user's shift-based access overview. `preview` asks the server to show
+ * what access WOULD be off shift if enforcement were enabled (display-only).
+ */
+function useShiftAccess(preview = false) {
+  return useQuery({
+    queryKey: ["access", "shift-status", preview],
+    queryFn: async () =>
+      (await api.get<{ data: ShiftAccessOverview }>(`/access/shift-status${preview ? "?preview=1" : ""}`)).data,
+    staleTime: 10_000,
+  });
+}
 
 // Things a general staff member can do while OFF shift (non-operational only).
 const CAN_DO = [

@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, AlertOctagon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeAllegationsInvestigationsManagementIntelligence } from "@/hooks/use-home-allegations-investigations-management-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { AllegationsInvestigationsRating } from "@/lib/engines/home-allegations-investigations-management-intelligence-engine";
+
+function useHomeAllegationsInvestigationsManagementIntelligence() {
+  return useQuery({
+    queryKey: ["home-allegations-investigations-management-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-allegations-investigations-management-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch allegations investigations management intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<AllegationsInvestigationsRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

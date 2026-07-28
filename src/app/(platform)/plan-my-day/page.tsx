@@ -14,12 +14,32 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
-import { usePlanMyDay, usePlanMyDayWithNotes } from "@/hooks/use-plan-my-day";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import {
   Clock, ArrowRight, Sparkles, ShieldAlert, Users, ClipboardList, CheckSquare, HeartHandshake, Stethoscope, CheckCircle2, CalendarClock, Coffee, Sunrise, ListPlus, Wand2, X,
 } from "lucide-react";
-import type { PlanActionItem, PlanCategory, PlanSeverity } from "@/lib/engines/manager-plan-my-day-engine";
+import type { PlanActionItem, PlanCategory, PlanSeverity, ManagerPlanDayResult } from "@/lib/engines/manager-plan-my-day-engine";
 import type { ScheduleBlock } from "@/lib/engines/day-schedule";
+
+function usePlanMyDay() {
+  return useQuery({
+    queryKey: ["plan-my-day"],
+    queryFn: () => api.get<{ data: ManagerPlanDayResult }>("/manager-plan-my-day"),
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * Re-plan the day folding in ad-hoc items the manager pasted or dictated.
+ * Returns the same shape as the GET — the page shows this result once it exists.
+ */
+function usePlanMyDayWithNotes() {
+  return useMutation({
+    mutationFn: (notes: string) =>
+      api.post<{ data: ManagerPlanDayResult }>("/manager-plan-my-day", { notes }),
+  });
+}
 
 const SEV_BAR: Record<PlanSeverity, string> = {
   critical: "border-l-[var(--cs-risk)]",

@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeFamilySocialConnectivityIntelligence } from "@/hooks/use-home-family-social-connectivity-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { FamilySocialConnectivityRating } from "@/lib/engines/home-family-social-connectivity-intelligence-engine";
+
+function useHomeFamilySocialConnectivityIntelligence() {
+  return useQuery({
+    queryKey: ["home-family-social-connectivity-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-family-social-connectivity-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch family social connectivity intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<FamilySocialConnectivityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

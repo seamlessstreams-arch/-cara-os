@@ -3,8 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, SmilePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeEmotionalLiteracyFeelingsExpressionIntelligence } from "@/hooks/use-home-emotional-literacy-feelings-expression-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { EmotionalLiteracyRating } from "@/lib/engines/home-emotional-literacy-feelings-expression-intelligence-engine";
+
+function useHomeEmotionalLiteracyFeelingsExpressionIntelligence() {
+  return useQuery({
+    queryKey: ["home-emotional-literacy-feelings-expression-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-emotional-literacy-feelings-expression-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch emotional literacy feelings expression intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<EmotionalLiteracyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

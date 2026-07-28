@@ -1,6 +1,7 @@
 "use client";
 
-import { useRestraintIntelligence } from "@/hooks/use-restraint-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
 import type {
   ChildRestraintProfile,
@@ -9,7 +10,20 @@ import type {
   TimePattern,
   RestraintAlert,
   CaraRestraintInsight,
+  RestraintIntelligenceResult,
 } from "@/lib/engines/restraint-intelligence-engine";
+
+interface RestraintIntelligenceResponse {
+  data: RestraintIntelligenceResult;
+}
+
+function useRestraintIntelligence() {
+  return useQuery({
+    queryKey: ["restraint-intelligence"],
+    queryFn: () => api.get<RestraintIntelligenceResponse>("/restraint-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const TREND_STYLES: Record<string, string> = {
   increasing:         "text-red-600",

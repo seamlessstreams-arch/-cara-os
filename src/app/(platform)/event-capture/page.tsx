@@ -7,17 +7,33 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FilePlus2, Brain, Loader2, Info, CheckCircle2, XCircle, Copy, Route, Archive, AlertTriangle, Send, Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEventCapture } from "@/hooks/use-event-capture";
+import { api } from "@/hooks/use-api";
+import type { EventCaptureResult } from "@/lib/event-capture/event-capture-engine";
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800", warning: "border-amber-200 bg-amber-50 text-amber-800", positive: "border-green-200 bg-green-50 text-green-800",
 };
+
+// ── useEventCapture (inlined from deleted src/hooks/use-event-capture.ts) ────
+// Also used, byte-identical, in components/dashboard/event-capture-card.tsx.
+
+interface EventCaptureResponse {
+  data: EventCaptureResult;
+}
+
+function useEventCapture() {
+  return useQuery({
+    queryKey: ["event-capture"],
+    queryFn: () => api.get<EventCaptureResponse>("/event-capture"),
+    refetchInterval: 60_000,
+  });
+}
 
 export default function EventCapturePage() {
   const { data, isLoading } = useEventCapture();

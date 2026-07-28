@@ -10,7 +10,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LineChart, Brain, Loader2, Info, AlertTriangle, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRecordingQualityTrend } from "@/hooks/use-recording-quality-trend";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { RecordingQualityTrendResult } from "@/lib/recording-quality-trend/recording-quality-trend-engine";
+
+interface RecordingQualityTrendResponse {
+  data: RecordingQualityTrendResult;
+}
+
+function useRecordingQualityTrend() {
+  return useQuery({
+    queryKey: ["recording-quality-trend"],
+    queryFn: () => api.get<RecordingQualityTrendResponse>("/recording-quality-trend"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800", warning: "border-amber-200 bg-amber-50 text-amber-800", positive: "border-green-200 bg-green-50 text-green-800",

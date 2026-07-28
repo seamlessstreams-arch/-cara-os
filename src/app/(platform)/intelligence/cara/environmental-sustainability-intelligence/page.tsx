@@ -4,8 +4,20 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Leaf, CheckCircle, AlertTriangle, Clock, Star } from "lucide-react";
-import { useHomeEnvironmentalSustainabilityEcoAwarenessIntelligence } from "@/hooks/use-home-environmental-sustainability-eco-awareness-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { EnvironmentalSustainabilityEcoAwarenessResult, SustainabilityRating } from "@/lib/engines/home-environmental-sustainability-eco-awareness-intelligence-engine";
+
+function useHomeEnvironmentalSustainabilityEcoAwarenessIntelligence() {
+  return useQuery({
+    queryKey: ["home-environmental-sustainability-eco-awareness-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-environmental-sustainability-eco-awareness-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch environmental sustainability eco-awareness intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_META: Record<SustainabilityRating, { label: string; color: string; bg: string; border: string }> = {
   outstanding:       { label: "Outstanding",       color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },

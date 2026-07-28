@@ -4,9 +4,23 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, CheckCircle, AlertTriangle, Clock } from "lucide-react";
-import { useHomeOfstedReadinessComposite } from "@/hooks/use-home-ofsted-readiness-composite";
+import { useQuery } from "@tanstack/react-query";
 import type { HomeOfstedReadinessResult, OfstedGrade } from "@/lib/engines/home-ofsted-readiness-composite-engine";
 import { InspectionVulnerabilitiesCard } from "@/components/ofsted-readiness/inspection-vulnerabilities-card";
+
+interface HomeOfstedReadinessResponse { data: HomeOfstedReadinessResult; }
+
+function useHomeOfstedReadinessComposite() {
+  return useQuery<HomeOfstedReadinessResponse>({
+    queryKey: ["home-ofsted-readiness-composite"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-ofsted-readiness-composite");
+      if (!res.ok) throw new Error("Failed to fetch Ofsted readiness composite");
+      return res.json();
+    },
+    refetchInterval: 120_000, // 2 minutes — composite is heavier
+  });
+}
 
 const GRADE_META: Record<OfstedGrade, { label: string; color: string; bg: string; border: string }> = {
   outstanding:          { label: "Outstanding",           color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },

@@ -7,12 +7,29 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CopyCheck, Brain, Loader2, Info, Link2, Layers, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useDuplicateDetection } from "@/hooks/use-duplicate-detection";
+import { api } from "@/hooks/use-api";
+import type { DuplicateDetectionResult } from "@/lib/duplicate-detection/duplicate-detection-engine";
+
+// ── useDuplicateDetection (inlined from deleted src/hooks/use-duplicate-detection.ts) ─
+// Also used, byte-identical, in components/dashboard/duplicate-detection-card.tsx.
+
+interface DuplicateDetectionResponse {
+  data: DuplicateDetectionResult;
+}
+
+function useDuplicateDetection() {
+  return useQuery({
+    queryKey: ["duplicate-detection"],
+    queryFn: () => api.get<DuplicateDetectionResponse>("/duplicate-detection"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",

@@ -8,6 +8,7 @@
 // multiple streams rise to the top. (Reg 12/13 — protection & oversight.)
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,23 @@ import {
   ListOrdered, ChevronRight, Brain, Loader2, Layers, ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildPriority } from "@/hooks/use-child-priority";
+import { api } from "@/hooks/use-api";
+import type { ChildPriorityResult } from "@/lib/child-priority/child-priority-engine";
+
+// ── useChildPriority (inlined from deleted src/hooks/use-child-priority.ts) ──
+// Also used, byte-identical, in app/(platform)/child-priority/page.tsx.
+
+interface ChildPriorityResponse {
+  data: ChildPriorityResult;
+}
+
+function useChildPriority() {
+  return useQuery({
+    queryKey: ["child-priority"],
+    queryFn: () => api.get<ChildPriorityResponse>("/child-priority"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const BAND_STYLES: Record<string, { bg: string; text: string }> = {
   critical: { bg: "bg-red-100", text: "text-red-700" },

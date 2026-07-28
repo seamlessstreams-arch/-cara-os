@@ -4,8 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Anchor } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomePlacementDisruptionPreventionIntelligence } from "@/hooks/use-home-placement-disruption-prevention-intelligence";
-import type { DisruptionPreventionRating } from "@/lib/engines/home-placement-disruption-prevention-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { DisruptionPreventionRating, DisruptionPreventionResult } from "@/lib/engines/home-placement-disruption-prevention-intelligence-engine";
+
+interface DisruptionPreventionResponse { data: DisruptionPreventionResult; }
+
+function useHomePlacementDisruptionPreventionIntelligence() {
+  return useQuery<DisruptionPreventionResponse>({
+    queryKey: ["home-placement-disruption-prevention-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-placement-disruption-prevention-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch placement disruption prevention intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<DisruptionPreventionRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

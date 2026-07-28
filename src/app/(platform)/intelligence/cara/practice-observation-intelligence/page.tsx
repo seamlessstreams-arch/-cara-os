@@ -1,10 +1,24 @@
 "use client";
 
-import { useHomePracticeObservationCompetencyIntelligence } from "@/hooks/use-home-practice-observation-competency-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type {
   PracticeObservationResult,
   PracticeObservationRating,
 } from "@/lib/engines/home-practice-observation-competency-intelligence-engine";
+
+interface PracticeObservationResponse { data: PracticeObservationResult; }
+
+function useHomePracticeObservationCompetencyIntelligence() {
+  return useQuery<PracticeObservationResponse>({
+    queryKey: ["home-practice-observation-competency-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-practice-observation-competency-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch practice observation competency intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_STYLES: Record<PracticeObservationRating, { badge: string; banner: string }> = {
   outstanding:        { badge: "bg-green-100 text-green-700 border-green-300",  banner: "border-green-300 bg-green-50" },

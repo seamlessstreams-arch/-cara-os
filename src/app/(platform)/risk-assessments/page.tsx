@@ -19,7 +19,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
-import { useRiskAssessments, useCreateRiskAssessment } from "@/hooks/use-risk-assessments";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { toast } from "sonner";
 import type { RiskAssessment, RiskDomain, RiskLevel, RiskTrend, RiskMitigation } from "@/types/extended";
 import {
@@ -32,6 +33,28 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 
+interface RAResponse {
+  data: RiskAssessment[];
+  meta: { total: number; current: number; high_very_high: number; overdue_reviews: number };
+}
+
+function useRiskAssessments(params?: { childId?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  return useQuery({
+    queryKey: ["risk-assessments", params?.childId],
+    queryFn: () => api.get<RAResponse>(`/risk-assessments?${qs.toString()}`),
+    staleTime: 30_000,
+  });
+}
+
+function useCreateRiskAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<RiskAssessment>) => api.post<{ data: RiskAssessment }>("/risk-assessments", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["risk-assessments"] }),
+  });
+}
 
 const DOMAIN_META: Record<RiskDomain, { label: string; color: string }> = {
   self_harm:         { label: "Self-Harm",           color: "bg-red-100 text-red-800" },

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,9 +10,21 @@ import {
   Loader2, RefreshCw, Users, ClipboardList, CalendarClock, Pill, Moon, AlertTriangle,
   AlertOctagon, CheckCircle2, UserCheck, Clock, ChevronRight,
 } from "lucide-react";
-import { useShiftBriefing } from "@/hooks/use-shift-briefing";
 import { ENTITY_HREF, attentionHref } from "@/config/entity-links";
 import type { ShiftBriefingResult, AttentionItem } from "@/lib/engines/shift-briefing-engine";
+
+function useShiftBriefing() {
+  return useQuery<ShiftBriefingResult>({
+    queryKey: ["shift-briefing"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/shift-briefing");
+      if (!res.ok) throw new Error("Failed to fetch shift briefing");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 function StatChip({ value, label, Icon, tone }: { value: number | string; label: string; Icon: typeof Users; tone: string }) {
   return (

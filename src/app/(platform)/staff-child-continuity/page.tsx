@@ -5,6 +5,7 @@
 // Relational continuity per child — consistent, trusted adults.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,20 @@ import {
   HeartHandshake, AlertTriangle, Brain, Loader2, Info, UserX, ListChecks,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useStaffChildContinuity } from "@/hooks/use-staff-child-continuity";
+import { api } from "@/hooks/use-api";
+import type { StaffChildContinuityResult } from "@/lib/staff-child-continuity/staff-child-continuity-engine";
+
+interface StaffChildContinuityResponse {
+  data: StaffChildContinuityResult;
+}
+
+function useStaffChildContinuity() {
+  return useQuery({
+    queryKey: ["staff-child-continuity"],
+    queryFn: () => api.get<StaffChildContinuityResponse>("/staff-child-continuity"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +17,8 @@ import {
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
 import { useStaff } from "@/hooks/use-staff";
-import { useDocuments, useCreateDocument } from "@/hooks/use-documents";
+import { api } from "@/hooks/use-api";
+import { careToast } from "@/lib/toast";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatDate, todayStr, daysFromNow } from "@/lib/utils";
 import { DOCUMENT_CATEGORIES } from "@/lib/constants";
@@ -26,6 +28,39 @@ import type { Document, DocumentReadReceipt } from "@/types";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Documents hooks (inlined from deleted src/hooks/use-documents.ts) ────────
+// useDocuments is also used, byte-identical, in
+// components/dashboard/document-sign-off.tsx. useCreateDocument is
+// single-call-site here.
+
+interface DocumentsResponse {
+  data: Document[];
+  receipts: DocumentReadReceipt[];
+  meta: { total: number; requires_sign: number; expiring_soon: number; expired: number };
+}
+
+function useDocuments(params?: { category?: string; requires_read_sign?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.category) query.set("category", params.category);
+  if (params?.requires_read_sign) query.set("requires_read_sign", "true");
+  return useQuery({
+    queryKey: ["documents", params],
+    queryFn: () => api.get<DocumentsResponse>(`/documents?${query}`),
+  });
+}
+
+function useCreateDocument() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Document>) => api.post<{ data: Document }>("/documents", data),
+    onSuccess: () => {
+      careToast.formSaved();
+      qc.invalidateQueries({ queryKey: ["documents"] });
+    },
+    onError: () => careToast.actionFailed("Upload document"),
+  });
+}
 
 type Tab = "library" | "read_sign" | "upload";
 type CategoryFilter = "all" | string;

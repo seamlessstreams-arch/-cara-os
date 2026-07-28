@@ -16,7 +16,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useRiskAssessmentIntelligence } from "@/hooks/use-risk-assessment-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { RiskAssessmentIntelligenceResult } from "@/lib/engines/risk-assessment-intelligence-engine";
+
+interface RiskAssessmentIntelligenceResponse {
+  data: RiskAssessmentIntelligenceResult;
+}
+
+function useRiskAssessmentIntelligence() {
+  return useQuery({
+    queryKey: ["risk-assessment-intelligence"],
+    queryFn: () => api.get<RiskAssessmentIntelligenceResponse>("/risk-assessment-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

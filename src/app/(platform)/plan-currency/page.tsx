@@ -8,9 +8,22 @@ import { cn } from "@/lib/utils";
 import {
   Loader2, RefreshCw, CalendarCheck, AlertOctagon, Clock, CheckCircle2, FileWarning,
 } from "lucide-react";
-import { usePlanCurrency } from "@/hooks/use-plan-currency";
+import { useQuery } from "@tanstack/react-query";
 import { planTypeHref } from "@/config/entity-links";
 import type { CellStatus, PlanCurrencyResult } from "@/lib/engines/plan-currency-engine";
+
+function usePlanCurrency() {
+  return useQuery<PlanCurrencyResult>({
+    queryKey: ["plan-currency"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/plan-currency");
+      if (!res.ok) throw new Error("Failed to fetch plan currency");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 const CELL_META: Record<CellStatus, { bg: string; text: string; rag: string; label: string }> = {
   overdue: { bg: "bg-red-100", text: "text-red-800", rag: "cs-rag-red", label: "Overdue" },

@@ -7,12 +7,26 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Workflow, Brain, Loader2, Info, AlertTriangle, Clock, Send, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useWorkflowOrchestration } from "@/hooks/use-workflow-orchestration";
+import { api } from "@/hooks/use-api";
+import type { WorkflowOrchestrationResult } from "@/lib/workflow-orchestration/workflow-orchestration-engine";
+
+interface WorkflowOrchestrationResponse {
+  data: WorkflowOrchestrationResult;
+}
+
+function useWorkflowOrchestration() {
+  return useQuery({
+    queryKey: ["workflow-orchestration"],
+    queryFn: () => api.get<WorkflowOrchestrationResponse>("/workflow-orchestration"),
+    refetchInterval: 60_000,
+  });
+}
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800", warning: "border-amber-200 bg-amber-50 text-amber-800", positive: "border-green-200 bg-green-50 text-green-800",

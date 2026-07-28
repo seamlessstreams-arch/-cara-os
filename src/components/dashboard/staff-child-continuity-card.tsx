@@ -8,13 +8,27 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   HeartHandshake, ChevronRight, AlertTriangle, Brain, Loader2, UserX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useStaffChildContinuity } from "@/hooks/use-staff-child-continuity";
+import { api } from "@/hooks/use-api";
+import type { StaffChildContinuityResult } from "@/lib/staff-child-continuity/staff-child-continuity-engine";
+
+interface StaffChildContinuityResponse {
+  data: StaffChildContinuityResult;
+}
+
+function useStaffChildContinuity() {
+  return useQuery({
+    queryKey: ["staff-child-continuity"],
+    queryFn: () => api.get<StaffChildContinuityResponse>("/staff-child-continuity"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",

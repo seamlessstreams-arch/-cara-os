@@ -3,8 +3,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHomeOfstedReadinessComposite } from "@/hooks/use-home-ofsted-readiness-composite";
-import type { OfstedGrade } from "@/lib/engines/home-ofsted-readiness-composite-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { HomeOfstedReadinessResult, OfstedGrade } from "@/lib/engines/home-ofsted-readiness-composite-engine";
+
+interface HomeOfstedReadinessResponse { data: HomeOfstedReadinessResult; }
+
+function useHomeOfstedReadinessComposite() {
+  return useQuery<HomeOfstedReadinessResponse>({
+    queryKey: ["home-ofsted-readiness-composite"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-ofsted-readiness-composite");
+      if (!res.ok) throw new Error("Failed to fetch Ofsted readiness composite");
+      return res.json();
+    },
+    refetchInterval: 120_000, // 2 minutes — composite is heavier
+  });
+}
 
 const GRADE_STYLES: Record<OfstedGrade, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },

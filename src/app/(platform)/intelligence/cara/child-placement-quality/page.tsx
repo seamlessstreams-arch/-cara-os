@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,9 +10,22 @@ import {
   CheckCircle, AlertTriangle, TrendingUp, TrendingDown, Minus,
   Heart, BookOpen, Shield, Dumbbell, Home, Star, Clock,
 } from "lucide-react";
-import { useChildPlacementQuality } from "@/hooks/use-child-placement-quality";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import type { PlacementQuality } from "@/lib/engines/child-placement-quality-engine";
+import type { PlacementQuality, ChildPlacementQualityResult } from "@/lib/engines/child-placement-quality-engine";
+
+// ── useChildPlacementQuality (inlined from deleted
+// src/hooks/use-child-placement-quality.ts). Also used, byte-identical, in
+// components/intelligence/child-placement-quality-card.tsx.
+
+function useChildPlacementQuality(childId: string | null) {
+  return useQuery<{ data: ChildPlacementQualityResult }>({
+    queryKey: ["child-placement-quality", childId],
+    queryFn: () =>
+      fetch(`/api/v1/child-placement-quality?childId=${encodeURIComponent(childId!)}`).then((r) => r.json()),
+    enabled: !!childId,
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Rating helpers ─────────────────────────────────────────────────────────────
 

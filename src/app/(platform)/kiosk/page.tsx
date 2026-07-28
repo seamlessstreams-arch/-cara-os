@@ -1,9 +1,23 @@
 "use client";
 
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ScanLine, ShieldCheck } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
-import { useKioskCode } from "@/hooks/use-sign-in";
+import { api } from "@/hooks/use-api";
+
+/** The rotating kiosk code a home displays for presence-verified sign-in. */
+function useKioskCode(enabled = true) {
+  return useQuery({
+    queryKey: ["sign-in", "kiosk-code"],
+    queryFn: async () =>
+      (await api.get<{ data: { home_id: string; code: string; window_minutes: number; valid_for_seconds: number } }>(
+        "/sign-in/kiosk-code",
+      )).data,
+    enabled,
+    staleTime: 30_000,
+  });
+}
 
 /**
  * Sign-in kiosk display. Mount this on a tablet AT the home; staff read the rotating

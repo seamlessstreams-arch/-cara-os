@@ -8,12 +8,23 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Users, ChevronRight, Loader2, Siren, AlertTriangle, UserCheck, MessageSquare, ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useWorkforceOversight } from "@/hooks/use-workforce-oversight";
+import { api } from "@/hooks/use-api";
+import type { WorkforceOversight } from "@/lib/oversight/workforce-oversight";
+
+function useWorkforceOversight(periodDays?: number) {
+  return useQuery({
+    queryKey: ["workforce-oversight", periodDays ?? 7],
+    queryFn: async () =>
+      (await api.get<{ data: WorkforceOversight }>(`/workforce-oversight${periodDays ? `?period=${periodDays}` : ""}`)).data,
+    staleTime: 15_000,
+  });
+}
 
 const SEV_STYLE: Record<string, string> = {
   critical: "text-[--cs-risk]",

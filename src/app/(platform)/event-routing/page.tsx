@@ -6,12 +6,29 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Route, Brain, Loader2, Info, Send, ShieldCheck, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEventRouting } from "@/hooks/use-event-routing";
+import { api } from "@/hooks/use-api";
+import type { EventRoutingResult } from "@/lib/event-routing/event-routing-engine";
+
+// ── useEventRouting (inlined from deleted src/hooks/use-event-routing.ts) ────
+// Also used, byte-identical, in components/dashboard/event-routing-card.tsx.
+
+interface EventRoutingResponse {
+  data: EventRoutingResult;
+}
+
+function useEventRouting() {
+  return useQuery({
+    queryKey: ["event-routing"],
+    queryFn: () => api.get<EventRoutingResponse>("/event-routing"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",

@@ -8,12 +8,14 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useDocuments, useSignDocument } from "@/hooks/use-documents";
+import { api } from "@/hooks/use-api";
+import { careToast } from "@/lib/toast";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatRelative } from "@/lib/utils";
 import {
@@ -21,6 +23,39 @@ import {
   Loader2, ChevronRight, Clock, Pen, Shield,
 } from "lucide-react";
 import type { Document, DocumentReadReceipt } from "@/types";
+
+// ── Documents hooks (inlined from deleted src/hooks/use-documents.ts) ────────
+// useDocuments is also used, byte-identical, in app/(platform)/documents/page.tsx.
+// useSignDocument is single-call-site here.
+
+interface DocumentsResponse {
+  data: Document[];
+  receipts: DocumentReadReceipt[];
+  meta: { total: number; requires_sign: number; expiring_soon: number; expired: number };
+}
+
+function useDocuments(params?: { category?: string; requires_read_sign?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.category) query.set("category", params.category);
+  if (params?.requires_read_sign) query.set("requires_read_sign", "true");
+  return useQuery({
+    queryKey: ["documents", params],
+    queryFn: () => api.get<DocumentsResponse>(`/documents?${query}`),
+  });
+}
+
+function useSignDocument() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ docId, staffId }: { docId: string; staffId: string }) =>
+      api.post(`/documents/${docId}/sign`, { staff_id: staffId }),
+    onSuccess: () => {
+      careToast.formSaved();
+      qc.invalidateQueries({ queryKey: ["documents"] });
+    },
+    onError: () => careToast.actionFailed("Sign document"),
+  });
+}
 
 // ── Category colours ────────────────────────────────────────────────────────
 

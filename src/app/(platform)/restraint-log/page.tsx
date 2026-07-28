@@ -29,11 +29,30 @@ import {
   ShieldAlert, AlertTriangle, CheckCircle2, Clock, Calendar,
   Heart, Shield, Users, Eye, Loader2
 } from "lucide-react";
-import { useRestraints, useCreateRestraint } from "@/hooks/use-restraints";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { RestraintType, RestraintReason, RestraintReviewStatus, RestraintRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+const RESTRAINTS_KEY = "restraints";
+const RESTRAINTS_API = "/api/v1/restraints";
+
+function useRestraints(childId?: string) {
+  return useQuery<{ data: RestraintRecord[] }>({
+    queryKey: childId ? [RESTRAINTS_KEY, childId] : [RESTRAINTS_KEY],
+    queryFn: () => fetch(childId ? `${RESTRAINTS_API}?child_id=${childId}` : RESTRAINTS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateRestraint() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<RestraintRecord>) =>
+      fetch(RESTRAINTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [RESTRAINTS_KEY] }),
+  });
+}
 
 const REASON_META: Record<RestraintReason, string> = {
   harm_to_self:         "Prevent harm to self",

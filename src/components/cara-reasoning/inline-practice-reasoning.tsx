@@ -10,9 +10,32 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Brain, Loader2, ChevronDown, ChevronUp, Eye, MessageCircleHeart, HelpCircle } from "lucide-react";
-import { usePracticeReasoning } from "@/hooks/use-practice-reasoning";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { PracticeReasoning, ReasoningSignalsInput } from "@/lib/cara-reasoning/types";
 import { ConfidencePill } from "./confidence-pill";
 import { PracticeReasoningPanel } from "./practice-reasoning-panel";
+
+interface PracticeReasoningPayload {
+  child: { id: string; name: string };
+  children: Array<{ id: string; name: string }>;
+  signals: ReasoningSignalsInput;
+  reasoning: PracticeReasoning;
+}
+interface PracticeReasoningResponse {
+  data: PracticeReasoningPayload;
+}
+
+function usePracticeReasoning(childId?: string) {
+  return useQuery({
+    queryKey: ["practice-reasoning", childId ?? "default"],
+    queryFn: () =>
+      api.get<PracticeReasoningResponse>(
+        `/practice-reasoning${childId ? `?childId=${encodeURIComponent(childId)}` : ""}`,
+      ),
+    staleTime: 60 * 1000,
+  });
+}
 
 function MiniSection({
   icon: Icon,

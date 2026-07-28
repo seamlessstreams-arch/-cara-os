@@ -7,7 +7,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { use, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,13 +27,82 @@ import {
   RefreshCw, ShieldAlert, Eye,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
-import {
-  useCaraArtifact, useUpdateCaraArtifact, useCaraQualityCheck,
-} from "@/hooks/use-cara-studio";
 import { CaraStudioEvidencePanel } from "@/components/cara/studio-evidence-panel";
 import { CaraStudioQualityPanel } from "@/components/cara/studio-quality-panel";
-import type { CaraArtifactStatus } from "@/types/cara-studio";
+import type {
+  CaraArtifactStatus, CaraArtifact, CaraArtifactVersion, CaraArtifactReview,
+  CaraQualityCheck, CaraStudioAuditLog, CaraSource,
+} from "@/types/cara-studio";
 import { CARA_ARTIFACT_TYPE_LABELS, CARA_STATUS_LABELS } from "@/types/cara-studio";
+
+// ── Cara Studio hooks (inlined from deleted src/hooks/use-cara-studio.ts) ────
+// useCaraArtifact and useCaraQualityCheck are single-call-site here.
+// useUpdateCaraArtifact is also used in intelligence/cara/studio/page.tsx —
+// kept byte-identical there.
+
+interface ArtifactDetailResponse {
+  data: CaraArtifact;
+  related: {
+    versions: CaraArtifactVersion[];
+    reviews: CaraArtifactReview[];
+    actions: unknown[];
+    qualityChecks: CaraQualityCheck[];
+    auditLog: CaraStudioAuditLog[];
+    sources: CaraSource[];
+  };
+}
+
+function useCaraArtifact(id: string | null) {
+  return useQuery({
+    queryKey: ["cara-studio-artifact", id],
+    queryFn: () => api.get<ArtifactDetailResponse>(`/cara-studio/artifacts/${id}`),
+    enabled: !!id,
+  });
+}
+
+interface ArtifactUpdatePayload {
+  id: string;
+  action?: "submit" | "approve" | "request_changes" | "reject" | "commit" | "archive" | "recover" | "quality_check" | "edit";
+  actor_id?: string;
+  generated_content?: string;
+  change_summary?: string;
+  comment?: string;
+  changes?: string;
+  reason?: string;
+  title?: string;
+  framework?: string;
+  tone?: string;
+  creative_mode?: string;
+}
+
+function useUpdateCaraArtifact() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: ArtifactUpdatePayload) =>
+      api.patch<{ data: CaraArtifact; qualityCheck?: CaraQualityCheck }>(
+        `/cara-studio/artifacts/${id}`,
+        data
+      ),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["cara-studio-artifacts"] });
+      queryClient.invalidateQueries({ queryKey: ["cara-studio-artifact", variables.id] });
+    },
+  });
+}
+
+function useCaraQualityCheck() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (artifactId: string) =>
+      api.post<{ data: { artifact: CaraArtifact; qualityCheck: CaraQualityCheck } }>(
+        "/cara-studio/quality-check",
+        { artifact_id: artifactId }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cara-studio-artifacts"] });
+    },
+  });
+}
 
 // ── Status badge colours ──────────────────────────────────────────────────────
 

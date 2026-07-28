@@ -23,12 +23,32 @@ import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useMutation } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ReferralExtraction } from "@/lib/referral-extraction/referral-extraction-engine";
 import { useAdmitChild, type AdmitChildResult } from "@/hooks/use-young-people";
-import { useReferralExtraction } from "@/hooks/use-referral-extraction";
 import { YoungPersonEditDialog } from "@/components/young-people/young-person-edit-dialog";
 import { LEGAL_STATUSES } from "@/lib/young-people/field-options";
 import { useHomeName } from "@/hooks/use-home-profile";
 import { CheckCircle2, FileText, Sparkles, Upload, Pencil } from "lucide-react";
+
+interface ReferralExtractionResponse {
+  data: ReferralExtraction;
+  /** Provenance: whether the governed AI layer filled any gap, and how it resolved. */
+  ai?: { used: boolean; method: string; filled: string[] };
+}
+
+/**
+ * Paste referral text → structured extraction (no persistence). Opts into the
+ * governed AI-enhance layer, which fills only non-PII gaps and falls back to the
+ * deterministic result on refusal / no-credits (today's prod always falls back).
+ */
+function useReferralExtraction() {
+  return useMutation({
+    mutationFn: (text: string) =>
+      api.post<ReferralExtractionResponse>("/referral-extraction", { text, enhance: true }),
+  });
+}
 
 const FIELD =
   "w-full rounded-md border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-teal)]";

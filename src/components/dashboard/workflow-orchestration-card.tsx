@@ -8,11 +8,25 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Workflow, ChevronRight, Loader2, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useWorkflowOrchestration } from "@/hooks/use-workflow-orchestration";
+import { api } from "@/hooks/use-api";
+import type { WorkflowOrchestrationResult } from "@/lib/workflow-orchestration/workflow-orchestration-engine";
+
+interface WorkflowOrchestrationResponse {
+  data: WorkflowOrchestrationResult;
+}
+
+function useWorkflowOrchestration() {
+  return useQuery({
+    queryKey: ["workflow-orchestration"],
+    queryFn: () => api.get<WorkflowOrchestrationResponse>("/workflow-orchestration"),
+    refetchInterval: 60_000,
+  });
+}
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]",

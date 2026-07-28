@@ -7,12 +7,29 @@
 // instead of re-recording it. Powered by the Duplicate Detection Engine.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CopyCheck, ChevronRight, Loader2, Brain, Link2, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useDuplicateDetection } from "@/hooks/use-duplicate-detection";
+import { api } from "@/hooks/use-api";
+import type { DuplicateDetectionResult } from "@/lib/duplicate-detection/duplicate-detection-engine";
+
+// ── useDuplicateDetection (inlined from deleted src/hooks/use-duplicate-detection.ts) ─
+// Also used, byte-identical, in app/(platform)/duplicate-detection/page.tsx.
+
+interface DuplicateDetectionResponse {
+  data: DuplicateDetectionResult;
+}
+
+function useDuplicateDetection() {
+  return useQuery({
+    queryKey: ["duplicate-detection"],
+    queryFn: () => api.get<DuplicateDetectionResponse>("/duplicate-detection"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",

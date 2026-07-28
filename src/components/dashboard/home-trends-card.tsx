@@ -3,9 +3,22 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Activity, Minus, ArrowRight } from "lucide-react";
-import { useHomeTrends } from "@/hooks/use-home-trends";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import type { HomeTrendsResult } from "@/lib/engines/home-trends-engine";
+
+function useHomeTrends() {
+  return useQuery<HomeTrendsResult>({
+    queryKey: ["home-trends"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-trends");
+      if (!res.ok) throw new Error("Failed to fetch home trends");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 type Overall = HomeTrendsResult["overview"]["overall_direction"];
 

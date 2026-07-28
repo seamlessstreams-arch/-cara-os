@@ -8,11 +8,98 @@
 // manual upkeep: record anywhere and it appears here.
 
 import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Activity, ArrowRight, Sparkles, FileUp } from "lucide-react";
-import { useChildChronology, type ChronologyItem } from "@/hooks/use-child-chronology";
+import { api } from "@/hooks/use-api";
 import { getStaffName } from "@/lib/seed-data";
 import { ChronologyImportDialog } from "@/components/young-person/chronology-import-dialog";
+
+// ── useChildChronology (inlined from deleted src/hooks/use-child-chronology.ts) ─
+// Also used, byte-identical, in
+// app/(platform)/young-people/[id]/chronology/page.tsx.
+
+interface ChronologyItem {
+  id: string;
+  source_type:
+    | "care_event"
+    | "incident"
+    | "missing_episode"
+    | "behaviour_log"
+    | "key_working"
+    | "daily_log"
+    | "risk_assessment"
+    | "chronology_entry"
+    | "family_time"
+    | "lac_review"
+    | "appointment"
+    | "education";
+  source_id: string;
+  date: string;
+  time: string | null;
+  title: string;
+  summary: string;
+  severity: "routine" | "significant" | "critical";
+  category: string;
+  staff_id: string | null;
+  links: { label: string; href: string }[];
+  imported?: boolean;
+}
+
+interface ChronologyStats {
+  total: number;
+  critical: number;
+  significant: number;
+  incidents: number;
+  missing: number;
+  keywork: number;
+  behaviour: number;
+  contact: number;
+  reviews: number;
+  health: number;
+  education: number;
+}
+
+interface ChronologyResponse {
+  data: ChronologyItem[];
+  stats: ChronologyStats;
+  total: number;
+}
+
+interface UseChildChronologyParams {
+  childId: string;
+  from?: string;
+  to?: string;
+  types?: ChronologyItem["source_type"][];
+  limit?: number;
+  enabled?: boolean;
+}
+
+function useChildChronology({
+  childId,
+  from,
+  to,
+  types,
+  limit = 200,
+  enabled = true,
+}: UseChildChronologyParams) {
+  const qs = new URLSearchParams();
+  if (from) qs.set("from", from);
+  if (to) qs.set("to", to);
+  if (limit !== 200) qs.set("limit", String(limit));
+  if (types?.length) types.forEach((t) => qs.append("type", t));
+  const query = qs.toString();
+
+  return useQuery({
+    queryKey: ["child-chronology", childId, from, to, types, limit],
+    queryFn: () =>
+      api.get<ChronologyResponse>(
+        `/young-people/${childId}/chronology${query ? `?${query}` : ""}`
+      ),
+    enabled: enabled && !!childId,
+    staleTime: 30_000,
+  });
+}
 
 const SOURCE_LABEL: Record<ChronologyItem["source_type"], string> = {
   care_event: "Care Event",

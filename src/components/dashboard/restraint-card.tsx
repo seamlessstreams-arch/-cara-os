@@ -16,7 +16,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useRestraintIntelligence } from "@/hooks/use-restraint-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { RestraintIntelligenceResult } from "@/lib/engines/restraint-intelligence-engine";
+
+interface RestraintIntelligenceResponse {
+  data: RestraintIntelligenceResult;
+}
+
+function useRestraintIntelligence() {
+  return useQuery({
+    queryKey: ["restraint-intelligence"],
+    queryFn: () => api.get<RestraintIntelligenceResponse>("/restraint-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

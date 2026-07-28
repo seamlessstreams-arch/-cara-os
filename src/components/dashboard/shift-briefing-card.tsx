@@ -1,10 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardCheck, ArrowRight } from "lucide-react";
-import { useShiftBriefing } from "@/hooks/use-shift-briefing";
 import { cn } from "@/lib/utils";
+import type { ShiftBriefingResult } from "@/lib/engines/shift-briefing-engine";
+
+function useShiftBriefing() {
+  return useQuery<ShiftBriefingResult>({
+    queryKey: ["shift-briefing"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/shift-briefing");
+      if (!res.ok) throw new Error("Failed to fetch shift briefing");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 /**
  * Command Centre entry card for the Shift Briefing.

@@ -1,8 +1,8 @@
 "use client";
-import type { DashboardData, PatternAlert } from "@/types/extended";
+import type { DashboardData, PatternAlert, Notification } from "@/types/extended";
 import { api } from "@/hooks/use-api";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — NOTIFICATION CENTRE
@@ -29,7 +29,37 @@ function usePatternAlerts(params?: { childId?: string; homeId?: string; status?:
       api.get<ListResponse<PatternAlert>>(`/intelligence/patterns?${query}`),
   });
 }
-import { useNotifications, useMarkNotificationRead } from "@/hooks/use-notifications";
+function useNotifications(params?: { recipientId?: string; unreadOnly?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.recipientId) query.set("recipient_id", params.recipientId);
+  if (params?.unreadOnly) query.set("unread_only", "true");
+
+  return useQuery<Notification[]>({
+    queryKey: ["notifications", params],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/notifications?${query.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch notifications");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+    refetchInterval: 30_000, // poll every 30 s for near-real-time
+  });
+}
+
+function useMarkNotificationRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch("/api/v1/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, read: true, read_at: new Date().toISOString() }),
+      });
+      if (!res.ok) throw new Error("Failed to mark notification read");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+}
 import { useAuthContext } from "@/contexts/auth-context";
 import {
   Bell, AlertTriangle, Pill, MapPin, Eye, Shield,

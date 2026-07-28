@@ -4,8 +4,20 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Network, CheckCircle, AlertTriangle, Clock, Star } from "lucide-react";
-import { useHomeFamilySocialConnectivityIntelligence } from "@/hooks/use-home-family-social-connectivity-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { FamilySocialConnectivityRating, FamilySocialConnectivityResult } from "@/lib/engines/home-family-social-connectivity-intelligence-engine";
+
+function useHomeFamilySocialConnectivityIntelligence() {
+  return useQuery({
+    queryKey: ["home-family-social-connectivity-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-family-social-connectivity-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch family social connectivity intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_META: Record<FamilySocialConnectivityRating, { label: string; color: string; bg: string; border: string }> = {
   outstanding:       { label: "Outstanding",       color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },

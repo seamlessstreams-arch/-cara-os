@@ -6,6 +6,7 @@
 // from the canonical CornerstoneEvent stream. "Capture once → analytics."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,23 @@ import {
   TrendingUp, TrendingDown, Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEventIntelligence } from "@/hooks/use-event-intelligence";
+import { api } from "@/hooks/use-api";
+import type { EventIntelligenceResult } from "@/lib/event-intelligence/event-intelligence-engine";
+
+// ── useEventIntelligence (inlined from deleted src/hooks/use-event-intelligence.ts) ─
+// Also used, byte-identical, in app/(platform)/event-intelligence/page.tsx.
+
+interface EventIntelligenceResponse {
+  data: EventIntelligenceResult;
+}
+
+function useEventIntelligence() {
+  return useQuery({
+    queryKey: ["event-intelligence"],
+    queryFn: () => api.get<EventIntelligenceResponse>("/event-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const TREND_ICON: Record<string, React.ReactNode> = {
   escalating: <TrendingUp className="h-3 w-3 text-red-500" />,

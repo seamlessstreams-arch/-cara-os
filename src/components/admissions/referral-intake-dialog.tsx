@@ -17,11 +17,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { useReferralExtraction } from "@/hooks/use-referral-extraction";
+import { useMutation } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ReferralExtraction } from "@/lib/referral-extraction/referral-extraction-engine";
 import { ADMISSION_REFERRAL_SOURCE_LABEL } from "@/types/extended";
 import type { AdmissionReferral, AdmissionReferralSource, AdmissionGender } from "@/types/extended";
 import { Sparkles, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
+
+interface ReferralExtractionResponse {
+  data: ReferralExtraction;
+  /** Provenance: whether the governed AI layer filled any gap, and how it resolved. */
+  ai?: { used: boolean; method: string; filled: string[] };
+}
+
+/**
+ * Paste referral text → structured extraction (no persistence). Opts into the
+ * governed AI-enhance layer, which fills only non-PII gaps and falls back to the
+ * deterministic result on refusal / no-credits (today's prod always falls back).
+ */
+function useReferralExtraction() {
+  return useMutation({
+    mutationFn: (text: string) =>
+      api.post<ReferralExtractionResponse>("/referral-extraction", { text, enhance: true }),
+  });
+}
 
 const GENDERS: AdmissionGender[] = ["male", "female", "non_binary", "prefer_not_to_say"];
 

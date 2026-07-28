@@ -18,9 +18,25 @@ import { getStore } from "@/lib/db/store";
 import { useYoungPerson, type YPEnriched } from "@/hooks/use-young-people";
 import { useStaffMember, type StaffEnriched } from "@/hooks/use-staff";
 import { useCarePlanByChild } from "@/hooks/use-care-plans";
-import { useRiskAssessments } from "@/hooks/use-risk-assessments";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
-import type { CarePlanGoal } from "@/types/extended";
+import type { CarePlanGoal, RiskAssessment } from "@/types/extended";
+
+interface RAResponse {
+  data: RiskAssessment[];
+  meta: { total: number; current: number; high_very_high: number; overdue_reviews: number };
+}
+
+function useRiskAssessments(params?: { childId?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  return useQuery({
+    queryKey: ["risk-assessments", params?.childId],
+    queryFn: () => api.get<RAResponse>(`/risk-assessments?${qs.toString()}`),
+    staleTime: 30_000,
+  });
+}
 
 // ── Auto-fill data shapes ────────────────────────────────────────────────────
 

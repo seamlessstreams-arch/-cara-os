@@ -2,16 +2,54 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   LogIn, LogOut, Clock, Users, AlertTriangle, CheckCircle2, MessageSquare, ClipboardCheck, Loader2, Moon, Sun,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useSignInStatus, useClockInOut, type ClockActionResult } from "@/hooks/use-sign-in";
 import { PresenceClockIn } from "@/components/attendance/presence-clock-in";
-import type { PresenceVerificationInput } from "@/lib/attendance/sign-in-service";
+import type { SignInStatus, PresenceVerificationInput } from "@/lib/attendance/sign-in-service";
+import type { PresenceResult } from "@/lib/attendance/presence-verification";
+
+function useSignInStatus() {
+  return useQuery({
+    queryKey: ["sign-in", "status"],
+    queryFn: async () => (await api.get<{ data: SignInStatus }>("/sign-in")).data,
+    staleTime: 10_000,
+  });
+}
+
+interface ClockActionResult {
+  status: SignInStatus;
+  late_minutes?: number;
+  duration_minutes?: number;
+  overtime_minutes?: number;
+  created_adhoc?: boolean;
+  already_on_shift?: boolean;
+  presence?: PresenceResult | null;
+}
+
+function useClockInOut() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: {
+      action: "clock_in" | "clock_out";
+      note?: string;
+      verification?: PresenceVerificationInput;
+    }) => api.post<{ data: ClockActionResult }>("/sign-in", payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sign-in"] });
+      // Going on/off shift changes Comms channel visibility + shift dashboards.
+      qc.invalidateQueries({ queryKey: ["comms", "channels"] });
+      qc.invalidateQueries({ queryKey: ["shift-summary"] });
+      qc.invalidateQueries({ queryKey: ["rota"] });
+    },
+  });
+}
 
 function fmtMins(mins: number): string {
   if (mins < 60) return `${mins}m`;

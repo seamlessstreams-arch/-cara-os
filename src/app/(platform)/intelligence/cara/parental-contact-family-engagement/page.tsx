@@ -4,8 +4,20 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, CheckCircle, AlertTriangle, Clock, Star } from "lucide-react";
-import { useHomeParentalContactFamilyEngagementIntelligence } from "@/hooks/use-home-parental-contact-family-engagement-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { FamilyEngagementRating, ParentalContactFamilyEngagementResult } from "@/lib/engines/home-parental-contact-family-engagement-intelligence-engine";
+
+function useHomeParentalContactFamilyEngagementIntelligence() {
+  return useQuery({
+    queryKey: ["home-parental-contact-family-engagement-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-parental-contact-family-engagement-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch parental contact family engagement intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_META: Record<FamilyEngagementRating, { label: string; color: string; bg: string; border: string }> = {
   outstanding:       { label: "Outstanding",       color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },

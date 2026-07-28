@@ -3,7 +3,22 @@
 import Link from "next/link";
 import { ShieldCheck, Lock, LogIn, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useShiftAccess } from "@/hooks/use-shift-access";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ShiftAccessOverview } from "@/lib/permissions/shift-enforcement";
+
+/**
+ * The acting user's shift-based access overview. `preview` asks the server to show
+ * what access WOULD be off shift if enforcement were enabled (display-only).
+ */
+function useShiftAccess(preview = false) {
+  return useQuery({
+    queryKey: ["access", "shift-status", preview],
+    queryFn: async () =>
+      (await api.get<{ data: ShiftAccessOverview }>(`/access/shift-status${preview ? "?preview=1" : ""}`)).data,
+    staleTime: 10_000,
+  });
+}
 
 /**
  * Off-shift portal banner (Phase 4). Shows a general staff member what operational

@@ -14,8 +14,31 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Brain, Loader2, Lock, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePracticeReasoning } from "@/hooks/use-practice-reasoning";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { PracticeReasoning, ReasoningSignalsInput } from "@/lib/cara-reasoning/types";
 import { PracticeReasoningPanel } from "@/components/cara-reasoning/practice-reasoning-panel";
+
+interface PracticeReasoningPayload {
+  child: { id: string; name: string };
+  children: Array<{ id: string; name: string }>;
+  signals: ReasoningSignalsInput;
+  reasoning: PracticeReasoning;
+}
+interface PracticeReasoningResponse {
+  data: PracticeReasoningPayload;
+}
+
+function usePracticeReasoning(childId?: string) {
+  return useQuery({
+    queryKey: ["practice-reasoning", childId ?? "default"],
+    queryFn: () =>
+      api.get<PracticeReasoningResponse>(
+        `/practice-reasoning${childId ? `?childId=${encodeURIComponent(childId)}` : ""}`,
+      ),
+    staleTime: 60 * 1000,
+  });
+}
 
 export default function PracticeReasoningPage() {
   const [childId, setChildId] = useState<string | undefined>(undefined);

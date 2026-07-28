@@ -6,6 +6,7 @@
 // register and theme trends — all from the canonical CornerstoneEvent stream.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,8 +14,24 @@ import {
   Radar, Brain, Loader2, Info, ShieldCheck, AlertTriangle, TrendingUp, TrendingDown, Minus, Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEventIntelligence } from "@/hooks/use-event-intelligence";
+import { api } from "@/hooks/use-api";
 import { eventTypeLabel } from "@/lib/event-stream/event-type-meta";
+import type { EventIntelligenceResult } from "@/lib/event-intelligence/event-intelligence-engine";
+
+// ── useEventIntelligence (inlined from deleted src/hooks/use-event-intelligence.ts) ─
+// Also used, byte-identical, in components/dashboard/event-intelligence-card.tsx.
+
+interface EventIntelligenceResponse {
+  data: EventIntelligenceResult;
+}
+
+function useEventIntelligence() {
+  return useQuery({
+    queryKey: ["event-intelligence"],
+    queryFn: () => api.get<EventIntelligenceResponse>("/event-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",

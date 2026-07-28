@@ -10,7 +10,21 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, ChevronRight, Loader2, Brain, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRecordingQualityTrend } from "@/hooks/use-recording-quality-trend";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { RecordingQualityTrendResult } from "@/lib/recording-quality-trend/recording-quality-trend-engine";
+
+interface RecordingQualityTrendResponse {
+  data: RecordingQualityTrendResult;
+}
+
+function useRecordingQualityTrend() {
+  return useQuery({
+    queryKey: ["recording-quality-trend"],
+    queryFn: () => api.get<RecordingQualityTrendResponse>("/recording-quality-trend"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const TREND_META: Record<string, { icon: React.ReactNode; cls: string; label: string }> = {
   improving: { icon: <TrendingUp className="h-3.5 w-3.5" />, cls: "text-[--cs-success]", label: "improving" },

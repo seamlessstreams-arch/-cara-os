@@ -4,8 +4,20 @@ import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, CheckCircle, AlertTriangle, Clock, Star } from "lucide-react";
-import { useHomeEmotionalLiteracyFeelingsExpressionIntelligence } from "@/hooks/use-home-emotional-literacy-feelings-expression-intelligence";
+import { useQuery } from "@tanstack/react-query";
 import type { EmotionalLiteracyResult, EmotionalLiteracyRating } from "@/lib/engines/home-emotional-literacy-feelings-expression-intelligence-engine";
+
+function useHomeEmotionalLiteracyFeelingsExpressionIntelligence() {
+  return useQuery({
+    queryKey: ["home-emotional-literacy-feelings-expression-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/home-emotional-literacy-feelings-expression-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch emotional literacy feelings expression intelligence");
+      return res.json();
+    },
+    refetchInterval: 60_000,
+  });
+}
 
 const RATING_META: Record<EmotionalLiteracyRating, { label: string; color: string; bg: string; border: string }> = {
   outstanding:       { label: "Outstanding",       color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },

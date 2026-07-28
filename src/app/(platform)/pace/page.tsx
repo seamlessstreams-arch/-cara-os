@@ -17,12 +17,66 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DictationButton } from "@/components/common/dictation-button";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import {
-  useAnalyzePACE, usePACERecordingAssist, usePACEGuidance, usePACETraining,
-  useChildPaceProfile, useUpdateChildPaceProfile,
-} from "@/hooks/use-pace";
-import type { PACEContext } from "@/lib/cara-intelligence/pace";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type {
+  ChildPACEProfile, PACEAnalysisResult, PACEContext, PACEGuidance,
+  PACERecordingAssistantResult, PACETrainingModule,
+} from "@/lib/cara-intelligence/pace";
 import { Heart, Sparkles, AlertTriangle, CheckCircle2, ListChecks, BookOpen, Baby, ShieldAlert, Lightbulb } from "lucide-react";
+
+/** Analyse a record for PACE quality. */
+function useAnalyzePACE() {
+  return useMutation({
+    mutationFn: (input: { text: string; context: PACEContext; riskPresentHint?: boolean }) =>
+      api.post<{ data: PACEAnalysisResult }>("/pace/analyse", input),
+  });
+}
+
+/** Recording-assistant suggestions for a draft record. */
+function usePACERecordingAssist() {
+  return useMutation({
+    mutationFn: (input: { text: string; context: PACEContext }) =>
+      api.post<{ data: PACERecordingAssistantResult }>("/pace/analyse?mode=recording", input),
+  });
+}
+
+/** PACE guidance for a context (what's underneath, what to say, escalate…). */
+function usePACEGuidance(context: PACEContext) {
+  return useQuery({
+    queryKey: ["pace-guidance", context],
+    queryFn: () => api.get<{ data: PACEGuidance }>(`/pace/analyse?context=${context}`),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** PACE micro-learning modules (optionally for a context). */
+function usePACETraining(context?: PACEContext) {
+  return useQuery({
+    queryKey: ["pace-training", context ?? "all"],
+    queryFn: () => api.get<{ data: { modules: PACETrainingModule[] } }>(`/pace/training${context ? `?context=${context}` : ""}`),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** A child's PACE profile ("what works for this child"). */
+function useChildPaceProfile(childId: string | null) {
+  return useQuery({
+    enabled: !!childId,
+    queryKey: ["pace-child-profile", childId],
+    queryFn: () => api.get<{ data: { childId: string; profile: ChildPACEProfile | null } }>(`/pace/child-profile?childId=${childId}`),
+    staleTime: 60_000,
+  });
+}
+
+function useUpdateChildPaceProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Partial<ChildPACEProfile> & { childId: string }) =>
+      api.patch<{ data: ChildPACEProfile }>("/pace/child-profile", input),
+    onSuccess: (_r, vars) => qc.invalidateQueries({ queryKey: ["pace-child-profile", vars.childId] }),
+  });
+}
 
 const CONTEXTS: { v: PACEContext; label: string }[] = [
   { v: "DAILY_LOG", label: "Daily log" }, { v: "INCIDENT", label: "Incident" },

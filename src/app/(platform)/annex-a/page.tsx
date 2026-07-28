@@ -1,5 +1,5 @@
 "use client";
-import type { Reg44VisitReport, Reg44Recommendation } from "@/types/extended";
+import type { Reg44VisitReport, Reg44Recommendation, RestraintRecord } from "@/types/extended";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -57,7 +57,6 @@ import type { AnnexAEvidenceEnriched } from "@/lib/care-events/compliance-queues
 import type { Complaint } from "@/types/extended";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
-import { useRestraints } from "@/hooks/use-restraints";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useStaff } from "@/hooks/use-staff";
 import { toast } from "sonner";
@@ -77,6 +76,18 @@ function useIncidents(params?: { status?: string; child_id?: string; needs_overs
   return useQuery({
     queryKey: ["incidents", params],
     queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${query}`),
+  });
+}
+
+// ── Restraints query (inlined from use-restraints) ──────────────────────────────
+
+const RESTRAINTS_KEY = "restraints";
+const RESTRAINTS_API = "/api/v1/restraints";
+
+function useRestraints(childId?: string) {
+  return useQuery<{ data: RestraintRecord[] }>({
+    queryKey: childId ? [RESTRAINTS_KEY, childId] : [RESTRAINTS_KEY],
+    queryFn: () => fetch(childId ? `${RESTRAINTS_API}?child_id=${childId}` : RESTRAINTS_API).then((r) => r.json()),
   });
 }
 
