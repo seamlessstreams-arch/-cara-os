@@ -4,7 +4,39 @@
 // CARA — RI COMMAND CENTRE HUB
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useHomeName } from "@/hooks/use-home-profile";
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
 import React, { useMemo } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -15,14 +47,60 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  useRiChallengeLogs,
-  useRiAlerts,
-  useRiReg45Evidence,
-  useRiGovernanceReports,
-  useTrainingNeeds,
-} from "@/hooks/use-ri-learning";
 import type { TrainingRecord } from "@/types";
+import type { RiChallengeLog, RiAlert, RiReg45Evidence, RiGovernanceReport, TrainingNeed } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useRiChallengeLogs(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "challenge-logs", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiChallengeLog>>(
+        `/ri/challenge-logs?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useRiAlerts(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "alerts", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiAlert> & { meta: { critical: number; unresolved: number } }>(
+        `/ri/alerts?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useRiReg45Evidence(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "reg45", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiReg45Evidence>>(
+        `/ri/reg45?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useRiGovernanceReports(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "governance-reports", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiGovernanceReport>>(
+        `/ri/governance-reports?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useTrainingNeeds(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "training-needs", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<TrainingNeed> & { meta: { urgent: number; total: number } }>(
+        `/learning/training-needs?home_id=${params.homeId}`
+      ),
+  });
+}
 
 // Types from use-audits
 export interface AuditsResponse {

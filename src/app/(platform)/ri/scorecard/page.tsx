@@ -1,6 +1,38 @@
 "use client";
 
-import { useHomeName } from "@/hooks/use-home-profile";
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
 import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
@@ -10,7 +42,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useRiChallengeLogs, useRiAlerts, useRiReg45Evidence, useTrainingNeeds } from "@/hooks/use-ri-learning";
+import type { RiChallengeLog, RiAlert, RiReg45Evidence, TrainingNeed } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useRiChallengeLogs(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "challenge-logs", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiChallengeLog>>(
+        `/ri/challenge-logs?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useRiAlerts(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "alerts", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiAlert> & { meta: { critical: number; unresolved: number } }>(
+        `/ri/alerts?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useRiReg45Evidence(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "reg45", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiReg45Evidence>>(
+        `/ri/reg45?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useTrainingNeeds(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "training-needs", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<TrainingNeed> & { meta: { urgent: number; total: number } }>(
+        `/learning/training-needs?home_id=${params.homeId}`
+      ),
+  });
+}
 
 // ── Inlined from the former use-training hook ─────────────────────────────────
 interface TrainingMeta {
@@ -65,7 +139,28 @@ function authHeaders() {
 
 import { useRecruitment } from "@/hooks/use-recruitment";
 import { currentUserId } from "@/lib/auth/current-user";
-import { useYoungPeople } from "@/hooks/use-young-people";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+function useYoungPeople(status = "current") {
+  return useQuery({
+    queryKey: ["young-people", status],
+    queryFn: () =>
+      api.get<{ data: YPEnriched[]; meta: Record<string, number> }>(
+        `/young-people?status=${status}`
+      ),
+  });
+}
 import { computeRiScores } from "@/lib/ri/compute-scores";
 import { below, meanOf, meets } from "@/lib/metrics/rate";
 import { Sparkles, TrendingUp, TrendingDown, Minus, BarChart3, Zap, CircleDot, Shield, Users, Heart, Building2, FileCheck } from "lucide-react";
@@ -73,7 +168,7 @@ import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
-import type { Incident, Supervision, TrainingRecord } from "@/types";
+import type { Incident, Supervision, TrainingRecord, YoungPerson, StaffMember } from "@/types";
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────
 

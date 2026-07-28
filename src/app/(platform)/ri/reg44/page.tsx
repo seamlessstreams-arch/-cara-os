@@ -20,7 +20,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { useReg44Visits, useUpdateReg44Visit } from "@/hooks/use-ri-learning";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   Reg44Visit,
   Reg44VisitStatus,
@@ -34,6 +34,29 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useReg44Visits(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "reg44", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<Reg44Visit> & { meta: { scheduled: number; open_actions: number } }>(
+        `/ri/reg44?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useUpdateReg44Visit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Reg44Visit> }) =>
+      api.patch<{ data: Reg44Visit }>(`/ri/reg44/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ri", "reg44"] });
+    },
+  });
+}
 
 const REG44_EXPORT_COLS: ExportColumn<Reg44Visit>[] = [
   { header: "Visit #", accessor: (v) => String(v.visit_number) },

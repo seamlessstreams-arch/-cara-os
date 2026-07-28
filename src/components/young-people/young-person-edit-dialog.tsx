@@ -17,9 +17,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useUpdateYoungPerson } from "@/hooks/use-young-people";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { LEGAL_STATUSES, PLACEMENT_STATUSES } from "@/lib/young-people/field-options";
 import type { YoungPerson } from "@/types";
+
+/**
+ * Edit a child's record — PATCH /api/v1/young-people/:id. Durable via the
+ * dual-mode dal (the real young_people table on a live tenant). Identity and
+ * tenancy fields (id, home_id) are fixed server-side; only real columns are
+ * written. Permission-gated (child_record / edit).
+ */
+function useUpdateYoungPerson(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<YoungPerson>) => api.patch<{ data: YoungPerson }>(`/young-people/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["young-people", id] });
+      qc.invalidateQueries({ queryKey: ["young-people"] });
+    },
+  });
+}
 
 const FIELD =
   "w-full rounded-md border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-teal)]";

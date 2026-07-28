@@ -4,7 +4,39 @@ import { api } from "@/hooks/use-api";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { useHomeName } from "@/hooks/use-home-profile";
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
 import React, { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";

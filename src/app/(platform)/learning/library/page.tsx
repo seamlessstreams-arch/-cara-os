@@ -12,9 +12,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  useResourceLibrary, useUpdateResourceLibraryEntry,
-} from "@/hooks/use-ri-learning";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { ResourceLibraryEntry, LearningPathway } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
@@ -26,6 +25,29 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useResourceLibrary(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "library", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<ResourceLibraryEntry>>(
+        `/learning/library?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useUpdateResourceLibraryEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<ResourceLibraryEntry>) =>
+      api.patch<SingleResponse<ResourceLibraryEntry>>(`/learning/library/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "library"] });
+    },
+  });
+}
 
 const PATHWAY_LABELS: Record<LearningPathway, string> = {
   child: "Children",

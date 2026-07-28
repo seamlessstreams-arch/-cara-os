@@ -4,9 +4,41 @@
 // CARA — REGULATION 45 ENGINE
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useHomeName } from "@/hooks/use-home-profile";
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
 import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -14,11 +46,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  useRiReg45Evidence, useCreateRiReg45Evidence, useUpdateRiReg45Evidence,
-  useTrainingNeeds, useRiAlerts, useRiChallengeLogs,
-} from "@/hooks/use-ri-learning";
-import type { RiReg45Evidence } from "@/types/extended";
+import type { RiReg45Evidence, TrainingNeed, RiAlert, RiChallengeLog } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import {
   FileText, Sparkles, CheckCircle2, Clock, AlertTriangle,
@@ -28,6 +56,71 @@ import {
 import { api } from "@/hooks/use-api";
 import { currentUserId } from "@/lib/auth/current-user";
 import type { Incident, Supervision } from "@/types";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useRiReg45Evidence(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "reg45", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiReg45Evidence>>(
+        `/ri/reg45?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useCreateRiReg45Evidence() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<RiReg45Evidence>) =>
+      api.post<SingleResponse<RiReg45Evidence>>("/ri/reg45", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ri", "reg45"] });
+    },
+  });
+}
+
+function useUpdateRiReg45Evidence() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<RiReg45Evidence>) =>
+      api.patch<SingleResponse<RiReg45Evidence>>(`/ri/reg45/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ri", "reg45"] });
+    },
+  });
+}
+
+function useTrainingNeeds(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "training-needs", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<TrainingNeed> & { meta: { urgent: number; total: number } }>(
+        `/learning/training-needs?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useRiAlerts(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "alerts", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiAlert> & { meta: { critical: number; unresolved: number } }>(
+        `/ri/alerts?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useRiChallengeLogs(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "challenge-logs", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiChallengeLog>>(
+        `/ri/challenge-logs?home_id=${params.homeId}`
+      ),
+  });
+}
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────
 

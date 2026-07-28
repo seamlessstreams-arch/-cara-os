@@ -22,11 +22,23 @@ import {
   FolderOpen, BarChart3, TrendingUp, TrendingDown, Minus, ArrowUpDown,
 } from "lucide-react";
 import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
-import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
-import type { Audit } from "@/types/extended";
+import type { Audit, TrainingNeed } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 // Types from use-audits
 export interface AuditsResponse {

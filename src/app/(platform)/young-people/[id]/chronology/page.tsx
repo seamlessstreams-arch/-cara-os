@@ -20,7 +20,46 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
-import { useYoungPerson } from "@/hooks/use-young-people";
+import type { YoungPerson, StaffMember } from "@/types";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+interface YPDetail extends YPEnriched {
+  related: {
+    incidents: import("@/types").Incident[];
+    tasks: import("@/types").Task[];
+    medications: import("@/types").Medication[];
+    missing_episodes: unknown[];
+    chronology: unknown[];
+    care_forms: import("@/types").CareForm[];
+    recent_log: import("@/types").DailyLogEntry[];
+  };
+  meta: {
+    today: string;
+    total_incidents: number;
+    open_incidents: number;
+    total_tasks: number;
+    active_tasks: number;
+  };
+}
+
+function useYoungPerson(id: string) {
+  return useQuery({
+    queryKey: ["young-people", id],
+    queryFn: () => api.get<{ data: YPEnriched; related: YPDetail["related"]; meta: YPDetail["meta"] }>(`/young-people/${id}`),
+    enabled: !!id,
+  });
+}
 import {
   AlertTriangle,
   ArrowLeft,

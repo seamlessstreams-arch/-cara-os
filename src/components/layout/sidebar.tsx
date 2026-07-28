@@ -17,9 +17,72 @@ import { currentUserId } from "@/lib/auth/current-user";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { APP_ROLE_LABELS, type AppRole } from "@/lib/permissions";
-import { useStaff } from "@/hooks/use-staff";
-import { useHomeName } from "@/hooks/use-home-profile";
-import type { StaffEnriched } from "@/hooks/use-staff";
+import { api } from "@/hooks/use-api";
+import type { StaffMember } from "@/types";
+
+// ── useStaff (inlined from use-staff) ───────────────────────────────────────
+
+interface StaffEnriched extends StaffMember {
+  is_on_shift_today: boolean;
+  today_shift_type: string | null;
+  today_shift_status: string | null;
+  supervision_overdue: boolean;
+  supervision_days_until_due: number | null;
+  training_total_count: number;
+  training_expired_count: number;
+  training_expiring_count: number;
+  active_tasks: number;
+  overdue_tasks: number;
+  is_on_leave_today: boolean;
+  notifications_unread: number;
+}
+
+function useStaff(params?: { role?: string; status?: string; employment_type?: string }) {
+  const query = new URLSearchParams();
+  if (params?.role) query.set("role", params.role);
+  if (params?.status) query.set("status", params.status);
+  if (params?.employment_type) query.set("employment_type", params.employment_type);
+
+  return useQuery({
+    queryKey: ["staff", params],
+    queryFn: () =>
+      api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
+  });
+}
+
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
 import { Badge } from "@/components/ui/badge";
 import { CaraStatusBadge } from "@/components/cara/cara-health-panel";
 import { OnDutyBar } from "@/components/layout/on-duty-bar";

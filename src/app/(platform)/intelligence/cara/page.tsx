@@ -4,7 +4,39 @@
 // CARA — Cara INTELLIGENCE HUB
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useHomeName } from "@/hooks/use-home-profile";
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
 import React, { useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -12,7 +44,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import { useYoungPeople } from "@/hooks/use-young-people";
+import type { YoungPerson, StaffMember } from "@/types";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+function useYoungPeople(status = "current") {
+  return useQuery({
+    queryKey: ["young-people", status],
+    queryFn: () =>
+      api.get<{ data: YPEnriched[]; meta: Record<string, number> }>(
+        `/young-people?status=${status}`
+      ),
+  });
+}
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import type { CaraSafeguardingFlag, CaraRecommendation, KeyWorkSession, CaraAssessment, CaraOversight, ChildResource, CaraAuditEntry } from "@/types/extended";

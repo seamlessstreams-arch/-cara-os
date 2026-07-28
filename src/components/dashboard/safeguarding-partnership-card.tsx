@@ -13,7 +13,21 @@ import {
   Shield, ChevronRight, Brain, Loader2, Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSafeguardingIntelligence } from "@/hooks/use-safeguarding-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { SafeguardingIntelligenceResult } from "@/lib/engines/safeguarding-intelligence-engine";
+
+interface SafeguardingIntelligenceResponse {
+  data: SafeguardingIntelligenceResult;
+}
+
+function useSafeguardingIntelligence() {
+  return useQuery({
+    queryKey: ["safeguarding-intelligence"],
+    queryFn: () => api.get<SafeguardingIntelligenceResponse>("/safeguarding-intelligence"),
+    refetchInterval: 30_000, // 30 second refresh (safeguarding data is critical)
+  });
+}
 import { formatRate } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────

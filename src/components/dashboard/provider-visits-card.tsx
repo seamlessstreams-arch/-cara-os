@@ -12,7 +12,24 @@ import {
   AlertTriangle, Brain, CalendarCheck, ChevronRight, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useQualityAssuranceIntelligence } from "@/hooks/use-quality-assurance-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { QualityAssuranceIntelligenceResult } from "@/lib/engines/quality-assurance-intelligence-engine";
+
+interface QualityAssuranceIntelligenceResponse {
+  data: QualityAssuranceIntelligenceResult;
+}
+
+function useQualityAssuranceIntelligence() {
+  return useQuery({
+    queryKey: ["quality-assurance-intelligence"],
+    queryFn: () =>
+      api.get<QualityAssuranceIntelligenceResponse>(
+        "/quality-assurance-intelligence"
+      ),
+    refetchInterval: 60_000,
+  });
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",

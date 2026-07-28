@@ -21,17 +21,68 @@
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getFormById } from "@/config/form-registry";
-import { useYoungPeople } from "@/hooks/use-young-people";
-import { useStaff } from "@/hooks/use-staff";
+import { api } from "@/hooks/use-api";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+function useYoungPeople(status = "current") {
+  return useQuery({
+    queryKey: ["young-people", status],
+    queryFn: () =>
+      api.get<{ data: YPEnriched[]; meta: Record<string, number> }>(
+        `/young-people?status=${status}`
+      ),
+  });
+}
+
+// ── useStaff (inlined from use-staff) ───────────────────────────────────────
+
+interface StaffEnriched extends StaffMember {
+  is_on_shift_today: boolean;
+  today_shift_type: string | null;
+  today_shift_status: string | null;
+  supervision_overdue: boolean;
+  supervision_days_until_due: number | null;
+  training_total_count: number;
+  training_expired_count: number;
+  training_expiring_count: number;
+  active_tasks: number;
+  overdue_tasks: number;
+  is_on_leave_today: boolean;
+  notifications_unread: number;
+}
+
+function useStaff(params?: { role?: string; status?: string; employment_type?: string }) {
+  const query = new URLSearchParams();
+  if (params?.role) query.set("role", params.role);
+  if (params?.status) query.set("status", params.status);
+  if (params?.employment_type) query.set("employment_type", params.employment_type);
+
+  return useQuery({
+    queryKey: ["staff", params],
+    queryFn: () =>
+      api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
+  });
+}
 import { useAuthContext } from "@/contexts/auth-context";
 import { currentUserId } from "@/lib/auth/current-user";
 import { CARE_FORM_TYPE_LABELS, type CareFormType } from "@/lib/constants";
-import type { CareForm } from "@/types";
+import type { CareForm, YoungPerson, StaffMember } from "@/types";
 
 // Best-effort map from a registry form to one of the fixed CareForm types. The
 // record's title carries its real name regardless, so an imperfect match only

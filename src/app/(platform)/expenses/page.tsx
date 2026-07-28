@@ -15,11 +15,40 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getStaffName } from "@/lib/seed-data";
-import { useStaff } from "@/hooks/use-staff";
+
+// ── useStaff (inlined from use-staff) ───────────────────────────────────────
+
+interface StaffEnriched extends StaffMember {
+  is_on_shift_today: boolean;
+  today_shift_type: string | null;
+  today_shift_status: string | null;
+  supervision_overdue: boolean;
+  supervision_days_until_due: number | null;
+  training_total_count: number;
+  training_expired_count: number;
+  training_expiring_count: number;
+  active_tasks: number;
+  overdue_tasks: number;
+  is_on_leave_today: boolean;
+  notifications_unread: number;
+}
+
+function useStaff(params?: { role?: string; status?: string; employment_type?: string }) {
+  const query = new URLSearchParams();
+  if (params?.role) query.set("role", params.role);
+  if (params?.status) query.set("status", params.status);
+  if (params?.employment_type) query.set("employment_type", params.employment_type);
+
+  return useQuery({
+    queryKey: ["staff", params],
+    queryFn: () =>
+      api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
+  });
+}
 import { cn, formatDate, daysFromNow } from "@/lib/utils";
-import type { Expense } from "@/types";
+import type { Expense, StaffMember } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/lib/constants";
-import { apiFetch } from "@/hooks/use-api";
+import { apiFetch, api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";

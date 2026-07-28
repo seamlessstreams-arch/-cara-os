@@ -32,8 +32,28 @@ import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-
 import { InlineNeuroProfilePanel } from "@/components/neurodiversity/inline-neuro-profile-panel";
 import type { CaraPracticeRecord, CaraPracticeRecordType, ImmediateRisk, RecordSeverity } from "@/lib/cara-heart/types";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useYoungPeople } from "@/hooks/use-young-people";
-import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+function useYoungPeople(status = "current") {
+  return useQuery({
+    queryKey: ["young-people", status],
+    queryFn: () =>
+      api.get<{ data: YPEnriched[]; meta: Record<string, number> }>(
+        `/young-people?status=${status}`
+      ),
+  });
+}
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -44,8 +64,22 @@ import { EvidenceLink } from "@/components/ui/evidence-link";
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS, INCIDENT_TYPES, INCIDENT_SEVERITIES } from "@/lib/constants";
 import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
-import type { Incident, IncidentNotification } from "@/types";
+import type { Incident, IncidentNotification, YoungPerson, StaffMember } from "@/types";
+import type { TrainingNeed } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────
 

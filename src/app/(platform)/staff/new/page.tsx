@@ -16,8 +16,53 @@ import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCreateStaffMember } from "@/hooks/use-staff";
-import { useHomeName } from "@/hooks/use-home-profile";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { StaffMember } from "@/types";
+
+// ── useCreateStaffMember (inlined from use-staff) ───────────────────────────
+
+function useCreateStaffMember() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<StaffMember>) => api.post<{ data: StaffMember }>("/staff", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["staff"] }),
+  });
+}
+
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
 
 const FIELD =
   "w-full rounded-md border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-teal)]";

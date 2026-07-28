@@ -52,7 +52,28 @@ import {
 } from "lucide-react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import { useYoungPeople } from "@/hooks/use-young-people";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+function useYoungPeople(status = "current") {
+  return useQuery({
+    queryKey: ["young-people", status],
+    queryFn: () =>
+      api.get<{ data: YPEnriched[]; meta: Record<string, number> }>(
+        `/young-people?status=${status}`
+      ),
+  });
+}
 import type { KeyWorkingSession } from "@/types/extended";
 import {
   runProactiveAlertScan,
@@ -60,7 +81,7 @@ import {
 } from "@/lib/cara/cara-proactive-alerts";
 import type { IncidentRecord } from "@/lib/cara/cara-pattern-engine";
 import type { ChildRecord, IncidentSummary } from "@/lib/cara/cara-voice-gap-analysis";
-import type { Incident } from "@/types";
+import type { Incident, YoungPerson, StaffMember } from "@/types";
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────
 

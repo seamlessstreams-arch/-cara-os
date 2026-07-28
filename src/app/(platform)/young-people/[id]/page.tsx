@@ -23,11 +23,9 @@ import {
 } from "lucide-react";
 import { ChildExperienceTab } from "@/components/intelligence/child-experience-tab";
 import { CaraQuickActions } from "@/components/intelligence/cara-quick-actions";
-import { useYoungPerson, useArchiveYoungPerson } from "@/hooks/use-young-people";
 import { YoungPersonEditDialog } from "@/components/young-people/young-person-edit-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { PrintButton } from "@/components/common/print-button";
 import { ChildCalendarTab } from "@/components/calendar/child-calendar-tab";
 import { ChildChronologyTab } from "@/components/young-person/child-chronology-tab";
@@ -40,14 +38,82 @@ import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Incident, Medication, CareForm, DailyLogEntry } from "@/types";
+import type { Incident, Medication, CareForm, DailyLogEntry, YoungPerson, StaffMember } from "@/types";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+interface YPDetail extends YPEnriched {
+  related: {
+    incidents: import("@/types").Incident[];
+    tasks: import("@/types").Task[];
+    medications: import("@/types").Medication[];
+    missing_episodes: unknown[];
+    chronology: unknown[];
+    care_forms: import("@/types").CareForm[];
+    recent_log: import("@/types").DailyLogEntry[];
+  };
+  meta: {
+    today: string;
+    total_incidents: number;
+    open_incidents: number;
+    total_tasks: number;
+    active_tasks: number;
+  };
+}
+
+function useYoungPerson(id: string) {
+  return useQuery({
+    queryKey: ["young-people", id],
+    queryFn: () => api.get<{ data: YPEnriched; related: YPDetail["related"]; meta: YPDetail["meta"] }>(`/young-people/${id}`),
+    enabled: !!id,
+  });
+}
+
+/**
+ * Archive a child's record — DELETE /api/v1/young-people/:id. This is a SOFT
+ * archive: it ends the placement (status "ended", placement_end = today) so the
+ * child leaves the current roster, and never destroys the record. Permission-
+ * gated as an edit.
+ */
+function useArchiveYoungPerson() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<{ data: YoungPerson; archived: boolean }>(`/young-people/${id}`),
+    onSuccess: (_res, id) => {
+      qc.invalidateQueries({ queryKey: ["young-people", id] });
+      qc.invalidateQueries({ queryKey: ["young-people"] });
+    },
+  });
+}
 import type {
   ChronologyEntry, KeyWorkSession, KeyWorkTheme,
   ContactArrangement, ContactLog, MissingEpisode,
+  TrainingNeed,
 } from "@/types/extended";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 // ── Inlined from use-doc-intelligence ──────────────────────────────────────────
 type DocListMeta = {

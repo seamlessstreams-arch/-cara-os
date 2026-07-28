@@ -10,7 +10,8 @@ import React from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useRiAlerts } from "@/hooks/use-ri-learning";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import {
@@ -18,6 +19,18 @@ import {
   Loader2, ChevronRight, Flame, Clock,
 } from "lucide-react";
 import type { RiAlert, RiAlertSeverity } from "@/types/extended";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useRiAlerts(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "alerts", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiAlert> & { meta: { critical: number; unresolved: number } }>(
+        `/ri/alerts?home_id=${params.homeId}`
+      ),
+  });
+}
 
 const SEV_DOT: Record<RiAlertSeverity, string> = {
   critical: "bg-red-500",

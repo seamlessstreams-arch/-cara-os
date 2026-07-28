@@ -4,7 +4,69 @@
 // CARA — TRAINING & COMPLIANCE
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useHomeName } from "@/hooks/use-home-profile";
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
+
+// ── useStaff (inlined from use-staff) ───────────────────────────────────────
+
+interface StaffEnriched extends StaffMember {
+  is_on_shift_today: boolean;
+  today_shift_type: string | null;
+  today_shift_status: string | null;
+  supervision_overdue: boolean;
+  supervision_days_until_due: number | null;
+  training_total_count: number;
+  training_expired_count: number;
+  training_expiring_count: number;
+  active_tasks: number;
+  overdue_tasks: number;
+  is_on_leave_today: boolean;
+  notifications_unread: number;
+}
+
+function useStaff(params?: { role?: string; status?: string; employment_type?: string }) {
+  const query = new URLSearchParams();
+  if (params?.role) query.set("role", params.role);
+  if (params?.status) query.set("status", params.status);
+  if (params?.employment_type) query.set("employment_type", params.employment_type);
+
+  return useQuery({
+    queryKey: ["staff", params],
+    queryFn: () =>
+      api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
+  });
+}
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,9 +89,8 @@ import {
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { TrainingRecord } from "@/types";
-import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
-import { useStaff } from "@/hooks/use-staff";
+import type { TrainingRecord, StaffMember } from "@/types";
+import type { TrainingNeed } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -42,6 +103,19 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 // ── Inlined from the former use-training hook ─────────────────────────────────
 interface TrainingMeta {

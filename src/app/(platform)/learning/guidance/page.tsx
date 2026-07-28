@@ -4,7 +4,39 @@
 // CARA — GUIDANCE NOTES GENERATOR
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useHomeName } from "@/hooks/use-home-profile";
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -17,10 +49,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  useGeneratedResources, useCreateGeneratedResource, useUpdateGeneratedResource,
-  useCreateResourceLibraryEntry,
-} from "@/hooks/use-ri-learning";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { GeneratedResource, ResourceLibraryEntry } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -28,6 +58,54 @@ import { PrintButton } from "@/components/common/print-button";
 import {
   FileText, Sparkles, CheckCircle2, Clock, ChevronDown, ChevronUp, BookOpen,
 } from "lucide-react";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useGeneratedResources(params: { homeId: string; projectId?: string }) {
+  const query = new URLSearchParams({ home_id: params.homeId });
+  if (params.projectId) query.set("project_id", params.projectId);
+  return useQuery({
+    queryKey: ["learning", "resources", params.homeId, params.projectId],
+    queryFn: () =>
+      api.get<ListResponse<GeneratedResource>>(`/learning/resources?${query}`),
+  });
+}
+
+function useCreateGeneratedResource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<GeneratedResource>) =>
+      api.post<SingleResponse<GeneratedResource>>("/learning/resources", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "resources"] });
+      qc.invalidateQueries({ queryKey: ["learning", "library"] });
+    },
+  });
+}
+
+function useUpdateGeneratedResource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<GeneratedResource>) =>
+      api.patch<SingleResponse<GeneratedResource>>(`/learning/resources/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "resources"] });
+      qc.invalidateQueries({ queryKey: ["learning", "library"] });
+    },
+  });
+}
+
+function useCreateResourceLibraryEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<ResourceLibraryEntry>) =>
+      api.post<SingleResponse<ResourceLibraryEntry>>("/learning/library", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "library"] });
+    },
+  });
+}
 import { useAuthContext } from "@/contexts/auth-context";
 
 

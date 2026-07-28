@@ -4,7 +4,39 @@
 // CARA — TRAINING NEEDS INTELLIGENCE (Core Loop Page)
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useHomeName } from "@/hooks/use-home-profile";
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -20,11 +52,8 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  useTrainingNeeds, useCreateTrainingNeed, useUpdateTrainingNeed,
-  useCreateLearningProject, useCreateGeneratedResource,
-} from "@/hooks/use-ri-learning";
-import type { TrainingNeed, TrainingNeedPriority, TrainingNeedIdentifiedBy, TrainingNeedStatus } from "@/types/extended";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { TrainingNeed, TrainingNeedPriority, TrainingNeedIdentifiedBy, TrainingNeedStatus, LearningProject, GeneratedResource } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import {
   Plus, AlertTriangle, BookOpen, ChevronDown, ChevronUp, Sparkles,
@@ -36,6 +65,65 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useTrainingNeeds(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "training-needs", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<TrainingNeed> & { meta: { urgent: number; total: number } }>(
+        `/learning/training-needs?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
+
+function useUpdateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<TrainingNeed>) =>
+      api.patch<SingleResponse<TrainingNeed>>(`/learning/training-needs/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+      qc.invalidateQueries({ queryKey: ["learning", "projects"] });
+    },
+  });
+}
+
+function useCreateLearningProject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<LearningProject>) =>
+      api.post<SingleResponse<LearningProject>>("/learning/projects", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "projects"] });
+    },
+  });
+}
+
+function useCreateGeneratedResource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<GeneratedResource>) =>
+      api.post<SingleResponse<GeneratedResource>>("/learning/resources", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "resources"] });
+      qc.invalidateQueries({ queryKey: ["learning", "library"] });
+    },
+  });
+}
 
 const TRAINING_NEED_EXPORT_COLS: ExportColumn<TrainingNeed>[] = [
   { header: "Title", accessor: (n) => n.title },

@@ -35,9 +35,22 @@ import { CaraWriteToChild } from "@/components/cara/cara-write-to-child";
 import { CaraOversightQuality } from "@/components/cara/cara-oversight-quality";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
-import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { DOCUMENT_CATEGORY_LABELS } from "@/types/documents";
 import type { DocumentIntelRisk, UploadedDocument } from "@/types/documents";
+import type { TrainingNeed } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 // ── Incident queries (inlined from use-incidents) ─────────────────────────────
 

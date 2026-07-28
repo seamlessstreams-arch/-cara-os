@@ -35,12 +35,25 @@ import { CaraOversightQuality } from "@/components/cara/cara-oversight-quality";
 import { StudioQuickActions } from "@/components/cara-studio/studio-quick-actions";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
-import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { DOCUMENT_CATEGORY_LABELS, type UploadedDocument } from "@/types/documents";
 import Link from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import type { TrainingNeed } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 // ── Inlined from use-doc-intelligence ──────────────────────────────────────────
 type DocListMeta = {

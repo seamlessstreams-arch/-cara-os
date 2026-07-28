@@ -13,7 +13,36 @@ import { InlineOutcomePanel } from "@/components/outcome-intelligence/inline-out
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, formatDate } from "@/lib/utils";
-import { useStaff } from "@/hooks/use-staff";
+
+// ── useStaff (inlined from use-staff) ───────────────────────────────────────
+
+interface StaffEnriched extends StaffMember {
+  is_on_shift_today: boolean;
+  today_shift_type: string | null;
+  today_shift_status: string | null;
+  supervision_overdue: boolean;
+  supervision_days_until_due: number | null;
+  training_total_count: number;
+  training_expired_count: number;
+  training_expiring_count: number;
+  active_tasks: number;
+  overdue_tasks: number;
+  is_on_leave_today: boolean;
+  notifications_unread: number;
+}
+
+function useStaff(params?: { role?: string; status?: string; employment_type?: string }) {
+  const query = new URLSearchParams();
+  if (params?.role) query.set("role", params.role);
+  if (params?.status) query.set("status", params.status);
+  if (params?.employment_type) query.set("employment_type", params.employment_type);
+
+  return useQuery({
+    queryKey: ["staff", params],
+    queryFn: () =>
+      api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
+  });
+}
 import { getYPName } from "@/lib/seed-data";
 import { api } from "@/hooks/use-api";
 import { PrintButton } from "@/components/common/print-button";
@@ -28,7 +57,7 @@ import {
 import Link from "next/link";
 import { ProgressiveSection } from "@/components/ui/progressive-section";
 import { PageGuidance } from "@/components/ui/page-guidance";
-import type { Incident } from "@/types";
+import type { Incident, StaffMember } from "@/types";
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────
 

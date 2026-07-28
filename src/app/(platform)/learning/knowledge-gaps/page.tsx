@@ -19,20 +19,42 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  useKnowledgeGaps, useCreateKnowledgeGap,
-} from "@/hooks/use-ri-learning";
 import type { KnowledgeGap, KnowledgeGapSeverity, KnowledgeGapStatus } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import {
   Plus, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Clock, TrendingDown, Search, ArrowUpDown,
 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useKnowledgeGaps(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "knowledge-gaps", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<KnowledgeGap>>(
+        `/learning/knowledge-gaps?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useCreateKnowledgeGap() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<KnowledgeGap>) =>
+      api.post<SingleResponse<KnowledgeGap>>("/learning/knowledge-gaps", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "knowledge-gaps"] });
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 const GAP_EXPORT_COLS: ExportColumn<KnowledgeGap>[] = [
   { header: "Gap Area", accessor: (g) => g.gap_area },

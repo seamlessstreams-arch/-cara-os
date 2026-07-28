@@ -16,10 +16,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  useGeneratedResources, useCreateGeneratedResource,
-} from "@/hooks/use-ri-learning";
-import type { LearningPathway } from "@/types/extended";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { LearningPathway, GeneratedResource } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -28,6 +26,31 @@ import {
   Sparkles, Presentation, Clock, ChevronDown, ChevronUp, Save, FileText,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useGeneratedResources(params: { homeId: string; projectId?: string }) {
+  const query = new URLSearchParams({ home_id: params.homeId });
+  if (params.projectId) query.set("project_id", params.projectId);
+  return useQuery({
+    queryKey: ["learning", "resources", params.homeId, params.projectId],
+    queryFn: () =>
+      api.get<ListResponse<GeneratedResource>>(`/learning/resources?${query}`),
+  });
+}
+
+function useCreateGeneratedResource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<GeneratedResource>) =>
+      api.post<SingleResponse<GeneratedResource>>("/learning/resources", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "resources"] });
+      qc.invalidateQueries({ queryKey: ["learning", "library"] });
+    },
+  });
+}
 
 
 const PATHWAY_LABELS: Record<LearningPathway, string> = {

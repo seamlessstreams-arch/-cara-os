@@ -15,7 +15,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { usePremisesSafetyIntelligence } from "@/hooks/use-premises-safety-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { PremisesSafetyIntelligenceResult } from "@/lib/engines/premises-safety-intelligence-engine";
+
+interface PremisesSafetyIntelligenceResponse {
+  data: PremisesSafetyIntelligenceResult;
+}
+
+function usePremisesSafetyIntelligence() {
+  return useQuery({
+    queryKey: ["premises-safety-intelligence"],
+    queryFn: () => api.get<PremisesSafetyIntelligenceResponse>("/premises-safety-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

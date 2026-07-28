@@ -15,12 +15,84 @@ import React, {
 } from "react";
 import { useParams } from "next/navigation";
 import { getStore } from "@/lib/db/store";
-import { useYoungPerson, type YPEnriched } from "@/hooks/use-young-people";
-import { useStaffMember, type StaffEnriched } from "@/hooks/use-staff";
+
+// ── useStaffMember (inlined from use-staff) ─────────────────────────────────
+
+interface StaffEnriched extends StaffMember {
+  is_on_shift_today: boolean;
+  today_shift_type: string | null;
+  today_shift_status: string | null;
+  supervision_overdue: boolean;
+  supervision_days_until_due: number | null;
+  training_total_count: number;
+  training_expired_count: number;
+  training_expiring_count: number;
+  active_tasks: number;
+  overdue_tasks: number;
+  is_on_leave_today: boolean;
+  notifications_unread: number;
+}
+
+interface StaffProfileResponse {
+  data: StaffEnriched;
+  related: {
+    training: TrainingRecord[];
+    supervisions: Supervision[];
+    tasks: Task[];
+  };
+}
+
+function useStaffMember(id: string) {
+  return useQuery({
+    queryKey: ["staff", id],
+    queryFn: () => api.get<StaffProfileResponse>(`/staff/${id}`),
+    enabled: !!id,
+  });
+}
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { CarePlanGoal, RiskAssessment, CarePlan } from "@/types/extended";
+import type { YoungPerson, StaffMember, TrainingRecord, Supervision, Task } from "@/types";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+interface YPDetail extends YPEnriched {
+  related: {
+    incidents: import("@/types").Incident[];
+    tasks: import("@/types").Task[];
+    medications: import("@/types").Medication[];
+    missing_episodes: unknown[];
+    chronology: unknown[];
+    care_forms: import("@/types").CareForm[];
+    recent_log: import("@/types").DailyLogEntry[];
+  };
+  meta: {
+    today: string;
+    total_incidents: number;
+    open_incidents: number;
+    total_tasks: number;
+    active_tasks: number;
+  };
+}
+
+function useYoungPerson(id: string) {
+  return useQuery({
+    queryKey: ["young-people", id],
+    queryFn: () => api.get<{ data: YPEnriched; related: YPDetail["related"]; meta: YPDetail["meta"] }>(`/young-people/${id}`),
+    enabled: !!id,
+  });
+}
 
 interface RAResponse {
   data: RiskAssessment[];

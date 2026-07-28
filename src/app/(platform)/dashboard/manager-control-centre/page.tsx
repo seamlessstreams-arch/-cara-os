@@ -332,10 +332,31 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tansta
 import { ilFetch } from "@/lib/intelligence/il-fetch";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
 import { api } from "@/hooks/use-api";
-import { useYoungPeople } from "@/hooks/use-young-people";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+function useYoungPeople(status = "current") {
+  return useQuery({
+    queryKey: ["young-people", status],
+    queryFn: () =>
+      api.get<{ data: YPEnriched[]; meta: Record<string, number> }>(
+        `/young-people?status=${status}`
+      ),
+  });
+}
 import type { KeyWorkingSession } from "@/types/extended";
 import { runProactiveAlertScan, type ProactiveAlert } from "@/lib/cara/cara-proactive-alerts";
-import type { Incident } from "@/types";
+import type { Incident, YoungPerson, StaffMember } from "@/types";
 import type { IncidentRecord } from "@/lib/cara/cara-pattern-engine";
 import type { ChildRecord, IncidentSummary } from "@/lib/cara/cara-voice-gap-analysis";
 import Link from "next/link";

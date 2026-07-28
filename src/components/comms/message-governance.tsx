@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   FileText, Lock, Unlock, AlertTriangle, Sparkles, CheckCircle2, ChevronDown, ChevronUp, Loader2, ArrowLeft,
 } from "lucide-react";
@@ -9,7 +9,29 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/hooks/use-api";
 import type { MessageGovernanceAnalysis } from "@/lib/comms/comms-governance";
-import { useYoungPeople } from "@/hooks/use-young-people";
+import type { YoungPerson, StaffMember } from "@/types";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+function useYoungPeople(status = "current") {
+  return useQuery({
+    queryKey: ["young-people", status],
+    queryFn: () =>
+      api.get<{ data: YPEnriched[]; meta: Record<string, number> }>(
+        `/young-people?status=${status}`
+      ),
+  });
+}
 import { CONVERSION_ACTIONS, ACTION_EVENT_MAP, RETENTION_CATEGORIES } from "@/lib/comms/comms-governance";
 import type { CommsMessageEnriched, CommsMessageActionType, CommsLinkedRecordType } from "@/types/comms";
 

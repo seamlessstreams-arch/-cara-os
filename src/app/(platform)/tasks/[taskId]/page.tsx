@@ -18,7 +18,36 @@ import {
   TrendingUp, Tag, FileText, ChevronRight,
 } from "lucide-react";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useStaff } from "@/hooks/use-staff";
+
+// ── useStaff (inlined from use-staff) ───────────────────────────────────────
+
+interface StaffEnriched extends StaffMember {
+  is_on_shift_today: boolean;
+  today_shift_type: string | null;
+  today_shift_status: string | null;
+  supervision_overdue: boolean;
+  supervision_days_until_due: number | null;
+  training_total_count: number;
+  training_expired_count: number;
+  training_expiring_count: number;
+  active_tasks: number;
+  overdue_tasks: number;
+  is_on_leave_today: boolean;
+  notifications_unread: number;
+}
+
+function useStaff(params?: { role?: string; status?: string; employment_type?: string }) {
+  const query = new URLSearchParams();
+  if (params?.role) query.set("role", params.role);
+  if (params?.status) query.set("status", params.status);
+  if (params?.employment_type) query.set("employment_type", params.employment_type);
+
+  return useQuery({
+    queryKey: ["staff", params],
+    queryFn: () =>
+      api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
+  });
+}
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { careToast } from "@/lib/toast";
@@ -27,7 +56,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
 import { cn, todayStr, formatRelative, isOverdue, isDueToday, formatDate } from "@/lib/utils";
 import { TASK_CATEGORY_LABELS, TASK_PRIORITIES, TASK_CATEGORIES, TASK_STATUSES } from "@/lib/constants";
-import type { Task } from "@/types";
+import type { Task, StaffMember } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ProvenanceBadge } from "@/components/forms/enter-once-indicator";

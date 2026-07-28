@@ -14,7 +14,21 @@ import {
   Users, TrendingUp, TrendingDown, Minus, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePlacementStability } from "@/hooks/use-placement-stability";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { PlacementStabilityResult } from "@/lib/engines/placement-stability-engine";
+
+interface PlacementStabilityResponse {
+  data: PlacementStabilityResult;
+}
+
+function usePlacementStability() {
+  return useQuery({
+    queryKey: ["placement-stability"],
+    queryFn: () => api.get<PlacementStabilityResponse>("/placement-stability"),
+    refetchInterval: 45_000, // 45 second refresh (placement data is semi-live)
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

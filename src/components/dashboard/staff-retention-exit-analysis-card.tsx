@@ -14,7 +14,21 @@ import {
   Users, Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { WorkforceIntelligenceResult } from "@/lib/engines/workforce-intelligence-engine";
+
+interface WorkforceIntelligenceResponse {
+  data: WorkforceIntelligenceResult;
+}
+
+function useWorkforceIntelligence() {
+  return useQuery({
+    queryKey: ["workforce-intelligence"],
+    queryFn: () => api.get<WorkforceIntelligenceResponse>("/workforce-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh (workforce data changes less frequently)
+  });
+}
 
 // ── Insight styling ──────────────────────────────────────────────────────────
 

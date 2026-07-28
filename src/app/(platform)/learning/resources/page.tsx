@@ -16,16 +16,61 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  useGeneratedResources, useCreateGeneratedResource, useUpdateGeneratedResource,
-  useCreateResourceLibraryEntry,
-} from "@/hooks/use-ri-learning";
-import type { GeneratedResource, GeneratedResourceType, LearningPathway } from "@/types/extended";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { GeneratedResource, GeneratedResourceType, LearningPathway, ResourceLibraryEntry } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useGeneratedResources(params: { homeId: string; projectId?: string }) {
+  const query = new URLSearchParams({ home_id: params.homeId });
+  if (params.projectId) query.set("project_id", params.projectId);
+  return useQuery({
+    queryKey: ["learning", "resources", params.homeId, params.projectId],
+    queryFn: () =>
+      api.get<ListResponse<GeneratedResource>>(`/learning/resources?${query}`),
+  });
+}
+
+function useCreateGeneratedResource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<GeneratedResource>) =>
+      api.post<SingleResponse<GeneratedResource>>("/learning/resources", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "resources"] });
+      qc.invalidateQueries({ queryKey: ["learning", "library"] });
+    },
+  });
+}
+
+function useUpdateGeneratedResource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<GeneratedResource>) =>
+      api.patch<SingleResponse<GeneratedResource>>(`/learning/resources/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "resources"] });
+      qc.invalidateQueries({ queryKey: ["learning", "library"] });
+    },
+  });
+}
+
+function useCreateResourceLibraryEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<ResourceLibraryEntry>) =>
+      api.post<SingleResponse<ResourceLibraryEntry>>("/learning/library", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "library"] });
+    },
+  });
+}
 import {
   Sparkles, BookOpen, CheckCircle2, Clock, FileText, Save, Plus,
 } from "lucide-react";

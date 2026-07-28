@@ -14,10 +14,39 @@ import {
   ChevronRight, Star, Sun, Loader2, Brain,
 } from "lucide-react";
 import Link from "next/link";
-import { useStaff } from "@/hooks/use-staff";
+
+// ── useStaff (inlined from use-staff) ───────────────────────────────────────
+
+interface StaffEnriched extends StaffMember {
+  is_on_shift_today: boolean;
+  today_shift_type: string | null;
+  today_shift_status: string | null;
+  supervision_overdue: boolean;
+  supervision_days_until_due: number | null;
+  training_total_count: number;
+  training_expired_count: number;
+  training_expiring_count: number;
+  active_tasks: number;
+  overdue_tasks: number;
+  is_on_leave_today: boolean;
+  notifications_unread: number;
+}
+
+function useStaff(params?: { role?: string; status?: string; employment_type?: string }) {
+  const query = new URLSearchParams();
+  if (params?.role) query.set("role", params.role);
+  if (params?.status) query.set("status", params.status);
+  if (params?.employment_type) query.set("employment_type", params.employment_type);
+
+  return useQuery({
+    queryKey: ["staff", params],
+    queryFn: () =>
+      api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
+  });
+}
 import { careToast } from "@/lib/toast";
 import type { PatternAlert, ActionOutcome } from "@/types/extended";
-import type { Incident, Shift, LeaveRequest, Task } from "@/types";
+import type { Incident, Shift, LeaveRequest, Task, StaffMember } from "@/types";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 

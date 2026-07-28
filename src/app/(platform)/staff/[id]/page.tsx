@@ -15,9 +15,41 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import { StudioQuickActions } from "@/components/cara-studio/studio-quick-actions";
-import { useStaffMember } from "@/hooks/use-staff";
+
+// ── useStaffMember (inlined from use-staff) ─────────────────────────────────
+
+interface StaffEnriched extends StaffMember {
+  is_on_shift_today: boolean;
+  today_shift_type: string | null;
+  today_shift_status: string | null;
+  supervision_overdue: boolean;
+  supervision_days_until_due: number | null;
+  training_total_count: number;
+  training_expired_count: number;
+  training_expiring_count: number;
+  active_tasks: number;
+  overdue_tasks: number;
+  is_on_leave_today: boolean;
+  notifications_unread: number;
+}
+
+interface StaffProfileResponse {
+  data: StaffEnriched;
+  related: {
+    training: TrainingRecord[];
+    supervisions: Supervision[];
+    tasks: Task[];
+  };
+}
+
+function useStaffMember(id: string) {
+  return useQuery({
+    queryKey: ["staff", id],
+    queryFn: () => api.get<StaffProfileResponse>(`/staff/${id}`),
+    enabled: !!id,
+  });
+}
 import { StaffComplianceCard } from "@/components/staff/staff-compliance-card";
-import { useTrainingNeeds } from "@/hooks/use-ri-learning";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -25,7 +57,8 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { UploadedDocument } from "@/types/documents";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
-import type { TrainingRecord, Supervision, Task } from "@/types";
+import type { TrainingRecord, Supervision, Task, StaffMember } from "@/types";
+import type { TrainingNeed } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import {
   ArrowLeft, BookOpen, ClipboardList, CheckSquare, Loader2,
@@ -35,6 +68,18 @@ import {
   FlaskConical, Flame, ShieldAlert, HeartPulse, Scale, Utensils,
   Users, BookMarked, XCircle,
 } from "lucide-react";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useTrainingNeeds(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "training-needs", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<TrainingNeed> & { meta: { urgent: number; total: number } }>(
+        `/learning/training-needs?home_id=${params.homeId}`
+      ),
+  });
+}
 
 // ── Inlined from use-doc-intelligence ──────────────────────────────────────────
 type DocListMeta = {

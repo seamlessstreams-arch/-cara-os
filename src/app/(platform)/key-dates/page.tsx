@@ -19,10 +19,39 @@ import {
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import type { CarePlan } from "@/types/extended";
-import { useStaff } from "@/hooks/use-staff";
+import type { CarePlan, Reg44Visit } from "@/types/extended";
+import type { StaffMember } from "@/types";
+
+// ── useStaff (inlined from use-staff) ───────────────────────────────────────
+
+interface StaffEnriched extends StaffMember {
+  is_on_shift_today: boolean;
+  today_shift_type: string | null;
+  today_shift_status: string | null;
+  supervision_overdue: boolean;
+  supervision_days_until_due: number | null;
+  training_total_count: number;
+  training_expired_count: number;
+  training_expiring_count: number;
+  active_tasks: number;
+  overdue_tasks: number;
+  is_on_leave_today: boolean;
+  notifications_unread: number;
+}
+
+function useStaff(params?: { role?: string; status?: string; employment_type?: string }) {
+  const query = new URLSearchParams();
+  if (params?.role) query.set("role", params.role);
+  if (params?.status) query.set("status", params.status);
+  if (params?.employment_type) query.set("employment_type", params.employment_type);
+
+  return useQuery({
+    queryKey: ["staff", params],
+    queryFn: () =>
+      api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
+  });
+}
 import { useQualifications } from "@/hooks/use-workforce";
-import { useReg44Visits } from "@/hooks/use-ri-learning";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn, formatDate } from "@/lib/utils";
@@ -42,6 +71,16 @@ function useCarePlans(params: { homeId: string }) {
     queryFn:  () =>
       api.get<ListResponse<CarePlan> & { meta: { total: number; attention_needed: number; lac_overdue: number } }>(
         `/care-plans?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useReg44Visits(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "reg44", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<Reg44Visit> & { meta: { scheduled: number; open_actions: number } }>(
+        `/ri/reg44?home_id=${params.homeId}`
       ),
   });
 }

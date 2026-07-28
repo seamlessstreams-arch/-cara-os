@@ -23,19 +23,82 @@ import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { ReferralExtraction } from "@/lib/referral-extraction/referral-extraction-engine";
-import { useAdmitChild, type AdmitChildResult } from "@/hooks/use-young-people";
+import type { YoungPerson } from "@/types";
 import { YoungPersonEditDialog } from "@/components/young-people/young-person-edit-dialog";
 import { LEGAL_STATUSES } from "@/lib/young-people/field-options";
-import { useHomeName } from "@/hooks/use-home-profile";
+
+// ── useHomeName (inlined from use-home-profile) ─────────────────────────────
+
+interface HomeProfile {
+  id: string;
+  name: string;
+  address: string;
+  ofsted_urn: string | null;
+}
+
+interface HomeProfileResult {
+  provisioned: boolean;
+  home: HomeProfile | null;
+}
+
+function useHomeProfile() {
+  return useQuery({
+    queryKey: ["home-profile"],
+    // apiFetch returns the route's envelope verbatim — {data: {...}} — so the
+    // payload must be unwrapped here. Shipped without this, the hook read
+    // undefined and served the fallback in BOTH modes: live looked correct by
+    // coincidence (fallback is right there pre-provisioning), and the demo
+    // sidebar quietly said "This home" instead of the seeded name.
+    queryFn: () =>
+      api.get<{ data: HomeProfileResult }>("/home-profile").then((r) => r.data),
+    staleTime: 30 * 60_000,
+    gcTime: 60 * 60_000,
+  });
+}
+
+function useHomeName(fallback = "This home"): string {
+  const { data } = useHomeProfile();
+  return data?.home?.name?.trim() || fallback;
+}
 import { CheckCircle2, FileText, Sparkles, Upload, Pencil } from "lucide-react";
 
 interface ReferralExtractionResponse {
   data: ReferralExtraction;
   /** Provenance: whether the governed AI layer filled any gap, and how it resolved. */
   ai?: { used: boolean; method: string; filled: string[] };
+}
+
+// ── Admit a child (referral-seeded intake) ────────────────────────────────────
+// One request: creates the young person, files the initial referral through the
+// smart-documents pipeline, seeds draft risk assessments from its extracted
+// risk factors, and instantiates the New Placement Admission workflow as dated
+// tasks. All deterministic — no AI credits involved.
+interface AdmitChildPayload extends Partial<YoungPerson> {
+  referral_text?: string;
+  referral_file_name?: string;
+  referral_file_type?: string;
+}
+
+interface AdmitChildResult {
+  young_person: YoungPerson;
+  tasks_created: { id: string; title: string; due_date: string; priority: string }[];
+  document: { id: string; category: string; status: string; suggested_tasks: number } | null;
+  risk_assessments: { id: string; domain: string }[];
+}
+
+function useAdmitChild() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AdmitChildPayload) => api.post<{ data: AdmitChildResult }>("/admissions/admit", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["young-people"] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["doc-intelligence"] });
+    },
+  });
 }
 
 /**

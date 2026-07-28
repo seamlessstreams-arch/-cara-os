@@ -15,14 +15,34 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import { useYoungPeople } from "@/hooks/use-young-people";
-import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
+
+interface YPEnriched extends YoungPerson {
+  age: number;
+  key_worker: StaffMember | null;
+  secondary_worker: StaffMember | null;
+  open_incidents: number;
+  active_tasks: number;
+  missing_episodes_total: number;
+  last_log_date: string | null;
+  active_medications: number;
+  risk_flags_count: number;
+}
+
+function useYoungPeople(status = "current") {
+  return useQuery({
+    queryKey: ["young-people", status],
+    queryFn: () =>
+      api.get<{ data: YPEnriched[]; meta: Record<string, number> }>(
+        `/young-people?status=${status}`
+      ),
+  });
+}
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { careToast } from "@/lib/toast";
-import type { Incident } from "@/types";
-import type { MissingEpisode, ChronologyEntry, ChronologyCategory } from "@/types/extended";
+import type { Incident, YoungPerson, StaffMember } from "@/types";
+import type { MissingEpisode, ChronologyEntry, ChronologyCategory, TrainingNeed } from "@/types/extended";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -30,6 +50,19 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import NextLink from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 // ── Inlined from the former use-missing-episodes hook ─────────────────────────
 interface PatternAnalysis {

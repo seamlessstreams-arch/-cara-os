@@ -19,9 +19,10 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { useRiAlerts, useResolveRiAlert, useCreateTrainingNeed } from "@/hooks/use-ri-learning";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
-import type { RiAlert, RiAlertType, RiAlertSeverity } from "@/types/extended";
+import type { RiAlert, RiAlertType, RiAlertSeverity, TrainingNeed } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -33,6 +34,46 @@ import {
   ShieldAlert, Eye, UserX, FileWarning, Timer, Flame, GraduationCap,
   MessageSquare, BarChart3, Activity, X, Zap,
 } from "lucide-react";
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useRiAlerts(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "alerts", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiAlert> & { meta: { critical: number; unresolved: number } }>(
+        `/ri/alerts?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useResolveRiAlert() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, resolution_note, resolved_by }: { id: string; resolution_note: string; resolved_by: string }) =>
+      api.patch<SingleResponse<RiAlert>>(`/ri/alerts/${id}`, {
+        is_resolved: true,
+        resolved_at: new Date().toISOString(),
+        resolved_by,
+        resolution_note,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ri", "alerts"] });
+    },
+  });
+}
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 const ALERT_EXPORT_COLS: ExportColumn<RiAlert>[] = [
   { header: "Title", accessor: (a) => a.title },

@@ -15,8 +15,20 @@ import {
   ShieldAlert, Clock, ArrowRight,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
-import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
-import type { Audit } from "@/types/extended";
+import type { Audit, TrainingNeed } from "@/types/extended";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 // Types from use-audits
 export interface AuditFinding {

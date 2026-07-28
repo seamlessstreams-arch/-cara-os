@@ -9,10 +9,9 @@ import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  useLearningProjects, useGeneratedResources, useTrainingNeeds,
-  useKnowledgeGaps, useResourceLibrary,
-} from "@/hooks/use-ri-learning";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { LearningProject, GeneratedResource, TrainingNeed, KnowledgeGap, ResourceLibraryEntry } from "@/types/extended";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -26,6 +25,57 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useLearningProjects(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "projects", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<LearningProject>>(
+        `/learning/projects?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useGeneratedResources(params: { homeId: string; projectId?: string }) {
+  const query = new URLSearchParams({ home_id: params.homeId });
+  if (params.projectId) query.set("project_id", params.projectId);
+  return useQuery({
+    queryKey: ["learning", "resources", params.homeId, params.projectId],
+    queryFn: () =>
+      api.get<ListResponse<GeneratedResource>>(`/learning/resources?${query}`),
+  });
+}
+
+function useTrainingNeeds(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "training-needs", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<TrainingNeed> & { meta: { urgent: number; total: number } }>(
+        `/learning/training-needs?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useKnowledgeGaps(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "knowledge-gaps", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<KnowledgeGap>>(
+        `/learning/knowledge-gaps?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useResourceLibrary(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["learning", "library", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<ResourceLibraryEntry>>(
+        `/learning/library?home_id=${params.homeId}`
+      ),
+  });
+}
 
 const FEATURES = [
   {

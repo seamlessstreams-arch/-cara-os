@@ -19,11 +19,8 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  useRiChallengeLogs, useCreateRiChallengeLog, useUpdateRiChallengeLog,
-  useCreateTrainingNeed,
-} from "@/hooks/use-ri-learning";
-import type { RiChallengeLog, RiChallengeArea, RiEscalationLevel } from "@/types/extended";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { RiChallengeLog, RiChallengeArea, RiEscalationLevel, TrainingNeed } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -50,6 +47,52 @@ import {
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
 
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useRiChallengeLogs(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["ri", "challenge-logs", params.homeId],
+    queryFn: () =>
+      api.get<ListResponse<RiChallengeLog>>(
+        `/ri/challenge-logs?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useCreateRiChallengeLog() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<RiChallengeLog>) =>
+      api.post<SingleResponse<RiChallengeLog>>("/ri/challenge-logs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ri", "challenge-logs"] });
+      qc.invalidateQueries({ queryKey: ["ri", "alerts"] });
+    },
+  });
+}
+
+function useUpdateRiChallengeLog() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<RiChallengeLog>) =>
+      api.patch<SingleResponse<RiChallengeLog>>(`/ri/challenge-logs/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ri", "challenge-logs"] });
+    },
+  });
+}
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 const AREA_LABELS: Record<RiChallengeArea, string> = {
   safeguarding: "Safeguarding",

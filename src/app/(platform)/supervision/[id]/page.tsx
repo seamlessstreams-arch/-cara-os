@@ -18,7 +18,6 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import { CaraContextLinker } from "@/components/cara/cara-context-linker";
 import { CaraOversightQuality } from "@/components/cara/cara-oversight-quality";
-import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getStaffName } from "@/lib/seed-data";
 import { SUPERVISION_TYPE_LABELS } from "@/lib/constants";
@@ -30,11 +29,25 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { DOCUMENT_CATEGORY_LABELS, type UploadedDocument } from "@/types/documents";
 import { api } from "@/hooks/use-api";
+import type { TrainingNeed } from "@/types/extended";
 import {
   ArrowLeft, Clock, CheckCircle2, Circle, AlertTriangle,
   Heart, PenLine, User, Users, Calendar, Loader2,
   ClipboardList, Shield, Sparkles, FileText, Library,
 } from "lucide-react";
+
+type SingleResponse<T> = { data: T };
+
+function useCreateTrainingNeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingNeed>) =>
+      api.post<SingleResponse<TrainingNeed>>("/learning/training-needs", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["learning", "training-needs"] });
+    },
+  });
+}
 
 // ── Inlined from use-supervision ────────────────────────────────────────────────
 const SUPERVISION_API = "/api/v1/supervision";
