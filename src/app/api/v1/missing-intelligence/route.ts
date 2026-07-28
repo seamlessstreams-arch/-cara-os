@@ -8,14 +8,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { computeMissingIntelligence } from "@/lib/engines/missing-from-care-engine";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: NextRequest) {
-  const episodes = db.missingEpisodes.findAll();
+  const episodes = await dal.missingEpisodes.findAll();
 
   // Build name lookup from young people (dual-mode: real table when Supabase is on)
   const yps = await dal.youngPeople.findAll();

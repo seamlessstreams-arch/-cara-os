@@ -11,7 +11,7 @@
 
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   const filterStatus = searchParams.get("status");
   const filterCategory = searchParams.get("category");
 
-  let list = db.audits.findAll();
+  let list = await dal.qaAudits.findAll();
 
   if (filterStatus) {
     list = list.filter((a) => a.status === filterStatus);
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   });
 
   // ── Compute meta over ALL audits ────────────────────────────────────────
-  const all = db.audits.findAll();
+  const all = await dal.qaAudits.findAll();
 
   const completed = all.filter((a) => a.status === "completed").length;
   const scheduled = all.filter((a) => a.status === "scheduled" && a.date >= today).length;
@@ -65,6 +65,6 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
-  const audit = db.audits.create(body);
+  const audit = await dal.qaAudits.create(body);
   return NextResponse.json({ data: audit }, { status: 201 });
 }
