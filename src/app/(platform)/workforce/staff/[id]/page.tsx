@@ -51,18 +51,74 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
   });
 }
 import {
-  useStaffCompetencyProfile,
-  useDevelopmentPlans,
-  usePracticeObservations,
-  useAppraisals,
-  useQualifications,
-} from "@/hooks/use-workforce";
-import {
   PATHWAY_STAGE_LABELS, PATHWAY_STAGE_ORDER,
   ALL_COMPETENCY_DOMAINS, COMPETENCY_DOMAIN_LABELS,
   COMPETENCY_LEVEL_LABELS,
   type CompetencyLevel, type PathwayStage,
+  type StaffCompetencyProfile,
+  type DevelopmentPlan,
+  type PracticeObservation,
+  type AppraisalRecord,
+  type QualificationRecord,
 } from "@/types/extended";
+
+// ── Workforce hooks (inlined from use-workforce) ────────────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+type SingleResponse<T> = { data: T };
+
+function useStaffCompetencyProfile(staffId: string) {
+  return useQuery({
+    queryKey: ["workforce", "competency-profiles", staffId],
+    queryFn: () =>
+      api.get<SingleResponse<StaffCompetencyProfile>>(`/workforce/competency-profiles?staff_id=${staffId}`),
+    enabled: !!staffId,
+  });
+}
+
+function useDevelopmentPlans(params?: { staffId?: string; status?: string }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.status) parts.push(`status=${params.status}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "development-plans", params],
+    queryFn: () => api.get<ListResponse<DevelopmentPlan>>(`/workforce/development-plans${qs}`),
+  });
+}
+
+function usePracticeObservations(params?: { staffId?: string }) {
+  const qs = params?.staffId ? `?staff_id=${params.staffId}` : "";
+  return useQuery({
+    queryKey: ["workforce", "observations", params],
+    queryFn: () => api.get<ListResponse<PracticeObservation>>(`/workforce/observations${qs}`),
+  });
+}
+
+function useAppraisals(params?: { staffId?: string; status?: string }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.status) parts.push(`status=${params.status}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "appraisals", params],
+    queryFn: () => api.get<ListResponse<AppraisalRecord>>(`/workforce/appraisals${qs}`),
+  });
+}
+
+function useQualifications(params?: { staffId?: string; expiringDays?: number }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.expiringDays) parts.push(`expiring_days=${params.expiringDays}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "qualifications", params],
+    queryFn: () => api.get<ListResponse<QualificationRecord>>(`/workforce/qualifications${qs}`),
+  });
+}
 
 const LEVEL_COLOUR: Record<CompetencyLevel, string> = {
   0: "bg-slate-100 text-[var(--cs-text-muted)] border-[var(--cs-border)]",

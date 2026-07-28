@@ -13,7 +13,6 @@ import {
   Shield, UserCheck, Calendar, ArrowUpDown,
 } from "lucide-react";
 import Link from "next/link";
-import { useCompetencyProfiles } from "@/hooks/use-workforce";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
@@ -47,10 +46,26 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { PATHWAY_STAGE_LABELS, type PathwayStage } from "@/types/extended";
+import {
+  PATHWAY_STAGE_LABELS,
+  type PathwayStage,
+  type StaffCompetencyProfile,
+} from "@/types/extended";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+
+// ── useCompetencyProfiles (inlined from use-workforce) ──────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useCompetencyProfiles(params?: { homeId?: string }) {
+  const qs = params?.homeId ? `?home_id=${params.homeId}` : "";
+  return useQuery({
+    queryKey: ["workforce", "competency-profiles", params],
+    queryFn: () => api.get<ListResponse<StaffCompetencyProfile>>(`/workforce/competency-profiles${qs}`),
+  });
+}
 
 // ── Constants ────────────────────────────────────────────────────────────────
 

@@ -25,7 +25,6 @@ import {
   User, ChevronDown, ChevronUp, Shield, Fingerprint, Search,
   BarChart3, XCircle, Loader2, ArrowUpDown,
 } from "lucide-react";
-import { useQualifications } from "@/hooks/use-workforce";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
@@ -60,6 +59,22 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
   });
 }
 import { type QualificationStatus } from "@/types/extended";
+
+// ── useQualifications (inlined from use-workforce) ───────────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useQualifications(params?: { staffId?: string; expiringDays?: number }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.expiringDays) parts.push(`expiring_days=${params.expiringDays}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "qualifications", params],
+    queryFn: () => api.get<ListResponse<QualificationRecord>>(`/workforce/qualifications${qs}`),
+  });
+}
 
 const QUAL_EXPORT_COLS: ExportColumn<QualificationRecord>[] = [
   { header: "Staff", accessor: (q) => seedGetStaffName(q.staff_id) },

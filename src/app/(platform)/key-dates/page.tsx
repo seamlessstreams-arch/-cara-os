@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import type { CarePlan, Reg44Visit } from "@/types/extended";
+import type { CarePlan, Reg44Visit, QualificationRecord } from "@/types/extended";
 import type { StaffMember } from "@/types";
 
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
@@ -51,7 +51,6 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { useQualifications } from "@/hooks/use-workforce";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn, formatDate } from "@/lib/utils";
@@ -82,6 +81,24 @@ function useReg44Visits(params: { homeId: string }) {
       api.get<ListResponse<Reg44Visit> & { meta: { scheduled: number; open_actions: number } }>(
         `/ri/reg44?home_id=${params.homeId}`
       ),
+  });
+}
+
+// ── useQualifications (inlined from use-workforce) ───────────────────────────
+// Named WorkforceListResponse — this file already has a same-named ListResponse<T>
+// (above, from use-care-plans) with a different meta shape (Record<string, number>).
+
+type WorkforceListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useQualifications(params?: { staffId?: string; expiringDays?: number }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.expiringDays) parts.push(`expiring_days=${params.expiringDays}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "qualifications", params],
+    queryFn: () => api.get<WorkforceListResponse<QualificationRecord>>(`/workforce/qualifications${qs}`),
   });
 }
 

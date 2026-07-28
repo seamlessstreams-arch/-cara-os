@@ -30,7 +30,6 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useInductionRecords } from "@/hooks/use-workforce";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
@@ -65,6 +64,22 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
   });
 }
 import { type InductionCheckStatus } from "@/types/extended";
+
+// ── useInductionRecords (inlined from use-workforce) ─────────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useInductionRecords(params?: { staffId?: string; status?: string }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.status) parts.push(`status=${params.status}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "induction", params],
+    queryFn: () => api.get<ListResponse<InductionRecord>>(`/workforce/induction${qs}`),
+  });
+}
 
 const INDUCTION_EXPORT_COLS: ExportColumn<InductionRecord>[] = [
   { header: "Staff", accessor: (r) => seedGetStaffName(r.staff_id) },

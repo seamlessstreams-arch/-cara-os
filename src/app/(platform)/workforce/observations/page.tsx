@@ -15,7 +15,6 @@ import {
   ThumbsUp, AlertTriangle, ChevronRight, Search, Users, Eye, ArrowUpDown,
 } from "lucide-react";
 import Link from "next/link";
-import { usePracticeObservations } from "@/hooks/use-workforce";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
@@ -51,6 +50,18 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
 }
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import { COMPETENCY_DOMAIN_LABELS, type ObservationOutcome, type PracticeObservation } from "@/types/extended";
+
+// ── usePracticeObservations (inlined from use-workforce) ────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function usePracticeObservations(params?: { staffId?: string }) {
+  const qs = params?.staffId ? `?staff_id=${params.staffId}` : "";
+  return useQuery({
+    queryKey: ["workforce", "observations", params],
+    queryFn: () => api.get<ListResponse<PracticeObservation>>(`/workforce/observations${qs}`),
+  });
+}
 
 const OUTCOME_CONFIG: Record<ObservationOutcome, { label: string; colour: string; icon: React.ElementType }> = {
   outstanding:      { label: "Outstanding",      colour: "text-emerald-700 bg-emerald-50 border-emerald-200", icon: Star },

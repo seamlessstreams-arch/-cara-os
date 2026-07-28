@@ -14,8 +14,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
-import { useCompetencyProfiles } from "@/hooks/use-workforce";
-import { useDevelopmentPlans } from "@/hooks/use-workforce";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
@@ -53,7 +51,31 @@ import { PATHWAY_STAGE_LABELS, PATHWAY_STAGE_ORDER, type PathwayStage } from "@/
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import type { StaffCompetencyProfile } from "@/types/extended";
+import type { StaffCompetencyProfile, DevelopmentPlan } from "@/types/extended";
+
+// ── Workforce hooks (inlined from use-workforce) ────────────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useCompetencyProfiles(params?: { homeId?: string }) {
+  const qs = params?.homeId ? `?home_id=${params.homeId}` : "";
+  return useQuery({
+    queryKey: ["workforce", "competency-profiles", params],
+    queryFn: () => api.get<ListResponse<StaffCompetencyProfile>>(`/workforce/competency-profiles${qs}`),
+  });
+}
+
+function useDevelopmentPlans(params?: { staffId?: string; status?: string }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.status) parts.push(`status=${params.status}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "development-plans", params],
+    queryFn: () => api.get<ListResponse<DevelopmentPlan>>(`/workforce/development-plans${qs}`),
+  });
+}
 
 const READINESS_COLOUR = (score: number) =>
   score >= 80 ? "text-emerald-600" : score >= 60 ? "text-amber-600" : "text-red-600";

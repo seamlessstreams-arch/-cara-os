@@ -12,7 +12,6 @@ import {
   Plus, GitMerge, ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import { useDevelopmentPlans } from "@/hooks/use-workforce";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
@@ -49,9 +48,26 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
 import {
   PATHWAY_STAGE_LABELS, COMPETENCY_DOMAIN_LABELS,
   type DevelopmentPlanStatus,
+  type DevelopmentPlan,
 } from "@/types/extended";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+
+// ── useDevelopmentPlans (inlined from use-workforce) ─────────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useDevelopmentPlans(params?: { staffId?: string; status?: string }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.status) parts.push(`status=${params.status}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "development-plans", params],
+    queryFn: () => api.get<ListResponse<DevelopmentPlan>>(`/workforce/development-plans${qs}`),
+  });
+}
 
 const STATUS_CONFIG: Record<DevelopmentPlanStatus, { label: string; colour: string }> = {
   draft:      { label: "Draft",      colour: "text-slate-600 bg-slate-100 border-slate-200"       },

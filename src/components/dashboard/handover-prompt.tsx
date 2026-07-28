@@ -13,7 +13,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate } from "@/lib/metrics/rate";
-import { useSupervisionIntelligence } from "@/hooks/use-supervision-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { SupervisionIntelligenceResult } from "@/lib/engines/supervision-intelligence-engine";
+
+interface SupervisionIntelligenceResponse {
+  data: SupervisionIntelligenceResult;
+}
+
+function useSupervisionIntelligence() {
+  return useQuery({
+    queryKey: ["supervision-intelligence"],
+    queryFn: () => api.get<SupervisionIntelligenceResponse>("/supervision-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",

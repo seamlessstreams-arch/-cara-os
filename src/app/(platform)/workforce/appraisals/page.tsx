@@ -20,7 +20,6 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { cn, formatDate } from "@/lib/utils";
-import { useAppraisals } from "@/hooks/use-workforce";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
@@ -67,6 +66,22 @@ import {
   Star, TrendingUp, BarChart3, Award, FileText, Brain,
   ArrowUpDown, Users, Target, Eye, Sparkles,
 } from "lucide-react";
+
+// ── useAppraisals (inlined from use-workforce) ───────────────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useAppraisals(params?: { staffId?: string; status?: string }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.status) parts.push(`status=${params.status}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "appraisals", params],
+    queryFn: () => api.get<ListResponse<AppraisalRecord>>(`/workforce/appraisals${qs}`),
+  });
+}
 
 // ── Config maps ──────────────────────────────────────────────────────────────
 

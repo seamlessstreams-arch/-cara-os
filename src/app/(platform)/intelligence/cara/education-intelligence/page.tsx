@@ -1,13 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useEducationIntelligence } from "@/hooks/use-education-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
 import type {
   ChildEducationProfile,
   EducationAlert,
   CaraEducationInsight,
+  EducationIntelligenceResult,
 } from "@/lib/engines/education-intelligence-engine";
+
+interface EducationIntelligenceResponse {
+  data: EducationIntelligenceResult;
+}
+
+function useEducationIntelligence() {
+  return useQuery({
+    queryKey: ["education-intelligence"],
+    queryFn: () => api.get<EducationIntelligenceResponse>("/education-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 type Signal = "green" | "amber" | "red" | "grey";
 

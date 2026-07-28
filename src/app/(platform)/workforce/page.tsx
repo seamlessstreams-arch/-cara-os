@@ -21,11 +21,6 @@ import {
   GraduationCap, MessageSquare, AlertTriangle, CheckCircle2,
   ChevronRight, ArrowUpRight, Telescope, Clock,
 } from "lucide-react";
-import { useCompetencyProfiles } from "@/hooks/use-workforce";
-import { useAppraisals } from "@/hooks/use-workforce";
-import { useSuccessionPlans } from "@/hooks/use-workforce";
-import { useQualifications } from "@/hooks/use-workforce";
-import { useInductionRecords } from "@/hooks/use-workforce";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
@@ -63,8 +58,69 @@ import {
   PATHWAY_STAGE_LABELS,
   COMPETENCY_DOMAIN_LABELS,
   type PathwayStage,
+  type StaffCompetencyProfile,
+  type AppraisalRecord,
+  type SuccessionPlan,
+  type QualificationRecord,
+  type InductionRecord,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+// ── Workforce hooks (inlined from use-workforce) ────────────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useCompetencyProfiles(params?: { homeId?: string }) {
+  const qs = params?.homeId ? `?home_id=${params.homeId}` : "";
+  return useQuery({
+    queryKey: ["workforce", "competency-profiles", params],
+    queryFn: () => api.get<ListResponse<StaffCompetencyProfile>>(`/workforce/competency-profiles${qs}`),
+  });
+}
+
+function useAppraisals(params?: { staffId?: string; status?: string }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.status) parts.push(`status=${params.status}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "appraisals", params],
+    queryFn: () => api.get<ListResponse<AppraisalRecord>>(`/workforce/appraisals${qs}`),
+  });
+}
+
+function useSuccessionPlans(params?: { homeId?: string }) {
+  const qs = params?.homeId ? `?home_id=${params.homeId}` : "";
+  return useQuery({
+    queryKey: ["workforce", "succession", params],
+    queryFn: () => api.get<ListResponse<SuccessionPlan>>(`/workforce/succession${qs}`),
+  });
+}
+
+function useQualifications(params?: { staffId?: string; expiringDays?: number }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.expiringDays) parts.push(`expiring_days=${params.expiringDays}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "qualifications", params],
+    queryFn: () => api.get<ListResponse<QualificationRecord>>(`/workforce/qualifications${qs}`),
+  });
+}
+
+function useInductionRecords(params?: { staffId?: string; status?: string }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.status) parts.push(`status=${params.status}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "induction", params],
+    queryFn: () => api.get<ListResponse<InductionRecord>>(`/workforce/induction${qs}`),
+  });
+}
 
 const STAGE_COLOURS: Record<PathwayStage, string> = {
   inductee:           "bg-slate-100 text-slate-700 border-slate-200",

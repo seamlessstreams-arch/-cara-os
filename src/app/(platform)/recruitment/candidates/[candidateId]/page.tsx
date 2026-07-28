@@ -20,14 +20,315 @@ import {
 import { toastSuccess, toastError, toastInfo } from "@/lib/toast";
 import { Input } from "@/components/ui/input";
 import { cn, formatDate } from "@/lib/utils";
-import {
-  useCandidate, useUpdateCheck, useUpdateReference,
-  useCreateReference, useUpdateOffer,
-} from "@/hooks/use-recruitment";
-import type { RecruitmentCheck, RecruitmentReference, Interview, Offer, RecruitmentAuditEntry } from "@/hooks/use-recruitment";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+
+// ── Inlined from use-recruitment ─────────────────────────────────────────────
+
+type CheckStatus =
+  | "not_started"
+  | "requested"
+  | "in_progress"
+  | "received"
+  | "verified"
+  | "concern_flagged"
+  | "override_approved"
+  | "not_required";
+
+type CheckType =
+  | "enhanced_dbs"
+  | "right_to_work"
+  | "identity"
+  | "references"
+  | "overseas_criminal_record"
+  | "qualifications"
+  | "employment_history"
+  | "medical_fitness"
+  | "prohibition_from_teaching"
+  | "disqualification_by_association"
+  | "section_128"
+  | "childcare_disqualification";
+
+type RiskLevel = "low" | "medium" | "high" | "critical";
+
+interface RecruitmentCheck {
+  id: string;
+  candidate_id: string;
+  check_type: CheckType;
+  status: CheckStatus;
+  owner: string | null;
+  requested_date: string | null;
+  received_date: string | null;
+  verified_by: string | null;
+  verified_at: string | null;
+  expiry_date: string | null;
+  certificate_number: string | null;
+  document_type: string | null;
+  concern_flag: boolean;
+  concern_notes: string | null;
+  override_reason: string | null;
+  override_by: string | null;
+  override_at: string | null;
+  risk_mitigation: string | null;
+  notes: string | null;
+  home_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface RecruitmentReference {
+  id: string;
+  candidate_id: string;
+  referee_name: string;
+  referee_org: string | null;
+  referee_role: string | null;
+  referee_email: string | null;
+  referee_phone: string | null;
+  relationship: string;
+  is_most_recent_employer: boolean;
+  status: "not_requested" | "requested" | "received" | "satisfactory" | "unsatisfactory" | "uncontactable";
+  requested_date: string | null;
+  received_date: string | null;
+  employment_dates_confirmed: boolean | null;
+  role_confirmed: boolean | null;
+  performance_rating: string | null;
+  safeguarding_concerns: boolean | null;
+  safeguarding_detail: string | null;
+  would_re_employ: boolean | null;
+  would_re_employ_reason: string | null;
+  discrepancy_flag: boolean;
+  discrepancy_notes: string | null;
+  home_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface EmploymentHistoryEntry {
+  id: string;
+  candidate_id: string;
+  employer: string;
+  role_title: string;
+  start_date: string;
+  end_date: string | null;
+  is_current: boolean;
+  reason_for_leaving: string | null;
+  verified: boolean;
+  verified_by: string | null;
+  verified_at: string | null;
+  notes: string | null;
+  home_id: string;
+  created_at: string;
+}
+
+interface EmploymentGap {
+  id: string;
+  candidate_id: string;
+  gap_start: string;
+  gap_end: string;
+  gap_days: number;
+  explanation: string | null;
+  review_status: "unreviewed" | "satisfactory" | "concern" | "override";
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  home_id: string;
+}
+
+interface Interview {
+  id: string;
+  candidate_id: string;
+  scheduled_at: string;
+  mode: "in_person" | "video" | "phone";
+  location: string | null;
+  status: "scheduled" | "completed" | "cancelled" | "rescheduled";
+  panel_members: string[];
+  safer_recruitment_trained: boolean;
+  recommendation: "proceed" | "decline" | "hold" | null;
+  overall_score: number | null;
+  scores_by_category: Record<string, number> | null;
+  notes: string | null;
+  home_id: string;
+  created_at: string;
+}
+
+interface Offer {
+  id: string;
+  candidate_id: string;
+  status: "not_made" | "conditional" | "unconditional" | "accepted" | "declined" | "withdrawn";
+  offer_date: string | null;
+  proposed_start_date: string | null;
+  role_title: string;
+  salary: number | null;
+  hours_per_week: number | null;
+  exceptional_start: boolean;
+  exceptional_start_risk_mitigation: string | null;
+  final_clearance_given: boolean;
+  final_clearance_date: string | null;
+  final_clearance_by: string | null;
+  contract_generated: boolean;
+  contract_generated_at: string | null;
+  home_id: string;
+  created_at: string;
+}
+
+interface RecruitmentAuditEntry {
+  id: string;
+  candidate_id: string;
+  event_type: string;
+  actor: string;
+  actor_role: string;
+  summary: string;
+  changes: Record<string, { old: unknown; new: unknown }> | null;
+  performed_at: string;
+  home_id: string;
+}
+
+interface CandidateDetail {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  role_applied: string;
+  stage: string;
+  source: string | null;
+  cv_url: string | null;
+  compliance_score: number;
+  risk_level: RiskLevel;
+  days_in_stage: number;
+  days_total: number;
+  manager_assigned: string | null;
+  interview_date: string | null;
+  interview_notes: string | null;
+  offer_date: string | null;
+  start_date: string | null;
+  notes: string | null;
+  blocker_summary: string[];
+  next_actions: string[];
+  checks: RecruitmentCheck[];
+  references: RecruitmentReference[];
+  employment_history: EmploymentHistoryEntry[];
+  employment_gaps: EmploymentGap[];
+  interviews: Interview[];
+  offer: Offer | null;
+  audit: RecruitmentAuditEntry[];
+  home_id: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+}
+
+interface UpdateCheckPayload {
+  checkId: string;
+  candidateId: string;
+  data: Partial<{
+    status: CheckStatus;
+    owner: string;
+    requested_date: string;
+    received_date: string;
+    verified_by: string;
+    verified_at: string;
+    certificate_number: string;
+    document_type: string;
+    expiry_date: string;
+    concern_flag: boolean;
+    concern_notes: string;
+    override_reason: string;
+    risk_mitigation: string;
+    notes: string;
+  }>;
+}
+
+interface CreateReferencePayload {
+  candidate_id: string;
+  referee_name: string;
+  referee_org?: string;
+  referee_role?: string;
+  referee_email?: string;
+  referee_phone?: string;
+  relationship: string;
+  is_most_recent_employer?: boolean;
+}
+
+interface UpdateReferencePayload {
+  referenceId: string;
+  candidateId: string;
+  data: Partial<{
+    status: RecruitmentReference["status"];
+    received_date: string;
+    employment_dates_confirmed: boolean;
+    role_confirmed: boolean;
+    performance_rating: string;
+    safeguarding_concerns: boolean;
+    safeguarding_detail: string;
+    would_re_employ: boolean;
+    would_re_employ_reason: string;
+    discrepancy_flag: boolean;
+    discrepancy_notes: string;
+  }>;
+}
+
+function useCandidate(candidateId: string) {
+  return useQuery({
+    queryKey: ["recruitment", candidateId],
+    queryFn: () => api.get<{ data: CandidateDetail }>(`/recruitment/${candidateId}`),
+    enabled: Boolean(candidateId),
+  });
+}
+
+function useUpdateCheck() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ checkId, data }: UpdateCheckPayload) =>
+      api.patch<{ data: RecruitmentCheck }>(`/recruitment/checks`, { id: checkId, ...data }),
+    onSuccess: (_result, variables) => {
+      qc.invalidateQueries({ queryKey: ["recruitment"] });
+      qc.invalidateQueries({ queryKey: ["recruitment", variables.candidateId] });
+      qc.invalidateQueries({ queryKey: ["recruitment-checks", variables.candidateId] });
+    },
+  });
+}
+
+function useCreateReference() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateReferencePayload) =>
+      api.post<{ data: RecruitmentReference }>("/recruitment/references", payload),
+    onSuccess: (_result, variables) => {
+      qc.invalidateQueries({ queryKey: ["recruitment"] });
+      qc.invalidateQueries({ queryKey: ["recruitment", variables.candidate_id] });
+      qc.invalidateQueries({ queryKey: ["recruitment-references", variables.candidate_id] });
+    },
+  });
+}
+
+function useUpdateReference() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ referenceId, data }: UpdateReferencePayload) =>
+      api.patch<{ data: RecruitmentReference }>("/recruitment/references", { id: referenceId, ...data }),
+    onSuccess: (_result, variables) => {
+      qc.invalidateQueries({ queryKey: ["recruitment"] });
+      qc.invalidateQueries({ queryKey: ["recruitment", variables.candidateId] });
+      qc.invalidateQueries({ queryKey: ["recruitment-references", variables.candidateId] });
+    },
+  });
+}
+
+function useUpdateOffer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ candidateId, action, by }: { candidateId: string; action: string; by?: string }) =>
+      api.patch<{ data: unknown }>("/recruitment/offers", { candidate_id: candidateId, action, by }),
+    onSuccess: (_result, variables) => {
+      qc.invalidateQueries({ queryKey: ["recruitment"] });
+      qc.invalidateQueries({ queryKey: ["recruitment", variables.candidateId] });
+    },
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

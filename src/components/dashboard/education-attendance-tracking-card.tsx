@@ -6,7 +6,21 @@ import { Badge } from "@/components/ui/badge";
 import { School, ChevronRight, AlertTriangle, Brain, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
-import { useEducationIntelligence } from "@/hooks/use-education-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { EducationIntelligenceResult } from "@/lib/engines/education-intelligence-engine";
+
+interface EducationIntelligenceResponse {
+  data: EducationIntelligenceResult;
+}
+
+function useEducationIntelligence() {
+  return useQuery({
+    queryKey: ["education-intelligence"],
+    queryFn: () => api.get<EducationIntelligenceResponse>("/education-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const ALERT_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",

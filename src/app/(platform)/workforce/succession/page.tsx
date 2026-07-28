@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useSuccessionPlans, useCompetencyProfiles } from "@/hooks/use-workforce";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
@@ -59,7 +58,32 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { PATHWAY_STAGE_LABELS, type PathwayStage } from "@/types/extended";
+import {
+  PATHWAY_STAGE_LABELS,
+  type PathwayStage,
+  type SuccessionPlan,
+  type StaffCompetencyProfile,
+} from "@/types/extended";
+
+// ── Workforce hooks (inlined from use-workforce) ────────────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useSuccessionPlans(params?: { homeId?: string }) {
+  const qs = params?.homeId ? `?home_id=${params.homeId}` : "";
+  return useQuery({
+    queryKey: ["workforce", "succession", params],
+    queryFn: () => api.get<ListResponse<SuccessionPlan>>(`/workforce/succession${qs}`),
+  });
+}
+
+function useCompetencyProfiles(params?: { homeId?: string }) {
+  const qs = params?.homeId ? `?home_id=${params.homeId}` : "";
+  return useQuery({
+    queryKey: ["workforce", "competency-profiles", params],
+    queryFn: () => api.get<ListResponse<StaffCompetencyProfile>>(`/workforce/competency-profiles${qs}`),
+  });
+}
 
 const URGENCY_CONFIG: Record<string, { label: string; colour: string; order: number }> = {
   immediate:     { label: "Immediate",   colour: "text-red-700 bg-red-50 border-red-200",       order: 0 },

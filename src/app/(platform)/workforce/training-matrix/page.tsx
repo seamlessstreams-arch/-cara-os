@@ -24,7 +24,6 @@ import {
   Filter, CalendarClock, X,
 } from "lucide-react";
 import Link from "next/link";
-import { useQualifications } from "@/hooks/use-workforce";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { StaffMember } from "@/types";
@@ -58,7 +57,23 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
       api.get<{ data: StaffEnriched[]; meta: Record<string, number> }>(`/staff?${query}`),
   });
 }
-import { type QualificationStatus } from "@/types/extended";
+import { type QualificationStatus, type QualificationRecord } from "@/types/extended";
+
+// ── useQualifications (inlined from use-workforce) ───────────────────────────
+
+type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+function useQualifications(params?: { staffId?: string; expiringDays?: number }) {
+  const parts: string[] = [];
+  if (params?.staffId) parts.push(`staff_id=${params.staffId}`);
+  if (params?.expiringDays) parts.push(`expiring_days=${params.expiringDays}`);
+  const qs = parts.length ? `?${parts.join("&")}` : "";
+
+  return useQuery({
+    queryKey: ["workforce", "qualifications", params],
+    queryFn: () => api.get<ListResponse<QualificationRecord>>(`/workforce/qualifications${qs}`),
+  });
+}
 
 // ── Training category definitions ────────────────────────────────────────────
 

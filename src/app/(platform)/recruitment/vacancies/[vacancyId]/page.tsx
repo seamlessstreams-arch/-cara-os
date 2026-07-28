@@ -50,10 +50,52 @@ import {
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useVacancy } from "@/hooks/use-recruitment";
-import type { VacancyCandidate } from "@/hooks/use-recruitment";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+
+// ── Inlined from use-recruitment ─────────────────────────────────────────────
+
+interface VacancyCandidate {
+  id: string;
+  name: string;
+  email: string;
+  stage: string;
+  risk_level: string;
+  days_total: number;
+  compliance_score: number;
+}
+
+interface VacancyDetail {
+  id: string;
+  home_id: string;
+  title: string;
+  role_code: string;
+  employment_type: string;
+  contract_type: string;
+  salary_min: number | null;
+  salary_max: number | null;
+  hours: number | null;
+  shift_pattern: string | null;
+  safeguarding_statement: string;
+  status: string;
+  approval_status: string;
+  reports_to: string | null;
+  posted_date: string;
+  days_open: number;
+  applications_count: number;
+  by_stage: Record<string, number>;
+  candidates: VacancyCandidate[];
+  created_at: string;
+  updated_at: string;
+}
+
+function useVacancy(vacancyId: string) {
+  return useQuery({
+    queryKey: ["vacancy", vacancyId],
+    queryFn: () => api.get<{ data: VacancyDetail }>(`/recruitment/vacancies/${vacancyId}`),
+    enabled: Boolean(vacancyId),
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
