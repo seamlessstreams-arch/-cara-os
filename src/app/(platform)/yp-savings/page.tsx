@@ -25,13 +25,43 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useYPSavingsAccountRecords, useCreateYPSavingsAccountRecord } from "@/hooks/use-yp-savings-account-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { YPSavingsAccountRecord, YPSavingsTransactionType } from "@/types/extended";
 import { YP_SAVINGS_TRANSACTION_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useYPSavingsAccountRecords(childId?: string) {
+  return useQuery<YPSavingsAccountRecord[]>({
+    queryKey: ["yp-savings-account-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/yp-savings-account-records?child_id=${childId}`
+        : "/api/v1/yp-savings-account-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch YP savings account records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateYPSavingsAccountRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<YPSavingsAccountRecord, "id">) => {
+      const res = await fetch("/api/v1/yp-savings-account-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create YP savings account record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["yp-savings-account-records"] }),
+  });
+}
 
 /* ── component ─────────────────────────────────────────────────────────── */
 

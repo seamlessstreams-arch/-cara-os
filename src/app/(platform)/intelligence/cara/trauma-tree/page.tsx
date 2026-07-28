@@ -12,11 +12,26 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useTraumaTree } from "@/hooks/use-trauma-tree";
+import { api } from "@/hooks/use-api";
+import type { TraumaTreeView } from "@/lib/trauma-tree/trauma-tree-engine";
 import { Sprout, TreeDeciduous, Stethoscope, CheckCircle2, HelpCircle, Loader2, ArrowUpRight } from "lucide-react";
+
+interface TraumaTreeData extends TraumaTreeView {
+  sources: { labelling: string };
+}
+
+/** Per child: is the thinking written down, when was it last looked at, and
+ *  what feeds the tree. Read-only — Cara never authors a formulation. */
+function useTraumaTree() {
+  return useQuery({
+    queryKey: ["trauma-tree"],
+    queryFn: async () => (await api.get<{ data: TraumaTreeData }>("/trauma-tree")).data,
+  });
+}
 
 export default function TraumaTreePage() {
   const q = useTraumaTree();

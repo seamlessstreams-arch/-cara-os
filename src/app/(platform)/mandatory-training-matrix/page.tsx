@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -17,7 +18,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useTrainingMatrixRows } from "@/hooks/use-training-matrix-rows";
 import type {
   TrainingMatrixRow, TrainingCourseCategory, TrainingCourseStatus,
   TrainingOverallCompliance, TrainingStatusEntry,
@@ -29,6 +29,15 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const TRAINING_MATRIX_ROWS_KEY = "training-matrix-rows";
+
+function useTrainingMatrixRows() {
+  return useQuery<{ data: TrainingMatrixRow[] }>({
+    queryKey: [TRAINING_MATRIX_ROWS_KEY],
+    queryFn: () => fetch("/api/v1/training-matrix-rows").then((r) => r.json()),
+  });
+}
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 

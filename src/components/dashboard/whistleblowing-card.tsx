@@ -14,7 +14,21 @@ import {
   Shield, Eye, Clock, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useWhistleblowingIntelligence } from "@/hooks/use-whistleblowing-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { WhistleblowingIntelligenceResult } from "@/lib/engines/whistleblowing-intelligence-engine";
+
+interface WhistleblowingIntelligenceResponse {
+  data: WhistleblowingIntelligenceResult;
+}
+
+function useWhistleblowingIntelligence() {
+  return useQuery({
+    queryKey: ["whistleblowing-intelligence"],
+    queryFn: () => api.get<WhistleblowingIntelligenceResponse>("/whistleblowing-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

@@ -23,10 +23,19 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { TherapeuticStaffTraining, TherapeuticChildImpact, TherapeuticCompetencyLevel } from "@/types/extended";
-import { useTherapeuticStaffTraining } from "@/hooks/use-therapeutic-staff-training";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const THERAPEUTIC_STAFF_TRAINING_KEY = "therapeutic-staff-training";
+
+function useTherapeuticStaffTraining(homeId?: string) {
+  const qs = homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: TherapeuticStaffTraining[] }>({
+    queryKey: [THERAPEUTIC_STAFF_TRAINING_KEY, homeId],
+    queryFn: () => fetch(`/api/v1/therapeutic-staff-training${qs}`).then((r) => r.json()),
+  });
+}
 
 const THERAPEUTIC_CHILD_IMPACT_KEY = "therapeutic-child-impact";
 

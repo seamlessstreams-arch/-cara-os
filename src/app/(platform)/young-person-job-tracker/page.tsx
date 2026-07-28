@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -12,7 +13,16 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { YpJob } from "@/types/extended";
-import { useYpJobs } from "@/hooks/use-yp-jobs";
+
+const YP_JOBS_KEY = "yp-jobs";
+
+function useYpJobs(childId?: string, homeId?: string) {
+  const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: YpJob[] }>({
+    queryKey: [YP_JOBS_KEY, childId, homeId],
+    queryFn: () => fetch(`/api/v1/yp-jobs${qs}`).then((r) => r.json()),
+  });
+}
 
 const statusColour: Record<string, string> = {
   Active: "bg-green-100 text-green-800",

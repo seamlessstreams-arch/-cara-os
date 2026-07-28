@@ -7,7 +7,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useWorkExpRecords } from "@/hooks/use-work-exp-records";
+import { useQuery } from "@tanstack/react-query";
 import type { WorkExpRecord } from "@/types/extended";
 import { WORK_EXP_TYPE_LABEL } from "@/types/extended";
 import {
@@ -31,6 +31,15 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const WORK_EXP_RECORDS_KEY = "work-exp-records";
+
+function useWorkExpRecords() {
+  return useQuery<{ data: WorkExpRecord[] }>({
+    queryKey: [WORK_EXP_RECORDS_KEY],
+    queryFn: () => fetch("/api/v1/work-exp-records").then((r) => r.json()),
+  });
+}
 
 const exportCols: ExportColumn<WorkExpRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },

@@ -10,15 +10,47 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus, LineChart, BellRing } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import { useTrajectoryAlerts, useAckTrajectoryAlert } from "@/hooks/use-trajectory-alerts";
 import type { TrajectoryAlert } from "@/lib/care-events/inspection-trajectory";
 import type { TrajectorySummary } from "@/lib/care-events/inspection-trajectory";
+import type { TrajectoryAlertAck } from "@/lib/db/store";
 
 const HOME_ID = "home_oak";
 
 interface TrajectoryResponse { data: TrajectorySummary }
+
+interface ListResponse {
+  data: { alerts: TrajectoryAlert[]; acks_recent: TrajectoryAlertAck[] };
+}
+interface AckResponse { data: TrajectoryAlertAck }
+
+function useTrajectoryAlerts(homeId: string | null | undefined) {
+  return useQuery({
+    queryKey: ["trajectory-alerts", homeId ?? ""],
+    enabled: !!homeId,
+    refetchInterval: 60_000,
+    queryFn: () =>
+      api.get<ListResponse>(
+        `/care-events/inspection-bundle/trajectory-alerts?home_id=${encodeURIComponent(homeId!)}`,
+      ),
+  });
+}
+
+function useAckTrajectoryAlert(homeId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { alert_id: string; note: string }) =>
+      api.post<AckResponse>(
+        `/care-events/inspection-bundle/trajectory-alerts/ack`,
+        { home_id: homeId, ...input },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["trajectory-alerts", homeId] });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+}
 
 export default function InspectionTrajectoryPage() {
   const q = useQuery({

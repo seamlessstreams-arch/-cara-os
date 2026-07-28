@@ -2,6 +2,7 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -23,8 +24,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useTransportLogRecords } from "@/hooks/use-transport-log-records";
-import { useCreateTransportLogRecord } from "@/hooks/use-transport-log-records";
 import type {
   TransportLogRecord,
   TransportLogPurpose,
@@ -39,6 +38,33 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useTransportLogRecords() {
+  return useQuery<TransportLogRecord[]>({
+    queryKey: ["transport-log-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/transport-log-records");
+      if (!res.ok) throw new Error("Failed to fetch transport log records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateTransportLogRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<TransportLogRecord, "id">) => {
+      const res = await fetch("/api/v1/transport-log-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create transport log record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["transport-log-records"] }),
+  });
+}
 
 // ── Local config ────────────────────────────────────────────────────────────
 

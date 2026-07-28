@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -30,7 +31,16 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { TimelineEvent, TimelineEventCategory } from "@/types/extended";
-import { useTimelineEvents } from "@/hooks/use-timeline-events";
+
+const TIMELINE_EVENTS_KEY = "timeline-events";
+
+function useTimelineEvents(childId?: string, homeId?: string) {
+  const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: TimelineEvent[] }>({
+    queryKey: [TIMELINE_EVENTS_KEY, childId, homeId],
+    queryFn: () => fetch(`/api/v1/timeline-events${qs}`).then((r) => r.json()),
+  });
+}
 
 // ── category config ─────────────────────────────────────────────────────────
 const categoryConfig: Record<TimelineEventCategory, { icon: typeof Heart; colour: string }> = {

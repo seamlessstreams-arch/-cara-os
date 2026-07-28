@@ -24,7 +24,7 @@ import { getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useWBInvestigationRecords } from "@/hooks/use-wb-investigation-records";
+import { useQuery } from "@tanstack/react-query";
 import type {
   WBInvestigationRecord,
   WBInvestigationConcernType,
@@ -40,6 +40,17 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useWBInvestigationRecords() {
+  return useQuery<WBInvestigationRecord[]>({
+    queryKey: ["wb-investigation-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/wb-investigation-records");
+      if (!res.ok) throw new Error("Failed to fetch WB investigation records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────── */
 

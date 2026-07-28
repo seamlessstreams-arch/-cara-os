@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import type { TransAffirmingPlan } from "@/types/extended";
-import { useTransAffirmingPlans } from "@/hooks/use-trans-affirming-plans";
 import {
   Heart,
   Shield,
@@ -28,6 +28,16 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const TRANS_AFFIRMING_PLANS_KEY = "trans-affirming-plans";
+
+function useTransAffirmingPlans(childId?: string, homeId?: string) {
+  const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: TransAffirmingPlan[] }>({
+    queryKey: [TRANS_AFFIRMING_PLANS_KEY, childId, homeId],
+    queryFn: () => fetch(`/api/v1/trans-affirming-plans${qs}`).then((r) => r.json()),
+  });
+}
 
 const d = (n: number) => {
   const dt = new Date();

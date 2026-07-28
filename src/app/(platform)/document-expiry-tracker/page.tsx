@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,6 @@ import { cn, formatDate } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import type { TrackedDocument, DocExpiryCategory, DocExpiryStatus } from "@/types/extended";
 import { DOC_EXPIRY_CATEGORY_LABEL, DOC_EXPIRY_STATUS_LABEL } from "@/types/extended";
-import { useTrackedDocuments } from "@/hooks/use-tracked-documents";
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, AlertOctagon, Shield, ShieldCheck,
@@ -28,6 +28,16 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const TRACKED_DOCUMENTS_KEY = "tracked-documents";
+const TRACKED_DOCUMENTS_API = "/api/v1/tracked-documents";
+
+function useTrackedDocuments() {
+  return useQuery<{ data: TrackedDocument[] }>({
+    queryKey: [TRACKED_DOCUMENTS_KEY],
+    queryFn: () => fetch(TRACKED_DOCUMENTS_API).then((r) => r.json()),
+  });
+}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 

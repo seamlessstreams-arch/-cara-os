@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -35,11 +36,20 @@ import {
   TUTORING_FUNDING_SOURCE_LABEL,
   TUTORING_MOTIVATION_LABEL,
 } from "@/types/extended";
-import { useTutoringRecords } from "@/hooks/use-tutoring-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const TUTORING_RECORDS_KEY = "tutoring-records";
+const TUTORING_RECORDS_API = "/api/v1/tutoring-records";
+
+function useTutoringRecords(childId?: string) {
+  return useQuery<{ data: TutoringRecord[] }>({
+    queryKey: childId ? [TUTORING_RECORDS_KEY, childId] : [TUTORING_RECORDS_KEY],
+    queryFn: () => fetch(childId ? `${TUTORING_RECORDS_API}?child_id=${childId}` : TUTORING_RECORDS_API).then((r) => r.json()),
+  });
+}
 
 const motivationColour: Record<TutoringMotivation, string> = {
   high: "bg-emerald-100 text-emerald-800",

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,6 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useTransitionPlanningRecords, useCreateTransitionPlanningRecord } from "@/hooks/use-transition-planning-records";
 import type {
   TransitionPlanningRecord,
   TransitionPlanningArea,
@@ -33,6 +33,36 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useTransitionPlanningRecords(childId?: string) {
+  return useQuery<TransitionPlanningRecord[]>({
+    queryKey: ["transition-planning-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/transition-planning-records?child_id=${childId}`
+        : "/api/v1/transition-planning-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch transition planning records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateTransitionPlanningRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<TransitionPlanningRecord, "id">) => {
+      const res = await fetch("/api/v1/transition-planning-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create transition planning record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["transition-planning-records"] }),
+  });
+}
 
 // ── Local config ────────────────────────────────────────────────────────────
 const AREA_META: Record<TransitionPlanningArea, { icon: React.ReactNode; color: string }> = {

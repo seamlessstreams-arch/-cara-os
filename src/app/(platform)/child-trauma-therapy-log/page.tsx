@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Heart,
   Brain,
@@ -31,11 +32,20 @@ import {
   THERAPY_SESSION_FORMAT_LABEL,
   THERAPY_PRESENTATION_LABEL,
 } from "@/types/extended";
-import { useTraumaTherapyLogs } from "@/hooks/use-trauma-therapy-logs";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const TRAUMA_THERAPY_LOGS_KEY = "trauma-therapy-logs";
+const TRAUMA_THERAPY_LOGS_API = "/api/v1/trauma-therapy-logs";
+
+function useTraumaTherapyLogs(childId?: string) {
+  return useQuery<{ data: TraumaTherapyLog[] }>({
+    queryKey: childId ? [TRAUMA_THERAPY_LOGS_KEY, childId] : [TRAUMA_THERAPY_LOGS_KEY],
+    queryFn: () => fetch(childId ? `${TRAUMA_THERAPY_LOGS_API}?child_id=${childId}` : TRAUMA_THERAPY_LOGS_API).then((r) => r.json()),
+  });
+}
 
 /* ── colour maps ───────────────────────────────────────────────────── */
 

@@ -28,7 +28,17 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { WelcomeTour } from "@/types/extended";
-import { useWelcomeTours } from "@/hooks/use-welcome-tours";
+import { useQuery } from "@tanstack/react-query";
+
+const WELCOME_TOURS_KEY = "welcome-tours";
+
+function useWelcomeTours(childId?: string, homeId?: string) {
+  const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: WelcomeTour[] }>({
+    queryKey: [WELCOME_TOURS_KEY, childId, homeId],
+    queryFn: () => fetch(`/api/v1/welcome-tours${qs}`).then((r) => r.json()),
+  });
+}
 
 const exportCols: ExportColumn<WelcomeTour>[] = [
   { header: "Child", accessor: (r: WelcomeTour) => r.childInitials },

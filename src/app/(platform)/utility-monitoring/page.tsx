@@ -11,12 +11,23 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUtilityMonitoringRecords } from "@/hooks/use-utility-monitoring-records";
+import { useQuery } from "@tanstack/react-query";
 import type { UtilityMonitoringRecord, UtilityMonitoringType } from "@/types/extended";
 import { UTILITY_MONITORING_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useUtilityMonitoringRecords() {
+  return useQuery<UtilityMonitoringRecord[]>({
+    queryKey: ["utility-monitoring-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/utility-monitoring-records");
+      if (!res.ok) throw new Error("Failed to fetch utility monitoring records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config (icons / colours — not serialisable) ─────────────────── */
 

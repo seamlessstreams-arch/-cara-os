@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -35,7 +36,16 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import type { TransportRA, JourneyType } from "@/types/extended";
-import { useTransportRAs } from "@/hooks/use-transport-ras";
+
+const TRANSPORT_RAS_KEY = "transport-risk-assessments";
+
+function useTransportRAs(childId?: string, homeId?: string) {
+  const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: TransportRA[] }>({
+    queryKey: [TRANSPORT_RAS_KEY, childId, homeId],
+    queryFn: () => fetch(`/api/v1/transport-risk-assessments${qs}`).then((r) => r.json()),
+  });
+}
 
 type RiskLevel = "Low" | "Medium" | "High";
 

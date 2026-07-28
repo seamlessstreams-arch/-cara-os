@@ -1,8 +1,58 @@
 "use client";
 
 import Link from "next/link";
-import { useWelfareCheckQuality } from "@/hooks/use-welfare-check-quality";
-import type { WelfareChildProfile } from "@/hooks/use-welfare-check-quality";
+import { useQuery } from "@tanstack/react-query";
+
+type WelfareChildProfile = {
+  childId: string;
+  childName: string;
+  totalChecks: number;
+  okCount: number;
+  asleepCount: number;
+  awakeCount: number;
+  concernCount: number;
+  notInRoomCount: number;
+  signal: "green" | "amber" | "red" | "grey";
+};
+
+type WelfareCheckQualityData = {
+  totalRounds: number;
+  totalChecks: number;
+  buildingSecureRate: number | null;
+  overnightCoverage: number;
+  checkStatusBreakdown: {
+    ok: number;
+    asleep: number;
+    awake: number;
+    concern: number;
+    not_in_room: number;
+    refused: number;
+  };
+  concernChecks: number;
+  escalatedConcerns: number;
+  unescalatedConcerns: number;
+  notInRoomChecks: number;
+  physicalMarksNoted: number;
+  childProfiles: WelfareChildProfile[];
+  insights: string[];
+  overallSignal: "green" | "amber" | "red" | "grey";
+  regulatoryNote: string;
+};
+
+async function fetchWelfareCheckQuality(): Promise<WelfareCheckQualityData> {
+  const res = await fetch("/api/v1/welfare-check-quality");
+  if (!res.ok) throw new Error("Failed to fetch welfare check quality data");
+  const json = await res.json();
+  return json.data as WelfareCheckQualityData;
+}
+
+function useWelfareCheckQuality() {
+  return useQuery({
+    queryKey: ["welfare-check-quality"],
+    queryFn: fetchWelfareCheckQuality,
+    staleTime: 120_000,
+  });
+}
 
 type Signal = "green" | "amber" | "red" | "grey";
 

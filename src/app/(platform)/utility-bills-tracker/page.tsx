@@ -40,7 +40,17 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import type { UtilityBill } from "@/types/extended";
-import { useUtilityBills } from "@/hooks/use-utility-bills";
+import { useQuery } from "@tanstack/react-query";
+
+const UTILITY_BILLS_KEY = "utility-bills";
+
+function useUtilityBills(homeId?: string) {
+  const qs = homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: UtilityBill[] }>({
+    queryKey: [UTILITY_BILLS_KEY, homeId],
+    queryFn: () => fetch(`/api/v1/utility-bills${qs}`).then((r) => r.json()),
+  });
+}
 
 const utilityIcon: Record<string, typeof Zap> = {
   Electricity: Zap,

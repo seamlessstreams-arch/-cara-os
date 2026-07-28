@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -14,7 +15,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useUnannouncedVisitRecords } from "@/hooks/use-unannounced-visit-records";
 import type {
   UnannouncedVisitRecord,
   UnannouncedVisitType,
@@ -28,6 +28,17 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useUnannouncedVisitRecords() {
+  return useQuery<UnannouncedVisitRecord[]>({
+    queryKey: ["unannounced-visit-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/unannounced-visit-records");
+      if (!res.ok) throw new Error("Failed to fetch unannounced visit records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 

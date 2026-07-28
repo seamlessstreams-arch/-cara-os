@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -24,7 +25,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useYPFeedback, useCreateYPFeedback } from "@/hooks/use-yp-feedback";
+import { api } from "@/hooks/use-api";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -32,6 +33,33 @@ import type { YPFeedbackEntry, YPFeedbackCategory, YPFeedbackMethod, YPFeedbackS
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+type ListResponse = { data: YPFeedbackEntry[]; meta: { total: number } };
+type SingleResponse = { data: YPFeedbackEntry };
+
+function useYPFeedback(params?: { childId?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  return useQuery({
+    queryKey: ["yp-feedback", params],
+    queryFn: () => api.get<ListResponse>(`/yp-feedback?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+function useCreateYPFeedback() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<YPFeedbackEntry>) =>
+      api.post<SingleResponse>("/yp-feedback", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["yp-feedback"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
 
 /* ── config ────────────────────────────────────────────────────────────── */
 

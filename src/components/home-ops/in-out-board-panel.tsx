@@ -12,11 +12,25 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useWhereabouts } from "@/hooks/use-whereabouts";
-import type { InOutBoard } from "@/hooks/use-whereabouts";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { InOutBoard } from "@/lib/whereabouts/whereabouts-engine";
 import {
   Home, DoorOpen, Siren, Loader2, ArrowRight, Clock, MapPin, Info,
 } from "lucide-react";
+
+type WhereaboutsResponse = { data: InOutBoard };
+
+/** The child in-out board (read-only). Refetches every minute — it's a live board. */
+function useWhereabouts() {
+  return useQuery({
+    queryKey: ["whereabouts"],
+    queryFn: () => api.get<WhereaboutsResponse>("/whereabouts"),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    gcTime: 5 * 60_000,
+  });
+}
 
 type Child = InOutBoard["children"][number];
 

@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useWellbeingPulseSurveyRecords } from "@/hooks/use-wellbeing-pulse-survey-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   WellbeingPulseSurveyRecord,
@@ -34,6 +34,20 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useWellbeingPulseSurveyRecords(childId?: string) {
+  return useQuery<WellbeingPulseSurveyRecord[]>({
+    queryKey: ["wellbeing-pulse-survey-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/wellbeing-pulse-survey-records?child_id=${childId}`
+        : "/api/v1/wellbeing-pulse-survey-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch wellbeing pulse survey records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 const d = (n: number) => {

@@ -65,7 +65,17 @@ function checkTypeIcon(t: string) {
 }
 
 import type { WelfareProtocol } from "@/types/extended";
-import { useWelfareProtocols } from "@/hooks/use-welfare-protocols";
+import { useQuery } from "@tanstack/react-query";
+
+const WELFARE_PROTOCOLS_KEY = "welfare-protocols";
+
+function useWelfareProtocols(childId?: string, homeId?: string) {
+  const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: WelfareProtocol[] }>({
+    queryKey: [WELFARE_PROTOCOLS_KEY, childId, homeId],
+    queryFn: () => fetch(`/api/v1/welfare-protocols${qs}`).then((r) => r.json()),
+  });
+}
 
 const exportCols: ExportColumn<WelfareProtocol>[] = [
   { header: "Young Person", accessor: (r: WelfareProtocol) => getYPName(r.child_id) },

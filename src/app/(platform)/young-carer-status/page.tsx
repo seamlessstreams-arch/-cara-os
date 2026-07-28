@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -12,7 +13,16 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { YoungCarerRecord } from "@/types/extended";
-import { useYoungCarerRecords } from "@/hooks/use-young-carer-records";
+
+const YOUNG_CARER_RECORDS_KEY = "young-carer-records";
+
+function useYoungCarerRecords(childId?: string, homeId?: string) {
+  const qs = childId ? `?child_id=${childId}` : homeId ? `?home_id=${homeId}` : "";
+  return useQuery<{ data: YoungCarerRecord[] }>({
+    queryKey: [YOUNG_CARER_RECORDS_KEY, childId, homeId],
+    queryFn: () => fetch(`/api/v1/young-carer-records${qs}`).then((r) => r.json()),
+  });
+}
 
 const statusColour: Record<string, string> = {
   "Identified young carer": "bg-amber-100 text-amber-800",

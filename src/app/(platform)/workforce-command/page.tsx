@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -9,8 +10,24 @@ import {
   UserCheck, Fingerprint, ClipboardList, CalendarClock, MessageSquare, GraduationCap,
   LifeBuoy, ClipboardCheck, ListChecks, Clock,
 } from "lucide-react";
-import { useWorkforceCommand } from "@/hooks/use-workforce-command";
-import type { CardStatus } from "@/lib/engines/workforce-command-engine";
+import type { CardStatus, WorkforceCommand } from "@/lib/engines/workforce-command-engine";
+
+interface RecentActivity { kind: string; label: string; when: string; href: string }
+interface WorkforceCommandResponse extends WorkforceCommand {
+  recent_activity: RecentActivity[];
+}
+
+function useWorkforceCommand() {
+  return useQuery<WorkforceCommandResponse>({
+    queryKey: ["workforce-command"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/workforce-command");
+      if (!res.ok) throw new Error("Failed to fetch workforce command");
+      return (await res.json()).data;
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 const CARD_ICON: Record<string, typeof UserCheck> = {
   recruitment: UserCheck, safer_recruitment: Fingerprint, onboarding: ClipboardList, probation: CalendarClock,

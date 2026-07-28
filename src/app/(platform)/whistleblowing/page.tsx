@@ -26,7 +26,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useWhistleblowingRecords, useCreateWhistleblowingRecord } from "@/hooks/use-whistleblowing-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   WhistleblowingRecord,
   WhistleblowingCategory,
@@ -41,6 +41,33 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useWhistleblowingRecords() {
+  return useQuery<WhistleblowingRecord[]>({
+    queryKey: ["whistleblowing-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/whistleblowing-records");
+      if (!res.ok) throw new Error("Failed to fetch whistleblowing records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateWhistleblowingRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<WhistleblowingRecord, "id">) => {
+      const res = await fetch("/api/v1/whistleblowing-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create whistleblowing record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["whistleblowing-records"] }),
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────── */
 

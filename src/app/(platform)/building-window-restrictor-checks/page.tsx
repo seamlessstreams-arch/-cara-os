@@ -8,7 +8,7 @@ import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/co
 import { CheckTile } from "@/components/ui/check-tile";
 import { getStaffName } from "@/lib/seed-data";
 import { cn, todayStr } from "@/lib/utils";
-import { useWindowChecks } from "@/hooks/use-window-checks";
+import { useQuery } from "@tanstack/react-query";
 import type { WindowCheck } from "@/types/extended";
 import {
   WINDOW_TYPE_LABEL,
@@ -37,6 +37,15 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const WINDOW_CHECKS_KEY = "window-checks";
+
+function useWindowChecks() {
+  return useQuery<{ data: WindowCheck[] }>({
+    queryKey: [WINDOW_CHECKS_KEY],
+    queryFn: () => fetch("/api/v1/window-checks").then((r) => r.json()),
+  });
+}
 
 const OUTCOME_TEXT: Record<string, string> = {
   pass: "text-[--cs-success]",

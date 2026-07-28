@@ -6,13 +6,32 @@
 // Drop <WritingToChildPanel defaultRecordType="daily_log" /> into any editor.
 
 import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { useReviewWritingToChild, useWritingExamples } from "@/hooks/use-writing-to-child";
-import type { WritingRecordType, WritingToChildReview } from "@/lib/writing-to-child/types";
+import { api } from "@/hooks/use-api";
+import type { WritingRecordType, WritingToChildInput, WritingToChildReview } from "@/lib/writing-to-child/types";
+import type { WritingExample } from "@/lib/writing-to-child/examples";
 import { Sparkles, Copy, AlertTriangle, MessageSquareText, ShieldAlert, HelpCircle, Loader2, FileSignature } from "lucide-react";
+
+/** Review a draft record for child-readability (deterministic; AI-enriched when configured). */
+function useReviewWritingToChild() {
+  return useMutation({
+    mutationFn: (input: WritingToChildInput) =>
+      api.post<{ data: WritingToChildReview }>("/writing-to-child", input),
+  });
+}
+
+/** Example scenarios + the supported record types (for the UI demo + selector). */
+function useWritingExamples() {
+  return useQuery({
+    queryKey: ["writing-to-child", "examples"],
+    queryFn: () => api.get<{ data: { examples: WritingExample[]; recordTypes: WritingRecordType[]; principle: string } }>("/writing-to-child?examples=1"),
+    staleTime: 10 * 60_000,
+  });
+}
 
 const RECORD_TYPES: { value: WritingRecordType; label: string }[] = [
   { value: "daily_log", label: "Daily log" },
