@@ -10,11 +10,40 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Wrench, ShieldCheck, UserCheck, CheckCircle2 } from "lucide-react";
-import { useSelfHealing, useApplySelfHealing } from "@/hooks/use-self-healing";
-import type { IntegrityRepair, RepairSeverity } from "@/lib/self-healing/types";
+import type { HealEvent, IntegrityRepair, RepairSeverity, SelfHealingPlan } from "@/lib/self-healing/types";
 import { cn } from "@/lib/utils";
+
+const SELF_HEALING_KEY = "self-healing";
+const SELF_HEALING_URL = "/api/v1/self-healing";
+
+interface SelfHealingScan {
+  plan: SelfHealingPlan;
+  healLog: HealEvent[];
+}
+
+function useSelfHealing() {
+  return useQuery<{ data: SelfHealingScan }>({
+    queryKey: [SELF_HEALING_KEY],
+    queryFn: () => fetch(SELF_HEALING_URL).then((r) => r.json()),
+    staleTime: 60 * 1000,
+  });
+}
+
+function useApplySelfHealing() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      fetch(SELF_HEALING_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "apply" }),
+      }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [SELF_HEALING_KEY] }),
+  });
+}
 
 const SEV: Record<RepairSeverity, { cls: string }> = {
   critical: { cls: "text-[var(--cs-risk)] bg-[var(--cs-risk-bg)] border-[var(--cs-risk-soft)]" },

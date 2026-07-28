@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Heart,
   Wind,
@@ -21,11 +22,20 @@ import {
 } from "@/components/ui/select";
 import type { SelfSoothingToolkit, ArousalState, WindowOfTolerance, ToolkitEffectiveness } from "@/types/extended";
 import { AROUSAL_STATE_LABEL, WINDOW_OF_TOLERANCE_LABEL, TOOLKIT_EFFECTIVENESS_LABEL } from "@/types/extended";
-import { useSelfSoothingToolkits } from "@/hooks/use-self-soothing-toolkits";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const SELF_SOOTHING_KEY = "self-soothing-toolkits";
+const SELF_SOOTHING_API = "/api/v1/self-soothing-toolkits";
+
+function useSelfSoothingToolkits(childId?: string) {
+  return useQuery<{ data: SelfSoothingToolkit[] }>({
+    queryKey: childId ? [SELF_SOOTHING_KEY, childId] : [SELF_SOOTHING_KEY],
+    queryFn: () => fetch(childId ? `${SELF_SOOTHING_API}?child_id=${childId}` : SELF_SOOTHING_API).then((r) => r.json()),
+  });
+}
 
 /* ── colour helpers ────────────────────────────────────────────────────── */
 

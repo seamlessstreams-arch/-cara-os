@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -26,12 +27,41 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useSensoryProfileRecords, useCreateSensoryProfileRecord } from "@/hooks/use-sensory-profile-records";
 import type { SensoryProfileRecord, SensoryDomain, SensoryResponsePattern, SensoryProfileStatus } from "@/types/extended";
 import { SENSORY_DOMAIN_LABEL, SENSORY_RESPONSE_PATTERN_LABEL, SENSORY_PROFILE_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useSensoryProfileRecords(childId?: string) {
+  return useQuery<SensoryProfileRecord[]>({
+    queryKey: ["sensory-profile-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/sensory-profile-records?child_id=${childId}`
+        : "/api/v1/sensory-profile-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch sensory profile records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateSensoryProfileRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<SensoryProfileRecord>) => {
+      const res = await fetch("/api/v1/sensory-profile-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create sensory profile record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["sensory-profile-records"] }),
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────── */
 

@@ -27,12 +27,24 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useRiskAppetiteDomains } from "@/hooks/use-risk-appetite-domains";
+import { useQuery } from "@tanstack/react-query";
 import type { RiskAppetiteDomain, RiskAppetiteLevel } from "@/types/extended";
 import { RISK_APPETITE_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const RISK_APPETITE_KEY = ["risk-appetite-domains"];
+
+async function fetchAll(): Promise<RiskAppetiteDomain[]> {
+  const res = await fetch("/api/v1/risk-appetite-domains");
+  if (!res.ok) throw new Error("Failed to fetch risk appetite domains");
+  const __j = await res.json(); return Array.isArray(__j) ? __j : (__j?.data ?? []);
+}
+
+function useRiskAppetiteDomains() {
+  return useQuery<RiskAppetiteDomain[]>({ queryKey: RISK_APPETITE_KEY, queryFn: fetchAll });
+}
 
 /* ── local config (icons cannot be serialized to store) ───────────── */
 

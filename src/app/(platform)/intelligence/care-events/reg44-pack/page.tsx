@@ -9,24 +9,57 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, Download, Loader2, History, Share2 } from "lucide-react";
-import {
-  useGenerateAndPersistReg44Pack,
-  usePersistedReg44Packs,
-  useFetchPersistedReg44Pack,
-} from "@/hooks/use-reg44-pack";
-import { apiFetch } from "@/hooks/use-api";
+import { apiFetch, api } from "@/hooks/use-api";
 import type { ExportHistoryEntry } from "@/lib/db/store";
-import type { Reg44Pack } from "@/lib/care-events/reg44-pack";
+import type { Reg44Pack, PersistedReg44PackRow } from "@/lib/care-events/reg44-pack";
 import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
 
 interface Reg44ExportResponse {
   data: { export: ExportHistoryEntry; payload: Reg44Pack };
+}
+
+interface PackResponse { data: Reg44Pack }
+interface ListResponse { data: PersistedReg44PackRow[] }
+interface DetailResponse { data: Reg44Pack }
+
+function usePersistedReg44Packs(homeId: string) {
+  return useQuery({
+    queryKey: ["reg44-packs", homeId],
+    queryFn: () =>
+      api.get<ListResponse>(
+        `/care-events/reg44-pack?home_id=${encodeURIComponent(homeId)}`,
+      ),
+    refetchInterval: 60000,
+  });
+}
+
+function useGenerateAndPersistReg44Pack(homeId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (days: number) =>
+      api.post<PackResponse>(`/care-events/reg44-pack`, {
+        home_id: homeId,
+        days,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["reg44-packs", homeId] });
+    },
+  });
+}
+
+function useFetchPersistedReg44Pack() {
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.get<DetailResponse>(
+        `/care-events/reg44-pack/${encodeURIComponent(id)}`,
+      ),
+  });
 }
 
 const HOME_ID = "home_oak";

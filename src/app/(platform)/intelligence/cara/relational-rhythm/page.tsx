@@ -12,17 +12,69 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { api } from "@/hooks/use-api";
 import {
-  useRelationalRhythm,
-  useCaptureCircle,
-  useConfigureRhythm,
-} from "@/hooks/use-relational-rhythm";
-import { suggestPrompt, type CircleKind } from "@/lib/relational-rhythm/rhythm-engine";
+  suggestPrompt,
+  type CircleKind,
+  type RhythmView,
+  type CircleDefinition,
+  type CircleNote,
+} from "@/lib/relational-rhythm/rhythm-engine";
 import { Users, Heart, ArrowUpRight, MessageCircle, Loader2, Lock, Sparkles } from "lucide-react";
+
+interface RelationalRhythmData extends RhythmView {
+  definitions: CircleDefinition[];
+  writeEnabled: boolean;
+}
+
+/** The home's circles, what the team keeps naming, and what still needs a home. */
+function useRelationalRhythm() {
+  return useQuery({
+    queryKey: ["relational-rhythm"],
+    queryFn: async () => (await api.get<{ data: RelationalRhythmData }>("/relational-rhythm")).data,
+  });
+}
+
+interface CaptureCirclePayload {
+  kind: string;
+  date: string;
+  themes?: string[];
+  gratitude?: string[];
+  emerging_concerns?: string[];
+}
+
+function useCaptureCircle() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: CaptureCirclePayload) =>
+      api.post<{ data: RhythmView & { note: CircleNote; handoffReminder: string | null } }>(
+        "/relational-rhythm",
+        vars,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["relational-rhythm"] });
+      qc.invalidateQueries({ queryKey: ["calendar"] });
+    },
+  });
+}
+
+/** Switch a circle on or off. Configurable is the point. */
+function useConfigureRhythm() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { id: string; enabled?: boolean; starts_at?: string }) =>
+      api.patch<{ data: RhythmView }>("/relational-rhythm", vars),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["relational-rhythm"] });
+      qc.invalidateQueries({ queryKey: ["calendar"] });
+    },
+  });
+}
 
 const fmtWhen = (iso: string | null): string => {
   if (!iso) return "no next date";

@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useSanctionRewards, useCreateSanctionReward } from "@/hooks/use-sanction-rewards";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
@@ -39,6 +40,34 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
+
+type ListResponse = { data: SanctionRewardEntry[]; meta: { total: number } };
+type SingleResponse = { data: SanctionRewardEntry };
+
+function useSanctionRewards(params?: { childId?: string; direction?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  if (params?.direction) qs.set("direction", params.direction);
+  return useQuery({
+    queryKey: ["sanction-rewards", params],
+    queryFn: () => api.get<ListResponse>(`/sanction-rewards?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+function useCreateSanctionReward() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<SanctionRewardEntry>) =>
+      api.post<SingleResponse>("/sanction-rewards", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sanction-rewards"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 

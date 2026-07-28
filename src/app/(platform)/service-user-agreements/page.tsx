@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -24,7 +25,6 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useServiceUserAgreementRecords, useCreateServiceUserAgreementRecord } from "@/hooks/use-service-user-agreement-records";
 import type { ServiceUserAgreementRecord, ServiceUserAgreementType, ServiceUserAgreementStatus } from "@/types/extended";
 import {
   SERVICE_USER_AGREEMENT_TYPE_LABEL,
@@ -33,6 +33,38 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from use-service-user-agreement-records (single call site) ────── */
+
+function useServiceUserAgreementRecords(childId?: string) {
+  return useQuery<ServiceUserAgreementRecord[]>({
+    queryKey: ["service-user-agreement-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/service-user-agreement-records?child_id=${childId}`
+        : "/api/v1/service-user-agreement-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch service user agreement records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateServiceUserAgreementRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<ServiceUserAgreementRecord, "id">) => {
+      const res = await fetch("/api/v1/service-user-agreement-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create service user agreement record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["service-user-agreement-records"] }),
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 

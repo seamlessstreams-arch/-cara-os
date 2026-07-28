@@ -16,10 +16,23 @@ import {
   ChevronUp, ChevronDown, MapPin, AlertTriangle, Clock,
   CheckCircle2, MessageCircle, Shield, ArrowUpDown, Loader2,
 } from "lucide-react";
-import { useReturnInterviews } from "@/hooks/use-return-interviews";
+import { useQuery } from "@tanstack/react-query";
 import type { ReturnInterview, ReturnInterviewStatus, ReturnInterviewAction, ReturnInterviewActionStatus } from "@/types/extended";
 import { RETURN_INTERVIEW_STATUS_LABEL, RETURN_INTERVIEW_ACTION_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+const RETURN_INTERVIEWS_BASE = "/api/v1/return-interviews";
+
+async function fetchAll(childId?: string) {
+  const url = childId ? `${RETURN_INTERVIEWS_BASE}?child_id=${childId}` : RETURN_INTERVIEWS_BASE;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch return interviews");
+  return res.json() as Promise<{ data: ReturnInterview[] }>;
+}
+
+function useReturnInterviews(childId?: string) {
+  return useQuery({ queryKey: ["return-interviews", childId], queryFn: () => fetchAll(childId) });
+}
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 

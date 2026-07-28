@@ -27,12 +27,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useRoomAllocationRecords } from "@/hooks/use-room-allocation-records";
+import { useQuery } from "@tanstack/react-query";
 import type { RoomAllocationRecord } from "@/types/extended";
 import { ROOM_ALLOCATION_SUITABILITY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useRoomAllocationRecords(childId?: string) {
+  return useQuery<RoomAllocationRecord[]>({
+    queryKey: ["room-allocation-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/room-allocation-records?child_id=${childId}`
+        : "/api/v1/room-allocation-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch room allocation records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── page ────────────────────────────────────────────────────────────── */
 

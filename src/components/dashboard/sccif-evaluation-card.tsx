@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +16,20 @@ import {
   Brain, Target, Star, TrendingUp, Clock, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSCCIFIntelligence } from "@/hooks/use-sccif-intelligence";
+import { api } from "@/hooks/use-api";
+import type { SCCIFIntelligenceResult } from "@/lib/engines/sccif-intelligence-engine";
+
+interface SCCIFIntelligenceResponse {
+  data: SCCIFIntelligenceResult;
+}
+
+function useSCCIFIntelligence() {
+  return useQuery({
+    queryKey: ["sccif-intelligence"],
+    queryFn: () => api.get<SCCIFIntelligenceResponse>("/sccif-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

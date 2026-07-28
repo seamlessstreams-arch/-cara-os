@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -25,12 +26,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useReligiousFestivalRecords } from "@/hooks/use-religious-festival-records";
 import type { ReligiousFestivalRecord, ReligiousFestivalFaith } from "@/types/extended";
 import { RELIGIOUS_FESTIVAL_FAITH_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+async function fetchAll(childId?: string): Promise<ReligiousFestivalRecord[]> {
+  const url = childId
+    ? `/api/v1/religious-festival-records?child_id=${childId}`
+    : "/api/v1/religious-festival-records";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch religious festival records");
+  const __j = await res.json(); return Array.isArray(__j) ? __j : (__j?.data ?? []);
+}
+
+function useReligiousFestivalRecords(childId?: string) {
+  return useQuery<ReligiousFestivalRecord[]>({
+    queryKey: ["religious-festival-records", childId ?? "all"],
+    queryFn: () => fetchAll(childId),
+  });
+}
 
 /* ── local colour map ─────────────────────────────────────────────── */
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -24,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useRegistrationChangeRecords } from "@/hooks/use-registration-change-records";
 import type {
   RegistrationChangeRecord,
   RegistrationChangeType,
@@ -37,6 +37,13 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useRegistrationChangeRecords() {
+  return useQuery<RegistrationChangeRecord[]>({
+    queryKey: ["registration-change-records"],
+    queryFn: () => fetch("/api/v1/registration-change-records").then((r) => r.json()).then((j) => Array.isArray(j) ? j : (j?.data ?? [])),
+  });
+}
 
 /* ── local colour map ────────────────────────────────────────────────── */
 

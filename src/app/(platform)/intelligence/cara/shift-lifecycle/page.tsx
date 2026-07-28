@@ -10,20 +10,19 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  useShiftLifecycle,
-  useAttestCheck,
-  useSignOffShift,
-} from "@/hooks/use-shift-lifecycle";
+import { api } from "@/hooks/use-api";
+import type { Shift } from "@/types";
 import {
   stageLabel,
   stageSubtitle,
   type LifecycleStage,
   type ResolvedCheck,
+  type ShiftLifecycle,
 } from "@/lib/shift-lifecycle/shift-lifecycle-engine";
 import {
   ClipboardCheck,
@@ -34,6 +33,52 @@ import {
   Loader2,
   Lock,
 } from "lucide-react";
+
+/* ── inlined from use-shift-lifecycle (single call site) ────────────────────── */
+
+interface ShiftLifecycleData {
+  staffId: string;
+  staffName: string;
+  shift: Shift | null;
+  lifecycle: ShiftLifecycle | null;
+  writeEnabled: boolean;
+  message?: string;
+}
+
+/** The caller's current (or most recent) shift, walked stage by stage. */
+function useShiftLifecycle(staffId?: string) {
+  const qs = staffId ? `?staff_id=${encodeURIComponent(staffId)}` : "";
+  return useQuery({
+    queryKey: ["shift-lifecycle", staffId ?? "me"],
+    queryFn: async () =>
+      (await api.get<{ data: ShiftLifecycleData }>(`/shift-lifecycle${qs}`)).data,
+  });
+}
+
+/** Tick a check only the person who was there can answer. */
+function useAttestCheck(staffId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { shift_id: string; check_id: string }) =>
+      api.post<{ data: { lifecycle: ShiftLifecycle | null } }>("/shift-lifecycle", vars),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["shift-lifecycle", staffId ?? "me"] });
+    },
+  });
+}
+
+/** Sign the shift off. A 422 here is not a refusal — it means Cara is asking
+ *  for a reason, and the same call with `override_reason` will be accepted. */
+function useSignOffShift(staffId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { shift_id: string; override_reason?: string }) =>
+      api.patch<{ data: { lifecycle: ShiftLifecycle | null } }>("/shift-lifecycle", vars),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["shift-lifecycle", staffId ?? "me"] });
+    },
+  });
+}
 
 const STAGES: LifecycleStage[] = ["before", "during", "throughout", "end"];
 

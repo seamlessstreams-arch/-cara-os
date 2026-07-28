@@ -28,12 +28,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useRseTrackerRecords } from "@/hooks/use-rse-tracker-records";
+import { useQuery } from "@tanstack/react-query";
 import type { RseTrackerRecord, RseTrackerTopic, RseTrackerMethod } from "@/types/extended";
 import { RSE_TRACKER_TOPIC_LABEL, RSE_TRACKER_METHOD_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useRseTrackerRecords(childId?: string) {
+  return useQuery<RseTrackerRecord[]>({
+    queryKey: ["rse-tracker-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/rse-tracker-records?child_id=${childId}`
+        : "/api/v1/rse-tracker-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch RSE tracker records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config ────────────────────────────────────────────────────── */
 

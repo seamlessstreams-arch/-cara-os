@@ -14,7 +14,21 @@ import {
   Brain, Clock, CalendarClock, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRotaIntelligence } from "@/hooks/use-rota-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { RotaIntelligenceResult } from "@/lib/engines/rota-intelligence-engine";
+
+interface RotaIntelligenceResponse {
+  data: RotaIntelligenceResult;
+}
+
+function useRotaIntelligence() {
+  return useQuery({
+    queryKey: ["rota-intelligence"],
+    queryFn: () => api.get<RotaIntelligenceResponse>("/rota-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

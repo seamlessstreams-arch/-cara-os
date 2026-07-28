@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -16,7 +17,6 @@ import { Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp, AlertTriangl
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useSeriousIncidentReviewRecords, useCreateSeriousIncidentReviewRecord } from "@/hooks/use-serious-incident-review-records";
 import type { SeriousIncidentReviewRecord, SeriousIncidentReviewType, SeriousIncidentReviewStatus } from "@/types/extended";
 import {
   SERIOUS_INCIDENT_REVIEW_TYPE_LABEL,
@@ -26,6 +26,35 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
+
+/* ── inlined from use-serious-incident-review-records (single call site) ───── */
+
+function useSeriousIncidentReviewRecords() {
+  return useQuery<SeriousIncidentReviewRecord[]>({
+    queryKey: ["serious-incident-review-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/serious-incident-review-records");
+      if (!res.ok) throw new Error("Failed to fetch serious incident review records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateSeriousIncidentReviewRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<SeriousIncidentReviewRecord, "id">) => {
+      const res = await fetch("/api/v1/serious-incident-review-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create serious incident review record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["serious-incident-review-records"] }),
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 

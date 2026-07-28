@@ -27,11 +27,8 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName } from "@/lib/seed-data";
 import type { RiGovernanceReport, RiReportType, RiReportStatus } from "@/types/extended";
-import {
-  useRiGovernanceReports,
-  useCreateRiGovernanceReport,
-  useUpdateRiGovernanceReport,
-} from "@/hooks/use-ri-governance-reports";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   Plus, FileText, BarChart3, Shield, Award, Calendar,
@@ -39,6 +36,35 @@ import {
   AlertTriangle, TrendingUp, User, X, Gavel,
   ScrollText, Activity, RefreshCw,
 } from "lucide-react";
+
+const RI_GOVERNANCE_REPORTS_KEY = "ri-governance-reports";
+
+function useRiGovernanceReports(homeId?: string) {
+  const qs = homeId ? `?home_id=${homeId}` : "";
+  return useQuery({
+    queryKey: [RI_GOVERNANCE_REPORTS_KEY, homeId],
+    queryFn: () => api.get<{ data: RiGovernanceReport[] }>(`/ri-governance-reports${qs}`),
+    staleTime: 30_000,
+  });
+}
+
+function useCreateRiGovernanceReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<RiGovernanceReport>) =>
+      api.post<{ data: RiGovernanceReport }>("/ri-governance-reports", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [RI_GOVERNANCE_REPORTS_KEY] }),
+  });
+}
+
+function useUpdateRiGovernanceReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<RiGovernanceReport> & { id: string }) =>
+      api.post<{ data: RiGovernanceReport }>("/ri-governance-reports", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [RI_GOVERNANCE_REPORTS_KEY] }),
+  });
+}
 
 // ── Seed data (local) ─────────────────────────────────────────────────────────
 

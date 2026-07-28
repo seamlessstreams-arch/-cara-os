@@ -16,7 +16,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useSaferRecruitmentIntelligence } from "@/hooks/use-safer-recruitment-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { SaferRecruitmentIntelligenceResult } from "@/lib/engines/safer-recruitment-intelligence-engine";
+
+interface SaferRecruitmentIntelligenceResponse {
+  data: SaferRecruitmentIntelligenceResult;
+}
+
+function useSaferRecruitmentIntelligence() {
+  return useQuery({
+    queryKey: ["safer-recruitment-intelligence"],
+    queryFn: () => api.get<SaferRecruitmentIntelligenceResponse>("/safer-recruitment-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

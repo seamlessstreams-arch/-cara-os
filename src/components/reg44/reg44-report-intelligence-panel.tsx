@@ -10,11 +10,26 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, ClipboardCheck, Loader2, ShieldQuestion, AlertTriangle, Ban } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useReg44ReportIntelligence } from "@/hooks/use-reg44-report-intelligence";
-import type { QualityStandardAssessment, QualityStandardStatus, StatutoryOpinion } from "@/lib/reg44-report-intelligence/types";
+import type { QualityStandardAssessment, QualityStandardStatus, StatutoryOpinion, Reg44QualityStandardsAssessment } from "@/lib/reg44-report-intelligence/types";
+import type { Reg44ReportAssembly } from "@/lib/reg44-report-intelligence/report-assembly";
+
+const REG44_REPORT_INTELLIGENCE_KEY = "reg44-report-intelligence";
+const REG44_REPORT_INTELLIGENCE_URL = "/api/v1/reg44-report-intelligence";
+
+function useReg44ReportIntelligence(homeId = "home_oak", month?: string, spokenTo?: number) {
+  const params = new URLSearchParams({ home_id: homeId });
+  if (month) params.set("month", month);
+  if (typeof spokenTo === "number") params.set("spoken_to", String(spokenTo));
+  return useQuery<{ data: { assessment: Reg44QualityStandardsAssessment; assembly: Reg44ReportAssembly; pack: { id: string; window: { start: string; end: string }; headline: Record<string, number> } } }>({
+    queryKey: [REG44_REPORT_INTELLIGENCE_KEY, homeId, month ?? "", spokenTo ?? 0],
+    queryFn: () => fetch(`${REG44_REPORT_INTELLIGENCE_URL}?${params.toString()}`).then((r) => r.json()),
+    staleTime: 2 * 60 * 1000,
+  });
+}
 
 // Theme-aware token classes (not hardcoded hex) so status pills follow the dark
 // skin: bg-[--cs-*-bg] are dark tints on dark, text-[--cs-*] is lifted bright by

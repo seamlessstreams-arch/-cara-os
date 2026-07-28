@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Calendar,
   Users,
@@ -22,11 +23,20 @@ import {
 } from "@/components/ui/select";
 import type { SchoolEngagementEvent } from "@/types/extended";
 import { SCHOOL_EVENT_TYPE_LABEL } from "@/types/extended";
-import { useSchoolEngagementEvents } from "@/hooks/use-school-engagement-events";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const SCHOOL_ENGAGEMENT_KEY = "school-engagement-events";
+const SCHOOL_ENGAGEMENT_API = "/api/v1/school-engagement-events";
+
+function useSchoolEngagementEvents(childId?: string) {
+  return useQuery<{ data: SchoolEngagementEvent[] }>({
+    queryKey: childId ? [SCHOOL_ENGAGEMENT_KEY, childId] : [SCHOOL_ENGAGEMENT_KEY],
+    queryFn: () => fetch(childId ? `${SCHOOL_ENGAGEMENT_API}?child_id=${childId}` : SCHOOL_ENGAGEMENT_API).then((r) => r.json()),
+  });
+}
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 

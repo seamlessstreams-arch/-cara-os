@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,7 +17,20 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { meets, formatRate } from "@/lib/metrics/rate";
-import { useReg44Intelligence } from "@/hooks/use-reg44-intelligence";
+import { api } from "@/hooks/use-api";
+import type { Reg44IntelligenceResult } from "@/lib/engines/reg44-intelligence-engine";
+
+interface Reg44IntelligenceResponse {
+  data: Reg44IntelligenceResult;
+}
+
+function useReg44Intelligence() {
+  return useQuery({
+    queryKey: ["reg44-intelligence"],
+    queryFn: () => api.get<Reg44IntelligenceResponse>("/reg44-intelligence"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

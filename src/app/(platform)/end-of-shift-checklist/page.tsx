@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -47,7 +48,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useShiftChecklists } from "@/hooks/use-shift-checklists";
 import type { ShiftChecklist, ChecklistItem } from "@/types/extended";
 import {
   END_OF_SHIFT_TYPE_LABEL,
@@ -55,6 +55,17 @@ import {
 } from "@/types/extended";
 import type { EndOfShiftType, ChecklistCategory } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+// ── Inlined from use-shift-checklists (single call site) ──────────────────────
+// useCreateShiftChecklist dropped — zero call sites anywhere in src/
+const SHIFT_CHECKLISTS_KEY = "shift-checklists";
+
+function useShiftChecklists() {
+  return useQuery<{ data: ShiftChecklist[] }>({
+    queryKey: [SHIFT_CHECKLISTS_KEY],
+    queryFn: () => fetch("/api/v1/shift-checklists").then((r) => r.json()),
+  });
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const shiftColour = (s: EndOfShiftType): string => {

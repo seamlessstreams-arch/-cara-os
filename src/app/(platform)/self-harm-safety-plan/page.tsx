@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -17,12 +18,25 @@ import {
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useSelfHarmSafetyPlanRecords } from "@/hooks/use-self-harm-safety-plan-records";
 import type { SelfHarmSafetyPlanRecord, SelfHarmSafetyPlanStatus, SelfHarmSafetyPlanReviewFrequency } from "@/types/extended";
 import { SELF_HARM_SAFETY_PLAN_STATUS_LABEL, SELF_HARM_SAFETY_PLAN_REVIEW_FREQUENCY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useSelfHarmSafetyPlanRecords(childId?: string) {
+  return useQuery<SelfHarmSafetyPlanRecord[]>({
+    queryKey: ["self-harm-safety-plan-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/self-harm-safety-plan-records?child_id=${childId}`
+        : "/api/v1/self-harm-safety-plan-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch self-harm safety plan records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────── */
 

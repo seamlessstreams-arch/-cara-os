@@ -16,7 +16,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import { useSanctionsRewardsIntelligence } from "@/hooks/use-sanctions-rewards-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { SanctionsRewardsIntelligenceResult } from "@/lib/engines/sanctions-rewards-intelligence-engine";
+
+interface SanctionsRewardsIntelligenceResponse {
+  data: SanctionsRewardsIntelligenceResult;
+}
+
+function useSanctionsRewardsIntelligence() {
+  return useQuery({
+    queryKey: ["sanctions-rewards-intelligence"],
+    queryFn: () => api.get<SanctionsRewardsIntelligenceResponse>("/sanctions-rewards-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

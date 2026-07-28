@@ -14,7 +14,6 @@ import {
   Search, BarChart3, Timer, ArrowLeftRight, ShieldAlert, Ban,
 } from "lucide-react";
 import { useStaff } from "@/hooks/use-staff";
-import { useShiftSwaps, useCreateSwapRequest } from "@/hooks/use-shift-swaps";
 import { cn, todayStr, formatDate } from "@/lib/utils";
 import { SHIFT_TYPES, SHIFT_TYPE_LABELS } from "@/lib/constants";
 import { CaraRotaIntelligence } from "@/components/cara";
@@ -23,6 +22,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton } from "@/components/common/export-button";
 import type { ExportColumn } from "@/components/common/export-button";
 import type { Shift, LeaveRequest } from "@/types";
+import type { ShiftSwapRequest } from "@/types/extended";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { api } from "@/hooks/use-api";
@@ -63,6 +63,33 @@ export interface AssignShiftInput {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// Inlined from use-shift-swaps (single call site)
+function useShiftSwaps() {
+  return useQuery({
+    queryKey: ["shift-swaps"],
+    queryFn: () => api.get<{ data: ShiftSwapRequest[] }>("/rota/swaps"),
+  });
+}
+
+interface CreateSwapInput {
+  requester_id: string;
+  target_staff_id: string;
+  requester_shift_id: string;
+  target_shift_id?: string | null;
+  reason: string;
+}
+
+function useCreateSwapRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateSwapInput) =>
+      api.post<{ data: ShiftSwapRequest }>("/rota/swaps", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["shift-swaps"] });
+    },
+  });
+}
 
 const SHIFT_COLORS: Record<string, string> = {
   day: "bg-emerald-100 text-emerald-800 border-emerald-200",

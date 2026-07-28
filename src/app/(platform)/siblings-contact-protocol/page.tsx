@@ -2,6 +2,7 @@
 
 import { useHomeName } from "@/hooks/use-home-profile";
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -20,11 +21,27 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useSiblingContactProtocolRecords } from "@/hooks/use-sibling-contact-protocol-records";
 import type { SiblingContactProtocolRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+/* ── inlined from use-sibling-contact-protocol-records (single call site) ──── */
+/* useCreateSiblingContactProtocolRecord dropped — zero call sites anywhere in src/ */
+
+function useSiblingContactProtocolRecords(childId?: string) {
+  return useQuery<SiblingContactProtocolRecord[]>({
+    queryKey: ["sibling-contact-protocol-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/sibling-contact-protocol-records?child_id=${childId}`
+        : "/api/v1/sibling-contact-protocol-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch sibling contact protocol records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── local config (icons are React.ElementType — cannot serialize) ───────── */
 

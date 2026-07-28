@@ -13,10 +13,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, ArrowLeftCircle, Shield, CheckCircle2 } from "lucide-react";
-import { useReturnedRecords } from "@/hooks/use-returned-records";
-import type { ReturnedAgeBand, ReturnedRecordRow } from "@/lib/care-events/returned-records";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { ReturnedAgeBand, ReturnedRecordRow, ReturnedRecordsSummary } from "@/lib/care-events/returned-records";
 
 const HOME_ID = "home_oak";
+
+interface ReturnedRecordsResponse {
+  data: ReturnedRecordsSummary;
+}
+
+function useReturnedRecords(homeId: string) {
+  return useQuery({
+    queryKey: ["returned-records", homeId],
+    queryFn: () =>
+      api.get<ReturnedRecordsResponse>(
+        `/care-events/returned-records?home_id=${encodeURIComponent(homeId)}`,
+      ),
+    refetchInterval: 30000,
+  });
+}
 
 const BAND_META: Record<ReturnedAgeBand, { label: string; tone: string }> = {
   today:        { label: "Today",        tone: "bg-slate-100 text-slate-800" },

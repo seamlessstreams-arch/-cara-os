@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +16,20 @@ import {
   Clock, Brain, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRegulatoryReportingIntelligence } from "@/hooks/use-regulatory-reporting-intelligence";
+import { api } from "@/hooks/use-api";
+import type { RegulatoryReportingIntelligenceResult } from "@/lib/engines/regulatory-reporting-intelligence-engine";
+
+interface RegulatoryReportingIntelligenceResponse {
+  data: RegulatoryReportingIntelligenceResult;
+}
+
+function useRegulatoryReportingIntelligence() {
+  return useQuery({
+    queryKey: ["regulatory-reporting-intelligence"],
+    queryFn: () => api.get<RegulatoryReportingIntelligenceResponse>("/regulatory-reporting-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

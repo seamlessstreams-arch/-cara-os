@@ -1,17 +1,73 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Clock, Users, Moon, CheckCircle } from "lucide-react";
-import {
-  useShiftSafetyIntelligence,
-  type StaffShiftProfile,
-  type StaffShiftSignal,
-  type OpenShift,
-} from "@/hooks/use-shift-safety-intelligence";
+
+/* ── inlined from use-shift-safety-intelligence (single call site) ──────────── */
+
+type StaffShiftSignal = "at_risk" | "monitoring" | "good";
+
+interface StaffShiftProfile {
+  staffId: string;
+  staffName: string;
+  totalShifts: number;
+  totalShiftMinutes: number;
+  totalOvertimeMinutes: number;
+  sleepInCount: number;
+  dayShiftCount: number;
+  longShiftCount: number;
+  lateArrivalCount: number;
+  noShowCount: number;
+  openShiftCount: number;
+  signal: StaffShiftSignal;
+  supervisionNote: string;
+}
+
+interface OpenShift {
+  shiftId: string;
+  date: string;
+  shiftType: string;
+  startTime: string;
+  endTime: string;
+  notes: string | null;
+}
+
+interface ShiftSafetySummary {
+  totalShifts: number;
+  todayShifts: number;
+  openShiftsToday: number;
+  openShiftsTotal: number;
+  totalOvertimeMinutes: number;
+  longShiftsCount: number;
+  lateArrivalsCount: number;
+  uniqueStaffWorked: number;
+  openShifts: OpenShift[];
+  ofstedNote: string;
+}
+
+interface ShiftSafetyResponse {
+  data: {
+    staffProfiles: StaffShiftProfile[];
+    summary: ShiftSafetySummary;
+  };
+}
+
+function useShiftSafetyIntelligence() {
+  return useQuery<ShiftSafetyResponse>({
+    queryKey: ["shift-safety-intelligence"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/shift-safety-intelligence");
+      if (!res.ok) throw new Error("Failed to fetch shift safety intelligence");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+}
 
 // ── Signal helpers ─────────────────────────────────────────────────────────────
 

@@ -24,7 +24,7 @@ import { cn }                          from "@/lib/utils";
 import { getStaffName, getYPName }     from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
-import { useRoomSearchRecords, useCreateRoomSearchRecord } from "@/hooks/use-room-search-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { YOUNG_PEOPLE } from "@/lib/seed-data";
 import type { RoomSearchRecord, RoomSearchType, RoomSearchStatus, RoomSearchDistressLevel, RoomSearchActionStatus } from "@/types/extended";
@@ -32,6 +32,36 @@ import { ROOM_SEARCH_TYPE_LABEL, ROOM_SEARCH_STATUS_LABEL, ROOM_SEARCH_DISTRESS_
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useRoomSearchRecords(childId?: string) {
+  return useQuery<RoomSearchRecord[]>({
+    queryKey: ["room-search-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/room-search-records?child_id=${childId}`
+        : "/api/v1/room-search-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch room search records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateRoomSearchRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<RoomSearchRecord>) => {
+      const res = await fetch("/api/v1/room-search-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create room search record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["room-search-records"] }),
+  });
+}
 
 /* ── local config ────────────────────────────────────────────────────── */
 

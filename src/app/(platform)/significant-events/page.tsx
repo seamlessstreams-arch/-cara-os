@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
@@ -19,7 +20,6 @@ import {
   Flag, AlertTriangle, CheckCircle2, Clock, Calendar,
   Star, Heart, Shield, Bell, Users, Loader2
 } from "lucide-react";
-import { useSignificantEvents, useCreateSignificantEvent } from "@/hooks/use-significant-events";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { SigEventCategory, SigEventSeverity, SigEventNotifyStatus, SignificantEvent } from "@/types/extended";
@@ -27,6 +27,27 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+/* ── inlined from use-significant-events (single call site) ─────────────────── */
+/* useUpdateSignificantEvent dropped — zero call sites anywhere in src/ */
+
+const SIGNIFICANT_EVENTS_KEY = "significant-events";
+const SIGNIFICANT_EVENTS_API = "/api/v1/significant-events";
+
+function useSignificantEvents(childId?: string) {
+  return useQuery<{ data: SignificantEvent[] }>({
+    queryKey: childId ? [SIGNIFICANT_EVENTS_KEY, childId] : [SIGNIFICANT_EVENTS_KEY],
+    queryFn: () => fetch(childId ? `${SIGNIFICANT_EVENTS_API}?child_id=${childId}` : SIGNIFICANT_EVENTS_API).then((r) => r.json()),
+  });
+}
+
+function useCreateSignificantEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<SignificantEvent>) =>
+      fetch(SIGNIFICANT_EVENTS_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [SIGNIFICANT_EVENTS_KEY] }),
+  });
+}
 
 const CATEGORY_META: Record<SigEventCategory, { label: string; icon: React.ReactNode; color: string }> = {
   positive_achievement: { label: "Positive Achievement", icon: <Star className="h-4 w-4" />,          color: "bg-green-100 text-green-800" },

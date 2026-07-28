@@ -25,11 +25,21 @@ import {
 } from "@/components/ui/select";
 import type { RightsLiteracyRecord, RightsKnowledgeLevel } from "@/types/extended";
 import { RIGHTS_KNOWLEDGE_LEVEL_LABEL } from "@/types/extended";
-import { useRightsLiteracyRecords } from "@/hooks/use-rights-literacy-records";
+import { useQuery } from "@tanstack/react-query";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const RIGHTS_LITERACY_KEY = "rights-literacy-records";
+const RIGHTS_LITERACY_API = "/api/v1/rights-literacy-records";
+
+function useRightsLiteracyRecords(childId?: string) {
+  return useQuery<{ data: RightsLiteracyRecord[] }>({
+    queryKey: childId ? [RIGHTS_LITERACY_KEY, childId] : [RIGHTS_LITERACY_KEY],
+    queryFn: () => fetch(childId ? `${RIGHTS_LITERACY_API}?child_id=${childId}` : RIGHTS_LITERACY_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 

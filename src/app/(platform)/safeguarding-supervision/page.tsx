@@ -13,13 +13,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowUpDown, ChevronDown, ChevronUp, Shield, Clock, AlertTriangle, Users, Brain, Lock, Calendar, Eye, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useSafeguardingSupervisionRecords } from "@/hooks/use-safeguarding-supervision-records";
+import { useQuery } from "@tanstack/react-query";
 import type { SafeguardingSupervisionRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
+
+function useSafeguardingSupervisionRecords() {
+  return useQuery<SafeguardingSupervisionRecord[]>({
+    queryKey: ["safeguarding-supervision-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/safeguarding-supervision-records");
+      if (!res.ok) throw new Error("Failed to fetch safeguarding supervision records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── component ───────────────────────────────────────────────────────────── */
 

@@ -11,13 +11,40 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { useRegulationProfile } from "@/hooks/use-regulation-profile";
+import { api } from "@/hooks/use-api";
 import { HeartPulse, Lightbulb, Loader2, Quote } from "lucide-react";
-import type { RegulationProfile } from "@/lib/emotional-safety/regulation-profile-engine";
+import type {
+  RegulationProfile,
+  ProfileSuggestion,
+  AdultRegulationReflection,
+  ReflectionRead,
+} from "@/lib/emotional-safety/regulation-profile-engine";
+
+interface RegulationProfileData {
+  childId: string;
+  childName: string;
+  profile: RegulationProfile | null;
+  suggestions: ProfileSuggestion[];
+  reflections: (AdultRegulationReflection & { read: ReflectionRead })[];
+  questions: { field: keyof AdultRegulationReflection; question: string }[];
+  writeEnabled: boolean;
+}
+
+function useRegulationProfile(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["regulation-profile", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (await api.get<{ data: RegulationProfileData }>(
+        `/regulation-profile?child_id=${encodeURIComponent(childId!)}`,
+      )).data,
+  });
+}
 
 type Field = { key: keyof RegulationProfile; label: string };
 const GROUPS: { title: string; fields: Field[] }[] = [

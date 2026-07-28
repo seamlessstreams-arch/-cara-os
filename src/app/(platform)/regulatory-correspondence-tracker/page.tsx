@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronUp,
@@ -23,7 +24,6 @@ import { getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useRegulatoryCorrespondenceLetters } from "@/hooks/use-regulatory-correspondence-letters";
 import type {
   RegulatoryCorrespondenceLetter,
   RegulatoryCorrespondenceRegulator,
@@ -42,6 +42,18 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const REGULATORY_CORRESPONDENCE_LETTERS_KEY = ["regulatory-correspondence-letters"];
+
+async function fetchAll(): Promise<RegulatoryCorrespondenceLetter[]> {
+  const res = await fetch("/api/v1/regulatory-correspondence-letters");
+  if (!res.ok) throw new Error("Failed to fetch regulatory correspondence letters");
+  const __j = await res.json(); return Array.isArray(__j) ? __j : (__j?.data ?? []);
+}
+
+function useRegulatoryCorrespondenceLetters() {
+  return useQuery<RegulatoryCorrespondenceLetter[]>({ queryKey: REGULATORY_CORRESPONDENCE_LETTERS_KEY, queryFn: fetchAll });
+}
 
 /* ── local colour maps ────────────────────────────────────────────── */
 

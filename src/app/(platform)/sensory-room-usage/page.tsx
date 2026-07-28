@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -25,12 +26,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSensoryRoomUsageRecords } from "@/hooks/use-sensory-room-usage-records";
 import type { SensoryRoomUsageRecord, SensoryRoomInitiatedBy } from "@/types/extended";
 import { SENSORY_ROOM_INITIATED_BY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useSensoryRoomUsageRecords(childId?: string) {
+  return useQuery<SensoryRoomUsageRecord[]>({
+    queryKey: ["sensory-room-usage-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/sensory-room-usage-records?child_id=${childId}`
+        : "/api/v1/sensory-room-usage-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch sensory room usage records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 const initiatedByColour: Record<SensoryRoomInitiatedBy, string> = {
   self: "bg-green-100 text-green-800",

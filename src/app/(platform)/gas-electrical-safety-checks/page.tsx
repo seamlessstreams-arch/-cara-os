@@ -39,10 +39,20 @@ import {
   SAFETY_CHECK_OUTCOME_LABEL,
   REMEDIAL_WORK_STATUS_LABEL,
 } from "@/types/extended";
-import { useSafetyCheckRecords } from "@/hooks/use-safety-check-records";
+import { useQuery } from "@tanstack/react-query";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+const SAFETY_CHECK_RECORDS_KEY = "safety-check-records";
+const SAFETY_CHECK_RECORDS_API = "/api/v1/safety-check-records";
+
+function useSafetyCheckRecords() {
+  return useQuery<{ data: SafetyCheckRecord[] }>({
+    queryKey: [SAFETY_CHECK_RECORDS_KEY],
+    queryFn: () => fetch(SAFETY_CHECK_RECORDS_API).then((r) => r.json()),
+  });
+}
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 

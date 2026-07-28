@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
@@ -21,12 +22,40 @@ import {
   Clock, Sun, Moon, Sunset, AlertTriangle, CheckCircle2,
   FileText, Star, Loader2,
 } from "lucide-react";
-import { useShiftNoteRecords, useCreateShiftNoteRecord } from "@/hooks/use-shift-note-records";
 import { toast } from "sonner";
 import { STAFF } from "@/lib/seed-data";
 import type { ShiftNoteRecord, ShiftNoteShiftType } from "@/types/extended";
 import { SHIFT_NOTE_SHIFT_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+/* ── inlined from use-shift-note-records (single call site) ─────────────────── */
+
+function useShiftNoteRecords() {
+  return useQuery<ShiftNoteRecord[]>({
+    queryKey: ["shift-note-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/shift-note-records");
+      if (!res.ok) throw new Error("Failed to fetch shift note records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateShiftNoteRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<ShiftNoteRecord, "id">) => {
+      const res = await fetch("/api/v1/shift-note-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create shift note record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["shift-note-records"] }),
+  });
+}
 
 /* ── local config (icons are React.ReactNode — cannot serialize) ─────────── */
 

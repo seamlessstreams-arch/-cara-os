@@ -20,7 +20,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useRiskRegisterEntries, useCreateRiskRegisterEntry } from "@/hooks/use-risk-register-entries";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { RiskRegisterEntry, RiskRegisterCategory, RiskRegisterStatus, RiskRegisterLevel } from "@/types/extended";
 import { RISK_REGISTER_CATEGORY_LABEL, RISK_REGISTER_STATUS_LABEL, RISK_REGISTER_LEVEL_LABEL } from "@/types/extended";
 import {
@@ -32,6 +32,36 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ────────────────────────────────────────────────────── */
+
+function useRiskRegisterEntries(childId?: string) {
+  return useQuery<RiskRegisterEntry[]>({
+    queryKey: ["risk-register-entries", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/risk-register-entries?child_id=${childId}`
+        : "/api/v1/risk-register-entries";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch risk register entries");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateRiskRegisterEntry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<RiskRegisterEntry>) => {
+      const res = await fetch("/api/v1/risk-register-entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create risk register entry");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["risk-register-entries"] }),
+  });
+}
 
 function computeLevel(score: number): RiskRegisterLevel {
   if (score >= 20) return "critical";

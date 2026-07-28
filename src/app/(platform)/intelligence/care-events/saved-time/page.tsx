@@ -4,16 +4,30 @@
 // Saved-Time Live Dashboard page  (Milestone 28)
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Clock } from "lucide-react";
-import { useSavedTimeDashboard } from "@/hooks/use-saved-time-dashboard";
+import { api } from "@/hooks/use-api";
 import { ROUTE_TYPE_LABEL } from "@/types/care-events";
-import type { SavedTimeWindow } from "@/lib/care-events/saved-time-dashboard";
+import type { SavedTimeDashboard, SavedTimeWindow } from "@/lib/care-events/saved-time-dashboard";
 
 const HOME_ID = "home_oak";
+
+interface SavedTimeDashboardResponse { data: SavedTimeDashboard }
+
+function useSavedTimeDashboard(homeId: string) {
+  return useQuery({
+    queryKey: ["saved-time-dashboard", homeId],
+    queryFn: () =>
+      api.get<SavedTimeDashboardResponse>(
+        `/care-events/saved-time-dashboard?home_id=${encodeURIComponent(homeId)}`,
+      ),
+    refetchInterval: 30000,
+  });
+}
 
 export default function SavedTimeDashboardPage() {
   const { data, refetch, isFetching, isLoading } = useSavedTimeDashboard(HOME_ID);

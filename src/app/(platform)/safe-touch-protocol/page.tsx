@@ -26,11 +26,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useSafeTouchProtocolRecords } from "@/hooks/use-safe-touch-protocol-records";
+import { useQuery } from "@tanstack/react-query";
 import type { SafeTouchProtocolRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useSafeTouchProtocolRecords(childId?: string) {
+  return useQuery<SafeTouchProtocolRecord[]>({
+    queryKey: ["safe-touch-protocol-records", childId],
+    queryFn: async () => {
+      const url = childId
+        ? `/api/v1/safe-touch-protocol-records?child_id=${childId}`
+        : "/api/v1/safe-touch-protocol-records";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch safe touch protocol records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 
