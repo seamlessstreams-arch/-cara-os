@@ -8,8 +8,17 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useResolutionMeetings } from "@/hooks/use-resolution-meetings";
+import { useQuery } from "@tanstack/react-query";
 import type { ResolutionMeeting } from "@/types/extended";
+
+const RESOLUTION_MEETINGS_KEY = "resolution-meetings";
+
+function useResolutionMeetings() {
+  return useQuery<{ data: ResolutionMeeting[] }>({
+    queryKey: [RESOLUTION_MEETINGS_KEY],
+    queryFn: () => fetch("/api/v1/resolution-meetings").then((r) => r.json()),
+  });
+}
 import {
   COMPLAINANT_TYPE_LABEL, MEETING_TYPE_LABEL, MEETING_FORMAT_LABEL,
   COMPLAINANT_SATISFACTION_LABEL, FOLLOW_UP_ACTION_STATUS_LABEL,

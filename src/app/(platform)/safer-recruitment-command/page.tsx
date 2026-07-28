@@ -10,17 +10,75 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ShieldCheck, AlertTriangle, Clock, UserCheck, FileWarning, Siren,
   ChevronDown, ChevronUp, CheckCircle2, XCircle, CircleDashed, Phone, Link2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
-import { useSaferRecruitmentCommand, useIssueReferenceLink, useSyncChaseReminders, type IssuedReferenceLink } from "@/hooks/use-safer-recruitment-command";
 import type {
   CommandCandidate,
   TrafficLight,
   StartEligibility,
+  SaferRecruitmentCommandResult,
 } from "@/lib/engines/safer-recruitment-command-engine";
+
+interface IssuedReferenceLink {
+  link: string;
+  expires_at: string;
+  referee_name: string;
+  note: string;
+}
+
+interface ReminderSyncResult {
+  created: number;
+  skipped_existing: number;
+  tasks: { id: string; title: string; priority: string }[];
+}
+
+function useSaferRecruitmentCommand() {
+  return useQuery<SaferRecruitmentCommandResult>({
+    queryKey: ["safer-recruitment-command"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/safer-recruitment-command");
+      if (!res.ok) throw new Error("Failed to fetch safer recruitment command centre");
+      const json = await res.json();
+      return json.data;
+    },
+    refetchInterval: 120_000,
+  });
+}
+
+function useSyncChaseReminders() {
+  const qc = useQueryClient();
+  return useMutation<ReminderSyncResult, Error, void>({
+    mutationFn: async () => {
+      const res = await fetch("/api/v1/safer-recruitment-command/sync-reminders", { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Couldn't sync chase reminders");
+      return json.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["safer-recruitment-command"] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+}
+
+function useIssueReferenceLink() {
+  const qc = useQueryClient();
+  return useMutation<IssuedReferenceLink, Error, string>({
+    mutationFn: async (referenceId: string) => {
+      const res = await fetch(`/api/v1/safer-recruitment-command/references/${referenceId}/link`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Couldn't issue the reference link");
+      return json.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["safer-recruitment-command"] });
+    },
+  });
+}
 
 const LIGHT_STYLES: Record<TrafficLight, string> = {
   red: "bg-red-50 text-red-700 border-red-200",

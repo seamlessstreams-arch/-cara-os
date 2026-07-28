@@ -26,7 +26,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useSecureStorageRecords, useCreateSecureStorageRecord } from "@/hooks/use-secure-storage-records";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { SecureStorageRecord, SecureStorageCategory, SecureStorageLocation, SecureStorageAccessLevel, SecureStorageItemStatus, SecureStorageAction } from "@/types/extended";
 import {
   SECURE_STORAGE_CATEGORY_LABEL,
@@ -38,6 +38,33 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useSecureStorageRecords() {
+  return useQuery<SecureStorageRecord[]>({
+    queryKey: ["secure-storage-records"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/secure-storage-records");
+      if (!res.ok) throw new Error("Failed to fetch secure storage records");
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
+    },
+  });
+}
+
+function useCreateSecureStorageRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<SecureStorageRecord>) => {
+      const res = await fetch("/api/v1/secure-storage-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create secure storage record");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["secure-storage-records"] }),
+  });
+}
 
 /* ── local config ─────────────────────────────────────────────────────── */
 

@@ -34,8 +34,24 @@ import {
   Loader2,
 } from "lucide-react";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useReligiousObservanceRecords } from "@/hooks/use-religious-observance-records";
+import { useQuery } from "@tanstack/react-query";
 import type { ReligiousObservanceRecord } from "@/types/extended";
+
+async function fetchAllReligiousObservanceRecords(childId?: string): Promise<ReligiousObservanceRecord[]> {
+  const url = childId
+    ? `/api/v1/religious-observance-records?child_id=${childId}`
+    : "/api/v1/religious-observance-records";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch religious observance records");
+  const __j = await res.json(); return Array.isArray(__j) ? __j : (__j?.data ?? []);
+}
+
+function useReligiousObservanceRecords(childId?: string) {
+  return useQuery<ReligiousObservanceRecord[]>({
+    queryKey: ["religious-observance-records", childId ?? "all"],
+    queryFn: () => fetchAllReligiousObservanceRecords(childId),
+  });
+}
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";

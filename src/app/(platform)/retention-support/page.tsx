@@ -5,8 +5,20 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Loader2, RefreshCw, LifeBuoy, HeartHandshake, ShieldAlert, CheckCircle2 } from "lucide-react";
-import { useRetentionRisk } from "@/hooks/use-retention-risk";
-import type { RetentionBand } from "@/lib/engines/retention-risk-engine";
+import { useQuery } from "@tanstack/react-query";
+import type { RetentionBand, RetentionOverview } from "@/lib/engines/retention-risk-engine";
+
+function useRetentionRisk() {
+  return useQuery<RetentionOverview>({
+    queryKey: ["retention-risk"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/retention-risk");
+      if (!res.ok) throw new Error("Failed to fetch retention indicators");
+      return (await res.json()).data;
+    },
+    refetchInterval: 120_000,
+  });
+}
 
 const BAND_META: Record<RetentionBand, { label: string; chip: string; bar: string; tone: string }> = {
   priority: { label: "Priority support", chip: "bg-red-100 text-red-800 border-red-200", bar: "bg-red-500", tone: "border-l-red-500" },
