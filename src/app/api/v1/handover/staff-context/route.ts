@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { getRequestIdentity } from "@/lib/auth-guard";
 import { todayStr, daysFromNow } from "@/lib/utils";
+import type { StaffMember, YoungPerson, Incident, DailyLogEntry, Task } from "@/types";
 
 export interface StaffHandoverContext {
   staff_id: string;
@@ -19,38 +20,39 @@ export interface StaffHandoverContext {
   cara_summary: string;
 }
 
-function getStaffName(staffId: string): string {
-  const s = db.staff.findAll().find((st) => st.id === staffId);
-  return s ? s.full_name : "Unknown";
-}
-
-function getYPName(childId: string): string {
-  const yp = db.youngPeople.findAll().find((y) => y.id === childId);
-  return yp ? (yp.preferred_name || yp.first_name) : "Unknown";
-}
-
 function contextDepth(days: number | null): "brief" | "standard" | "comprehensive" {
   if (days === null || days >= 4) return "comprehensive";
   if (days >= 2) return "standard";
   return "brief";
 }
 
+// buildCaraSummary now takes pre-fetched incidents/logs/currentYP/tasks so it
+// stays sync (the containing GET is async and fans everything out once at the
+// top). Same primitives as before, no computation moved.
 function buildCaraSummary(
   staffName: string,
   days: number | null,
   sinceDate: string | null,
-  depth: "brief" | "standard" | "comprehensive"
+  depth: "brief" | "standard" | "comprehensive",
+  allIncidents: Incident[],
+  allLogs: DailyLogEntry[],
+  currentYP: YoungPerson[],
+  allTasks: Task[],
 ): string {
   const today = todayStr();
   const firstName = staffName.split(" ")[0];
 
   const incidents = sinceDate
-    ? db.incidents.findAll().filter((i) => i.date > sinceDate && i.date <= today)
+    ? allIncidents.filter((i) => i.date > sinceDate && i.date <= today)
     : [];
   const logs = sinceDate
-    ? db.dailyLog.findAll().filter((l) => l.date > sinceDate && l.date <= today)
+    ? allLogs.filter((l) => l.date > sinceDate && l.date <= today)
     : [];
-  const currentYP = db.youngPeople.findAll().filter((yp) => yp.status === "current");
+
+  const getYPName = (childId: string): string => {
+    const yp = currentYP.find((y) => y.id === childId);
+    return yp ? (yp.preferred_name || yp.first_name) : "Unknown";
+  };
 
   const lines: string[] = [];
 
@@ -112,7 +114,7 @@ function buildCaraSummary(
   }
 
   // Key tasks completed
-  const completedTasks = db.tasks.findAll().filter((t) => {
+  const completedTasks = allTasks.filter((t) => {
     if (t.status !== "completed" || !t.completed_at) return false;
     const completedDate = t.completed_at.slice(0, 10);
     return sinceDate ? completedDate > sinceDate && completedDate <= today : false;
@@ -127,7 +129,7 @@ function buildCaraSummary(
   }
 
   // Pending urgent items
-  const urgentPending = db.tasks.findAll().filter(
+  const urgentPending = allTasks.filter(
     (t) => t.status !== "completed" && t.status !== "cancelled" && (t.priority === "urgent" || t.priority === "high")
   );
   if (urgentPending.length > 0) {
@@ -155,8 +157,36 @@ export async function GET(req: NextRequest) {
   const today = todayStr();
   const results: StaffHandoverContext[] = [];
 
+  // Pre-fetch every collection once; the per-staff loop below reads sync from
+  // these arrays/maps rather than re-hitting the store on every iteration.
+  // Note: dal.shifts.findByStaff now returns all-time shifts (was current-week
+  // only until 2026-07-29). That fix is what unblocked this route from moving
+  // off the raw store in the first place.
+  const [allStaff, allYP, allIncidents, allLogs, allMissing, allTasks, todayShifts] = await Promise.all([
+    dal.staff.findAll(),
+    dal.youngPeople.findAll(),
+    dal.incidents.findAll(),
+    dal.dailyLog.findAll(),
+    dal.missingEpisodes.findAll(),
+    dal.tasks.findAll(),
+    dal.shifts.findToday(),
+  ]);
+  const staffMap = new Map<string, StaffMember>(allStaff.map((s) => [s.id, s]));
+  const currentYP = allYP.filter((yp) => yp.status === "current");
+  const onShiftIds = new Set(todayShifts.map((s) => s.staff_id).filter((id): id is string => !!id));
+
+  const getStaffName = (id: string): string => staffMap.get(id)?.full_name ?? "Unknown";
+
+  // Per-staff shift history in parallel — one findByStaff per staff id, bounded
+  // by the ~1-5 staff typically requested (comma-list in the query string).
+  const shiftHistoryByStaff = new Map(
+    await Promise.all(
+      staffIds.map(async (id) => [id, await dal.shifts.findByStaff(id)] as const),
+    ),
+  );
+
   for (const staffId of staffIds) {
-    const shifts = db.shifts.findByStaff(staffId)
+    const shifts = (shiftHistoryByStaff.get(staffId) ?? [])
       .filter((s) => s.date < today && s.status === "completed")
       .sort((a, b) => b.date.localeCompare(a.date));
 
@@ -169,27 +199,23 @@ export async function GET(req: NextRequest) {
       daysSince = Math.floor((now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24));
     }
 
-    // Also check if they're on shift today
-    const onShiftToday = db.shifts.findToday().some((s) => s.staff_id === staffId);
-    if (onShiftToday) {
-      daysSince = 0;
-    }
+    if (onShiftIds.has(staffId)) daysSince = 0;
 
     const depth = contextDepth(daysSince);
 
     // Count events since last shift
     const sinceDate = lastShiftDate;
     const incidentsSince = sinceDate
-      ? db.incidents.findAll().filter((i) => i.date > sinceDate && i.date <= today).length
-      : db.incidents.findAll().length;
+      ? allIncidents.filter((i) => i.date > sinceDate && i.date <= today).length
+      : allIncidents.length;
     const logsSince = sinceDate
-      ? db.dailyLog.findAll().filter((l) => l.date > sinceDate && l.date <= today).length
-      : db.dailyLog.findAll().length;
+      ? allLogs.filter((l) => l.date > sinceDate && l.date <= today).length
+      : allLogs.length;
     const missingSince = sinceDate
-      ? db.missingEpisodes.findAll().filter((m) => m.created_at?.slice(0, 10) > sinceDate).length
+      ? allMissing.filter((m) => m.created_at?.slice(0, 10) > sinceDate).length
       : 0;
     const tasksDone = sinceDate
-      ? db.tasks.findAll().filter((t) => t.status === "completed" && t.completed_at && t.completed_at.slice(0, 10) > sinceDate).length
+      ? allTasks.filter((t) => t.status === "completed" && t.completed_at && t.completed_at.slice(0, 10) > sinceDate).length
       : 0;
 
     results.push({
@@ -205,7 +231,10 @@ export async function GET(req: NextRequest) {
         medication_issues: 0,
         tasks_completed: tasksDone,
       },
-      cara_summary: buildCaraSummary(getStaffName(staffId), daysSince, sinceDate, depth),
+      cara_summary: buildCaraSummary(
+        getStaffName(staffId), daysSince, sinceDate, depth,
+        allIncidents, allLogs, currentYP, allTasks,
+      ),
     });
   }
 

@@ -110,6 +110,19 @@ export async function getTaskById(sb: SB, id: string) {
   return unwrap(await sb.from("tasks").select("*").eq("id", id).single());
 }
 
+/**
+ * Active = anything not yet finished. Matches `store.tasks.findActive`
+ * (excludes "completed" and "cancelled" — includes "not_started",
+ * "in_progress", and any other in-flight status).
+ */
+export async function getActiveTasks(sb: SB, homeId: string) {
+  return unwrap(
+    await sb.from("tasks").select("*").eq("home_id", homeId)
+      .not("status", "in", '("completed","cancelled")')
+      .order("due_date", { nullsFirst: false })
+  );
+}
+
 export async function createTask(sb: SB, data: Database["public"]["Tables"]["tasks"]["Insert"]) {
   return unwrap(await sb.from("tasks").insert(data).select().single());
 }
@@ -167,6 +180,21 @@ export async function getShiftsForWeek(sb: SB, homeId: string, weekStart: string
 export async function getShiftsToday(sb: SB, homeId: string) {
   return unwrap(
     await sb.from("shifts").select("*").eq("home_id", homeId).eq("date", todayStr())
+  );
+}
+
+/**
+ * All shifts for a staff member across all time, newest first.
+ * Callers that need multi-week history (handover context "days since last
+ * shift", etc.) rely on this — getShiftsForWeek would silently return an
+ * empty list for staff who haven't worked THIS week.
+ */
+export async function getShiftsByStaff(sb: SB, homeId: string, staffId: string) {
+  return unwrap(
+    await sb.from("shifts").select("*")
+      .eq("home_id", homeId)
+      .eq("staff_id", staffId)
+      .order("date", { ascending: false })
   );
 }
 

@@ -120,7 +120,7 @@ export const dal = {
     },
     async findActive() {
       const c = sb();
-      if (c) return sq.getTasks(c, homeId(), { status: "not_started" });
+      if (c) return sq.getActiveTasks(c, homeId());
       return db.tasks.findActive();
     },
     async findOverdue() {
@@ -219,10 +219,7 @@ export const dal = {
     },
     async findByStaff(staffId: string) {
       const c = sb();
-      if (c) {
-        const all = await sq.getShiftsForWeek(c, homeId(), todayStr());
-        return (all as any[]).filter((s: any) => s.staff_id === staffId);
-      }
+      if (c) return sq.getShiftsByStaff(c, homeId(), staffId);
       return db.shifts.findByStaff(staffId);
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -361,7 +358,19 @@ export const dal = {
     async findAll(filters?: { staff_id?: string; supervisor_id?: string; status?: string; overdue?: boolean }) {
       const c = sb();
       if (c) return sq.getSupervisions(c, homeId(), filters);
-      return db.supervisions.findAll();
+      // In-memory fallback: apply the same filters client-side so demo mode
+      // matches live behavior. The primitives (findByStaff, findScheduled,
+      // etc.) exist on store.supervisions if a single-filter fast path is ever
+      // needed; findAll+filter keeps parity for the multi-filter case.
+      let list = db.supervisions.findAll();
+      if (filters?.staff_id) list = list.filter((s) => s.staff_id === filters.staff_id);
+      if (filters?.supervisor_id) list = list.filter((s) => s.supervisor_id === filters.supervisor_id);
+      if (filters?.status) list = list.filter((s) => s.status === filters.status);
+      if (filters?.overdue) {
+        const today = todayStr();
+        list = list.filter((s) => s.status === "scheduled" && s.scheduled_date < today);
+      }
+      return list;
     },
     async findById(id: string) {
       const c = sb();

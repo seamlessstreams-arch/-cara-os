@@ -24,14 +24,7 @@ export async function POST(req: NextRequest) {
 
   const command = computeSaferRecruitmentCommand({ today, candidates: assembleCommandCandidates() });
   const specs = deriveReminderSpecs(command);
-  // dal.tasks.findActive on live filters to status="not_started" only, but the
-  // in-memory equivalent returns everything not-completed/not-cancelled (incl.
-  // in_progress/paused). Preserve exact dedupe behavior with a client-side filter
-  // over findAll() instead of accepting the narrower live semantics.
-  const allTasks = await dal.tasks.findAll();
-  const openDescriptions = allTasks
-    .filter((t) => t.status !== "completed" && t.status !== "cancelled")
-    .map((t) => t.description);
+  const openDescriptions = (await dal.tasks.findActive()).map((t) => t.description);
   const plan = planReminderSync(specs, openDescriptions);
 
   // Pre-fetch candidate profiles for the reminders we're about to create + index
