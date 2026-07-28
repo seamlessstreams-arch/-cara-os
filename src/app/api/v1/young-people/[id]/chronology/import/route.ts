@@ -6,7 +6,6 @@
 // marked `imported`, so they slot into the live per-child chronology by date.
 // Deterministic parse always; the saved entries auto-merge with live sources.
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 import { parseChronologyText, type ParsedChronologyEntry } from "@/lib/chronology/chronology-import";
@@ -59,8 +58,7 @@ async function importChronology(req: Request, { params }: { params: Promise<{ id
 
   // Existing imported keys (date+title) to avoid duplicate re-imports.
   const existing = new Set(
-    db.chronology
-      .findByChild(childId)
+    (await dal.chronology.findByChild(childId))
       .filter((e) => e.imported)
       .map((e) => `${e.date}|${(e.title || "").slice(0, 60)}`),
   );
@@ -88,7 +86,7 @@ async function importChronology(req: Request, { params }: { params: Promise<{ id
       imported: true,
       source_label: sourceLabel,
     };
-    db.chronology.create(record);
+    await dal.chronology.create(record);
     existing.add(key);
     saved += 1;
   }

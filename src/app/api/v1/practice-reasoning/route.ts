@@ -11,7 +11,6 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -47,14 +46,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No child available to reason over" }, { status: 404 });
   }
 
-  const youngPerson = db.youngPeople.findById(childId);
+  const youngPerson = await dal.youngPeople.findById(childId);
   if (!youngPerson) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
 
-  const incidents = db.incidents.findAll().filter((i) => i.child_id === childId);
-  const dailyLogs = db.dailyLog.findByChild(childId);
-  const chronology = db.chronology.findByChild(childId);
+  const incidents = (await dal.incidents.findAll()).filter((i) => i.child_id === childId);
+  const dailyLogs = await dal.dailyLog.findByChild(childId);
+  const chronology = await dal.chronology.findByChild(childId);
 
   try {
     const signals = buildReasoningSignals({ childId, youngPerson, incidents, dailyLogs, chronology, today });

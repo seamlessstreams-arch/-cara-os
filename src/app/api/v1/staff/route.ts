@@ -9,7 +9,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 
@@ -47,9 +46,9 @@ export async function GET(req: NextRequest) {
   }
 
   // ── Pre-fetch shared collections once (avoid N+1) ─────────────────────────
-  const todayShifts = db.shifts.findToday();
-  const onLeaveToday = db.leave.findOnLeaveToday();
-  const allTraining = db.training.findAll();
+  const todayShifts = await dal.shifts.findToday();
+  const onLeaveToday = await dal.leave.findOnLeaveToday();
+  const allTraining = await dal.training.findAll();
   const allTasks = await dal.tasks.findAll();
 
   // Index by staff_id for O(1) lookups

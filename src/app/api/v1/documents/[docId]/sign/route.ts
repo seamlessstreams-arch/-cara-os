@@ -1,6 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 
 export async function POST(
   req: NextRequest,
@@ -14,6 +14,6 @@ export async function POST(
   if (!staff_id) {
     return NextResponse.json({ error: "staff_id is required" }, { status: 400 });
   }
-  const receipt = db.documentReadReceipts.upsertSignature(docId, staff_id);
+  const receipt = await dal.documentReadReceipts.upsertSignature(docId, staff_id);
   return NextResponse.json({ data: receipt }, { status: 200 });
 }

@@ -17,7 +17,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS, type AppRole } from "@/lib/permissions";
 import {
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     let persistedToRecord = false;
     if (result.signed && body.recordId && body.recordType === "incident") {
       const note = buildSignOffNote(body.finalProfessionalOversight, signOffInput.signOffRole);
-      const updated = db.incidents.addOversight(body.recordId, note, auth.userId);
+      const updated = await dal.incidents.addOversight(body.recordId, note, auth.userId);
       persistedToRecord = !!updated;
     }
 

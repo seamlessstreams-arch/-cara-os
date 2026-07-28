@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
 
@@ -21,18 +20,21 @@ export async function GET(
   }
 
   const today = todayStr();
-  const todayShifts = db.shifts.findToday();
-  const onLeaveToday = db.leave.findOnLeaveToday();
+  const todayShifts = await dal.shifts.findToday();
+  const onLeaveToday = await dal.leave.findOnLeaveToday();
 
   const todayShift = todayShifts.find((sh) => sh.staff_id === id) ?? null;
   const isOnLeaveToday = onLeaveToday.some((l) => l.staff_id === id);
 
-  const training = db.training
-    .findByStaff(id)
+  const training = (await dal.training.findByStaff(id))
     .sort((a, b) => (b.completed_date ?? "").localeCompare(a.completed_date ?? ""));
 
-  const supervisions = db.supervisions
-    .findByStaff(id)
+  // dal.supervisions has no dedicated findByStaff — its findAll(filters) ignores
+  // filters in the in-memory fallback branch, so filtering client-side here
+  // preserves exact current behavior instead of silently returning every
+  // supervision for the home.
+  const supervisions = (await dal.supervisions.findAll())
+    .filter((s) => s.staff_id === id)
     .sort((a, b) => b.scheduled_date.localeCompare(a.scheduled_date));
 
   const allTasks = await dal.tasks.findAll();

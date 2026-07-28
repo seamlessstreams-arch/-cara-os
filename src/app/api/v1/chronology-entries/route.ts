@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   if (identity instanceof NextResponse) return identity;
   const denied = assertChildHomeAccess(identity, childId);
   if (denied) return denied;
-  const data = childId ? db.chronology.findByChild(childId) : db.chronology.findAll();
+  const data = childId ? await dal.chronology.findByChild(childId) : await dal.chronology.findAll();
   return NextResponse.json({ data });
 }
 
@@ -49,6 +49,6 @@ export async function POST(req: NextRequest) {
   const denied = assertChildHomeAccess(identity, body.child_id as string);
   if (denied) return denied;
 
-  const entry = db.chronology.create({ recorded_by: identity.userId, ...body });
+  const entry = await dal.chronology.create({ recorded_by: identity.userId, ...body });
   return NextResponse.json({ data: entry }, { status: 201 });
 }

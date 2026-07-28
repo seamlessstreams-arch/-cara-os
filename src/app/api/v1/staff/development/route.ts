@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { below, meanOf, rateOf } from "@/lib/metrics/rate";
 import { todayStr } from "@/lib/utils";
@@ -7,13 +7,13 @@ import { todayStr } from "@/lib/utils";
 export async function GET(_req: NextRequest) {
   const today = todayStr();
 
-  const activeStaff = db.staff.findActive().filter(
+  const activeStaff = (await dal.staff.findActive()).filter(
     (s) => s.role !== "responsible_individual"
   );
 
-  const allSupervisions = db.supervisions.findAll();
+  const allSupervisions = await dal.supervisions.findAll();
   const allTrainingNeeds = intelligenceDb.trainingNeeds.findAll("home_oak");
-  const allTrainingRecords = db.training.findAll();
+  const allTrainingRecords = await dal.training.findAll();
 
   const profiles = activeStaff.map((s) => {
     // Training needs
