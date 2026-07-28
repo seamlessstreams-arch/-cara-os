@@ -33,14 +33,13 @@ import { ChildCalendarTab } from "@/components/calendar/child-calendar-tab";
 import { ChildChronologyTab } from "@/components/young-person/child-chronology-tab";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
+import type { UploadedDocument } from "@/types/documents";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
 import type { Incident, Medication, CareForm, DailyLogEntry } from "@/types";
 import type {
   ChronologyEntry, KeyWorkSession, KeyWorkTheme,
@@ -49,6 +48,27 @@ import type {
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
 type SingleResponse<T> = { data: T };
+
+// ── Inlined from use-doc-intelligence ──────────────────────────────────────────
+type DocListMeta = {
+  total: number;
+  awaiting_review: number;
+  high_risk: number;
+  tasks_created: number;
+  injection_detected: number;
+};
+
+function useDocumentIntelligence(params?: { status?: string; risk_level?: string; category?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.risk_level) query.set("risk_level", params.risk_level);
+  if (params?.category) query.set("category", params.category);
+  return useQuery({
+    queryKey: ["doc-intelligence", params],
+    queryFn: () => api.get<{ data: UploadedDocument[]; meta: DocListMeta }>(`/doc-intelligence?${query}`),
+    refetchInterval: 5000, // poll while documents may be analysing
+  });
+}
 
 function useKeyWorkSessions(params?: { childId?: string; homeId?: string; status?: string }) {
   const query = new URLSearchParams();
@@ -71,6 +91,46 @@ function useCreateKeyWorkSession() {
       qc.invalidateQueries({ queryKey: ["cara-intelligence", "keywork"] });
       qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
     },
+  });
+}
+
+// ── Inlined from the former use-missing-episodes hook ─────────────────────────
+interface PatternAnalysis {
+  child_id: string;
+  child_name: string;
+  total_episodes: number;
+  avg_duration_hours: number;
+  highest_risk: string;
+  contextual_risk: boolean;
+  return_interview_outstanding: boolean;
+  last_episode_date: string | null;
+}
+type MissingEpisodesListResponse<T> = {
+  data: T[];
+  meta: {
+    total: number;
+    active: number;
+    this_month: number;
+    this_year: number;
+    contextual_risk: number;
+    unresolved: number;
+  };
+  pattern_analysis: PatternAnalysis[];
+};
+
+function useMissingEpisodes(params: {
+  homeId?: string;
+  childId?: string;
+  status?: "all" | "active" | "closed";
+}) {
+  const qs = new URLSearchParams();
+  if (params.childId) qs.set("child_id", params.childId);
+  if (params.status && params.status !== "all") qs.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["missing-episodes", params],
+    queryFn: () =>
+      api.get<MissingEpisodesListResponse<MissingEpisode>>(`/missing-episodes?${qs.toString()}`),
   });
 }
 import { EmptyState } from "@/components/ui/empty-state";

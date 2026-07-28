@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { cn, formatDate, generateId } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { useCarePlans, useUpdateCarePlan } from "@/hooks/use-care-plans";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getYPName, getStaffName, STAFF } from "@/lib/seed-data";
 import type {
   CarePlan, CarePlanGoal, CarePlanGoalStatus, CarePlanDomain,
@@ -36,6 +36,32 @@ import { Textarea } from "@/components/ui/textarea";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { toastSuccess } from "@/lib/toast";
+
+// ── Inlined from former hook wrapper: use-care-plans (useCarePlans, useUpdateCarePlan) ──
+
+type ListResponse<T> = { data: T[]; meta: Record<string, number> };
+type SingleResponse<T> = { data: T };
+
+function useCarePlans(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["care-plans", params.homeId],
+    queryFn:  () =>
+      api.get<ListResponse<CarePlan> & { meta: { total: number; attention_needed: number; lac_overdue: number } }>(
+        `/care-plans?home_id=${params.homeId}`
+      ),
+  });
+}
+
+function useUpdateCarePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CarePlan> }) =>
+      api.patch<SingleResponse<CarePlan>>(`/care-plans/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["care-plans"] });
+    },
+  });
+}
 
 // ── Filter types ─────────────────────────────────────────────────────────────
 

@@ -1,9 +1,24 @@
 "use client";
 
 import React from "react";
-import { useRelationalTimeline } from "@/hooks/use-relational-timeline";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { RelationalTimeline } from "@/lib/relational-timeline/relational-timeline-engine";
 import { cn } from "@/lib/utils";
 import { Link2, ShieldCheck, ChevronDown, TrendingUp, TrendingDown, Minus, Lightbulb } from "lucide-react";
+
+function useRelationalTimeline(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["relational-timeline", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (
+        await api.get<{ data: RelationalTimeline }>(
+          `/relational-timeline?child_id=${encodeURIComponent(childId!)}`,
+        )
+      ).data,
+  });
+}
 
 const STATUS_BADGE: Record<string, string> = {
   secure: "bg-emerald-100 text-emerald-800 border-emerald-200",

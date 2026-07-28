@@ -1,18 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  useReflectionOverview,
-  useStartReflection,
-  useUpdateReflection,
-  type ReflectionResult,
-} from "@/hooks/use-post-incident-reflection";
-import { STAGE_DEFS, type StageKey, type StageStatus } from "@/lib/post-incident-reflection/types";
+import { STAGE_DEFS, type StageKey, type StageStatus, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type {
   ReflectionFlag,
   IncidentNeedingReflection,
+  ReflectionOverview,
+  ReflectionAnalysis,
 } from "@/lib/post-incident-reflection/post-incident-reflection-engine";
 import { cn } from "@/lib/utils";
 import {
@@ -30,6 +28,41 @@ import {
   MessageCircle,
   ClipboardCheck,
 } from "lucide-react";
+
+// ── Inlined from (deleted) src/hooks/use-post-incident-reflection.ts ──────────
+
+interface ReflectionResult {
+  reflection: PostIncidentReflection;
+  analysis: ReflectionAnalysis;
+}
+
+/** Whole-home reflection overview — incidents needing reflection, repeated triggers, alerts. */
+function useReflectionOverview() {
+  return useQuery({
+    queryKey: ["post-incident-reflection", "overview"],
+    queryFn: async () => (await api.get<{ data: ReflectionOverview }>(`/post-incident-reflection`)).data,
+  });
+}
+
+/** Start a reflection for an incident. */
+function useStartReflection() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { incident_id: string } & Partial<PostIncidentReflection>) =>
+      (await api.post<{ data: ReflectionResult }>(`/post-incident-reflection`, payload)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["post-incident-reflection"] }),
+  });
+}
+
+/** Update a reflection — fields, stages, manager comments, or sign-off. */
+function useUpdateReflection() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { id: string; sign_off?: boolean } & Partial<PostIncidentReflection>) =>
+      (await api.patch<{ data: ReflectionResult }>(`/post-incident-reflection`, payload)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["post-incident-reflection"] }),
+  });
+}
 
 const HOME_STATUS: Record<string, { label: string; badge: string }> = {
   settled: { label: "Settled", badge: "bg-emerald-100 text-emerald-800 border-emerald-200" },

@@ -5,11 +5,51 @@
 // statutory decision and rationale. Cara never decides.
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShieldAlert, Loader2, AlertTriangle } from "lucide-react";
-import { useCaraThreshold, useCaraReview } from "@/hooks/use-cara-practice";
+import { currentUserId } from "@/lib/auth/current-user";
+
+const PRACTICE_ROOT = "/api/cara/practice-intelligence";
+
+function practiceUserHeader(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  return { "x-user-id": currentUserId() };
+}
+
+async function practiceFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${PRACTICE_ROOT}${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...practiceUserHeader(), ...(options?.headers ?? {}) },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Request failed" }));
+    throw new Error(err.error || `Cara error ${res.status}`);
+  }
+  return res.json();
+}
+
+function useCaraThreshold() {
+  return useMutation({
+    mutationFn: (input: { childId?: string; concern: string; homeId?: string }) =>
+      practiceFetch<{ data: Record<string, unknown> }>("/threshold", { method: "POST", body: JSON.stringify(input) }),
+  });
+}
+
+interface ReviewInput {
+  entity: "flag" | "assessment" | "threshold";
+  id: string;
+  rationale?: string;
+  decision?: string;
+}
+function useCaraReview() {
+  return useMutation({
+    mutationFn: (input: ReviewInput) =>
+      practiceFetch<{ data: Record<string, unknown> }>("/review", { method: "PATCH", body: JSON.stringify(input) }),
+  });
+}
 
 interface ThresholdResult {
   consultationId?: string | null;

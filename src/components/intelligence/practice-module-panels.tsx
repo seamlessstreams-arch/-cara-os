@@ -10,12 +10,90 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Scale, ShieldCheck, Network, RefreshCcw, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChildRestrictions } from "@/hooks/use-rights-restriction";
-import { useChildStayingSafePlan } from "@/hooks/use-staying-safe-plan";
-import { useChildRelationships } from "@/hooks/use-protective-relationships";
-import { useChildReflections } from "@/hooks/use-post-incident-reflection";
+import { api } from "@/hooks/use-api";
+import type { RestrictionAnalysis } from "@/lib/rights-restriction/rights-restriction-engine";
+import type { RestrictionReview } from "@/lib/rights-restriction/types";
+import type { SafePlanAnalysis } from "@/lib/staying-safe-plan/staying-safe-plan-engine";
+import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
+import type { ChildRelationshipAnalysis } from "@/lib/protective-relationships/protective-relationships-engine";
+import type { RelationshipEntry } from "@/lib/protective-relationships/types";
+import type { SocialConvoy } from "@/lib/protective-relationships/social-convoy-engine";
+import type { ReflectionAnalysis } from "@/lib/post-incident-reflection/post-incident-reflection-engine";
+import type { PostIncidentReflection } from "@/lib/post-incident-reflection/types";
+
+// ── Inlined from (deleted) src/hooks/use-rights-restriction.ts,
+// use-staying-safe-plan.ts, use-protective-relationships.ts and
+// use-post-incident-reflection.ts — this file is the only consumer of each
+// module's per-child hook, so each is duplicated here as a local, non-exported
+// query hook rather than kept as a shared module. ─────────────────────────────
+
+interface ChildRestrictions {
+  childId: string;
+  childName: string;
+  reviews: { review: RestrictionReview; analysis: RestrictionAnalysis }[];
+}
+
+function useChildRestrictions(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["rights-restriction", "child", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (await api.get<{ data: ChildRestrictions }>(`/rights-restriction?child_id=${encodeURIComponent(childId!)}`)).data,
+  });
+}
+
+interface ChildSafePlan {
+  childId: string;
+  childName: string;
+  plan: StayingSafePlan | null;
+  analysis: SafePlanAnalysis | null;
+}
+
+function useChildStayingSafePlan(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["staying-safe-plan", "child", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (await api.get<{ data: ChildSafePlan }>(`/staying-safe-plan?child_id=${encodeURIComponent(childId!)}`)).data,
+  });
+}
+
+interface ChildRelationships {
+  childId: string;
+  childName: string;
+  entries: RelationshipEntry[];
+  analysis: ChildRelationshipAnalysis;
+  /** Convoy circles + network-shape detections over the same entries. */
+  convoy: SocialConvoy;
+}
+
+function useChildRelationships(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["protective-relationships", "child", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (await api.get<{ data: ChildRelationships }>(`/protective-relationships?child_id=${encodeURIComponent(childId!)}`)).data,
+  });
+}
+
+interface ReflectionResult {
+  reflection: PostIncidentReflection;
+  analysis: ReflectionAnalysis;
+}
+
+function useChildReflections(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["post-incident-reflection", "child", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (await api.get<{ data: { childId: string; childName: string; reflections: ReflectionResult[] } }>(
+        `/post-incident-reflection?child_id=${encodeURIComponent(childId!)}`,
+      )).data,
+  });
+}
 
 // ── Shared flag handling ──────────────────────────────────────────────────────
 

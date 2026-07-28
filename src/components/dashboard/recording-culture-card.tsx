@@ -9,11 +9,43 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PenLine, ChevronRight, AlertTriangle, Loader2, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCaraPracticeDashboard } from "@/hooks/use-cara-practice";
+import { currentUserId } from "@/lib/auth/current-user";
+import type { PracticeDashboard } from "@/lib/cara-practice/cara-dashboard";
+
+const PRACTICE_ROOT = "/api/cara/practice-intelligence";
+
+function practiceUserHeader(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  return { "x-user-id": currentUserId() };
+}
+
+async function practiceFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${PRACTICE_ROOT}${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...practiceUserHeader(), ...(options?.headers ?? {}) },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Request failed" }));
+    throw new Error(err.error || `Cara error ${res.status}`);
+  }
+  return res.json();
+}
+
+function useCaraPracticeDashboard(homeId?: string, childId?: string) {
+  const qs = new URLSearchParams();
+  if (homeId) qs.set("homeId", homeId);
+  if (childId) qs.set("childId", childId);
+  const s = qs.toString();
+  return useQuery({
+    queryKey: ["cara-practice-dashboard", homeId ?? null, childId ?? null],
+    queryFn: () => practiceFetch<{ data: PracticeDashboard & { meta: Record<string, unknown> } }>(`/dashboard${s ? `?${s}` : ""}`),
+  });
+}
 
 const LEVEL_STYLES: Record<string, string> = {
   critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",

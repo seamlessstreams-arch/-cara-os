@@ -14,7 +14,23 @@ import {
   Lock, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useNightMonitoring } from "@/hooks/use-night-monitoring";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { NightMonitoringResult } from "@/lib/engines/night-monitoring-engine";
+
+// ── Inlined from former hook wrapper: use-night-monitoring ─────────────────
+
+interface NightMonitoringResponse {
+  data: NightMonitoringResult;
+}
+
+function useNightMonitoring() {
+  return useQuery({
+    queryKey: ["night-monitoring"],
+    queryFn: () => api.get<NightMonitoringResponse>("/night-monitoring"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

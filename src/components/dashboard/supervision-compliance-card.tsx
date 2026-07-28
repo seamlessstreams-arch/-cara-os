@@ -9,16 +9,55 @@
 
 import React, { useMemo } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useSupervisions } from "@/hooks/use-supervision";
 import { useStaff } from "@/hooks/use-staff";
 import { getStaffName } from "@/lib/seed-data";
 import { cn, formatRelative } from "@/lib/utils";
+import { currentUserId } from "@/lib/auth/current-user";
+import type { Supervision } from "@/types";
 import {
   MessageSquare, Loader2, AlertTriangle, CheckCircle2,
   Clock, Users, Heart, Calendar,
 } from "lucide-react";
+
+// ── Inlined from use-supervision ────────────────────────────────────────────────
+const SUPERVISION_API = "/api/v1/supervision";
+
+function supervisionAuthHeaders() {
+  return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
+}
+
+interface SupervisionListResponse {
+  data: Supervision[];
+  meta: {
+    total: number;
+    overdue: number;
+    due_soon: number;
+    scheduled: number;
+    completed: number;
+    today: string;
+  };
+}
+
+const SUPERVISION_KEYS = {
+  all:    ["supervisions"] as const,
+  list:   (params?: Record<string, string>) => ["supervisions", "list", params] as const,
+  detail: (id: string) => ["supervisions", "detail", id] as const,
+};
+
+function useSupervisions(params?: Record<string, string>) {
+  const query = params ? "?" + new URLSearchParams(params).toString() : "";
+  return useQuery<SupervisionListResponse>({
+    queryKey: SUPERVISION_KEYS.list(params),
+    queryFn: async () => {
+      const res = await fetch(`${SUPERVISION_API}${query}`, { headers: supervisionAuthHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch supervisions");
+      return res.json();
+    },
+  });
+}
 
 // ── Component ───────────────────────────────────────────────────────────────
 

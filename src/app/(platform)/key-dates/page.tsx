@@ -17,7 +17,9 @@ import {
   Filter, Loader2, CalendarDays, Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useCarePlans } from "@/hooks/use-care-plans";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { CarePlan } from "@/types/extended";
 import { useStaff } from "@/hooks/use-staff";
 import { useQualifications } from "@/hooks/use-workforce";
 import { useReg44Visits } from "@/hooks/use-ri-learning";
@@ -29,6 +31,20 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined from former hook wrapper: use-care-plans (useCarePlans only) ───
+
+type ListResponse<T> = { data: T[]; meta: Record<string, number> };
+
+function useCarePlans(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["care-plans", params.homeId],
+    queryFn:  () =>
+      api.get<ListResponse<CarePlan> & { meta: { total: number; attention_needed: number; lac_overdue: number } }>(
+        `/care-plans?home_id=${params.homeId}`
+      ),
+  });
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

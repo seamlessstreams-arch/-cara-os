@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, use } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,25 +18,90 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import { CaraContextLinker } from "@/components/cara/cara-context-linker";
 import { CaraOversightQuality } from "@/components/cara/cara-oversight-quality";
-import {
-  useSupervision, useUpdateSupervision,
-} from "@/hooks/use-supervision";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getStaffName } from "@/lib/seed-data";
 import { SUPERVISION_TYPE_LABELS } from "@/lib/constants";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { currentUserId } from "@/lib/auth/current-user";
 import type { Supervision, SupervisionAction } from "@/types";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
-import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { DOCUMENT_CATEGORY_LABELS } from "@/types/documents";
+import { DOCUMENT_CATEGORY_LABELS, type UploadedDocument } from "@/types/documents";
+import { api } from "@/hooks/use-api";
 import {
   ArrowLeft, Clock, CheckCircle2, Circle, AlertTriangle,
   Heart, PenLine, User, Users, Calendar, Loader2,
   ClipboardList, Shield, Sparkles, FileText, Library,
 } from "lucide-react";
+
+// ── Inlined from use-supervision ────────────────────────────────────────────────
+const SUPERVISION_API = "/api/v1/supervision";
+
+function supervisionAuthHeaders() {
+  return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
+}
+
+const SUPERVISION_KEYS = {
+  all:    ["supervisions"] as const,
+  list:   (params?: Record<string, string>) => ["supervisions", "list", params] as const,
+  detail: (id: string) => ["supervisions", "detail", id] as const,
+};
+
+function useSupervision(id: string) {
+  return useQuery<Supervision>({
+    queryKey: SUPERVISION_KEYS.detail(id),
+    queryFn: async () => {
+      const res = await fetch(`${SUPERVISION_API}/${id}`, { headers: supervisionAuthHeaders() });
+      if (!res.ok) throw new Error("Supervision not found");
+      const json: { data: Supervision } = await res.json();
+      return json.data;
+    },
+    enabled: !!id,
+  });
+}
+
+function useUpdateSupervision() {
+  const qc = useQueryClient();
+  return useMutation<Supervision, Error, { id: string } & Partial<Supervision> & { action?: string }>({
+    mutationFn: async ({ id, ...data }) => {
+      const res = await fetch(`${SUPERVISION_API}/${id}`, {
+        method: "PATCH",
+        headers: supervisionAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to update supervision");
+      const json: { data: Supervision } = await res.json();
+      return json.data;
+    },
+    onSuccess: (sup) => {
+      qc.invalidateQueries({ queryKey: SUPERVISION_KEYS.all });
+      qc.setQueryData(SUPERVISION_KEYS.detail(sup.id), sup);
+    },
+  });
+}
+
+// ── Inlined from use-doc-intelligence ──────────────────────────────────────────
+type DocListMeta = {
+  total: number;
+  awaiting_review: number;
+  high_risk: number;
+  tasks_created: number;
+  injection_detected: number;
+};
+
+function useDocumentIntelligence(params?: { status?: string; risk_level?: string; category?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.risk_level) query.set("risk_level", params.risk_level);
+  if (params?.category) query.set("category", params.category);
+  return useQuery({
+    queryKey: ["doc-intelligence", params],
+    queryFn: () => api.get<{ data: UploadedDocument[]; meta: DocListMeta }>(`/doc-intelligence?${query}`),
+    refetchInterval: 5000, // poll while documents may be analysing
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

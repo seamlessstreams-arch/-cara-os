@@ -2,7 +2,20 @@
 
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
-import { useSafeStaffing } from "@/hooks/use-safe-staffing";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { SafeStaffingStatus } from "@/lib/staffing/safe-staffing-service";
+
+// ── Inlined from former hook wrapper: use-safe-staffing (useSafeStaffing) ──
+
+function useSafeStaffing() {
+  return useQuery({
+    queryKey: ["safe-staffing"],
+    queryFn: async () => (await api.get<{ data: SafeStaffingStatus }>("/safe-staffing")).data,
+    staleTime: 10_000,
+    refetchInterval: 30_000,
+  });
+}
 
 /**
  * Platform-wide safe-staffing alert. Shows only when staffing is CRITICAL right now

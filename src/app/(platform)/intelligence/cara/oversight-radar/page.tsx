@@ -9,16 +9,32 @@ import React, { useState, useMemo, useEffect } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useCreateTask } from "@/hooks/use-tasks";
+import { careToast } from "@/lib/toast";
 import type { OversightRadarItem, OversightRadarSeverity, CaraAssessment, KeyWorkSession, CaraSafeguardingFlag, CaraRecommendation } from "@/types/extended";
 import type { TaskCategory, TaskPriority } from "@/lib/constants";
+import type { Task } from "@/types";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+// ── Tasks mutation (inlined from use-tasks) ────────────────────────────────────
+
+function useCreateTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Task>) => api.post<{ data: Task }>("/tasks", data),
+    onSuccess: (_res, data) => {
+      careToast.taskCreated(data.title ?? "New task");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: () => careToast.actionFailed("Create task"),
+  });
+}
 
 // ── Inlined intelligence hooks ───────────────────────────────────────────────
 

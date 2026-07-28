@@ -13,13 +13,35 @@ import {
   CheckCircle2, Clock,
 } from "lucide-react";
 import Link from "next/link";
-import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { useStaff } from "@/hooks/use-staff";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import { DOCUMENT_CATEGORY_LABELS, type DocumentIntelCategory } from "@/types/documents";
 import type { UploadedDocument } from "@/types/documents";
+
+// ── Inlined from use-doc-intelligence ──────────────────────────────────────────
+type DocListMeta = {
+  total: number;
+  awaiting_review: number;
+  high_risk: number;
+  tasks_created: number;
+  injection_detected: number;
+};
+
+function useDocumentIntelligence(params?: { status?: string; risk_level?: string; category?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.risk_level) query.set("risk_level", params.risk_level);
+  if (params?.category) query.set("category", params.category);
+  return useQuery({
+    queryKey: ["doc-intelligence", params],
+    queryFn: () => api.get<{ data: UploadedDocument[]; meta: DocListMeta }>(`/doc-intelligence?${query}`),
+    refetchInterval: 5000, // poll while documents may be analysing
+  });
+}
 
 // Evidence-relevant categories
 const EVIDENCE_CATEGORIES: { key: DocumentIntelCategory | "all"; label: string }[] = [

@@ -19,22 +19,200 @@ import {
   AlertTriangle, Lock, RotateCcw, ArrowUpRight, Eye, Route,
   FolderOpen, BarChart2, ListChecks,
 } from "lucide-react";
-import {
-  useCareEvents, useCreateCareEvent, useSubmitCareEvent,
-  useVerifyCareEvent, useReturnCareEvent, useLockCareEvent,
-  useRetryCareEventRouting, useUpdateCareEventPrompts,
-} from "@/hooks/use-care-events";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import { toast } from "sonner";
+import { careToast } from "@/lib/toast";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import {
   CARE_EVENT_STATUS_LABEL, CARE_EVENT_CATEGORY_LABEL,
 } from "@/types/care-events";
 import type {
-  CareEvent, CareEventCategory, EvidencePrompt,
+  CareEvent, CareEventCategory, CareEventStatus, EvidencePrompt,
+  CreateCareEventPayload, SubmitCareEventPayload,
+  VerifyCareEventPayload, ReturnCareEventPayload,
 } from "@/types/care-events";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined from former hook wrapper: use-care-events (8 of 12 exports) ────
+// NOTE: this file already declares its own `RoutingResult` (display shape for
+// RoutingResultBanner, below). The API-response shape from the hook is
+// renamed CareEventApiRoutingResult here to avoid colliding with it — same
+// value/shape as the hook's original `RoutingResult`, local name only.
+
+interface CareEventsParams {
+  child_id?: string;
+  status?: CareEventStatus;
+  category?: CareEventCategory;
+  date?: string;
+  days?: number;
+  page?: number;
+  limit?: number;
+}
+
+interface CareEventsResponse {
+  data: CareEvent[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+    status_counts: Record<string, number>;
+  };
+}
+
+interface CareEventApiRoutingResult {
+  success: boolean;
+  routes_completed: number;
+  routes_failed: number;
+  routes_skipped: number;
+  routing_summary: {
+    records_updated: number;
+    tasks_created: number;
+    reg45_count: number;
+    annex_a_count: number;
+    areas_updated: string[];
+  };
+  routing_summary_text: string;
+  errors: Array<{ route: string; error: string }>;
+}
+
+function useCareEvents(params?: CareEventsParams) {
+  const query = new URLSearchParams();
+  if (params?.child_id) query.set("child_id", params.child_id);
+  if (params?.status) query.set("status", params.status);
+  if (params?.category) query.set("category", params.category);
+  if (params?.date) query.set("date", params.date);
+  if (params?.days !== undefined) query.set("days", String(params.days));
+  if (params?.page !== undefined) query.set("page", String(params.page));
+  if (params?.limit !== undefined) query.set("limit", String(params.limit));
+
+  return useQuery({
+    queryKey: ["care-events", params],
+    queryFn: () => api.get<CareEventsResponse>(`/care-events?${query}`),
+    // Poll faster if any events are in transient routing states
+    refetchInterval: (query) => {
+      const data = query.state.data?.data ?? [];
+      const hasRouting = data.some((e) => e.status === "routing" || e.status === "submitted");
+      return hasRouting ? 5_000 : 30_000;
+    },
+  });
+}
+
+function useCreateCareEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateCareEventPayload) =>
+      api.post<{ data: CareEvent; routing_preview: object }>("/care-events", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: () => careToast.actionFailed("Create care event"),
+  });
+}
+
+function useSubmitCareEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...payload }: { id: string } & SubmitCareEventPayload) =>
+      api.patch<{ data: CareEvent; result: CareEventApiRoutingResult }>(`/care-events/${id}`, {
+        action: "submit",
+        ...payload,
+      }),
+    onSuccess: (response) => {
+      const text = response.result?.routing_summary_text ?? "Entry submitted.";
+      toast.success(text);
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["reg45-evidence"] });
+      qc.invalidateQueries({ queryKey: ["annex-a-evidence"] });
+    },
+    onError: () => careToast.actionFailed("Submit care event"),
+  });
+}
+
+function useVerifyCareEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...payload }: { id: string } & VerifyCareEventPayload) =>
+      api.patch<{ data: CareEvent }>(`/care-events/${id}`, { action: "verify", ...payload }),
+    onSuccess: () => {
+      toast.success("Record verified and evidence approved.");
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["reg45-evidence"] });
+      qc.invalidateQueries({ queryKey: ["annex-a-evidence"] });
+    },
+    onError: () => careToast.actionFailed("Verify care event"),
+  });
+}
+
+function useReturnCareEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...payload }: { id: string } & ReturnCareEventPayload) =>
+      api.patch<{ data: CareEvent }>(`/care-events/${id}`, { action: "return", ...payload }),
+    onSuccess: () => {
+      toast.info("Record returned to staff for correction.");
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: () => careToast.actionFailed("Return care event"),
+  });
+}
+
+function useLockCareEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.patch<{ data: CareEvent }>(`/care-events/${id}`, { action: "lock" }),
+    onSuccess: () => {
+      toast.success("Record locked.");
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+    },
+    onError: () => careToast.actionFailed("Lock care event"),
+  });
+}
+
+function useRetryCareEventRouting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.patch<{ data: CareEvent; result: CareEventApiRoutingResult }>(`/care-events/${id}`, {
+        action: "retry",
+      }),
+    onSuccess: (response) => {
+      const { result } = response;
+      if (result?.routes_failed === 0) {
+        toast.success("Routing completed successfully.");
+      } else {
+        toast.warning(`Routing partially failed: ${result?.routes_failed} route(s) still failing.`);
+      }
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: () => careToast.actionFailed("Retry routing"),
+  });
+}
+
+function useUpdateCareEventPrompts() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, evidence_answers }: { id: string; evidence_answers: Record<string, string> }) =>
+      api.patch<{ data: CareEvent }>(`/care-events/${id}`, {
+        action: "update_prompts",
+        evidence_answers,
+      }),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ["care-event", variables.id] });
+    },
+    onError: () => careToast.actionFailed("Save evidence responses"),
+  });
+}
 
 // ── Status colours ─────────────────────────────────────────────────────────
 

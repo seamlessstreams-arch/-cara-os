@@ -6,11 +6,51 @@
 // is flagged automatically for statutory-plan or supervision outcomes.
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Loader2, Brain, Check, Sparkles, ListChecks } from "lucide-react";
-import { usePostIncident, useSavePostIncident } from "@/hooks/use-cara-incident";
 import { EntryAssist } from "@/components/forms/entry-assist";
+
+// ── Inlined from the former use-cara-incident hook ────────────────────────────
+interface PostIncidentData {
+  restorative: any[];
+  reflections: any[];
+  templates: {
+    restorative_questions: { key: string; label: string }[];
+    readiness_checks: string[];
+    reflection_questions: { key: string; label: string }[];
+    reflection_factors: { key: string; label: string; suggestion: string }[];
+    reflection_outcomes: { key: string; label: string; suggestion: string }[];
+  };
+  disclaimers: { restorative: string; reflection: string };
+}
+
+const json = async (res: Response) => {
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(j.error || "Request failed");
+  return j.data;
+};
+
+function usePostIncident(sessionId: string | null) {
+  return useQuery<PostIncidentData>({
+    queryKey: ["cara-post-incident", sessionId ?? ""],
+    queryFn: () => fetch(`/api/v1/cara-incident/${sessionId}/post-incident`).then(json),
+    enabled: !!sessionId,
+  });
+}
+
+function useSavePostIncident(sessionId: string | null) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Record<string, unknown>) =>
+      fetch(`/api/v1/cara-incident/${sessionId}/post-incident`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(json),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cara-post-incident", sessionId ?? ""] });
+      qc.invalidateQueries({ queryKey: ["cara-incident", sessionId ?? ""] }); // timeline + gate refresh
+    },
+  });
+}
 
 const inputCls = "w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm focus:border-[var(--cs-teal)] focus:outline-none focus:ring-1 focus:ring-[var(--cs-teal)]";
 

@@ -7,19 +7,18 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, use, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { InlineOutcomePanel } from "@/components/outcome-intelligence/inline-outcome-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, formatDate } from "@/lib/utils";
-import { useCarePlan, useUpdateCarePlan } from "@/hooks/use-care-plans";
 import { useStaff } from "@/hooks/use-staff";
 import { getYPName } from "@/lib/seed-data";
 import { api } from "@/hooks/use-api";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
-import type { CarePlanGoal, CarePlanGoalStatus, CarePlanDomain } from "@/types/extended";
+import type { CarePlanGoal, CarePlanGoalStatus, CarePlanDomain, CarePlan } from "@/types/extended";
 import {
   ArrowLeft, Heart, GraduationCap, Brain, Fingerprint, Users,
   Zap, Home, Shield, CheckCircle2, Clock, AlertTriangle,
@@ -42,6 +41,29 @@ function useIncidents(params?: { status?: string; child_id?: string; needs_overs
   return useQuery({
     queryKey: ["incidents", params],
     queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${query}`),
+  });
+}
+
+// ── Inlined from former hook wrapper: use-care-plans (useCarePlan, useUpdateCarePlan) ──
+
+type SingleResponse<T> = { data: T };
+
+function useCarePlan(id: string) {
+  return useQuery({
+    queryKey: ["care-plans", id],
+    queryFn:  () => api.get<SingleResponse<CarePlan>>(`/care-plans/${id}`),
+    enabled:  !!id,
+  });
+}
+
+function useUpdateCarePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CarePlan> }) =>
+      api.patch<SingleResponse<CarePlan>>(`/care-plans/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["care-plans"] });
+    },
   });
 }
 

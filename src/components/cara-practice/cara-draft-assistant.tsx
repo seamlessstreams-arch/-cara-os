@@ -5,12 +5,46 @@
 // saving. Deterministic scaffold always; AI narrative when a provider is set.
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PenLine, Loader2, Sparkles } from "lucide-react";
-import { useCaraPracticeDraft, type DraftInput } from "@/hooks/use-cara-practice";
-import type { CaraDraftType } from "@/lib/cara-practice/cara-draft";
+import { currentUserId } from "@/lib/auth/current-user";
+import type { CaraDraftType, CaraDraftResult } from "@/lib/cara-practice/cara-draft";
 import type { PracticeSourceType } from "@/lib/cara-practice/types";
+
+const PRACTICE_ROOT = "/api/cara/practice-intelligence";
+
+function practiceUserHeader(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  return { "x-user-id": currentUserId() };
+}
+
+async function practiceFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${PRACTICE_ROOT}${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...practiceUserHeader(), ...(options?.headers ?? {}) },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Request failed" }));
+    throw new Error(err.error || `Cara error ${res.status}`);
+  }
+  return res.json();
+}
+
+interface DraftInput {
+  draftType: CaraDraftType;
+  sourceType: PracticeSourceType;
+  content: string;
+  childId?: string | null;
+  staffId?: string | null;
+  homeId?: string | null;
+}
+function useCaraPracticeDraft() {
+  return useMutation({
+    mutationFn: (input: DraftInput) => practiceFetch<{ data: CaraDraftResult }>("/draft", { method: "POST", body: JSON.stringify(input) }),
+  });
+}
 
 const DRAFT_TYPES: { value: CaraDraftType; label: string }[] = [
   { value: "professional_record", label: "Professional record" },

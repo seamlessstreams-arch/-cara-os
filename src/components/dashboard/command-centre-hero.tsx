@@ -12,12 +12,24 @@
 
 import React from "react";
 import Link from "next/link";
-import { useSystemHealth } from "@/hooks/use-system-health";
-import type { HealthCheckCategory, HealthSeverity } from "@/lib/system-health/types";
+import { useQuery } from "@tanstack/react-query";
+import type { HealthCheckCategory, HealthSeverity, SystemHealthReport } from "@/lib/system-health/types";
 import {
   ShieldAlert, Eye, MapPin, Clock, ListChecks, FileText, Link2,
   ArrowRight, Users, HeartHandshake, ShieldCheck, CalendarDays, Sparkles,
 } from "lucide-react";
+
+// ── Inlined from the former use-system-health hook ────────────────────────────
+const COMMAND_CENTRE_HEALTH_KEY = "system-health";
+const COMMAND_CENTRE_HEALTH_URL = "/api/v1/system-health";
+
+function useSystemHealth() {
+  return useQuery<{ data: SystemHealthReport }>({
+    queryKey: [COMMAND_CENTRE_HEALTH_KEY],
+    queryFn: () => fetch(COMMAND_CENTRE_HEALTH_URL).then((r) => r.json()),
+    staleTime: 2 * 60 * 1000,
+  });
+}
 
 type Tone = "rose" | "amber" | "teal";
 

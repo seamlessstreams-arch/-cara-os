@@ -1,9 +1,24 @@
 "use client";
 
 import React from "react";
-import { useEmotionalSafety } from "@/hooks/use-emotional-safety";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { EmotionalSafetyAnalysis } from "@/lib/emotional-safety/emotional-safety-engine";
 import { cn } from "@/lib/utils";
 import { HeartPulse, Zap, ShieldCheck, ChevronDown } from "lucide-react";
+
+function useEmotionalSafety(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["emotional-safety", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (
+        await api.get<{ data: EmotionalSafetyAnalysis }>(
+          `/emotional-safety?child_id=${encodeURIComponent(childId!)}`,
+        )
+      ).data,
+  });
+}
 
 const STATUS_BADGE: Record<string, string> = {
   secure: "bg-emerald-100 text-emerald-800 border-emerald-200",

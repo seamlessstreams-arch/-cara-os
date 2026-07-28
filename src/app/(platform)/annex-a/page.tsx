@@ -1,5 +1,5 @@
 "use client";
-import type { Reg44VisitReport, Reg44Recommendation, RestraintRecord } from "@/types/extended";
+import type { Reg44VisitReport, Reg44Recommendation, RestraintRecord, MissingEpisode } from "@/types/extended";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
@@ -56,7 +56,6 @@ import type { AnnexAEvidenceItem, Reg45EvidenceItem, ManagerDecision } from "@/t
 import type { AnnexAEvidenceEnriched } from "@/lib/care-events/compliance-queues";
 import type { Complaint } from "@/types/extended";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useStaff } from "@/hooks/use-staff";
 import { toast } from "sonner";
@@ -64,6 +63,46 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { Incident } from "@/types";
+
+// ── Inlined from the former use-missing-episodes hook ─────────────────────────
+interface PatternAnalysis {
+  child_id: string;
+  child_name: string;
+  total_episodes: number;
+  avg_duration_hours: number;
+  highest_risk: string;
+  contextual_risk: boolean;
+  return_interview_outstanding: boolean;
+  last_episode_date: string | null;
+}
+type MissingEpisodesListResponse<T> = {
+  data: T[];
+  meta: {
+    total: number;
+    active: number;
+    this_month: number;
+    this_year: number;
+    contextual_risk: number;
+    unresolved: number;
+  };
+  pattern_analysis: PatternAnalysis[];
+};
+
+function useMissingEpisodes(params: {
+  homeId?: string;
+  childId?: string;
+  status?: "all" | "active" | "closed";
+}) {
+  const qs = new URLSearchParams();
+  if (params.childId) qs.set("child_id", params.childId);
+  if (params.status && params.status !== "all") qs.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["missing-episodes", params],
+    queryFn: () =>
+      api.get<MissingEpisodesListResponse<MissingEpisode>>(`/missing-episodes?${qs.toString()}`),
+  });
+}
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────
 

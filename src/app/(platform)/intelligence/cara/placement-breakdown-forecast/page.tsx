@@ -1,6 +1,7 @@
 "use client";
 
-import { usePlacementBreakdownForecast } from "@/hooks/use-placement-breakdown-forecast";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import type {
   ChildPlacementForecast,
   ForecastAlert,
@@ -9,7 +10,21 @@ import type {
   RecommendedAction,
   RiskBand,
   RiskTrend,
+  PlacementBreakdownForecastResult,
 } from "@/lib/placement-breakdown-forecast/placement-breakdown-forecast-engine";
+
+interface PlacementBreakdownForecastResponse {
+  data: PlacementBreakdownForecastResult;
+}
+
+function usePlacementBreakdownForecast() {
+  return useQuery({
+    queryKey: ["placement-breakdown-forecast"],
+    queryFn: () =>
+      api.get<PlacementBreakdownForecastResponse>("/placement-breakdown-forecast"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const RISK_BAND_STYLES: Record<RiskBand, { badge: string; card: string; score: string }> = {
   critical: { badge: "bg-red-100 text-red-700 border-red-300",      card: "border-red-300",    score: "text-red-700"    },

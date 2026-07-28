@@ -10,11 +10,23 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Loader2, Activity, ShieldCheck, AlertTriangle } from "lucide-react";
-import { useSystemHealth } from "@/hooks/use-system-health";
-import type { HealthSeverity, HealthCheckCategory } from "@/lib/system-health/types";
+import type { HealthSeverity, HealthCheckCategory, SystemHealthReport } from "@/lib/system-health/types";
+
+// ── Inlined from the former use-system-health hook ────────────────────────────
+const SYSTEM_HEALTH_PANEL_KEY = "system-health";
+const SYSTEM_HEALTH_PANEL_URL = "/api/v1/system-health";
+
+function useSystemHealth() {
+  return useQuery<{ data: SystemHealthReport }>({
+    queryKey: [SYSTEM_HEALTH_PANEL_KEY],
+    queryFn: () => fetch(SYSTEM_HEALTH_PANEL_URL).then((r) => r.json()),
+    staleTime: 2 * 60 * 1000,
+  });
+}
 
 const SEV_STYLE: Record<HealthSeverity, { cls: string; label: string }> = {
   critical: { cls: "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)] border-[var(--cs-risk-soft)]", label: "Critical" },

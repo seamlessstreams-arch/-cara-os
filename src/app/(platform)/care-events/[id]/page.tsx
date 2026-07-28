@@ -8,7 +8,7 @@
 import React, { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,19 +47,207 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
-import {
-  useCareEvent,
-  useRetryCareEventRouting,
-  useVerifyCareEvent,
-  useReturnCareEvent,
-  useLockCareEvent,
-  useAmendCareEvent,
-  useCareEventJobs,
-  useRunCareEventJobs,
-} from "@/hooks/use-care-events";
 import { toast } from "sonner";
+import { careToast } from "@/lib/toast";
 import { api } from "@/hooks/use-api";
-import type { CareEventRoute, CareEventAuditLog, RouteStatus, CareEventJob, JobStatus } from "@/types/care-events";
+import type {
+  CareEventRoute, CareEventAuditLog, RouteStatus, CareEventJob, JobStatus,
+  CareEvent, VerifyCareEventPayload, ReturnCareEventPayload, AmendCareEventPayload,
+} from "@/types/care-events";
+
+// ── Inlined from former hook wrapper: use-care-events (8 of 12 exports) ────
+
+interface CareEventVersionHistoryItem {
+  id: string;
+  version: number;
+  amended_at: string | null;
+  amendment_reason: string | null;
+  amended_by_name: string | null;
+}
+
+interface CareEventDetailResponse {
+  data: CareEvent & {
+    routes: CareEventRoute[];
+    audit_log: CareEventAuditLog[];
+    routing_preview: string[];
+    staff_name: string | null;
+    child_name: string | null;
+    verified_by_name: string | null;
+    version_history: CareEventVersionHistoryItem[];
+  };
+}
+
+interface RoutingResult {
+  success: boolean;
+  routes_completed: number;
+  routes_failed: number;
+  routes_skipped: number;
+  routing_summary: {
+    records_updated: number;
+    tasks_created: number;
+    reg45_count: number;
+    annex_a_count: number;
+    areas_updated: string[];
+  };
+  routing_summary_text: string;
+  errors: Array<{ route: string; error: string }>;
+}
+
+function useCareEvent(id: string | null) {
+  return useQuery({
+    queryKey: ["care-event", id],
+    queryFn: () => api.get<CareEventDetailResponse>(`/care-events/${id}`),
+    enabled: !!id,
+    // Poll faster when in transient routing states
+    refetchInterval: (query) => {
+      const status = query.state.data?.data?.status;
+      if (status === "routing" || status === "submitted") return 5_000; // 5s while routing
+      if (status === "routed" || status === "manager_review_required") return 30_000; // 30s pending review
+      return 60_000; // 60s for stable states
+    },
+  });
+}
+
+function useVerifyCareEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...payload }: { id: string } & VerifyCareEventPayload) =>
+      api.patch<{ data: CareEvent }>(`/care-events/${id}`, { action: "verify", ...payload }),
+    onSuccess: () => {
+      toast.success("Record verified and evidence approved.");
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["reg45-evidence"] });
+      qc.invalidateQueries({ queryKey: ["annex-a-evidence"] });
+    },
+    onError: () => careToast.actionFailed("Verify care event"),
+  });
+}
+
+function useReturnCareEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...payload }: { id: string } & ReturnCareEventPayload) =>
+      api.patch<{ data: CareEvent }>(`/care-events/${id}`, { action: "return", ...payload }),
+    onSuccess: () => {
+      toast.info("Record returned to staff for correction.");
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: () => careToast.actionFailed("Return care event"),
+  });
+}
+
+function useAmendCareEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...payload }: { id: string } & AmendCareEventPayload) =>
+      api.patch<{ data: CareEvent; previous_version_id: string }>(`/care-events/${id}`, {
+        action: "amend",
+        ...payload,
+      }),
+    onSuccess: () => {
+      toast.success("New version created. Amendment requires manager review.");
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+    },
+    onError: () => careToast.actionFailed("Amend care event"),
+  });
+}
+
+function useLockCareEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.patch<{ data: CareEvent }>(`/care-events/${id}`, { action: "lock" }),
+    onSuccess: () => {
+      toast.success("Record locked.");
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+    },
+    onError: () => careToast.actionFailed("Lock care event"),
+  });
+}
+
+function useRetryCareEventRouting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.patch<{ data: CareEvent; result: RoutingResult }>(`/care-events/${id}`, {
+        action: "retry",
+      }),
+    onSuccess: (response) => {
+      const { result } = response;
+      if (result?.routes_failed === 0) {
+        toast.success("Routing completed successfully.");
+      } else {
+        toast.warning(`Routing partially failed: ${result?.routes_failed} route(s) still failing.`);
+      }
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: () => careToast.actionFailed("Retry routing"),
+  });
+}
+
+interface JobsResponse {
+  data: CareEventJob[];
+  meta: {
+    total: number;
+    pending: number;
+    processing: number;
+    completed: number;
+    failed: number;
+  };
+}
+
+interface RunJobsResponse {
+  processed: number;
+  completed: number;
+  failed: number;
+  results: Array<{
+    job_id: string;
+    job_type: string;
+    care_event_id: string;
+    status: "completed" | "failed" | "skipped";
+    error?: string;
+  }>;
+}
+
+function useCareEventJobs(careEventId: string | null) {
+  return useQuery({
+    queryKey: ["care-event-jobs", careEventId],
+    queryFn: () =>
+      api.get<JobsResponse>(`/care-events/jobs?care_event_id=${careEventId}`),
+    enabled: !!careEventId,
+    refetchInterval: (query) => {
+      const jobs = query.state.data?.data ?? [];
+      const hasActive = jobs.some(
+        (j) => j.status === "pending" || j.status === "processing" || j.status === "retry_required"
+      );
+      return hasActive ? 5_000 : 30_000;
+    },
+  });
+}
+
+function useRunCareEventJobs() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ care_event_id, job_type }: { care_event_id?: string; job_type?: string }) =>
+      api.post<RunJobsResponse>("/care-events/jobs", { care_event_id, job_type }),
+    onSuccess: (response, variables) => {
+      const { processed, completed, failed } = response;
+      if (failed === 0) {
+        toast.success(`Background jobs complete: ${completed} of ${processed} processed.`);
+      } else {
+        toast.warning(`Jobs partially complete: ${completed} of ${processed} succeeded, ${failed} failed.`);
+      }
+      qc.invalidateQueries({ queryKey: ["care-event-jobs", variables.care_event_id] });
+      qc.invalidateQueries({ queryKey: ["care-events"] });
+      qc.invalidateQueries({ queryKey: ["reg45"] });
+      qc.invalidateQueries({ queryKey: ["annex-a"] });
+    },
+    onError: () => careToast.actionFailed("Run background jobs"),
+  });
+}
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
 

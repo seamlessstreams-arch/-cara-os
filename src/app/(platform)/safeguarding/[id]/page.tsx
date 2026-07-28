@@ -35,10 +35,9 @@ import { CaraWriteToChild } from "@/components/cara/cara-write-to-child";
 import { CaraOversightQuality } from "@/components/cara/cara-oversight-quality";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
-import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { DOCUMENT_CATEGORY_LABELS } from "@/types/documents";
-import type { DocumentIntelRisk } from "@/types/documents";
+import type { DocumentIntelRisk, UploadedDocument } from "@/types/documents";
 
 // ── Incident queries (inlined from use-incidents) ─────────────────────────────
 
@@ -59,6 +58,27 @@ function useUpdateIncident() {
       qc.invalidateQueries({ queryKey: ["incidents"] });
       qc.invalidateQueries({ queryKey: ["incidents", vars.id] });
     },
+  });
+}
+
+// ── Inlined from use-doc-intelligence ──────────────────────────────────────────
+type DocListMeta = {
+  total: number;
+  awaiting_review: number;
+  high_risk: number;
+  tasks_created: number;
+  injection_detected: number;
+};
+
+function useDocumentIntelligence(params?: { status?: string; risk_level?: string; category?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.risk_level) query.set("risk_level", params.risk_level);
+  if (params?.category) query.set("category", params.category);
+  return useQuery({
+    queryKey: ["doc-intelligence", params],
+    queryFn: () => api.get<{ data: UploadedDocument[]; meta: DocListMeta }>(`/doc-intelligence?${query}`),
+    refetchInterval: 5000, // poll while documents may be analysing
   });
 }
 

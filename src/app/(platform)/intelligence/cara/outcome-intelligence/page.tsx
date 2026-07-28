@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { useOutcomeIntelligence } from "@/hooks/use-outcome-intelligence";
+import { api } from "@/hooks/use-api";
 import type {
   OutcomeStatus,
   OutcomeDirection,
   OutcomeDomain,
+  OutcomeIntelligence,
 } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
 import { cn } from "@/lib/utils";
 import {
@@ -26,6 +28,19 @@ import {
   AlertTriangle,
   Sparkles,
 } from "lucide-react";
+
+function useOutcomeIntelligence(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["outcome-intelligence", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (
+        await api.get<{ data: OutcomeIntelligence }>(
+          `/outcome-intelligence?child_id=${encodeURIComponent(childId!)}`,
+        )
+      ).data,
+  });
+}
 
 const STATUS_CONFIG: Record<OutcomeStatus, { label: string; badge: string; dot: string }> = {
   on_track: { label: "On track", badge: "bg-emerald-100 text-emerald-800 border-emerald-200", dot: "bg-emerald-500" },

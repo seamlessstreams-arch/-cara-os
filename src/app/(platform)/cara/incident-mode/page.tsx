@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -8,14 +9,122 @@ import {
   Loader2, Play, Square, Bell, BellRing, Sparkles, HeartHandshake, ShieldAlert,
   CheckCircle2, Circle, AlertTriangle, Plus, MessageCircle, FileText, Check, ArrowLeft,
 } from "lucide-react";
-import {
-  useCaraIncidentList, useCaraIncidentSession, useStartIncident, usePatchIncident,
-  useAddTimelineEntry, useGenerateDraft, useAcceptDraft, type DraftResponse,
-} from "@/hooks/use-cara-incident";
+import type {
+  IncidentSession, IncidentTimelineEntry, LivePrompts, QualityGate, WorkflowStep,
+} from "@/lib/cara-incident/cara-incident-engine";
 import { RestorativeConversationForm } from "@/components/cara/RestorativeConversationForm";
 import { PostIncidentReflectionForm } from "@/components/cara/PostIncidentReflectionForm";
 import { EntryAssist } from "@/components/forms/entry-assist";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+
+// ── Inlined from the former use-cara-incident hook ────────────────────────────
+interface SessionListItem extends IncidentSession { child_name: string; entry_count: number; type_label: string }
+interface IncidentListResponse {
+  sessions: SessionListItem[];
+  children: { id: string; name: string }[];
+  incident_types: { key: string; label: string }[];
+  active: SessionListItem | null;
+  disclaimer: string;
+}
+interface SessionBundle {
+  session: IncidentSession;
+  child_name: string;
+  started_by_name: string;
+  timeline: IncidentTimelineEntry[];
+  checklist: (WorkflowStep & { completed: boolean })[];
+  prompts: LivePrompts;
+  gate: QualityGate;
+  child_voice_prompts: string[];
+  child_declined_prompts: string[];
+  incident_types: { key: string; label: string }[];
+  entry_types: { key: string; label: string }[];
+  disclaimer: string;
+}
+
+const json = async (res: Response) => {
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(j.error || "Request failed");
+  return j.data;
+};
+
+function useCaraIncidentList() {
+  return useQuery<IncidentListResponse>({
+    queryKey: ["cara-incident-list"],
+    queryFn: () => fetch("/api/v1/cara-incident").then(json),
+    refetchInterval: 60_000,
+  });
+}
+
+function useCaraIncidentSession(sessionId: string | null) {
+  return useQuery<SessionBundle>({
+    queryKey: ["cara-incident", sessionId ?? ""],
+    queryFn: () => fetch(`/api/v1/cara-incident/${sessionId}`).then(json),
+    enabled: !!sessionId,
+    refetchInterval: 30_000,
+  });
+}
+
+function useInvalidate() {
+  const qc = useQueryClient();
+  return (sessionId?: string) => {
+    qc.invalidateQueries({ queryKey: ["cara-incident-list"] });
+    if (sessionId) qc.invalidateQueries({ queryKey: ["cara-incident", sessionId] });
+  };
+}
+
+function useStartIncident() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (payload: { child_id: string; incident_type: string; immediate_risk_level: string }) =>
+      fetch("/api/v1/cara-incident", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(json),
+    onSuccess: () => invalidate(),
+  });
+}
+
+function usePatchIncident(sessionId: string | null) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (payload: { action: "end" | "notify_manager" | "set_risk" | "toggle_step"; risk?: string; step?: string; note?: string }) =>
+      fetch(`/api/v1/cara-incident/${sessionId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(json),
+    onSuccess: () => invalidate(sessionId ?? undefined),
+  });
+}
+
+function useAddTimelineEntry(sessionId: string | null) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (payload: { entry_type: string; raw_text: string }) =>
+      fetch(`/api/v1/cara-incident/${sessionId}/timeline`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(json),
+    onSuccess: () => invalidate(sessionId ?? undefined),
+  });
+}
+
+interface DraftResponse {
+  deterministic_draft: string;
+  ai_draft: string | null;
+  llmUsed: boolean;
+  llm_message: string | null;
+  gate: QualityGate;
+  disclaimer: string;
+}
+
+function useGenerateDraft(sessionId: string | null) {
+  return useMutation<DraftResponse>({
+    mutationFn: () => fetch(`/api/v1/cara-incident/${sessionId}/draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).then(json),
+  });
+}
+
+function useAcceptDraft(sessionId: string | null) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (payload: { final_text: string; ai_suggested_text?: string | null }) =>
+      fetch(`/api/v1/cara-incident/${sessionId}/draft`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accept: true, confirm: true, ...payload }),
+      }).then(json),
+    onSuccess: () => invalidate(sessionId ?? undefined),
+  });
+}
 
 const RISK_META: Record<string, { label: string; on: string; off: string }> = {
   low: { label: "Low", on: "bg-green-600 text-white", off: "bg-green-50 text-green-700 border-green-200" },

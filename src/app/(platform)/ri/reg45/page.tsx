@@ -18,7 +18,6 @@ import {
   useRiReg45Evidence, useCreateRiReg45Evidence, useUpdateRiReg45Evidence,
   useTrainingNeeds, useRiAlerts, useRiChallengeLogs,
 } from "@/hooks/use-ri-learning";
-import { useSupervisions } from "@/hooks/use-supervision";
 import type { RiReg45Evidence } from "@/types/extended";
 import { cn, formatDate } from "@/lib/utils";
 import {
@@ -27,7 +26,8 @@ import {
   Users, Zap, Copy, ChevronRight,
 } from "lucide-react";
 import { api } from "@/hooks/use-api";
-import type { Incident } from "@/types";
+import { currentUserId } from "@/lib/auth/current-user";
+import type { Incident, Supervision } from "@/types";
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────
 
@@ -52,6 +52,42 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 
+// ── Inlined from use-supervision ────────────────────────────────────────────────
+const SUPERVISION_API = "/api/v1/supervision";
+
+function supervisionAuthHeaders() {
+  return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
+}
+
+interface SupervisionListResponse {
+  data: Supervision[];
+  meta: {
+    total: number;
+    overdue: number;
+    due_soon: number;
+    scheduled: number;
+    completed: number;
+    today: string;
+  };
+}
+
+const SUPERVISION_KEYS = {
+  all:    ["supervisions"] as const,
+  list:   (params?: Record<string, string>) => ["supervisions", "list", params] as const,
+  detail: (id: string) => ["supervisions", "detail", id] as const,
+};
+
+function useSupervisions(params?: Record<string, string>) {
+  const query = params ? "?" + new URLSearchParams(params).toString() : "";
+  return useQuery<SupervisionListResponse>({
+    queryKey: SUPERVISION_KEYS.list(params),
+    queryFn: async () => {
+      const res = await fetch(`${SUPERVISION_API}${query}`, { headers: supervisionAuthHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch supervisions");
+      return res.json();
+    },
+  });
+}
 
 const STATUS_COLOURS: Record<string, string> = {
   draft: "bg-slate-100 text-[var(--cs-text-secondary)]",

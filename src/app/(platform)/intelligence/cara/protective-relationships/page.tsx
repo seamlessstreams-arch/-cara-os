@@ -1,27 +1,63 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { PrintButton } from "@/components/ui/print-button";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import {
-  useRelationshipsOverview,
-  useChildRelationships,
-  useAddRelationship,
-} from "@/hooks/use-protective-relationships";
 import {
   CATEGORY_META,
   type RelationshipEntry,
   type RelationshipRating,
   type RelationshipCategory,
 } from "@/lib/protective-relationships/types";
-import type { RelationshipFlag } from "@/lib/protective-relationships/protective-relationships-engine";
+import type { RelationshipFlag, RelationshipsOverview, ChildRelationshipAnalysis } from "@/lib/protective-relationships/protective-relationships-engine";
+import type { SocialConvoy } from "@/lib/protective-relationships/social-convoy-engine";
 import { cn } from "@/lib/utils";
 import {
   Network, Loader2, AlertTriangle, Lightbulb, Info, ShieldCheck, ShieldAlert, Plus, X,
   Users, Briefcase, Baby, Lock,
 } from "lucide-react";
+
+// ── Inlined from (deleted) src/hooks/use-protective-relationships.ts ──────────
+
+/** Whole-home relationship overview + alerts. */
+function useRelationshipsOverview() {
+  return useQuery({
+    queryKey: ["protective-relationships", "overview"],
+    queryFn: async () => (await api.get<{ data: RelationshipsOverview }>(`/protective-relationships`)).data,
+  });
+}
+
+interface ChildRelationships {
+  childId: string;
+  childName: string;
+  entries: RelationshipEntry[];
+  analysis: ChildRelationshipAnalysis;
+  /** Convoy circles + network-shape detections over the same entries. */
+  convoy: SocialConvoy;
+}
+
+/** A single child's relationship map + analysis. */
+function useChildRelationships(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["protective-relationships", "child", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (await api.get<{ data: ChildRelationships }>(`/protective-relationships?child_id=${encodeURIComponent(childId!)}`)).data,
+  });
+}
+
+function useAddRelationship() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { child_id: string; name: string } & Partial<RelationshipEntry>) =>
+      (await api.post<{ data: RelationshipEntry }>(`/protective-relationships`, payload)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["protective-relationships"] }),
+  });
+}
 
 const HOME_STATUS: Record<string, { label: string; badge: string }> = {
   settled: { label: "Settled", badge: "bg-emerald-100 text-emerald-800 border-emerald-200" },

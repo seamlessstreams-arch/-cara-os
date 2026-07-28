@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
 import { PageGuidance } from "@/components/ui/page-guidance";
@@ -21,17 +22,91 @@ import { getStaffName } from "@/lib/seed-data";
 import { demoSeed } from "@/lib/demo/demo-seed";
 import { useStaff } from "@/hooks/use-staff";
 import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
-import { useSupervisions, useCreateSupervision, useUpdateSupervision } from "@/hooks/use-supervision";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { api } from "@/hooks/use-api";
+import { currentUserId } from "@/lib/auth/current-user";
 import type { Supervision, SupervisionAction } from "@/types";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined from use-supervision ────────────────────────────────────────────────
+const SUPERVISION_API = "/api/v1/supervision";
+
+function supervisionAuthHeaders() {
+  return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
+}
+
+interface SupervisionListResponse {
+  data: Supervision[];
+  meta: {
+    total: number;
+    overdue: number;
+    due_soon: number;
+    scheduled: number;
+    completed: number;
+    today: string;
+  };
+}
+
+const SUPERVISION_KEYS = {
+  all:    ["supervisions"] as const,
+  list:   (params?: Record<string, string>) => ["supervisions", "list", params] as const,
+  detail: (id: string) => ["supervisions", "detail", id] as const,
+};
+
+function useSupervisions(params?: Record<string, string>) {
+  const query = params ? "?" + new URLSearchParams(params).toString() : "";
+  return useQuery<SupervisionListResponse>({
+    queryKey: SUPERVISION_KEYS.list(params),
+    queryFn: async () => {
+      const res = await fetch(`${SUPERVISION_API}${query}`, { headers: supervisionAuthHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch supervisions");
+      return res.json();
+    },
+  });
+}
+
+function useCreateSupervision() {
+  const qc = useQueryClient();
+  return useMutation<Supervision, Error, Partial<Supervision>>({
+    mutationFn: async (data) => {
+      const res = await fetch(SUPERVISION_API, {
+        method: "POST",
+        headers: supervisionAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create supervision");
+      const json: { data: Supervision } = await res.json();
+      return json.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: SUPERVISION_KEYS.all }),
+  });
+}
+
+function useUpdateSupervision() {
+  const qc = useQueryClient();
+  return useMutation<Supervision, Error, { id: string } & Partial<Supervision> & { action?: string }>({
+    mutationFn: async ({ id, ...data }) => {
+      const res = await fetch(`${SUPERVISION_API}/${id}`, {
+        method: "PATCH",
+        headers: supervisionAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to update supervision");
+      const json: { data: Supervision } = await res.json();
+      return json.data;
+    },
+    onSuccess: (sup) => {
+      qc.invalidateQueries({ queryKey: SUPERVISION_KEYS.all });
+      qc.setQueryData(SUPERVISION_KEYS.detail(sup.id), sup);
+    },
+  });
+}
 
 type Tab = "supervision" | "probation" | "appraisals" | "goals";
 

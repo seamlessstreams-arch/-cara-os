@@ -1,11 +1,25 @@
 "use client";
 
-import { useMissingIntelligence } from "@/hooks/use-missing-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import type {
   RecentEpisode,
   CaraInsight,
   PushPullFactor,
+  MissingIntelligenceResult,
 } from "@/lib/engines/missing-from-care-engine";
+
+interface MissingIntelligenceResponse {
+  data: MissingIntelligenceResult;
+}
+
+function useMissingIntelligence() {
+  return useQuery({
+    queryKey: ["missing-intelligence"],
+    queryFn: () => api.get<MissingIntelligenceResponse>("/missing-intelligence"),
+    refetchInterval: 30_000,
+  });
+}
 
 const RISK_STYLES: Record<string, string> = {
   critical: "bg-red-100 text-red-700 border-red-300",

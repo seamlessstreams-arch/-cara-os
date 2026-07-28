@@ -14,12 +14,43 @@ import {
   ChevronRight, Star, Sun, Loader2, Brain,
 } from "lucide-react";
 import Link from "next/link";
-import { useTasks, useCompleteTask } from "@/hooks/use-tasks";
 import { useStaff } from "@/hooks/use-staff";
+import { careToast } from "@/lib/toast";
 import type { PatternAlert, ActionOutcome } from "@/types/extended";
-import type { Incident, Shift, LeaveRequest } from "@/types";
+import type { Incident, Shift, LeaveRequest, Task } from "@/types";
 
 type ListResponse<T> = { data: T[]; meta: Record<string, unknown> };
+
+// ── Tasks query + mutation (inlined from use-tasks) ─────────────────────────────
+
+function useTasks(params?: { assigned_to?: string; status?: string; priority?: string; category?: string; overdue?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.assigned_to) query.set("assigned_to", params.assigned_to);
+  if (params?.status) query.set("status", params.status);
+  if (params?.priority) query.set("priority", params.priority);
+  if (params?.category) query.set("category", params.category);
+  if (params?.overdue) query.set("overdue", "true");
+
+  return useQuery({
+    queryKey: ["tasks", params],
+    queryFn: () => api.get<{ data: Task[]; meta: Record<string, number> }>(`/tasks?${query}`),
+  });
+}
+
+function useCompleteTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, by, note }: { id: string; by: string; note?: string }) =>
+      api.patch(`/tasks/${id}`, { action: "complete", completed_by: by, evidence_note: note }),
+    onSuccess: () => {
+      careToast.taskCompleted("Task marked as complete");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["health-check"] });
+    },
+    onError: () => careToast.actionFailed("Complete task"),
+  });
+}
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────
 

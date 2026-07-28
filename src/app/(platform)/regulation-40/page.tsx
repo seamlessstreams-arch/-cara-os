@@ -6,6 +6,10 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { Task } from "@/types/index";
+import type { CareEvent } from "@/types/care-events";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,13 +38,68 @@ import {
   FileText,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
-import { useReg40Triage, useTriageReg40Task, type Reg40Task } from "@/hooks/use-oversight-queues";
 import { useAuthContext } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import Link from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined from (deleted) src/hooks/use-oversight-queues.ts ──────────────────
+
+interface Reg40Task extends Task {
+  care_event: {
+    id: string;
+    title: string;
+    category: string;
+    event_date: string;
+    status: string;
+    staff_id: string;
+    child_id: string | null;
+    content_excerpt: string;
+  } | null;
+}
+
+interface Reg40Meta {
+  total: number;
+  active: number;
+  overdue: number;
+  care_events_pending_triage: number;
+}
+
+function useReg40Triage(params?: { status?: string; child_id?: string }) {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set("status", params.status);
+  if (params?.child_id) searchParams.set("child_id", params.child_id);
+  const qs = searchParams.toString();
+
+  return useQuery({
+    queryKey: ["reg40-triage", params],
+    queryFn: () =>
+      api.get<{ data: Reg40Task[]; meta: Reg40Meta }>(
+        `/reg40-triage${qs ? `?${qs}` : ""}`
+      ),
+  });
+}
+
+function useTriageReg40Task() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: {
+      task_id: string;
+      action: "complete" | "notify_ofsted" | "no_notification_required";
+      completed_by: string;
+      evidence_note?: string;
+    }) => api.patch<{ data: Task }>("/reg40-triage", payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reg40-triage"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      // a notify_ofsted triage queues a pending notifiable event
+      queryClient.invalidateQueries({ queryKey: ["notifiable-events"] });
+      queryClient.invalidateQueries({ queryKey: ["notifiable-events-intelligence"] });
+    },
+  });
+}
 
 // ── Status colours ─────────────────────────────────────────────────────────────
 

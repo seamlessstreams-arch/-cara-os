@@ -26,7 +26,7 @@ import {
   ArrowUpDown, Filter, BarChart3, Users,
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
-import { useTraining, useAddTrainingRecord } from "@/hooks/use-training";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { TrainingRecord } from "@/types";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { useStaff } from "@/hooks/use-staff";
@@ -42,6 +42,38 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+// ── Inlined from the former use-training hook ─────────────────────────────────
+interface TrainingMeta {
+  total: number;
+  compliant: number;
+  expiring: number;
+  expired: number;
+  not_started: number;
+  rate: number;
+}
+
+function useTraining(params?: { staff_id?: string; status?: string; category?: string }) {
+  const query = new URLSearchParams();
+  if (params?.staff_id) query.set("staff_id", params.staff_id);
+  if (params?.status) query.set("status", params.status);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["training", params],
+    queryFn: () =>
+      api.get<{ data: TrainingRecord[]; meta: TrainingMeta }>(`/training?${query}`),
+  });
+}
+
+function useAddTrainingRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<TrainingRecord>) =>
+      api.post<{ data: TrainingRecord }>("/training", data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["training"] }),
+  });
+}
 
 const STATUS_STYLES: Record<string, { color: string; icon: React.ElementType; label: string }> = {
   compliant:     { color: "bg-emerald-100 text-emerald-700", icon: CheckCircle2,  label: "Compliant"     },

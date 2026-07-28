@@ -8,11 +8,51 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Loader2, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useWorkflowSignOff } from "@/hooks/use-oversight-workflow";
 import type { OversightInput, OversightResult, WorkflowSignOffResult } from "@/lib/oversight/types";
+
+// ── Inlined from the former use-oversight-workflow hook ──────────────────────
+interface SignOffVars {
+  /** Original input — preferred: the server regenerates the result authoritatively. */
+  input?: OversightInput;
+  /** Or a prior result (kept for flexibility; the role gate is always server-derived). */
+  oversightResult?: OversightResult;
+  finalProfessionalOversight: string;
+  childAddressedOversight?: string;
+  confirmActionsAssigned: boolean;
+  confirmTimescalesRecorded: boolean;
+  confirmRisksEscalated: boolean;
+  confirmChildFacingSafeOrSuppressed: boolean;
+  oversightChildModeRequested?: boolean;
+  contradictionsUnresolved?: boolean;
+  overrideReason?: string;
+  /** When set, a successful sign-off is recorded against this source record. */
+  recordId?: string;
+  recordType?: string;
+}
+interface SignOffResponse {
+  data: WorkflowSignOffResult & { persistedToRecord?: boolean };
+}
+
+/** Attempt final sign-off. Returns signed/blocked + blockers (always HTTP 200). */
+function useWorkflowSignOff() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (vars: SignOffVars) =>
+      api.post<SignOffResponse>("/oversight-workflow/sign-off", vars),
+    onSuccess: (res) => {
+      // If the sign-off was recorded against a record, refresh the picker + record view.
+      if (res?.data?.persistedToRecord) {
+        qc.invalidateQueries({ queryKey: ["oversight-record-list"] });
+        qc.invalidateQueries({ queryKey: ["oversight-from-record"] });
+      }
+    },
+  });
+}
 
 function Check({
   checked,

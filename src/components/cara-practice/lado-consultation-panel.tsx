@@ -5,11 +5,38 @@
 // Cara NEVER decides the outcome and never advises a premature internal investigation.
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UserX, Loader2 } from "lucide-react";
-import { useCaraLado } from "@/hooks/use-cara-practice";
+import { currentUserId } from "@/lib/auth/current-user";
+
+const PRACTICE_ROOT = "/api/cara/practice-intelligence";
+
+function practiceUserHeader(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  return { "x-user-id": currentUserId() };
+}
+
+async function practiceFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${PRACTICE_ROOT}${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...practiceUserHeader(), ...(options?.headers ?? {}) },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Request failed" }));
+    throw new Error(err.error || `Cara error ${res.status}`);
+  }
+  return res.json();
+}
+
+function useCaraLado() {
+  return useMutation({
+    mutationFn: (input: { childId?: string; staffId?: string; concern: string; homeId?: string }) =>
+      practiceFetch<{ data: Record<string, unknown> }>("/lado", { method: "POST", body: JSON.stringify(input) }),
+  });
+}
 
 interface LadoResult {
   ladoConsiderationDetected?: boolean;

@@ -5,13 +5,47 @@ import { Siren, Loader2, CheckCircle2, X, HandHelping, MapPin } from "lucide-rea
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useTriggerEmergency, useEmergencyAlerts, useEmergencyAction } from "@/hooks/use-safe-staffing";
-import { EMERGENCY_TYPE_LABEL, type EmergencyType } from "@/lib/staffing/emergency-types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import { EMERGENCY_TYPE_LABEL, type EmergencyType, type EmergencyAlert } from "@/lib/staffing/emergency-types";
 
 const TYPES = Object.keys(EMERGENCY_TYPE_LABEL) as EmergencyType[];
 
 function timeLabel(iso: string): string {
   return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+
+// ── Inlined from former hook wrapper: use-safe-staffing (3 of 4 exports) ───
+
+function useTriggerEmergency() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { type: EmergencyType; location?: string; note?: string }) =>
+      api.post<{ data: { alert: EmergencyAlert } }>("/emergency", payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["emergency"] });
+      qc.invalidateQueries({ queryKey: ["comms", "messages"] });
+      qc.invalidateQueries({ queryKey: ["comms", "channels"] });
+    },
+  });
+}
+
+function useEmergencyAlerts() {
+  return useQuery({
+    queryKey: ["emergency", "active"],
+    queryFn: async () => (await api.get<{ data: EmergencyAlert[] }>("/emergency")).data ?? [],
+    staleTime: 5_000,
+    refetchInterval: 15_000,
+  });
+}
+
+function useEmergencyAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, action }: { id: string; action: "acknowledge" | "resolve" }) =>
+      api.patch(`/emergency/${id}`, { action }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["emergency"] }),
+  });
 }
 
 // ── Panic / raise-emergency control (two-step to avoid accidental triggers) ────

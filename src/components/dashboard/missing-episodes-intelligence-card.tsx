@@ -14,7 +14,21 @@ import {
   Clock, Shield, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMissingIntelligence } from "@/hooks/use-missing-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { MissingIntelligenceResult } from "@/lib/engines/missing-from-care-engine";
+
+interface MissingIntelligenceResponse {
+  data: MissingIntelligenceResult;
+}
+
+function useMissingIntelligence() {
+  return useQuery({
+    queryKey: ["missing-intelligence"],
+    queryFn: () => api.get<MissingIntelligenceResponse>("/missing-intelligence"),
+    refetchInterval: 30_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

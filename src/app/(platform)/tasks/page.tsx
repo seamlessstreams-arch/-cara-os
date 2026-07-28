@@ -18,7 +18,8 @@ import {
 
 type SortKey = "priority" | "due_date" | "assignee" | "category" | "status";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useTasks } from "@/hooks/use-tasks";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { useStaff } from "@/hooks/use-staff";
 import { cn, todayStr, formatRelative, isOverdue, isDueToday } from "@/lib/utils";
 import { TASK_CATEGORY_LABELS, TASK_PRIORITIES } from "@/lib/constants";
@@ -30,6 +31,20 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+function useTasks(params?: { assigned_to?: string; status?: string; priority?: string; category?: string; overdue?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.assigned_to) query.set("assigned_to", params.assigned_to);
+  if (params?.status) query.set("status", params.status);
+  if (params?.priority) query.set("priority", params.priority);
+  if (params?.category) query.set("category", params.category);
+  if (params?.overdue) query.set("overdue", "true");
+
+  return useQuery({
+    queryKey: ["tasks", params],
+    queryFn: () => api.get<{ data: Task[]; meta: Record<string, number> }>(`/tasks?${query}`),
+  });
+}
 
 const TASK_EXPORT_COLS: ExportColumn<Task>[] = [
   { header: "Title", accessor: (t) => t.title },

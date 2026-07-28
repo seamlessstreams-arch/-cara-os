@@ -9,7 +9,19 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
-import type { OversightRecordOption } from "@/hooks/use-oversight-workflow";
+
+// ── Inlined from the former use-oversight-workflow hook ──────────────────────
+interface OversightRecordOption {
+  id: string;
+  recordType: string;
+  reference: string;
+  type: string;
+  severity: string;
+  date: string;
+  childName: string;
+  requiresOversight: boolean;
+  oversightDone: boolean;
+}
 
 const SEVERITY_CLS: Record<string, string> = {
   low: "bg-emerald-50 text-emerald-700 border-emerald-200",

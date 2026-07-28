@@ -15,13 +15,25 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { Shift } from "@/types";
 import type { PriorityBriefingResult } from "@/lib/engines/manager-priority-briefing-engine";
-import { useSystemHealth } from "@/hooks/use-system-health";
+import type { SystemHealthReport } from "@/lib/system-health/types";
 import { getStaffName } from "@/lib/seed-data";
 import { todayStr } from "@/lib/utils";
 import {
   Users, CalendarDays, Radar, ArrowRight, CircleDot, Clock,
 } from "lucide-react";
 import type { CalendarFeed } from "@/lib/calendar/calendar-types";
+
+// ── Inlined from the former use-system-health hook ────────────────────────────
+const TODAY_BAND_HEALTH_KEY = "system-health";
+const TODAY_BAND_HEALTH_URL = "/api/v1/system-health";
+
+function useSystemHealth() {
+  return useQuery<{ data: SystemHealthReport }>({
+    queryKey: [TODAY_BAND_HEALTH_KEY],
+    queryFn: () => fetch(TODAY_BAND_HEALTH_URL).then((r) => r.json()),
+    staleTime: 2 * 60 * 1000,
+  });
+}
 
 // ── Data hook (inlined from the former use-manager-priority-briefing hook) ─────
 function useManagerPriorityBriefing() {

@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { useEmotionalSafety } from "@/hooks/use-emotional-safety";
-import type { EmotionalSafetyStatus, TimeOfDayPattern } from "@/lib/emotional-safety/emotional-safety-engine";
+import { api } from "@/hooks/use-api";
+import type { EmotionalSafetyStatus, TimeOfDayPattern, EmotionalSafetyAnalysis } from "@/lib/emotional-safety/emotional-safety-engine";
 import { cn } from "@/lib/utils";
 import {
   HeartPulse,
@@ -20,6 +21,19 @@ import {
   Clock,
   Sparkles,
 } from "lucide-react";
+
+function useEmotionalSafety(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["emotional-safety", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (
+        await api.get<{ data: EmotionalSafetyAnalysis }>(
+          `/emotional-safety?child_id=${encodeURIComponent(childId!)}`,
+        )
+      ).data,
+  });
+}
 
 const STATUS_CONFIG: Record<EmotionalSafetyStatus, { label: string; badge: string }> = {
   secure: { label: "Settled", badge: "bg-emerald-100 text-emerald-800 border-emerald-200" },

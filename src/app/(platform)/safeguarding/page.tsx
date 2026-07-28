@@ -17,7 +17,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
-import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
@@ -31,6 +30,46 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import NextLink from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+
+// ── Inlined from the former use-missing-episodes hook ─────────────────────────
+interface PatternAnalysis {
+  child_id: string;
+  child_name: string;
+  total_episodes: number;
+  avg_duration_hours: number;
+  highest_risk: string;
+  contextual_risk: boolean;
+  return_interview_outstanding: boolean;
+  last_episode_date: string | null;
+}
+type MissingEpisodesListResponse<T> = {
+  data: T[];
+  meta: {
+    total: number;
+    active: number;
+    this_month: number;
+    this_year: number;
+    contextual_risk: number;
+    unresolved: number;
+  };
+  pattern_analysis: PatternAnalysis[];
+};
+
+function useMissingEpisodes(params: {
+  homeId?: string;
+  childId?: string;
+  status?: "all" | "active" | "closed";
+}) {
+  const qs = new URLSearchParams();
+  if (params.childId) qs.set("child_id", params.childId);
+  if (params.status && params.status !== "all") qs.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["missing-episodes", params],
+    queryFn: () =>
+      api.get<MissingEpisodesListResponse<MissingEpisode>>(`/missing-episodes?${qs.toString()}`),
+  });
+}
 
 // ── Incidents + oversight queries (inlined from use-incidents) ────────────────
 

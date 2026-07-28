@@ -17,8 +17,8 @@ import {
 import { HOME, getStaffName } from "@/lib/seed-data";
 import { demoSeed } from "@/lib/demo/demo-seed";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { AnnexAEvidenceItem, Reg45EvidenceItem, ManagerDecision } from "@/types/care-events";
-import { useManagementOversight, useReg40Triage } from "@/hooks/use-oversight-queues";
+import type { AnnexAEvidenceItem, Reg45EvidenceItem, ManagerDecision, CareEvent } from "@/types/care-events";
+import type { Task } from "@/types/index";
 import type { ActionOutcome, HealthCheckScore, InspectionRecord, PatternAlert, HomeClimateSnapshot } from "@/types/extended";
 import { cn, formatDate, daysFromNow, todayStr } from "@/lib/utils";
 
@@ -100,6 +100,70 @@ function useUpdateActionOutcome() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["intelligence", "action-outcomes"] });
     },
+  });
+}
+
+// Inlined from (deleted) src/hooks/use-oversight-queues.ts
+
+interface OversightTask extends Task {
+  care_event: Pick<CareEvent, "id" | "title" | "category" | "event_date" | "status" | "staff_id" | "child_id"> | null;
+}
+
+interface OversightMeta {
+  total: number;
+  active: number;
+  urgent: number;
+  overdue: number;
+}
+
+function useManagementOversight(params?: { status?: string; priority?: string; child_id?: string }) {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set("status", params.status);
+  if (params?.priority) searchParams.set("priority", params.priority);
+  if (params?.child_id) searchParams.set("child_id", params.child_id);
+  const qs = searchParams.toString();
+
+  return useQuery({
+    queryKey: ["management-oversight", params],
+    queryFn: () =>
+      api.get<{ data: OversightTask[]; meta: OversightMeta }>(
+        `/management-oversight${qs ? `?${qs}` : ""}`
+      ),
+  });
+}
+
+interface Reg40Task extends Task {
+  care_event: {
+    id: string;
+    title: string;
+    category: string;
+    event_date: string;
+    status: string;
+    staff_id: string;
+    child_id: string | null;
+    content_excerpt: string;
+  } | null;
+}
+
+interface Reg40Meta {
+  total: number;
+  active: number;
+  overdue: number;
+  care_events_pending_triage: number;
+}
+
+function useReg40Triage(params?: { status?: string; child_id?: string }) {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set("status", params.status);
+  if (params?.child_id) searchParams.set("child_id", params.child_id);
+  const qs = searchParams.toString();
+
+  return useQuery({
+    queryKey: ["reg40-triage", params],
+    queryFn: () =>
+      api.get<{ data: Reg40Task[]; meta: Reg40Meta }>(
+        `/reg40-triage${qs ? `?${qs}` : ""}`
+      ),
   });
 }
 

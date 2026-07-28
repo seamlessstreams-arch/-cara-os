@@ -2,8 +2,20 @@
 
 import Link from "next/link";
 import { Siren } from "lucide-react";
-import { useEmergencyAlerts } from "@/hooks/use-safe-staffing";
-import { EMERGENCY_TYPE_LABEL } from "@/lib/staffing/emergency-types";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import { EMERGENCY_TYPE_LABEL, type EmergencyAlert } from "@/lib/staffing/emergency-types";
+
+// ── Inlined from former hook wrapper: use-safe-staffing (useEmergencyAlerts) ──
+
+function useEmergencyAlerts() {
+  return useQuery({
+    queryKey: ["emergency", "active"],
+    queryFn: async () => (await api.get<{ data: EmergencyAlert[] }>("/emergency")).data ?? [],
+    staleTime: 5_000,
+    refetchInterval: 15_000,
+  });
+}
 
 /**
  * Platform-wide emergency indicator. The moment an emergency is raised (Phase 7), a

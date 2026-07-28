@@ -10,19 +10,79 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ShieldCheck, Loader2, Lock, Info, ListChecks, Sparkles } from "lucide-react";
-import {
-  useOversightWorkflowExample,
-  useOversightRecordList,
-  useOversightFromRecord,
-} from "@/hooks/use-oversight-workflow";
+import type { OversightInput, OversightResult } from "@/lib/oversight/types";
 import { OversightWorkflowPanel } from "@/components/oversight/oversight-workflow-panel";
 import { OversightRecordPicker } from "@/components/oversight/oversight-record-picker";
 import { EthicalCyclePanel } from "@/components/ethical-intelligence/ethical-cycle-panel";
 import { TapThinkingPanel } from "@/components/tap-thinking/tap-thinking-panel";
 import { BiasReflectionPanel } from "@/components/cognitive-bias/bias-reflection-panel";
+
+// ── Inlined from the former use-oversight-workflow hook ──────────────────────
+interface OversightExamplePayload {
+  example: boolean;
+  input: OversightInput;
+  result: OversightResult;
+  disclaimer: string;
+}
+interface ExampleResponse {
+  data: OversightExamplePayload;
+}
+interface OversightRecordOption {
+  id: string;
+  recordType: string;
+  reference: string;
+  type: string;
+  severity: string;
+  date: string;
+  childName: string;
+  requiresOversight: boolean;
+  oversightDone: boolean;
+}
+interface RecordListResponse {
+  data: { records: OversightRecordOption[] };
+}
+interface FromRecordPayload {
+  record: { id: string; childId: string; reference: string; type: string; severity: string; date: string; childName: string };
+  input: OversightInput;
+  result: OversightResult;
+  disclaimer: string;
+}
+interface FromRecordResponse {
+  data: FromRecordPayload;
+}
+
+/** Deterministic worked example — lets the page render immediately, even in prod with no AI key. */
+function useOversightWorkflowExample() {
+  return useQuery({
+    queryKey: ["oversight-workflow-example"],
+    queryFn: () => api.get<ExampleResponse>("/oversight-workflow"),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** Recent records (incidents) available to run oversight on — for the picker. */
+function useOversightRecordList() {
+  return useQuery({
+    queryKey: ["oversight-record-list"],
+    queryFn: () => api.get<RecordListResponse>("/oversight-workflow/from-record"),
+    staleTime: 60 * 1000,
+  });
+}
+
+/** Generate oversight for a specific real record (incident). Enabled only when an id is given. */
+function useOversightFromRecord(id: string | null) {
+  return useQuery({
+    queryKey: ["oversight-from-record", id],
+    queryFn: () =>
+      api.get<FromRecordResponse>(`/oversight-workflow/from-record?recordType=incident&id=${encodeURIComponent(id!)}`),
+    enabled: !!id,
+  });
+}
 
 export default function OversightWorkflowPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);

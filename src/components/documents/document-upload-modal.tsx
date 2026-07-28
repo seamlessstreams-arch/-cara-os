@@ -8,13 +8,37 @@
 import React, { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { cn, formatDate } from "@/lib/utils";
-import { useUploadDocument } from "@/hooks/use-doc-intelligence";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import type { UploadedDocument, DocumentRiskFlag } from "@/types/documents";
 import {
   X, Upload, FileText, Loader2, CheckCircle2, AlertTriangle,
   Shield, Sparkles, ChevronRight, TriangleAlert, Brain,
   ClipboardList, Link, BookOpen, Info, ArrowRight, Download,
 } from "lucide-react";
+
+// ── Inlined from use-doc-intelligence ──────────────────────────────────────────
+type UploadPayload = {
+  original_file_name: string;
+  file_type?: string;
+  file_size?: number;
+  extracted_text: string;
+  /** The file's bytes as a base64 data URL, so the actual file is stored. */
+  file_data_url?: string | null;
+  linked_child_id?: string | null;
+  linked_staff_id?: string | null;
+  linked_incident_id?: string | null;
+  upload_context?: string | null;
+};
+
+function useUploadDocument() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: UploadPayload) =>
+      api.post<{ data: UploadedDocument; cara_error?: string }>("/doc-intelligence", payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["doc-intelligence"] }),
+  });
+}
 
 type Step = "select" | "analysing" | "review";
 

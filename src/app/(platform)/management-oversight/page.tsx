@@ -6,6 +6,10 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { Task } from "@/types/index";
+import type { CareEvent } from "@/types/care-events";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,16 +39,53 @@ import {
   Eye,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
-import {
-  useManagementOversight,
-  useCompleteOversightTask,
-  type OversightTask,
-} from "@/hooks/use-oversight-queues";
 import { useAuthContext } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import Link from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined from (deleted) src/hooks/use-oversight-queues.ts ──────────────────
+
+interface OversightTask extends Task {
+  care_event: Pick<CareEvent, "id" | "title" | "category" | "event_date" | "status" | "staff_id" | "child_id"> | null;
+}
+
+interface OversightMeta {
+  total: number;
+  active: number;
+  urgent: number;
+  overdue: number;
+}
+
+function useManagementOversight(params?: { status?: string; priority?: string; child_id?: string }) {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set("status", params.status);
+  if (params?.priority) searchParams.set("priority", params.priority);
+  if (params?.child_id) searchParams.set("child_id", params.child_id);
+  const qs = searchParams.toString();
+
+  return useQuery({
+    queryKey: ["management-oversight", params],
+    queryFn: () =>
+      api.get<{ data: OversightTask[]; meta: OversightMeta }>(
+        `/management-oversight${qs ? `?${qs}` : ""}`
+      ),
+  });
+}
+
+function useCompleteOversightTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { task_id: string; completed_by: string; evidence_note?: string }) =>
+      api.patch<{ data: Task }>("/management-oversight", { ...payload, action: "complete" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["management-oversight"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["care-events"] });
+    },
+  });
+}
 
 // ── Status / priority colours ─────────────────────────────────────────────────
 

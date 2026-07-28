@@ -21,7 +21,7 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { useOutcomes, useCreateOutcomeReview, useCreateOutcomeTarget } from "@/hooks/use-outcomes";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName } from "@/lib/seed-data";
@@ -41,6 +41,103 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined from former hook wrapper: use-outcomes ──────────────────────────
+
+interface OutcomesResponse {
+  data: OutcomeTarget[];
+  reviews: OutcomeReview[];
+  meta: {
+    total_targets: number;
+    active_targets: number;
+    improving: number;
+    stable: number;
+    declining: number;
+    achieved: number;
+    avg_rating: number;
+    reviews_due_soon: number;
+    total_reviews: number;
+  };
+  per_child: {
+    child_id: string;
+    active_targets: number;
+    avg_rating: number;
+    improving: number;
+    stable: number;
+    declining: number;
+  }[];
+  per_domain: {
+    domain: OutcomeDomain;
+    count: number;
+    avg_rating: number;
+    improving: number;
+    declining: number;
+  }[];
+}
+
+interface UseOutcomesParams {
+  childId?: string;
+  domain?: OutcomeDomain;
+}
+
+function useOutcomes(params?: UseOutcomesParams) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  if (params?.domain)  qs.set("domain", params.domain);
+
+  return useQuery<OutcomesResponse>({
+    queryKey: ["outcomes", params?.childId, params?.domain],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/outcomes?${qs.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch outcomes");
+      return res.json();
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+}
+
+function useCreateOutcomeTarget() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<OutcomeTarget>) => {
+      const res = await fetch("/api/v1/outcomes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create outcome target");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["outcomes"] }),
+  });
+}
+
+function useCreateOutcomeReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      target_id: string;
+      new_rating: OutcomeRating;
+      progress_notes: string;
+      yp_participated?: boolean;
+      yp_voice?: string;
+      barriers?: string;
+      next_steps?: string;
+      reviewer_id?: string;
+      reviewer_role?: string;
+    }) => {
+      const res = await fetch("/api/v1/outcomes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "review", ...data }),
+      });
+      if (!res.ok) throw new Error("Failed to create outcome review");
+      return res.json();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["outcomes"] }),
+  });
+}
 
 const OUTCOME_EXPORT_COLS: ExportColumn<OutcomeTarget>[] = [
   { header: "Young Person", accessor: (t) => getYPName(t.child_id) },

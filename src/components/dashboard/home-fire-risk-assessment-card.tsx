@@ -15,7 +15,21 @@ import {
   FileCheck, Timer, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEmergencyIntelligence } from "@/hooks/use-emergency-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { EmergencyIntelligenceResult } from "@/lib/engines/emergency-intelligence-engine";
+
+interface EmergencyIntelligenceResponse {
+  data: EmergencyIntelligenceResult;
+}
+
+function useEmergencyIntelligence() {
+  return useQuery({
+    queryKey: ["emergency-intelligence"],
+    queryFn: () => api.get<EmergencyIntelligenceResponse>("/emergency-intelligence"),
+    refetchInterval: 60_000,
+  });
+}
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 

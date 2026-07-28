@@ -1,10 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useOutcomeIntelligence } from "@/hooks/use-outcome-intelligence";
-import type { OutcomeStatus } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { OutcomeStatus, OutcomeIntelligence } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
 import { cn } from "@/lib/utils";
 import { Target, TrendingUp, TrendingDown, Minus, ArrowRight, Loader2 } from "lucide-react";
+
+function useOutcomeIntelligence(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["outcome-intelligence", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (
+        await api.get<{ data: OutcomeIntelligence }>(
+          `/outcome-intelligence?child_id=${encodeURIComponent(childId!)}`,
+        )
+      ).data,
+  });
+}
 
 const STATUS: Record<OutcomeStatus, { label: string; badge: string; pill: string }> = {
   on_track: { label: "On track", badge: "bg-emerald-100 text-emerald-800 border-emerald-200", pill: "bg-emerald-50 text-emerald-700" },

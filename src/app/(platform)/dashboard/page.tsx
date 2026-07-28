@@ -16,10 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar } from "@/components/ui/avatar";
 import { PriorityCard } from "@/components/ui/priority-card";
-import { useCareEvents } from "@/hooks/use-care-events";
+import type { CareEvent, CareEventStatus, CareEventCategory } from "@/types/care-events";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { careToast } from "@/lib/toast";
-import { useCompleteTask } from "@/hooks/use-tasks";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { cn, todayStr, formatRelative, isOverdue, isDueToday } from "@/lib/utils";
 import type { Task, Incident, YoungPerson, Shift } from "@/types";
@@ -37,6 +36,23 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { TaskSlaCard } from "@/components/dashboard/task-sla-card";
 import { CommandCentreHero } from "@/components/dashboard/command-centre-hero";
 import { TodayBand } from "@/components/dashboard/today-band";
+
+// ── Tasks mutation (inlined from use-tasks) ────────────────────────────────────
+
+function useCompleteTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, by, note }: { id: string; by: string; note?: string }) =>
+      api.patch(`/tasks/${id}`, { action: "complete", completed_by: by, evidence_note: note }),
+    onSuccess: () => {
+      careToast.taskCompleted("Task marked as complete");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["health-check"] });
+    },
+    onError: () => careToast.actionFailed("Complete task"),
+  });
+}
 
 // ── Dynamic imports — loaded on demand to prevent browser memory crash ────────
 
@@ -1213,6 +1229,51 @@ function getDashboardConfig(role: AppRole): DashboardConfig {
     zoneBLabel:          "B  ·  Today's operation",
     zoneBDescription:    "Shift coverage, medication, active tasks, and daily intelligence",
   };
+}
+
+// ── Inlined from former hook wrapper: use-care-events (useCareEvents only) ──
+
+interface CareEventsParams {
+  child_id?: string;
+  status?: CareEventStatus;
+  category?: CareEventCategory;
+  date?: string;
+  days?: number;
+  page?: number;
+  limit?: number;
+}
+
+interface CareEventsResponse {
+  data: CareEvent[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+    status_counts: Record<string, number>;
+  };
+}
+
+function useCareEvents(params?: CareEventsParams) {
+  const query = new URLSearchParams();
+  if (params?.child_id) query.set("child_id", params.child_id);
+  if (params?.status) query.set("status", params.status);
+  if (params?.category) query.set("category", params.category);
+  if (params?.date) query.set("date", params.date);
+  if (params?.days !== undefined) query.set("days", String(params.days));
+  if (params?.page !== undefined) query.set("page", String(params.page));
+  if (params?.limit !== undefined) query.set("limit", String(params.limit));
+
+  return useQuery({
+    queryKey: ["care-events", params],
+    queryFn: () => api.get<CareEventsResponse>(`/care-events?${query}`),
+    // Poll faster if any events are in transient routing states
+    refetchInterval: (query) => {
+      const data = query.state.data?.data ?? [];
+      const hasRouting = data.some((e) => e.status === "routing" || e.status === "submitted");
+      return hasRouting ? 5_000 : 30_000;
+    },
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

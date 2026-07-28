@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -21,10 +22,6 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  useMissingEpisodes, useCreateMissingEpisode, useUpdateMissingEpisode,
-  type PatternAnalysis,
-} from "@/hooks/use-missing-episodes";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import type { MissingEpisode } from "@/types/extended";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -48,6 +45,72 @@ import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-prac
 import { InlinePracticeModules } from "@/components/intelligence/practice-module-panels";
 import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
 import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
+
+// ── Inlined from the former use-missing-episodes hook ─────────────────────────
+interface PatternAnalysis {
+  child_id: string;
+  child_name: string;
+  total_episodes: number;
+  avg_duration_hours: number;
+  highest_risk: string;
+  contextual_risk: boolean;
+  return_interview_outstanding: boolean;
+  last_episode_date: string | null;
+}
+type MissingEpisodesListResponse<T> = {
+  data: T[];
+  meta: {
+    total: number;
+    active: number;
+    this_month: number;
+    this_year: number;
+    contextual_risk: number;
+    unresolved: number;
+  };
+  pattern_analysis: PatternAnalysis[];
+};
+type MissingEpisodesSingleResponse<T> = { data: T };
+
+function useMissingEpisodes(params: {
+  homeId?: string;
+  childId?: string;
+  status?: "all" | "active" | "closed";
+}) {
+  const qs = new URLSearchParams();
+  if (params.childId) qs.set("child_id", params.childId);
+  if (params.status && params.status !== "all") qs.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["missing-episodes", params],
+    queryFn: () =>
+      api.get<MissingEpisodesListResponse<MissingEpisode>>(`/missing-episodes?${qs.toString()}`),
+  });
+}
+
+function useCreateMissingEpisode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MissingEpisode>) =>
+      api.post<MissingEpisodesSingleResponse<MissingEpisode>>("/missing-episodes", data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["missing-episodes"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["sidebar-counts"] });
+    },
+  });
+}
+
+function useUpdateMissingEpisode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Partial<MissingEpisode>) =>
+      api.patch<MissingEpisodesSingleResponse<MissingEpisode>>(`/missing-episodes/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["missing-episodes"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
 
 const MFC_EXPORT_COLS: ExportColumn<MissingEpisode>[] = [
   { header: "Reference", accessor: (e) => e.reference },

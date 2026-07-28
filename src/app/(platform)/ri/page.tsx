@@ -9,6 +9,8 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
+import { currentUserId } from "@/lib/auth/current-user";
+import type { Supervision } from "@/types";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,13 +22,35 @@ import {
   useRiGovernanceReports,
   useTrainingNeeds,
 } from "@/hooks/use-ri-learning";
-import { useSupervisions } from "@/hooks/use-supervision";
-import { useTraining } from "@/hooks/use-training";
+import type { TrainingRecord } from "@/types";
 
 // Types from use-audits
 export interface AuditsResponse {
   data: any[];
   meta: { total: number; completed: number; scheduled: number; in_progress: number; overdue: number };
+}
+
+// ── Inlined from the former use-training hook ─────────────────────────────────
+interface TrainingMeta {
+  total: number;
+  compliant: number;
+  expiring: number;
+  expired: number;
+  not_started: number;
+  rate: number;
+}
+
+function useTraining(params?: { staff_id?: string; status?: string; category?: string }) {
+  const query = new URLSearchParams();
+  if (params?.staff_id) query.set("staff_id", params.staff_id);
+  if (params?.status) query.set("status", params.status);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["training", params],
+    queryFn: () =>
+      api.get<{ data: TrainingRecord[]; meta: TrainingMeta }>(`/training?${query}`),
+  });
 }
 import { computeRiScores } from "@/lib/ri/compute-scores";
 import { below, meets } from "@/lib/metrics/rate";
@@ -43,6 +67,42 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
+// ── Inlined from use-supervision ────────────────────────────────────────────────
+const SUPERVISION_API = "/api/v1/supervision";
+
+function supervisionAuthHeaders() {
+  return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
+}
+
+interface SupervisionListResponse {
+  data: Supervision[];
+  meta: {
+    total: number;
+    overdue: number;
+    due_soon: number;
+    scheduled: number;
+    completed: number;
+    today: string;
+  };
+}
+
+const SUPERVISION_KEYS = {
+  all:    ["supervisions"] as const,
+  list:   (params?: Record<string, string>) => ["supervisions", "list", params] as const,
+  detail: (id: string) => ["supervisions", "detail", id] as const,
+};
+
+function useSupervisions(params?: Record<string, string>) {
+  const query = params ? "?" + new URLSearchParams(params).toString() : "";
+  return useQuery<SupervisionListResponse>({
+    queryKey: SUPERVISION_KEYS.list(params),
+    queryFn: async () => {
+      const res = await fetch(`${SUPERVISION_API}${query}`, { headers: supervisionAuthHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch supervisions");
+      return res.json();
+    },
+  });
+}
 
 // ── Score pill ─────────────────────────────────────────────────────────────────
 function ScorePill({ score, size = "md" }: { score: number | null; size?: "sm" | "md" | "lg" }) {

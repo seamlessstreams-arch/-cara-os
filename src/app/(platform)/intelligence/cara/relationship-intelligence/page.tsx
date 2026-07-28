@@ -2,13 +2,14 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { useRelationalTimeline } from "@/hooks/use-relational-timeline";
-import { useEmotionalSafety } from "@/hooks/use-emotional-safety";
-import { useOutcomeIntelligence } from "@/hooks/use-outcome-intelligence";
-import type { OutcomeStatus } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
+import { api } from "@/hooks/use-api";
+import type { RelationalTimeline } from "@/lib/relational-timeline/relational-timeline-engine";
+import type { EmotionalSafetyAnalysis } from "@/lib/emotional-safety/emotional-safety-engine";
+import type { OutcomeStatus, OutcomeIntelligence } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
 import { cn } from "@/lib/utils";
 import {
   Sparkles,
@@ -24,6 +25,45 @@ import {
   Lightbulb,
   Target,
 } from "lucide-react";
+
+function useRelationalTimeline(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["relational-timeline", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (
+        await api.get<{ data: RelationalTimeline }>(
+          `/relational-timeline?child_id=${encodeURIComponent(childId!)}`,
+        )
+      ).data,
+  });
+}
+
+function useEmotionalSafety(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["emotional-safety", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (
+        await api.get<{ data: EmotionalSafetyAnalysis }>(
+          `/emotional-safety?child_id=${encodeURIComponent(childId!)}`,
+        )
+      ).data,
+  });
+}
+
+function useOutcomeIntelligence(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["outcome-intelligence", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (
+        await api.get<{ data: OutcomeIntelligence }>(
+          `/outcome-intelligence?child_id=${encodeURIComponent(childId!)}`,
+        )
+      ).data,
+  });
+}
 
 const OUTCOME_STATUS: Record<OutcomeStatus, { label: string; badge: string; pill: string }> = {
   on_track: { label: "On track", badge: "bg-emerald-100 text-emerald-800 border-emerald-200", pill: "bg-emerald-50 text-emerald-700" },

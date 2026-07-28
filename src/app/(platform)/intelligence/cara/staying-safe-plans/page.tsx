@@ -1,23 +1,64 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { PrintButton } from "@/components/ui/print-button";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import {
-  useStayingSafePlanOverview,
-  useChildStayingSafePlan,
-  useCreateStayingSafePlan,
-  useUpdateStayingSafePlan,
-} from "@/hooks/use-staying-safe-plan";
 import { ZONE_META, type StayingSafePlan, type ZonePlan } from "@/lib/staying-safe-plan/types";
-import type { SafePlanFlag } from "@/lib/staying-safe-plan/staying-safe-plan-engine";
+import type { SafePlanFlag, SafePlanOverview, SafePlanAnalysis } from "@/lib/staying-safe-plan/staying-safe-plan-engine";
 import { cn } from "@/lib/utils";
 import {
   ShieldCheck, Loader2, AlertTriangle, Lightbulb, Info, CheckCircle2, Plus, X,
   Heart, Users, Sparkles, BookOpen, Baby, Briefcase,
 } from "lucide-react";
+
+// ── Inlined from (deleted) src/hooks/use-staying-safe-plan.ts ─────────────────
+
+/** Whole-home Staying Safe Plan overview + alerts. */
+function useStayingSafePlanOverview() {
+  return useQuery({
+    queryKey: ["staying-safe-plan", "overview"],
+    queryFn: async () => (await api.get<{ data: SafePlanOverview }>(`/staying-safe-plan`)).data,
+  });
+}
+
+interface ChildSafePlan {
+  childId: string;
+  childName: string;
+  plan: StayingSafePlan | null;
+  analysis: SafePlanAnalysis | null;
+}
+
+/** A single child's Staying Safe Plan + analysis (or null if none yet). */
+function useChildStayingSafePlan(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["staying-safe-plan", "child", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (await api.get<{ data: ChildSafePlan }>(`/staying-safe-plan?child_id=${encodeURIComponent(childId!)}`)).data,
+  });
+}
+
+function useCreateStayingSafePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { child_id: string } & Partial<StayingSafePlan>) =>
+      (await api.post<{ data: { plan: StayingSafePlan; analysis: SafePlanAnalysis } }>(`/staying-safe-plan`, payload)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["staying-safe-plan"] }),
+  });
+}
+
+function useUpdateStayingSafePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { id: string; approve?: boolean } & Partial<StayingSafePlan>) =>
+      (await api.patch<{ data: { plan: StayingSafePlan; analysis: SafePlanAnalysis } }>(`/staying-safe-plan`, payload)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["staying-safe-plan"] }),
+  });
+}
 
 const HOME_STATUS: Record<string, { label: string; badge: string }> = {
   settled: { label: "Settled", badge: "bg-emerald-100 text-emerald-800 border-emerald-200" },

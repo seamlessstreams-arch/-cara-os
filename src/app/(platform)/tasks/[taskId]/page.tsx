@@ -19,10 +19,9 @@ import {
 } from "lucide-react";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useStaff } from "@/hooks/use-staff";
-import {
-  useTask, useUpdateTask, useCompleteTask,
-  useSignOffTask, useEscalateTask, useCancelTask,
-} from "@/hooks/use-tasks";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import { careToast } from "@/lib/toast";
 import { useAuthContext } from "@/contexts/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -32,6 +31,107 @@ import type { Task } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ProvenanceBadge } from "@/components/forms/enter-once-indicator";
+
+// ── Tasks queries + mutations (inlined from use-tasks) ─────────────────────────
+
+/** Fetch a single task by ID. Falls back to seed data if API fails. */
+function useTask(id: string | null) {
+  return useQuery({
+    queryKey: ["task", id],
+    queryFn: () => api.get<{ data: Task }>(`/tasks/${id}`),
+    enabled: !!id,
+    select: (res) => res.data,
+  });
+}
+
+/** Update task fields (title, description, status, priority, due_date, etc.) */
+function useUpdateTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Task> }) =>
+      api.patch<{ data: Task }>(`/tasks/${id}`, data),
+    onSuccess: (_res, { id }) => {
+      qc.invalidateQueries({ queryKey: ["task", id] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+function useCompleteTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, by, note }: { id: string; by: string; note?: string }) =>
+      api.patch(`/tasks/${id}`, { action: "complete", completed_by: by, evidence_note: note }),
+    onSuccess: () => {
+      careToast.taskCompleted("Task marked as complete");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["health-check"] });
+    },
+    onError: () => careToast.actionFailed("Complete task"),
+  });
+}
+
+/** Sign off a completed task */
+function useSignOffTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, by }: { id: string; by: string }) =>
+      api.patch<{ data: Task }>(`/tasks/${id}`, {
+        action: "sign_off",
+        signed_off_by: by,
+        signed_off_at: new Date().toISOString(),
+      }),
+    onSuccess: (_res, { id }) => {
+      careToast.taskSignedOff("Task");
+      qc.invalidateQueries({ queryKey: ["task", id] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: () => careToast.actionFailed("Sign off task"),
+  });
+}
+
+/** Escalate a task to a senior staff member */
+function useEscalateTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      escalated_to,
+      reason,
+    }: {
+      id: string;
+      escalated_to: string;
+      reason: string;
+    }) =>
+      api.patch<{ data: Task }>(`/tasks/${id}`, {
+        action: "escalate",
+        escalated: true,
+        escalated_to,
+        escalation_reason: reason,
+        escalated_at: new Date().toISOString(),
+      }),
+    onSuccess: (_res, { id }) => {
+      qc.invalidateQueries({ queryKey: ["task", id] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+}
+
+/** Cancel / archive a task */
+function useCancelTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: string }) =>
+      api.patch<{ data: Task }>(`/tasks/${id}`, { status: "cancelled" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

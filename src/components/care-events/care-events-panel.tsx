@@ -35,10 +35,56 @@ import {
   Eye,
   Shield,
 } from "lucide-react";
-import { useCareEvents } from "@/hooks/use-care-events";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { cn, formatDate } from "@/lib/utils";
-import type { CareEventCategory, CareEventStatus } from "@/types/care-events";
+import type { CareEvent, CareEventCategory, CareEventStatus } from "@/types/care-events";
 import { CARE_EVENT_STATUS_LABEL, CARE_EVENT_CATEGORY_LABEL } from "@/types/care-events";
+
+// ── Inlined from former hook wrapper: use-care-events (useCareEvents only) ──
+
+interface CareEventsParams {
+  child_id?: string;
+  status?: CareEventStatus;
+  category?: CareEventCategory;
+  date?: string;
+  days?: number;
+  page?: number;
+  limit?: number;
+}
+
+interface CareEventsResponse {
+  data: CareEvent[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+    status_counts: Record<string, number>;
+  };
+}
+
+function useCareEvents(params?: CareEventsParams) {
+  const query = new URLSearchParams();
+  if (params?.child_id) query.set("child_id", params.child_id);
+  if (params?.status) query.set("status", params.status);
+  if (params?.category) query.set("category", params.category);
+  if (params?.date) query.set("date", params.date);
+  if (params?.days !== undefined) query.set("days", String(params.days));
+  if (params?.page !== undefined) query.set("page", String(params.page));
+  if (params?.limit !== undefined) query.set("limit", String(params.limit));
+
+  return useQuery({
+    queryKey: ["care-events", params],
+    queryFn: () => api.get<CareEventsResponse>(`/care-events?${query}`),
+    // Poll faster if any events are in transient routing states
+    refetchInterval: (query) => {
+      const data = query.state.data?.data ?? [];
+      const hasRouting = data.some((e) => e.status === "routing" || e.status === "submitted");
+      return hasRouting ? 5_000 : 30_000;
+    },
+  });
+}
 
 // ── Status styling ────────────────────────────────────────────────────────────
 

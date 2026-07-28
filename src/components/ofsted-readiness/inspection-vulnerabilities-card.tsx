@@ -8,10 +8,23 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldAlert, Loader2 } from "lucide-react";
-import { useSystemHealth } from "@/hooks/use-system-health";
+import type { SystemHealthReport } from "@/lib/system-health/types";
 import { mapHealthToVulnerabilities, groupVulnerabilitiesByArea, type InspectionVulnerability } from "@/lib/ofsted-readiness/vulnerability-alerts";
+
+// ── Inlined from the former use-system-health hook ────────────────────────────
+const INSPECTION_VULNERABILITIES_HEALTH_KEY = "system-health";
+const INSPECTION_VULNERABILITIES_HEALTH_URL = "/api/v1/system-health";
+
+function useSystemHealth() {
+  return useQuery<{ data: SystemHealthReport }>({
+    queryKey: [INSPECTION_VULNERABILITIES_HEALTH_KEY],
+    queryFn: () => fetch(INSPECTION_VULNERABILITIES_HEALTH_URL).then((r) => r.json()),
+    staleTime: 2 * 60 * 1000,
+  });
+}
 
 const SEV_CLASS: Record<string, string> = {
   critical: "border-red-300 bg-red-50 text-red-800",

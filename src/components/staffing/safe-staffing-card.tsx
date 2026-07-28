@@ -3,7 +3,20 @@
 import { Users, AlertTriangle, CheckCircle2, Moon, Sun, PhoneCall, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { useSafeStaffing } from "@/hooks/use-safe-staffing";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { SafeStaffingStatus } from "@/lib/staffing/safe-staffing-service";
+
+// ── Inlined from former hook wrapper: use-safe-staffing (useSafeStaffing) ──
+
+function useSafeStaffing() {
+  return useQuery({
+    queryKey: ["safe-staffing"],
+    queryFn: async () => (await api.get<{ data: SafeStaffingStatus }>("/safe-staffing")).data,
+    staleTime: 10_000,
+    refetchInterval: 30_000,
+  });
+}
 
 export function SafeStaffingCard() {
   const { data, isLoading } = useSafeStaffing();

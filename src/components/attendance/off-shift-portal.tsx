@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import type { ShiftAccessOverview } from "@/lib/permissions/shift-enforcement";
-import { useSafeStaffing } from "@/hooks/use-safe-staffing";
+import type { SafeStaffingStatus } from "@/lib/staffing/safe-staffing-service";
 import { useAuthContext } from "@/contexts/auth-context";
 
 /**
@@ -22,6 +22,17 @@ function useShiftAccess(preview = false) {
     queryFn: async () =>
       (await api.get<{ data: ShiftAccessOverview }>(`/access/shift-status${preview ? "?preview=1" : ""}`)).data,
     staleTime: 10_000,
+  });
+}
+
+// ── Inlined from former hook wrapper: use-safe-staffing (useSafeStaffing) ──
+
+function useSafeStaffing() {
+  return useQuery({
+    queryKey: ["safe-staffing"],
+    queryFn: async () => (await api.get<{ data: SafeStaffingStatus }>("/safe-staffing")).data,
+    staleTime: 10_000,
+    refetchInterval: 30_000,
   });
 }
 

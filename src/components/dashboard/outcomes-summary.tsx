@@ -10,13 +10,69 @@ import React from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useOutcomes } from "@/hooks/use-outcomes";
+import { useQuery } from "@tanstack/react-query";
+import type { OutcomeTarget, OutcomeReview, OutcomeDomain } from "@/types/extended";
 import { getYPName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import {
   Target, TrendingUp, TrendingDown, Minus, Star, Loader2,
   ChevronRight, AlertTriangle, User,
 } from "lucide-react";
+
+// ── Inlined from former hook wrapper: use-outcomes ──────────────────────────
+
+interface OutcomesResponse {
+  data: OutcomeTarget[];
+  reviews: OutcomeReview[];
+  meta: {
+    total_targets: number;
+    active_targets: number;
+    improving: number;
+    stable: number;
+    declining: number;
+    achieved: number;
+    avg_rating: number;
+    reviews_due_soon: number;
+    total_reviews: number;
+  };
+  per_child: {
+    child_id: string;
+    active_targets: number;
+    avg_rating: number;
+    improving: number;
+    stable: number;
+    declining: number;
+  }[];
+  per_domain: {
+    domain: OutcomeDomain;
+    count: number;
+    avg_rating: number;
+    improving: number;
+    declining: number;
+  }[];
+}
+
+interface UseOutcomesParams {
+  childId?: string;
+  domain?: OutcomeDomain;
+}
+
+function useOutcomes(params?: UseOutcomesParams) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  if (params?.domain)  qs.set("domain", params.domain);
+
+  return useQuery<OutcomesResponse>({
+    queryKey: ["outcomes", params?.childId, params?.domain],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/outcomes?${qs.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch outcomes");
+      return res.json();
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+}
 
 export function OutcomesSummary() {
   const { data, isLoading } = useOutcomes();

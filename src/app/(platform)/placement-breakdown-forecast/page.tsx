@@ -13,7 +13,22 @@ import {
   Minus, CalendarClock, ShieldCheck, ListChecks, Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePlacementBreakdownForecast } from "@/hooks/use-placement-breakdown-forecast";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { PlacementBreakdownForecastResult } from "@/lib/placement-breakdown-forecast/placement-breakdown-forecast-engine";
+
+interface PlacementBreakdownForecastResponse {
+  data: PlacementBreakdownForecastResult;
+}
+
+function usePlacementBreakdownForecast() {
+  return useQuery({
+    queryKey: ["placement-breakdown-forecast"],
+    queryFn: () =>
+      api.get<PlacementBreakdownForecastResponse>("/placement-breakdown-forecast"),
+    refetchInterval: 60_000, // 60 second refresh
+  });
+}
 
 const BAND_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
   critical: { bg: "bg-[--cs-risk-bg]", text: "text-[--cs-risk]", ring: "ring-[--cs-risk-soft]" },

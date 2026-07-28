@@ -47,10 +47,8 @@ function useChildExperienceLatest(childId: string) {
     enabled: !!childId,
   });
 }
-import { useCarePlans } from "@/hooks/use-care-plans";
-import { useOutcomes } from "@/hooks/use-outcomes";
 import { useAuthContext } from "@/contexts/auth-context";
-import type { CarePlan } from "@/types/extended";
+import type { CarePlan, OutcomeTarget, OutcomeReview, OutcomeDomain } from "@/types/extended";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -59,6 +57,75 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+
+// ── Inlined from former hook wrapper: use-outcomes (useOutcomes only) ───────
+
+interface OutcomesResponse {
+  data: OutcomeTarget[];
+  reviews: OutcomeReview[];
+  meta: {
+    total_targets: number;
+    active_targets: number;
+    improving: number;
+    stable: number;
+    declining: number;
+    achieved: number;
+    avg_rating: number;
+    reviews_due_soon: number;
+    total_reviews: number;
+  };
+  per_child: {
+    child_id: string;
+    active_targets: number;
+    avg_rating: number;
+    improving: number;
+    stable: number;
+    declining: number;
+  }[];
+  per_domain: {
+    domain: OutcomeDomain;
+    count: number;
+    avg_rating: number;
+    improving: number;
+    declining: number;
+  }[];
+}
+
+interface UseOutcomesParams {
+  childId?: string;
+  domain?: OutcomeDomain;
+}
+
+function useOutcomes(params?: UseOutcomesParams) {
+  const qs = new URLSearchParams();
+  if (params?.childId) qs.set("child_id", params.childId);
+  if (params?.domain)  qs.set("domain", params.domain);
+
+  return useQuery<OutcomesResponse>({
+    queryKey: ["outcomes", params?.childId, params?.domain],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/outcomes?${qs.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch outcomes");
+      return res.json();
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+}
+
+// ── Inlined from former hook wrapper: use-care-plans (useCarePlans only) ───
+
+type ListResponse<T> = { data: T[]; meta: Record<string, number> };
+
+function useCarePlans(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["care-plans", params.homeId],
+    queryFn:  () =>
+      api.get<ListResponse<CarePlan> & { meta: { total: number; attention_needed: number; lac_overdue: number } }>(
+        `/care-plans?home_id=${params.homeId}`
+      ),
+  });
+}
 
 const YP_EXPORT_COLS: ExportColumn<YPEnriched>[] = [
   { header: "First Name", accessor: (yp) => yp.preferred_name ?? yp.first_name },

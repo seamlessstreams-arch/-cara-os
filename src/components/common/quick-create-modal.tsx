@@ -19,7 +19,8 @@ import { cn } from "@/lib/utils";
 import { EntryAssist } from "@/components/forms/entry-assist";
 import { useStaff } from "@/hooks/use-staff";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { useCreateTask } from "@/hooks/use-tasks";
+import { api } from "@/hooks/use-api";
+import { careToast } from "@/lib/toast";
 import { useAuthContext } from "@/contexts/auth-context";
 import { currentUserId } from "@/lib/auth/current-user";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -29,6 +30,21 @@ import {
   CARE_FORM_TYPES, CARE_FORM_TYPE_LABELS,
 } from "@/lib/constants";
 import type { Task, CareForm } from "@/types";
+
+// ── Tasks mutation (inlined from use-tasks) ────────────────────────────────────
+
+function useCreateTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Task>) => api.post<{ data: Task }>("/tasks", data),
+    onSuccess: (_res, data) => {
+      careToast.taskCreated(data.title ?? "New task");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: () => careToast.actionFailed("Create task"),
+  });
+}
 
 // ── Context prefill interface ─────────────────────────────────────────────────
 

@@ -1,19 +1,18 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import {
-  useRightsRestrictionOverview,
-  useCreateRestrictionReview,
-} from "@/hooks/use-rights-restriction";
 import type {
   RestrictionAnalysis,
   RestrictionFlag,
+  RestrictionOverview,
 } from "@/lib/rights-restriction/rights-restriction-engine";
 import { RESTRICTION_KIND_LABEL } from "@/lib/rights-restriction/types";
-import type { RestrictionKind, YesNoUnknown } from "@/lib/rights-restriction/types";
+import type { RestrictionKind, YesNoUnknown, RestrictionReview } from "@/lib/rights-restriction/types";
 import { cn } from "@/lib/utils";
 import {
   Scale,
@@ -27,6 +26,28 @@ import {
   X,
   MessageCircle,
 } from "lucide-react";
+
+// ── Inlined from (deleted) src/hooks/use-rights-restriction.ts ────────────────
+
+/** Whole-home Rights, Liberty & Restriction overview + dashboard alerts. */
+function useRightsRestrictionOverview() {
+  return useQuery({
+    queryKey: ["rights-restriction", "overview"],
+    queryFn: async () => (await api.get<{ data: RestrictionOverview }>(`/rights-restriction`)).data,
+  });
+}
+
+/** Record a restriction review through the structured pathway. */
+function useCreateRestrictionReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<RestrictionReview>) =>
+      (await api.post<{ data: { review: RestrictionReview; analysis: RestrictionAnalysis } }>(`/rights-restriction`, payload)).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["rights-restriction"] });
+    },
+  });
+}
 
 const HOME_STATUS: Record<string, { label: string; badge: string }> = {
   settled: { label: "Settled", badge: "bg-emerald-100 text-emerald-800 border-emerald-200" },

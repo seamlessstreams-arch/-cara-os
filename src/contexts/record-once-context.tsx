@@ -17,11 +17,10 @@ import { useParams } from "next/navigation";
 import { getStore } from "@/lib/db/store";
 import { useYoungPerson, type YPEnriched } from "@/hooks/use-young-people";
 import { useStaffMember, type StaffEnriched } from "@/hooks/use-staff";
-import { useCarePlanByChild } from "@/hooks/use-care-plans";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
-import type { CarePlanGoal, RiskAssessment } from "@/types/extended";
+import type { CarePlanGoal, RiskAssessment, CarePlan } from "@/types/extended";
 
 interface RAResponse {
   data: RiskAssessment[];
@@ -35,6 +34,18 @@ function useRiskAssessments(params?: { childId?: string }) {
     queryKey: ["risk-assessments", params?.childId],
     queryFn: () => api.get<RAResponse>(`/risk-assessments?${qs.toString()}`),
     staleTime: 30_000,
+  });
+}
+
+// ── Inlined from former hook wrapper: use-care-plans (useCarePlanByChild only) ──
+
+type SingleResponse<T> = { data: T };
+
+function useCarePlanByChild(childId: string) {
+  return useQuery({
+    queryKey: ["care-plans", "child", childId],
+    queryFn:  () => api.get<SingleResponse<CarePlan>>(`/care-plans?child_id=${childId}`),
+    enabled:  !!childId,
   });
 }
 

@@ -11,8 +11,29 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useRiChallengeLogs, useRiAlerts, useRiReg45Evidence, useTrainingNeeds } from "@/hooks/use-ri-learning";
-import { useSupervisions } from "@/hooks/use-supervision";
-import { useTraining } from "@/hooks/use-training";
+
+// ── Inlined from the former use-training hook ─────────────────────────────────
+interface TrainingMeta {
+  total: number;
+  compliant: number;
+  expiring: number;
+  expired: number;
+  not_started: number;
+  rate: number;
+}
+
+function useTraining(params?: { staff_id?: string; status?: string; category?: string }) {
+  const query = new URLSearchParams();
+  if (params?.staff_id) query.set("staff_id", params.staff_id);
+  if (params?.status) query.set("status", params.status);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["training", params],
+    queryFn: () =>
+      api.get<{ data: TrainingRecord[]; meta: TrainingMeta }>(`/training?${query}`),
+  });
+}
 
 // Types from use-audits
 export interface AuditsResponse {
@@ -52,7 +73,7 @@ import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
-import type { Incident } from "@/types";
+import type { Incident, Supervision, TrainingRecord } from "@/types";
 
 // ── Incidents query (inlined from use-incidents) ──────────────────────────────
 
@@ -65,6 +86,43 @@ function useIncidents(params?: { status?: string; child_id?: string; needs_overs
   return useQuery({
     queryKey: ["incidents", params],
     queryFn: () => api.get<{ data: Incident[]; meta: Record<string, number> }>(`/incidents?${query}`),
+  });
+}
+
+// ── Inlined from use-supervision ────────────────────────────────────────────────
+const SUPERVISION_API = "/api/v1/supervision";
+
+function supervisionAuthHeaders() {
+  return { "Content-Type": "application/json", "X-User-Id": currentUserId() };
+}
+
+interface SupervisionListResponse {
+  data: Supervision[];
+  meta: {
+    total: number;
+    overdue: number;
+    due_soon: number;
+    scheduled: number;
+    completed: number;
+    today: string;
+  };
+}
+
+const SUPERVISION_KEYS = {
+  all:    ["supervisions"] as const,
+  list:   (params?: Record<string, string>) => ["supervisions", "list", params] as const,
+  detail: (id: string) => ["supervisions", "detail", id] as const,
+};
+
+function useSupervisions(params?: Record<string, string>) {
+  const query = params ? "?" + new URLSearchParams(params).toString() : "";
+  return useQuery<SupervisionListResponse>({
+    queryKey: SUPERVISION_KEYS.list(params),
+    queryFn: async () => {
+      const res = await fetch(`${SUPERVISION_API}${query}`, { headers: supervisionAuthHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch supervisions");
+      return res.json();
+    },
   });
 }
 

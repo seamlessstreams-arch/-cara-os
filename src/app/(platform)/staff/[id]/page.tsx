@@ -21,7 +21,9 @@ import { useTrainingNeeds } from "@/hooks/use-ri-learning";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
-import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
+import type { UploadedDocument } from "@/types/documents";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import type { TrainingRecord, Supervision, Task } from "@/types";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -33,6 +35,27 @@ import {
   FlaskConical, Flame, ShieldAlert, HeartPulse, Scale, Utensils,
   Users, BookMarked, XCircle,
 } from "lucide-react";
+
+// ── Inlined from use-doc-intelligence ──────────────────────────────────────────
+type DocListMeta = {
+  total: number;
+  awaiting_review: number;
+  high_risk: number;
+  tasks_created: number;
+  injection_detected: number;
+};
+
+function useDocumentIntelligence(params?: { status?: string; risk_level?: string; category?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.risk_level) query.set("risk_level", params.risk_level);
+  if (params?.category) query.set("category", params.category);
+  return useQuery({
+    queryKey: ["doc-intelligence", params],
+    queryFn: () => api.get<{ data: UploadedDocument[]; meta: DocListMeta }>(`/doc-intelligence?${query}`),
+    refetchInterval: 5000, // poll while documents may be analysing
+  });
+}
 
 // ── Status helpers ────────────────────────────────────────────────────────────
 

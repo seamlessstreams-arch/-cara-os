@@ -11,7 +11,8 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useCarePlans } from "@/hooks/use-care-plans";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/hooks/use-api";
 import { getYPName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import {
@@ -19,6 +20,20 @@ import {
   ChevronRight, Calendar, Target, Flame, Clock,
 } from "lucide-react";
 import type { CarePlan } from "@/types/extended";
+
+// ── Inlined from former hook wrapper: use-care-plans (useCarePlans only) ───
+
+type ListResponse<T> = { data: T[]; meta: Record<string, number> };
+
+function useCarePlans(params: { homeId: string }) {
+  return useQuery({
+    queryKey: ["care-plans", params.homeId],
+    queryFn:  () =>
+      api.get<ListResponse<CarePlan> & { meta: { total: number; attention_needed: number; lac_overdue: number } }>(
+        `/care-plans?home_id=${params.homeId}`
+      ),
+  });
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

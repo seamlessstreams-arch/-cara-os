@@ -4,12 +4,44 @@
 // practice-drift warnings, protective-factor weaknesses, relationship-depth map,
 // threshold watchlist, staff wellbeing (role-restricted) and the culture radar.
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, AlertTriangle, ShieldAlert, HeartPulse, Activity, Gauge, Compass, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCaraPracticeDashboard } from "@/hooks/use-cara-practice";
+import { currentUserId } from "@/lib/auth/current-user";
 import type { CaraSeverity } from "@/lib/cara-practice/types";
+import type { PracticeDashboard } from "@/lib/cara-practice/cara-dashboard";
+
+const PRACTICE_ROOT = "/api/cara/practice-intelligence";
+
+function practiceUserHeader(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  return { "x-user-id": currentUserId() };
+}
+
+async function practiceFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${PRACTICE_ROOT}${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...practiceUserHeader(), ...(options?.headers ?? {}) },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Request failed" }));
+    throw new Error(err.error || `Cara error ${res.status}`);
+  }
+  return res.json();
+}
+
+function useCaraPracticeDashboard(homeId?: string, childId?: string) {
+  const qs = new URLSearchParams();
+  if (homeId) qs.set("homeId", homeId);
+  if (childId) qs.set("childId", childId);
+  const s = qs.toString();
+  return useQuery({
+    queryKey: ["cara-practice-dashboard", homeId ?? null, childId ?? null],
+    queryFn: () => practiceFetch<{ data: PracticeDashboard & { meta: Record<string, unknown> } }>(`/dashboard${s ? `?${s}` : ""}`),
+  });
+}
 
 const SEV: Record<CaraSeverity, string> = {
   critical: "bg-red-100 text-red-800 border-red-300",

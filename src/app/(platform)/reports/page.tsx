@@ -14,12 +14,49 @@ import {
   ArrowUp, ArrowDown, Minus, Loader2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useTasks } from "@/hooks/use-tasks";
 import { api } from "@/hooks/use-api";
-import { useTraining } from "@/hooks/use-training";
 import { useStaff } from "@/hooks/use-staff";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import type { Incident, LeaveRequest } from "@/types";
+import type { Incident, LeaveRequest, TrainingRecord, Task } from "@/types";
+
+// ── Tasks query (inlined from use-tasks) ───────────────────────────────────────
+
+function useTasks(params?: { assigned_to?: string; status?: string; priority?: string; category?: string; overdue?: boolean }) {
+  const query = new URLSearchParams();
+  if (params?.assigned_to) query.set("assigned_to", params.assigned_to);
+  if (params?.status) query.set("status", params.status);
+  if (params?.priority) query.set("priority", params.priority);
+  if (params?.category) query.set("category", params.category);
+  if (params?.overdue) query.set("overdue", "true");
+
+  return useQuery({
+    queryKey: ["tasks", params],
+    queryFn: () => api.get<{ data: Task[]; meta: Record<string, number> }>(`/tasks?${query}`),
+  });
+}
+
+// ── Inlined from the former use-training hook ─────────────────────────────────
+interface TrainingMeta {
+  total: number;
+  compliant: number;
+  expiring: number;
+  expired: number;
+  not_started: number;
+  rate: number;
+}
+
+function useTraining(params?: { staff_id?: string; status?: string; category?: string }) {
+  const query = new URLSearchParams();
+  if (params?.staff_id) query.set("staff_id", params.staff_id);
+  if (params?.status) query.set("status", params.status);
+  if (params?.category) query.set("category", params.category);
+
+  return useQuery({
+    queryKey: ["training", params],
+    queryFn: () =>
+      api.get<{ data: TrainingRecord[]; meta: TrainingMeta }>(`/training?${query}`),
+  });
+}
 import { cn, todayStr } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";

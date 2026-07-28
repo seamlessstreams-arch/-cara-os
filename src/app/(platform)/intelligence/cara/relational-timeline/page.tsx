@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { useRelationalTimeline } from "@/hooks/use-relational-timeline";
+import { api } from "@/hooks/use-api";
 import type {
   RelationalLens,
   RelationalMoment,
   RelationalStatus,
+  RelationalTimeline,
 } from "@/lib/relational-timeline/relational-timeline-engine";
 import { cn, formatDate } from "@/lib/utils";
 import {
@@ -28,6 +30,19 @@ import {
   Lightbulb,
   Link2,
 } from "lucide-react";
+
+function useRelationalTimeline(childId: string | undefined) {
+  return useQuery({
+    queryKey: ["relational-timeline", childId],
+    enabled: !!childId,
+    queryFn: async () =>
+      (
+        await api.get<{ data: RelationalTimeline }>(
+          `/relational-timeline?child_id=${encodeURIComponent(childId!)}`,
+        )
+      ).data,
+  });
+}
 
 const LENS_CONFIG: Record<
   RelationalLens,
