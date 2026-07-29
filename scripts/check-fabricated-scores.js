@@ -135,6 +135,65 @@ const ALLOWED = new Map([
   ["src/lib/oversight/scoring.ts:pr:60", "neutral 60 default when the sub-score input is absent"],
   ["src/lib/oversight/scoring.ts:wf:60", "neutral 60 default when the sub-score input is absent"],
   ["src/lib/oversight/scoring.ts:required.length:100", "referralCompletionScore: nothing required ⇒ vacuously complete"],
+
+  // ── Baseline burn-down 2026-07-29: vacuously-complete + inverse-frequency ──
+  // Each was read at the source and judged. The through-line: the denominator
+  // in the fabricate-ternary means "nothing to score against", and the score
+  // is arithmetically the correct answer for a vacuous case (`0/0 = 100%`
+  // trivially). They stay ALLOWED rather than getting rewritten to null-safe
+  // rate() calls — the callers already interpret "no denominator" correctly.
+  [
+    "src/app/(platform)/regulation-44/page.tsx:recStats.total:100",
+    "recommendation completion % on a Reg 44 visit — no recommendations ⇒ vacuously complete",
+  ],
+  [
+    "src/app/(platform)/reports/page.tsx:totalTasks:100",
+    "per-staff completion rate — no tasks assigned ⇒ vacuously complete (nothing to complete)",
+  ],
+  [
+    "src/app/(platform)/supervision/page.tsx:totalDays:100",
+    "supervision-cycle elapsed % — 0 total days is a degenerate cycle; showing 100 is arithmetically correct (nothing/nothing) and only fires as a UI edge case",
+  ],
+  [
+    "src/app/api/cara/regulatory-pulse/route.ts:totalIncidents:100",
+    "oversight rate on this week's incidents — no incidents ⇒ nothing to oversight (inverse-frequency)",
+  ],
+  [
+    "src/app/api/v1/medication-safety/route.ts:totalDoses:100",
+    "MAR compliance rate — no doses administered means no medication regime this window; compliance is vacuous",
+  ],
+  [
+    "src/app/api/v1/routine-activity/route.ts:windowParam:90",
+    "sanitises `days` query param to 90-day default; not a score",
+  ],
+  [
+    "src/lib/ask-cara/governance-summary.ts:total:100",
+    "AI-governance compliance % — no governed AI calls in window ⇒ nothing to score against, vacuously compliant",
+  ],
+  [
+    "src/lib/attachment-relationships/attachment-relationships-engine.ts:totalConflicts:100",
+    "conflict-resolution rate — no conflicts ⇒ nothing to resolve, vacuously complete (inverse-frequency)",
+  ],
+  [
+    "src/lib/behaviour-trigger-patterns/behaviour-trigger-patterns-engine.ts:concerning_90d:100",
+    "strategy_coverage_pct: no concerning entries in 90d ⇒ nothing to strategise for, vacuously covered (inverse-frequency)",
+  ],
+  [
+    "src/lib/cara/contact-intelligence.ts:expectedTotal:1",
+    "0-1 scale contact-plan compliance — 0 expected contacts (no plan for period) ⇒ Math.min(1,...) is arithmetically 1, matches the 'family-contact:requirements.length:75' allowed reasoning",
+  ],
+  [
+    "src/lib/cara/emotional-wellbeing-intelligence.ts:totalPlanned:1",
+    "therapy attendance rate — active therapy with 0 planned sessions logged is unmeasured; documented 'no therapy, N/A' per the code comment above the return",
+  ],
+  [
+    "src/lib/cara/family-contact-intelligence.ts:totalWeight:75",
+    "NEUTRAL default (75, not flattering) — total weight of 0 means no family-contact requirements recorded and the weighted score defaults to neutral rather than to a pass",
+  ],
+  [
+    "src/lib/cara/health-intelligence.ts:input.actionsTotal:100",
+    "health-plan action progress % — no actions on the plan ⇒ nothing outstanding, vacuously complete",
+  ],
 ]);
 
 function walk(dir, out = []) {
