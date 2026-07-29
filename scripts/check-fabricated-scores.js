@@ -268,6 +268,81 @@ const ALLOWED = new Map([
     "src/lib/engines/child-behaviour-safety-intelligence-engine.ts:d:100",
     "the shared pct(n,d) helper duplicated in each child-domain engine — d=0 returns 100 as a divide-by-zero fallback; call-site correctness depends on each caller's semantics (same trade-off as the family of duplicated pct helpers)",
   ],
+
+  // ── Baseline burn-down 2026-07-29 batch 3 ──
+  // The remaining 5 duplicated pct(n,d) helpers in child-domain engines
+  // (matching the child-behaviour-safety entry above), plus the
+  // home-safety domain (bathroom-shower + continence) which is
+  // uniformly inverse-frequency: 0 hazards / refusals / breaches =
+  // no adverse event to resolve.
+  [
+    "src/lib/engines/child-education-intelligence-engine.ts:d:100",
+    "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
+  ],
+  [
+    "src/lib/engines/child-health-intelligence-engine.ts:d:100",
+    "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
+  ],
+  [
+    "src/lib/engines/child-missing-intelligence-engine.ts:d:1",
+    "0-1 form of the duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
+  ],
+  [
+    "src/lib/engines/child-placement-quality-engine.ts:d:100",
+    "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
+  ],
+  [
+    "src/lib/engines/child-safeguarding-intelligence-engine.ts:d:100",
+    "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
+  ],
+  [
+    "src/lib/engines/child-voice-participation-engine.ts:d:100",
+    "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
+  ],
+  [
+    "src/lib/engines/health-wellbeing-engine.ts:totalChecks:100",
+    "overall pass rate on child health checks — 0 checks ⇒ nothing yet monitored; vacuously complete on a fresh tenant",
+  ],
+  [
+    "src/lib/engines/home-bathroom-shower-facilities-intelligence-engine.ts:hazardsFoundCount:100",
+    "correctiveActionRate — no hazards found ⇒ nothing to correct (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-bathroom-shower-facilities-intelligence-engine.ts:followUpRequiredCount:100",
+    "followUpCompletionRate — no follow-ups required ⇒ nothing to complete (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-bathroom-shower-facilities-intelligence-engine.ts:repairRequestedCount:100",
+    "repairCompletionRate — no repairs requested ⇒ nothing to complete (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-bathroom-shower-facilities-intelligence-engine.ts:childAffectedCount:100",
+    "alternativeProvidedRate — no children affected by facility issues ⇒ no accommodation needed (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-bathroom-shower-facilities-intelligence-engine.ts:hwCorrectiveRequiredCount:100",
+    "hwCorrectiveCompletionRate — no hot-water corrective actions required ⇒ nothing to complete (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-bathroom-shower-facilities-intelligence-engine.ts:privacyComplaintCount:100",
+    "complaintResolutionRate — no privacy complaints ⇒ nothing to resolve (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-behaviour-support-plan-effectiveness-intelligence-engine.ts:activeBSPsWithReviewDue:1",
+    "cascading divide-by-zero fallback (`X.length > 0 ? X.length : Y.length > 0 ? Y.length : 1`) to prevent NaN in the compliance rate denominator; the fallback of 1 is a divisor floor, not a score",
+  ],
+  [
+    "src/lib/engines/home-continence-personal-hygiene-support-intelligence-engine.ts:followUpPlanned:100",
+    "followUpCompletionRate — no follow-ups planned ⇒ nothing to complete (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-continence-personal-hygiene-support-intelligence-engine.ts:routinesRefused:100",
+    "refusalHandlingRate — no refusals ⇒ nothing to handle sensitively (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-data-protection-gdpr-compliance-intelligence-engine.ts:totalBreaches:100",
+    "on a composite compliance score, the risk-assessment dimension scores 100 when there were no breaches to risk-assess — inverse-frequency at the sub-dimension level, safe because the parent score is dominated by the other three dimensions",
+  ],
 ]);
 
 function walk(dir, out = []) {
