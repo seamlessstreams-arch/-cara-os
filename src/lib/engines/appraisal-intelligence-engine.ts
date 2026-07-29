@@ -81,7 +81,9 @@ export interface AppraisalOverview {
 export interface RatingBreakdown {
   rating: AppraisalRating;
   count: number;
-  percentage: number;
+  // null when there are no completed appraisals — "0% Outstanding" implies we have
+  // appraisals and none earned it, which is the wrong signal when we simply have none.
+  percentage: number | null;
 }
 
 export interface CompetencyAnalysis {
@@ -241,7 +243,7 @@ export function computeAppraisalIntelligence(
     return {
       rating: r,
       count,
-      percentage: completed.length > 0 ? Math.round((count / completed.length) * 100) : 0,
+      percentage: completed.length > 0 ? Math.round((count / completed.length) * 100) : null,
     };
   });
 

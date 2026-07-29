@@ -154,7 +154,9 @@ describe("computeRestraintIntelligence", () => {
 
       expect(result.overview.total_incidents_30d).toBe(0);
       expect(result.overview.total_incidents_90d).toBe(0);
-      expect(result.overview.avg_duration_minutes).toBe(0);
+      // Fab-0 fix: no restraints ⇒ null, not 0. A "0 min avg" reads as a restraint that lasted 0 minutes.
+      expect(result.overview.avg_duration_minutes).toBeNull();
+      expect(result.overview.max_duration_minutes).toBeNull();
       expect(result.overview.children_involved_30d).toBe(0);
       expect(result.overview.child_debrief_rate).toBeNull();
       expect(result.overview.team_teach_compliance_rate).toBeNull();

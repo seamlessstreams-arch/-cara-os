@@ -65,8 +65,8 @@ export interface RestraintIntelligenceInput {
 export interface RestraintOverview {
   total_incidents_30d: number;
   total_incidents_90d: number;
-  avg_duration_minutes: number;
-  max_duration_minutes: number;
+  avg_duration_minutes: number | null; // null on empty — "0 min avg" reads as a happened-but-instant restraint
+  max_duration_minutes: number | null; // null on empty — "0 min longest" implies at least one occurred
   children_involved_30d: number;
   incidents_with_injury: number;
   // null on every rate below = no restraint records in the window, so practice
@@ -210,8 +210,9 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
   const overview: RestraintOverview = {
     total_incidents_30d: within30d.length,
     total_incidents_90d: total90d,
-    avg_duration_minutes: Math.round(average(durations90d) * 10) / 10,
-    max_duration_minutes: durations90d.length > 0 ? Math.max(...durations90d) : 0,
+    // Null on empty — a "0 min avg / 0 min max" reads as a restraint that happened and lasted no time.
+    avg_duration_minutes: durations90d.length > 0 ? Math.round(average(durations90d) * 10) / 10 : null,
+    max_duration_minutes: durations90d.length > 0 ? Math.max(...durations90d) : null,
     children_involved_30d: childrenInvolved30d,
     incidents_with_injury: withInjury,
     child_debrief_rate: pct(childDebrief),

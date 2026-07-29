@@ -6,6 +6,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { below, formatRate, meets, rateOf } from "@/lib/metrics/rate";
+// Note: this engine already null-guards each downstream site of avgDuration via
+// `sessions90d.length > 0` — no need for `above()`; we swap raw comparisons for
+// helpers only where the compiler needs it (the widened type).
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -45,7 +48,7 @@ export interface SessionsProfile {
   total_90d: number;
   total_30d: number;
   avg_per_child_30d: number;
-  avg_duration_minutes: number;
+  avg_duration_minutes: number | null;  // null on no sessions in 90d — "0 min avg" implies sessions that lasted no time
   types_distribution: { type: string; count: number }[];
   child_voice_rate: number | null;      // % with child voice recorded, null = no sessions in 90d
   actions_per_session: number;          // avg actions agreed
@@ -150,7 +153,7 @@ export function computeHomeKeyWorking(
     : 0;
 
   const totalDuration = sessions90d.reduce((s, se) => s + se.duration_minutes, 0);
-  const avgDuration = sessions90d.length > 0 ? Math.round(totalDuration / sessions90d.length) : 0;
+  const avgDuration: number | null = sessions90d.length > 0 ? Math.round(totalDuration / sessions90d.length) : null;
 
   // Types distribution
   const typeMap: Record<string, number> = {};
@@ -329,9 +332,9 @@ export function computeHomeKeyWorking(
   else if (below(goalLinkedRate, 20)) score -= 2;
 
   // Duration quality (±4)
-  if (avgDuration >= 30) score += 3;
-  else if (avgDuration >= 20) score += 1;
-  else if (avgDuration < 15 && sessions90d.length > 0) score -= 2;
+  if (meets(avgDuration, 30)) score += 3;
+  else if (meets(avgDuration, 20)) score += 1;
+  else if (below(avgDuration, 15) && sessions90d.length > 0) score -= 2;
 
   // Type diversity (±3)
   if (typesDistribution.length >= 4) score += 3;
@@ -353,7 +356,7 @@ export function computeHomeKeyWorking(
   if (meets(followUpRate, 90)) strengths.push(`${formatRate(followUpRate)} of follow-up actions completed — demonstrating excellent continuity of support.`);
   if (actionsPerSession >= 2) strengths.push(`Average ${actionsPerSession} actions per session — sessions are purposeful and outcome-focused.`);
   if (typesDistribution.length >= 4) strengths.push("Sessions cover a diverse range of types (therapeutic, wellbeing, life skills, goals) — holistic approach to key working.");
-  if (avgDuration >= 30) strengths.push(`Average session duration of ${avgDuration} minutes — allowing meaningful engagement time.`);
+  if (meets(avgDuration, 30)) strengths.push(`Average session duration of ${avgDuration} minutes — allowing meaningful engagement time.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
@@ -364,7 +367,7 @@ export function computeHomeKeyWorking(
   if (below(childVoiceRate, 50)) concerns.push(`Only ${formatRate(childVoiceRate)} of sessions include the child's own voice — sessions may not be child-centred.`);
   if (below(followUpRate, 60)) concerns.push(`Only ${formatRate(followUpRate)} of follow-up actions completed — children may feel their concerns are not being addressed.`);
   if (positiveShiftRate < 30 && withMood.length > 0) concerns.push("Very few sessions show mood improvement — review the quality and approach of key working practice.");
-  if (avgDuration < 15 && sessions90d.length > 0) concerns.push(`Average session duration is only ${avgDuration} minutes — insufficient time for meaningful engagement.`);
+  if (below(avgDuration, 15) && sessions90d.length > 0) concerns.push(`Average session duration is only ${avgDuration} minutes — insufficient time for meaningful engagement.`);
   if (trend === "declining") concerns.push("Key working quality is declining — mood outcomes are worsening over recent sessions.");
 
   // ── Recommendations ───────────────────────────────────────────────────
@@ -411,7 +414,7 @@ export function computeHomeKeyWorking(
   if (trend === "improving") {
     insights.push({ text: "Key working quality is improving — mood outcomes are getting better over recent sessions.", severity: "positive" });
   }
-  if (avgDuration < 15 && sessions90d.length > 0) {
+  if (below(avgDuration, 15) && sessions90d.length > 0) {
     insights.push({ text: "Sessions averaging under 15 minutes may be too brief for meaningful therapeutic engagement. Consider whether time pressures are affecting quality.", severity: "warning" });
   }
 
@@ -445,7 +448,7 @@ export function computeHomeKeyWorking(
 // ── Empty Defaults ──────────────────────────────────────────────────────────
 
 function emptySessions(): SessionsProfile {
-  return { total_90d: 0, total_30d: 0, avg_per_child_30d: 0, avg_duration_minutes: 0, types_distribution: [], child_voice_rate: null, actions_per_session: 0, follow_up_rate: null, goal_linked_rate: null };
+  return { total_90d: 0, total_30d: 0, avg_per_child_30d: 0, avg_duration_minutes: null, types_distribution: [], child_voice_rate: null, actions_per_session: 0, follow_up_rate: null, goal_linked_rate: null };
 }
 
 function emptyMood(): MoodProfile {

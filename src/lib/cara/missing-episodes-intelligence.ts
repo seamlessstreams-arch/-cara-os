@@ -90,8 +90,8 @@ export interface MissingAssessment {
   totalEpisodes: number;
   missingEpisodes: number;
   absentEpisodes: number;
-  averageDurationMinutes: number;
-  longestEpisodeMinutes: number;
+  averageDurationMinutes: number | null;  // null on no episodes — "0 min avg" implies episodes that ended instantly
+  longestEpisodeMinutes: number | null;   // null on no episodes — "0 min longest" implies at least one occurred
   episodesLast30Days: number;
   episodesLast90Days: number;
   trend: "improving" | "stable" | "escalating";
@@ -157,10 +157,11 @@ export function analyseMissingEpisodes(input: MissingInput): MissingAssessment {
   const durations = episodes
     .map(e => e.durationMinutes ?? calculateDuration(e))
     .filter(d => d > 0);
-  const averageDuration = durations.length > 0
+  // Null on no episodes — a "0 min" avg/longest reads as an episode that ended instantly.
+  const averageDuration: number | null = durations.length > 0
     ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
-    : 0;
-  const longestDuration = durations.length > 0 ? Math.max(...durations) : 0;
+    : null;
+  const longestDuration: number | null = durations.length > 0 ? Math.max(...durations) : null;
 
   // ── Recent episodes ───────────────────────────────────────────────────
   const now = new Date();
@@ -286,7 +287,7 @@ function assessRiskLevel(
   input: MissingInput,
   episodes: MissingEpisode[],
   trend: string,
-  avgDuration: number,
+  avgDuration: number | null,
 ): "low" | "medium" | "high" | "very_high" {
   let riskPoints = 0;
 
@@ -299,10 +300,10 @@ function assessRiskLevel(
   else if (recent >= 3) riskPoints += 3;
   else if (recent >= 1) riskPoints += 1;
 
-  // Duration
-  if (avgDuration > 1440) riskPoints += 3; // >24h average
-  else if (avgDuration > 480) riskPoints += 2; // >8h
-  else if (avgDuration > 120) riskPoints += 1; // >2h
+  // Duration — null avgDuration (no episodes with a measured duration) adds no risk points.
+  if (avgDuration !== null && avgDuration > 1440) riskPoints += 3; // >24h average
+  else if (avgDuration !== null && avgDuration > 480) riskPoints += 2; // >8h
+  else if (avgDuration !== null && avgDuration > 120) riskPoints += 1; // >2h
 
   // Trend
   if (trend === "escalating") riskPoints += 3;
@@ -521,7 +522,7 @@ function identifyConcerns(
   episodes: MissingEpisode[],
   rhi: RHICompliance,
   trend: string,
-  avgDuration: number,
+  avgDuration: number | null,
   last30: number,
 ): MissingConcern[] {
   const concerns: MissingConcern[] = [];
@@ -550,14 +551,14 @@ function identifyConcerns(
     });
   }
 
-  // Long duration
-  if (avgDuration > 1440) {
+  // Long duration — null avgDuration (no episodes with measured duration) pushes no concern.
+  if (avgDuration !== null && avgDuration > 1440) {
     concerns.push({
       severity: "critical",
       category: "duration",
       description: `Average episode duration exceeds 24 hours`,
     });
-  } else if (avgDuration > 480) {
+  } else if (avgDuration !== null && avgDuration > 480) {
     concerns.push({
       severity: "significant",
       category: "duration",
@@ -868,8 +869,8 @@ function buildNoEpisodesAssessment(input: MissingInput): MissingAssessment {
     totalEpisodes: 0,
     missingEpisodes: 0,
     absentEpisodes: 0,
-    averageDurationMinutes: 0,
-    longestEpisodeMinutes: 0,
+    averageDurationMinutes: null, // no episodes ⇒ unmeasured, not "0 minutes on average"
+    longestEpisodeMinutes: null,  // no episodes ⇒ unmeasured, not "0 minutes at longest"
     episodesLast30Days: 0,
     episodesLast90Days: 0,
     trend: "stable",

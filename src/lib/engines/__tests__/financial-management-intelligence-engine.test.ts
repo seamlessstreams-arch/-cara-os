@@ -102,7 +102,9 @@ describe("empty state", () => {
     expect(r.overview.total_spend).toBe(0);
     expect(r.overview.pending_approval).toBe(0);
     expect(r.overview.missing_receipts).toBe(0);
-    expect(r.overview.avg_expense_amount).toBe(0);
+    // Was toBe(0) — fab-0 fix: no expenses ⇒ null, not 0.
+    // "£0 avg spend" reads as "we processed £0 expenses"; null is the honest signal.
+    expect(r.overview.avg_expense_amount).toBeNull();
     expect(r.overview.avg_approval_days).toBeNull();
     expect(r.category_spend).toHaveLength(0);
     expect(r.staff_spend).toHaveLength(0);

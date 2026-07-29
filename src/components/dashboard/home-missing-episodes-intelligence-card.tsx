@@ -173,8 +173,8 @@ export function HomeMissingEpisodesIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Episodes (180d)</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Total: <span className="font-medium text-slate-600">{d.episodes.total_180d}</span></p>
-                <p>Avg duration: <span className="font-medium text-slate-600">{d.episodes.avg_duration_hours}h</span></p>
-                <p>Longest: <span className={cn("font-medium", d.episodes.longest_duration_hours > 4 ? "text-[--cs-risk]" : "text-slate-600")}>{d.episodes.longest_duration_hours}h</span></p>
+                <p>Avg duration: <span className="font-medium text-slate-600">{typeof d.episodes.avg_duration_hours === "number" ? `${d.episodes.avg_duration_hours}h` : "—"}</span></p>
+                <p>Longest: <span className={cn("font-medium", typeof d.episodes.longest_duration_hours === "number" && d.episodes.longest_duration_hours > 4 ? "text-[--cs-risk]" : "text-slate-600")}>{typeof d.episodes.longest_duration_hours === "number" ? `${d.episodes.longest_duration_hours}h` : "—"}</span></p>
                 {d.episodes.open_episodes > 0 && <p>Open: <span className="font-medium text-red-600">{d.episodes.open_episodes}</span></p>}
                 {d.episodes.contextual_safeguarding_count > 0 && <p>CS risk: <span className="font-medium text-red-600">{d.episodes.contextual_safeguarding_count}</span></p>}
               </div>

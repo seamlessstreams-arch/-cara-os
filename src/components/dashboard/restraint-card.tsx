@@ -127,7 +127,7 @@ export function RestraintCard() {
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-blue-600">
-              {o.avg_duration_minutes}m
+              {typeof o.avg_duration_minutes === "number" ? `${o.avg_duration_minutes}m` : "—"}
             </p>
             <p className="text-[10px] text-muted-foreground">Avg Duration</p>
           </div>

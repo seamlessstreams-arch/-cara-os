@@ -5,7 +5,7 @@
 // CHR 2015 Reg 12, 34. SCCIF: "Safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -42,8 +42,8 @@ export interface EpisodeProfile {
   total_90d: number;
   total_180d: number;
   high_risk_count: number;
-  avg_duration_hours: number;
-  longest_duration_hours: number;
+  avg_duration_hours: number | null;      // null on no episodes — "0h avg" implies an episode with instant return
+  longest_duration_hours: number | null;  // null on no episodes — "0h longest" implies at least one occurred
   children_with_episodes: string[];
   repeat_children: string[];             // children with 2+ episodes in 180d
   police_reported_rate: number | null;   // % reported to police (high risk); null with no such episodes
@@ -135,10 +135,11 @@ export function computeHomeMissingEpisodes(
 
   const highRisk = eps180d.filter(e => e.risk_level === "high");
   const durations = eps180d.map(e => e.duration_hours);
-  const avgDuration = durations.length > 0
+  // Null on no episodes — a "0h avg / 0h longest" implies episodes that ended instantly.
+  const avgDuration: number | null = durations.length > 0
     ? Math.round((durations.reduce((s, v) => s + v, 0) / durations.length) * 10) / 10
-    : 0;
-  const longestDuration = durations.length > 0 ? Math.max(...durations) : 0;
+    : null;
+  const longestDuration: number | null = durations.length > 0 ? Math.max(...durations) : null;
 
   const childrenWithEps = [...new Set(eps180d.map(e => e.child_id))];
 
@@ -249,9 +250,9 @@ export function computeHomeMissingEpisodes(
   else if (repeatChildren.length === 1) score -= 3;
   else score -= 6;
 
-  // Duration (±5)
-  if (longestDuration > 6) score -= 5;
-  else if (longestDuration > 3) score -= 2;
+  // Duration (±5) — null longestDuration (no episodes) triggers neither deduction.
+  if (above(longestDuration, 6)) score -= 5;
+  else if (above(longestDuration, 3)) score -= 2;
 
   // Contextual safeguarding (±8)
   if (csCount === 0) score += 2;
@@ -292,7 +293,7 @@ export function computeHomeMissingEpisodes(
   if (below(riRate, 100) && eps180d.length > 0) concerns.push(`Return interview completion at ${formatRate(riRate)} — all children must have a return interview after every episode.`);
   if (escalating) concerns.push("Missing episodes are escalating in duration or frequency — intervention strategy needs review.");
   if (openEps > 0) concerns.push(`${openEps} missing episode${openEps > 1 ? "s" : ""} still open — ensure timely closure with documented outcomes.`);
-  if (longestDuration > 4) concerns.push(`Longest episode was ${longestDuration} hours — extended absences increase safeguarding risk.`);
+  if (above(longestDuration, 4)) concerns.push(`Longest episode was ${longestDuration} hours — extended absences increase safeguarding risk.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: MissingEpisodesRecommendation[] = [];
@@ -372,7 +373,7 @@ export function computeHomeMissingEpisodes(
 // ── Empty Defaults ──────────────────────────────────────────────────────────
 
 function emptyEpisodes(): EpisodeProfile {
-  return { total_90d: 0, total_180d: 0, high_risk_count: 0, avg_duration_hours: 0, longest_duration_hours: 0, children_with_episodes: [], repeat_children: [], police_reported_rate: null, la_reported_rate: null, return_interview_rate: null, contextual_safeguarding_count: 0, open_episodes: 0 };
+  return { total_90d: 0, total_180d: 0, high_risk_count: 0, avg_duration_hours: null, longest_duration_hours: null, children_with_episodes: [], repeat_children: [], police_reported_rate: null, la_reported_rate: null, return_interview_rate: null, contextual_safeguarding_count: 0, open_episodes: 0 };
 }
 
 function emptyPattern(): PatternProfile {

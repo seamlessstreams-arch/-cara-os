@@ -87,8 +87,9 @@ describe("no episodes", () => {
     expect(r.episodes.total_90d).toBe(0);
     expect(r.episodes.total_180d).toBe(0);
     expect(r.episodes.high_risk_count).toBe(0);
-    expect(r.episodes.avg_duration_hours).toBe(0);
-    expect(r.episodes.longest_duration_hours).toBe(0);
+    // Fab-0 fix: no episodes ⇒ null, not 0. "0h avg / 0h longest" implies episodes that ended instantly.
+    expect(r.episodes.avg_duration_hours).toBeNull();
+    expect(r.episodes.longest_duration_hours).toBeNull();
     expect(r.episodes.children_with_episodes).toEqual([]);
     expect(r.episodes.repeat_children).toEqual([]);
     expect(r.episodes.open_episodes).toBe(0);

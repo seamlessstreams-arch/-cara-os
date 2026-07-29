@@ -172,7 +172,7 @@ export default function RestraintIntelligencePage() {
           { label: "Incidents (30d)", value: ov.total_incidents_30d, alert: highFrequency },
           { label: "Incidents (90d)", value: ov.total_incidents_90d },
           { label: "Children involved (30d)", value: ov.children_involved_30d, alert: ov.children_involved_30d > 1 },
-          { label: "Avg duration", value: ov.avg_duration_minutes > 0 ? `${ov.avg_duration_minutes}min` : "—" },
+          { label: "Avg duration", value: typeof ov.avg_duration_minutes === "number" && ov.avg_duration_minutes > 0 ? `${ov.avg_duration_minutes}min` : "—" },
         ].map((m) => (
           <div key={m.label} className={`rounded-lg border p-4 ${m.alert ? "border-red-300 bg-red-50" : "border-slate-200 bg-white"}`}>
             <p className="text-xs text-slate-500">{m.label}</p>

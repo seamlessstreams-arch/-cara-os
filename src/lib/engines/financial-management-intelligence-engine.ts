@@ -74,7 +74,7 @@ export interface FinancialOverview {
   child_linked_spend: number;       // total amount linked to a child
   child_linked_count: number;
   approval_rate: number | null;     // pct of submitted that are approved/paid; null = nothing decided yet
-  avg_expense_amount: number;
+  avg_expense_amount: number | null; // null when no expenses — "£0 avg spend" reads as "we processed £0"
   avg_approval_days: number | null; // avg days from submitted to approved; null = nothing approved yet
 }
 
@@ -164,7 +164,7 @@ export function computeFinancialManagementIntelligence(
   const approvalRate = rateOf(approvedOrPaid, decidedExpenses);
 
   // Average expense amount
-  const avgAmount = expenses.length > 0 ? round2(totalSpend / expenses.length) : 0;
+  const avgAmount = expenses.length > 0 ? round2(totalSpend / expenses.length) : null;
 
   // Average approval turnaround
   const approvalDays = approvedOrPaid

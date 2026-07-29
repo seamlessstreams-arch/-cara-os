@@ -41,6 +41,9 @@ const INSIGHT_BORDER: Record<string, string> = {
 
 function RatingBar({ rb }: { rb: RatingBreakdown }) {
   const colors = RATING_COLORS[rb.rating] ?? { text: "text-slate-700", bg: "bg-slate-100", border: "border-slate-200" };
+  // percentage is null when there are no completed appraisals — bar collapses to 0%, label reads "—".
+  const barWidth = typeof rb.percentage === "number" ? `${rb.percentage}%` : "0%";
+  const label = typeof rb.percentage === "number" ? `${rb.percentage}%` : "—";
   return (
     <div className="flex items-center gap-3">
       <div className={`w-32 shrink-0 rounded border px-2 py-1 text-xs font-medium ${colors.text} ${colors.bg} ${colors.border}`}>
@@ -49,11 +52,11 @@ function RatingBar({ rb }: { rb: RatingBreakdown }) {
       <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
         <div
           className={`h-full rounded-full ${colors.bg.replace("100", "500")}`}
-          style={{ width: `${rb.percentage}%` }}
+          style={{ width: barWidth }}
         />
       </div>
       <span className="w-10 shrink-0 text-right text-xs text-slate-600">
-        {rb.count} ({rb.percentage}%)
+        {rb.count} ({label})
       </span>
     </div>
   );
