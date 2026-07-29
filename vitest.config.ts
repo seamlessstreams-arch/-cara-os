@@ -4,7 +4,7 @@ import path from "path";
 export default defineConfig({
   test: {
     globals: true,
-    exclude: ["node_modules", "e2e", "cornerstone-agent"],
+    exclude: ["node_modules", "e2e", "cornerstone-agent", ".claude/worktrees/**"],
     // vitest's 5s default is too tight for this repo. Importing the in-memory
     // store pulls in ~20.5k lines of seed, and suites that also use
     // vi.resetModules() pay that per case. Such a test passes alone in ~2.7s
