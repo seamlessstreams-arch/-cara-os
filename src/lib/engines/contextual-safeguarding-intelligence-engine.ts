@@ -16,6 +16,8 @@
 //   SCCIF: "Helped & Protected" — contextual safeguarding evidence
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate, below } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ExploitationScreeningInput {
@@ -56,7 +58,7 @@ export interface StaffRef {
 export interface ContextualSafeguardingOverview {
   children_screened: number;
   total_children: number;
-  screening_coverage_rate: number;
+  screening_coverage_rate: number | null;
   high_risk_children: number;
   moderate_risk_children: number;
   emerging_risk_children: number;
@@ -273,9 +275,11 @@ function computeOverview(
   const childrenScreened = childrenScreenedSet.size;
   const totalChildren = children.length;
 
-  const screeningCoverageRate = totalChildren === 0
-    ? 100
-    : Math.round((childrenScreened / totalChildren) * 100);
+  // Null on an empty roster — a fresh home hasn't screened anyone because there
+  // is no one to screen, and a dashboard tile reading "100% coverage" tells a
+  // manager to stop looking. rate() returns null; callers already check
+  // `total_children > 0` before treating the value as evidence of coverage.
+  const screeningCoverageRate = rate(childrenScreened, totalChildren);
 
   const highRiskChildren = childRiskProfiles.filter(
     (p) => p.highest_risk_level === "high"
@@ -379,11 +383,12 @@ function computeAlerts(
     }
   }
 
-  // MEDIUM: Coverage rate below 80%
+  // MEDIUM: Coverage rate below 80% — null on an empty roster (no children to
+  // screen yet) so an empty home neither fabricates 100% coverage nor alerts.
   const childrenScreenedSet = new Set(screenings.map((s) => s.child_id));
   const totalChildren = children.length;
-  const coverageRate = totalChildren === 0 ? 100 : Math.round((childrenScreenedSet.size / totalChildren) * 100);
-  if (coverageRate < 80) {
+  const coverageRate = rate(childrenScreenedSet.size, totalChildren);
+  if (below(coverageRate, 80)) {
     alerts.push({
       severity: "medium",
       message: `Screening coverage is at ${coverageRate}% — below the 80% target`,
@@ -395,10 +400,8 @@ function computeAlerts(
   const actualScreenedCombinations = new Set(
     screenings.map((s) => `${s.child_id}:${s.screening_type}`)
   ).size;
-  const fullCoverageRate = totalPossibleScreenings === 0
-    ? 100
-    : Math.round((actualScreenedCombinations / totalPossibleScreenings) * 100);
-  if (fullCoverageRate < 80) {
+  const fullCoverageRate = rate(actualScreenedCombinations, totalPossibleScreenings);
+  if (below(fullCoverageRate, 80)) {
     alerts.push({
       severity: "medium",
       message: `Full screening coverage across all types is ${fullCoverageRate}% — not all children screened for all exploitation types`,

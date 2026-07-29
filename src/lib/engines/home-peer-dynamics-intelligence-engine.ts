@@ -5,6 +5,8 @@
 // SCCIF: "Children feel safe with each other and with staff."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate, meets, below } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface PeerEntryInput {
@@ -367,10 +369,13 @@ export function computeHomePeerDynamics(
   score += mod7;
 
   // mod8: Coverage completeness (±3)
-  // Expected pairs = n*(n-1)/2 for n children
+  // Expected pairs = n*(n-1)/2 for n children — null when there are < 2
+  // children (no pairs are possible, so coverage is not measurable). Neutral
+  // score in that case rather than a fabricated 100%.
   const expectedPairs = (total_children * (total_children - 1)) / 2;
-  const coverageRate = expectedPairs === 0 ? 100 : pct(peer_dynamics.length, expectedPairs);
+  const coverageRate = rate(peer_dynamics.length, expectedPairs);
   const mod8 =
+    coverageRate === null ? 0 :
     coverageRate >= 80 ? 3 :
     coverageRate >= 50 ? 1 :
     coverageRate >= 25 ? 0 : -2;
@@ -389,7 +394,7 @@ export function computeHomePeerDynamics(
   if (review_profile.overdue_reviews === 0 && peer_dynamics.length > 0) strengths.push("All peer relationship reviews are up to date.");
   if (group_profile.latest_atmosphere === "calm") strengths.push("Latest group assessment indicates a calm atmosphere in the home.");
   if (strategy_profile.pairs_needing_strategies === 0 && highRiskPairs.length > 0) strengths.push("All strained/conflicted relationships have documented strategies.");
-  if (coverageRate >= 80) strengths.push(`${coverageRate}% of possible peer pairings have been assessed — comprehensive monitoring.`);
+  if (meets(coverageRate, 80)) strengths.push(`${coverageRate}% of possible peer pairings have been assessed — comprehensive monitoring.`);
   if (entry_profile.mediations > 0) strengths.push(`${entry_profile.mediations} mediation(s) recorded — active conflict resolution practice.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -401,7 +406,7 @@ export function computeHomePeerDynamics(
   if (group_profile.latest_atmosphere === "tense") concerns.push("Latest group assessment indicates tension — risk of escalation.");
   if (strategy_profile.pairs_needing_strategies > 0) concerns.push(`${strategy_profile.pairs_needing_strategies} strained/conflicted relationship(s) have no documented management strategies.`);
   if (entry_profile.incidents > entry_profile.positive_interactions && entry_profile.total_entries > 0) concerns.push("More peer incidents than positive interactions recorded — negative dynamic prevailing.");
-  if (coverageRate < 50 && expectedPairs > 0) concerns.push(`Only ${coverageRate}% of possible peer pairings assessed — significant monitoring gaps.`);
+  if (below(coverageRate, 50) && expectedPairs > 0) concerns.push(`Only ${coverageRate}% of possible peer pairings assessed — significant monitoring gaps.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recommendations: Recommendation[] = [];
@@ -447,7 +452,7 @@ export function computeHomePeerDynamics(
       regulatory_ref: null,
     });
   }
-  if (coverageRate < 80 && expectedPairs > 0) {
+  if (below(coverageRate, 80) && expectedPairs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Assess remaining peer pairings to achieve comprehensive coverage.",

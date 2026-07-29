@@ -143,7 +143,7 @@ describe("empty inputs", () => {
     const r = run([], [], { children: [] });
     expect(r.overview.children_screened).toBe(0);
     expect(r.overview.total_children).toBe(0);
-    expect(r.overview.screening_coverage_rate).toBe(100);
+    expect(r.overview.screening_coverage_rate).toBeNull(); // not 100 — nothing to cover
     expect(r.overview.overdue_screenings).toBe(0);
     expect(r.overview.referrals_made).toBe(0);
   });
@@ -754,9 +754,9 @@ describe("screening coverage edge cases", () => {
 // ── Overview Calculations ───────────────────────────────────────────────────
 
 describe("overview calculations", () => {
-  it("screening_coverage_rate is 100 when no children", () => {
+  it("screening_coverage_rate is null when there are no children (an empty roster has nothing to cover, not 100% coverage)", () => {
     const r = run([], [], { children: [] });
-    expect(r.overview.screening_coverage_rate).toBe(100);
+    expect(r.overview.screening_coverage_rate).toBeNull();
   });
 
   it("screening_coverage_rate rounds to nearest integer", () => {

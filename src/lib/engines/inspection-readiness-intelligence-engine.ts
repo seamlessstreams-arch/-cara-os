@@ -7,7 +7,7 @@
 // CHR 2015 (all regulations). SCCIF: All three judgment areas.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meanOf, meets, below } from "@/lib/metrics/rate";
+import { meanOf, meets, below, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -611,19 +611,25 @@ function buildComplianceMatrix(input: InspectionReadinessInput): ComplianceItem[
     detail: `${input.staff_compliance.staff_with_overdue_training} staff need training`,
   });
 
+  // Care plan / risk assessment rate over children — null on an empty roster
+  // (fresh home with no admitted children yet), not a fabricated 100%. The
+  // compliant flag follows suit: 0/0 is "no evidence", not "fully compliant".
+  const carePlanRate = rate(input.children_plans.children_with_current_care_plan, input.total_children);
+  const riskAssessmentRate = rate(input.children_plans.children_with_current_risk_assessment, input.total_children);
+
   items.push({
     area: "Care Plans",
     regulation: "Reg 9",
-    compliant: input.children_plans.children_with_current_care_plan >= input.total_children,
-    rate: input.total_children > 0 ? Math.round((input.children_plans.children_with_current_care_plan / input.total_children) * 100) : 100,
+    compliant: meets(carePlanRate, 100),
+    rate: carePlanRate,
     detail: `${input.children_plans.children_with_current_care_plan}/${input.total_children} current`,
   });
 
   items.push({
     area: "Risk Assessments",
     regulation: "Reg 12",
-    compliant: input.children_plans.children_with_current_risk_assessment >= input.total_children,
-    rate: input.total_children > 0 ? Math.round((input.children_plans.children_with_current_risk_assessment / input.total_children) * 100) : 100,
+    compliant: meets(riskAssessmentRate, 100),
+    rate: riskAssessmentRate,
     detail: `${input.children_plans.children_with_current_risk_assessment}/${input.total_children} current`,
   });
 
