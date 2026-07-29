@@ -343,6 +343,75 @@ const ALLOWED = new Map([
     "src/lib/engines/home-data-protection-gdpr-compliance-intelligence-engine.ts:totalBreaches:100",
     "on a composite compliance score, the risk-assessment dimension scores 100 when there were no breaches to risk-assess — inverse-frequency at the sub-dimension level, safe because the parent score is dominated by the other three dimensions",
   ],
+
+  // ── Baseline burn-down 2026-07-29 batch 4 ──
+  // Home-domain intelligence engines: uniformly inverse-frequency
+  // (zero adverse events ⇒ vacuously safe) or divide-by-zero
+  // fallbacks that aren't scores.
+  [
+    "src/lib/engines/home-financial-wellbeing-intelligence-engine.ts:minAmt:1",
+    "divide-by-zero fallback in a maxAmt/minAmt ratio (99 is a sentinel high ratio meaning 'no minimum to compare'); not a score",
+  ],
+  [
+    "src/lib/engines/home-financial-wellbeing-intelligence-engine.ts:minAmt:99",
+    "the 99 sentinel value the guard reads as flattering; see the :minAmt:1 twin above — same site, same reasoning",
+  ],
+  [
+    "src/lib/engines/home-health-monitoring-intelligence-engine.ts:totalMissed:100",
+    "catch-up rate on missed immunisations — 0 missed ⇒ vacuously caught up (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-meeting-governance-intelligence-engine.ts:total:100",
+    "per-meeting attendance rate — 0 attendees expected ⇒ vacuous (0/0)",
+  ],
+  [
+    "src/lib/engines/home-night-care-quality-intelligence-engine.ts:uniqueCheckDates:1",
+    "divide-by-zero fallback for night-check coverage denominator; not a score",
+  ],
+  [
+    "src/lib/engines/home-participation-intelligence-engine.ts:totalPrevActions:100",
+    "prior-actions completion rate — no prior actions to follow through on ⇒ vacuously complete",
+  ],
+  [
+    "src/lib/engines/home-pocket-money-distribution-equity-intelligence-engine.ts:t.due:1",
+    "per-child pocket-money payment ratio (0-1) — 0 due ⇒ vacuously fully paid (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-policy-compliance-intelligence-engine.ts:p.total_staff_required:100",
+    "per-policy acknowledgement rate — 0 staff required to acknowledge ⇒ vacuously complete",
+  ],
+  [
+    "src/lib/engines/home-safeguarding-depth-intelligence-engine.ts:s.actions_set:100",
+    "per-supervision action-completion rate — 0 actions set ⇒ vacuously complete",
+  ],
+  [
+    "src/lib/engines/home-staff-wellbeing-intelligence-engine.ts:supportNeeded:100",
+    "supportActionRate — no support needed ⇒ vacuously complete (nothing to action)",
+  ],
+  [
+    "src/lib/engines/home-staff-wellbeing-retention-intelligence-engine.ts:leftEvents:1",
+    "handover-completion rate on leavers — 0 leavers ⇒ no handovers required (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-substance-misuse-prevention-intelligence-engine.ts:totalReferralRecords:100",
+    "referral compliance rate — 0 referrals needed ⇒ vacuously compliant (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-washing-machine-dryer-maintenance-intelligence-engine.ts:independenceGoalsSet:1",
+    "divide-by-zero fallback for independence-goal completion denominator (safe divisor floor); not a score",
+  ],
+  [
+    "src/lib/engines/home-window-blind-curtain-safety-intelligence-engine.ts:childAccessibleCords:100",
+    "blindChildSafety — 0 accessible cords is the strongest safety outcome (inverse-frequency); the sibling insight text at :735 makes this explicit",
+  ],
+  [
+    "src/lib/engines/home-window-blind-curtain-safety-intelligence-engine.ts:overdueInspections:100",
+    "inspection score — 0 overdue is the strongest outcome (inverse-frequency); same domain as :childAccessibleCords above",
+  ],
+  [
+    "src/lib/engines/home-workforce-resilience-composite-engine.ts:home_level.exit_interviews_due:100",
+    "exit-interview completion rate — 0 due ⇒ no leavers ⇒ vacuously complete (inverse-frequency)",
+  ],
 ]);
 
 function walk(dir, out = []) {
