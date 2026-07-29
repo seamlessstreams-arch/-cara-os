@@ -575,13 +575,32 @@ export default function SettingsPage() {
   const me = allStaff.find((s) => s.id === (currentUser?.id ?? "staff_darren")) ?? allStaff[0];
 
   const [tab, setTab] = useState<SettingsTab>("profile");
-  const [profile, setProfile] = useState({ first_name: "", last_name: "", email: "", phone: "", payroll_id: "" });
+  const [profile, setProfile] = useState({ first_name: "", last_name: "", email: "", phone: "", payroll_id: "", avatar_url: null as string | null });
   const [profileSaved, setProfileSaved] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (me) setProfile({ first_name: me.first_name ?? "", last_name: me.last_name ?? "", email: me.email ?? "", phone: me.phone ?? "", payroll_id: me.payroll_id ?? "" });
+    if (me) setProfile({ first_name: me.first_name ?? "", last_name: me.last_name ?? "", email: me.email ?? "", phone: me.phone ?? "", payroll_id: me.payroll_id ?? "", avatar_url: me.avatar_url ?? null });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me?.id]);
+
+  // 3MB cap matches the SmartUpload data-URL pipeline elsewhere in the app —
+  // above that, an inline base64 blob starts to bloat the JSON payload the
+  // save posts. Object storage is a follow-up (see project_document_upload_storage).
+  const PHOTO_MAX_BYTES = 3 * 1024 * 1024;
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setPhotoError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setPhotoError("Choose an image file (JPG, PNG, GIF, WebP)."); e.target.value = ""; return; }
+    if (file.size > PHOTO_MAX_BYTES) { setPhotoError(`Photo is ${(file.size / 1024 / 1024).toFixed(1)} MB — max is 3 MB.`); e.target.value = ""; return; }
+    const reader = new FileReader();
+    reader.onload = () => setProfile((p) => ({ ...p, avatar_url: typeof reader.result === "string" ? reader.result : null }));
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
+  function handleRemovePhoto() { setProfile((p) => ({ ...p, avatar_url: null })); setPhotoError(null); }
 
   const [homeForm, setHomeForm] = useState({
     name: HOME.name ?? "", ofsted_urn: HOME.ofsted_urn ?? "", address: HOME.address ?? "",
@@ -637,11 +656,22 @@ export default function SettingsPage() {
               <CardHeader><CardTitle>My Profile</CardTitle></CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center gap-5">
-                  <Avatar name={me.full_name} size="xl" />
+                  <Avatar name={me.full_name} src={profile.avatar_url} size="xl" />
                   <div>
                     <div className="text-lg font-bold text-slate-900">{me.full_name}</div>
                     <div className="text-sm text-slate-500">{me.job_title}</div>
-                    <Button size="sm" variant="outline" className="mt-2 h-8 text-xs" disabled>Change photo</Button>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => photoInputRef.current?.click()}>
+                        <Upload className="h-3 w-3 mr-1" />Change photo
+                      </Button>
+                      {profile.avatar_url && (
+                        <Button size="sm" variant="ghost" className="h-8 text-xs text-slate-500" onClick={handleRemovePhoto}>
+                          <X className="h-3 w-3 mr-1" />Remove
+                        </Button>
+                      )}
+                    </div>
+                    {photoError && <p className="mt-1.5 text-xs text-red-600">{photoError}</p>}
+                    <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
                   </div>
                 </div>
                 <SavedBanner show={profileSaved} />
