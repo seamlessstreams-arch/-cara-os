@@ -163,6 +163,13 @@ const EMPTY_TERNARY = /(\w+(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(\d{2,3})
 // spells it with `if`/`return`. Bounded, single-line, so it cannot swallow an
 // unrelated later return.
 const EMPTY_RETURN = /if\s*\(\s*!?\s*(\w+(?:\.\w+)*)(?:\.length)?\s*(?:===?\s*0|<\s*1)?\s*\)\s*return\s+(\d{2,3})\s*;/g;
+// 0-1 scale variant: `xs.length > 0 ? num/den : 1` — same fabricate-on-empty
+// class, spelt with 1.0 meaning "100%" on a normalised scale. The score
+// value here is always the literal `1`, so a separate FLATTERING_UNIT
+// threshold (below) covers it while the primary FLATTERING (60-100) covers
+// the percentage form.
+const NON_EMPTY_TERNARY_UNIT = /(\w+(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[\s\S]{0,220}?:\s*(1)(?!\d|\.\d)\b/g;
+const EMPTY_TERNARY_UNIT = /(\w+(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(1)(?!\d|\.\d)\b/g;
 
 // Blank out line and block comments BEFORE matching, so a memory-doc line
 // quoting the bug pattern (line comments in engine headers, block comments
@@ -182,6 +189,7 @@ for (const dir of SCAN_DIRS) {
     const rawSrc = fs.readFileSync(file, "utf8");
     const src = stripComments(rawSrc);
     const rel = path.relative(ROOT, file);
+    // Percentage-form matchers: value must be in the FLATTERING (60-100) band.
     for (const re of [NON_EMPTY_TERNARY, EMPTY_TERNARY, EMPTY_RETURN]) {
       re.lastIndex = 0;
       let m;
@@ -190,6 +198,19 @@ for (const dir of SCAN_DIRS) {
         if (value < FLATTERING || value > 100) continue;
         const line = src.slice(0, m.index).split("\n").length;
         found.push({ key: `${rel}:${m[1]}:${value}`, rel, line, collection: m[1], value });
+      }
+    }
+    // Unit-scale (0-1) matchers: the literal is always `1`, which is the
+    // same lie as `100` on a 0-100 scale. Tracked in the same baseline so
+    // the class stays enforced regardless of numeric scale.
+    for (const re of [NON_EMPTY_TERNARY_UNIT, EMPTY_TERNARY_UNIT]) {
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(src)) !== null) {
+        const line = src.slice(0, m.index).split("\n").length;
+        // Key uses `:1` as the value marker so it can never collide with a
+        // percentage-form entry at the same site.
+        found.push({ key: `${rel}:${m[1]}:1`, rel, line, collection: m[1], value: 1 });
       }
     }
   }
