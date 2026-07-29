@@ -17,6 +17,7 @@ import {
   Search, ArrowUpDown,
 } from "lucide-react";
 import { getStaffName } from "@/lib/seed-data";
+import { timesheetCsv, sageCsv } from "@/lib/timesheets/csv-export";
 
 // ── useStaff (inlined from use-staff) ───────────────────────────────────────
 
@@ -257,8 +258,7 @@ export default function TimesheetsPage() {
     return weekFilter === "this_week" ? "this-week" : weekFilter === "last_week" ? "last-week" : "this-month";
   }
 
-  function downloadCsv(rows: string[][], filename: string) {
-    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\r\n") + "\r\n";
+  function downloadCsv(csv: string, filename: string) {
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -269,51 +269,14 @@ export default function TimesheetsPage() {
   }
 
   function exportCSV() {
-    const headers = ["Staff Name", "Job Title", "Payroll ID", "Contracted Hrs/wk", "Hours Worked", "Overtime Mins", "OT Pay (£)", "Status", "Approved"];
-    const rows = timesheetData.map((d) => [
-      d.staff.full_name,
-      d.staff.job_title,
-      d.staff.payroll_id ?? "",
-      String(d.staff.contracted_hours),
-      (d.totalScheduledMins / 60).toFixed(2),
-      String(d.overtimeMinutes),
-      d.overtimePay.toFixed(2),
-      d.status,
-      effectiveApprovedIds.has(d.staff.id) ? "Yes" : "No",
-    ]);
-    downloadCsv([headers, ...rows], `timesheets-${periodSlug()}-${new Date().toISOString().slice(0, 10)}.csv`);
+    const csv = timesheetCsv(timesheetData, effectiveApprovedIds);
+    downloadCsv(csv, `timesheets-${periodSlug()}-${new Date().toISOString().slice(0, 10)}.csv`);
   }
 
-  // Sage-friendly shape: one row per staff per payment type (basic + overtime),
-  // with Employee Reference / Payment Type / Units / Rate columns Sage 50
-  // Payroll's import tool maps to. Overtime rows are omitted when zero so the
-  // sheet doesn't carry noise. Rate defaults from contracted_hours if the
-  // staff record doesn't carry a stored rate — flagged in the header comment
-  // that the payroll admin should double-check the rate column before import.
   function exportSageCSV() {
     const today = new Date().toISOString().slice(0, 10);
-    const headers = ["Employee Reference", "Full Name", "Payment Type", "Units (hours)", "Rate (£)", "Total (£)", "Period End", "Notes"];
-    const rows: string[][] = [];
-    for (const d of timesheetData) {
-      const ref = d.staff.payroll_id ?? d.staff.id;
-      const basicHours = d.totalScheduledMins / 60;
-      // Approximate rate from OT pay / OT hours where both are populated; otherwise blank.
-      const rate = d.overtimeMinutes > 0 && d.overtimePay > 0
-        ? (d.overtimePay / (d.overtimeMinutes / 60) / 1.5).toFixed(2) // OT paid at 1.5x
-        : "";
-      rows.push([
-        ref, d.staff.full_name, "Basic", basicHours.toFixed(2), rate,
-        rate ? (basicHours * Number(rate)).toFixed(2) : "",
-        today, effectiveApprovedIds.has(d.staff.id) ? "Approved" : "Pending approval",
-      ]);
-      if (d.overtimeMinutes > 0) {
-        rows.push([
-          ref, d.staff.full_name, "Overtime", (d.overtimeMinutes / 60).toFixed(2), rate,
-          d.overtimePay.toFixed(2), today, "OT @ 1.5x",
-        ]);
-      }
-    }
-    downloadCsv([headers, ...rows], `sage-payroll-${periodSlug()}-${today}.csv`);
+    const csv = sageCsv(timesheetData, effectiveApprovedIds, today);
+    downloadCsv(csv, `sage-payroll-${periodSlug()}-${today}.csv`);
   }
 
   function handleApprove(staffId: string) {
