@@ -5,6 +5,7 @@
 // ════���═════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import {
   analyseStaffingAdequacy,
   type ShiftSlot,
@@ -81,6 +82,27 @@ export async function GET(req: NextRequest) {
   try {
     const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
     const days = parseInt(req.nextUrl.searchParams.get("days") ?? "7", 10);
+
+    // Live tenants have no shift/staffing source wired to this route yet — was
+    // leaking fabricated child/staff names (Jordan P, Sarah T, etc.) into a
+    // safety-critical staffing analysis until 2026-07-29. Return an empty
+    // "no data" analysis instead; the frontend renders an empty state.
+    if (isLiveTenant()) {
+      const emptyConfig: HomeConfig = {
+        homeId,
+        homeName: "This home",
+        registeredBeds: 0,
+        currentOccupancy: 0,
+        minimumDayStaff: 0,
+        minimumEveningStaff: 0,
+        minimumNightStaff: 0,
+        requiresSeniorEveryShift: false,
+        requiresFirstAidEveryShift: false,
+        requiresMedTrainedEveryShift: false,
+      };
+      const analysis = analyseStaffingAdequacy([], [], [], emptyConfig, days);
+      return NextResponse.json({ ok: true, data: analysis, live_no_data: true });
+    }
 
     const { shifts, childNeeds, activities, config } = getDemoData(homeId);
     const analysis = analyseStaffingAdequacy(shifts, childNeeds, activities, config, days);

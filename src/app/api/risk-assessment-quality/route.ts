@@ -3,11 +3,14 @@
 //
 // Risk Assessment Quality Intelligence
 //
-// GET  — Returns risk assessment quality metrics with demo data (Chamberlain House)
-// POST — Accepts custom data and returns analysis
+// GET  — Demo mode: returns risk assessment quality metrics with Chamberlain
+//        House demo data. Live mode: returns an empty response (was leaking
+//        demo child names unconditionally until 2026-07-29).
+// POST — Accepts custom data and returns analysis; unaffected by the gate.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import {
   generateRiskAssessmentQualityIntelligence,
   getRiskCategoryLabel,
@@ -207,6 +210,35 @@ function generateDemoData(): {
 // ── GET ────────────────────────────────────────────────────────────────────
 
 export async function GET() {
+  // Live tenants have no risk-assessment source wired to this route yet —
+  // return an empty response instead of Chamberlain-named demo child data.
+  // Was leaking demo data unconditionally until 2026-07-29.
+  if (isLiveTenant()) {
+    const emptyPolicy: RiskAssessmentPolicy = {
+      id: "policy-empty",
+      riskManagementFramework: false,
+      dynamicAssessmentProcedure: false,
+      positiveRiskTakingPolicy: false,
+      incidentResponseProtocol: false,
+      multiAgencyRiskSharing: false,
+      staffRiskTrainingRequirement: false,
+      regularReview: false,
+    };
+    const result = generateRiskAssessmentQualityIntelligence(
+      [], emptyPolicy, [], "home_oak", "2026-04-01", "2026-05-20",
+    );
+    return NextResponse.json({
+      data: {
+        ...result,
+        meta: {
+          assessmentSummary: [],
+          ratingLabel: getRatingLabel(result.rating),
+        },
+      },
+      live_no_data: true,
+    });
+  }
+
   const { assessments, policy, training } = generateDemoData();
 
   const result = generateRiskAssessmentQualityIntelligence(

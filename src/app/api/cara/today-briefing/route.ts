@@ -425,8 +425,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, data: briefing });
   } catch (err) {
     console.error("[cara/today-briefing] Error:", err);
-    // Graceful fallback to demo
     const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
+    // A live tenant hitting a transient error must NOT fall back to demo —
+    // that would surface "Chamberlain House" as their home name on any glitch.
+    // Return a real error; the frontend already handles missing data.
+    if (isSupabaseEnabled()) {
+      return NextResponse.json({ ok: false, error: "Failed to generate briefing" }, { status: 503 });
+    }
+    // Demo mode: the fallback is fine (and expected) here.
     return NextResponse.json({ ok: true, data: generateDemoBriefing(homeId) });
   }
 }

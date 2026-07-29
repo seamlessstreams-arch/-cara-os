@@ -1,12 +1,15 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara -- HR Files & Workforce Compliance API Route
 //
-// GET  -> returns Chamberlain House demo workforce data
-// POST -> accepts custom data for any home
+// GET  -> in demo mode: returns Chamberlain House demo workforce data.
+//         On a live tenant: returns an empty/no-data response (was leaking the
+//         Chamberlain demo unconditionally until 2026-07-29).
+// POST -> accepts custom data for any home; unaffected by the live gate.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import {
   calculateWorkforceMetrics,
   evaluateTrainingCompliance,
@@ -223,6 +226,19 @@ function getDemoStaff(): StaffMember[] {
 
 export async function GET() {
   try {
+    // Live tenants have no workforce data source wired to this route yet —
+    // return an empty, shape-preserving response instead of Chamberlain demo.
+    // POST still accepts caller-supplied data if a caller has real inputs.
+    if (isLiveTenant()) {
+      return NextResponse.json({
+        metrics: calculateWorkforceMetrics([], 0, 0, new Date().toISOString()),
+        trainingCompliance: [],
+        supervisionCompliance: [],
+        trainingGaps: [],
+        live_no_data: true,
+      });
+    }
+
     const staff = getDemoStaff();
     const establishedPosts = 6;
     const leaversInPeriod = 1;

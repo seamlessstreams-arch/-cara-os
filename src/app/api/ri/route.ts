@@ -1,12 +1,16 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — RI Governance Scoring API Route
 //
-// GET  → returns Chamberlain House demo governance scorecard
-// POST → accepts custom RiScoreInputs for any home
+// GET  → in demo mode: returns Chamberlain House demo governance scorecard.
+//        On a live tenant: returns an empty scorecard (computeRiScores handles
+//        empty inputs — unmeasured domains return null by design). Was leaking
+//        the Chamberlain demo unconditionally until 2026-07-29.
+// POST → accepts custom RiScoreInputs for any home; unaffected by the gate.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { computeRiScores } from "@/lib/ri/compute-scores";
 import type { RiScoreInputs } from "@/lib/ri/compute-scores";
 
@@ -403,7 +407,16 @@ function getDemoInputs(): RiScoreInputs {
 
 export async function GET() {
   try {
-    const inputs = getDemoInputs();
+    // Live tenants have no scoring inputs wired to this route yet — call the
+    // engine with empty inputs (its "unevidenced domain returns null" design
+    // gives a genuine no-data scorecard), and mark it so callers can render
+    // an empty state rather than a fake governance picture.
+    const inputs: RiScoreInputs = isLiveTenant()
+      ? {
+          trainingNeeds: [], trainingRecords: [], alerts: [], incidents: [],
+          audits: [], medicationAudits: [], reg45Items: [], challenges: [],
+        }
+      : getDemoInputs();
     const scores = computeRiScores(inputs);
 
     return NextResponse.json({
@@ -424,6 +437,7 @@ export async function GET() {
         active_candidates: inputs.activeCandidates?.length ?? 0,
         yp_count: inputs.ypCount ?? 0,
       },
+      ...(isLiveTenant() && { live_no_data: true }),
     });
   } catch (error) {
     return NextResponse.json(
