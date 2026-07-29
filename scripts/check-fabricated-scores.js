@@ -179,8 +179,8 @@ const ALLOWED = new Map([
     "strategy_coverage_pct: no concerning entries in 90d ⇒ nothing to strategise for, vacuously covered (inverse-frequency)",
   ],
   [
-    "src/lib/cara/contact-intelligence.ts:expectedTotal:1",
-    "0-1 scale contact-plan compliance — 0 expected contacts (no plan for period) ⇒ Math.min(1,...) is arithmetically 1, matches the 'family-contact:requirements.length:75' allowed reasoning",
+    "src/lib/cara/contact-intelligence.ts:planned:1",
+    "0-1 scale contact-plan compliance — 0 expected contacts (no plan for period) ⇒ Math.min(1,...) is arithmetically 1, matches the 'family-contact:requirements.length:75' allowed reasoning (regex-tightening 2026-07-29 re-attributed the site from :expectedTotal:1 to :planned:1 which is the actual cascading-fallback denominator)",
   ],
   [
     "src/lib/cara/emotional-wellbeing-intelligence.ts:totalPlanned:1",
@@ -257,10 +257,6 @@ const ALLOWED = new Map([
     "inverse-frequency — 0 physical interventions is the safest real outcome, matches the sibling safeguarding-intelligence:count:100 allowlist entry",
   ],
   [
-    "src/lib/engines/behaviour-intelligence-engine.ts:totalSanctions:1",
-    "reward/sanction ratio — 0 events of either type means no behaviour-management activity in the window; vacuously balanced",
-  ],
-  [
     "src/lib/engines/behaviour-intelligence-engine.ts:totalWithIncidents:100",
     "category share / positive_percentage — vacuous on 0 incidents (0/0 arithmetic); frontend's arr.length>0 idiom decides whether to render the number",
   ],
@@ -282,10 +278,6 @@ const ALLOWED = new Map([
   [
     "src/lib/engines/child-health-intelligence-engine.ts:d:100",
     "duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
-  ],
-  [
-    "src/lib/engines/child-missing-intelligence-engine.ts:d:1",
-    "0-1 form of the duplicated pct(n,d) helper — same reasoning as :child-behaviour-safety:d:100 above",
   ],
   [
     "src/lib/engines/child-placement-quality-engine.ts:d:100",
@@ -328,8 +320,8 @@ const ALLOWED = new Map([
     "complaintResolutionRate — no privacy complaints ⇒ nothing to resolve (inverse-frequency)",
   ],
   [
-    "src/lib/engines/home-behaviour-support-plan-effectiveness-intelligence-engine.ts:activeBSPsWithReviewDue:1",
-    "cascading divide-by-zero fallback (`X.length > 0 ? X.length : Y.length > 0 ? Y.length : 1`) to prevent NaN in the compliance rate denominator; the fallback of 1 is a divisor floor, not a score",
+    "src/lib/engines/home-behaviour-support-plan-effectiveness-intelligence-engine.ts:activeBSPs:1",
+    "cascading divide-by-zero fallback (`X.length > 0 ? X.length : Y.length > 0 ? Y.length : 1`) to prevent NaN in the compliance rate denominator; the fallback of 1 is a divisor floor, not a score (regex-tightening 2026-07-29 re-attributed the site from :activeBSPsWithReviewDue:1 to :activeBSPs:1 which is the innermost fallback)",
   ],
   [
     "src/lib/engines/home-continence-personal-hygiene-support-intelligence-engine.ts:followUpPlanned:100",
@@ -349,10 +341,6 @@ const ALLOWED = new Map([
   // (zero adverse events ⇒ vacuously safe) or divide-by-zero
   // fallbacks that aren't scores.
   [
-    "src/lib/engines/home-financial-wellbeing-intelligence-engine.ts:minAmt:1",
-    "divide-by-zero fallback in a maxAmt/minAmt ratio (99 is a sentinel high ratio meaning 'no minimum to compare'); not a score",
-  ],
-  [
     "src/lib/engines/home-financial-wellbeing-intelligence-engine.ts:minAmt:99",
     "the 99 sentinel value the guard reads as flattering; see the :minAmt:1 twin above — same site, same reasoning",
   ],
@@ -365,8 +353,8 @@ const ALLOWED = new Map([
     "per-meeting attendance rate — 0 attendees expected ⇒ vacuous (0/0)",
   ],
   [
-    "src/lib/engines/home-night-care-quality-intelligence-engine.ts:uniqueCheckDates:1",
-    "divide-by-zero fallback for night-check coverage denominator; not a score",
+    "src/lib/engines/home-night-care-quality-intelligence-engine.ts:totalNightChecks:1",
+    "cascading divide-by-zero fallback for the expectedChecks divisor (`total_children && uniqueCheckDates ? ... : totalNightChecks > 0 ? totalNightChecks : 1`); the innermost `: 1` is a divisor floor, not a score (regex-tightening 2026-07-29 re-attributed from :uniqueCheckDates:1 to the correct innermost fallback denominator)",
   ],
   [
     "src/lib/engines/home-participation-intelligence-engine.ts:totalPrevActions:100",
@@ -389,12 +377,8 @@ const ALLOWED = new Map([
     "supportActionRate — no support needed ⇒ vacuously complete (nothing to action)",
   ],
   [
-    "src/lib/engines/home-staff-wellbeing-retention-intelligence-engine.ts:leftEvents:1",
-    "handover-completion rate on leavers — 0 leavers ⇒ no handovers required (inverse-frequency)",
-  ],
-  [
-    "src/lib/engines/home-substance-misuse-prevention-intelligence-engine.ts:totalReferralRecords:100",
-    "referral compliance rate — 0 referrals needed ⇒ vacuously compliant (inverse-frequency)",
+    "src/lib/engines/home-staff-wellbeing-retention-intelligence-engine.ts:totalExitInterviews:1",
+    "cascading divide-by-zero fallback for the exit-interview completion denominator (`leftEvents > 0 ? leftEvents : totalExitInterviews > 0 ? totalExitInterviews : 1`); the innermost `: 1` is a divisor floor, not a score (regex-tightening 2026-07-29 re-attributed from :leftEvents:1 to the correct innermost fallback denominator)",
   ],
   [
     "src/lib/engines/home-washing-machine-dryer-maintenance-intelligence-engine.ts:independenceGoalsSet:1",
@@ -446,20 +430,12 @@ const ALLOWED = new Map([
     "recommendation completion rate — 0 recommendations ⇒ vacuously complete",
   ],
   [
-    "src/lib/engines/risk-intelligence-dashboard-engine.ts:denominator:1",
-    "0-1 form of the duplicated pct(n,d) helper (same class as :child-behaviour-safety:d:100 allowlist entry)",
-  ],
-  [
     "src/lib/engines/risk-intelligence-dashboard-engine.ts:denominator:100",
     "percentage form of the same pct(n,d) helper twin (see :denominator:1 above)",
   ],
   [
     "src/lib/engines/rota-intelligence-engine.ts:completionDenom:100",
     "shift-completion rate — 0 completed + 0 no-shows ⇒ no shift outcomes yet, vacuously complete",
-  ],
-  [
-    "src/lib/event-stream/event-projector.ts:r.max_score:1",
-    "0-1 QA audit ratio — 0 max_score ⇒ divide-by-zero fallback to neutral 1 (rendering-only projection, not a scoring input)",
   ],
   [
     "src/lib/inspection/readiness-engine.ts:inputs.complaintsInPeriod:100",
@@ -539,6 +515,32 @@ const ALLOWED = new Map([
     "src/lib/trauma-informed/trauma-informed-engine.ts:reviewableCount:100",
     "review currency rate on trauma-informed plans — 0 reviewable ⇒ vacuously current (inverse-frequency)",
   ],
+
+  // ── Baseline burn-down 2026-07-29 batch 7 (regex-tightening reveal) ──
+  // The tighter body constraint on NON_EMPTY_TERNARY / NON_EMPTY_TERNARY_UNIT
+  // (see comments at the regex definitions) surfaces these five sites that
+  // were previously misattributed to a nearby collection. Each was read at
+  // the source and judged.
+  [
+    "src/lib/advocacy-representation/advocacy-representation-engine.ts:complaintReferrals:100",
+    "complaint-support rate — 0 complaint referrals ⇒ vacuously supported; the code comment 'No complaints = full compliance' documents it explicitly",
+  ],
+  [
+    "src/lib/engines/home-substance-misuse-prevention-intelligence-engine.ts:followUpRequired:100",
+    "referralFollowUp sub-dimension of a composite referral-compliance rate — 0 follow-ups required ⇒ that sub-dimension defaults to 100; safe because the composite averages three dimensions and this ONE gets the vacuous default only when there's nothing to follow up",
+  ],
+  [
+    "src/lib/notification-timeliness/notification-timeliness-engine.ts:totalRequired:100",
+    "completenessRate — 0 required notifications ⇒ vacuously complete (inverse-frequency)",
+  ],
+  [
+    "src/lib/notification-timeliness/notification-timeliness-engine.ts:followUpRequired:100",
+    "followUpRate — 0 follow-ups required ⇒ vacuously complete (inverse-frequency)",
+  ],
+  [
+    "src/lib/services/daily-recording-service.ts:total_expected:100",
+    "daily-log submission compliance — 0 expected records (no children on shift) ⇒ vacuously complete",
+  ],
 ]);
 
 function walk(dir, out = []) {
@@ -561,7 +563,12 @@ function walk(dir, out = []) {
 // The `.length` is optional so the same lie spelled with a scalar counter
 // (`total_children > 0 ? … : 100`) is caught — a counter used as a denominator
 // has identical fabricate-on-empty semantics.
-const NON_EMPTY_TERNARY = /(\w+(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[\s\S]{0,220}?:\s*(\d{2,3})\b/g;
+// The body character class excludes `?`, `:`, `{`, `}` and `;` so the match
+// stays inside ONE ternary — before this tightening the body could extend
+// past a `: <smaller>` on the same line-block and grab a `100` from an
+// unrelated later expression (the misattribution class documented in the
+// batch-2-through-batch-6 burn-down commits).
+const NON_EMPTY_TERNARY = /(\w+(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[^?:{};]{0,220}?:\s*(\d{2,3})\b/g;
 // `xs.length === 0 ? 92 : <computed>` — and scalar counters (`total === 0 ? 100 : …`).
 const EMPTY_TERNARY = /(\w+(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(\d{2,3})\b/g;
 // Statement form of the same lie, which the ternary matchers miss:
@@ -575,8 +582,9 @@ const EMPTY_RETURN = /if\s*\(\s*!?\s*(\w+(?:\.\w+)*)(?:\.length)?\s*(?:===?\s*0|
 // class, spelt with 1.0 meaning "100%" on a normalised scale. The score
 // value here is always the literal `1`, so a separate FLATTERING_UNIT
 // threshold (below) covers it while the primary FLATTERING (60-100) covers
-// the percentage form.
-const NON_EMPTY_TERNARY_UNIT = /(\w+(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[\s\S]{0,220}?:\s*(1)(?!\d|\.\d)\b/g;
+// the percentage form. Same body-character constraint as the percentage-
+// form matcher above, for the same misattribution-prevention reason.
+const NON_EMPTY_TERNARY_UNIT = /(\w+(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[^?:{};]{0,220}?:\s*(1)(?!\d|\.\d)\b/g;
 const EMPTY_TERNARY_UNIT = /(\w+(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(1)(?!\d|\.\d)\b/g;
 // Object-return form:
 //   if (expected.length === 0) return { score: 100, missing: [] };
