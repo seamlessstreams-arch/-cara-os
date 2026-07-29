@@ -118,6 +118,10 @@ const ALLOWED = new Map([
     "scoreRiskRelevance: a record that is not risk-related is not-applicable and must not be dragged down — not a fabricated quality claim",
   ],
   [
+    "src/lib/recording-quality/recording-quality-engine.ts:expected.length:100",
+    "scoreCompleteness: no expected fields = nothing to score against, vacuously complete (matches oversight/scoring.ts:required.length:100 pattern); the object-return matcher surfaced this",
+  ],
+  [
     "src/lib/command-palette/rank.ts:wordStart:76",
     "search-relevance ranking (word-boundary match scores 76), not a care-quality score",
   ],
@@ -170,6 +174,15 @@ const EMPTY_RETURN = /if\s*\(\s*!?\s*(\w+(?:\.\w+)*)(?:\.length)?\s*(?:===?\s*0|
 // the percentage form.
 const NON_EMPTY_TERNARY_UNIT = /(\w+(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[\s\S]{0,220}?:\s*(1)(?!\d|\.\d)\b/g;
 const EMPTY_TERNARY_UNIT = /(\w+(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(1)(?!\d|\.\d)\b/g;
+// Object-return form:
+//   if (expected.length === 0) return { score: 100, missing: [] };
+// EMPTY_RETURN matches scalar `return N;` only, so a function that early-
+// exits with a full score inside an object literal was silently uncaught.
+// Field names limited to those Cara uses for scoring outputs (score, rate,
+// percentage, pct, compliance, coverage) — widening would catch config /
+// pagination defaults (limit: 100, size: 100) that aren't scoring at all.
+const EMPTY_RETURN_OBJECT =
+  /if\s*\(\s*!?\s*(\w+(?:\.\w+)*)(?:\.length)?\s*(?:===?\s*0|<\s*1)?\s*\)\s*return\s*\{[^}]*?\b(?:score|rate|percentage|pct|compliance|coverage)\s*:\s*(\d{2,3})\b/g;
 
 // Blank out line and block comments BEFORE matching, so a memory-doc line
 // quoting the bug pattern (line comments in engine headers, block comments
@@ -190,7 +203,7 @@ for (const dir of SCAN_DIRS) {
     const src = stripComments(rawSrc);
     const rel = path.relative(ROOT, file);
     // Percentage-form matchers: value must be in the FLATTERING (60-100) band.
-    for (const re of [NON_EMPTY_TERNARY, EMPTY_TERNARY, EMPTY_RETURN]) {
+    for (const re of [NON_EMPTY_TERNARY, EMPTY_TERNARY, EMPTY_RETURN, EMPTY_RETURN_OBJECT]) {
       re.lastIndex = 0;
       let m;
       while ((m = re.exec(src)) !== null) {
