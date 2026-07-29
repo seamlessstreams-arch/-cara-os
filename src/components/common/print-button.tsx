@@ -56,6 +56,10 @@ interface PrintButtonProps {
   size?: "default" | "sm" | "icon";
   /** ID of the DOM element to print. If not given, prints the whole page. */
   targetId?: string;
+  /** Button label; defaults to "Print". Set to "Export PDF" when the print
+   *  dialog's Save-as-PDF is the intended user action (all major browsers
+   *  offer it), so a manager who scanned the page for "PDF" finds it. */
+  label?: string;
 }
 
 export function PrintButton({
@@ -65,6 +69,7 @@ export function PrintButton({
   variant = "outline",
   size = "sm",
   targetId,
+  label = "Print",
 }: PrintButtonProps) {
   // The home's real name — one source for every printout. In a live tenant
   // before provisioning this is the neutral fallback, never the demo name.
@@ -212,7 +217,7 @@ export function PrintButton({
       data-no-print
     >
       <Printer className="h-3.5 w-3.5" />
-      <span className="hidden sm:inline">Print</span>
+      <span className="hidden sm:inline">{label}</span>
     </Button>
   );
 }

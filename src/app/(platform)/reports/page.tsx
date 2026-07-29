@@ -264,9 +264,7 @@ export default function ReportsPage() {
               >{p}</button>
             ))}
           </div>
-          <Button variant="outline" size="sm" disabled title="PDF export requires the reporting integration to be configured by your system administrator.">
-            <Download className="h-3.5 w-3.5 mr-1" />Export PDF
-          </Button>
+          <PrintButton title="Reports" subtitle="Management Reports" targetId="reports-content" label="Export PDF" />
         </div>
       }
     >
