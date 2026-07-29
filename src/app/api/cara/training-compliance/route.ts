@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { analyseTrainingCompliance, type StaffTrainingRecord } from "@/lib/cara/training-compliance";
 
 // ── Demo data ───────────────────────────────────────────────────────────────
@@ -118,6 +119,15 @@ function getDemoData(): StaffTrainingRecord[] {
 export async function GET(req: NextRequest) {
   try {
     const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
+
+    // Live tenants: was leaking fabricated Sarah T/Mike R/Emma L/James K/Lisa M
+    // training records (with staff names, qualifications, expiry dates)
+    // unconditionally until 2026-07-29. Return an empty analysis on live.
+    if (isLiveTenant()) {
+      const analysis = analyseTrainingCompliance([], homeId);
+      return NextResponse.json({ ok: true, data: analysis, live_no_data: true });
+    }
+
     const records = getDemoData();
     const analysis = analyseTrainingCompliance(records, homeId);
 

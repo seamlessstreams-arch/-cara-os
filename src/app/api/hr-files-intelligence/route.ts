@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { generateHrFilesIntelligence } from "@/lib/hr-files";
 import type { HrFilesRecord, HrFilesPolicy, StaffHrFilesTraining } from "@/lib/hr-files";
 
@@ -30,9 +31,19 @@ const DEMO_STAFF: StaffHrFilesTraining[] = [
 ];
 
 export async function GET() {
+  // Live tenants: was leaking fabricated Sarah Johnson/Tom Richards/Lisa Williams/
+  // Olivia Hayes HR files (supervision, DBS, disciplinary, absence records)
+  // unconditionally until 2026-07-29. Return an empty analysis on live.
+  const live = isLiveTenant();
+  const emptyPolicy: HrFilesPolicy = {
+    supervisionPolicy: false, mandatoryTrainingPolicy: false, saferRecruitmentPolicy: false,
+    dbsRenewalPolicy: false, absenceManagementPolicy: false, performanceReviewPolicy: false, disciplinaryPolicy: false,
+  };
   const result = generateHrFilesIntelligence({
     homeId: "home-oak", periodStart: "2026-01-01", periodEnd: "2026-05-21",
-    records: DEMO_RECORDS, policy: DEMO_POLICY, staff: DEMO_STAFF,
+    records: live ? [] : DEMO_RECORDS,
+    policy: live ? emptyPolicy : DEMO_POLICY,
+    staff: live ? [] : DEMO_STAFF,
   });
-  return NextResponse.json({ data: { ...result, meta: { generatedAt: new Date().toISOString(), engine: "hr-files-intelligence", version: "2.0.0" } } });
+  return NextResponse.json({ data: { ...result, meta: { generatedAt: new Date().toISOString(), engine: "hr-files-intelligence", version: "2.0.0" }, ...(live && { live_no_data: true }) } });
 }

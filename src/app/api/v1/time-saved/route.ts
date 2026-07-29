@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { getStore } from "@/lib/db/store";
 import { todayStr } from "@/lib/utils";
 import type { TimeSavedSummary } from "@/types/extended";
@@ -52,13 +53,16 @@ export async function GET(_req: NextRequest) {
     .filter((e) => e.created_at.slice(0, 10) >= monthAgoStr)
     .reduce((sum, e) => sum + e.minutes_saved, 0);
 
-  // Add demo baseline savings to make demo meaningful
+  // Live tenants: was ADDING fabricated baseline (+42/+183/+547/+1840 mins +
+  // DEMO_SAVINGS breakdown) to real numbers unconditionally until 2026-07-29.
+  // On live, return the real numbers only and an empty breakdown.
+  const live = isLiveTenant();
   const summary: TimeSavedSummary = {
-    user_today_minutes: todayMinutes + 42,
-    user_week_minutes: weekMinutes + 183,
-    home_week_minutes: homeWeekMinutes + 547,
-    home_month_minutes: homeMonthMinutes + 1840,
-    breakdown: DEMO_SAVINGS,
+    user_today_minutes: todayMinutes + (live ? 0 : 42),
+    user_week_minutes: weekMinutes + (live ? 0 : 183),
+    home_week_minutes: homeWeekMinutes + (live ? 0 : 547),
+    home_month_minutes: homeMonthMinutes + (live ? 0 : 1840),
+    breakdown: live ? [] : DEMO_SAVINGS,
   };
 
   return NextResponse.json({
@@ -69,6 +73,7 @@ export async function GET(_req: NextRequest) {
       home_week: formatMinutes(summary.home_week_minutes),
       home_month: formatMinutes(summary.home_month_minutes),
     },
+    ...(live && { live_no_data: true }),
   });
 }
 

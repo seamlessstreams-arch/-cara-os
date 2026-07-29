@@ -15,6 +15,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { generateManagementOversight } from "@/lib/oversight/management-oversight-engine";
 import { OVERSIGHT_DISCLAIMER, type OversightInput } from "@/lib/oversight/types";
 import { readJsonBody } from "@/lib/http/read-json";
@@ -96,6 +97,22 @@ export async function GET(req: NextRequest) {
   const auth = requirePermission(req, PERMISSIONS.ADD_OVERSIGHT);
   if (auth instanceof NextResponse) return auth;
   try {
+    // Live tenants: was returning DEMO_INPUT (fictional "Jordan" 14yo physical
+    // intervention worked example) even though tagged `example: true` — this
+    // still surfaced fictional child data on live UIs until 2026-07-29. Omit
+    // the worked example on live and let the frontend show its empty state.
+    if (isLiveTenant()) {
+      return NextResponse.json({
+        data: {
+          example: false,
+          input: null,
+          result: null,
+          disclaimer: OVERSIGHT_DISCLAIMER,
+          live_no_data: true,
+        },
+      });
+    }
+
     const result = generateManagementOversight(DEMO_INPUT);
     return NextResponse.json({
       data: {

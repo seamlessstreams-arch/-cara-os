@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { analyseSupervisions, type SupervisionRecord } from "@/lib/cara/supervision-intelligence";
 
 // ── Demo data ───────────────────────────────────────────────────────────────
@@ -131,7 +132,14 @@ export async function GET(req: NextRequest) {
   try {
     const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
 
-    // Demo mode (live version would pull from supervision table)
+    // Live tenants: was leaking fabricated Olivia H/Pat M/Sarah K/Mark T/Lisa J/Tom R
+    // supervision records (with themes, actions, wellbeing scores, reflections)
+    // unconditionally until 2026-07-29. Return an empty analysis on live.
+    if (isLiveTenant()) {
+      const analysis = analyseSupervisions([], [], homeId);
+      return NextResponse.json({ ok: true, data: analysis, live_no_data: true });
+    }
+
     const { staffList, records } = getDemoData();
     const analysis = analyseSupervisions(records, staffList, homeId);
 

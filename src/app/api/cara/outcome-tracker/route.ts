@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { trackOutcomes, type OutcomeObjective, type EvidenceEntry } from "@/lib/cara/outcome-tracker";
 
 // ── Demo data ───────────────────────────────────────────────────────────────
@@ -96,6 +97,15 @@ function getDemoData(childId: string) {
 export async function GET(req: NextRequest) {
   try {
     const childId = req.nextUrl.searchParams.get("childId") ?? "child_jordan";
+
+    // Live tenants: was leaking fabricated Jordan P/Sam W outcome objectives
+    // and evidence unconditionally until 2026-07-29. Return an empty analysis
+    // on live; frontend renders its existing empty state.
+    if (isLiveTenant()) {
+      const analysis = trackOutcomes(childId, "", [], []);
+      return NextResponse.json({ ok: true, data: analysis, live_no_data: true });
+    }
+
     const { objectives, evidence, childName } = getDemoData(childId);
 
     const analysis = trackOutcomes(childId, childName, objectives, evidence);

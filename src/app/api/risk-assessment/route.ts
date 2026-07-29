@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { generateRiskAssessmentIntelligence } from "@/lib/risk-assessment";
 import type { RiskAssessmentRecord, RiskAssessmentPolicy, StaffRiskAssessmentTraining } from "@/lib/risk-assessment";
 
@@ -39,19 +40,32 @@ const DEMO_STAFF: StaffRiskAssessmentTraining[] = [
 // ── Handler ───────────────────────────────────────────────────────────────
 
 export async function GET() {
+  // Live tenants: was leaking fabricated Alex/Jordan/Morgan risk-assessment
+  // records unconditionally until 2026-07-29. Return an empty analysis on live.
+  const live = isLiveTenant();
+  const emptyPolicy: RiskAssessmentPolicy = {
+    riskAssessmentPolicy: false,
+    dynamicRiskUpdatePolicy: false,
+    positiveRiskTakingPolicy: false,
+    incidentTriggeredReviewPolicy: false,
+    communityRiskPolicy: false,
+    environmentalRiskPolicy: false,
+    multiAgencyRiskSharingPolicy: false,
+  };
   const result = generateRiskAssessmentIntelligence({
     homeId: "home-oak",
     periodStart: "2026-01-01",
     periodEnd: "2026-05-20",
-    records: DEMO_RECORDS,
-    policy: DEMO_POLICY,
-    staff: DEMO_STAFF,
+    records: live ? [] : DEMO_RECORDS,
+    policy: live ? emptyPolicy : DEMO_POLICY,
+    staff: live ? [] : DEMO_STAFF,
   });
 
   return NextResponse.json({
     data: {
       ...result,
       meta: { generatedAt: new Date().toISOString(), engine: "risk-assessment", version: "2.0.0" },
+      ...(live && { live_no_data: true }),
     },
   });
 }

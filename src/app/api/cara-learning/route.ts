@@ -4,6 +4,7 @@
 
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import {
   evaluateAgentReadiness,
   calculateOrganisationLearningMetrics,
@@ -238,14 +239,20 @@ export async function GET(req: NextRequest) {
   const mode = searchParams.get("mode") ?? "dashboard";
   const agentId = searchParams.get("agentId");
 
+  // Live tenants: was leaking fabricated agent capability profiles (with
+  // "Olivia Hayes" as approver, real-looking readiness scores, etc.)
+  // unconditionally until 2026-07-29. Return empty profiles on live.
+  const profiles: AgentCapabilityProfile[] = isLiveTenant() ? [] : DEMO_PROFILES;
+  const live = isLiveTenant();
+
   if (mode === "dashboard") {
-    const metrics = calculateOrganisationLearningMetrics(DEMO_PROFILES, "org-cornerstone");
-    const agentResults = DEMO_PROFILES.map(p => evaluateAgentReadiness(p));
-    return NextResponse.json({ metrics, agentResults, profiles: DEMO_PROFILES });
+    const metrics = calculateOrganisationLearningMetrics(profiles, "org-cornerstone");
+    const agentResults = profiles.map(p => evaluateAgentReadiness(p));
+    return NextResponse.json({ metrics, agentResults, profiles, ...(live && { live_no_data: true }) });
   }
 
   if (mode === "agent" && agentId) {
-    const profile = DEMO_PROFILES.find(p => p.id === agentId);
+    const profile = profiles.find(p => p.id === agentId);
     if (!profile) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
@@ -254,8 +261,8 @@ export async function GET(req: NextRequest) {
   }
 
   if (mode === "metrics") {
-    const metrics = calculateOrganisationLearningMetrics(DEMO_PROFILES, "org-cornerstone");
-    return NextResponse.json(metrics);
+    const metrics = calculateOrganisationLearningMetrics(profiles, "org-cornerstone");
+    return NextResponse.json({ ...metrics, ...(live && { live_no_data: true }) });
   }
 
   return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
