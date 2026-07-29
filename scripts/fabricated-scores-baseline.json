@@ -1,13 +1,3 @@
 [
-  "src/app/api/cara/sleep-patterns/route.ts:3:1",
-  "src/lib/cara/staffing-adequacy.ts:totalAssessments:100",
-  "src/lib/engines/home-leave-absence-intelligence-engine.ts:leave_requests:1",
-  "src/lib/engines/home-leave-absence-intelligence-engine.ts:totalDays:1",
-  "src/lib/engines/home-placement-stability-permanence-intelligence-engine.ts:totalEnded:100",
-  "src/lib/engines/home-policy-compliance-intelligence-engine.ts:active:1",
-  "src/lib/engines/home-staff-reflective-practice-intelligence-engine.ts:shadowings:1",
-  "src/lib/incident-pattern-analysis/incident-pattern-analysis-engine.ts:restraintRate:1",
-  "src/lib/multi-agency-effectiveness/multi-agency-effectiveness-engine.ts:childEscalations:1",
-  "src/lib/quality-assurance/quality-assurance-engine.ts:followUpRequired:1",
-  "src/lib/services/policies-register-service.ts:policyAcks:1"
+  "src/lib/cara/staffing-adequacy.ts:totalAssessments:100"
 ]

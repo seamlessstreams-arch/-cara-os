@@ -541,6 +541,46 @@ const ALLOWED = new Map([
     "src/lib/services/daily-recording-service.ts:total_expected:100",
     "daily-log submission compliance — 0 expected records (no children on shift) ⇒ vacuously complete",
   ],
+
+  // ── Baseline burn-down 2026-07-29 batch 8 (final push) ──
+  // The last 9 sites verified from source. Remaining: only
+  // staffing-adequacy:totalAssessments:100 (needs product judgement).
+  [
+    "src/lib/engines/home-leave-absence-intelligence-engine.ts:leave_requests:1",
+    "divide-by-zero fallback in the pendingRate divisor (`leave_requests.length > 0 ? leave_requests.length : 1`) — 1 is a divisor floor, not a score",
+  ],
+  [
+    "src/lib/engines/home-leave-absence-intelligence-engine.ts:totalDays:1",
+    "divide-by-zero fallback in the sick_rate divisor (`totalDays > 0 ? totalDays : 1`) — 1 is a divisor floor, not a score",
+  ],
+  [
+    "src/lib/engines/home-placement-stability-permanence-intelligence-engine.ts:totalEnded:100",
+    "plannedEndingRate — 0 placements ended ⇒ no endings to plan against, vacuously complete (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/home-policy-compliance-intelligence-engine.ts:active:1",
+    "divide-by-zero fallback for currencyRate divisor (`active.length > 0 ? active.length : 1`) — 1 is a divisor floor",
+  ],
+  [
+    "src/lib/engines/home-staff-reflective-practice-intelligence-engine.ts:shadowings:1",
+    "0 shadowings in the period ⇒ vacuously 1 on the reflective-practice sub-score (inverse-frequency; matches the sibling `if (X.length === 0) return 1` pattern that's ALLOWED elsewhere)",
+  ],
+  [
+    "src/lib/incident-pattern-analysis/incident-pattern-analysis-engine.ts:restraintRate:1",
+    "lowRestraintFactor — restraintRate===0 ⇒ 1 (the strongest inverse-frequency outcome, no restraint activity)",
+  ],
+  [
+    "src/lib/multi-agency-effectiveness/multi-agency-effectiveness-engine.ts:childEscalations:1",
+    "per-child escalation-resolution score — 0 escalations ⇒ 1 (best outcome, no escalations to resolve; graded down to 0.8/0.3 when there ARE escalations)",
+  ],
+  [
+    "src/lib/quality-assurance/quality-assurance-engine.ts:followUpRequired:1",
+    "followUp completion rate (0-1) — 0 follow-ups required ⇒ vacuously complete (inverse-frequency)",
+  ],
+  [
+    "src/lib/services/policies-register-service.ts:policyAcks:1",
+    "divisor floor for the totalExpected accumulator (`policyAcks.length > 0 ? policyAcks.length : 1`) — 1 is a divisor floor, not a score",
+  ],
 ]);
 
 function walk(dir, out = []) {
@@ -568,9 +608,9 @@ function walk(dir, out = []) {
 // past a `: <smaller>` on the same line-block and grab a `100` from an
 // unrelated later expression (the misattribution class documented in the
 // batch-2-through-batch-6 burn-down commits).
-const NON_EMPTY_TERNARY = /(\w+(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[^?:{};]{0,220}?:\s*(\d{2,3})\b/g;
+const NON_EMPTY_TERNARY = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[^?:{};]{0,220}?:\s*(\d{2,3})\b/g;
 // `xs.length === 0 ? 92 : <computed>` — and scalar counters (`total === 0 ? 100 : …`).
-const EMPTY_TERNARY = /(\w+(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(\d{2,3})\b/g;
+const EMPTY_TERNARY = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(\d{2,3})\b/g;
 // Statement form of the same lie, which the ternary matchers miss:
 //   if (xs.length === 0) return 100;   /   if (!xs.length) return 90;
 // A score function that early-returns a flattering literal for an empty
@@ -584,8 +624,8 @@ const EMPTY_RETURN = /if\s*\(\s*!?\s*(\w+(?:\.\w+)*)(?:\.length)?\s*(?:===?\s*0|
 // threshold (below) covers it while the primary FLATTERING (60-100) covers
 // the percentage form. Same body-character constraint as the percentage-
 // form matcher above, for the same misattribution-prevention reason.
-const NON_EMPTY_TERNARY_UNIT = /(\w+(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[^?:{};]{0,220}?:\s*(1)(?!\d|\.\d)\b/g;
-const EMPTY_TERNARY_UNIT = /(\w+(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(1)(?!\d|\.\d)\b/g;
+const NON_EMPTY_TERNARY_UNIT = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[^?:{};]{0,220}?:\s*(1)(?!\d|\.\d)\b/g;
+const EMPTY_TERNARY_UNIT = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(1)(?!\d|\.\d)\b/g;
 // Object-return form:
 //   if (expected.length === 0) return { score: 100, missing: [] };
 // EMPTY_RETURN matches scalar `return N;` only, so a function that early-
