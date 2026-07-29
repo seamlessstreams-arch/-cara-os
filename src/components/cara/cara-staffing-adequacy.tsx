@@ -68,8 +68,8 @@ interface StaffingData {
   homeId: string;
   analysisDate: string;
   windowDays: number;
-  overallStatus: "adequate" | "concerns" | "inadequate";
-  overallScore: number;
+  overallStatus: "adequate" | "concerns" | "inadequate" | "not_assessed";
+  overallScore: number | null;
   shiftAssessments: ShiftAssessment[];
   gaps: StaffingGap[];
   qualificationCoverage: QualificationCoverage[];
@@ -135,13 +135,17 @@ export default function CaraStaffingAdequacy({ homeId = "home_oak", days = 7 }: 
     ? "text-emerald-700 bg-emerald-50 border-emerald-200"
     : data.overallStatus === "inadequate"
       ? "text-red-700 bg-red-50 border-red-200"
-      : "text-amber-700 bg-amber-50 border-amber-200";
+      : data.overallStatus === "not_assessed"
+        ? "text-gray-600 bg-gray-50 border-gray-200"
+        : "text-amber-700 bg-amber-50 border-amber-200";
 
   const statusIcon = data.overallStatus === "adequate"
     ? <CheckCircle2 className="h-4 w-4 text-emerald-600" />
     : data.overallStatus === "inadequate"
       ? <XCircle className="h-4 w-4 text-red-600" />
-      : <AlertTriangle className="h-4 w-4 text-amber-600" />;
+      : data.overallStatus === "not_assessed"
+        ? <Users className="h-4 w-4 text-gray-500" />
+        : <AlertTriangle className="h-4 w-4 text-amber-600" />;
 
   const adequateShifts = data.shiftAssessments.filter((a) => a.status === "adequate").length;
   const totalShifts = data.shiftAssessments.length;
@@ -173,9 +177,11 @@ export default function CaraStaffingAdequacy({ homeId = "home_oak", days = 7 }: 
             ? "Staffing levels adequate"
             : data.overallStatus === "inadequate"
               ? "Staffing critically inadequate"
-              : "Staffing concerns identified"}
+              : data.overallStatus === "not_assessed"
+                ? "No shift data yet — nothing to assess"
+                : "Staffing concerns identified"}
         </span>
-        <span className="ml-auto text-xs opacity-70">{data.overallScore}%</span>
+        <span className="ml-auto text-xs opacity-70">{data.overallScore !== null ? `${data.overallScore}%` : "—"}</span>
       </div>
 
       {/* Key metrics */}
@@ -183,7 +189,12 @@ export default function CaraStaffingAdequacy({ homeId = "home_oak", days = 7 }: 
         <MetricBox label="Shifts OK" value={`${adequateShifts}/${totalShifts}`} good={adequateShifts === totalShifts} warn={adequateShifts < totalShifts * 0.7} />
         <MetricBox label="Gaps" value={String(data.gaps.length)} good={data.gaps.length === 0} warn={data.gaps.length > 2} />
         <MetricBox label="Alerts" value={String(data.alerts.length)} good={data.alerts.length === 0} warn={data.alerts.length > 1} />
-        <MetricBox label="Score" value={`${data.overallScore}%`} good={data.overallScore >= 80} warn={data.overallScore < 60} />
+        <MetricBox
+          label="Score"
+          value={data.overallScore !== null ? `${data.overallScore}%` : "—"}
+          good={data.overallScore !== null && data.overallScore >= 80}
+          warn={data.overallScore !== null && data.overallScore < 60}
+        />
       </div>
 
       {/* Alerts */}

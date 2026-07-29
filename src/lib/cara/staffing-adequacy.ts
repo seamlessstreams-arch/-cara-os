@@ -72,8 +72,8 @@ export interface StaffingAdequacy {
   windowDays: number;
 
   // Overview
-  overallStatus: "adequate" | "concerns" | "inadequate";
-  overallScore: number;        // 0-100
+  overallStatus: "adequate" | "concerns" | "inadequate" | "not_assessed";
+  overallScore: number | null;        // 0-100, null when no shifts to assess
 
   // Shift-by-shift
   shiftAssessments: ShiftAssessment[];
@@ -371,12 +371,18 @@ export function analyseStaffingAdequacy(
   const adequateCount = shiftAssessments.filter((a) => a.status === "adequate").length;
   const marginalCount = shiftAssessments.filter((a) => a.status === "marginal").length;
 
+  // No shifts to assess ⇒ score is genuinely unknown. Returning 100 + status
+  // "adequate" told a manager on a fresh live tenant that staffing was fine
+  // when in truth there was no rota to score against. Null + "not_assessed"
+  // renders as neutral in the widget ("no shift data yet"), matching the
+  // idiom the rest of the fab-100 fixes use (see project_fabricated_scores).
   const overallScore = totalAssessments > 0
     ? Math.round(((adequateCount * 100 + marginalCount * 60) / (totalAssessments * 100)) * 100)
-    : 100;
+    : null;
 
-  let overallStatus: "adequate" | "concerns" | "inadequate";
-  if (overallScore >= 80 && unfilled.length === 0) overallStatus = "adequate";
+  let overallStatus: "adequate" | "concerns" | "inadequate" | "not_assessed";
+  if (overallScore === null) overallStatus = "not_assessed";
+  else if (overallScore >= 80 && unfilled.length === 0) overallStatus = "adequate";
   else if (overallScore >= 50) overallStatus = "concerns";
   else overallStatus = "inadequate";
 
@@ -390,7 +396,7 @@ export function analyseStaffingAdequacy(
   const medCoverage = qualificationCoverage.find((q) => q.qualification === "med_trained");
   if (medCoverage && medCoverage.coveragePercent < 100) issues.push("Medication-trained staff not on every shift");
 
-  if (overallScore >= 90) strengths.push("Strong staffing levels across the week");
+  if (overallScore !== null && overallScore >= 90) strengths.push("Strong staffing levels across the week");
   if (qualificationCoverage.every((q) => q.coveragePercent === 100)) strengths.push("Full qualification coverage on all shifts");
   if (unconfirmed.length === 0) strengths.push("All shifts confirmed");
   if (loneShifts.length === 0 && totalAssessments > 0) strengths.push("No lone working identified");
