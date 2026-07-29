@@ -389,9 +389,11 @@ export default function ChecksPage() {
         <div className="flex gap-2">
           <PrintButton title="Compliance Checks" subtitle="Single Central Record" targetId="sr-checks-content" />
           <SmartUploadButton variant="inline" label="Upload Check Document" uploadContext="Safer Recruitment — compliance check document or certificate upload" />
-          <Button variant="outline" size="sm" className="rounded-xl text-xs" disabled title="SCR grid export is available from the Audit page.">
-            <Download className="h-3.5 w-3.5 mr-1.5" /> Export Grid
-          </Button>
+          <a href="/api/v1/recruitment/export?type=scr" download>
+            <Button variant="outline" size="sm" className="rounded-xl text-xs">
+              <Download className="h-3.5 w-3.5 mr-1.5" /> Export Grid
+            </Button>
+          </a>
           <div className="flex rounded-xl border border-[var(--cs-border)] overflow-hidden">
             <button
               onClick={() => setViewMode("grid")}

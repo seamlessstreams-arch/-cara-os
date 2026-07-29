@@ -943,27 +943,33 @@ function ReportsTab() {
               <div className="text-sm font-medium text-slate-900">Audit Bundle</div>
               <div className="text-xs text-slate-500">All candidates, checks, and decisions for inspection</div>
             </div>
-            <Button size="sm" className="h-8 text-xs" disabled title="Audit bundle export requires the reporting integration. Visit the Audit page to view the full log.">
-              <Download className="h-3 w-3 mr-1" />Export
-            </Button>
+            <a href="/api/v1/recruitment/export?type=audit" download>
+              <Button size="sm" className="h-8 text-xs">
+                <Download className="h-3 w-3 mr-1" />Export
+              </Button>
+            </a>
           </div>
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
             <div>
               <div className="text-sm font-medium text-slate-900">Time to Appoint Report</div>
-              <div className="text-xs text-slate-500">Average days per stage and overall pipeline velocity</div>
+              <div className="text-xs text-slate-500">Days per candidate from application to appointment</div>
             </div>
-            <Button size="sm" variant="outline" className="h-8 text-xs" disabled title="Time to appoint reporting requires the analytics integration to be configured.">
-              <BarChart3 className="h-3 w-3 mr-1" />Generate
-            </Button>
+            <a href="/api/v1/recruitment/export?type=time-to-appoint" download>
+              <Button size="sm" variant="outline" className="h-8 text-xs">
+                <BarChart3 className="h-3 w-3 mr-1" />Generate
+              </Button>
+            </a>
           </div>
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
             <div>
               <div className="text-sm font-medium text-slate-900">SCR Export (Ofsted)</div>
-              <div className="text-xs text-slate-500">Single Central Record in Ofsted-ready format</div>
+              <div className="text-xs text-slate-500">Single Central Record: per-candidate check statuses</div>
             </div>
-            <Button size="sm" variant="outline" className="h-8 text-xs" disabled title="SCR export is available from the Checks page. Contact your system administrator for the Ofsted-ready format.">
-              <FileCheck className="h-3 w-3 mr-1" />Export
-            </Button>
+            <a href="/api/v1/recruitment/export?type=scr" download>
+              <Button size="sm" variant="outline" className="h-8 text-xs">
+                <FileCheck className="h-3 w-3 mr-1" />Export
+              </Button>
+            </a>
           </div>
         </div>
       </div>

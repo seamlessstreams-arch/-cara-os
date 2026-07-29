@@ -396,10 +396,12 @@ export default function AuditLogPage() {
         <div className="flex items-center gap-2">
           <PrintButton title="Audit Log" subtitle="Safer Recruitment Audit Trail" targetId="sr-audit-content" />
           <SmartUploadButton variant="inline" label="Upload Audit Document" uploadContext="Safer Recruitment — audit evidence or inspection bundle document upload" />
-          <Button size="sm" variant="outline" className="gap-1.5" disabled title="Inspection bundles are generated from the Documents section. Contact your system administrator.">
-            <Download className="h-3.5 w-3.5" />
-            Generate Inspection Bundle
-          </Button>
+          <a href="/api/v1/recruitment/export?type=audit" download>
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <Download className="h-3.5 w-3.5" />
+              Generate Inspection Bundle
+            </Button>
+          </a>
           <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }

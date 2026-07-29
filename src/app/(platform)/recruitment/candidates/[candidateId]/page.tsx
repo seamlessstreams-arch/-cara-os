@@ -1364,9 +1364,11 @@ export default function CandidateDetailPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center justify-between">
                   <span>Audit Trail</span>
-                  <Button size="sm" variant="outline" className="rounded-xl text-xs" disabled title="Audit trail export is available from the Recruitment Audit page.">
-                    <FileText className="h-3.5 w-3.5 mr-1" /> Export
-                  </Button>
+                  <a href="/api/v1/recruitment/export?type=audit" download>
+                    <Button size="sm" variant="outline" className="rounded-xl text-xs">
+                      <FileText className="h-3.5 w-3.5 mr-1" /> Export
+                    </Button>
+                  </a>
                 </CardTitle>
               </CardHeader>
               <CardContent>
