@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { analyseMedications, type MedicationRecord, type MedicationProfile } from "@/lib/cara/medication-intelligence";
 
 // ── Demo data ───────────────────────────────────────────────────────────────
@@ -70,6 +71,15 @@ export async function GET(req: NextRequest) {
   try {
     const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
     const days = parseInt(req.nextUrl.searchParams.get("days") ?? "7", 10);
+
+    // Live tenants have no medication-administration source wired to this
+    // route yet — was leaking fabricated Jordan P/Sam W controlled-drug
+    // administration records unconditionally until 2026-07-29. Return an
+    // empty analysis on live; frontend renders its existing empty state.
+    if (isLiveTenant()) {
+      const analysis = analyseMedications([], [], homeId, days);
+      return NextResponse.json({ ok: true, data: analysis, live_no_data: true });
+    }
 
     const { records, profiles } = getDemoData(homeId);
     const analysis = analyseMedications(records, profiles, homeId, days);

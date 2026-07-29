@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { analyseKeyWork, type KeyWorkSession, type KeyWorkConfig } from "@/lib/cara/key-work-quality";
 
 // ── Demo data ───────────────────────────────────────────────────────────────
@@ -68,6 +69,14 @@ export async function GET(req: NextRequest) {
   try {
     const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
     const days = parseInt(req.nextUrl.searchParams.get("days") ?? "28", 10);
+
+    // Live tenants: was leaking fabricated Jordan/Sam/Alex key-work sessions
+    // (with keyworker pairings, DofE topics, etc.) unconditionally until
+    // 2026-07-29. Return an empty analysis on live.
+    if (isLiveTenant()) {
+      const analysis = analyseKeyWork([], [], homeId, days);
+      return NextResponse.json({ ok: true, data: analysis, live_no_data: true });
+    }
 
     const { sessions, configs } = getDemoData();
     const analysis = analyseKeyWork(sessions, configs, homeId, days);

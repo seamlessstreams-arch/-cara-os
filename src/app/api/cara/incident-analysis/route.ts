@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { analyseIncidents, type IncidentRecord } from "@/lib/cara/incident-analysis";
 
 // ── Demo data ───────────────────────────────────────────────────────────────
@@ -41,6 +42,14 @@ export async function GET(req: NextRequest) {
   try {
     const homeId = req.nextUrl.searchParams.get("homeId") ?? "home_oak";
     const days = parseInt(req.nextUrl.searchParams.get("days") ?? "28", 10);
+
+    // Live tenants: was leaking fabricated Jordan P/Sam W/Alex R incident
+    // records (self-harm, restraint, missing episodes) unconditionally until
+    // 2026-07-29. Return an empty analysis on live.
+    if (isLiveTenant()) {
+      const analysis = analyseIncidents([], homeId, days);
+      return NextResponse.json({ ok: true, data: analysis, live_no_data: true });
+    }
 
     const records = getDemoData();
     const analysis = analyseIncidents(records, homeId, days);

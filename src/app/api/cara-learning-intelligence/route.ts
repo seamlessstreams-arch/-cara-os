@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isLiveTenant } from "@/lib/db/live-mode";
 import { generateCaraLearningIntelligence } from "@/lib/cara-learning";
 import type {
   CaraLearningRecord,
@@ -48,13 +49,25 @@ const DEMO_STAFF: StaffCaraLearningTraining[] = [
 // ── Handler ───────────────────────────────────────────────────────────────
 
 export async function GET() {
+  // Live tenants: was leaking fabricated Alex/Jordan/Morgan learning records
+  // unconditionally until 2026-07-29. Return an empty response on live.
+  const live = isLiveTenant();
+  const emptyPolicy: CaraLearningPolicy = {
+    agentLearningPolicy: false,
+    costReductionFramework: false,
+    qualityAssurancePolicy: false,
+    dataProtectionForAgents: false,
+    performanceBenchmarkingPolicy: false,
+    humanOversightPolicy: false,
+    agentCapabilityReviewPolicy: false,
+  };
   const result = generateCaraLearningIntelligence({
     homeId: "home-oak",
     periodStart: "2026-01-01",
     periodEnd: "2026-05-21",
-    records: DEMO_RECORDS,
-    policy: DEMO_POLICY,
-    staff: DEMO_STAFF,
+    records: live ? [] : DEMO_RECORDS,
+    policy: live ? emptyPolicy : DEMO_POLICY,
+    staff: live ? [] : DEMO_STAFF,
   });
 
   return NextResponse.json({
@@ -65,6 +78,7 @@ export async function GET() {
         engine: "cara-learning-intelligence",
         version: "2.0.0",
       },
+      ...(live && { live_no_data: true }),
     },
   });
 }
