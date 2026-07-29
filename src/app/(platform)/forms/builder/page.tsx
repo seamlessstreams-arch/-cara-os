@@ -184,6 +184,33 @@ export default function FormBuilderPage() {
   const [formCategory, setFormCategory] = useState("incident_reporting");
   const [paletteCategory, setPaletteCategory] = useState("basic");
 
+  // Save Template → download the template as portable JSON. No form_templates
+  // table exists yet (would need its own migration + save/load endpoints), so
+  // JSON export is the honest bridge: the user gets a real artifact they can
+  // save, share, and re-import once import is wired. Same idiom as the
+  // recruitment CSV exports and Reg44 pack (client-side download, no
+  // integration required).
+  function handleSaveTemplate() {
+    const template = {
+      // Version so a future importer can migrate schemas rather than fail.
+      schema_version: "1.0.0",
+      exported_at: new Date().toISOString(),
+      title: formTitle,
+      category: formCategory,
+      fields,
+    };
+    const json = JSON.stringify(template, null, 2);
+    const slug = formTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "form-template";
+    const filename = `${slug}-template-${new Date().toISOString().slice(0, 10)}.json`;
+    const blob = new Blob([json], { type: "application/json;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const selectedField = selectedFieldId ? fields.find((f) => f.id === selectedFieldId) : null;
 
   const addField = useCallback((type: FormFieldType) => {
@@ -266,7 +293,7 @@ export default function FormBuilderPage() {
               <Eye className="h-4 w-4" /> Preview
             </Button>
           </div>
-          <Button size="sm" className="gap-1.5">
+          <Button size="sm" className="gap-1.5" onClick={handleSaveTemplate} title="Download this template as JSON — save it, share it, or re-import later (import UI is a follow-up).">
             <Save className="h-4 w-4" /> Save Template
           </Button>
         </div>
