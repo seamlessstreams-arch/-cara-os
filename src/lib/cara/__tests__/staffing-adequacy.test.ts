@@ -63,7 +63,11 @@ describe("Staffing Adequacy Analyser", () => {
       const result = analyseStaffingAdequacy([], [], [], defaultConfig, 7);
       expect(result.homeId).toBe("home_oak");
       expect(result.windowDays).toBe(7);
-      expect(result.overallScore).toBe(100);
+      // No rota to score against → null + "not_assessed", NOT a fabricated
+      // 100. This is the fab-on-empty fix (previous behaviour: a genuinely
+      // empty rota produced a green "fully staffed" score on a live tenant).
+      expect(result.overallScore).toBeNull();
+      expect(result.overallStatus).toBe("not_assessed");
       expect(result.shiftAssessments).toHaveLength(0);
       expect(result.gaps).toHaveLength(0);
       expect(result.alerts).toHaveLength(0);

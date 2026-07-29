@@ -81,9 +81,9 @@ function makeCandidate(overrides: Partial<CandidateProfile> = {}): CandidateProf
     phone: "07000000000",
     dob: "1990-05-01",
     current_address: null,
-    source: "website",
-    current_stage: "shortlisted",
-    compliance_status: "pending",
+    source: "other",
+    current_stage: "interview_completed",
+    compliance_status: "not_started",
     risk_level: "low",
     shortlisted: true,
     appointed: false,
@@ -168,9 +168,9 @@ describe("candidateAuditCsv", () => {
 describe("timeToAppointCsv", () => {
   it("only includes candidates with current_stage='appointed' AND appointed=true", () => {
     const csv = timeToAppointCsv([
-      makeCandidate({ id: "in_pipeline", current_stage: "shortlisted", appointed: false }),
+      makeCandidate({ id: "in_pipeline", current_stage: "interview_completed", appointed: false }),
       makeCandidate({ id: "appointed_stage_only", current_stage: "appointed", appointed: false }),
-      makeCandidate({ id: "appointed_flag_only", current_stage: "shortlisted", appointed: true }),
+      makeCandidate({ id: "appointed_flag_only", current_stage: "interview_completed", appointed: true }),
       makeCandidate({ id: "truly_appointed", current_stage: "appointed", appointed: true }),
     ]);
     const lines = csv.split("\r\n").filter(Boolean);
