@@ -80,6 +80,11 @@ export function below(score: number | null | undefined, threshold: number): bool
   return typeof score === "number" && Number.isFinite(score) && score < threshold;
 }
 
+/** True when a score exists and is strictly above `threshold`. Symmetric to `meets`/`below`. */
+export function above(score: number | null | undefined, threshold: number): boolean {
+  return typeof score === "number" && Number.isFinite(score) && score > threshold;
+}
+
 /** Render a rate for display: "87%" or an em dash when unmeasured. */
 export function formatRate(score: number | null | undefined, unmeasured = "—"): string {
   return typeof score === "number" && Number.isFinite(score) ? `${score}%` : unmeasured;

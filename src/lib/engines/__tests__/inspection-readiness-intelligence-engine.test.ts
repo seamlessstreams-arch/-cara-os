@@ -179,4 +179,42 @@ describe("Inspection Readiness Intelligence Engine", () => {
     const risk = result.key_risks.find((r) => r.risk.includes("escalated"));
     expect(risk).toBeDefined();
   });
+
+  // ── Fab-0 fix: null-input handling (2026-07-29) ─────────────────────────────
+  // When there are no SEF actions to score / no complaints have been resolved,
+  // the route now passes null (not 0). The engine must treat null as "no signal"
+  // — not push false-negative recommendations, not warn about phantom slow
+  // resolution, not fabricate a positive strength either.
+
+  it("does NOT push 'Complete SEF action plan' when action_completion_rate is null", () => {
+    const result = computeInspectionReadiness(baseInput({
+      self_evaluation: { has_current_sef: true, last_updated: "2026-05-01", judgment_area_coverage: 3, action_completion_rate: null },
+    }));
+    const sefAction = result.action_priorities.find((a) => a.action.includes("SEF action plan"));
+    expect(sefAction).toBeUndefined();
+  });
+
+  it("does NOT push the 'strong self-evaluation' positive insight when action_completion_rate is null", () => {
+    const result = computeInspectionReadiness(baseInput({
+      self_evaluation: { has_current_sef: true, last_updated: "2026-05-01", judgment_area_coverage: 3, action_completion_rate: null },
+    }));
+    const positive = result.insights.find((i) => i.text.includes("Strong self-evaluation"));
+    expect(positive).toBeUndefined();
+  });
+
+  it("does NOT warn about slow complaint resolution when average_resolution_days is null", () => {
+    const result = computeInspectionReadiness(baseInput({
+      complaints_summary: { open_complaints: 0, complaints_this_quarter: 0, average_resolution_days: null, escalated_to_ofsted: 0 },
+    }));
+    const slowWarn = result.insights.find((i) => i.text.includes("complaint resolution"));
+    expect(slowWarn).toBeUndefined();
+  });
+
+  it("evidence_strength for self_evaluation is 'adequate' (not 'strong') when action_completion_rate is null but SEF exists", () => {
+    const result = computeInspectionReadiness(baseInput({
+      self_evaluation: { has_current_sef: true, last_updated: "2026-05-01", judgment_area_coverage: 3, action_completion_rate: null },
+    }));
+    const sef = result.evidence_strength.find((e) => e.category === "self_evaluation");
+    expect(sef?.strength).toBe("adequate");
+  });
 });

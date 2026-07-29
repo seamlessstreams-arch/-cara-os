@@ -7,7 +7,7 @@
 // CHR 2015 (all regulations). SCCIF: All three judgment areas.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meanOf, meets, below, rate } from "@/lib/metrics/rate";
+import { meanOf, meets, below, above, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -72,13 +72,17 @@ export interface SelfEvaluationStatus {
   has_current_sef: boolean;
   last_updated: string | null;
   judgment_area_coverage: number;
-  action_completion_rate: number;
+  // null when there are no SEF actions to measure against — an empty action
+  // plan is not 0% complete. Same doctrine as StaffComplianceSummary below.
+  action_completion_rate: number | null;
 }
 
 export interface ComplaintsSummary {
   open_complaints: number;
   complaints_this_quarter: number;
-  average_resolution_days: number;
+  // null when no complaints have been resolved this period — an empty log is
+  // not "0 days to resolve" (that reads as instant/perfect), it's unmeasured.
+  average_resolution_days: number | null;
   escalated_to_ofsted: number;
 }
 
@@ -517,7 +521,7 @@ function assessEvidenceStrength(input: InspectionReadinessInput): EvidenceStreng
       category: "self_evaluation",
       label: "Self-Evaluation (SEF)",
       check: () => ({
-        strength: input.self_evaluation.has_current_sef && input.self_evaluation.action_completion_rate >= 80 ? "strong" :
+        strength: input.self_evaluation.has_current_sef && meets(input.self_evaluation.action_completion_rate, 80) ? "strong" :
                   input.self_evaluation.has_current_sef ? "adequate" : "missing",
         count: input.self_evaluation.has_current_sef ? 1 : 0,
         updated: input.self_evaluation.last_updated,
@@ -769,7 +773,9 @@ function buildActionPriorities(
     });
   }
 
-  if (input.self_evaluation.action_completion_rate < 80 && input.self_evaluation.has_current_sef) {
+  // Only recommend "complete plan" when we HAVE a measured rate and it's low.
+  // A null rate (no actions to score) is not evidence to nudge on.
+  if (input.self_evaluation.has_current_sef && below(input.self_evaluation.action_completion_rate, 80)) {
     actions.push({
       rank: ++rank,
       action: `Complete SEF action plan — currently at ${input.self_evaluation.action_completion_rate}%`,
@@ -845,7 +851,7 @@ function generateInsights(
     insights.push({ text: "DBS non-compliance is the single highest-risk finding in any Ofsted inspection — address immediately.", severity: "critical" });
   }
 
-  if (input.self_evaluation.has_current_sef && input.self_evaluation.action_completion_rate >= 80) {
+  if (input.self_evaluation.has_current_sef && meets(input.self_evaluation.action_completion_rate, 80)) {
     insights.push({ text: "Strong self-evaluation with high action completion demonstrates reflective leadership practice.", severity: "positive" });
   }
 
@@ -858,7 +864,7 @@ function generateInsights(
     insights.push({ text: `${weakJudgment.area_label} at ${weakJudgment.score}% — this area will be the inspector's primary focus.`, severity: "warning" });
   }
 
-  if (input.complaints_summary.average_resolution_days > 20) {
+  if (above(input.complaints_summary.average_resolution_days, 20)) {
     insights.push({ text: `Average complaint resolution at ${input.complaints_summary.average_resolution_days} days — inspector will examine whether resolution is timely.`, severity: "warning" });
   }
 

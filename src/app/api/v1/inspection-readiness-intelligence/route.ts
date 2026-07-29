@@ -45,15 +45,18 @@ export async function GET() {
     : null;
   const sefActions = selfEvalAreas.flatMap((a: any) => a.actions ?? []);
   const sefCompleted = sefActions.filter((a: any) => a.status === "completed").length;
-  const sefCompletionRate = sefActions.length > 0 ? Math.round((sefCompleted / sefActions.length) * 100) : 0;
+  // Null on empty (no actions to score) — an empty action plan is not 0% complete.
+  const sefCompletionRate = sefActions.length > 0 ? Math.round((sefCompleted / sefActions.length) * 100) : null;
 
   const complaints = store.complaintOutcomeRecords ?? [];
   const openComplaints = complaints.filter((c: any) => !c.date_resolved).length;
   const complaintsThisQ = complaints.filter((c: any) => (c.complaint_date ?? c.created_at ?? "") >= quarterStart).length;
   const resolvedComplaints = complaints.filter((c: any) => c.date_resolved && c.response_time_days);
+  // Null when no complaints have been RESOLVED — "0 days to resolve" reads as
+  // instant/perfect. above() in the engine treats null as "no signal".
   const avgResolution = resolvedComplaints.length > 0
     ? Math.round(resolvedComplaints.reduce((s: number, c: any) => s + (c.response_time_days ?? 0), 0) / resolvedComplaints.length)
-    : 0;
+    : null;
   const escalated = complaints.filter((c: any) => c.ofsted_notified || c.escalated).length;
 
   const dbsCompliant = staff.filter((s) => s.dbs_number && s.dbs_issue_date).length;
