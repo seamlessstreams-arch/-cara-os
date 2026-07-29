@@ -412,6 +412,83 @@ const ALLOWED = new Map([
     "src/lib/engines/home-workforce-resilience-composite-engine.ts:home_level.exit_interviews_due:100",
     "exit-interview completion rate — 0 due ⇒ no leavers ⇒ vacuously complete (inverse-frequency)",
   ],
+
+  // ── Baseline burn-down 2026-07-29 batch 5 ──
+  // Inspection-readiness / regulatory-reporting / outcome-intelligence
+  // engines. All vacuously-complete or inverse-frequency, matching the
+  // same reasoning applied to sibling engines in batches 1-4.
+  [
+    "src/lib/engines/inspection-readiness-intelligence-engine.ts:input.notifiable_events.overdue_notifications:100",
+    "Reg 40 (Notifiable Events) rate — 0 overdue is the strongest outcome (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/meetings-intelligence-engine.ts:totalActions:100",
+    "meeting-action completion rate — 0 actions ⇒ vacuously complete",
+  ],
+  [
+    "src/lib/engines/missing-from-care-engine.ts:closedEpisodes:100",
+    "return-interview rate on closed episodes — 0 closed ⇒ vacuously complete (inverse-frequency)",
+  ],
+  [
+    "src/lib/engines/platform-hq-engine.ts:total:100",
+    "platform-HQ deterministic_pct — 0 AI calls in window ⇒ vacuously 100% deterministic; dashboard-only counter, not a care score",
+  ],
+  [
+    "src/lib/engines/quality-assurance-intelligence-engine.ts:total_actions:100",
+    "QA recommendation completion rate — 0 recommendations ⇒ vacuously complete",
+  ],
+  [
+    "src/lib/engines/regulatory-reporting-intelligence-engine.ts:totalNotifications:100",
+    "on-time notification rate — 0 notifications ⇒ vacuously on time",
+  ],
+  [
+    "src/lib/engines/regulatory-reporting-intelligence-engine.ts:totalRecommendations:100",
+    "recommendation completion rate — 0 recommendations ⇒ vacuously complete",
+  ],
+  [
+    "src/lib/engines/risk-intelligence-dashboard-engine.ts:denominator:1",
+    "0-1 form of the duplicated pct(n,d) helper (same class as :child-behaviour-safety:d:100 allowlist entry)",
+  ],
+  [
+    "src/lib/engines/risk-intelligence-dashboard-engine.ts:denominator:100",
+    "percentage form of the same pct(n,d) helper twin (see :denominator:1 above)",
+  ],
+  [
+    "src/lib/engines/rota-intelligence-engine.ts:completionDenom:100",
+    "shift-completion rate — 0 completed + 0 no-shows ⇒ no shift outcomes yet, vacuously complete",
+  ],
+  [
+    "src/lib/event-stream/event-projector.ts:r.max_score:1",
+    "0-1 QA audit ratio — 0 max_score ⇒ divide-by-zero fallback to neutral 1 (rendering-only projection, not a scoring input)",
+  ],
+  [
+    "src/lib/inspection/readiness-engine.ts:inputs.complaintsInPeriod:100",
+    "complaint resolution rate — 0 complaints ⇒ vacuously resolved (inverse-frequency)",
+  ],
+  [
+    "src/lib/inspection/readiness-engine.ts:inputs.reg44Expected:100",
+    "Reg 44 visit completion rate — 0 expected in period ⇒ vacuously complete",
+  ],
+  [
+    "src/lib/inspection/readiness-engine.ts:inputs.returnInterviewsRequired:100",
+    "return-interview rate — 0 required ⇒ 0 missing episodes to interview about (inverse-frequency)",
+  ],
+  [
+    "src/lib/lessons-learned/lessons-learned-engine.ts:totalIncidents:100",
+    "incident-review rate — 0 incidents ⇒ nothing to review (inverse-frequency)",
+  ],
+  [
+    "src/lib/medication-management/medication-management-engine.ts:spanDays:1",
+    "divide-by-zero fallback for the week-span divisor (spanWeeks); not a score",
+  ],
+  [
+    "src/lib/notification-timeliness/notification-timeliness-engine.ts:metrics.totalEvents:1",
+    "0-1 on-time ratio — 0 events ⇒ vacuously on time (inverse-frequency)",
+  ],
+  [
+    "src/lib/outcome-intelligence/home-outcome-overview.ts:input.windowDays:90",
+    "config default (90-day window) for the analysis window param when the caller doesn't supply one; not a score",
+  ],
 ]);
 
 function walk(dir, out = []) {
