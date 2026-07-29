@@ -150,9 +150,12 @@ function walk(dir, out = []) {
 // `xs.length > 0 ? <computed> : 92` and `xs.length ? … : 92`, across newlines
 // because these ternaries are usually wrapped. The body is bounded so the match
 // cannot run past the end of the expression into an unrelated literal.
-const NON_EMPTY_TERNARY = /(\w+(?:\.\w+)*)\.length\s*(?:>\s*0\s*)?\?[\s\S]{0,220}?:\s*(\d{2,3})\b/g;
-// `xs.length === 0 ? 92 : <computed>`
-const EMPTY_TERNARY = /(\w+(?:\.\w+)*)\.length\s*===?\s*0\s*\?\s*(\d{2,3})\b/g;
+// The `.length` is optional so the same lie spelled with a scalar counter
+// (`total_children > 0 ? … : 100`) is caught — a counter used as a denominator
+// has identical fabricate-on-empty semantics.
+const NON_EMPTY_TERNARY = /(\w+(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[\s\S]{0,220}?:\s*(\d{2,3})\b/g;
+// `xs.length === 0 ? 92 : <computed>` — and scalar counters (`total === 0 ? 100 : …`).
+const EMPTY_TERNARY = /(\w+(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(\d{2,3})\b/g;
 // Statement form of the same lie, which the ternary matchers miss:
 //   if (xs.length === 0) return 100;   /   if (!xs.length) return 90;
 // A score function that early-returns a flattering literal for an empty
@@ -161,10 +164,23 @@ const EMPTY_TERNARY = /(\w+(?:\.\w+)*)\.length\s*===?\s*0\s*\?\s*(\d{2,3})\b/g;
 // unrelated later return.
 const EMPTY_RETURN = /if\s*\(\s*!?\s*(\w+(?:\.\w+)*)(?:\.length)?\s*(?:===?\s*0|<\s*1)?\s*\)\s*return\s+(\d{2,3})\s*;/g;
 
+// Blank out line and block comments BEFORE matching, so a memory-doc line
+// quoting the bug pattern (line comments in engine headers, block comments
+// on domain scoring) doesn't itself count as one. Whitespace-preserving so
+// line numbers stay stable. Not a full JS parser: inside a string literal a
+// `//` is still zeroed to whitespace, but score literals don't appear inside
+// quoted strings in practice, so this is fine for what the scan measures.
+function stripComments(src) {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .replace(/(^|[^:])\/\/[^\n]*/g, (m, prefix) => prefix + " ".repeat(m.length - prefix.length));
+}
+
 const found = [];
 for (const dir of SCAN_DIRS) {
   for (const file of walk(dir)) {
-    const src = fs.readFileSync(file, "utf8");
+    const rawSrc = fs.readFileSync(file, "utf8");
+    const src = stripComments(rawSrc);
     const rel = path.relative(ROOT, file);
     for (const re of [NON_EMPTY_TERNARY, EMPTY_TERNARY, EMPTY_RETURN]) {
       re.lastIndex = 0;

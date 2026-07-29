@@ -187,18 +187,23 @@ async function generateLivePulse(homeId: string): Promise<RegulatoryPulse> {
     .gte("date", sevenDaysAgo);
 
   const expectedLogs = childCount * 7;
-  const logScore = expectedLogs > 0 ? Math.min(100, Math.round(((logCount ?? 0) / expectedLogs) * 100)) : 100;
-  const logStatus: ComplianceStatus = logScore >= 80 ? "green" : logScore >= 60 ? "amber" : "red";
+  // Skip the daily-log check on a fresh home with no children — the previous
+  // default (100% compliant on zero expected) told a manager "records look
+  // great" while the register was empty. Don't push a check we can't measure.
+  if (expectedLogs > 0) {
+    const logScore = Math.min(100, Math.round(((logCount ?? 0) / expectedLogs) * 100));
+    const logStatus: ComplianceStatus = logScore >= 80 ? "green" : logScore >= 60 ? "amber" : "red";
 
-  checks.push({
-    regulation: "Reg 36 — Records",
-    description: "Individual case records maintained and up to date",
-    status: logStatus,
-    score: logScore,
-    detail: `${logCount ?? 0} daily logs recorded in the last 7 days across ${childCount} young people (${logScore}% of expected).`,
-    actionRequired: logStatus !== "green" ? "Review daily recording compliance with the team" : undefined,
-    sccifArea: "Leadership & Management",
-  });
+    checks.push({
+      regulation: "Reg 36 — Records",
+      description: "Individual case records maintained and up to date",
+      status: logStatus,
+      score: logScore,
+      detail: `${logCount ?? 0} daily logs recorded in the last 7 days across ${childCount} young people (${logScore}% of expected).`,
+      actionRequired: logStatus !== "green" ? "Review daily recording compliance with the team" : undefined,
+      sccifArea: "Leadership & Management",
+    });
+  }
 
   // Reg 40 — Monitoring: incidents with oversight
   const { data: recentIncidents } = await (sb.from("cs_incidents") as SB)
@@ -247,23 +252,32 @@ async function generateLivePulse(homeId: string): Promise<RegulatoryPulse> {
     .gte("date", thirtyDaysAgo);
 
   const expectedKeyWork = childCount * 2; // 2 per child per month
-  const keyWorkScore = expectedKeyWork > 0 ? Math.min(100, Math.round(((keyWorkCount ?? 0) / expectedKeyWork) * 100)) : 100;
-  const keyWorkStatus: ComplianceStatus = keyWorkScore >= 80 ? "green" : keyWorkScore >= 60 ? "amber" : "red";
+  // Skip the key-work check on a home with no children — same class of
+  // fabrication as the daily-log check above.
+  if (expectedKeyWork > 0) {
+    const keyWorkScore = Math.min(100, Math.round(((keyWorkCount ?? 0) / expectedKeyWork) * 100));
+    const keyWorkStatus: ComplianceStatus = keyWorkScore >= 80 ? "green" : keyWorkScore >= 60 ? "amber" : "red";
 
-  checks.push({
-    regulation: "Reg 9 — Quality of Care",
-    description: "Care meets assessed needs in care plans",
-    status: keyWorkStatus,
-    score: keyWorkScore,
-    detail: `${keyWorkCount ?? 0} key work sessions in the last 30 days (expected: ${expectedKeyWork}).`,
-    actionRequired: keyWorkStatus !== "green" ? "Schedule overdue key work sessions" : undefined,
-    sccifArea: "Experiences & Progress",
-  });
+    checks.push({
+      regulation: "Reg 9 — Quality of Care",
+      description: "Care meets assessed needs in care plans",
+      status: keyWorkStatus,
+      score: keyWorkScore,
+      detail: `${keyWorkCount ?? 0} key work sessions in the last 30 days (expected: ${expectedKeyWork}).`,
+      actionRequired: keyWorkStatus !== "green" ? "Schedule overdue key work sessions" : undefined,
+      sccifArea: "Experiences & Progress",
+    });
+  }
 
-  // Calculate overall
+  // Calculate overall — guard against a zero-checks state (fresh home with no
+  // children yet) so overallScore isn't NaN.
   const scores = checks.map((c) => c.score);
-  const overallScore = Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length);
-  const overallStatus: ComplianceStatus = overallScore >= 80 ? "green" : overallScore >= 60 ? "amber" : "red";
+  const overallScore = scores.length > 0
+    ? Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length)
+    : 0;
+  const overallStatus: ComplianceStatus = scores.length === 0
+    ? "amber"
+    : overallScore >= 80 ? "green" : overallScore >= 60 ? "amber" : "red";
 
   return {
     date: today.toISOString().slice(0, 10),

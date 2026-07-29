@@ -543,7 +543,7 @@ export async function GET() {
       total_alerts: education.alerts.length,
       compliance_rate: education.overview.total_children > 0
         ? Math.round((education.overview.in_education / education.overview.total_children) * 100)
-        : 100,
+        : null,
       overdue_count: education.overview.pep_overdue_count,
       improving_count: 0,
       worsening_count: education.overview.neet_count,
