@@ -16,20 +16,9 @@
   "src/lib/multi-agency-effectiveness/multi-agency-effectiveness-engine.ts:childEscalations:1",
   "src/lib/notification-timeliness/notification-timeliness-engine.ts:delayedCount:100",
   "src/lib/notification-timeliness/notification-timeliness-engine.ts:totalSent:100",
-  "src/lib/outcome-intelligence/outcome-intelligence-engine.ts:input.windowDays:90",
   "src/lib/quality-assurance/quality-assurance-engine.ts:followUpRequired:1",
-  "src/lib/record-quality/record-quality-engine.ts:r.mandatoryFieldsTotal:100",
-  "src/lib/sanctions/sanctions-engine.ts:escalatedCount:1",
-  "src/lib/services/complaints-service.ts:complianceDenominator:100",
   "src/lib/services/daily-recording-service.ts:qualityScoreCount:100",
-  "src/lib/services/deprivation-of-liberty-service.ts:activeRestrictionsCount:100",
-  "src/lib/services/incident-analytics-service.ts:required:100",
   "src/lib/services/independence-preparation-service.ts:totalChildren:1",
-  "src/lib/services/notifiable-events-service.ts:totalRequired:100",
   "src/lib/services/policies-register-service.ts:policyAcks:1",
-  "src/lib/services/premises-service.ts:applicableDenominator:100",
-  "src/lib/services/premises-service.ts:statutoryTotal:100",
-  "src/lib/services/safeguarding-service.ts:ofstedRequired:100",
-  "src/lib/services/staff-wellbeing-service.ts:wellbeingCount:1",
-  "src/lib/trauma-informed/trauma-informed-engine.ts:reviewableCount:100"
+  "src/lib/services/staff-wellbeing-service.ts:wellbeingCount:1"
 ]

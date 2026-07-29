@@ -489,6 +489,56 @@ const ALLOWED = new Map([
     "src/lib/outcome-intelligence/home-outcome-overview.ts:input.windowDays:90",
     "config default (90-day window) for the analysis window param when the caller doesn't supply one; not a score",
   ],
+
+  // ── Baseline burn-down 2026-07-29 batch 6 ──
+  // Services + record-quality + sanctions + trauma-informed. Same
+  // themes as prior batches: vacuously-complete on zero-denominator
+  // records or inverse-frequency where zero adverse events is the
+  // best real outcome.
+  [
+    "src/lib/outcome-intelligence/outcome-intelligence-engine.ts:input.windowDays:90",
+    "twin of :home-outcome-overview:input.windowDays:90 — 90-day config default",
+  ],
+  [
+    "src/lib/record-quality/record-quality-engine.ts:r.mandatoryFieldsTotal:100",
+    "per-record mandatory-fields completion — 0 expected fields ⇒ nothing to score against; matches the scoreCompleteness/oversight referral-completion allowlist reasoning",
+  ],
+  [
+    "src/lib/sanctions/sanctions-engine.ts:escalatedCount:1",
+    "noEscalation indicator (`escalatedCount === 0 ? 1 : 0`) — inverse-frequency: zero escalated outcomes is the safest sanction pattern",
+  ],
+  [
+    "src/lib/services/complaints-service.ts:complianceDenominator:100",
+    "complaint-timescale compliance rate — 0 in-scope complaints ⇒ vacuously compliant (inverse-frequency)",
+  ],
+  [
+    "src/lib/services/deprivation-of-liberty-service.ts:activeRestrictionsCount:100",
+    "child-consultation + proportionality rates on active restrictions — 0 restrictions ⇒ vacuously compliant (inverse-frequency); covers both :232 and :239 sites",
+  ],
+  [
+    "src/lib/services/incident-analytics-service.ts:required:100",
+    "notifiable-incident compliance percentage — 0 notifiable events required ⇒ vacuously compliant (inverse-frequency)",
+  ],
+  [
+    "src/lib/services/notifiable-events-service.ts:totalRequired:100",
+    "on-time notification rate — 0 required ⇒ vacuously compliant (inverse-frequency)",
+  ],
+  [
+    "src/lib/services/premises-service.ts:applicableDenominator:100",
+    "premises check pass rate — 0 applicable checks ⇒ vacuously compliant",
+  ],
+  [
+    "src/lib/services/premises-service.ts:statutoryTotal:100",
+    "statutory certification pass rate — 0 statutory items in scope ⇒ vacuously compliant",
+  ],
+  [
+    "src/lib/services/safeguarding-service.ts:ofstedRequired:100",
+    "Ofsted notification compliance — 0 required ⇒ vacuously compliant (inverse-frequency)",
+  ],
+  [
+    "src/lib/trauma-informed/trauma-informed-engine.ts:reviewableCount:100",
+    "review currency rate on trauma-informed plans — 0 reviewable ⇒ vacuously current (inverse-frequency)",
+  ],
 ]);
 
 function walk(dir, out = []) {
