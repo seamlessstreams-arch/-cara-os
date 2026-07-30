@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { ClothingLabellingRating } from "@/lib/engines/home-clothing-labelling-storage-intelligence-engine";
 
@@ -73,24 +74,24 @@ export function HomeClothingLabellingStorageIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.labelling_compliance_rate >= 90 ? "text-[--cs-success]" : d.labelling_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.labelling_compliance_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Labelling</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.storage_adequacy_rate >= 90 ? "bg-green-50" : d.storage_adequacy_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.storage_adequacy_rate >= 90 ? "text-[--cs-success]" : d.storage_adequacy_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.storage_adequacy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.storage_adequacy_rate, 90) ? "bg-green-50" : meets(d.storage_adequacy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.storage_adequacy_rate, 90) ? "text-[--cs-success]" : meets(d.storage_adequacy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.storage_adequacy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Storage</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.seasonal_rotation_rate >= 90 ? "bg-green-50" : d.seasonal_rotation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.seasonal_rotation_rate >= 90 ? "text-[--cs-success]" : d.seasonal_rotation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.seasonal_rotation_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Rotation</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.ownership_respect_rate >= 90 ? "bg-green-50" : d.ownership_respect_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.ownership_respect_rate >= 90 ? "text-[--cs-success]" : d.ownership_respect_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.ownership_respect_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.ownership_respect_rate, 90) ? "bg-green-50" : meets(d.ownership_respect_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.ownership_respect_rate, 90) ? "text-[--cs-success]" : meets(d.ownership_respect_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.ownership_respect_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Ownership</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.condition_monitoring_rate >= 90 ? "bg-green-50" : d.condition_monitoring_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.condition_monitoring_rate >= 90 ? "text-[--cs-success]" : d.condition_monitoring_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.condition_monitoring_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.condition_monitoring_rate, 90) ? "bg-green-50" : meets(d.condition_monitoring_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.condition_monitoring_rate, 90) ? "text-[--cs-success]" : meets(d.condition_monitoring_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.condition_monitoring_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Condition</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

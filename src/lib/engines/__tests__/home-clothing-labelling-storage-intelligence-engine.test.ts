@@ -186,11 +186,11 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
     it("returns all rates as 0 for insufficient_data", () => {
       const r = computeClothingLabellingStorage(baseInput({ total_children: 0 }));
       expect(r.labelling_compliance_rate).toBe(0);
-      expect(r.storage_adequacy_rate).toBe(0);
+      expect(r.storage_adequacy_rate).toBeNull();
       expect(r.seasonal_rotation_rate).toBe(0);
-      expect(r.ownership_respect_rate).toBe(0);
-      expect(r.condition_monitoring_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.ownership_respect_rate).toBeNull();
+      expect(r.condition_monitoring_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("returns empty arrays for insufficient_data", () => {
@@ -257,11 +257,11 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
     it("all rates are 0", () => {
       const r = computeClothingLabellingStorage(baseInput());
       expect(r.labelling_compliance_rate).toBe(0);
-      expect(r.storage_adequacy_rate).toBe(0);
+      expect(r.storage_adequacy_rate).toBeNull();
       expect(r.seasonal_rotation_rate).toBe(0);
-      expect(r.ownership_respect_rate).toBe(0);
-      expect(r.condition_monitoring_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.ownership_respect_rate).toBeNull();
+      expect(r.condition_monitoring_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("works for total_children=1", () => {
@@ -442,6 +442,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
           storage_clean: false,
         })],
       }));
+      // record exists → 0, not null
       expect(r.storage_adequacy_rate).toBe(0);
     });
 
@@ -464,7 +465,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       const r = computeClothingLabellingStorage(baseInput({
         labelling_records: [makeLabelling()],
       }));
-      expect(r.storage_adequacy_rate).toBe(0);
+      expect(r.storage_adequacy_rate).toBeNull();
     });
 
     it("wardrobe_adequate_size requires wardrobe_available", () => {
@@ -481,6 +482,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       }));
       // wardrobe_available=0%, wardrobe_adequate=0% (because wardrobe not available),
       // drawers_available=0%, drawers_adequate=0%, shoe=0%, clean=0% -> 0%
+      // record exists → 0, not null
       expect(r.storage_adequacy_rate).toBe(0);
     });
   });
@@ -543,6 +545,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
           clothing_reflects_identity: false,
         })],
       }));
+      // record exists → 0, not null
       expect(r.ownership_respect_rate).toBe(0);
     });
 
@@ -562,7 +565,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       const r = computeClothingLabellingStorage(baseInput({
         labelling_records: [makeLabelling()],
       }));
-      expect(r.ownership_respect_rate).toBe(0);
+      expect(r.ownership_respect_rate).toBeNull();
     });
   });
 
@@ -603,7 +606,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       const r = computeClothingLabellingStorage(baseInput({
         labelling_records: [makeLabelling()],
       }));
-      expect(r.condition_monitoring_rate).toBe(0);
+      expect(r.condition_monitoring_rate).toBeNull();
     });
 
     it("handles 0 items needing replacement (replacement_rate = 0)", () => {
@@ -648,7 +651,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       const r = computeClothingLabellingStorage(baseInput({
         labelling_records: [makeLabelling()],
       }));
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("handles mixed satisfaction sources", () => {
@@ -2284,8 +2287,10 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
     it("all core rates are low", () => {
       const r = computeClothingLabellingStorage(poorInput());
       expect(r.labelling_compliance_rate).toBeLessThan(50);
+      // record exists → 0, not null
       expect(r.storage_adequacy_rate).toBe(0);
       expect(r.seasonal_rotation_rate).toBe(0);
+      // record exists → 0, not null
       expect(r.ownership_respect_rate).toBe(0);
       expect(r.condition_monitoring_rate).toBeLessThan(40);
     });
@@ -2313,10 +2318,10 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
         labelling_records: [makeLabelling()],
       }));
       expect(r.labelling_compliance_rate).toBeGreaterThan(0);
-      expect(r.storage_adequacy_rate).toBe(0);
+      expect(r.storage_adequacy_rate).toBeNull();
       expect(r.seasonal_rotation_rate).toBe(0);
-      expect(r.ownership_respect_rate).toBe(0);
-      expect(r.condition_monitoring_rate).toBe(0);
+      expect(r.ownership_respect_rate).toBeNull();
+      expect(r.condition_monitoring_rate).toBeNull();
     });
 
     it("only storage records present", () => {
@@ -2421,6 +2426,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
           storage_clean: false,
         })],
       }));
+      // record exists → 0, not null
       expect(r.storage_adequacy_rate).toBe(0);
     });
 
@@ -2429,11 +2435,11 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
         total_children: 0,
       }));
       expect(r.labelling_compliance_rate).toBe(0);
-      expect(r.storage_adequacy_rate).toBe(0);
+      expect(r.storage_adequacy_rate).toBeNull();
       expect(r.seasonal_rotation_rate).toBe(0);
-      expect(r.ownership_respect_rate).toBe(0);
-      expect(r.condition_monitoring_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.ownership_respect_rate).toBeNull();
+      expect(r.condition_monitoring_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("zero items audited yields 0% labelling compliance without error", () => {
@@ -2452,6 +2458,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
           items_replaced: 0,
         })],
       }));
+      // record exists → 0, not null
       expect(r.condition_monitoring_rate).toBe(0);
     });
   });

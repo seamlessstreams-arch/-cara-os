@@ -11,6 +11,8 @@
 //             clothingConditionRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface ClothingLabellingRecordInput {
@@ -141,12 +143,18 @@ export interface ClothingLabellingStorageResult {
   labelling_rating: ClothingLabellingRating;
   labelling_score: number;
   headline: string;
+  // labelling_compliance_rate + seasonal_rotation_rate use pct() directly
+  // (deterministic 0 on empty). The 4 composite rates below are null on
+  // empty: no source records ⇒ no signal. "0% storage / 0% ownership /
+  // 0% condition monitoring / 0% child satisfaction" would read as a
+  // home where children have no ownership of their clothes, not
+  // "unmeasured". Fab-0 doctrine.
   labelling_compliance_rate: number;
-  storage_adequacy_rate: number;
+  storage_adequacy_rate: number | null;
   seasonal_rotation_rate: number;
-  ownership_respect_rate: number;
-  condition_monitoring_rate: number;
-  child_satisfaction_rate: number;
+  ownership_respect_rate: number | null;
+  condition_monitoring_rate: number | null;
+  child_satisfaction_rate: number | null;
   labelling_records: ClothingLabellingRecordInput[];
   storage_records: ClothingStorageRecordInput[];
   rotation_records: ClothingRotationRecordInput[];
@@ -187,11 +195,11 @@ function emptyResult(
     labelling_score: score,
     headline,
     labelling_compliance_rate: 0,
-    storage_adequacy_rate: 0,
+    storage_adequacy_rate: null,
     seasonal_rotation_rate: 0,
-    ownership_respect_rate: 0,
-    condition_monitoring_rate: 0,
-    child_satisfaction_rate: 0,
+    ownership_respect_rate: null,
+    condition_monitoring_rate: null,
+    child_satisfaction_rate: null,
     labelling_records: [],
     storage_records: [],
     rotation_records: [],
@@ -331,9 +339,9 @@ export function computeClothingLabellingStorage(
         pct(storageClean, totalStorageRecords),
       ]
     : [];
-  const storageAdequacyRate = storageComponents.length > 0
+  const storageAdequacyRate: number | null = storageComponents.length > 0
     ? Math.round(storageComponents.reduce((a, b) => a + b, 0) / storageComponents.length)
-    : 0;
+      : null;
 
   const storageSatisfied = storage_records.filter(
     (r) => r.child_satisfied_with_storage,
@@ -389,10 +397,10 @@ export function computeClothingLabellingStorage(
   const rotationSatisfactionSum = rotation_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const rotationSatisfactionAvg =
+  const rotationSatisfactionAvg: number | null =
     totalRotationRecords > 0
       ? Math.round((rotationSatisfactionSum / totalRotationRecords) * 100) / 100
-      : 0;
+      : null;
 
   // --- Ownership respect ---
   const totalOwnershipRecords = ownership_records.length;
@@ -450,9 +458,9 @@ export function computeClothingLabellingStorage(
         reflectsIdentityRate,
       ]
     : [];
-  const ownershipRespectRate = ownershipComponents.length > 0
+  const ownershipRespectRate: number | null = ownershipComponents.length > 0
     ? Math.round(ownershipComponents.reduce((a, b) => a + b, 0) / ownershipComponents.length)
-    : 0;
+      : null;
 
   // --- Condition monitoring ---
   const totalConditionRecords = condition_records.length;
@@ -478,9 +486,9 @@ export function computeClothingLabellingStorage(
   const goodConditionRate = pct(totalItemsGood, totalItemsChecked);
   const poorConditionRate = pct(totalItemsPoor, totalItemsChecked);
   const replacementRate = pct(totalItemsReplaced, totalItemsNeedingReplacement);
-  const conditionMonitoringRate = totalConditionRecords > 0
+  const conditionMonitoringRate: number | null = totalConditionRecords > 0
     ? Math.round((goodConditionRate + replacementRate) / 2)
-    : 0;
+      : null;
 
   const underwearAdequate = condition_records.filter(
     (r) => r.underwear_adequate,
@@ -516,11 +524,11 @@ export function computeClothingLabellingStorage(
   // Combine satisfaction from storage, rotation, ownership
   const satisfactionSources: number[] = [];
   if (totalStorageRecords > 0) satisfactionSources.push(storageSatisfactionRate);
-  if (totalRotationRecords > 0) satisfactionSources.push(Math.round(rotationSatisfactionAvg * 20)); // scale 1-5 to 0-100
+  if (totalRotationRecords > 0) satisfactionSources.push(Math.round(rotationSatisfactionAvg! * 20)); // scale 1-5 to 0-100
   if (totalOwnershipRecords > 0) satisfactionSources.push(ownershipSatisfactionRate);
-  const childSatisfactionRate = satisfactionSources.length > 0
+  const childSatisfactionRate: number | null = satisfactionSources.length > 0
     ? Math.round(satisfactionSources.reduce((a, b) => a + b, 0) / satisfactionSources.length)
-    : 0;
+      : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -531,24 +539,24 @@ export function computeClothingLabellingStorage(
   else if (labellingComplianceRate >= 70) score += 2;
 
   // --- Bonus 2: storageAdequacyRate (>=90: +5, >=70: +2) ---
-  if (storageAdequacyRate >= 90) score += 5;
-  else if (storageAdequacyRate >= 70) score += 2;
+  if (meets(storageAdequacyRate, 90)) score += 5;
+  else if (meets(storageAdequacyRate, 70)) score += 2;
 
   // --- Bonus 3: seasonalRotationRate (>=90: +4, >=70: +2) ---
   if (seasonalRotationRate >= 90) score += 4;
   else if (seasonalRotationRate >= 70) score += 2;
 
   // --- Bonus 4: ownershipRespectRate (>=90: +4, >=70: +2) ---
-  if (ownershipRespectRate >= 90) score += 4;
-  else if (ownershipRespectRate >= 70) score += 2;
+  if (meets(ownershipRespectRate, 90)) score += 4;
+  else if (meets(ownershipRespectRate, 70)) score += 2;
 
   // --- Bonus 5: conditionMonitoringRate (>=90: +4, >=70: +2) ---
-  if (conditionMonitoringRate >= 90) score += 4;
-  else if (conditionMonitoringRate >= 70) score += 2;
+  if (meets(conditionMonitoringRate, 90)) score += 4;
+  else if (meets(conditionMonitoringRate, 70)) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=80: +3, >=60: +1) ---
-  if (childSatisfactionRate >= 80) score += 3;
-  else if (childSatisfactionRate >= 60) score += 1;
+  if (meets(childSatisfactionRate, 80)) score += 3;
+  else if (meets(childSatisfactionRate, 60)) score += 1;
 
   // --- Bonus 7: weatherAppropriateRate (>=90: +3, >=70: +1) ---
   if (weatherAppropriateRate >= 90) score += 3;
@@ -561,11 +569,11 @@ export function computeClothingLabellingStorage(
   // labellingComplianceRate < 50 -> -5
   if (labellingComplianceRate < 50 && totalItemsAudited > 0) score -= 5;
 
-  // storageAdequacyRate < 50 -> -5
-  if (storageAdequacyRate < 50 && totalStorageRecords > 0) score -= 5;
+  // below(storageAdequacyRate, 50) -> -5
+  if (below(storageAdequacyRate, 50) && totalStorageRecords > 0) score -= 5;
 
-  // conditionMonitoringRate < 40 -> -4
-  if (conditionMonitoringRate < 40 && totalConditionRecords > 0) score -= 4;
+  // below(conditionMonitoringRate, 40) -> -4
+  if (below(conditionMonitoringRate, 40) && totalConditionRecords > 0) score -= 4;
 
   // childEmbarrassedRate >= 30 -> -4
   if (childEmbarrassedRate >= 30 && totalConditionRecords > 0) score -= 4;
@@ -618,11 +626,11 @@ export function computeClothingLabellingStorage(
     );
   }
 
-  if (storageAdequacyRate >= 90 && totalStorageRecords > 0) {
+  if (meets(storageAdequacyRate, 90) && totalStorageRecords > 0) {
     strengths.push(
       `Storage adequacy at ${storageAdequacyRate}% -- children have appropriate wardrobe, drawer, and shoe storage that meets their needs.`,
     );
-  } else if (storageAdequacyRate >= 70 && totalStorageRecords > 0) {
+  } else if (meets(storageAdequacyRate, 70) && totalStorageRecords > 0) {
     strengths.push(
       `${storageAdequacyRate}% storage adequacy rate -- most children have adequate wardrobe and drawer space for their clothing.`,
     );
@@ -680,7 +688,7 @@ export function computeClothingLabellingStorage(
     );
   }
 
-  if (rotationSatisfactionAvg >= 4.0 && totalRotationRecords > 0) {
+  if (meets(rotationSatisfactionAvg, 4.0) && totalRotationRecords > 0) {
     strengths.push(
       `Children's satisfaction with seasonal clothing provision averages ${rotationSatisfactionAvg}/5 -- children feel well provided for and involved in the process.`,
     );
@@ -798,11 +806,11 @@ export function computeClothingLabellingStorage(
     );
   }
 
-  if (storageAdequacyRate < 50 && totalStorageRecords > 0) {
+  if (below(storageAdequacyRate, 50) && totalStorageRecords > 0) {
     concerns.push(
       `Storage adequacy at only ${storageAdequacyRate}% -- children do not have adequate wardrobe, drawer, or shoe storage for their clothing, compromising Reg 5 requirements.`,
     );
-  } else if (storageAdequacyRate < 70 && storageAdequacyRate >= 50 && totalStorageRecords > 0) {
+  } else if (below(storageAdequacyRate, 70) && meets(storageAdequacyRate, 50) && totalStorageRecords > 0) {
     concerns.push(
       `Storage adequacy at ${storageAdequacyRate}% -- some children lack adequate wardrobe or drawer space for their clothing.`,
     );
@@ -872,11 +880,11 @@ export function computeClothingLabellingStorage(
     );
   }
 
-  if (conditionMonitoringRate < 40 && totalConditionRecords > 0) {
+  if (below(conditionMonitoringRate, 40) && totalConditionRecords > 0) {
     concerns.push(
       `Condition monitoring rate at only ${conditionMonitoringRate}% -- clothing is not being adequately maintained or replaced when worn, risking children's dignity and comfort.`,
     );
-  } else if (conditionMonitoringRate < 60 && conditionMonitoringRate >= 40 && totalConditionRecords > 0) {
+  } else if (below(conditionMonitoringRate, 60) && meets(conditionMonitoringRate, 40) && totalConditionRecords > 0) {
     concerns.push(
       `Condition monitoring rate at ${conditionMonitoringRate}% -- clothing maintenance and replacement could be more responsive to wear and tear.`,
     );
@@ -949,7 +957,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (storageAdequacyRate < 50 && totalStorageRecords > 0) {
+  if (below(storageAdequacyRate, 50) && totalStorageRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -969,7 +977,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (conditionMonitoringRate < 40 && totalConditionRecords > 0) {
+  if (below(conditionMonitoringRate, 40) && totalConditionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1059,7 +1067,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (storageAdequacyRate >= 50 && storageAdequacyRate < 70 && totalStorageRecords > 0) {
+  if (meets(storageAdequacyRate, 50) && below(storageAdequacyRate, 70) && totalStorageRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1152,7 +1160,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (storageAdequacyRate < 50 && totalStorageRecords > 0) {
+  if (below(storageAdequacyRate, 50) && totalStorageRecords > 0) {
     insights.push({
       text: `Storage adequacy at only ${storageAdequacyRate}%. Inadequate wardrobe and drawer space means children cannot properly store their clothing, impacting their dignity and the home's compliance with Reg 5 requirements for living accommodation.`,
       severity: "critical",
@@ -1166,7 +1174,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (conditionMonitoringRate < 40 && totalConditionRecords > 0) {
+  if (below(conditionMonitoringRate, 40) && totalConditionRecords > 0) {
     insights.push({
       text: `Condition monitoring rate at only ${conditionMonitoringRate}%. Poor clothing condition and slow replacement suggests the home is not adequately investing in children's clothing needs. Ofsted will view this as a failure to provide the standard of living that children deserve.`,
       severity: "critical",
@@ -1203,7 +1211,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (storageAdequacyRate >= 50 && storageAdequacyRate < 70 && totalStorageRecords > 0) {
+  if (meets(storageAdequacyRate, 50) && below(storageAdequacyRate, 70) && totalStorageRecords > 0) {
     insights.push({
       text: `Storage adequacy at ${storageAdequacyRate}% -- while some children have adequate storage, others lack sufficient wardrobe or drawer space. Inconsistent provision risks Reg 5 non-compliance.`,
       severity: "warning",
@@ -1217,21 +1225,21 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (ownershipRespectRate >= 50 && ownershipRespectRate < 80 && totalOwnershipRecords > 0) {
+  if (meets(ownershipRespectRate, 50) && below(ownershipRespectRate, 80) && totalOwnershipRecords > 0) {
     insights.push({
       text: `Ownership respect rate at ${ownershipRespectRate}% -- while ownership principles are partially in place, not all children experience full ownership of their clothing, freedom of choice, and identity expression through what they wear.`,
       severity: "warning",
     });
   }
 
-  if (conditionMonitoringRate >= 40 && conditionMonitoringRate < 70 && totalConditionRecords > 0) {
+  if (meets(conditionMonitoringRate, 40) && below(conditionMonitoringRate, 70) && totalConditionRecords > 0) {
     insights.push({
       text: `Condition monitoring at ${conditionMonitoringRate}% -- clothing maintenance is happening but replacement of worn items needs to be more responsive. Children deserve clothing in consistently good condition.`,
       severity: "warning",
     });
   }
 
-  if (childSatisfactionRate >= 50 && childSatisfactionRate < 80) {
+  if (meets(childSatisfactionRate, 50) && below(childSatisfactionRate, 80)) {
     insights.push({
       text: `Child satisfaction with clothing provision at ${childSatisfactionRate}% -- while some children are satisfied, others feel their clothing needs are not fully met. Individual conversations are needed to understand and address gaps.`,
       severity: "warning",
@@ -1275,7 +1283,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (labellingComplianceRate >= 90 && storageAdequacyRate >= 90 && totalItemsAudited > 0 && totalStorageRecords > 0) {
+  if (labellingComplianceRate >= 90 && meets(storageAdequacyRate, 90) && totalItemsAudited > 0 && totalStorageRecords > 0) {
     insights.push({
       text: `Labelling compliance at ${labellingComplianceRate}% with storage adequacy at ${storageAdequacyRate}% -- the home provides comprehensive clothing management infrastructure. Children's clothing is identifiable and properly stored, reducing loss and supporting dignity.`,
       severity: "positive",
@@ -1289,14 +1297,14 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (ownershipRespectRate >= 90 && totalOwnershipRecords > 0) {
+  if (meets(ownershipRespectRate, 90) && totalOwnershipRecords > 0) {
     insights.push({
       text: `Ownership respect rate at ${ownershipRespectRate}% -- children's clothing genuinely belongs to them, reflects their identity, and travels with them. The home demonstrates exemplary respect for children's personal property and autonomy under Reg 25.`,
       severity: "positive",
     });
   }
 
-  if (childSatisfactionRate >= 80) {
+  if (meets(childSatisfactionRate, 80)) {
     insights.push({
       text: `Child satisfaction with clothing provision at ${childSatisfactionRate}% -- children feel well dressed, confident, and respected in their clothing choices. This is strong evidence that the home prioritises children's experiences and dignity.`,
       severity: "positive",
