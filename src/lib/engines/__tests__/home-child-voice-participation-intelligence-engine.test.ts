@@ -313,11 +313,15 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
       expect(r.total_council_records).toBe(0);
       expect(r.total_feeling_heard_records).toBe(0);
       expect(r.meeting_attendance_rate).toBe(0);
-      expect(r.consultation_rate).toBe(0);
+      // Fab-0 fix: no records ⇒ null (unmeasured), not 0% ("we consulted / heard /
+      // asked children and they all rated it 0"). feedback_action_rate stays a
+      // plain number because pct(0, 0) returns 0 and its widening is a separate
+      // cascade (pct helper stays baselined).
+      expect(r.consultation_rate).toBeNull();
       expect(r.feedback_action_rate).toBe(0);
-      expect(r.council_engagement_rate).toBe(0);
-      expect(r.feeling_heard_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.council_engagement_rate).toBeNull();
+      expect(r.feeling_heard_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("no strengths, concerns, recommendations, insights", () => {
@@ -970,7 +974,7 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
 
       it("returns 0 when no consultations", () => {
         const r = computeChildVoiceParticipation(baseInput());
-        expect(r.consultation_rate).toBe(0);
+        expect(r.consultation_rate).toBeNull();
       });
     });
 
@@ -1016,7 +1020,7 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
 
       it("returns 0 when no council records", () => {
         const r = computeChildVoiceParticipation(baseInput());
-        expect(r.council_engagement_rate).toBe(0);
+        expect(r.council_engagement_rate).toBeNull();
       });
     });
 
@@ -1037,7 +1041,7 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
 
       it("returns 0 when no feeling heard records", () => {
         const r = computeChildVoiceParticipation(baseInput());
-        expect(r.feeling_heard_rate).toBe(0);
+        expect(r.feeling_heard_rate).toBeNull();
       });
     });
 
@@ -2182,16 +2186,19 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
       const r = computeChildVoiceParticipation(
         baseInput({ council_engagement_records: councils }),
       );
+      // NOT null: records exist (5 of them) but every attendance/contribution/
+      // listened-to flag is false, so councilEngagementRate = pct(0, 5) = 0
+      // legitimately. Null is only for the "no records at all" case.
       expect(r.council_engagement_rate).toBe(0);
     });
 
     it("pct returns 0 when denominator is 0", () => {
       const r = computeChildVoiceParticipation(baseInput({ total_children: 0 }));
       expect(r.meeting_attendance_rate).toBe(0);
-      expect(r.consultation_rate).toBe(0);
+      expect(r.consultation_rate).toBeNull();
       expect(r.feedback_action_rate).toBe(0);
-      expect(r.council_engagement_rate).toBe(0);
-      expect(r.feeling_heard_rate).toBe(0);
+      expect(r.council_engagement_rate).toBeNull();
+      expect(r.feeling_heard_rate).toBeNull();
     });
 
     it("meeting with 0 actions_from_meeting => no action completion bonus", () => {
@@ -2487,7 +2494,7 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
       const r = computeChildVoiceParticipation(
         baseInput({ council_engagement_records: councils }),
       );
-      if (r.council_engagement_rate >= 30) {
+      if (r.council_engagement_rate !== null && r.council_engagement_rate >= 30) {
         expect(r.voice_score).toBeGreaterThanOrEqual(52);
       }
     });

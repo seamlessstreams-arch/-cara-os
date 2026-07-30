@@ -14,6 +14,8 @@
 //             feelingHeardRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface MeetingAttendanceRecordInput {
@@ -146,11 +148,15 @@ export interface ChildVoiceResult {
   total_council_records: number;
   total_feeling_heard_records: number;
   meeting_attendance_rate: number;
-  consultation_rate: number;
+  // Null when the underlying record collection is empty — "0% consultation /
+  // 0% council engagement / 0% feeling heard / 0% satisfaction" reads as
+  // "children were consulted / engaged / asked / rated and it all failed",
+  // when in fact no data exists to measure. Same fab-0 doctrine as elsewhere.
+  consultation_rate: number | null;
   feedback_action_rate: number;
-  council_engagement_rate: number;
-  feeling_heard_rate: number;
-  child_satisfaction_rate: number;
+  council_engagement_rate: number | null;
+  feeling_heard_rate: number | null;
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: ChildVoiceRecommendation[];
@@ -191,11 +197,11 @@ function emptyResult(
     total_council_records: 0,
     total_feeling_heard_records: 0,
     meeting_attendance_rate: 0,
-    consultation_rate: 0,
+    consultation_rate: null,
     feedback_action_rate: 0,
-    council_engagement_rate: 0,
-    feeling_heard_rate: 0,
-    child_satisfaction_rate: 0,
+    council_engagement_rate: null,
+    feeling_heard_rate: null,
+    child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -333,13 +339,14 @@ export function computeChildVoiceParticipation(
   ).length;
   const followUpCompletionRate = pct(followUpCompleted, followUpRequired);
 
-  // Composite consultation rate: engagement + views recorded + outcome communicated
-  const consultationRate =
+  // Composite consultation rate: engagement + views recorded + outcome communicated.
+  // Null on empty — no consultations ⇒ nothing to measure engagement across.
+  const consultationRate: number | null =
     totalConsultationRecords > 0
       ? Math.round(
           (consultationEngagementRate + viewsRecordedRate + outcomeCommunicatedRate) / 3,
         )
-      : 0;
+      : null;
 
   const uniqueChildrenInConsultations = new Set(
     consultation_records.filter((c) => c.child_engaged).map((c) => c.child_id),
@@ -377,14 +384,15 @@ export function computeChildVoiceParticipation(
   const escalatedFeedback = feedback_action_records.filter((f) => f.escalated).length;
   const escalationRate = pct(escalatedFeedback, totalFeedbackRecords);
 
-  const avgDaysToAction =
+  // Null on empty — no actions taken ⇒ no delay to report.
+  const avgDaysToAction: number | null =
     actionTaken > 0
       ? Math.round(
           feedback_action_records
             .filter((f) => f.feedback_received && f.action_taken)
             .reduce((sum, f) => sum + f.days_to_action, 0) / actionTaken,
         )
-      : 0;
+      : null;
 
   const uniqueChildrenWithFeedback = new Set(
     feedback_action_records.filter((f) => f.feedback_received).map((f) => f.child_id),
@@ -424,13 +432,13 @@ export function computeChildVoiceParticipation(
     0,
   );
 
-  // Composite council engagement rate: attendance + contribution + felt listened to
-  const councilEngagementRate =
+  // Composite council engagement rate — null on empty (no council meetings ⇒ nothing to engage with).
+  const councilEngagementRate: number | null =
     totalCouncilRecords > 0
       ? Math.round(
           (councilAttendanceRate + councilContributionRate + councilFeltListenedRate) / 3,
         )
-      : 0;
+      : null;
 
   const uniqueChildrenInCouncil = new Set(
     council_engagement_records.filter((c) => c.attended).map((c) => c.child_id),
@@ -460,14 +468,15 @@ export function computeChildVoiceParticipation(
   const knowsAdvocate = feeling_heard_records.filter((f) => f.knows_advocate).length;
   const knowsAdvocateRate = pct(knowsAdvocate, totalFeelingHeardRecords);
 
-  const avgSatisfaction =
+  // Null on empty — no feeling-heard records ⇒ no satisfaction to average.
+  const avgSatisfaction: number | null =
     totalFeelingHeardRecords > 0
       ? Math.round(
           (feeling_heard_records.reduce((sum, f) => sum + f.overall_satisfaction, 0) /
             totalFeelingHeardRecords) *
             100,
         ) / 100
-      : 0;
+      : null;
 
   const specificConcerns = feeling_heard_records.filter(
     (f) => f.specific_concern && f.specific_concern.length > 0,
@@ -477,13 +486,13 @@ export function computeChildVoiceParticipation(
   ).length;
   const concernAddressedRate = pct(concernsAddressed, specificConcerns);
 
-  // Composite feeling heard rate: listens + views matter + changes happen
-  const feelingHeardRate =
+  // Composite feeling heard rate — null on empty (no feeling-heard records ⇒ nothing to score).
+  const feelingHeardRate: number | null =
     totalFeelingHeardRecords > 0
       ? Math.round(
           (feelsListenedToRate + feelsViewsMatterRate + feelsChangesHappenRate) / 3,
         )
-      : 0;
+      : null;
 
   const uniqueChildrenFeelingHeard = new Set(
     feeling_heard_records.map((f) => f.child_id),
@@ -529,20 +538,20 @@ export function computeChildVoiceParticipation(
   else if (meetingAttendanceRate >= 70) score += 2;
 
   // --- Bonus 2: consultationRate (>=90: +4, >=70: +2) ---
-  if (consultationRate >= 90) score += 4;
-  else if (consultationRate >= 70) score += 2;
+  if (meets(consultationRate, 90)) score += 4;
+  else if (meets(consultationRate, 70)) score += 2;
 
   // --- Bonus 3: feedbackActionRate (>=90: +4, >=70: +2) ---
   if (feedbackActionRate >= 90) score += 4;
   else if (feedbackActionRate >= 70) score += 2;
 
   // --- Bonus 4: councilEngagementRate (>=90: +3, >=70: +1) ---
-  if (councilEngagementRate >= 90) score += 3;
-  else if (councilEngagementRate >= 70) score += 1;
+  if (meets(councilEngagementRate, 90)) score += 3;
+  else if (meets(councilEngagementRate, 70)) score += 1;
 
   // --- Bonus 5: feelingHeardRate (>=90: +4, >=70: +2) ---
-  if (feelingHeardRate >= 90) score += 4;
-  else if (feelingHeardRate >= 70) score += 2;
+  if (meets(feelingHeardRate, 90)) score += 4;
+  else if (meets(feelingHeardRate, 70)) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
   if (childSatisfactionRate >= 90) score += 3;
@@ -566,11 +575,11 @@ export function computeChildVoiceParticipation(
   // feedbackActionRate < 40 → -5 (guarded)
   if (feedbackActionRate < 40 && feedback_action_records.length > 0) score -= 5;
 
-  // feelingHeardRate < 40 → -5 (guarded)
-  if (feelingHeardRate < 40 && feeling_heard_records.length > 0) score -= 5;
+  // below(feelingHeardRate, 40) → -5 (guarded)
+  if (below(feelingHeardRate, 40) && feeling_heard_records.length > 0) score -= 5;
 
-  // councilEngagementRate < 30 → -3 (guarded)
-  if (councilEngagementRate < 30 && council_engagement_records.length > 0) score -= 3;
+  // below(councilEngagementRate, 30) → -3 (guarded)
+  if (below(councilEngagementRate, 30) && council_engagement_records.length > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -590,11 +599,11 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (consultationRate >= 90 && totalConsultationRecords > 0) {
+  if (meets(consultationRate, 90) && totalConsultationRecords > 0) {
     strengths.push(
       `${consultationRate}% consultation effectiveness — children are actively engaged in consultations, their views are recorded, and outcomes are communicated back to them. This demonstrates exemplary practice in seeking and acting on children's views.`,
     );
-  } else if (consultationRate >= 70 && totalConsultationRecords > 0) {
+  } else if (meets(consultationRate, 70) && totalConsultationRecords > 0) {
     strengths.push(
       `${consultationRate}% consultation effectiveness rate — good practice in consulting children, recording their views, and communicating outcomes back to them.`,
     );
@@ -610,21 +619,21 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (councilEngagementRate >= 90 && totalCouncilRecords > 0) {
+  if (meets(councilEngagementRate, 90) && totalCouncilRecords > 0) {
     strengths.push(
       `${councilEngagementRate}% council engagement rate — children actively attend, contribute to, and feel listened to in council and house meetings. The child council is a genuine forum for children's participation in decision-making.`,
     );
-  } else if (councilEngagementRate >= 70 && totalCouncilRecords > 0) {
+  } else if (meets(councilEngagementRate, 70) && totalCouncilRecords > 0) {
     strengths.push(
       `${councilEngagementRate}% council engagement — good levels of attendance, contribution, and children feeling listened to in council and house meetings.`,
     );
   }
 
-  if (feelingHeardRate >= 90 && totalFeelingHeardRecords > 0) {
+  if (meets(feelingHeardRate, 90) && totalFeelingHeardRecords > 0) {
     strengths.push(
       `${feelingHeardRate}% of children feel heard — children overwhelmingly report feeling listened to, that their views matter, and that changes happen as a result. This is the gold standard for Reg 7 compliance.`,
     );
-  } else if (feelingHeardRate >= 70 && totalFeelingHeardRecords > 0) {
+  } else if (meets(feelingHeardRate, 70) && totalFeelingHeardRecords > 0) {
     strengths.push(
       `${feelingHeardRate}% feeling heard rate — the majority of children feel listened to, believe their views matter, and see changes happen as a result of speaking up.`,
     );
@@ -710,11 +719,11 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (avgSatisfaction >= 4.0 && totalFeelingHeardRecords > 0) {
+  if (meets(avgSatisfaction, 4.0) && totalFeelingHeardRecords > 0) {
     strengths.push(
       `Children's overall satisfaction with voice and participation averages ${avgSatisfaction}/5 — children feel genuinely valued, listened to, and empowered.`,
     );
-  } else if (avgSatisfaction >= 3.5 && totalFeelingHeardRecords > 0) {
+  } else if (meets(avgSatisfaction, 3.5) && totalFeelingHeardRecords > 0) {
     strengths.push(
       `Children's overall satisfaction with being heard averages ${avgSatisfaction}/5 — positive overall experience of voice and participation.`,
     );
@@ -740,11 +749,11 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (consultationRate < 40 && totalConsultationRecords > 0) {
+  if (below(consultationRate, 40) && totalConsultationRecords > 0) {
     concerns.push(
       `Consultation effectiveness at only ${consultationRate}% — consultations are not effectively engaging children, recording their views, or communicating outcomes. The consultation process requires fundamental review.`,
     );
-  } else if (consultationRate >= 40 && consultationRate < 70 && totalConsultationRecords > 0) {
+  } else if (meets(consultationRate, 40) && below(consultationRate, 70) && totalConsultationRecords > 0) {
     concerns.push(
       `Consultation effectiveness at ${consultationRate}% — gaps exist in engagement, recording of views, or communication of outcomes to children.`,
     );
@@ -760,21 +769,21 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (councilEngagementRate < 30 && totalCouncilRecords > 0) {
+  if (below(councilEngagementRate, 30) && totalCouncilRecords > 0) {
     concerns.push(
       `Council engagement at only ${councilEngagementRate}% — the child council or house meeting is not functioning as an effective forum for children's participation. Children are not attending, contributing, or feeling listened to in these forums.`,
     );
-  } else if (councilEngagementRate >= 30 && councilEngagementRate < 70 && totalCouncilRecords > 0) {
+  } else if (meets(councilEngagementRate, 30) && below(councilEngagementRate, 70) && totalCouncilRecords > 0) {
     concerns.push(
       `Council engagement at ${councilEngagementRate}% — not all children are actively engaged in council or house meetings. The forum may not feel accessible or meaningful to all children.`,
     );
   }
 
-  if (feelingHeardRate < 40 && totalFeelingHeardRecords > 0) {
+  if (below(feelingHeardRate, 40) && totalFeelingHeardRecords > 0) {
     concerns.push(
       `Only ${feelingHeardRate}% of children feel heard — the majority of children do not feel listened to, do not believe their views matter, or do not see changes happen as a result of speaking up. This is a critical failure under Reg 7.`,
     );
-  } else if (feelingHeardRate >= 40 && feelingHeardRate < 70 && totalFeelingHeardRecords > 0) {
+  } else if (meets(feelingHeardRate, 40) && below(feelingHeardRate, 70) && totalFeelingHeardRecords > 0) {
     concerns.push(
       `Feeling heard rate at ${feelingHeardRate}% — a significant minority of children do not feel adequately listened to or do not see their views leading to change.`,
     );
@@ -812,7 +821,7 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (avgDaysToAction > 14 && actionTaken > 0) {
+  if (above(avgDaysToAction, 14) && actionTaken > 0) {
     concerns.push(
       `Average ${avgDaysToAction} days to act on children's feedback — delays in responding to feedback undermine children's confidence that their views lead to timely change.`,
     );
@@ -885,7 +894,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (feelingHeardRate < 40 && totalFeelingHeardRecords > 0) {
+  if (below(feelingHeardRate, 40) && totalFeelingHeardRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -895,7 +904,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (councilEngagementRate < 30 && totalCouncilRecords > 0) {
+  if (below(councilEngagementRate, 30) && totalCouncilRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -905,7 +914,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (consultationRate < 40 && totalConsultationRecords > 0) {
+  if (below(consultationRate, 40) && totalConsultationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -975,7 +984,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (avgDaysToAction > 14 && actionTaken > 0) {
+  if (above(avgDaysToAction, 14) && actionTaken > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1014,8 +1023,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    feelingHeardRate >= 40 &&
-    feelingHeardRate < 70 &&
+    meets(feelingHeardRate, 40) &&
+    below(feelingHeardRate, 70) &&
     totalFeelingHeardRecords > 0
   ) {
     recommendations.push({
@@ -1028,8 +1037,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    councilEngagementRate >= 30 &&
-    councilEngagementRate < 70 &&
+    meets(councilEngagementRate, 30) &&
+    below(councilEngagementRate, 70) &&
     totalCouncilRecords > 0
   ) {
     recommendations.push({
@@ -1042,8 +1051,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    consultationRate >= 40 &&
-    consultationRate < 70 &&
+    meets(consultationRate, 40) &&
+    below(consultationRate, 70) &&
     totalConsultationRecords > 0
   ) {
     recommendations.push({
@@ -1104,14 +1113,14 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (feelingHeardRate < 40 && totalFeelingHeardRecords > 0) {
+  if (below(feelingHeardRate, 40) && totalFeelingHeardRecords > 0) {
     insights.push({
       text: `Only ${feelingHeardRate}% of children feel heard. This is the most direct measure of voice and participation effectiveness — if children themselves report not feeling heard, all other participation activities are failing in their purpose. This requires urgent and fundamental review of how the home listens to and acts on children's views.`,
       severity: "critical",
     });
   }
 
-  if (councilEngagementRate < 30 && totalCouncilRecords > 0) {
+  if (below(councilEngagementRate, 30) && totalCouncilRecords > 0) {
     insights.push({
       text: `Council engagement at only ${councilEngagementRate}%. The child council or house meeting is not functioning as an effective participation forum — children are not attending, not contributing, or not feeling listened to. The council should be the centrepiece of children's democratic participation in the home.`,
       severity: "critical",
@@ -1153,8 +1162,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    consultationRate >= 40 &&
-    consultationRate < 70 &&
+    meets(consultationRate, 40) &&
+    below(consultationRate, 70) &&
     totalConsultationRecords > 0
   ) {
     insights.push({
@@ -1175,8 +1184,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    councilEngagementRate >= 30 &&
-    councilEngagementRate < 70 &&
+    meets(councilEngagementRate, 30) &&
+    below(councilEngagementRate, 70) &&
     totalCouncilRecords > 0
   ) {
     insights.push({
@@ -1186,8 +1195,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    feelingHeardRate >= 40 &&
-    feelingHeardRate < 70 &&
+    meets(feelingHeardRate, 40) &&
+    below(feelingHeardRate, 70) &&
     totalFeelingHeardRecords > 0
   ) {
     insights.push({
@@ -1218,7 +1227,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (avgDaysToAction > 7 && avgDaysToAction <= 14 && actionTaken > 0) {
+  if (above(avgDaysToAction, 7) && (typeof avgDaysToAction === "number" && avgDaysToAction <= 14) && actionTaken > 0) {
     insights.push({
       text: `Average ${avgDaysToAction} days to act on feedback — while within a reasonable timeframe, faster response would reinforce to children that their views are a priority. Consider whether quicker acknowledgement is possible even when full resolution takes longer.`,
       severity: "warning",
@@ -1236,8 +1245,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    avgSatisfaction >= 2.0 &&
-    avgSatisfaction < 3.0 &&
+    meets(avgSatisfaction, 2.0) &&
+    below(avgSatisfaction, 3.0) &&
     totalFeelingHeardRecords > 0
   ) {
     insights.push({
@@ -1279,7 +1288,7 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    feelingHeardRate >= 90 &&
+    meets(feelingHeardRate, 90) &&
     totalFeelingHeardRecords > 0
   ) {
     insights.push({
@@ -1289,7 +1298,7 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    councilEngagementRate >= 90 &&
+    meets(councilEngagementRate, 90) &&
     totalCouncilRecords > 0
   ) {
     insights.push({
@@ -1299,7 +1308,7 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    consultationRate >= 90 &&
+    meets(consultationRate, 90) &&
     consultationSatisfactionRate >= 90 &&
     totalConsultationRecords > 0
   ) {
@@ -1330,7 +1339,7 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    avgSatisfaction >= 4.0 &&
+    meets(avgSatisfaction, 4.0) &&
     totalFeelingHeardRecords > 0
   ) {
     insights.push({
@@ -1381,7 +1390,9 @@ export function computeChildVoiceParticipation(
     feedback_action_rate: feedbackActionRate,
     council_engagement_rate: councilEngagementRate,
     feeling_heard_rate: feelingHeardRate,
-    child_satisfaction_rate: childSatisfactionRate,
+    // Preserve null-on-empty semantic: pct() returns 0 for empty denominator,
+    // but the field promises null-on-unmeasured. Gate on totalSatisDenom.
+    child_satisfaction_rate: totalSatisDenom > 0 ? childSatisfactionRate : null,
     strengths,
     concerns,
     recommendations,
