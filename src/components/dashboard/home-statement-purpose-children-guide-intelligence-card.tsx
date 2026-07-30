@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, BookMarked } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { StatementPurposeRating } from "@/lib/engines/home-statement-purpose-children-guide-intelligence-engine";
 
@@ -73,24 +74,24 @@ export function HomeStatementPurposeChildrenGuideIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.statement_currency_rate >= 90 ? "text-[--cs-success]" : d.statement_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.statement_currency_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Currency</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.guide_accessibility_rate >= 90 ? "bg-green-50" : d.guide_accessibility_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.guide_accessibility_rate >= 90 ? "text-[--cs-success]" : d.guide_accessibility_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.guide_accessibility_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.guide_accessibility_rate, 90) ? "bg-green-50" : meets(d.guide_accessibility_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.guide_accessibility_rate, 90) ? "text-[--cs-success]" : meets(d.guide_accessibility_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.guide_accessibility_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Access.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.review_cycle_rate >= 90 ? "bg-green-50" : d.review_cycle_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.review_cycle_rate >= 90 ? "text-[--cs-success]" : d.review_cycle_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.review_cycle_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.review_cycle_rate, 90) ? "bg-green-50" : meets(d.review_cycle_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.review_cycle_rate, 90) ? "text-[--cs-success]" : meets(d.review_cycle_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.review_cycle_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Reviews</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.young_person_involvement_rate >= 90 ? "bg-green-50" : d.young_person_involvement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.young_person_involvement_rate >= 90 ? "text-[--cs-success]" : d.young_person_involvement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.young_person_involvement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.young_person_involvement_rate, 90) ? "bg-green-50" : meets(d.young_person_involvement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.young_person_involvement_rate, 90) ? "text-[--cs-success]" : meets(d.young_person_involvement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.young_person_involvement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">YP Involve.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.ofsted_submission_rate >= 90 ? "bg-green-50" : d.ofsted_submission_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.ofsted_submission_rate >= 90 ? "text-[--cs-success]" : d.ofsted_submission_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.ofsted_submission_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.ofsted_submission_rate, 90) ? "bg-green-50" : meets(d.ofsted_submission_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.ofsted_submission_rate, 90) ? "text-[--cs-success]" : meets(d.ofsted_submission_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.ofsted_submission_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Ofsted</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.stakeholder_awareness_rate >= 90 ? "bg-green-50" : d.stakeholder_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.stakeholder_awareness_rate >= 90 ? "text-[--cs-success]" : d.stakeholder_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.stakeholder_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.stakeholder_awareness_rate, 90) ? "bg-green-50" : meets(d.stakeholder_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.stakeholder_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.stakeholder_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.stakeholder_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Awareness</p>
             </div>
           </div>

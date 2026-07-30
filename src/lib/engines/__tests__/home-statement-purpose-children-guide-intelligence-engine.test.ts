@@ -250,11 +250,11 @@ describe("Empty and edge-case inputs", () => {
   it("10 — all rates 0 for insufficient_data", () => {
     const r = run({ total_children: 0 });
     expect(r.statement_currency_rate).toBe(0);
-    expect(r.guide_accessibility_rate).toBe(0);
-    expect(r.review_cycle_rate).toBe(0);
-    expect(r.young_person_involvement_rate).toBe(0);
-    expect(r.ofsted_submission_rate).toBe(0);
-    expect(r.stakeholder_awareness_rate).toBe(0);
+    expect(r.guide_accessibility_rate).toBeNull();
+    expect(r.review_cycle_rate).toBeNull();
+    expect(r.young_person_involvement_rate).toBeNull();
+    expect(r.ofsted_submission_rate).toBeNull();
+    expect(r.stakeholder_awareness_rate).toBeNull();
   });
 });
 
@@ -655,7 +655,7 @@ describe("Guide accessibility metrics", () => {
 
   it("57 — no guide records → accessibility 0", () => {
     const r = run({ guide_records: [] });
-    expect(r.guide_accessibility_rate).toBe(0);
+    expect(r.guide_accessibility_rate).toBeNull();
   });
 
   it("58 — guide section coverage — all current guide sections covered", () => {
@@ -793,7 +793,7 @@ describe("Review cycle metrics", () => {
 
   it("74 — no review records → review_cycle_rate 0", () => {
     const r = run({ review_cycle_records: [] });
-    expect(r.review_cycle_rate).toBe(0);
+    expect(r.review_cycle_rate).toBeNull();
   });
 
   it("75 — amendment rate >= 40 → warning insight", () => {
@@ -825,6 +825,7 @@ describe("Young person involvement metrics", () => {
         makeInvolvement({ views_sought: false, views_recorded: false, views_actioned: false, supported_to_participate: false }),
       ],
     });
+    // record exists → 0, not null
     expect(r.young_person_involvement_rate).toBe(0);
   });
 
@@ -961,7 +962,7 @@ describe("Ofsted submission metrics", () => {
 
   it("92 — no submissions → rate 0", () => {
     const r = run({ submission_records: [] });
-    expect(r.ofsted_submission_rate).toBe(0);
+    expect(r.ofsted_submission_rate).toBeNull();
   });
 
   it("93 — submission not on time → reduces rate", () => {
@@ -1062,6 +1063,7 @@ describe("Stakeholder awareness metrics", () => {
     const r = run({
       statement_records: [makeStatement({ distributed_to_stakeholders: false, ofsted_notified: false })],
     });
+    // record exists → 0, not null
     expect(r.stakeholder_awareness_rate).toBe(0);
   });
 
@@ -1686,7 +1688,7 @@ describe("Submission type variations", () => {
 describe("Mixed scenarios", () => {
   it("167 — statements only, no guides → guide rate 0", () => {
     const r = run({ statement_records: [makeStatement()], guide_records: [] });
-    expect(r.guide_accessibility_rate).toBe(0);
+    expect(r.guide_accessibility_rate).toBeNull();
   });
 
   it("168 — guides only, no statements → statement currency 0", () => {
