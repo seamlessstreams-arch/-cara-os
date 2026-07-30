@@ -10,6 +10,8 @@
 //             relationshipRepairRecords, mediationRecords, childVoiceRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface RestorativeConferenceRecordInput {
@@ -162,9 +164,11 @@ export interface RestorativePracticeResult {
   conference_completion_rate: number;
   conflict_resolution_rate: number;
   relationship_repair_rate: number;
-  mediation_quality_rate: number;
+  // Null on empty — no mediations ⇒ no quality signal; no satisfaction records ⇒ no satisfaction.
+  // "0% mediation quality / 0% satisfaction" reads as "we did all this and it failed", not "unmeasured".
+  mediation_quality_rate: number | null;
   child_voice_rate: number;
-  satisfaction_rate: number;
+  satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: RestorativePracticeRecommendation[];
@@ -202,9 +206,9 @@ function emptyResult(
     conference_completion_rate: 0,
     conflict_resolution_rate: 0,
     relationship_repair_rate: 0,
-    mediation_quality_rate: 0,
+    mediation_quality_rate: null,
     child_voice_rate: 0,
-    satisfaction_rate: 0,
+    satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -331,10 +335,10 @@ export function computeRestorativePracticeConflictResolution(
   const conferenceSatisfactionSum = restorative_conference_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const conferenceSatisfactionAvg =
+  const conferenceSatisfactionAvg: number | null =
     totalConferences > 0
       ? Math.round((conferenceSatisfactionSum / totalConferences) * 100) / 100
-      : 0;
+      : null;
 
   // --- Conflict resolution effectiveness ---
   const totalConflicts = conflict_resolution_records.length;
@@ -380,13 +384,13 @@ export function computeRestorativePracticeConflictResolution(
 
   // Average resolution time
   const resolvedWithTime = conflict_resolution_records.filter((r) => r.resolved && r.resolution_time_hours > 0);
-  const avgResolutionTimeHours =
+  const avgResolutionTimeHours: number | null =
     resolvedWithTime.length > 0
       ? Math.round(
           (resolvedWithTime.reduce((sum, r) => sum + r.resolution_time_hours, 0) /
             resolvedWithTime.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   // --- Relationship repair tracking ---
   const totalRepairRecords = relationship_repair_records.length;
@@ -419,18 +423,18 @@ export function computeRestorativePracticeConflictResolution(
   const progressRatingSum = relationship_repair_records.reduce(
     (sum, r) => sum + r.progress_rating, 0,
   );
-  const progressRatingAvg =
+  const progressRatingAvg: number | null =
     totalRepairRecords > 0
       ? Math.round((progressRatingSum / totalRepairRecords) * 100) / 100
-      : 0;
+      : null;
 
   const repairSatisfactionSum = relationship_repair_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const repairSatisfactionAvg =
+  const repairSatisfactionAvg: number | null =
     totalRepairRecords > 0
       ? Math.round((repairSatisfactionSum / totalRepairRecords) * 100) / 100
-      : 0;
+      : null;
 
   const severeRepairs = relationship_repair_records.filter(
     (r) => r.initial_damage_level === "severe" || r.initial_damage_level === "significant",
@@ -472,11 +476,13 @@ export function computeRestorativePracticeConflictResolution(
   const mediationQualityScoreSum = mediation_records.reduce(
     (sum, r) => sum + r.mediation_quality_score, 0,
   );
-  const mediationQualityAvg =
+  const mediationQualityAvg: number | null =
     totalMediations > 0
       ? Math.round((mediationQualityScoreSum / totalMediations) * 100) / 100
-      : 0;
-  const mediationQualityRate = totalMediations > 0 ? Math.round(mediationQualityAvg * 20) : 0; // convert 1-5 to 0-100 scale
+      : null;
+  // The outer `totalMediations > 0` guard is what guarantees mediationQualityAvg
+  // is a number here — the widened `: null` on line 482 only fires when totalMediations === 0.
+  const mediationQualityRate: number | null = totalMediations > 0 ? Math.round((mediationQualityAvg ?? 0) * 20) : null; // convert 1-5 to 0-100 scale
 
   const mediationSatisfactionSum = mediation_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -484,7 +490,7 @@ export function computeRestorativePracticeConflictResolution(
   const mediationSatisfactionAvg =
     totalMediations > 0
       ? Math.round((mediationSatisfactionSum / totalMediations) * 100) / 100
-      : 0;
+      : null;
 
   const peerMediation = mediation_records.filter((r) => r.mediation_type === "peer_mediation").length;
   const peerMediationRate = pct(peerMediation, totalMediations);
@@ -523,10 +529,10 @@ export function computeRestorativePracticeConflictResolution(
   const voiceSatisfactionSum = child_voice_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const voiceSatisfactionAvg =
+  const voiceSatisfactionAvg: number | null =
     totalVoiceRecords > 0
       ? Math.round((voiceSatisfactionSum / totalVoiceRecords) * 100) / 100
-      : 0;
+      : null;
 
   // --- Composite child voice rate across all domains ---
   const compositeVoiceNumerator =
@@ -536,18 +542,21 @@ export function computeRestorativePracticeConflictResolution(
   const childVoiceRate = pct(compositeVoiceNumerator, compositeVoiceDenominator);
 
   // --- Overall satisfaction composite ---
+  // The outer `totalX > 0` guards prove each avg is a number here — non-null
+  // asserts keep the pushes simple while the avgs stay widened for fab-0.
   const satisfactionSources: number[] = [];
-  if (totalConferences > 0) satisfactionSources.push(conferenceSatisfactionAvg);
-  if (totalRepairRecords > 0) satisfactionSources.push(repairSatisfactionAvg);
-  if (totalMediations > 0) satisfactionSources.push(mediationSatisfactionAvg);
-  if (totalVoiceRecords > 0) satisfactionSources.push(voiceSatisfactionAvg);
-  const overallSatisfactionAvg =
+  if (totalConferences > 0) satisfactionSources.push(conferenceSatisfactionAvg!);
+  if (totalRepairRecords > 0) satisfactionSources.push(repairSatisfactionAvg!);
+  if (totalMediations > 0) satisfactionSources.push(mediationSatisfactionAvg!);
+  if (totalVoiceRecords > 0) satisfactionSources.push(voiceSatisfactionAvg!);
+  const overallSatisfactionAvg: number | null =
     satisfactionSources.length > 0
       ? Math.round(
           (satisfactionSources.reduce((sum, v) => sum + v, 0) / satisfactionSources.length) * 100,
         ) / 100
-      : 0;
-  const satisfactionRate = satisfactionSources.length > 0 ? Math.round(overallSatisfactionAvg * 20) : 0; // 1-5 -> 0-100
+      : null;
+  // Outer guard proves overallSatisfactionAvg is non-null here.
+  const satisfactionRate: number | null = satisfactionSources.length > 0 ? Math.round((overallSatisfactionAvg ?? 0) * 20) : null; // 1-5 -> 0-100
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -566,8 +575,8 @@ export function computeRestorativePracticeConflictResolution(
   else if (relationshipRepairRate >= 60) score += 1;
 
   // --- Bonus 4: mediationQualityRate (>=80: +3, >=60: +1) ---
-  if (mediationQualityRate >= 80) score += 3;
-  else if (mediationQualityRate >= 60) score += 1;
+  if (meets(mediationQualityRate, 80)) score += 3;
+  else if (meets(mediationQualityRate, 60)) score += 1;
 
   // --- Bonus 5: childVoiceRate (>=85: +4, >=65: +2) ---
   if (childVoiceRate >= 85) score += 4;
@@ -582,8 +591,8 @@ export function computeRestorativePracticeConflictResolution(
   else if (agreementActionCompletionRate >= 70) score += 1;
 
   // --- Bonus 8: satisfactionRate (>=80: +2, >=60: +1) ---
-  if (satisfactionRate >= 80) score += 2;
-  else if (satisfactionRate >= 60) score += 1;
+  if (meets(satisfactionRate, 80)) score += 2;
+  else if (meets(satisfactionRate, 60)) score += 1;
 
   // --- Bonus 9: facilitatorTrainedRate (>=90: +2, >=70: +1) ---
   if (facilitatorTrainedRate >= 90) score += 2;
@@ -729,7 +738,7 @@ export function computeRestorativePracticeConflictResolution(
     );
   }
 
-  if (progressRatingAvg >= 4.0 && totalRepairRecords > 0) {
+  if (meets(progressRatingAvg, 4.0) && totalRepairRecords > 0) {
     strengths.push(
       `Average relationship repair progress rating of ${progressRatingAvg}/5 -- meaningful and sustained progress in restoring damaged relationships.`,
     );
@@ -763,7 +772,7 @@ export function computeRestorativePracticeConflictResolution(
     );
   }
 
-  if (mediationQualityAvg >= 4.0 && totalMediations > 0) {
+  if (meets(mediationQualityAvg, 4.0) && totalMediations > 0) {
     strengths.push(
       `Mediation quality averages ${mediationQualityAvg}/5 -- consistently high-quality mediation processes.`,
     );
@@ -799,7 +808,7 @@ export function computeRestorativePracticeConflictResolution(
     );
   }
 
-  if (satisfactionRate >= 80) {
+  if (meets(satisfactionRate, 80)) {
     strengths.push(
       `Overall satisfaction rate of ${satisfactionRate}% across restorative processes -- children feel well supported throughout conflict resolution and relationship repair.`,
     );
@@ -951,7 +960,7 @@ export function computeRestorativePracticeConflictResolution(
     );
   }
 
-  if (mediationQualityAvg < 3.0 && totalMediations > 0) {
+  if (below(mediationQualityAvg, 3.0) && totalMediations > 0) {
     concerns.push(
       `Mediation quality averages only ${mediationQualityAvg}/5 -- overall mediation process quality is poor and requires urgent improvement.`,
     );
@@ -991,7 +1000,7 @@ export function computeRestorativePracticeConflictResolution(
     );
   }
 
-  if (satisfactionRate < 50) {
+  if (below(satisfactionRate, 50)) {
     concerns.push(
       `Overall satisfaction rate of only ${satisfactionRate}% across restorative processes -- children do not feel well served by the home's approach to conflict resolution and relationship repair.`,
     );
@@ -1466,7 +1475,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (satisfactionRate >= 80) {
+  if (meets(satisfactionRate, 80)) {
     insights.push({
       text: `Overall satisfaction of ${satisfactionRate}% across restorative processes -- children feel well supported throughout conflict resolution and relationship repair. High satisfaction indicates trust in the process and confidence in adult facilitation.`,
       severity: "positive",

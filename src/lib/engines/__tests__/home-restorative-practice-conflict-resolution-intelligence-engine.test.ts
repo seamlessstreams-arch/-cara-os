@@ -243,9 +243,9 @@ describe("Home Restorative Practice & Conflict Resolution Intelligence Engine", 
       expect(r.conference_completion_rate).toBe(0);
       expect(r.conflict_resolution_rate).toBe(0);
       expect(r.relationship_repair_rate).toBe(0);
-      expect(r.mediation_quality_rate).toBe(0);
+      expect(r.mediation_quality_rate).toBeNull();
       expect(r.child_voice_rate).toBe(0);
-      expect(r.satisfaction_rate).toBe(0);
+      expect(r.satisfaction_rate).toBeNull();
     });
 
     it("no strengths, concerns, recommendations, or insights", () => {
@@ -297,9 +297,9 @@ describe("Home Restorative Practice & Conflict Resolution Intelligence Engine", 
       expect(r.conference_completion_rate).toBe(0);
       expect(r.conflict_resolution_rate).toBe(0);
       expect(r.relationship_repair_rate).toBe(0);
-      expect(r.mediation_quality_rate).toBe(0);
+      expect(r.mediation_quality_rate).toBeNull();
       expect(r.child_voice_rate).toBe(0);
-      expect(r.satisfaction_rate).toBe(0);
+      expect(r.satisfaction_rate).toBeNull();
     });
 
     it("no strengths", () => {
@@ -336,7 +336,7 @@ describe("Home Restorative Practice & Conflict Resolution Intelligence Engine", 
       const r = run({
         restorative_conference_records: [makeConference()],
       });
-      expect(r.mediation_quality_rate).toBe(0);
+      expect(r.mediation_quality_rate).toBeNull();
     });
 
     it("child_voice_rate uses composite denominator, returns 0 when all zero domains", () => {
@@ -1720,7 +1720,7 @@ describe("Home Restorative Practice & Conflict Resolution Intelligence Engine", 
         // Only provide conflicts which have no satisfaction metric in the composite
         conflict_resolution_records: [makeConflict()],
       });
-      expect(r.satisfaction_rate).toBe(0);
+      expect(r.satisfaction_rate).toBeNull();
     });
   });
 
