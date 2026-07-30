@@ -1314,16 +1314,16 @@ describe("Home Hobbies & Interests Development Intelligence Engine", () => {
       expect(r.exploration_breadth_avg).toBe(1.5);
     });
 
-    it("exploration_breadth_avg is 0 when no explorations", () => {
+    it("exploration_breadth_avg is null when no explorations", () => {
       const r = run({ total_children: 1 });
-      expect(r.exploration_breadth_avg).toBe(0);
+      expect(r.exploration_breadth_avg).toBeNull();
     });
 
-    it("hobby_enjoyment_avg is 0 when no hobbies", () => {
+    it("hobby_enjoyment_avg is null when no hobbies", () => {
       const r = run({
         total_children: 0,
       });
-      expect(r.hobby_enjoyment_avg).toBe(0);
+      expect(r.hobby_enjoyment_avg).toBeNull();
     });
   });
 

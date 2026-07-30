@@ -14,6 +14,8 @@
 //             childLedActivityRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface HobbyParticipationInput {
@@ -149,15 +151,20 @@ export interface HobbiesInterestsResult {
   hobbies_score: number;
   headline: string;
   total_hobbies: number;
+  // Rates use total_children as denominator (unrelated to fab-0). Only the
+  // avgs below are gated on record-count denominators — widened to null.
   hobby_participation_rate: number;
   interest_exploration_rate: number;
   talent_development_rate: number;
   creative_expression_rate: number;
   child_led_rate: number;
   child_satisfaction_rate: number;
-  hobby_enjoyment_avg: number;
-  skill_progression_avg: number;
-  exploration_breadth_avg: number;
+  // Null on empty: no records ⇒ no signal. "0.0 enjoyment" or "0.0 skill
+  // progression" would read as "children hate their hobbies", not "unmeasured".
+  // Fab-0 doctrine.
+  hobby_enjoyment_avg: number | null;
+  skill_progression_avg: number | null;
+  exploration_breadth_avg: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: HobbiesInterestsRecommendation[];
@@ -199,9 +206,9 @@ function emptyResult(
     creative_expression_rate: 0,
     child_led_rate: 0,
     child_satisfaction_rate: 0,
-    hobby_enjoyment_avg: 0,
-    skill_progression_avg: 0,
-    exploration_breadth_avg: 0,
+    hobby_enjoyment_avg: null,
+    skill_progression_avg: null,
+    exploration_breadth_avg: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -300,19 +307,19 @@ export function computeHobbiesInterestsDevelopment(
     (sum, h) => sum + h.child_enjoyment_rating,
     0,
   );
-  const hobbyEnjoymentAvg =
+  const hobbyEnjoymentAvg: number | null =
     totalHobbies > 0
       ? Math.round((hobbyEnjoymentSum / totalHobbies) * 100) / 100
-      : 0;
+      : null;
 
   const skillProgressionSum = hobby_participation_records.reduce(
     (sum, h) => sum + h.skill_progression_rating,
     0,
   );
-  const skillProgressionAvg =
+  const skillProgressionAvg: number | null =
     totalHobbies > 0
       ? Math.round((skillProgressionSum / totalHobbies) * 100) / 100
-      : 0;
+      : null;
 
   const childChosenHobbies = hobby_participation_records.filter(
     (h) => h.child_chose_hobby,
@@ -392,23 +399,23 @@ export function computeHobbiesInterestsDevelopment(
     explorationsByChild[e.child_id].add(e.exploration_type);
   }
   const explorationBreadthValues = Object.values(explorationsByChild).map((s) => s.size);
-  const explorationBreadthAvg =
+  const explorationBreadthAvg: number | null =
     explorationBreadthValues.length > 0
       ? Math.round(
           (explorationBreadthValues.reduce((sum, v) => sum + v, 0) /
             explorationBreadthValues.length) *
             100,
         ) / 100
-      : 0;
+      : null;
 
   const explorationEngagementSum = interest_exploration_records.reduce(
     (sum, e) => sum + e.child_engagement_rating,
     0,
   );
-  const explorationEngagementAvg =
+  const explorationEngagementAvg: number | null =
     totalExplorations > 0
       ? Math.round((explorationEngagementSum / totalExplorations) * 100) / 100
-      : 0;
+      : null;
 
   // --- Talent development ---
   const totalTalentProgrammes = talent_development_records.length;
@@ -450,10 +457,10 @@ export function computeHobbiesInterestsDevelopment(
     (sum, t) => sum + t.child_motivation_rating,
     0,
   );
-  const talentMotivationAvg =
+  const talentMotivationAvg: number | null =
     totalTalentProgrammes > 0
       ? Math.round((talentMotivationSum / totalTalentProgrammes) * 100) / 100
-      : 0;
+      : null;
 
   const overdueTalentReviews = talent_development_records.filter(
     (t) => t.review_overdue && t.active,
@@ -494,10 +501,10 @@ export function computeHobbiesInterestsDevelopment(
     (sum, c) => sum + c.child_satisfaction_rating,
     0,
   );
-  const creativeSatisfactionAvg =
+  const creativeSatisfactionAvg: number | null =
     totalCreativeActivities > 0
       ? Math.round((creativeSatisfactionSum / totalCreativeActivities) * 100) / 100
-      : 0;
+      : null;
 
   const therapeuticCreativeActivities = creative_expression_records.filter(
     (c) => c.therapeutic_value,
@@ -533,10 +540,10 @@ export function computeHobbiesInterestsDevelopment(
     (sum, a) => sum + a.child_satisfaction_rating,
     0,
   );
-  const childLedSatisfactionAvg =
+  const childLedSatisfactionAvg: number | null =
     totalChildLedActivities > 0
       ? Math.round((childLedSatisfactionSum / totalChildLedActivities) * 100) / 100
-      : 0;
+      : null;
 
   const childLedPositiveOutcomes = child_led_activity_records.filter(
     (a) => a.outcome_positive,
@@ -602,8 +609,8 @@ export function computeHobbiesInterestsDevelopment(
   else if (childSatisfactionRate >= 70) score += 1;
 
   // --- Bonus 7: hobbyEnjoymentAvg (>=4.0: +2, >=3.0: +1) ---
-  if (hobbyEnjoymentAvg >= 4.0) score += 2;
-  else if (hobbyEnjoymentAvg >= 3.0) score += 1;
+  if (meets(hobbyEnjoymentAvg, 4.0)) score += 2;
+  else if (meets(hobbyEnjoymentAvg, 3.0)) score += 1;
 
   // --- Bonus 8: childChoiceRate (>=80: +2, >=60: +1) ---
   if (childChoiceRate >= 80) score += 2;
@@ -691,11 +698,11 @@ export function computeHobbiesInterestsDevelopment(
     );
   }
 
-  if (hobbyEnjoymentAvg >= 4.0 && totalHobbies > 0) {
+  if (meets(hobbyEnjoymentAvg, 4.0) && totalHobbies > 0) {
     strengths.push(
       `Hobby enjoyment averages ${hobbyEnjoymentAvg}/5 — children genuinely enjoy their hobby activities, indicating hobbies are well-matched to their interests and preferences.`,
     );
-  } else if (hobbyEnjoymentAvg >= 3.0 && totalHobbies > 0) {
+  } else if (meets(hobbyEnjoymentAvg, 3.0) && totalHobbies > 0) {
     strengths.push(
       `Hobby enjoyment averages ${hobbyEnjoymentAvg}/5 — children generally find their hobby activities enjoyable and worthwhile.`,
     );
@@ -733,7 +740,7 @@ export function computeHobbiesInterestsDevelopment(
     );
   }
 
-  if (skillProgressionAvg >= 4.0 && totalHobbies > 0) {
+  if (meets(skillProgressionAvg, 4.0) && totalHobbies > 0) {
     strengths.push(
       `Skill progression averages ${skillProgressionAvg}/5 — children are making strong progress in developing skills through their hobby activities.`,
     );
@@ -1391,7 +1398,7 @@ export function computeHobbiesInterestsDevelopment(
 
   if (
     creativeExpressionRate >= 80 &&
-    creativeSatisfactionAvg >= 4.0 &&
+    meets(creativeSatisfactionAvg, 4.0) &&
     total_children > 0 &&
     totalCreativeActivities > 0
   ) {
@@ -1437,7 +1444,7 @@ export function computeHobbiesInterestsDevelopment(
 
   if (
     hobbyAttendanceRate >= 90 &&
-    hobbyEnjoymentAvg >= 4.0 &&
+    meets(hobbyEnjoymentAvg, 4.0) &&
     hobbyPlannedTotal > 0 &&
     totalHobbies > 0
   ) {
@@ -1460,7 +1467,7 @@ export function computeHobbiesInterestsDevelopment(
 
   if (
     therapeuticRate >= 40 &&
-    creativeSatisfactionAvg >= 4.0 &&
+    meets(creativeSatisfactionAvg, 4.0) &&
     totalCreativeActivities > 0
   ) {
     insights.push({
@@ -1482,8 +1489,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    skillProgressionAvg >= 4.0 &&
-    talentMotivationAvg >= 4.0 &&
+    meets(skillProgressionAvg, 4.0) &&
+    meets(talentMotivationAvg, 4.0) &&
     totalHobbies > 0 &&
     totalTalentProgrammes > 0
   ) {
