@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, CheckCircle, AlertTriangle, Clock, Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { NeighbourhoodSafetyRiskAssessmentResult, NeighbourhoodSafetyRating } from "@/lib/engines/home-neighbourhood-safety-risk-assessment-intelligence-engine";
+import { below, formatRate } from "@/lib/metrics/rate";
 
 function useHomeNeighbourhoodSafetyRiskAssessmentIntelligence() {
   return useQuery({
@@ -27,7 +28,18 @@ const RATING_META: Record<NeighbourhoodSafetyRating, { label: string; color: str
   insufficient_data: { label: "Insufficient Data",  color: "text-slate-600",   bg: "bg-slate-50",   border: "border-slate-200" },
 };
 
-function RateBar({ label, value, warn = 80 }: { label: string; value: number; warn?: number }) {
+function RateBar({ label, value, warn = 80 }: { label: string; value: number | null; warn?: number }) {
+  if (value === null) {
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>{label}</span>
+          <span className="font-medium text-muted-foreground">—</span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden" />
+      </div>
+    );
+  }
   const pct = Math.round(value);
   const color = pct >= warn ? "bg-emerald-500" : pct >= 50 ? "bg-amber-400" : "bg-red-400";
   return (
@@ -81,7 +93,7 @@ export default function NeighbourhoodSafetyIntelligencePage() {
               <div className="flex-1">
                 <p className="text-sm font-medium">{d.headline}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Neighbourhood score: {d.neighbourhood_score}/100 · risk assessment {Math.round(d.risk_assessment_rate)}% · safety mapping {Math.round(d.safety_mapping_rate)}% · route safety {Math.round(d.route_safety_rate)}% · child awareness {Math.round(d.child_awareness_rate)}%
+                  Neighbourhood score: {d.neighbourhood_score}/100 · risk assessment {formatRate(d.risk_assessment_rate)} · safety mapping {formatRate(d.safety_mapping_rate)} · route safety {formatRate(d.route_safety_rate)} · child awareness {Math.round(d.child_awareness_rate)}%
                 </p>
               </div>
               <div className="text-right">
@@ -92,18 +104,18 @@ export default function NeighbourhoodSafetyIntelligencePage() {
           </CardContent>
         </Card>
 
-        {(d.risk_assessment_rate < 80 || d.hazard_identification_rate < 80 || d.child_awareness_rate < 70) && (
+        {(below(d.risk_assessment_rate, 80) || below(d.hazard_identification_rate, 80) || d.child_awareness_rate < 70) && (
           <div className="flex flex-col gap-2">
-            {d.risk_assessment_rate < 80 && (
+            {below(d.risk_assessment_rate, 80) && (
               <div className="flex items-center gap-1.5 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
-                Neighbourhood risk assessment rate {Math.round(d.risk_assessment_rate)}% — the area around the home is part of the children's environment; an unassessed neighbourhood means risks from local gangs, county lines, exploitation networks or physical hazards may be unknown and unmitigated
+                Neighbourhood risk assessment rate {formatRate(d.risk_assessment_rate)} — the area around the home is part of the children's environment; an unassessed neighbourhood means risks from local gangs, county lines, exploitation networks or physical hazards may be unknown and unmitigated
               </div>
             )}
-            {d.hazard_identification_rate < 80 && (
+            {below(d.hazard_identification_rate, 80) && (
               <div className="flex items-center gap-1.5 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
-                Hazard identification rate {Math.round(d.hazard_identification_rate)}% — known hazards that have not been formally identified and recorded cannot be mitigated; children using local routes are at risk from hazards the home cannot manage if it does not know about them
+                Hazard identification rate {formatRate(d.hazard_identification_rate)} — known hazards that have not been formally identified and recorded cannot be mitigated; children using local routes are at risk from hazards the home cannot manage if it does not know about them
               </div>
             )}
             {d.child_awareness_rate < 70 && (
