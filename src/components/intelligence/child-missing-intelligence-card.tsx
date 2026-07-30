@@ -144,7 +144,7 @@ export function ChildMissingIntelligenceCard({ childId }: { childId: string }) {
               <div className="flex items-center justify-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-slate-400" />
                 <p className="text-lg font-bold tabular-nums text-slate-600">
-                  {d.duration.avg_duration_hours > 0 ? `${d.duration.avg_duration_hours}h` : "—"}
+                  {typeof d.duration.avg_duration_hours === "number" && d.duration.avg_duration_hours > 0 ? `${d.duration.avg_duration_hours}h` : "—"}
                 </p>
                 {d.duration.duration_trend !== "insufficient_data" && (
                   <DurTrendIcon className={cn("h-3.5 w-3.5", TREND_COLOR[d.duration.duration_trend])} />
@@ -189,7 +189,7 @@ export function ChildMissingIntelligenceCard({ childId }: { childId: string }) {
               <p className="font-medium text-slate-700 mb-1">Response Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>RI completed: <span className={d.response_quality.return_interview_rate === 100 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.response_quality.return_interview_rate}%</span></p>
-                {d.response_quality.avg_ri_delay_days > 0 && <p>Avg RI delay: {d.response_quality.avg_ri_delay_days}d</p>}
+                {typeof d.response_quality.avg_ri_delay_days === "number" && d.response_quality.avg_ri_delay_days > 0 && <p>Avg RI delay: {d.response_quality.avg_ri_delay_days}d</p>}
                 <p>Police rate (high/crit): {d.response_quality.police_reporting_rate}%</p>
                 <p>LA notified: {d.response_quality.la_notification_rate}%</p>
               </div>

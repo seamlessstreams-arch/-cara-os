@@ -49,9 +49,11 @@ export interface FrequencyProfile {
 }
 
 export interface DurationProfile {
-  avg_duration_hours: number;
-  max_duration_hours: number;
-  min_duration_hours: number;
+  // Null on no episodes — "0h avg / 0h max / 0h min" reads as episodes that
+  // ended instantly, which is a fabrication of both outcome AND presence.
+  avg_duration_hours: number | null;
+  max_duration_hours: number | null;
+  min_duration_hours: number | null;
   duration_trend: "increasing" | "stable" | "decreasing" | "insufficient_data";
 }
 
@@ -64,9 +66,11 @@ export interface RiskProfile {
   la_notified_count: number;
 }
 
+// Note: `avg_ri_delay_days` widened to `number | null` in the fab-0 batch —
+// see [[project_fabricated_scores]]. Consumers must null-guard.
 export interface ResponseQuality {
   return_interview_rate: number;     // % of returned episodes with RI completed
-  avg_ri_delay_days: number;         // avg days between return and RI
+  avg_ri_delay_days: number | null;  // null when no completed RIs to time; avg days between return and RI otherwise
   police_reporting_rate: number;     // % reported to police when high/critical
   la_notification_rate: number;      // % notified to LA
 }
@@ -125,8 +129,8 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function avg(values: number[]): number {
-  return values.length > 0 ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10 : 0;
+function avg(values: number[]): number | null {
+  return values.length > 0 ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10 : null;
 }
 
 function pct(n: number, d: number): number {
@@ -211,11 +215,15 @@ export function computeChildMissing(
     .map((e) => e.duration_hours as number);
 
   let durationTrend: DurationProfile["duration_trend"];
+  // Non-null asserts on the two avg() calls: the outer length guards
+  // (recentDurations.length >= 2, olderDurations.length >= 1) prove the
+  // arrays are non-empty, so avg() returns a number here. Retain the
+  // widened `number | null` return so the fab-0 guard stays clean.
   if (durations.length < 2) {
     durationTrend = "insufficient_data";
-  } else if (recentDurations.length >= 2 && olderDurations.length >= 1 && avg(recentDurations) > avg(olderDurations) + 0.5) {
+  } else if (recentDurations.length >= 2 && olderDurations.length >= 1 && avg(recentDurations)! > avg(olderDurations)! + 0.5) {
     durationTrend = "increasing";
-  } else if (recentDurations.length >= 2 && olderDurations.length >= 1 && avg(recentDurations) < avg(olderDurations) - 0.5) {
+  } else if (recentDurations.length >= 2 && olderDurations.length >= 1 && avg(recentDurations)! < avg(olderDurations)! - 0.5) {
     durationTrend = "decreasing";
   } else {
     durationTrend = "stable";
@@ -223,8 +231,8 @@ export function computeChildMissing(
 
   const duration: DurationProfile = {
     avg_duration_hours: avg(durations),
-    max_duration_hours: durations.length > 0 ? Math.max(...durations) : 0,
-    min_duration_hours: durations.length > 0 ? Math.min(...durations) : 0,
+    max_duration_hours: durations.length > 0 ? Math.max(...durations) : null,
+    min_duration_hours: durations.length > 0 ? Math.min(...durations) : null,
     duration_trend: durationTrend,
   };
 
@@ -236,11 +244,13 @@ export function computeChildMissing(
   const policeCount = episodes.filter((e) => e.reported_to_police);
   const laCount = episodes.filter((e) => e.reported_to_la);
 
-  // Risk escalating: recent episodes have higher risk than older ones
+  // Risk escalating: recent episodes have higher risk than older ones.
+  // The outer length guards prove both avg() calls return numbers; non-null
+  // asserts keep the compare simple while `avg()` stays widened for fab-0.
   const recentRisks = sorted.slice(0, 2).map((e) => riskValue(e.risk_level));
   const olderRisks = sorted.slice(2, 4).map((e) => riskValue(e.risk_level));
   const riskEscalating = recentRisks.length >= 1 && olderRisks.length >= 1
-    ? avg(recentRisks) > avg(olderRisks) + 0.3
+    ? avg(recentRisks)! > avg(olderRisks)! + 0.3
     : false;
 
   const risk: RiskProfile = {

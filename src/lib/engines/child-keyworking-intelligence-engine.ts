@@ -11,6 +11,8 @@
 // Reg 7 (children's views), Reg 10 (daily life). SCCIF: "Quality of care."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type KeyworkSessionType =
@@ -53,8 +55,10 @@ export interface FrequencyProfile {
   total_sessions: number;
   sessions_30d: number;
   sessions_90d: number;
-  avg_per_week_30d: number;       // rounded to 1dp
-  avg_per_week_90d: number;
+  // Null when the child had no sessions in the window — "0 sessions/week" implies
+  // a schedule of 0 was maintained, when in fact there were no sessions to average.
+  avg_per_week_30d: number | null;  // rounded to 1dp
+  avg_per_week_90d: number | null;
   trend: "increasing" | "stable" | "decreasing" | "insufficient_data";
 }
 
@@ -151,8 +155,8 @@ export function computeChildKeyworking(
   const sessions30d = sorted.filter((s) => daysAgo(today, s.date) <= 30 && daysAgo(today, s.date) >= 0);
   const sessions90d = sorted.filter((s) => daysAgo(today, s.date) <= 90 && daysAgo(today, s.date) >= 0);
 
-  const avgPerWeek30d = sessions30d.length > 0 ? Math.round((sessions30d.length / 4.3) * 10) / 10 : 0;
-  const avgPerWeek90d = sessions90d.length > 0 ? Math.round((sessions90d.length / 12.9) * 10) / 10 : 0;
+  const avgPerWeek30d: number | null = sessions30d.length > 0 ? Math.round((sessions30d.length / 4.3) * 10) / 10 : null;
+  const avgPerWeek90d: number | null = sessions90d.length > 0 ? Math.round((sessions90d.length / 12.9) * 10) / 10 : null;
 
   // Trend: compare first half vs second half of 90d window
   let trend: "increasing" | "stable" | "decreasing" | "insufficient_data" = "insufficient_data";
@@ -315,7 +319,7 @@ export function computeChildKeyworking(
     strengths.push(`${session_types.length} different session types used (${session_types.slice(0, 3).map((t) => t.type.replace(/_/g, " ")).join(", ")}). Varied approaches demonstrate that keywork is tailored to ${child_name}'s changing needs.`);
   }
 
-  if (frequency.avg_per_week_30d >= 1.5) {
+  if (meets(frequency.avg_per_week_30d, 1.5)) {
     strengths.push(`${frequency.avg_per_week_30d} sessions per week over the last 30 days. High-frequency contact builds trust and enables early intervention when issues arise.`);
   }
 

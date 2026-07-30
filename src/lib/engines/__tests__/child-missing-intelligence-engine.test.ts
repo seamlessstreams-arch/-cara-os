@@ -422,8 +422,11 @@ describe("Child Missing & Return Intelligence Engine", () => {
     const r = computeChildMissing(baseInput({
       episodes: [makeEpisode({ duration_hours: null })],
     }));
-    expect(r.duration.avg_duration_hours).toBe(0);
-    expect(r.duration.max_duration_hours).toBe(0);
+    // Fab-0 fix: no measurable durations ⇒ null, not 0. "0h avg / 0h max" reads
+    // as "the child went missing and returned instantly", not "no data".
+    expect(r.duration.avg_duration_hours).toBeNull();
+    expect(r.duration.max_duration_hours).toBeNull();
+    expect(r.duration.min_duration_hours).toBeNull();
   });
 
   it("clamps risk score to 0-100", () => {
