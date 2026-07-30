@@ -316,12 +316,12 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
       const result = computeCctvSurveillanceGovernance(
         baseInput({ total_children: 0 }),
       );
-      expect(result.policy_compliance_rate).toBe(0);
-      expect(result.privacy_impact_rate).toBe(0);
-      expect(result.retention_compliance_rate).toBe(0);
-      expect(result.child_awareness_rate).toBe(0);
-      expect(result.data_protection_rate).toBe(0);
-      expect(result.staff_training_rate).toBe(0);
+      expect(result.policy_compliance_rate).toBeNull();
+      expect(result.privacy_impact_rate).toBeNull();
+      expect(result.retention_compliance_rate).toBeNull();
+      expect(result.child_awareness_rate).toBeNull();
+      expect(result.data_protection_rate).toBeNull();
+      expect(result.staff_training_rate).toBeNull();
     });
 
     it("returns empty strengths, concerns, recommendations, insights", () => {
@@ -683,7 +683,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
           ],
         });
         const result = computeCctvSurveillanceGovernance(input);
-        expect(result.policy_compliance_rate).toBe(0);
+        expect(result.policy_compliance_rate).toBe(0); // record exists → 0, not null
       });
     });
 
@@ -945,7 +945,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         ],
       });
       const result = computeCctvSurveillanceGovernance(input);
-      expect(result.policy_compliance_rate).toBe(0);
+      expect(result.policy_compliance_rate).toBe(0); // record exists → 0, not null
       expect(result.cctv_score).toBe(47); // 52 - 5 = 47
     });
 
@@ -957,7 +957,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         ],
       });
       const result = computeCctvSurveillanceGovernance(input);
-      expect(result.privacy_impact_rate).toBe(0);
+      expect(result.privacy_impact_rate).toBe(0); // record exists → 0, not null
       expect(result.cctv_score).toBe(47); // 52 - 5 = 47
     });
 
@@ -969,7 +969,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         ],
       });
       const result = computeCctvSurveillanceGovernance(input);
-      expect(result.retention_compliance_rate).toBe(0);
+      expect(result.retention_compliance_rate).toBe(0); // record exists → 0, not null
       expect(result.cctv_score).toBe(50); // 52 - 5 + side-effect bonuses
     });
 
@@ -987,7 +987,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         ],
       });
       const result = computeCctvSurveillanceGovernance(input);
-      expect(result.child_awareness_rate).toBe(0);
+      expect(result.child_awareness_rate).toBe(0); // record exists → 0, not null
       expect(result.cctv_score).toBe(52 - 3);
     });
 
@@ -1048,7 +1048,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, data_protection_records: [makeDataProtection()] }),
         );
-        expect(result.policy_compliance_rate).toBe(0);
+        expect(result.policy_compliance_rate).toBeNull();
       });
 
       it("only counts approved records for ICO/children/RM rates", () => {
@@ -1089,7 +1089,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, cctv_policy_records: [makePolicy()] }),
         );
-        expect(result.privacy_impact_rate).toBe(0);
+        expect(result.privacy_impact_rate).toBeNull();
       });
     });
 
@@ -1113,7 +1113,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, cctv_policy_records: [makePolicy()] }),
         );
-        expect(result.retention_compliance_rate).toBe(0);
+        expect(result.retention_compliance_rate).toBeNull();
       });
     });
 
@@ -1137,7 +1137,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, cctv_policy_records: [makePolicy()] }),
         );
-        expect(result.child_awareness_rate).toBe(0);
+        expect(result.child_awareness_rate).toBeNull();
       });
     });
 
@@ -1161,7 +1161,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, cctv_policy_records: [makePolicy()] }),
         );
-        expect(result.data_protection_rate).toBe(0);
+        expect(result.data_protection_rate).toBeNull();
       });
     });
 
@@ -1185,7 +1185,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, cctv_policy_records: [makePolicy()] }),
         );
-        expect(result.staff_training_rate).toBe(0);
+        expect(result.staff_training_rate).toBeNull();
       });
 
       it("both trained and current yield 100%", () => {
@@ -1205,7 +1205,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
           ],
         });
         const result = computeCctvSurveillanceGovernance(input);
-        expect(result.staff_training_rate).toBe(0);
+        expect(result.staff_training_rate).toBe(0); // record exists → 0, not null
       });
     });
   });
@@ -2164,10 +2164,10 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
       });
       const result = computeCctvSurveillanceGovernance(input);
       expect(result.policy_compliance_rate).toBe(100);
-      expect(result.privacy_impact_rate).toBe(0);
-      expect(result.retention_compliance_rate).toBe(0);
-      expect(result.child_awareness_rate).toBe(0);
-      expect(result.data_protection_rate).toBe(0);
+      expect(result.privacy_impact_rate).toBeNull();
+      expect(result.retention_compliance_rate).toBeNull();
+      expect(result.child_awareness_rate).toBeNull();
+      expect(result.data_protection_rate).toBeNull();
       expect(result.cctv_score).toBe(52 + 4); // only policy bonus
     });
 
@@ -2425,7 +2425,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         ],
       });
       const result = computeCctvSurveillanceGovernance(input);
-      expect(result.retention_compliance_rate).toBe(0);
+      expect(result.retention_compliance_rate).toBe(0); // record exists → 0, not null
     });
 
     it("privacy impact with all 5 factors true = 100%", () => {
@@ -2450,7 +2450,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
           ],
         }),
       );
-      expect(result.privacy_impact_rate).toBe(0);
+      expect(result.privacy_impact_rate).toBe(0); // record exists → 0, not null
     });
 
     it("staff training with mixed trained/not-trained", () => {
@@ -2619,6 +2619,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         ],
       });
       const result = computeCctvSurveillanceGovernance(input);
+      // record exists → 0, not null
       expect(result.data_protection_rate).toBe(0);
       expect(result.staff_training_rate).toBe(0);
       // No data protection penalty defined (unlike policy < 40 => -5)
