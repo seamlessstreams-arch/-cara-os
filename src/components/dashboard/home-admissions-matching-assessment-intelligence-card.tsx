@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { AdmissionsMatchingRating } from "@/lib/engines/home-admissions-matching-assessment-intelligence-engine";
 
@@ -73,20 +74,20 @@ export function HomeAdmissionsMatchingAssessmentIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.referral_assessment_rate >= 90 ? "text-[--cs-success]" : d.referral_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.referral_assessment_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Referral</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.impact_assessment_rate >= 90 ? "bg-green-50" : d.impact_assessment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.impact_assessment_rate >= 90 ? "text-[--cs-success]" : d.impact_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.impact_assessment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.impact_assessment_rate, 90) ? "bg-green-50" : meets(d.impact_assessment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.impact_assessment_rate, 90) ? "text-[--cs-success]" : meets(d.impact_assessment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.impact_assessment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Impact</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.matching_quality_rate >= 90 ? "bg-green-50" : d.matching_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.matching_quality_rate >= 90 ? "text-[--cs-success]" : d.matching_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.matching_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.matching_quality_rate, 90) ? "bg-green-50" : meets(d.matching_quality_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.matching_quality_rate, 90) ? "text-[--cs-success]" : meets(d.matching_quality_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.matching_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Matching</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.suitability_review_rate >= 90 ? "bg-green-50" : d.suitability_review_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.suitability_review_rate >= 90 ? "text-[--cs-success]" : d.suitability_review_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.suitability_review_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.suitability_review_rate, 90) ? "bg-green-50" : meets(d.suitability_review_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.suitability_review_rate, 90) ? "text-[--cs-success]" : meets(d.suitability_review_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.suitability_review_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Suitability</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.admission_planning_rate >= 90 ? "bg-green-50" : d.admission_planning_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.admission_planning_rate >= 90 ? "text-[--cs-success]" : d.admission_planning_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.admission_planning_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.admission_planning_rate, 90) ? "bg-green-50" : meets(d.admission_planning_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.admission_planning_rate, 90) ? "text-[--cs-success]" : meets(d.admission_planning_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.admission_planning_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Planning</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_consultation_rate >= 90 ? "bg-green-50" : d.child_consultation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

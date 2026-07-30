@@ -12,6 +12,8 @@
 //             admissionPlanningRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ReferralAssessmentRecordInput {
@@ -178,11 +180,16 @@ export interface AdmissionsMatchingResult {
   total_matching_records: number;
   total_suitability_reviews: number;
   total_admission_plans: number;
+  // referral_assessment_rate + child_consultation_rate use pct() directly
+  // (deterministic 0 on empty). The 4 composite rates below are null on
+  // empty: no source records ⇒ no signal. "0% impact assessment / 0%
+  // matching / 0% suitability / 0% planning" would read as a home taking
+  // random referrals with no thought, not "unmeasured". Fab-0 doctrine.
   referral_assessment_rate: number;
-  impact_assessment_rate: number;
-  matching_quality_rate: number;
-  suitability_review_rate: number;
-  admission_planning_rate: number;
+  impact_assessment_rate: number | null;
+  matching_quality_rate: number | null;
+  suitability_review_rate: number | null;
+  admission_planning_rate: number | null;
   child_consultation_rate: number;
   strengths: string[];
   concerns: string[];
@@ -224,10 +231,10 @@ function emptyResult(
     total_suitability_reviews: 0,
     total_admission_plans: 0,
     referral_assessment_rate: 0,
-    impact_assessment_rate: 0,
-    matching_quality_rate: 0,
-    suitability_review_rate: 0,
-    admission_planning_rate: 0,
+    impact_assessment_rate: null,
+    matching_quality_rate: null,
+    suitability_review_rate: null,
+    admission_planning_rate: null,
     child_consultation_rate: 0,
     strengths: [],
     concerns: [],
@@ -337,9 +344,9 @@ export function computeAdmissionsMatchingAssessment(
   const holisticNeedsRate = pct(holisticNeedsCount, totalReferralAssessments * 3);
 
   const referralQualitySum = referral_assessment_records.reduce((s, r) => s + r.quality_rating, 0);
-  const avgReferralQuality = totalReferralAssessments > 0
+  const avgReferralQuality: number | null = totalReferralAssessments > 0
     ? Math.round((referralQualitySum / totalReferralAssessments) * 100) / 100
-    : 0;
+      : null;
 
   // --- Impact risk assessment metrics ---
   const totalImpactAssessments = impact_risk_assessment_records.length;
@@ -378,14 +385,14 @@ export function computeAdmissionsMatchingAssessment(
   const highRiskImpacts = impact_risk_assessment_records.filter((a) => a.risk_level === "high" || a.risk_level === "very_high").length;
 
   const impactQualitySum = impact_risk_assessment_records.reduce((s, a) => s + a.quality_rating, 0);
-  const avgImpactQuality = totalImpactAssessments > 0
+  const avgImpactQuality: number | null = totalImpactAssessments > 0
     ? Math.round((impactQualitySum / totalImpactAssessments) * 100) / 100
-    : 0;
+      : null;
 
   // Composite impact assessment rate
-  const impactAssessmentRate = totalImpactAssessments > 0
+  const impactAssessmentRate: number | null = totalImpactAssessments > 0
     ? Math.round((individualImpactRate + impactChildConsultRate + mitigationAdequacyRate + safeguardingImplicationsRate) / 4)
-    : 0;
+      : null;
 
   // --- Matching criteria metrics ---
   const totalMatchingRecords = matching_criteria_records.length;
@@ -421,14 +428,14 @@ export function computeAdmissionsMatchingAssessment(
   const domainCoverageRate = pct(domainCoverageCount, totalMatchingRecords * 6);
 
   const matchingQualitySum = matching_criteria_records.reduce((s, m) => s + m.quality_rating, 0);
-  const avgMatchingQuality = totalMatchingRecords > 0
+  const avgMatchingQuality: number | null = totalMatchingRecords > 0
     ? Math.round((matchingQualitySum / totalMatchingRecords) * 100) / 100
-    : 0;
+      : null;
 
   // Composite matching quality rate
-  const matchingQualityRate = totalMatchingRecords > 0
+  const matchingQualityRate: number | null = totalMatchingRecords > 0
     ? Math.round((criteriaMetRate + matchingChildViewsRate + domainCoverageRate + matchingRationaleRate) / 4)
-    : 0;
+      : null;
 
   // --- Placement suitability metrics ---
   const totalSuitabilityReviews = placement_suitability_records.length;
@@ -469,14 +476,14 @@ export function computeAdmissionsMatchingAssessment(
   const contactFeasibleRate = pct(contactFeasible, totalSuitabilityReviews);
 
   const suitabilityQualitySum = placement_suitability_records.reduce((s, p) => s + p.quality_rating, 0);
-  const avgSuitabilityQuality = totalSuitabilityReviews > 0
+  const avgSuitabilityQuality: number | null = totalSuitabilityReviews > 0
     ? Math.round((suitabilityQualitySum / totalSuitabilityReviews) * 100) / 100
-    : 0;
+      : null;
 
   // Composite suitability review rate
-  const suitabilityReviewRate = totalSuitabilityReviews > 0
+  const suitabilityReviewRate: number | null = totalSuitabilityReviews > 0
     ? Math.round((suitabilityDeterminedRate + sopCheckRate + decisionRationaleRate + regulatoryMetRate) / 4)
-    : 0;
+      : null;
 
   // --- Admission planning metrics ---
   const totalAdmissionPlans = admission_planning_records.length;
@@ -529,14 +536,14 @@ export function computeAdmissionsMatchingAssessment(
   const contactAgreedRate = pct(contactAgreed, totalAdmissionPlans);
 
   const planQualitySum = admission_planning_records.reduce((s, a) => s + a.quality_rating, 0);
-  const avgPlanQuality = totalAdmissionPlans > 0
+  const avgPlanQuality: number | null = totalAdmissionPlans > 0
     ? Math.round((planQualitySum / totalAdmissionPlans) * 100) / 100
-    : 0;
+      : null;
 
   // Composite admission planning rate
-  const admissionPlanningRate = totalAdmissionPlans > 0
+  const admissionPlanningRate: number | null = totalAdmissionPlans > 0
     ? Math.round((introVisitRate + childPrepRate + staffBriefingRate + placementPlanRate + keyWorkerRate) / 5)
-    : 0;
+      : null;
 
   // --- Child consultation composite ---
   // Composite across all arrays where child voice is captured
@@ -569,20 +576,20 @@ export function computeAdmissionsMatchingAssessment(
   else if (referralAssessmentRate >= 70) score += 2;
 
   // --- Bonus 2: impactAssessmentRate (>=90: +4, >=70: +2) ---
-  if (impactAssessmentRate >= 90) score += 4;
-  else if (impactAssessmentRate >= 70) score += 2;
+  if (meets(impactAssessmentRate, 90)) score += 4;
+  else if (meets(impactAssessmentRate, 70)) score += 2;
 
   // --- Bonus 3: matchingQualityRate (>=90: +3, >=70: +1) ---
-  if (matchingQualityRate >= 90) score += 3;
-  else if (matchingQualityRate >= 70) score += 1;
+  if (meets(matchingQualityRate, 90)) score += 3;
+  else if (meets(matchingQualityRate, 70)) score += 1;
 
   // --- Bonus 4: suitabilityReviewRate (>=90: +3, >=70: +1) ---
-  if (suitabilityReviewRate >= 90) score += 3;
-  else if (suitabilityReviewRate >= 70) score += 1;
+  if (meets(suitabilityReviewRate, 90)) score += 3;
+  else if (meets(suitabilityReviewRate, 70)) score += 1;
 
   // --- Bonus 5: admissionPlanningRate (>=90: +3, >=70: +1) ---
-  if (admissionPlanningRate >= 90) score += 3;
-  else if (admissionPlanningRate >= 70) score += 1;
+  if (meets(admissionPlanningRate, 90)) score += 3;
+  else if (meets(admissionPlanningRate, 70)) score += 1;
 
   // --- Bonus 6: childConsultationRate (>=90: +3, >=70: +1) ---
   if (childConsultationRate >= 90) score += 3;
@@ -597,27 +604,27 @@ export function computeAdmissionsMatchingAssessment(
   else if (sopAlignmentRate >= 70) score += 1;
 
   // --- Bonus 9: avgReferralQuality + avgImpactQuality composite (>=4.0: +2, >=3.0: +1) ---
-  const avgQualityComposite = totalReferralAssessments > 0 && totalImpactAssessments > 0
-    ? Math.round(((avgReferralQuality + avgImpactQuality) / 2) * 100) / 100
+  const avgQualityComposite: number | null = totalReferralAssessments > 0 && totalImpactAssessments > 0
+    ? Math.round(((avgReferralQuality! + avgImpactQuality!) / 2) * 100) / 100
     : totalReferralAssessments > 0 ? avgReferralQuality
     : totalImpactAssessments > 0 ? avgImpactQuality
-    : 0;
-  if (avgQualityComposite >= 4.0) score += 2;
-  else if (avgQualityComposite >= 3.0) score += 1;
+      : null;
+  if (meets(avgQualityComposite, 4.0)) score += 2;
+  else if (meets(avgQualityComposite, 3.0)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // referralAssessmentRate < 40 → -5 (guarded)
   if (referralAssessmentRate < 40 && referral_assessment_records.length > 0) score -= 5;
 
-  // impactAssessmentRate < 40 → -5 (guarded)
-  if (impactAssessmentRate < 40 && impact_risk_assessment_records.length > 0) score -= 5;
+  // below(impactAssessmentRate, 40) → -5 (guarded)
+  if (below(impactAssessmentRate, 40) && impact_risk_assessment_records.length > 0) score -= 5;
 
   // childConsultationRate < 30 → -4 (guarded)
   if (childConsultationRate < 30 && totalChildConsultDenom > 0) score -= 4;
 
-  // matchingQualityRate < 30 → -4 (guarded)
-  if (matchingQualityRate < 30 && matching_criteria_records.length > 0) score -= 4;
+  // below(matchingQualityRate, 30) → -4 (guarded)
+  if (below(matchingQualityRate, 30) && matching_criteria_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -637,41 +644,41 @@ export function computeAdmissionsMatchingAssessment(
     );
   }
 
-  if (impactAssessmentRate >= 90 && totalImpactAssessments > 0) {
+  if (meets(impactAssessmentRate, 90) && totalImpactAssessments > 0) {
     strengths.push(
       `${impactAssessmentRate}% impact assessment quality — comprehensive risk assessment of each admission's effect on existing children, with child consultation and adequate mitigations.`,
     );
-  } else if (impactAssessmentRate >= 70 && totalImpactAssessments > 0) {
+  } else if (meets(impactAssessmentRate, 70) && totalImpactAssessments > 0) {
     strengths.push(
       `${impactAssessmentRate}% impact assessment rate — good evaluation of how new admissions affect existing residents.`,
     );
   }
 
-  if (matchingQualityRate >= 90 && totalMatchingRecords > 0) {
+  if (meets(matchingQualityRate, 90) && totalMatchingRecords > 0) {
     strengths.push(
       `${matchingQualityRate}% matching quality — outstanding multi-domain compatibility assessment ensuring children are well-matched to the home and existing group.`,
     );
-  } else if (matchingQualityRate >= 70 && totalMatchingRecords > 0) {
+  } else if (meets(matchingQualityRate, 70) && totalMatchingRecords > 0) {
     strengths.push(
       `${matchingQualityRate}% matching quality rate — children's compatibility is consistently evaluated across key domains before placement.`,
     );
   }
 
-  if (suitabilityReviewRate >= 90 && totalSuitabilityReviews > 0) {
+  if (meets(suitabilityReviewRate, 90) && totalSuitabilityReviews > 0) {
     strengths.push(
       `${suitabilityReviewRate}% suitability review quality — placement suitability decisions are well-documented with regulatory compliance and clear rationale.`,
     );
-  } else if (suitabilityReviewRate >= 70 && totalSuitabilityReviews > 0) {
+  } else if (meets(suitabilityReviewRate, 70) && totalSuitabilityReviews > 0) {
     strengths.push(
       `${suitabilityReviewRate}% suitability review rate — good standard of placement suitability decision-making.`,
     );
   }
 
-  if (admissionPlanningRate >= 90 && totalAdmissionPlans > 0) {
+  if (meets(admissionPlanningRate, 90) && totalAdmissionPlans > 0) {
     strengths.push(
       `${admissionPlanningRate}% admission planning quality — the home prepares thoroughly for each admission with introductory visits, staff briefings, key worker allocation, and placement plans.`,
     );
-  } else if (admissionPlanningRate >= 70 && totalAdmissionPlans > 0) {
+  } else if (meets(admissionPlanningRate, 70) && totalAdmissionPlans > 0) {
     strengths.push(
       `${admissionPlanningRate}% admission planning rate — good preparation processes support smooth transitions into the home.`,
     );
@@ -727,7 +734,7 @@ export function computeAdmissionsMatchingAssessment(
     );
   }
 
-  if (avgQualityComposite >= 4.0) {
+  if (meets(avgQualityComposite, 4.0)) {
     strengths.push(
       `Assessment quality averaging ${avgQualityComposite}/5 — the standard of referral and impact assessment documentation is consistently high.`,
     );
@@ -759,11 +766,11 @@ export function computeAdmissionsMatchingAssessment(
     );
   }
 
-  if (impactAssessmentRate < 40 && totalImpactAssessments > 0) {
+  if (below(impactAssessmentRate, 40) && totalImpactAssessments > 0) {
     concerns.push(
       `Only ${impactAssessmentRate}% impact assessment quality — existing children's welfare is not adequately protected through thorough impact and risk assessment of new admissions.`,
     );
-  } else if (impactAssessmentRate < 70 && impactAssessmentRate >= 40 && totalImpactAssessments > 0) {
+  } else if (below(impactAssessmentRate, 70) && meets(impactAssessmentRate, 40) && totalImpactAssessments > 0) {
     concerns.push(
       `Impact assessment quality at ${impactAssessmentRate}% — gaps in individual impact assessment, child consultation, or mitigation planning leave existing residents potentially exposed.`,
     );
@@ -775,11 +782,11 @@ export function computeAdmissionsMatchingAssessment(
     );
   }
 
-  if (matchingQualityRate < 30 && totalMatchingRecords > 0) {
+  if (below(matchingQualityRate, 30) && totalMatchingRecords > 0) {
     concerns.push(
       `Only ${matchingQualityRate}% matching quality — matching criteria are poorly evaluated, children's views are not sought, and compatibility domains are inadequately assessed.`,
     );
-  } else if (matchingQualityRate < 70 && matchingQualityRate >= 30 && totalMatchingRecords > 0) {
+  } else if (below(matchingQualityRate, 70) && meets(matchingQualityRate, 30) && totalMatchingRecords > 0) {
     concerns.push(
       `Matching quality at ${matchingQualityRate}% — inconsistencies in criteria evaluation, child consultation, or domain coverage weaken the matching process.`,
     );
@@ -813,13 +820,13 @@ export function computeAdmissionsMatchingAssessment(
     );
   }
 
-  if (suitabilityReviewRate < 50 && totalSuitabilityReviews > 0) {
+  if (below(suitabilityReviewRate, 50) && totalSuitabilityReviews > 0) {
     concerns.push(
       `Suitability review quality at only ${suitabilityReviewRate}% — placement suitability decisions lack adequate documentation, SoP checks, or regulatory compliance verification.`,
     );
   }
 
-  if (admissionPlanningRate < 40 && totalAdmissionPlans > 0) {
+  if (below(admissionPlanningRate, 40) && totalAdmissionPlans > 0) {
     concerns.push(
       `Admission planning at only ${admissionPlanningRate}% — children are not being adequately prepared for admission, with gaps in introductory visits, staff briefings, or key worker allocation.`,
     );
@@ -876,7 +883,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (impactAssessmentRate < 40 && totalImpactAssessments > 0) {
+  if (below(impactAssessmentRate, 40) && totalImpactAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -926,7 +933,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (matchingQualityRate < 50 && matchingQualityRate > 0 && totalMatchingRecords > 0) {
+  if (below(matchingQualityRate, 50) && above(matchingQualityRate, 0) && totalMatchingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -946,7 +953,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (admissionPlanningRate < 50 && totalAdmissionPlans > 0) {
+  if (below(admissionPlanningRate, 50) && totalAdmissionPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1047,7 +1054,7 @@ export function computeAdmissionsMatchingAssessment(
     });
   }
 
-  if (impactAssessmentRate < 40 && totalImpactAssessments > 0) {
+  if (below(impactAssessmentRate, 40) && totalImpactAssessments > 0) {
     insights.push({
       text: `Impact assessment quality at only ${impactAssessmentRate}%. Inadequate impact risk assessment means the home cannot demonstrate that it protects existing children when admitting new residents. This undermines the home's overall effectiveness judgement under SCCIF.`,
       severity: "critical",
@@ -1096,8 +1103,8 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    impactAssessmentRate >= 40 &&
-    impactAssessmentRate < 70 &&
+    meets(impactAssessmentRate, 40) &&
+    below(impactAssessmentRate, 70) &&
     totalImpactAssessments > 0
   ) {
     insights.push({
@@ -1107,8 +1114,8 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    matchingQualityRate >= 30 &&
-    matchingQualityRate < 70 &&
+    meets(matchingQualityRate, 30) &&
+    below(matchingQualityRate, 70) &&
     totalMatchingRecords > 0
   ) {
     insights.push({
@@ -1129,8 +1136,8 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    suitabilityReviewRate >= 40 &&
-    suitabilityReviewRate < 70 &&
+    meets(suitabilityReviewRate, 40) &&
+    below(suitabilityReviewRate, 70) &&
     totalSuitabilityReviews > 0
   ) {
     insights.push({
@@ -1140,8 +1147,8 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    admissionPlanningRate >= 40 &&
-    admissionPlanningRate < 70 &&
+    meets(admissionPlanningRate, 40) &&
+    below(admissionPlanningRate, 70) &&
     totalAdmissionPlans > 0
   ) {
     insights.push({
@@ -1208,7 +1215,7 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    impactAssessmentRate >= 90 &&
+    meets(impactAssessmentRate, 90) &&
     impactChildConsultRate >= 90 &&
     mitigationAdequacyRate >= 90 &&
     totalImpactAssessments > 0
@@ -1220,7 +1227,7 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    matchingQualityRate >= 90 &&
+    meets(matchingQualityRate, 90) &&
     domainCoverageRate >= 90 &&
     totalMatchingRecords > 0
   ) {
@@ -1241,7 +1248,7 @@ export function computeAdmissionsMatchingAssessment(
   }
 
   if (
-    admissionPlanningRate >= 90 &&
+    meets(admissionPlanningRate, 90) &&
     existingPrepRate >= 90 &&
     totalAdmissionPlans > 0
   ) {

@@ -328,10 +328,10 @@ describe("Admissions Matching Engine — Insufficient Data", () => {
       baseInput({ total_children: 0 }),
     );
     expect(r.referral_assessment_rate).toBe(0);
-    expect(r.impact_assessment_rate).toBe(0);
-    expect(r.matching_quality_rate).toBe(0);
-    expect(r.suitability_review_rate).toBe(0);
-    expect(r.admission_planning_rate).toBe(0);
+    expect(r.impact_assessment_rate).toBeNull();
+    expect(r.matching_quality_rate).toBeNull();
+    expect(r.suitability_review_rate).toBeNull();
+    expect(r.admission_planning_rate).toBeNull();
     expect(r.child_consultation_rate).toBe(0);
   });
 });
@@ -388,10 +388,10 @@ describe("Admissions Matching Engine — Inadequate Floor (children, no records)
       baseInput({ total_children: 5 }),
     );
     expect(r.referral_assessment_rate).toBe(0);
-    expect(r.impact_assessment_rate).toBe(0);
-    expect(r.matching_quality_rate).toBe(0);
-    expect(r.suitability_review_rate).toBe(0);
-    expect(r.admission_planning_rate).toBe(0);
+    expect(r.impact_assessment_rate).toBeNull();
+    expect(r.matching_quality_rate).toBeNull();
+    expect(r.suitability_review_rate).toBeNull();
+    expect(r.admission_planning_rate).toBeNull();
     expect(r.child_consultation_rate).toBe(0);
   });
 
@@ -429,7 +429,7 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
         referral_assessment_records: [makeReferralAssessment()],
       }),
     );
-    expect(r.impact_assessment_rate).toBe(0);
+    expect(r.impact_assessment_rate).toBeNull();
   });
 
   it("matching_quality_rate is 0 when no matching records", () => {
@@ -439,7 +439,7 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
         referral_assessment_records: [makeReferralAssessment()],
       }),
     );
-    expect(r.matching_quality_rate).toBe(0);
+    expect(r.matching_quality_rate).toBeNull();
   });
 
   it("suitability_review_rate is 0 when no suitability records", () => {
@@ -449,7 +449,7 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
         referral_assessment_records: [makeReferralAssessment()],
       }),
     );
-    expect(r.suitability_review_rate).toBe(0);
+    expect(r.suitability_review_rate).toBeNull();
   });
 
   it("admission_planning_rate is 0 when no admission plan records", () => {
@@ -459,7 +459,7 @@ describe("Admissions Matching Engine — pct(0,0)=0 behaviour", () => {
         referral_assessment_records: [makeReferralAssessment()],
       }),
     );
-    expect(r.admission_planning_rate).toBe(0);
+    expect(r.admission_planning_rate).toBeNull();
   });
 
   it("child_consultation_rate is 0 when no relevant consultation data exists", () => {
@@ -1971,7 +1971,7 @@ describe("Admissions Matching Engine — Rate calculations", () => {
           ],
         }),
       );
-      // (0 + pct(0,0)=0 + 0 + 0) / 4 = 0
+      // (0 + pct(0,0)=0 + 0 + 0) / 4 = 0 (record exists → 0, not null)
       expect(r.impact_assessment_rate).toBe(0);
     });
   });
@@ -3206,7 +3206,7 @@ describe("Admissions Matching Engine — Edge cases", () => {
     );
     expect(r.total_referral_assessments).toBe(1);
     expect(r.total_impact_assessments).toBe(0);
-    expect(r.impact_assessment_rate).toBe(0);
+    expect(r.impact_assessment_rate).toBeNull();
     expect(r.admissions_rating).toBeDefined();
   });
 
