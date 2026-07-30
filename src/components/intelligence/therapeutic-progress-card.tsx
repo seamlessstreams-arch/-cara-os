@@ -15,6 +15,7 @@ import {
   AlertCircle, Sparkles, Stethoscope, BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRate } from "@/lib/metrics/rate";
 import type {
   TrajectoryDirection,
   EngagementLevel,
@@ -124,7 +125,7 @@ export function TherapeuticProgressCard({ childId }: { childId: string }) {
           </div>
           <div className={cn("text-center rounded-lg p-2", engStyle.bg)}>
             <p className={cn("text-[10px] font-bold uppercase", engStyle.text)}>{d.therapy_engagement.engagement_level}</p>
-            <p className="text-lg font-bold tabular-nums text-slate-600">{d.therapy_engagement.attendance_rate}%</p>
+            <p className="text-lg font-bold tabular-nums text-slate-600">{formatRate(d.therapy_engagement.attendance_rate)}</p>
             <p className="text-[10px] text-muted-foreground">Therapy Attend.</p>
           </div>
           <div className="text-center rounded-lg bg-slate-50 p-2">
@@ -147,7 +148,7 @@ export function TherapeuticProgressCard({ childId }: { childId: string }) {
         <div className="grid grid-cols-2 gap-1.5">
           {[
             { label: "Mood Trajectory", direction: d.mood_trajectory.direction, detail: d.mood_trajectory.data_points + " data points" },
-            { label: "Behaviour", direction: d.behaviour_trajectory.direction, detail: d.behaviour_trajectory.de_escalation_success_rate + "% de-escalation" },
+            { label: "Behaviour", direction: d.behaviour_trajectory.direction, detail: formatRate(d.behaviour_trajectory.de_escalation_success_rate) + " de-escalation" },
             { label: "Therapy Sessions", direction: d.therapy_engagement.attended > d.therapy_engagement.missed ? "improving" as TrajectoryDirection : d.therapy_engagement.total_sessions === 0 ? "insufficient_data" as TrajectoryDirection : "declining" as TrajectoryDirection, detail: d.therapy_engagement.sessions_last_30d + " in 30d" },
             { label: "Outcomes", direction: d.outcome_progress.improving > d.outcome_progress.declining ? "improving" as TrajectoryDirection : d.outcome_progress.declining > 0 ? "declining" as TrajectoryDirection : d.outcome_progress.total_targets === 0 ? "insufficient_data" as TrajectoryDirection : "stable" as TrajectoryDirection, detail: `${d.outcome_progress.improving}↑ ${d.outcome_progress.stable}→ ${d.outcome_progress.declining}↓` },
           ].map((item) => {

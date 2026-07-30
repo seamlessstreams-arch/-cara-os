@@ -8,6 +8,8 @@
 // SCCIF: Overall experiences and progress of children.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface TherapeuticProgressInput {
@@ -147,7 +149,9 @@ export interface TherapyEngagement {
   total_sessions: number;
   attended: number;
   missed: number;
-  attendance_rate: number;
+  // Null on empty: no sessions ⇒ no signal. "0% attendance" reads as
+  // "the child refused every session"; fab-0 doctrine.
+  attendance_rate: number | null;
   engagement_level: EngagementLevel;
   sessions_last_30d: number;
   modalities_used: string[];
@@ -172,7 +176,8 @@ export interface BehaviourTrajectory {
   incidents_previous_30d: number;
   restraints_last_30d: number;
   restraints_previous_30d: number;
-  de_escalation_success_rate: number;
+  // Null on empty: no de-escalation attempts ⇒ no signal. Fab-0 doctrine.
+  de_escalation_success_rate: number | null;
   severity_trend: TrajectoryDirection;
   common_triggers: string[];
 }
@@ -181,8 +186,9 @@ export interface KeyworkEffectiveness {
   total_sessions: number;
   sessions_last_30d: number;
   average_mood_lift: number;
-  action_completion_rate: number;
-  therapeutic_session_pct: number;
+  // Null on empty: no keywork sessions with actions ⇒ no signal. Fab-0 doctrine.
+  action_completion_rate: number | null;
+  therapeutic_session_pct: number | null;
   topics_coverage: string[];
 }
 
@@ -192,7 +198,8 @@ export interface OutcomeProgressSummary {
   stable: number;
   declining: number;
   achieved: number;
-  average_progress_pct: number;
+  // Null on empty: no scored targets ⇒ no signal. Fab-0 doctrine.
+  average_progress_pct: number | null;
 }
 
 export interface CamhsStatusSummary {
@@ -303,7 +310,7 @@ function computeTherapyEngagement(input: TherapeuticProgressInput): TherapyEngag
   const total = sessions.length;
   const attended = sessions.filter((s) => s.attended).length;
   const missed = total - attended;
-  const rate = total > 0 ? Math.round((attended / total) * 100) : 0;
+  const rate: number | null = total > 0 ? Math.round((attended / total) * 100) : null;
 
   const sessions30d = sessions.filter((s) => withinDays(s.session_date, input.today, 30));
 
@@ -318,9 +325,9 @@ function computeTherapyEngagement(input: TherapeuticProgressInput): TherapyEngag
   const themes = topN(sessions.map((s) => s.general_theme), 5);
 
   let engagement: EngagementLevel;
-  if (rate >= 90 && total >= 3) engagement = "excellent";
-  else if (rate >= 75) engagement = "good";
-  else if (rate >= 50) engagement = "inconsistent";
+  if (meets(rate, 90) && total >= 3) engagement = "excellent";
+  else if (meets(rate, 75)) engagement = "good";
+  else if (meets(rate, 50)) engagement = "inconsistent";
   else if (total > 0) engagement = "poor";
   else engagement = "disengaged";
 
@@ -430,7 +437,7 @@ function computeBehaviourTrajectory(input: TherapeuticProgressInput): BehaviourT
 
   const deEscEntries = entries.filter((e) => e.de_escalation_used);
   const deEscSuccess = deEscEntries.filter((e) => e.response_effective).length;
-  const deEscRate = deEscEntries.length > 0 ? Math.round((deEscSuccess / deEscEntries.length) * 100) : 0;
+  const deEscRate: number | null = deEscEntries.length > 0 ? Math.round((deEscSuccess / deEscEntries.length) * 100) : null;
 
   let direction: TrajectoryDirection = "stable";
   if (inc30d + res30d < inc60d + res60d - 1) direction = "improving";
@@ -444,12 +451,12 @@ function computeBehaviourTrajectory(input: TherapeuticProgressInput): BehaviourT
     return d > 30 && d <= 60;
   });
   const sevScore = (s: string) => s === "critical" ? 4 : s === "high" ? 3 : s === "medium" ? 2 : 1;
-  const recentSev = recent30.length > 0 ? average(recent30.map((e) => sevScore(e.severity))) : 0;
-  const prevSev = prev30.length > 0 ? average(prev30.map((e) => sevScore(e.severity))) : 0;
+  const recentSev: number | null = recent30.length > 0 ? average(recent30.map((e) => sevScore(e.severity))) : null;
+  const prevSev: number | null = prev30.length > 0 ? average(prev30.map((e) => sevScore(e.severity))) : null;
   let sevTrend: TrajectoryDirection = "stable";
   if (recent30.length > 0 && prev30.length > 0) {
-    if (recentSev < prevSev - 0.3) sevTrend = "improving";
-    else if (recentSev > prevSev + 0.3) sevTrend = "declining";
+    if (recentSev! < prevSev! - 0.3) sevTrend = "improving";
+    else if (recentSev! > prevSev! + 0.3) sevTrend = "declining";
   } else {
     sevTrend = "insufficient_data";
   }
@@ -482,10 +489,10 @@ function computeKeyworkEffectiveness(input: TherapeuticProgressInput): KeyworkEf
 
   const withActions = sessions.filter((s) => s.actions_agreed.length > 0);
   const completed = withActions.filter((s) => s.follow_up_completed).length;
-  const actionRate = withActions.length > 0 ? Math.round((completed / withActions.length) * 100) : 0;
+  const actionRate: number | null = withActions.length > 0 ? Math.round((completed / withActions.length) * 100) : null;
 
   const therapeutic = sessions.filter((s) => s.type === "therapeutic" || s.type === "wellbeing_check").length;
-  const therapeuticPct = total > 0 ? Math.round((therapeutic / total) * 100) : 0;
+  const therapeuticPct: number | null = total > 0 ? Math.round((therapeutic / total) * 100) : null;
 
   const allTopics = sessions.flatMap((s) => s.topics);
   const coverage = topN(allTopics, 8);
@@ -506,7 +513,7 @@ function computeOutcomeProgress(input: TherapeuticProgressInput): OutcomeProgres
   const targets = input.outcome_targets;
   const total = targets.length;
   if (total === 0) {
-    return { total_targets: 0, improving: 0, stable: 0, declining: 0, achieved: 0, average_progress_pct: 0 };
+    return { total_targets: 0, improving: 0, stable: 0, declining: 0, achieved: 0, average_progress_pct: null };
   }
 
   const improving = targets.filter((t) => t.direction === "improving").length;
@@ -517,7 +524,7 @@ function computeOutcomeProgress(input: TherapeuticProgressInput): OutcomeProgres
   const progressScores = targets
     .filter((t) => t.baseline_score !== null && t.current_score !== null && t.baseline_score !== 0)
     .map((t) => Math.round(((t.current_score! - t.baseline_score!) / Math.max(1, 10 - t.baseline_score!)) * 100));
-  const avgProgress = progressScores.length > 0 ? Math.round(average(progressScores)) : 0;
+  const avgProgress: number | null = progressScores.length > 0 ? Math.round(average(progressScores)) : null;
 
   return { total_targets: total, improving, stable, declining, achieved, average_progress_pct: avgProgress };
 }
@@ -572,11 +579,11 @@ function computeOverallScore(
   // Behaviour trajectory (+/- 15)
   if (behaviour.direction === "improving") score += 15;
   else if (behaviour.direction === "declining") score -= 15;
-  if (behaviour.de_escalation_success_rate > 70) score += 5;
+  if (above(behaviour.de_escalation_success_rate, 70)) score += 5;
 
   // Keywork (+/- 5)
-  if (keywork.action_completion_rate > 75) score += 5;
-  else if (keywork.action_completion_rate < 30 && keywork.total_sessions > 3) score -= 5;
+  if (above(keywork.action_completion_rate, 75)) score += 5;
+  else if (below(keywork.action_completion_rate, 30) && keywork.total_sessions > 3) score -= 5;
 
   // Outcomes (+/- 10)
   if (outcomes.total_targets > 0) {
@@ -668,13 +675,13 @@ function identifyStrengths(
   if (behaviour.direction === "improving") {
     strengths.push("Behaviour incidents reducing over time");
   }
-  if (behaviour.de_escalation_success_rate > 70) {
+  if (above(behaviour.de_escalation_success_rate, 70)) {
     strengths.push(`Effective de-escalation (${behaviour.de_escalation_success_rate}% success)`);
   }
   if (keywork.average_mood_lift > 0.3) {
     strengths.push("Keywork sessions lifting mood consistently");
   }
-  if (keywork.action_completion_rate > 75) {
+  if (above(keywork.action_completion_rate, 75)) {
     strengths.push(`Strong follow-through on keywork actions (${keywork.action_completion_rate}%)`);
   }
   if (outcomes.improving > 0 && outcomes.declining === 0) {
@@ -698,7 +705,7 @@ function identifyConcerns(
 ): string[] {
   const concerns: string[] = [];
 
-  if (therapy.missed > 2 && therapy.attendance_rate < 60) {
+  if (therapy.missed > 2 && below(therapy.attendance_rate, 60)) {
     concerns.push(`Low therapy attendance — ${therapy.missed} sessions missed (${therapy.attendance_rate}%)`);
   }
   if (mood.direction === "declining") {
@@ -755,7 +762,7 @@ function buildRecommendations(
     });
   }
 
-  if (therapy.attendance_rate < 60 && therapy.total_sessions > 2) {
+  if (below(therapy.attendance_rate, 60) && therapy.total_sessions > 2) {
     recs.push({
       rank: ++rank,
       recommendation: "Address therapy non-attendance — explore barriers and adapt approach",
@@ -795,7 +802,7 @@ function buildRecommendations(
     });
   }
 
-  if (keywork.action_completion_rate < 40 && keywork.total_sessions > 3) {
+  if (below(keywork.action_completion_rate, 40) && keywork.total_sessions > 3) {
     recs.push({
       rank: ++rank,
       recommendation: "Improve keywork action follow-through — only " + keywork.action_completion_rate + "% completed",
@@ -866,7 +873,7 @@ function generateInsights(
     });
   }
 
-  if (therapy.average_mood_improvement > 0.5 && therapy.attendance_rate > 80) {
+  if (therapy.average_mood_improvement > 0.5 && above(therapy.attendance_rate, 80)) {
     insights.push({
       text: `Therapy is demonstrably effective — ${input.child_name} shows consistent mood improvement post-session (avg +${therapy.average_mood_improvement}).`,
       severity: "positive",
@@ -901,7 +908,7 @@ function generateInsights(
     });
   }
 
-  if (keywork.therapeutic_session_pct > 40) {
+  if (above(keywork.therapeutic_session_pct, 40)) {
     insights.push({
       text: `${keywork.therapeutic_session_pct}% of keywork sessions are therapeutic in nature — good therapeutic content integration.`,
       severity: "positive",
