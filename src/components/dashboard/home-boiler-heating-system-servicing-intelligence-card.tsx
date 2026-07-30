@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { BoilerHeatingRating } from "@/lib/engines/home-boiler-heating-system-servicing-intelligence-engine";
 
@@ -77,20 +78,20 @@ export function HomeBoilerHeatingSystemServicingIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.heating_check_rate >= 90 ? "text-[--cs-success]" : d.heating_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.heating_check_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Heating</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.radiator_maintenance_rate >= 90 ? "bg-green-50" : d.radiator_maintenance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.radiator_maintenance_rate >= 90 ? "text-[--cs-success]" : d.radiator_maintenance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.radiator_maintenance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.radiator_maintenance_rate, 90) ? "bg-green-50" : meets(d.radiator_maintenance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.radiator_maintenance_rate, 90) ? "text-[--cs-success]" : meets(d.radiator_maintenance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.radiator_maintenance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Radiators</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.thermostat_calibration_rate >= 90 ? "bg-green-50" : d.thermostat_calibration_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.thermostat_calibration_rate >= 90 ? "text-[--cs-success]" : d.thermostat_calibration_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.thermostat_calibration_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Thermo.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.energy_efficiency_rate >= 90 ? "bg-green-50" : d.energy_efficiency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.energy_efficiency_rate >= 90 ? "text-[--cs-success]" : d.energy_efficiency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.energy_efficiency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.energy_efficiency_rate, 90) ? "bg-green-50" : meets(d.energy_efficiency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.energy_efficiency_rate, 90) ? "text-[--cs-success]" : meets(d.energy_efficiency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.energy_efficiency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Energy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_comfort_rate >= 90 ? "bg-green-50" : d.child_comfort_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_comfort_rate >= 90 ? "text-[--cs-success]" : d.child_comfort_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_comfort_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_comfort_rate, 90) ? "bg-green-50" : meets(d.child_comfort_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_comfort_rate, 90) ? "text-[--cs-success]" : meets(d.child_comfort_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_comfort_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Comfort</p>
             </div>
           </div>

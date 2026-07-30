@@ -225,14 +225,14 @@ describe("Special cases and empty data", () => {
     const r = run({ total_children: 2 });
     expect(r.boiler_servicing_rate).toBe(0);
     expect(r.heating_check_rate).toBe(0);
-    expect(r.radiator_maintenance_rate).toBe(0);
+    expect(r.radiator_maintenance_rate).toBeNull();
     expect(r.thermostat_calibration_rate).toBe(0);
-    expect(r.energy_efficiency_rate).toBe(0);
-    expect(r.child_comfort_rate).toBe(0);
+    expect(r.energy_efficiency_rate).toBeNull();
+    expect(r.child_comfort_rate).toBeNull();
     expect(r.gas_safety_compliance_rate).toBe(0);
     expect(r.carbon_monoxide_safety_rate).toBe(0);
     expect(r.fault_resolution_rate).toBe(0);
-    expect(r.boiler_condition_score).toBe(0);
+    expect(r.boiler_condition_score).toBeNull();
   });
 
   it("10 — empty+children strengths array is empty", () => {
@@ -409,6 +409,7 @@ describe("Boiler condition score", () => {
 
   it("35 — condemned = 0", () => {
     const r = run({ boiler_service_records: [makeBoilerService({ boiler_condition: "condemned" })] });
+    // record exists → 0, not null
     expect(r.boiler_condition_score).toBe(0);
   });
 
@@ -462,6 +463,7 @@ describe("Radiator maintenance rate", () => {
 
   it("41 — 0% when all bleeds and inspections overdue", () => {
     const r = run({ radiator_records: [makeRadiator({ bleed_overdue: true, inspection_overdue: true })] });
+    // record exists → 0, not null
     expect(r.radiator_maintenance_rate).toBe(0);
   });
 
@@ -545,7 +547,7 @@ describe("Energy efficiency rate", () => {
 
   it("49 — 0% when no energy records at all", () => {
     const r = run({ energy_records: [] });
-    expect(r.energy_efficiency_rate).toBe(0);
+    expect(r.energy_efficiency_rate).toBeNull();
   });
 
   it("50 — EPC rating A yields highest score component", () => {
@@ -585,12 +587,13 @@ describe("Child comfort rate", () => {
       heating_check_records: [makeHeatingCheck({ all_zones_heating: false, hot_water_functional: false })],
       thermostat_records: [makeThermostat({ programming_correct: false })],
     });
+    // records exist → 0, not null
     expect(r.child_comfort_rate).toBe(0);
   });
 
   it("54 — 0% when no relevant records exist", () => {
     const r = run({});
-    expect(r.child_comfort_rate).toBe(0);
+    expect(r.child_comfort_rate).toBeNull();
   });
 
   it("55 — partial comfort with mixed results", () => {

@@ -15,6 +15,8 @@
 //             thermostatRecords, energyRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface BoilerServiceInput {
@@ -161,16 +163,21 @@ export interface BoilerHeatingSystemServicingResult {
   total_radiators: number;
   total_thermostats: number;
   total_energy_records: number;
+  // The 4 composite rates below (+ boiler_condition_score) are null on empty:
+  // no source records ⇒ no signal. "0% radiator maintenance / 0% energy
+  // efficiency / 0% child comfort / 0 boiler condition" would read as a home
+  // actively failing Reg 25 (Premises) with freezing children, not
+  // "unmeasured". Fab-0 doctrine. Other rates use pct() directly.
   boiler_servicing_rate: number;
   heating_check_rate: number;
-  radiator_maintenance_rate: number;
+  radiator_maintenance_rate: number | null;
   thermostat_calibration_rate: number;
-  energy_efficiency_rate: number;
-  child_comfort_rate: number;
+  energy_efficiency_rate: number | null;
+  child_comfort_rate: number | null;
   gas_safety_compliance_rate: number;
   carbon_monoxide_safety_rate: number;
   fault_resolution_rate: number;
-  boiler_condition_score: number;
+  boiler_condition_score: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: BoilerHeatingRecommendation[];
@@ -212,14 +219,14 @@ function emptyResult(
     total_energy_records: 0,
     boiler_servicing_rate: 0,
     heating_check_rate: 0,
-    radiator_maintenance_rate: 0,
+    radiator_maintenance_rate: null,
     thermostat_calibration_rate: 0,
-    energy_efficiency_rate: 0,
-    child_comfort_rate: 0,
+    energy_efficiency_rate: null,
+    child_comfort_rate: null,
     gas_safety_compliance_rate: 0,
     carbon_monoxide_safety_rate: 0,
     fault_resolution_rate: 0,
-    boiler_condition_score: 0,
+    boiler_condition_score: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -366,13 +373,13 @@ export function computeBoilerHeatingSystemServicing(
   const conditionScores = boiler_service_records.map(
     (s) => conditionMap[s.boiler_condition] ?? 50,
   );
-  const boilerConditionScore =
+  const boilerConditionScore: number | null =
     conditionScores.length > 0
       ? Math.round(
           conditionScores.reduce((sum, v) => sum + v, 0) /
             conditionScores.length,
         )
-      : 0;
+      : null;
 
   // Boiler services with notes
   const boilerServicesWithNotes = boiler_service_records.filter(
@@ -481,10 +488,10 @@ export function computeBoilerHeatingSystemServicing(
   ).length;
   const radiatorBleedRate = pct(radiatorsNotOverdueBleed, totalRadiators);
   const radiatorInspectionRate = pct(radiatorsNotOverdueInspection, totalRadiators);
-  const radiatorMaintenanceRate =
+  const radiatorMaintenanceRate: number | null =
     totalRadiators > 0
       ? Math.round((radiatorBleedRate + radiatorInspectionRate) / 2)
-      : 0;
+      : null;
 
   // Radiators heating evenly
   const radiatorsHeatingEvenly = radiator_records.filter(
@@ -549,14 +556,14 @@ export function computeBoilerHeatingSystemServicing(
   const varianceValues = thermostat_records.map(
     (t) => Math.abs(t.temperature_variance_celsius),
   );
-  const avgVariance =
+  const avgVariance: number | null =
     varianceValues.length > 0
       ? Math.round(
           (varianceValues.reduce((sum, v) => sum + v, 0) /
             varianceValues.length) *
             100,
         ) / 100
-      : 0;
+      : null;
 
   // Battery status
   const thermostatsBatteryOk = thermostat_records.filter(
@@ -603,14 +610,14 @@ export function computeBoilerHeatingSystemServicing(
   const setTemperatures = thermostat_records
     .filter((t) => t.set_temperature_celsius > 0)
     .map((t) => t.set_temperature_celsius);
-  const avgSetTemperature =
+  const avgSetTemperature: number | null =
     setTemperatures.length > 0
       ? Math.round(
           (setTemperatures.reduce((sum, v) => sum + v, 0) /
             setTemperatures.length) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   // Thermostat documentation
   const thermostatsWithNotes = thermostat_records.filter(
@@ -680,13 +687,13 @@ export function computeBoilerHeatingSystemServicing(
   if (recordsWithInsulation.length > 0) energyComponentScores.push(insulationRate);
   if (recordsWithInsulation.length > 0) energyComponentScores.push(draughtProofingRate);
   if (totalEnergyRecords > 0) energyComponentScores.push(controlsOptimisedRate);
-  const energyEfficiencyRate =
+  const energyEfficiencyRate: number | null =
     energyComponentScores.length > 0
       ? Math.round(
           energyComponentScores.reduce((sum, v) => sum + v, 0) /
             energyComponentScores.length,
         )
-      : 0;
+      : null;
 
   // Energy documentation
   const energyWithNotes = energy_records.filter(
@@ -703,13 +710,13 @@ export function computeBoilerHeatingSystemServicing(
   if (totalRadiators > 0) comfortComponents.push(evenHeatingRate);
   if (totalHeatingChecks > 0) comfortComponents.push(hotWaterRate);
   if (totalThermostats > 0) comfortComponents.push(programmingCorrectRate);
-  const childComfortRate =
+  const childComfortRate: number | null =
     comfortComponents.length > 0
       ? Math.round(
           comfortComponents.reduce((sum, v) => sum + v, 0) /
             comfortComponents.length,
         )
-      : 0;
+      : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
@@ -724,16 +731,16 @@ export function computeBoilerHeatingSystemServicing(
   else if (heatingCheckRate >= 80) score += 2;
 
   // --- Bonus 3: radiatorMaintenanceRate (>=90: +4, >=70: +2) ---
-  if (radiatorMaintenanceRate >= 90) score += 4;
-  else if (radiatorMaintenanceRate >= 70) score += 2;
+  if (meets(radiatorMaintenanceRate, 90)) score += 4;
+  else if (meets(radiatorMaintenanceRate, 70)) score += 2;
 
   // --- Bonus 4: thermostatCalibrationRate (>=100: +4, >=80: +2) ---
   if (thermostatCalibrationRate >= 100) score += 4;
   else if (thermostatCalibrationRate >= 80) score += 2;
 
   // --- Bonus 5: energyEfficiencyRate (>=80: +4, >=60: +2) ---
-  if (energyEfficiencyRate >= 80) score += 4;
-  else if (energyEfficiencyRate >= 60) score += 2;
+  if (meets(energyEfficiencyRate, 80)) score += 4;
+  else if (meets(energyEfficiencyRate, 60)) score += 2;
 
   // --- Bonus 6: gasSafetyComplianceRate (>=100: +3, >=80: +1) ---
   if (gasSafetyComplianceRate >= 100) score += 3;
@@ -744,8 +751,8 @@ export function computeBoilerHeatingSystemServicing(
   else if (carbonMonoxideSafetyRate >= 90) score += 1;
 
   // --- Bonus 8: childComfortRate (>=90: +2, >=70: +1) ---
-  if (childComfortRate >= 90) score += 2;
-  else if (childComfortRate >= 70) score += 1;
+  if (meets(childComfortRate, 90)) score += 2;
+  else if (meets(childComfortRate, 70)) score += 1;
 
   // Max bonuses: 5+4+4+4+4+3+2+2 = 28
 
@@ -757,8 +764,8 @@ export function computeBoilerHeatingSystemServicing(
   // Penalty 2: gasSafetyComplianceRate < 50 → -6
   if (gasSafetyComplianceRate < 50 && totalBoilerServices > 0) score -= 6;
 
-  // Penalty 3: radiatorMaintenanceRate < 50 → -4
-  if (radiatorMaintenanceRate < 50 && totalRadiators > 0) score -= 4;
+  // Penalty 3: below(radiatorMaintenanceRate, 50) → -4
+  if (below(radiatorMaintenanceRate, 50) && totalRadiators > 0) score -= 4;
 
   // Penalty 4: thermostatCalibrationRate < 50 → -4
   if (thermostatCalibrationRate < 50 && totalThermostats > 0) score -= 4;
@@ -811,11 +818,11 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (radiatorMaintenanceRate >= 90 && totalRadiators > 0) {
+  if (meets(radiatorMaintenanceRate, 90) && totalRadiators > 0) {
     strengths.push(
       `${radiatorMaintenanceRate}% radiator maintenance compliance — radiators are regularly bled and inspected, ensuring efficient heat distribution throughout the home.`,
     );
-  } else if (radiatorMaintenanceRate >= 70 && totalRadiators > 0) {
+  } else if (meets(radiatorMaintenanceRate, 70) && totalRadiators > 0) {
     strengths.push(
       `${radiatorMaintenanceRate}% radiator maintenance rate — the home generally keeps radiators well-maintained.`,
     );
@@ -831,21 +838,21 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (energyEfficiencyRate >= 80 && energyComponentScores.length > 0) {
+  if (meets(energyEfficiencyRate, 80) && energyComponentScores.length > 0) {
     strengths.push(
       `Energy efficiency score of ${energyEfficiencyRate}% — the home demonstrates strong energy efficiency practices, contributing to environmental responsibility and cost-effective heating.`,
     );
-  } else if (energyEfficiencyRate >= 60 && energyComponentScores.length > 0) {
+  } else if (meets(energyEfficiencyRate, 60) && energyComponentScores.length > 0) {
     strengths.push(
       `Energy efficiency at ${energyEfficiencyRate}% — the home shows reasonable energy efficiency with room for further improvement.`,
     );
   }
 
-  if (childComfortRate >= 90 && comfortComponents.length > 0) {
+  if (meets(childComfortRate, 90) && comfortComponents.length > 0) {
     strengths.push(
       `${childComfortRate}% child comfort score — children experience consistently warm, well-heated living spaces with reliable hot water and appropriate temperature settings.`,
     );
-  } else if (childComfortRate >= 70 && comfortComponents.length > 0) {
+  } else if (meets(childComfortRate, 70) && comfortComponents.length > 0) {
     strengths.push(
       `${childComfortRate}% child comfort rate — the heating system generally provides good levels of comfort for children.`,
     );
@@ -959,11 +966,11 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (radiatorMaintenanceRate < 50 && totalRadiators > 0) {
+  if (below(radiatorMaintenanceRate, 50) && totalRadiators > 0) {
     concerns.push(
       `Only ${radiatorMaintenanceRate}% radiator maintenance compliance — the majority of radiators have overdue bleeding or inspections, leading to inefficient heating and potential cold spots in children's living areas.`,
     );
-  } else if (radiatorMaintenanceRate < 80 && radiatorMaintenanceRate >= 50 && totalRadiators > 0) {
+  } else if (below(radiatorMaintenanceRate, 80) && meets(radiatorMaintenanceRate, 50) && totalRadiators > 0) {
     concerns.push(
       `Radiator maintenance at ${radiatorMaintenanceRate}% — some radiators need bleeding or inspection, which may affect heat distribution.`,
     );
@@ -1045,7 +1052,7 @@ export function computeBoilerHeatingSystemServicing(
     );
   }
 
-  if (energyEfficiencyRate < 40 && energyComponentScores.length > 0) {
+  if (below(energyEfficiencyRate, 40) && energyComponentScores.length > 0) {
     concerns.push(
       `Energy efficiency at only ${energyEfficiencyRate}% — poor energy efficiency means higher costs and a less comfortable living environment for children.`,
     );
@@ -1116,7 +1123,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (radiatorMaintenanceRate < 50 && totalRadiators > 0) {
+  if (below(radiatorMaintenanceRate, 50) && totalRadiators > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1188,8 +1195,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    radiatorMaintenanceRate >= 50 &&
-    radiatorMaintenanceRate < 80 &&
+    meets(radiatorMaintenanceRate, 50) &&
+    below(radiatorMaintenanceRate, 80) &&
     totalRadiators > 0
   ) {
     recommendations.push({
@@ -1245,7 +1252,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (energyEfficiencyRate < 60 && energyComponentScores.length > 0) {
+  if (below(energyEfficiencyRate, 60) && energyComponentScores.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1319,7 +1326,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (radiatorMaintenanceRate < 50 && totalRadiators > 0) {
+  if (below(radiatorMaintenanceRate, 50) && totalRadiators > 0) {
     insights.push({
       text: `Only ${radiatorMaintenanceRate}% radiator maintenance compliance. Poorly maintained radiators lead to cold spots, inefficient heating, and increased energy costs. Children may be living in inadequately heated areas, which affects their comfort, health, and wellbeing.`,
       severity: "critical",
@@ -1369,8 +1376,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    radiatorMaintenanceRate >= 50 &&
-    radiatorMaintenanceRate < 80 &&
+    meets(radiatorMaintenanceRate, 50) &&
+    below(radiatorMaintenanceRate, 80) &&
     totalRadiators > 0
   ) {
     insights.push({
@@ -1418,7 +1425,7 @@ export function computeBoilerHeatingSystemServicing(
     });
   }
 
-  if (avgVariance > 2.0 && totalThermostats > 0) {
+  if (above(avgVariance, 2.0) && totalThermostats > 0) {
     insights.push({
       text: `Average thermostat variance is ${avgVariance}°C — temperature readings are deviating significantly from actual room temperatures. This level of inaccuracy means temperature settings cannot be relied upon for maintaining children's comfort.`,
       severity: "warning",
@@ -1426,8 +1433,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    energyEfficiencyRate >= 40 &&
-    energyEfficiencyRate < 60 &&
+    meets(energyEfficiencyRate, 40) &&
+    below(energyEfficiencyRate, 60) &&
     energyComponentScores.length > 0
   ) {
     insights.push({
@@ -1444,8 +1451,8 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    childComfortRate >= 50 &&
-    childComfortRate < 70 &&
+    meets(childComfortRate, 50) &&
+    below(childComfortRate, 70) &&
     comfortComponents.length > 0
   ) {
     insights.push({
@@ -1522,7 +1529,7 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    radiatorMaintenanceRate >= 90 &&
+    meets(radiatorMaintenanceRate, 90) &&
     evenHeatingRate >= 90 &&
     totalRadiators > 0
   ) {
@@ -1544,7 +1551,7 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    childComfortRate >= 90 &&
+    meets(childComfortRate, 90) &&
     comfortComponents.length > 0
   ) {
     insights.push({
@@ -1554,7 +1561,7 @@ export function computeBoilerHeatingSystemServicing(
   }
 
   if (
-    energyEfficiencyRate >= 80 &&
+    meets(energyEfficiencyRate, 80) &&
     energyComponentScores.length > 0
   ) {
     insights.push({
