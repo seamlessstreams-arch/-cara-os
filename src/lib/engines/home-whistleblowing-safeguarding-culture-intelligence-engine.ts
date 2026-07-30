@@ -11,6 +11,8 @@
 //             childProtectionRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface WhistleblowingAwarenessRecordInput {
@@ -146,12 +148,16 @@ export interface WhistleblowingResult {
   safeguarding_culture_rating: WhistleblowingRating;
   safeguarding_culture_score: number;
   headline: string;
-  policy_awareness_rate: number;
-  reporting_confidence_rate: number;
-  training_currency_rate: number;
-  culture_audit_rate: number;
-  child_protection_rate: number;
-  staff_confidence_rate: number;
+  // Null on empty across every composite rate — no records ⇒ no signal.
+  // "0% awareness / 0% confidence / 0% training / 0% audit / 0% protection /
+  // 0% staff confidence" would read as "we asked every staff member and they
+  // all failed on safeguarding", not "unmeasured". Fab-0 doctrine.
+  policy_awareness_rate: number | null;
+  reporting_confidence_rate: number | null;
+  training_currency_rate: number | null;
+  culture_audit_rate: number | null;
+  child_protection_rate: number | null;
+  staff_confidence_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: WhistleblowingRecommendation[];
@@ -186,12 +192,12 @@ function emptyResult(
     safeguarding_culture_rating: rating,
     safeguarding_culture_score: score,
     headline,
-    policy_awareness_rate: 0,
-    reporting_confidence_rate: 0,
-    training_currency_rate: 0,
-    culture_audit_rate: 0,
-    child_protection_rate: 0,
-    staff_confidence_rate: 0,
+    policy_awareness_rate: null,
+    reporting_confidence_rate: null,
+    training_currency_rate: null,
+    culture_audit_rate: null,
+    child_protection_rate: null,
+    staff_confidence_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -316,18 +322,18 @@ export function computeWhistleblowingSafeguardingCulture(
   const quizScoreSum = whistleblowing_awareness_records.reduce(
     (sum, r) => sum + r.quiz_score, 0,
   );
-  const avgQuizScore =
+  const avgQuizScore: number | null =
     totalAwareness > 0
       ? Math.round(quizScoreSum / totalAwareness)
-      : 0;
+      : null;
 
   // Composite policy awareness rate
-  const policyAwarenessRate =
+  const policyAwarenessRate: number | null =
     totalAwareness > 0
       ? Math.round(
           (policyReadRate + policyCurrentRate + channelUnderstandingRate + declarationRate) / 4,
         )
-      : 0;
+      : null;
 
   // === 2. Reporting confidence ===
   const totalConfidence = reporting_confidence_records.length;
@@ -335,10 +341,10 @@ export function computeWhistleblowingSafeguardingCulture(
   const confidenceSum = reporting_confidence_records.reduce(
     (sum, r) => sum + r.confidence_level, 0,
   );
-  const avgConfidence =
+  const avgConfidence: number | null =
     totalConfidence > 0
       ? Math.round((confidenceSum / totalConfidence) * 100) / 100
-      : 0;
+      : null;
 
   const wouldReportColleague = reporting_confidence_records.filter(
     (r) => r.would_report_colleague,
@@ -374,18 +380,18 @@ export function computeWhistleblowingSafeguardingCulture(
   const barrierRate = pct(withBarriers, totalConfidence);
 
   // Composite reporting confidence rate
-  const reportingConfidenceRate =
+  const reportingConfidenceRate: number | null =
     totalConfidence > 0
       ? Math.round(
           (colleagueReportRate + managerReportRate + safeReportingRate) / 3,
         )
-      : 0;
+      : null;
 
   // Staff confidence rate (average confidence as percentage of max 5)
-  const staffConfidenceRate =
+  const staffConfidenceRate: number | null =
     totalConfidence > 0
-      ? Math.round((avgConfidence / 5) * 100)
-      : 0;
+      ? Math.round((avgConfidence! / 5) * 100)
+      : null;
 
   // === 3. Safeguarding training currency ===
   const totalTraining = safeguarding_training_records.length;
@@ -423,10 +429,10 @@ export function computeWhistleblowingSafeguardingCulture(
   const scoredTraining = safeguarding_training_records.filter(
     (r) => r.score !== null,
   ).length;
-  const avgTrainingScore =
+  const avgTrainingScore: number | null =
     scoredTraining > 0
       ? Math.round(trainingScoreSum / scoredTraining)
-      : 0;
+      : null;
 
   // Unique staff with current training
   const staffWithCurrentTraining = new Set(
@@ -444,12 +450,12 @@ export function computeWhistleblowingSafeguardingCulture(
   );
 
   // Composite training currency rate
-  const trainingCurrencyRate =
+  const trainingCurrencyRate: number | null =
     totalTraining > 0
       ? Math.round(
           (inDateRate + trainingPassRate + certificateRate) / 3,
         )
-      : 0;
+      : null;
 
   // === 4. Culture audit outcomes ===
   const totalAudits = culture_audit_records.length;
@@ -463,18 +469,18 @@ export function computeWhistleblowingSafeguardingCulture(
   const auditRatingSum = culture_audit_records.reduce(
     (sum, r) => sum + (auditRatingScores[r.overall_rating] ?? 50), 0,
   );
-  const avgAuditRating =
+  const avgAuditRating: number | null =
     totalAudits > 0
       ? Math.round(auditRatingSum / totalAudits)
-      : 0;
+      : null;
 
   const openCultureScoreSum = culture_audit_records.reduce(
     (sum, r) => sum + r.open_culture_score, 0,
   );
-  const avgOpenCultureScore =
+  const avgOpenCultureScore: number | null =
     totalAudits > 0
       ? Math.round(openCultureScoreSum / totalAudits)
-      : 0;
+      : null;
 
   const challengeAccepted = culture_audit_records.filter(
     (r) => r.challenge_accepted,
@@ -534,12 +540,12 @@ export function computeWhistleblowingSafeguardingCulture(
   ).length;
 
   // Composite culture audit rate
-  const cultureAuditRate =
+  const cultureAuditRate: number | null =
     totalAudits > 0
       ? Math.round(
-          (avgAuditRating + avgOpenCultureScore + childSafeRate) / 3,
+          (avgAuditRating! + avgOpenCultureScore! + childSafeRate) / 3,
         )
-      : 0;
+      : null;
 
   // === 5. Child protection practice quality ===
   const totalProtection = child_protection_records.length;
@@ -621,10 +627,10 @@ export function computeWhistleblowingSafeguardingCulture(
   const protectionQualitySum = child_protection_records.reduce(
     (sum, r) => sum + (qualityScores[r.quality_rating] ?? 50), 0,
   );
-  const avgProtectionQuality =
+  const avgProtectionQuality: number | null =
     totalProtection > 0
       ? Math.round(protectionQualitySum / totalProtection)
-      : 0;
+      : null;
 
   const poorQuality = child_protection_records.filter(
     (r) => r.quality_rating === "poor",
@@ -636,40 +642,40 @@ export function computeWhistleblowingSafeguardingCulture(
   ).length;
 
   // Composite child protection rate
-  const childProtectionRate =
+  const childProtectionRate: number | null =
     totalProtection > 0
       ? Math.round(
           (timelyReportingRate + correctChannelRate + childVoiceRate + outcomeRate + followUpRate) / 5,
         )
-      : 0;
+      : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: policyAwarenessRate (>=90: +4, >=70: +2) ---
-  if (policyAwarenessRate >= 90) score += 4;
-  else if (policyAwarenessRate >= 70) score += 2;
+  if (meets(policyAwarenessRate, 90)) score += 4;
+  else if (meets(policyAwarenessRate, 70)) score += 2;
 
   // --- Bonus 2: reportingConfidenceRate (>=90: +4, >=70: +2) ---
-  if (reportingConfidenceRate >= 90) score += 4;
-  else if (reportingConfidenceRate >= 70) score += 2;
+  if (meets(reportingConfidenceRate, 90)) score += 4;
+  else if (meets(reportingConfidenceRate, 70)) score += 2;
 
   // --- Bonus 3: trainingCurrencyRate (>=90: +4, >=70: +2) ---
-  if (trainingCurrencyRate >= 90) score += 4;
-  else if (trainingCurrencyRate >= 70) score += 2;
+  if (meets(trainingCurrencyRate, 90)) score += 4;
+  else if (meets(trainingCurrencyRate, 70)) score += 2;
 
   // --- Bonus 4: cultureAuditRate (>=80: +4, >=60: +2) ---
-  if (cultureAuditRate >= 80) score += 4;
-  else if (cultureAuditRate >= 60) score += 2;
+  if (meets(cultureAuditRate, 80)) score += 4;
+  else if (meets(cultureAuditRate, 60)) score += 2;
 
   // --- Bonus 5: childProtectionRate (>=90: +4, >=70: +2) ---
-  if (childProtectionRate >= 90) score += 4;
-  else if (childProtectionRate >= 70) score += 2;
+  if (meets(childProtectionRate, 90)) score += 4;
+  else if (meets(childProtectionRate, 70)) score += 2;
 
   // --- Bonus 6: staffConfidenceRate (>=80: +3, >=60: +1) ---
-  if (staffConfidenceRate >= 80) score += 3;
-  else if (staffConfidenceRate >= 60) score += 1;
+  if (meets(staffConfidenceRate, 80)) score += 3;
+  else if (meets(staffConfidenceRate, 60)) score += 1;
 
   // --- Bonus 7: childSafeRate (>=90: +3, >=70: +1) ---
   if (childSafeRate >= 90) score += 3;
@@ -681,17 +687,17 @@ export function computeWhistleblowingSafeguardingCulture(
 
   // -- Penalties (4 with guards) -------------------------------------------
 
-  // policyAwarenessRate < 50 -> -6
-  if (policyAwarenessRate < 50 && whistleblowing_awareness_records.length > 0) score -= 6;
+  // below(policyAwarenessRate, 50) -> -6
+  if (below(policyAwarenessRate, 50) && whistleblowing_awareness_records.length > 0) score -= 6;
 
-  // reportingConfidenceRate < 50 -> -5
-  if (reportingConfidenceRate < 50 && reporting_confidence_records.length > 0) score -= 5;
+  // below(reportingConfidenceRate, 50) -> -5
+  if (below(reportingConfidenceRate, 50) && reporting_confidence_records.length > 0) score -= 5;
 
-  // trainingCurrencyRate < 50 -> -5
-  if (trainingCurrencyRate < 50 && safeguarding_training_records.length > 0) score -= 5;
+  // below(trainingCurrencyRate, 50) -> -5
+  if (below(trainingCurrencyRate, 50) && safeguarding_training_records.length > 0) score -= 5;
 
-  // childProtectionRate < 50 -> -6
-  if (childProtectionRate < 50 && child_protection_records.length > 0) score -= 6;
+  // below(childProtectionRate, 50) -> -6
+  if (below(childProtectionRate, 50) && child_protection_records.length > 0) score -= 6;
 
   score = clamp(score, 0, 100);
 
@@ -702,11 +708,11 @@ export function computeWhistleblowingSafeguardingCulture(
   const strengths: string[] = [];
 
   // Policy awareness strengths
-  if (policyAwarenessRate >= 90 && totalAwareness > 0) {
+  if (meets(policyAwarenessRate, 90) && totalAwareness > 0) {
     strengths.push(
       `${policyAwarenessRate}% composite policy awareness -- staff demonstrate comprehensive understanding of whistleblowing policy, reporting channels, and signed declarations.`,
     );
-  } else if (policyAwarenessRate >= 70 && totalAwareness > 0) {
+  } else if (meets(policyAwarenessRate, 70) && totalAwareness > 0) {
     strengths.push(
       `${policyAwarenessRate}% policy awareness rate -- most staff have read, understood, and signed the whistleblowing policy.`,
     );
@@ -743,17 +749,17 @@ export function computeWhistleblowingSafeguardingCulture(
   }
 
   // Reporting confidence strengths
-  if (reportingConfidenceRate >= 90 && totalConfidence > 0) {
+  if (meets(reportingConfidenceRate, 90) && totalConfidence > 0) {
     strengths.push(
       `${reportingConfidenceRate}% composite reporting confidence -- staff would report concerns about colleagues and managers and feel safe doing so.`,
     );
-  } else if (reportingConfidenceRate >= 70 && totalConfidence > 0) {
+  } else if (meets(reportingConfidenceRate, 70) && totalConfidence > 0) {
     strengths.push(
       `${reportingConfidenceRate}% reporting confidence rate -- most staff are willing to report concerns about colleagues and managers.`,
     );
   }
 
-  if (avgConfidence >= 4.0 && totalConfidence > 0) {
+  if (meets(avgConfidence, 4.0) && totalConfidence > 0) {
     strengths.push(
       `Staff confidence in reporting concerns averages ${avgConfidence}/5 -- staff feel empowered to raise safeguarding concerns without fear.`,
     );
@@ -784,11 +790,11 @@ export function computeWhistleblowingSafeguardingCulture(
   }
 
   // Training currency strengths
-  if (trainingCurrencyRate >= 90 && totalTraining > 0) {
+  if (meets(trainingCurrencyRate, 90) && totalTraining > 0) {
     strengths.push(
       `${trainingCurrencyRate}% safeguarding training currency -- training is in-date, passed, and certificated to a high standard across the workforce.`,
     );
-  } else if (trainingCurrencyRate >= 70 && totalTraining > 0) {
+  } else if (meets(trainingCurrencyRate, 70) && totalTraining > 0) {
     strengths.push(
       `${trainingCurrencyRate}% training currency rate -- most staff have current, passed safeguarding training with certificates on file.`,
     );
@@ -812,18 +818,18 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (avgTrainingScore >= 85 && scoredTraining > 0) {
+  if (meets(avgTrainingScore, 85) && scoredTraining > 0) {
     strengths.push(
       `Average safeguarding training score of ${avgTrainingScore}% -- staff demonstrate strong knowledge acquisition from safeguarding training.`,
     );
   }
 
   // Culture audit strengths
-  if (cultureAuditRate >= 80 && totalAudits > 0) {
+  if (meets(cultureAuditRate, 80) && totalAudits > 0) {
     strengths.push(
       `${cultureAuditRate}% composite culture audit rate -- audit ratings, open culture scores, and children feeling safe all score highly.`,
     );
-  } else if (cultureAuditRate >= 60 && totalAudits > 0) {
+  } else if (meets(cultureAuditRate, 60) && totalAudits > 0) {
     strengths.push(
       `${cultureAuditRate}% culture audit rate -- audits indicate a generally positive safeguarding culture across the home.`,
     );
@@ -872,11 +878,11 @@ export function computeWhistleblowingSafeguardingCulture(
   }
 
   // Child protection strengths
-  if (childProtectionRate >= 90 && totalProtection > 0) {
+  if (meets(childProtectionRate, 90) && totalProtection > 0) {
     strengths.push(
       `${childProtectionRate}% composite child protection practice quality -- timely reporting, correct channels, child voice, outcomes, and follow-up all score highly.`,
     );
-  } else if (childProtectionRate >= 70 && totalProtection > 0) {
+  } else if (meets(childProtectionRate, 70) && totalProtection > 0) {
     strengths.push(
       `${childProtectionRate}% child protection practice quality -- most child protection responses meet required standards.`,
     );
@@ -935,11 +941,11 @@ export function computeWhistleblowingSafeguardingCulture(
   const concerns: string[] = [];
 
   // Policy awareness concerns
-  if (policyAwarenessRate < 50 && totalAwareness > 0) {
+  if (below(policyAwarenessRate, 50) && totalAwareness > 0) {
     concerns.push(
       `Only ${policyAwarenessRate}% composite policy awareness -- the majority of staff have not read, understood, or signed the whistleblowing policy, creating a fundamental gap in the home's safeguarding culture.`,
     );
-  } else if (policyAwarenessRate < 70 && policyAwarenessRate >= 50 && totalAwareness > 0) {
+  } else if (below(policyAwarenessRate, 70) && meets(policyAwarenessRate, 50) && totalAwareness > 0) {
     concerns.push(
       `Policy awareness at ${policyAwarenessRate}% -- a significant minority of staff lack full understanding of whistleblowing procedures and their obligations.`,
     );
@@ -976,17 +982,17 @@ export function computeWhistleblowingSafeguardingCulture(
   }
 
   // Reporting confidence concerns
-  if (reportingConfidenceRate < 50 && totalConfidence > 0) {
+  if (below(reportingConfidenceRate, 50) && totalConfidence > 0) {
     concerns.push(
       `Only ${reportingConfidenceRate}% composite reporting confidence -- the majority of staff would not report concerns about colleagues or managers, indicating a closed safeguarding culture.`,
     );
-  } else if (reportingConfidenceRate < 70 && reportingConfidenceRate >= 50 && totalConfidence > 0) {
+  } else if (below(reportingConfidenceRate, 70) && meets(reportingConfidenceRate, 50) && totalConfidence > 0) {
     concerns.push(
       `Reporting confidence at ${reportingConfidenceRate}% -- a significant proportion of staff lack confidence in reporting safeguarding concerns about colleagues or managers.`,
     );
   }
 
-  if (avgConfidence < 3.0 && totalConfidence > 0) {
+  if (below(avgConfidence, 3.0) && totalConfidence > 0) {
     concerns.push(
       `Staff confidence in reporting concerns averages only ${avgConfidence}/5 -- staff do not feel empowered to raise safeguarding concerns, which directly undermines child protection.`,
     );
@@ -1017,11 +1023,11 @@ export function computeWhistleblowingSafeguardingCulture(
   }
 
   // Training currency concerns
-  if (trainingCurrencyRate < 50 && totalTraining > 0) {
+  if (below(trainingCurrencyRate, 50) && totalTraining > 0) {
     concerns.push(
       `Only ${trainingCurrencyRate}% safeguarding training currency -- the majority of training records show expired, failed, or uncertificated training, leaving staff ill-equipped to safeguard children.`,
     );
-  } else if (trainingCurrencyRate < 70 && trainingCurrencyRate >= 50 && totalTraining > 0) {
+  } else if (below(trainingCurrencyRate, 70) && meets(trainingCurrencyRate, 50) && totalTraining > 0) {
     concerns.push(
       `Training currency at ${trainingCurrencyRate}% -- a significant proportion of safeguarding training is expired, failed, or lacks certificates on file.`,
     );
@@ -1046,11 +1052,11 @@ export function computeWhistleblowingSafeguardingCulture(
   }
 
   // Culture audit concerns
-  if (cultureAuditRate < 50 && totalAudits > 0) {
+  if (below(cultureAuditRate, 50) && totalAudits > 0) {
     concerns.push(
       `Only ${cultureAuditRate}% composite culture audit rate -- audit ratings, open culture scores, and children's sense of safety are all concerning.`,
     );
-  } else if (cultureAuditRate < 60 && cultureAuditRate >= 50 && totalAudits > 0) {
+  } else if (below(cultureAuditRate, 60) && meets(cultureAuditRate, 50) && totalAudits > 0) {
     concerns.push(
       `Culture audit rate at ${cultureAuditRate}% -- audits indicate a safeguarding culture that needs improvement across multiple domains.`,
     );
@@ -1099,11 +1105,11 @@ export function computeWhistleblowingSafeguardingCulture(
   }
 
   // Child protection concerns
-  if (childProtectionRate < 50 && totalProtection > 0) {
+  if (below(childProtectionRate, 50) && totalProtection > 0) {
     concerns.push(
       `Only ${childProtectionRate}% composite child protection practice quality -- timely reporting, correct channels, child voice, outcomes, and follow-up are all below acceptable standards.`,
     );
-  } else if (childProtectionRate < 70 && childProtectionRate >= 50 && totalProtection > 0) {
+  } else if (below(childProtectionRate, 70) && meets(childProtectionRate, 50) && totalProtection > 0) {
     concerns.push(
       `Child protection practice quality at ${childProtectionRate}% -- significant aspects of child protection responses do not meet required standards.`,
     );
@@ -1187,7 +1193,7 @@ export function computeWhistleblowingSafeguardingCulture(
   let rank = 0;
 
   // Immediate recommendations
-  if (policyAwarenessRate < 50 && totalAwareness > 0) {
+  if (below(policyAwarenessRate, 50) && totalAwareness > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1197,7 +1203,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (reportingConfidenceRate < 50 && totalConfidence > 0) {
+  if (below(reportingConfidenceRate, 50) && totalConfidence > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1207,7 +1213,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (trainingCurrencyRate < 50 && totalTraining > 0) {
+  if (below(trainingCurrencyRate, 50) && totalTraining > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1217,7 +1223,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (childProtectionRate < 50 && totalProtection > 0) {
+  if (below(childProtectionRate, 50) && totalProtection > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1268,7 +1274,7 @@ export function computeWhistleblowingSafeguardingCulture(
   }
 
   // Soon recommendations
-  if (policyAwarenessRate >= 50 && policyAwarenessRate < 70 && totalAwareness > 0) {
+  if (meets(policyAwarenessRate, 50) && below(policyAwarenessRate, 70) && totalAwareness > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1278,7 +1284,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (reportingConfidenceRate >= 50 && reportingConfidenceRate < 70 && totalConfidence > 0) {
+  if (meets(reportingConfidenceRate, 50) && below(reportingConfidenceRate, 70) && totalConfidence > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1288,7 +1294,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (trainingCurrencyRate >= 50 && trainingCurrencyRate < 70 && totalTraining > 0) {
+  if (meets(trainingCurrencyRate, 50) && below(trainingCurrencyRate, 70) && totalTraining > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1298,7 +1304,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (childProtectionRate >= 50 && childProtectionRate < 70 && totalProtection > 0) {
+  if (meets(childProtectionRate, 50) && below(childProtectionRate, 70) && totalProtection > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1455,28 +1461,28 @@ export function computeWhistleblowingSafeguardingCulture(
 
   // --- Critical insights ---
 
-  if (policyAwarenessRate < 50 && totalAwareness > 0) {
+  if (below(policyAwarenessRate, 50) && totalAwareness > 0) {
     insights.push({
       text: `Only ${policyAwarenessRate}% composite policy awareness. Ofsted will view the widespread lack of whistleblowing policy understanding as evidence that the home has not embedded a safeguarding culture -- staff cannot blow the whistle if they do not understand how. This is a direct failure under Reg 34.`,
       severity: "critical",
     });
   }
 
-  if (reportingConfidenceRate < 50 && totalConfidence > 0) {
+  if (below(reportingConfidenceRate, 50) && totalConfidence > 0) {
     insights.push({
       text: `Only ${reportingConfidenceRate}% reporting confidence. When staff do not feel confident reporting concerns about colleagues or managers, safeguarding risks go undetected. Ofsted identifies a closed culture -- where concerns are not raised or listened to -- as a hallmark of inadequate safety provision.`,
       severity: "critical",
     });
   }
 
-  if (trainingCurrencyRate < 50 && totalTraining > 0) {
+  if (below(trainingCurrencyRate, 50) && totalTraining > 0) {
     insights.push({
       text: `Only ${trainingCurrencyRate}% safeguarding training currency. Staff without current safeguarding training cannot be expected to recognise, respond to, or report concerns effectively. Ofsted will view this as a significant Reg 34 failure that directly compromises children's safety.`,
       severity: "critical",
     });
   }
 
-  if (childProtectionRate < 50 && totalProtection > 0) {
+  if (below(childProtectionRate, 50) && totalProtection > 0) {
     insights.push({
       text: `Only ${childProtectionRate}% child protection practice quality. When reporting is delayed, channels are misused, child voice is absent, outcomes are undocumented, and follow-up is incomplete, children are left at continuing risk. This pattern of practice failure undermines the home's ability to protect the children in its care.`,
       severity: "critical",
@@ -1513,28 +1519,28 @@ export function computeWhistleblowingSafeguardingCulture(
 
   // --- Warning insights ---
 
-  if (policyAwarenessRate >= 50 && policyAwarenessRate < 70 && totalAwareness > 0) {
+  if (meets(policyAwarenessRate, 50) && below(policyAwarenessRate, 70) && totalAwareness > 0) {
     insights.push({
       text: `Policy awareness at ${policyAwarenessRate}% -- improving but a significant minority of staff lack full understanding of whistleblowing procedures. Each staff member who does not understand the policy is a potential gap in the home's safeguarding net.`,
       severity: "warning",
     });
   }
 
-  if (reportingConfidenceRate >= 50 && reportingConfidenceRate < 70 && totalConfidence > 0) {
+  if (meets(reportingConfidenceRate, 50) && below(reportingConfidenceRate, 70) && totalConfidence > 0) {
     insights.push({
       text: `Reporting confidence at ${reportingConfidenceRate}% -- while some staff feel able to raise concerns, a significant proportion lack confidence. The home should actively work to build a culture where every member of staff feels empowered to whistleblow without fear.`,
       severity: "warning",
     });
   }
 
-  if (trainingCurrencyRate >= 50 && trainingCurrencyRate < 70 && totalTraining > 0) {
+  if (meets(trainingCurrencyRate, 50) && below(trainingCurrencyRate, 70) && totalTraining > 0) {
     insights.push({
       text: `Training currency at ${trainingCurrencyRate}% -- while some training is current, gaps in expired or uncertificated training mean some staff may lack the knowledge to respond effectively to safeguarding concerns.`,
       severity: "warning",
     });
   }
 
-  if (childProtectionRate >= 50 && childProtectionRate < 70 && totalProtection > 0) {
+  if (meets(childProtectionRate, 50) && below(childProtectionRate, 70) && totalProtection > 0) {
     insights.push({
       text: `Child protection practice quality at ${childProtectionRate}% -- while some responses meet standards, inconsistency in reporting timeliness, child voice capture, or follow-up completion means safeguarding responses are not reliably protecting children.`,
       severity: "warning",
@@ -1548,7 +1554,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (avgConfidence >= 3.0 && avgConfidence < 4.0 && totalConfidence > 0) {
+  if (meets(avgConfidence, 3.0) && below(avgConfidence, 4.0) && totalConfidence > 0) {
     insights.push({
       text: `Staff confidence averages ${avgConfidence}/5 -- moderate but not strong. The home should continue building confidence through regular reassurance, visible action on concerns raised, and an open-door culture.`,
       severity: "warning",
@@ -1603,21 +1609,21 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (policyAwarenessRate >= 90 && reportingConfidenceRate >= 90 && totalAwareness > 0 && totalConfidence > 0) {
+  if (meets(policyAwarenessRate, 90) && meets(reportingConfidenceRate, 90) && totalAwareness > 0 && totalConfidence > 0) {
     insights.push({
       text: `${policyAwarenessRate}% policy awareness combined with ${reportingConfidenceRate}% reporting confidence -- staff both understand whistleblowing procedures and feel empowered to use them. This is the hallmark of an open, safe safeguarding culture.`,
       severity: "positive",
     });
   }
 
-  if (trainingCurrencyRate >= 90 && totalTraining > 0) {
+  if (meets(trainingCurrencyRate, 90) && totalTraining > 0) {
     insights.push({
       text: `${trainingCurrencyRate}% safeguarding training currency -- virtually all staff have current, passed, and certificated safeguarding training. The home can confidently evidence to Ofsted that its workforce is competent to safeguard children.`,
       severity: "positive",
     });
   }
 
-  if (childProtectionRate >= 90 && totalProtection > 0) {
+  if (meets(childProtectionRate, 90) && totalProtection > 0) {
     insights.push({
       text: `${childProtectionRate}% child protection practice quality -- concerns are reported promptly through correct channels, child voice is captured, outcomes are documented, and follow-up is completed. This demonstrates exemplary safeguarding practice.`,
       severity: "positive",
@@ -1638,7 +1644,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (avgConfidence >= 4.0 && totalConfidence > 0) {
+  if (meets(avgConfidence, 4.0) && totalConfidence > 0) {
     insights.push({
       text: `Staff confidence in reporting averages ${avgConfidence}/5 -- staff feel strongly empowered to raise safeguarding concerns. This level of confidence indicates a mature, embedded whistleblowing culture.`,
       severity: "positive",

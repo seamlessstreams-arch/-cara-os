@@ -218,12 +218,12 @@ describe("Insufficient data", () => {
       culture_audit_records: [],
       child_protection_records: [],
     });
-    expect(r.policy_awareness_rate).toBe(0);
-    expect(r.reporting_confidence_rate).toBe(0);
-    expect(r.training_currency_rate).toBe(0);
-    expect(r.culture_audit_rate).toBe(0);
-    expect(r.child_protection_rate).toBe(0);
-    expect(r.staff_confidence_rate).toBe(0);
+    expect(r.policy_awareness_rate).toBeNull();
+    expect(r.reporting_confidence_rate).toBeNull();
+    expect(r.training_currency_rate).toBeNull();
+    expect(r.culture_audit_rate).toBeNull();
+    expect(r.child_protection_rate).toBeNull();
+    expect(r.staff_confidence_rate).toBeNull();
   });
 
   it("returns empty strengths/concerns/recommendations/insights for insufficient data", () => {
@@ -306,12 +306,12 @@ describe("Inadequate floor (all empty, children > 0)", () => {
 
   it("all rates are zero", () => {
     const r = computeWhistleblowingSafeguardingCulture(emptyWithChildren());
-    expect(r.policy_awareness_rate).toBe(0);
-    expect(r.reporting_confidence_rate).toBe(0);
-    expect(r.training_currency_rate).toBe(0);
-    expect(r.culture_audit_rate).toBe(0);
-    expect(r.child_protection_rate).toBe(0);
-    expect(r.staff_confidence_rate).toBe(0);
+    expect(r.policy_awareness_rate).toBeNull();
+    expect(r.reporting_confidence_rate).toBeNull();
+    expect(r.training_currency_rate).toBeNull();
+    expect(r.culture_audit_rate).toBeNull();
+    expect(r.child_protection_rate).toBeNull();
+    expect(r.staff_confidence_rate).toBeNull();
   });
 });
 
@@ -1546,7 +1546,7 @@ describe("Rate computations", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ whistleblowing_awareness_records: [] }),
       );
-      expect(r.policy_awareness_rate).toBe(0);
+      expect(r.policy_awareness_rate).toBeNull();
     });
 
     it("is 100 when all fields true for all records", () => {
@@ -1577,7 +1577,7 @@ describe("Rate computations", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ reporting_confidence_records: [] }),
       );
-      expect(r.reporting_confidence_rate).toBe(0);
+      expect(r.reporting_confidence_rate).toBeNull();
     });
 
     it("is 100 when all fields true", () => {
@@ -1607,7 +1607,7 @@ describe("Rate computations", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ safeguarding_training_records: [] }),
       );
-      expect(r.training_currency_rate).toBe(0);
+      expect(r.training_currency_rate).toBeNull();
     });
 
     it("is 100 when all passed, in-date, with certificates", () => {
@@ -1632,7 +1632,7 @@ describe("Rate computations", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ safeguarding_training_records: training }),
       );
-      // inDateRate=0, passRate=0, certRate=0 => 0
+      // inDateRate=0, passRate=0, certRate=0 => 0 (record exists → 0, not null)
       expect(r.training_currency_rate).toBe(0);
     });
   });
@@ -1642,7 +1642,7 @@ describe("Rate computations", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ culture_audit_records: [] }),
       );
-      expect(r.culture_audit_rate).toBe(0);
+      expect(r.culture_audit_rate).toBeNull();
     });
 
     it("round((100+90+100)/3) = 97 for outstanding audits with 90 open_culture_score", () => {
@@ -1671,7 +1671,7 @@ describe("Rate computations", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ child_protection_records: [] }),
       );
-      expect(r.child_protection_rate).toBe(0);
+      expect(r.child_protection_rate).toBeNull();
     });
 
     it("is 100 when all fields true", () => {
@@ -1703,7 +1703,7 @@ describe("Rate computations", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ reporting_confidence_records: [] }),
       );
-      expect(r.staff_confidence_rate).toBe(0);
+      expect(r.staff_confidence_rate).toBeNull();
     });
 
     it("is 100 when all confidence_level = 5", () => {
@@ -2955,12 +2955,12 @@ describe("Edge cases", () => {
       culture_audit_records: [],
       child_protection_records: [],
     });
-    expect(r.policy_awareness_rate).toBe(0);
-    expect(r.reporting_confidence_rate).toBe(0);
-    expect(r.training_currency_rate).toBe(0);
-    expect(r.culture_audit_rate).toBe(0);
-    expect(r.child_protection_rate).toBe(0);
-    expect(r.staff_confidence_rate).toBe(0);
+    expect(r.policy_awareness_rate).toBeNull();
+    expect(r.reporting_confidence_rate).toBeNull();
+    expect(r.training_currency_rate).toBeNull();
+    expect(r.culture_audit_rate).toBeNull();
+    expect(r.child_protection_rate).toBeNull();
+    expect(r.staff_confidence_rate).toBeNull();
   });
 
   it("score is clamped to 0 minimum", () => {
