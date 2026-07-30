@@ -14,6 +14,7 @@ import {
   type WheelchairAccessRecordInput,
   type ModificationRecordInput,
 } from "../home-bathroom-accessibility-adaptations-intelligence-engine";
+import { above, below, meets } from "@/lib/metrics/rate";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -237,12 +238,12 @@ describe("insufficient data", () => {
       wheelchair_records: [],
       modification_records: [],
     });
-    expect(r.adaptation_adequacy_rate).toBe(0);
-    expect(r.grab_rail_rate).toBe(0);
-    expect(r.non_slip_rate).toBe(0);
-    expect(r.wheelchair_access_rate).toBe(0);
-    expect(r.child_modification_rate).toBe(0);
-    expect(r.satisfaction_rate).toBe(0);
+    expect(r.adaptation_adequacy_rate).toBeNull();
+    expect(r.grab_rail_rate).toBeNull();
+    expect(r.non_slip_rate).toBeNull();
+    expect(r.wheelchair_access_rate).toBeNull();
+    expect(r.child_modification_rate).toBeNull();
+    expect(r.satisfaction_rate).toBeNull();
   });
 });
 
@@ -1026,7 +1027,7 @@ describe("rates", () => {
         modification_records: [],
         total_children: 0,
       }));
-      expect(r.adaptation_adequacy_rate).toBe(0);
+      expect(r.adaptation_adequacy_rate).toBeNull();
     });
 
     it("correctly averages installed + meets_needs + inspection + documented", () => {
@@ -1055,6 +1056,7 @@ describe("rates", () => {
         wheelchair_records: [],
         modification_records: [],
       }));
+      // record exists → 0, not null
       expect(r.adaptation_adequacy_rate).toBe(0);
     });
   });
@@ -1095,7 +1097,7 @@ describe("rates", () => {
         modification_records: [],
         total_children: 0,
       }));
-      expect(r.grab_rail_rate).toBe(0);
+      expect(r.grab_rail_rate).toBeNull();
     });
   });
 
@@ -1135,7 +1137,7 @@ describe("rates", () => {
         modification_records: [],
         total_children: 0,
       }));
-      expect(r.non_slip_rate).toBe(0);
+      expect(r.non_slip_rate).toBeNull();
     });
   });
 
@@ -1175,7 +1177,7 @@ describe("rates", () => {
         modification_records: [],
         total_children: 0,
       }));
-      expect(r.wheelchair_access_rate).toBe(0);
+      expect(r.wheelchair_access_rate).toBeNull();
     });
   });
 
@@ -1215,7 +1217,7 @@ describe("rates", () => {
         modification_records: [],
         total_children: 0,
       }));
-      expect(r.child_modification_rate).toBe(0);
+      expect(r.child_modification_rate).toBeNull();
     });
   });
 
@@ -1255,7 +1257,7 @@ describe("rates", () => {
           makeModification({ id: "mod_1", child_id: "yp_alex", installed: false, satisfaction_rating: 5 }),
         ],
       }));
-      expect(r.satisfaction_rate).toBe(0);
+      expect(r.satisfaction_rate).toBeNull();
     });
 
     it("handles mixed satisfaction ratings", () => {
@@ -1294,7 +1296,7 @@ describe("strengths", () => {
         makeAdaptation({ id: "adapt_2", installed: true, meets_child_needs: false, inspection_passed: false, documented: true, bathroom_id: "bath_2" }),
       ],
     }));
-    if (r.adaptation_adequacy_rate >= 70 && r.adaptation_adequacy_rate < 90) {
+    if (meets(r.adaptation_adequacy_rate, 70) && below(r.adaptation_adequacy_rate, 90)) {
       const s = r.strengths.find((s) => s.includes("adaptation adequacy rate"));
       expect(s).toBeDefined();
     }
@@ -1473,7 +1475,7 @@ describe("concerns", () => {
       wheelchair_records: [],
       modification_records: [],
     }));
-    if (r.adaptation_adequacy_rate >= 40 && r.adaptation_adequacy_rate < 70) {
+    if (meets(r.adaptation_adequacy_rate, 40) && below(r.adaptation_adequacy_rate, 70)) {
       const c = r.concerns.find((c) => c.includes("Adaptation adequacy at"));
       expect(c).toBeDefined();
     }
@@ -1504,7 +1506,7 @@ describe("concerns", () => {
       wheelchair_records: [],
       modification_records: [],
     }));
-    if (r.grab_rail_rate >= 40 && r.grab_rail_rate < 70) {
+    if (meets(r.grab_rail_rate, 40) && below(r.grab_rail_rate, 70)) {
       const c = r.concerns.find((c) => c.includes("Grab rail provision at"));
       expect(c).toBeDefined();
     }
@@ -1535,7 +1537,7 @@ describe("concerns", () => {
       wheelchair_records: [],
       modification_records: [],
     }));
-    if (r.non_slip_rate >= 40 && r.non_slip_rate < 70) {
+    if (meets(r.non_slip_rate, 40) && below(r.non_slip_rate, 70)) {
       const c = r.concerns.find((c) => c.includes("Non-slip compliance at"));
       expect(c).toBeDefined();
     }
@@ -1566,7 +1568,7 @@ describe("concerns", () => {
       ],
       modification_records: [],
     }));
-    if (r.wheelchair_access_rate >= 40 && r.wheelchair_access_rate < 70) {
+    if (meets(r.wheelchair_access_rate, 40) && below(r.wheelchair_access_rate, 70)) {
       const c = r.concerns.find((c) => c.includes("Wheelchair access at"));
       expect(c).toBeDefined();
     }
@@ -1597,7 +1599,7 @@ describe("concerns", () => {
         makeModification({ id: "mod_2", child_id: "yp_jordan", installed: true, meets_child_needs: false, child_consulted: true, care_plan_linked: false, bathroom_id: "bath_2" }),
       ],
     }));
-    if (r.child_modification_rate >= 40 && r.child_modification_rate < 70) {
+    if (meets(r.child_modification_rate, 40) && below(r.child_modification_rate, 70)) {
       const c = r.concerns.find((c) => c.includes("Child modification rate at"));
       expect(c).toBeDefined();
     }
@@ -2032,7 +2034,7 @@ describe("recommendations", () => {
       wheelchair_records: [],
       modification_records: [],
     }));
-    if (r.adaptation_adequacy_rate >= 40 && r.adaptation_adequacy_rate < 70) {
+    if (meets(r.adaptation_adequacy_rate, 40) && below(r.adaptation_adequacy_rate, 70)) {
       const rec = r.recommendations.find((r) => r.recommendation.includes("Improve adaptation adequacy"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("soon");
@@ -2050,7 +2052,7 @@ describe("recommendations", () => {
       wheelchair_records: [],
       modification_records: [],
     }));
-    if (r.grab_rail_rate >= 40 && r.grab_rail_rate < 70) {
+    if (meets(r.grab_rail_rate, 40) && below(r.grab_rail_rate, 70)) {
       const rec = r.recommendations.find((r) => r.recommendation.includes("Improve grab rail compliance"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("planned");
@@ -2068,7 +2070,7 @@ describe("recommendations", () => {
       wheelchair_records: [],
       modification_records: [],
     }));
-    if (r.non_slip_rate >= 40 && r.non_slip_rate < 70) {
+    if (meets(r.non_slip_rate, 40) && below(r.non_slip_rate, 70)) {
       const rec = r.recommendations.find((r) => r.recommendation.includes("Improve non-slip surface compliance"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("planned");
@@ -2086,7 +2088,7 @@ describe("recommendations", () => {
       ],
       modification_records: [],
     }));
-    if (r.wheelchair_access_rate >= 40 && r.wheelchair_access_rate < 70) {
+    if (meets(r.wheelchair_access_rate, 40) && below(r.wheelchair_access_rate, 70)) {
       const rec = r.recommendations.find((r) => r.recommendation.includes("Improve wheelchair access compliance"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("planned");
@@ -2104,7 +2106,7 @@ describe("recommendations", () => {
         makeModification({ id: "mod_2", child_id: "yp_jordan", installed: true, meets_child_needs: false, child_consulted: true, care_plan_linked: false, bathroom_id: "bath_2" }),
       ],
     }));
-    if (r.child_modification_rate >= 40 && r.child_modification_rate < 70) {
+    if (meets(r.child_modification_rate, 40) && below(r.child_modification_rate, 70)) {
       const rec = r.recommendations.find((r) => r.recommendation.includes("Improve child modification compliance"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("planned");
@@ -2295,7 +2297,7 @@ describe("insights", () => {
         wheelchair_records: [],
         modification_records: [],
       }));
-      if (r.adaptation_adequacy_rate >= 40 && r.adaptation_adequacy_rate < 70) {
+      if (meets(r.adaptation_adequacy_rate, 40) && below(r.adaptation_adequacy_rate, 70)) {
         const insight = r.insights.find((i) => i.text.includes("Adaptation adequacy at") && i.severity === "warning");
         expect(insight).toBeDefined();
       }
@@ -2312,7 +2314,7 @@ describe("insights", () => {
         wheelchair_records: [],
         modification_records: [],
       }));
-      if (r.grab_rail_rate >= 40 && r.grab_rail_rate < 70) {
+      if (meets(r.grab_rail_rate, 40) && below(r.grab_rail_rate, 70)) {
         const insight = r.insights.find((i) => i.text.includes("Grab rail provision at") && i.severity === "warning");
         expect(insight).toBeDefined();
       }
@@ -2329,7 +2331,7 @@ describe("insights", () => {
         wheelchair_records: [],
         modification_records: [],
       }));
-      if (r.non_slip_rate >= 40 && r.non_slip_rate < 70) {
+      if (meets(r.non_slip_rate, 40) && below(r.non_slip_rate, 70)) {
         const insight = r.insights.find((i) => i.text.includes("Non-slip compliance at") && i.severity === "warning");
         expect(insight).toBeDefined();
       }
@@ -2346,7 +2348,7 @@ describe("insights", () => {
         ],
         modification_records: [],
       }));
-      if (r.wheelchair_access_rate >= 40 && r.wheelchair_access_rate < 70) {
+      if (meets(r.wheelchair_access_rate, 40) && below(r.wheelchair_access_rate, 70)) {
         const insight = r.insights.find((i) => i.text.includes("Wheelchair access at") && i.severity === "warning");
         expect(insight).toBeDefined();
       }
@@ -2363,7 +2365,7 @@ describe("insights", () => {
           makeModification({ id: "mod_2", child_id: "yp_jordan", installed: true, meets_child_needs: false, child_consulted: true, care_plan_linked: false, bathroom_id: "bath_2" }),
         ],
       }));
-      if (r.child_modification_rate >= 40 && r.child_modification_rate < 70) {
+      if (meets(r.child_modification_rate, 40) && below(r.child_modification_rate, 70)) {
         const insight = r.insights.find((i) => i.text.includes("Child modification rate at") && i.severity === "warning");
         expect(insight).toBeDefined();
       }
@@ -2882,11 +2884,12 @@ describe("edge cases", () => {
       ],
     }));
     // installed rate = 0 for adapt/grab/nonslip, so sub-metrics counts are 0 for installed && X
+    // records exist → 0, not null (satisfaction filter drops installed:false → truly null)
     expect(r.adaptation_adequacy_rate).toBe(0);
     expect(r.grab_rail_rate).toBe(0);
     expect(r.non_slip_rate).toBe(0);
     expect(r.child_modification_rate).toBe(0);
-    expect(r.satisfaction_rate).toBe(0);
+    expect(r.satisfaction_rate).toBeNull();
   });
 
   it("wheelchair doorway_width_mm has no effect on scoring", () => {

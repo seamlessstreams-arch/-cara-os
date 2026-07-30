@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Accessibility } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { BathroomAccessibilityRating } from "@/lib/engines/home-bathroom-accessibility-adaptations-intelligence-engine";
 
@@ -69,28 +70,28 @@ export function HomeBathroomAccessibilityAdaptationsIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.bath_access_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.adaptation_adequacy_rate >= 90 ? "bg-green-50" : d.adaptation_adequacy_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.adaptation_adequacy_rate >= 90 ? "text-[--cs-success]" : d.adaptation_adequacy_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.adaptation_adequacy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.adaptation_adequacy_rate, 90) ? "bg-green-50" : meets(d.adaptation_adequacy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.adaptation_adequacy_rate, 90) ? "text-[--cs-success]" : meets(d.adaptation_adequacy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.adaptation_adequacy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Adaptations</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.grab_rail_rate >= 90 ? "bg-green-50" : d.grab_rail_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.grab_rail_rate >= 90 ? "text-[--cs-success]" : d.grab_rail_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.grab_rail_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.grab_rail_rate, 90) ? "bg-green-50" : meets(d.grab_rail_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.grab_rail_rate, 90) ? "text-[--cs-success]" : meets(d.grab_rail_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.grab_rail_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Grab Rails</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.non_slip_rate >= 90 ? "bg-green-50" : d.non_slip_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.non_slip_rate >= 90 ? "text-[--cs-success]" : d.non_slip_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.non_slip_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.non_slip_rate, 90) ? "bg-green-50" : meets(d.non_slip_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.non_slip_rate, 90) ? "text-[--cs-success]" : meets(d.non_slip_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.non_slip_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Non-Slip</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.wheelchair_access_rate >= 90 ? "bg-green-50" : d.wheelchair_access_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.wheelchair_access_rate >= 90 ? "text-[--cs-success]" : d.wheelchair_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.wheelchair_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.wheelchair_access_rate, 90) ? "bg-green-50" : meets(d.wheelchair_access_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.wheelchair_access_rate, 90) ? "text-[--cs-success]" : meets(d.wheelchair_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.wheelchair_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Wheelchair</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_modification_rate >= 90 ? "bg-green-50" : d.child_modification_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_modification_rate >= 90 ? "text-[--cs-success]" : d.child_modification_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_modification_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_modification_rate, 90) ? "bg-green-50" : meets(d.child_modification_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_modification_rate, 90) ? "text-[--cs-success]" : meets(d.child_modification_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_modification_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Mod</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.satisfaction_rate >= 90 ? "bg-green-50" : d.satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.satisfaction_rate >= 90 ? "text-[--cs-success]" : d.satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.satisfaction_rate, 90) ? "bg-green-50" : meets(d.satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisfaction</p>
             </div>
           </div>
