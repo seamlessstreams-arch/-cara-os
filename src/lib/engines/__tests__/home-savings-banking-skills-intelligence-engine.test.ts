@@ -221,11 +221,11 @@ describe("computeSavingsBankingSkills", () => {
       const r = computeSavingsBankingSkills(
         baseInput({ total_children: 0 }),
       );
-      expect(r.savings_account_rate).toBe(0);
-      expect(r.banking_skills_rate).toBe(0);
-      expect(r.financial_goal_rate).toBe(0);
-      expect(r.money_confidence_rate).toBe(0);
-      expect(r.financial_independence_rate).toBe(0);
+      expect(r.savings_account_rate).toBeNull();
+      expect(r.banking_skills_rate).toBeNull();
+      expect(r.financial_goal_rate).toBeNull();
+      expect(r.money_confidence_rate).toBeNull();
+      expect(r.financial_independence_rate).toBeNull();
       expect(r.child_engagement_rate).toBe(0);
     });
   });
@@ -300,11 +300,11 @@ describe("computeSavingsBankingSkills", () => {
 
     it("returns 0 for all rates", () => {
       const r = computeSavingsBankingSkills(baseInput());
-      expect(r.savings_account_rate).toBe(0);
-      expect(r.banking_skills_rate).toBe(0);
-      expect(r.financial_goal_rate).toBe(0);
-      expect(r.money_confidence_rate).toBe(0);
-      expect(r.financial_independence_rate).toBe(0);
+      expect(r.savings_account_rate).toBeNull();
+      expect(r.banking_skills_rate).toBeNull();
+      expect(r.financial_goal_rate).toBeNull();
+      expect(r.money_confidence_rate).toBeNull();
+      expect(r.financial_independence_rate).toBeNull();
       expect(r.child_engagement_rate).toBe(0);
     });
   });
@@ -1147,7 +1147,7 @@ describe("computeSavingsBankingSkills", () => {
         const r = computeSavingsBankingSkills(
           baseInput({ banking_skills_records: [makeBankingSkill()] }),
         );
-        expect(r.savings_account_rate).toBe(0);
+        expect(r.savings_account_rate).toBeNull();
       });
 
       it("equals avg of coverage, namedHolder, access, understands", () => {
@@ -1174,7 +1174,7 @@ describe("computeSavingsBankingSkills", () => {
         const r = computeSavingsBankingSkills(
           baseInput({ savings_account_records: [makeSavingsAccount()] }),
         );
-        expect(r.banking_skills_rate).toBe(0);
+        expect(r.banking_skills_rate).toBeNull();
       });
 
       it("equals avg of coverage, competence, confidence, practiceGiven", () => {
@@ -1194,7 +1194,7 @@ describe("computeSavingsBankingSkills", () => {
         const r = computeSavingsBankingSkills(
           baseInput({ savings_account_records: [makeSavingsAccount()] }),
         );
-        expect(r.financial_goal_rate).toBe(0);
+        expect(r.financial_goal_rate).toBeNull();
       });
 
       it("equals avg of coverage, childSetGoal, childTracking, reviewedInKeywork", () => {
@@ -1214,7 +1214,7 @@ describe("computeSavingsBankingSkills", () => {
         const r = computeSavingsBankingSkills(
           baseInput({ savings_account_records: [makeSavingsAccount()] }),
         );
-        expect(r.money_confidence_rate).toBe(0);
+        expect(r.money_confidence_rate).toBeNull();
       });
 
       it("equals avg of coverage, understandsValue, canBudget, canPurchase", () => {
@@ -1236,7 +1236,7 @@ describe("computeSavingsBankingSkills", () => {
         const r = computeSavingsBankingSkills(
           baseInput({ savings_account_records: [makeSavingsAccount()] }),
         );
-        expect(r.financial_independence_rate).toBe(0);
+        expect(r.financial_independence_rate).toBeNull();
       });
 
       it("equals avg of coverage, achievedRate, childInitiated, documentedInPathway", () => {
