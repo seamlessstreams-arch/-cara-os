@@ -13,6 +13,8 @@
 //             childComfortRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface NoiseMonitoringRecordInput {
@@ -138,11 +140,17 @@ export interface NoiseSoundResult {
   total_sensory_environment_records: number;
   total_insulation_records: number;
   total_comfort_records: number;
-  noise_monitoring_rate: number;
+  // quiet_hours_compliance_rate uses pct() directly (deterministic 0 on empty)
+  // and staff_awareness_rate is a manual composite over multiple numerators.
+  // The four composite rates below are null on empty: no records ⇒ no signal.
+  // "0% noise monitoring / 0% sensory environment / 0% sound insulation /
+  // 0% child comfort" would read as an actively hostile living environment,
+  // not "unmeasured". Fab-0 doctrine.
+  noise_monitoring_rate: number | null;
   quiet_hours_compliance_rate: number;
-  sensory_environment_rate: number;
-  sound_insulation_rate: number;
-  child_comfort_rate: number;
+  sensory_environment_rate: number | null;
+  sound_insulation_rate: number | null;
+  child_comfort_rate: number | null;
   staff_awareness_rate: number;
   strengths: string[];
   concerns: string[];
@@ -183,11 +191,11 @@ function emptyResult(
     total_sensory_environment_records: 0,
     total_insulation_records: 0,
     total_comfort_records: 0,
-    noise_monitoring_rate: 0,
+    noise_monitoring_rate: null,
     quiet_hours_compliance_rate: 0,
-    sensory_environment_rate: 0,
-    sound_insulation_rate: 0,
-    child_comfort_rate: 0,
+    sensory_environment_rate: null,
+    sound_insulation_rate: null,
+    child_comfort_rate: null,
     staff_awareness_rate: 0,
     strengths: [],
     concerns: [],
@@ -313,7 +321,7 @@ export function computeNoiseSoundManagement(
 
   // Composite noise monitoring rate
   // Weight: 40% acceptable levels, 25% source identification, 20% action taken, 15% location coverage
-  const noiseMonitoringRate =
+  const noiseMonitoringRate: number | null =
     totalMonitoringRecords > 0
       ? Math.round(
           acceptableNoiseRate * 0.4 +
@@ -321,7 +329,7 @@ export function computeNoiseSoundManagement(
           actionTakenRate * 0.2 +
           locationCoverage * 0.15,
         )
-      : 0;
+      : null;
 
   // ══════════════════════════════════════════════════════════════════════════
   // QUIET HOURS METRICS
@@ -374,10 +382,10 @@ export function computeNoiseSoundManagement(
     (sum, r) => sum + r.duration_of_disruption_minutes,
     0,
   );
-  const avgDisruptionMinutes =
+  const avgDisruptionMinutes: number | null =
     nonCompliantRecords.length > 0
       ? Math.round(totalDisruptionMinutes / nonCompliantRecords.length)
-      : 0;
+      : null;
 
   // Total children affected across disruptions
   const totalChildrenAffected = quiet_hours_records.reduce(
@@ -407,10 +415,10 @@ export function computeNoiseSoundManagement(
   const effectivenessSum = sensory_environment_records
     .filter((r) => r.adaptation_in_place)
     .reduce((sum, r) => sum + r.effectiveness_rating, 0);
-  const avgEffectiveness =
+  const avgEffectiveness: number | null =
     adaptationsInPlace > 0
       ? Math.round((effectivenessSum / adaptationsInPlace) * 100) / 100
-      : 0;
+      : null;
 
   // Child feedback positive rate
   const positiveFeedbackSensory = sensory_environment_records.filter(
@@ -450,7 +458,7 @@ export function computeNoiseSoundManagement(
 
   // Composite sensory environment rate
   // Weight: 30% in place, 25% child feedback, 25% reviewed with child, 20% linked to care plan
-  const sensoryEnvironmentRate =
+  const sensoryEnvironmentRate: number | null =
     totalSensoryRecords > 0
       ? Math.round(
           adaptationInPlaceRate * 0.3 +
@@ -458,7 +466,7 @@ export function computeNoiseSoundManagement(
           reviewedWithChildRate * 0.25 +
           linkedToCarePlanRate * 0.2,
         )
-      : 0;
+      : null;
 
   // ══════════════════════════════════════════════════════════════════════════
   // SOUND INSULATION METRICS
@@ -516,14 +524,14 @@ export function computeNoiseSoundManagement(
 
   // Composite sound insulation rate
   // Weight: 40% meets standard, 30% good condition, 30% no impact
-  const soundInsulationRate =
+  const soundInsulationRate: number | null =
     totalInsulationRecords > 0
       ? Math.round(
           meetsStandardRate * 0.4 +
           goodConditionRate * 0.3 +
           noImpactRate * 0.3,
         )
-      : 0;
+      : null;
 
   // ══════════════════════════════════════════════════════════════════════════
   // CHILD COMFORT METRICS
@@ -575,10 +583,10 @@ export function computeNoiseSoundManagement(
     (sum, r) => sum + r.overall_satisfaction,
     0,
   );
-  const avgSatisfaction =
+  const avgSatisfaction: number | null =
     totalComfortRecords > 0
       ? Math.round((satisfactionSum / totalComfortRecords) * 100) / 100
-      : 0;
+      : null;
 
   // High sensitivity children count
   const highSensitivity = child_comfort_records.filter(
@@ -600,7 +608,7 @@ export function computeNoiseSoundManagement(
   ).length;
   const highSatisfactionRate = pct(highSatisfactionRecords, totalComfortRecords);
 
-  const childComfortRate =
+  const childComfortRate: number | null =
     totalComfortRecords > 0
       ? Math.round(
           comfortableRate * 0.35 +
@@ -608,7 +616,7 @@ export function computeNoiseSoundManagement(
           staffResponsiveRate * 0.25 +
           highSatisfactionRate * 0.15,
         )
-      : 0;
+      : null;
 
   // ══════════════════════════════════════════════════════════════════════════
   // STAFF AWARENESS COMPOSITE
@@ -651,24 +659,24 @@ export function computeNoiseSoundManagement(
   let score = 52;
 
   // --- Bonus 1: noiseMonitoringRate (>=90: +4, >=70: +2) ---
-  if (noiseMonitoringRate >= 90) score += 4;
-  else if (noiseMonitoringRate >= 70) score += 2;
+  if (meets(noiseMonitoringRate, 90)) score += 4;
+  else if (meets(noiseMonitoringRate, 70)) score += 2;
 
   // --- Bonus 2: quietHoursComplianceRate (>=95: +5, >=80: +3) ---
   if (quietHoursComplianceRate >= 95) score += 5;
   else if (quietHoursComplianceRate >= 80) score += 3;
 
   // --- Bonus 3: sensoryEnvironmentRate (>=90: +4, >=70: +2) ---
-  if (sensoryEnvironmentRate >= 90) score += 4;
-  else if (sensoryEnvironmentRate >= 70) score += 2;
+  if (meets(sensoryEnvironmentRate, 90)) score += 4;
+  else if (meets(sensoryEnvironmentRate, 70)) score += 2;
 
   // --- Bonus 4: soundInsulationRate (>=90: +3, >=70: +1) ---
-  if (soundInsulationRate >= 90) score += 3;
-  else if (soundInsulationRate >= 70) score += 1;
+  if (meets(soundInsulationRate, 90)) score += 3;
+  else if (meets(soundInsulationRate, 70)) score += 1;
 
   // --- Bonus 5: childComfortRate (>=90: +4, >=70: +2) ---
-  if (childComfortRate >= 90) score += 4;
-  else if (childComfortRate >= 70) score += 2;
+  if (meets(childComfortRate, 90)) score += 4;
+  else if (meets(childComfortRate, 70)) score += 2;
 
   // --- Bonus 6: staffAwarenessRate (>=90: +3, >=70: +1) ---
   if (staffAwarenessRate >= 90) score += 3;
@@ -679,8 +687,8 @@ export function computeNoiseSoundManagement(
   else if (comfortSurveyCoverage >= 80) score += 1;
 
   // --- Bonus 8: avgSatisfaction (>=4.5: +2, >=3.5: +1) ---
-  if (avgSatisfaction >= 4.5) score += 2;
-  else if (avgSatisfaction >= 3.5) score += 1;
+  if (meets(avgSatisfaction, 4.5)) score += 2;
+  else if (meets(avgSatisfaction, 3.5)) score += 1;
 
   // ── Penalties (guarded by array.length > 0) ──────────────────────────
 
@@ -688,7 +696,7 @@ export function computeNoiseSoundManagement(
   if (quietHoursComplianceRate < 50 && totalQuietHoursRecords > 0) score -= 6;
 
   // Penalty 2: child comfort rate below 40%
-  if (childComfortRate < 40 && totalComfortRecords > 0) score -= 5;
+  if (below(childComfortRate, 40) && totalComfortRecords > 0) score -= 5;
 
   // Penalty 3: sound insulation poor/failed rate above 30%
   if (poorConditionRate > 30 && totalInsulationRecords > 0) score -= 4;
@@ -799,9 +807,9 @@ export function computeNoiseSoundManagement(
     );
   }
 
-  if (avgSatisfaction >= 4.5 && totalComfortRecords > 0) {
+  if (meets(avgSatisfaction, 4.5) && totalComfortRecords > 0) {
     strengths.push(`Average noise comfort satisfaction at ${avgSatisfaction}/5 — children are highly satisfied with the home's sound environment.`);
-  } else if (avgSatisfaction >= 3.5 && totalComfortRecords > 0) {
+  } else if (meets(avgSatisfaction, 3.5) && totalComfortRecords > 0) {
     strengths.push(`Noise comfort satisfaction averaging ${avgSatisfaction}/5 — children are generally satisfied with the sound environment.`);
   }
 
@@ -870,7 +878,7 @@ export function computeNoiseSoundManagement(
     );
   }
 
-  if (avgDisruptionMinutes > 30 && nonCompliantRecords.length > 0) {
+  if (above(avgDisruptionMinutes, 30) && nonCompliantRecords.length > 0) {
     concerns.push(`Average quiet hours disruption lasts ${avgDisruptionMinutes} minutes — prolonged disruptions significantly impact children's rest.`);
   }
 
@@ -889,7 +897,7 @@ export function computeNoiseSoundManagement(
     concerns.push(`Only ${reviewedWithChildRate}% of sensory adaptations reviewed with the child — children's views are not being consistently sought about adaptations affecting their daily experience.`);
   }
 
-  if (avgEffectiveness < 2.5 && adaptationsInPlace > 0) {
+  if (below(avgEffectiveness, 2.5) && adaptationsInPlace > 0) {
     concerns.push(`Sensory adaptation effectiveness averaging only ${avgEffectiveness}/5 — current adaptations are not working well and need review.`);
   }
 
@@ -933,9 +941,9 @@ export function computeNoiseSoundManagement(
     concerns.push(`Staff responsiveness to noise concerns at only ${staffResponsiveRate}% — children's noise issues are not being addressed.`);
   }
 
-  if (avgSatisfaction < 2.5 && totalComfortRecords > 0) {
+  if (below(avgSatisfaction, 2.5) && totalComfortRecords > 0) {
     concerns.push(`Average noise satisfaction at only ${avgSatisfaction}/5 — children are dissatisfied with the sound environment, requiring urgent attention.`);
-  } else if (avgSatisfaction >= 2.5 && avgSatisfaction < 3.0 && totalComfortRecords > 0) {
+  } else if (meets(avgSatisfaction, 2.5) && below(avgSatisfaction, 3.0) && totalComfortRecords > 0) {
     concerns.push(`Noise satisfaction averaging ${avgSatisfaction}/5 — below an acceptable level.`);
   }
 
@@ -1082,7 +1090,7 @@ export function computeNoiseSoundManagement(
     });
   }
 
-  if (childComfortRate < 40 && totalComfortRecords > 0) {
+  if (below(childComfortRate, 40) && totalComfortRecords > 0) {
     insights.push({
       text: `Child comfort composite at only ${childComfortRate}%. When comfort, voice, staff responsiveness, and satisfaction are considered together, the home is failing to provide a sound environment that meets children's needs. This is a fundamental premises and welfare concern.`,
       severity: "critical",
@@ -1159,14 +1167,14 @@ export function computeNoiseSoundManagement(
     });
   }
 
-  if (avgSatisfaction >= 2.5 && avgSatisfaction < 3.5 && totalComfortRecords > 0) {
+  if (meets(avgSatisfaction, 2.5) && below(avgSatisfaction, 3.5) && totalComfortRecords > 0) {
     insights.push({
       text: `Average noise satisfaction at ${avgSatisfaction}/5 — children's satisfaction with the sound environment is mediocre. Understanding specific aspects affecting satisfaction could guide targeted improvements.`,
       severity: "warning",
     });
   }
 
-  if (avgEffectiveness >= 2.5 && avgEffectiveness < 3.5 && adaptationsInPlace > 0) {
+  if (meets(avgEffectiveness, 2.5) && below(avgEffectiveness, 3.5) && adaptationsInPlace > 0) {
     insights.push({
       text: `Sensory adaptation effectiveness averaging ${avgEffectiveness}/5 — adaptations are in place but not working optimally. Reviewing individual adaptations with each child could make a real difference.`,
       severity: "warning",

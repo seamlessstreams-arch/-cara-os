@@ -184,11 +184,11 @@ describe("insufficient_data", () => {
 
   it("all rates are 0", () => {
     const r = computeNoiseSoundManagement(baseInput({ total_children: 0 }));
-    expect(r.noise_monitoring_rate).toBe(0);
+    expect(r.noise_monitoring_rate).toBeNull();
     expect(r.quiet_hours_compliance_rate).toBe(0);
-    expect(r.sensory_environment_rate).toBe(0);
-    expect(r.sound_insulation_rate).toBe(0);
-    expect(r.child_comfort_rate).toBe(0);
+    expect(r.sensory_environment_rate).toBeNull();
+    expect(r.sound_insulation_rate).toBeNull();
+    expect(r.child_comfort_rate).toBeNull();
     expect(r.staff_awareness_rate).toBe(0);
   });
 });
@@ -230,11 +230,11 @@ describe("inadequate floor — all empty with children on placement", () => {
 
   it("all rates are 0", () => {
     const r = computeNoiseSoundManagement(baseInput({ total_children: 3 }));
-    expect(r.noise_monitoring_rate).toBe(0);
+    expect(r.noise_monitoring_rate).toBeNull();
     expect(r.quiet_hours_compliance_rate).toBe(0);
-    expect(r.sensory_environment_rate).toBe(0);
-    expect(r.sound_insulation_rate).toBe(0);
-    expect(r.child_comfort_rate).toBe(0);
+    expect(r.sensory_environment_rate).toBeNull();
+    expect(r.sound_insulation_rate).toBeNull();
+    expect(r.child_comfort_rate).toBeNull();
     expect(r.staff_awareness_rate).toBe(0);
   });
 
@@ -254,11 +254,11 @@ describe("pct(0,0) edge case", () => {
         total_children: 0,
       }),
     );
-    expect(r.noise_monitoring_rate).toBe(0);
+    expect(r.noise_monitoring_rate).toBeNull();
     expect(r.quiet_hours_compliance_rate).toBe(0);
-    expect(r.sensory_environment_rate).toBe(0);
-    expect(r.sound_insulation_rate).toBe(0);
-    expect(r.child_comfort_rate).toBe(0);
+    expect(r.sensory_environment_rate).toBeNull();
+    expect(r.sound_insulation_rate).toBeNull();
+    expect(r.child_comfort_rate).toBeNull();
     expect(r.staff_awareness_rate).toBe(0);
   });
 });
@@ -1222,7 +1222,7 @@ describe("rate calculations", () => {
   describe("noise_monitoring_rate", () => {
     it("is 0 when no monitoring records", () => {
       const r = computeNoiseSoundManagement(baseInput());
-      expect(r.noise_monitoring_rate).toBe(0);
+      expect(r.noise_monitoring_rate).toBeNull();
     });
 
     it("weighted: 40% acceptable + 25% source + 20% action + 15% location", () => {
@@ -1288,7 +1288,7 @@ describe("rate calculations", () => {
   describe("sensory_environment_rate", () => {
     it("is 0 when no sensory records", () => {
       const r = computeNoiseSoundManagement(baseInput());
-      expect(r.sensory_environment_rate).toBe(0);
+      expect(r.sensory_environment_rate).toBeNull();
     });
 
     it("weighted: 30% in_place + 25% positive_feedback + 25% reviewed + 20% care_plan", () => {
@@ -1315,7 +1315,7 @@ describe("rate calculations", () => {
   describe("sound_insulation_rate", () => {
     it("is 0 when no insulation records", () => {
       const r = computeNoiseSoundManagement(baseInput());
-      expect(r.sound_insulation_rate).toBe(0);
+      expect(r.sound_insulation_rate).toBeNull();
     });
 
     it("weighted: 40% meets_standard + 30% good_condition + 30% no_impact", () => {
@@ -1337,7 +1337,7 @@ describe("rate calculations", () => {
   describe("child_comfort_rate", () => {
     it("is 0 when no comfort records", () => {
       const r = computeNoiseSoundManagement(baseInput());
-      expect(r.child_comfort_rate).toBe(0);
+      expect(r.child_comfort_rate).toBeNull();
     });
 
     it("weighted: 35% comfortable + 25% feels_heard + 25% staff_responsive + 15% high_satisfaction", () => {

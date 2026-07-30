@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { NoiseSoundRating } from "@/lib/engines/home-noise-sound-management-intelligence-engine";
 
@@ -69,24 +70,24 @@ export function HomeNoiseSoundManagementIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.noise_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.noise_monitoring_rate >= 90 ? "bg-green-50" : d.noise_monitoring_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.noise_monitoring_rate >= 90 ? "text-[--cs-success]" : d.noise_monitoring_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.noise_monitoring_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.noise_monitoring_rate, 90) ? "bg-green-50" : meets(d.noise_monitoring_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.noise_monitoring_rate, 90) ? "text-[--cs-success]" : meets(d.noise_monitoring_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.noise_monitoring_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Monitor</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.quiet_hours_compliance_rate >= 90 ? "bg-green-50" : d.quiet_hours_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.quiet_hours_compliance_rate >= 90 ? "text-[--cs-success]" : d.quiet_hours_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.quiet_hours_compliance_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Quiet Hrs</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.sensory_environment_rate >= 90 ? "bg-green-50" : d.sensory_environment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sensory_environment_rate >= 90 ? "text-[--cs-success]" : d.sensory_environment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sensory_environment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sensory_environment_rate, 90) ? "bg-green-50" : meets(d.sensory_environment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sensory_environment_rate, 90) ? "text-[--cs-success]" : meets(d.sensory_environment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sensory_environment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Sensory</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.sound_insulation_rate >= 90 ? "bg-green-50" : d.sound_insulation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sound_insulation_rate >= 90 ? "text-[--cs-success]" : d.sound_insulation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sound_insulation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sound_insulation_rate, 90) ? "bg-green-50" : meets(d.sound_insulation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sound_insulation_rate, 90) ? "text-[--cs-success]" : meets(d.sound_insulation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sound_insulation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Insulation</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_comfort_rate >= 90 ? "bg-green-50" : d.child_comfort_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_comfort_rate >= 90 ? "text-[--cs-success]" : d.child_comfort_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_comfort_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_comfort_rate, 90) ? "bg-green-50" : meets(d.child_comfort_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_comfort_rate, 90) ? "text-[--cs-success]" : meets(d.child_comfort_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_comfort_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Comfort</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.staff_awareness_rate >= 90 ? "bg-green-50" : d.staff_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
