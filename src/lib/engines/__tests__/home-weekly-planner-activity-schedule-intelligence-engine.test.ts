@@ -180,17 +180,17 @@ describe("insufficient data and edge cases", () => {
   it("all rates are 0 for insufficient_data", () => {
     const r = run({ total_children: 0 });
     expect(r.schedule_timeliness_rate).toBe(0);
-    expect(r.activity_variety_rate).toBe(0);
-    expect(r.child_input_rate).toBe(0);
-    expect(r.communication_rate).toBe(0);
-    expect(r.adherence_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.activity_variety_rate).toBeNull();
+    expect(r.child_input_rate).toBeNull();
+    expect(r.communication_rate).toBeNull();
+    expect(r.adherence_rate).toBeNull();
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 
   it("all rates are 0 for empty-with-children", () => {
     const r = run({ total_children: 2 });
     expect(r.schedule_timeliness_rate).toBe(0);
-    expect(r.activity_variety_rate).toBe(0);
+    expect(r.activity_variety_rate).toBeNull();
   });
 
   it("empty strengths for insufficient_data", () => {
@@ -445,7 +445,7 @@ describe("schedule coverage (full day, weekend, all children, manager approval)"
 describe("activity variety", () => {
   it("activityVarietyRate is 0 when no records", () => {
     const r = run({});
-    expect(r.activity_variety_rate).toBe(0);
+    expect(r.activity_variety_rate).toBeNull();
   });
 
   it("varied categories and types produce high variety rate", () => {
@@ -594,7 +594,7 @@ describe("activity variety", () => {
 describe("child input in planning", () => {
   it("childInputRate is 0 when no records", () => {
     const r = run({});
-    expect(r.child_input_rate).toBe(0);
+    expect(r.child_input_rate).toBeNull();
   });
 
   it("100% when all consulted, preferences recorded, felt listened to", () => {
@@ -610,6 +610,7 @@ describe("child input in planning", () => {
       makeChildInput({ consulted_before_planning: false, preferences_recorded: false, felt_listened_to: false })
     );
     const r = run({ child_input_records: records });
+    // records exist → 0, not null
     expect(r.child_input_rate).toBe(0);
   });
 
@@ -635,6 +636,7 @@ describe("child input in planning", () => {
       makeChildInput({ consulted_before_planning: false, preferences_recorded: false, felt_listened_to: false })
     );
     const r = run({ child_input_records: records });
+    // records exist → 0, not null
     expect(r.child_input_rate).toBe(0);
     expect(r.planner_score).toBeLessThanOrEqual(52);
   });
@@ -821,7 +823,7 @@ describe("child input in planning", () => {
 describe("communication effectiveness", () => {
   it("communicationRate is 0 when no records", () => {
     const r = run({});
-    expect(r.communication_rate).toBe(0);
+    expect(r.communication_rate).toBeNull();
   });
 
   it("100% when all communication flags true", () => {
@@ -835,6 +837,7 @@ describe("communication effectiveness", () => {
       makeCommunication({ schedule_displayed: false, shared_with_children: false, shared_with_staff: false, shared_before_week_start: false })
     );
     const r = run({ communication_records: records });
+    // records exist → 0, not null
     expect(r.communication_rate).toBe(0);
   });
 
@@ -858,6 +861,7 @@ describe("communication effectiveness", () => {
       makeCommunication({ schedule_displayed: false, shared_with_children: false, shared_with_staff: false, shared_before_week_start: false })
     );
     const r = run({ communication_records: records });
+    // records exist → 0, not null
     expect(r.communication_rate).toBe(0);
     expect(r.planner_score).toBeLessThanOrEqual(52);
   });
@@ -993,7 +997,7 @@ describe("communication effectiveness", () => {
 describe("adherence to planned activities", () => {
   it("adherenceRate is 0 when no records", () => {
     const r = run({});
-    expect(r.adherence_rate).toBe(0);
+    expect(r.adherence_rate).toBeNull();
   });
 
   it("100% when all delivered as planned", () => {
@@ -1009,6 +1013,7 @@ describe("adherence to planned activities", () => {
       makeAdherence({ was_delivered: false, delivered_as_planned: false })
     );
     const r = run({ adherence_records: records });
+    // records exist → 0, not null
     expect(r.adherence_rate).toBe(0);
   });
 
@@ -1025,6 +1030,7 @@ describe("adherence to planned activities", () => {
       makeAdherence({ was_delivered: false, delivered_as_planned: false })
     );
     const r = run({ adherence_records: records });
+    // records exist → 0, not null
     expect(r.adherence_rate).toBe(0);
     expect(r.planner_score).toBeLessThanOrEqual(52);
   });
@@ -1202,7 +1208,7 @@ describe("adherence to planned activities", () => {
 describe("child satisfaction", () => {
   it("satisfaction is 0 when no satisfaction data", () => {
     const r = run({});
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 
   it("high satisfaction from variety records", () => {
@@ -1741,7 +1747,7 @@ describe("output shape", () => {
     const r = run({ schedule_creation_records: schedules });
     expect(r.schedule_timeliness_rate).toBeGreaterThanOrEqual(0);
     expect(r.schedule_timeliness_rate).toBeLessThanOrEqual(100);
-    expect(r.activity_variety_rate).toBeGreaterThanOrEqual(0);
-    expect(r.activity_variety_rate).toBeLessThanOrEqual(100);
+    // activity_variety_rate is null when no variety records
+    expect(r.activity_variety_rate).toBeNull();
   });
 });

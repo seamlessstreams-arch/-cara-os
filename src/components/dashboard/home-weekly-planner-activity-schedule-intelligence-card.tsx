@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import type { WeeklyPlannerRating } from "@/lib/engines/home-weekly-planner-activity-schedule-intelligence-engine";
 
 const RATING_STYLES: Record<WeeklyPlannerRating, { bg: string; text: string; border: string; label: string }> = {
@@ -69,24 +70,24 @@ export function HomeWeeklyPlannerActivityScheduleIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.schedule_timeliness_rate >= 90 ? "text-[--cs-success]" : d.schedule_timeliness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.schedule_timeliness_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Timely</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.activity_variety_rate >= 90 ? "bg-green-50" : d.activity_variety_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.activity_variety_rate >= 90 ? "text-[--cs-success]" : d.activity_variety_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.activity_variety_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.activity_variety_rate, 90) ? "bg-green-50" : meets(d.activity_variety_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.activity_variety_rate, 90) ? "text-[--cs-success]" : meets(d.activity_variety_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.activity_variety_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Variety</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_input_rate >= 90 ? "bg-green-50" : d.child_input_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_input_rate >= 90 ? "text-[--cs-success]" : d.child_input_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_input_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_input_rate, 90) ? "bg-green-50" : meets(d.child_input_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_input_rate, 90) ? "text-[--cs-success]" : meets(d.child_input_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_input_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Input</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.communication_rate >= 90 ? "bg-green-50" : d.communication_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.communication_rate >= 90 ? "text-[--cs-success]" : d.communication_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.communication_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.communication_rate, 90) ? "bg-green-50" : meets(d.communication_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.communication_rate, 90) ? "text-[--cs-success]" : meets(d.communication_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.communication_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Comms</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.adherence_rate >= 90 ? "bg-green-50" : d.adherence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.adherence_rate >= 90 ? "text-[--cs-success]" : d.adherence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.adherence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.adherence_rate, 90) ? "bg-green-50" : meets(d.adherence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.adherence_rate, 90) ? "text-[--cs-success]" : meets(d.adherence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.adherence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Adhere</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

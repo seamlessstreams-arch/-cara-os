@@ -14,6 +14,8 @@
 //             childInputRecords, communicationRecords, adherenceRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface ScheduleCreationRecordInput {
@@ -137,12 +139,17 @@ export interface WeeklyPlannerResult {
   planner_rating: WeeklyPlannerRating;
   planner_score: number;
   headline: string;
+  // schedule_timeliness_rate uses pct() directly (deterministic 0 on empty).
+  // The 5 composite rates below are null on empty: no source records ⇒ no
+  // signal. "0% variety / 0% input / 0% communication / 0% adherence /
+  // 0% satisfaction" would read as an actively chaotic weekly programme,
+  // not "unmeasured". Fab-0 doctrine.
   schedule_timeliness_rate: number;
-  activity_variety_rate: number;
-  child_input_rate: number;
-  communication_rate: number;
-  adherence_rate: number;
-  child_satisfaction_rate: number;
+  activity_variety_rate: number | null;
+  child_input_rate: number | null;
+  communication_rate: number | null;
+  adherence_rate: number | null;
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: WeeklyPlannerRecommendation[];
@@ -178,11 +185,11 @@ function emptyResult(
     planner_score: score,
     headline,
     schedule_timeliness_rate: 0,
-    activity_variety_rate: 0,
-    child_input_rate: 0,
-    communication_rate: 0,
-    adherence_rate: 0,
-    child_satisfaction_rate: 0,
+    activity_variety_rate: null,
+    child_input_rate: null,
+    communication_rate: null,
+    adherence_rate: null,
+    child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -288,10 +295,10 @@ export function computeWeeklyPlannerActivitySchedule(
   const totalActivitiesPlanned = schedule_creation_records.reduce(
     (sum, r) => sum + r.total_activities_planned, 0,
   );
-  const avgActivitiesPerWeek =
+  const avgActivitiesPerWeek: number | null =
     totalSchedules > 0
       ? Math.round((totalActivitiesPlanned / totalSchedules) * 10) / 10
-      : 0;
+      : null;
 
   const highRevisionSchedules = schedule_creation_records.filter(
     (r) => r.revision_count >= 3,
@@ -364,19 +371,19 @@ export function computeWeeklyPlannerActivitySchedule(
   ].filter(Boolean).length;
 
   // Variety rate: combination of category count and type coverage
-  const activityVarietyRate =
+  const activityVarietyRate: number | null =
     totalVarietyRecords > 0
       ? clamp(Math.round(((uniqueCategoryCount / Math.max(totalVarietyRecords, 1)) * 50) + ((typeFlags / 12) * 50)), 0, 100)
-      : 0;
+      : null;
 
   // Activity satisfaction from variety records
   const varietySatisfactionSum = activity_variety_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const varietySatisfactionAvg =
+  const varietySatisfactionAvg: number | null =
     totalVarietyRecords > 0
       ? Math.round((varietySatisfactionSum / totalVarietyRecords) * 100) / 100
-      : 0;
+      : null;
 
   // --- Child input in planning ---
   const totalChildInputRecords = child_input_records.length;
@@ -416,16 +423,16 @@ export function computeWeeklyPlannerActivitySchedule(
   const childInputSatisfactionSum = child_input_records.reduce(
     (sum, r) => sum + r.satisfaction_score, 0,
   );
-  const childInputSatisfactionAvg =
+  const childInputSatisfactionAvg: number | null =
     totalChildInputRecords > 0
       ? Math.round((childInputSatisfactionSum / totalChildInputRecords) * 100) / 100
-      : 0;
+      : null;
 
   // Composite child input rate
-  const childInputRate =
+  const childInputRate: number | null =
     totalChildInputRecords > 0
       ? Math.round((consultationRate + preferencesRate + feltListenedToRate) / 3)
-      : 0;
+      : null;
 
   // Unique children consulted
   const uniqueChildrenConsulted = new Set(
@@ -480,10 +487,10 @@ export function computeWeeklyPlannerActivitySchedule(
   const digitalAvailabilityRate = pct(digitalCopyAvailable, totalCommunicationRecords);
 
   // Composite communication rate
-  const communicationRate =
+  const communicationRate: number | null =
     totalCommunicationRecords > 0
       ? Math.round((displayRate + childShareRate + staffShareRate + earlyShareRate) / 4)
-      : 0;
+      : null;
 
   // --- Adherence to planned activities ---
   const totalAdherenceRecords = adherence_records.length;
@@ -521,36 +528,34 @@ export function computeWeeklyPlannerActivitySchedule(
   const adherenceSatisfactionSum = adherence_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const adherenceSatisfactionAvg =
+  const adherenceSatisfactionAvg: number | null =
     totalAdherenceRecords > 0
       ? Math.round((adherenceSatisfactionSum / totalAdherenceRecords) * 100) / 100
-      : 0;
+      : null;
 
   // Composite adherence rate
-  const adherenceRate =
+  const adherenceRate: number | null =
     totalAdherenceRecords > 0
       ? Math.round((deliveryRate + asPlannedRate) / 2)
-      : 0;
+      : null;
 
   const uniqueStaffDelivering = new Set(
     adherence_records.filter((r) => r.staff_id).map((r) => r.staff_id),
   ).size;
 
   // --- Child satisfaction composite ---
-  const satisfactionDenominator =
-    (totalVarietyRecords > 0 ? 1 : 0) +
-    (totalChildInputRecords > 0 ? 1 : 0) +
-    (totalAdherenceRecords > 0 ? 1 : 0);
+  // Average of the present sub-satisfaction averages (variety / child-input /
+  // adherence). Null when no source records exist.
+  const satisfactionComponents: number[] = [];
+  if (totalVarietyRecords > 0) satisfactionComponents.push(pct(Math.round(varietySatisfactionAvg!), 5));
+  if (totalChildInputRecords > 0) satisfactionComponents.push(pct(Math.round(childInputSatisfactionAvg!), 5));
+  if (totalAdherenceRecords > 0) satisfactionComponents.push(pct(Math.round(adherenceSatisfactionAvg!), 5));
+  const satisfactionDenominator = satisfactionComponents.length;
 
-  const satisfactionNumerator =
-    (totalVarietyRecords > 0 ? pct(Math.round(varietySatisfactionAvg), 5) : 0) +
-    (totalChildInputRecords > 0 ? pct(Math.round(childInputSatisfactionAvg), 5) : 0) +
-    (totalAdherenceRecords > 0 ? pct(Math.round(adherenceSatisfactionAvg), 5) : 0);
-
-  const childSatisfactionRate =
-    satisfactionDenominator > 0
-      ? Math.round(satisfactionNumerator / satisfactionDenominator)
-      : 0;
+  const childSatisfactionRate: number | null =
+    satisfactionComponents.length > 0
+      ? Math.round(satisfactionComponents.reduce((a, b) => a + b, 0) / satisfactionComponents.length)
+      : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -561,24 +566,24 @@ export function computeWeeklyPlannerActivitySchedule(
   else if (scheduleTimelinessRate >= 70) score += 3;
 
   // --- Bonus 2: activityVarietyRate (>=80: +4, >=60: +2) ---
-  if (activityVarietyRate >= 80) score += 4;
-  else if (activityVarietyRate >= 60) score += 2;
+  if (meets(activityVarietyRate, 80)) score += 4;
+  else if (meets(activityVarietyRate, 60)) score += 2;
 
   // --- Bonus 3: childInputRate (>=80: +5, >=60: +3) ---
-  if (childInputRate >= 80) score += 5;
-  else if (childInputRate >= 60) score += 3;
+  if (meets(childInputRate, 80)) score += 5;
+  else if (meets(childInputRate, 60)) score += 3;
 
   // --- Bonus 4: communicationRate (>=90: +4, >=70: +2) ---
-  if (communicationRate >= 90) score += 4;
-  else if (communicationRate >= 70) score += 2;
+  if (meets(communicationRate, 90)) score += 4;
+  else if (meets(communicationRate, 70)) score += 2;
 
   // --- Bonus 5: adherenceRate (>=90: +4, >=70: +2) ---
-  if (adherenceRate >= 90) score += 4;
-  else if (adherenceRate >= 70) score += 2;
+  if (meets(adherenceRate, 90)) score += 4;
+  else if (meets(adherenceRate, 70)) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=80: +3, >=60: +1) ---
-  if (childSatisfactionRate >= 80) score += 3;
-  else if (childSatisfactionRate >= 60) score += 1;
+  if (meets(childSatisfactionRate, 80)) score += 3;
+  else if (meets(childSatisfactionRate, 60)) score += 1;
 
   // --- Bonus 7: fullCoverageRate (>=90: +3, >=70: +1) ---
   if (fullCoverageRate >= 90) score += 3;
@@ -597,14 +602,14 @@ export function computeWeeklyPlannerActivitySchedule(
   // scheduleTimelinessRate < 50 -> -5
   if (scheduleTimelinessRate < 50 && schedule_creation_records.length > 0) score -= 5;
 
-  // childInputRate < 40 -> -5
-  if (childInputRate < 40 && child_input_records.length > 0) score -= 5;
+  // below(childInputRate, 40) -> -5
+  if (below(childInputRate, 40) && child_input_records.length > 0) score -= 5;
 
-  // adherenceRate < 50 -> -5
-  if (adherenceRate < 50 && adherence_records.length > 0) score -= 5;
+  // below(adherenceRate, 50) -> -5
+  if (below(adherenceRate, 50) && adherence_records.length > 0) score -= 5;
 
-  // communicationRate < 50 -> -4
-  if (communicationRate < 50 && communication_records.length > 0) score -= 4;
+  // below(communicationRate, 50) -> -4
+  if (below(communicationRate, 50) && communication_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -762,7 +767,7 @@ export function computeWeeklyPlannerActivitySchedule(
     );
   }
 
-  if (childSatisfactionRate >= 80) {
+  if (meets(childSatisfactionRate, 80)) {
     strengths.push(
       `Overall child satisfaction rate at ${childSatisfactionRate}% -- children are satisfied with the planning process, activity variety, and delivery of the weekly programme.`,
     );
@@ -910,7 +915,7 @@ export function computeWeeklyPlannerActivitySchedule(
     );
   }
 
-  if (childSatisfactionRate < 50 && satisfactionDenominator > 0) {
+  if (below(childSatisfactionRate, 50) && satisfactionDenominator > 0) {
     concerns.push(
       `Overall child satisfaction rate at only ${childSatisfactionRate}% -- children are not satisfied with the weekly planning process. Their views should drive improvement.`,
     );
@@ -1221,7 +1226,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (communicationRate < 50 && totalCommunicationRecords > 0) {
+  if (below(communicationRate, 50) && totalCommunicationRecords > 0) {
     insights.push({
       text: `Schedule communication rate at only ${communicationRate}%. Children and staff are not consistently informed about what is planned, reducing the schedule's effectiveness. Ofsted expects clear, timely communication of the activity programme to all stakeholders.`,
       severity: "critical",
@@ -1286,7 +1291,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (childSatisfactionRate >= 50 && childSatisfactionRate < 80 && satisfactionDenominator > 0) {
+  if (meets(childSatisfactionRate, 50) && below(childSatisfactionRate, 80) && satisfactionDenominator > 0) {
     insights.push({
       text: `Child satisfaction at ${childSatisfactionRate}% -- while acceptable, there is room to improve how children experience the planning and delivery of weekly activities.`,
       severity: "warning",
@@ -1330,7 +1335,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (scheduleTimelinessRate >= 90 && adherenceRate >= 90 && totalSchedules > 0 && totalAdherenceRecords > 0) {
+  if (scheduleTimelinessRate >= 90 && meets(adherenceRate, 90) && totalSchedules > 0 && totalAdherenceRecords > 0) {
     insights.push({
       text: `${scheduleTimelinessRate}% schedule timeliness with ${adherenceRate}% adherence -- the home plans ahead and follows through. Children experience a reliable, predictable programme of activities. This demonstrates the kind of proactive, organised care that Ofsted expects under Reg 5.`,
       severity: "positive",
@@ -1344,7 +1349,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (communicationRate >= 90 && totalCommunicationRecords > 0) {
+  if (meets(communicationRate, 90) && totalCommunicationRecords > 0) {
     insights.push({
       text: `Schedule communication at ${communicationRate}% -- all stakeholders are consistently informed about the weekly programme. Children, staff, and carers know what to expect, promoting predictability, routine, and effective preparation.`,
       severity: "positive",
@@ -1358,7 +1363,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (childSatisfactionRate >= 80 && satisfactionDenominator >= 2) {
+  if (meets(childSatisfactionRate, 80) && satisfactionDenominator >= 2) {
     insights.push({
       text: `Overall child satisfaction at ${childSatisfactionRate}% across planning, variety, and delivery -- children are satisfied with the weekly programme. Their positive experience is the strongest indicator that planning is effective and child-centred.`,
       severity: "positive",
