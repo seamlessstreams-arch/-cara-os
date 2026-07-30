@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { ComplaintsIntelligenceResult } from "@/lib/engines/complaints-intelligence-engine";
 import { api } from "@/hooks/use-api";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 // ── Styling ─────────────────────────────────────────────────────────────────
 
@@ -104,31 +105,31 @@ export function ComplaintsNotificationsCard() {
           </div>
           <div className="text-center rounded-lg bg-slate-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-slate-600">
-              {o.avg_response_days}d
+              {typeof o.avg_response_days === "number" ? `${o.avg_response_days}d` : "—"}
             </p>
             <p className="text-[10px] text-muted-foreground">Avg Response</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.satisfaction_rate >= 75 ? "bg-green-50" : o.satisfaction_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+            meets(o.satisfaction_rate, 75) ? "bg-green-50" : meets(o.satisfaction_rate, 50) ? "bg-amber-50" : o.satisfaction_rate === null ? "bg-slate-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.satisfaction_rate >= 75 ? "text-[--cs-success]" : o.satisfaction_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.satisfaction_rate, 75) ? "text-[--cs-success]" : meets(o.satisfaction_rate, 50) ? "text-[--cs-warning]" : o.satisfaction_rate === null ? "text-[var(--cs-text-muted)]" : "text-[--cs-risk]",
             )}>
-              {o.satisfaction_rate}%
+              {formatRate(o.satisfaction_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Satisfied</p>
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.lessons_recorded_rate >= 90 ? "bg-green-50" : o.lessons_recorded_rate >= 70 ? "bg-amber-50" : "bg-red-50",
+            meets(o.lessons_recorded_rate, 90) ? "bg-green-50" : meets(o.lessons_recorded_rate, 70) ? "bg-amber-50" : o.lessons_recorded_rate === null ? "bg-slate-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.lessons_recorded_rate >= 90 ? "text-[--cs-success]" : o.lessons_recorded_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.lessons_recorded_rate, 90) ? "text-[--cs-success]" : meets(o.lessons_recorded_rate, 70) ? "text-[--cs-warning]" : o.lessons_recorded_rate === null ? "text-[var(--cs-text-muted)]" : "text-[--cs-risk]",
             )}>
-              {o.lessons_recorded_rate}%
+              {formatRate(o.lessons_recorded_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Lessons</p>
           </div>
@@ -144,9 +145,9 @@ export function ComplaintsNotificationsCard() {
           <div>
             <p className={cn(
               "font-bold tabular-nums",
-              o.upheld_rate > 50 ? "text-[--cs-warning]" : "text-slate-700",
+              typeof o.upheld_rate === "number" && o.upheld_rate > 50 ? "text-[--cs-warning]" : "text-slate-700",
             )}>
-              {o.upheld_rate}%
+              {formatRate(o.upheld_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Upheld Rate</p>
           </div>

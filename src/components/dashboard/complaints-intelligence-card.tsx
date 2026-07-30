@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { ComplaintsIntelligenceResult } from "@/lib/engines/complaints-intelligence-engine";
 import { api } from "@/hooks/use-api";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 // ── Styling maps ────────────────────────────────────────────────────────────
 
@@ -85,12 +86,12 @@ export function ComplaintsIntelligenceCard() {
             <p className="text-[10px] text-muted-foreground">Open</p>
           </div>
           <div className="text-center rounded-lg bg-gray-50 p-2">
-            <p className="text-lg font-bold tabular-nums">{o.avg_response_days}d</p>
+            <p className="text-lg font-bold tabular-nums">{typeof o.avg_response_days === "number" ? `${o.avg_response_days}d` : "—"}</p>
             <p className="text-[10px] text-muted-foreground">Avg Response</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", o.satisfaction_rate >= 80 ? "bg-green-50" : o.satisfaction_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.satisfaction_rate >= 80 ? "text-[--cs-success]" : o.satisfaction_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {o.satisfaction_rate}%
+          <div className={cn("text-center rounded-lg p-2", meets(o.satisfaction_rate, 80) ? "bg-green-50" : meets(o.satisfaction_rate, 50) ? "bg-amber-50" : o.satisfaction_rate === null ? "bg-slate-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", meets(o.satisfaction_rate, 80) ? "text-[--cs-success]" : meets(o.satisfaction_rate, 50) ? "text-[--cs-warning]" : o.satisfaction_rate === null ? "text-[var(--cs-text-muted)]" : "text-[--cs-risk]")}>
+              {formatRate(o.satisfaction_rate)}
             </p>
             <p className="text-[10px] text-muted-foreground">Satisfied</p>
           </div>
