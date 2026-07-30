@@ -15,6 +15,8 @@
 //             childBenefitRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface AromatherapySessionRecordInput {
@@ -370,10 +372,10 @@ export function computeAromatherapyWellbeingTherapies(
     (sum, r) => sum + r.child_engagement_rating,
     0,
   );
-  const avgAromaEngagement =
+  const avgAromaEngagement: number | null =
     totalAromaSessions > 0
       ? Math.round((aromaEngagementSum / totalAromaSessions) * 100) / 100
-      : 0;
+      : null;
 
   // Unique children accessing aromatherapy
   const uniqueChildrenAroma = new Set(
@@ -435,10 +437,10 @@ export function computeAromatherapyWellbeingTherapies(
     (sum, r) => sum + r.child_engagement_rating,
     0,
   );
-  const avgWellbeingEngagement =
+  const avgWellbeingEngagement: number | null =
     totalWellbeingTherapies > 0
       ? Math.round((wellbeingEngagementSum / totalWellbeingTherapies) * 100) / 100
-      : 0;
+      : null;
 
   const wellbeingNotesRecorded = wellbeing_therapy_records.filter(
     (r) => r.notes_recorded,
@@ -507,10 +509,10 @@ export function computeAromatherapyWellbeingTherapies(
     (sum, r) => sum + r.effectiveness_rating,
     0,
   );
-  const avgRelaxationEffectiveness =
+  const avgRelaxationEffectiveness: number | null =
     totalRelaxationProgrammes > 0
       ? Math.round((relaxationEffectivenessSum / totalRelaxationProgrammes) * 100) / 100
-      : 0;
+      : null;
 
   const relaxationAnxietyReduced = relaxation_programme_records.filter(
     (r) => r.anxiety_level_after < r.anxiety_level_before,
@@ -529,10 +531,10 @@ export function computeAromatherapyWellbeingTherapies(
     (sum, r) => sum + r.child_engagement_rating,
     0,
   );
-  const avgRelaxationEngagement =
+  const avgRelaxationEngagement: number | null =
     totalRelaxationProgrammes > 0
       ? Math.round((relaxationEngagementSum / totalRelaxationProgrammes) * 100) / 100
-      : 0;
+      : null;
 
   // Relaxation effectiveness composite: outcomes achieved + anxiety reduced + child positive + reviewed
   const relaxEffNumerator =
@@ -587,10 +589,10 @@ export function computeAromatherapyWellbeingTherapies(
     (sum, r) => sum + r.effectiveness_rating,
     0,
   );
-  const avgCalmingEffectiveness =
+  const avgCalmingEffectiveness: number | null =
     totalCalmingTechniques > 0
       ? Math.round((calmingEffectivenessSum / totalCalmingTechniques) * 100) / 100
-      : 0;
+      : null;
 
   // Calming technique composite: effective + appropriate + sensory considered + de-escalation
   const calmingCompositeNumerator =
@@ -660,10 +662,10 @@ export function computeAromatherapyWellbeingTherapies(
     (sum, r) => sum + r.overall_progress_rating,
     0,
   );
-  const avgBenefitProgress =
+  const avgBenefitProgress: number | null =
     totalBenefitAssessments > 0
       ? Math.round((benefitProgressSum / totalBenefitAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const benefitReviewOverdue = child_benefit_records.filter(
     (r) => r.review_overdue,
@@ -1545,7 +1547,7 @@ export function computeAromatherapyWellbeingTherapies(
   }
 
   if (
-    avgBenefitProgress >= 4.0 &&
+    meets(avgBenefitProgress, 4.0) &&
     totalBenefitAssessments > 0
   ) {
     insights.push({
