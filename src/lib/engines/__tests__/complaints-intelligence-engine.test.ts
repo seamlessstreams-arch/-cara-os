@@ -216,13 +216,15 @@ describe("Complaints Intelligence Engine", () => {
       expect(result.overview.total_complaints).toBe(0);
       expect(result.overview.open_count).toBe(0);
       expect(result.overview.resolved_count).toBe(0);
-      expect(result.overview.upheld_rate).toBe(0);
-      expect(result.overview.avg_response_days).toBe(0);
-      expect(result.overview.satisfaction_rate).toBe(0);
+      // Fab-0 fix: no complaints ⇒ null, not 0. "0% upheld / 0 days / 0% satisfied"
+      // reads as "we handled complaints and it all went badly", not "unmeasured".
+      expect(result.overview.upheld_rate).toBeNull();
+      expect(result.overview.avg_response_days).toBeNull();
+      expect(result.overview.satisfaction_rate).toBeNull();
       expect(result.overview.escalated_count).toBe(0);
       expect(result.overview.ofsted_notified_count).toBe(0);
       expect(result.overview.child_complaints).toBe(0);
-      expect(result.overview.lessons_recorded_rate).toBe(0);
+      expect(result.overview.lessons_recorded_rate).toBeNull();
       expect(result.open_complaints).toHaveLength(0);
       expect(result.theme_breakdown).toHaveLength(0);
       expect(result.source_breakdown).toHaveLength(0);
@@ -681,8 +683,9 @@ describe("Complaints Intelligence Engine", () => {
       const result = run(complaints);
       expect(result.overview.open_count).toBe(2);
       expect(result.overview.resolved_count).toBe(0);
-      expect(result.overview.upheld_rate).toBe(0);
-      expect(result.overview.avg_response_days).toBe(0);
+      // Fab-0 fix: no resolved complaints ⇒ null (nothing to compute over).
+      expect(result.overview.upheld_rate).toBeNull();
+      expect(result.overview.avg_response_days).toBeNull();
       expect(result.open_complaints).toHaveLength(2);
     });
 
@@ -703,7 +706,8 @@ describe("Complaints Intelligence Engine", () => {
         makeComplaint({ complainant_satisfied: null }),
       ];
       const result = run(complaints);
-      expect(result.overview.satisfaction_rate).toBe(0);
+      // Fab-0 fix: no satisfaction responses ⇒ null, not 0% satisfied.
+      expect(result.overview.satisfaction_rate).toBeNull();
     });
 
     it("handles single complaint", () => {
@@ -723,7 +727,8 @@ describe("Complaints Intelligence Engine", () => {
       const result = run(complaints);
       expect(result.overview.open_count).toBe(0);
       expect(result.overview.resolved_count).toBe(0);
-      expect(result.overview.upheld_rate).toBe(0);
+      // Fab-0 fix: withdrawn-only ⇒ nothing resolved to score ⇒ null.
+      expect(result.overview.upheld_rate).toBeNull();
     });
 
     it("handles mixed outcomes correctly", () => {

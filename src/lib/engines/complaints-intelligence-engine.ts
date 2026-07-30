@@ -6,6 +6,8 @@
 // Reg 39: complaints procedure — Reg 40: notification of significant events
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 export interface ComplaintInput {
   id: string;
   complaint_date: string;
@@ -39,13 +41,17 @@ export interface ComplaintsOverview {
   total_complaints: number;
   open_count: number;
   resolved_count: number;
-  upheld_rate: number;
-  avg_response_days: number;
-  satisfaction_rate: number;
+  // null on empty — an empty complaints register has no upheld/response/
+  // satisfaction/lessons signal to report. "0" reads as "we handled
+  // complaints and none of it went well" — fabricated bad news, same class
+  // as "100 = fully compliant on empty" (see project_fabricated_scores).
+  upheld_rate: number | null;
+  avg_response_days: number | null;
+  satisfaction_rate: number | null;
   escalated_count: number;
   ofsted_notified_count: number;
   child_complaints: number;
-  lessons_recorded_rate: number;
+  lessons_recorded_rate: number | null;
 }
 
 export interface OpenComplaint {
@@ -143,13 +149,13 @@ export function computeComplaintsIntelligence(input: {
         total_complaints: 0,
         open_count: 0,
         resolved_count: 0,
-        upheld_rate: 0,
-        avg_response_days: 0,
-        satisfaction_rate: 0,
+        upheld_rate: null,
+        avg_response_days: null,
+        satisfaction_rate: null,
         escalated_count: 0,
         ofsted_notified_count: 0,
         child_complaints: 0,
-        lessons_recorded_rate: 0,
+        lessons_recorded_rate: null,
       },
       open_complaints: [],
       theme_breakdown: [],
@@ -164,19 +170,21 @@ export function computeComplaintsIntelligence(input: {
 
   // ── Overview ────────────────────────────────────────────────────────────
   const upheldCount = resolved.filter((c) => c.outcome === "upheld" || c.outcome === "partially_upheld").length;
-  const upheldRate = resolved.length > 0 ? Math.round((upheldCount / resolved.length) * 100) : 0;
+  // Null on empty — an empty `resolved`/`resolvedWithTime`/`totalWithSatisfaction`
+  // population is UNMEASURED, not "0% upheld / 0 days to respond / 0% satisfied".
+  const upheldRate: number | null = resolved.length > 0 ? Math.round((upheldCount / resolved.length) * 100) : null;
 
   const resolvedWithTime = resolved.filter((c) => c.response_time_days > 0);
-  const avgResponseDays = resolvedWithTime.length > 0
+  const avgResponseDays: number | null = resolvedWithTime.length > 0
     ? Math.round(resolvedWithTime.reduce((sum, c) => sum + c.response_time_days, 0) / resolvedWithTime.length)
-    : 0;
+    : null;
 
   const satisfiedCount = complaints.filter((c) => c.complainant_satisfied === true).length;
   const dissatisfiedCount = complaints.filter((c) => c.complainant_satisfied === false).length;
   const totalWithSatisfaction = satisfiedCount + dissatisfiedCount;
-  const satisfactionRate = totalWithSatisfaction > 0
+  const satisfactionRate: number | null = totalWithSatisfaction > 0
     ? Math.round((satisfiedCount / totalWithSatisfaction) * 100)
-    : 0;
+    : null;
 
   const escalatedCount = complaints.filter((c) => c.escalated).length;
   const ofstedNotifiedCount = complaints.filter((c) => c.ofsted_notified).length;
@@ -278,7 +286,7 @@ export function computeComplaintsIntelligence(input: {
     }
   }
 
-  if (totalWithSatisfaction > 0 && satisfactionRate < 60) {
+  if (below(satisfactionRate, 60)) {
     alerts.push({
       severity: "medium",
       message: `Complainant satisfaction rate at ${satisfactionRate}% — below 60% threshold`,
@@ -311,14 +319,14 @@ export function computeComplaintsIntelligence(input: {
     }
   }
 
-  if (resolved.length > 0 && upheldRate > 50) {
+  if (above(upheldRate, 50)) {
     insights.push({
       severity: "warning",
       text: `High upheld rate at ${upheldRate}% — review whether systemic issues are being addressed`,
     });
   }
 
-  if (totalWithSatisfaction > 0 && satisfactionRate < 60) {
+  if (below(satisfactionRate, 60)) {
     insights.push({
       severity: "warning",
       text: `Low complainant satisfaction at ${satisfactionRate}% — consider reviewing complaint response quality`,
@@ -341,7 +349,7 @@ export function computeComplaintsIntelligence(input: {
     });
   }
 
-  if (totalWithSatisfaction > 0 && satisfactionRate >= 75) {
+  if (meets(satisfactionRate, 75)) {
     insights.push({
       severity: "positive",
       text: `Strong complainant satisfaction at ${satisfactionRate}% — above 75% threshold`,

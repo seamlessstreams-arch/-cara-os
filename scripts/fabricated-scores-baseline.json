@@ -1,6 +1,5 @@
 [
-  "src/app/(platform)/annex-a/page.tsx:evidenceCount:0"
-,
+  "src/app/(platform)/annex-a/page.tsx:evidenceCount:0",
   "src/app/(platform)/annex-a/page.tsx:s.evidence_count:0",
   "src/app/(platform)/annual-health-assessment/page.tsx:total:0",
   "src/app/(platform)/audits/[id]/page.tsx:audit.max_score:0",
@@ -232,9 +231,6 @@
   "src/lib/engines/child-risk-profile-intelligence-engine.ts:d:0",
   "src/lib/engines/chronology-intelligence-engine.ts:children:0",
   "src/lib/engines/chronology-intelligence-engine.ts:events:0",
-  "src/lib/engines/complaints-intelligence-engine.ts:resolved:0",
-  "src/lib/engines/complaints-intelligence-engine.ts:resolvedWithTime:0",
-  "src/lib/engines/complaints-intelligence-engine.ts:totalWithSatisfaction:0",
   "src/lib/engines/education-intelligence-engine.ts:children:0",
   "src/lib/engines/family-relationships-intelligence-engine.ts:reviews12m:0",
   "src/lib/engines/family-relationships-intelligence-engine.ts:sessions90d:0",
