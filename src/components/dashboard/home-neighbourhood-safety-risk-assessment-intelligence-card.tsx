@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { NeighbourhoodSafetyRating } from "@/lib/engines/home-neighbourhood-safety-risk-assessment-intelligence-engine";
 
@@ -69,24 +70,24 @@ export function HomeNeighbourhoodSafetyRiskAssessmentIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.neighbourhood_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.risk_assessment_rate >= 90 ? "bg-green-50" : d.risk_assessment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.risk_assessment_rate >= 90 ? "text-[--cs-success]" : d.risk_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.risk_assessment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.risk_assessment_rate, 90) ? "bg-green-50" : meets(d.risk_assessment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.risk_assessment_rate, 90) ? "text-[--cs-success]" : meets(d.risk_assessment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.risk_assessment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Risk</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.safety_mapping_rate >= 90 ? "bg-green-50" : d.safety_mapping_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.safety_mapping_rate >= 90 ? "text-[--cs-success]" : d.safety_mapping_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safety_mapping_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.safety_mapping_rate, 90) ? "bg-green-50" : meets(d.safety_mapping_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.safety_mapping_rate, 90) ? "text-[--cs-success]" : meets(d.safety_mapping_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.safety_mapping_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Mapping</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.hazard_identification_rate >= 90 ? "bg-green-50" : d.hazard_identification_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hazard_identification_rate >= 90 ? "text-[--cs-success]" : d.hazard_identification_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hazard_identification_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hazard_identification_rate, 90) ? "bg-green-50" : meets(d.hazard_identification_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hazard_identification_rate, 90) ? "text-[--cs-success]" : meets(d.hazard_identification_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hazard_identification_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hazards</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.route_safety_rate >= 90 ? "bg-green-50" : d.route_safety_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.route_safety_rate >= 90 ? "text-[--cs-success]" : d.route_safety_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.route_safety_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.route_safety_rate, 90) ? "bg-green-50" : meets(d.route_safety_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.route_safety_rate, 90) ? "text-[--cs-success]" : meets(d.route_safety_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.route_safety_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Routes</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.community_partnership_rate >= 90 ? "bg-green-50" : d.community_partnership_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.community_partnership_rate >= 90 ? "text-[--cs-success]" : d.community_partnership_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.community_partnership_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.community_partnership_rate, 90) ? "bg-green-50" : meets(d.community_partnership_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.community_partnership_rate, 90) ? "text-[--cs-success]" : meets(d.community_partnership_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.community_partnership_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Partners</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_awareness_rate >= 90 ? "bg-green-50" : d.child_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

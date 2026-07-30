@@ -8,6 +8,7 @@ import {
   type RouteSafetyRecordInput,
   type CommunityPartnershipRecordInput,
 } from "../home-neighbourhood-safety-risk-assessment-intelligence-engine";
+import { above, below, meets } from "@/lib/metrics/rate";
 
 /* ── helpers ────────────────────────────────────────────────────────────────── */
 
@@ -229,11 +230,11 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
         route_safety_records: [],
         community_partnership_records: [],
       });
-      expect(r.risk_assessment_rate).toBe(0);
-      expect(r.safety_mapping_rate).toBe(0);
-      expect(r.hazard_identification_rate).toBe(0);
-      expect(r.route_safety_rate).toBe(0);
-      expect(r.community_partnership_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
+      expect(r.safety_mapping_rate).toBeNull();
+      expect(r.hazard_identification_rate).toBeNull();
+      expect(r.route_safety_rate).toBeNull();
+      expect(r.community_partnership_rate).toBeNull();
       expect(r.child_awareness_rate).toBe(0);
     });
 
@@ -769,7 +770,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
       const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
         risk_assessment_records: [],
       }));
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
     });
 
     it("returns 100 when all four components are perfect", () => {
@@ -825,7 +826,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
       const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
         safety_mapping_records: [],
       }));
-      expect(r.safety_mapping_rate).toBe(0);
+      expect(r.safety_mapping_rate).toBeNull();
     });
 
     it("returns 100 when all four components perfect", () => {
@@ -881,7 +882,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
       const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
         hazard_records: [],
       }));
-      expect(r.hazard_identification_rate).toBe(0);
+      expect(r.hazard_identification_rate).toBeNull();
     });
 
     it("returns 100 when all hazards reported, mitigated, resolved", () => {
@@ -927,7 +928,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
       const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
         route_safety_records: [],
       }));
-      expect(r.route_safety_rate).toBe(0);
+      expect(r.route_safety_rate).toBeNull();
     });
 
     it("returns 100 when all four components perfect", () => {
@@ -983,7 +984,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
       const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
         community_partnership_records: [],
       }));
-      expect(r.community_partnership_rate).toBe(0);
+      expect(r.community_partnership_rate).toBeNull();
     });
 
     it("returns 100 when all four components perfect", () => {
@@ -1214,6 +1215,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
         community_partnership_records: [],
       }));
       // risk assessment rate is 0 (all components 0), penalty -6 applies
+      // record exists → 0, not null
       expect(penalized.risk_assessment_rate).toBe(0);
       expect(penalized.neighbourhood_score).toBeLessThan(52);
     });
@@ -1228,6 +1230,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
         route_safety_records: [],
         community_partnership_records: [],
       }));
+      // record exists → 0, not null
       expect(penalized.hazard_identification_rate).toBe(0);
       expect(penalized.neighbourhood_score).toBeLessThan(52);
     });
@@ -1247,6 +1250,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
         ],
         community_partnership_records: [],
       }));
+      // record exists → 0, not null
       expect(penalized.route_safety_rate).toBe(0);
       expect(penalized.neighbourhood_score).toBeLessThan(52);
     });
@@ -1266,6 +1270,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           }),
         ],
       }));
+      // record exists → 0, not null
       expect(penalized.community_partnership_rate).toBe(0);
       expect(penalized.neighbourhood_score).toBeLessThan(52);
     });
@@ -2046,7 +2051,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           }),
         ],
       }));
-      if (r.risk_assessment_rate >= 50 && r.risk_assessment_rate < 70) {
+      if (meets(r.risk_assessment_rate, 50) && below(r.risk_assessment_rate, 70)) {
         expect(r.recommendations.some((rec) => rec.urgency === "planned" && rec.recommendation.includes("Improve risk assessment completeness"))).toBe(true);
       }
     });
@@ -2199,7 +2204,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           }),
         ],
       }));
-      if (r.risk_assessment_rate >= 50 && r.risk_assessment_rate < 70) {
+      if (meets(r.risk_assessment_rate, 50) && below(r.risk_assessment_rate, 70)) {
         expect(r.insights.some((i) => i.severity === "warning" && i.text.includes("Risk assessment completeness at"))).toBe(true);
       }
     });
@@ -2479,10 +2484,10 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
         community_partnership_records: [],
       }));
       expect(r.risk_assessment_rate).toBe(100);
-      expect(r.safety_mapping_rate).toBe(0);
-      expect(r.hazard_identification_rate).toBe(0);
-      expect(r.route_safety_rate).toBe(0);
-      expect(r.community_partnership_rate).toBe(0);
+      expect(r.safety_mapping_rate).toBeNull();
+      expect(r.hazard_identification_rate).toBeNull();
+      expect(r.route_safety_rate).toBeNull();
+      expect(r.community_partnership_rate).toBeNull();
     });
 
     it("only hazard_records present", () => {
@@ -2493,7 +2498,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
         community_partnership_records: [],
       }));
       expect(r.hazard_identification_rate).toBe(100);
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
     });
 
     it("only community_partnership_records present", () => {
@@ -2504,7 +2509,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
         route_safety_records: [],
       }));
       expect(r.community_partnership_rate).toBe(100);
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
     });
 
     it("total_children 1 with full data still works", () => {
@@ -2799,7 +2804,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           }),
         ],
       }));
-      if (r.risk_assessment_rate >= 50 && r.risk_assessment_rate < 70) {
+      if (meets(r.risk_assessment_rate, 50) && below(r.risk_assessment_rate, 70)) {
         expect(r.concerns.some((c) => c.includes("Risk assessment completeness at"))).toBe(true);
       }
     });
@@ -2812,7 +2817,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeSafetyMapping("sm3", { lighting_assessed: false, update_frequency_met: false }),
         ],
       }));
-      if (r.safety_mapping_rate >= 50 && r.safety_mapping_rate < 70) {
+      if (meets(r.safety_mapping_rate, 50) && below(r.safety_mapping_rate, 70)) {
         expect(r.concerns.some((c) => c.includes("Safety mapping completeness at"))).toBe(true);
       }
     });
@@ -2825,7 +2830,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeHazard("h3", { mitigation_in_place: false }),
         ],
       }));
-      if (r.hazard_identification_rate >= 40 && r.hazard_identification_rate < 70) {
+      if (meets(r.hazard_identification_rate, 40) && below(r.hazard_identification_rate, 70)) {
         expect(r.concerns.some((c) => c.includes("Hazard management rate at"))).toBe(true);
       }
     });
@@ -2838,7 +2843,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeRoute("r3", { safe_crossing_points: false }),
         ],
       }));
-      if (r.route_safety_rate >= 50 && r.route_safety_rate < 70) {
+      if (meets(r.route_safety_rate, 50) && below(r.route_safety_rate, 70)) {
         expect(r.concerns.some((c) => c.includes("Route safety completeness at"))).toBe(true);
       }
     });
@@ -2858,7 +2863,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           }),
         ],
       }));
-      if (r.community_partnership_rate >= 40 && r.community_partnership_rate < 70) {
+      if (meets(r.community_partnership_rate, 40) && below(r.community_partnership_rate, 70)) {
         expect(r.concerns.some((c) => c.includes("Community partnership effectiveness at"))).toBe(true);
       }
     });
@@ -3020,7 +3025,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeSafetyMapping("sm3", { lighting_assessed: false, update_frequency_met: false }),
         ],
       }));
-      if (r.safety_mapping_rate >= 50 && r.safety_mapping_rate < 70) {
+      if (meets(r.safety_mapping_rate, 50) && below(r.safety_mapping_rate, 70)) {
         expect(r.recommendations.some((rec) => rec.recommendation.includes("Strengthen safety mapping"))).toBe(true);
       }
     });
@@ -3057,7 +3062,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeRoute("r3", { safe_crossing_points: false }),
         ],
       }));
-      if (r.route_safety_rate >= 50 && r.route_safety_rate < 70) {
+      if (meets(r.route_safety_rate, 50) && below(r.route_safety_rate, 70)) {
         expect(r.recommendations.some((rec) => rec.urgency === "planned" && rec.recommendation.includes("Improve route safety completeness"))).toBe(true);
       }
     });
@@ -3077,7 +3082,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           }),
         ],
       }));
-      if (r.community_partnership_rate >= 40 && r.community_partnership_rate < 70) {
+      if (meets(r.community_partnership_rate, 40) && below(r.community_partnership_rate, 70)) {
         expect(r.recommendations.some((rec) => rec.urgency === "planned" && rec.recommendation.includes("Strengthen community partnerships"))).toBe(true);
       }
     });
@@ -3095,7 +3100,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeSafetyMapping("sm4", { staff_walked_area: false }),
         ],
       }));
-      if (r.safety_mapping_rate >= 70 && r.safety_mapping_rate < 90) {
+      if (meets(r.safety_mapping_rate, 70) && below(r.safety_mapping_rate, 90)) {
         expect(r.strengths.some((s) => s.includes("safety mapping completeness") && s.includes("good"))).toBe(true);
       }
     });
@@ -3109,7 +3114,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeRoute("r4", { child_walked_route: false }),
         ],
       }));
-      if (r.route_safety_rate >= 70 && r.route_safety_rate < 90) {
+      if (meets(r.route_safety_rate, 70) && below(r.route_safety_rate, 90)) {
         expect(r.strengths.some((s) => s.includes("route safety completeness") && s.includes("good"))).toBe(true);
       }
     });
@@ -3123,7 +3128,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makePartnership("cp4", { partner_type: "school", contact_frequency_met: false }),
         ],
       }));
-      if (r.community_partnership_rate >= 70 && r.community_partnership_rate < 90) {
+      if (meets(r.community_partnership_rate, 70) && below(r.community_partnership_rate, 90)) {
         expect(r.strengths.some((s) => s.includes("community partnership effectiveness") && s.includes("good"))).toBe(true);
       }
     });
@@ -3137,7 +3142,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeHazard("h4", { resolved: false }),
         ],
       }));
-      if (r.hazard_identification_rate >= 70 && r.hazard_identification_rate < 90) {
+      if (meets(r.hazard_identification_rate, 70) && below(r.hazard_identification_rate, 90)) {
         expect(r.strengths.some((s) => s.includes("hazard management rate"))).toBe(true);
       }
     });
@@ -3151,7 +3156,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeRiskAssessment("ra4", { local_crime_reviewed: false }),
         ],
       }));
-      if (r.risk_assessment_rate >= 70) {
+      if (meets(r.risk_assessment_rate, 70)) {
         // 3/4 = 75% comprehensive coverage
         expect(r.strengths.some((s) => s.includes("cover all seven key areas") && s.includes("most"))).toBe(true);
       }
@@ -3169,7 +3174,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeSafetyMapping("sm3", { lighting_assessed: false, update_frequency_met: false }),
         ],
       }));
-      if (r.safety_mapping_rate >= 50 && r.safety_mapping_rate < 70) {
+      if (meets(r.safety_mapping_rate, 50) && below(r.safety_mapping_rate, 70)) {
         expect(r.insights.some((i) => i.severity === "warning" && i.text.includes("Safety mapping completeness"))).toBe(true);
       }
     });
@@ -3182,7 +3187,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeHazard("h3", { mitigation_in_place: false }),
         ],
       }));
-      if (r.hazard_identification_rate >= 40 && r.hazard_identification_rate < 70) {
+      if (meets(r.hazard_identification_rate, 40) && below(r.hazard_identification_rate, 70)) {
         expect(r.insights.some((i) => i.severity === "warning" && i.text.includes("Hazard management rate"))).toBe(true);
       }
     });
@@ -3195,7 +3200,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           makeRoute("r3", { safe_crossing_points: false }),
         ],
       }));
-      if (r.route_safety_rate >= 50 && r.route_safety_rate < 70) {
+      if (meets(r.route_safety_rate, 50) && below(r.route_safety_rate, 70)) {
         expect(r.insights.some((i) => i.severity === "warning" && i.text.includes("Route safety completeness"))).toBe(true);
       }
     });
@@ -3215,7 +3220,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
           }),
         ],
       }));
-      if (r.community_partnership_rate >= 40 && r.community_partnership_rate < 70) {
+      if (meets(r.community_partnership_rate, 40) && below(r.community_partnership_rate, 70)) {
         expect(r.insights.some((i) => i.severity === "warning" && i.text.includes("Community partnership effectiveness"))).toBe(true);
       }
     });
