@@ -104,7 +104,8 @@ export default function SleepInLogPage() {
   }, [records, search, statusFilter, sortBy]);
 
   const thisMonth = records.length;
-  const disturbedPct = records.length > 0 ? Math.round(records.filter(r => r.status !== "completed").length / records.length * 100) : 0;
+  // Null on empty — "0% disturbed" on no records reads as "we had sleep-in shifts and none were disturbed".
+  const disturbedPct = records.length > 0 ? Math.round(records.filter(r => r.status !== "completed").length / records.length * 100) : null;
   const compRestOwed = records.filter(r => r.compensatory_rest && !r.compensatory_rest_date).length;
   const avgDistMins = records.length > 0 ? Math.round(records.reduce((s, r) => s + r.total_disturbance_minutes, 0) / records.length) : 0;
 
@@ -114,7 +115,7 @@ export default function SleepInLogPage() {
     const recs = records.filter(r => r.staff_member === sid);
     const disturbed = recs.filter(r => r.status !== "completed").length;
     const compOwed = recs.filter(r => r.compensatory_rest && !r.compensatory_rest_date).length;
-    return { id: sid, total: recs.length, disturbedPct: recs.length > 0 ? Math.round(disturbed / recs.length * 100) : 0, compOwed, last: recs.sort((a, b) => b.date.localeCompare(a.date))[0]?.date };
+    return { id: sid, total: recs.length, disturbedPct: recs.length > 0 ? Math.round(disturbed / recs.length * 100) : null, compOwed, last: recs.sort((a, b) => b.date.localeCompare(a.date))[0]?.date };
   }), [records, staffIds]);
 
   const exportCols: ExportColumn<SleepInRecord>[] = [
@@ -162,7 +163,7 @@ export default function SleepInLogPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Sleep-Ins This Month", value: thisMonth, icon: Moon, colour: "text-indigo-600" },
-            { label: "Disturbed Nights", value: `${disturbedPct}%`, icon: AlertTriangle, colour: "text-amber-600" },
+            { label: "Disturbed Nights", value: typeof disturbedPct === "number" ? `${disturbedPct}%` : "—", icon: AlertTriangle, colour: "text-amber-600" },
             { label: "Comp Rest Owed", value: compRestOwed, icon: Clock, colour: "text-red-600" },
             { label: "Avg Disturbance Mins", value: avgDistMins, icon: Clock, colour: "text-gray-600" },
           ].map(s => (
@@ -177,7 +178,7 @@ export default function SleepInLogPage() {
               <CardHeader className="pb-2"><CardTitle className="text-sm">{getStaffName(ss.id)}</CardTitle></CardHeader>
               <CardContent className="space-y-1 text-xs">
                 <div className="flex justify-between"><span className="text-muted-foreground">Total Sleep-Ins</span><span className="font-medium">{ss.total}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Disturbed</span><span className={cn("font-medium", ss.disturbedPct > 50 ? "text-[--cs-risk]" : "")}>{ss.disturbedPct}%</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Disturbed</span><span className={cn("font-medium", typeof ss.disturbedPct === "number" && ss.disturbedPct > 50 ? "text-[--cs-risk]" : "")}>{typeof ss.disturbedPct === "number" ? `${ss.disturbedPct}%` : "—"}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Comp Rest Owed</span><Badge className={cn("text-xs", ss.compOwed > 0 ? "bg-[--cs-risk-bg] text-[--cs-risk]" : "bg-[--cs-success-bg] text-[--cs-success]")}>{ss.compOwed}</Badge></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Last Sleep-In</span><span>{ss.last}</span></div>
               </CardContent>

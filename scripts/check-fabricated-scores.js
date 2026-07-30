@@ -30,9 +30,23 @@
  *   formatRate(score)              → "—" for unmeasured
  *
  * Note `?? 0` is the same lie pointing the other way: it manufactures a failure
- * out of silence, and a red zero is just as false as a green hundred. This guard
- * only catches the flattering direction, which is the dangerous one, but treat
- * both as the same bug.
+ * out of silence, and a red zero is just as false as a green hundred.
+ *
+ * FAB-0 MIRROR (added 2026-07-30): the same class inverted, spelled as
+ *
+ *   const avgDuration = restraints.length > 0
+ *     ? Math.round(average(durations))
+ *     : 0;                                   // ← 0 min avg reads as "instant"
+ *
+ * A restraint that lasted 0 minutes never happened, so "0" here is not a real
+ * finding either — it manufactures a failure the same way `: 100` manufactures
+ * a pass. NON_EMPTY_TERNARY_ZERO catches this pattern, but ONLY when the
+ * ternary's non-empty branch contains a computed-metric call (Math.round/max/
+ * min, average, mean, meanOf, round1/round2). Generic `? X : 0` is left alone
+ * because most of it is legitimate: boolean-as-integer (`? 1 : 0`), count
+ * fallback (`? count : 0`), and unmeasured-is-genuinely-zero cases (frequency
+ * counters, alert flags). The compute-gate keeps the matcher narrow enough to
+ * enforce without a wall of ALLOWED entries.
  *
  * BASELINE: sites that predate this guard are listed below so it can be
  * enforced immediately and burned down over time. Deleting entries as they are
@@ -626,6 +640,25 @@ const EMPTY_RETURN = /if\s*\(\s*!?\s*(\w+(?:\.\w+)*)(?:\.length)?\s*(?:===?\s*0|
 // form matcher above, for the same misattribution-prevention reason.
 const NON_EMPTY_TERNARY_UNIT = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[^?:{};]{0,220}?:\s*(1)(?!\d|\.\d)\b/g;
 const EMPTY_TERNARY_UNIT = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(1)(?!\d|\.\d)\b/g;
+// Fab-0 mirror form:
+//   `xs.length > 0 ? Math.round((completed/xs.length) * 100) : 0`
+// Body captured (m[2]) so the run loop can check for a computed-metric call
+// (Math.round/max/min, average, mean, meanOf, round1/round2) — the "compute
+// gate". Generic `? X : 0` (boolean-as-int, count fallback, alert-flag) is
+// legitimate at ~200+ sites and does NOT match this gate. Same body-character
+// containment as the sibling matchers, plus a trailing `(?!\.\d)` so `: 0.5`
+// (which is a rate literal, not a fab-0) never matches.
+const NON_EMPTY_TERNARY_ZERO = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?([^?:{};]{0,220}?):\s*0\b(?!\.\d)/g;
+// The compute-gate keeps the fab-0 matcher narrow enough to enforce. A body
+// that computes a PERCENTAGE (contains `* 100`) is the shape that produces
+// the most misleading dashboard output — "0% compliant on an empty register"
+// is the mirror of "100% compliant on an empty register" and reads exactly
+// as false. Duration/count/currency averages ARE also fab-0 in the strict
+// sense, but they show up ~200x across page components and the burn-down
+// would swamp the doctrine. Add another gate here (e.g. `average\\(` or
+// `Math\\.max\\(`) only when a specific engine's regression is worth the
+// class-wide baseline entry cost.
+const COMPUTE_CALL = /Math\.round\s*\([^)]*\*\s*100\s*\)/;
 // Object-return form:
 //   if (expected.length === 0) return { score: 100, missing: [] };
 // EMPTY_RETURN matches scalar `return N;` only, so a function that early-
@@ -678,6 +711,20 @@ for (const dir of SCAN_DIRS) {
         found.push({ key: `${rel}:${m[1]}:1`, rel, line, collection: m[1], value: 1 });
       }
     }
+    // Fab-0 mirror: `X.length > 0 ? <computed metric> : 0`. The compute-gate
+    // (COMPUTE_CALL against the body) is what keeps this narrow — without it
+    // the matcher would false-positive on every `? 1 : 0` (boolean-as-int)
+    // and `? count : 0` (count fallback) in the codebase.
+    NON_EMPTY_TERNARY_ZERO.lastIndex = 0;
+    let m;
+    while ((m = NON_EMPTY_TERNARY_ZERO.exec(src)) !== null) {
+      const body = m[2];
+      if (!COMPUTE_CALL.test(body)) continue;
+      const line = src.slice(0, m.index).split("\n").length;
+      // Key uses `:0` as the value marker; distinct from `:1` (unit) and
+      // `:60..100` (percentage) so it can never collide at the same site.
+      found.push({ key: `${rel}:${m[1]}:0`, rel, line, collection: m[1], value: 0 });
+    }
   }
 }
 
@@ -695,13 +742,13 @@ let failed = false;
 if (fresh.length > 0) {
   failed = true;
   console.error(
-    `check-fabricated-scores: ${fresh.length} new site(s) score an EMPTY population as compliant.\n` +
-      "A percentage with no records behind it must be null (\"not yet measured\"), not a high number:\n",
+    `check-fabricated-scores: ${fresh.length} new site(s) fabricate a score from an EMPTY population.\n` +
+      "A percentage/duration/count with no records behind it must be null (\"not yet measured\"), not a placeholder — 0 lies the same way 100 does:\n",
   );
   for (const f of fresh) {
     console.error(`  ✗ ${f.rel}:${f.line} — empty \`${f.collection}\` yields ${f.value}`);
   }
-  console.error("\nUse rate()/rateOf()/meanOf()/weightedMeanOf() from src/lib/metrics/rate.ts. See this file's header.");
+  console.error("\nUse rate()/rateOf()/meanOf()/weightedMeanOf() + meets()/below()/above() from src/lib/metrics/rate.ts. See this file's header.");
 }
 
 if (stale.length > 0) {
