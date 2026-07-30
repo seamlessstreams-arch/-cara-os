@@ -239,8 +239,8 @@ describe("Home Anxiety & Mental Health Screening Intelligence Engine", () => {
       expect(r.wellbeing_checkin_rate).toBe(0);
       expect(r.early_intervention_rate).toBe(0);
       expect(r.child_engagement_rate).toBe(0);
-      expect(r.assessment_improvement_avg).toBe(0);
-      expect(r.intervention_progress_avg).toBe(0);
+      expect(r.assessment_improvement_avg).toBeNull();
+      expect(r.intervention_progress_avg).toBeNull();
     });
   });
 
@@ -1336,7 +1336,7 @@ describe("Home Anxiety & Mental Health Screening Intelligence Engine", () => {
         total_children: 5,
         anxiety_assessment_records: [makeAssessment({ previous_score: null })],
       }));
-      expect(r.assessment_improvement_avg).toBe(0);
+      expect(r.assessment_improvement_avg).toBeNull();
     });
 
     it("calculates (prev - current) / prev * 100 clamped to [-100, 100]", () => {
@@ -1377,7 +1377,7 @@ describe("Home Anxiety & Mental Health Screening Intelligence Engine", () => {
           makeAssessment({ child_id: "c1", previous_score: 0, score: 5 }), // prev is 0 -> returns 0
         ],
       }));
-      expect(r.assessment_improvement_avg).toBe(0);
+      expect(r.assessment_improvement_avg).toBeNull();
     });
   });
 
@@ -1391,7 +1391,7 @@ describe("Home Anxiety & Mental Health Screening Intelligence Engine", () => {
         total_children: 5,
         screening_records: screeningsForChildren(5),
       }));
-      expect(r.intervention_progress_avg).toBe(0);
+      expect(r.intervention_progress_avg).toBeNull();
     });
 
     it("calculates progress towards target", () => {
@@ -1423,6 +1423,10 @@ describe("Home Anxiety & Mental Health Screening Intelligence Engine", () => {
           }),
         ],
       }));
+      // NOT null: 1 intervention exists with a measurable baseline/current, so
+      // interventionProgressValues.length > 0. Negative progress clamps to 0 —
+      // that's a legitimate "measured, no progress" signal. Null is only for
+      // "no records to measure at all".
       expect(r.intervention_progress_avg).toBe(0);
     });
 
@@ -1455,7 +1459,7 @@ describe("Home Anxiety & Mental Health Screening Intelligence Engine", () => {
           }),
         ],
       }));
-      expect(r.intervention_progress_avg).toBe(0);
+      expect(r.intervention_progress_avg).toBeNull();
     });
 
     it("averages multiple interventions correctly", () => {
@@ -2949,7 +2953,7 @@ describe("Home Anxiety & Mental Health Screening Intelligence Engine", () => {
       }));
       // target_score (5) < baseline_score (8) is not > baseline, so filtered out
       // Actually the filter is target_score > baseline_score, so target=5, baseline=8 fails
-      expect(r.intervention_progress_avg).toBe(0);
+      expect(r.intervention_progress_avg).toBeNull();
     });
 
     it("intervention with 0 sessions planned yields 0% session completion", () => {

@@ -14,6 +14,8 @@
 //             earlyInterventionRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types -------------------------------------------------------------
 
 export interface ScreeningRecordInput {
@@ -151,8 +153,10 @@ export interface AnxietyMentalHealthResult {
   wellbeing_checkin_rate: number;
   early_intervention_rate: number;
   child_engagement_rate: number;
-  assessment_improvement_avg: number;
-  intervention_progress_avg: number;
+  // Null on empty — no measurable assessments/interventions ⇒ no improvement
+  // signal. "0" reads as "we tried and it didn't work", null reads as "unmeasured".
+  assessment_improvement_avg: number | null;
+  intervention_progress_avg: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: AnxietyMentalHealthRecommendation[];
@@ -194,8 +198,8 @@ function emptyResult(
     wellbeing_checkin_rate: 0,
     early_intervention_rate: 0,
     child_engagement_rate: 0,
-    assessment_improvement_avg: 0,
-    intervention_progress_avg: 0,
+    assessment_improvement_avg: null,
+    intervention_progress_avg: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -363,21 +367,24 @@ export function computeAnxietyMentalHealthScreening(
     (a) => a.severity === "moderate",
   ).length;
 
-  // Assessment improvement average (score change for those with previous_score)
+  // Assessment improvement average (score change for those with previous_score).
+  // Filter to non-zero previous scores BEFORE mapping — a zero-baseline has no
+  // improvement metric, so including it as "0% improvement" would be a fab-0.
   const assessmentsWithPrevious = anxiety_assessment_records.filter(
-    (a) => a.previous_score !== null,
+    (a) => a.previous_score !== null && (a.previous_score as number) > 0,
   );
   const assessmentImprovementValues = assessmentsWithPrevious.map((a) => {
     const prev = a.previous_score as number;
-    return prev > 0 ? clamp(Math.round(((prev - a.score) / prev) * 100), -100, 100) : 0;
+    return clamp(Math.round(((prev - a.score) / prev) * 100), -100, 100);
   });
-  const assessmentImprovementAvg =
+  // Null on empty — no measurable-improvement assessments ⇒ no average to report.
+  const assessmentImprovementAvg: number | null =
     assessmentImprovementValues.length > 0
       ? Math.round(
           assessmentImprovementValues.reduce((sum, v) => sum + v, 0) /
             assessmentImprovementValues.length,
         )
-      : 0;
+      : null;
 
   // --- CAMHS referrals ---
   const totalReferrals = camhs_referral_records.length;
@@ -400,13 +407,14 @@ export function computeAnxietyMentalHealthScreening(
   const referralDaysToAppt = camhs_referral_records
     .filter((r) => r.days_to_first_appointment !== null && r.days_to_first_appointment! > 0)
     .map((r) => r.days_to_first_appointment as number);
-  const avgDaysToFirstAppt =
+  // Null on empty — no referrals with a first-appointment ⇒ no wait to average.
+  const avgDaysToFirstAppt: number | null =
     referralDaysToAppt.length > 0
       ? Math.round(
           referralDaysToAppt.reduce((sum, d) => sum + d, 0) /
             referralDaysToAppt.length,
         )
-      : 0;
+      : null;
 
   const activeReferrals = camhs_referral_records.filter(
     (r) => r.currently_active,
@@ -473,10 +481,11 @@ export function computeAnxietyMentalHealthScreening(
     (sum, w) => sum + w.mood_rating,
     0,
   );
-  const avgMoodRating =
+  // Null on empty — no check-ins ⇒ no mood rating to average.
+  const avgMoodRating: number | null =
     totalCheckins > 0
       ? Math.round((moodRatingSum / totalCheckins) * 100) / 100
-      : 0;
+      : null;
 
   // --- Early intervention ---
   const totalInterventions = early_intervention_records.length;
@@ -505,13 +514,14 @@ export function computeAnxietyMentalHealthScreening(
       const progress = i.current_score - i.baseline_score;
       return clamp(Math.round((progress / range) * 100), 0, 100);
     });
-  const interventionProgressAvg =
+  // Null on empty — no interventions with a baseline-and-current score ⇒ no progress to average.
+  const interventionProgressAvg: number | null =
     interventionProgressValues.length > 0
       ? Math.round(
           interventionProgressValues.reduce((sum, v) => sum + v, 0) /
             interventionProgressValues.length,
         )
-      : 0;
+      : null;
 
   const childReportedImprovement = early_intervention_records.filter(
     (i) => i.child_reported_improvement,
@@ -771,7 +781,7 @@ export function computeAnxietyMentalHealthScreening(
     );
   }
 
-  if (avgMoodRating >= 7.0 && totalCheckins > 0) {
+  if (meets(avgMoodRating, 7.0) && totalCheckins > 0) {
     strengths.push(
       `Average mood rating of ${avgMoodRating}/10 across wellbeing check-ins -- children generally report positive emotional states, indicating a supportive home environment.`,
     );
@@ -899,7 +909,7 @@ export function computeAnxietyMentalHealthScreening(
     );
   }
 
-  if (avgDaysToFirstAppt > 90 && referralDaysToAppt.length > 0) {
+  if (above(avgDaysToFirstAppt, 90) && referralDaysToAppt.length > 0) {
     concerns.push(
       `Average wait of ${avgDaysToFirstAppt} days to first CAMHS appointment -- extended waits leave children without specialist support during a critical period.`,
     );
@@ -923,7 +933,7 @@ export function computeAnxietyMentalHealthScreening(
     );
   }
 
-  if (avgMoodRating < 4.0 && totalCheckins > 0) {
+  if (below(avgMoodRating, 4.0) && totalCheckins > 0) {
     concerns.push(
       `Average mood rating of ${avgMoodRating}/10 across wellbeing check-ins -- children are consistently reporting low mood, indicating widespread emotional distress that requires immediate therapeutic response.`,
     );
@@ -1006,7 +1016,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (avgMoodRating < 4.0 && totalCheckins > 0) {
+  if (below(avgMoodRating, 4.0) && totalCheckins > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1241,7 +1251,7 @@ export function computeAnxietyMentalHealthScreening(
     });
   }
 
-  if (avgMoodRating < 4.0 && totalCheckins > 0) {
+  if (below(avgMoodRating, 4.0) && totalCheckins > 0) {
     insights.push({
       text: `Average mood rating of ${avgMoodRating}/10 indicates widespread emotional distress across the home. Consistently low mood across the cohort suggests environmental or systemic factors may be contributing to children's poor emotional health, beyond individual clinical needs.`,
       severity: "critical",
@@ -1343,7 +1353,7 @@ export function computeAnxietyMentalHealthScreening(
     }
   }
 
-  if (avgDaysToFirstAppt > 60 && referralDaysToAppt.length > 0) {
+  if (above(avgDaysToFirstAppt, 60) && referralDaysToAppt.length > 0) {
     insights.push({
       text: `Average wait of ${avgDaysToFirstAppt} days to first CAMHS appointment. Extended waiting periods leave children without specialist support and may lead to deterioration. Consider what interim therapeutic support the home can provide while children wait.`,
       severity: "warning",
