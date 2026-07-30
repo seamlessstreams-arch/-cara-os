@@ -11,6 +11,8 @@
 //             enuresisEmotionalWellbeingRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ManagementPlanRecordInput {
@@ -344,10 +346,12 @@ export function computeBedwettingEnuresisSupport(
   const outcomesDocumentedRate = pct(outcomesDocumented, totalManagementPlans);
 
   const progressSum = management_plan_records.reduce((sum, p) => sum + p.progress_rating, 0);
-  const avgProgressRating =
+  // Null on empty — no management plans ⇒ no progress to rate; "0/5" would
+  // read as "children under a plan and making no progress".
+  const avgProgressRating: number | null =
     totalManagementPlans > 0
       ? Math.round((progressSum / totalManagementPlans) * 100) / 100
-      : 0;
+      : null;
 
   // Management plan rate: composite of active, reviewed, child involved, triggers, night routine, staff trained
   const planQualityChecks = [
@@ -453,14 +457,15 @@ export function computeBedwettingEnuresisSupport(
   ).length;
   const dignityIssueResolutionRate = pct(dignityIssuesResolved, dignityIssuesIdentified);
 
-  const avgDignityScore =
+  // Null on empty — no dignity records ⇒ no dignity score to compute.
+  const avgDignityScore: number | null =
     totalDignityRecords > 0
       ? Math.round(
           (dignity_preservation_records.reduce((sum, d) => sum + d.overall_dignity_score, 0) /
             totalDignityRecords) *
             100,
         ) / 100
-      : 0;
+      : null;
 
   const noPeerAwareness = dignity_preservation_records.filter((d) => d.no_peer_awareness_incidents).length;
   const peerAwarenessRate = pct(noPeerAwareness, totalDignityRecords);
@@ -568,10 +573,11 @@ export function computeBedwettingEnuresisSupport(
   const avoidsSleepoverRate = pct(avoidsSleepover, totalEmotionalRecords);
 
   const selfEsteemSum = emotional_wellbeing_records.reduce((sum, e) => sum + e.child_self_esteem_rating, 0);
-  const avgSelfEsteem =
+  // Null on empty — no emotional-wellbeing records ⇒ no self-esteem to average.
+  const avgSelfEsteem: number | null =
     totalEmotionalRecords > 0
       ? Math.round((selfEsteemSum / totalEmotionalRecords) * 100) / 100
-      : 0;
+      : null;
 
   const significantImpact = emotional_wellbeing_records.filter(
     (e) => e.emotional_impact_level === "significant" || e.emotional_impact_level === "severe",
@@ -929,11 +935,13 @@ export function computeBedwettingEnuresisSupport(
     );
   }
 
-  if (avgSelfEsteem < 2.5 && totalEmotionalRecords > 0) {
+  // below()/meets() are null-safe: unmeasured (no emotional-wellbeing records)
+  // never fires a "self-esteem too low" concern without evidence.
+  if (below(avgSelfEsteem, 2.5)) {
     concerns.push(
       `Average self-esteem rating at only ${avgSelfEsteem}/5 — children's self-esteem is significantly impacted by bedwetting, requiring urgent therapeutic support and confidence-building interventions.`,
     );
-  } else if (avgSelfEsteem < 3.0 && avgSelfEsteem >= 2.5 && totalEmotionalRecords > 0) {
+  } else if (below(avgSelfEsteem, 3.0) && meets(avgSelfEsteem, 2.5)) {
     concerns.push(
       `Average self-esteem rating at ${avgSelfEsteem}/5 — children's self-esteem around bedwetting is below acceptable levels and requires targeted intervention.`,
     );
@@ -1524,10 +1532,8 @@ export function computeBedwettingEnuresisSupport(
     });
   }
 
-  if (
-    avgProgressRating >= 4.0 &&
-    totalManagementPlans > 0
-  ) {
+  // meets() is null-safe: no plans ⇒ no "strong progress" insight fires.
+  if (meets(avgProgressRating, 4.0)) {
     insights.push({
       text: `Average progress rating of ${avgProgressRating}/5 — children are making strong progress under their enuresis management plans. The home's approach is evidencing positive outcomes and continuous improvement in managing bedwetting.`,
       severity: "positive",
