@@ -14,6 +14,7 @@ import {
   type InternetSafetyRecordInput,
   type TechnologyLearningRecordInput,
 } from "../home-technology-digital-inclusion-intelligence-engine";
+import { above, below, meets } from "@/lib/metrics/rate";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -178,11 +179,11 @@ describe("insufficient data", () => {
       technology_learning_records: [],
     }));
     expect(r.device_access_rate).toBe(0);
-    expect(r.digital_skills_rate).toBe(0);
+    expect(r.digital_skills_rate).toBeNull();
     expect(r.assistive_technology_rate).toBe(0);
-    expect(r.internet_safety_rate).toBe(0);
-    expect(r.technology_learning_rate).toBe(0);
-    expect(r.child_confidence_rate).toBe(0);
+    expect(r.internet_safety_rate).toBeNull();
+    expect(r.technology_learning_rate).toBeNull();
+    expect(r.child_confidence_rate).toBeNull();
   });
 
   it("returns empty arrays on insufficient_data", () => {
@@ -281,11 +282,11 @@ describe("inadequate floor (all empty, children > 0)", () => {
       technology_learning_records: [],
     }));
     expect(r.device_access_rate).toBe(0);
-    expect(r.digital_skills_rate).toBe(0);
+    expect(r.digital_skills_rate).toBeNull();
     expect(r.assistive_technology_rate).toBe(0);
-    expect(r.internet_safety_rate).toBe(0);
-    expect(r.technology_learning_rate).toBe(0);
-    expect(r.child_confidence_rate).toBe(0);
+    expect(r.internet_safety_rate).toBeNull();
+    expect(r.technology_learning_rate).toBeNull();
+    expect(r.child_confidence_rate).toBeNull();
   });
 
   it("has headline mentioning inadequate", () => {
@@ -539,7 +540,7 @@ describe("pct(0,0) = 0", () => {
       digital_skills_records: [],
       device_access_records: [makeDevice()],
     }));
-    expect(r.digital_skills_rate).toBe(0);
+    expect(r.digital_skills_rate).toBeNull();
   });
 
   it("assistive_technology_rate is 0 when no assistive records", () => {
@@ -555,7 +556,7 @@ describe("pct(0,0) = 0", () => {
       internet_safety_records: [],
       device_access_records: [makeDevice()],
     }));
-    expect(r.internet_safety_rate).toBe(0);
+    expect(r.internet_safety_rate).toBeNull();
   });
 
   it("technology_learning_rate is 0 when no learning records", () => {
@@ -563,7 +564,7 @@ describe("pct(0,0) = 0", () => {
       technology_learning_records: [],
       device_access_records: [makeDevice()],
     }));
-    expect(r.technology_learning_rate).toBe(0);
+    expect(r.technology_learning_rate).toBeNull();
   });
 
   it("child_confidence_rate is 0 when no skills or safety records", () => {
@@ -572,7 +573,7 @@ describe("pct(0,0) = 0", () => {
       internet_safety_records: [],
       device_access_records: [makeDevice()],
     }));
-    expect(r.child_confidence_rate).toBe(0);
+    expect(r.child_confidence_rate).toBeNull();
   });
 });
 
@@ -651,7 +652,7 @@ describe("digital_skills_rate computation", () => {
         makeSkills({ plan_in_place: false, sessions_planned: 0, sessions_completed: 0, progress_evidenced: false }),
       ],
     }));
-    // plan=0%, sessions=pct(0,0)=0, progress=0% => 0
+    // plan=0%, sessions=pct(0,0)=0, progress=0% => 0 (record exists → 0, not null)
     expect(r.digital_skills_rate).toBe(0);
   });
 });
@@ -724,6 +725,7 @@ describe("internet_safety_rate computation", () => {
         makeSafety({ completed: false, child_engaged: false, child_demonstrated_understanding: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.internet_safety_rate).toBe(0);
   });
 });
@@ -755,6 +757,7 @@ describe("technology_learning_rate computation", () => {
         makeLearning({ effective: false, child_supported: false, educational_outcome_documented: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.technology_learning_rate).toBe(0);
   });
 });
@@ -1325,6 +1328,7 @@ describe("penalty: internetSafetyRate < 50", () => {
         makeSafety({ completed: false, child_engaged: false, child_demonstrated_understanding: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.internet_safety_rate).toBe(0);
   });
 
@@ -1333,7 +1337,7 @@ describe("penalty: internetSafetyRate < 50", () => {
       internet_safety_records: [],
       device_access_records: [makeDevice()],
     }));
-    expect(r.internet_safety_rate).toBe(0);
+    expect(r.internet_safety_rate).toBeNull();
   });
 });
 
@@ -1374,6 +1378,7 @@ describe("penalty: technologyLearningRate < 30", () => {
         makeLearning({ effective: false, child_supported: false, educational_outcome_documented: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.technology_learning_rate).toBe(0);
   });
 
@@ -1382,7 +1387,7 @@ describe("penalty: technologyLearningRate < 30", () => {
       technology_learning_records: [],
       device_access_records: [makeDevice()],
     }));
-    expect(r.technology_learning_rate).toBe(0);
+    expect(r.technology_learning_rate).toBeNull();
   });
 
   it("does NOT apply when learningRate >= 30", () => {
@@ -1667,7 +1672,7 @@ describe("strengths", () => {
       ],
     }));
     // 77% => 60-79 range
-    if (r2.digital_skills_rate >= 60 && r2.digital_skills_rate < 80) {
+    if (meets(r2.digital_skills_rate, 60) && below(r2.digital_skills_rate, 80)) {
       const s = r2.strengths.find(s => s.includes("good progress"));
       expect(s).toBeDefined();
     }
@@ -1757,7 +1762,7 @@ describe("strengths", () => {
       })),
     }));
     // (80+80+60)/3 = 73
-    if (r.internet_safety_rate >= 70 && r.internet_safety_rate < 90) {
+    if (meets(r.internet_safety_rate, 70) && below(r.internet_safety_rate, 90)) {
       const s = r.strengths.find(s => s.includes("engaging well"));
       expect(s).toBeDefined();
     }
@@ -1803,7 +1808,7 @@ describe("strengths", () => {
     }));
     const r = computeTechnologyDigitalInclusion(baseInput({ technology_learning_records: records }));
     // (80+70+70)/3 = 73
-    if (r.technology_learning_rate >= 70 && r.technology_learning_rate < 90) {
+    if (meets(r.technology_learning_rate, 70) && below(r.technology_learning_rate, 90)) {
       const s = r.strengths.find(s => s.includes("good use of technology"));
       expect(s).toBeDefined();
     }
@@ -1841,7 +1846,7 @@ describe("strengths", () => {
       internet_safety_records: [makeSafety({ child_confidence_rating: 3 })],
     }));
     // avg = 3/5 = 60%
-    if (r.child_confidence_rate >= 60 && r.child_confidence_rate < 80) {
+    if (meets(r.child_confidence_rate, 60) && below(r.child_confidence_rate, 80)) {
       const s = r.strengths.find(s => s.includes("building confidence"));
       expect(s).toBeDefined();
     }
@@ -1937,7 +1942,7 @@ describe("concerns", () => {
         makeSkills({ plan_in_place: true, sessions_planned: 10, sessions_completed: 5, progress_evidenced: false }),
       ],
     }));
-    if (r.digital_skills_rate >= 50 && r.digital_skills_rate < 60) {
+    if (meets(r.digital_skills_rate, 50) && below(r.digital_skills_rate, 60)) {
       const c = r.concerns.find(c => c.includes("Digital skills rate at") && c.includes("strengthening"));
       expect(c).toBeDefined();
     }
@@ -2055,7 +2060,7 @@ describe("concerns", () => {
     }));
     const r = computeTechnologyDigitalInclusion(baseInput({ internet_safety_records: records }));
     // (60+60+50)/3 = 57 => 50-69
-    if (r.internet_safety_rate >= 50 && r.internet_safety_rate < 70) {
+    if (meets(r.internet_safety_rate, 50) && below(r.internet_safety_rate, 70)) {
       const c = r.concerns.find(c => c.includes("Internet safety rate at") && c.includes("strengthening"));
       expect(c).toBeDefined();
     }
@@ -2104,7 +2109,7 @@ describe("concerns", () => {
     }));
     const r = computeTechnologyDigitalInclusion(baseInput({ technology_learning_records: records }));
     // (40+40+40)/3=40 => 30-69
-    if (r.technology_learning_rate >= 30 && r.technology_learning_rate < 70) {
+    if (meets(r.technology_learning_rate, 30) && below(r.technology_learning_rate, 70)) {
       const c = r.concerns.find(c => c.includes("Technology-supported learning at") && c.includes("improvement"));
       expect(c).toBeDefined();
     }
@@ -2161,7 +2166,7 @@ describe("concerns", () => {
       ],
     }));
     // avg = (2+3+2+3)/4 = 2.5 => 50%
-    if (r.child_confidence_rate >= 50 && r.child_confidence_rate < 60) {
+    if (meets(r.child_confidence_rate, 50) && below(r.child_confidence_rate, 60)) {
       const c = r.concerns.find(c => c.includes("confidence") && c.includes("further support"));
       expect(c).toBeDefined();
     }
@@ -2324,7 +2329,7 @@ describe("recommendations", () => {
     }));
     const r = computeTechnologyDigitalInclusion(baseInput({ internet_safety_records: records }));
     // (60+60+50)/3=57 => 50-69
-    if (r.internet_safety_rate >= 50 && r.internet_safety_rate < 70) {
+    if (meets(r.internet_safety_rate, 50) && below(r.internet_safety_rate, 70)) {
       const rec = r.recommendations.find(r => r.recommendation.includes("Strengthen internet safety provision"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("planned");
@@ -2337,7 +2342,7 @@ describe("recommendations", () => {
         makeSkills({ plan_in_place: true, sessions_planned: 10, sessions_completed: 5, progress_evidenced: false }),
       ],
     }));
-    if (r.digital_skills_rate >= 50 && r.digital_skills_rate < 60) {
+    if (meets(r.digital_skills_rate, 50) && below(r.digital_skills_rate, 60)) {
       const rec = r.recommendations.find(r => r.recommendation.includes("digital skills development rates"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("planned");
@@ -2349,7 +2354,7 @@ describe("recommendations", () => {
       id: `l${i}`, effective: i < 4, child_supported: i < 4, educational_outcome_documented: i < 4,
     }));
     const r = computeTechnologyDigitalInclusion(baseInput({ technology_learning_records: records }));
-    if (r.technology_learning_rate >= 30 && r.technology_learning_rate < 70) {
+    if (meets(r.technology_learning_rate, 30) && below(r.technology_learning_rate, 70)) {
       const rec = r.recommendations.find(r => r.recommendation.includes("creative approaches"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("planned");
@@ -2487,7 +2492,7 @@ describe("insights", () => {
         makeSkills({ plan_in_place: true, sessions_planned: 10, sessions_completed: 3, progress_evidenced: true }),
       ],
     }));
-    if (r2.digital_skills_rate >= 50 && r2.digital_skills_rate < 80) {
+    if (meets(r2.digital_skills_rate, 50) && below(r2.digital_skills_rate, 80)) {
       const ins = r2.insights.find(i => i.severity === "warning" && i.text.includes("Digital skills rate at"));
       expect(ins).toBeDefined();
     }
@@ -2514,7 +2519,7 @@ describe("insights", () => {
       child_demonstrated_understanding: i < 5,
     }));
     const r = computeTechnologyDigitalInclusion(baseInput({ internet_safety_records: records }));
-    if (r.internet_safety_rate >= 50 && r.internet_safety_rate < 70) {
+    if (meets(r.internet_safety_rate, 50) && below(r.internet_safety_rate, 70)) {
       const ins = r.insights.find(i => i.severity === "warning" && i.text.includes("Internet safety rate at"));
       expect(ins).toBeDefined();
     }
@@ -2525,7 +2530,7 @@ describe("insights", () => {
       id: `l${i}`, effective: i < 4, child_supported: i < 4, educational_outcome_documented: i < 4,
     }));
     const r = computeTechnologyDigitalInclusion(baseInput({ technology_learning_records: records }));
-    if (r.technology_learning_rate >= 30 && r.technology_learning_rate < 70) {
+    if (meets(r.technology_learning_rate, 30) && below(r.technology_learning_rate, 70)) {
       const ins = r.insights.find(i => i.severity === "warning" && i.text.includes("Technology-supported learning at"));
       expect(ins).toBeDefined();
     }

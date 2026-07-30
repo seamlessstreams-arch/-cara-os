@@ -13,6 +13,8 @@
 //             technologyLearningRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface DeviceAccessRecordInput {
@@ -137,12 +139,17 @@ export interface TechnologyDigitalInclusionResult {
   digital_inclusion_rating: DigitalInclusionRating;
   digital_inclusion_score: number;
   headline: string;
+  // device_access_rate + assistive_technology_rate use pct() directly (deterministic
+  // 0 on empty denominator) and are unaffected by fab-0. The composite rates below
+  // are null on empty: no records ⇒ no signal. "0% digital skills / 0% safety
+  // engagement / 0% learning effectiveness / 0% child confidence" would read as
+  // "the home actively fails digital inclusion", not "unmeasured". Fab-0 doctrine.
   device_access_rate: number;
-  digital_skills_rate: number;
+  digital_skills_rate: number | null;
   assistive_technology_rate: number;
-  internet_safety_rate: number;
-  technology_learning_rate: number;
-  child_confidence_rate: number;
+  internet_safety_rate: number | null;
+  technology_learning_rate: number | null;
+  child_confidence_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: DigitalInclusionRecommendation[];
@@ -178,11 +185,11 @@ function emptyResult(
     digital_inclusion_score: score,
     headline,
     device_access_rate: 0,
-    digital_skills_rate: 0,
+    digital_skills_rate: null,
     assistive_technology_rate: 0,
-    internet_safety_rate: 0,
-    technology_learning_rate: 0,
-    child_confidence_rate: 0,
+    internet_safety_rate: null,
+    technology_learning_rate: null,
+    child_confidence_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -284,10 +291,10 @@ export function computeTechnologyDigitalInclusion(
   const deviceSatisfactionSum = device_access_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const deviceSatisfactionAvg =
+  const deviceSatisfactionAvg: number | null =
     totalDeviceRecords > 0
       ? Math.round((deviceSatisfactionSum / totalDeviceRecords) * 100) / 100
-      : 0;
+      : null;
 
   const devicesWithIssues = device_access_records.filter(
     (r) => r.issues_reported.length > 0,
@@ -328,10 +335,10 @@ export function computeTechnologyDigitalInclusion(
   ).length;
   const improvementRate = pct(improved, totalSkillsRecords);
 
-  const digitalSkillsRate =
+  const digitalSkillsRate: number | null =
     totalSkillsRecords > 0
       ? Math.round((skillsPlanRate + sessionCompletionRate + progressRate) / 3)
-      : 0;
+      : null;
 
   // --- Assistive technology ---
   const totalAssistiveRecords = assistive_technology_records.length;
@@ -361,10 +368,10 @@ export function computeTechnologyDigitalInclusion(
   const effectivenessSum = assistive_technology_records
     .filter((r) => r.need_identified && r.need_type !== "none")
     .reduce((sum, r) => sum + r.effectiveness_rating, 0);
-  const effectivenessAvg =
+  const effectivenessAvg: number | null =
     needsIdentified > 0
       ? Math.round((effectivenessSum / needsIdentified) * 100) / 100
-      : 0;
+      : null;
 
   const assistiveBarriersTotal = assistive_technology_records.filter(
     (r) => r.barriers_encountered.length > 0,
@@ -401,10 +408,10 @@ export function computeTechnologyDigitalInclusion(
     internet_safety_records.map((r) => r.topic),
   ).size;
 
-  const internetSafetyRate =
+  const internetSafetyRate: number | null =
     totalSafetyRecords > 0
       ? Math.round((safetyCompletionRate + safetyEngagementRate + understandingRate) / 3)
-      : 0;
+      : null;
 
   // --- Technology-supported learning ---
   const totalLearningRecords = technology_learning_records.length;
@@ -439,15 +446,15 @@ export function computeTechnologyDigitalInclusion(
   const learningSatisfactionSum = technology_learning_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const learningSatisfactionAvg =
+  const learningSatisfactionAvg: number | null =
     totalLearningRecords > 0
       ? Math.round((learningSatisfactionSum / totalLearningRecords) * 100) / 100
-      : 0;
+      : null;
 
-  const technologyLearningRate =
+  const technologyLearningRate: number | null =
     totalLearningRecords > 0
       ? Math.round((learningEffectivenessRate + learningSupportRate + outcomeDocumentationRate) / 3)
-      : 0;
+      : null;
 
   // --- Child confidence composite ---
   const skillsConfidenceSum = digital_skills_records.reduce(
@@ -458,15 +465,15 @@ export function computeTechnologyDigitalInclusion(
   );
   const confidenceDenominator = totalSkillsRecords + totalSafetyRecords;
   const confidenceNumerator = skillsConfidenceSum + safetyConfidenceSum;
-  const childConfidenceAvg =
+  const childConfidenceAvg: number | null =
     confidenceDenominator > 0
       ? Math.round((confidenceNumerator / confidenceDenominator) * 100) / 100
-      : 0;
+      : null;
   // Convert 1-5 scale to percentage: (avg/5)*100
-  const childConfidenceRate =
+  const childConfidenceRate: number | null =
     confidenceDenominator > 0
-      ? Math.round((childConfidenceAvg / 5) * 100)
-      : 0;
+      ? Math.round((childConfidenceAvg! / 5) * 100)
+      : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -477,24 +484,24 @@ export function computeTechnologyDigitalInclusion(
   else if (deviceAccessRate >= 70) score += 2;
 
   // --- Bonus 2: digitalSkillsRate (>=80: +3, >=60: +1) ---
-  if (digitalSkillsRate >= 80) score += 3;
-  else if (digitalSkillsRate >= 60) score += 1;
+  if (meets(digitalSkillsRate, 80)) score += 3;
+  else if (meets(digitalSkillsRate, 60)) score += 1;
 
   // --- Bonus 3: assistiveTechnologyRate (>=100: +4, >=80: +2) ---
   if (assistiveTechnologyRate >= 100) score += 4;
   else if (assistiveTechnologyRate >= 80) score += 2;
 
   // --- Bonus 4: internetSafetyRate (>=90: +3, >=70: +1) ---
-  if (internetSafetyRate >= 90) score += 3;
-  else if (internetSafetyRate >= 70) score += 1;
+  if (meets(internetSafetyRate, 90)) score += 3;
+  else if (meets(internetSafetyRate, 70)) score += 1;
 
   // --- Bonus 5: technologyLearningRate (>=90: +3, >=70: +1) ---
-  if (technologyLearningRate >= 90) score += 3;
-  else if (technologyLearningRate >= 70) score += 1;
+  if (meets(technologyLearningRate, 90)) score += 3;
+  else if (meets(technologyLearningRate, 70)) score += 1;
 
   // --- Bonus 6: childConfidenceRate (>=80: +3, >=60: +1) ---
-  if (childConfidenceRate >= 80) score += 3;
-  else if (childConfidenceRate >= 60) score += 1;
+  if (meets(childConfidenceRate, 80)) score += 3;
+  else if (meets(childConfidenceRate, 60)) score += 1;
 
   // --- Bonus 7: filterRate (>=95: +3, >=80: +1) ---
   if (filterRate >= 95) score += 3;
@@ -513,14 +520,14 @@ export function computeTechnologyDigitalInclusion(
   // deviceAccessRate < 50 -> -5
   if (deviceAccessRate < 50 && totalDeviceRecords > 0) score -= 5;
 
-  // internetSafetyRate < 50 -> -5
-  if (internetSafetyRate < 50 && totalSafetyRecords > 0) score -= 5;
+  // below(internetSafetyRate, 50) -> -5
+  if (below(internetSafetyRate, 50) && totalSafetyRecords > 0) score -= 5;
 
   // assistiveTechnologyRate < 50 -> -4
   if (assistiveTechnologyRate < 50 && needsIdentified > 0) score -= 4;
 
-  // technologyLearningRate < 30 -> -4
-  if (technologyLearningRate < 30 && totalLearningRecords > 0) score -= 4;
+  // below(technologyLearningRate, 30) -> -4
+  if (below(technologyLearningRate, 30) && totalLearningRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -562,7 +569,7 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (deviceSatisfactionAvg >= 4.0 && totalDeviceRecords > 0) {
+  if (meets(deviceSatisfactionAvg, 4.0) && totalDeviceRecords > 0) {
     strengths.push(
       `Children's satisfaction with device access averages ${deviceSatisfactionAvg}/5 -- children feel their technology needs are well met.`,
     );
@@ -574,11 +581,11 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (digitalSkillsRate >= 80 && totalSkillsRecords > 0) {
+  if (meets(digitalSkillsRate, 80) && totalSkillsRecords > 0) {
     strengths.push(
       `Digital skills development rate at ${digitalSkillsRate}% -- plans are in place, sessions are completed, and progress is evidenced.`,
     );
-  } else if (digitalSkillsRate >= 60 && totalSkillsRecords > 0) {
+  } else if (meets(digitalSkillsRate, 60) && totalSkillsRecords > 0) {
     strengths.push(
       `Digital skills development rate at ${digitalSkillsRate}% -- good progress in building children's digital competence.`,
     );
@@ -628,17 +635,17 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (effectivenessAvg >= 4.0 && needsIdentified > 0) {
+  if (meets(effectivenessAvg, 4.0) && needsIdentified > 0) {
     strengths.push(
       `Assistive technology effectiveness averages ${effectivenessAvg}/5 -- the technology provided is genuinely meeting children's needs.`,
     );
   }
 
-  if (internetSafetyRate >= 90 && totalSafetyRecords > 0) {
+  if (meets(internetSafetyRate, 90) && totalSafetyRecords > 0) {
     strengths.push(
       `${internetSafetyRate}% internet safety rate -- children consistently complete, engage with, and demonstrate understanding of online safety education.`,
     );
-  } else if (internetSafetyRate >= 70 && totalSafetyRecords > 0) {
+  } else if (meets(internetSafetyRate, 70) && totalSafetyRecords > 0) {
     strengths.push(
       `${internetSafetyRate}% internet safety rate -- most children are engaging well with online safety education.`,
     );
@@ -662,11 +669,11 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (technologyLearningRate >= 90 && totalLearningRecords > 0) {
+  if (meets(technologyLearningRate, 90) && totalLearningRecords > 0) {
     strengths.push(
       `Technology-supported learning rate at ${technologyLearningRate}% -- technology is effectively enhancing children's educational outcomes.`,
     );
-  } else if (technologyLearningRate >= 70 && totalLearningRecords > 0) {
+  } else if (meets(technologyLearningRate, 70) && totalLearningRecords > 0) {
     strengths.push(
       `Technology-supported learning rate at ${technologyLearningRate}% -- good use of technology to support children's education.`,
     );
@@ -684,17 +691,17 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (learningSatisfactionAvg >= 4.0 && totalLearningRecords > 0) {
+  if (meets(learningSatisfactionAvg, 4.0) && totalLearningRecords > 0) {
     strengths.push(
       `Children's satisfaction with technology-supported learning averages ${learningSatisfactionAvg}/5 -- children value the role technology plays in their education.`,
     );
   }
 
-  if (childConfidenceRate >= 80 && confidenceDenominator > 0) {
+  if (meets(childConfidenceRate, 80) && confidenceDenominator > 0) {
     strengths.push(
       `Child digital confidence rate at ${childConfidenceRate}% -- children feel confident navigating the digital world safely and skilfully.`,
     );
-  } else if (childConfidenceRate >= 60 && confidenceDenominator > 0) {
+  } else if (meets(childConfidenceRate, 60) && confidenceDenominator > 0) {
     strengths.push(
       `Child digital confidence rate at ${childConfidenceRate}% -- children are building confidence in their digital skills and online safety knowledge.`,
     );
@@ -732,7 +739,7 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (deviceSatisfactionAvg < 3.0 && totalDeviceRecords > 0) {
+  if (below(deviceSatisfactionAvg, 3.0) && totalDeviceRecords > 0) {
     concerns.push(
       `Children's satisfaction with device access averages only ${deviceSatisfactionAvg}/5 -- children feel their technology needs are not being met.`,
     );
@@ -744,11 +751,11 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (digitalSkillsRate < 50 && totalSkillsRecords > 0) {
+  if (below(digitalSkillsRate, 50) && totalSkillsRecords > 0) {
     concerns.push(
       `Digital skills development rate at only ${digitalSkillsRate}% -- plans, sessions, and progress evidence are not adequately supporting children's digital competence.`,
     );
-  } else if (digitalSkillsRate < 60 && digitalSkillsRate >= 50 && totalSkillsRecords > 0) {
+  } else if (below(digitalSkillsRate, 60) && meets(digitalSkillsRate, 50) && totalSkillsRecords > 0) {
     concerns.push(
       `Digital skills rate at ${digitalSkillsRate}% -- digital skills development planning and delivery need strengthening.`,
     );
@@ -800,11 +807,11 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (internetSafetyRate < 50 && totalSafetyRecords > 0) {
+  if (below(internetSafetyRate, 50) && totalSafetyRecords > 0) {
     concerns.push(
       `Internet safety rate at only ${internetSafetyRate}% -- children are not consistently completing, engaging with, or demonstrating understanding of online safety education. This is a safeguarding concern.`,
     );
-  } else if (internetSafetyRate < 70 && internetSafetyRate >= 50 && totalSafetyRecords > 0) {
+  } else if (below(internetSafetyRate, 70) && meets(internetSafetyRate, 50) && totalSafetyRecords > 0) {
     concerns.push(
       `Internet safety rate at ${internetSafetyRate}% -- online safety education needs strengthening to ensure all children develop robust online safety awareness.`,
     );
@@ -822,11 +829,11 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (technologyLearningRate < 30 && totalLearningRecords > 0) {
+  if (below(technologyLearningRate, 30) && totalLearningRecords > 0) {
     concerns.push(
       `Technology-supported learning rate at only ${technologyLearningRate}% -- technology is not effectively supporting children's education.`,
     );
-  } else if (technologyLearningRate < 70 && technologyLearningRate >= 30 && totalLearningRecords > 0) {
+  } else if (below(technologyLearningRate, 70) && meets(technologyLearningRate, 30) && totalLearningRecords > 0) {
     concerns.push(
       `Technology-supported learning at ${technologyLearningRate}% -- the use of technology to enhance children's education needs improvement.`,
     );
@@ -844,17 +851,17 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (learningSatisfactionAvg < 3.0 && totalLearningRecords > 0) {
+  if (below(learningSatisfactionAvg, 3.0) && totalLearningRecords > 0) {
     concerns.push(
       `Children's satisfaction with technology-supported learning averages only ${learningSatisfactionAvg}/5 -- children are not experiencing technology as a positive support for their education.`,
     );
   }
 
-  if (childConfidenceRate < 50 && confidenceDenominator > 0) {
+  if (below(childConfidenceRate, 50) && confidenceDenominator > 0) {
     concerns.push(
       `Child digital confidence rate at only ${childConfidenceRate}% -- children lack confidence in their digital skills and online safety knowledge.`,
     );
-  } else if (childConfidenceRate < 60 && childConfidenceRate >= 50 && confidenceDenominator > 0) {
+  } else if (below(childConfidenceRate, 60) && meets(childConfidenceRate, 50) && confidenceDenominator > 0) {
     concerns.push(
       `Child digital confidence rate at ${childConfidenceRate}% -- children's confidence in their digital abilities needs further support.`,
     );
@@ -893,7 +900,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (internetSafetyRate < 50 && totalSafetyRecords > 0) {
+  if (below(internetSafetyRate, 50) && totalSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -913,7 +920,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (technologyLearningRate < 30 && totalLearningRecords > 0) {
+  if (below(technologyLearningRate, 30) && totalLearningRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -933,7 +940,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (childConfidenceRate < 50 && confidenceDenominator > 0) {
+  if (below(childConfidenceRate, 50) && confidenceDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1013,7 +1020,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (internetSafetyRate >= 50 && internetSafetyRate < 70 && totalSafetyRecords > 0) {
+  if (meets(internetSafetyRate, 50) && below(internetSafetyRate, 70) && totalSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1023,7 +1030,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (digitalSkillsRate >= 50 && digitalSkillsRate < 60 && totalSkillsRecords > 0) {
+  if (meets(digitalSkillsRate, 50) && below(digitalSkillsRate, 60) && totalSkillsRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1033,7 +1040,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (technologyLearningRate >= 30 && technologyLearningRate < 70 && totalLearningRecords > 0) {
+  if (meets(technologyLearningRate, 30) && below(technologyLearningRate, 70) && totalLearningRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1086,7 +1093,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (internetSafetyRate < 50 && totalSafetyRecords > 0) {
+  if (below(internetSafetyRate, 50) && totalSafetyRecords > 0) {
     insights.push({
       text: `Internet safety rate at only ${internetSafetyRate}%. Children are not adequately equipped to navigate the online world safely. Ofsted considers robust online safety education a fundamental safeguarding responsibility -- this represents a significant gap in the home's duty of care under Reg 5.`,
       severity: "critical",
@@ -1100,7 +1107,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (technologyLearningRate < 30 && totalLearningRecords > 0) {
+  if (below(technologyLearningRate, 30) && totalLearningRecords > 0) {
     insights.push({
       text: `Technology-supported learning rate at only ${technologyLearningRate}%. Technology is failing to enhance children's education -- without effective digital learning support, children miss out on the educational benefits of technology that their peers take for granted. This undermines Reg 8 compliance.`,
       severity: "critical",
@@ -1130,7 +1137,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (digitalSkillsRate >= 50 && digitalSkillsRate < 80 && totalSkillsRecords > 0) {
+  if (meets(digitalSkillsRate, 50) && below(digitalSkillsRate, 80) && totalSkillsRecords > 0) {
     insights.push({
       text: `Digital skills rate at ${digitalSkillsRate}% -- plans and sessions are partially in place but not yet consistently driving digital competence development for all children.`,
       severity: "warning",
@@ -1144,21 +1151,21 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (internetSafetyRate >= 50 && internetSafetyRate < 70 && totalSafetyRecords > 0) {
+  if (meets(internetSafetyRate, 50) && below(internetSafetyRate, 70) && totalSafetyRecords > 0) {
     insights.push({
       text: `Internet safety rate at ${internetSafetyRate}% -- some children are not consistently engaging with or demonstrating understanding of online safety concepts. The home should review delivery methods to improve impact.`,
       severity: "warning",
     });
   }
 
-  if (technologyLearningRate >= 30 && technologyLearningRate < 70 && totalLearningRecords > 0) {
+  if (meets(technologyLearningRate, 30) && below(technologyLearningRate, 70) && totalLearningRecords > 0) {
     insights.push({
       text: `Technology-supported learning at ${technologyLearningRate}% -- technology is only partially supporting children's education. Consider how digital tools can be better integrated into homework support, revision, and independent learning.`,
       severity: "warning",
     });
   }
 
-  if (childConfidenceRate >= 50 && childConfidenceRate < 80 && confidenceDenominator > 0) {
+  if (meets(childConfidenceRate, 50) && below(childConfidenceRate, 80) && confidenceDenominator > 0) {
     insights.push({
       text: `Child digital confidence at ${childConfidenceRate}% -- while some confidence is developing, children need more support to feel fully capable and safe navigating the digital world.`,
       severity: "warning",
@@ -1213,35 +1220,35 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (internetSafetyRate >= 90 && understandingRate >= 90 && totalSafetyRecords > 0) {
+  if (meets(internetSafetyRate, 90) && understandingRate >= 90 && totalSafetyRecords > 0) {
     insights.push({
       text: `${internetSafetyRate}% internet safety rate with ${understandingRate}% demonstrated understanding -- children are not only receiving online safety education but genuinely internalising it. This demonstrates the home's commitment to empowering children to keep themselves safe online.`,
       severity: "positive",
     });
   }
 
-  if (digitalSkillsRate >= 80 && improvementRate >= 80 && totalSkillsRecords > 0) {
+  if (meets(digitalSkillsRate, 80) && improvementRate >= 80 && totalSkillsRecords > 0) {
     insights.push({
       text: `Digital skills development at ${digitalSkillsRate}% with ${improvementRate}% showing skill improvement -- children are making genuine, measurable progress in their digital competence. This evidences the home's investment in preparing children for a digital world.`,
       severity: "positive",
     });
   }
 
-  if (assistiveTechnologyRate >= 90 && effectivenessAvg >= 4.0 && needsIdentified > 0) {
+  if (assistiveTechnologyRate >= 90 && meets(effectivenessAvg, 4.0) && needsIdentified > 0) {
     insights.push({
       text: `${assistiveTechnologyRate}% assistive technology provision with effectiveness averaging ${effectivenessAvg}/5 -- children with additional needs have the technology they require and it is working well. This is exemplary inclusive practice.`,
       severity: "positive",
     });
   }
 
-  if (childConfidenceRate >= 80 && confidenceDenominator > 0) {
+  if (meets(childConfidenceRate, 80) && confidenceDenominator > 0) {
     insights.push({
       text: `Child digital confidence at ${childConfidenceRate}% -- children feel confident, capable, and safe in the digital world. This level of confidence reflects the home's investment in both skills development and online safety education.`,
       severity: "positive",
     });
   }
 
-  if (technologyLearningRate >= 90 && learningSatisfactionAvg >= 4.0 && totalLearningRecords > 0) {
+  if (meets(technologyLearningRate, 90) && meets(learningSatisfactionAvg, 4.0) && totalLearningRecords > 0) {
     insights.push({
       text: `Technology-supported learning at ${technologyLearningRate}% with child satisfaction averaging ${learningSatisfactionAvg}/5 -- technology is genuinely enhancing children's educational experience and outcomes. Ofsted will recognise this as evidence of how the home uses all available resources to support children's education.`,
       severity: "positive",
