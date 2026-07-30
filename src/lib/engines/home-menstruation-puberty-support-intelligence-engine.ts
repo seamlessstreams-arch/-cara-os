@@ -11,6 +11,8 @@
 //             bodyConfidenceRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface PubertyEducationRecordInput {
@@ -193,12 +195,16 @@ export interface MenstruationPubertyResult {
   puberty_rating: MenstruationPubertyRating;
   puberty_score: number;
   headline: string;
-  puberty_education_rate: number;
-  menstruation_support_rate: number;
-  product_availability_rate: number;
-  dignity_care_rate: number;
-  body_confidence_rate: number;
-  child_comfort_rate: number;
+  // Null on empty across every composite rate — no records ⇒ no signal.
+  // "0% puberty education / 0% menstruation support / 0% dignity care" would
+  // read as a home actively failing safeguarding around growing bodies, not
+  // "unmeasured". Fab-0 doctrine.
+  puberty_education_rate: number | null;
+  menstruation_support_rate: number | null;
+  product_availability_rate: number | null;
+  dignity_care_rate: number | null;
+  body_confidence_rate: number | null;
+  child_comfort_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: MenstruationPubertyRecommendation[];
@@ -233,12 +239,12 @@ function emptyResult(
     puberty_rating: rating,
     puberty_score: score,
     headline,
-    puberty_education_rate: 0,
-    menstruation_support_rate: 0,
-    product_availability_rate: 0,
-    dignity_care_rate: 0,
-    body_confidence_rate: 0,
-    child_comfort_rate: 0,
+    puberty_education_rate: null,
+    menstruation_support_rate: null,
+    product_availability_rate: null,
+    dignity_care_rate: null,
+    body_confidence_rate: null,
+    child_comfort_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -337,10 +343,10 @@ export function computeMenstruationPubertySupport(
   const educationSatisfactionSum = puberty_education_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const educationSatisfactionAvg =
+  const educationSatisfactionAvg: number | null =
     totalEducationRecords > 0
       ? Math.round((educationSatisfactionSum / totalEducationRecords) * 100) / 100
-      : 0;
+      : null;
 
   const culturalSensitivity = puberty_education_records.filter(
     (r) => r.cultural_sensitivity_considered,
@@ -355,10 +361,10 @@ export function computeMenstruationPubertySupport(
   ).size;
 
   // Puberty education composite rate
-  const pubertyEducationRate =
+  const pubertyEducationRate: number | null =
     totalEducationRecords > 0
       ? Math.round((ageAppropriateRate + engagementRate + understandingRate) / 3)
-      : 0;
+      : null;
 
   // --- Menstruation support provision ---
   const totalMenstruationRecords = menstruation_support_records.length;
@@ -392,10 +398,10 @@ export function computeMenstruationPubertySupport(
   const menstruationComfortSum = menstruation_support_records.reduce(
     (sum, r) => sum + r.child_comfort_level, 0,
   );
-  const menstruationComfortAvg =
+  const menstruationComfortAvg: number | null =
     totalMenstruationRecords > 0
       ? Math.round((menstruationComfortSum / totalMenstruationRecords) * 100) / 100
-      : 0;
+      : null;
 
   const schoolAbsenceDueToPeriod = menstruation_support_records.filter(
     (r) => r.school_absence_due_to_period,
@@ -415,10 +421,10 @@ export function computeMenstruationPubertySupport(
   ).size;
 
   // Menstruation support composite rate
-  const menstruationSupportRate =
+  const menstruationSupportRate: number | null =
     totalMenstruationRecords > 0
       ? Math.round((supportProvidedRate + staffResponsiveRate + privacyRate) / 3)
-      : 0;
+      : null;
 
   // --- Product availability ---
   const totalProductRecords = product_availability_records.length;
@@ -448,10 +454,10 @@ export function computeMenstruationPubertySupport(
   const budgetAllocatedRate = pct(budgetAllocated, totalProductRecords);
 
   // Product availability composite rate
-  const productAvailabilityRate =
+  const productAvailabilityRate: number | null =
     totalProductRecords > 0
       ? Math.round((productAvailableRate + accessibleLocationRate + discreetAccessRate) / 3)
-      : 0;
+      : null;
 
   // --- Dignity in puberty care ---
   const totalDignityRecords = dignity_care_records.length;
@@ -481,10 +487,10 @@ export function computeMenstruationPubertySupport(
   const dignitySatisfactionSum = dignity_care_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const dignitySatisfactionAvg =
+  const dignitySatisfactionAvg: number | null =
     totalDignityRecords > 0
       ? Math.round((dignitySatisfactionSum / totalDignityRecords) * 100) / 100
-      : 0;
+      : null;
 
   const dignityConcernsRaised = dignity_care_records.filter(
     (r) => r.dignity_concern_raised,
@@ -498,10 +504,10 @@ export function computeMenstruationPubertySupport(
   const culturalNeedsMetRate = pct(culturalNeedsMet, totalDignityRecords);
 
   // Dignity care composite rate
-  const dignityCareRate =
+  const dignityCareRate: number | null =
     totalDignityRecords > 0
       ? Math.round((dignityPrivacyRate + preferencesFollowedRate + comfortableRate) / 3)
-      : 0;
+      : null;
 
   // --- Body confidence building ---
   const totalBodyConfidenceRecords = body_confidence_records.length;
@@ -524,10 +530,10 @@ export function computeMenstruationPubertySupport(
   const bcSelfAssessmentSum = body_confidence_records.reduce(
     (sum, r) => sum + r.child_self_assessment, 0,
   );
-  const bcSelfAssessmentAvg =
+  const bcSelfAssessmentAvg: number | null =
     totalBodyConfidenceRecords > 0
       ? Math.round((bcSelfAssessmentSum / totalBodyConfidenceRecords) * 100) / 100
-      : 0;
+      : null;
 
   const bcConcernsIdentified = body_confidence_records.filter(
     (r) => r.concerns_identified,
@@ -546,54 +552,55 @@ export function computeMenstruationPubertySupport(
   ).size;
 
   // Body confidence composite rate
-  const bodyConfidenceRate =
+  const bodyConfidenceRate: number | null =
     totalBodyConfidenceRecords > 0
       ? Math.round((bcAgeAppropriateRate + bcEngagementRate + positiveOutcomeRate) / 3)
-      : 0;
+      : null;
 
   // --- Child comfort composite ---
   // Blends menstruation comfort, dignity comfort, and education satisfaction
   const comfortNumerator =
-    (totalMenstruationRecords > 0 ? menstruationComfortAvg : 0) +
-    (totalDignityRecords > 0 ? dignitySatisfactionAvg : 0) +
-    (totalEducationRecords > 0 ? educationSatisfactionAvg : 0);
+    (totalMenstruationRecords > 0 ? menstruationComfortAvg! : 0) +
+    (totalDignityRecords > 0 ? dignitySatisfactionAvg! : 0) +
+    (totalEducationRecords > 0 ? educationSatisfactionAvg! : 0);
   const comfortDenominator =
     (totalMenstruationRecords > 0 ? 1 : 0) +
     (totalDignityRecords > 0 ? 1 : 0) +
     (totalEducationRecords > 0 ? 1 : 0);
-  const avgComfortScore =
+  const avgComfortScore: number | null =
     comfortDenominator > 0
       ? Math.round((comfortNumerator / comfortDenominator) * 100) / 100
-      : 0;
-  const childComfortRate = comfortDenominator > 0 ? Math.round((avgComfortScore / 5) * 100) : 0;
+      : null;
+  const childComfortRate: number | null = comfortDenominator > 0 ? Math.round((avgComfortScore! / 5) * 100)
+      : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: pubertyEducationRate (>=90: +4, >=70: +2) ---
-  if (pubertyEducationRate >= 90) score += 4;
-  else if (pubertyEducationRate >= 70) score += 2;
+  if (meets(pubertyEducationRate, 90)) score += 4;
+  else if (meets(pubertyEducationRate, 70)) score += 2;
 
   // --- Bonus 2: menstruationSupportRate (>=90: +4, >=70: +2) ---
-  if (menstruationSupportRate >= 90) score += 4;
-  else if (menstruationSupportRate >= 70) score += 2;
+  if (meets(menstruationSupportRate, 90)) score += 4;
+  else if (meets(menstruationSupportRate, 70)) score += 2;
 
   // --- Bonus 3: productAvailabilityRate (>=95: +4, >=80: +2) ---
-  if (productAvailabilityRate >= 95) score += 4;
-  else if (productAvailabilityRate >= 80) score += 2;
+  if (meets(productAvailabilityRate, 95)) score += 4;
+  else if (meets(productAvailabilityRate, 80)) score += 2;
 
   // --- Bonus 4: dignityCareRate (>=90: +4, >=70: +2) ---
-  if (dignityCareRate >= 90) score += 4;
-  else if (dignityCareRate >= 70) score += 2;
+  if (meets(dignityCareRate, 90)) score += 4;
+  else if (meets(dignityCareRate, 70)) score += 2;
 
   // --- Bonus 5: bodyConfidenceRate (>=80: +3, >=60: +1) ---
-  if (bodyConfidenceRate >= 80) score += 3;
-  else if (bodyConfidenceRate >= 60) score += 1;
+  if (meets(bodyConfidenceRate, 80)) score += 3;
+  else if (meets(bodyConfidenceRate, 60)) score += 1;
 
   // --- Bonus 6: childComfortRate (>=80: +3, >=60: +1) ---
-  if (childComfortRate >= 80) score += 3;
-  else if (childComfortRate >= 60) score += 1;
+  if (meets(childComfortRate, 80)) score += 3;
+  else if (meets(childComfortRate, 60)) score += 1;
 
   // --- Bonus 7: staffConfidenceRate (>=90: +3, >=70: +1) ---
   if (staffConfidenceRate >= 90) score += 3;
@@ -613,17 +620,17 @@ export function computeMenstruationPubertySupport(
 
   // -- Penalties (4 with guards) -------------------------------------------
 
-  // pubertyEducationRate < 50 -> -5
-  if (pubertyEducationRate < 50 && totalEducationRecords > 0) score -= 5;
+  // below(pubertyEducationRate, 50) -> -5
+  if (below(pubertyEducationRate, 50) && totalEducationRecords > 0) score -= 5;
 
-  // menstruationSupportRate < 50 -> -5
-  if (menstruationSupportRate < 50 && totalMenstruationRecords > 0) score -= 5;
+  // below(menstruationSupportRate, 50) -> -5
+  if (below(menstruationSupportRate, 50) && totalMenstruationRecords > 0) score -= 5;
 
-  // productAvailabilityRate < 50 -> -5
-  if (productAvailabilityRate < 50 && totalProductRecords > 0) score -= 5;
+  // below(productAvailabilityRate, 50) -> -5
+  if (below(productAvailabilityRate, 50) && totalProductRecords > 0) score -= 5;
 
-  // dignityCareRate < 50 -> -4
-  if (dignityCareRate < 50 && totalDignityRecords > 0) score -= 4;
+  // below(dignityCareRate, 50) -> -4
+  if (below(dignityCareRate, 50) && totalDignityRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -633,11 +640,11 @@ export function computeMenstruationPubertySupport(
 
   const strengths: string[] = [];
 
-  if (pubertyEducationRate >= 90 && totalEducationRecords > 0) {
+  if (meets(pubertyEducationRate, 90) && totalEducationRecords > 0) {
     strengths.push(
       `Puberty education rate at ${pubertyEducationRate}% -- the home delivers outstanding age-appropriate puberty education with strong child engagement and demonstrated understanding.`,
     );
-  } else if (pubertyEducationRate >= 70 && totalEducationRecords > 0) {
+  } else if (meets(pubertyEducationRate, 70) && totalEducationRecords > 0) {
     strengths.push(
       `Puberty education rate at ${pubertyEducationRate}% -- good delivery of age-appropriate puberty education with children generally engaging well.`,
     );
@@ -655,7 +662,7 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (educationSatisfactionAvg >= 4.0 && totalEducationRecords > 0) {
+  if (meets(educationSatisfactionAvg, 4.0) && totalEducationRecords > 0) {
     strengths.push(
       `Children's satisfaction with puberty education averages ${educationSatisfactionAvg}/5 -- children feel well supported and informed about puberty-related changes.`,
     );
@@ -673,11 +680,11 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (menstruationSupportRate >= 90 && totalMenstruationRecords > 0) {
+  if (meets(menstruationSupportRate, 90) && totalMenstruationRecords > 0) {
     strengths.push(
       `Menstruation support rate at ${menstruationSupportRate}% -- the home provides outstanding, responsive menstruation support with strong privacy practices.`,
     );
-  } else if (menstruationSupportRate >= 70 && totalMenstruationRecords > 0) {
+  } else if (meets(menstruationSupportRate, 70) && totalMenstruationRecords > 0) {
     strengths.push(
       `Menstruation support rate at ${menstruationSupportRate}% -- good provision of menstruation support with appropriate staff responsiveness and privacy.`,
     );
@@ -713,17 +720,17 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (menstruationComfortAvg >= 4.0 && totalMenstruationRecords > 0) {
+  if (meets(menstruationComfortAvg, 4.0) && totalMenstruationRecords > 0) {
     strengths.push(
       `Children's comfort level with menstruation support averages ${menstruationComfortAvg}/5 -- children feel at ease seeking and receiving menstruation support.`,
     );
   }
 
-  if (productAvailabilityRate >= 95 && totalProductRecords > 0) {
+  if (meets(productAvailabilityRate, 95) && totalProductRecords > 0) {
     strengths.push(
       `Product availability rate at ${productAvailabilityRate}% -- menstruation products are consistently available, accessible, and discreetly located.`,
     );
-  } else if (productAvailabilityRate >= 80 && totalProductRecords > 0) {
+  } else if (meets(productAvailabilityRate, 80) && totalProductRecords > 0) {
     strengths.push(
       `Product availability rate at ${productAvailabilityRate}% -- good availability and access to menstruation products throughout the home.`,
     );
@@ -753,11 +760,11 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (dignityCareRate >= 90 && totalDignityRecords > 0) {
+  if (meets(dignityCareRate, 90) && totalDignityRecords > 0) {
     strengths.push(
       `Dignity care rate at ${dignityCareRate}% -- outstanding protection of children's privacy, preferences, and comfort during puberty-related care.`,
     );
-  } else if (dignityCareRate >= 70 && totalDignityRecords > 0) {
+  } else if (meets(dignityCareRate, 70) && totalDignityRecords > 0) {
     strengths.push(
       `Dignity care rate at ${dignityCareRate}% -- good practice in protecting children's dignity during puberty-related care interactions.`,
     );
@@ -775,7 +782,7 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (dignitySatisfactionAvg >= 4.0 && totalDignityRecords > 0) {
+  if (meets(dignitySatisfactionAvg, 4.0) && totalDignityRecords > 0) {
     strengths.push(
       `Children's satisfaction with dignity care averages ${dignitySatisfactionAvg}/5 -- children feel their privacy and dignity are respected.`,
     );
@@ -787,11 +794,11 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (bodyConfidenceRate >= 80 && totalBodyConfidenceRecords > 0) {
+  if (meets(bodyConfidenceRate, 80) && totalBodyConfidenceRecords > 0) {
     strengths.push(
       `Body confidence rate at ${bodyConfidenceRate}% -- the home delivers effective, age-appropriate body confidence activities with strong child engagement and positive outcomes.`,
     );
-  } else if (bodyConfidenceRate >= 60 && totalBodyConfidenceRecords > 0) {
+  } else if (meets(bodyConfidenceRate, 60) && totalBodyConfidenceRecords > 0) {
     strengths.push(
       `Body confidence rate at ${bodyConfidenceRate}% -- good progress in body confidence building with children generally engaging positively.`,
     );
@@ -809,7 +816,7 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (bcSelfAssessmentAvg >= 4.0 && totalBodyConfidenceRecords > 0) {
+  if (meets(bcSelfAssessmentAvg, 4.0) && totalBodyConfidenceRecords > 0) {
     strengths.push(
       `Children's body confidence self-assessment averages ${bcSelfAssessmentAvg}/5 -- children report feeling good about their bodies and physical development.`,
     );
@@ -839,7 +846,7 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (childComfortRate >= 80) {
+  if (meets(childComfortRate, 80)) {
     strengths.push(
       `Overall child comfort rate at ${childComfortRate}% -- children feel safe, supported, and comfortable across all puberty and menstruation care interactions.`,
     );
@@ -849,11 +856,11 @@ export function computeMenstruationPubertySupport(
 
   const concerns: string[] = [];
 
-  if (pubertyEducationRate < 50 && totalEducationRecords > 0) {
+  if (below(pubertyEducationRate, 50) && totalEducationRecords > 0) {
     concerns.push(
       `Puberty education rate at only ${pubertyEducationRate}% -- the majority of puberty education sessions are not age-appropriate, not engaging children, or not demonstrating understanding. Children are not receiving adequate preparation for puberty.`,
     );
-  } else if (pubertyEducationRate >= 50 && pubertyEducationRate < 70 && totalEducationRecords > 0) {
+  } else if (meets(pubertyEducationRate, 50) && below(pubertyEducationRate, 70) && totalEducationRecords > 0) {
     concerns.push(
       `Puberty education rate at ${pubertyEducationRate}% -- some puberty education sessions are not meeting the standard for age-appropriateness, engagement, or child understanding.`,
     );
@@ -871,7 +878,7 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (educationSatisfactionAvg < 3.0 && totalEducationRecords > 0) {
+  if (below(educationSatisfactionAvg, 3.0) && totalEducationRecords > 0) {
     concerns.push(
       `Children's satisfaction with puberty education averages only ${educationSatisfactionAvg}/5 -- children do not feel well supported in understanding puberty.`,
     );
@@ -883,11 +890,11 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (menstruationSupportRate < 50 && totalMenstruationRecords > 0) {
+  if (below(menstruationSupportRate, 50) && totalMenstruationRecords > 0) {
     concerns.push(
       `Menstruation support rate at only ${menstruationSupportRate}% -- the majority of menstruation support interactions are failing in provision, staff responsiveness, or privacy. Children are not receiving adequate care during their periods.`,
     );
-  } else if (menstruationSupportRate >= 50 && menstruationSupportRate < 70 && totalMenstruationRecords > 0) {
+  } else if (meets(menstruationSupportRate, 50) && below(menstruationSupportRate, 70) && totalMenstruationRecords > 0) {
     concerns.push(
       `Menstruation support rate at ${menstruationSupportRate}% -- some aspects of menstruation care need improvement in support provision, staff responsiveness, or privacy.`,
     );
@@ -911,17 +918,17 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (menstruationComfortAvg < 3.0 && totalMenstruationRecords > 0) {
+  if (below(menstruationComfortAvg, 3.0) && totalMenstruationRecords > 0) {
     concerns.push(
       `Children's comfort with menstruation support averages only ${menstruationComfortAvg}/5 -- children feel uncomfortable or embarrassed seeking menstruation support.`,
     );
   }
 
-  if (productAvailabilityRate < 50 && totalProductRecords > 0) {
+  if (below(productAvailabilityRate, 50) && totalProductRecords > 0) {
     concerns.push(
       `Product availability rate at only ${productAvailabilityRate}% -- menstruation products are not consistently available, accessible, or discreetly located. Children may be left without essential products.`,
     );
-  } else if (productAvailabilityRate >= 50 && productAvailabilityRate < 80 && totalProductRecords > 0) {
+  } else if (meets(productAvailabilityRate, 50) && below(productAvailabilityRate, 80) && totalProductRecords > 0) {
     concerns.push(
       `Product availability rate at ${productAvailabilityRate}% -- gaps exist in the availability, accessibility, or discreet placement of menstruation products.`,
     );
@@ -945,11 +952,11 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (dignityCareRate < 50 && totalDignityRecords > 0) {
+  if (below(dignityCareRate, 50) && totalDignityRecords > 0) {
     concerns.push(
       `Dignity care rate at only ${dignityCareRate}% -- the majority of puberty-related care interactions are failing to protect children's privacy, respect their preferences, or ensure their comfort. This is a fundamental failure of dignity in care.`,
     );
-  } else if (dignityCareRate >= 50 && dignityCareRate < 70 && totalDignityRecords > 0) {
+  } else if (meets(dignityCareRate, 50) && below(dignityCareRate, 70) && totalDignityRecords > 0) {
     concerns.push(
       `Dignity care rate at ${dignityCareRate}% -- some puberty-related care interactions are not adequately protecting children's privacy, preferences, or comfort.`,
     );
@@ -967,7 +974,7 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (dignitySatisfactionAvg < 3.0 && totalDignityRecords > 0) {
+  if (below(dignitySatisfactionAvg, 3.0) && totalDignityRecords > 0) {
     concerns.push(
       `Children's satisfaction with dignity care averages only ${dignitySatisfactionAvg}/5 -- children do not feel their privacy and dignity are adequately respected.`,
     );
@@ -979,17 +986,17 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (bodyConfidenceRate < 50 && totalBodyConfidenceRecords > 0) {
+  if (below(bodyConfidenceRate, 50) && totalBodyConfidenceRecords > 0) {
     concerns.push(
       `Body confidence rate at only ${bodyConfidenceRate}% -- body confidence activities are not age-appropriate, not engaging children, or not producing positive outcomes.`,
     );
-  } else if (bodyConfidenceRate >= 50 && bodyConfidenceRate < 60 && totalBodyConfidenceRecords > 0) {
+  } else if (meets(bodyConfidenceRate, 50) && below(bodyConfidenceRate, 60) && totalBodyConfidenceRecords > 0) {
     concerns.push(
       `Body confidence rate at ${bodyConfidenceRate}% -- body confidence building needs strengthening in age-appropriateness, engagement, or outcomes.`,
     );
   }
 
-  if (bcSelfAssessmentAvg < 3.0 && totalBodyConfidenceRecords > 0) {
+  if (below(bcSelfAssessmentAvg, 3.0) && totalBodyConfidenceRecords > 0) {
     concerns.push(
       `Children's body confidence self-assessment averages only ${bcSelfAssessmentAvg}/5 -- children report low confidence in their bodies and physical development, indicating unmet needs.`,
     );
@@ -1031,7 +1038,7 @@ export function computeMenstruationPubertySupport(
     );
   }
 
-  if (childComfortRate < 50 && comfortDenominator > 0) {
+  if (below(childComfortRate, 50) && comfortDenominator > 0) {
     concerns.push(
       `Overall child comfort rate at only ${childComfortRate}% -- children feel uncomfortable, embarrassed, or unsupported across puberty and menstruation care interactions.`,
     );
@@ -1042,7 +1049,7 @@ export function computeMenstruationPubertySupport(
   const recommendations: MenstruationPubertyRecommendation[] = [];
   let rank = 0;
 
-  if (pubertyEducationRate < 50 && totalEducationRecords > 0) {
+  if (below(pubertyEducationRate, 50) && totalEducationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1052,7 +1059,7 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (menstruationSupportRate < 50 && totalMenstruationRecords > 0) {
+  if (below(menstruationSupportRate, 50) && totalMenstruationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1062,7 +1069,7 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (productAvailabilityRate < 50 && totalProductRecords > 0) {
+  if (below(productAvailabilityRate, 50) && totalProductRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1072,7 +1079,7 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (dignityCareRate < 50 && totalDignityRecords > 0) {
+  if (below(dignityCareRate, 50) && totalDignityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1082,7 +1089,7 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (bodyConfidenceRate < 50 && totalBodyConfidenceRecords > 0) {
+  if (below(bodyConfidenceRate, 50) && totalBodyConfidenceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1092,7 +1099,7 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (childComfortRate < 50 && comfortDenominator > 0) {
+  if (below(childComfortRate, 50) && comfortDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1172,7 +1179,7 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (pubertyEducationRate >= 50 && pubertyEducationRate < 70 && totalEducationRecords > 0) {
+  if (meets(pubertyEducationRate, 50) && below(pubertyEducationRate, 70) && totalEducationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1182,7 +1189,7 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (menstruationSupportRate >= 50 && menstruationSupportRate < 70 && totalMenstruationRecords > 0) {
+  if (meets(menstruationSupportRate, 50) && below(menstruationSupportRate, 70) && totalMenstruationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1192,7 +1199,7 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (dignityCareRate >= 50 && dignityCareRate < 70 && totalDignityRecords > 0) {
+  if (meets(dignityCareRate, 50) && below(dignityCareRate, 70) && totalDignityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1202,7 +1209,7 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (bodyConfidenceRate >= 50 && bodyConfidenceRate < 60 && totalBodyConfidenceRecords > 0) {
+  if (meets(bodyConfidenceRate, 50) && below(bodyConfidenceRate, 60) && totalBodyConfidenceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1298,28 +1305,28 @@ export function computeMenstruationPubertySupport(
 
   // --- Critical insights ---
 
-  if (pubertyEducationRate < 50 && totalEducationRecords > 0) {
+  if (below(pubertyEducationRate, 50) && totalEducationRecords > 0) {
     insights.push({
       text: `Puberty education rate at only ${pubertyEducationRate}%. Ofsted will view the failure to provide adequate puberty education as evidence that the home is not meeting children's health and development needs -- a direct failure under Reg 14.`,
       severity: "critical",
     });
   }
 
-  if (menstruationSupportRate < 50 && totalMenstruationRecords > 0) {
+  if (below(menstruationSupportRate, 50) && totalMenstruationRecords > 0) {
     insights.push({
       text: `Menstruation support rate at only ${menstruationSupportRate}%. Failing to provide responsive, private, and adequate menstruation support is a fundamental care failure that undermines children's dignity, health, and wellbeing.`,
       severity: "critical",
     });
   }
 
-  if (productAvailabilityRate < 50 && totalProductRecords > 0) {
+  if (below(productAvailabilityRate, 50) && totalProductRecords > 0) {
     insights.push({
       text: `Product availability at only ${productAvailabilityRate}%. Children cannot manage their periods effectively without reliable access to products. This is a basic care provision failure that Ofsted will view as evidence of inadequate health care under Reg 14.`,
       severity: "critical",
     });
   }
 
-  if (dignityCareRate < 50 && totalDignityRecords > 0) {
+  if (below(dignityCareRate, 50) && totalDignityRecords > 0) {
     insights.push({
       text: `Dignity care rate at only ${dignityCareRate}%. Children's privacy, preferences, and comfort are not being protected during puberty-related care. This represents a serious failure in Reg 14 compliance and risks significant emotional harm to vulnerable children.`,
       severity: "critical",
@@ -1333,7 +1340,7 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (bodyConfidenceRate < 50 && totalBodyConfidenceRecords > 0) {
+  if (below(bodyConfidenceRate, 50) && totalBodyConfidenceRecords > 0) {
     insights.push({
       text: `Body confidence rate at only ${bodyConfidenceRate}%. Children going through puberty need active support to develop a positive body image. Inadequate body confidence building can contribute to low self-esteem, mental health difficulties, and disordered eating.`,
       severity: "critical",
@@ -1342,42 +1349,42 @@ export function computeMenstruationPubertySupport(
 
   // --- Warning insights ---
 
-  if (pubertyEducationRate >= 50 && pubertyEducationRate < 70 && totalEducationRecords > 0) {
+  if (meets(pubertyEducationRate, 50) && below(pubertyEducationRate, 70) && totalEducationRecords > 0) {
     insights.push({
       text: `Puberty education rate at ${pubertyEducationRate}% -- improving but not yet consistently meeting children's needs. Each session that is not age-appropriate or fails to engage children represents a missed opportunity to prepare them for puberty.`,
       severity: "warning",
     });
   }
 
-  if (menstruationSupportRate >= 50 && menstruationSupportRate < 70 && totalMenstruationRecords > 0) {
+  if (meets(menstruationSupportRate, 50) && below(menstruationSupportRate, 70) && totalMenstruationRecords > 0) {
     insights.push({
       text: `Menstruation support rate at ${menstruationSupportRate}% -- while some support is in place, gaps in provision, responsiveness, or privacy mean not all children are receiving dignified menstrual care.`,
       severity: "warning",
     });
   }
 
-  if (productAvailabilityRate >= 50 && productAvailabilityRate < 80 && totalProductRecords > 0) {
+  if (meets(productAvailabilityRate, 50) && below(productAvailabilityRate, 80) && totalProductRecords > 0) {
     insights.push({
       text: `Product availability at ${productAvailabilityRate}% -- while products are sometimes available, inconsistent accessibility or stock levels mean children cannot always rely on having what they need.`,
       severity: "warning",
     });
   }
 
-  if (dignityCareRate >= 50 && dignityCareRate < 70 && totalDignityRecords > 0) {
+  if (meets(dignityCareRate, 50) && below(dignityCareRate, 70) && totalDignityRecords > 0) {
     insights.push({
       text: `Dignity care at ${dignityCareRate}% -- some improvement needed to ensure all puberty-related interactions consistently protect children's privacy, preferences, and comfort.`,
       severity: "warning",
     });
   }
 
-  if (bodyConfidenceRate >= 50 && bodyConfidenceRate < 80 && totalBodyConfidenceRecords > 0) {
+  if (meets(bodyConfidenceRate, 50) && below(bodyConfidenceRate, 80) && totalBodyConfidenceRecords > 0) {
     insights.push({
       text: `Body confidence rate at ${bodyConfidenceRate}% -- body confidence activities are partially effective but need strengthening to produce consistently positive outcomes for all children.`,
       severity: "warning",
     });
   }
 
-  if (childComfortRate >= 50 && childComfortRate < 80 && comfortDenominator > 0) {
+  if (meets(childComfortRate, 50) && below(childComfortRate, 80) && comfortDenominator > 0) {
     insights.push({
       text: `Child comfort rate at ${childComfortRate}% -- some children feel comfortable with puberty and menstruation care but the experience is not yet consistently positive for all.`,
       severity: "warning",
@@ -1442,28 +1449,28 @@ export function computeMenstruationPubertySupport(
     });
   }
 
-  if (pubertyEducationRate >= 90 && menstruationSupportRate >= 90 && totalEducationRecords > 0 && totalMenstruationRecords > 0) {
+  if (meets(pubertyEducationRate, 90) && meets(menstruationSupportRate, 90) && totalEducationRecords > 0 && totalMenstruationRecords > 0) {
     insights.push({
       text: `Puberty education at ${pubertyEducationRate}% and menstruation support at ${menstruationSupportRate}% -- the home provides comprehensive, high-quality puberty and menstruation care. Ofsted will recognise this as evidence of genuinely child-centred health provision.`,
       severity: "positive",
     });
   }
 
-  if (productAvailabilityRate >= 95 && dignityCareRate >= 90 && totalProductRecords > 0 && totalDignityRecords > 0) {
+  if (meets(productAvailabilityRate, 95) && meets(dignityCareRate, 90) && totalProductRecords > 0 && totalDignityRecords > 0) {
     insights.push({
       text: `Product availability at ${productAvailabilityRate}% with dignity care at ${dignityCareRate}% -- children have reliable access to products and receive dignified care. This combination evidences the home's commitment to supporting children through puberty with sensitivity and respect.`,
       severity: "positive",
     });
   }
 
-  if (bodyConfidenceRate >= 80 && bcSelfAssessmentAvg >= 4.0 && totalBodyConfidenceRecords > 0) {
+  if (meets(bodyConfidenceRate, 80) && meets(bcSelfAssessmentAvg, 4.0) && totalBodyConfidenceRecords > 0) {
     insights.push({
       text: `Body confidence rate at ${bodyConfidenceRate}% with children's self-assessment averaging ${bcSelfAssessmentAvg}/5 -- the home actively builds children's body confidence, and children report feeling positive about their bodies. This is exemplary practice in supporting wellbeing through puberty.`,
       severity: "positive",
     });
   }
 
-  if (childComfortRate >= 80 && comfortDenominator > 0) {
+  if (meets(childComfortRate, 80) && comfortDenominator > 0) {
     insights.push({
       text: `Overall child comfort rate at ${childComfortRate}% -- children feel genuinely safe, supported, and comfortable across all puberty and menstruation interactions. This level of comfort is essential for looked-after children who may have experienced neglect or abuse.`,
       severity: "positive",

@@ -217,12 +217,12 @@ describe("computeMenstruationPubertySupport", () => {
       const r = computeMenstruationPubertySupport(
         baseInput({ total_children: 0 }),
       );
-      expect(r.puberty_education_rate).toBe(0);
-      expect(r.menstruation_support_rate).toBe(0);
-      expect(r.product_availability_rate).toBe(0);
-      expect(r.dignity_care_rate).toBe(0);
-      expect(r.body_confidence_rate).toBe(0);
-      expect(r.child_comfort_rate).toBe(0);
+      expect(r.puberty_education_rate).toBeNull();
+      expect(r.menstruation_support_rate).toBeNull();
+      expect(r.product_availability_rate).toBeNull();
+      expect(r.dignity_care_rate).toBeNull();
+      expect(r.body_confidence_rate).toBeNull();
+      expect(r.child_comfort_rate).toBeNull();
     });
   });
 
@@ -245,12 +245,12 @@ describe("computeMenstruationPubertySupport", () => {
       const r = computeMenstruationPubertySupport(
         baseInput({ total_children: 0 }),
       );
-      expect(r.puberty_education_rate).toBe(0);
-      expect(r.menstruation_support_rate).toBe(0);
-      expect(r.product_availability_rate).toBe(0);
-      expect(r.dignity_care_rate).toBe(0);
-      expect(r.body_confidence_rate).toBe(0);
-      expect(r.child_comfort_rate).toBe(0);
+      expect(r.puberty_education_rate).toBeNull();
+      expect(r.menstruation_support_rate).toBeNull();
+      expect(r.product_availability_rate).toBeNull();
+      expect(r.dignity_care_rate).toBeNull();
+      expect(r.body_confidence_rate).toBeNull();
+      expect(r.child_comfort_rate).toBeNull();
     });
   });
 
@@ -288,12 +288,12 @@ describe("computeMenstruationPubertySupport", () => {
 
     it("all rates are 0", () => {
       const r = computeMenstruationPubertySupport(baseInput());
-      expect(r.puberty_education_rate).toBe(0);
-      expect(r.menstruation_support_rate).toBe(0);
-      expect(r.product_availability_rate).toBe(0);
-      expect(r.dignity_care_rate).toBe(0);
-      expect(r.body_confidence_rate).toBe(0);
-      expect(r.child_comfort_rate).toBe(0);
+      expect(r.puberty_education_rate).toBeNull();
+      expect(r.menstruation_support_rate).toBeNull();
+      expect(r.product_availability_rate).toBeNull();
+      expect(r.dignity_care_rate).toBeNull();
+      expect(r.body_confidence_rate).toBeNull();
+      expect(r.child_comfort_rate).toBeNull();
     });
   });
 
@@ -1238,7 +1238,7 @@ describe("computeMenstruationPubertySupport", () => {
 
       it("returns 0 when no records", () => {
         const r = computeMenstruationPubertySupport(baseInput());
-        expect(r.puberty_education_rate).toBe(0);
+        expect(r.puberty_education_rate).toBeNull();
       });
 
       it("handles mixed rates across the three components", () => {
@@ -1275,7 +1275,7 @@ describe("computeMenstruationPubertySupport", () => {
 
       it("returns 0 when no records", () => {
         const r = computeMenstruationPubertySupport(baseInput());
-        expect(r.menstruation_support_rate).toBe(0);
+        expect(r.menstruation_support_rate).toBeNull();
       });
     });
 
@@ -1296,7 +1296,7 @@ describe("computeMenstruationPubertySupport", () => {
 
       it("returns 0 when no records", () => {
         const r = computeMenstruationPubertySupport(baseInput());
-        expect(r.product_availability_rate).toBe(0);
+        expect(r.product_availability_rate).toBeNull();
       });
     });
 
@@ -1318,7 +1318,7 @@ describe("computeMenstruationPubertySupport", () => {
 
       it("returns 0 when no records", () => {
         const r = computeMenstruationPubertySupport(baseInput());
-        expect(r.dignity_care_rate).toBe(0);
+        expect(r.dignity_care_rate).toBeNull();
       });
     });
 
@@ -1339,7 +1339,7 @@ describe("computeMenstruationPubertySupport", () => {
 
       it("returns 0 when no records", () => {
         const r = computeMenstruationPubertySupport(baseInput());
-        expect(r.body_confidence_rate).toBe(0);
+        expect(r.body_confidence_rate).toBeNull();
       });
     });
 
@@ -1350,7 +1350,7 @@ describe("computeMenstruationPubertySupport", () => {
             product_availability_records: nRecords(5, makeProduct),
           }),
         );
-        expect(r.child_comfort_rate).toBe(0);
+        expect(r.child_comfort_rate).toBeNull();
       });
 
       it("uses single source (education only)", () => {

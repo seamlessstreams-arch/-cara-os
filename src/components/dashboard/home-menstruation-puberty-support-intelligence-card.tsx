@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Flower2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import type { MenstruationPubertyRating } from "@/lib/engines/home-menstruation-puberty-support-intelligence-engine";
 
 const RATING_STYLES: Record<MenstruationPubertyRating, { bg: string; text: string; border: string; label: string }> = {
@@ -65,28 +66,28 @@ export function HomeMenstruationPubertySupportIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.puberty_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.puberty_education_rate >= 90 ? "bg-green-50" : d.puberty_education_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.puberty_education_rate >= 90 ? "text-[--cs-success]" : d.puberty_education_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.puberty_education_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.puberty_education_rate, 90) ? "bg-green-50" : meets(d.puberty_education_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.puberty_education_rate, 90) ? "text-[--cs-success]" : meets(d.puberty_education_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.puberty_education_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Education</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.menstruation_support_rate >= 90 ? "bg-green-50" : d.menstruation_support_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.menstruation_support_rate >= 90 ? "text-[--cs-success]" : d.menstruation_support_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.menstruation_support_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.menstruation_support_rate, 90) ? "bg-green-50" : meets(d.menstruation_support_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.menstruation_support_rate, 90) ? "text-[--cs-success]" : meets(d.menstruation_support_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.menstruation_support_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Support</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.product_availability_rate >= 90 ? "bg-green-50" : d.product_availability_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.product_availability_rate >= 90 ? "text-[--cs-success]" : d.product_availability_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.product_availability_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.product_availability_rate, 90) ? "bg-green-50" : meets(d.product_availability_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.product_availability_rate, 90) ? "text-[--cs-success]" : meets(d.product_availability_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.product_availability_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Products</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.dignity_care_rate >= 90 ? "bg-green-50" : d.dignity_care_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.dignity_care_rate >= 90 ? "text-[--cs-success]" : d.dignity_care_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dignity_care_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.dignity_care_rate, 90) ? "bg-green-50" : meets(d.dignity_care_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.dignity_care_rate, 90) ? "text-[--cs-success]" : meets(d.dignity_care_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dignity_care_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Dignity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.body_confidence_rate >= 90 ? "bg-green-50" : d.body_confidence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.body_confidence_rate >= 90 ? "text-[--cs-success]" : d.body_confidence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.body_confidence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.body_confidence_rate, 90) ? "bg-green-50" : meets(d.body_confidence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.body_confidence_rate, 90) ? "text-[--cs-success]" : meets(d.body_confidence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.body_confidence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Confidence</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_comfort_rate >= 90 ? "bg-green-50" : d.child_comfort_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_comfort_rate >= 90 ? "text-[--cs-success]" : d.child_comfort_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_comfort_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_comfort_rate, 90) ? "bg-green-50" : meets(d.child_comfort_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_comfort_rate, 90) ? "text-[--cs-success]" : meets(d.child_comfort_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_comfort_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Comfort</p>
             </div>
           </div>
