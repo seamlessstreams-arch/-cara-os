@@ -14,6 +14,8 @@
 //             childSatisfactionRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface FriendshipMappingInput {
@@ -148,10 +150,14 @@ export interface FriendshipSocialResult {
   isolation_prevention_rate: number;
   child_satisfaction_rate: number;
   child_confidence_rate: number;
-  avg_friends_per_child: number;
-  avg_friendship_quality: number;
+  // Null on empty — no mappings ⇒ no friends count / quality to average.
+  // "0 friends / 0/5 quality" would read as "children are isolated and
+  // dislike everyone", not "unmeasured".
+  avg_friends_per_child: number | null;
+  avg_friendship_quality: number | null;
   network_positivity_rate: number;
-  peer_engagement_avg: number;
+  // Null on empty — no peer activities ⇒ no engagement signal.
+  peer_engagement_avg: number | null;
   isolation_high_risk_count: number;
   loneliness_rate: number;
   strengths: string[];
@@ -195,10 +201,10 @@ function emptyResult(
     isolation_prevention_rate: 0,
     child_satisfaction_rate: 0,
     child_confidence_rate: 0,
-    avg_friends_per_child: 0,
-    avg_friendship_quality: 0,
+    avg_friends_per_child: null,
+    avg_friendship_quality: null,
     network_positivity_rate: 0,
-    peer_engagement_avg: 0,
+    peer_engagement_avg: null,
     isolation_high_risk_count: 0,
     loneliness_rate: 0,
     strengths: [],
@@ -303,29 +309,29 @@ export function computeFriendshipSocialNetwork(
   const overdueMappingReviews = friendship_mapping_records.filter(
     (m) => m.review_overdue,
   ).length;
-  const mappingReviewComplianceRate = totalMappings > 0
+  const mappingReviewComplianceRate: number | null = totalMappings > 0
     ? pct(totalMappings - overdueMappingReviews, totalMappings)
-    : 0;
+    : null;
 
   // --- Average friends per child ---
   const totalFriendsSum = friendship_mapping_records.reduce(
     (sum, m) => sum + m.total_friends_identified,
     0,
   );
-  const avgFriendsPerChild =
+  const avgFriendsPerChild: number | null =
     totalMappings > 0
       ? Math.round((totalFriendsSum / totalMappings) * 100) / 100
-      : 0;
+      : null;
 
   // --- Friendship quality average (1-5) ---
   const friendshipQualitySum = friendship_mapping_records.reduce(
     (sum, m) => sum + m.friendship_quality_rating,
     0,
   );
-  const avgFriendshipQuality =
+  const avgFriendshipQuality: number | null =
     totalMappings > 0
       ? Math.round((friendshipQualitySum / totalMappings) * 100) / 100
-      : 0;
+      : null;
 
   // --- Friends outside home ---
   const childrenWithOutsideFriends = friendship_mapping_records.filter(
@@ -378,9 +384,9 @@ export function computeFriendshipSocialNetwork(
   const networksWithSupport = social_network_records.filter(
     (n) => n.barriers_identified && n.support_provided,
   ).length;
-  const barrierSupportRate = networksWithBarriers > 0
+  const barrierSupportRate: number | null = networksWithBarriers > 0
     ? pct(networksWithSupport, networksWithBarriers)
-    : 0;
+    : null;
 
   const overdueNetworkReviews = social_network_records.filter(
     (n) => n.review_overdue,
@@ -391,10 +397,10 @@ export function computeFriendshipSocialNetwork(
     (sum, n) => sum + n.child_satisfaction_with_network,
     0,
   );
-  const networkSatisfactionAvg =
+  const networkSatisfactionAvg: number | null =
     totalNetworks > 0
       ? Math.round((networkSatisfactionSum / totalNetworks) * 100) / 100
-      : 0;
+      : null;
 
   // --- Peer support quality ---
   const totalPeerActivities = peer_support_records.length;
@@ -408,19 +414,19 @@ export function computeFriendshipSocialNetwork(
     (sum, p) => sum + p.child_engagement_rating,
     0,
   );
-  const peerEngagementAvg =
+  const peerEngagementAvg: number | null =
     totalPeerActivities > 0
       ? Math.round((peerEngagementSum / totalPeerActivities) * 100) / 100
-      : 0;
+      : null;
 
   const peerInteractionQualitySum = peer_support_records.reduce(
     (sum, p) => sum + p.peer_interaction_quality,
     0,
   );
-  const peerInteractionQualityAvg =
+  const peerInteractionQualityAvg: number | null =
     totalPeerActivities > 0
       ? Math.round((peerInteractionQualitySum / totalPeerActivities) * 100) / 100
-      : 0;
+      : null;
 
   const positiveOutcomeActivities = peer_support_records.filter(
     (p) => p.outcome_positive,
@@ -461,19 +467,19 @@ export function computeFriendshipSocialNetwork(
     (sum, i) => sum + i.child_engagement,
     0,
   );
-  const isolationEngagementAvg =
+  const isolationEngagementAvg: number | null =
     totalIsolationRecords > 0
       ? Math.round((isolationEngagementSum / totalIsolationRecords) * 100) / 100
-      : 0;
+      : null;
 
   const isolationProgressSum = isolation_prevention_records.reduce(
     (sum, i) => sum + i.progress_rating,
     0,
   );
-  const isolationProgressAvg =
+  const isolationProgressAvg: number | null =
     totalIsolationRecords > 0
       ? Math.round((isolationProgressSum / totalIsolationRecords) * 100) / 100
-      : 0;
+      : null;
 
   const overdueIsolationReviews = isolation_prevention_records.filter(
     (i) => i.review_overdue && i.intervention_active,
@@ -502,10 +508,10 @@ export function computeFriendshipSocialNetwork(
     (sum, s) => sum + s.satisfaction_with_friendships,
     0,
   );
-  const satisfactionAvg =
+  const satisfactionAvg: number | null =
     totalSurveys > 0
       ? Math.round((satisfactionSum / totalSurveys) * 100) / 100
-      : 0;
+      : null;
 
   const satisfiedChildren = child_satisfaction_records.filter(
     (s) => s.satisfaction_with_friendships >= 4,
@@ -521,10 +527,10 @@ export function computeFriendshipSocialNetwork(
     (sum, s) => sum + s.confidence_in_social_situations,
     0,
   );
-  const confidenceAvg =
+  const confidenceAvg: number | null =
     totalSurveys > 0
       ? Math.round((confidenceSum / totalSurveys) * 100) / 100
-      : 0;
+      : null;
 
   const childrenFeelIncluded = child_satisfaction_records.filter(
     (s) => s.feels_included,
@@ -555,10 +561,10 @@ export function computeFriendshipSocialNetwork(
     (sum, s) => sum + s.satisfaction_with_contact_arrangements,
     0,
   );
-  const contactSatisfactionAvg =
+  const contactSatisfactionAvg: number | null =
     totalSurveys > 0
       ? Math.round((contactSatisfactionSum / totalSurveys) * 100) / 100
-      : 0;
+      : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
@@ -589,12 +595,12 @@ export function computeFriendshipSocialNetwork(
   else if (childConfidenceRate >= 70) score += 1;
 
   // --- Bonus 7: avgFriendshipQuality (>=4.0: +3, >=3.0: +1) ---
-  if (avgFriendshipQuality >= 4.0) score += 3;
-  else if (avgFriendshipQuality >= 3.0) score += 1;
+  if (meets(avgFriendshipQuality, 4.0)) score += 3;
+  else if (meets(avgFriendshipQuality, 3.0)) score += 1;
 
   // --- Bonus 8: mappingReviewComplianceRate (>=100: +2, >=80: +1) ---
-  if (mappingReviewComplianceRate >= 100) score += 2;
-  else if (mappingReviewComplianceRate >= 80) score += 1;
+  if (meets(mappingReviewComplianceRate, 100)) score += 2;
+  else if (meets(mappingReviewComplianceRate, 80)) score += 1;
 
   // --- Bonus 9: networkPositivityRate (>=90: +1) ---
   if (networkPositivityRate >= 90) score += 1;
@@ -681,11 +687,11 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (avgFriendshipQuality >= 4.0 && totalMappings > 0) {
+  if (meets(avgFriendshipQuality, 4.0) && totalMappings > 0) {
     strengths.push(
       `Average friendship quality rating of ${avgFriendshipQuality}/5 — children's friendships are of a high quality, indicating meaningful and supportive relationships.`,
     );
-  } else if (avgFriendshipQuality >= 3.0 && totalMappings > 0) {
+  } else if (meets(avgFriendshipQuality, 3.0) && totalMappings > 0) {
     strengths.push(
       `Average friendship quality rating of ${avgFriendshipQuality}/5 — children generally have competent quality friendships.`,
     );
@@ -747,7 +753,7 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (barrierSupportRate >= 90 && networksWithBarriers > 0) {
+  if (meets(barrierSupportRate, 90) && networksWithBarriers > 0) {
     strengths.push(
       `${barrierSupportRate}% of identified social barriers have support in place — the home responds proactively when children face obstacles to social connection.`,
     );
@@ -759,11 +765,11 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (mappingReviewComplianceRate >= 100 && totalMappings > 0) {
+  if (meets(mappingReviewComplianceRate, 100) && totalMappings > 0) {
     strengths.push(
       "All friendship mapping reviews are up to date — the home ensures assessments remain current and reflect children's evolving social landscape.",
     );
-  } else if (mappingReviewComplianceRate >= 80 && totalMappings > 0) {
+  } else if (meets(mappingReviewComplianceRate, 80) && totalMappings > 0) {
     strengths.push(
       `${mappingReviewComplianceRate}% of friendship mapping reviews are on schedule — strong compliance with review timescales.`,
     );
@@ -875,11 +881,11 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (avgFriendshipQuality < 2.5 && totalMappings > 0) {
+  if (below(avgFriendshipQuality, 2.5) && totalMappings > 0) {
     concerns.push(
       `Average friendship quality rating of ${avgFriendshipQuality}/5 — the quality of children's friendships is poor, suggesting relationships may be superficial, conflictual, or unsupportive.`,
     );
-  } else if (avgFriendshipQuality < 3.0 && avgFriendshipQuality >= 2.5 && totalMappings > 0) {
+  } else if (below(avgFriendshipQuality, 3.0) && meets(avgFriendshipQuality, 2.5) && totalMappings > 0) {
     concerns.push(
       `Average friendship quality rating of ${avgFriendshipQuality}/5 — friendship quality is below the standard expected, indicating some children's relationships may not be providing adequate emotional support.`,
     );
@@ -927,7 +933,7 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (barrierSupportRate < 50 && networksWithBarriers > 0) {
+  if (below(barrierSupportRate, 50) && networksWithBarriers > 0) {
     concerns.push(
       `Only ${barrierSupportRate}% of identified social barriers have support in place — where barriers to social connection have been identified, the home is not consistently responding with appropriate support.`,
     );
@@ -1020,7 +1026,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (barrierSupportRate < 50 && networksWithBarriers > 0) {
+  if (below(barrierSupportRate, 50) && networksWithBarriers > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1338,8 +1344,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    avgFriendshipQuality >= 2.5 &&
-    avgFriendshipQuality < 3.0 &&
+    meets(avgFriendshipQuality, 2.5) &&
+    below(avgFriendshipQuality, 3.0) &&
     totalMappings > 0
   ) {
     insights.push({
@@ -1491,7 +1497,7 @@ export function computeFriendshipSocialNetwork(
 
   if (
     bestFriendRate >= 80 &&
-    avgFriendshipQuality >= 4.0 &&
+    meets(avgFriendshipQuality, 4.0) &&
     totalSurveys > 0 &&
     totalMappings > 0
   ) {
@@ -1513,7 +1519,7 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    barrierSupportRate >= 90 &&
+    meets(barrierSupportRate, 90) &&
     networksWithBarriers > 0
   ) {
     insights.push({

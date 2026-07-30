@@ -189,10 +189,10 @@ describe("insufficient data", () => {
     expect(r.isolation_prevention_rate).toBe(0);
     expect(r.child_satisfaction_rate).toBe(0);
     expect(r.child_confidence_rate).toBe(0);
-    expect(r.avg_friends_per_child).toBe(0);
-    expect(r.avg_friendship_quality).toBe(0);
+    expect(r.avg_friends_per_child).toBeNull();
+    expect(r.avg_friendship_quality).toBeNull();
     expect(r.network_positivity_rate).toBe(0);
-    expect(r.peer_engagement_avg).toBe(0);
+    expect(r.peer_engagement_avg).toBeNull();
     expect(r.isolation_high_risk_count).toBe(0);
     expect(r.loneliness_rate).toBe(0);
   });
@@ -366,8 +366,8 @@ describe("friendship mapping metrics", () => {
       friendship_mapping_records: [],
     }));
     expect(r.total_mappings).toBe(0);
-    expect(r.avg_friends_per_child).toBe(0);
-    expect(r.avg_friendship_quality).toBe(0);
+    expect(r.avg_friends_per_child).toBeNull();
+    expect(r.avg_friendship_quality).toBeNull();
   });
 });
 
@@ -447,7 +447,7 @@ describe("peer support metrics", () => {
     const r = computeFriendshipSocialNetwork(baseInput({
       peer_support_records: [],
     }));
-    expect(r.peer_engagement_avg).toBe(0);
+    expect(r.peer_engagement_avg).toBeNull();
   });
 
   it("returns 100% peer_support_rate when all children participate", () => {
@@ -2553,6 +2553,9 @@ describe("edge cases", () => {
         makeMapping({ id: "fm_1", total_friends_identified: 0, friends_in_home: 0, friends_outside_home: 0, friends_from_school: 0, friends_from_community: 0, online_friends_identified: 0 }),
       ],
     }));
+    // NOT null: 1 mapping exists with total_friends_identified=0. The sum is
+    // legitimately 0 and totalMappings=1, so the average is measured 0
+    // ("child has zero friends"), not unmeasured.
     expect(r.avg_friends_per_child).toBe(0);
   });
 
