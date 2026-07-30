@@ -649,16 +649,19 @@ const EMPTY_TERNARY_UNIT = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*
 // containment as the sibling matchers, plus a trailing `(?!\.\d)` so `: 0.5`
 // (which is a rate literal, not a fab-0) never matches.
 const NON_EMPTY_TERNARY_ZERO = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?([^?:{};]{0,220}?):\s*0\b(?!\.\d)/g;
-// The compute-gate keeps the fab-0 matcher narrow enough to enforce. A body
-// that computes a PERCENTAGE (contains `* 100`) is the shape that produces
-// the most misleading dashboard output — "0% compliant on an empty register"
-// is the mirror of "100% compliant on an empty register" and reads exactly
-// as false. Duration/count/currency averages ARE also fab-0 in the strict
-// sense, but they show up ~200x across page components and the burn-down
-// would swamp the doctrine. Add another gate here (e.g. `average\\(` or
-// `Math\\.max\\(`) only when a specific engine's regression is worth the
-// class-wide baseline entry cost.
-const COMPUTE_CALL = /Math\.round\s*\([^)]*\*\s*100\s*\)/;
+// Widened 2026-07-30 (from `Math.round(...*100)`-only) to cover any of the
+// canonical computed-metric shapes: percentage (Math.round(x*100)), duration/
+// count/currency averages (Math.round(sum/n), average(), mean(), meanOf()),
+// peaks (Math.max, Math.min), rounded rates (round1, round2). All of them
+// share the fab-0 semantic: an empty population that fabricates a value
+// where "unmeasured" is the honest answer.
+//
+// The initial run of the widened gate found ~2300 sites, most in page
+// components — the burn-down is real work, and every entry lives in the
+// baseline JSON until fixed. Add a new compute-call here (e.g. reduce()
+// with a division) only if a specific regression makes it worth it —
+// reduce() alone is too broad (Sets, Maps, non-metric aggregates).
+const COMPUTE_CALL = /Math\.(?:round|max|min)\s*\(|\baverage\s*\(|\bmean(?:Of)?\s*\(|\bround[12]\s*\(/;
 // Object-return form:
 //   if (expected.length === 0) return { score: 100, missing: [] };
 // EMPTY_RETURN matches scalar `return N;` only, so a function that early-
