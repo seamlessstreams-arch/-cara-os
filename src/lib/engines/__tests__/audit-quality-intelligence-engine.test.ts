@@ -78,7 +78,8 @@ describe("empty state", () => {
     const r = run([]);
     expect(r.overview.total_audits).toBe(0);
     expect(r.overview.completed_count).toBe(0);
-    expect(r.overview.avg_compliance_score).toBe(0);
+    // Fab-0 fix: no completed audits with rubric ⇒ null, not 0%.
+    expect(r.overview.avg_compliance_score).toBeNull();
     expect(r.overview.overdue_count).toBe(0);
     expect(r.audit_profiles).toHaveLength(0);
     expect(r.category_analysis).toHaveLength(0);
@@ -188,9 +189,10 @@ describe("audit profiles", () => {
     expect(r.audit_profiles[0].compliance_pct).toBe(78);
   });
 
-  it("compliance is 0 for scheduled audits", () => {
+  it("compliance is null for scheduled audits (not yet scored)", () => {
     const r = run([makeAudit({ status: "scheduled", score: 0, completed_by: null })]);
-    expect(r.audit_profiles[0].compliance_pct).toBe(0);
+    // Fab-0 fix: scheduled audits have no score yet ⇒ null, not 0% ("audited and failed").
+    expect(r.audit_profiles[0].compliance_pct).toBeNull();
   });
 
   it("resolves completed_by to staff name", () => {
@@ -555,9 +557,13 @@ describe("Chamberlain House integration", () => {
   it("produces correct category analysis for Chamberlain House", () => {
     const r = run(oakAudits, STAFF);
     expect(r.category_analysis).toHaveLength(5);
-    // Weakest first: scheduled categories have avg 0, then finance 78, health_safety 87, medication 92
+    // Fab-0 fix: scheduled categories now sort to the END (null = not yet measured,
+    // shown last rather than confusingly grouped with the weakest scores).
+    // Weakest first: finance 78, health_safety 87, medication 92, then unscored categories.
     const first = r.category_analysis[0];
-    expect(first.avg_compliance_score).toBe(0); // one of the scheduled categories
+    expect(first.avg_compliance_score).toBe(78); // was scheduled=0, now finance=78 (weakest scored)
+    const last = r.category_analysis[r.category_analysis.length - 1];
+    expect(last.avg_compliance_score).toBeNull(); // unscored category sinks to the bottom
   });
 
   it("fires expected alerts for Chamberlain House data", () => {

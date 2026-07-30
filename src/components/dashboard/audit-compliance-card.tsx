@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AuditQualityIntelligenceResult } from "@/lib/engines/audit-quality-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 // ── Query Config ────────────────────────────────────────────────────────────
 const AUDIT_QUALITY_INTELLIGENCE_KEY = "audit-quality-intelligence";
@@ -96,13 +97,13 @@ export function AuditComplianceCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.avg_compliance_score >= 85 ? "bg-green-50" : o.avg_compliance_score >= 70 ? "bg-amber-50" : "bg-red-50",
+            meets(o.avg_compliance_score, 85) ? "bg-green-50" : meets(o.avg_compliance_score, 70) ? "bg-amber-50" : o.avg_compliance_score === null ? "bg-slate-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.avg_compliance_score >= 85 ? "text-[--cs-success]" : o.avg_compliance_score >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              meets(o.avg_compliance_score, 85) ? "text-[--cs-success]" : meets(o.avg_compliance_score, 70) ? "text-[--cs-warning]" : o.avg_compliance_score === null ? "text-[var(--cs-text-muted)]" : "text-[--cs-risk]",
             )}>
-              {o.avg_compliance_score}%
+              {formatRate(o.avg_compliance_score)}
             </p>
             <p className="text-[10px] text-muted-foreground">Avg Score</p>
           </div>
@@ -169,14 +170,15 @@ export function AuditComplianceCard() {
                     <div
                       className={cn(
                         "h-full rounded-full",
-                        ca.avg_compliance_score >= 85 ? "bg-green-400"
-                          : ca.avg_compliance_score >= 70 ? "bg-amber-400"
+                        meets(ca.avg_compliance_score, 85) ? "bg-green-400"
+                          : meets(ca.avg_compliance_score, 70) ? "bg-amber-400"
+                          : ca.avg_compliance_score === null ? "bg-slate-300"
                           : "bg-red-400",
                       )}
-                      style={{ width: `${Math.max(4, ca.avg_compliance_score)}%` }}
+                      style={{ width: `${Math.max(4, ca.avg_compliance_score ?? 0)}%` }}
                     />
                   </div>
-                  <span className="w-8 text-right font-medium tabular-nums">{ca.avg_compliance_score}%</span>
+                  <span className="w-8 text-right font-medium tabular-nums">{formatRate(ca.avg_compliance_score)}</span>
                 </div>
               ))}
           </div>
@@ -201,11 +203,12 @@ export function AuditComplianceCard() {
                       {ap.status === "completed" ? (
                         <Badge className={cn(
                           "text-[9px]",
-                          ap.compliance_pct >= 85 ? "bg-[--cs-success-bg] text-[--cs-success]"
-                            : ap.compliance_pct >= 70 ? "bg-[--cs-warning-bg] text-[--cs-warning]"
+                          meets(ap.compliance_pct, 85) ? "bg-[--cs-success-bg] text-[--cs-success]"
+                            : meets(ap.compliance_pct, 70) ? "bg-[--cs-warning-bg] text-[--cs-warning]"
+                            : ap.compliance_pct === null ? "bg-[--cs-info-bg] text-[--cs-info]"
                             : "bg-[--cs-risk-bg] text-[--cs-risk]",
                         )}>
-                          {ap.compliance_pct}%
+                          {formatRate(ap.compliance_pct)}
                         </Badge>
                       ) : (
                         <Badge className={cn(

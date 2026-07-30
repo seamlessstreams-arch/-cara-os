@@ -11,6 +11,8 @@
 // home have robust quality assurance systems?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type AuditStatus = "completed" | "scheduled" | "in_progress";
@@ -48,7 +50,9 @@ export interface AuditOverview {
   scheduled_count: number;
   in_progress_count: number;
   overdue_count: number;
-  avg_compliance_score: number;         // pct across completed audits
+  // Null when no completed audits have a scoring rubric — "0% avg compliance"
+  // reads as "we audited and everything failed", not "unmeasured".
+  avg_compliance_score: number | null;  // pct across completed audits; null when nothing to average
   high_performing_count: number;        // completed with score >=90%
   below_threshold_count: number;        // completed with score <70%
   total_findings: number;
@@ -62,7 +66,10 @@ export interface AuditProfile {
   title: string;
   category: string;
   status: AuditStatus;
-  compliance_pct: number;               // score/max_score * 100 (0 if scheduled)
+  // Null when the audit is not yet completed OR has no scoring rubric (max_score=0).
+  // Was 0 with a comment "(0 if scheduled)" — but 0% reads as "audit failed", not
+  // "not yet scored". null is the honest signal for "scheduled / in_progress / no rubric".
+  compliance_pct: number | null;        // score/max_score * 100; null when incomplete or no rubric
   completed_by_name: string | null;
   date: string;
   days_since_or_until: number;          // negative = past, positive = future
@@ -77,7 +84,9 @@ export interface CategoryAnalysis {
   category: string;
   audit_count: number;
   completed_count: number;
-  avg_compliance_score: number;
+  // Null when the category has no completed audits with a rubric — "0% avg
+  // compliance for this category" is a lie when we haven't audited it yet.
+  avg_compliance_score: number | null;
   total_findings: number;
   total_actions: number;
 }
@@ -137,9 +146,10 @@ export function computeAuditQualityIntelligence(
   const complianceScores = completedWithScore.map(
     (a) => Math.round((a.score / a.max_score) * 100),
   );
-  const avgCompliance = complianceScores.length > 0
+  // Null on empty — no completed audits with a rubric ⇒ no average to report.
+  const avgCompliance: number | null = complianceScores.length > 0
     ? Math.round(complianceScores.reduce((s, v) => s + v, 0) / complianceScores.length)
-    : 0;
+    : null;
 
   const highPerforming = complianceScores.filter((s) => s >= 90).length;
   const belowThreshold = complianceScores.filter((s) => s < 70).length;
@@ -169,17 +179,20 @@ export function computeAuditQualityIntelligence(
 
   // ── Audit Profiles ─────────────────────────────────────────────────────
   const audit_profiles: AuditProfile[] = audits.map((a) => {
-    const compliancePct = a.status === "completed" && a.max_score > 0
+    // Null when the audit hasn't been scored yet (incomplete or no rubric).
+    // "compliance_pct: 0" would read as "audited and failed"; null reads as "not yet scored".
+    const compliancePct: number | null = a.status === "completed" && a.max_score > 0
       ? Math.round((a.score / a.max_score) * 100)
-      : 0;
+      : null;
     const daysDiff = daysBetween(today, a.date); // positive = future, negative = past
     const isOverdue = (a.status === "scheduled" || a.status === "in_progress") && daysDiff < 0;
     const unresolved = Math.max(0, a.findings - a.actions);
 
     const riskFlags: string[] = [];
     if (isOverdue) riskFlags.push("overdue");
-    if (a.status === "completed" && compliancePct < 70) riskFlags.push("below_threshold");
-    if (a.status === "completed" && compliancePct < 50) riskFlags.push("critical_score");
+    // below() is null-safe: unmeasured is never a below-threshold breach.
+    if (a.status === "completed" && below(compliancePct, 70)) riskFlags.push("below_threshold");
+    if (a.status === "completed" && below(compliancePct, 50)) riskFlags.push("critical_score");
     if (unresolved > 0) riskFlags.push("unresolved_findings");
     if (a.status === "completed" && a.findings > 0 && a.actions === 0) riskFlags.push("no_actions_raised");
 
@@ -212,9 +225,11 @@ export function computeAuditQualityIntelligence(
     .map(([category, items]) => {
       const catCompleted = items.filter((a) => a.status === "completed" && a.max_score > 0);
       const catScores = catCompleted.map((a) => Math.round((a.score / a.max_score) * 100));
-      const catAvg = catScores.length > 0
+      // Null when this category has no completed audits with a rubric —
+      // "0% avg" would falsely imply we audited the category and it failed.
+      const catAvg: number | null = catScores.length > 0
         ? Math.round(catScores.reduce((s, v) => s + v, 0) / catScores.length)
-        : 0;
+        : null;
 
       return {
         category,
@@ -225,7 +240,15 @@ export function computeAuditQualityIntelligence(
         total_actions: items.reduce((s, a) => s + a.actions, 0),
       };
     })
-    .sort((a, b) => a.avg_compliance_score - b.avg_compliance_score); // weakest first
+    // Sort weakest-scored first; unscored (null) categories sort to the end
+    // where they're most visible as "not yet measured" rather than confusingly
+    // grouped with the weakest scores.
+    .sort((a, b) => {
+      if (a.avg_compliance_score === null && b.avg_compliance_score === null) return 0;
+      if (a.avg_compliance_score === null) return 1;
+      if (b.avg_compliance_score === null) return -1;
+      return a.avg_compliance_score - b.avg_compliance_score;
+    });
 
   // ── Alerts ────────────────────────────────────────────────────────────
   const alerts: AuditAlert[] = [];
@@ -320,8 +343,8 @@ export function computeAuditQualityIntelligence(
     });
   }
 
-  // Positive: high average compliance
-  if (avgCompliance >= 85 && completedWithScore.length > 0) {
+  // Positive: high average compliance — null-safe via meets() (unmeasured is never a pass).
+  if (meets(avgCompliance, 85) && completedWithScore.length > 0) {
     insights.push({
       severity: "positive",
       text: `Average audit compliance score is ${avgCompliance}% across ${completedWithScore.length} completed audit(s). Scores above 85% indicate strong operational standards and proactive quality management.`,
