@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PocketMoneyEquityRating } from "@/lib/engines/home-pocket-money-distribution-equity-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 function useHomePocketMoneyDistributionEquityIntelligence() {
   return useQuery({
@@ -81,16 +82,16 @@ export function HomePocketMoneyDistributionEquityIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.timely_payment_rate >= 90 ? "text-[--cs-success]" : d.timely_payment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.timely_payment_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Timely</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_understanding_rate >= 90 ? "bg-green-50" : d.child_understanding_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_understanding_rate >= 90 ? "text-[--cs-success]" : d.child_understanding_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_understanding_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_understanding_rate, 90) ? "bg-green-50" : meets(d.child_understanding_rate, 70) ? "bg-amber-50" : d.child_understanding_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_understanding_rate, 90) ? "text-[--cs-success]" : meets(d.child_understanding_rate, 70) ? "text-[--cs-warning]" : d.child_understanding_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.child_understanding_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Underst.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.transparency_rate >= 90 ? "bg-green-50" : d.transparency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.transparency_rate >= 90 ? "text-[--cs-success]" : d.transparency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.transparency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.transparency_rate, 90) ? "bg-green-50" : meets(d.transparency_rate, 70) ? "bg-amber-50" : d.transparency_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.transparency_rate, 90) ? "text-[--cs-success]" : meets(d.transparency_rate, 70) ? "text-[--cs-warning]" : d.transparency_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.transparency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Transp.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : d.child_satisfaction_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : d.child_satisfaction_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

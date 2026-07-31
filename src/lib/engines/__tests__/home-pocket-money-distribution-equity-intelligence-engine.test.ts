@@ -348,9 +348,10 @@ describe("insufficient data", () => {
     expect(r.equitable_distribution_rate).toBe(0);
     expect(r.age_appropriate_rate).toBe(0);
     expect(r.timely_payment_rate).toBe(0);
-    expect(r.child_understanding_rate).toBe(0);
-    expect(r.transparency_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
+    // fab-0: null (no records)
+    expect(r.child_understanding_rate).toBeNull();
+    expect(r.transparency_rate).toBeNull();
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 
   it("returns empty narrative arrays", () => {
@@ -460,9 +461,10 @@ describe("inadequate floor (all empty with children)", () => {
     expect(r.equitable_distribution_rate).toBe(0);
     expect(r.age_appropriate_rate).toBe(0);
     expect(r.timely_payment_rate).toBe(0);
-    expect(r.child_understanding_rate).toBe(0);
-    expect(r.transparency_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
+    // fab-0: null (no records)
+    expect(r.child_understanding_rate).toBeNull();
+    expect(r.transparency_rate).toBeNull();
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 
   it("works with 1 child just as well as with multiple", () => {
@@ -888,11 +890,11 @@ describe("bonus 4: child understanding rate (composite)", () => {
     expect(r.child_understanding_rate).toBeGreaterThanOrEqual(60);
   });
 
-  it("childUnderstandingRate is 0 when no understanding records", () => {
+  it("childUnderstandingRate is null when no understanding records (fab-0)", () => {
     const r = computePocketMoneyDistributionEquity(
       baseInput({ child_understanding_records: [] }),
     );
-    expect(r.child_understanding_rate).toBe(0);
+    expect(r.child_understanding_rate).toBeNull();
   });
 
   it("composite is average of 4 sub-rates", () => {
@@ -942,11 +944,11 @@ describe("bonus 5: transparency rate (composite)", () => {
     expect(r.transparency_rate).toBe(78);
   });
 
-  it("transparencyRate is 0 when no transparency records", () => {
+  it("transparencyRate is null when no transparency records (fab-0)", () => {
     const r = computePocketMoneyDistributionEquity(
       baseInput({ transparency_records: [] }),
     );
-    expect(r.transparency_rate).toBe(0);
+    expect(r.transparency_rate).toBeNull();
   });
 
   it("composite is average of accessibility, explanation, and balance view rates", () => {
@@ -1013,7 +1015,7 @@ describe("bonus 6: child satisfaction rate (composite)", () => {
     expect(r.child_satisfaction_rate).toBe(100);
   });
 
-  it("satisfaction is 0 when all component arrays are empty", () => {
+  it("satisfaction is null when all component arrays are empty (fab-0)", () => {
     const r = computePocketMoneyDistributionEquity(
       baseInput({
         distribution_records: [],
@@ -1021,7 +1023,7 @@ describe("bonus 6: child satisfaction rate (composite)", () => {
         child_understanding_records: [],
       }),
     );
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 });
 
@@ -1172,11 +1174,12 @@ describe("penalty 4: transparency rate < 40", () => {
     expect(r.concerns.some((c) => c.includes("Transparency rate") && c.includes("0%"))).toBe(true);
   });
 
-  it("no penalty when transparency records are empty", () => {
+  it("no penalty when transparency records are empty (fab-0)", () => {
     const r = computePocketMoneyDistributionEquity(
       baseInput({ transparency_records: [] }),
     );
-    expect(r.transparency_rate).toBe(0);
+    // fab-0: null (no records) → penalty gate holds
+    expect(r.transparency_rate).toBeNull();
   });
 });
 
@@ -2936,7 +2939,8 @@ describe("edge cases", () => {
     expect(r.equitable_distribution_rate).toBe(0);
     expect(r.age_appropriate_rate).toBe(0);
     expect(r.timely_payment_rate).toBe(0);
-    expect(r.child_understanding_rate).toBe(0);
+    // fab-0: null (no understanding records)
+    expect(r.child_understanding_rate).toBeNull();
   });
 
   it("amount_paid can exceed amount_due and still counts as equitable", () => {
