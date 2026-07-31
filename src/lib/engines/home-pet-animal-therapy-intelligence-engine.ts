@@ -13,6 +13,8 @@
 //             animalWelfareRecords, childEngagementRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types -------------------------------------------------------------
 
 export interface TherapySessionInput {
@@ -159,8 +161,11 @@ export interface PetAnimalTherapyResult {
   welfare_compliance_rate: number;
   child_engagement_rate: number;
   child_benefit_rate: number;
-  session_goal_achievement_avg: number;
-  mood_improvement_avg: number;
+  // The 6 rate fields above use pct() directly (deterministic 0 on empty).
+  // The 2 avg fields below are null on empty: no source records ⇒ no signal.
+  // Fab-0 doctrine.
+  session_goal_achievement_avg: number | null;
+  mood_improvement_avg: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: PetAnimalTherapyRecommendation[];
@@ -202,8 +207,8 @@ function emptyResult(
     welfare_compliance_rate: 0,
     child_engagement_rate: 0,
     child_benefit_rate: 0,
-    session_goal_achievement_avg: 0,
-    mood_improvement_avg: 0,
+    session_goal_achievement_avg: null,
+    mood_improvement_avg: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -321,24 +326,24 @@ export function computePetAnimalTherapy(
     (sum, s) => sum + s.child_engagement_rating,
     0,
   );
-  const sessionEngagementAvg =
+  const sessionEngagementAvg: number | null =
     totalSessions > 0
       ? Math.round((sessionEngagementSum / totalSessions) * 100) / 100
-      : 0;
+      : null;
 
   const sessionOutcomeSum = therapy_session_records.reduce(
     (sum, s) => sum + s.outcome_rating,
     0,
   );
-  const sessionOutcomeAvg =
+  const sessionOutcomeAvg: number | null =
     totalSessions > 0
       ? Math.round((sessionOutcomeSum / totalSessions) * 100) / 100
-      : 0;
+      : null;
 
-  const sessionGoalAchievementAvg =
+  const sessionGoalAchievementAvg: number | null =
     sessionsWithGoalsSet > 0
       ? Math.round((sessionsWithGoalsMet / sessionsWithGoalsSet) * 100) / 100
-      : 0;
+      : null;
 
   // --- Pet care responsibility ---
   const totalCareRecords = pet_care_records.length;
@@ -373,10 +378,10 @@ export function computePetAnimalTherapy(
     (sum, c) => sum + c.child_engagement_rating,
     0,
   );
-  const careEngagementAvg =
+  const careEngagementAvg: number | null =
     totalCareRecords > 0
       ? Math.round((careEngagementSum / totalCareRecords) * 100) / 100
-      : 0;
+      : null;
 
   const careNotesRecorded = pet_care_records.filter(
     (c) => c.notes_recorded,
@@ -419,14 +424,14 @@ export function computePetAnimalTherapy(
   const moodImprovementValues = animal_interaction_records
     .filter((i) => i.child_mood_before > 0 && i.child_mood_after > 0)
     .map((i) => i.child_mood_after - i.child_mood_before);
-  const moodImprovementAvg =
+  const moodImprovementAvg: number | null =
     moodImprovementValues.length > 0
       ? Math.round(
           (moodImprovementValues.reduce((sum, v) => sum + v, 0) /
             moodImprovementValues.length) *
             100,
         ) / 100
-      : 0;
+      : null;
 
   const moodImprovedCount = moodImprovementValues.filter((v) => v > 0).length;
   const moodImprovementRate = pct(moodImprovedCount, moodImprovementValues.length);
@@ -550,10 +555,10 @@ export function computePetAnimalTherapy(
     (sum, e) => sum + e.overall_progress_rating,
     0,
   );
-  const progressRatingAvg =
+  const progressRatingAvg: number | null =
     totalEngagementRecords > 0
       ? Math.round((progressRatingSum / totalEngagementRecords) * 100) / 100
-      : 0;
+      : null;
 
   // --- Child benefit rate (composite across sessions, interactions, engagement) ---
   const totalBenefitOpportunities =

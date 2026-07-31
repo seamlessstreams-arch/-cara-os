@@ -1314,7 +1314,7 @@ describe("computePetAnimalTherapy", () => {
         animal_welfare_records: [makeWelfare()],
         child_engagement_records: [makeEngagement()],
       }));
-      expect(r.session_goal_achievement_avg).toBe(0);
+      expect(r.session_goal_achievement_avg).toBeNull();
     });
   });
 
@@ -1364,7 +1364,7 @@ describe("computePetAnimalTherapy", () => {
         animal_welfare_records: [makeWelfare()],
         child_engagement_records: [makeEngagement()],
       }));
-      expect(r.mood_improvement_avg).toBe(0);
+      expect(r.mood_improvement_avg).toBeNull();
     });
 
     it("rounds to 2 decimals", () => {
