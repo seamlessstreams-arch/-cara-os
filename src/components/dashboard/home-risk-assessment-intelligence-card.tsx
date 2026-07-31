@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { RiskAssessmentRating, HomeRiskAssessmentResult } from "@/lib/engines/home-risk-assessment-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 interface HomeRiskAssessmentResponse {
   data: HomeRiskAssessmentResult;
@@ -153,10 +154,11 @@ export function HomeRiskAssessmentIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <CheckCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.risk_profile.mitigation_effectiveness_rate >= 80 ? "text-[--cs-success]" :
-                  d.risk_profile.mitigation_effectiveness_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.risk_profile.mitigation_effectiveness_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.risk_profile.mitigation_effectiveness_rate, 50) ? "text-[--cs-warning]" :
+                  d.risk_profile.mitigation_effectiveness_rate === null ? "text-muted-foreground" : "text-[--cs-risk]"
                 )}>
-                  {d.risk_profile.mitigation_effectiveness_rate}%
+                  {formatRate(d.risk_profile.mitigation_effectiveness_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Mitigations</p>
@@ -185,7 +187,7 @@ export function HomeRiskAssessmentIntelligenceCard() {
                 <p>Children covered: <span className={cn("font-medium", d.risk_profile.children_without_assessments.length === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.risk_profile.children_with_assessments.length}</span></p>
                 {d.risk_profile.very_high_risk_count > 0 && <p>Very high risk: <span className="font-medium text-red-600">{d.risk_profile.very_high_risk_count}</span></p>}
                 {d.risk_profile.high_risk_count > 0 && <p>High risk: <span className="font-medium text-amber-600">{d.risk_profile.high_risk_count}</span></p>}
-                <p>Child views: <span className={cn("font-medium", d.risk_profile.child_views_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.risk_profile.child_views_rate}%</span></p>
+                <p>Child views: <span className={cn("font-medium", d.risk_profile.child_views_rate === 100 ? "text-[--cs-success]" : d.risk_profile.child_views_rate === null ? "text-muted-foreground" : "text-[--cs-warning]")}>{formatRate(d.risk_profile.child_views_rate)}</span></p>
                 {d.risk_profile.overdue_reviews > 0 && <p>Overdue reviews: <span className="font-medium text-red-600">{d.risk_profile.overdue_reviews}</span></p>}
               </div>
             </div>
@@ -194,9 +196,9 @@ export function HomeRiskAssessmentIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">BSP Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Improving behaviours: <span className={cn("font-medium", d.bsp_profile.improving_behaviour_rate >= 60 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.bsp_profile.improving_behaviour_rate}%</span></p>
-                <p>Avg strategies: <span className="font-medium text-slate-600">{d.bsp_profile.avg_strategies_per_plan}</span></p>
-                <p>Safety plans: <span className={cn("font-medium", d.bsp_profile.safety_plan_coverage === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.bsp_profile.safety_plan_coverage}%</span></p>
+                <p>Improving behaviours: <span className={cn("font-medium", meets(d.bsp_profile.improving_behaviour_rate, 60) ? "text-[--cs-success]" : d.bsp_profile.improving_behaviour_rate === null ? "text-muted-foreground" : "text-[--cs-warning]")}>{formatRate(d.bsp_profile.improving_behaviour_rate)}</span></p>
+                <p>Avg strategies: <span className="font-medium text-slate-600">{d.bsp_profile.avg_strategies_per_plan ?? "—"}</span></p>
+                <p>Safety plans: <span className={cn("font-medium", d.bsp_profile.safety_plan_coverage === 100 ? "text-[--cs-success]" : d.bsp_profile.safety_plan_coverage === null ? "text-muted-foreground" : "text-[--cs-warning]")}>{formatRate(d.bsp_profile.safety_plan_coverage)}</span></p>
                 {d.bsp_profile.overdue_reviews > 0 && <p>Overdue reviews: <span className="font-medium text-red-600">{d.bsp_profile.overdue_reviews}</span></p>}
               </div>
             </div>

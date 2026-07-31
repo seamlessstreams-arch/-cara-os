@@ -6,6 +6,8 @@
 // CHR 2015 Reg 12, 13. SCCIF: "Safe", "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, below } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface RiskAssessmentInput {
@@ -65,8 +67,9 @@ export interface RiskProfile {
   increasing_trend_count: number;
   stable_trend_count: number;
   overdue_reviews: number;
-  child_views_rate: number;
-  mitigation_effectiveness_rate: number;
+  // fab-0: null when no current RAs.
+  child_views_rate: number | null;
+  mitigation_effectiveness_rate: number | null;
 }
 
 export interface BSPProfile {
@@ -74,10 +77,11 @@ export interface BSPProfile {
   active_plans: number;
   children_with_plans: string[];
   overdue_reviews: number;
-  child_views_rate: number;
-  improving_behaviour_rate: number;
-  avg_strategies_per_plan: number;
-  safety_plan_coverage: number;            // % plans with safety plan
+  // fab-0: null when no active BSPs / no behaviours tracked.
+  child_views_rate: number | null;
+  improving_behaviour_rate: number | null;
+  avg_strategies_per_plan: number | null;
+  safety_plan_coverage: number | null;            // % plans with safety plan
 }
 
 export interface RiskInsight {
@@ -161,15 +165,17 @@ export function computeHomeRiskAssessment(
   const overdueRAReviews = currentRAs.filter(r => r.review_date < today).length;
 
   const raWithViews = currentRAs.filter(r => r.has_child_views).length;
-  const raViewsRate = currentRAs.length > 0
+  // fab-0: null when no current RAs.
+  const raViewsRate: number | null = currentRAs.length > 0
     ? Math.round((raWithViews / currentRAs.length) * 100)
-    : 0;
+    : null;
 
   const totalMitigations = currentRAs.reduce((s, r) => s + r.mitigation_count, 0);
   const effectiveMitigations = currentRAs.reduce((s, r) => s + r.effective_mitigations, 0);
-  const mitigationEffRate = totalMitigations > 0
+  // fab-0: null when no mitigations to evaluate.
+  const mitigationEffRate: number | null = totalMitigations > 0
     ? Math.round((effectiveMitigations / totalMitigations) * 100)
-    : 0;
+    : null;
 
   const riskProfile: RiskProfile = {
     total_assessments: currentRAs.length,
@@ -191,25 +197,29 @@ export function computeHomeRiskAssessment(
   const overdueBSPReviews = activeBSPs.filter(b => b.review_date < today).length;
 
   const bspWithViews = activeBSPs.filter(b => b.has_child_views).length;
-  const bspViewsRate = activeBSPs.length > 0
+  // fab-0: null when no active BSPs.
+  const bspViewsRate: number | null = activeBSPs.length > 0
     ? Math.round((bspWithViews / activeBSPs.length) * 100)
-    : 0;
+    : null;
 
   const totalBehaviours = activeBSPs.reduce((s, b) => s + b.primary_behaviour_count, 0);
   const improvingBehaviours = activeBSPs.reduce((s, b) => s + b.improving_behaviours, 0);
-  const improvingRate = totalBehaviours > 0
+  // fab-0: null when no behaviours tracked.
+  const improvingRate: number | null = totalBehaviours > 0
     ? Math.round((improvingBehaviours / totalBehaviours) * 100)
-    : 0;
+    : null;
 
   const totalStrategies = activeBSPs.reduce((s, b) => s + b.positive_strategy_count, 0);
-  const avgStrategies = activeBSPs.length > 0
+  // fab-0: null when no active BSPs.
+  const avgStrategies: number | null = activeBSPs.length > 0
     ? Math.round((totalStrategies / activeBSPs.length) * 10) / 10
-    : 0;
+    : null;
 
   const withSafetyPlan = activeBSPs.filter(b => b.has_safety_plan).length;
-  const safetyPlanRate = activeBSPs.length > 0
+  // fab-0: null when no active BSPs.
+  const safetyPlanRate: number | null = activeBSPs.length > 0
     ? Math.round((withSafetyPlan / activeBSPs.length) * 100)
-    : 0;
+    : null;
 
   const bspProfile: BSPProfile = {
     total_plans: behaviour_support_plans.length,
@@ -255,17 +265,17 @@ export function computeHomeRiskAssessment(
   else if (combinedViewsRate < 50) score -= 4;
 
   // Mitigation effectiveness (±6)
-  if (mitigationEffRate >= 80) score += 4;
-  else if (mitigationEffRate >= 50) score += 1;
+  if (meets(mitigationEffRate, 80)) score += 4;
+  else if (meets(mitigationEffRate, 50)) score += 1;
   else if (totalMitigations > 0) score -= 3;
 
   // BSP quality (±8)
   if (activeBSPs.length > 0) {
-    if (improvingRate >= 60) score += 3;
-    else if (improvingRate < 30 && totalBehaviours > 0) score -= 3;
+    if (meets(improvingRate, 60)) score += 3;
+    else if (below(improvingRate, 30) && totalBehaviours > 0) score -= 3;
 
     if (safetyPlanRate === 100) score += 3;
-    else if (safetyPlanRate < 50 && activeBSPs.length > 0) score -= 3;
+    else if (below(safetyPlanRate, 50) && activeBSPs.length > 0) score -= 3;
   }
 
   score = clamp(score, 0, 100);
@@ -277,8 +287,8 @@ export function computeHomeRiskAssessment(
   if (increasing === 0 && currentRAs.length > 0) strengths.push("No increasing risk trends — current strategies are maintaining or reducing risk levels.");
   if (decreasing > 0) strengths.push(`${decreasing} risk assessment${decreasing > 1 ? "s" : ""} showing decreasing trends — interventions are working.`);
   if (combinedViewsRate === 100 && (currentRAs.length + activeBSPs.length) > 0) strengths.push("Child views captured in all risk assessments and BSPs — child-centred risk management.");
-  if (mitigationEffRate >= 80 && totalMitigations > 0) strengths.push(`${mitigationEffRate}% mitigation effectiveness — strategies are working well.`);
-  if (improvingRate >= 60 && totalBehaviours > 0) strengths.push(`${improvingRate}% of behaviours improving — behaviour support plans are effective.`);
+  if (totalMitigations > 0 && meets(mitigationEffRate, 80)) strengths.push(`${mitigationEffRate}% mitigation effectiveness — strategies are working well.`);
+  if (totalBehaviours > 0 && meets(improvingRate, 60)) strengths.push(`${improvingRate}% of behaviours improving — behaviour support plans are effective.`);
   if (totalOverdue === 0 && (currentRAs.length + activeBSPs.length) > 0) strengths.push("All risk assessments and BSPs reviewed within timescales.");
   if (safetyPlanRate === 100 && activeBSPs.length > 0) strengths.push("Safety plans in place for all behaviour support plans.");
 
@@ -288,7 +298,7 @@ export function computeHomeRiskAssessment(
   if (veryHighRisk > 0) concerns.push(`${veryHighRisk} very high risk assessment${veryHighRisk > 1 ? "s" : ""} — these require enhanced monitoring and multi-agency input.`);
   if (increasing > 0) concerns.push(`${increasing} risk assessment${increasing > 1 ? "s" : ""} with increasing trends — current strategies may not be effective.`);
   if (totalOverdue > 0) concerns.push(`${totalOverdue} overdue review${totalOverdue > 1 ? "s" : ""} — risk assessments and BSPs must be reviewed within agreed timescales.`);
-  if (mitigationEffRate < 50 && totalMitigations > 0) concerns.push(`Only ${mitigationEffRate}% mitigation effectiveness — strategies need reviewing and strengthening.`);
+  if (totalMitigations > 0 && below(mitigationEffRate, 50)) concerns.push(`Only ${mitigationEffRate}% mitigation effectiveness — strategies need reviewing and strengthening.`);
   if (combinedViewsRate < 50 && (currentRAs.length + activeBSPs.length) > 0) concerns.push("Child views missing from many risk documents — the child's perspective is essential for effective risk management.");
 
   // ── Recommendations ───────────────────────────────────────────────────
@@ -307,10 +317,10 @@ export function computeHomeRiskAssessment(
   if (veryHighRisk > 0) {
     recs.push({ rank: rank++, recommendation: "Ensure enhanced monitoring plans are in place for very high risk assessments — multi-agency involvement should be evidenced.", urgency: "soon", regulatory_ref: "Reg 13" });
   }
-  if (mitigationEffRate < 50 && totalMitigations > 0) {
+  if (totalMitigations > 0 && below(mitigationEffRate, 50)) {
     recs.push({ rank: rank++, recommendation: "Review and update mitigation strategies that are not proving effective.", urgency: "planned", regulatory_ref: "Reg 12" });
   }
-  if (safetyPlanRate < 100 && activeBSPs.length > 0) {
+  if (activeBSPs.length > 0 && safetyPlanRate !== 100) {
     recs.push({ rank: rank++, recommendation: "Ensure all behaviour support plans include a safety plan for crisis scenarios.", urgency: "planned", regulatory_ref: "Reg 13" });
   }
 
@@ -329,10 +339,10 @@ export function computeHomeRiskAssessment(
   if (decreasing > 0 && increasing === 0 && currentRAs.length >= 2) {
     insights.push({ text: "All risk trends are stable or decreasing — this evidences effective risk management and responsive care practice.", severity: "positive" });
   }
-  if (mitigationEffRate >= 80 && totalMitigations > 0) {
+  if (totalMitigations > 0 && meets(mitigationEffRate, 80)) {
     insights.push({ text: `${mitigationEffRate}% mitigation effectiveness is excellent. This demonstrates that the home's strategies are working and children are being kept safe.`, severity: "positive" });
   }
-  if (improvingRate >= 60 && totalBehaviours > 0) {
+  if (totalBehaviours > 0 && meets(improvingRate, 60)) {
     insights.push({ text: `${improvingRate}% of target behaviours are improving. Behaviour support plans are having a positive impact — excellent evidence of therapeutically informed care.`, severity: "positive" });
   }
   if (combinedViewsRate === 100 && (currentRAs.length + activeBSPs.length) > 0) {
@@ -371,14 +381,14 @@ function emptyRiskProfile(childIds: string[]): RiskProfile {
     total_assessments: 0, children_with_assessments: [], children_without_assessments: childIds,
     high_risk_count: 0, very_high_risk_count: 0, domains: {},
     decreasing_trend_count: 0, increasing_trend_count: 0, stable_trend_count: 0,
-    overdue_reviews: 0, child_views_rate: 0, mitigation_effectiveness_rate: 0,
+    overdue_reviews: 0, child_views_rate: null, mitigation_effectiveness_rate: null,
   };
 }
 
 function emptyBSPProfile(): BSPProfile {
   return {
     total_plans: 0, active_plans: 0, children_with_plans: [],
-    overdue_reviews: 0, child_views_rate: 0, improving_behaviour_rate: 0,
-    avg_strategies_per_plan: 0, safety_plan_coverage: 0,
+    overdue_reviews: 0, child_views_rate: null, improving_behaviour_rate: null,
+    avg_strategies_per_plan: null, safety_plan_coverage: null,
   };
 }
