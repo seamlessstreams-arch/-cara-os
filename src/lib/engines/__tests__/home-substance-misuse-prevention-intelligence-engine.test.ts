@@ -218,10 +218,10 @@ describe("computeSubstanceMisusePrevention", () => {
     it("returns zero for all metric rates when insufficient_data", () => {
       const r = computeSubstanceMisusePrevention(baseInput({ total_children: 0 }));
       expect(r.education_coverage_rate).toBe(0);
-      expect(r.risk_assessment_rate).toBe(0);
-      expect(r.intervention_effectiveness_rate).toBe(0);
-      expect(r.referral_compliance_rate).toBe(0);
-      expect(r.harm_reduction_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
+      expect(r.intervention_effectiveness_rate).toBeNull();
+      expect(r.referral_compliance_rate).toBeNull();
+      expect(r.harm_reduction_rate).toBeNull();
       expect(r.child_awareness_rate).toBe(0);
     });
 
@@ -285,10 +285,10 @@ describe("computeSubstanceMisusePrevention", () => {
     it("returns zero for all rates", () => {
       const r = computeSubstanceMisusePrevention(baseInput({ total_children: 5 }));
       expect(r.education_coverage_rate).toBe(0);
-      expect(r.risk_assessment_rate).toBe(0);
-      expect(r.intervention_effectiveness_rate).toBe(0);
-      expect(r.referral_compliance_rate).toBe(0);
-      expect(r.harm_reduction_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
+      expect(r.intervention_effectiveness_rate).toBeNull();
+      expect(r.referral_compliance_rate).toBeNull();
+      expect(r.harm_reduction_rate).toBeNull();
       expect(r.child_awareness_rate).toBe(0);
     });
   });
@@ -1246,7 +1246,7 @@ describe("computeSubstanceMisusePrevention", () => {
           // provide some other record to avoid allEmpty
           substance_education_records: [makeEducation()],
         }));
-        expect(r.risk_assessment_rate).toBe(0);
+        expect(r.risk_assessment_rate).toBeNull();
       });
     });
 
@@ -1270,7 +1270,7 @@ describe("computeSubstanceMisusePrevention", () => {
           total_children: 5,
           substance_education_records: [makeEducation()],
         }));
-        expect(r.intervention_effectiveness_rate).toBe(0);
+        expect(r.intervention_effectiveness_rate).toBeNull();
       });
     });
 
@@ -1318,7 +1318,7 @@ describe("computeSubstanceMisusePrevention", () => {
           total_children: 5,
           substance_education_records: [makeEducation()],
         }));
-        expect(r.referral_compliance_rate).toBe(0);
+        expect(r.referral_compliance_rate).toBeNull();
       });
     });
 
@@ -1343,7 +1343,7 @@ describe("computeSubstanceMisusePrevention", () => {
           total_children: 5,
           substance_education_records: [makeEducation()],
         }));
-        expect(r.harm_reduction_rate).toBe(0);
+        expect(r.harm_reduction_rate).toBeNull();
       });
     });
 
@@ -2482,7 +2482,7 @@ describe("computeSubstanceMisusePrevention", () => {
       // Tested implicitly: when no records exist, all rates are 0
       const r = computeSubstanceMisusePrevention(baseInput({ total_children: 0 }));
       expect(r.education_coverage_rate).toBe(0);
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBeNull();
     });
 
     it("single record per category", () => {
@@ -2580,7 +2580,7 @@ describe("computeSubstanceMisusePrevention", () => {
         risk_assessment_records: manyRiskAssessment(5, { completed: false }),
       }));
       // completion=0, coverage=0 → avg=0
-      expect(r.risk_assessment_rate).toBe(0);
+      expect(r.risk_assessment_rate).toBe(0) // record exists → 0, not null;
     });
 
     it("follow-up completion rate: pct(0,0) when no follow-ups planned", () => {
@@ -2606,7 +2606,7 @@ describe("computeSubstanceMisusePrevention", () => {
         // implementation = 0/1 = 0%
         // avg = 0
       }));
-      expect(r.harm_reduction_rate).toBe(0);
+      expect(r.harm_reduction_rate).toBe(0) // record exists → 0, not null;
     });
 
     it("referral compliance uses 100 for follow-up when no follow_up_required", () => {

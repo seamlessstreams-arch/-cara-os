@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldAlert } fro
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { SubstanceMisuseRating } from "@/lib/engines/home-substance-misuse-prevention-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<SubstanceMisuseRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -69,20 +70,20 @@ export function HomeSubstanceMisusePreventionIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.education_coverage_rate >= 90 ? "text-[--cs-success]" : d.education_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.education_coverage_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Education</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.risk_assessment_rate >= 90 ? "bg-green-50" : d.risk_assessment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.risk_assessment_rate >= 90 ? "text-[--cs-success]" : d.risk_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.risk_assessment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.risk_assessment_rate, 90) ? "bg-green-50" : meets(d.risk_assessment_rate, 70) ? "bg-amber-50" : d.risk_assessment_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.risk_assessment_rate, 90) ? "text-[--cs-success]" : meets(d.risk_assessment_rate, 70) ? "text-[--cs-warning]" : d.risk_assessment_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.risk_assessment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Risk Assess</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.intervention_effectiveness_rate >= 90 ? "bg-green-50" : d.intervention_effectiveness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.intervention_effectiveness_rate >= 90 ? "text-[--cs-success]" : d.intervention_effectiveness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.intervention_effectiveness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.intervention_effectiveness_rate, 90) ? "bg-green-50" : meets(d.intervention_effectiveness_rate, 70) ? "bg-amber-50" : d.intervention_effectiveness_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.intervention_effectiveness_rate, 90) ? "text-[--cs-success]" : meets(d.intervention_effectiveness_rate, 70) ? "text-[--cs-warning]" : d.intervention_effectiveness_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.intervention_effectiveness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Intervention</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.referral_compliance_rate >= 90 ? "bg-green-50" : d.referral_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.referral_compliance_rate >= 90 ? "text-[--cs-success]" : d.referral_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.referral_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.referral_compliance_rate, 90) ? "bg-green-50" : meets(d.referral_compliance_rate, 70) ? "bg-amber-50" : d.referral_compliance_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.referral_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.referral_compliance_rate, 70) ? "text-[--cs-warning]" : d.referral_compliance_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.referral_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Referral</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.harm_reduction_rate >= 90 ? "bg-green-50" : d.harm_reduction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.harm_reduction_rate >= 90 ? "text-[--cs-success]" : d.harm_reduction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.harm_reduction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.harm_reduction_rate, 90) ? "bg-green-50" : meets(d.harm_reduction_rate, 70) ? "bg-amber-50" : d.harm_reduction_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.harm_reduction_rate, 90) ? "text-[--cs-success]" : meets(d.harm_reduction_rate, 70) ? "text-[--cs-warning]" : d.harm_reduction_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.harm_reduction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Harm Red.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_awareness_rate >= 90 ? "bg-green-50" : d.child_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
