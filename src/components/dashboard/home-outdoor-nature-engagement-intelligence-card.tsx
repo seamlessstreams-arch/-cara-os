@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, TreePine } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { OutdoorNatureRating } from "@/lib/engines/home-outdoor-nature-engagement-intelligence-engine";
 
@@ -73,24 +74,24 @@ export function HomeOutdoorNatureEngagementIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.outdoor_frequency_rate >= 90 ? "text-[--cs-success]" : d.outdoor_frequency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.outdoor_frequency_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Outdoor</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.nature_learning_rate >= 90 ? "bg-green-50" : d.nature_learning_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.nature_learning_rate >= 90 ? "text-[--cs-success]" : d.nature_learning_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.nature_learning_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.nature_learning_rate, 90) ? "bg-green-50" : meets(d.nature_learning_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.nature_learning_rate, 90) ? "text-[--cs-success]" : meets(d.nature_learning_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.nature_learning_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Nature</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.garden_participation_rate >= 90 ? "bg-green-50" : d.garden_participation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.garden_participation_rate >= 90 ? "text-[--cs-success]" : d.garden_participation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.garden_participation_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Garden</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.exploration_diversity_rate >= 90 ? "bg-green-50" : d.exploration_diversity_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.exploration_diversity_rate >= 90 ? "text-[--cs-success]" : d.exploration_diversity_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.exploration_diversity_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.exploration_diversity_rate, 90) ? "bg-green-50" : meets(d.exploration_diversity_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.exploration_diversity_rate, 90) ? "text-[--cs-success]" : meets(d.exploration_diversity_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.exploration_diversity_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Explore</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.safety_compliance_rate >= 90 ? "bg-green-50" : d.safety_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.safety_compliance_rate >= 90 ? "text-[--cs-success]" : d.safety_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safety_compliance_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Safety</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_enjoyment_rate >= 90 ? "bg-green-50" : d.child_enjoyment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_enjoyment_rate >= 90 ? "text-[--cs-success]" : d.child_enjoyment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_enjoyment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_enjoyment_rate, 90) ? "bg-green-50" : meets(d.child_enjoyment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_enjoyment_rate, 90) ? "text-[--cs-success]" : meets(d.child_enjoyment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_enjoyment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Enjoy</p>
             </div>
           </div>

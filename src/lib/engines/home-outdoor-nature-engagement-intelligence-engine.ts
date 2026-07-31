@@ -10,6 +10,8 @@
 //             gardenProjectRecords, explorationRecords, outdoorSafetyRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface OutdoorActivityRecordInput {
@@ -132,12 +134,14 @@ export interface OutdoorNatureResult {
   outdoor_rating: OutdoorNatureRating;
   outdoor_score: number;
   headline: string;
+  // Most rates use pct() directly (deterministic 0 on empty). The 3 composite
+  // rates below are null on empty: no source records ⇒ no signal. Fab-0 doctrine.
   outdoor_frequency_rate: number;
-  nature_learning_rate: number;
+  nature_learning_rate: number | null;
   garden_participation_rate: number;
-  exploration_diversity_rate: number;
+  exploration_diversity_rate: number | null;
   safety_compliance_rate: number;
-  child_enjoyment_rate: number;
+  child_enjoyment_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: OutdoorNatureRecommendation[];
@@ -173,11 +177,11 @@ function emptyResult(
     outdoor_score: score,
     headline,
     outdoor_frequency_rate: 0,
-    nature_learning_rate: 0,
+    nature_learning_rate: null,
     garden_participation_rate: 0,
-    exploration_diversity_rate: 0,
+    exploration_diversity_rate: null,
     safety_compliance_rate: 0,
-    child_enjoyment_rate: 0,
+    child_enjoyment_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -272,10 +276,10 @@ export function computeOutdoorNatureEngagement(
   const outdoorEnjoymentSum = outdoor_activity_records.reduce(
     (sum, r) => sum + r.child_enjoyment, 0,
   );
-  const outdoorEnjoymentAvg =
+  const outdoorEnjoymentAvg: number | null =
     totalOutdoorRecords > 0
       ? Math.round((outdoorEnjoymentSum / totalOutdoorRecords) * 100) / 100
-      : 0;
+      : null;
 
   const weatherAppropriate = outdoor_activity_records.filter((r) => r.weather_appropriate_clothing).length;
   const weatherClothingRate = pct(weatherAppropriate, totalOutdoorRecords);
@@ -309,10 +313,10 @@ export function computeOutdoorNatureEngagement(
   const natureEngagementSum = nature_learning_records.reduce(
     (sum, r) => sum + r.child_engagement, 0,
   );
-  const natureEngagementAvg =
+  const natureEngagementAvg: number | null =
     totalNatureLearning > 0
       ? Math.round((natureEngagementSum / totalNatureLearning) * 100) / 100
-      : 0;
+      : null;
 
   const natureVoiceCaptured = nature_learning_records.filter((r) => r.child_voice_captured).length;
   const natureVoiceRate = pct(natureVoiceCaptured, totalNatureLearning);
@@ -326,10 +330,10 @@ export function computeOutdoorNatureEngagement(
   const outcomesDocumented = nature_learning_records.filter((r) => r.outcome_documented).length;
   const outcomeDocRate = pct(outcomesDocumented, totalNatureLearning);
 
-  const natureLearningRate =
+  const natureLearningRate: number | null =
     totalNatureLearning > 0
       ? Math.round((objectivesMetRate + pct(uniqueChildrenNature, total_children) + outcomeDocRate) / 3)
-      : 0;
+      : null;
 
   const uniqueLearningTypes = new Set(
     nature_learning_records.map((r) => r.learning_type),
@@ -365,10 +369,10 @@ export function computeOutdoorNatureEngagement(
   const gardenSatisfactionSum = garden_project_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const gardenSatisfactionAvg =
+  const gardenSatisfactionAvg: number | null =
     totalGardenRecords > 0
       ? Math.round((gardenSatisfactionSum / totalGardenRecords) * 100) / 100
-      : 0;
+      : null;
 
   const gardenWithSkills = garden_project_records.filter((r) => r.skills_gained.length > 0).length;
   const gardenSkillsRate = pct(gardenWithSkills, totalGardenRecords);
@@ -398,10 +402,10 @@ export function computeOutdoorNatureEngagement(
   const explorationEnjoymentSum = exploration_records.reduce(
     (sum, r) => sum + r.child_enjoyment, 0,
   );
-  const explorationEnjoymentAvg =
+  const explorationEnjoymentAvg: number | null =
     totalExplorationRecords > 0
       ? Math.round((explorationEnjoymentSum / totalExplorationRecords) * 100) / 100
-      : 0;
+      : null;
 
   const educationalExploration = exploration_records.filter((r) => r.educational_value).length;
   const educationalExplorationRate = pct(educationalExploration, totalExplorationRecords);
@@ -413,10 +417,10 @@ export function computeOutdoorNatureEngagement(
     exploration_records.map((r) => r.exploration_type),
   ).size;
 
-  const explorationDiversityRate =
+  const explorationDiversityRate: number | null =
     totalExplorationRecords > 0
       ? Math.round((newEnvironmentRate + pct(uniqueExplorationTypes, 5) + sensoryEngagementRate) / 3)
-      : 0;
+      : null;
 
   // --- Outdoor safety compliance ---
   const totalSafetyRecords = outdoor_safety_records.length;
@@ -448,14 +452,15 @@ export function computeOutdoorNatureEngagement(
     (totalExplorationRecords > 0 ? 1 : 0) +
     (totalGardenRecords > 0 ? 1 : 0);
   const enjoymentSumComposite =
-    (totalOutdoorRecords > 0 ? outdoorEnjoymentAvg : 0) +
-    (totalExplorationRecords > 0 ? explorationEnjoymentAvg : 0) +
-    (totalGardenRecords > 0 ? gardenSatisfactionAvg : 0);
-  const childEnjoymentAvg =
+    (totalOutdoorRecords > 0 ? outdoorEnjoymentAvg! : 0) +
+    (totalExplorationRecords > 0 ? explorationEnjoymentAvg! : 0) +
+    (totalGardenRecords > 0 ? gardenSatisfactionAvg! : 0);
+  const childEnjoymentAvg: number | null =
     enjoymentCount > 0
       ? Math.round((enjoymentSumComposite / enjoymentCount) * 100) / 100
-      : 0;
-  const childEnjoymentRate = enjoymentCount > 0 ? Math.round((childEnjoymentAvg / 5) * 100) : 0;
+      : null;
+  const childEnjoymentRate: number | null = enjoymentCount > 0 ? Math.round((childEnjoymentAvg! / 5) * 100)
+      : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -466,24 +471,24 @@ export function computeOutdoorNatureEngagement(
   else if (outdoorFrequencyRate >= 70) score += 2;
 
   // --- Bonus 2: natureLearningRate (>=80: +3, >=60: +1) ---
-  if (natureLearningRate >= 80) score += 3;
-  else if (natureLearningRate >= 60) score += 1;
+  if (meets(natureLearningRate, 80)) score += 3;
+  else if (meets(natureLearningRate, 60)) score += 1;
 
   // --- Bonus 3: gardenParticipationRate (>=90: +3, >=70: +1) ---
   if (gardenParticipationRate >= 90) score += 3;
   else if (gardenParticipationRate >= 70) score += 1;
 
   // --- Bonus 4: explorationDiversityRate (>=80: +3, >=60: +1) ---
-  if (explorationDiversityRate >= 80) score += 3;
-  else if (explorationDiversityRate >= 60) score += 1;
+  if (meets(explorationDiversityRate, 80)) score += 3;
+  else if (meets(explorationDiversityRate, 60)) score += 1;
 
   // --- Bonus 5: safetyComplianceRate (>=95: +4, >=80: +2) ---
   if (safetyComplianceRate >= 95) score += 4;
   else if (safetyComplianceRate >= 80) score += 2;
 
   // --- Bonus 6: childEnjoymentRate (>=80: +3, >=60: +1) ---
-  if (childEnjoymentRate >= 80) score += 3;
-  else if (childEnjoymentRate >= 60) score += 1;
+  if (meets(childEnjoymentRate, 80)) score += 3;
+  else if (meets(childEnjoymentRate, 60)) score += 1;
 
   // --- Bonus 7: childInitiatedRate (>=50: +3, >=30: +1) ---
   if (childInitiatedRate >= 50) score += 3;
@@ -505,11 +510,11 @@ export function computeOutdoorNatureEngagement(
   // safetyComplianceRate < 50 -> -5
   if (safetyComplianceRate < 50 && totalSafetyRecords > 0) score -= 5;
 
-  // natureLearningRate < 30 -> -4
-  if (natureLearningRate < 30 && totalNatureLearning > 0) score -= 4;
+  // below(natureLearningRate, 30) -> -4
+  if (below(natureLearningRate, 30) && totalNatureLearning > 0) score -= 4;
 
-  // childEnjoymentRate < 40 -> -4
-  if (childEnjoymentRate < 40 && enjoymentCount > 0) score -= 4;
+  // below(childEnjoymentRate, 40) -> -4
+  if (below(childEnjoymentRate, 40) && enjoymentCount > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -541,7 +546,7 @@ export function computeOutdoorNatureEngagement(
     );
   }
 
-  if (outdoorEnjoymentAvg >= 4.0 && totalOutdoorRecords > 0) {
+  if (meets(outdoorEnjoymentAvg, 4.0) && totalOutdoorRecords > 0) {
     strengths.push(
       `Children's enjoyment of outdoor activities averages ${outdoorEnjoymentAvg}/5 -- children genuinely enjoy their time outdoors, evidencing positive wellbeing outcomes.`,
     );
@@ -571,11 +576,11 @@ export function computeOutdoorNatureEngagement(
     );
   }
 
-  if (natureLearningRate >= 80 && totalNatureLearning > 0) {
+  if (meets(natureLearningRate, 80) && totalNatureLearning > 0) {
     strengths.push(
       `Nature learning rate at ${natureLearningRate}% -- nature-based learning is well planned, delivered, and documented with strong outcomes for children.`,
     );
-  } else if (natureLearningRate >= 60 && totalNatureLearning > 0) {
+  } else if (meets(natureLearningRate, 60) && totalNatureLearning > 0) {
     strengths.push(
       `Nature learning rate at ${natureLearningRate}% -- good progress in embedding nature-based learning into children's experiences.`,
     );
@@ -587,7 +592,7 @@ export function computeOutdoorNatureEngagement(
     );
   }
 
-  if (natureEngagementAvg >= 4.0 && totalNatureLearning > 0) {
+  if (meets(natureEngagementAvg, 4.0) && totalNatureLearning > 0) {
     strengths.push(
       `Children's engagement with nature learning averages ${natureEngagementAvg}/5 -- children are actively interested and involved in nature-based education.`,
     );
@@ -633,17 +638,17 @@ export function computeOutdoorNatureEngagement(
     );
   }
 
-  if (gardenSatisfactionAvg >= 4.0 && totalGardenRecords > 0) {
+  if (meets(gardenSatisfactionAvg, 4.0) && totalGardenRecords > 0) {
     strengths.push(
       `Children's satisfaction with garden projects averages ${gardenSatisfactionAvg}/5 -- children find gardening rewarding and enjoyable.`,
     );
   }
 
-  if (explorationDiversityRate >= 80 && totalExplorationRecords > 0) {
+  if (meets(explorationDiversityRate, 80) && totalExplorationRecords > 0) {
     strengths.push(
       `Exploration diversity rate at ${explorationDiversityRate}% -- children experience a rich variety of natural environments and exploration activities.`,
     );
-  } else if (explorationDiversityRate >= 60 && totalExplorationRecords > 0) {
+  } else if (meets(explorationDiversityRate, 60) && totalExplorationRecords > 0) {
     strengths.push(
       `Exploration diversity rate at ${explorationDiversityRate}% -- good range of environmental exploration opportunities for children.`,
     );
@@ -701,7 +706,7 @@ export function computeOutdoorNatureEngagement(
     );
   }
 
-  if (childEnjoymentRate >= 80 && enjoymentCount > 0) {
+  if (meets(childEnjoymentRate, 80) && enjoymentCount > 0) {
     strengths.push(
       `Composite child enjoyment rate at ${childEnjoymentRate}% -- children consistently derive pleasure and satisfaction from their outdoor and nature experiences.`,
     );
@@ -727,7 +732,7 @@ export function computeOutdoorNatureEngagement(
     );
   }
 
-  if (outdoorEnjoymentAvg < 3.0 && totalOutdoorRecords > 0) {
+  if (below(outdoorEnjoymentAvg, 3.0) && totalOutdoorRecords > 0) {
     concerns.push(
       `Children's enjoyment of outdoor activities averages only ${outdoorEnjoymentAvg}/5 -- activities may not be well-matched to children's interests or abilities.`,
     );
@@ -751,11 +756,11 @@ export function computeOutdoorNatureEngagement(
     );
   }
 
-  if (natureLearningRate < 30 && totalNatureLearning > 0) {
+  if (below(natureLearningRate, 30) && totalNatureLearning > 0) {
     concerns.push(
       `Nature learning rate at only ${natureLearningRate}% -- nature-based education is poorly planned, delivered, or documented, missing opportunities for children's development.`,
     );
-  } else if (natureLearningRate < 60 && natureLearningRate >= 30 && totalNatureLearning > 0) {
+  } else if (below(natureLearningRate, 60) && meets(natureLearningRate, 30) && totalNatureLearning > 0) {
     concerns.push(
       `Nature learning rate at ${natureLearningRate}% -- nature-based learning needs strengthening to maximise educational and developmental outcomes.`,
     );
@@ -767,7 +772,7 @@ export function computeOutdoorNatureEngagement(
     );
   }
 
-  if (natureEngagementAvg < 3.0 && totalNatureLearning > 0) {
+  if (below(natureEngagementAvg, 3.0) && totalNatureLearning > 0) {
     concerns.push(
       `Children's engagement with nature learning averages only ${natureEngagementAvg}/5 -- nature-based activities are not capturing children's interest.`,
     );
@@ -795,11 +800,11 @@ export function computeOutdoorNatureEngagement(
     );
   }
 
-  if (explorationDiversityRate < 30 && totalExplorationRecords > 0) {
+  if (below(explorationDiversityRate, 30) && totalExplorationRecords > 0) {
     concerns.push(
       `Exploration diversity rate at only ${explorationDiversityRate}% -- children are not experiencing a sufficient variety of natural environments and exploration activities.`,
     );
-  } else if (explorationDiversityRate < 60 && explorationDiversityRate >= 30 && totalExplorationRecords > 0) {
+  } else if (below(explorationDiversityRate, 60) && meets(explorationDiversityRate, 30) && totalExplorationRecords > 0) {
     concerns.push(
       `Exploration diversity at ${explorationDiversityRate}% -- the range of environmental exploration experiences needs broadening.`,
     );
@@ -839,11 +844,11 @@ export function computeOutdoorNatureEngagement(
     );
   }
 
-  if (childEnjoymentRate < 40 && enjoymentCount > 0) {
+  if (below(childEnjoymentRate, 40) && enjoymentCount > 0) {
     concerns.push(
       `Composite child enjoyment rate at only ${childEnjoymentRate}% -- children are not finding outdoor and nature experiences satisfying, suggesting the programme needs redesigning around children's interests.`,
     );
-  } else if (childEnjoymentRate < 60 && childEnjoymentRate >= 40 && enjoymentCount > 0) {
+  } else if (below(childEnjoymentRate, 60) && meets(childEnjoymentRate, 40) && enjoymentCount > 0) {
     concerns.push(
       `Child enjoyment rate at ${childEnjoymentRate}% -- outdoor and nature experiences are not consistently enjoyable for children.`,
     );
@@ -902,7 +907,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (childEnjoymentRate < 40 && enjoymentCount > 0) {
+  if (below(childEnjoymentRate, 40) && enjoymentCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -922,7 +927,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (natureLearningRate < 30 && totalNatureLearning > 0) {
+  if (below(natureLearningRate, 30) && totalNatureLearning > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -962,7 +967,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (explorationDiversityRate < 30 && totalExplorationRecords > 0) {
+  if (below(explorationDiversityRate, 30) && totalExplorationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1002,7 +1007,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (natureLearningRate >= 30 && natureLearningRate < 60 && totalNatureLearning > 0) {
+  if (meets(natureLearningRate, 30) && below(natureLearningRate, 60) && totalNatureLearning > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1022,7 +1027,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (explorationDiversityRate >= 30 && explorationDiversityRate < 60 && totalExplorationRecords > 0) {
+  if (meets(explorationDiversityRate, 30) && below(explorationDiversityRate, 60) && totalExplorationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1079,7 +1084,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (childEnjoymentRate < 40 && enjoymentCount > 0) {
+  if (below(childEnjoymentRate, 40) && enjoymentCount > 0) {
     insights.push({
       text: `Child enjoyment rate at only ${childEnjoymentRate}%. When children do not enjoy outdoor experiences, the programme is failing in its fundamental purpose. Ofsted expects outdoor activities to be enriching, enjoyable, and matched to children's interests and developmental needs.`,
       severity: "critical",
@@ -1102,7 +1107,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (natureLearningRate >= 30 && natureLearningRate < 80 && totalNatureLearning > 0) {
+  if (meets(natureLearningRate, 30) && below(natureLearningRate, 80) && totalNatureLearning > 0) {
     insights.push({
       text: `Nature learning rate at ${natureLearningRate}% -- nature-based education is partially effective but not yet consistently delivering strong outcomes for all children.`,
       severity: "warning",
@@ -1116,7 +1121,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (explorationDiversityRate >= 30 && explorationDiversityRate < 60 && totalExplorationRecords > 0) {
+  if (meets(explorationDiversityRate, 30) && below(explorationDiversityRate, 60) && totalExplorationRecords > 0) {
     insights.push({
       text: `Exploration diversity at ${explorationDiversityRate}% -- children would benefit from a wider range of environments and exploration types to build their confidence and connection with nature.`,
       severity: "warning",
@@ -1130,7 +1135,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (childEnjoymentRate >= 40 && childEnjoymentRate < 60 && enjoymentCount > 0) {
+  if (meets(childEnjoymentRate, 40) && below(childEnjoymentRate, 60) && enjoymentCount > 0) {
     insights.push({
       text: `Child enjoyment rate at ${childEnjoymentRate}% -- outdoor experiences are not consistently enjoyable. Consider consulting children more actively about what outdoor activities they would find rewarding.`,
       severity: "warning",
@@ -1175,7 +1180,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (outdoorFrequencyRate >= 90 && childEnjoymentRate >= 80 && totalOutdoorRecords > 0 && enjoymentCount > 0) {
+  if (outdoorFrequencyRate >= 90 && meets(childEnjoymentRate, 80) && totalOutdoorRecords > 0 && enjoymentCount > 0) {
     insights.push({
       text: `${outdoorFrequencyRate}% outdoor coverage with ${childEnjoymentRate}% child enjoyment -- children are not only accessing regular outdoor experiences but genuinely enjoying them. Ofsted will recognise this as evidence of child-centred, enriching care.`,
       severity: "positive",
@@ -1189,7 +1194,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (natureLearningRate >= 80 && educationLinkRate >= 70 && totalNatureLearning > 0) {
+  if (meets(natureLearningRate, 80) && educationLinkRate >= 70 && totalNatureLearning > 0) {
     insights.push({
       text: `Nature learning rate at ${natureLearningRate}% with ${educationLinkRate}% education linkage -- the home effectively uses nature-based learning to support children's educational and personal development. This bridges outdoor experiences with formal learning outcomes.`,
       severity: "positive",
@@ -1203,7 +1208,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (explorationDiversityRate >= 80 && newEnvironmentRate >= 50 && totalExplorationRecords > 0) {
+  if (meets(explorationDiversityRate, 80) && newEnvironmentRate >= 50 && totalExplorationRecords > 0) {
     insights.push({
       text: `Exploration diversity at ${explorationDiversityRate}% with ${newEnvironmentRate}% new environments -- children regularly discover unfamiliar natural settings, building environmental awareness, confidence, and a sense of adventure.`,
       severity: "positive",
@@ -1217,7 +1222,7 @@ export function computeOutdoorNatureEngagement(
     });
   }
 
-  if (therapeuticRate >= 60 && gardenSatisfactionAvg >= 4.0 && totalGardenRecords > 0) {
+  if (therapeuticRate >= 60 && meets(gardenSatisfactionAvg, 4.0) && totalGardenRecords > 0) {
     insights.push({
       text: `Therapeutic benefit noted in ${therapeuticRate}% of garden activities with ${gardenSatisfactionAvg}/5 satisfaction -- gardening is effectively used as a therapeutic tool, supporting children's emotional wellbeing, regulation, and sense of achievement.`,
       severity: "positive",

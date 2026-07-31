@@ -176,11 +176,11 @@ describe("computeOutdoorNatureEngagement", () => {
     it("returns all rates as 0 for insufficient_data", () => {
       const r = run({ total_children: 0 });
       expect(r.outdoor_frequency_rate).toBe(0);
-      expect(r.nature_learning_rate).toBe(0);
+      expect(r.nature_learning_rate).toBeNull();
       expect(r.garden_participation_rate).toBe(0);
-      expect(r.exploration_diversity_rate).toBe(0);
+      expect(r.exploration_diversity_rate).toBeNull();
       expect(r.safety_compliance_rate).toBe(0);
-      expect(r.child_enjoyment_rate).toBe(0);
+      expect(r.child_enjoyment_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights", () => {
@@ -228,11 +228,11 @@ describe("computeOutdoorNatureEngagement", () => {
     it("all rates are 0", () => {
       const r = run({ total_children: 3 });
       expect(r.outdoor_frequency_rate).toBe(0);
-      expect(r.nature_learning_rate).toBe(0);
+      expect(r.nature_learning_rate).toBeNull();
       expect(r.garden_participation_rate).toBe(0);
-      expect(r.exploration_diversity_rate).toBe(0);
+      expect(r.exploration_diversity_rate).toBeNull();
       expect(r.safety_compliance_rate).toBe(0);
-      expect(r.child_enjoyment_rate).toBe(0);
+      expect(r.child_enjoyment_rate).toBeNull();
     });
   });
 
@@ -1112,7 +1112,7 @@ describe("computeOutdoorNatureEngagement", () => {
         total_children: 4,
         outdoor_activity_records: acts,
       });
-      expect(r.nature_learning_rate).toBe(0);
+      expect(r.nature_learning_rate).toBeNull();
       expect(r.outdoor_score).toBe(52);
     });
   });
@@ -1138,7 +1138,7 @@ describe("computeOutdoorNatureEngagement", () => {
         total_children: 4,
         outdoor_safety_records: safs,
       });
-      expect(r.child_enjoyment_rate).toBe(0);
+      expect(r.child_enjoyment_rate).toBeNull();
       // Only bonus: safety 100% => +4
       expect(r.outdoor_score).toBe(56); // 52 + 4
     });
@@ -1204,7 +1204,7 @@ describe("computeOutdoorNatureEngagement", () => {
 
       it("is 0 when no nature records", () => {
         const r = run({ total_children: 4, outdoor_activity_records: [makeActivity({ child_id: "c1", child_initiated: false, child_enjoyment: 2 })] });
-        expect(r.nature_learning_rate).toBe(0);
+        expect(r.nature_learning_rate).toBeNull();
       });
     });
 
@@ -1238,7 +1238,7 @@ describe("computeOutdoorNatureEngagement", () => {
 
       it("is 0 when no exploration records", () => {
         const r = run({ total_children: 4, outdoor_activity_records: [makeActivity({ child_id: "c1", child_initiated: false, child_enjoyment: 2 })] });
-        expect(r.exploration_diversity_rate).toBe(0);
+        expect(r.exploration_diversity_rate).toBeNull();
       });
     });
 
@@ -1298,7 +1298,7 @@ describe("computeOutdoorNatureEngagement", () => {
       it("is 0 when no outdoor, exploration, or garden records", () => {
         const safs = [makeSafety({ compliant: true })];
         const r = run({ total_children: 4, outdoor_safety_records: safs });
-        expect(r.child_enjoyment_rate).toBe(0);
+        expect(r.child_enjoyment_rate).toBeNull();
       });
     });
   });
