@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PositiveIdentityRating } from "@/lib/engines/home-positive-identity-self-esteem-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 function useHomePositiveIdentitySelfEsteemIntelligence() {
   return useQuery({
@@ -73,20 +74,20 @@ export function HomePositiveIdentitySelfEsteemIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.identity_work_rate >= 90 ? "text-[--cs-success]" : d.identity_work_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.identity_work_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Identity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.life_story_engagement_rate >= 90 ? "bg-green-50" : d.life_story_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.life_story_engagement_rate >= 90 ? "text-[--cs-success]" : d.life_story_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.life_story_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.life_story_engagement_rate, 90) ? "bg-green-50" : meets(d.life_story_engagement_rate, 70) ? "bg-amber-50" : d.life_story_engagement_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.life_story_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.life_story_engagement_rate, 70) ? "text-[--cs-warning]" : d.life_story_engagement_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.life_story_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Life Story</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.self_esteem_programme_rate >= 90 ? "bg-green-50" : d.self_esteem_programme_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.self_esteem_programme_rate >= 90 ? "text-[--cs-success]" : d.self_esteem_programme_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.self_esteem_programme_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.self_esteem_programme_rate, 90) ? "bg-green-50" : meets(d.self_esteem_programme_rate, 70) ? "bg-amber-50" : d.self_esteem_programme_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.self_esteem_programme_rate, 90) ? "text-[--cs-success]" : meets(d.self_esteem_programme_rate, 70) ? "text-[--cs-warning]" : d.self_esteem_programme_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.self_esteem_programme_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Self-Est.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.achievement_celebration_rate >= 90 ? "bg-green-50" : d.achievement_celebration_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.achievement_celebration_rate >= 90 ? "text-[--cs-success]" : d.achievement_celebration_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.achievement_celebration_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Achieve.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.positive_image_rate >= 90 ? "bg-green-50" : d.positive_image_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.positive_image_rate >= 90 ? "text-[--cs-success]" : d.positive_image_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.positive_image_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.positive_image_rate, 90) ? "bg-green-50" : meets(d.positive_image_rate, 70) ? "bg-amber-50" : d.positive_image_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.positive_image_rate, 90) ? "text-[--cs-success]" : meets(d.positive_image_rate, 70) ? "text-[--cs-warning]" : d.positive_image_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.positive_image_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Image</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_confidence_rate >= 90 ? "bg-green-50" : d.child_confidence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

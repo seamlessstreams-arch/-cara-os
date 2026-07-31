@@ -11,6 +11,8 @@
 //             positiveImageRecords
 // ==============================================================================
 
+import { meets, below } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface IdentityWorkRecordInput {
@@ -174,10 +176,11 @@ export interface PositiveIdentityResult {
   identity_score: number;
   headline: string;
   identity_work_rate: number;
-  life_story_engagement_rate: number;
-  self_esteem_programme_rate: number;
+  // fab-0: null when no records for the domain.
+  life_story_engagement_rate: number | null;
+  self_esteem_programme_rate: number | null;
   achievement_celebration_rate: number;
-  positive_image_rate: number;
+  positive_image_rate: number | null;
   child_confidence_rate: number;
   strengths: string[];
   concerns: string[];
@@ -214,10 +217,10 @@ function emptyResult(
     identity_score: score,
     headline,
     identity_work_rate: 0,
-    life_story_engagement_rate: 0,
-    self_esteem_programme_rate: 0,
+    life_story_engagement_rate: null,
+    self_esteem_programme_rate: null,
     achievement_celebration_rate: 0,
-    positive_image_rate: 0,
+    positive_image_rate: null,
     child_confidence_rate: 0,
     strengths: [],
     concerns: [],
@@ -320,10 +323,11 @@ export function computePositiveIdentitySelfEsteem(
   const identitySatisfactionSum = identity_work_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const identitySatisfactionAvg =
+  // fab-0: null when no records.
+  const identitySatisfactionAvg: number | null =
     totalIdentityRecords > 0
       ? Math.round((identitySatisfactionSum / totalIdentityRecords) * 100) / 100
-      : 0;
+      : null;
 
   const uniqueChildrenWithIdentityWork = new Set(
     identity_work_records.map((r) => r.child_id),
@@ -366,19 +370,21 @@ export function computePositiveIdentitySelfEsteem(
   const lifeStorySatisfactionSum = life_story_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const lifeStorySatisfactionAvg =
+  // fab-0: null when no records.
+  const lifeStorySatisfactionAvg: number | null =
     totalLifeStoryRecords > 0
       ? Math.round((lifeStorySatisfactionSum / totalLifeStoryRecords) * 100) / 100
-      : 0;
+      : null;
 
   const lifeStorySWInvolved = life_story_records.filter((r) => r.social_worker_involved).length;
   const lifeStorySWRate = pct(lifeStorySWInvolved, totalLifeStoryRecords);
 
   // Composite life story engagement rate
-  const lifeStoryEngagementRate =
+  // fab-0: null when no records.
+  const lifeStoryEngagementRate: number | null =
     totalLifeStoryRecords > 0
       ? Math.round((lifeStoryBookRate + lifeStoryActiveRate + lifeStorySessionRate + lifeStoryEngagementRateRaw) / 4)
-      : 0;
+      : null;
 
   // --- Self-esteem programme rate ---
   const totalSelfEsteemRecords = self_esteem_programme_records.length;
@@ -408,16 +414,18 @@ export function computePositiveIdentitySelfEsteem(
   const selfEsteemSatisfactionSum = self_esteem_programme_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const selfEsteemSatisfactionAvg =
+  // fab-0: null when no records.
+  const selfEsteemSatisfactionAvg: number | null =
     totalSelfEsteemRecords > 0
       ? Math.round((selfEsteemSatisfactionSum / totalSelfEsteemRecords) * 100) / 100
-      : 0;
+      : null;
 
   // Composite self-esteem programme rate
-  const selfEsteemProgrammeRate =
+  // fab-0: null when no records.
+  const selfEsteemProgrammeRate: number | null =
     totalSelfEsteemRecords > 0
       ? Math.round((selfEsteemAttendanceRate + selfEsteemEngagementRate + selfEsteemProgressRate) / 3)
-      : 0;
+      : null;
 
   // --- Achievement celebration rate ---
   const totalAchievementRecords = achievement_records.length;
@@ -469,19 +477,12 @@ export function computePositiveIdentitySelfEsteem(
   const positiveImageFollowUp = positive_image_records.filter((r) => r.follow_up_planned).length;
   const positiveImageFollowUpRate = pct(positiveImageFollowUp, totalPositiveImageRecords);
 
-  const positiveImageSatisfactionSum = positive_image_records.reduce(
-    (sum, r) => sum + r.child_satisfaction, 0,
-  );
-  const positiveImageSatisfactionAvg =
-    totalPositiveImageRecords > 0
-      ? Math.round((positiveImageSatisfactionSum / totalPositiveImageRecords) * 100) / 100
-      : 0;
-
   // Composite positive image rate
-  const positiveImageRate =
+  // fab-0: null when no records.
+  const positiveImageRate: number | null =
     totalPositiveImageRecords > 0
       ? Math.round((positiveImageCompletionRate + positiveImageEngagementRate + positiveImageImprovementRate) / 3)
-      : 0;
+      : null;
 
   // --- Child confidence composite rate ---
   // Measures overall child confidence/engagement across all domains
@@ -508,20 +509,20 @@ export function computePositiveIdentitySelfEsteem(
   else if (identityWorkRate >= 70) score += 2;
 
   // --- Bonus 2: lifeStoryEngagementRate (>=80: +3, >=60: +1) ---
-  if (lifeStoryEngagementRate >= 80) score += 3;
-  else if (lifeStoryEngagementRate >= 60) score += 1;
+  if (meets(lifeStoryEngagementRate, 80)) score += 3;
+  else if (meets(lifeStoryEngagementRate, 60)) score += 1;
 
   // --- Bonus 3: selfEsteemProgrammeRate (>=80: +4, >=60: +2) ---
-  if (selfEsteemProgrammeRate >= 80) score += 4;
-  else if (selfEsteemProgrammeRate >= 60) score += 2;
+  if (meets(selfEsteemProgrammeRate, 80)) score += 4;
+  else if (meets(selfEsteemProgrammeRate, 60)) score += 2;
 
   // --- Bonus 4: achievementCelebrationRate (>=90: +3, >=70: +1) ---
   if (achievementCelebrationRate >= 90) score += 3;
   else if (achievementCelebrationRate >= 70) score += 1;
 
   // --- Bonus 5: positiveImageRate (>=80: +3, >=60: +1) ---
-  if (positiveImageRate >= 80) score += 3;
-  else if (positiveImageRate >= 60) score += 1;
+  if (meets(positiveImageRate, 80)) score += 3;
+  else if (meets(positiveImageRate, 60)) score += 1;
 
   // --- Bonus 6: childConfidenceRate (>=80: +3, >=60: +1) ---
   if (childConfidenceRate >= 80) score += 3;
@@ -545,13 +546,13 @@ export function computePositiveIdentitySelfEsteem(
   if (identityWorkRate < 50 && totalIdentityRecords > 0) score -= 5;
 
   // lifeStoryEngagementRate < 40 -> -5
-  if (lifeStoryEngagementRate < 40 && totalLifeStoryRecords > 0) score -= 5;
+  if (below(lifeStoryEngagementRate, 40) && totalLifeStoryRecords > 0) score -= 5;
 
   // achievementCelebrationRate < 50 -> -4
   if (achievementCelebrationRate < 50 && totalAchievementRecords > 0) score -= 4;
 
   // selfEsteemProgrammeRate < 40 -> -4
-  if (selfEsteemProgrammeRate < 40 && totalSelfEsteemRecords > 0) score -= 4;
+  if (below(selfEsteemProgrammeRate, 40) && totalSelfEsteemRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -583,7 +584,7 @@ export function computePositiveIdentitySelfEsteem(
     );
   }
 
-  if (identitySatisfactionAvg >= 4.0 && totalIdentityRecords > 0) {
+  if (totalIdentityRecords > 0 && identitySatisfactionAvg !== null && identitySatisfactionAvg >= 4.0) {
     strengths.push(
       `Children's satisfaction with identity work averages ${identitySatisfactionAvg}/5 -- children feel the identity exploration is valuable and personally meaningful.`,
     );
@@ -605,11 +606,11 @@ export function computePositiveIdentitySelfEsteem(
     );
   }
 
-  if (lifeStoryEngagementRate >= 80 && totalLifeStoryRecords > 0) {
+  if (totalLifeStoryRecords > 0 && meets(lifeStoryEngagementRate, 80)) {
     strengths.push(
       `Life story engagement rate at ${lifeStoryEngagementRate}% -- life story work is active, well-attended, and children are meaningfully engaged in exploring their personal narratives.`,
     );
-  } else if (lifeStoryEngagementRate >= 60 && totalLifeStoryRecords > 0) {
+  } else if (totalLifeStoryRecords > 0 && meets(lifeStoryEngagementRate, 60)) {
     strengths.push(
       `Life story engagement rate at ${lifeStoryEngagementRate}% -- good levels of participation in life story work supporting children's identity development.`,
     );
@@ -627,17 +628,17 @@ export function computePositiveIdentitySelfEsteem(
     );
   }
 
-  if (lifeStorySatisfactionAvg >= 4.0 && totalLifeStoryRecords > 0) {
+  if (totalLifeStoryRecords > 0 && lifeStorySatisfactionAvg !== null && lifeStorySatisfactionAvg >= 4.0) {
     strengths.push(
       `Children's satisfaction with life story work averages ${lifeStorySatisfactionAvg}/5 -- children find the work meaningful, age-appropriate, and supportive.`,
     );
   }
 
-  if (selfEsteemProgrammeRate >= 80 && totalSelfEsteemRecords > 0) {
+  if (totalSelfEsteemRecords > 0 && meets(selfEsteemProgrammeRate, 80)) {
     strengths.push(
       `Self-esteem programme rate at ${selfEsteemProgrammeRate}% -- programmes are well attended, children are engaged, and progress is documented. The home delivers effective, structured self-esteem support.`,
     );
-  } else if (selfEsteemProgrammeRate >= 60 && totalSelfEsteemRecords > 0) {
+  } else if (totalSelfEsteemRecords > 0 && meets(selfEsteemProgrammeRate, 60)) {
     strengths.push(
       `Self-esteem programme rate at ${selfEsteemProgrammeRate}% -- good levels of engagement and attendance across self-esteem programmes.`,
     );
@@ -655,7 +656,7 @@ export function computePositiveIdentitySelfEsteem(
     );
   }
 
-  if (selfEsteemSatisfactionAvg >= 4.0 && totalSelfEsteemRecords > 0) {
+  if (totalSelfEsteemRecords > 0 && selfEsteemSatisfactionAvg !== null && selfEsteemSatisfactionAvg >= 4.0) {
     strengths.push(
       `Children's satisfaction with self-esteem programmes averages ${selfEsteemSatisfactionAvg}/5 -- children value and benefit from the self-esteem support provided.`,
     );
@@ -701,11 +702,11 @@ export function computePositiveIdentitySelfEsteem(
     );
   }
 
-  if (positiveImageRate >= 80 && totalPositiveImageRecords > 0) {
+  if (totalPositiveImageRecords > 0 && meets(positiveImageRate, 80)) {
     strengths.push(
       `Positive self-image rate at ${positiveImageRate}% -- the home delivers effective activities that build children's confidence, resilience, and positive self-perception.`,
     );
-  } else if (positiveImageRate >= 60 && totalPositiveImageRecords > 0) {
+  } else if (totalPositiveImageRecords > 0 && meets(positiveImageRate, 60)) {
     strengths.push(
       `Positive self-image rate at ${positiveImageRate}% -- good levels of engagement in positive image building activities.`,
     );
@@ -759,7 +760,7 @@ export function computePositiveIdentitySelfEsteem(
     );
   }
 
-  if (identitySatisfactionAvg < 3.0 && totalIdentityRecords > 0) {
+  if (totalIdentityRecords > 0 && identitySatisfactionAvg !== null && identitySatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with identity work averages only ${identitySatisfactionAvg}/5 -- children do not find the identity exploration valuable or supportive.`,
     );
@@ -781,11 +782,11 @@ export function computePositiveIdentitySelfEsteem(
     );
   }
 
-  if (lifeStoryEngagementRate < 40 && totalLifeStoryRecords > 0) {
+  if (totalLifeStoryRecords > 0 && below(lifeStoryEngagementRate, 40)) {
     concerns.push(
       `Life story engagement rate at only ${lifeStoryEngagementRate}% -- life story work is insufficiently active, attended, or engaging. Children need consistent, meaningful opportunities to explore their personal narrative.`,
     );
-  } else if (lifeStoryEngagementRate < 60 && lifeStoryEngagementRate >= 40 && totalLifeStoryRecords > 0) {
+  } else if (totalLifeStoryRecords > 0 && lifeStoryEngagementRate !== null && lifeStoryEngagementRate < 60 && lifeStoryEngagementRate >= 40) {
     concerns.push(
       `Life story engagement rate at ${lifeStoryEngagementRate}% -- life story work needs strengthening to ensure all children benefit from exploring their personal history.`,
     );
@@ -803,17 +804,17 @@ export function computePositiveIdentitySelfEsteem(
     );
   }
 
-  if (lifeStorySatisfactionAvg < 3.0 && totalLifeStoryRecords > 0) {
+  if (totalLifeStoryRecords > 0 && lifeStorySatisfactionAvg !== null && lifeStorySatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with life story work averages only ${lifeStorySatisfactionAvg}/5 -- children do not find the life story work helpful or engaging.`,
     );
   }
 
-  if (selfEsteemProgrammeRate < 40 && totalSelfEsteemRecords > 0) {
+  if (totalSelfEsteemRecords > 0 && below(selfEsteemProgrammeRate, 40)) {
     concerns.push(
       `Self-esteem programme rate at only ${selfEsteemProgrammeRate}% -- programmes are poorly attended, children are disengaged, or progress is not being documented. The home is failing to provide effective self-esteem support.`,
     );
-  } else if (selfEsteemProgrammeRate < 60 && selfEsteemProgrammeRate >= 40 && totalSelfEsteemRecords > 0) {
+  } else if (totalSelfEsteemRecords > 0 && selfEsteemProgrammeRate !== null && selfEsteemProgrammeRate < 60 && selfEsteemProgrammeRate >= 40) {
     concerns.push(
       `Self-esteem programme rate at ${selfEsteemProgrammeRate}% -- self-esteem programme delivery needs improvement to ensure all children receive effective support.`,
     );
@@ -837,7 +838,7 @@ export function computePositiveIdentitySelfEsteem(
     );
   }
 
-  if (selfEsteemSatisfactionAvg < 3.0 && totalSelfEsteemRecords > 0) {
+  if (totalSelfEsteemRecords > 0 && selfEsteemSatisfactionAvg !== null && selfEsteemSatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with self-esteem programmes averages only ${selfEsteemSatisfactionAvg}/5 -- children do not feel the programmes are helpful or relevant.`,
     );
@@ -871,11 +872,11 @@ export function computePositiveIdentitySelfEsteem(
     );
   }
 
-  if (positiveImageRate < 40 && totalPositiveImageRecords > 0) {
+  if (totalPositiveImageRecords > 0 && below(positiveImageRate, 40)) {
     concerns.push(
       `Positive self-image rate at only ${positiveImageRate}% -- positive image building activities are not being effectively delivered, leaving children without adequate support for self-confidence.`,
     );
-  } else if (positiveImageRate < 60 && positiveImageRate >= 40 && totalPositiveImageRecords > 0) {
+  } else if (totalPositiveImageRecords > 0 && positiveImageRate !== null && positiveImageRate < 60 && positiveImageRate >= 40) {
     concerns.push(
       `Positive self-image rate at ${positiveImageRate}% -- positive image activities need improvement to ensure all children are supported in developing a healthy self-perception.`,
     );
@@ -930,7 +931,7 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (lifeStoryEngagementRate < 40 && totalLifeStoryRecords > 0) {
+  if (totalLifeStoryRecords > 0 && below(lifeStoryEngagementRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -950,7 +951,7 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (selfEsteemProgrammeRate < 40 && totalSelfEsteemRecords > 0) {
+  if (totalSelfEsteemRecords > 0 && below(selfEsteemProgrammeRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -980,7 +981,7 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (positiveImageRate < 40 && totalPositiveImageRecords > 0) {
+  if (totalPositiveImageRecords > 0 && below(positiveImageRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1113,7 +1114,7 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (lifeStoryEngagementRate < 40 && totalLifeStoryRecords > 0) {
+  if (totalLifeStoryRecords > 0 && below(lifeStoryEngagementRate, 40)) {
     insights.push({
       text: `Life story engagement at only ${lifeStoryEngagementRate}%. For looked-after children, understanding their personal history is fundamental to developing a secure identity. Low engagement with life story work risks children carrying unresolved questions about their past into adulthood.`,
       severity: "critical",
@@ -1127,7 +1128,7 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (selfEsteemProgrammeRate < 40 && totalSelfEsteemRecords > 0) {
+  if (totalSelfEsteemRecords > 0 && below(selfEsteemProgrammeRate, 40)) {
     insights.push({
       text: `Self-esteem programme rate at only ${selfEsteemProgrammeRate}%. Ineffective self-esteem support means children are not receiving the structured help they need to develop confidence and resilience. Ofsted will expect to see evidence of effective, measurable self-esteem interventions under SCCIF experiences and progress.`,
       severity: "critical",
@@ -1157,14 +1158,14 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (lifeStoryEngagementRate >= 40 && lifeStoryEngagementRate < 60 && totalLifeStoryRecords > 0) {
+  if (totalLifeStoryRecords > 0 && lifeStoryEngagementRate !== null && lifeStoryEngagementRate >= 40 && lifeStoryEngagementRate < 60) {
     insights.push({
       text: `Life story engagement at ${lifeStoryEngagementRate}% -- life story work is partially in place but not yet consistently supporting all children's understanding of their personal history.`,
       severity: "warning",
     });
   }
 
-  if (selfEsteemProgrammeRate >= 40 && selfEsteemProgrammeRate < 60 && totalSelfEsteemRecords > 0) {
+  if (totalSelfEsteemRecords > 0 && selfEsteemProgrammeRate !== null && selfEsteemProgrammeRate >= 40 && selfEsteemProgrammeRate < 60) {
     insights.push({
       text: `Self-esteem programme rate at ${selfEsteemProgrammeRate}% -- while some programmes are running, attendance, engagement, or progress documentation need improvement to ensure all children benefit.`,
       severity: "warning",
@@ -1178,7 +1179,7 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (positiveImageRate >= 40 && positiveImageRate < 60 && totalPositiveImageRecords > 0) {
+  if (totalPositiveImageRecords > 0 && positiveImageRate !== null && positiveImageRate >= 40 && positiveImageRate < 60) {
     insights.push({
       text: `Positive self-image rate at ${positiveImageRate}% -- self-image building activities are partially effective but need strengthening to ensure all children develop healthy self-perception and confidence.`,
       severity: "warning",
@@ -1233,7 +1234,7 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (identityWorkRate >= 90 && lifeStoryEngagementRate >= 80 && totalIdentityRecords > 0 && totalLifeStoryRecords > 0) {
+  if (totalIdentityRecords > 0 && totalLifeStoryRecords > 0 && meets(lifeStoryEngagementRate, 80) && identityWorkRate >= 90) {
     insights.push({
       text: `Identity work at ${identityWorkRate}% and life story engagement at ${lifeStoryEngagementRate}% -- the home provides comprehensive identity development support that helps children understand their past, navigate their present, and build hope for their future. Ofsted will recognise this as evidence of genuinely personalised care.`,
       severity: "positive",
@@ -1247,7 +1248,7 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (selfEsteemProgrammeRate >= 80 && selfEsteemMeasurableRate >= 70 && totalSelfEsteemRecords > 0) {
+  if (totalSelfEsteemRecords > 0 && meets(selfEsteemProgrammeRate, 80) && selfEsteemMeasurableRate >= 70) {
     insights.push({
       text: `Self-esteem programme rate at ${selfEsteemProgrammeRate}% with ${selfEsteemMeasurableRate}% measurable outcomes -- the home delivers effective, evidence-based self-esteem support with documented improvements in children's confidence and resilience.`,
       severity: "positive",
@@ -1261,7 +1262,7 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (positiveImageImprovementRate >= 70 && positiveImageRate >= 80 && totalPositiveImageRecords > 0) {
+  if (totalPositiveImageRecords > 0 && meets(positiveImageRate, 80) && positiveImageImprovementRate >= 70) {
     insights.push({
       text: `Positive self-image rate at ${positiveImageRate}% with ${positiveImageImprovementRate}% showing measurable improvement -- the home's self-image building activities are demonstrably effective in helping children develop healthy self-perception and confidence.`,
       severity: "positive",
@@ -1275,7 +1276,7 @@ export function computePositiveIdentitySelfEsteem(
     });
   }
 
-  if (lifeStoryBookRate >= 90 && lifeStorySatisfactionAvg >= 4.0 && totalLifeStoryRecords > 0) {
+  if (totalLifeStoryRecords > 0 && lifeStorySatisfactionAvg !== null && lifeStoryBookRate >= 90 && lifeStorySatisfactionAvg >= 4.0) {
     insights.push({
       text: `${lifeStoryBookRate}% life story book provision with child satisfaction averaging ${lifeStorySatisfactionAvg}/5 -- every child has access to their personal history in a meaningful, age-appropriate format that they value. This is exemplary practice in supporting identity development.`,
       severity: "positive",

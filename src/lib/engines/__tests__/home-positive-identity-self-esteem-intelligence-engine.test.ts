@@ -307,10 +307,10 @@ describe("computePositiveIdentitySelfEsteem", () => {
         positive_image_records: [],
       });
       expect(r.identity_work_rate).toBe(0);
-      expect(r.life_story_engagement_rate).toBe(0);
-      expect(r.self_esteem_programme_rate).toBe(0);
+      expect(r.life_story_engagement_rate).toBeNull();
+      expect(r.self_esteem_programme_rate).toBeNull();
       expect(r.achievement_celebration_rate).toBe(0);
-      expect(r.positive_image_rate).toBe(0);
+      expect(r.positive_image_rate).toBeNull();
       expect(r.child_confidence_rate).toBe(0);
     });
 
@@ -427,10 +427,10 @@ describe("computePositiveIdentitySelfEsteem", () => {
         positive_image_records: [],
       });
       expect(r.identity_work_rate).toBe(0);
-      expect(r.life_story_engagement_rate).toBe(0);
-      expect(r.self_esteem_programme_rate).toBe(0);
+      expect(r.life_story_engagement_rate).toBeNull();
+      expect(r.self_esteem_programme_rate).toBeNull();
       expect(r.achievement_celebration_rate).toBe(0);
-      expect(r.positive_image_rate).toBe(0);
+      expect(r.positive_image_rate).toBeNull();
       expect(r.child_confidence_rate).toBe(0);
     });
   });
@@ -784,7 +784,7 @@ describe("computePositiveIdentitySelfEsteem", () => {
 
     it("life_story_engagement_rate = 0 when no life story records", () => {
       const r = computePositiveIdentitySelfEsteem(identityOnly());
-      expect(r.life_story_engagement_rate).toBe(0);
+      expect(r.life_story_engagement_rate).toBeNull();
     });
 
     it("self_esteem_programme_rate is composite of 3 sub-rates", () => {
@@ -813,7 +813,7 @@ describe("computePositiveIdentitySelfEsteem", () => {
 
     it("self_esteem_programme_rate = 0 when no self-esteem records", () => {
       const r = computePositiveIdentitySelfEsteem(identityOnly());
-      expect(r.self_esteem_programme_rate).toBe(0);
+      expect(r.self_esteem_programme_rate).toBeNull();
     });
 
     it("achievement_celebration_rate = pct(celebrated, total)", () => {
@@ -855,7 +855,7 @@ describe("computePositiveIdentitySelfEsteem", () => {
 
     it("positive_image_rate = 0 when no positive image records", () => {
       const r = computePositiveIdentitySelfEsteem(identityOnly());
-      expect(r.positive_image_rate).toBe(0);
+      expect(r.positive_image_rate).toBeNull();
     });
 
     it("child_confidence_rate counts engagement across all domains", () => {
