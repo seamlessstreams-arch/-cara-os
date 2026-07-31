@@ -3,6 +3,11 @@
 import { useState, useEffect } from "react";
 import type { AttachmentRelationshipsIntelligence } from "@/lib/attachment-relationships";
 
+function fmt(v: number | null | undefined): string {
+  if (v === null || v === undefined) return "—";
+  return String(v);
+}
+
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
   good: "bg-blue-100 text-blue-800 border-blue-300",
@@ -152,10 +157,10 @@ export function AttachmentRelationshipsDashboardWidget() {
                   </span>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600">
-                  <div>Trust: <span className="font-medium">{child.averageTrustScore}/10</span></div>
+                  <div>Trust: <span className="font-medium">{fmt(child.averageTrustScore)}/10</span></div>
                   <div>Key Worker: <span className="font-medium">{child.keyWorkerQuality}</span></div>
                   <div>Belonging: <span className="font-medium">{child.belongingScore}/10</span></div>
-                  <div>Wellbeing: <span className="font-medium">{child.overallWellbeing}/10</span></div>
+                  <div>Wellbeing: <span className="font-medium">{fmt(child.overallWellbeing)}/10</span></div>
                 </div>
                 {child.protectiveFactors.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
@@ -182,8 +187,8 @@ export function AttachmentRelationshipsDashboardWidget() {
             <div><span className="text-gray-500">Strong:</span> <span className="font-medium text-green-600">{data.relationshipQuality.strongRelationshipsRate}%</span></div>
             <div><span className="text-gray-500">Avg Trust:</span> <span className="font-medium">{data.relationshipQuality.averageTrustScore}/10</span></div>
             <div><span className="text-gray-500">Avg Consistency:</span> <span className="font-medium">{data.relationshipQuality.averageConsistencyScore}/10</span></div>
-            <div><span className="text-gray-500">Key Worker Quality:</span> <span className="font-medium">{data.relationshipQuality.keyWorkerRelationshipQuality}/10</span></div>
-            <div><span className="text-gray-500">Child Rating:</span> <span className="font-medium">{data.relationshipQuality.averageChildRating}/10</span></div>
+            <div><span className="text-gray-500">Key Worker Quality:</span> <span className="font-medium">{fmt(data.relationshipQuality.keyWorkerRelationshipQuality)}/10</span></div>
+            <div><span className="text-gray-500">Child Rating:</span> <span className="font-medium">{fmt(data.relationshipQuality.averageChildRating)}/10</span></div>
           </div>
         </Section>
 
@@ -192,7 +197,7 @@ export function AttachmentRelationshipsDashboardWidget() {
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.interactionQuality.totalInteractions}</span></div>
             <div><span className="text-gray-500">Avg Quality:</span> <span className="font-medium">{data.interactionQuality.averageQuality}/10</span></div>
             <div><span className="text-gray-500">Child Initiated:</span> <span className="font-medium">{data.interactionQuality.childInitiatedRate}%</span></div>
-            <div><span className="text-gray-500">Per Child/Week:</span> <span className="font-medium">{data.interactionQuality.interactionsPerChildPerWeek}</span></div>
+            <div><span className="text-gray-500">Per Child/Week:</span> <span className="font-medium">{fmt(data.interactionQuality.interactionsPerChildPerWeek)}</span></div>
             <div><span className="text-gray-500">Attachment Relevant:</span> <span className="font-medium">{data.interactionQuality.attachmentRelevantRate}%</span></div>
             <div><span className="text-gray-500">Regulation Support:</span> <span className="font-medium">{data.interactionQuality.regulationSupportRate}%</span></div>
           </div>

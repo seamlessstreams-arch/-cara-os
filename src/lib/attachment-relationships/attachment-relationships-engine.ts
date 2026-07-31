@@ -146,9 +146,11 @@ export interface PeerRelationship {
 export interface AttachmentAssessmentResult {
   totalAssessments: number;
   childrenAssessed: number;
-  assessmentCoverageRate: number;
+  // fab-0: null when no children in the cohort (can't compute).
+  assessmentCoverageRate: number | null;
   styleDistribution: Record<string, number>;
-  assessmentCurrency: number; // % current (within 6 months)
+  // fab-0: null when no assessments exist to check currency.
+  assessmentCurrency: number | null; // % current (within 6 months)
   informedCareRate: number;
   sharedWithTeamRate: number;
   childrenShowingProgress: number;
@@ -160,9 +162,11 @@ export interface RelationshipQualityResult {
   qualityDistribution: Record<string, number>;
   averageTrustScore: number;
   averageConsistencyScore: number;
-  averageChildRating: number;
+  // fab-0: null when no relationships have a child rating.
+  averageChildRating: number | null;
   strongRelationshipsRate: number;
-  keyWorkerRelationshipQuality: number; // average quality score for key worker relationships
+  // fab-0: null when no key worker relationships exist.
+  keyWorkerRelationshipQuality: number | null;
   trendDistribution: Record<string, number>;
   overallScore: number;
 }
@@ -175,7 +179,8 @@ export interface InteractionQualityResult {
   attachmentRelevantRate: number;
   regulationSupportRate: number;
   averageDuration: number;
-  interactionsPerChildPerWeek: number;
+  // fab-0: null when no children have interactions.
+  interactionsPerChildPerWeek: number | null;
   overallScore: number;
 }
 
@@ -209,12 +214,13 @@ export interface ChildAttachmentProfile {
   keyWorkerQuality: RelationshipQuality | "none";
   totalRelationships: number;
   strongRelationships: number;
-  averageTrustScore: number;
-  interactionQuality: number;
+  // fab-0: null when the child has no relationships/interactions/peers.
+  averageTrustScore: number | null;
+  interactionQuality: number | null;
   stabilityScore: number;
   belongingScore: number;
-  peerRelationshipQuality: number;
-  overallWellbeing: number;
+  peerRelationshipQuality: number | null;
+  overallWellbeing: number | null;
   riskFactors: string[];
   protectiveFactors: string[];
 }
@@ -251,8 +257,8 @@ export function evaluateAttachmentAssessments(
 ): AttachmentAssessmentResult {
   if (assessments.length === 0) {
     return {
-      totalAssessments: 0, childrenAssessed: 0, assessmentCoverageRate: 0,
-      styleDistribution: {}, assessmentCurrency: 0, informedCareRate: 0,
+      totalAssessments: 0, childrenAssessed: 0, assessmentCoverageRate: null,
+      styleDistribution: {}, assessmentCurrency: null, informedCareRate: 0,
       sharedWithTeamRate: 0, childrenShowingProgress: 0, overallScore: 0,
     };
   }
@@ -260,9 +266,9 @@ export function evaluateAttachmentAssessments(
   const refDate = new Date(referenceDate);
   const totalAssessments = assessments.length;
   const childrenAssessed = new Set(assessments.map(a => a.childId)).size;
-  const assessmentCoverageRate = childIds.length > 0
+  const assessmentCoverageRate: number | null = childIds.length > 0
     ? Math.round((childrenAssessed / childIds.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Style distribution
   const styleDistribution: Record<string, number> = {};
@@ -286,9 +292,9 @@ export function evaluateAttachmentAssessments(
       (refDate.getMonth() - assessDate.getMonth());
     if (monthsDiff <= ASSESSMENT_CURRENCY_MONTHS) currentCount++;
   }
-  const assessmentCurrency = latestByChild.size > 0
+  const assessmentCurrency: number | null = latestByChild.size > 0
     ? Math.round((currentCount / latestByChild.size) * 1000) / 10
-    : 0;
+    : null;
 
   // Informed care and shared with team
   const informedCareRate = Math.round((assessments.filter(a => a.informedCareApproach).length / totalAssessments) * 1000) / 10;
@@ -307,8 +313,8 @@ export function evaluateAttachmentAssessments(
   }
 
   // Scoring: coverage(30) + currency(25) + informed care(20) + shared(15) + progress(10) = 100
-  const coverageScore = Math.min(assessmentCoverageRate, 100) * 0.3;
-  const currencyScore = Math.min(assessmentCurrency, 100) * 0.25;
+  const coverageScore = Math.min(assessmentCoverageRate ?? 0, 100) * 0.3;
+  const currencyScore = Math.min(assessmentCurrency ?? 0, 100) * 0.25;
   const informedScore = Math.min(informedCareRate, 100) * 0.2;
   const sharedScore = Math.min(sharedWithTeamRate, 100) * 0.15;
   const progressScore = latestByChild.size > 0
@@ -331,8 +337,8 @@ export function evaluateRelationshipQuality(
   if (relationships.length === 0) {
     return {
       totalRelationships: 0, qualityDistribution: {}, averageTrustScore: 0,
-      averageConsistencyScore: 0, averageChildRating: 0, strongRelationshipsRate: 0,
-      keyWorkerRelationshipQuality: 0, trendDistribution: {}, overallScore: 0,
+      averageConsistencyScore: 0, averageChildRating: null, strongRelationshipsRate: 0,
+      keyWorkerRelationshipQuality: null, trendDistribution: {}, overallScore: 0,
     };
   }
 
@@ -349,9 +355,9 @@ export function evaluateRelationshipQuality(
   const averageConsistencyScore = Math.round((relationships.reduce((s, r) => s + r.consistencyScore, 0) / totalRelationships) * 10) / 10;
 
   const withChildRating = relationships.filter(r => r.childRating !== undefined);
-  const averageChildRating = withChildRating.length > 0
+  const averageChildRating: number | null = withChildRating.length > 0
     ? Math.round((withChildRating.reduce((s, r) => s + r.childRating!, 0) / withChildRating.length) * 10) / 10
-    : 0;
+    : null;
 
   // Strong relationships rate
   const strongCount = relationships.filter(r => r.quality === "strong").length;
@@ -359,9 +365,9 @@ export function evaluateRelationshipQuality(
 
   // Key worker relationship quality (average trust + consistency for key worker relationships)
   const keyWorkerRels = relationships.filter(r => r.relationshipType === "key_worker");
-  const keyWorkerRelationshipQuality = keyWorkerRels.length > 0
+  const keyWorkerRelationshipQuality: number | null = keyWorkerRels.length > 0
     ? Math.round(((keyWorkerRels.reduce((s, r) => s + r.trustScore + r.consistencyScore, 0) / (keyWorkerRels.length * 2))) * 10) / 10
-    : 0;
+    : null;
 
   // Trend distribution
   const trendDistribution: Record<string, number> = {};
@@ -372,9 +378,9 @@ export function evaluateRelationshipQuality(
   // Scoring: trust(25) + consistency(20) + child rating(20) + strong rate(20) + key worker(15) = 100
   const trustScore = (averageTrustScore / 10) * 25;
   const consistencyScoreVal = (averageConsistencyScore / 10) * 20;
-  const childRatingScore = withChildRating.length > 0 ? (averageChildRating / 10) * 20 : 10; // default mid if no child ratings
+  const childRatingScore = averageChildRating !== null ? (averageChildRating / 10) * 20 : 10; // default mid if no child ratings
   const strongRateScore = Math.min(strongRelationshipsRate, 100) * 0.2;
-  const keyWorkerScore = (keyWorkerRelationshipQuality / 10) * 15;
+  const keyWorkerScore = keyWorkerRelationshipQuality !== null ? (keyWorkerRelationshipQuality / 10) * 15 : 0;
 
   const overallScore = Math.round(trustScore + consistencyScoreVal + childRatingScore + strongRateScore + keyWorkerScore);
 
@@ -395,7 +401,7 @@ export function evaluateInteractionQuality(
     return {
       totalInteractions: 0, averageQuality: 0, childInitiatedRate: 0,
       contextDistribution: {}, attachmentRelevantRate: 0, regulationSupportRate: 0,
-      averageDuration: 0, interactionsPerChildPerWeek: 0, overallScore: 0,
+      averageDuration: 0, interactionsPerChildPerWeek: null, overallScore: 0,
     };
   }
 
@@ -418,13 +424,13 @@ export function evaluateInteractionQuality(
   const end = new Date(periodEnd);
   const weeksDiff = Math.max(1, (end.getTime() - start.getTime()) / (7 * 24 * 60 * 60 * 1000));
   const childrenWithInteractions = new Set(interactions.map(i => i.childId)).size;
-  const interactionsPerChildPerWeek = childrenWithInteractions > 0
+  const interactionsPerChildPerWeek: number | null = childrenWithInteractions > 0
     ? Math.round((totalInteractions / childrenWithInteractions / weeksDiff) * 10) / 10
-    : 0;
+    : null;
 
   // Scoring: quality(30) + frequency(25) + child-initiated(20) + attachment-relevant(15) + regulation(10)
   const qualityScore = (averageQuality / 10) * 30;
-  const frequencyScore = Math.min(interactionsPerChildPerWeek / 5, 1) * 25; // 5+ per week = full marks
+  const frequencyScore = Math.min((interactionsPerChildPerWeek ?? 0) / 5, 1) * 25; // 5+ per week = full marks
   const childInitScore = Math.min(childInitiatedRate, 100) * 0.2;
   const attachScore = Math.min(attachmentRelevantRate, 100) * 0.15;
   const regScore = Math.min(regulationSupportRate, 100) * 0.1;
@@ -559,15 +565,15 @@ export function buildChildAttachmentProfiles(
     const keyWorkerRel = childRels.find(r => r.relationshipType === "key_worker");
     const keyWorkerQuality: RelationshipQuality | "none" = keyWorkerRel?.quality || "none";
     const strongRelationships = childRels.filter(r => r.quality === "strong").length;
-    const avgTrust = childRels.length > 0
+    const avgTrust: number | null = childRels.length > 0
       ? Math.round((childRels.reduce((s, r) => s + r.trustScore, 0) / childRels.length) * 10) / 10
-      : 0;
+      : null;
 
     // Interactions
     const childInteractions = interactions.filter(i => i.childId === childId);
-    const interactionQuality = childInteractions.length > 0
+    const interactionQuality: number | null = childInteractions.length > 0
       ? Math.round((childInteractions.reduce((s, i) => s + i.qualityRating, 0) / childInteractions.length) * 10) / 10
-      : 0;
+      : null;
 
     // Stability
     const childStability = stability.filter(s => s.childId === childId);
@@ -580,15 +586,16 @@ export function buildChildAttachmentProfiles(
     // Peer relationships
     const childPeers = peers.filter(p => p.childId === childId);
     const peerQualityRank: Record<string, number> = { strong: 10, developing: 7, new: 5, inconsistent: 4, strained: 2, broken: 0 };
-    const peerRelationshipQuality = childPeers.length > 0
+    const peerRelationshipQuality: number | null = childPeers.length > 0
       ? Math.round((childPeers.reduce((s, p) => s + (peerQualityRank[p.quality] || 0), 0) / childPeers.length) * 10) / 10
-      : 0;
+      : null;
 
     // Overall wellbeing: average of available scores (out of 10)
-    const scores = [avgTrust, interactionQuality, stabilityScore, belongingScore, peerRelationshipQuality].filter(s => s > 0);
-    const overallWellbeing = scores.length > 0
+    const scores = [avgTrust, interactionQuality, stabilityScore, belongingScore, peerRelationshipQuality]
+      .filter((s): s is number => s !== null && s > 0);
+    const overallWellbeing: number | null = scores.length > 0
       ? Math.round((scores.reduce((s, v) => s + v, 0) / scores.length) * 10) / 10
-      : 0;
+      : null;
 
     // Risk and protective factors
     const riskFactors: string[] = [];
@@ -670,19 +677,19 @@ export function generateAttachmentRelationshipsIntelligence(
 
   // Strengths
   const strengths: string[] = [];
-  if (assessmentResult.assessmentCoverageRate >= 100) strengths.push("All children have current attachment assessments informing their care approach");
+  if (assessmentResult.assessmentCoverageRate !== null && assessmentResult.assessmentCoverageRate >= 100) strengths.push("All children have current attachment assessments informing their care approach");
   if (relationshipResult.averageTrustScore >= 8) strengths.push("High trust scores across staff-child relationships demonstrate consistent relational practice");
   if (interactionResult.childInitiatedRate >= 50) strengths.push("Children frequently initiate positive interactions with staff, indicating strong relational security");
   if (stabilityResult.childFeelsSafeRate >= 100) strengths.push("All children report feeling safe — a fundamental indicator of attachment security");
   if (stabilityResult.averageBelonging >= 8) strengths.push("Strong sense of belonging across the home supports secure base development");
   if (peerResult.conflictResolutionRate >= 80) strengths.push("High conflict resolution rate demonstrates effective peer mediation and restorative approaches");
-  if (relationshipResult.keyWorkerRelationshipQuality >= 8) strengths.push("Key worker relationships are strong and consistent, providing secure base for each child");
+  if (relationshipResult.keyWorkerRelationshipQuality !== null && relationshipResult.keyWorkerRelationshipQuality >= 8) strengths.push("Key worker relationships are strong and consistent, providing secure base for each child");
   if (assessmentResult.childrenShowingProgress > 0) strengths.push("Evidence of positive shifts in attachment patterns shows therapeutic impact");
 
   // Areas for improvement
   const areasForImprovement: string[] = [];
-  if (assessmentResult.assessmentCoverageRate < 100) areasForImprovement.push("Not all children have attachment assessments — gaps in understanding needs");
-  if (assessmentResult.assessmentCurrency < 80) areasForImprovement.push("Some attachment assessments are not current — review schedule needs strengthening");
+  if (assessmentResult.assessmentCoverageRate !== null && assessmentResult.assessmentCoverageRate < 100) areasForImprovement.push("Not all children have attachment assessments — gaps in understanding needs");
+  if (assessmentResult.assessmentCurrency !== null && assessmentResult.assessmentCurrency < 80) areasForImprovement.push("Some attachment assessments are not current — review schedule needs strengthening");
   if (relationshipResult.averageTrustScore < 6) areasForImprovement.push("Trust scores are below expected levels — focus on consistency and predictability");
   if (interactionResult.averageQuality < 6) areasForImprovement.push("Interaction quality ratings suggest need for relational practice training");
   if (stabilityResult.keyWorkerConsistencyRate < 80) areasForImprovement.push("Key worker consistency is low — changes in key worker impact attachment security");
@@ -692,10 +699,10 @@ export function generateAttachmentRelationshipsIntelligence(
 
   // Actions
   const actions: string[] = [];
-  if (assessmentResult.assessmentCoverageRate < 100) actions.push("Commission attachment assessments for all children without current assessment");
+  if (assessmentResult.assessmentCoverageRate !== null && assessmentResult.assessmentCoverageRate < 100) actions.push("Commission attachment assessments for all children without current assessment");
   if (assessmentResult.informedCareRate < 80) actions.push("Ensure every attachment assessment translates into personalised care strategies");
   if (relationshipResult.averageTrustScore < 7) actions.push("Implement relational practice training focused on building trust through predictability and attunement");
-  if (interactionResult.interactionsPerChildPerWeek < 3) actions.push("Increase planned quality interactions to minimum 3 per child per week");
+  if (interactionResult.interactionsPerChildPerWeek !== null && interactionResult.interactionsPerChildPerWeek < 3) actions.push("Increase planned quality interactions to minimum 3 per child per week");
   if (stabilityResult.keyWorkerConsistencyRate < 80) actions.push("Review staff allocation to ensure key worker consistency — avoid unnecessary changes");
   if (peerResult.conflictResolutionRate < 70) actions.push("Strengthen peer conflict resolution through restorative practice circles and social skills groups");
 

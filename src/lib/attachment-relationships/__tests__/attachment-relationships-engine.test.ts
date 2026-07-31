@@ -358,9 +358,10 @@ describe("evaluateRelationshipQuality", () => {
   });
 
   it("handles relationships without child ratings", () => {
+    // fab-0: null when no relationship has a child rating (not measured).
     const noRating = [makeRelationship({ childRating: undefined })];
     const result = evaluateRelationshipQuality(noRating, CHILD_IDS);
-    expect(result.averageChildRating).toBe(0);
+    expect(result.averageChildRating).toBeNull();
   });
 });
 

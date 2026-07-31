@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
+
+function formatMaybe(v: unknown): string {
+  if (v === null || v === undefined) return "—";
+  return String(v);
+}
 
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
@@ -79,8 +85,8 @@ export function AttachmentRelationshipsIntelligenceWidget() {
         <ScoreBar label="Assessment Score" value={assessments.overallScore} max={100} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Assessments" value={assessments.totalAssessments} />
-          <Stat label="Coverage Rate" value={`${assessments.assessmentCoverageRate}%`} />
-          <Stat label="Currency" value={`${assessments.assessmentCurrency}%`} />
+          <Stat label="Coverage Rate" value={formatRate(assessments.assessmentCoverageRate as number | null)} />
+          <Stat label="Currency" value={formatRate(assessments.assessmentCurrency as number | null)} />
           <Stat label="Informed Care" value={`${assessments.informedCareRate}%`} />
           <Stat label="Shared With Team" value={`${assessments.sharedWithTeamRate}%`} />
           <Stat label="Showing Progress" value={assessments.childrenShowingProgress} />
@@ -93,9 +99,9 @@ export function AttachmentRelationshipsIntelligenceWidget() {
           <Stat label="Total Relationships" value={(relQuality as Record<string, number>).totalRelationships} />
           <Stat label="Avg Trust" value={(relQuality as Record<string, number>).averageTrustScore} />
           <Stat label="Avg Consistency" value={(relQuality as Record<string, number>).averageConsistencyScore} />
-          <Stat label="Avg Child Rating" value={(relQuality as Record<string, number>).averageChildRating} />
+          <Stat label="Avg Child Rating" value={formatMaybe((relQuality as Record<string, unknown>).averageChildRating)} />
           <Stat label="Strong Rate" value={`${(relQuality as Record<string, number>).strongRelationshipsRate}%`} />
-          <Stat label="Key Worker Quality" value={(relQuality as Record<string, number>).keyWorkerRelationshipQuality} />
+          <Stat label="Key Worker Quality" value={formatMaybe((relQuality as Record<string, unknown>).keyWorkerRelationshipQuality)} />
         </div>
       </Section>
 
@@ -107,7 +113,7 @@ export function AttachmentRelationshipsIntelligenceWidget() {
           <Stat label="Child Initiated" value={`${interQuality.childInitiatedRate}%`} />
           <Stat label="Attachment Relevant" value={`${interQuality.attachmentRelevantRate}%`} />
           <Stat label="Regulation Support" value={`${interQuality.regulationSupportRate}%`} />
-          <Stat label="Per Child/Week" value={interQuality.interactionsPerChildPerWeek} />
+          <Stat label="Per Child/Week" value={formatMaybe((interQuality as Record<string, unknown>).interactionsPerChildPerWeek)} />
         </div>
       </Section>
 
@@ -138,7 +144,7 @@ export function AttachmentRelationshipsIntelligenceWidget() {
         <Section title={`Child Profiles (${childProfiles.length})`}>
           {childProfiles.map((c) => (
             <div key={c.childId as string} className="mb-2 p-2 bg-gray-50 rounded">
-              <div className="flex justify-between text-sm font-medium"><span>{c.childName as string}</span><span>Wellbeing: {c.overallWellbeing as number}/10</span></div>
+              <div className="flex justify-between text-sm font-medium"><span>{c.childName as string}</span><span>Wellbeing: {formatMaybe(c.overallWellbeing)}/10</span></div>
               <p className="text-xs text-gray-500 mt-1">Style: {String(c.attachmentStyle).replace(/_/g, " ")} · {c.totalRelationships as number} relationships · {c.strongRelationships as number} strong</p>
               {(c.riskFactors as string[]).length > 0 && <p className="text-xs text-red-600 mt-1">Risk: {(c.riskFactors as string[]).join(", ")}</p>}
               {(c.protectiveFactors as string[]).length > 0 && <p className="text-xs text-green-600 mt-1">Protective: {(c.protectiveFactors as string[]).join(", ")}</p>}
