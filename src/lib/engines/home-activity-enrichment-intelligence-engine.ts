@@ -51,7 +51,8 @@ export type EnrichmentRating = "outstanding" | "good" | "adequate" | "inadequate
 export interface CategoryBreakdown {
   category: string;
   count: number;
-  percentage: number;
+  // fab-0: null when no activities in window (denominator 0).
+  percentage: number | null;
 }
 
 export interface ChildActivityProfile {
@@ -60,8 +61,9 @@ export interface ChildActivityProfile {
   activities_30d: number;
   new_experiences_30d: number;
   categories_accessed: string[];
-  participation_rate: number;    // % of activities where engaged (not refused)
-  enthusiasm_rate: number;       // % enthusiastic or suggested_by_yp
+  // fab-0: null when this child had no activities in 30d.
+  participation_rate: number | null;
+  enthusiasm_rate: number | null;
   has_feedback: boolean;
   activity_score: number;        // 0-100
   flags: string[];
@@ -71,10 +73,12 @@ export interface ProvisionSnapshot {
   total_activities_30d: number;
   total_activities_7d: number;
   unique_categories_30d: number;
-  avg_per_child_30d: number;
+  // fab-0: null when no children on establishment.
+  avg_per_child_30d: number | null;
   new_experiences_30d: number;
   yp_suggested_30d: number;
-  avg_duration_minutes: number;
+  // fab-0: null when no activities had recorded durations.
+  avg_duration_minutes: number | null;
   unique_staff_leading: number;
 }
 
@@ -123,12 +127,14 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 0;
+// fab-0: null when denominator is 0 — "not measured" is not "0%".
+function pct(n: number, d: number): number | null {
+  return d > 0 ? Math.round((n / d) * 100) : null;
 }
 
-function avg(values: number[]): number {
-  return values.length > 0 ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10 : 0;
+// fab-0: null on empty — no data to average.
+function avg(values: number[]): number | null {
+  return values.length > 0 ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10 : null;
 }
 
 function isEngaged(engagement: string): boolean {
@@ -181,8 +187,8 @@ export function computeHomeActivityEnrichment(
     if (newExp.length >= 3) score += 8;
     else if (newExp.length >= 1) score += 3;
 
-    if (enthusiasmRate >= 70) score += 5;
-    if (participationRate < 50 && mine30d.length >= 2) score -= 10;
+    if (enthusiasmRate !== null && enthusiasmRate >= 70) score += 5;
+    if (participationRate !== null && participationRate < 50 && mine30d.length >= 2) score -= 10;
 
     if (hasFeedback) score += 3;
 
@@ -192,7 +198,7 @@ export function computeHomeActivityEnrichment(
     if (mine30d.length === 0) flags.push("No activities in 30 days");
     if (mine30d.length > 0 && mine30d.length < 2) flags.push("Very few activities");
     if (categories.length <= 1 && mine30d.length >= 2) flags.push("Limited variety");
-    if (participationRate < 50 && mine30d.length >= 2) flags.push("Low participation");
+    if (participationRate !== null && participationRate < 50 && mine30d.length >= 2) flags.push("Low participation");
     if (mine30d.filter((a) => a.engagement === "refused").length >= 3) flags.push("Frequently refusing");
 
     return {
@@ -220,10 +226,10 @@ export function computeHomeActivityEnrichment(
     total_activities_30d: act30d.length,
     total_activities_7d: act7d.length,
     unique_categories_30d: uniqueCats30d.length,
-    avg_per_child_30d: children.length > 0 ? Math.round((act30d.length / children.length) * 10) / 10 : 0,
+    avg_per_child_30d: children.length > 0 ? Math.round((act30d.length / children.length) * 10) / 10 : null,
     new_experiences_30d: newExp30d.length,
     yp_suggested_30d: ypSuggested.length,
-    avg_duration_minutes: Math.round(avg(durations)),
+    avg_duration_minutes: durations.length > 0 ? Math.round(avg(durations)!) : null,
     unique_staff_leading: uniqueStaff.length,
   };
 
@@ -247,7 +253,7 @@ export function computeHomeActivityEnrichment(
 
   // ── Enrichment Score ─────────────────────────────────────────────────
   const avgChildScore = child_profiles.length > 0
-    ? avg(child_profiles.map((p) => p.activity_score))
+    ? (avg(child_profiles.map((p) => p.activity_score)) ?? 50)
     : 50;
 
   let enrichment_score = Math.round(avgChildScore);
@@ -304,7 +310,7 @@ export function computeHomeActivityEnrichment(
     strengths.push("Every child has participated in at least one activity in the last 30 days. Inclusive activity planning ensures no child is left behind.");
   }
 
-  const highEngagement = child_profiles.filter((p) => p.enthusiasm_rate >= 70 && p.activities_30d >= 2);
+  const highEngagement = child_profiles.filter((p) => p.enthusiasm_rate !== null && p.enthusiasm_rate >= 70 && p.activities_30d >= 2);
   if (highEngagement.length > 0) {
     strengths.push(`${highEngagement.length} child${highEngagement.length !== 1 ? "ren" : ""} show high enthusiasm for activities. Strong engagement indicates activities are well-matched to children's interests.`);
   }
@@ -328,7 +334,7 @@ export function computeHomeActivityEnrichment(
     concerns.push("No new experiences introduced in 30 days. Children benefit from trying new things — it builds confidence, broadens horizons, and supports positive identity development.");
   }
 
-  const refusingChildren = child_profiles.filter((p) => p.participation_rate < 50 && p.activities_30d >= 2);
+  const refusingChildren = child_profiles.filter((p) => p.participation_rate !== null && p.participation_rate < 50 && p.activities_30d >= 2);
   if (refusingChildren.length > 0) {
     concerns.push(`${refusingChildren.length} child${refusingChildren.length !== 1 ? "ren" : ""} have low participation rates. Consider whether activities are well-matched to their interests — consult with each child about what they would enjoy.`);
   }
