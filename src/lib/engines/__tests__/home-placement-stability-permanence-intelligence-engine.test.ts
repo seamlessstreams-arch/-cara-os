@@ -296,8 +296,8 @@ describe("computePlacementStabilityPermanence", () => {
     it("returns zero for all 6 output rates on insufficient data", () => {
       const r = computePlacementStabilityPermanence(baseInput({ total_children: 0 }));
       expect(r.placement_stability_rate).toBe(0);
-      expect(r.matching_quality_rate).toBe(0);
-      expect(r.stability_meeting_rate).toBe(0);
+      expect(r.matching_quality_rate).toBeNull();
+      expect(r.stability_meeting_rate).toBeNull();
       expect(r.disruption_prevention_rate).toBe(0);
       expect(r.planned_ending_rate).toBe(0);
       expect(r.child_consultation_rate).toBe(0);
@@ -352,8 +352,8 @@ describe("computePlacementStabilityPermanence", () => {
     it("returns zero for all 6 output rates", () => {
       const r = computePlacementStabilityPermanence(baseInput({ total_children: 3 }));
       expect(r.placement_stability_rate).toBe(0);
-      expect(r.matching_quality_rate).toBe(0);
-      expect(r.stability_meeting_rate).toBe(0);
+      expect(r.matching_quality_rate).toBeNull();
+      expect(r.stability_meeting_rate).toBeNull();
       expect(r.disruption_prevention_rate).toBe(0);
       expect(r.planned_ending_rate).toBe(0);
       expect(r.child_consultation_rate).toBe(0);
@@ -1687,7 +1687,7 @@ describe("computePlacementStabilityPermanence", () => {
           total_children: 1,
           placement_records: [makePlacement({ id: "pl-1", child_id: "c1" })],
         }));
-        expect(r.matching_quality_rate).toBe(0);
+        expect(r.matching_quality_rate).toBeNull();
       });
 
       it("returns 100 when all assessments have all criteria met", () => {
@@ -1732,7 +1732,7 @@ describe("computePlacementStabilityPermanence", () => {
           total_children: 1,
           placement_records: [makePlacement({ id: "pl-1", child_id: "c1" })],
         }));
-        expect(r.stability_meeting_rate).toBe(0);
+        expect(r.stability_meeting_rate).toBeNull();
       });
 
       it("handles meetings with no follow-up required", () => {
@@ -2886,8 +2886,8 @@ describe("computePlacementStabilityPermanence", () => {
       }));
       expect(r.stability_rating).toBeDefined();
       expect(r.stability_score).toBeGreaterThanOrEqual(0);
-      expect(r.matching_quality_rate).toBe(0);
-      expect(r.stability_meeting_rate).toBe(0);
+      expect(r.matching_quality_rate).toBeNull();
+      expect(r.stability_meeting_rate).toBeNull();
       expect(r.disruption_prevention_rate).toBe(0);
     });
 
@@ -3047,8 +3047,8 @@ describe("computePlacementStabilityPermanence", () => {
         total_children: 1,
         placement_records: [makePlacement({ id: "pl-1", child_id: "c1" })],
       }));
-      expect(r.matching_quality_rate).toBe(0);
-      expect(r.stability_meeting_rate).toBe(0);
+      expect(r.matching_quality_rate).toBeNull();
+      expect(r.stability_meeting_rate).toBeNull();
       expect(r.disruption_prevention_rate).toBe(0);
     });
 

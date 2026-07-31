@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import type { PlacementStabilityRating } from "@/lib/engines/home-placement-stability-permanence-intelligence-engine";
 
 function useHomePlacementStabilityPermanenceIntelligence() {
@@ -73,12 +74,12 @@ export function HomePlacementStabilityPermanenceIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.placement_stability_rate >= 90 ? "text-[--cs-success]" : d.placement_stability_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.placement_stability_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Stability</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.matching_quality_rate >= 90 ? "bg-green-50" : d.matching_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.matching_quality_rate >= 90 ? "text-[--cs-success]" : d.matching_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.matching_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.matching_quality_rate, 90) ? "bg-green-50" : meets(d.matching_quality_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.matching_quality_rate, 90) ? "text-[--cs-success]" : meets(d.matching_quality_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.matching_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Matching</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.stability_meeting_rate >= 90 ? "bg-green-50" : d.stability_meeting_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.stability_meeting_rate >= 90 ? "text-[--cs-success]" : d.stability_meeting_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.stability_meeting_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.stability_meeting_rate, 90) ? "bg-green-50" : meets(d.stability_meeting_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.stability_meeting_rate, 90) ? "text-[--cs-success]" : meets(d.stability_meeting_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.stability_meeting_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Meetings</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.disruption_prevention_rate >= 90 ? "bg-green-50" : d.disruption_prevention_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

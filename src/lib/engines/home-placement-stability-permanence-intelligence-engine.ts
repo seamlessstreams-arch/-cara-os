@@ -11,6 +11,8 @@
 //             placementReviewRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface PlacementRecordInput {
@@ -160,9 +162,11 @@ export interface PlacementStabilityResult {
   stability_rating: PlacementStabilityRating;
   stability_score: number;
   headline: string;
+  // Most rates use pct() directly (deterministic 0 on empty). The 2 composite
+  // rates below are null on empty: no source records ⇒ no signal. Fab-0 doctrine.
   placement_stability_rate: number;
-  matching_quality_rate: number;
-  stability_meeting_rate: number;
+  matching_quality_rate: number | null;
+  stability_meeting_rate: number | null;
   disruption_prevention_rate: number;
   planned_ending_rate: number;
   child_consultation_rate: number;
@@ -201,8 +205,8 @@ function emptyResult(
     stability_score: score,
     headline,
     placement_stability_rate: 0,
-    matching_quality_rate: 0,
-    stability_meeting_rate: 0,
+    matching_quality_rate: null,
+    stability_meeting_rate: null,
     disruption_prevention_rate: 0,
     planned_ending_rate: 0,
     child_consultation_rate: 0,
@@ -349,19 +353,19 @@ export function computePlacementStabilityPermanence(
   const placementSatisfactionSum = placement_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const placementSatisfactionAvg =
+  const placementSatisfactionAvg: number | null =
     totalPlacements > 0
       ? Math.round((placementSatisfactionSum / totalPlacements) * 100) / 100
-      : 0;
+      : null;
 
   // Stability ratings on placements
   const stabilityRatingSum = placement_records.reduce(
     (sum, r) => sum + r.stability_rating, 0,
   );
-  const stabilityRatingAvg =
+  const stabilityRatingAvg: number | null =
     totalPlacements > 0
       ? Math.round((stabilityRatingSum / totalPlacements) * 100) / 100
-      : 0;
+      : null;
 
   // Peer impact assessed
   const peerImpactAssessed = placement_records.filter((r) => r.peer_impact_assessed).length;
@@ -374,17 +378,17 @@ export function computePlacementStabilityPermanence(
     const diff = nowMs - startMs;
     return diff > 0 ? Math.floor(diff / (1000 * 60 * 60 * 24)) : r.duration_days;
   });
-  const avgOngoingDuration =
+  const avgOngoingDuration: number | null =
     ongoingDurations.length > 0
       ? Math.round(ongoingDurations.reduce((a, b) => a + b, 0) / ongoingDurations.length)
-      : 0;
+      : null;
 
   // Average matching score on placements
   const matchingScoreSum = placement_records.reduce(
     (sum, r) => sum + r.matching_score, 0,
   );
-  const avgPlacementMatchScore =
-    totalPlacements > 0 ? Math.round(matchingScoreSum / totalPlacements) : 0;
+  const avgPlacementMatchScore: number | null =
+    totalPlacements > 0 ? Math.round(matchingScoreSum / totalPlacements) : null;
 
   // ==========================================
   // METRIC 2 -- Matching Quality Rate
@@ -445,13 +449,13 @@ export function computePlacementStabilityPermanence(
   const overallMatchScoreSum = matching_assessment_records.reduce(
     (sum, r) => sum + r.overall_match_score, 0,
   );
-  const avgMatchScore =
+  const avgMatchScore: number | null =
     totalMatchingAssessments > 0
       ? Math.round(overallMatchScoreSum / totalMatchingAssessments)
-      : 0;
+      : null;
 
   // Composite matching quality rate
-  const matchingQualityRate =
+  const matchingQualityRate: number | null =
     totalMatchingAssessments > 0
       ? Math.round(
           (matchingCriteriaRate +
@@ -461,7 +465,7 @@ export function computePlacementStabilityPermanence(
             existingResidentsRate) /
             5,
         )
-      : 0;
+      : null;
 
   // ==========================================
   // METRIC 3 -- Stability Meeting Rate
@@ -519,7 +523,7 @@ export function computePlacementStabilityPermanence(
   const meetingCoverageRate = pct(uniqueChildrenWithMeetings, total_children);
 
   // Composite stability meeting rate
-  const stabilityMeetingRate =
+  const stabilityMeetingRate: number | null =
     totalStabilityMeetings > 0
       ? Math.round(
           (childViewsMeetingRate +
@@ -527,7 +531,7 @@ export function computePlacementStabilityPermanence(
             followUpCompletionRate) /
             3,
         )
-      : 0;
+      : null;
 
   // ==========================================
   // METRIC 4 -- Disruption Prevention Rate
@@ -674,10 +678,10 @@ export function computePlacementStabilityPermanence(
   const reviewQualitySum = placement_review_records.reduce(
     (sum, r) => sum + r.overall_placement_quality, 0,
   );
-  const reviewQualityAvg =
+  const reviewQualityAvg: number | null =
     totalReviews > 0
       ? Math.round((reviewQualitySum / totalReviews) * 100) / 100
-      : 0;
+      : null;
 
   // ==========================================
   // SCORING: base 52, max bonuses = +28
@@ -691,8 +695,8 @@ export function computePlacementStabilityPermanence(
   else if (placementStabilityRate >= 60) score += 1;
 
   // --- Bonus 2: Matching quality rate (>=85: +4, >=70: +2) ---
-  if (matchingQualityRate >= 85) score += 4;
-  else if (matchingQualityRate >= 70) score += 2;
+  if (meets(matchingQualityRate, 85)) score += 4;
+  else if (meets(matchingQualityRate, 70)) score += 2;
 
   // --- Bonus 3: Disruption prevention rate (>=80: +3, >=60: +1) ---
   if (disruptionPreventionRate >= 80) score += 3;
@@ -728,7 +732,7 @@ export function computePlacementStabilityPermanence(
   if (breakdownRate > 20 && totalPlacements > 0) score -= 6;
 
   // Penalty 2: Low matching quality -> -5
-  if (matchingQualityRate < 50 && totalMatchingAssessments > 0) score -= 5;
+  if (below(matchingQualityRate, 50) && totalMatchingAssessments > 0) score -= 5;
 
   // Penalty 3: Low disruption prevention -> -4
   if (disruptionPreventionRate < 40 && totalDisruptionRecords > 0) score -= 4;
@@ -765,11 +769,11 @@ export function computePlacementStabilityPermanence(
   }
 
   // S3: Matching quality
-  if (matchingQualityRate >= 85 && totalMatchingAssessments > 0) {
+  if (meets(matchingQualityRate, 85) && totalMatchingAssessments > 0) {
     strengths.push(
       `${matchingQualityRate}% matching quality composite rate -- comprehensive assessment of needs, risks, and compatibility consistently informs admission decisions.`,
     );
-  } else if (matchingQualityRate >= 70 && totalMatchingAssessments > 0) {
+  } else if (meets(matchingQualityRate, 70) && totalMatchingAssessments > 0) {
     strengths.push(
       `${matchingQualityRate}% matching quality rate -- good evidence of thorough matching assessments prior to placement.`,
     );
@@ -841,7 +845,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // S11: High average satisfaction
-  if (placementSatisfactionAvg >= 4.0 && totalPlacements > 0) {
+  if (meets(placementSatisfactionAvg, 4.0) && totalPlacements > 0) {
     strengths.push(
       `Children's placement satisfaction averages ${placementSatisfactionAvg}/5 -- residents report positive experiences of their placements.`,
     );
@@ -855,7 +859,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // S13: Review quality high
-  if (reviewQualityAvg >= 4.0 && totalReviews > 0) {
+  if (meets(reviewQualityAvg, 4.0) && totalReviews > 0) {
     strengths.push(
       `Overall placement quality averages ${reviewQualityAvg}/5 in reviews -- reviewers rate the home's placement provision highly.`,
     );
@@ -896,7 +900,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // C3: Low matching quality
-  if (matchingQualityRate < 60 && totalMatchingAssessments > 0) {
+  if (below(matchingQualityRate, 60) && totalMatchingAssessments > 0) {
     concerns.push(
       `Matching quality composite rate at ${matchingQualityRate}% -- matching assessments are not consistently meeting the required standard for needs assessment, risk compatibility, and consideration of existing residents.`,
     );
@@ -995,7 +999,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R3: Low matching quality
-  if (matchingQualityRate < 65 && totalMatchingAssessments > 0) {
+  if (below(matchingQualityRate, 65) && totalMatchingAssessments > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -1162,7 +1166,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I4: Low matching quality contributing to instability
-  if (matchingQualityRate < 50 && unplannedEndingRate > 30 && totalMatchingAssessments > 0) {
+  if (below(matchingQualityRate, 50) && unplannedEndingRate > 30 && totalMatchingAssessments > 0) {
     insights.push({
       text: `Low matching quality (${matchingQualityRate}%) combined with high unplanned endings (${unplannedEndingRate}%) suggests that inadequate matching assessments may be contributing to placement instability. Ofsted will expect to see clear evidence that Reg 36 admission and matching processes are robust and effective.`,
       severity: "critical",
@@ -1210,7 +1214,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I10: Long average placement duration (positive)
-  if (avgOngoingDuration >= 180 && totalOngoing >= 2) {
+  if (meets(avgOngoingDuration, 180) && totalOngoing >= 2) {
     insights.push({
       text: `Average ongoing placement duration is ${avgOngoingDuration} days -- sustained placements indicate that the home provides a stable, nurturing environment where children can develop secure relationships and a sense of belonging.`,
       severity: "positive",
