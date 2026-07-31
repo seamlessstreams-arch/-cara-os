@@ -626,9 +626,10 @@ export function computeSensoryDietRegulation(
   // ================================================================
 
   // Composite: children improving in self-reg + positive OT goal progress + strategy effectiveness
+  const goalContribution = Math.min(totalGoalsAchieved, totalGoalsSet);
   const childProgressNumerator =
     childrenImproving +
-    (totalGoalsAchieved > 0 ? Math.min(totalGoalsAchieved, totalGoalsSet) : 0) +
+    goalContribution +
     effectiveStrategies;
   const childProgressDenominator =
     totalSelfRegAssessments + totalGoalsSet + totalStrategies;
