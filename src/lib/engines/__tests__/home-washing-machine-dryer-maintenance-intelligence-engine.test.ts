@@ -210,12 +210,12 @@ describe("Empty / edge-case scenarios", () => {
 
   it("returns average_appliance_age 0 when no energy records", () => {
     const r = computeWashingMachineDryerMaintenance({ ...baseInput, total_children: 0 });
-    expect(r.average_appliance_age).toBe(0);
+    expect(r.average_appliance_age).toBeNull();
   });
 
   it("returns breakdown_resolution_avg_hours 0 when no breakdowns", () => {
     const r = computeWashingMachineDryerMaintenance({ ...baseInput, total_children: 0 });
-    expect(r.breakdown_resolution_avg_hours).toBe(0);
+    expect(r.breakdown_resolution_avg_hours).toBeNull();
   });
 });
 
@@ -328,7 +328,7 @@ describe("Breakdown response rate", () => {
         resolved_date: null,
       })],
     });
-    expect(r.breakdown_resolution_avg_hours).toBe(0);
+    expect(r.breakdown_resolution_avg_hours).toBeNull();
   });
 
   it("counts unique appliance IDs from breakdowns", () => {

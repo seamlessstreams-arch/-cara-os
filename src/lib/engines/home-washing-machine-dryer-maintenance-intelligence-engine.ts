@@ -157,8 +157,9 @@ export interface WashingMachineDryerMaintenanceResult {
   hygiene_cycle_rate: number;
   energy_efficiency_rate: number;
   child_independence_rate: number;
-  average_appliance_age: number;
-  breakdown_resolution_avg_hours: number;
+  // fab-0: null when no energy records / no breakdowns.
+  average_appliance_age: number | null;
+  breakdown_resolution_avg_hours: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: WashingMachineDryerRecommendation[];
@@ -214,8 +215,8 @@ function emptyResult(
     hygiene_cycle_rate: 0,
     energy_efficiency_rate: 0,
     child_independence_rate: 0,
-    average_appliance_age: 0,
-    breakdown_resolution_avg_hours: 0,
+    average_appliance_age: null,
+    breakdown_resolution_avg_hours: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -374,13 +375,14 @@ export function computeWashingMachineDryerMaintenance(
       resolutionHours.push(hrs);
     }
   }
-  const breakdownResolutionAvgHours =
+  // fab-0: null when no resolved breakdowns.
+  const breakdownResolutionAvgHours: number | null =
     resolutionHours.length > 0
       ? Math.round(
           resolutionHours.reduce((sum, h) => sum + h, 0) /
             resolutionHours.length,
         )
-      : 0;
+      : null;
 
   // Temporary arrangement provision rate
   const tempArrangementProvided = breakdown_records.filter(
@@ -472,10 +474,11 @@ export function computeWashingMachineDryerMaintenance(
     (sum, c) => sum + c.child_satisfaction_rating,
     0,
   );
-  const satisfactionAvg =
+  // fab-0: null when no child-access records.
+  const satisfactionAvg: number | null =
     totalChildAccessRecords > 0
       ? Math.round((satisfactionSum / totalChildAccessRecords) * 100) / 100
-      : 0;
+      : null;
 
   // Children with barriers
   const childrenWithBarriers = child_access_records.filter(
@@ -589,10 +592,11 @@ export function computeWashingMachineDryerMaintenance(
 
   // Average appliance age
   const totalAge = energy_records.reduce((sum, e) => sum + e.age_years, 0);
-  const averageApplianceAge =
+  // fab-0: null when no energy records.
+  const averageApplianceAge: number | null =
     totalEnergyRecords > 0
       ? Math.round((totalAge / totalEnergyRecords) * 10) / 10
-      : 0;
+      : null;
 
   // Eco mode usage
   const ecoModeAvailable = energy_records.filter(
@@ -601,10 +605,11 @@ export function computeWashingMachineDryerMaintenance(
   const ecoModeUsageSum = energy_records
     .filter((e) => e.eco_mode_available)
     .reduce((sum, e) => sum + e.eco_mode_used_percentage, 0);
-  const ecoModeUsageAvg =
+  // fab-0: null when no eco-mode appliances.
+  const ecoModeUsageAvg: number | null =
     ecoModeAvailable > 0
       ? Math.round(ecoModeUsageSum / ecoModeAvailable)
-      : 0;
+      : null;
 
   // Efficiency check compliance
   const efficiencyChecksOverdue = energy_records.filter(
@@ -634,10 +639,11 @@ export function computeWashingMachineDryerMaintenance(
     (sum, e) => sum + e.annual_cost_estimate_gbp,
     0,
   );
-  const avgAnnualCostPerAppliance =
+  // fab-0: null when no energy records.
+  const avgAnnualCostPerAppliance: number | null =
     totalEnergyRecords > 0
       ? Math.round((totalAnnualCost / totalEnergyRecords) * 100) / 100
-      : 0;
+      : null;
 
   // Poor energy ratings (D or worse)
   const poorEnergyRatings = ["D", "E", "F", "G"];
@@ -777,7 +783,7 @@ export function computeWashingMachineDryerMaintenance(
     );
   }
 
-  if (satisfactionAvg >= 4.0 && preferenceRate >= 90 && totalChildAccessRecords > 0) {
+  if (totalChildAccessRecords > 0 && satisfactionAvg !== null && satisfactionAvg >= 4.0 && preferenceRate >= 90) {
     strengths.push(
       `Child satisfaction averages ${satisfactionAvg}/5 with ${preferenceRate}% preferences respected — children report high satisfaction and feel their laundry choices are valued.`,
     );
@@ -899,7 +905,7 @@ export function computeWashingMachineDryerMaintenance(
     );
   }
 
-  if (satisfactionAvg < 2.5 && totalChildAccessRecords > 0) {
+  if (totalChildAccessRecords > 0 && satisfactionAvg !== null && satisfactionAvg < 2.5) {
     concerns.push(
       `Child satisfaction with laundry access averages only ${satisfactionAvg}/5 — children are dissatisfied with how their laundry needs are being met.`,
     );
@@ -1125,7 +1131,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (ecoModeUsageAvg < 50 && ecoModeAvailable > 0) {
+  if (ecoModeAvailable > 0 && ecoModeUsageAvg !== null && ecoModeUsageAvg < 50) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1145,7 +1151,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (satisfactionAvg < 3.0 && totalChildAccessRecords > 0) {
+  if (totalChildAccessRecords > 0 && satisfactionAvg !== null && satisfactionAvg < 3.0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1279,7 +1285,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (satisfactionAvg >= 2.5 && satisfactionAvg < 3.5 && totalChildAccessRecords > 0) {
+  if (totalChildAccessRecords > 0 && satisfactionAvg !== null && satisfactionAvg >= 2.5 && satisfactionAvg < 3.5) {
     insights.push({
       text: `Child satisfaction with laundry averages ${satisfactionAvg}/5 — children's experience of laundry arrangements is mediocre. Consulting children about what would improve their experience could reveal practical changes that make a meaningful difference to daily life.`,
       severity: "warning",
