@@ -186,17 +186,19 @@ export function HomeShiftPatternIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Punctuality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Avg delay: <span className={cn("font-medium",
+                  d.punctuality.avg_delay_minutes === null ? "text-muted-foreground" :
                   d.punctuality.avg_delay_minutes <= 5 ? "text-[--cs-success]" :
                   d.punctuality.avg_delay_minutes <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.punctuality.avg_delay_minutes}m</span></p>
+                )}>{d.punctuality.avg_delay_minutes === null ? "—" : `${d.punctuality.avg_delay_minutes}m`}</span></p>
                 <p>Late starts: <span className={cn("font-medium",
                   d.punctuality.late_count === 0 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.punctuality.late_count}</span></p>
                 <p>Fairness: <span className={cn("font-medium",
+                  d.workload.fairness_ratio === null ? "text-muted-foreground" :
                   d.workload.fairness_ratio >= 0.6 ? "text-[--cs-success]" :
                   d.workload.fairness_ratio >= 0.4 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.workload.fairness_ratio}</span></p>
-                <p>Max delay: <span className="font-medium text-slate-600">{d.punctuality.max_delay_minutes}m</span></p>
+                )}>{d.workload.fairness_ratio ?? "—"}</span></p>
+                <p>Max delay: <span className="font-medium text-slate-600">{d.punctuality.max_delay_minutes === null ? "—" : `${d.punctuality.max_delay_minutes}m`}</span></p>
               </div>
             </div>
           </div>

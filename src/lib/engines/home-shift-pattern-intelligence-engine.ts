@@ -58,26 +58,29 @@ export interface CoverageProfile {
 
 export interface PunctualityProfile {
   shifts_with_actual_start: number;
-  avg_delay_minutes: number;
+  // fab-0: null when no actual-start data.
+  avg_delay_minutes: number | null;
   on_time_count: number;
   on_time_rate: number;
   late_count: number;
   early_count: number;
-  max_delay_minutes: number;
+  max_delay_minutes: number | null;
 }
 
 export interface OvertimeProfile {
   total_overtime_minutes: number;
-  avg_overtime_per_shift: number;
+  // fab-0: null when no completed shifts.
+  avg_overtime_per_shift: number | null;
   shifts_with_overtime: number;
   overtime_rate: number;
 }
 
 export interface WorkloadProfile {
   staff_shift_counts: { staff_id: string; count: number }[];
-  max_shifts_per_staff: number;
-  min_shifts_per_staff: number;
-  fairness_ratio: number;         // min/max, 1.0 = perfectly even
+  // fab-0: null when no staff shifts recorded.
+  max_shifts_per_staff: number | null;
+  min_shifts_per_staff: number | null;
+  fairness_ratio: number | null;         // min/max, 1.0 = perfectly even
 }
 
 export interface SwapProfile {
@@ -159,17 +162,17 @@ export function computeHomeShiftPattern(
         unique_staff_working: 0, day_shifts: 0, sleep_in_shifts: 0,
       },
       punctuality: {
-        shifts_with_actual_start: 0, avg_delay_minutes: 0,
+        shifts_with_actual_start: 0, avg_delay_minutes: null,
         on_time_count: 0, on_time_rate: 0, late_count: 0,
-        early_count: 0, max_delay_minutes: 0,
+        early_count: 0, max_delay_minutes: null,
       },
       overtime: {
-        total_overtime_minutes: 0, avg_overtime_per_shift: 0,
+        total_overtime_minutes: 0, avg_overtime_per_shift: null,
         shifts_with_overtime: 0, overtime_rate: 0,
       },
       workload: {
-        staff_shift_counts: [], max_shifts_per_staff: 0,
-        min_shifts_per_staff: 0, fairness_ratio: 0,
+        staff_shift_counts: [], max_shifts_per_staff: null,
+        min_shifts_per_staff: null, fairness_ratio: null,
       },
       swaps: {
         total_swaps: 0, pending_swaps: 0, approved_swaps: 0,
@@ -213,14 +216,15 @@ export function computeHomeShiftPattern(
   const delays = shiftsWithActualStart.map((s) =>
     delayMinutes(s.start_time, s.actual_start!),
   );
-  const avgDelay =
+  // fab-0: null when no actual-start data.
+  const avgDelay: number | null =
     delays.length > 0
       ? Math.round((delays.reduce((s, d) => s + d, 0) / delays.length) * 10) / 10
-      : 0;
+      : null;
   const onTime = delays.filter((d) => d >= -5 && d <= 5).length;
   const late = delays.filter((d) => d > 5).length;
   const early = delays.filter((d) => d < -5).length;
-  const maxDelay = delays.length > 0 ? Math.max(...delays) : 0;
+  const maxDelay: number | null = delays.length > 0 ? Math.max(...delays) : null;
 
   const punctuality: PunctualityProfile = {
     shifts_with_actual_start: shiftsWithActualStart.length,
@@ -238,10 +242,11 @@ export function computeHomeShiftPattern(
     0,
   );
   const completedShifts = completed.length + inProgress.length;
-  const avgOvertimePerShift =
+  // fab-0: null when no completed shifts.
+  const avgOvertimePerShift: number | null =
     completedShifts > 0
       ? Math.round((totalOvertimeMinutes / completedShifts) * 10) / 10
-      : 0;
+      : null;
   const shiftsWithOvertime = shifts.filter(
     (s) => s.overtime_minutes > 0,
   ).length;
@@ -263,12 +268,13 @@ export function computeHomeShiftPattern(
     .map(([staff_id, count]) => ({ staff_id, count }))
     .sort((a, b) => b.count - a.count);
   const counts = staffShiftCounts.map((s) => s.count);
-  const maxShifts = counts.length > 0 ? Math.max(...counts) : 0;
-  const minShifts = counts.length > 0 ? Math.min(...counts) : 0;
-  const fairnessRatio =
-    maxShifts > 0
+  const maxShifts: number | null = counts.length > 0 ? Math.max(...counts) : null;
+  const minShifts: number | null = counts.length > 0 ? Math.min(...counts) : null;
+  // fab-0: null when no shifts to compare across staff.
+  const fairnessRatio: number | null =
+    maxShifts !== null && maxShifts > 0 && minShifts !== null
       ? Math.round((minShifts / maxShifts) * 100) / 100
-      : 0;
+      : null;
 
   const workload: WorkloadProfile = {
     staff_shift_counts: staffShiftCounts,
@@ -312,7 +318,7 @@ export function computeHomeShiftPattern(
   // No actual starts = neutral
 
   // Modifier 3: Overtime burden (±3)
-  if (completedShifts > 0) {
+  if (completedShifts > 0 && avgOvertimePerShift !== null) {
     if (avgOvertimePerShift <= 5) score += 3;
     else if (avgOvertimePerShift <= 15) score += 1;
     else if (avgOvertimePerShift <= 30) score += 0;
@@ -355,7 +361,7 @@ export function computeHomeShiftPattern(
   else score -= 3;
 
   // Modifier 8: Workload fairness (±3)
-  if (staffShiftCounts.length >= 2) {
+  if (staffShiftCounts.length >= 2 && fairnessRatio !== null) {
     if (fairnessRatio >= 0.6) score += 3;
     else if (fairnessRatio >= 0.4) score += 1;
     else if (fairnessRatio >= 0.2) score += 0;
@@ -383,7 +389,7 @@ export function computeHomeShiftPattern(
     strengths.push("Minimal overtime recorded — healthy workload management.");
   if (uniqueStaff >= total_staff * 0.8)
     strengths.push(`${uniqueStaff} of ${total_staff} staff rostered — strong team engagement.`);
-  if (fairnessRatio >= 0.6 && staffShiftCounts.length >= 2)
+  if (staffShiftCounts.length >= 2 && fairnessRatio !== null && fairnessRatio >= 0.6)
     strengths.push(`Workload fairness ratio of ${fairnessRatio} — shifts distributed equitably.`);
   if (dayShifts.length > 0 && sleepInShifts.length > 0)
     strengths.push("Balanced mix of day and sleep-in shifts covering 24-hour care.");
@@ -398,11 +404,11 @@ export function computeHomeShiftPattern(
     concerns.push(`${openShifts.length} open shift(s) without assigned staff — coverage gap risk.`);
   if (punctuality.on_time_rate < 50 && shiftsWithActualStart.length > 0)
     concerns.push(`Only ${punctuality.on_time_rate}% punctuality — systemic lateness affects handovers and children's routines.`);
-  if (avgOvertimePerShift > 30 && completedShifts > 0)
+  if (completedShifts > 0 && avgOvertimePerShift !== null && avgOvertimePerShift > 30)
     concerns.push(`Average ${avgOvertimePerShift} minutes overtime per shift — staff wellbeing risk and potential regulatory concern.`);
   if (staffCoverageRate < 40)
     concerns.push(`Only ${staffCoverageRate}% of staff rostered — over-reliance on a small team.`);
-  if (fairnessRatio < 0.2 && staffShiftCounts.length >= 2)
+  if (staffShiftCounts.length >= 2 && fairnessRatio !== null && fairnessRatio < 0.2)
     concerns.push("Significant workload imbalance — some staff working far more shifts than others.");
   if (pendingSwaps.length > 0)
     concerns.push(`${pendingSwaps.length} shift swap request(s) awaiting manager decision.`);
@@ -433,14 +439,14 @@ export function computeHomeShiftPattern(
       urgency: punctuality.on_time_rate < 50 ? "immediate" : "soon",
       regulatory_ref: "Reg 33",
     });
-  if (avgOvertimePerShift > 15 && completedShifts > 0)
+  if (completedShifts > 0 && avgOvertimePerShift !== null && avgOvertimePerShift > 15)
     recommendations.push({
       rank: rank++,
       recommendation: "Review overtime patterns — excessive overtime suggests staffing gaps or rota inefficiency.",
-      urgency: avgOvertimePerShift > 30 ? "immediate" : "planned",
+      urgency: (avgOvertimePerShift !== null && avgOvertimePerShift > 30) ? "immediate" : "planned",
       regulatory_ref: "Reg 33",
     });
-  if (fairnessRatio < 0.4 && staffShiftCounts.length >= 2)
+  if (staffShiftCounts.length >= 2 && fairnessRatio !== null && fairnessRatio < 0.4)
     recommendations.push({
       rank: rank++,
       recommendation: "Rebalance shift allocation to ensure equitable distribution across the team.",
