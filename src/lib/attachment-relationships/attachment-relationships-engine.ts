@@ -317,9 +317,8 @@ export function evaluateAttachmentAssessments(
   const currencyScore = Math.min(assessmentCurrency ?? 0, 100) * 0.25;
   const informedScore = Math.min(informedCareRate, 100) * 0.2;
   const sharedScore = Math.min(sharedWithTeamRate, 100) * 0.15;
-  const progressScore = latestByChild.size > 0
-    ? Math.min((childrenShowingProgress / latestByChild.size) * 100, 100) * 0.1
-    : 0;
+  // latestByChild.size is guaranteed > 0 here (we returned early when assessments.length === 0).
+  const progressScore = Math.min((childrenShowingProgress / Math.max(latestByChild.size, 1)) * 100, 100) * 0.1;
 
   const overallScore = Math.round(coverageScore + currencyScore + informedScore + sharedScore + progressScore);
 
