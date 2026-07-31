@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, FileCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Reg4445QualityRating } from "@/lib/engines/home-reg44-45-quality-assurance-reporting-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 function useHomeReg4445QualityAssuranceReportingIntelligence() {
   return useQuery({
@@ -85,8 +86,8 @@ export function HomeReg4445QualityAssuranceReportingIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.quality_improvement_rate >= 90 ? "text-[--cs-success]" : d.quality_improvement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.quality_improvement_rate}%</p>
               <p className="text-[9px] text-muted-foreground">QI Cycles</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.notification_compliance_rate >= 90 ? "bg-green-50" : d.notification_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.notification_compliance_rate >= 90 ? "text-[--cs-success]" : d.notification_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.notification_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.notification_compliance_rate, 90) ? "bg-green-50" : meets(d.notification_compliance_rate, 70) ? "bg-amber-50" : d.notification_compliance_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.notification_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.notification_compliance_rate, 70) ? "text-[--cs-warning]" : d.notification_compliance_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.notification_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Notif.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.stakeholder_engagement_rate >= 90 ? "bg-green-50" : d.stakeholder_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

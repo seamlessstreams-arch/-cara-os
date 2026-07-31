@@ -749,6 +749,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
         makeNotification({ id: `n_${i}`, notified_within_24_hours: false, notified_ofsted: false, documented_in_records: false }),
       );
       const r = computeReg4445QualityAssuranceReporting(baseInput({ notification_records: notifs }));
+      // record exists → 0, not null; below() gate still fires
       expect(r.notification_compliance_rate).toBe(0);
       // 80 - 5(b5) - 5(p4) = 70
       expect(r.quality_assurance_score).toBe(70);
@@ -825,7 +826,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
     it("reg44_quality_avg is 0 when no submitted reports", () => {
       const r44 = [makeReg44({ id: "r44_0", report_submitted: false })];
       const r = computeReg4445QualityAssuranceReporting(baseInput({ reg44_report_records: r44 }));
-      expect(r.reg44_quality_avg).toBe(0);
+      expect(r.reg44_quality_avg).toBeNull();
     });
   });
 
@@ -854,7 +855,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
 
     it("reg45_quality_avg is 0 when no reviews", () => {
       const r = computeReg4445QualityAssuranceReporting(baseInput({ reg45_review_records: [] }));
-      expect(r.reg45_quality_avg).toBe(0);
+      expect(r.reg45_quality_avg).toBeNull();
     });
   });
 
@@ -925,7 +926,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
 
     it("notification_compliance_rate is 0 when no notifications", () => {
       const r = computeReg4445QualityAssuranceReporting(baseInput({ notification_records: [] }));
-      expect(r.notification_compliance_rate).toBe(0);
+      expect(r.notification_compliance_rate).toBeNull();
     });
 
     it("partial compliance calculated correctly", () => {

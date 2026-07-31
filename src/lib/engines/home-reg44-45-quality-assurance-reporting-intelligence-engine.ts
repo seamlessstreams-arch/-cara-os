@@ -16,6 +16,8 @@
 //             qualityImprovementRecords, notificationRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, below } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface Reg44ReportInput {
@@ -186,10 +188,12 @@ export interface Reg4445QualityAssuranceReportingResult {
   reg45_timeliness_rate: number;
   action_plan_rate: number;
   quality_improvement_rate: number;
-  notification_compliance_rate: number;
+  // fab-0: null when no notifications logged.
+  notification_compliance_rate: number | null;
   stakeholder_engagement_rate: number;
-  reg44_quality_avg: number;
-  reg45_quality_avg: number;
+  // fab-0: null when no Reg 44 submitted / no Reg 45 reviews.
+  reg44_quality_avg: number | null;
+  reg45_quality_avg: number | null;
   action_plan_overdue_count: number;
   action_plan_escalated_count: number;
   strengths: string[];
@@ -235,10 +239,10 @@ function emptyResult(
     reg45_timeliness_rate: 0,
     action_plan_rate: 0,
     quality_improvement_rate: 0,
-    notification_compliance_rate: 0,
+    notification_compliance_rate: null,
     stakeholder_engagement_rate: 0,
-    reg44_quality_avg: 0,
-    reg45_quality_avg: 0,
+    reg44_quality_avg: null,
+    reg45_quality_avg: null,
     action_plan_overdue_count: 0,
     action_plan_escalated_count: 0,
     strengths: [],
@@ -369,10 +373,11 @@ export function computeReg4445QualityAssuranceReporting(
   const reg44QualitySum = reg44_report_records
     .filter((r) => r.report_submitted)
     .reduce((sum, r) => sum + r.report_quality_rating, 0);
-  const reg44QualityAvg =
+  // fab-0: null when no Reg 44 reports submitted.
+  const reg44QualityAvg: number | null =
     submittedReg44 > 0
       ? Math.round((reg44QualitySum / submittedReg44) * 100) / 100
-      : 0;
+      : null;
 
   const totalShortfallsIdentified = reg44_report_records.reduce(
     (sum, r) => sum + r.shortfalls_identified,
@@ -453,10 +458,11 @@ export function computeReg4445QualityAssuranceReporting(
     (sum, r) => sum + r.review_quality_rating,
     0,
   );
-  const reg45QualityAvg =
+  // fab-0: null when no Reg 45 reviews.
+  const reg45QualityAvg: number | null =
     totalReg45 > 0
       ? Math.round((reg45QualitySum / totalReg45) * 100) / 100
-      : 0;
+      : null;
 
   const totalChildrenConsultedReg45 = reg45_review_records.reduce(
     (sum, r) => sum + r.children_consulted,
@@ -641,13 +647,14 @@ export function computeReg4445QualityAssuranceReporting(
       const progress = q.current_measure - q.baseline_measure;
       return clamp(Math.round((progress / range) * 100), 0, 100);
     });
-  const avgImprovementProgress =
+  // fab-0: null when no eligible improvement values.
+  const avgImprovementProgress: number | null =
     improvementProgressValues.length > 0
       ? Math.round(
           improvementProgressValues.reduce((sum, v) => sum + v, 0) /
             improvementProgressValues.length,
         )
-      : 0;
+      : null;
 
   // ── Notification Metrics ──────────────────────────────────────────────
 
@@ -711,7 +718,8 @@ export function computeReg4445QualityAssuranceReporting(
   const notificationActionRate = pct(notificationActionsCompleted, notificationActionsTotal);
 
   // Composite notification compliance
-  const notificationComplianceRate =
+  // fab-0: null when no notifications recorded.
+  const notificationComplianceRate: number | null =
     totalNotifications > 0
       ? Math.round(
           (notificationTimelinessRate +
@@ -719,7 +727,7 @@ export function computeReg4445QualityAssuranceReporting(
             documentationRate) /
             3,
         )
-      : 0;
+      : null;
 
   // ══════════════════════════════════════════════════════════════════════════
   // SCORING: base = 52, max bonuses = +28, 4 guarded penalties
@@ -744,8 +752,8 @@ export function computeReg4445QualityAssuranceReporting(
   else if (qualityImprovementRate >= 60) score += 2;
 
   // --- Bonus 5: notificationComplianceRate (>=95: +5, >=80: +3) ---
-  if (notificationComplianceRate >= 95) score += 5;
-  else if (notificationComplianceRate >= 80) score += 3;
+  if (meets(notificationComplianceRate, 95)) score += 5;
+  else if (meets(notificationComplianceRate, 80)) score += 3;
 
   // --- Bonus 6: stakeholderEngagementRate (>=80: +4, >=60: +2) ---
   if (stakeholderEngagementRate >= 80) score += 4;
@@ -763,7 +771,7 @@ export function computeReg4445QualityAssuranceReporting(
   if (actionPlanRate < 40 && actionableActions > 0) score -= 5;
 
   // Penalty 4: notificationComplianceRate < 50 → -5
-  if (notificationComplianceRate < 50 && totalNotifications > 0) score -= 5;
+  if (below(notificationComplianceRate, 50) && totalNotifications > 0) score -= 5;
 
   score = clamp(score, 0, 100);
 
@@ -815,11 +823,11 @@ export function computeReg4445QualityAssuranceReporting(
     );
   }
 
-  if (notificationComplianceRate >= 95 && totalNotifications > 0) {
+  if (totalNotifications > 0 && meets(notificationComplianceRate, 95)) {
     strengths.push(
       `${notificationComplianceRate}% notification compliance — the home meets its Ofsted notification obligations comprehensively and promptly.`,
     );
-  } else if (notificationComplianceRate >= 80 && totalNotifications > 0) {
+  } else if (totalNotifications > 0 && meets(notificationComplianceRate, 80)) {
     strengths.push(
       `${notificationComplianceRate}% notification compliance — strong adherence to Ofsted notification requirements.`,
     );
@@ -835,21 +843,21 @@ export function computeReg4445QualityAssuranceReporting(
     );
   }
 
-  if (reg44QualityAvg >= 4.0 && submittedReg44 > 0) {
+  if (submittedReg44 > 0 && reg44QualityAvg !== null && reg44QualityAvg >= 4.0) {
     strengths.push(
       `Reg 44 report quality averages ${reg44QualityAvg}/5 — independent visitor reports are thorough, well-structured, and provide meaningful oversight of the home's practice.`,
     );
-  } else if (reg44QualityAvg >= 3.0 && submittedReg44 > 0) {
+  } else if (submittedReg44 > 0 && reg44QualityAvg !== null && reg44QualityAvg >= 3.0) {
     strengths.push(
       `Reg 44 report quality averages ${reg44QualityAvg}/5 — independent visitor reports are competent and provide useful oversight.`,
     );
   }
 
-  if (reg45QualityAvg >= 4.0 && totalReg45 > 0) {
+  if (totalReg45 > 0 && reg45QualityAvg !== null && reg45QualityAvg >= 4.0) {
     strengths.push(
       `Reg 45 review quality averages ${reg45QualityAvg}/5 — quality-of-care reviews are comprehensive, analytical, and drive meaningful improvement.`,
     );
-  } else if (reg45QualityAvg >= 3.0 && totalReg45 > 0) {
+  } else if (totalReg45 > 0 && reg45QualityAvg !== null && reg45QualityAvg >= 3.0) {
     strengths.push(
       `Reg 45 review quality averages ${reg45QualityAvg}/5 — quality-of-care reviews provide a competent assessment of the home's standards.`,
     );
@@ -1033,11 +1041,11 @@ export function computeReg4445QualityAssuranceReporting(
     );
   }
 
-  if (notificationComplianceRate < 50 && totalNotifications > 0) {
+  if (totalNotifications > 0 && below(notificationComplianceRate, 50)) {
     concerns.push(
       `Notification compliance at only ${notificationComplianceRate}% — the home is failing to meet its statutory obligations to notify Ofsted and relevant authorities of significant events within required timescales.`,
     );
-  } else if (notificationComplianceRate < 80 && notificationComplianceRate >= 50 && totalNotifications > 0) {
+  } else if (totalNotifications > 0 && notificationComplianceRate !== null && notificationComplianceRate < 80 && notificationComplianceRate >= 50) {
     concerns.push(
       `Notification compliance at ${notificationComplianceRate}% — some notifications are not being made in full or on time, which may result in regulatory action.`,
     );
@@ -1178,7 +1186,7 @@ export function computeReg4445QualityAssuranceReporting(
     });
   }
 
-  if (notificationComplianceRate < 50 && totalNotifications > 0) {
+  if (totalNotifications > 0 && below(notificationComplianceRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1454,7 +1462,7 @@ export function computeReg4445QualityAssuranceReporting(
     });
   }
 
-  if (notificationComplianceRate < 50 && totalNotifications > 0) {
+  if (totalNotifications > 0 && below(notificationComplianceRate, 50)) {
     insights.push({
       text: `Notification compliance at only ${notificationComplianceRate}%. The home is failing to meet its legal obligations to notify Ofsted and relevant authorities of serious events. This prevents timely external oversight and may constitute a regulatory offence.`,
       severity: "critical",
@@ -1519,7 +1527,7 @@ export function computeReg4445QualityAssuranceReporting(
     });
   }
 
-  if (notificationComplianceRate >= 50 && notificationComplianceRate < 80 && totalNotifications > 0) {
+  if (totalNotifications > 0 && notificationComplianceRate !== null && notificationComplianceRate >= 50 && notificationComplianceRate < 80) {
     insights.push({
       text: `Notification compliance at ${notificationComplianceRate}% — while not critically low, any gap in notification compliance is taken seriously by Ofsted. Each missed or late notification potentially delays external support and oversight.`,
       severity: "warning",
@@ -1533,14 +1541,14 @@ export function computeReg4445QualityAssuranceReporting(
     });
   }
 
-  if (reg44QualityAvg < 3.0 && reg44QualityAvg > 0 && submittedReg44 > 0) {
+  if (submittedReg44 > 0 && reg44QualityAvg !== null && reg44QualityAvg < 3.0 && reg44QualityAvg > 0) {
     insights.push({
       text: `Reg 44 report quality averaging ${reg44QualityAvg}/5 — reports may lack depth, fail to adequately capture children's views, or not cover the full range of required areas. Consider whether the current independent visitor has the skills and knowledge needed for effective oversight.`,
       severity: "warning",
     });
   }
 
-  if (reg45QualityAvg < 3.0 && reg45QualityAvg > 0 && totalReg45 > 0) {
+  if (totalReg45 > 0 && reg45QualityAvg !== null && reg45QualityAvg < 3.0 && reg45QualityAvg > 0) {
     insights.push({
       text: `Reg 45 review quality averaging ${reg45QualityAvg}/5 — reviews may be superficial or formulaic rather than genuinely analytical. Effective Reg 45 reviews should critically evaluate all aspects of care quality, not merely confirm compliance.`,
       severity: "warning",
@@ -1632,9 +1640,10 @@ export function computeReg4445QualityAssuranceReporting(
   }
 
   if (
+    totalReg44 > 0 &&
+    reg44QualityAvg !== null &&
     reg44CompletionRate >= 100 &&
-    reg44QualityAvg >= 4.0 &&
-    totalReg44 > 0
+    reg44QualityAvg >= 4.0
   ) {
     insights.push({
       text: `100% Reg 44 report submission with quality averaging ${reg44QualityAvg}/5 — the independent visitor function is operating at an exceptional level, providing comprehensive, high-quality oversight that strengthens the home's quality assurance framework.`,
@@ -1677,9 +1686,9 @@ export function computeReg4445QualityAssuranceReporting(
   }
 
   if (
-    notificationComplianceRate >= 95 &&
-    investigationCompletionRate >= 100 &&
-    totalNotifications > 0
+    totalNotifications > 0 &&
+    meets(notificationComplianceRate, 95) &&
+    investigationCompletionRate >= 100
   ) {
     insights.push({
       text: `${notificationComplianceRate}% notification compliance with all investigations completed — the home responds to serious events with both regulatory compliance and thorough investigation, demonstrating responsible and accountable practice.`,
