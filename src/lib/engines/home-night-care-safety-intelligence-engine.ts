@@ -5,6 +5,8 @@
 // CHR 2015 Reg 12/25: Night care and safety.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input types ─────────────────────────────────────────────────────────────
 
 export interface NightCheckInput {
@@ -79,9 +81,12 @@ export type NightCareRating =
   | "inadequate"
   | "insufficient_data";
 
+// Nested-interface fab-0 doctrine: rate/pct/count fields keep number (deterministic
+// 0 on empty), avg fields go null on empty (0 avg looks like measured badness,
+// not "no records to average"). Fab-0 doctrine.
 export interface NightCheckSummary {
   total_checks_30d: number;
-  checks_per_child: number;
+  checks_per_child: number | null;
   room_temp_ok_rate: number;
   concern_raised_count: number;
   concern_follow_up_rate: number;
@@ -93,15 +98,15 @@ export interface NightCheckSummary {
 export interface HandoverSummary {
   total_handovers: number;
   completion_rate: number;
-  avg_risk_briefing_count: number;
-  avg_concerns_documented: number;
-  avg_children_covered: number;
+  avg_risk_briefing_count: number | null;
+  avg_concerns_documented: number | null;
+  avg_children_covered: number | null;
 }
 
 export interface AnxietySupportSummary {
   total_records: number;
   child_coverage: number;
-  avg_strategies: number;
+  avg_strategies: number | null;
   severe_crisis_with_referral_rate: number;
   child_voice_rate: number;
   child_preferences_rate: number;
@@ -110,18 +115,18 @@ export interface AnxietySupportSummary {
 export interface BedtimeRoutineSummary {
   total_routines: number;
   child_coverage: number;
-  avg_effectiveness: number;
+  avg_effectiveness: number | null;
   child_agreed_rate: number;
-  avg_steps: number;
+  avg_steps: number | null;
   overdue_reviews: number;
 }
 
 export interface WakeUpRoutineSummary {
   total_routines: number;
   child_coverage: number;
-  avg_effectiveness: number;
+  avg_effectiveness: number | null;
   child_agreed_rate: number;
-  avg_steps: number;
+  avg_steps: number | null;
   overdue_reviews: number;
 }
 
@@ -201,11 +206,11 @@ export function computeHomeNightCareSafety(
       night_care_rating: "insufficient_data",
       night_care_score: 0,
       headline: "No night care data available for analysis.",
-      night_checks: { total_checks_30d: 0, checks_per_child: 0, room_temp_ok_rate: 0, concern_raised_count: 0, concern_follow_up_rate: 0, scheduled_count: 0, additional_count: 0, children_checked: 0 },
-      handovers: { total_handovers: 0, completion_rate: 0, avg_risk_briefing_count: 0, avg_concerns_documented: 0, avg_children_covered: 0 },
-      anxiety_support: { total_records: 0, child_coverage: 0, avg_strategies: 0, severe_crisis_with_referral_rate: 0, child_voice_rate: 0, child_preferences_rate: 0 },
-      bedtime_routines: { total_routines: 0, child_coverage: 0, avg_effectiveness: 0, child_agreed_rate: 0, avg_steps: 0, overdue_reviews: 0 },
-      wake_up_routines: { total_routines: 0, child_coverage: 0, avg_effectiveness: 0, child_agreed_rate: 0, avg_steps: 0, overdue_reviews: 0 },
+      night_checks: { total_checks_30d: 0, checks_per_child: null, room_temp_ok_rate: 0, concern_raised_count: 0, concern_follow_up_rate: 0, scheduled_count: 0, additional_count: 0, children_checked: 0 },
+      handovers: { total_handovers: 0, completion_rate: 0, avg_risk_briefing_count: null, avg_concerns_documented: null, avg_children_covered: null },
+      anxiety_support: { total_records: 0, child_coverage: 0, avg_strategies: null, severe_crisis_with_referral_rate: 0, child_voice_rate: 0, child_preferences_rate: 0 },
+      bedtime_routines: { total_routines: 0, child_coverage: 0, avg_effectiveness: null, child_agreed_rate: 0, avg_steps: null, overdue_reviews: 0 },
+      wake_up_routines: { total_routines: 0, child_coverage: 0, avg_effectiveness: null, child_agreed_rate: 0, avg_steps: null, overdue_reviews: 0 },
       sleep_quality: { sleeping_rate: 0, settled_rate: 0, distressed_rate: 0, not_in_room_rate: 0, concern_resolution_rate: 0 },
       child_voice: { anxiety_voice_rate: 0, bedtime_agreed_rate: 0, wakeup_agreed_rate: 0, anxiety_preferences_rate: 0 },
       review_compliance: { anxiety_overdue: 0, bedtime_overdue: 0, wakeup_overdue: 0, total_overdue: 0 },
@@ -219,7 +224,8 @@ export function computeHomeNightCareSafety(
   // ── Night check analysis (last 30 days) ──────────────────────────────
   const nc30 = night_checks.filter(c => daysBetween(c.date, today) >= 0 && daysBetween(c.date, today) <= 30);
   const ncChildIds = new Set(nc30.map(c => c.child_id));
-  const ncChecksPerChild = total_children > 0 ? Math.round((nc30.length / total_children) * 10) / 10 : 0;
+  const ncChecksPerChild: number | null = total_children > 0 ? Math.round((nc30.length / total_children) * 10) / 10
+      : null;
   const ncTempOk = nc30.filter(c => c.room_temp_ok).length;
   const ncTempOkRate = pct(ncTempOk, nc30.length);
   const ncConcernRaised = nc30.filter(c => c.concern_raised).length;
@@ -242,15 +248,15 @@ export function computeHomeNightCareSafety(
   // ── Handover analysis ───────────────────────────────────────────────
   const hoComplete = night_staff_handovers.filter(h => h.morning_handover_complete).length;
   const hoCompletionRate = pct(hoComplete, night_staff_handovers.length);
-  const hoAvgRiskBriefing = night_staff_handovers.length > 0
+  const hoAvgRiskBriefing: number | null = night_staff_handovers.length > 0
     ? Math.round((night_staff_handovers.reduce((s, h) => s + h.risk_briefing_count, 0) / night_staff_handovers.length) * 10) / 10
-    : 0;
-  const hoAvgConcerns = night_staff_handovers.length > 0
+      : null;
+  const hoAvgConcerns: number | null = night_staff_handovers.length > 0
     ? Math.round((night_staff_handovers.reduce((s, h) => s + h.specific_concerns_count, 0) / night_staff_handovers.length) * 10) / 10
-    : 0;
-  const hoAvgChildCovered = night_staff_handovers.length > 0
+      : null;
+  const hoAvgChildCovered: number | null = night_staff_handovers.length > 0
     ? Math.round((night_staff_handovers.reduce((s, h) => s + h.children_at_home_count, 0) / night_staff_handovers.length) * 10) / 10
-    : 0;
+      : null;
 
   const handoversSummary: HandoverSummary = {
     total_handovers: night_staff_handovers.length,
@@ -263,9 +269,9 @@ export function computeHomeNightCareSafety(
   // ── Night anxiety support analysis ──────────────────────────────────
   const nasChildIds = new Set(night_anxiety_support_records.map(r => r.child_id));
   const nasCoverage = pct(nasChildIds.size, total_children);
-  const nasAvgStrategies = night_anxiety_support_records.length > 0
+  const nasAvgStrategies: number | null = night_anxiety_support_records.length > 0
     ? Math.round(night_anxiety_support_records.reduce((s, r) => s + r.do_strategies_count + r.do_not_strategies_count, 0) / night_anxiety_support_records.length)
-    : 0;
+      : null;
   const nasSevereCrisis = night_anxiety_support_records.filter(r => r.anxiety_level === "severe" || r.anxiety_level === "crisis");
   const nasSCWithReferral = nasSevereCrisis.filter(r => r.external_referral_active !== null && r.external_referral_active !== "").length;
   const nasSCReferralRate = pct(nasSCWithReferral, nasSevereCrisis.length);
@@ -286,14 +292,14 @@ export function computeHomeNightCareSafety(
   // ── Bedtime routine analysis ────────────────────────────────────────
   const brChildIds = new Set(bedtime_routines.map(r => r.child_id));
   const brCoverage = pct(brChildIds.size, total_children);
-  const brAvgEff = bedtime_routines.length > 0
+  const brAvgEff: number | null = bedtime_routines.length > 0
     ? Math.round((bedtime_routines.reduce((s, r) => s + r.effectiveness_rating, 0) / bedtime_routines.length) * 10) / 10
-    : 0;
+      : null;
   const brAgreed = bedtime_routines.filter(r => r.child_agreed).length;
   const brAgreedRate = pct(brAgreed, bedtime_routines.length);
-  const brAvgSteps = bedtime_routines.length > 0
+  const brAvgSteps: number | null = bedtime_routines.length > 0
     ? Math.round(bedtime_routines.reduce((s, r) => s + r.routine_steps_count + r.pre_bed_rituals_count, 0) / bedtime_routines.length)
-    : 0;
+      : null;
   const brOverdue = bedtime_routines.filter(r => daysBetween(r.reviewed_date, today) > 90).length;
 
   const bedtimeRoutinesSummary: BedtimeRoutineSummary = {
@@ -308,14 +314,14 @@ export function computeHomeNightCareSafety(
   // ── Wake-up routine analysis ────────────────────────────────────────
   const wuChildIds = new Set(wake_up_routines.map(r => r.child_id));
   const wuCoverage = pct(wuChildIds.size, total_children);
-  const wuAvgEff = wake_up_routines.length > 0
+  const wuAvgEff: number | null = wake_up_routines.length > 0
     ? Math.round((wake_up_routines.reduce((s, r) => s + r.effectivenessRating, 0) / wake_up_routines.length) * 10) / 10
-    : 0;
+      : null;
   const wuAgreed = wake_up_routines.filter(r => r.childAgreed).length;
   const wuAgreedRate = pct(wuAgreed, wake_up_routines.length);
-  const wuAvgSteps = wake_up_routines.length > 0
+  const wuAvgSteps: number | null = wake_up_routines.length > 0
     ? Math.round(wake_up_routines.reduce((s, r) => s + r.wakeUpSteps_count, 0) / wake_up_routines.length)
-    : 0;
+      : null;
   const wuOverdue = wake_up_routines.filter(r => daysBetween(r.reviewedDate, today) > 90).length;
 
   const wakeUpRoutinesSummary: WakeUpRoutineSummary = {
@@ -376,8 +382,8 @@ export function computeHomeNightCareSafety(
     let m = 0;
     if (nc30.length > 0) {
       // Checks per child: >=20 excellent, >=10 good
-      if (ncChecksPerChild >= 20) m += 2;
-      else if (ncChecksPerChild >= 10) m += 1;
+      if (meets(ncChecksPerChild, 20)) m += 2;
+      else if (meets(ncChecksPerChild, 10)) m += 1;
       else m -= 1;
 
       // Room temp ok rate
@@ -412,11 +418,11 @@ export function computeHomeNightCareSafety(
       else m -= 1;
 
       // Risk briefing thoroughness
-      if (hoAvgRiskBriefing >= 2) m += 1;
-      else if (hoAvgRiskBriefing < 1) m -= 1;
+      if (meets(hoAvgRiskBriefing, 2)) m += 1;
+      else if (below(hoAvgRiskBriefing, 1)) m -= 1;
 
       // Specific concerns documentation
-      if (hoAvgConcerns >= 1) m += 1;
+      if (meets(hoAvgConcerns, 1)) m += 1;
       else m -= 1;
     } else {
       if (total_children >= 2) m -= 2;
@@ -433,8 +439,8 @@ export function computeHomeNightCareSafety(
       else if (nasCoverage < 40) m -= 1;
 
       // Strategy richness
-      if (nasAvgStrategies >= 6) m += 1;
-      else if (nasAvgStrategies < 3) m -= 1;
+      if (meets(nasAvgStrategies, 6)) m += 1;
+      else if (below(nasAvgStrategies, 3)) m -= 1;
 
       // Severe/crisis with external referral
       if (nasSevereCrisis.length > 0) {
@@ -458,16 +464,16 @@ export function computeHomeNightCareSafety(
       else if (brCoverage < 40) m -= 1;
 
       // Effectiveness rating average (1-5)
-      if (brAvgEff >= 4) m += 1;
-      else if (brAvgEff < 2.5) m -= 1;
+      if (meets(brAvgEff, 4)) m += 1;
+      else if (below(brAvgEff, 2.5)) m -= 1;
 
       // Child agreed rate
       if (brAgreedRate >= 80) m += 1;
       else if (brAgreedRate < 40) m -= 1;
 
       // Richness: routine_steps + pre_bed_rituals
-      if (brAvgSteps >= 6) m += 1;
-      else if (brAvgSteps < 3) m -= 1;
+      if (meets(brAvgSteps, 6)) m += 1;
+      else if (below(brAvgSteps, 3)) m -= 1;
     } else {
       if (total_children >= 2) m -= 2;
     }
@@ -483,11 +489,11 @@ export function computeHomeNightCareSafety(
       else if (wuCoverage < 40) m -= 1;
 
       // Effectiveness rating average
-      if (wuAvgEff >= 4) m += 1;
-      else if (wuAvgEff < 2.5) m -= 1;
+      if (meets(wuAvgEff, 4)) m += 1;
+      else if (below(wuAvgEff, 2.5)) m -= 1;
 
       // Child agreed rate & steps richness combined
-      if (wuAgreedRate >= 80 && wuAvgSteps >= 4) m += 1;
+      if (wuAgreedRate >= 80 && meets(wuAvgSteps, 4)) m += 1;
       else if (wuAgreedRate < 40) m -= 1;
     } else {
       if (total_children >= 2) m -= 1;
@@ -569,7 +575,7 @@ export function computeHomeNightCareSafety(
   let rank = 0;
 
   // Night checks
-  if (nc30.length > 0 && ncChecksPerChild >= 20) {
+  if (nc30.length > 0 && meets(ncChecksPerChild, 20)) {
     strengths.push(`Excellent night check frequency — ${ncChecksPerChild} checks per child in the last 30 days.`);
   }
   if (nc30.length > 0 && ncTempOkRate >= 95) {
@@ -598,7 +604,7 @@ export function computeHomeNightCareSafety(
   }
 
   // Anxiety support
-  if (night_anxiety_support_records.length > 0 && nasCoverage >= 80 && nasAvgStrategies >= 6) {
+  if (night_anxiety_support_records.length > 0 && nasCoverage >= 80 && meets(nasAvgStrategies, 6)) {
     strengths.push(`Comprehensive night anxiety support — ${nasCoverage}% child coverage with an average of ${nasAvgStrategies} strategies per child.`);
   }
   if (nasSevereCrisis.length > 0 && nasSCReferralRate < 40) {
@@ -607,7 +613,7 @@ export function computeHomeNightCareSafety(
   }
 
   // Bedtime routines
-  if (bedtime_routines.length > 0 && brCoverage >= 80 && brAvgEff >= 4) {
+  if (bedtime_routines.length > 0 && brCoverage >= 80 && meets(brAvgEff, 4)) {
     strengths.push(`Effective bedtime routines — ${brCoverage}% coverage with average effectiveness rating of ${brAvgEff}/5.`);
   }
   if (bedtime_routines.length === 0 && total_children >= 2) {
@@ -616,7 +622,7 @@ export function computeHomeNightCareSafety(
   }
 
   // Wake-up routines
-  if (wake_up_routines.length > 0 && wuCoverage >= 80 && wuAvgEff >= 4) {
+  if (wake_up_routines.length > 0 && wuCoverage >= 80 && meets(wuAvgEff, 4)) {
     strengths.push(`Effective wake-up routines — ${wuCoverage}% coverage with average effectiveness rating of ${wuAvgEff}/5.`);
   }
   if (wake_up_routines.length === 0 && total_children >= 2) {

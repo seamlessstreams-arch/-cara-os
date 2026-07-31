@@ -15,6 +15,7 @@ import {
   Sunrise, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { NightCareRating, HomeNightCareSafetyResult } from "@/lib/engines/home-night-care-safety-intelligence-engine";
 
@@ -126,8 +127,8 @@ export function HomeNightCareSafetyIntelligenceCard() {
             <p className="text-[10px] text-muted-foreground">Checks (30d)</p>
           </div>
           <div className="text-center rounded-lg bg-slate-50 p-2">
-            <p className={cn("text-lg font-bold tabular-nums", d.night_checks.checks_per_child >= 20 ? "text-[--cs-success]" : d.night_checks.checks_per_child >= 10 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {d.night_checks.checks_per_child}
+            <p className={cn("text-lg font-bold tabular-nums", meets(d.night_checks.checks_per_child, 20) ? "text-[--cs-success]" : meets(d.night_checks.checks_per_child, 10) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {d.night_checks.checks_per_child ?? "—"}
             </p>
             <p className="text-[10px] text-muted-foreground">Per Child</p>
           </div>
@@ -158,7 +159,7 @@ export function HomeNightCareSafetyIntelligenceCard() {
               </p>
               <div className="space-y-0.5 text-[10px] text-indigo-800">
                 <p>Coverage: <span className="font-bold">{d.bedtime_routines.child_coverage}%</span></p>
-                <p>Effectiveness: <span className="font-bold">{d.bedtime_routines.avg_effectiveness}/5</span></p>
+                <p>Effectiveness: <span className="font-bold">{d.bedtime_routines.avg_effectiveness ?? "—"}/5</span></p>
                 <p>Child Agreed: <span className="font-bold">{d.bedtime_routines.child_agreed_rate}%</span></p>
               </div>
             </div>
@@ -169,7 +170,7 @@ export function HomeNightCareSafetyIntelligenceCard() {
               </p>
               <div className="space-y-0.5 text-[10px] text-[--cs-warning]">
                 <p>Coverage: <span className="font-bold">{d.wake_up_routines.child_coverage}%</span></p>
-                <p>Effectiveness: <span className="font-bold">{d.wake_up_routines.avg_effectiveness}/5</span></p>
+                <p>Effectiveness: <span className="font-bold">{d.wake_up_routines.avg_effectiveness ?? "—"}/5</span></p>
                 <p>Child Agreed: <span className="font-bold">{d.wake_up_routines.child_agreed_rate}%</span></p>
               </div>
             </div>
