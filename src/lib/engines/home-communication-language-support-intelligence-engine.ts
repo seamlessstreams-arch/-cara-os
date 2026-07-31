@@ -12,6 +12,8 @@
 //             staffCommunicationTrainingRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, below } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface CommunicationAssessmentRecordInput {
@@ -153,7 +155,8 @@ export interface CommunicationLanguageSupportResult {
   aid_provision_rate: number;
   inclusive_practice_rate: number;
   staff_training_rate: number;
-  child_progress_rate: number;
+  // fab-0: null when no assessments/therapy sessions yield progress ratings.
+  child_progress_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: CommunicationSupportRecommendation[];
@@ -195,7 +198,7 @@ function emptyResult(
     aid_provision_rate: 0,
     inclusive_practice_rate: 0,
     staff_training_rate: 0,
-    child_progress_rate: 0,
+    child_progress_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -330,15 +333,6 @@ export function computeCommunicationLanguageSupport(
   }
   const assessmentComprehensivenessRate = pct(totalAssessmentChecksPassed, totalAssessmentChecksPossible);
 
-  const assessmentProgressSum = communication_assessment_records.reduce(
-    (sum, r) => sum + r.progress_rating,
-    0,
-  );
-  const avgAssessmentProgress =
-    totalAssessments > 0
-      ? Math.round((assessmentProgressSum / totalAssessments) * 100) / 100
-      : 0;
-
   // --- Speech therapy metrics ---
   const totalTherapySessions = speech_therapy_records.length;
 
@@ -380,10 +374,11 @@ export function computeCommunicationLanguageSupport(
     (sum, r) => sum + r.progress_rating,
     0,
   );
-  const avgTherapyProgress =
+  // fab-0: null when no therapy sessions to average.
+  const avgTherapyProgress: number | null =
     totalTherapySessions > 0
       ? Math.round((therapyProgressSum / totalTherapySessions) * 100) / 100
-      : 0;
+      : null;
 
   // --- Communication aid metrics ---
   const totalAids = communication_aid_records.length;
@@ -440,10 +435,11 @@ export function computeCommunicationLanguageSupport(
     (sum, r) => sum + r.effectiveness_rating,
     0,
   );
-  const avgAidEffectiveness =
+  // fab-0: null when no aids in use.
+  const avgAidEffectiveness: number | null =
     totalAids > 0
       ? Math.round((aidEffectivenessSum / totalAids) * 100) / 100
-      : 0;
+      : null;
 
   // --- Inclusive practice metrics ---
   const totalInclusivePractice = inclusive_practice_records.length;
@@ -538,13 +534,14 @@ export function computeCommunicationLanguageSupport(
   }
   const totalProgressRatings = allProgressRatings.length;
   const progressSum = allProgressRatings.reduce((sum, v) => sum + v, 0);
-  const avgProgress =
+  // fab-0: null when no ratings collected — child_progress_rate propagates.
+  const avgProgress: number | null =
     totalProgressRatings > 0
       ? Math.round((progressSum / totalProgressRatings) * 100) / 100
-      : 0;
+      : null;
   // Convert 1-5 progress to 0-100 scale
-  const childProgressRate =
-    totalProgressRatings > 0 ? Math.round(((avgProgress - 1) / 4) * 100) : 0;
+  const childProgressRate: number | null =
+    avgProgress !== null ? Math.round(((avgProgress - 1) / 4) * 100) : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
@@ -579,8 +576,8 @@ export function computeCommunicationLanguageSupport(
   else if (homePracticeCompletionRate >= 70) score += 1;
 
   // --- Bonus 8: childProgressRate (>=75: +2, >=50: +1) ---
-  if (childProgressRate >= 75) score += 2;
-  else if (childProgressRate >= 50) score += 1;
+  if (meets(childProgressRate, 75)) score += 2;
+  else if (meets(childProgressRate, 50)) score += 1;
 
   // --- Bonus 9: supportPlanReviewRate (>=90: +3, >=70: +1) ---
   if (supportPlanReviewRate >= 90) score += 3;
@@ -732,7 +729,7 @@ export function computeCommunicationLanguageSupport(
     );
   }
 
-  if (avgAidEffectiveness >= 4.0 && totalAids > 0) {
+  if (totalAids > 0 && meets(avgAidEffectiveness, 4.0)) {
     strengths.push(
       `Average communication aid effectiveness rating of ${avgAidEffectiveness}/5 — the aids provided are genuinely helping children to communicate more effectively.`,
     );
@@ -860,7 +857,7 @@ export function computeCommunicationLanguageSupport(
     );
   }
 
-  if (avgAidEffectiveness < 2.5 && totalAids > 0) {
+  if (totalAids > 0 && below(avgAidEffectiveness, 2.5)) {
     concerns.push(
       `Average communication aid effectiveness rating at only ${avgAidEffectiveness}/5 — the aids currently provided are not meeting children's communication needs effectively and require review.`,
     );
@@ -1299,7 +1296,7 @@ export function computeCommunicationLanguageSupport(
     });
   }
 
-  if (targetsMetRate >= 80 && avgTherapyProgress >= 4.0 && totalTherapySessions > 0) {
+  if (totalTherapySessions > 0 && meets(avgTherapyProgress, 4.0) && targetsMetRate >= 80) {
     insights.push({
       text: `${targetsMetRate}% of therapy targets met with average progress of ${avgTherapyProgress}/5 — children are making excellent progress with their speech and language goals. The combination of therapy, home support, and inclusive practices is producing real outcomes.`,
       severity: "positive",

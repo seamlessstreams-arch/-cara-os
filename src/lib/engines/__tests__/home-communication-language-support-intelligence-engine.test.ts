@@ -288,7 +288,8 @@ describe("insufficient_data — 0 children + all arrays empty", () => {
     expect(r.aid_provision_rate).toBe(0);
     expect(r.inclusive_practice_rate).toBe(0);
     expect(r.staff_training_rate).toBe(0);
-    expect(r.child_progress_rate).toBe(0);
+    // fab-0: null (no progress ratings)
+    expect(r.child_progress_rate).toBeNull();
   });
 
   it("has no strengths, concerns, recommendations, or insights", () => {
@@ -344,7 +345,8 @@ describe("inadequate floor — children present, no records", () => {
     expect(r.aid_provision_rate).toBe(0);
     expect(r.inclusive_practice_rate).toBe(0);
     expect(r.staff_training_rate).toBe(0);
-    expect(r.child_progress_rate).toBe(0);
+    // fab-0: null (no progress ratings)
+    expect(r.child_progress_rate).toBeNull();
   });
 });
 
@@ -1298,14 +1300,14 @@ describe("rate calculations", () => {
       expect(r.child_progress_rate).toBe(75);
     });
 
-    it("is 0 when no progress ratings exist", () => {
+    it("is null when no progress ratings exist (fab-0)", () => {
       const r = computeCommunicationLanguageSupport(
         baseInput({
           total_children: 0,
           communication_aid_records: [makeAid()],
         }),
       );
-      expect(r.child_progress_rate).toBe(0);
+      expect(r.child_progress_rate).toBeNull();
     });
 
     it("averages across assessment and therapy", () => {
