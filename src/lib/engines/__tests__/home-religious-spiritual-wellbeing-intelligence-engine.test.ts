@@ -169,7 +169,7 @@ describe("insufficient data", () => {
   it("returns all metric rates as 0", () => {
     const result = run();
     expect(result.faith_support_coverage_rate).toBe(0);
-    expect(result.spiritual_development_rate).toBe(0);
+    expect(result.spiritual_development_rate).toBeNull();
     expect(result.dietary_accommodation_rate).toBe(0);
     expect(result.worship_access_rate).toBe(0);
     expect(result.celebration_participation_rate).toBe(0);
@@ -216,7 +216,7 @@ describe("inadequate baseline (all empty, children > 0)", () => {
   it("returns all metric rates as 0", () => {
     const result = run({ total_children: 3 });
     expect(result.faith_support_coverage_rate).toBe(0);
-    expect(result.spiritual_development_rate).toBe(0);
+    expect(result.spiritual_development_rate).toBeNull();
     expect(result.dietary_accommodation_rate).toBe(0);
     expect(result.worship_access_rate).toBe(0);
     expect(result.celebration_participation_rate).toBe(0);
@@ -241,7 +241,7 @@ describe("pct(0,0) = 0", () => {
       faith_observance_records: [makeFaithObservance({ supported: false })],
     });
     // spiritual_development_rate = 0 (no spiritual records)
-    expect(result.spiritual_development_rate).toBe(0);
+    expect(result.spiritual_development_rate).toBeNull();
     // dietary_accommodation_rate = 0 (no dietary records)
     expect(result.dietary_accommodation_rate).toBe(0);
     // worship_access_rate = 0 (no worship records)
@@ -1259,7 +1259,7 @@ describe("metric calculations", () => {
         total_children: 1,
         faith_observance_records: [makeFaithObservance({ supported: true })],
       });
-      expect(result.spiritual_development_rate).toBe(0);
+      expect(result.spiritual_development_rate).toBeNull();
     });
   });
 

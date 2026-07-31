@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Church } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SpiritualWellbeingRating } from "@/lib/engines/home-religious-spiritual-wellbeing-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 function useHomeReligiousSpiritualWellbeingIntelligence() {
   return useQuery({
@@ -73,8 +74,8 @@ export function HomeReligiousSpiritualWellbeingIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.faith_support_coverage_rate >= 90 ? "text-[--cs-success]" : d.faith_support_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.faith_support_coverage_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Faith</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.spiritual_development_rate >= 90 ? "bg-green-50" : d.spiritual_development_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.spiritual_development_rate >= 90 ? "text-[--cs-success]" : d.spiritual_development_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.spiritual_development_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.spiritual_development_rate, 90) ? "bg-green-50" : meets(d.spiritual_development_rate, 70) ? "bg-amber-50" : d.spiritual_development_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.spiritual_development_rate, 90) ? "text-[--cs-success]" : meets(d.spiritual_development_rate, 70) ? "text-[--cs-warning]" : d.spiritual_development_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.spiritual_development_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Develop.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.dietary_accommodation_rate >= 90 ? "bg-green-50" : d.dietary_accommodation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

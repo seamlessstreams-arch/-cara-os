@@ -11,6 +11,8 @@
 //             celebrationParticipationRecords
 // ==============================================================================
 
+import { meets, below } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface FaithObservanceRecordInput {
@@ -128,7 +130,8 @@ export interface ReligiousSpiritualWellbeingResult {
   spiritual_score: number;
   headline: string;
   faith_support_coverage_rate: number;
-  spiritual_development_rate: number;
+  // fab-0: null when no spiritual records.
+  spiritual_development_rate: number | null;
   dietary_accommodation_rate: number;
   worship_access_rate: number;
   celebration_participation_rate: number;
@@ -168,7 +171,7 @@ function emptyResult(
     spiritual_score: score,
     headline,
     faith_support_coverage_rate: 0,
-    spiritual_development_rate: 0,
+    spiritual_development_rate: null,
     dietary_accommodation_rate: 0,
     worship_access_rate: 0,
     celebration_participation_rate: 0,
@@ -263,10 +266,11 @@ export function computeReligiousSpiritualWellbeing(
   const faithSatisfactionSum = faith_observance_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const faithSatisfactionAvg =
+  // fab-0: null when no faith records.
+  const faithSatisfactionAvg: number | null =
     totalFaithRecords > 0
       ? Math.round((faithSatisfactionSum / totalFaithRecords) * 100) / 100
-      : 0;
+      : null;
 
   const faithBarriersTotal = faith_observance_records.filter(
     (r) => r.barriers_encountered.length > 0,
@@ -294,10 +298,11 @@ export function computeReligiousSpiritualWellbeing(
   );
   const sessionAttendanceRate = pct(totalSessionsAttended, totalSessionsPlanned);
 
-  const spiritualDevelopmentRate =
+  // fab-0: null when no spiritual records.
+  const spiritualDevelopmentRate: number | null =
     totalSpiritualRecords > 0
       ? Math.round((planRate + goalProgressRate + sessionAttendanceRate) / 3)
-      : 0;
+      : null;
 
   const mentorAssigned = spiritual_development_records.filter((r) => r.mentor_assigned).length;
   const mentorRate = pct(mentorAssigned, totalSpiritualRecords);
@@ -354,10 +359,11 @@ export function computeReligiousSpiritualWellbeing(
   const worshipSatisfactionSum = worship_access_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const worshipSatisfactionAvg =
+  // fab-0: null when no worship records.
+  const worshipSatisfactionAvg: number | null =
     totalWorshipRecords > 0
       ? Math.round((worshipSatisfactionSum / totalWorshipRecords) * 100) / 100
-      : 0;
+      : null;
 
   const worshipBarriersTotal = worship_access_records.filter(
     (r) => r.barriers_encountered.length > 0,
@@ -394,10 +400,11 @@ export function computeReligiousSpiritualWellbeing(
   const celebrationSatisfactionSum = celebration_participation_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const celebrationSatisfactionAvg =
+  // fab-0: null when no celebration records.
+  const celebrationSatisfactionAvg: number | null =
     totalCelebrationRecords > 0
       ? Math.round((celebrationSatisfactionSum / totalCelebrationRecords) * 100) / 100
-      : 0;
+      : null;
 
   const educationalCelebrations = celebration_participation_records.filter(
     (r) => r.educational_component,
@@ -428,8 +435,8 @@ export function computeReligiousSpiritualWellbeing(
   else if (faithSupportCoverageRate >= 70) score += 2;
 
   // --- Bonus 2: spiritualDevelopmentRate (>=80: +3, >=60: +1) ---
-  if (spiritualDevelopmentRate >= 80) score += 3;
-  else if (spiritualDevelopmentRate >= 60) score += 1;
+  if (meets(spiritualDevelopmentRate, 80)) score += 3;
+  else if (meets(spiritualDevelopmentRate, 60)) score += 1;
 
   // --- Bonus 3: dietaryAccommodationRate (>=100: +4, >=80: +2) ---
   if (dietaryAccommodationRate >= 100) score += 4;
@@ -497,17 +504,17 @@ export function computeReligiousSpiritualWellbeing(
     );
   }
 
-  if (faithSatisfactionAvg >= 4.0 && totalFaithRecords > 0) {
+  if (totalFaithRecords > 0 && faithSatisfactionAvg !== null && faithSatisfactionAvg >= 4.0) {
     strengths.push(
       `Children's satisfaction with faith support averages ${faithSatisfactionAvg}/5 -- children feel their spiritual needs are well understood and met.`,
     );
   }
 
-  if (spiritualDevelopmentRate >= 80 && totalSpiritualRecords > 0) {
+  if (totalSpiritualRecords > 0 && meets(spiritualDevelopmentRate, 80)) {
     strengths.push(
       `Spiritual development rate at ${spiritualDevelopmentRate}% -- plans are in place, goals are progressing, and sessions are well attended.`,
     );
-  } else if (spiritualDevelopmentRate >= 60 && totalSpiritualRecords > 0) {
+  } else if (totalSpiritualRecords > 0 && meets(spiritualDevelopmentRate, 60)) {
     strengths.push(
       `Spiritual development rate at ${spiritualDevelopmentRate}% -- good progress in spiritual development planning and delivery.`,
     );
@@ -567,7 +574,7 @@ export function computeReligiousSpiritualWellbeing(
     );
   }
 
-  if (worshipSatisfactionAvg >= 4.0 && totalWorshipRecords > 0) {
+  if (totalWorshipRecords > 0 && worshipSatisfactionAvg !== null && worshipSatisfactionAvg >= 4.0) {
     strengths.push(
       `Children's satisfaction with worship access averages ${worshipSatisfactionAvg}/5 -- children feel well supported in attending their place of worship.`,
     );
@@ -643,17 +650,17 @@ export function computeReligiousSpiritualWellbeing(
     );
   }
 
-  if (faithSatisfactionAvg < 3.0 && totalFaithRecords > 0) {
+  if (totalFaithRecords > 0 && faithSatisfactionAvg !== null && faithSatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with faith support averages only ${faithSatisfactionAvg}/5 -- children do not feel their spiritual needs are being met.`,
     );
   }
 
-  if (spiritualDevelopmentRate < 50 && totalSpiritualRecords > 0) {
+  if (totalSpiritualRecords > 0 && below(spiritualDevelopmentRate, 50)) {
     concerns.push(
       `Spiritual development rate at only ${spiritualDevelopmentRate}% -- plans, goals, and sessions are not adequately supporting children's spiritual growth.`,
     );
-  } else if (spiritualDevelopmentRate < 60 && spiritualDevelopmentRate >= 50 && totalSpiritualRecords > 0) {
+  } else if (totalSpiritualRecords > 0 && spiritualDevelopmentRate !== null && spiritualDevelopmentRate < 60 && spiritualDevelopmentRate >= 50) {
     concerns.push(
       `Spiritual development rate at ${spiritualDevelopmentRate}% -- spiritual growth planning and delivery need strengthening.`,
     );
@@ -715,7 +722,7 @@ export function computeReligiousSpiritualWellbeing(
     );
   }
 
-  if (worshipSatisfactionAvg < 3.0 && totalWorshipRecords > 0) {
+  if (totalWorshipRecords > 0 && worshipSatisfactionAvg !== null && worshipSatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with worship access averages only ${worshipSatisfactionAvg}/5 -- children are not satisfied with how their worship needs are facilitated.`,
     );
@@ -990,7 +997,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (spiritualDevelopmentRate >= 50 && spiritualDevelopmentRate < 80 && totalSpiritualRecords > 0) {
+  if (totalSpiritualRecords > 0 && spiritualDevelopmentRate !== null && spiritualDevelopmentRate >= 50 && spiritualDevelopmentRate < 80) {
     insights.push({
       text: `Spiritual development rate at ${spiritualDevelopmentRate}% -- plans and goals are partially in place but not yet consistently driving spiritual growth for all children.`,
       severity: "warning",
@@ -1077,7 +1084,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (worshipAccessRate >= 90 && worshipSatisfactionAvg >= 4.0 && totalWorshipRecords > 0) {
+  if (totalWorshipRecords > 0 && worshipSatisfactionAvg !== null && worshipAccessRate >= 90 && worshipSatisfactionAvg >= 4.0) {
     insights.push({
       text: `${worshipAccessRate}% worship access with child satisfaction averaging ${worshipSatisfactionAvg}/5 -- children can worship freely and feel well supported in doing so. This demonstrates the home's commitment to religious freedom and Reg 6 compliance.`,
       severity: "positive",
