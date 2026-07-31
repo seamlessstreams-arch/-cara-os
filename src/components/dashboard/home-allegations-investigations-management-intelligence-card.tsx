@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, AlertOctagon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { AllegationsInvestigationsRating } from "@/lib/engines/home-allegations-investigations-management-intelligence-engine";
 
@@ -89,8 +90,8 @@ export function HomeAllegationsInvestigationsManagementIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.safeguarding_response_rate >= 90 ? "text-[--cs-success]" : d.safeguarding_response_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safeguarding_response_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Response</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.timeliness_rate >= 90 ? "bg-green-50" : d.timeliness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.timeliness_rate >= 90 ? "text-[--cs-success]" : d.timeliness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.timeliness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.timeliness_rate, 90) ? "bg-green-50" : meets(d.timeliness_rate, 70) ? "bg-amber-50" : d.timeliness_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.timeliness_rate, 90) ? "text-[--cs-success]" : meets(d.timeliness_rate, 70) ? "text-[--cs-warning]" : d.timeliness_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.timeliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Timely</p>
             </div>
           </div>

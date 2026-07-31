@@ -172,7 +172,8 @@ export interface AllegationsInvestigationsResult {
   investigation_completion_rate: number;
   outcome_documentation_rate: number;
   safeguarding_response_rate: number;
-  timeliness_rate: number;
+  // fab-0: null when no timeliness components (no allegations/referrals/investigations/responses).
+  timeliness_rate: number | null;
   total_allegations: number;
   total_lado_referrals: number;
   total_investigations: number;
@@ -225,7 +226,7 @@ function emptyResult(
     investigation_completion_rate: 0,
     outcome_documentation_rate: 0,
     safeguarding_response_rate: 0,
-    timeliness_rate: 0,
+    timeliness_rate: null,
     total_allegations: 0,
     total_lado_referrals: 0,
     total_investigations: 0,
@@ -548,17 +549,6 @@ export function computeAllegationsInvestigationsManagement(
   ).length;
   const interimMeasuresRate = pct(interimMeasures, totalInvestigations);
 
-  // Average completion days for completed investigations
-  const completedDays = investigation_records
-    .filter((i) => !i.is_open && i.actual_completion_days >= 0)
-    .map((i) => i.actual_completion_days);
-  const avgCompletionDays =
-    completedDays.length > 0
-      ? Math.round(
-          completedDays.reduce((sum, d) => sum + d, 0) / completedDays.length,
-        )
-      : 0;
-
   // Overdue open investigations (open longer than target). An open investigation
   // with a missing/invalid date_opened yields NaN — treat that as overdue too,
   // since NaN > target is false and would otherwise hide an un-dated open case.
@@ -784,13 +774,14 @@ export function computeAllegationsInvestigationsManagement(
     timelinessComponents.push(completionWithinTargetRate);
   if (totalSafeguardingResponses > 0)
     timelinessComponents.push(safeguardingResponseRate);
-  const timelinessRate =
+  // fab-0: null when no components accumulated (means no data source qualified).
+  const timelinessRate: number | null =
     timelinessComponents.length > 0
       ? Math.round(
           timelinessComponents.reduce((s, v) => s + v, 0) /
             timelinessComponents.length,
         )
-      : 0;
+      : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
   // 9 bonus categories summing to exactly 28 (max 80 = outstanding)

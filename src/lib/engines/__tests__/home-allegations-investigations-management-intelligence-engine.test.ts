@@ -312,7 +312,8 @@ describe("computeAllegationsInvestigationsManagement", () => {
       expect(r.investigation_completion_rate).toBe(0);
       expect(r.outcome_documentation_rate).toBe(0);
       expect(r.safeguarding_response_rate).toBe(0);
-      expect(r.timeliness_rate).toBe(0);
+      // fab-0: null when no timeliness components exist (empty records).
+      expect(r.timeliness_rate).toBeNull();
     });
   });
 
@@ -469,7 +470,8 @@ describe("computeAllegationsInvestigationsManagement", () => {
       expect(r.investigation_completion_rate).toBe(0);
       expect(r.outcome_documentation_rate).toBe(0);
       expect(r.safeguarding_response_rate).toBe(0);
-      expect(r.timeliness_rate).toBe(0);
+      // fab-0: null when no timeliness components exist (empty records).
+      expect(r.timeliness_rate).toBeNull();
     });
   });
 
@@ -1837,8 +1839,8 @@ describe("computeAllegationsInvestigationsManagement", () => {
       expect(r.timeliness_rate).toBe(100);
     });
 
-    it("returns 0 when no records exist to compute timeliness", () => {
-      // All empty arrays → no timeliness components → 0
+    it("returns null when no records exist to compute timeliness", () => {
+      // fab-0: no timeliness components → null (not measured).
       const r = computeAllegationsInvestigationsManagement({
         today: "2026-05-28",
         total_children: 0,
@@ -1848,7 +1850,7 @@ describe("computeAllegationsInvestigationsManagement", () => {
         outcome_records: [],
         safeguarding_response_records: [],
       });
-      expect(r.timeliness_rate).toBe(0);
+      expect(r.timeliness_rate).toBeNull();
     });
 
     it("averages available timeliness components", () => {
