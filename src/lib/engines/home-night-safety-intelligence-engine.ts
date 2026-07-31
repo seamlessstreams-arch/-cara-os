@@ -74,7 +74,8 @@ export interface CheckComplianceOverview {
   nights_with_checks_30d: number;
   total_nights_30d: number;
   compliance_rate: number;            // % of nights with checks completed
-  children_checked_per_night_avg: number;
+  // fab-0: null when no checks in the 30-day window.
+  children_checked_per_night_avg: number | null;
   all_children_checked_rate: number;  // % of nights where all children were checked
 }
 
@@ -82,7 +83,8 @@ export interface DisturbanceOverview {
   total_disturbances_7d: number;
   total_disturbances_30d: number;
   children_with_disturbances: string[];
-  avg_per_night_30d: number;
+  // fab-0: null when no nights with disturbances in the 30-day window.
+  avg_per_night_30d: number | null;
 }
 
 export interface NightIncidentOverview {
@@ -150,12 +152,16 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
+// Call sites guarantee d > 0 (fixed literals or Math.max(x, 1)), so no
+// fab-0 fallback needed. Adding one would fabricate 0% on empty inputs.
 function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 0;
+  return Math.round((n / d) * 100);
 }
 
+// Call sites guarantee values.length > 0 (see avgChildScore gate at L304),
+// so no fab-0 fallback needed. Adding one would fabricate 0 on empty inputs.
 function avg(values: number[]): number {
-  return values.length > 0 ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10 : 0;
+  return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
 }
 
 function isUnsettled(status: string): boolean {
@@ -255,9 +261,10 @@ export function computeHomeNightSafety(
     return children.every((c) => childrenChecked.has(c.id));
   });
 
-  const avgChildrenPerNight = checkDates.length > 0
+  // fab-0: null when no check dates in window.
+  const avgChildrenPerNight: number | null = checkDates.length > 0
     ? Math.round((allChecks30d.length / checkDates.length) * 10) / 10
-    : 0;
+    : null;
 
   const check_compliance: CheckComplianceOverview = {
     nights_with_checks_30d: nightsWithChecks,
@@ -277,7 +284,8 @@ export function computeHomeNightSafety(
     total_disturbances_7d: disturb7d.length,
     total_disturbances_30d: disturb30d.length,
     children_with_disturbances: disturbChildNames,
-    avg_per_night_30d: nightsWithDisturb > 0 ? Math.round((disturb30d.length / nightsWithDisturb) * 10) / 10 : 0,
+    // fab-0: null when no disturbance nights.
+    avg_per_night_30d: nightsWithDisturb > 0 ? Math.round((disturb30d.length / nightsWithDisturb) * 10) / 10 : null,
   };
 
   // ── Night Incidents ──────────────────────────────────────────────────
