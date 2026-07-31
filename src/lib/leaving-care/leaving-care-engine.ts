@@ -181,29 +181,31 @@ export interface PathwayPlanningResult {
   plansOverdue: number;
   plansDraft: number;
   plansNotStarted: number;
-  youngPersonInvolvementRate: number;
-  averageGoalAchievementRate: number;
-  planCompletenessRate: number;
+  // fab-0: null when no plans exist to measure over.
+  youngPersonInvolvementRate: number | null;
+  averageGoalAchievementRate: number | null;
+  planCompletenessRate: number | null;
 }
 
 export interface IndependenceSkillsResult {
   score: number;
   maxScore: number;
   totalAssessments: number;
-  averageSkillLevel: number;
+  // fab-0: null when no assessments have been made / no measurable population.
+  averageSkillLevel: number | null;
   skillsAtCompetentOrAbove: number;
   skillsImproving: number;
   skillsStagnant: number;
   skillsNotAssessed: number;
-  coverageRate: number;
-  progressRate: number;
+  coverageRate: number | null;
+  progressRate: number | null;
   categoryBreakdown: SkillCategoryBreakdown[];
 }
 
 export interface SkillCategoryBreakdown {
   skill: SkillCategory;
   childCount: number;
-  averageLevel: number;
+  averageLevel: number | null;
   competentCount: number;
   label: string;
 }
@@ -230,7 +232,8 @@ export interface SupportNetworkResult {
   mentorsActive: number;
   communityConnections: number;
   supportTypeCoverage: number;
-  averageSupportPerChild: number;
+  // fab-0: null when there are no eligible children to average over.
+  averageSupportPerChild: number | null;
   childrenWithNoSupport: number;
 }
 
@@ -240,8 +243,9 @@ export interface ChildLeavingProfile {
   age: number;
   hasPathwayPlan: boolean;
   pathwayPlanStatus?: PathwayPlanStatus;
-  goalAchievementRate: number;
-  independenceSkillLevel: number;
+  // fab-0: null when the child has no plan / no assessed skills.
+  goalAchievementRate: number | null;
+  independenceSkillLevel: number | null;
   skillsAssessed: number;
   skillsCompetent: number;
   accommodationStatus?: AccommodationStatus;
@@ -375,7 +379,7 @@ export function evaluatePathwayPlanning(
   const involvementRate =
     relevantPlans.length > 0
       ? Math.round((involvedPlans.length / relevantPlans.length) * 100)
-      : 0;
+      : null;
 
   // Goal achievement
   const goalRates = relevantPlans
@@ -384,7 +388,7 @@ export function evaluatePathwayPlanning(
   const avgGoalRate =
     goalRates.length > 0
       ? Math.round(goalRates.reduce((sum, r) => sum + r, 0) / goalRates.length)
-      : 0;
+      : null;
 
   // Plan completeness (all 4 sections included)
   const completeCount = relevantPlans.filter(
@@ -397,7 +401,7 @@ export function evaluatePathwayPlanning(
   const completenessRate =
     relevantPlans.length > 0
       ? Math.round((completeCount / relevantPlans.length) * 100)
-      : 0;
+      : null;
 
   // Score (max 30)
   let score = 0;
@@ -411,13 +415,13 @@ export function evaluatePathwayPlanning(
   score += Math.max(0, 6 - overdueRatio * 12);
 
   // Young person involvement (max 6)
-  score += (involvementRate / 100) * 6;
+  score += ((involvementRate ?? 0) / 100) * 6;
 
   // Goal achievement (max 4)
-  score += (avgGoalRate / 100) * 4;
+  score += ((avgGoalRate ?? 0) / 100) * 4;
 
   // Completeness (max 4)
-  score += (completenessRate / 100) * 4;
+  score += ((completenessRate ?? 0) / 100) * 4;
 
   score = Math.max(0, Math.min(30, Math.round(score)));
 
@@ -479,7 +483,7 @@ export function evaluateIndependenceSkills(
   const coverageRate =
     totalPossible > 0
       ? Math.round((assessedPairs.size / totalPossible) * 100)
-      : 0;
+      : null;
 
   // Average skill level (over assessed only)
   const levelValues = assessed.map((a) => skillLevelToNumber(a.currentLevel));
@@ -488,7 +492,7 @@ export function evaluateIndependenceSkills(
       ? Math.round(
           (levelValues.reduce((s, v) => s + v, 0) / levelValues.length) * 100,
         ) / 100
-      : 0;
+      : null;
 
   // Competent or above
   const competentOrAbove = assessed.filter(
@@ -530,7 +534,7 @@ export function evaluateIndependenceSkills(
           ? Math.round(
               (levels.reduce((s, v) => s + v, 0) / levels.length) * 100,
             ) / 100
-          : 0;
+          : null;
       const competent = skillAssessments.filter(
         (a) =>
           a.currentLevel === "competent" || a.currentLevel === "independent",
@@ -550,13 +554,13 @@ export function evaluateIndependenceSkills(
   let score = 0;
 
   // Coverage (max 8)
-  score += (coverageRate / 100) * 8;
+  score += ((coverageRate ?? 0) / 100) * 8;
 
   // Average skill level (max 7) — normalized to 0-4 scale
-  score += (avgLevel / 4) * 7;
+  score += ((avgLevel ?? 0) / 4) * 7;
 
   // Progress rate (max 5)
-  score += (progressRate / 100) * 5;
+  score += ((progressRate ?? 0) / 100) * 5;
 
   // Competent ratio (max 5)
   const competentRatio =
@@ -692,7 +696,7 @@ export function evaluateSupportNetwork(
       mentorsActive: 0,
       communityConnections: 0,
       supportTypeCoverage: 100,
-      averageSupportPerChild: 0,
+      averageSupportPerChild: null,
       childrenWithNoSupport: 0,
     };
   }
@@ -730,7 +734,7 @@ export function evaluateSupportNetwork(
             childSupportCounts.length) *
             100,
         ) / 100
-      : 0;
+      : null;
   const noSupport = childSupportCounts.filter((c) => c === 0).length;
 
   // Unique children with PAs
@@ -752,7 +756,7 @@ export function evaluateSupportNetwork(
   score += (typeCoverage / 100) * 5;
 
   // Average support per child (max 4) — target 3+
-  const supportRatio = Math.min(1, avgSupport / 3);
+  const supportRatio = Math.min(1, (avgSupport ?? 0) / 3);
   score += supportRatio * 4;
 
   // Mentoring (max 3)
@@ -808,7 +812,7 @@ export function buildChildLeavingProfiles(
     const goalRate =
       plan && plan.goalsSet > 0
         ? Math.round((plan.goalsAchieved / plan.goalsSet) * 100)
-        : 0;
+        : null;
 
     // Average skill level (0-100 scale based on 0-4)
     const levels = childAssessments.map((a) =>
@@ -819,7 +823,7 @@ export function buildChildLeavingProfiles(
         ? Math.round(
             (levels.reduce((s, v) => s + v, 0) / levels.length / 4) * 100,
           )
-        : 0;
+        : null;
 
     const competentCount = childAssessments.filter(
       (a) =>
@@ -842,7 +846,7 @@ export function buildChildLeavingProfiles(
       readiness += (planScore / 30) * 30;
 
       // Independence skills (25%)
-      readiness += avgSkillLevel * 0.25;
+      readiness += (avgSkillLevel ?? 0) * 0.25;
 
       // Accommodation (25%)
       const accomScore = accomPlan
@@ -863,7 +867,7 @@ export function buildChildLeavingProfiles(
       readiness += Math.min(20, supportScore);
     } else {
       // Non-eligible: simpler calculation based on skills and support
-      readiness += avgSkillLevel * 0.6;
+      readiness += (avgSkillLevel ?? 0) * 0.6;
       readiness += Math.min(40, support.length * 10);
     }
     readiness = Math.max(0, Math.min(100, Math.round(readiness)));
@@ -1140,27 +1144,27 @@ function generateStrengths(
       "All eligible young people have current pathway plans in place — statutory duties met",
     );
   }
-  if (pathway.youngPersonInvolvementRate >= 90) {
+  if ((pathway.youngPersonInvolvementRate ?? 0) >= 90) {
     strengths.push(
       "Excellent young person involvement in pathway planning — their voice is central to the process",
     );
   }
-  if (pathway.averageGoalAchievementRate >= 75) {
+  if ((pathway.averageGoalAchievementRate ?? 0) >= 75) {
     strengths.push(
       "Strong goal achievement rate in pathway plans — young people are making good progress toward their aspirations",
     );
   }
-  if (skills.coverageRate >= 80) {
+  if ((skills.coverageRate ?? 0) >= 80) {
     strengths.push(
       "Independence skills assessment coverage is comprehensive — all key areas are being tracked",
     );
   }
-  if (skills.progressRate >= 70) {
+  if ((skills.progressRate ?? 0) >= 70) {
     strengths.push(
       "Good progress in independence skills development — young people are building practical life skills",
     );
   }
-  if (skills.averageSkillLevel >= 3) {
+  if ((skills.averageSkillLevel ?? 0) >= 3) {
     strengths.push(
       "Average skill level is at or above competent — young people are developing real independence",
     );
@@ -1232,19 +1236,19 @@ function generateAreasForImprovement(
     );
   }
   if (
-    pathway.youngPersonInvolvementRate < 75 &&
+    (pathway.youngPersonInvolvementRate ?? 0) < 75 &&
     pathway.totalPlansRequired > 0
   ) {
     areas.push(
       `Young person involvement in pathway planning is ${pathway.youngPersonInvolvementRate}% — review how young people participate in their plans`,
     );
   }
-  if (pathway.planCompletenessRate < 80 && pathway.totalPlansRequired > 0) {
+  if ((pathway.planCompletenessRate ?? 100) < 80 && pathway.totalPlansRequired > 0) {
     areas.push(
       `Only ${pathway.planCompletenessRate}% of pathway plans include all required sections — ensure education, health, finance, and accommodation are all addressed`,
     );
   }
-  if (skills.coverageRate < 60) {
+  if ((skills.coverageRate ?? 0) < 60) {
     areas.push(
       `Independence skills assessment coverage is only ${skills.coverageRate}% — expand assessment to cover all key life skill areas`,
     );
@@ -1254,7 +1258,7 @@ function generateAreasForImprovement(
       `${skills.skillsStagnant} skill assessment(s) show no progress — review teaching approaches and support`,
     );
   }
-  if (skills.averageSkillLevel < 2 && skills.totalAssessments > 0) {
+  if ((skills.averageSkillLevel ?? 0) < 2 && skills.totalAssessments > 0) {
     areas.push(
       "Average independence skill level is below developing — intensify life skills teaching programme",
     );
@@ -1333,7 +1337,7 @@ function generateActions(
     );
   }
 
-  if (skills.coverageRate < 50) {
+  if ((skills.coverageRate ?? 0) < 50) {
     result.push(
       "MEDIUM: Independence skills coverage below 50%. Schedule comprehensive life skills assessment for all young people within 4 weeks.",
     );

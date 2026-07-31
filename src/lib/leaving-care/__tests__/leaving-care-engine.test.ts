@@ -514,7 +514,8 @@ describe("evaluatePathwayPlanning", () => {
     const children = [makeChild()];
     const plans = [makePlan({ goalsSet: 0, goalsAchieved: 0 })];
     const result = evaluatePathwayPlanning(children, plans);
-    expect(result.averageGoalAchievementRate).toBe(0);
+    // fab-0: null when no goals set.
+    expect(result.averageGoalAchievementRate).toBeNull();
   });
 
   it("includes due_for_review in plansInPlace count", () => {
@@ -670,8 +671,10 @@ describe("evaluateIndependenceSkills", () => {
     const children = [makeChild()];
     const result = evaluateIndependenceSkills(children, []);
     expect(result.totalAssessments).toBe(0);
+    // Coverage = assessed/totalPossible; child exists → totalPossible > 0 → 0/N = real 0.
     expect(result.coverageRate).toBe(0);
-    expect(result.averageSkillLevel).toBe(0);
+    // fab-0: null when no assessments to average over.
+    expect(result.averageSkillLevel).toBeNull();
     expect(result.score).toBe(0);
   });
 
@@ -996,14 +999,16 @@ describe("buildChildLeavingProfiles", () => {
   it("returns 0 goal rate when no plan", () => {
     const children = [makeChild()];
     const profiles = buildChildLeavingProfiles(children, [], [], [], []);
-    expect(profiles[0].goalAchievementRate).toBe(0);
+    // fab-0: null when no plan / no goals set.
+    expect(profiles[0].goalAchievementRate).toBeNull();
   });
 
   it("returns 0 goal rate when goalsSet is 0", () => {
     const children = [makeChild()];
     const plans = [makePlan({ goalsSet: 0, goalsAchieved: 0 })];
     const profiles = buildChildLeavingProfiles(children, plans, [], [], []);
-    expect(profiles[0].goalAchievementRate).toBe(0);
+    // fab-0: null when no plan / no goals set.
+    expect(profiles[0].goalAchievementRate).toBeNull();
   });
 
   it("calculates independence skill level from assessments", () => {
