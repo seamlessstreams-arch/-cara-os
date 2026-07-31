@@ -12,6 +12,8 @@
 //             ageGuidanceRecords, productProvisionRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface ContinencePlanRecordInput {
@@ -194,11 +196,16 @@ export interface ContinenceHygieneResult {
   total_dignity_care_records: number;
   total_age_guidance_records: number;
   total_product_provision_records: number;
-  continence_plan_rate: number;
-  hygiene_routine_rate: number;
-  dignity_compliance_rate: number;
-  age_appropriate_rate: number;
-  product_provision_rate: number;
+  // child_independence_rate uses pct() directly (deterministic 0 on empty).
+  // The 5 composite rates below are null on empty: no source records ⇒ no
+  // signal. "0% continence plans / 0% hygiene routines / 0% dignity /
+  // 0% age-appropriate / 0% product provision" would read as a home
+  // actively neglecting personal care, not "unmeasured". Fab-0 doctrine.
+  continence_plan_rate: number | null;
+  hygiene_routine_rate: number | null;
+  dignity_compliance_rate: number | null;
+  age_appropriate_rate: number | null;
+  product_provision_rate: number | null;
   child_independence_rate: number;
   strengths: string[];
   concerns: string[];
@@ -239,11 +246,11 @@ function emptyResult(
     total_dignity_care_records: 0,
     total_age_guidance_records: 0,
     total_product_provision_records: 0,
-    continence_plan_rate: 0,
-    hygiene_routine_rate: 0,
-    dignity_compliance_rate: 0,
-    age_appropriate_rate: 0,
-    product_provision_rate: 0,
+    continence_plan_rate: null,
+    hygiene_routine_rate: null,
+    dignity_compliance_rate: null,
+    age_appropriate_rate: null,
+    product_provision_rate: null,
     child_independence_rate: 0,
     strengths: [],
     concerns: [],
@@ -374,10 +381,10 @@ export function computeContinencePersonalHygieneSupport(
   const socialWorkerInformedRate = pct(socialWorkerInformed, totalContinencePlans);
 
   // Composite continence_plan_rate: average of planInPlace, personalised, reviewedOnTime, goals
-  const continencePlanRate =
+  const continencePlanRate: number | null =
     totalContinencePlans > 0
       ? Math.round((planInPlaceRate + planPersonalisedRate + planReviewRate + goalsSetRate) / 4)
-      : 0;
+      : null;
 
   // --- Hygiene routine metrics ---
   const totalHygieneRoutines = hygiene_routine_records.length;
@@ -430,12 +437,12 @@ export function computeContinencePersonalHygieneSupport(
   const refusalHandlingRate = routinesRefused > 0 ? pct(refusalsHandledSensitively, routinesRefused) : 100;
 
   // Composite hygiene_routine_rate
-  const hygieneRoutineRate =
+  const hygieneRoutineRate: number | null =
     totalHygieneRoutines > 0
       ? Math.round(
           (routineSupportRate + routineCompletionRate + routineDignityRate + routinePrivacyRate + ageAppropriateRoutineRate) / 5,
         )
-      : 0;
+      : null;
 
   // --- Dignity care metrics ---
   const totalDignityCareRecords = dignity_care_records.length;
@@ -494,12 +501,12 @@ export function computeContinencePersonalHygieneSupport(
   const minimalStaffRate = pct(minimalStaffInvolved, totalDignityCareRecords);
 
   // Composite dignity_compliance_rate
-  const dignityComplianceRate =
+  const dignityComplianceRate: number | null =
     totalDignityCareRecords > 0
       ? Math.round(
           (dignityMaintainedRate + privacyEnsuredRate + consentRate + noShamingRate + embarrassmentMinimisedRate + reassuranceRate) / 6,
         )
-      : 0;
+      : null;
 
   // --- Age guidance metrics ---
   const totalAgeGuidanceRecords = age_guidance_records.length;
@@ -548,12 +555,12 @@ export function computeContinencePersonalHygieneSupport(
   const guidanceChildCoverage = total_children > 0 ? pct(uniqueChildrenGuidance, total_children) : 0;
 
   // Composite age_appropriate_rate
-  const ageAppropriateRate =
+  const ageAppropriateRate: number | null =
     totalAgeGuidanceRecords > 0
       ? Math.round(
           (ageAppropriateGuidanceRate + developmentAppropriateRate + deliveredSensitivelyRate + childEngagedRate) / 4,
         )
-      : 0;
+      : null;
 
   // --- Product provision metrics ---
   const totalProductProvisionRecords = product_provision_records.length;
@@ -609,12 +616,12 @@ export function computeContinencePersonalHygieneSupport(
   const staffAwareProductRate = pct(staffAwareProducts, totalProductProvisionRecords);
 
   // Composite product_provision_rate
-  const productProvisionRate =
+  const productProvisionRate: number | null =
     totalProductProvisionRecords > 0
       ? Math.round(
           (productAvailabilityRate + productSuitabilityRate + sufficientQuantityRate + storedDiscreetlyRate + dignityProductRate) / 5,
         )
-      : 0;
+      : null;
 
   // --- Child independence composite ---
   const independenceNumerators: number[] = [];
@@ -646,24 +653,24 @@ export function computeContinencePersonalHygieneSupport(
   let score = 52;
 
   // --- Bonus 1: continencePlanRate (>=90: +5, >=70: +3) ---
-  if (continencePlanRate >= 90) score += 5;
-  else if (continencePlanRate >= 70) score += 3;
+  if (meets(continencePlanRate, 90)) score += 5;
+  else if (meets(continencePlanRate, 70)) score += 3;
 
   // --- Bonus 2: hygieneRoutineRate (>=90: +5, >=70: +3) ---
-  if (hygieneRoutineRate >= 90) score += 5;
-  else if (hygieneRoutineRate >= 70) score += 3;
+  if (meets(hygieneRoutineRate, 90)) score += 5;
+  else if (meets(hygieneRoutineRate, 70)) score += 3;
 
   // --- Bonus 3: dignityComplianceRate (>=95: +5, >=80: +3) ---
-  if (dignityComplianceRate >= 95) score += 5;
-  else if (dignityComplianceRate >= 80) score += 3;
+  if (meets(dignityComplianceRate, 95)) score += 5;
+  else if (meets(dignityComplianceRate, 80)) score += 3;
 
   // --- Bonus 4: ageAppropriateRate (>=90: +4, >=70: +2) ---
-  if (ageAppropriateRate >= 90) score += 4;
-  else if (ageAppropriateRate >= 70) score += 2;
+  if (meets(ageAppropriateRate, 90)) score += 4;
+  else if (meets(ageAppropriateRate, 70)) score += 2;
 
   // --- Bonus 5: productProvisionRate (>=90: +4, >=70: +2) ---
-  if (productProvisionRate >= 90) score += 4;
-  else if (productProvisionRate >= 70) score += 2;
+  if (meets(productProvisionRate, 90)) score += 4;
+  else if (meets(productProvisionRate, 70)) score += 2;
 
   // --- Bonus 6: childIndependenceRate (>=90: +3, >=70: +1) ---
   if (childIndependenceRate >= 90) score += 3;
@@ -676,17 +683,17 @@ export function computeContinencePersonalHygieneSupport(
 
   // -- Penalties -------------------------------------------------------------
 
-  // continencePlanRate < 40 -> -5 (guarded)
-  if (continencePlanRate < 40 && continence_plan_records.length > 0) score -= 5;
+  // below(continencePlanRate, 40) -> -5 (guarded)
+  if (below(continencePlanRate, 40) && continence_plan_records.length > 0) score -= 5;
 
-  // hygieneRoutineRate < 40 -> -5 (guarded)
-  if (hygieneRoutineRate < 40 && hygiene_routine_records.length > 0) score -= 5;
+  // below(hygieneRoutineRate, 40) -> -5 (guarded)
+  if (below(hygieneRoutineRate, 40) && hygiene_routine_records.length > 0) score -= 5;
 
-  // dignityComplianceRate < 50 -> -5 (guarded)
-  if (dignityComplianceRate < 50 && dignity_care_records.length > 0) score -= 5;
+  // below(dignityComplianceRate, 50) -> -5 (guarded)
+  if (below(dignityComplianceRate, 50) && dignity_care_records.length > 0) score -= 5;
 
-  // productProvisionRate < 40 -> -3 (guarded)
-  if (productProvisionRate < 40 && product_provision_records.length > 0) score -= 3;
+  // below(productProvisionRate, 40) -> -3 (guarded)
+  if (below(productProvisionRate, 40) && product_provision_records.length > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -696,51 +703,51 @@ export function computeContinencePersonalHygieneSupport(
 
   const strengths: string[] = [];
 
-  if (continencePlanRate >= 90 && totalContinencePlans > 0) {
+  if (meets(continencePlanRate, 90) && totalContinencePlans > 0) {
     strengths.push(
       `Continence plan compliance at ${continencePlanRate}% -- plans are in place, personalised, reviewed on time, and include clear goals. Children's continence needs are being managed proactively and comprehensively.`,
     );
-  } else if (continencePlanRate >= 70 && totalContinencePlans > 0) {
+  } else if (meets(continencePlanRate, 70) && totalContinencePlans > 0) {
     strengths.push(
       `Continence plan compliance at ${continencePlanRate}% -- the home maintains good standards of continence management planning for children with identified needs.`,
     );
   }
 
-  if (hygieneRoutineRate >= 90 && totalHygieneRoutines > 0) {
+  if (meets(hygieneRoutineRate, 90) && totalHygieneRoutines > 0) {
     strengths.push(
       `Hygiene routine quality at ${hygieneRoutineRate}% -- personal hygiene routines are well-supported, completed with dignity, and respect children's privacy and age-appropriate needs.`,
     );
-  } else if (hygieneRoutineRate >= 70 && totalHygieneRoutines > 0) {
+  } else if (meets(hygieneRoutineRate, 70) && totalHygieneRoutines > 0) {
     strengths.push(
       `Hygiene routine quality at ${hygieneRoutineRate}% -- the home provides good support for children's personal hygiene routines with appropriate attention to dignity and privacy.`,
     );
   }
 
-  if (dignityComplianceRate >= 95 && totalDignityCareRecords > 0) {
+  if (meets(dignityComplianceRate, 95) && totalDignityCareRecords > 0) {
     strengths.push(
       `Dignity in care compliance at ${dignityComplianceRate}% -- exemplary standards of dignity, privacy, and sensitivity in all continence and personal care interactions. Children's embarrassment is minimised and positive reassurance is consistently provided.`,
     );
-  } else if (dignityComplianceRate >= 80 && totalDignityCareRecords > 0) {
+  } else if (meets(dignityComplianceRate, 80) && totalDignityCareRecords > 0) {
     strengths.push(
       `Dignity in care compliance at ${dignityComplianceRate}% -- the home demonstrates strong commitment to maintaining children's dignity and privacy during personal care support.`,
     );
   }
 
-  if (ageAppropriateRate >= 90 && totalAgeGuidanceRecords > 0) {
+  if (meets(ageAppropriateRate, 90) && totalAgeGuidanceRecords > 0) {
     strengths.push(
       `Age-appropriate guidance rate at ${ageAppropriateRate}% -- guidance on continence, hygiene, and personal care is consistently tailored to each child's age and developmental stage, delivered sensitively with strong engagement.`,
     );
-  } else if (ageAppropriateRate >= 70 && totalAgeGuidanceRecords > 0) {
+  } else if (meets(ageAppropriateRate, 70) && totalAgeGuidanceRecords > 0) {
     strengths.push(
       `Age-appropriate guidance rate at ${ageAppropriateRate}% -- good standards of age and developmentally appropriate guidance on personal hygiene and continence matters.`,
     );
   }
 
-  if (productProvisionRate >= 90 && totalProductProvisionRecords > 0) {
+  if (meets(productProvisionRate, 90) && totalProductProvisionRecords > 0) {
     strengths.push(
       `Product provision rate at ${productProvisionRate}% -- continence and hygiene products are consistently available, suitable, stored discreetly, and provided in sufficient quantities while preserving children's dignity.`,
     );
-  } else if (productProvisionRate >= 70 && totalProductProvisionRecords > 0) {
+  } else if (meets(productProvisionRate, 70) && totalProductProvisionRecords > 0) {
     strengths.push(
       `Product provision rate at ${productProvisionRate}% -- the home ensures children have access to appropriate continence and hygiene products with attention to dignity and suitability.`,
     );
@@ -840,51 +847,51 @@ export function computeContinencePersonalHygieneSupport(
 
   const concerns: string[] = [];
 
-  if (continencePlanRate < 40 && totalContinencePlans > 0) {
+  if (below(continencePlanRate, 40) && totalContinencePlans > 0) {
     concerns.push(
       `Continence plan compliance at only ${continencePlanRate}% -- continence management plans are significantly deficient. Plans may be absent, not personalised, not reviewed, or lack clear goals, meaning children's continence needs are not being adequately managed.`,
     );
-  } else if (continencePlanRate >= 40 && continencePlanRate < 70 && totalContinencePlans > 0) {
+  } else if (meets(continencePlanRate, 40) && below(continencePlanRate, 70) && totalContinencePlans > 0) {
     concerns.push(
       `Continence plan compliance at ${continencePlanRate}% -- while plans exist, gaps in personalisation, timely reviews, or goal-setting mean continence management is inconsistent.`,
     );
   }
 
-  if (hygieneRoutineRate < 40 && totalHygieneRoutines > 0) {
+  if (below(hygieneRoutineRate, 40) && totalHygieneRoutines > 0) {
     concerns.push(
       `Hygiene routine quality at only ${hygieneRoutineRate}% -- personal hygiene routines are poorly supported, completed without adequate dignity or privacy, or lack age-appropriate approaches. This represents a serious welfare concern.`,
     );
-  } else if (hygieneRoutineRate >= 40 && hygieneRoutineRate < 70 && totalHygieneRoutines > 0) {
+  } else if (meets(hygieneRoutineRate, 40) && below(hygieneRoutineRate, 70) && totalHygieneRoutines > 0) {
     concerns.push(
       `Hygiene routine quality at ${hygieneRoutineRate}% -- inconsistencies in support, dignity, privacy, or age-appropriate approaches during personal hygiene routines require improvement.`,
     );
   }
 
-  if (dignityComplianceRate < 50 && totalDignityCareRecords > 0) {
+  if (below(dignityComplianceRate, 50) && totalDignityCareRecords > 0) {
     concerns.push(
       `Dignity in care compliance at only ${dignityComplianceRate}% -- children's dignity, privacy, and emotional wellbeing are not being consistently protected during continence and personal care support. This is a serious safeguarding concern.`,
     );
-  } else if (dignityComplianceRate >= 50 && dignityComplianceRate < 80 && totalDignityCareRecords > 0) {
+  } else if (meets(dignityComplianceRate, 50) && below(dignityComplianceRate, 80) && totalDignityCareRecords > 0) {
     concerns.push(
       `Dignity in care compliance at ${dignityComplianceRate}% -- while some dignity standards are met, inconsistencies in privacy, consent, reassurance, or sensitive language require attention.`,
     );
   }
 
-  if (ageAppropriateRate < 40 && totalAgeGuidanceRecords > 0) {
+  if (below(ageAppropriateRate, 40) && totalAgeGuidanceRecords > 0) {
     concerns.push(
       `Age-appropriate guidance rate at only ${ageAppropriateRate}% -- guidance on continence and hygiene is not consistently age or developmentally appropriate, delivered insensitively, or failing to engage children. This undermines children's understanding and confidence.`,
     );
-  } else if (ageAppropriateRate >= 40 && ageAppropriateRate < 70 && totalAgeGuidanceRecords > 0) {
+  } else if (meets(ageAppropriateRate, 40) && below(ageAppropriateRate, 70) && totalAgeGuidanceRecords > 0) {
     concerns.push(
       `Age-appropriate guidance rate at ${ageAppropriateRate}% -- guidance is not consistently meeting the age and developmental needs of all children, and engagement levels suggest the approach may need review.`,
     );
   }
 
-  if (productProvisionRate < 40 && totalProductProvisionRecords > 0) {
+  if (below(productProvisionRate, 40) && totalProductProvisionRecords > 0) {
     concerns.push(
       `Product provision rate at only ${productProvisionRate}% -- children lack consistent access to suitable, sufficient, and discreetly stored continence and hygiene products. This directly impacts children's dignity and wellbeing.`,
     );
-  } else if (productProvisionRate >= 40 && productProvisionRate < 70 && totalProductProvisionRecords > 0) {
+  } else if (meets(productProvisionRate, 40) && below(productProvisionRate, 70) && totalProductProvisionRecords > 0) {
     concerns.push(
       `Product provision rate at ${productProvisionRate}% -- gaps in product availability, suitability, quantity, storage, or dignity in provision require improvement.`,
     );
@@ -965,7 +972,7 @@ export function computeContinencePersonalHygieneSupport(
   const recommendations: ContinenceHygieneRecommendation[] = [];
   let rank = 0;
 
-  if (continencePlanRate < 40 && totalContinencePlans > 0) {
+  if (below(continencePlanRate, 40) && totalContinencePlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -975,7 +982,7 @@ export function computeContinencePersonalHygieneSupport(
     });
   }
 
-  if (dignityComplianceRate < 50 && totalDignityCareRecords > 0) {
+  if (below(dignityComplianceRate, 50) && totalDignityCareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -985,7 +992,7 @@ export function computeContinencePersonalHygieneSupport(
     });
   }
 
-  if (hygieneRoutineRate < 40 && totalHygieneRoutines > 0) {
+  if (below(hygieneRoutineRate, 40) && totalHygieneRoutines > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1015,7 +1022,7 @@ export function computeContinencePersonalHygieneSupport(
     });
   }
 
-  if (productProvisionRate < 40 && totalProductProvisionRecords > 0) {
+  if (below(productProvisionRate, 40) && totalProductProvisionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1055,7 +1062,7 @@ export function computeContinencePersonalHygieneSupport(
     });
   }
 
-  if (ageAppropriateRate >= 40 && ageAppropriateRate < 70 && totalAgeGuidanceRecords > 0) {
+  if (meets(ageAppropriateRate, 40) && below(ageAppropriateRate, 70) && totalAgeGuidanceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1065,7 +1072,7 @@ export function computeContinencePersonalHygieneSupport(
     });
   }
 
-  if (ageAppropriateRate < 40 && totalAgeGuidanceRecords > 0) {
+  if (below(ageAppropriateRate, 40) && totalAgeGuidanceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1106,8 +1113,8 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    continencePlanRate >= 40 &&
-    continencePlanRate < 70 &&
+    meets(continencePlanRate, 40) &&
+    below(continencePlanRate, 70) &&
     totalContinencePlans > 0
   ) {
     recommendations.push({
@@ -1120,8 +1127,8 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    hygieneRoutineRate >= 40 &&
-    hygieneRoutineRate < 70 &&
+    meets(hygieneRoutineRate, 40) &&
+    below(hygieneRoutineRate, 70) &&
     totalHygieneRoutines > 0
   ) {
     recommendations.push({
@@ -1134,8 +1141,8 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    dignityComplianceRate >= 50 &&
-    dignityComplianceRate < 80 &&
+    meets(dignityComplianceRate, 50) &&
+    below(dignityComplianceRate, 80) &&
     totalDignityCareRecords > 0
   ) {
     recommendations.push({
@@ -1148,8 +1155,8 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    productProvisionRate >= 40 &&
-    productProvisionRate < 70 &&
+    meets(productProvisionRate, 40) &&
+    below(productProvisionRate, 70) &&
     totalProductProvisionRecords > 0
   ) {
     recommendations.push({
@@ -1216,21 +1223,21 @@ export function computeContinencePersonalHygieneSupport(
 
   // -- Critical insights --
 
-  if (continencePlanRate < 40 && totalContinencePlans > 0) {
+  if (below(continencePlanRate, 40) && totalContinencePlans > 0) {
     insights.push({
       text: `Continence plan compliance at only ${continencePlanRate}%. Inadequate continence management planning means children's health needs are not being properly assessed, planned for, or reviewed. Under Regulation 14, the home must ensure that each child's health care needs are met, including continence management. This level of compliance indicates a systemic failure in health care planning.`,
       severity: "critical",
     });
   }
 
-  if (dignityComplianceRate < 50 && totalDignityCareRecords > 0) {
+  if (below(dignityComplianceRate, 50) && totalDignityCareRecords > 0) {
     insights.push({
       text: `Dignity in care compliance at only ${dignityComplianceRate}%. Children are not consistently experiencing dignity, privacy, and sensitive care during continence and personal hygiene support. Ofsted inspectors will assess whether children are treated with dignity and respect -- this level of non-compliance represents a safeguarding concern and will significantly impact inspection judgements.`,
       severity: "critical",
     });
   }
 
-  if (hygieneRoutineRate < 40 && totalHygieneRoutines > 0) {
+  if (below(hygieneRoutineRate, 40) && totalHygieneRoutines > 0) {
     insights.push({
       text: `Hygiene routine quality at only ${hygieneRoutineRate}%. Personal hygiene routines are not being adequately supported, compromising children's physical health, dignity, and emotional wellbeing. Poor hygiene support can lead to health complications, social stigma, and damaged self-esteem, making this a priority welfare concern.`,
       severity: "critical",
@@ -1251,7 +1258,7 @@ export function computeContinencePersonalHygieneSupport(
     });
   }
 
-  if (productProvisionRate < 40 && totalProductProvisionRecords > 0) {
+  if (below(productProvisionRate, 40) && totalProductProvisionRecords > 0) {
     insights.push({
       text: `Product provision rate at only ${productProvisionRate}%. Children lack consistent access to suitable continence and hygiene products. Running out of products, having unsuitable items, or lacking discreet storage forces children into undignified situations and undermines their confidence and self-esteem. This is a basic care requirement that must be met.`,
       severity: "critical",
@@ -1275,8 +1282,8 @@ export function computeContinencePersonalHygieneSupport(
   // -- Warning insights --
 
   if (
-    continencePlanRate >= 40 &&
-    continencePlanRate < 70 &&
+    meets(continencePlanRate, 40) &&
+    below(continencePlanRate, 70) &&
     totalContinencePlans > 0
   ) {
     insights.push({
@@ -1286,8 +1293,8 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    hygieneRoutineRate >= 40 &&
-    hygieneRoutineRate < 70 &&
+    meets(hygieneRoutineRate, 40) &&
+    below(hygieneRoutineRate, 70) &&
     totalHygieneRoutines > 0
   ) {
     insights.push({
@@ -1297,8 +1304,8 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    dignityComplianceRate >= 50 &&
-    dignityComplianceRate < 80 &&
+    meets(dignityComplianceRate, 50) &&
+    below(dignityComplianceRate, 80) &&
     totalDignityCareRecords > 0
   ) {
     insights.push({
@@ -1308,8 +1315,8 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    ageAppropriateRate >= 40 &&
-    ageAppropriateRate < 70 &&
+    meets(ageAppropriateRate, 40) &&
+    below(ageAppropriateRate, 70) &&
     totalAgeGuidanceRecords > 0
   ) {
     insights.push({
@@ -1319,8 +1326,8 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    productProvisionRate >= 40 &&
-    productProvisionRate < 70 &&
+    meets(productProvisionRate, 40) &&
+    below(productProvisionRate, 70) &&
     totalProductProvisionRecords > 0
   ) {
     insights.push({
@@ -1435,7 +1442,7 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    continencePlanRate >= 90 &&
+    meets(continencePlanRate, 90) &&
     medicalInvolvementRate >= 90 &&
     totalContinencePlans > 0
   ) {
@@ -1446,7 +1453,7 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    dignityComplianceRate >= 95 &&
+    meets(dignityComplianceRate, 95) &&
     noShamingRate >= 95 &&
     totalDignityCareRecords > 0
   ) {
@@ -1457,7 +1464,7 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    hygieneRoutineRate >= 90 &&
+    meets(hygieneRoutineRate, 90) &&
     routinePersonalisedRate >= 90 &&
     totalHygieneRoutines > 0
   ) {
@@ -1468,7 +1475,7 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    ageAppropriateRate >= 90 &&
+    meets(ageAppropriateRate, 90) &&
     childEngagedRate >= 90 &&
     totalAgeGuidanceRecords > 0
   ) {
@@ -1479,7 +1486,7 @@ export function computeContinencePersonalHygieneSupport(
   }
 
   if (
-    productProvisionRate >= 90 &&
+    meets(productProvisionRate, 90) &&
     easyAccessRate >= 90 &&
     totalProductProvisionRecords > 0
   ) {

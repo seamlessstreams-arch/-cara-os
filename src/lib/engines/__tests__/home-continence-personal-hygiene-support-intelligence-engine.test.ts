@@ -271,11 +271,11 @@ describe("insufficient_data", () => {
       age_guidance_records: [],
       product_provision_records: [],
     });
-    expect(r.continence_plan_rate).toBe(0);
-    expect(r.hygiene_routine_rate).toBe(0);
-    expect(r.dignity_compliance_rate).toBe(0);
-    expect(r.age_appropriate_rate).toBe(0);
-    expect(r.product_provision_rate).toBe(0);
+    expect(r.continence_plan_rate).toBeNull();
+    expect(r.hygiene_routine_rate).toBeNull();
+    expect(r.dignity_compliance_rate).toBeNull();
+    expect(r.age_appropriate_rate).toBeNull();
+    expect(r.product_provision_rate).toBeNull();
     expect(r.child_independence_rate).toBe(0);
   });
 
@@ -343,11 +343,11 @@ describe("inadequate floor (all empty + children > 0)", () => {
   });
 
   it("all rates remain 0", () => {
-    expect(result.continence_plan_rate).toBe(0);
-    expect(result.hygiene_routine_rate).toBe(0);
-    expect(result.dignity_compliance_rate).toBe(0);
-    expect(result.age_appropriate_rate).toBe(0);
-    expect(result.product_provision_rate).toBe(0);
+    expect(result.continence_plan_rate).toBeNull();
+    expect(result.hygiene_routine_rate).toBeNull();
+    expect(result.dignity_compliance_rate).toBeNull();
+    expect(result.age_appropriate_rate).toBeNull();
+    expect(result.product_provision_rate).toBeNull();
     expect(result.child_independence_rate).toBe(0);
   });
 
@@ -380,10 +380,10 @@ describe("pct(0,0) = 0", () => {
       product_provision_records: [],
       hygiene_routine_records: [makeHygieneRoutine()],
     }));
-    expect(r.continence_plan_rate).toBe(0);
-    expect(r.dignity_compliance_rate).toBe(0);
-    expect(r.age_appropriate_rate).toBe(0);
-    expect(r.product_provision_rate).toBe(0);
+    expect(r.continence_plan_rate).toBeNull();
+    expect(r.dignity_compliance_rate).toBeNull();
+    expect(r.age_appropriate_rate).toBeNull();
+    expect(r.product_provision_rate).toBeNull();
   });
 });
 
@@ -967,6 +967,7 @@ describe("penalty isolation", () => {
         makeContinencePlan({ id: "cp_1", plan_in_place: false, plan_personalised: false, plan_reviewed_on_time: false, goals_set: false, child_involved_in_planning: false, confidentiality_maintained: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.continence_plan_rate).toBe(0);
     expect(r.hygiene_score).toBe(52 - 5);
   });
@@ -986,6 +987,7 @@ describe("penalty isolation", () => {
         makeHygieneRoutine({ id: "hr_1", routine_supported: false, routine_completed: false, dignity_maintained: false, privacy_respected: false, age_appropriate_approach: false, child_independent: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.hygiene_routine_rate).toBe(0);
     expect(r.hygiene_score).toBe(52 - 5);
   });
@@ -1005,6 +1007,7 @@ describe("penalty isolation", () => {
         makeDignityCare({ id: "dc_1", dignity_maintained: false, privacy_ensured: false, consent_sought: false, no_shaming_language: false, child_embarrassment_minimised: false, positive_reassurance_given: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.dignity_compliance_rate).toBe(0);
     expect(r.hygiene_score).toBe(52 - 5);
   });
@@ -1024,6 +1027,7 @@ describe("penalty isolation", () => {
         makeProductProvision({ id: "pp_1", product_available: false, product_suitable: false, sufficient_quantity: false, stored_discreetly: false, child_dignity_preserved: false, child_consulted_on_choice: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.product_provision_rate).toBe(0);
     expect(r.hygiene_score).toBe(52 - 3);
   });
@@ -1076,7 +1080,7 @@ describe("six composite rates", () => {
       const r = computeContinencePersonalHygieneSupport(baseInput({
         continence_plan_records: [],
       }));
-      expect(r.continence_plan_rate).toBe(0);
+      expect(r.continence_plan_rate).toBeNull();
     });
   });
 
@@ -1098,7 +1102,7 @@ describe("six composite rates", () => {
       const r = computeContinencePersonalHygieneSupport(baseInput({
         hygiene_routine_records: [],
       }));
-      expect(r.hygiene_routine_rate).toBe(0);
+      expect(r.hygiene_routine_rate).toBeNull();
     });
   });
 
@@ -1120,7 +1124,7 @@ describe("six composite rates", () => {
       const r = computeContinencePersonalHygieneSupport(baseInput({
         dignity_care_records: [],
       }));
-      expect(r.dignity_compliance_rate).toBe(0);
+      expect(r.dignity_compliance_rate).toBeNull();
     });
   });
 
@@ -1142,7 +1146,7 @@ describe("six composite rates", () => {
       const r = computeContinencePersonalHygieneSupport(baseInput({
         age_guidance_records: [],
       }));
-      expect(r.age_appropriate_rate).toBe(0);
+      expect(r.age_appropriate_rate).toBeNull();
     });
   });
 
@@ -1164,7 +1168,7 @@ describe("six composite rates", () => {
       const r = computeContinencePersonalHygieneSupport(baseInput({
         product_provision_records: [],
       }));
-      expect(r.product_provision_rate).toBe(0);
+      expect(r.product_provision_rate).toBeNull();
     });
   });
 
@@ -2341,8 +2345,8 @@ describe("edge cases", () => {
     // Not allEmpty (hygiene has record), so it proceeds to scoring
     expect(r.hygiene_rating).not.toBe("insufficient_data");
     expect(r.total_hygiene_routines).toBe(1);
-    expect(r.continence_plan_rate).toBe(0);
-    expect(r.dignity_compliance_rate).toBe(0);
+    expect(r.continence_plan_rate).toBeNull();
+    expect(r.dignity_compliance_rate).toBeNull();
   });
 
   it("only continence plans provided (no hygiene/dignity/guidance/products)", () => {
@@ -2357,7 +2361,7 @@ describe("edge cases", () => {
     });
     expect(r.hygiene_rating).not.toBe("insufficient_data");
     expect(r.total_continence_plans).toBe(1);
-    expect(r.hygiene_routine_rate).toBe(0);
+    expect(r.hygiene_routine_rate).toBeNull();
   });
 
   it("only dignity care records provided", () => {

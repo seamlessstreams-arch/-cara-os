@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import type { ContinenceHygieneRating } from "@/lib/engines/home-continence-personal-hygiene-support-intelligence-engine";
 
 const RATING_STYLES: Record<ContinenceHygieneRating, { bg: string; text: string; border: string; label: string }> = {
@@ -65,24 +66,24 @@ export function HomeContinencePersonalHygieneSupportIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.hygiene_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.continence_plan_rate >= 90 ? "bg-green-50" : d.continence_plan_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.continence_plan_rate >= 90 ? "text-[--cs-success]" : d.continence_plan_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.continence_plan_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.continence_plan_rate, 90) ? "bg-green-50" : meets(d.continence_plan_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.continence_plan_rate, 90) ? "text-[--cs-success]" : meets(d.continence_plan_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.continence_plan_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.hygiene_routine_rate >= 90 ? "bg-green-50" : d.hygiene_routine_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hygiene_routine_rate >= 90 ? "text-[--cs-success]" : d.hygiene_routine_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hygiene_routine_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hygiene_routine_rate, 90) ? "bg-green-50" : meets(d.hygiene_routine_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hygiene_routine_rate, 90) ? "text-[--cs-success]" : meets(d.hygiene_routine_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hygiene_routine_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Routines</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.dignity_compliance_rate >= 90 ? "bg-green-50" : d.dignity_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.dignity_compliance_rate >= 90 ? "text-[--cs-success]" : d.dignity_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dignity_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.dignity_compliance_rate, 90) ? "bg-green-50" : meets(d.dignity_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.dignity_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.dignity_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dignity_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Dignity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.age_appropriate_rate >= 90 ? "bg-green-50" : d.age_appropriate_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.age_appropriate_rate >= 90 ? "text-[--cs-success]" : d.age_appropriate_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.age_appropriate_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.age_appropriate_rate, 90) ? "bg-green-50" : meets(d.age_appropriate_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.age_appropriate_rate, 90) ? "text-[--cs-success]" : meets(d.age_appropriate_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.age_appropriate_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Guidance</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.product_provision_rate >= 90 ? "bg-green-50" : d.product_provision_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.product_provision_rate >= 90 ? "text-[--cs-success]" : d.product_provision_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.product_provision_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.product_provision_rate, 90) ? "bg-green-50" : meets(d.product_provision_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.product_provision_rate, 90) ? "text-[--cs-success]" : meets(d.product_provision_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.product_provision_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Products</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_independence_rate >= 90 ? "bg-green-50" : d.child_independence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
