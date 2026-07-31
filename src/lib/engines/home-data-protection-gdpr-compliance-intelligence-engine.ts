@@ -10,6 +10,8 @@
 //             dataBreachRecords, privacyNoticeRecords, gdprTrainingRecords
 // ==============================================================================
 
+import { meets, below } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface DataProtectionPolicyRecordInput {
@@ -151,11 +153,15 @@ export interface DataProtectionGdprComplianceResult {
   data_protection_rating: DataProtectionRating;
   data_protection_score: number;
   headline: string;
-  policy_compliance_rate: number;
-  sar_handling_rate: number;
+  // fab-0: null when no policies exist to score.
+  policy_compliance_rate: number | null;
+  // fab-0: null when no SARs recorded.
+  sar_handling_rate: number | null;
   breach_management_rate: number;
-  privacy_notice_rate: number;
-  staff_training_rate: number;
+  // fab-0: null when no privacy notices published.
+  privacy_notice_rate: number | null;
+  // fab-0: null when no training records logged.
+  staff_training_rate: number | null;
   record_security_rate: number;
   policy_compliance_records: DataProtectionPolicyRecordInput[];
   sar_records: SubjectAccessRequestRecordInput[];
@@ -214,11 +220,11 @@ function emptyResult(
     data_protection_rating: rating,
     data_protection_score: score,
     headline,
-    policy_compliance_rate: 0,
-    sar_handling_rate: 0,
+    policy_compliance_rate: null,
+    sar_handling_rate: null,
     breach_management_rate: 0,
-    privacy_notice_rate: 0,
-    staff_training_rate: 0,
+    privacy_notice_rate: null,
+    staff_training_rate: null,
     record_security_rate: 0,
     policy_compliance_records: [],
     sar_records: [],
@@ -333,12 +339,12 @@ export function computeDataProtectionGdprCompliance(
   const policyReviewRate = pct(policiesReviewedOnTime, totalPolicies);
 
   // Composite policy compliance rate
-  const policyComplianceRate =
+  const policyComplianceRate: number | null =
     totalPolicies > 0
       ? Math.round(
           (gdprComplianceRate + chr2015ComplianceRate + policyReviewRate + staffAcknowledgementRate + dpoSignOffRate) / 5,
         )
-      : 0;
+      : null;
 
   // === 2. Subject Access Request handling ===
   const totalSars = sar_records.length;
@@ -367,12 +373,12 @@ export function computeDataProtectionGdprCompliance(
   }).length;
 
   // Composite SAR handling rate
-  const sarHandlingRate =
+  const sarHandlingRate: number | null =
     totalSars > 0
       ? Math.round(
           (sarCompletionRate + sarDeadlineRate + sarQualityRate + sarAcknowledgementRate) / 4,
         )
-      : 0;
+      : null;
 
   // === 3. Data breach management ===
   const totalBreaches = breach_records.length;
@@ -444,12 +450,12 @@ export function computeDataProtectionGdprCompliance(
   const noticePublishedRate = pct(publishedNotices, totalNotices);
 
   // Composite privacy notice rate
-  const privacyNoticeRate =
+  const privacyNoticeRate: number | null =
     totalNotices > 0
       ? Math.round(
           (noticeGdprRate + noticePlainLanguageRate + noticeProcessingRate + noticeLawfulBasisRate + noticeRightsRate + noticePublishedRate) / 6,
         )
-      : 0;
+      : null;
 
   // === 5. Staff GDPR training ===
   const totalTrainingRecords = training_records.length;
@@ -480,21 +486,13 @@ export function computeDataProtectionGdprCompliance(
   const trainingCurrentRate = pct(trainingCurrent, totalTrainingRecords);
   const certificateRate = pct(certificateHeld, totalTrainingRecords);
 
-  const avgTrainingScore =
-    totalTrainingRecords > 0
-      ? Math.round(
-          training_records.reduce((sum, r) => sum + (r.score ?? 0), 0) /
-            training_records.filter((r) => r.score !== null).length || 0,
-        )
-      : 0;
-
   // Composite staff training rate
-  const staffTrainingRate =
+  const staffTrainingRate: number | null =
     totalTrainingRecords > 0
       ? Math.round(
           (trainingPassRate + staffTrainingCoverage + trainingCurrentRate + refresherCompletionRate) / 4,
         )
-      : 0;
+      : null;
 
   // === 6. Record security composite ===
   // Derived from policy accessibility, DPO oversight, breach response quality, and training coverage
@@ -510,24 +508,24 @@ export function computeDataProtectionGdprCompliance(
   let score = 52;
 
   // --- Bonus 1: policyComplianceRate (>=90: +5, >=70: +3) ---
-  if (policyComplianceRate >= 90) score += 5;
-  else if (policyComplianceRate >= 70) score += 3;
+  if (meets(policyComplianceRate, 90)) score += 5;
+  else if (meets(policyComplianceRate, 70)) score += 3;
 
   // --- Bonus 2: sarHandlingRate (>=90: +5, >=70: +2) ---
-  if (sarHandlingRate >= 90) score += 5;
-  else if (sarHandlingRate >= 70) score += 2;
+  if (meets(sarHandlingRate, 90)) score += 5;
+  else if (meets(sarHandlingRate, 70)) score += 2;
 
   // --- Bonus 3: breachManagementRate (>=90: +5, >=70: +2) ---
   if (breachManagementRate >= 90) score += 5;
   else if (breachManagementRate >= 70) score += 2;
 
   // --- Bonus 4: privacyNoticeRate (>=90: +4, >=70: +2) ---
-  if (privacyNoticeRate >= 90) score += 4;
-  else if (privacyNoticeRate >= 70) score += 2;
+  if (meets(privacyNoticeRate, 90)) score += 4;
+  else if (meets(privacyNoticeRate, 70)) score += 2;
 
   // --- Bonus 5: staffTrainingRate (>=90: +5, >=70: +2) ---
-  if (staffTrainingRate >= 90) score += 5;
-  else if (staffTrainingRate >= 70) score += 2;
+  if (meets(staffTrainingRate, 90)) score += 5;
+  else if (meets(staffTrainingRate, 70)) score += 2;
 
   // --- Bonus 6: recordSecurityRate (>=90: +4, >=70: +2) ---
   if (recordSecurityRate >= 90) score += 4;
@@ -536,16 +534,16 @@ export function computeDataProtectionGdprCompliance(
   // -- Penalties (4 with guards) -------------------------------------------
 
   // policyComplianceRate < 50 -> -6
-  if (policyComplianceRate < 50 && totalPolicies > 0) score -= 6;
+  if (below(policyComplianceRate, 50) && totalPolicies > 0) score -= 6;
 
   // sarHandlingRate < 50 (with pending overdue SARs) -> -5
-  if (sarHandlingRate < 50 && totalSars > 0 && sarOverdueCount > 0) score -= 5;
+  if (below(sarHandlingRate, 50) && totalSars > 0 && sarOverdueCount > 0) score -= 5;
 
   // breachManagementRate < 50 with high-severity breaches -> -6
   if (breachManagementRate < 50 && totalBreaches > 0 && highSeverityBreaches > 0) score -= 6;
 
   // staffTrainingRate < 40 -> -5
-  if (staffTrainingRate < 40 && totalTrainingRecords > 0) score -= 5;
+  if (below(staffTrainingRate, 40) && totalTrainingRecords > 0) score -= 5;
 
   score = clamp(score, 0, 100);
 

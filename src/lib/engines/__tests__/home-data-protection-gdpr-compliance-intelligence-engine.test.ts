@@ -218,11 +218,12 @@ describe("insufficient_data", () => {
       privacy_notice_records: [],
       training_records: [],
     });
-    expect(r.policy_compliance_rate).toBe(0);
-    expect(r.sar_handling_rate).toBe(0);
+    // fab-0: null (no records) — see engine header
+    expect(r.policy_compliance_rate).toBeNull();
+    expect(r.sar_handling_rate).toBeNull();
     expect(r.breach_management_rate).toBe(0);
-    expect(r.privacy_notice_rate).toBe(0);
-    expect(r.staff_training_rate).toBe(0);
+    expect(r.privacy_notice_rate).toBeNull();
+    expect(r.staff_training_rate).toBeNull();
     expect(r.record_security_rate).toBe(0);
   });
 
@@ -848,8 +849,8 @@ describe("penalties", () => {
       const r = run({
         policy_compliance_records: [],
       });
-      // policyComplianceRate = 0 but totalPolicies = 0, so no penalty
-      expect(r.policy_compliance_rate).toBe(0);
+      // fab-0: null when totalPolicies=0 — penalty gate holds
+      expect(r.policy_compliance_rate).toBeNull();
     });
   });
 
@@ -900,7 +901,8 @@ describe("penalties", () => {
 
     it("does not apply when totalSars = 0", () => {
       const r = run({ sar_records: [] });
-      expect(r.sar_handling_rate).toBe(0);
+      // fab-0: null when totalSars=0 — penalty gate holds
+      expect(r.sar_handling_rate).toBeNull();
       // No penalty
     });
   });
@@ -981,7 +983,8 @@ describe("penalties", () => {
 
     it("does not apply when totalTrainingRecords = 0", () => {
       const r = run({ training_records: [] });
-      expect(r.staff_training_rate).toBe(0);
+      // fab-0: null when totalTrainingRecords=0 — penalty gate holds
+      expect(r.staff_training_rate).toBeNull();
       // No penalty since no records
     });
 
@@ -1040,9 +1043,9 @@ describe("composite rates", () => {
       expect(r.policy_compliance_rate).toBe(60);
     });
 
-    it("returns 0 when no policies", () => {
+    it("returns null when no policies (fab-0)", () => {
       const r = run({ policy_compliance_records: [] });
-      expect(r.policy_compliance_rate).toBe(0);
+      expect(r.policy_compliance_rate).toBeNull();
     });
   });
 
@@ -1058,9 +1061,9 @@ describe("composite rates", () => {
       expect(r.sar_handling_rate).toBe(50);
     });
 
-    it("returns 0 when no SARs", () => {
+    it("returns null when no SARs (fab-0)", () => {
       const r = run({ sar_records: [] });
-      expect(r.sar_handling_rate).toBe(0);
+      expect(r.sar_handling_rate).toBeNull();
     });
   });
 
@@ -1094,9 +1097,9 @@ describe("composite rates", () => {
       expect(r.privacy_notice_rate).toBe(83);
     });
 
-    it("returns 0 when no notices", () => {
+    it("returns null when no notices (fab-0)", () => {
       const r = run({ privacy_notice_records: [] });
-      expect(r.privacy_notice_rate).toBe(0);
+      expect(r.privacy_notice_rate).toBeNull();
     });
   });
 
@@ -1113,9 +1116,9 @@ describe("composite rates", () => {
       expect(r.staff_training_rate).toBe(88);
     });
 
-    it("returns 0 when no training records", () => {
+    it("returns null when no training records (fab-0)", () => {
       const r = run({ training_records: [] });
-      expect(r.staff_training_rate).toBe(0);
+      expect(r.staff_training_rate).toBeNull();
     });
   });
 

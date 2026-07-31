@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DataProtectionRating } from "@/lib/engines/home-data-protection-gdpr-compliance-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<DataProtectionRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -65,24 +66,24 @@ export function HomeDataProtectionGdprComplianceIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.data_protection_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.policy_compliance_rate >= 90 ? "bg-green-50" : d.policy_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.policy_compliance_rate >= 90 ? "text-[--cs-success]" : d.policy_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.policy_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.policy_compliance_rate, 90) ? "bg-green-50" : meets(d.policy_compliance_rate, 70) ? "bg-amber-50" : d.policy_compliance_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.policy_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.policy_compliance_rate, 70) ? "text-[--cs-warning]" : d.policy_compliance_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.policy_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Policy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.sar_handling_rate >= 90 ? "bg-green-50" : d.sar_handling_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sar_handling_rate >= 90 ? "text-[--cs-success]" : d.sar_handling_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sar_handling_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sar_handling_rate, 90) ? "bg-green-50" : meets(d.sar_handling_rate, 70) ? "bg-amber-50" : d.sar_handling_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sar_handling_rate, 90) ? "text-[--cs-success]" : meets(d.sar_handling_rate, 70) ? "text-[--cs-warning]" : d.sar_handling_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.sar_handling_rate)}</p>
               <p className="text-[9px] text-muted-foreground">SAR</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.breach_management_rate >= 90 ? "bg-green-50" : d.breach_management_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.breach_management_rate >= 90 ? "text-[--cs-success]" : d.breach_management_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.breach_management_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Breach</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.privacy_notice_rate >= 90 ? "bg-green-50" : d.privacy_notice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.privacy_notice_rate >= 90 ? "text-[--cs-success]" : d.privacy_notice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.privacy_notice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.privacy_notice_rate, 90) ? "bg-green-50" : meets(d.privacy_notice_rate, 70) ? "bg-amber-50" : d.privacy_notice_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.privacy_notice_rate, 90) ? "text-[--cs-success]" : meets(d.privacy_notice_rate, 70) ? "text-[--cs-warning]" : d.privacy_notice_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.privacy_notice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Privacy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_training_rate >= 90 ? "bg-green-50" : d.staff_training_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_training_rate >= 90 ? "text-[--cs-success]" : d.staff_training_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_training_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_training_rate, 90) ? "bg-green-50" : meets(d.staff_training_rate, 70) ? "bg-amber-50" : d.staff_training_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_training_rate, 90) ? "text-[--cs-success]" : meets(d.staff_training_rate, 70) ? "text-[--cs-warning]" : d.staff_training_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.staff_training_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.record_security_rate >= 90 ? "bg-green-50" : d.record_security_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
