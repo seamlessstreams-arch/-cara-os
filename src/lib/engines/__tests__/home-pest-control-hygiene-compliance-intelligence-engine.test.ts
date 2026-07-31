@@ -184,8 +184,8 @@ describe("Home Pest Control & Hygiene Compliance Intelligence Engine", () => {
       });
       expect(r.inspection_compliance_rate).toBe(0);
       expect(r.treatment_effectiveness_rate).toBe(0);
-      expect(r.kitchen_hygiene_rate).toBe(0);
-      expect(r.cleanliness_rate).toBe(0);
+      expect(r.kitchen_hygiene_rate).toBeNull();
+      expect(r.cleanliness_rate).toBeNull();
       expect(r.product_safety_rate).toBe(0);
       expect(r.staff_training_rate).toBe(0);
     });

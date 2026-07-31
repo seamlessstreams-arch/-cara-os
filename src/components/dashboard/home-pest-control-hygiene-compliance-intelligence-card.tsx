@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { PestControlRating } from "@/lib/engines/home-pest-control-hygiene-compliance-intelligence-engine";
 
@@ -77,12 +78,12 @@ export function HomePestControlHygieneComplianceIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.treatment_effectiveness_rate >= 90 ? "text-[--cs-success]" : d.treatment_effectiveness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.treatment_effectiveness_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Treat.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.kitchen_hygiene_rate >= 90 ? "bg-green-50" : d.kitchen_hygiene_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.kitchen_hygiene_rate >= 90 ? "text-[--cs-success]" : d.kitchen_hygiene_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.kitchen_hygiene_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.kitchen_hygiene_rate, 90) ? "bg-green-50" : meets(d.kitchen_hygiene_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.kitchen_hygiene_rate, 90) ? "text-[--cs-success]" : meets(d.kitchen_hygiene_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.kitchen_hygiene_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Kitchen</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.cleanliness_rate >= 90 ? "bg-green-50" : d.cleanliness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cleanliness_rate >= 90 ? "text-[--cs-success]" : d.cleanliness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cleanliness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.cleanliness_rate, 90) ? "bg-green-50" : meets(d.cleanliness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.cleanliness_rate, 90) ? "text-[--cs-success]" : meets(d.cleanliness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cleanliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Clean.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.product_safety_rate >= 90 ? "bg-green-50" : d.product_safety_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

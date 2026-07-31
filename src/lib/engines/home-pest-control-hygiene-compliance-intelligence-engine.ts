@@ -9,6 +9,8 @@
 //             cleanlinessRatingRecords, productSafetyRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface PestInspectionRecordInput {
@@ -160,10 +162,12 @@ export interface PestControlResult {
   pest_control_rating: PestControlRating;
   pest_control_score: number;
   headline: string;
+  // Most rates use pct() directly (deterministic 0 on empty). The 2 composite
+  // rates below are null on empty: no source records ⇒ no signal. Fab-0 doctrine.
   inspection_compliance_rate: number;
   treatment_effectiveness_rate: number;
-  kitchen_hygiene_rate: number;
-  cleanliness_rate: number;
+  kitchen_hygiene_rate: number | null;
+  cleanliness_rate: number | null;
   product_safety_rate: number;
   staff_training_rate: number;
   strengths: string[];
@@ -202,8 +206,8 @@ function emptyResult(
     headline,
     inspection_compliance_rate: 0,
     treatment_effectiveness_rate: 0,
-    kitchen_hygiene_rate: 0,
-    cleanliness_rate: 0,
+    kitchen_hygiene_rate: null,
+    cleanliness_rate: null,
     product_safety_rate: 0,
     staff_training_rate: 0,
     strengths: [],
@@ -355,10 +359,10 @@ export function computePestControlHygieneCompliance(
   const kitchenScoreSum = kitchen_hygiene_records.reduce(
     (sum, r) => sum + r.overall_score, 0,
   );
-  const kitchenHygieneRate =
+  const kitchenHygieneRate: number | null =
     totalKitchenAudits > 0
       ? Math.round(kitchenScoreSum / totalKitchenAudits)
-      : 0;
+      : null;
 
   const foodStorageCompliant = kitchen_hygiene_records.filter(
     (r) => r.food_storage_compliant,
@@ -409,10 +413,10 @@ export function computePestControlHygieneCompliance(
   const foodHygieneRatingSum = kitchen_hygiene_records.reduce(
     (sum, r) => sum + r.food_hygiene_rating, 0,
   );
-  const averageFoodHygieneRating =
+  const averageFoodHygieneRating: number | null =
     totalKitchenAudits > 0
       ? Math.round((foodHygieneRatingSum / totalKitchenAudits) * 10) / 10
-      : 0;
+      : null;
 
 
   // === 4. Environmental Cleanliness ===
@@ -421,14 +425,14 @@ export function computePestControlHygieneCompliance(
   const cleanlinessScoreSum = cleanliness_rating_records.reduce(
     (sum, r) => sum + r.cleanliness_score, 0,
   );
-  const averageCleanlinessScore =
+  const averageCleanlinessScore: number | null =
     totalCleanlinessAssessments > 0
       ? Math.round((cleanlinessScoreSum / totalCleanlinessAssessments) * 10) / 10
-      : 0;
-  const cleanlinessRate =
+      : null;
+  const cleanlinessRate: number | null =
     totalCleanlinessAssessments > 0
-      ? Math.round((averageCleanlinessScore / 10) * 100)
-      : 0;
+      ? Math.round((averageCleanlinessScore! / 10) * 100)
+      : null;
 
   const hygieneStandardMet = cleanliness_rating_records.filter(
     (r) => r.hygiene_standard_met,
@@ -479,10 +483,10 @@ export function computePestControlHygieneCompliance(
   const bedroomScoreSum = bedroomAssessments.reduce(
     (sum, r) => sum + r.cleanliness_score, 0,
   );
-  const bedroomCleanlinessAvg =
+  const bedroomCleanlinessAvg: number | null =
     bedroomAssessments.length > 0
       ? Math.round((bedroomScoreSum / bedroomAssessments.length) * 10) / 10
-      : 0;
+      : null;
 
   const bathroomAssessments = cleanliness_rating_records.filter(
     (r) => r.area_type === "bathroom",
@@ -490,10 +494,10 @@ export function computePestControlHygieneCompliance(
   const bathroomScoreSum = bathroomAssessments.reduce(
     (sum, r) => sum + r.cleanliness_score, 0,
   );
-  const bathroomCleanlinessAvg =
+  const bathroomCleanlinessAvg: number | null =
     bathroomAssessments.length > 0
       ? Math.round((bathroomScoreSum / bathroomAssessments.length) * 10) / 10
-      : 0;
+      : null;
 
   const kitchenAreaAssessments = cleanliness_rating_records.filter(
     (r) => r.area_type === "kitchen",
@@ -501,10 +505,10 @@ export function computePestControlHygieneCompliance(
   const kitchenAreaScoreSum = kitchenAreaAssessments.reduce(
     (sum, r) => sum + r.cleanliness_score, 0,
   );
-  const kitchenAreaCleanlinessAvg =
+  const kitchenAreaCleanlinessAvg: number | null =
     kitchenAreaAssessments.length > 0
       ? Math.round((kitchenAreaScoreSum / kitchenAreaAssessments.length) * 10) / 10
-      : 0;
+      : null;
 
   // === 5. Product Safety ===
 
@@ -569,12 +573,12 @@ export function computePestControlHygieneCompliance(
   else if (treatmentEffectivenessRate >= 70) score += 2;
 
   // --- Bonus 3: kitchenHygieneRate (>=85: +5, >=70: +2) ---
-  if (kitchenHygieneRate >= 85) score += 5;
-  else if (kitchenHygieneRate >= 70) score += 2;
+  if (meets(kitchenHygieneRate, 85)) score += 5;
+  else if (meets(kitchenHygieneRate, 70)) score += 2;
 
   // --- Bonus 4: cleanlinessRate (>=85: +4, >=70: +2) ---
-  if (cleanlinessRate >= 85) score += 4;
-  else if (cleanlinessRate >= 70) score += 2;
+  if (meets(cleanlinessRate, 85)) score += 4;
+  else if (meets(cleanlinessRate, 70)) score += 2;
 
   // --- Bonus 5: productSafetyRate (>=90: +4, >=70: +2) ---
   if (productSafetyRate >= 90) score += 4;
@@ -595,14 +599,14 @@ export function computePestControlHygieneCompliance(
   // inspectionComplianceRate < 50 -> -6
   if (inspectionComplianceRate < 50 && pest_inspection_records.length > 0) score -= 6;
 
-  // kitchenHygieneRate < 50 -> -6
-  if (kitchenHygieneRate < 50 && kitchen_hygiene_records.length > 0) score -= 6;
+  // below(kitchenHygieneRate, 50) -> -6
+  if (below(kitchenHygieneRate, 50) && kitchen_hygiene_records.length > 0) score -= 6;
 
   // productSafetyRate < 50 -> -5
   if (productSafetyRate < 50 && product_safety_records.length > 0) score -= 5;
 
-  // cleanlinessRate < 50 -> -5
-  if (cleanlinessRate < 50 && cleanliness_rating_records.length > 0) score -= 5;
+  // below(cleanlinessRate, 50) -> -5
+  if (below(cleanlinessRate, 50) && cleanliness_rating_records.length > 0) score -= 5;
 
   score = clamp(score, 0, 100);
 
@@ -660,17 +664,17 @@ export function computePestControlHygieneCompliance(
     );
   }
 
-  if (kitchenHygieneRate >= 85 && totalKitchenAudits > 0) {
+  if (meets(kitchenHygieneRate, 85) && totalKitchenAudits > 0) {
     strengths.push(
       `Kitchen hygiene audit scores average ${kitchenHygieneRate}% -- the kitchen maintains excellent hygiene standards, providing a safe food preparation environment.`,
     );
-  } else if (kitchenHygieneRate >= 70 && totalKitchenAudits > 0) {
+  } else if (meets(kitchenHygieneRate, 70) && totalKitchenAudits > 0) {
     strengths.push(
       `Kitchen hygiene rate at ${kitchenHygieneRate}% -- good kitchen hygiene standards are maintained.`,
     );
   }
 
-  if (averageFoodHygieneRating >= 4.0 && totalKitchenAudits > 0) {
+  if (meets(averageFoodHygieneRating, 4.0) && totalKitchenAudits > 0) {
     strengths.push(
       `Average food hygiene rating of ${averageFoodHygieneRating}/5 -- strong food hygiene standards are evidenced.`,
     );
@@ -700,11 +704,11 @@ export function computePestControlHygieneCompliance(
     );
   }
 
-  if (cleanlinessRate >= 85 && totalCleanlinessAssessments > 0) {
+  if (meets(cleanlinessRate, 85) && totalCleanlinessAssessments > 0) {
     strengths.push(
       `Environmental cleanliness at ${cleanlinessRate}% (avg ${averageCleanlinessScore}/10) -- excellent hygiene standards across all areas.`,
     );
-  } else if (cleanlinessRate >= 70 && totalCleanlinessAssessments > 0) {
+  } else if (meets(cleanlinessRate, 70) && totalCleanlinessAssessments > 0) {
     strengths.push(
       `Environmental cleanliness at ${cleanlinessRate}% -- good cleanliness standards maintained.`,
     );
@@ -826,11 +830,11 @@ export function computePestControlHygieneCompliance(
     );
   }
 
-  if (kitchenHygieneRate < 50 && totalKitchenAudits > 0) {
+  if (below(kitchenHygieneRate, 50) && totalKitchenAudits > 0) {
     concerns.push(
       `Kitchen hygiene rate at only ${kitchenHygieneRate}% -- kitchen hygiene standards are fundamentally inadequate, posing serious food safety risks to children.`,
     );
-  } else if (kitchenHygieneRate < 70 && kitchenHygieneRate >= 50 && totalKitchenAudits > 0) {
+  } else if (below(kitchenHygieneRate, 70) && meets(kitchenHygieneRate, 50) && totalKitchenAudits > 0) {
     concerns.push(
       `Kitchen hygiene rate at ${kitchenHygieneRate}% -- kitchen hygiene standards need significant improvement.`,
     );
@@ -842,7 +846,7 @@ export function computePestControlHygieneCompliance(
     );
   }
 
-  if (averageFoodHygieneRating < 3.0 && totalKitchenAudits > 0) {
+  if (below(averageFoodHygieneRating, 3.0) && totalKitchenAudits > 0) {
     concerns.push(
       `Average food hygiene rating of only ${averageFoodHygieneRating}/5 -- the home's food hygiene standards are below acceptable levels.`,
     );
@@ -866,11 +870,11 @@ export function computePestControlHygieneCompliance(
     );
   }
 
-  if (cleanlinessRate < 50 && totalCleanlinessAssessments > 0) {
+  if (below(cleanlinessRate, 50) && totalCleanlinessAssessments > 0) {
     concerns.push(
       `Environmental cleanliness rate at only ${cleanlinessRate}% -- the home's living environment is not maintained to an acceptable standard.`,
     );
-  } else if (cleanlinessRate < 70 && cleanlinessRate >= 50 && totalCleanlinessAssessments > 0) {
+  } else if (below(cleanlinessRate, 70) && meets(cleanlinessRate, 50) && totalCleanlinessAssessments > 0) {
     concerns.push(
       `Environmental cleanliness rate at ${cleanlinessRate}% -- cleanliness standards across the home need improvement.`,
     );
@@ -979,7 +983,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (kitchenHygieneRate < 50 && totalKitchenAudits > 0) {
+  if (below(kitchenHygieneRate, 50) && totalKitchenAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -999,7 +1003,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (cleanlinessRate < 50 && totalCleanlinessAssessments > 0) {
+  if (below(cleanlinessRate, 50) && totalCleanlinessAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1079,7 +1083,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (kitchenHygieneRate >= 50 && kitchenHygieneRate < 70 && totalKitchenAudits > 0) {
+  if (meets(kitchenHygieneRate, 50) && below(kitchenHygieneRate, 70) && totalKitchenAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1089,7 +1093,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (cleanlinessRate >= 50 && cleanlinessRate < 70 && totalCleanlinessAssessments > 0) {
+  if (meets(cleanlinessRate, 50) && below(cleanlinessRate, 70) && totalCleanlinessAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1202,7 +1206,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (kitchenHygieneRate < 50 && totalKitchenAudits > 0) {
+  if (below(kitchenHygieneRate, 50) && totalKitchenAudits > 0) {
     insights.push({
       text: `Kitchen hygiene rate at only ${kitchenHygieneRate}%. Fundamentally inadequate kitchen hygiene poses serious food safety risks to children. Ofsted and EHO will view this as a significant premises failure under Reg 25 and a potential safeguarding concern.`,
       severity: "critical",
@@ -1216,7 +1220,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (cleanlinessRate < 50 && totalCleanlinessAssessments > 0) {
+  if (below(cleanlinessRate, 50) && totalCleanlinessAssessments > 0) {
     insights.push({
       text: `Environmental cleanliness at only ${cleanlinessRate}%. The home's living environment does not meet acceptable hygiene standards. Ofsted will view this as evidence that premises are not maintained to a high standard as required by Reg 25.`,
       severity: "critical",
@@ -1254,14 +1258,14 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (kitchenHygieneRate >= 50 && kitchenHygieneRate < 70 && totalKitchenAudits > 0) {
+  if (meets(kitchenHygieneRate, 50) && below(kitchenHygieneRate, 70) && totalKitchenAudits > 0) {
     insights.push({
       text: `Kitchen hygiene at ${kitchenHygieneRate}% -- standards need improvement to ensure consistent food safety for children.`,
       severity: "warning",
     });
   }
 
-  if (cleanlinessRate >= 50 && cleanlinessRate < 70 && totalCleanlinessAssessments > 0) {
+  if (meets(cleanlinessRate, 50) && below(cleanlinessRate, 70) && totalCleanlinessAssessments > 0) {
     insights.push({
       text: `Environmental cleanliness at ${cleanlinessRate}% -- cleanliness standards are below the level expected for a well-maintained children's home. Targeted cleaning improvements are needed.`,
       severity: "warning",
@@ -1307,14 +1311,14 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (kitchenHygieneRate >= 85 && kitchenPestRate === 0 && totalKitchenAudits > 0) {
+  if (meets(kitchenHygieneRate, 85) && kitchenPestRate === 0 && totalKitchenAudits > 0) {
     insights.push({
       text: `Kitchen hygiene rate at ${kitchenHygieneRate}% with zero pest evidence -- the kitchen maintains excellent hygiene standards and is pest-free. This demonstrates the home's commitment to food safety and environmental health.`,
       severity: "positive",
     });
   }
 
-  if (cleanlinessRate >= 85 && infectionControlRate >= 90 && totalCleanlinessAssessments > 0) {
+  if (meets(cleanlinessRate, 85) && infectionControlRate >= 90 && totalCleanlinessAssessments > 0) {
     insights.push({
       text: `Environmental cleanliness at ${cleanlinessRate}% with ${infectionControlRate}% infection control compliance -- the home maintains excellent environmental hygiene standards with robust infection prevention practices.`,
       severity: "positive",
@@ -1344,21 +1348,21 @@ export function computePestControlHygieneCompliance(
 
   // -- Area-specific insights ---
 
-  if (bedroomCleanlinessAvg > 0 && bedroomCleanlinessAvg < 5 && bedroomAssessments.length > 0) {
+  if (above(bedroomCleanlinessAvg, 0) && below(bedroomCleanlinessAvg, 5) && bedroomAssessments.length > 0) {
     insights.push({
       text: `Bedroom cleanliness averages only ${bedroomCleanlinessAvg}/10 -- children's personal spaces are not maintained to an acceptable standard, affecting comfort and dignity.`,
       severity: "warning",
     });
   }
 
-  if (bathroomCleanlinessAvg > 0 && bathroomCleanlinessAvg < 5 && bathroomAssessments.length > 0) {
+  if (above(bathroomCleanlinessAvg, 0) && below(bathroomCleanlinessAvg, 5) && bathroomAssessments.length > 0) {
     insights.push({
       text: `Bathroom cleanliness averages only ${bathroomCleanlinessAvg}/10 -- poor bathroom hygiene poses infection risks and affects children's dignity.`,
       severity: "critical",
     });
   }
 
-  if (kitchenAreaCleanlinessAvg > 0 && kitchenAreaCleanlinessAvg < 5 && kitchenAreaAssessments.length > 0) {
+  if (above(kitchenAreaCleanlinessAvg, 0) && below(kitchenAreaCleanlinessAvg, 5) && kitchenAreaAssessments.length > 0) {
     insights.push({
       text: `Kitchen area cleanliness averages only ${kitchenAreaCleanlinessAvg}/10 -- a poorly maintained kitchen increases food contamination and pest risks.`,
       severity: "critical",
