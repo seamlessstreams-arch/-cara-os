@@ -13,6 +13,8 @@
 //             selfRegulationRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface SensoryDietPlanInput {
@@ -157,8 +159,11 @@ export interface SensoryDietResult {
   therapy_integration_rate: number;
   self_regulation_rate: number;
   child_progress_rate: number;
-  strategy_effectiveness_avg: number;
-  self_regulation_progress_avg: number;
+  // The 6 rate fields above use pct() directly (deterministic 0 on empty).
+  // The 2 avg fields below are null on empty: no source records ⇒ no signal.
+  // Fab-0 doctrine.
+  strategy_effectiveness_avg: number | null;
+  self_regulation_progress_avg: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SensoryDietRecommendation[];
@@ -200,8 +205,8 @@ function emptyResult(
     therapy_integration_rate: 0,
     self_regulation_rate: 0,
     child_progress_rate: 0,
-    strategy_effectiveness_avg: 0,
-    self_regulation_progress_avg: 0,
+    strategy_effectiveness_avg: null,
+    self_regulation_progress_avg: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -349,10 +354,10 @@ export function computeSensoryDietRegulation(
     (sum, s) => sum + s.effectiveness_rating,
     0,
   );
-  const strategyEffectivenessAvg =
+  const strategyEffectivenessAvg: number | null =
     totalStrategies > 0
       ? Math.round((strategyEffectivenessSum / totalStrategies) * 100) / 100
-      : 0;
+      : null;
 
   const strategiesUsedIndependently = regulation_strategy_records.filter(
     (s) => s.used_independently_by_child && s.active,
@@ -363,19 +368,19 @@ export function computeSensoryDietRegulation(
     (sum, s) => sum + s.child_engagement_rating,
     0,
   );
-  const childEngagementAvg =
+  const childEngagementAvg: number | null =
     totalStrategies > 0
       ? Math.round((childEngagementSum / totalStrategies) * 100) / 100
-      : 0;
+      : null;
 
   const staffConsistencySum = regulation_strategy_records.reduce(
     (sum, s) => sum + s.staff_consistency_rating,
     0,
   );
-  const staffConsistencyAvg =
+  const staffConsistencyAvg: number | null =
     totalStrategies > 0
       ? Math.round((staffConsistencySum / totalStrategies) * 100) / 100
-      : 0;
+      : null;
 
   const totalOutcomes = regulation_strategy_records.reduce(
     (sum, s) => sum + s.positive_outcome_count + s.negative_outcome_count + s.neutral_outcome_count,
@@ -431,10 +436,10 @@ export function computeSensoryDietRegulation(
     (sum, b) => sum + b.outcome_rating,
     0,
   );
-  const breakOutcomeAvg =
+  const breakOutcomeAvg: number | null =
     totalBreaks > 0
       ? Math.round((breakOutcomeSum / totalBreaks) * 100) / 100
-      : 0;
+      : null;
 
   const breaksDocumented = sensory_break_records.filter(
     (b) => b.notes_recorded,
@@ -535,41 +540,41 @@ export function computeSensoryDietRegulation(
       const progress = r.current_score - r.baseline_score;
       return clamp(Math.round((progress / range) * 100), 0, 100);
     });
-  const selfRegulationProgressAvg =
+  const selfRegulationProgressAvg: number | null =
     selfRegProgressValues.length > 0
       ? Math.round(
           selfRegProgressValues.reduce((sum, v) => sum + v, 0) /
             selfRegProgressValues.length,
         )
-      : 0;
+      : null;
 
   // Emotional, sensory, behavioural sub-scores
   const emotionalRegSum = self_regulation_records.reduce(
     (sum, r) => sum + r.emotional_regulation_score,
     0,
   );
-  const emotionalRegAvg =
+  const emotionalRegAvg: number | null =
     totalSelfRegAssessments > 0
       ? Math.round((emotionalRegSum / totalSelfRegAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const sensoryRegSum = self_regulation_records.reduce(
     (sum, r) => sum + r.sensory_regulation_score,
     0,
   );
-  const sensoryRegAvg =
+  const sensoryRegAvg: number | null =
     totalSelfRegAssessments > 0
       ? Math.round((sensoryRegSum / totalSelfRegAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const behaviouralRegSum = self_regulation_records.reduce(
     (sum, r) => sum + r.behavioural_regulation_score,
     0,
   );
-  const behaviouralRegAvg =
+  const behaviouralRegAvg: number | null =
     totalSelfRegAssessments > 0
       ? Math.round((behaviouralRegSum / totalSelfRegAssessments) * 100) / 100
-      : 0;
+      : null;
 
   // Skills acquisition
   const canIdentifyTriggers = self_regulation_records.filter(
@@ -951,7 +956,7 @@ export function computeSensoryDietRegulation(
     );
   }
 
-  if (staffConsistencyAvg < 3.0 && totalStrategies > 0) {
+  if (below(staffConsistencyAvg, 3.0) && totalStrategies > 0) {
     concerns.push(
       `Staff consistency in delivering regulation strategies averages ${staffConsistencyAvg}/5 — inconsistent delivery undermines children's ability to rely on and internalise strategies.`,
     );
@@ -1050,7 +1055,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (staffConsistencyAvg < 3.0 && totalStrategies > 0) {
+  if (below(staffConsistencyAvg, 3.0) && totalStrategies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1276,7 +1281,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (staffConsistencyAvg >= 3.0 && staffConsistencyAvg < 4.0 && totalStrategies > 0) {
+  if (meets(staffConsistencyAvg, 3.0) && below(staffConsistencyAvg, 4.0) && totalStrategies > 0) {
     insights.push({
       text: `Staff consistency in strategy delivery averages ${staffConsistencyAvg}/5 — room for improvement. Children need reliable, predictable delivery of regulation strategies to build trust in the approaches and internalise them over time.`,
       severity: "warning",
@@ -1482,7 +1487,7 @@ export function computeSensoryDietRegulation(
   }
 
   if (
-    staffConsistencyAvg >= 4.0 &&
+    meets(staffConsistencyAvg, 4.0) &&
     totalStrategies > 0
   ) {
     insights.push({

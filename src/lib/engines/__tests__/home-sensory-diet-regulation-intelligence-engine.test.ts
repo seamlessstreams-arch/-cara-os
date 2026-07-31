@@ -1484,7 +1484,7 @@ describe("strategy_effectiveness_avg", () => {
     const r = computeSensoryDietRegulation(baseInput({
       regulation_strategy_records: [],
     }));
-    expect(r.strategy_effectiveness_avg).toBe(0);
+    expect(r.strategy_effectiveness_avg).toBeNull();
   });
 
   it("rounds to 2 decimal places", () => {
@@ -1520,7 +1520,7 @@ describe("self_regulation_progress_avg", () => {
         makeSelfReg({ id: "sr_1", baseline_score: 5, current_score: 5, target_score: 5 }),
       ],
     }));
-    expect(r.self_regulation_progress_avg).toBe(0);
+    expect(r.self_regulation_progress_avg).toBeNull();
   });
 
   it("clamps progress to 0 when current < baseline", () => {
@@ -1529,7 +1529,7 @@ describe("self_regulation_progress_avg", () => {
         makeSelfReg({ id: "sr_1", baseline_score: 5, current_score: 3, target_score: 8 }),
       ],
     }));
-    // progress = -2, clamped to 0
+    // progress = -2, clamped to 0 (record exists → 0, not null)
     expect(r.self_regulation_progress_avg).toBe(0);
   });
 
@@ -1546,7 +1546,7 @@ describe("self_regulation_progress_avg", () => {
     const r = computeSensoryDietRegulation(baseInput({
       self_regulation_records: [],
     }));
-    expect(r.self_regulation_progress_avg).toBe(0);
+    expect(r.self_regulation_progress_avg).toBeNull();
   });
 
   it("averages multiple progress values", () => {
