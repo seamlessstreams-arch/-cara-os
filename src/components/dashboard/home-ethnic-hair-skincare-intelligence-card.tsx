@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Scissors } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import type { EthnicHairSkincareRating } from "@/lib/engines/home-ethnic-hair-skincare-intelligence-engine";
 
 function useHomeEthnicHairSkincareIntelligence() {
@@ -69,20 +70,20 @@ export function HomeEthnicHairSkincareIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.haircare_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.hair_care_rate >= 90 ? "bg-green-50" : d.hair_care_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hair_care_rate >= 90 ? "text-[--cs-success]" : d.hair_care_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hair_care_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hair_care_rate, 90) ? "bg-green-50" : meets(d.hair_care_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hair_care_rate, 90) ? "text-[--cs-success]" : meets(d.hair_care_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hair_care_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hair Care</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.skincare_routine_rate >= 90 ? "bg-green-50" : d.skincare_routine_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.skincare_routine_rate >= 90 ? "text-[--cs-success]" : d.skincare_routine_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.skincare_routine_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.skincare_routine_rate, 90) ? "bg-green-50" : meets(d.skincare_routine_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.skincare_routine_rate, 90) ? "text-[--cs-success]" : meets(d.skincare_routine_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.skincare_routine_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Skincare</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.product_availability_rate >= 90 ? "bg-green-50" : d.product_availability_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.product_availability_rate >= 90 ? "text-[--cs-success]" : d.product_availability_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.product_availability_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.product_availability_rate, 90) ? "bg-green-50" : meets(d.product_availability_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.product_availability_rate, 90) ? "text-[--cs-success]" : meets(d.product_availability_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.product_availability_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Products</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.specialist_access_rate >= 90 ? "bg-green-50" : d.specialist_access_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.specialist_access_rate >= 90 ? "text-[--cs-success]" : d.specialist_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.specialist_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.specialist_access_rate, 90) ? "bg-green-50" : meets(d.specialist_access_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.specialist_access_rate, 90) ? "text-[--cs-success]" : meets(d.specialist_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.specialist_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Specialist</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.staff_training_rate >= 90 ? "bg-green-50" : d.staff_training_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

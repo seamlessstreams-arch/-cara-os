@@ -159,10 +159,10 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
         product_provision_records: [], specialist_referral_records: [],
         child_satisfaction_records: [],
       });
-      expect(r.hair_care_rate).toBe(0);
-      expect(r.skincare_routine_rate).toBe(0);
-      expect(r.product_availability_rate).toBe(0);
-      expect(r.specialist_access_rate).toBe(0);
+      expect(r.hair_care_rate).toBeNull();
+      expect(r.skincare_routine_rate).toBeNull();
+      expect(r.product_availability_rate).toBeNull();
+      expect(r.specialist_access_rate).toBeNull();
       expect(r.staff_training_rate).toBe(0);
       expect(r.child_satisfaction_rate).toBe(0);
     });
@@ -778,6 +778,7 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
           specialist_referral_records: [],
           child_satisfaction_records: [],
         });
+        // record exists → 0, not null
         expect(r.hair_care_rate).toBe(0);
         // 52 - 5 (hair penalty) - 5 (staff<30 penalty) - 3 (satis<30 penalty) = 39
         expect(r.haircare_score).toBe(39);
@@ -793,7 +794,7 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
           child_satisfaction_records: [],
         });
         // hairCareRate is 0 but no records → penalty guarded
-        expect(r.hair_care_rate).toBe(0);
+        expect(r.hair_care_rate).toBeNull();
         // score = 52 + product bonus (100 → +4) = 56 (no hair penalty)
         expect(r.haircare_score).toBe(56);
       });
@@ -815,6 +816,7 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
           specialist_referral_records: [],
           child_satisfaction_records: [],
         });
+        // record exists → 0, not null
         expect(r.skincare_routine_rate).toBe(0);
         // 52 - 5 (skincare) - 5 (staff<30) - 3 (satis<30) = 39
         expect(r.haircare_score).toBe(39);
@@ -829,7 +831,7 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
           specialist_referral_records: [],
           child_satisfaction_records: [],
         });
-        expect(r.skincare_routine_rate).toBe(0);
+        expect(r.skincare_routine_rate).toBeNull();
         expect(r.haircare_score).toBe(56);
       });
     });
@@ -956,7 +958,7 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
 
       it("returns 0 when no hair care records", () => {
         const r = computeEthnicHairSkincare(baseInput({ hair_care_records: [] }));
-        expect(r.hair_care_rate).toBe(0);
+        expect(r.hair_care_rate).toBeNull();
       });
     });
 
@@ -973,7 +975,7 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
 
       it("returns 0 when no skincare records", () => {
         const r = computeEthnicHairSkincare(baseInput({ skincare_routine_records: [] }));
-        expect(r.skincare_routine_rate).toBe(0);
+        expect(r.skincare_routine_rate).toBeNull();
       });
     });
 
@@ -990,7 +992,7 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
 
       it("returns 0 when no product records", () => {
         const r = computeEthnicHairSkincare(baseInput({ product_provision_records: [] }));
-        expect(r.product_availability_rate).toBe(0);
+        expect(r.product_availability_rate).toBeNull();
       });
     });
 
@@ -1007,7 +1009,7 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
 
       it("returns 0 when no specialist records", () => {
         const r = computeEthnicHairSkincare(baseInput({ specialist_referral_records: [] }));
-        expect(r.specialist_access_rate).toBe(0);
+        expect(r.specialist_access_rate).toBeNull();
       });
     });
 
@@ -2288,10 +2290,10 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
         product_provision_records: [], specialist_referral_records: [],
         child_satisfaction_records: [],
       });
-      expect(r.hair_care_rate).toBe(0);
-      expect(r.skincare_routine_rate).toBe(0);
-      expect(r.product_availability_rate).toBe(0);
-      expect(r.specialist_access_rate).toBe(0);
+      expect(r.hair_care_rate).toBeNull();
+      expect(r.skincare_routine_rate).toBeNull();
+      expect(r.product_availability_rate).toBeNull();
+      expect(r.specialist_access_rate).toBeNull();
       expect(r.staff_training_rate).toBe(0);
       expect(r.child_satisfaction_rate).toBe(0);
     });
@@ -2475,7 +2477,7 @@ describe("Home Ethnic Hair & Skincare Intelligence Engine", () => {
       const r = computeEthnicHairSkincare(baseInput({
         product_provision_records: [],
       }));
-      expect(r.product_availability_rate).toBe(0);
+      expect(r.product_availability_rate).toBeNull();
       expect(r.total_product_records).toBe(0);
     });
 

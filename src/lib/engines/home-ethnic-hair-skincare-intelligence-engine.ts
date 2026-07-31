@@ -12,6 +12,8 @@
 //             specialistReferralRecords, childSatisfactionRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface HairCareRecordInput {
@@ -159,10 +161,16 @@ export interface EthnicHairSkincareResult {
   total_product_records: number;
   total_specialist_referrals: number;
   total_satisfaction_records: number;
-  hair_care_rate: number;
-  skincare_routine_rate: number;
-  product_availability_rate: number;
-  specialist_access_rate: number;
+  // staff_training_rate + child_satisfaction_rate use pct() directly
+  // (deterministic 0 on empty). The 4 composite rates below are null on
+  // empty: no source records ⇒ no signal. "0% hair care / 0% skincare /
+  // 0% products / 0% specialist access" would read as a home where
+  // children of colour receive no culturally-appropriate care, not
+  // "unmeasured". Fab-0 doctrine.
+  hair_care_rate: number | null;
+  skincare_routine_rate: number | null;
+  product_availability_rate: number | null;
+  specialist_access_rate: number | null;
   staff_training_rate: number;
   child_satisfaction_rate: number;
   strengths: string[];
@@ -204,10 +212,10 @@ function emptyResult(
     total_product_records: 0,
     total_specialist_referrals: 0,
     total_satisfaction_records: 0,
-    hair_care_rate: 0,
-    skincare_routine_rate: 0,
-    product_availability_rate: 0,
-    specialist_access_rate: 0,
+    hair_care_rate: null,
+    skincare_routine_rate: null,
+    product_availability_rate: null,
+    specialist_access_rate: null,
     staff_training_rate: 0,
     child_satisfaction_rate: 0,
     strengths: [],
@@ -332,9 +340,9 @@ export function computeEthnicHairSkincare(
   const hairCareCoverage = total_children > 0 ? pct(uniqueChildrenHairCare, total_children) : 0;
 
   // Composite hair care rate: average of care plan rate, appropriate products, culturally matched, child voice, frequency
-  const hairCareRate = totalHairCareRecords > 0
+  const hairCareRate: number | null = totalHairCareRecords > 0
     ? Math.round((hairCarePlanRate + appropriateProductsRate + culturallyMatchedRate + childVoiceHairRate + frequencyAppropriateRate) / 5)
-    : 0;
+      : null;
 
   // --- Skincare routine metrics ---
   const totalSkincareRecords = skincare_routine_records.length;
@@ -381,9 +389,9 @@ export function computeEthnicHairSkincare(
   const skincareCoverage = total_children > 0 ? pct(uniqueChildrenSkincare, total_children) : 0;
 
   // Composite skincare routine rate
-  const skincareRoutineRate = totalSkincareRecords > 0
+  const skincareRoutineRate: number | null = totalSkincareRecords > 0
     ? Math.round((routineInPlaceRate + productsAppropriateRate + moisturisingRate + routineFollowedRate + childEducatedSkincareRate) / 5)
-    : 0;
+      : null;
 
   // --- Product provision metrics ---
   const totalProductRecords = product_provision_records.length;
@@ -410,14 +418,14 @@ export function computeEthnicHairSkincare(
   const replacementTimelyRate = pct(replacementTimely, totalProductRecords);
 
   const qualitySum = product_provision_records.reduce((sum, p) => sum + p.quality_rating, 0);
-  const avgProductQuality = totalProductRecords > 0
+  const avgProductQuality: number | null = totalProductRecords > 0
     ? Math.round((qualitySum / totalProductRecords) * 100) / 100
-    : 0;
+      : null;
 
   // Composite product availability rate
-  const productAvailabilityRate = totalProductRecords > 0
+  const productAvailabilityRate: number | null = totalProductRecords > 0
     ? Math.round((culturallyAppropriateProductRate + inStockRate + budgetAdequateRate + childApprovedRate) / 4)
-    : 0;
+      : null;
 
   // --- Specialist referral metrics ---
   const totalSpecialistReferrals = specialist_referral_records.length;
@@ -441,17 +449,17 @@ export function computeEthnicHairSkincare(
   const staffAdvocated = specialist_referral_records.filter((r) => r.staff_advocated).length;
   const staffAdvocatedRate = pct(staffAdvocated, totalSpecialistReferrals);
 
-  const avgWaitingTime = totalSpecialistReferrals > 0
+  const avgWaitingTime: number | null = totalSpecialistReferrals > 0
     ? Math.round(specialist_referral_records.reduce((sum, r) => sum + r.waiting_time_days, 0) / totalSpecialistReferrals)
-    : 0;
+      : null;
 
   // Unique children with specialist referrals
   const uniqueChildrenSpecialist = new Set(specialist_referral_records.map((r) => r.child_id)).size;
 
   // Composite specialist access rate
-  const specialistAccessRate = totalSpecialistReferrals > 0
+  const specialistAccessRate: number | null = totalSpecialistReferrals > 0
     ? Math.round((referralMadeRate + appointmentAttendedRate + outcomePositiveRate + childSatisfiedSpecialistRate) / 4)
-    : 0;
+      : null;
 
   // --- Staff training composite ---
   // Combines hair care staff competency, ethnic hair training, skincare staff knowledge
@@ -525,29 +533,29 @@ export function computeEthnicHairSkincare(
   const complaintsResolved = child_satisfaction_records.filter((s) => s.complaints_raised && s.complaint_resolved).length;
   const complaintResolutionRate = pct(complaintsResolved, complaintsRaised);
 
-  const avgSatisfactionRating = totalSatisfactionRecords > 0
+  const avgSatisfactionRating: number | null = totalSatisfactionRecords > 0
     ? Math.round((child_satisfaction_records.reduce((sum, s) => sum + s.satisfaction_rating, 0) / totalSatisfactionRecords) * 100) / 100
-    : 0;
+      : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: hairCareRate (>=90: +5, >=70: +3) ---
-  if (hairCareRate >= 90) score += 5;
-  else if (hairCareRate >= 70) score += 3;
+  if (meets(hairCareRate, 90)) score += 5;
+  else if (meets(hairCareRate, 70)) score += 3;
 
   // --- Bonus 2: skincareRoutineRate (>=90: +5, >=70: +3) ---
-  if (skincareRoutineRate >= 90) score += 5;
-  else if (skincareRoutineRate >= 70) score += 3;
+  if (meets(skincareRoutineRate, 90)) score += 5;
+  else if (meets(skincareRoutineRate, 70)) score += 3;
 
   // --- Bonus 3: productAvailabilityRate (>=90: +4, >=70: +2) ---
-  if (productAvailabilityRate >= 90) score += 4;
-  else if (productAvailabilityRate >= 70) score += 2;
+  if (meets(productAvailabilityRate, 90)) score += 4;
+  else if (meets(productAvailabilityRate, 70)) score += 2;
 
   // --- Bonus 4: specialistAccessRate (>=90: +4, >=70: +2) ---
-  if (specialistAccessRate >= 90) score += 4;
-  else if (specialistAccessRate >= 70) score += 2;
+  if (meets(specialistAccessRate, 90)) score += 4;
+  else if (meets(specialistAccessRate, 70)) score += 2;
 
   // --- Bonus 5: staffTrainingRate (>=90: +5, >=70: +3) ---
   if (staffTrainingRate >= 90) score += 5;
@@ -561,11 +569,11 @@ export function computeEthnicHairSkincare(
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
-  // hairCareRate < 40 → -5 (guarded)
-  if (hairCareRate < 40 && hair_care_records.length > 0) score -= 5;
+  // below(hairCareRate, 40) → -5 (guarded)
+  if (below(hairCareRate, 40) && hair_care_records.length > 0) score -= 5;
 
-  // skincareRoutineRate < 40 → -5 (guarded)
-  if (skincareRoutineRate < 40 && skincare_routine_records.length > 0) score -= 5;
+  // below(skincareRoutineRate, 40) → -5 (guarded)
+  if (below(skincareRoutineRate, 40) && skincare_routine_records.length > 0) score -= 5;
 
   // staffTrainingRate < 30 → -5 (guarded)
   if (staffTrainingRate < 30 && totalStaffTrainDenom > 0) score -= 5;
@@ -581,41 +589,41 @@ export function computeEthnicHairSkincare(
 
   const strengths: string[] = [];
 
-  if (hairCareRate >= 90 && totalHairCareRecords > 0) {
+  if (meets(hairCareRate, 90) && totalHairCareRecords > 0) {
     strengths.push(
       `${hairCareRate}% ethnic hair care quality — the home demonstrates excellent culturally appropriate hair care with individualised care plans, appropriate products, and children's preferences consistently captured and respected.`,
     );
-  } else if (hairCareRate >= 70 && totalHairCareRecords > 0) {
+  } else if (meets(hairCareRate, 70) && totalHairCareRecords > 0) {
     strengths.push(
       `${hairCareRate}% ethnic hair care quality — good provision of culturally appropriate hair care with care plans and suitable products in place for children.`,
     );
   }
 
-  if (skincareRoutineRate >= 90 && totalSkincareRecords > 0) {
+  if (meets(skincareRoutineRate, 90) && totalSkincareRecords > 0) {
     strengths.push(
       `${skincareRoutineRate}% skincare routine adequacy — excellent skincare provision with appropriate products, consistent routines, and children educated on self-care for their skin type.`,
     );
-  } else if (skincareRoutineRate >= 70 && totalSkincareRecords > 0) {
+  } else if (meets(skincareRoutineRate, 70) && totalSkincareRecords > 0) {
     strengths.push(
       `${skincareRoutineRate}% skincare routine quality — good skincare provision with routines documented and culturally appropriate products available.`,
     );
   }
 
-  if (productAvailabilityRate >= 90 && totalProductRecords > 0) {
+  if (meets(productAvailabilityRate, 90) && totalProductRecords > 0) {
     strengths.push(
       `${productAvailabilityRate}% product availability — culturally appropriate products are consistently in stock, within budget, and approved by children. The home ensures children have access to the products they need and want.`,
     );
-  } else if (productAvailabilityRate >= 70 && totalProductRecords > 0) {
+  } else if (meets(productAvailabilityRate, 70) && totalProductRecords > 0) {
     strengths.push(
       `${productAvailabilityRate}% product availability — good provision of culturally appropriate hair and skincare products, with reasonable stock levels and budget allocation.`,
     );
   }
 
-  if (specialistAccessRate >= 90 && totalSpecialistReferrals > 0) {
+  if (meets(specialistAccessRate, 90) && totalSpecialistReferrals > 0) {
     strengths.push(
       `${specialistAccessRate}% specialist access quality — referrals are made promptly, appointments attended, outcomes positive, and children satisfied with specialist care. The home actively connects children with culturally skilled specialists.`,
     );
-  } else if (specialistAccessRate >= 70 && totalSpecialistReferrals > 0) {
+  } else if (meets(specialistAccessRate, 70) && totalSpecialistReferrals > 0) {
     strengths.push(
       `${specialistAccessRate}% specialist access — good access to culturally appropriate hair care and skincare specialists with positive outcomes for children.`,
     );
@@ -711,7 +719,7 @@ export function computeEthnicHairSkincare(
     );
   }
 
-  if (avgProductQuality >= 4.0 && totalProductRecords > 0) {
+  if (meets(avgProductQuality, 4.0) && totalProductRecords > 0) {
     strengths.push(
       `Product quality averaging ${avgProductQuality}/5 — the home invests in high-quality, culturally appropriate hair and skincare products that meet children's needs and expectations.`,
     );
@@ -733,41 +741,41 @@ export function computeEthnicHairSkincare(
 
   const concerns: string[] = [];
 
-  if (hairCareRate < 40 && totalHairCareRecords > 0) {
+  if (below(hairCareRate, 40) && totalHairCareRecords > 0) {
     concerns.push(
       `Only ${hairCareRate}% ethnic hair care quality — significant deficits in care planning, product appropriateness, cultural matching, and capturing children's preferences. Children's ethnic hair care needs are not being adequately met.`,
     );
-  } else if (hairCareRate < 70 && hairCareRate >= 40 && totalHairCareRecords > 0) {
+  } else if (below(hairCareRate, 70) && meets(hairCareRate, 40) && totalHairCareRecords > 0) {
     concerns.push(
       `Ethnic hair care quality at ${hairCareRate}% — inconsistencies in care planning, product selection, or capturing children's hair care preferences require improvement.`,
     );
   }
 
-  if (skincareRoutineRate < 40 && totalSkincareRecords > 0) {
+  if (below(skincareRoutineRate, 40) && totalSkincareRecords > 0) {
     concerns.push(
       `Only ${skincareRoutineRate}% skincare routine adequacy — fundamental gaps in skincare routines, product appropriateness, or consistency. Children's skincare needs are being neglected.`,
     );
-  } else if (skincareRoutineRate < 70 && skincareRoutineRate >= 40 && totalSkincareRecords > 0) {
+  } else if (below(skincareRoutineRate, 70) && meets(skincareRoutineRate, 40) && totalSkincareRecords > 0) {
     concerns.push(
       `Skincare routine adequacy at ${skincareRoutineRate}% — skincare routines are not consistently in place, documented, or followed with appropriate products.`,
     );
   }
 
-  if (productAvailabilityRate < 50 && totalProductRecords > 0) {
+  if (below(productAvailabilityRate, 50) && totalProductRecords > 0) {
     concerns.push(
       `Only ${productAvailabilityRate}% product availability — culturally appropriate hair and skincare products are not consistently available, in stock, or approved by children. This represents a failure to meet children's basic personal care needs.`,
     );
-  } else if (productAvailabilityRate < 70 && productAvailabilityRate >= 50 && totalProductRecords > 0) {
+  } else if (below(productAvailabilityRate, 70) && meets(productAvailabilityRate, 50) && totalProductRecords > 0) {
     concerns.push(
       `Product availability at ${productAvailabilityRate}% — gaps in culturally appropriate product provision, stock management, or budget allocation for children's hair and skincare needs.`,
     );
   }
 
-  if (specialistAccessRate < 50 && totalSpecialistReferrals > 0) {
+  if (below(specialistAccessRate, 50) && totalSpecialistReferrals > 0) {
     concerns.push(
       `Only ${specialistAccessRate}% specialist access quality — referrals are not being made, appointments are missed, or outcomes are poor. Children are being denied access to culturally appropriate specialist care.`,
     );
-  } else if (specialistAccessRate < 70 && specialistAccessRate >= 50 && totalSpecialistReferrals > 0) {
+  } else if (below(specialistAccessRate, 70) && meets(specialistAccessRate, 50) && totalSpecialistReferrals > 0) {
     concerns.push(
       `Specialist access at ${specialistAccessRate}% — some referrals are not being actioned promptly or resulting in positive outcomes for children.`,
     );
@@ -815,7 +823,7 @@ export function computeEthnicHairSkincare(
     );
   }
 
-  if (avgWaitingTime > 28 && totalSpecialistReferrals > 0) {
+  if (above(avgWaitingTime, 28) && totalSpecialistReferrals > 0) {
     concerns.push(
       `Average specialist waiting time is ${avgWaitingTime} days — children are waiting too long for culturally appropriate specialist hair and skincare appointments.`,
     );
@@ -868,7 +876,7 @@ export function computeEthnicHairSkincare(
   const recommendations: EthnicHairSkincareRecommendation[] = [];
   let rank = 0;
 
-  if (hairCareRate < 40 && totalHairCareRecords > 0) {
+  if (below(hairCareRate, 40) && totalHairCareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -878,7 +886,7 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (skincareRoutineRate < 40 && totalSkincareRecords > 0) {
+  if (below(skincareRoutineRate, 40) && totalSkincareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -908,7 +916,7 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (productAvailabilityRate < 50 && totalProductRecords > 0) {
+  if (below(productAvailabilityRate, 50) && totalProductRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -918,7 +926,7 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (specialistAccessRate < 50 && totalSpecialistReferrals > 0) {
+  if (below(specialistAccessRate, 50) && totalSpecialistReferrals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -958,7 +966,7 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (hairCareRate >= 40 && hairCareRate < 70 && totalHairCareRecords > 0) {
+  if (meets(hairCareRate, 40) && below(hairCareRate, 70) && totalHairCareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -968,7 +976,7 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (skincareRoutineRate >= 40 && skincareRoutineRate < 70 && totalSkincareRecords > 0) {
+  if (meets(skincareRoutineRate, 40) && below(skincareRoutineRate, 70) && totalSkincareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -998,7 +1006,7 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (avgWaitingTime > 28 && totalSpecialistReferrals > 0) {
+  if (above(avgWaitingTime, 28) && totalSpecialistReferrals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1008,7 +1016,7 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (productAvailabilityRate >= 50 && productAvailabilityRate < 70 && totalProductRecords > 0) {
+  if (meets(productAvailabilityRate, 50) && below(productAvailabilityRate, 70) && totalProductRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1018,7 +1026,7 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (specialistAccessRate >= 50 && specialistAccessRate < 70 && totalSpecialistReferrals > 0) {
+  if (meets(specialistAccessRate, 50) && below(specialistAccessRate, 70) && totalSpecialistReferrals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1084,14 +1092,14 @@ export function computeEthnicHairSkincare(
 
   // -- Critical insights --
 
-  if (hairCareRate < 40 && totalHairCareRecords > 0) {
+  if (below(hairCareRate, 40) && totalHairCareRecords > 0) {
     insights.push({
       text: `Only ${hairCareRate}% ethnic hair care quality. Inadequate hair care for children from diverse ethnic backgrounds is a failure of identity support under Reg 5. Hair care is deeply personal and culturally significant — poor provision damages children's self-esteem, cultural identity, and physical wellbeing. Ofsted will consider this a serious shortcoming.`,
       severity: "critical",
     });
   }
 
-  if (skincareRoutineRate < 40 && totalSkincareRecords > 0) {
+  if (below(skincareRoutineRate, 40) && totalSkincareRecords > 0) {
     insights.push({
       text: `Only ${skincareRoutineRate}% skincare routine adequacy. Melanin-rich skin has specific moisturising, protection, and care needs. Failing to provide adequate skincare routines with appropriate products constitutes neglect of children's physical and identity needs under Reg 5.`,
       severity: "critical",
@@ -1142,14 +1150,14 @@ export function computeEthnicHairSkincare(
 
   // -- Warning insights --
 
-  if (hairCareRate >= 40 && hairCareRate < 70 && totalHairCareRecords > 0) {
+  if (meets(hairCareRate, 40) && below(hairCareRate, 70) && totalHairCareRecords > 0) {
     insights.push({
       text: `Ethnic hair care quality at ${hairCareRate}% — while some provision is in place, inconsistencies in care planning, product matching, or capturing children's preferences mean hair care is not yet at the standard required. Strengthening care plans and cultural matching would improve outcomes.`,
       severity: "warning",
     });
   }
 
-  if (skincareRoutineRate >= 40 && skincareRoutineRate < 70 && totalSkincareRecords > 0) {
+  if (meets(skincareRoutineRate, 40) && below(skincareRoutineRate, 70) && totalSkincareRecords > 0) {
     insights.push({
       text: `Skincare routine adequacy at ${skincareRoutineRate}% — routines exist but gaps in consistency, product appropriateness, or children's education mean skincare provision is not yet comprehensive. Regular review and improved product sourcing would strengthen this area.`,
       severity: "warning",
@@ -1170,21 +1178,21 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (productAvailabilityRate >= 50 && productAvailabilityRate < 70 && totalProductRecords > 0) {
+  if (meets(productAvailabilityRate, 50) && below(productAvailabilityRate, 70) && totalProductRecords > 0) {
     insights.push({
       text: `Product availability at ${productAvailabilityRate}% — while some culturally appropriate products are available, inconsistencies in stock levels, budget allocation, or child approval mean product provision is not yet reliable.`,
       severity: "warning",
     });
   }
 
-  if (specialistAccessRate >= 50 && specialistAccessRate < 70 && totalSpecialistReferrals > 0) {
+  if (meets(specialistAccessRate, 50) && below(specialistAccessRate, 70) && totalSpecialistReferrals > 0) {
     insights.push({
       text: `Specialist access at ${specialistAccessRate}% — referrals are being made but outcomes, attendance, or child satisfaction are not consistently positive. Building stronger relationships with trusted specialists would improve this area.`,
       severity: "warning",
     });
   }
 
-  if (avgWaitingTime > 21 && avgWaitingTime <= 28 && totalSpecialistReferrals > 0) {
+  if (above(avgWaitingTime, 21) && avgWaitingTime! <= 28 && totalSpecialistReferrals > 0) {
     insights.push({
       text: `Average specialist waiting time is ${avgWaitingTime} days — while within acceptable limits, reducing waiting times would better serve children's needs and demonstrate proactive care.`,
       severity: "warning",
@@ -1245,14 +1253,14 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (hairCareRate >= 90 && staffTrainedEthnicHairRate >= 90 && totalHairCareRecords > 0) {
+  if (meets(hairCareRate, 90) && staffTrainedEthnicHairRate >= 90 && totalHairCareRecords > 0) {
     insights.push({
       text: `${hairCareRate}% hair care quality with ${staffTrainedEthnicHairRate}% staff trained in ethnic hair care — the home combines high-quality care planning with staff competency, ensuring children receive knowledgeable, culturally appropriate hair care from people who understand their needs.`,
       severity: "positive",
     });
   }
 
-  if (skincareRoutineRate >= 90 && moisturisingRate >= 90 && totalSkincareRecords > 0) {
+  if (meets(skincareRoutineRate, 90) && moisturisingRate >= 90 && totalSkincareRecords > 0) {
     insights.push({
       text: `${skincareRoutineRate}% skincare routine quality with ${moisturisingRate}% adequate moisturising — comprehensive skincare provision ensures children's skin is properly cared for with appropriate products and consistent routines.`,
       severity: "positive",
@@ -1266,14 +1274,14 @@ export function computeEthnicHairSkincare(
     });
   }
 
-  if (productAvailabilityRate >= 90 && avgProductQuality >= 4.0 && totalProductRecords > 0) {
+  if (meets(productAvailabilityRate, 90) && meets(avgProductQuality, 4.0) && totalProductRecords > 0) {
     insights.push({
       text: `${productAvailabilityRate}% product availability with quality averaging ${avgProductQuality}/5 — the home invests in high-quality, culturally appropriate products that are consistently available and approved by children.`,
       severity: "positive",
     });
   }
 
-  if (specialistAccessRate >= 90 && staffAdvocatedRate >= 90 && totalSpecialistReferrals > 0) {
+  if (meets(specialistAccessRate, 90) && staffAdvocatedRate >= 90 && totalSpecialistReferrals > 0) {
     insights.push({
       text: `${specialistAccessRate}% specialist access with ${staffAdvocatedRate}% staff advocacy — staff actively champion children's access to culturally appropriate specialists, ensuring referrals are made, appointments attended, and outcomes are positive.`,
       severity: "positive",
