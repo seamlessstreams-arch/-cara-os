@@ -184,10 +184,10 @@ export interface PlacementDurationResult {
   endedUnplannedCount: number;
   endedEmergencyCount: number;
   onNoticeCount: number;
-  averageDurationDays: number;
-  plannedEndingRate: number;
-  unplannedEndingRate: number;
-  emergencyPlacementRate: number;
+  averageDurationDays: number | null;
+  plannedEndingRate: number | null;
+  unplannedEndingRate: number | null;
+  emergencyPlacementRate: number | null;
   longestPlacementDays: number;
   shortestPlacementDays: number;
   endingReasons: Record<string, number>;
@@ -195,35 +195,35 @@ export interface PlacementDurationResult {
 
 export interface DisruptionManagementResult {
   totalDisruptions: number;
-  anticipatedRate: number;
-  preventionAttemptedRate: number;
-  preventionSuccessRate: number;
-  averageSupportActionsPerDisruption: number;
+  anticipatedRate: number | null;
+  preventionAttemptedRate: number | null;
+  preventionSuccessRate: number | null;
+  averageSupportActionsPerDisruption: number | null;
   severityBreakdown: { low: number; medium: number; high: number; critical: number };
   topFactors: { factor: DisruptionFactor; count: number }[];
-  supportProvidedRate: number;
+  supportProvidedRate: number | null;
 }
 
 export interface MatchingQualityResult {
   totalAssessments: number;
-  averageOverallScore: number;
+  averageOverallScore: number | null;
   factorBreakdown: { factor: MatchingFactor; averageScore: number; count: number }[];
-  impactAssessmentRate: number;
-  childrenConsultedRate: number;
-  childViewsRate: number;
-  riskAssessmentRate: number;
-  fullFactorAssessmentRate: number;
+  impactAssessmentRate: number | null;
+  childrenConsultedRate: number | null;
+  childViewsRate: number | null;
+  riskAssessmentRate: number | null;
+  fullFactorAssessmentRate: number | null;
 }
 
 export interface OutcomesDuringPlacementResult {
   totalOutcomes: number;
   progressBreakdown: Record<ProgressRating, number>;
-  averageEducationAttendance: number;
-  healthAppointmentRate: number;
-  carePlanUpToDateRate: number;
+  averageEducationAttendance: number | null;
+  healthAppointmentRate: number | null;
+  carePlanUpToDateRate: number | null;
   areaBreakdown: { area: OutcomeArea; averageRating: number; count: number }[];
-  improvementRate: number;
-  declineRate: number;
+  improvementRate: number | null;
+  declineRate: number | null;
 }
 
 export interface ChildStabilityProfile {
@@ -317,17 +317,17 @@ export function evaluatePlacementDuration(
   const plannedEndingRate =
     totalEnded > 0
       ? Math.round((endedPlannedCount / totalEnded) * 100)
-      : 0;
+      : null;
 
   const unplannedEndingRate =
     totalEnded > 0
       ? Math.round(((endedUnplannedCount + endedEmergencyCount) / totalEnded) * 100)
-      : 0;
+      : null;
 
   const emergencyPlacementRate =
     totalPlacements > 0
       ? Math.round((relevantPlacements.filter((p) => p.isEmergencyPlacement).length / totalPlacements) * 100)
-      : 0;
+      : null;
 
   // Duration calculations
   const durations = relevantPlacements.map((p) => {
@@ -338,7 +338,7 @@ export function evaluatePlacementDuration(
   const averageDurationDays =
     durations.length > 0
       ? Math.round((durations.reduce((s, d) => s + d, 0) / durations.length) * 10) / 10
-      : 0;
+      : null;
 
   const longestPlacementDays = durations.length > 0 ? Math.max(...durations) : 0;
   const shortestPlacementDays = durations.length > 0 ? Math.min(...durations) : 0;
@@ -384,18 +384,18 @@ export function evaluateDisruptionManagement(
   const anticipatedRate =
     totalDisruptions > 0
       ? Math.round((periodDisruptions.filter((d) => d.wasAnticipated).length / totalDisruptions) * 100)
-      : 0;
+      : null;
 
   const preventionAttemptedRate =
     totalDisruptions > 0
       ? Math.round((periodDisruptions.filter((d) => d.preventionAttempted).length / totalDisruptions) * 100)
-      : 0;
+      : null;
 
   const preventionAttempted = periodDisruptions.filter((d) => d.preventionAttempted);
   const preventionSuccessRate =
     preventionAttempted.length > 0
       ? Math.round((preventionAttempted.filter((d) => d.preventionSuccessful).length / preventionAttempted.length) * 100)
-      : 0;
+      : null;
 
   const totalSupportActions = periodDisruptions.reduce(
     (s, d) => s + d.supportProvided.length,
@@ -404,7 +404,7 @@ export function evaluateDisruptionManagement(
   const averageSupportActionsPerDisruption =
     totalDisruptions > 0
       ? Math.round((totalSupportActions / totalDisruptions) * 10) / 10
-      : 0;
+      : null;
 
   const severityBreakdown = {
     low: periodDisruptions.filter((d) => d.severity === "low").length,
@@ -427,7 +427,7 @@ export function evaluateDisruptionManagement(
   const supportProvidedRate =
     totalDisruptions > 0
       ? Math.round((periodDisruptions.filter((d) => d.supportProvided.length > 0).length / totalDisruptions) * 100)
-      : 0;
+      : null;
 
   return {
     totalDisruptions,
@@ -453,7 +453,7 @@ export function evaluateMatchingQuality(
       ? Math.round(
           (matchingRecords.reduce((s, m) => s + m.overallScore, 0) / totalAssessments) * 10,
         ) / 10
-      : 0;
+      : null;
 
   // Factor-level breakdown
   const factorMap = new Map<MatchingFactor, { total: number; count: number }>();
@@ -480,22 +480,22 @@ export function evaluateMatchingQuality(
   const impactAssessmentRate =
     totalAssessments > 0
       ? Math.round((matchingRecords.filter((m) => m.impactAssessmentCompleted).length / totalAssessments) * 100)
-      : 0;
+      : null;
 
   const childrenConsultedRate =
     totalAssessments > 0
       ? Math.round((matchingRecords.filter((m) => m.existingChildrenConsulted).length / totalAssessments) * 100)
-      : 0;
+      : null;
 
   const childViewsRate =
     totalAssessments > 0
       ? Math.round((matchingRecords.filter((m) => m.childViewsRecorded).length / totalAssessments) * 100)
-      : 0;
+      : null;
 
   const riskAssessmentRate =
     totalAssessments > 0
       ? Math.round((matchingRecords.filter((m) => m.riskAssessmentCompleted).length / totalAssessments) * 100)
-      : 0;
+      : null;
 
   const fullFactorAssessmentRate =
     totalAssessments > 0
@@ -504,7 +504,7 @@ export function evaluateMatchingQuality(
             totalAssessments) *
             100,
         )
-      : 0;
+      : null;
 
   return {
     totalAssessments,
@@ -548,21 +548,21 @@ export function evaluateOutcomesDuringPlacement(
             educationOutcomes.length) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   const healthAppointmentRate =
     totalOutcomes > 0
       ? Math.round(
           (outcomes.filter((o) => o.healthAppointmentsAttended).length / totalOutcomes) * 100,
         )
-      : 0;
+      : null;
 
   const carePlanUpToDateRate =
     totalOutcomes > 0
       ? Math.round(
           (outcomes.filter((o) => o.carePlanUpToDate).length / totalOutcomes) * 100,
         )
-      : 0;
+      : null;
 
   // Area breakdown
   const areaMap = new Map<OutcomeArea, { total: number; count: number }>();
@@ -602,7 +602,7 @@ export function evaluateOutcomesDuringPlacement(
             totalOutcomes) *
             100,
         )
-      : 0;
+      : null;
 
   const declineRate =
     totalOutcomes > 0
@@ -611,7 +611,7 @@ export function evaluateOutcomesDuringPlacement(
             totalOutcomes) *
             100,
         )
-      : 0;
+      : null;
 
   return {
     totalOutcomes,
@@ -766,18 +766,18 @@ function calculateComponentScores(
     // Planned ending rate: 10 pts — higher is better (of those ended, how many were planned?)
     const endedTotal = pd.endedPlannedCount + pd.endedUnplannedCount + pd.endedEmergencyCount;
     if (endedTotal > 0) {
-      pdScore += (pd.plannedEndingRate / 100) * 10;
+      pdScore += ((pd.plannedEndingRate ?? 0) / 100) * 10;
     } else {
       // No endings yet — all active is good
       pdScore += 10;
     }
 
     // Low emergency placement rate: 5 pts — invert: 0% emergency = 5pts, 100% = 0pts
-    pdScore += ((100 - pd.emergencyPlacementRate) / 100) * 5;
+    pdScore += ((100 - (pd.emergencyPlacementRate ?? 0)) / 100) * 5;
 
     // Duration stability: 10 pts — longer average = more stable
     // Benchmark: 180+ days = full marks, sliding scale below
-    const durationScore = Math.min(pd.averageDurationDays / 180, 1);
+    const durationScore = Math.min((pd.averageDurationDays ?? 0) / 180, 1);
     pdScore += durationScore * 10;
   } else {
     pdScore = 0;
@@ -787,13 +787,13 @@ function calculateComponentScores(
   let dmScore = 0;
   if (dm.totalDisruptions > 0) {
     // Anticipation rate: 8 pts
-    dmScore += (dm.anticipatedRate / 100) * 8;
+    dmScore += ((dm.anticipatedRate ?? 0) / 100) * 8;
     // Prevention attempted rate: 7 pts
-    dmScore += (dm.preventionAttemptedRate / 100) * 7;
+    dmScore += ((dm.preventionAttemptedRate ?? 0) / 100) * 7;
     // Prevention success rate: 5 pts
-    dmScore += (dm.preventionSuccessRate / 100) * 5;
+    dmScore += ((dm.preventionSuccessRate ?? 0) / 100) * 5;
     // Support provided rate: 5 pts
-    dmScore += (dm.supportProvidedRate / 100) * 5;
+    dmScore += ((dm.supportProvidedRate ?? 0) / 100) * 5;
   } else {
     // No disruptions — perfect stability
     dmScore = 25;
@@ -803,15 +803,15 @@ function calculateComponentScores(
   let mqScore = 0;
   if (mq.totalAssessments > 0) {
     // Overall matching score: 8 pts
-    mqScore += (Math.min(mq.averageOverallScore, 5) / 5) * 8;
+    mqScore += (Math.min(mq.averageOverallScore ?? 0, 5) / 5) * 8;
     // Impact assessment rate: 5 pts
-    mqScore += (mq.impactAssessmentRate / 100) * 5;
+    mqScore += ((mq.impactAssessmentRate ?? 0) / 100) * 5;
     // Children consulted rate: 4 pts
-    mqScore += (mq.childrenConsultedRate / 100) * 4;
+    mqScore += ((mq.childrenConsultedRate ?? 0) / 100) * 4;
     // Child views rate: 4 pts
-    mqScore += (mq.childViewsRate / 100) * 4;
+    mqScore += ((mq.childViewsRate ?? 0) / 100) * 4;
     // Risk assessment rate: 4 pts
-    mqScore += (mq.riskAssessmentRate / 100) * 4;
+    mqScore += ((mq.riskAssessmentRate ?? 0) / 100) * 4;
   } else {
     mqScore = 0;
   }
@@ -820,13 +820,13 @@ function calculateComponentScores(
   let opScore = 0;
   if (op.totalOutcomes > 0) {
     // Improvement rate: 10 pts
-    opScore += (op.improvementRate / 100) * 10;
+    opScore += ((op.improvementRate ?? 0) / 100) * 10;
     // Education attendance: 5 pts
-    opScore += (Math.min(op.averageEducationAttendance, 100) / 100) * 5;
+    opScore += (Math.min(op.averageEducationAttendance ?? 0, 100) / 100) * 5;
     // Health appointments: 5 pts
-    opScore += (op.healthAppointmentRate / 100) * 5;
+    opScore += ((op.healthAppointmentRate ?? 0) / 100) * 5;
     // Care plan up to date: 5 pts
-    opScore += (op.carePlanUpToDateRate / 100) * 5;
+    opScore += ((op.carePlanUpToDateRate ?? 0) / 100) * 5;
   } else {
     opScore = 0;
   }
@@ -858,13 +858,13 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (pd.plannedEndingRate >= 80 && (pd.endedPlannedCount + pd.endedUnplannedCount + pd.endedEmergencyCount) > 0) {
+  if ((pd.plannedEndingRate ?? 0) >= 80 && (pd.endedPlannedCount + pd.endedUnplannedCount + pd.endedEmergencyCount) > 0) {
     strengths.push(
       "Excellent placement stability: over 80% of endings are planned, demonstrating effective transition management",
     );
   }
 
-  if (pd.averageDurationDays >= 180 && pd.totalPlacements > 0) {
+  if ((pd.averageDurationDays ?? 0) >= 180 && pd.totalPlacements > 0) {
     strengths.push(
       `Strong placement duration with an average of ${pd.averageDurationDays} days, supporting continuity and permanence`,
     );
@@ -876,19 +876,19 @@ function generateStrengths(
     );
   }
 
-  if (dm.anticipatedRate >= 80 && dm.totalDisruptions > 0) {
+  if ((dm.anticipatedRate ?? 0) >= 80 && dm.totalDisruptions > 0) {
     strengths.push(
       "Disruptions are consistently anticipated, showing proactive risk awareness and management",
     );
   }
 
-  if (dm.preventionSuccessRate >= 70 && dm.totalDisruptions > 0) {
+  if ((dm.preventionSuccessRate ?? 0) >= 70 && dm.totalDisruptions > 0) {
     strengths.push(
       "High prevention success rate: staff effectively intervene to prevent placement disruption",
     );
   }
 
-  if (dm.supportProvidedRate >= 90 && dm.totalDisruptions > 0) {
+  if ((dm.supportProvidedRate ?? 0) >= 90 && dm.totalDisruptions > 0) {
     strengths.push(
       "Support is consistently provided during disruptions, ensuring children receive timely intervention",
     );
@@ -900,43 +900,43 @@ function generateStrengths(
     );
   }
 
-  if (mq.averageOverallScore >= 4 && mq.totalAssessments > 0) {
+  if ((mq.averageOverallScore ?? 0) >= 4 && mq.totalAssessments > 0) {
     strengths.push(
       "High-quality matching assessments demonstrate careful consideration of each child's needs against the home's offer",
     );
   }
 
-  if (mq.impactAssessmentRate >= 90 && mq.totalAssessments > 0) {
+  if ((mq.impactAssessmentRate ?? 0) >= 90 && mq.totalAssessments > 0) {
     strengths.push(
       "Impact assessments consistently completed before placement, supporting Reg 36 compliance",
     );
   }
 
-  if (mq.childrenConsultedRate >= 90 && mq.totalAssessments > 0) {
+  if ((mq.childrenConsultedRate ?? 0) >= 90 && mq.totalAssessments > 0) {
     strengths.push(
       "Existing children consistently consulted during matching, promoting child-centred practice",
     );
   }
 
-  if (mq.childViewsRate >= 90 && mq.totalAssessments > 0) {
+  if ((mq.childViewsRate ?? 0) >= 90 && mq.totalAssessments > 0) {
     strengths.push(
       "Children's views consistently recorded in matching assessments, supporting participation rights",
     );
   }
 
-  if (op.improvementRate >= 70 && op.totalOutcomes > 0) {
+  if ((op.improvementRate ?? 0) >= 70 && op.totalOutcomes > 0) {
     strengths.push(
       "Strong outcomes: over 70% of children showing improvement during placement, evidencing effective care",
     );
   }
 
-  if (op.averageEducationAttendance >= 90 && op.totalOutcomes > 0) {
+  if ((op.averageEducationAttendance ?? 0) >= 90 && op.totalOutcomes > 0) {
     strengths.push(
       `Excellent education engagement with ${op.averageEducationAttendance}% average attendance during placement`,
     );
   }
 
-  if (op.healthAppointmentRate >= 90 && op.totalOutcomes > 0) {
+  if ((op.healthAppointmentRate ?? 0) >= 90 && op.totalOutcomes > 0) {
     strengths.push(
       "Health appointments consistently attended, ensuring children's health needs are met during placement",
     );
@@ -959,103 +959,103 @@ function generateAreasForImprovement(
 ): string[] {
   const areas: string[] = [];
 
-  if (pd.unplannedEndingRate > 40 && (pd.endedPlannedCount + pd.endedUnplannedCount + pd.endedEmergencyCount) > 0) {
+  if ((pd.unplannedEndingRate ?? 0) > 40 && (pd.endedPlannedCount + pd.endedUnplannedCount + pd.endedEmergencyCount) > 0) {
     areas.push(
       "High rate of unplanned endings: review placement support and disruption prevention strategies",
     );
   }
 
-  if (pd.emergencyPlacementRate > 30 && pd.totalPlacements > 0) {
+  if ((pd.emergencyPlacementRate ?? 0) > 30 && pd.totalPlacements > 0) {
     areas.push(
       "High proportion of emergency placements: strengthen planned admission processes to reduce crisis placements",
     );
   }
 
-  if (pd.averageDurationDays < 90 && pd.totalPlacements > 0) {
+  if ((pd.averageDurationDays ?? 0) < 90 && pd.totalPlacements > 0) {
     areas.push(
       `Short average placement duration of ${pd.averageDurationDays} days: investigate factors affecting stability and permanence`,
     );
   }
 
-  if (dm.anticipatedRate < 60 && dm.totalDisruptions > 0) {
+  if ((dm.anticipatedRate ?? 0) < 60 && dm.totalDisruptions > 0) {
     areas.push(
       "Disruptions not consistently anticipated: strengthen risk monitoring and early warning systems",
     );
   }
 
-  if (dm.preventionAttemptedRate < 70 && dm.totalDisruptions > 0) {
+  if ((dm.preventionAttemptedRate ?? 0) < 70 && dm.totalDisruptions > 0) {
     areas.push(
       "Prevention not consistently attempted when disruptions arise: develop proactive intervention protocols",
     );
   }
 
-  if (dm.preventionSuccessRate < 50 && dm.totalDisruptions > 0) {
+  if ((dm.preventionSuccessRate ?? 0) < 50 && dm.totalDisruptions > 0) {
     areas.push(
       "Low prevention success rate: review effectiveness of disruption prevention strategies and staff training",
     );
   }
 
-  if (dm.supportProvidedRate < 70 && dm.totalDisruptions > 0) {
+  if ((dm.supportProvidedRate ?? 0) < 70 && dm.totalDisruptions > 0) {
     areas.push(
       "Support not consistently provided during disruptions: ensure all disruption events trigger appropriate support response",
     );
   }
 
-  if (mq.averageOverallScore < 3 && mq.totalAssessments > 0) {
+  if ((mq.averageOverallScore ?? 0) < 3 && mq.totalAssessments > 0) {
     areas.push(
       "Low average matching scores suggest placements may not be well-matched to the home's purpose and capabilities",
     );
   }
 
-  if (mq.impactAssessmentRate < 70 && mq.totalAssessments > 0) {
+  if ((mq.impactAssessmentRate ?? 0) < 70 && mq.totalAssessments > 0) {
     areas.push(
       "Impact assessments not consistently completed: ensure Reg 36 compliance by assessing impact before every placement",
     );
   }
 
-  if (mq.childrenConsultedRate < 70 && mq.totalAssessments > 0) {
+  if ((mq.childrenConsultedRate ?? 0) < 70 && mq.totalAssessments > 0) {
     areas.push(
       "Existing children not consistently consulted during matching: develop routine consultation processes",
     );
   }
 
-  if (mq.childViewsRate < 70 && mq.totalAssessments > 0) {
+  if ((mq.childViewsRate ?? 0) < 70 && mq.totalAssessments > 0) {
     areas.push(
       "Children's views not consistently captured in matching: strengthen child participation in placement decisions",
     );
   }
 
-  if (mq.riskAssessmentRate < 70 && mq.totalAssessments > 0) {
+  if ((mq.riskAssessmentRate ?? 0) < 70 && mq.totalAssessments > 0) {
     areas.push(
       "Risk assessments not consistently completed for matching: ensure all placements have documented risk assessments",
     );
   }
 
-  if (op.improvementRate < 50 && op.totalOutcomes > 0) {
+  if ((op.improvementRate ?? 0) < 50 && op.totalOutcomes > 0) {
     areas.push(
       "Less than half of children showing improvement during placement: review care planning and intervention effectiveness",
     );
   }
 
-  if (op.declineRate > 30 && op.totalOutcomes > 0) {
+  if ((op.declineRate ?? 0) > 30 && op.totalOutcomes > 0) {
     areas.push(
       "Significant decline rate observed during placement: urgently review care strategies and individual support plans",
     );
   }
 
-  if (op.averageEducationAttendance < 70 && op.totalOutcomes > 0) {
+  if ((op.averageEducationAttendance ?? 0) < 70 && op.totalOutcomes > 0) {
     areas.push(
       `Education attendance at ${op.averageEducationAttendance}%: strengthen education support and engagement strategies`,
     );
   }
 
-  if (op.healthAppointmentRate < 70 && op.totalOutcomes > 0) {
+  if ((op.healthAppointmentRate ?? 0) < 70 && op.totalOutcomes > 0) {
     areas.push(
       "Health appointments not consistently attended: review health advocacy and appointment support processes",
     );
   }
 
-  if (op.carePlanUpToDateRate < 80 && op.totalOutcomes > 0) {
+  if ((op.carePlanUpToDateRate ?? 0) < 80 && op.totalOutcomes > 0) {
     areas.push(
       "Care plans not consistently up to date: implement regular review schedule per Reg 14",
     );
@@ -1078,25 +1078,25 @@ function generateActions(
     );
   }
 
-  if (pd.unplannedEndingRate > 30 && (pd.endedPlannedCount + pd.endedUnplannedCount + pd.endedEmergencyCount) > 0) {
+  if ((pd.unplannedEndingRate ?? 0) > 30 && (pd.endedPlannedCount + pd.endedUnplannedCount + pd.endedEmergencyCount) > 0) {
     actions.push(
       "Conduct disruption analysis for all unplanned endings to identify common factors and develop prevention strategies",
     );
   }
 
-  if (pd.emergencyPlacementRate > 20 && pd.totalPlacements > 0) {
+  if ((pd.emergencyPlacementRate ?? 0) > 20 && pd.totalPlacements > 0) {
     actions.push(
       "Review emergency placement procedures and strengthen planned admission pathways to reduce crisis placements",
     );
   }
 
-  if (dm.anticipatedRate < 70 && dm.totalDisruptions > 0) {
+  if ((dm.anticipatedRate ?? 0) < 70 && dm.totalDisruptions > 0) {
     actions.push(
       "Implement early warning indicator system to improve disruption anticipation and enable proactive intervention",
     );
   }
 
-  if (dm.preventionAttemptedRate < 80 && dm.totalDisruptions > 0) {
+  if ((dm.preventionAttemptedRate ?? 0) < 80 && dm.totalDisruptions > 0) {
     actions.push(
       "Develop disruption prevention protocol requiring documented intervention for every identified disruption risk",
     );
@@ -1108,37 +1108,37 @@ function generateActions(
     );
   }
 
-  if (mq.impactAssessmentRate < 100 && mq.totalAssessments > 0) {
+  if ((mq.impactAssessmentRate ?? 0) < 100 && mq.totalAssessments > 0) {
     actions.push(
       "Ensure impact assessments are completed for all prospective placements before admission per Reg 36",
     );
   }
 
-  if (mq.childrenConsultedRate < 80 && mq.totalAssessments > 0) {
+  if ((mq.childrenConsultedRate ?? 0) < 80 && mq.totalAssessments > 0) {
     actions.push(
       "Establish routine consultation with existing children before each new placement decision",
     );
   }
 
-  if (mq.fullFactorAssessmentRate < 80 && mq.totalAssessments > 0) {
+  if ((mq.fullFactorAssessmentRate ?? 0) < 80 && mq.totalAssessments > 0) {
     actions.push(
       "Implement comprehensive matching checklist covering all 8 factors for every placement assessment",
     );
   }
 
-  if (op.declineRate > 20 && op.totalOutcomes > 0) {
+  if ((op.declineRate ?? 0) > 20 && op.totalOutcomes > 0) {
     actions.push(
       "Convene multi-agency review for children showing decline to adjust care plans and interventions",
     );
   }
 
-  if (op.averageEducationAttendance < 80 && op.totalOutcomes > 0) {
+  if ((op.averageEducationAttendance ?? 0) < 80 && op.totalOutcomes > 0) {
     actions.push(
       "Strengthen education support: implement daily attendance monitoring and liaise with designated teachers",
     );
   }
 
-  if (op.carePlanUpToDateRate < 100 && op.totalOutcomes > 0) {
+  if ((op.carePlanUpToDateRate ?? 0) < 100 && op.totalOutcomes > 0) {
     actions.push(
       "Schedule care plan reviews to ensure all plans are current and reflect each child's evolving needs",
     );
@@ -1189,7 +1189,7 @@ function generateRegulatoryLinks(
     );
   }
 
-  if (pd.unplannedEndingRate > 0 && (pd.endedPlannedCount + pd.endedUnplannedCount + pd.endedEmergencyCount) > 0) {
+  if ((pd.unplannedEndingRate ?? 0) > 0 && (pd.endedPlannedCount + pd.endedUnplannedCount + pd.endedEmergencyCount) > 0) {
     links.push(
       "CHR 2015 Reg 36 — Unplanned endings must be reviewed to understand contributing factors and prevent recurrence",
     );

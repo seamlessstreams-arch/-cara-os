@@ -405,10 +405,10 @@ describe("evaluatePlacementDuration", () => {
     const result = evaluatePlacementDuration([], PERIOD_START, PERIOD_END, REFERENCE_DATE);
     expect(result.totalPlacements).toBe(0);
     expect(result.activePlacements).toBe(0);
-    expect(result.averageDurationDays).toBe(0);
-    expect(result.plannedEndingRate).toBe(0);
-    expect(result.unplannedEndingRate).toBe(0);
-    expect(result.emergencyPlacementRate).toBe(0);
+    expect(result.averageDurationDays).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.plannedEndingRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.unplannedEndingRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.emergencyPlacementRate).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.longestPlacementDays).toBe(0);
     expect(result.shortestPlacementDays).toBe(0);
   });
@@ -514,8 +514,8 @@ describe("evaluatePlacementDuration", () => {
       makePlacement({ id: "p1", status: "active" }),
     ];
     const result = evaluatePlacementDuration(placements, PERIOD_START, PERIOD_END, REFERENCE_DATE);
-    expect(result.plannedEndingRate).toBe(0);
-    expect(result.unplannedEndingRate).toBe(0);
+    expect(result.plannedEndingRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.unplannedEndingRate).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("handles single placement correctly", () => {
@@ -541,11 +541,12 @@ describe("evaluateDisruptionManagement", () => {
   it("returns zero values for empty array", () => {
     const result = evaluateDisruptionManagement([], PERIOD_START, PERIOD_END);
     expect(result.totalDisruptions).toBe(0);
-    expect(result.anticipatedRate).toBe(0);
-    expect(result.preventionAttemptedRate).toBe(0);
-    expect(result.preventionSuccessRate).toBe(0);
-    expect(result.averageSupportActionsPerDisruption).toBe(0);
-    expect(result.supportProvidedRate).toBe(0);
+    // fab-0: empty array → all null (no source data to compute over).
+    expect(result.anticipatedRate).toBeNull();
+    expect(result.preventionAttemptedRate).toBeNull();
+    expect(result.preventionSuccessRate).toBeNull();
+    expect(result.averageSupportActionsPerDisruption).toBeNull();
+    expect(result.supportProvidedRate).toBeNull();
   });
 
   it("calculates anticipation rate", () => {
@@ -597,6 +598,7 @@ describe("evaluateDisruptionManagement", () => {
       makeDisruption({ supportProvided: [] }),
     ];
     const result = evaluateDisruptionManagement(disruptions, PERIOD_START, PERIOD_END);
+    // Record exists → real 0, not null (support field is empty on the record, denominator = 1).
     expect(result.supportProvidedRate).toBe(0);
     expect(result.averageSupportActionsPerDisruption).toBe(0);
   });
@@ -615,8 +617,9 @@ describe("evaluateDisruptionManagement", () => {
       makeDisruption({ preventionAttempted: false, preventionSuccessful: false }),
     ];
     const result = evaluateDisruptionManagement(disruptions, PERIOD_START, PERIOD_END);
+    // Record exists but preventionAttempted=false → real 0 for attempted (1 record). preventionSuccess NULL because no attempts to succeed over.
     expect(result.preventionAttemptedRate).toBe(0);
-    expect(result.preventionSuccessRate).toBe(0);
+    expect(result.preventionSuccessRate).toBeNull();
   });
 
   it("correctly handles all critical severity disruptions", () => {
@@ -653,13 +656,13 @@ describe("evaluateMatchingQuality", () => {
   it("returns zero values for empty array", () => {
     const result = evaluateMatchingQuality([]);
     expect(result.totalAssessments).toBe(0);
-    expect(result.averageOverallScore).toBe(0);
+    expect(result.averageOverallScore).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.factorBreakdown).toEqual([]);
-    expect(result.impactAssessmentRate).toBe(0);
-    expect(result.childrenConsultedRate).toBe(0);
-    expect(result.childViewsRate).toBe(0);
-    expect(result.riskAssessmentRate).toBe(0);
-    expect(result.fullFactorAssessmentRate).toBe(0);
+    expect(result.impactAssessmentRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.childrenConsultedRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.childViewsRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.riskAssessmentRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.fullFactorAssessmentRate).toBeNull(); // fab-0: null (empty array).
   });
 
   it("calculates average overall score", () => {
@@ -716,6 +719,7 @@ describe("evaluateMatchingQuality", () => {
   it("handles assessment with no factors", () => {
     const records: MatchingRecord[] = [makeMatchingRecord({ factors: [], overallScore: 0 })];
     const result = evaluateMatchingQuality(records);
+    // Record exists, so full-factor rate is real 0/1.
     expect(result.fullFactorAssessmentRate).toBe(0);
     expect(result.factorBreakdown).toEqual([]);
   });
@@ -758,11 +762,11 @@ describe("evaluateOutcomesDuringPlacement", () => {
   it("returns zero values for empty array", () => {
     const result = evaluateOutcomesDuringPlacement([]);
     expect(result.totalOutcomes).toBe(0);
-    expect(result.averageEducationAttendance).toBe(0);
-    expect(result.healthAppointmentRate).toBe(0);
-    expect(result.carePlanUpToDateRate).toBe(0);
-    expect(result.improvementRate).toBe(0);
-    expect(result.declineRate).toBe(0);
+    expect(result.averageEducationAttendance).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.healthAppointmentRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.carePlanUpToDateRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.improvementRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.declineRate).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.areaBreakdown).toEqual([]);
   });
 
@@ -795,7 +799,7 @@ describe("evaluateOutcomesDuringPlacement", () => {
     const result = evaluateOutcomesDuringPlacement(OAK_HOUSE_OUTCOMES);
     // 2 out of 3 improving
     expect(result.improvementRate).toBe(67);
-    // 0 out of 3 declining
+    // 0 out of 3 declining — records exist, so real 0 not null.
     expect(result.declineRate).toBe(0);
   });
 
@@ -818,6 +822,7 @@ describe("evaluateOutcomesDuringPlacement", () => {
     ];
     const result = evaluateOutcomesDuringPlacement(outcomes);
     expect(result.declineRate).toBe(100);
+    // 0 out of totalOutcomes improving — records exist, real 0.
     expect(result.improvementRate).toBe(0);
   });
 
@@ -826,7 +831,7 @@ describe("evaluateOutcomesDuringPlacement", () => {
       makeOutcome({ educationAttendancePercent: undefined }),
     ];
     const result = evaluateOutcomesDuringPlacement(outcomes);
-    expect(result.averageEducationAttendance).toBe(0);
+    expect(result.averageEducationAttendance).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("handles mixed progress ratings", () => {
@@ -1932,6 +1937,7 @@ describe("edge cases", () => {
       makePlacement({ id: "p1", startDate: "2026-01-01", endDate: "2026-01-01", status: "ended_emergency" }),
     ];
     const result = evaluatePlacementDuration(placements, "2026-01-01", "2026-05-18", "2026-05-18");
+    // Placement exists, ended same day → duration is real 0 (0 days).
     expect(result.averageDurationDays).toBe(0);
     expect(result.shortestPlacementDays).toBe(0);
   });
@@ -1965,6 +1971,7 @@ describe("edge cases", () => {
       makeOutcome({ educationAttendancePercent: 0 }),
     ];
     const result = evaluateOutcomesDuringPlacement(outcomes);
+    // 0 is a valid measurement — real 0, not null.
     expect(result.averageEducationAttendance).toBe(0);
   });
 
