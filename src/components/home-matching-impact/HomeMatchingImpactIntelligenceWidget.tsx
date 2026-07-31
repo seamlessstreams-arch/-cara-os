@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
   const colour = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-yellow-500" : pct >= 40 ? "bg-orange-500" : "bg-red-500";
@@ -53,8 +54,8 @@ export function HomeMatchingImpactIntelligenceWidget() {
         <ScoreBar label="Matching Quality" value={scores.matchingQuality} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Assessments" value={matching.totalAssessments} />
-          <Stat label="Completion Rate" value={`${matching.assessmentCompletionRate}%`} />
-          <Stat label="Children Consulted" value={`${matching.existingChildrenConsultedRate}%`} />
+          <Stat label="Completion Rate" value={formatRate(matching.assessmentCompletionRate as number | null)} />
+          <Stat label="Children Consulted" value={formatRate(matching.existingChildrenConsultedRate as number | null)} />
           <Stat label="Conditions Applied" value={rateText(matching.conditionsAppliedRate)} />
         </div>
       </Section>
@@ -62,8 +63,8 @@ export function HomeMatchingImpactIntelligenceWidget() {
         <ScoreBar label="Impact Monitoring" value={scores.impactMonitoring} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Records" value={impact.totalMonitoringRecords} />
-          <Stat label="Positive Impact" value={`${impact.positiveImpactRate}%`} />
-          <Stat label="Negative Impact" value={`${impact.negativeImpactRate}%`} />
+          <Stat label="Positive Impact" value={formatRate(impact.positiveImpactRate as number | null)} />
+          <Stat label="Negative Impact" value={formatRate(impact.negativeImpactRate as number | null)} />
           <Stat label="Resolution" value={rateText(impact.resolutionRate)} />
         </div>
       </Section>
@@ -71,18 +72,18 @@ export function HomeMatchingImpactIntelligenceWidget() {
         <ScoreBar label="Consultation" value={scores.residentConsultation} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Consultations" value={consultation.totalConsultations} />
-          <Stat label="Informed" value={`${consultation.informedRate}%`} />
-          <Stat label="Views Sought" value={`${consultation.viewsSoughtRate}%`} />
-          <Stat label="Views Acted Upon" value={`${consultation.viewsActedUponRate}%`} />
+          <Stat label="Informed" value={formatRate(consultation.informedRate as number | null)} />
+          <Stat label="Views Sought" value={formatRate(consultation.viewsSoughtRate as number | null)} />
+          <Stat label="Views Acted Upon" value={formatRate(consultation.viewsActedUponRate as number | null)} />
         </div>
       </Section>
       <Section title="Admission Outcomes">
         <ScoreBar label="Outcomes" value={scores.admissionOutcomes} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Outcomes" value={outcomes.totalOutcomes} />
-          <Stat label="Placement Stability" value={`${outcomes.placementStabilityRate}%`} />
-          <Stat label="Disruption Rate" value={`${outcomes.disruptionRate}%`} />
-          <Stat label="Assessment Linked" value={`${outcomes.matchingAssessmentLinkedRate}%`} />
+          <Stat label="Placement Stability" value={formatRate(outcomes.placementStabilityRate as number | null)} />
+          <Stat label="Disruption Rate" value={formatRate(outcomes.disruptionRate as number | null)} />
+          <Stat label="Assessment Linked" value={formatRate(outcomes.matchingAssessmentLinkedRate as number | null)} />
         </div>
       </Section>
       {strengths.length > 0 && <Section title="Strengths"><ul className="text-sm space-y-1">{strengths.map((s, i) => <li key={i} className="text-green-700">✓ {s}</li>)}</ul></Section>}

@@ -13,6 +13,12 @@
 
 import { useState, useEffect } from "react";
 
+function fmt(v: number | null | undefined): string {
+  if (v === null || v === undefined) return "—";
+  return String(v);
+}
+
+
 /** Rates are null when nothing was recorded — show the gap, never a fabricated number. */
 function pct(value: number | null | undefined): string {
   return typeof value === "number" && Number.isFinite(value) ? `${value}%` : "—";
@@ -33,42 +39,42 @@ interface HomeMatchingImpactData {
   rating: string;
   matchingQuality: {
     totalAssessments: number;
-    averageCompatibilityScore: number;
-    assessmentCompletionRate: number;
-    existingChildrenConsultedRate: number;
+    averageCompatibilityScore: number | null;
+    assessmentCompletionRate: number | null;
+    existingChildrenConsultedRate: number | null;
     conditionsAppliedRate: number | null;
     decisionBreakdown: Record<string, number>;
     admissionTypeBreakdown: Record<string, number>;
-    averageRiskFactors: number;
-    averageProtectiveFactors: number;
-    reviewDateSetRate: number;
+    averageRiskFactors: number | null;
+    averageProtectiveFactors: number | null;
+    reviewDateSetRate: number | null;
   };
   impactMonitoring: {
     totalMonitoringRecords: number;
-    negativeImpactRate: number;
-    significantNegativeRate: number;
-    positiveImpactRate: number;
+    negativeImpactRate: number | null;
+    significantNegativeRate: number | null;
+    positiveImpactRate: number | null;
     impactAreaBreakdown: Record<string, number>;
     resolutionRate: number | null;
     mitigationProvidedRate: number | null;
-    averageMonitoringPerChild: number;
+    averageMonitoringPerChild: number | null;
     monitoringFrequencyAdequate: boolean;
   };
   residentConsultation: {
     totalConsultations: number;
-    informedRate: number;
-    viewsSoughtRate: number;
-    viewsActedUponRate: number;
-    consultationCompletionRate: number;
-    averageConsultationsPerAdmission: number;
+    informedRate: number | null;
+    viewsSoughtRate: number | null;
+    viewsActedUponRate: number | null;
+    consultationCompletionRate: number | null;
+    averageConsultationsPerAdmission: number | null;
   };
   admissionOutcomes: {
     totalOutcomes: number;
-    placementStabilityRate: number;
-    averageDaysToSettle: number;
-    disruptionRate: number;
+    placementStabilityRate: number | null;
+    averageDaysToSettle: number | null;
+    disruptionRate: number | null;
     disruptionReasons: Record<string, number>;
-    matchingAssessmentLinkedRate: number;
+    matchingAssessmentLinkedRate: number | null;
   };
   strengths: string[];
   areasForImprovement: string[];
@@ -293,25 +299,25 @@ export function HomeMatchingImpactDashboardWidget() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <MetricCard
           label="Compatibility"
-          value={`${data.matchingQuality.averageCompatibilityScore}/10`}
-          subValue={`${data.matchingQuality.existingChildrenConsultedRate}% consulted`}
+          value={`${fmt(data.matchingQuality.averageCompatibilityScore)}/10`}
+          subValue={`${fmt(data.matchingQuality.existingChildrenConsultedRate)}% consulted`}
           color="text-blue-700 bg-blue-50"
         />
         <MetricCard
           label="Positive Impact"
-          value={`${data.impactMonitoring.positiveImpactRate}%`}
+          value={`${fmt(data.impactMonitoring.positiveImpactRate)}%`}
           subValue={`${data.impactMonitoring.totalMonitoringRecords} records`}
           color="text-green-700 bg-green-50"
         />
         <MetricCard
           label="Views Sought"
-          value={`${data.residentConsultation.viewsSoughtRate}%`}
+          value={`${fmt(data.residentConsultation.viewsSoughtRate)}%`}
           subValue={`${data.residentConsultation.totalConsultations} consultations`}
           color="text-teal-700 bg-teal-50"
         />
         <MetricCard
           label="Stability"
-          value={`${data.admissionOutcomes.placementStabilityRate}%`}
+          value={`${fmt(data.admissionOutcomes.placementStabilityRate)}%`}
           subValue={`${data.admissionOutcomes.totalOutcomes} admissions`}
           color="text-purple-700 bg-purple-50"
         />
@@ -366,18 +372,18 @@ export function HomeMatchingImpactDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             <MetricCard
               label="Avg Compatibility"
-              value={`${data.matchingQuality.averageCompatibilityScore}/10`}
+              value={`${fmt(data.matchingQuality.averageCompatibilityScore)}/10`}
               color="text-indigo-700 bg-indigo-50"
             />
             <MetricCard
               label="Completion Rate"
               value={`${data.matchingQuality.assessmentCompletionRate}%`}
-              color={data.matchingQuality.assessmentCompletionRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
+              color={(data.matchingQuality.assessmentCompletionRate ?? 0) >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard
               label="Review Date Set"
-              value={`${data.matchingQuality.reviewDateSetRate}%`}
-              color={data.matchingQuality.reviewDateSetRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
+              value={`${fmt(data.matchingQuality.reviewDateSetRate)}%`}
+              color={(data.matchingQuality.reviewDateSetRate ?? 0) >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
           </div>
           {/* Decision breakdown */}
@@ -412,12 +418,12 @@ export function HomeMatchingImpactDashboardWidget() {
           <div className="grid grid-cols-2 gap-2">
             <MetricCard
               label="Avg Risk Factors"
-              value={data.matchingQuality.averageRiskFactors}
+              value={fmt(data.matchingQuality.averageRiskFactors)}
               color="text-red-700 bg-red-50"
             />
             <MetricCard
               label="Avg Protective Factors"
-              value={data.matchingQuality.averageProtectiveFactors}
+              value={fmt(data.matchingQuality.averageProtectiveFactors)}
               color="text-green-700 bg-green-50"
             />
           </div>
@@ -430,18 +436,18 @@ export function HomeMatchingImpactDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             <MetricCard
               label="Positive Impact"
-              value={`${data.impactMonitoring.positiveImpactRate}%`}
+              value={`${fmt(data.impactMonitoring.positiveImpactRate)}%`}
               color="text-green-700 bg-green-50"
             />
             <MetricCard
               label="Negative Impact"
-              value={`${data.impactMonitoring.negativeImpactRate}%`}
-              color={data.impactMonitoring.negativeImpactRate <= 20 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
+              value={`${fmt(data.impactMonitoring.negativeImpactRate)}%`}
+              color={(data.impactMonitoring.negativeImpactRate ?? 0) <= 20 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
             />
             <MetricCard
               label="Significant Negative"
-              value={`${data.impactMonitoring.significantNegativeRate}%`}
-              color={data.impactMonitoring.significantNegativeRate === 0 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
+              value={`${fmt(data.impactMonitoring.significantNegativeRate)}%`}
+              color={(data.impactMonitoring.significantNegativeRate ?? 0) === 0 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
             />
             <MetricCard
               label="Resolution Rate"
@@ -455,7 +461,7 @@ export function HomeMatchingImpactDashboardWidget() {
             />
             <MetricCard
               label="Avg per Child"
-              value={data.impactMonitoring.averageMonitoringPerChild}
+              value={fmt(data.impactMonitoring.averageMonitoringPerChild)}
               subValue={data.impactMonitoring.monitoringFrequencyAdequate ? "Adequate" : "Below standard"}
               color="text-gray-700 bg-gray-50"
             />
@@ -482,27 +488,27 @@ export function HomeMatchingImpactDashboardWidget() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           <MetricCard
             label="Informed Rate"
-            value={`${data.residentConsultation.informedRate}%`}
-            color={data.residentConsultation.informedRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
+            value={`${fmt(data.residentConsultation.informedRate)}%`}
+            color={(data.residentConsultation.informedRate ?? 0) >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
             label="Views Sought"
-            value={`${data.residentConsultation.viewsSoughtRate}%`}
-            color={data.residentConsultation.viewsSoughtRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
+            value={`${fmt(data.residentConsultation.viewsSoughtRate)}%`}
+            color={(data.residentConsultation.viewsSoughtRate ?? 0) >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
             label="Views Acted Upon"
-            value={`${data.residentConsultation.viewsActedUponRate}%`}
-            color={data.residentConsultation.viewsActedUponRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
+            value={`${fmt(data.residentConsultation.viewsActedUponRate)}%`}
+            color={(data.residentConsultation.viewsActedUponRate ?? 0) >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
           />
           <MetricCard
             label="Completion Rate"
-            value={`${data.residentConsultation.consultationCompletionRate}%`}
-            color={data.residentConsultation.consultationCompletionRate >= 80 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
+            value={`${fmt(data.residentConsultation.consultationCompletionRate)}%`}
+            color={(data.residentConsultation.consultationCompletionRate ?? 0) >= 80 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
           />
           <MetricCard
             label="Avg per Admission"
-            value={data.residentConsultation.averageConsultationsPerAdmission}
+            value={fmt(data.residentConsultation.averageConsultationsPerAdmission)}
             color="text-gray-700 bg-gray-50"
           />
         </div>
@@ -514,24 +520,24 @@ export function HomeMatchingImpactDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             <MetricCard
               label="Placement Stability"
-              value={`${data.admissionOutcomes.placementStabilityRate}%`}
-              color={data.admissionOutcomes.placementStabilityRate >= 80 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
+              value={`${fmt(data.admissionOutcomes.placementStabilityRate)}%`}
+              color={(data.admissionOutcomes.placementStabilityRate ?? 0) >= 80 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
             />
             <MetricCard
               label="Avg Days to Settle"
-              value={data.admissionOutcomes.averageDaysToSettle}
+              value={fmt(data.admissionOutcomes.averageDaysToSettle)}
               subValue="days"
-              color={data.admissionOutcomes.averageDaysToSettle <= 14 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
+              color={(data.admissionOutcomes.averageDaysToSettle ?? 999) <= 14 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
             <MetricCard
               label="Disruption Rate"
-              value={`${data.admissionOutcomes.disruptionRate}%`}
-              color={data.admissionOutcomes.disruptionRate <= 20 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
+              value={`${fmt(data.admissionOutcomes.disruptionRate)}%`}
+              color={(data.admissionOutcomes.disruptionRate ?? 0) <= 20 ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"}
             />
             <MetricCard
               label="Assessment Linked"
-              value={`${data.admissionOutcomes.matchingAssessmentLinkedRate}%`}
-              color={data.admissionOutcomes.matchingAssessmentLinkedRate >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
+              value={`${fmt(data.admissionOutcomes.matchingAssessmentLinkedRate)}%`}
+              color={(data.admissionOutcomes.matchingAssessmentLinkedRate ?? 0) >= 80 ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"}
             />
           </div>
           {/* Disruption reasons */}

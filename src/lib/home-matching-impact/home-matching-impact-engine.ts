@@ -18,7 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
-import { below, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+import { above, below, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -120,45 +120,49 @@ export interface AdmissionOutcome {
 
 export interface MatchingQualityResult {
   totalAssessments: number;
-  averageCompatibilityScore: number;
-  assessmentCompletionRate: number;
-  existingChildrenConsultedRate: number;
+  // fab-0: null when no assessments in the period (can't compute).
+  averageCompatibilityScore: number | null;
+  assessmentCompletionRate: number | null;
+  existingChildrenConsultedRate: number | null;
   conditionsAppliedRate: number | null;   // null when no admission proceeded with conditions
   decisionBreakdown: Record<MatchingDecision, number>;
   admissionTypeBreakdown: Record<AdmissionType, number>;
-  averageRiskFactors: number;
-  averageProtectiveFactors: number;
-  reviewDateSetRate: number;
+  averageRiskFactors: number | null;
+  averageProtectiveFactors: number | null;
+  reviewDateSetRate: number | null;
 }
 
 export interface ImpactMonitoringResult {
   totalMonitoringRecords: number;
-  negativeImpactRate: number;
-  significantNegativeRate: number;
-  positiveImpactRate: number;
+  // fab-0: null when there are no monitoring records at all.
+  negativeImpactRate: number | null;
+  significantNegativeRate: number | null;
+  positiveImpactRate: number | null;
   impactAreaBreakdown: Record<ImpactArea, number>;
   resolutionRate: number | null;          // null when no negative impact was recorded
   mitigationProvidedRate: number | null;  // null when no negative impact was recorded
-  averageMonitoringPerChild: number;
+  averageMonitoringPerChild: number | null;
   monitoringFrequencyAdequate: boolean;
 }
 
 export interface ResidentConsultationResult {
   totalConsultations: number;
-  informedRate: number;
-  viewsSoughtRate: number;
-  viewsActedUponRate: number;
-  consultationCompletionRate: number;
-  averageConsultationsPerAdmission: number;
+  // fab-0: null when no consultation records exist.
+  informedRate: number | null;
+  viewsSoughtRate: number | null;
+  viewsActedUponRate: number | null;
+  consultationCompletionRate: number | null;
+  averageConsultationsPerAdmission: number | null;
 }
 
 export interface AdmissionOutcomeResult {
   totalOutcomes: number;
-  placementStabilityRate: number;
-  averageDaysToSettle: number;
-  disruptionRate: number;
+  // fab-0: null when no outcome records exist.
+  placementStabilityRate: number | null;
+  averageDaysToSettle: number | null;
+  disruptionRate: number | null;
   disruptionReasons: Record<string, number>;
-  matchingAssessmentLinkedRate: number;
+  matchingAssessmentLinkedRate: number | null;
 }
 
 export interface HomeMatchingImpactIntelligence {
@@ -232,7 +236,7 @@ export function evaluateMatchingQuality(
             totalAssessments) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   // Assessment completion rate: assessments that have a decision (not deferred without resolution)
   const completedAssessments = periodAssessments.filter(
@@ -241,7 +245,7 @@ export function evaluateMatchingQuality(
   const assessmentCompletionRate =
     totalAssessments > 0
       ? Math.round((completedAssessments.length / totalAssessments) * 100)
-      : 0;
+      : null;
 
   // Existing children consulted rate
   const existingChildrenConsultedRate =
@@ -251,7 +255,7 @@ export function evaluateMatchingQuality(
             totalAssessments) *
             100,
         )
-      : 0;
+      : null;
 
   // Conditions applied rate (for those that proceeded with conditions)
   const proceedWithConditions = periodAssessments.filter(
@@ -295,7 +299,7 @@ export function evaluateMatchingQuality(
             totalAssessments) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   // Average protective factors
   const averageProtectiveFactors =
@@ -305,7 +309,7 @@ export function evaluateMatchingQuality(
             totalAssessments) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   // Review date set rate
   const reviewDateSetRate =
@@ -315,7 +319,7 @@ export function evaluateMatchingQuality(
             totalAssessments) *
             100,
         )
-      : 0;
+      : null;
 
   return {
     totalAssessments,
@@ -352,7 +356,7 @@ export function evaluateImpactMonitoring(
   const negativeImpactRate =
     totalMonitoringRecords > 0
       ? Math.round((negativeRecords.length / totalMonitoringRecords) * 100)
-      : 0;
+      : null;
 
   // Significant negative rate
   const significantNegativeRecords = periodMonitoring.filter(
@@ -363,7 +367,7 @@ export function evaluateImpactMonitoring(
       ? Math.round(
           (significantNegativeRecords.length / totalMonitoringRecords) * 100,
         )
-      : 0;
+      : null;
 
   // Positive impact rate
   const positiveRecords = periodMonitoring.filter(
@@ -372,7 +376,7 @@ export function evaluateImpactMonitoring(
   const positiveImpactRate =
     totalMonitoringRecords > 0
       ? Math.round((positiveRecords.length / totalMonitoringRecords) * 100)
-      : 0;
+      : null;
 
   // Impact area breakdown
   const impactAreaBreakdown: Record<ImpactArea, number> = {
@@ -414,11 +418,11 @@ export function evaluateImpactMonitoring(
   const averageMonitoringPerChild =
     uniqueNewChildren.size > 0
       ? Math.round((totalMonitoringRecords / uniqueNewChildren.size) * 10) / 10
-      : 0;
+      : null;
 
   // Monitoring frequency adequacy: at least 2 monitoring records per admitted child
   const monitoringFrequencyAdequate =
-    uniqueNewChildren.size === 0 || averageMonitoringPerChild >= 2;
+    uniqueNewChildren.size === 0 || (averageMonitoringPerChild !== null && averageMonitoringPerChild >= 2);
 
   return {
     totalMonitoringRecords,
@@ -456,7 +460,7 @@ export function evaluateResidentConsultation(
             totalConsultations) *
             100,
         )
-      : 0;
+      : null;
 
   // Views sought rate
   const viewsSoughtRate =
@@ -466,7 +470,7 @@ export function evaluateResidentConsultation(
             totalConsultations) *
             100,
         )
-      : 0;
+      : null;
 
   // Views acted upon rate (of those where views were sought)
   const soughtConsultations = periodConsultations.filter((c) => c.viewsSought);
@@ -477,7 +481,7 @@ export function evaluateResidentConsultation(
             soughtConsultations.length) *
             100,
         )
-      : 0;
+      : null;
 
   // Consultation completion rate: percentage of admissions with at least one consultation
   const periodAssessments = assessments.filter(
@@ -498,13 +502,13 @@ export function evaluateResidentConsultation(
             admittedChildIds.size) *
             100,
         )
-      : 0;
+      : null;
 
   // Average consultations per admission
   const averageConsultationsPerAdmission =
     admittedChildIds.size > 0
       ? Math.round((totalConsultations / admittedChildIds.size) * 10) / 10
-      : 0;
+      : null;
 
   return {
     totalConsultations,
@@ -537,7 +541,7 @@ export function evaluateAdmissionOutcomes(
             totalOutcomes) *
             100,
         )
-      : 0;
+      : null;
 
   // Average days to settle
   const settledOutcomes = periodOutcomes.filter((o) => o.daysToSettle > 0);
@@ -548,7 +552,7 @@ export function evaluateAdmissionOutcomes(
             settledOutcomes.length) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   // Disruption rate
   const disruptionRate =
@@ -558,7 +562,7 @@ export function evaluateAdmissionOutcomes(
             totalOutcomes) *
             100,
         )
-      : 0;
+      : null;
 
   // Disruption reasons
   const disruptionReasons: Record<string, number> = {};
@@ -579,7 +583,7 @@ export function evaluateAdmissionOutcomes(
             totalOutcomes) *
             100,
         )
-      : 0;
+      : null;
 
   return {
     totalOutcomes,
@@ -686,13 +690,13 @@ function calculateComponentScores(
   let mqScore = 0;
   if (mq.totalAssessments > 0) {
     // Compatibility score quality: 10 pts (score out of 10, scaled to 10)
-    mqScore += (Math.min(mq.averageCompatibilityScore, 10) / 10) * 10;
+    mqScore += (Math.min(mq.averageCompatibilityScore ?? 0, 10) / 10) * 10;
     // Existing children consulted rate: 8 pts
-    mqScore += (mq.existingChildrenConsultedRate / 100) * 8;
+    mqScore += ((mq.existingChildrenConsultedRate ?? 0) / 100) * 8;
     // Assessment completion rate: 6 pts
-    mqScore += (mq.assessmentCompletionRate / 100) * 6;
+    mqScore += ((mq.assessmentCompletionRate ?? 0) / 100) * 6;
     // Review date set rate: 6 pts
-    mqScore += (mq.reviewDateSetRate / 100) * 6;
+    mqScore += ((mq.reviewDateSetRate ?? 0) / 100) * 6;
   }
 
   // Impact monitoring: max 25 points
@@ -701,7 +705,7 @@ function calculateComponentScores(
     // Resolution and mitigation are only measurable where a negative impact was
     // recorded; when they are not, the remaining 20 points are carried by the
     // limbs that were measured rather than awarded for silence.
-    const negativeInverse = Math.max(0, 100 - im.negativeImpactRate);
+    const negativeInverse = Math.max(0, 100 - (im.negativeImpactRate ?? 0));
     const measured = weightedMeanOf([
       { score: im.resolutionRate, weight: 8 },
       { score: im.mitigationProvidedRate, weight: 7 },
@@ -722,13 +726,13 @@ function calculateComponentScores(
   let rcScore = 0;
   if (rc.totalConsultations > 0) {
     // Informed rate: 7 pts
-    rcScore += (rc.informedRate / 100) * 7;
+    rcScore += ((rc.informedRate ?? 0) / 100) * 7;
     // Views sought rate: 7 pts
-    rcScore += (rc.viewsSoughtRate / 100) * 7;
+    rcScore += ((rc.viewsSoughtRate ?? 0) / 100) * 7;
     // Views acted upon rate: 6 pts
-    rcScore += (rc.viewsActedUponRate / 100) * 6;
+    rcScore += ((rc.viewsActedUponRate ?? 0) / 100) * 6;
     // Consultation completion rate: 5 pts
-    rcScore += (rc.consultationCompletionRate / 100) * 5;
+    rcScore += ((rc.consultationCompletionRate ?? 0) / 100) * 5;
   } else if (mq.totalAssessments > 0) {
     // Assessments exist but no consultations = bad
     rcScore = 0;
@@ -741,14 +745,14 @@ function calculateComponentScores(
   let aoScore = 0;
   if (ao.totalOutcomes > 0) {
     // Placement stability rate: 8 pts
-    aoScore += (ao.placementStabilityRate / 100) * 8;
+    aoScore += ((ao.placementStabilityRate ?? 0) / 100) * 8;
     // Low disruption (invert: higher is better): 5 pts
-    const disruptionInverse = Math.max(0, 100 - ao.disruptionRate);
+    const disruptionInverse = Math.max(0, 100 - (ao.disruptionRate ?? 0));
     aoScore += (disruptionInverse / 100) * 5;
     // Matching assessment linked rate: 4 pts
-    aoScore += (ao.matchingAssessmentLinkedRate / 100) * 4;
+    aoScore += ((ao.matchingAssessmentLinkedRate ?? 0) / 100) * 4;
     // Quick settling time: 3 pts (target <= 14 days)
-    if (ao.averageDaysToSettle > 0) {
+    if (ao.averageDaysToSettle !== null && ao.averageDaysToSettle > 0) {
       const settleScore = Math.max(0, 1 - (ao.averageDaysToSettle - 7) / 21);
       aoScore += Math.min(settleScore, 1) * 3;
     } else {
@@ -789,25 +793,25 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (mq.averageCompatibilityScore >= 7 && mq.totalAssessments > 0) {
+  if (meets(mq.averageCompatibilityScore, 7) && mq.totalAssessments > 0) {
     strengths.push(
       "High average compatibility scores indicate thorough matching against the home's statement of purpose",
     );
   }
 
-  if (mq.existingChildrenConsultedRate >= 90 && mq.totalAssessments > 0) {
+  if (meets(mq.existingChildrenConsultedRate, 90) && mq.totalAssessments > 0) {
     strengths.push(
       "Existing children consistently consulted during matching assessments, demonstrating child-centred practice",
     );
   }
 
-  if (mq.assessmentCompletionRate === 100 && mq.totalAssessments > 0) {
+  if (meets(mq.assessmentCompletionRate, 100) && mq.totalAssessments > 0) {
     strengths.push(
       "All matching assessments completed with clear decisions, supporting Reg 14 compliance",
     );
   }
 
-  if (mq.reviewDateSetRate === 100 && mq.totalAssessments > 0) {
+  if (meets(mq.reviewDateSetRate, 100) && mq.totalAssessments > 0) {
     strengths.push(
       "Review dates consistently set for all matching assessments, ensuring ongoing oversight",
     );
@@ -825,7 +829,7 @@ function generateStrengths(
     );
   }
 
-  if (im.positiveImpactRate >= 50 && im.totalMonitoringRecords > 0) {
+  if (meets(im.positiveImpactRate, 50) && im.totalMonitoringRecords > 0) {
     strengths.push(
       "Majority of impact monitoring records show positive outcomes for existing residents",
     );
@@ -837,43 +841,43 @@ function generateStrengths(
     );
   }
 
-  if (rc.informedRate >= 90 && rc.totalConsultations > 0) {
+  if (meets(rc.informedRate, 90) && rc.totalConsultations > 0) {
     strengths.push(
       "Existing residents consistently informed about new admissions, promoting transparency and trust",
     );
   }
 
-  if (rc.viewsSoughtRate >= 90 && rc.totalConsultations > 0) {
+  if (meets(rc.viewsSoughtRate, 90) && rc.totalConsultations > 0) {
     strengths.push(
       "Children's views consistently sought before new admissions, supporting participation rights",
     );
   }
 
-  if (rc.viewsActedUponRate >= 80 && rc.totalConsultations > 0) {
+  if (meets(rc.viewsActedUponRate, 80) && rc.totalConsultations > 0) {
     strengths.push(
       "Children's views demonstrably acted upon in admission decisions, showing genuine participation",
     );
   }
 
-  if (ao.placementStabilityRate >= 90 && ao.totalOutcomes > 0) {
+  if (meets(ao.placementStabilityRate, 90) && ao.totalOutcomes > 0) {
     strengths.push(
       "High placement stability rate indicates effective matching and transition support",
     );
   }
 
-  if (ao.disruptionRate <= 10 && ao.totalOutcomes > 0) {
+  if (ao.totalOutcomes > 0 && ao.disruptionRate !== null && ao.disruptionRate <= 10) {
     strengths.push(
       "Very low placement disruption rate, demonstrating that matching decisions support stable placements",
     );
   }
 
-  if (ao.matchingAssessmentLinkedRate === 100 && ao.totalOutcomes > 0) {
+  if (meets(ao.matchingAssessmentLinkedRate, 100) && ao.totalOutcomes > 0) {
     strengths.push(
       "All admission outcomes linked to matching assessments, providing clear audit trail",
     );
   }
 
-  if (ao.averageDaysToSettle > 0 && ao.averageDaysToSettle <= 7 && ao.totalOutcomes > 0) {
+  if (ao.totalOutcomes > 0 && ao.averageDaysToSettle !== null && ao.averageDaysToSettle > 0 && ao.averageDaysToSettle <= 7) {
     strengths.push(
       `Average settling time of ${ao.averageDaysToSettle} days indicates effective transition planning`,
     );
@@ -890,37 +894,37 @@ function generateAreasForImprovement(
 ): string[] {
   const areas: string[] = [];
 
-  if (mq.averageCompatibilityScore < 5 && mq.totalAssessments > 0) {
+  if (below(mq.averageCompatibilityScore, 5) && mq.totalAssessments > 0) {
     areas.push(
       "Low average compatibility scores suggest placements may not be well matched to the home's statement of purpose",
     );
   }
 
-  if (mq.existingChildrenConsultedRate < 70 && mq.totalAssessments > 0) {
+  if (below(mq.existingChildrenConsultedRate, 70) && mq.totalAssessments > 0) {
     areas.push(
       "Existing children not consistently consulted during matching: develop systematic consultation process per Reg 14",
     );
   }
 
-  if (mq.assessmentCompletionRate < 80 && mq.totalAssessments > 0) {
+  if (below(mq.assessmentCompletionRate, 80) && mq.totalAssessments > 0) {
     areas.push(
       "Not all matching assessments result in clear decisions: ensure assessments lead to documented outcomes",
     );
   }
 
-  if (mq.reviewDateSetRate < 80 && mq.totalAssessments > 0) {
+  if (below(mq.reviewDateSetRate, 80) && mq.totalAssessments > 0) {
     areas.push(
       "Review dates not consistently set for matching assessments: implement review scheduling at point of decision",
     );
   }
 
-  if (im.negativeImpactRate > 30 && im.totalMonitoringRecords > 0) {
+  if (above(im.negativeImpactRate, 30) && im.totalMonitoringRecords > 0) {
     areas.push(
       "High rate of negative impact recorded: review matching decisions and strengthen transition support",
     );
   }
 
-  if (im.significantNegativeRate > 10 && im.totalMonitoringRecords > 0) {
+  if (above(im.significantNegativeRate, 10) && im.totalMonitoringRecords > 0) {
     areas.push(
       "Significant negative impacts identified: urgent review needed of risk assessment and matching processes",
     );
@@ -944,49 +948,49 @@ function generateAreasForImprovement(
     );
   }
 
-  if (rc.informedRate < 70 && rc.totalConsultations > 0) {
+  if (rc.totalConsultations > 0 && below(rc.informedRate, 70)) {
     areas.push(
       "Existing residents not consistently informed about new admissions: improve communication processes",
     );
   }
 
-  if (rc.viewsSoughtRate < 70 && rc.totalConsultations > 0) {
+  if (rc.totalConsultations > 0 && below(rc.viewsSoughtRate, 70)) {
     areas.push(
       "Children's views not consistently sought before admissions: develop age-appropriate consultation methods",
     );
   }
 
-  if (rc.viewsActedUponRate < 60 && rc.totalConsultations > 0) {
+  if (rc.totalConsultations > 0 && below(rc.viewsActedUponRate, 60)) {
     areas.push(
       "Children's views not demonstrably acted upon: ensure feedback loop shows how views influenced decisions",
     );
   }
 
-  if (rc.consultationCompletionRate < 80 && mq.totalAssessments > 0 && rc.totalConsultations > 0) {
+  if (mq.totalAssessments > 0 && rc.totalConsultations > 0 && below(rc.consultationCompletionRate, 80)) {
     areas.push(
       "Not all admissions supported by resident consultations: ensure every admission involves existing resident views",
     );
   }
 
-  if (ao.placementStabilityRate < 70 && ao.totalOutcomes > 0) {
+  if (ao.totalOutcomes > 0 && below(ao.placementStabilityRate, 70)) {
     areas.push(
       "Low placement stability rate: review matching criteria and transition support to improve outcomes",
     );
   }
 
-  if (ao.disruptionRate > 30 && ao.totalOutcomes > 0) {
+  if (ao.totalOutcomes > 0 && above(ao.disruptionRate, 30)) {
     areas.push(
       "High placement disruption rate: analyse disruption reasons and strengthen matching practice",
     );
   }
 
-  if (ao.matchingAssessmentLinkedRate < 80 && ao.totalOutcomes > 0) {
+  if (ao.totalOutcomes > 0 && below(ao.matchingAssessmentLinkedRate, 80)) {
     areas.push(
       "Not all outcomes linked to matching assessments: ensure audit trail from assessment to outcome",
     );
   }
 
-  if (ao.averageDaysToSettle > 21 && ao.totalOutcomes > 0) {
+  if (ao.totalOutcomes > 0 && above(ao.averageDaysToSettle, 21)) {
     areas.push(
       `Average settling time of ${ao.averageDaysToSettle} days exceeds expected norms: review transition and settling-in support`,
     );
@@ -1003,25 +1007,25 @@ function generateActions(
 ): string[] {
   const actions: string[] = [];
 
-  if (mq.existingChildrenConsultedRate < 80 && mq.totalAssessments > 0) {
+  if (mq.totalAssessments > 0 && below(mq.existingChildrenConsultedRate, 80)) {
     actions.push(
       "Implement mandatory consultation checklist within matching assessment process to ensure existing children are consulted",
     );
   }
 
-  if (mq.reviewDateSetRate < 100 && mq.totalAssessments > 0) {
+  if (mq.totalAssessments > 0 && below(mq.reviewDateSetRate, 100)) {
     actions.push(
       "Set review dates for all matching assessments at point of decision to ensure post-admission follow-up",
     );
   }
 
-  if (mq.assessmentCompletionRate < 100 && mq.totalAssessments > 0) {
+  if (mq.totalAssessments > 0 && below(mq.assessmentCompletionRate, 100)) {
     actions.push(
       "Review deferred matching assessments and progress to clear decision within agreed timescales",
     );
   }
 
-  if (im.significantNegativeRate > 0 && im.totalMonitoringRecords > 0) {
+  if (im.totalMonitoringRecords > 0 && above(im.significantNegativeRate, 0)) {
     actions.push(
       "Convene multi-disciplinary review for all significant negative impacts to develop remediation plans",
     );
@@ -1039,37 +1043,37 @@ function generateActions(
     );
   }
 
-  if (rc.viewsSoughtRate < 80 && rc.totalConsultations > 0) {
+  if (rc.totalConsultations > 0 && below(rc.viewsSoughtRate, 80)) {
     actions.push(
       "Develop age-appropriate consultation tools to ensure all existing residents can share their views",
     );
   }
 
-  if (rc.viewsActedUponRate < 70 && rc.totalConsultations > 0) {
+  if (rc.totalConsultations > 0 && below(rc.viewsActedUponRate, 70)) {
     actions.push(
       "Document how children's views have influenced each admission decision in the matching record",
     );
   }
 
-  if (rc.consultationCompletionRate < 100 && mq.totalAssessments > 0 && rc.totalConsultations >= 0) {
+  if (mq.totalAssessments > 0 && rc.totalConsultations >= 0 && below(rc.consultationCompletionRate, 100)) {
     actions.push(
       "Ensure resident consultation is completed for every new admission before the child moves in",
     );
   }
 
-  if (ao.disruptionRate > 20 && ao.totalOutcomes > 0) {
+  if (ao.totalOutcomes > 0 && above(ao.disruptionRate, 20)) {
     actions.push(
       "Analyse disruption patterns and present findings at next management meeting with proposed improvements",
     );
   }
 
-  if (ao.matchingAssessmentLinkedRate < 100 && ao.totalOutcomes > 0) {
+  if (ao.totalOutcomes > 0 && below(ao.matchingAssessmentLinkedRate, 100)) {
     actions.push(
       "Link all admission outcomes to their matching assessments to maintain regulatory audit trail",
     );
   }
 
-  if (ao.placementStabilityRate < 80 && ao.totalOutcomes > 0) {
+  if (ao.totalOutcomes > 0 && below(ao.placementStabilityRate, 80)) {
     actions.push(
       "Develop enhanced settling-in programme with daily keyworker check-ins for first 14 days post-admission",
     );
@@ -1117,7 +1121,7 @@ function generateRegulatoryLinks(
     "DfE Guide to Children's Homes Regulations 2015 — Matching: thorough impact assessment before every admission, including consultation with existing residents",
   );
 
-  if (im.significantNegativeRate > 0 || ao.disruptionRate > 0) {
+  if (above(im.significantNegativeRate, 0) || above(ao.disruptionRate, 0)) {
     links.push(
       "SCCIF — Safety of children: significant negative impacts and disruptions must be reviewed to ensure children remain safe",
     );

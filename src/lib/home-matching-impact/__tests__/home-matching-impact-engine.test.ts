@@ -313,9 +313,10 @@ describe("evaluateMatchingQuality", () => {
   it("returns zero totals for empty assessments", () => {
     const result = evaluateMatchingQuality([], PERIOD_START, PERIOD_END);
     expect(result.totalAssessments).toBe(0);
-    expect(result.averageCompatibilityScore).toBe(0);
-    expect(result.assessmentCompletionRate).toBe(0);
-    expect(result.existingChildrenConsultedRate).toBe(0);
+    // fab-0: null when no assessments.
+    expect(result.averageCompatibilityScore).toBeNull();
+    expect(result.assessmentCompletionRate).toBeNull();
+    expect(result.existingChildrenConsultedRate).toBeNull();
   });
 
   it("filters assessments to the given period", () => {
@@ -480,7 +481,8 @@ describe("evaluateImpactMonitoring", () => {
   it("returns zero totals for empty monitoring", () => {
     const result = evaluateImpactMonitoring([], [], PERIOD_START, PERIOD_END);
     expect(result.totalMonitoringRecords).toBe(0);
-    expect(result.negativeImpactRate).toBe(0);
+    // fab-0: null when no monitoring records.
+    expect(result.negativeImpactRate).toBeNull();
   });
 
   it("calculates negative impact rate", () => {
@@ -626,7 +628,8 @@ describe("evaluateResidentConsultation", () => {
   it("returns zero totals for empty consultations", () => {
     const result = evaluateResidentConsultation([], [], PERIOD_START, PERIOD_END);
     expect(result.totalConsultations).toBe(0);
-    expect(result.informedRate).toBe(0);
+    // fab-0: null when no consultations.
+    expect(result.informedRate).toBeNull();
   });
 
   it("calculates informed rate", () => {
@@ -663,7 +666,7 @@ describe("evaluateResidentConsultation", () => {
       makeConsultation({ viewsSought: false, viewsActedUpon: false }),
     ];
     const result = evaluateResidentConsultation(consultations, [], PERIOD_START, PERIOD_END);
-    expect(result.viewsActedUponRate).toBe(0);
+    expect(result.viewsActedUponRate).toBeNull(); // fab-0: null when no views sought.
   });
 
   it("calculates consultation completion rate against admitted children", () => {
@@ -682,7 +685,7 @@ describe("evaluateResidentConsultation", () => {
   it("returns 0% consultation completion rate when no admissions", () => {
     const consultations = [makeConsultation()];
     const result = evaluateResidentConsultation(consultations, [], PERIOD_START, PERIOD_END);
-    expect(result.consultationCompletionRate).toBe(0);
+    expect(result.consultationCompletionRate).toBeNull(); // fab-0: null when no admitted children.
   });
 
   it("calculates average consultations per admission", () => {
@@ -739,8 +742,9 @@ describe("evaluateAdmissionOutcomes", () => {
   it("returns zero totals for empty outcomes", () => {
     const result = evaluateAdmissionOutcomes([], PERIOD_START, PERIOD_END);
     expect(result.totalOutcomes).toBe(0);
-    expect(result.placementStabilityRate).toBe(0);
-    expect(result.disruptionRate).toBe(0);
+    // fab-0: null when no outcomes.
+    expect(result.placementStabilityRate).toBeNull();
+    expect(result.disruptionRate).toBeNull();
   });
 
   it("calculates placement stability rate", () => {
@@ -775,7 +779,7 @@ describe("evaluateAdmissionOutcomes", () => {
       makeOutcome({ daysToSettle: 0 }),
     ];
     const result = evaluateAdmissionOutcomes(outcomes, PERIOD_START, PERIOD_END);
-    expect(result.averageDaysToSettle).toBe(0);
+    expect(result.averageDaysToSettle).toBeNull(); // fab-0: null when nobody settled.
   });
 
   it("calculates disruption rate", () => {
