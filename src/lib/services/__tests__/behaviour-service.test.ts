@@ -92,10 +92,10 @@ describe("computeBehaviourSummary", () => {
     expect(result.positive_count).toBe(0);
     expect(result.concerning_count).toBe(0);
     expect(result.pi_count).toBe(0);
-    expect(result.de_escalation_success_rate).toBe(0);
-    expect(result.pi_injury_rate).toBe(0);
-    expect(result.pi_debrief_completion_rate).toBe(0);
-    expect(result.avg_pi_duration).toBe(0);
+    expect(result.de_escalation_success_rate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.pi_injury_rate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.pi_debrief_completion_rate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.avg_pi_duration).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.top_de_escalation).toEqual([]);
   });
 
@@ -167,7 +167,7 @@ describe("computeBehaviourSummary", () => {
   it("returns 0 de-escalation success rate when none attempted", () => {
     const entries = [entry({ de_escalation_used: [] })];
     const result = computeBehaviourSummary(entries);
-    expect(result.de_escalation_success_rate).toBe(0);
+    expect(result.de_escalation_success_rate).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("calculates PI injury rate as percentage", () => {
@@ -208,7 +208,7 @@ describe("computeBehaviourSummary", () => {
       entry({ physical_intervention: true, pi_duration_minutes: null }),
     ];
     const result = computeBehaviourSummary(entries);
-    expect(result.avg_pi_duration).toBe(0);
+    expect(result.avg_pi_duration).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("returns top 5 de-escalation techniques sorted by count", () => {
@@ -243,14 +243,14 @@ describe("computeChildBehaviourProfile", () => {
     const result = computeChildBehaviourProfile("child-1", [], []);
     expect(result.child_id).toBe("child-1");
     expect(result.total_entries).toBe(0);
-    expect(result.positive_ratio).toBe(0);
+    expect(result.positive_ratio).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.pi_count).toBe(0);
     expect(result.common_antecedents).toEqual([]);
     expect(result.common_categories).toEqual([]);
     expect(result.trend).toBe("stable");
     expect(result.rewards_count).toBe(0);
     expect(result.sanctions_count).toBe(0);
-    expect(result.reward_sanction_ratio).toBe(0);
+    expect(result.reward_sanction_ratio).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.last_pi_date).toBeNull();
   });
 
@@ -402,7 +402,7 @@ describe("computeChildBehaviourProfile", () => {
 
   it("returns 0 reward/sanction ratio when no rewards or sanctions", () => {
     const result = computeChildBehaviourProfile("child-1", [], []);
-    expect(result.reward_sanction_ratio).toBe(0);
+    expect(result.reward_sanction_ratio).toBeNull(); // fab-0: null when the source population is empty.
   });
 });
 
@@ -416,7 +416,7 @@ describe("computePIAnalysis", () => {
     expect(result.by_level).toEqual({ low: 0, medium: 0, high: 0 });
     expect(result.avg_duration).toBe(0);
     expect(result.injury_incidents).toBe(0);
-    expect(result.debrief_rate).toBe(0);
+    expect(result.debrief_rate).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.repeat_children).toEqual([]);
     expect(result.staff_involved).toEqual([]);
     expect(result.time_pattern).toEqual({ morning: 0, afternoon: 0, evening: 0, night: 0 });

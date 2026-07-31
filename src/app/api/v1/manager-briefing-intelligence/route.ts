@@ -478,7 +478,7 @@ export async function GET() {
       high_alerts: behaviour.alerts.filter((a) => a.severity === "high").length,
       medium_alerts: behaviour.alerts.filter((a) => a.severity === "medium").length,
       total_alerts: behaviour.alerts.length,
-      compliance_rate: behaviour.profile.de_escalation_success_rate,
+      compliance_rate: behaviour.profile.de_escalation_success_rate ?? 0,
       overdue_count: 0,
       improving_count: behaviour.child_trajectories.filter((t) => t.trend === "improving").length,
       worsening_count: behaviour.child_trajectories.filter((t) => t.trend === "declining").length,

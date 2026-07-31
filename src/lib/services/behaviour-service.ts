@@ -111,10 +111,11 @@ export function computeBehaviourSummary(entries: BehaviourEntry[]): {
   positive_count: number;
   concerning_count: number;
   pi_count: number;
-  de_escalation_success_rate: number;
-  pi_injury_rate: number;
-  pi_debrief_completion_rate: number;
-  avg_pi_duration: number;
+  // fab-0: null when the source population is empty (no attempts / no PIs / no PI durations).
+  de_escalation_success_rate: number | null;
+  pi_injury_rate: number | null;
+  pi_debrief_completion_rate: number | null;
+  avg_pi_duration: number | null;
   top_de_escalation: { technique: string; count: number }[];
 } {
   const byCategory: Record<string, number> = {};
@@ -170,25 +171,25 @@ export function computeBehaviourSummary(entries: BehaviourEntry[]): {
   const total = entries.length;
   const concerningCount = total - positiveCount;
 
-  const deEscalationSuccessRate =
+  const deEscalationSuccessRate: number | null =
     deEscalationAttempted > 0
       ? Math.round((deEscalationEffective / deEscalationAttempted) * 1000) / 10
-      : 0;
+      : null;
 
-  const piInjuryRate =
+  const piInjuryRate: number | null =
     piCount > 0
       ? Math.round((piInjuryCount / piCount) * 1000) / 10
-      : 0;
+      : null;
 
-  const piDebriefCompletionRate =
+  const piDebriefCompletionRate: number | null =
     piCount > 0
       ? Math.round((piDebriefCompleted / piCount) * 1000) / 10
-      : 0;
+      : null;
 
-  const avgPiDuration =
+  const avgPiDuration: number | null =
     piDurationCount > 0
       ? Math.round(piDurationTotal / piDurationCount)
-      : 0;
+      : null;
 
   // Top 5 de-escalation techniques
   const topDeEscalation = Object.entries(techniqueCounts)
@@ -220,14 +221,15 @@ export function computeChildBehaviourProfile(
 ): {
   child_id: string;
   total_entries: number;
-  positive_ratio: number;
+  // fab-0: null when the child has no entries / no rewards+sanctions.
+  positive_ratio: number | null;
   pi_count: number;
   common_antecedents: string[];
   common_categories: { category: string; count: number }[];
   trend: "improving" | "stable" | "declining";
   rewards_count: number;
   sanctions_count: number;
-  reward_sanction_ratio: number;
+  reward_sanction_ratio: number | null;
   last_pi_date: string | null;
 } {
   const childEntries = entries.filter((e) => e.child_id === childId);
@@ -235,7 +237,7 @@ export function computeChildBehaviourProfile(
 
   const total = childEntries.length;
   const positiveEntries = childEntries.filter((e) => e.category === "positive");
-  const positiveRatio = total > 0 ? Math.round((positiveEntries.length / total) * 1000) / 10 : 0;
+  const positiveRatio: number | null = total > 0 ? Math.round((positiveEntries.length / total) * 1000) / 10 : null;
 
   // PI count and last PI date
   const piEntries = childEntries.filter((e) => e.physical_intervention);
@@ -296,10 +298,10 @@ export function computeChildBehaviourProfile(
   const rewardsCount = childRewards.filter((r) => r.type === "reward").length;
   const sanctionsCount = childRewards.filter((r) => r.type === "sanction").length;
   const rsTotal = rewardsCount + sanctionsCount;
-  const rewardSanctionRatio =
+  const rewardSanctionRatio: number | null =
     rsTotal > 0
       ? Math.round((rewardsCount / rsTotal) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     child_id: childId,
@@ -325,7 +327,8 @@ export function computePIAnalysis(entries: BehaviourEntry[]): {
   by_level: { low: number; medium: number; high: number };
   avg_duration: number;
   injury_incidents: number;
-  debrief_rate: number;
+  // fab-0: null when there are no PIs to compute over.
+  debrief_rate: number | null;
   repeat_children: { child_id: string; count: number }[];
   staff_involved: { staff_id: string; count: number }[];
   time_pattern: Record<string, number>;
@@ -378,10 +381,10 @@ export function computePIAnalysis(entries: BehaviourEntry[]): {
       debriefCompleted++;
     }
   }
-  const debriefRate =
+  const debriefRate: number | null =
     totalPi > 0
       ? Math.round((debriefCompleted / totalPi) * 1000) / 10
-      : 0;
+      : null;
 
   // Repeat children (2+ PIs, sorted desc)
   const childPiCounts: Record<string, number> = {};
