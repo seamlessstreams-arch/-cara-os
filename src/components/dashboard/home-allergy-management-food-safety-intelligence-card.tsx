@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain } from "lucide-rea
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { AllergyManagementRating } from "@/lib/engines/home-allergy-management-food-safety-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 function useHomeAllergyManagementFoodSafetyIntelligence() {
   return useQuery({
@@ -85,8 +86,8 @@ export function HomeAllergyManagementFoodSafetyIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.food_labelling_rate >= 90 ? "text-[--cs-success]" : d.food_labelling_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.food_labelling_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Labelling</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.emergency_response_rate >= 90 ? "bg-green-50" : d.emergency_response_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.emergency_response_rate >= 90 ? "text-[--cs-success]" : d.emergency_response_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.emergency_response_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.emergency_response_rate, 90) ? "bg-green-50" : meets(d.emergency_response_rate, 70) ? "bg-amber-50" : d.emergency_response_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.emergency_response_rate, 90) ? "text-[--cs-success]" : meets(d.emergency_response_rate, 70) ? "text-[--cs-warning]" : d.emergency_response_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.emergency_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Emergency</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_awareness_rate >= 90 ? "bg-green-50" : d.child_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

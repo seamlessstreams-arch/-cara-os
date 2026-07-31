@@ -17,6 +17,8 @@
 //             emergencyResponseRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface AllergyPlanInput {
@@ -152,9 +154,11 @@ export interface AllergyManagementFoodSafetyResult {
   allergen_awareness_rate: number;
   epipen_check_rate: number;
   food_labelling_rate: number;
-  emergency_response_rate: number;
+  // fab-0: null when no drills/plans have been recorded (see check-fabricated-scores.js).
+  emergency_response_rate: number | null;
   child_awareness_rate: number;
-  plan_quality_avg: number;
+  // fab-0: null when no allergy plans exist to average quality across.
+  plan_quality_avg: number | null;
   training_currency_rate: number;
   allergy_plan_records: AllergyPlanInput[];
   allergen_awareness_records: AllergenAwarenessInput[];
@@ -201,9 +205,9 @@ function emptyResult(
     allergen_awareness_rate: 0,
     epipen_check_rate: 0,
     food_labelling_rate: 0,
-    emergency_response_rate: 0,
+    emergency_response_rate: null,
     child_awareness_rate: 0,
-    plan_quality_avg: 0,
+    plan_quality_avg: null,
     training_currency_rate: 0,
     allergy_plan_records: [],
     allergen_awareness_records: [],
@@ -362,10 +366,10 @@ export function computeAllergyManagementFoodSafety(
     ? pct(totalPlans - overdueplanReviews, totalPlans)
     : 0;
 
-  // Plan quality: average of key quality indicators per plan
+  // Plan quality: average of key quality indicators per plan. `checks` is a
+  // fixed-length array literal so the denominator is compile-time > 0 — no
+  // fab-0 risk in the per-plan map.
   const planQualityScores = allergy_plan_records.map((p) => {
-    let q = 0;
-    let max = 0;
     const checks = [
       p.plan_shared_with_staff,
       p.plan_shared_with_child,
@@ -378,19 +382,17 @@ export function computeAllergyManagementFoodSafety(
       p.photo_on_plan,
       p.plan_accessible_in_kitchen,
     ];
-    for (const c of checks) {
-      max += 1;
-      if (c) q += 1;
-    }
-    return max > 0 ? Math.round((q / max) * 100) : 0;
+    const q = checks.filter(Boolean).length;
+    return Math.round((q / checks.length) * 100);
   });
-  const planQualityAvg =
+  // fab-0: null when no allergy plans to average across.
+  const planQualityAvg: number | null =
     planQualityScores.length > 0
       ? Math.round(
           planQualityScores.reduce((sum, v) => sum + v, 0) /
             planQualityScores.length,
         )
-      : 0;
+      : null;
 
   // Severity distribution
   const lifeThreatPlans = allergy_plan_records.filter(
@@ -581,19 +583,19 @@ export function computeAllergyManagementFoodSafety(
   );
   const improvementActionRate = pct(totalImprovementsActioned, totalImprovementsIdentified);
 
-  // Emergency response composite rate
-  const emergencyResponseRate = totalDrills > 0
+  // Emergency response composite rate — null when no drills recorded.
+  const emergencyResponseRate: number | null = totalDrills > 0
     ? Math.round((correctProcedureRate + epipenAdminRate + emergencyCallRate) / 3)
-    : 0;
+    : null;
 
-  // Response time analysis
+  // Response time analysis — null when no response times recorded.
   const responseTimes = emergency_response_records
     .filter((e) => e.response_time_seconds !== null && e.response_time_seconds !== undefined)
     .map((e) => e.response_time_seconds as number);
-  const avgResponseTime =
+  const avgResponseTime: number | null =
     responseTimes.length > 0
       ? Math.round(responseTimes.reduce((sum, t) => sum + t, 0) / responseTimes.length)
-      : 0;
+      : null;
   const slowResponses = responseTimes.filter((t) => t > 300).length; // > 5 minutes
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
@@ -617,12 +619,12 @@ export function computeAllergyManagementFoodSafety(
   else if (foodLabellingRate >= 80) score += 2;
 
   // --- Bonus 5: emergencyResponseRate (>=90: +5, >=70: +3) ---
-  if (emergencyResponseRate >= 90) score += 5;
-  else if (emergencyResponseRate >= 70) score += 3;
+  if (meets(emergencyResponseRate, 90)) score += 5;
+  else if (meets(emergencyResponseRate, 70)) score += 3;
 
   // --- Bonus 6: planQualityAvg (>=90: +2, >=70: +1) ---
-  if (planQualityAvg >= 90) score += 2;
-  else if (planQualityAvg >= 70) score += 1;
+  if (meets(planQualityAvg, 90)) score += 2;
+  else if (meets(planQualityAvg, 70)) score += 1;
 
   // --- Bonus 7: childAwarenessRate (>=90: +2, >=70: +1) ---
   if (childAwarenessRate >= 90) score += 2;
@@ -640,7 +642,7 @@ export function computeAllergyManagementFoodSafety(
   if (epipenCheckRate < 50 && totalEpipenChecks > 0) score -= 5;
 
   // emergencyResponseRate < 40 → -5
-  if (emergencyResponseRate < 40 && totalDrills > 0) score -= 5;
+  if (below(emergencyResponseRate, 40) && totalDrills > 0) score -= 5;
 
   score = clamp(score, 0, 100);
 
@@ -690,11 +692,11 @@ export function computeAllergyManagementFoodSafety(
     );
   }
 
-  if (emergencyResponseRate >= 90 && totalDrills > 0) {
+  if (totalDrills > 0 && meets(emergencyResponseRate, 90)) {
     strengths.push(
       `${emergencyResponseRate}% emergency response accuracy — staff demonstrate excellent capability in following correct procedures, administering epipens, and contacting emergency services during drills.`,
     );
-  } else if (emergencyResponseRate >= 70 && totalDrills > 0) {
+  } else if (totalDrills > 0 && meets(emergencyResponseRate, 70)) {
     strengths.push(
       `${emergencyResponseRate}% emergency response accuracy — staff demonstrate competent allergy emergency response skills across drills.`,
     );
@@ -710,11 +712,11 @@ export function computeAllergyManagementFoodSafety(
     );
   }
 
-  if (planQualityAvg >= 90 && totalPlans > 0) {
+  if (totalPlans > 0 && meets(planQualityAvg, 90)) {
     strengths.push(
       `Allergy plan quality averages ${planQualityAvg}% — plans are comprehensive, including emergency medication, dietary requirements, cross-contamination measures, risk assessments, and professional input.`,
     );
-  } else if (planQualityAvg >= 70 && totalPlans > 0) {
+  } else if (totalPlans > 0 && meets(planQualityAvg, 70)) {
     strengths.push(
       `Allergy plan quality averages ${planQualityAvg}% — plans contain the majority of essential elements for safe allergy management.`,
     );
@@ -850,11 +852,11 @@ export function computeAllergyManagementFoodSafety(
     );
   }
 
-  if (emergencyResponseRate < 40 && totalDrills > 0) {
+  if (totalDrills > 0 && below(emergencyResponseRate, 40)) {
     concerns.push(
       `Emergency response accuracy at only ${emergencyResponseRate}% — staff are not consistently demonstrating correct procedures, epipen administration, or emergency call protocols during drills, indicating a serious training gap.`,
     );
-  } else if (emergencyResponseRate < 70 && emergencyResponseRate >= 40 && totalDrills > 0) {
+  } else if (totalDrills > 0 && emergencyResponseRate !== null && emergencyResponseRate < 70 && emergencyResponseRate >= 40) {
     concerns.push(
       `Emergency response accuracy at ${emergencyResponseRate}% — not all drills demonstrate correct allergy emergency procedures, indicating further training and practice is needed.`,
     );
@@ -991,7 +993,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (emergencyResponseRate < 40 && totalDrills > 0) {
+  if (totalDrills > 0 && below(emergencyResponseRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1094,9 +1096,10 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
+    totalDrills > 0 &&
+    emergencyResponseRate !== null &&
     emergencyResponseRate >= 40 &&
-    emergencyResponseRate < 70 &&
-    totalDrills > 0
+    emergencyResponseRate < 70
   ) {
     recommendations.push({
       rank: ++rank,
@@ -1232,7 +1235,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (emergencyResponseRate < 40 && totalDrills > 0) {
+  if (totalDrills > 0 && below(emergencyResponseRate, 40)) {
     insights.push({
       text: `Emergency response accuracy at only ${emergencyResponseRate}%. When staff cannot consistently demonstrate correct allergy emergency procedures during controlled drills, there is a serious risk that a real allergic emergency would be managed poorly. The home must invest in intensive, repeated practice to build muscle memory and confidence.`,
       severity: "critical",
@@ -1282,9 +1285,10 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
+    totalDrills > 0 &&
+    emergencyResponseRate !== null &&
     emergencyResponseRate >= 40 &&
-    emergencyResponseRate < 70 &&
-    totalDrills > 0
+    emergencyResponseRate < 70
   ) {
     insights.push({
       text: `Emergency response accuracy at ${emergencyResponseRate}% — not all drills demonstrate correct procedures. Further practice is needed to ensure every staff member can confidently and correctly manage an allergic emergency.`,
@@ -1328,7 +1332,7 @@ export function computeAllergyManagementFoodSafety(
     });
   }
 
-  if (slowResponses > 0 && responseTimes.length > 0) {
+  if (slowResponses > 0 && responseTimes.length > 0 && avgResponseTime !== null) {
     insights.push({
       text: `${slowResponses} drill${slowResponses !== 1 ? "s" : ""} recorded response times exceeding 5 minutes. In anaphylaxis, adrenaline should be administered as quickly as possible — delays significantly reduce the likelihood of a positive outcome. Average response time across drills: ${avgResponseTime} seconds.`,
       severity: "warning",
@@ -1336,9 +1340,10 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
+    totalPlans > 0 &&
+    planQualityAvg !== null &&
     planQualityAvg >= 50 &&
-    planQualityAvg < 70 &&
-    totalPlans > 0
+    planQualityAvg < 70
   ) {
     insights.push({
       text: `Allergy plan quality averaging ${planQualityAvg}% — plans are missing some essential elements such as emergency medication details, cross-contamination measures, photographs, or risk assessments. Incomplete plans may not provide staff with the information they need during an emergency.`,
@@ -1421,10 +1426,11 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
+    totalPlans > 0 &&
+    planQualityAvg !== null &&
     allergyPlanRate >= 100 &&
     planQualityAvg >= 90 &&
-    children_with_allergies > 0 &&
-    totalPlans > 0
+    children_with_allergies > 0
   ) {
     insights.push({
       text: `Every child with an allergy has a comprehensive plan averaging ${planQualityAvg}% quality — the home excels at documenting allergy management with all essential elements including emergency medication, dietary requirements, cross-contamination measures, and risk assessments.`,
@@ -1469,9 +1475,10 @@ export function computeAllergyManagementFoodSafety(
   }
 
   if (
+    totalDrills > 0 &&
+    emergencyResponseRate !== null &&
     emergencyResponseRate >= 90 &&
-    debriefRate >= 100 &&
-    totalDrills > 0
+    debriefRate >= 100
   ) {
     insights.push({
       text: `${emergencyResponseRate}% emergency response accuracy with 100% debrief completion — staff demonstrate excellent allergy emergency skills and the home uses drills as genuine learning opportunities, continuously improving its readiness for real incidents.`,

@@ -191,9 +191,11 @@ describe("insufficient data", () => {
     expect(r.allergen_awareness_rate).toBe(0);
     expect(r.epipen_check_rate).toBe(0);
     expect(r.food_labelling_rate).toBe(0);
-    expect(r.emergency_response_rate).toBe(0);
+    // fab-0: null (no records) — see engine header + check-fabricated-scores.js
+    expect(r.emergency_response_rate).toBeNull();
     expect(r.child_awareness_rate).toBe(0);
-    expect(r.plan_quality_avg).toBe(0);
+    // fab-0: null (no records)
+    expect(r.plan_quality_avg).toBeNull();
     expect(r.training_currency_rate).toBe(0);
   });
 
@@ -1263,11 +1265,11 @@ describe("rates", () => {
     expect(r.emergency_response_rate).toBe(83);
   });
 
-  it("emergencyResponseRate is 0 with no drills", () => {
+  it("emergencyResponseRate is null with no drills (fab-0)", () => {
     const r = computeAllergyManagementFoodSafety(baseInput({
       emergency_response_records: [],
     }));
-    expect(r.emergency_response_rate).toBe(0);
+    expect(r.emergency_response_rate).toBeNull();
   });
 
   it("childAwarenessRate: pct(plansSharedWithChild, totalPlans)", () => {
@@ -1451,12 +1453,12 @@ describe("edge cases", () => {
     expect(slowConcern).toBeUndefined();
   });
 
-  it("planQualityAvg with no plans is 0", () => {
+  it("planQualityAvg with no plans is null (fab-0)", () => {
     const r = computeAllergyManagementFoodSafety(baseInput({
       children_with_allergies: 0,
       allergy_plan_records: [],
     }));
-    expect(r.plan_quality_avg).toBe(0);
+    expect(r.plan_quality_avg).toBeNull();
   });
 
   it("plan with all false fields = 0% quality", () => {
