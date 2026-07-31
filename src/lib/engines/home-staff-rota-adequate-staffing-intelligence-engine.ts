@@ -287,10 +287,11 @@ export function computeStaffRotaAdequateStaffing(
     (sum, r) => sum + r.handover_quality_rating,
     0,
   );
-  const avgHandoverQuality =
+  // fab-0: null when no records — no shifts means no handover quality to average.
+  const avgHandoverQuality: number | null =
     totalShiftRecords > 0
       ? Math.round((handoverQualitySum / totalShiftRecords) * 100) / 100
-      : 0;
+      : null;
 
   const loneWorkingShifts = shift_coverage_records.filter((r) => r.lone_working_occurred).length;
   const loneWorkingRate = pct(loneWorkingShifts, totalShiftRecords);
@@ -348,11 +349,6 @@ export function computeStaffRotaAdequateStaffing(
   // --- Overtime metrics (inverted: lower overtime = better) ---
   const totalOvertimeRecords = overtime_records.length;
 
-  const totalOvertimeHours = overtime_records.reduce(
-    (sum, r) => sum + r.overtime_hours,
-    0,
-  );
-
   const overtimeApproved = overtime_records.filter((r) => r.overtime_approved).length;
   const overtimeApprovalRate = pct(overtimeApproved, totalOvertimeRecords);
 
@@ -368,13 +364,6 @@ export function computeStaffRotaAdequateStaffing(
     (r) => r.fatigue_risk_acknowledged,
   ).length;
   const fatigueAcknowledgementRate = pct(fatigueAcknowledged, totalOvertimeRecords);
-
-  // Overtime rate: proportion of overtime records among total_staff — inverted in scoring
-  // Higher overtime = worse
-  const avgOvertimeHoursPerRecord =
-    totalOvertimeRecords > 0
-      ? Math.round((totalOvertimeHours / totalOvertimeRecords) * 100) / 100
-      : 0;
 
   // Staff with consecutive days > 6
   const highConsecutiveDays = overtime_records.filter(
@@ -422,16 +411,6 @@ export function computeStaffRotaAdequateStaffing(
     (r) => r.feedback_collected,
   ).length;
   const agencyFeedbackRate = pct(agencyFeedbackCollected, totalAgencyRecords);
-
-  const agencyFeedbackRatings = agency_usage_records
-    .filter((r) => r.feedback_rating !== null)
-    .map((r) => r.feedback_rating as number);
-  const avgAgencyFeedbackRating =
-    agencyFeedbackRatings.length > 0
-      ? Math.round(
-          (agencyFeedbackRatings.reduce((s, v) => s + v, 0) / agencyFeedbackRatings.length) * 100,
-        ) / 100
-      : 0;
 
   const totalAgencyCost = agency_usage_records.reduce((sum, r) => sum + r.cost, 0);
 
@@ -484,19 +463,21 @@ export function computeStaffRotaAdequateStaffing(
     (sum, r) => sum + r.fairness_score,
     0,
   );
-  const avgFairnessScore =
+  // fab-0: null when no rota records to average.
+  const avgFairnessScore: number | null =
     totalRotaRecords > 0
       ? Math.round((fairnessScoreSum / totalRotaRecords) * 100) / 100
-      : 0;
+      : null;
 
   const totalChangesAfterPub = rota_planning_records.reduce(
     (sum, r) => sum + r.changes_after_publication,
     0,
   );
-  const avgChangesPerRota =
+  // fab-0: null when no rota records to average.
+  const avgChangesPerRota: number | null =
     totalRotaRecords > 0
       ? Math.round((totalChangesAfterPub / totalRotaRecords) * 100) / 100
-      : 0;
+      : null;
 
   const totalUnfilledShifts = rota_planning_records.reduce(
     (sum, r) => sum + r.unfilled_shifts_count,
@@ -706,7 +687,7 @@ export function computeStaffRotaAdequateStaffing(
     );
   }
 
-  if (avgFairnessScore >= 4.0 && totalRotaRecords > 0) {
+  if (totalRotaRecords > 0 && avgFairnessScore !== null && avgFairnessScore >= 4.0) {
     strengths.push(
       `Average fairness score of ${avgFairnessScore}/5 — unsocial hours and demanding shifts are distributed equitably among staff, promoting workforce morale and reducing burnout risk.`,
     );
@@ -724,7 +705,7 @@ export function computeStaffRotaAdequateStaffing(
     );
   }
 
-  if (avgHandoverQuality >= 4.0 && totalShiftRecords > 0) {
+  if (totalShiftRecords > 0 && avgHandoverQuality !== null && avgHandoverQuality >= 4.0) {
     strengths.push(
       `Average handover quality rating of ${avgHandoverQuality}/5 — shift handovers are thorough and effective, ensuring incoming staff have the information they need to provide consistent, safe care.`,
     );
@@ -876,13 +857,13 @@ export function computeStaffRotaAdequateStaffing(
     );
   }
 
-  if (avgFairnessScore < 2.5 && totalRotaRecords > 0) {
+  if (totalRotaRecords > 0 && avgFairnessScore !== null && avgFairnessScore < 2.5) {
     concerns.push(
       `Average fairness score at only ${avgFairnessScore}/5 — unsocial hours and demanding shifts are not distributed equitably, which may cause resentment, staff turnover, and workforce instability.`,
     );
   }
 
-  if (avgChangesPerRota > 5 && totalRotaRecords > 0) {
+  if (totalRotaRecords > 0 && avgChangesPerRota !== null && avgChangesPerRota > 5) {
     concerns.push(
       `Average of ${avgChangesPerRota} changes per published rota — excessive post-publication changes undermine staff confidence in the rota, create uncertainty, and may indicate poor planning.`,
     );
@@ -1137,7 +1118,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (avgFairnessScore < 3.0 && avgFairnessScore >= 2.0 && totalRotaRecords > 0) {
+  if (totalRotaRecords > 0 && avgFairnessScore !== null && avgFairnessScore < 3.0 && avgFairnessScore >= 2.0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1147,7 +1128,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (avgChangesPerRota > 5 && totalRotaRecords > 0) {
+  if (totalRotaRecords > 0 && avgChangesPerRota !== null && avgChangesPerRota > 5) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1324,9 +1305,10 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
+    totalRotaRecords > 0 &&
+    avgFairnessScore !== null &&
     avgFairnessScore >= 2.5 &&
-    avgFairnessScore < 3.5 &&
-    totalRotaRecords > 0
+    avgFairnessScore < 3.5
   ) {
     insights.push({
       text: `Average fairness score at ${avgFairnessScore}/5 — the distribution of unsocial hours and demanding shifts is perceived as uneven. Inequitable rota distribution erodes team cohesion and contributes to staff dissatisfaction.`,
@@ -1334,7 +1316,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (avgChangesPerRota > 3 && avgChangesPerRota <= 5 && totalRotaRecords > 0) {
+  if (totalRotaRecords > 0 && avgChangesPerRota !== null && avgChangesPerRota > 3 && avgChangesPerRota <= 5) {
     insights.push({
       text: `Average of ${avgChangesPerRota} post-publication rota changes — while some flexibility is necessary, frequent changes suggest planning gaps. Consider whether earlier identification of absences or better contingency planning could reduce changes.`,
       severity: "warning",
@@ -1366,12 +1348,9 @@ export function computeStaffRotaAdequateStaffing(
     }
   }
 
-  // Total agency cost insight
-  if (totalAgencyCost > 0) {
-    const avgCostPerShift =
-      totalAgencyRecords > 0
-        ? Math.round(totalAgencyCost / totalAgencyRecords)
-        : 0;
+  // Total agency cost insight — gated on totalAgencyCost>0 which requires records.
+  if (totalAgencyCost > 0 && totalAgencyRecords > 0) {
+    const avgCostPerShift = Math.round(totalAgencyCost / totalAgencyRecords);
     insights.push({
       text: `Total agency spend of £${totalAgencyCost.toLocaleString()} across ${totalAgencyRecords} placements (avg £${avgCostPerShift}/shift). Reducing agency reliance through improved recruitment and retention would redirect resources to benefit children's direct care experience.`,
       severity: "warning",
@@ -1400,9 +1379,10 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
+    totalShiftRecords > 0 &&
+    avgHandoverQuality !== null &&
     handoverRate >= 95 &&
-    avgHandoverQuality >= 4.0 &&
-    totalShiftRecords > 0
+    avgHandoverQuality >= 4.0
   ) {
     insights.push({
       text: `${handoverRate}% handover completion with average quality of ${avgHandoverQuality}/5 — shift handovers are consistently thorough and effective, ensuring seamless continuity of care and information transfer.`,
@@ -1432,9 +1412,10 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
+    totalRotaRecords > 0 &&
+    avgFairnessScore !== null &&
     staffSatisfactionRate >= 90 &&
-    avgFairnessScore >= 4.0 &&
-    totalRotaRecords > 0
+    avgFairnessScore >= 4.0
   ) {
     insights.push({
       text: `${staffSatisfactionRate}% staff satisfaction with fairness score of ${avgFairnessScore}/5 — staff feel consulted, their preferences are considered, and shifts are distributed equitably. This promotes workforce stability and staff retention.`,
