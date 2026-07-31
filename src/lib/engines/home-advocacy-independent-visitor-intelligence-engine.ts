@@ -6,6 +6,8 @@
 // deps.
 // CHR 2015 Reg 5 (Engaging with the wider system), Reg 7 (Children's views),
 // Reg 22 (Independent person), SCCIF "Voice of the child".
+import { meets, below } from "@/lib/metrics/rate";
+
 // Store keys: independentVisitorRecords, advocacyServiceRecords,
 //             representationRecords, visitComplianceRecords,
 //             childSatisfactionRecords
@@ -157,7 +159,8 @@ export interface AdvocacyVisitorResult {
   representation_quality_rate: number;
   visit_compliance_rate: number;
   child_voice_rate: number;
-  child_satisfaction_rate: number;
+  // fab-0: null when no satisfaction records / no components.
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: AdvocacyVisitorRecommendation[];
@@ -197,7 +200,7 @@ function emptyResult(
     representation_quality_rate: 0,
     visit_compliance_rate: 0,
     child_voice_rate: 0,
-    child_satisfaction_rate: 0,
+    child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -383,10 +386,11 @@ export function computeAdvocacyIndependentVisitor(
   const advocacySatisfactionSum = advocacy_service_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const advocacySatisfactionAvg =
+  // fab-0: null when no advocacy records.
+  const advocacySatisfactionAvg: number | null =
     totalAdvocacyRecords > 0
       ? Math.round((advocacySatisfactionSum / totalAdvocacyRecords) * 100) / 100
-      : 0;
+      : null;
 
   const advocacyIndependent = advocacy_service_records.filter(
     (r) => r.advocacy_independent_of_home,
@@ -535,31 +539,32 @@ export function computeAdvocacyIndependentVisitor(
   const satIVSum = child_satisfaction_records.reduce(
     (sum, r) => sum + r.satisfaction_with_iv, 0,
   );
-  const satIVAvg =
+  // fab-0: null when no satisfaction records.
+  const satIVAvg: number | null =
     totalSatRecords > 0
       ? Math.round((satIVSum / totalSatRecords) * 100) / 100
-      : 0;
+      : null;
 
   const satAdvocacySum = child_satisfaction_records.reduce(
     (sum, r) => sum + r.satisfaction_with_advocacy, 0,
   );
-  const satAdvocacyAvg =
+  const satAdvocacyAvg: number | null =
     totalSatRecords > 0
       ? Math.round((satAdvocacySum / totalSatRecords) * 100) / 100
-      : 0;
+      : null;
 
   const satRepSum = child_satisfaction_records.reduce(
     (sum, r) => sum + r.satisfaction_with_representation, 0,
   );
-  const satRepAvg =
+  const satRepAvg: number | null =
     totalSatRecords > 0
       ? Math.round((satRepSum / totalSatRecords) * 100) / 100
-      : 0;
+      : null;
 
-  const overallSatisfactionAvg =
-    totalSatRecords > 0
+  const overallSatisfactionAvg: number | null =
+    totalSatRecords > 0 && satIVAvg !== null && satAdvocacyAvg !== null && satRepAvg !== null
       ? Math.round(((satIVAvg + satAdvocacyAvg + satRepAvg) / 3) * 100) / 100
-      : 0;
+      : null;
 
   // --- Child voice composite ---
   const voiceNumerator = ivWishesRecorded + viewsSought + visitViewsRecorded;
@@ -575,10 +580,13 @@ export function computeAdvocacyIndependentVisitor(
     (feelsListened > 0 ? 1 : 0) +
     (trustsAdvocate > 0 ? 1 : 0) +
     (feelsViewsMakeDifference > 0 ? 1 : 0);
-  const childSatisfactionRate =
-    totalSatRecords > 0 && satBoolDivisor > 0
-      ? Math.round(satBoolCount / satBoolDivisor)
-      : 0;
+  // fab-0: null when no satisfaction records at all. With records present but
+  // every bool false, satBoolDivisor is 0 → keep returning 0 (that IS the
+  // finding: children feel unheard); guard the divide-by-zero with || 1.
+  const childSatisfactionRate: number | null =
+    totalSatRecords > 0
+      ? Math.round(satBoolCount / (satBoolDivisor || 1))
+      : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -605,8 +613,8 @@ export function computeAdvocacyIndependentVisitor(
   else if (childVoiceRate >= 60) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=80: +3, >=60: +1) ---
-  if (childSatisfactionRate >= 80) score += 3;
-  else if (childSatisfactionRate >= 60) score += 1;
+  if (meets(childSatisfactionRate, 80)) score += 3;
+  else if (meets(childSatisfactionRate, 60)) score += 1;
 
   // --- Bonus 7: independenceRate (>=90: +3, >=70: +1) ---
   if (independenceRate >= 90) score += 3;
@@ -770,17 +778,17 @@ export function computeAdvocacyIndependentVisitor(
     );
   }
 
-  if (childSatisfactionRate >= 80 && totalSatRecords > 0) {
+  if (totalSatRecords > 0 && meets(childSatisfactionRate, 80)) {
     strengths.push(
       `Child satisfaction composite rate at ${childSatisfactionRate}% -- children feel listened to, trust their advocates, and believe their views make a difference.`,
     );
-  } else if (childSatisfactionRate >= 60 && totalSatRecords > 0) {
+  } else if (totalSatRecords > 0 && meets(childSatisfactionRate, 60)) {
     strengths.push(
       `Child satisfaction composite rate at ${childSatisfactionRate}% -- children generally feel supported by advocacy and independent visitor provision.`,
     );
   }
 
-  if (overallSatisfactionAvg >= 4.0 && totalSatRecords > 0) {
+  if (totalSatRecords > 0 && overallSatisfactionAvg !== null && overallSatisfactionAvg >= 4.0) {
     strengths.push(
       `Overall advocacy satisfaction averages ${overallSatisfactionAvg}/5 -- children rate their experience of advocacy and independent visiting highly.`,
     );
@@ -878,7 +886,7 @@ export function computeAdvocacyIndependentVisitor(
     );
   }
 
-  if (advocacySatisfactionAvg < 3.0 && totalAdvocacyRecords > 0) {
+  if (totalAdvocacyRecords > 0 && advocacySatisfactionAvg !== null && advocacySatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with advocacy averages only ${advocacySatisfactionAvg}/5 -- children are not experiencing advocacy as helpful or effective.`,
     );
@@ -944,13 +952,13 @@ export function computeAdvocacyIndependentVisitor(
     );
   }
 
-  if (childSatisfactionRate < 50 && totalSatRecords > 0) {
+  if (totalSatRecords > 0 && below(childSatisfactionRate, 50)) {
     concerns.push(
       `Child satisfaction composite rate at only ${childSatisfactionRate}% -- children do not feel listened to, do not trust their advocates, or do not believe their views make a difference.`,
     );
   }
 
-  if (overallSatisfactionAvg < 3.0 && totalSatRecords > 0) {
+  if (totalSatRecords > 0 && overallSatisfactionAvg !== null && overallSatisfactionAvg < 3.0) {
     concerns.push(
       `Overall advocacy satisfaction averages only ${overallSatisfactionAvg}/5 -- children rate their experience of advocacy and independent visiting poorly.`,
     );
@@ -1290,7 +1298,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (childSatisfactionRate >= 50 && childSatisfactionRate < 80 && totalSatRecords > 0) {
+  if (totalSatRecords > 0 && childSatisfactionRate !== null && childSatisfactionRate >= 50 && childSatisfactionRate < 80) {
     insights.push({
       text: `Child satisfaction composite at ${childSatisfactionRate}% -- while children generally feel supported, there is scope to improve how children experience advocacy, visiting, and representation.`,
       severity: "warning",
@@ -1366,7 +1374,7 @@ export function computeAdvocacyIndependentVisitor(
     });
   }
 
-  if (overallSatisfactionAvg >= 4.0 && wouldUseAgainRate >= 80 && totalSatRecords > 0) {
+  if (totalSatRecords > 0 && overallSatisfactionAvg !== null && overallSatisfactionAvg >= 4.0 && wouldUseAgainRate >= 80) {
     insights.push({
       text: `Overall satisfaction at ${overallSatisfactionAvg}/5 with ${wouldUseAgainRate}% willing to use advocacy again -- children trust and value the independent support available to them. This reflects a culture where children's voices are genuinely heard and respected.`,
       severity: "positive",

@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Megaphone } from 
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { AdvocacyVisitorRating } from "@/lib/engines/home-advocacy-independent-visitor-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 function useHomeAdvocacyIndependentVisitorIntelligence() {
   return useQuery({
@@ -89,8 +90,8 @@ export function HomeAdvocacyIndependentVisitorIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : d.child_satisfaction_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : d.child_satisfaction_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

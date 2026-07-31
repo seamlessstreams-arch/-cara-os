@@ -204,7 +204,7 @@ describe("insufficient_data", () => {
     expect(r.representation_quality_rate).toBe(0);
     expect(r.visit_compliance_rate).toBe(0);
     expect(r.child_voice_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 });
 
@@ -250,7 +250,7 @@ describe("inadequate floor -- all empty with children on placement", () => {
     expect(r.representation_quality_rate).toBe(0);
     expect(r.visit_compliance_rate).toBe(0);
     expect(r.child_voice_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 
   it("returns inadequate floor with total_children=1 (minimal)", () => {
@@ -1312,12 +1312,13 @@ describe("rate computations", () => {
           makeSat({ feels_listened_to: false, trusts_advocate: false, feels_views_make_difference: false }),
         ),
       });
+      // records exist → 0, not null; concern still fires via below()
       expect(r.child_satisfaction_rate).toBe(0);
     });
 
     it("0% when no sat records", () => {
       const r = run({ child_satisfaction_records: [] });
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("averages only present bool groups", () => {
