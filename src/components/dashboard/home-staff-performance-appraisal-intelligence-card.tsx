@@ -6,6 +6,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ClipboardCheck } 
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { StaffPerformanceRating, StaffPerformanceResult } from "@/lib/engines/home-staff-performance-appraisal-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 interface StaffPerformanceAppraisalResponse { data: StaffPerformanceResult; }
 
@@ -93,8 +94,8 @@ export function HomeStaffPerformanceAppraisalIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.feedback_quality_rate >= 80 ? "text-[--cs-success]" : d.feedback_quality_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.feedback_quality_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Feedback</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_satisfaction_rate >= 80 ? "bg-green-50" : d.staff_satisfaction_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_satisfaction_rate >= 80 ? "text-[--cs-success]" : d.staff_satisfaction_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_satisfaction_rate, 80) ? "bg-green-50" : meets(d.staff_satisfaction_rate, 60) ? "bg-amber-50" : d.staff_satisfaction_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_satisfaction_rate, 80) ? "text-[--cs-success]" : meets(d.staff_satisfaction_rate, 60) ? "text-[--cs-warning]" : d.staff_satisfaction_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.staff_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

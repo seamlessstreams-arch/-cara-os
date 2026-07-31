@@ -105,7 +105,8 @@ export interface StaffPerformanceResult {
   competency_rate: number;
   development_progress_rate: number;
   feedback_quality_rate: number;
-  staff_satisfaction_rate: number;
+  // fab-0: null when no satisfaction components observable.
+  staff_satisfaction_rate: number | null;
   appraisal_profile: AppraisalProfile;
   target_profile: TargetProfile;
   competency_profile: CompetencyProfile;
@@ -145,7 +146,8 @@ export interface TargetProfile {
   not_met_count: number;
   not_started_count: number;
   achievement_rate: number;
-  avg_progress: number;
+  // fab-0: null when no records to average.
+  avg_progress: number | null;
   reviewed_rate: number;
   evidence_rate: number;
   category_breakdown: { category: string; total: number; achieved: number }[];
@@ -171,7 +173,8 @@ export interface DevelopmentProfile {
   overdue_count: number;
   cancelled_count: number;
   completion_rate: number;
-  avg_progress: number;
+  // fab-0: null when no goals to average.
+  avg_progress: number | null;
   support_provided_rate: number;
   resource_allocated_rate: number;
   category_breakdown: { category: string; total: number; completed: number }[];
@@ -187,7 +190,8 @@ export interface FeedbackProfile {
   actionable_rate: number;
   follow_up_rate: number;
   sentiment_distribution: { positive: number; constructive: number; negative: number; mixed: number };
-  feedback_per_staff: number;
+  // fab-0: null when total_staff is 0.
+  feedback_per_staff: number | null;
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -354,9 +358,10 @@ export function computeStaffPerformanceAppraisal(
     : 0;
 
   const targetProgressValues = performance_target_records.map(t => t.progress_percentage);
-  const avgTargetProgress = targetProgressValues.length > 0
+  // fab-0: null when no target records.
+  const avgTargetProgress: number | null = targetProgressValues.length > 0
     ? Math.round(targetProgressValues.reduce((s, v) => s + v, 0) / targetProgressValues.length)
-    : 0;
+    : null;
 
   const reviewedTargets = performance_target_records.filter(t => t.reviewed).length;
   const reviewedRate = pct(reviewedTargets, totalTargets);
@@ -482,9 +487,10 @@ export function computeStaffPerformanceAppraisal(
   const goalProgressValues = development_goal_records
     .filter(g => g.status !== "cancelled")
     .map(g => g.progress_percentage);
-  const avgGoalProgress = goalProgressValues.length > 0
+  // fab-0: null when no goal records eligible.
+  const avgGoalProgress: number | null = goalProgressValues.length > 0
     ? Math.round(goalProgressValues.reduce((s, v) => s + v, 0) / goalProgressValues.length)
-    : 0;
+    : null;
 
   const supportProvidedCount = development_goal_records.filter(g => g.support_provided).length;
   const supportProvidedRate = pct(supportProvidedCount, totalGoals);
@@ -562,9 +568,10 @@ export function computeStaffPerformanceAppraisal(
     mixed: feedback_records.filter(f => f.sentiment === "mixed").length,
   };
 
-  const feedbackPerStaff = total_staff > 0
+  // fab-0: null when no staff on establishment.
+  const feedbackPerStaff: number | null = total_staff > 0
     ? Math.round((totalFeedback / total_staff) * 10) / 10
-    : 0;
+    : null;
 
   const feedbackProfile: FeedbackProfile = {
     total_feedback: totalFeedback,
@@ -602,9 +609,10 @@ export function computeStaffPerformanceAppraisal(
     satisfactionComponents.push(supportProvidedRate);
   }
 
-  const staffSatisfactionRate = satisfactionComponents.length > 0
+  // fab-0: null when no satisfaction components observable.
+  const staffSatisfactionRate: number | null = satisfactionComponents.length > 0
     ? Math.round(satisfactionComponents.reduce((s, v) => s + v, 0) / satisfactionComponents.length)
-    : 0;
+    : null;
 
   // ════════════════════════════════════════════════════════════════════════
   // SCORING — base 52, max bonuses +28, 4 penalties guarded by length>0
@@ -772,7 +780,7 @@ export function computeStaffPerformanceAppraisal(
       `All ${total_staff} staff have at least one appraisal on record — full workforce coverage.`,
     );
   }
-  if (feedbackPerStaff >= 3) {
+  if (feedbackPerStaff !== null && feedbackPerStaff >= 3) {
     strengths.push(
       `Average of ${feedbackPerStaff} feedback entries per staff member — rich feedback culture supports continuous improvement.`,
     );
@@ -886,7 +894,7 @@ export function computeStaffPerformanceAppraisal(
       `Only ${followUpRate}% of feedback has been followed up — feedback loop is not closing effectively.`,
     );
   }
-  if (feedbackPerStaff < 1 && totalFeedback > 0 && total_staff > 0) {
+  if (total_staff > 0 && feedbackPerStaff !== null && feedbackPerStaff < 1 && totalFeedback > 0) {
     concerns.push(
       `Average of only ${feedbackPerStaff} feedback entries per staff member — feedback frequency is insufficient.`,
     );
@@ -991,7 +999,7 @@ export function computeStaffPerformanceAppraisal(
       regulatory_ref: "CHR 2015 Reg 33",
     });
   }
-  if (feedbackPerStaff < 2 && total_staff > 0) {
+  if (total_staff > 0 && feedbackPerStaff !== null && feedbackPerStaff < 2) {
     recs.push({
       rank: rank++,
       recommendation: `Increase feedback frequency — currently averaging ${feedbackPerStaff} per staff member. Aim for regular formal and informal feedback throughout the appraisal cycle.`,
@@ -1126,7 +1134,7 @@ export function computeStaffPerformanceAppraisal(
   }
 
   // Positive: Rich feedback culture
-  if (feedbackPerStaff >= 3 && feedbackQualityRate >= 75) {
+  if (feedbackPerStaff !== null && feedbackPerStaff >= 3 && feedbackQualityRate >= 75) {
     insights.push({
       text: `Rich feedback culture with ${feedbackPerStaff} entries per staff member and ${feedbackQualityRate}% quality rate. Evidence of reflective, learning-oriented workforce management.`,
       severity: "positive",
@@ -1321,7 +1329,7 @@ function emptyResult(
     actionable_rate: 0,
     follow_up_rate: 0,
     sentiment_distribution: { positive: 0, constructive: 0, negative: 0, mixed: 0 },
-    feedback_per_staff: 0,
+    feedback_per_staff: null,
   };
 
   return {
@@ -1333,7 +1341,7 @@ function emptyResult(
     competency_rate: 0,
     development_progress_rate: 0,
     feedback_quality_rate: 0,
-    staff_satisfaction_rate: 0,
+    staff_satisfaction_rate: null,
     appraisal_profile: emptyAppraisalProfile,
     target_profile: emptyTargetProfile,
     competency_profile: emptyCompetencyProfile,

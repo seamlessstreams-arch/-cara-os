@@ -157,7 +157,7 @@ describe("insufficient_data — no staff, no records", () => {
     expect(r.competency_rate).toBe(0);
     expect(r.development_progress_rate).toBe(0);
     expect(r.feedback_quality_rate).toBe(0);
-    expect(r.staff_satisfaction_rate).toBe(0);
+    expect(r.staff_satisfaction_rate).toBeNull();
   });
   it("strengths, concerns empty", () => {
     expect(r.strengths).toHaveLength(0);
@@ -209,7 +209,7 @@ describe("inadequate floor — staff exist but no records", () => {
     expect(r.competency_rate).toBe(0);
     expect(r.development_progress_rate).toBe(0);
     expect(r.feedback_quality_rate).toBe(0);
-    expect(r.staff_satisfaction_rate).toBe(0);
+    expect(r.staff_satisfaction_rate).toBeNull();
   });
 });
 
@@ -1054,7 +1054,7 @@ describe("staff_satisfaction_rate", () => {
     // No completed appraisals, no quality scores, no feedback, no goals → 0
     const appraisals = [makeAppraisal({ status: "scheduled", quality_score: null })];
     const r = run({ appraisal_records: appraisals });
-    expect(r.staff_satisfaction_rate).toBe(0);
+    expect(r.staff_satisfaction_rate).toBeNull();
   });
 
   it("composites dual_signature, quality, positive sentiment, follow_up, support", () => {
@@ -2366,7 +2366,8 @@ describe("edge cases", () => {
       development_goal_records: [],
       feedback_records: [makeFeedback()],
     });
-    expect(r.feedback_profile.feedback_per_staff).toBe(0);
+    // fab-0: null when total_staff=0 — no denominator
+    expect(r.feedback_profile.feedback_per_staff).toBeNull();
   });
 });
 
