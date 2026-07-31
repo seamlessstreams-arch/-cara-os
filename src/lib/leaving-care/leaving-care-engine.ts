@@ -517,8 +517,8 @@ export function evaluateIndependenceSkills(
   const withPrevious = relevantAssessments.filter(
     (a) => a.previousLevel,
   ).length;
-  const progressRate =
-    withPrevious > 0 ? Math.round((improving / withPrevious) * 100) : 0;
+  const progressRate: number | null =
+    withPrevious > 0 ? Math.round((improving / withPrevious) * 100) : null;
 
   // Category breakdown
   const categoryBreakdown: SkillCategoryBreakdown[] = ALL_SKILL_CATEGORIES.map(
