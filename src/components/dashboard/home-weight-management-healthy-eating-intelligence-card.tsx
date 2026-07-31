@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WeightManagementRating } from "@/lib/engines/home-weight-management-healthy-eating-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<WeightManagementRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -69,20 +70,20 @@ export function HomeWeightManagementHealthyEatingIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.weight_monitoring_rate >= 90 ? "text-[--cs-success]" : d.weight_monitoring_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.weight_monitoring_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Weight</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.bmi_tracking_rate >= 90 ? "bg-green-50" : d.bmi_tracking_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.bmi_tracking_rate >= 90 ? "text-[--cs-success]" : d.bmi_tracking_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.bmi_tracking_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.bmi_tracking_rate, 90) ? "bg-green-50" : meets(d.bmi_tracking_rate, 70) ? "bg-amber-50" : d.bmi_tracking_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.bmi_tracking_rate, 90) ? "text-[--cs-success]" : meets(d.bmi_tracking_rate, 70) ? "text-[--cs-warning]" : d.bmi_tracking_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.bmi_tracking_rate)}</p>
               <p className="text-[9px] text-muted-foreground">BMI</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.healthy_eating_rate >= 90 ? "bg-green-50" : d.healthy_eating_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.healthy_eating_rate >= 90 ? "text-[--cs-success]" : d.healthy_eating_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.healthy_eating_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.healthy_eating_rate, 90) ? "bg-green-50" : meets(d.healthy_eating_rate, 70) ? "bg-amber-50" : d.healthy_eating_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.healthy_eating_rate, 90) ? "text-[--cs-success]" : meets(d.healthy_eating_rate, 70) ? "text-[--cs-warning]" : d.healthy_eating_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.healthy_eating_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Eating</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.portion_control_rate >= 90 ? "bg-green-50" : d.portion_control_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.portion_control_rate >= 90 ? "text-[--cs-success]" : d.portion_control_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.portion_control_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.portion_control_rate, 90) ? "bg-green-50" : meets(d.portion_control_rate, 70) ? "bg-amber-50" : d.portion_control_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.portion_control_rate, 90) ? "text-[--cs-success]" : meets(d.portion_control_rate, 70) ? "text-[--cs-warning]" : d.portion_control_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.portion_control_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Portions</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.body_positivity_rate >= 90 ? "bg-green-50" : d.body_positivity_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.body_positivity_rate >= 90 ? "text-[--cs-success]" : d.body_positivity_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.body_positivity_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.body_positivity_rate, 90) ? "bg-green-50" : meets(d.body_positivity_rate, 70) ? "bg-amber-50" : d.body_positivity_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.body_positivity_rate, 90) ? "text-[--cs-success]" : meets(d.body_positivity_rate, 70) ? "text-[--cs-warning]" : d.body_positivity_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.body_positivity_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Body +</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_engagement_rate >= 90 ? "bg-green-50" : d.child_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

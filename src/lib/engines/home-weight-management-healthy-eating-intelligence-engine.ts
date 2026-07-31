@@ -6,6 +6,8 @@
 // Pure deterministic engine -- no imports, no LLM, no external deps.
 // CHR 2015 Reg 14 (Health care), Reg 5 (Statement of purpose),
 // SCCIF "Health and wellbeing".
+import { meets, below } from "@/lib/metrics/rate";
+
 // Store keys: weightMonitoringRecords, bmiTrackingRecords,
 //             healthyEatingRecords, portionControlRecords,
 //             bodyPositivityRecords
@@ -157,10 +159,14 @@ export interface WeightManagementResult {
   weight_score: number;
   headline: string;
   weight_monitoring_rate: number;
-  bmi_tracking_rate: number;
-  healthy_eating_rate: number;
-  portion_control_rate: number;
-  body_positivity_rate: number;
+  // fab-0: null when no records.
+  bmi_tracking_rate: number | null;
+  // fab-0: null when no records.
+  healthy_eating_rate: number | null;
+  // fab-0: null when no records.
+  portion_control_rate: number | null;
+  // fab-0: null when no records.
+  body_positivity_rate: number | null;
   child_engagement_rate: number;
   strengths: string[];
   concerns: string[];
@@ -197,10 +203,10 @@ function emptyResult(
     weight_score: score,
     headline,
     weight_monitoring_rate: 0,
-    bmi_tracking_rate: 0,
-    healthy_eating_rate: 0,
-    portion_control_rate: 0,
-    body_positivity_rate: 0,
+    bmi_tracking_rate: null,
+    healthy_eating_rate: null,
+    portion_control_rate: null,
+    body_positivity_rate: null,
     child_engagement_rate: 0,
     strengths: [],
     concerns: [],
@@ -323,10 +329,11 @@ export function computeWeightManagementHealthyEating(
   const bmiChartReviewed = bmi_tracking_records.filter((r) => r.growth_chart_reviewed).length;
   const bmiReviewRate = pct(bmiChartReviewed, totalBmiRecords);
 
-  const bmiTrackingRate =
+  // fab-0: null when no BMI records.
+  const bmiTrackingRate: number | null =
     totalBmiRecords > 0
       ? Math.round((bmiPlottingRate + bmiReviewRate) / 2)
-      : 0;
+      : null;
 
   const bmiHealthy = bmi_tracking_records.filter((r) => r.bmi_category === "healthy").length;
   const bmiHealthyRate = pct(bmiHealthy, totalBmiRecords);
@@ -361,10 +368,11 @@ export function computeWeightManagementHealthyEating(
   const healthyEatingEngaged = healthy_eating_records.filter((r) => r.engaged).length;
   const healthyEatingEngagementRate = pct(healthyEatingEngaged, totalHealthyEatingRecords);
 
-  const healthyEatingRate =
+  // fab-0: null when no healthy-eating records.
+  const healthyEatingRate: number | null =
     totalHealthyEatingRecords > 0
       ? Math.round((healthyEatingAttendanceRate + healthyEatingEngagementRate) / 2)
-      : 0;
+      : null;
 
   const healthyEatingEnjoyed = healthy_eating_records.filter((r) => r.child_enjoyed).length;
   const healthyEatingEnjoymentRate = pct(healthyEatingEnjoyed, totalHealthyEatingRecords);
@@ -372,10 +380,11 @@ export function computeWeightManagementHealthyEating(
   const healthyEatingSatisfactionSum = healthy_eating_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const healthyEatingSatisfactionAvg =
+  // fab-0: null when no healthy-eating records.
+  const healthyEatingSatisfactionAvg: number | null =
     totalHealthyEatingRecords > 0
       ? Math.round((healthyEatingSatisfactionSum / totalHealthyEatingRecords) * 100) / 100
-      : 0;
+      : null;
 
   const healthyEatingObjectivesMet = healthy_eating_records.filter(
     (r) => r.learning_objectives_met,
@@ -415,10 +424,11 @@ export function computeWeightManagementHealthyEating(
   ).length;
   const ageAppropriatePortionRate = pct(ageAppropriatePortions, totalPortionRecords);
 
-  const portionControlRate =
+  // fab-0: null when no portion records.
+  const portionControlRate: number | null =
     totalPortionRecords > 0
       ? Math.round((portionUnderstandingRate + ageAppropriatePortionRate) / 2)
-      : 0;
+      : null;
 
   const mealsBalanced = portion_control_records.filter((r) => r.meals_balanced).length;
   const mealsBalancedRate = pct(mealsBalanced, totalPortionRecords);
@@ -482,18 +492,20 @@ export function computeWeightManagementHealthyEating(
   ).length;
   const positiveImageRate = pct(positiveImageDiscussed, totalBodyPositivityRecords);
 
-  const bodyPositivityRate =
+  // fab-0: null when no body-positivity records.
+  const bodyPositivityRate: number | null =
     totalBodyPositivityRecords > 0
       ? Math.round((bodyPositivityEngagementRate + positiveImageRate) / 2)
-      : 0;
+      : null;
 
   const bodyPositivitySatisfactionSum = body_positivity_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const bodyPositivitySatisfactionAvg =
+  // fab-0: null when no body-positivity records.
+  const bodyPositivitySatisfactionAvg: number | null =
     totalBodyPositivityRecords > 0
       ? Math.round((bodyPositivitySatisfactionSum / totalBodyPositivityRecords) * 100) / 100
-      : 0;
+      : null;
 
   const selfEsteemComponent = body_positivity_records.filter(
     (r) => r.self_esteem_component,
@@ -556,20 +568,20 @@ export function computeWeightManagementHealthyEating(
   else if (weightMonitoringRate >= 70) score += 2;
 
   // --- Bonus 2: bmiTrackingRate (>=80: +4, >=60: +2) ---
-  if (bmiTrackingRate >= 80) score += 4;
-  else if (bmiTrackingRate >= 60) score += 2;
+  if (meets(bmiTrackingRate, 80)) score += 4;
+  else if (meets(bmiTrackingRate, 60)) score += 2;
 
   // --- Bonus 3: healthyEatingRate (>=90: +4, >=70: +2) ---
-  if (healthyEatingRate >= 90) score += 4;
-  else if (healthyEatingRate >= 70) score += 2;
+  if (meets(healthyEatingRate, 90)) score += 4;
+  else if (meets(healthyEatingRate, 70)) score += 2;
 
   // --- Bonus 4: portionControlRate (>=90: +3, >=70: +1) ---
-  if (portionControlRate >= 90) score += 3;
-  else if (portionControlRate >= 70) score += 1;
+  if (meets(portionControlRate, 90)) score += 3;
+  else if (meets(portionControlRate, 70)) score += 1;
 
   // --- Bonus 5: bodyPositivityRate (>=90: +3, >=70: +1) ---
-  if (bodyPositivityRate >= 90) score += 3;
-  else if (bodyPositivityRate >= 70) score += 1;
+  if (meets(bodyPositivityRate, 90)) score += 3;
+  else if (meets(bodyPositivityRate, 70)) score += 1;
 
   // --- Bonus 6: childEngagementRate (>=80: +3, >=60: +1) ---
   if (childEngagementRate >= 80) score += 3;
@@ -596,10 +608,10 @@ export function computeWeightManagementHealthyEating(
   if (bmiDecliningRate > 40 && bmi_tracking_records.length > 0) score -= 5;
 
   // healthyEatingRate < 40 -> -4
-  if (healthyEatingRate < 40 && healthy_eating_records.length > 0) score -= 4;
+  if (below(healthyEatingRate, 40) && healthy_eating_records.length > 0) score -= 4;
 
   // bodyPositivityRate < 40 -> -4
-  if (bodyPositivityRate < 40 && body_positivity_records.length > 0) score -= 4;
+  if (below(bodyPositivityRate, 40) && body_positivity_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -647,11 +659,11 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (bmiTrackingRate >= 80 && totalBmiRecords > 0) {
+  if (totalBmiRecords > 0 && meets(bmiTrackingRate, 80)) {
     strengths.push(
       `BMI tracking rate at ${bmiTrackingRate}% -- growth charts are plotted and reviewed systematically for all children.`,
     );
-  } else if (bmiTrackingRate >= 60 && totalBmiRecords > 0) {
+  } else if (totalBmiRecords > 0 && meets(bmiTrackingRate, 60)) {
     strengths.push(
       `BMI tracking rate at ${bmiTrackingRate}% -- good progress in systematic BMI monitoring and growth chart review.`,
     );
@@ -675,17 +687,17 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (healthyEatingRate >= 90 && totalHealthyEatingRecords > 0) {
+  if (totalHealthyEatingRecords > 0 && meets(healthyEatingRate, 90)) {
     strengths.push(
       `Healthy eating programme engagement at ${healthyEatingRate}% -- children are attending and actively participating in nutrition education.`,
     );
-  } else if (healthyEatingRate >= 70 && totalHealthyEatingRecords > 0) {
+  } else if (totalHealthyEatingRecords > 0 && meets(healthyEatingRate, 70)) {
     strengths.push(
       `Healthy eating engagement at ${healthyEatingRate}% -- good levels of participation in nutrition programmes.`,
     );
   }
 
-  if (healthyEatingSatisfactionAvg >= 4.0 && totalHealthyEatingRecords > 0) {
+  if (totalHealthyEatingRecords > 0 && healthyEatingSatisfactionAvg !== null && healthyEatingSatisfactionAvg >= 4.0) {
     strengths.push(
       `Children's satisfaction with healthy eating programmes averages ${healthyEatingSatisfactionAvg}/5 -- children enjoy and value the nutrition education provided.`,
     );
@@ -709,11 +721,11 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (portionControlRate >= 90 && totalPortionRecords > 0) {
+  if (totalPortionRecords > 0 && meets(portionControlRate, 90)) {
     strengths.push(
       `Portion control awareness at ${portionControlRate}% -- children understand appropriate portions and are served age-appropriate meals.`,
     );
-  } else if (portionControlRate >= 70 && totalPortionRecords > 0) {
+  } else if (totalPortionRecords > 0 && meets(portionControlRate, 70)) {
     strengths.push(
       `Portion control awareness at ${portionControlRate}% -- good understanding of portions across the home.`,
     );
@@ -749,17 +761,17 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (bodyPositivityRate >= 90 && totalBodyPositivityRecords > 0) {
+  if (totalBodyPositivityRecords > 0 && meets(bodyPositivityRate, 90)) {
     strengths.push(
       `Body positivity support at ${bodyPositivityRate}% -- children are engaged in positive body image work and discussions.`,
     );
-  } else if (bodyPositivityRate >= 70 && totalBodyPositivityRecords > 0) {
+  } else if (totalBodyPositivityRecords > 0 && meets(bodyPositivityRate, 70)) {
     strengths.push(
       `Body positivity support at ${bodyPositivityRate}% -- good levels of engagement with positive body image activities.`,
     );
   }
 
-  if (bodyPositivitySatisfactionAvg >= 4.0 && totalBodyPositivityRecords > 0) {
+  if (totalBodyPositivityRecords > 0 && bodyPositivitySatisfactionAvg !== null && bodyPositivitySatisfactionAvg >= 4.0) {
     strengths.push(
       `Children's satisfaction with body positivity work averages ${bodyPositivitySatisfactionAvg}/5 -- children find the sessions helpful and supportive.`,
     );
@@ -851,11 +863,11 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (bmiTrackingRate < 50 && totalBmiRecords > 0) {
+  if (totalBmiRecords > 0 && below(bmiTrackingRate, 50)) {
     concerns.push(
       `BMI tracking rate at only ${bmiTrackingRate}% -- growth charts are not being consistently plotted or reviewed, meaning weight trends may be missed.`,
     );
-  } else if (bmiTrackingRate < 60 && bmiTrackingRate >= 50 && totalBmiRecords > 0) {
+  } else if (totalBmiRecords > 0 && bmiTrackingRate !== null && bmiTrackingRate < 60 && bmiTrackingRate >= 50) {
     concerns.push(
       `BMI tracking rate at ${bmiTrackingRate}% -- growth chart plotting and review need strengthening to ensure systematic BMI monitoring.`,
     );
@@ -873,17 +885,17 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (healthyEatingRate < 40 && totalHealthyEatingRecords > 0) {
+  if (totalHealthyEatingRecords > 0 && below(healthyEatingRate, 40)) {
     concerns.push(
       `Healthy eating programme engagement at only ${healthyEatingRate}% -- children are not attending or engaging with nutrition education, undermining healthy eating promotion.`,
     );
-  } else if (healthyEatingRate < 70 && healthyEatingRate >= 40 && totalHealthyEatingRecords > 0) {
+  } else if (totalHealthyEatingRecords > 0 && healthyEatingRate !== null && healthyEatingRate < 70 && healthyEatingRate >= 40) {
     concerns.push(
       `Healthy eating engagement at ${healthyEatingRate}% -- participation in nutrition programmes needs strengthening to ensure all children benefit.`,
     );
   }
 
-  if (healthyEatingSatisfactionAvg < 3.0 && totalHealthyEatingRecords > 0) {
+  if (totalHealthyEatingRecords > 0 && healthyEatingSatisfactionAvg !== null && healthyEatingSatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with healthy eating programmes averages only ${healthyEatingSatisfactionAvg}/5 -- children do not find the nutrition education engaging or enjoyable.`,
     );
@@ -895,11 +907,11 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (portionControlRate < 50 && totalPortionRecords > 0) {
+  if (totalPortionRecords > 0 && below(portionControlRate, 50)) {
     concerns.push(
       `Portion control awareness at only ${portionControlRate}% -- children do not understand appropriate portions and may not be served age-appropriate meals.`,
     );
-  } else if (portionControlRate < 70 && portionControlRate >= 50 && totalPortionRecords > 0) {
+  } else if (totalPortionRecords > 0 && portionControlRate !== null && portionControlRate < 70 && portionControlRate >= 50) {
     concerns.push(
       `Portion control awareness at ${portionControlRate}% -- portion understanding and serving practices need improvement.`,
     );
@@ -935,11 +947,11 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (bodyPositivityRate < 40 && totalBodyPositivityRecords > 0) {
+  if (totalBodyPositivityRecords > 0 && below(bodyPositivityRate, 40)) {
     concerns.push(
       `Body positivity support at only ${bodyPositivityRate}% -- children are not engaging with positive body image work, leaving them vulnerable to weight stigma and low self-esteem.`,
     );
-  } else if (bodyPositivityRate < 70 && bodyPositivityRate >= 40 && totalBodyPositivityRecords > 0) {
+  } else if (totalBodyPositivityRecords > 0 && bodyPositivityRate !== null && bodyPositivityRate < 70 && bodyPositivityRate >= 40) {
     concerns.push(
       `Body positivity support at ${bodyPositivityRate}% -- more children need to be engaged in positive body image activities.`,
     );
@@ -951,7 +963,7 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (bodyPositivitySatisfactionAvg < 3.0 && totalBodyPositivityRecords > 0) {
+  if (totalBodyPositivityRecords > 0 && bodyPositivitySatisfactionAvg !== null && bodyPositivitySatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with body positivity work averages only ${bodyPositivitySatisfactionAvg}/5 -- the approach to body image support may not be resonating with children.`,
     );
@@ -1010,7 +1022,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (healthyEatingRate < 40 && totalHealthyEatingRecords > 0) {
+  if (totalHealthyEatingRecords > 0 && below(healthyEatingRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1020,7 +1032,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (bodyPositivityRate < 40 && totalBodyPositivityRecords > 0) {
+  if (totalBodyPositivityRecords > 0 && below(bodyPositivityRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1040,7 +1052,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (bmiTrackingRate < 50 && totalBmiRecords > 0) {
+  if (totalBmiRecords > 0 && below(bmiTrackingRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1050,7 +1062,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (portionControlRate < 50 && totalPortionRecords > 0) {
+  if (totalPortionRecords > 0 && below(portionControlRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1120,7 +1132,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (healthyEatingRate >= 40 && healthyEatingRate < 70 && totalHealthyEatingRecords > 0) {
+  if (totalHealthyEatingRecords > 0 && healthyEatingRate !== null && healthyEatingRate >= 40 && healthyEatingRate < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1130,7 +1142,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (portionControlRate >= 50 && portionControlRate < 70 && totalPortionRecords > 0) {
+  if (totalPortionRecords > 0 && portionControlRate !== null && portionControlRate >= 50 && portionControlRate < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1140,7 +1152,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (bodyPositivityRate >= 40 && bodyPositivityRate < 70 && totalBodyPositivityRecords > 0) {
+  if (totalBodyPositivityRecords > 0 && bodyPositivityRate !== null && bodyPositivityRate >= 40 && bodyPositivityRate < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1210,14 +1222,14 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (healthyEatingRate < 40 && totalHealthyEatingRecords > 0) {
+  if (totalHealthyEatingRecords > 0 && below(healthyEatingRate, 40)) {
     insights.push({
       text: `Healthy eating programme engagement at only ${healthyEatingRate}%. Children are not attending or engaging with nutrition education, meaning the home cannot evidence that it promotes healthy eating as required by Reg 14. The programme may need fundamental redesign to engage children meaningfully.`,
       severity: "critical",
     });
   }
 
-  if (bodyPositivityRate < 40 && totalBodyPositivityRecords > 0) {
+  if (totalBodyPositivityRecords > 0 && below(bodyPositivityRate, 40)) {
     insights.push({
       text: `Body positivity support at only ${bodyPositivityRate}%. Without effective body image work, children are vulnerable to weight stigma, disordered eating patterns, and low self-esteem. Ofsted expects homes to promote positive body image as part of holistic health and wellbeing.`,
       severity: "critical",
@@ -1247,21 +1259,21 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (healthyEatingRate >= 40 && healthyEatingRate < 70 && totalHealthyEatingRecords > 0) {
+  if (totalHealthyEatingRecords > 0 && healthyEatingRate !== null && healthyEatingRate >= 40 && healthyEatingRate < 70) {
     insights.push({
       text: `Healthy eating engagement at ${healthyEatingRate}% -- while some children participate, overall engagement needs improvement to demonstrate the home's commitment to promoting healthy eating across the whole community.`,
       severity: "warning",
     });
   }
 
-  if (portionControlRate >= 50 && portionControlRate < 70 && totalPortionRecords > 0) {
+  if (totalPortionRecords > 0 && portionControlRate !== null && portionControlRate >= 50 && portionControlRate < 70) {
     insights.push({
       text: `Portion control awareness at ${portionControlRate}% -- understanding of appropriate portions is developing but not yet embedded. Inconsistent portion knowledge may contribute to unhealthy eating patterns.`,
       severity: "warning",
     });
   }
 
-  if (bodyPositivityRate >= 40 && bodyPositivityRate < 70 && totalBodyPositivityRecords > 0) {
+  if (totalBodyPositivityRecords > 0 && bodyPositivityRate !== null && bodyPositivityRate >= 40 && bodyPositivityRate < 70) {
     insights.push({
       text: `Body positivity support at ${bodyPositivityRate}% -- some children are benefiting from positive body image work but coverage needs expansion to protect all children from weight stigma and self-image difficulties.`,
       severity: "warning",
@@ -1326,28 +1338,28 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (weightMonitoringRate >= 90 && bmiTrackingRate >= 80 && totalWeightRecords > 0 && totalBmiRecords > 0) {
+  if (totalWeightRecords > 0 && totalBmiRecords > 0 && meets(bmiTrackingRate, 80) && weightMonitoringRate >= 90) {
     insights.push({
       text: `${weightMonitoringRate}% healthy weight range with BMI tracking at ${bmiTrackingRate}% -- the home provides comprehensive, systematic weight monitoring with clinical rigour. Ofsted will recognise this as evidence of proactive health care.`,
       severity: "positive",
     });
   }
 
-  if (healthyEatingRate >= 90 && healthyEatingSatisfactionAvg >= 4.0 && totalHealthyEatingRecords > 0) {
+  if (totalHealthyEatingRecords > 0 && meets(healthyEatingRate, 90) && healthyEatingSatisfactionAvg !== null && healthyEatingSatisfactionAvg >= 4.0) {
     insights.push({
       text: `Healthy eating engagement at ${healthyEatingRate}% with satisfaction averaging ${healthyEatingSatisfactionAvg}/5 -- children are not only attending nutrition programmes but genuinely enjoying and learning from them. This translates knowledge into lasting healthy habits.`,
       severity: "positive",
     });
   }
 
-  if (portionControlRate >= 90 && mealsBalancedRate >= 90 && totalPortionRecords > 0) {
+  if (totalPortionRecords > 0 && meets(portionControlRate, 90) && mealsBalancedRate >= 90) {
     insights.push({
       text: `Portion awareness at ${portionControlRate}% with ${mealsBalancedRate}% balanced meals -- the home delivers consistently nutritious, appropriately portioned meals while building children's understanding of healthy eating. This supports both immediate health and long-term independence.`,
       severity: "positive",
     });
   }
 
-  if (bodyPositivityRate >= 90 && selfEsteemRate >= 80 && totalBodyPositivityRecords > 0) {
+  if (totalBodyPositivityRecords > 0 && meets(bodyPositivityRate, 90) && selfEsteemRate >= 80) {
     insights.push({
       text: `Body positivity at ${bodyPositivityRate}% with self-esteem components in ${selfEsteemRate}% of sessions -- the home goes beyond weight management to nurture children's holistic wellbeing, confidence, and positive self-image. This is exemplary practice.`,
       severity: "positive",

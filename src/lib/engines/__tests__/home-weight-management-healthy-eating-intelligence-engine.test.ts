@@ -202,10 +202,10 @@ describe("insufficient data and edge cases", () => {
   it("all rates are 0 for insufficient_data", () => {
     const r = run({ total_children: 0 });
     expect(r.weight_monitoring_rate).toBe(0);
-    expect(r.bmi_tracking_rate).toBe(0);
-    expect(r.healthy_eating_rate).toBe(0);
-    expect(r.portion_control_rate).toBe(0);
-    expect(r.body_positivity_rate).toBe(0);
+    expect(r.bmi_tracking_rate).toBeNull();
+    expect(r.healthy_eating_rate).toBeNull();
+    expect(r.portion_control_rate).toBeNull();
+    expect(r.body_positivity_rate).toBeNull();
     expect(r.child_engagement_rate).toBe(0);
   });
 
@@ -387,7 +387,7 @@ describe("weight monitoring", () => {
 describe("BMI tracking", () => {
   it("bmiTrackingRate is 0 when no records", () => {
     const r = run({});
-    expect(r.bmi_tracking_rate).toBe(0);
+    expect(r.bmi_tracking_rate).toBeNull();
   });
 
   it("100% when all plotted and reviewed", () => {
@@ -403,6 +403,7 @@ describe("BMI tracking", () => {
       makeBmiTracking({ plotted_on_growth_chart: false, growth_chart_reviewed: false })
     );
     const r = run({ bmi_tracking_records: records });
+    // record exists → 0, not null
     expect(r.bmi_tracking_rate).toBe(0);
   });
 
@@ -538,7 +539,7 @@ describe("BMI tracking", () => {
 describe("healthy eating", () => {
   it("healthyEatingRate is 0 when no records", () => {
     const r = run({});
-    expect(r.healthy_eating_rate).toBe(0);
+    expect(r.healthy_eating_rate).toBeNull();
   });
 
   it("100% when all attended and engaged", () => {
@@ -550,6 +551,7 @@ describe("healthy eating", () => {
   it("0% when none attended or engaged", () => {
     const records = Array.from({ length: 10 }, () => makeHealthyEating({ attended: false, engaged: false }));
     const r = run({ healthy_eating_records: records });
+    // record exists → 0, not null
     expect(r.healthy_eating_rate).toBe(0);
   });
 
@@ -661,7 +663,7 @@ describe("healthy eating", () => {
 describe("portion control", () => {
   it("portionControlRate is 0 when no records", () => {
     const r = run({});
-    expect(r.portion_control_rate).toBe(0);
+    expect(r.portion_control_rate).toBeNull();
   });
 
   it("100% when all understand and served appropriate portions", () => {
@@ -675,6 +677,7 @@ describe("portion control", () => {
       makePortionControl({ understands_portions: false, age_appropriate_portions_served: false })
     );
     const r = run({ portion_control_records: records });
+    // record exists → 0, not null
     expect(r.portion_control_rate).toBe(0);
   });
 
@@ -844,7 +847,7 @@ describe("portion control", () => {
 describe("body positivity", () => {
   it("bodyPositivityRate is 0 when no records", () => {
     const r = run({});
-    expect(r.body_positivity_rate).toBe(0);
+    expect(r.body_positivity_rate).toBeNull();
   });
 
   it("100% when all engaged and discussed", () => {
@@ -858,6 +861,7 @@ describe("body positivity", () => {
       makeBodyPositivity({ child_engaged: false, positive_body_image_discussed: false })
     );
     const r = run({ body_positivity_records: records });
+    // record exists → 0, not null
     expect(r.body_positivity_rate).toBe(0);
   });
 
