@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Footprints } from
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { SlipsTripsFallsRating } from "@/lib/engines/home-slips-trips-falls-prevention-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 function useHomeSlipsTripsFallsPreventionIntelligence() {
   return useQuery({
@@ -77,20 +78,20 @@ export function HomeSlipsTripsFallsPreventionIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.flooring_condition_rate >= 90 ? "text-[--cs-success]" : d.flooring_condition_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.flooring_condition_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Flooring</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.wet_floor_protocol_rate >= 90 ? "bg-green-50" : d.wet_floor_protocol_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.wet_floor_protocol_rate >= 90 ? "text-[--cs-success]" : d.wet_floor_protocol_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.wet_floor_protocol_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.wet_floor_protocol_rate, 90) ? "bg-green-50" : meets(d.wet_floor_protocol_rate, 70) ? "bg-amber-50" : d.wet_floor_protocol_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.wet_floor_protocol_rate, 90) ? "text-[--cs-success]" : meets(d.wet_floor_protocol_rate, 70) ? "text-[--cs-warning]" : d.wet_floor_protocol_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.wet_floor_protocol_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Wet Floor</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.stairway_safety_rate >= 90 ? "bg-green-50" : d.stairway_safety_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.stairway_safety_rate >= 90 ? "text-[--cs-success]" : d.stairway_safety_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.stairway_safety_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.stairway_safety_rate, 90) ? "bg-green-50" : meets(d.stairway_safety_rate, 70) ? "bg-amber-50" : d.stairway_safety_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.stairway_safety_rate, 90) ? "text-[--cs-success]" : meets(d.stairway_safety_rate, 70) ? "text-[--cs-warning]" : d.stairway_safety_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.stairway_safety_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Stairway</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.incident_learning_rate >= 90 ? "bg-green-50" : d.incident_learning_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.incident_learning_rate >= 90 ? "text-[--cs-success]" : d.incident_learning_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.incident_learning_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.incident_learning_rate, 90) ? "bg-green-50" : meets(d.incident_learning_rate, 70) ? "bg-amber-50" : d.incident_learning_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.incident_learning_rate, 90) ? "text-[--cs-success]" : meets(d.incident_learning_rate, 70) ? "text-[--cs-warning]" : d.incident_learning_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.incident_learning_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Learning</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_awareness_rate >= 90 ? "bg-green-50" : d.staff_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_awareness_rate >= 90 ? "text-[--cs-success]" : d.staff_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_awareness_rate, 90) ? "bg-green-50" : meets(d.staff_awareness_rate, 70) ? "bg-amber-50" : d.staff_awareness_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.staff_awareness_rate, 70) ? "text-[--cs-warning]" : d.staff_awareness_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.staff_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Staff</p>
             </div>
           </div>

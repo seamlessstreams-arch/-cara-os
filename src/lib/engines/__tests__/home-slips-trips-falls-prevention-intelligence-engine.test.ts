@@ -190,10 +190,10 @@ describe("computeSlipsTripsFallsPrevention", () => {
       });
       expect(r.risk_assessment_rate).toBe(0);
       expect(r.flooring_condition_rate).toBe(0);
-      expect(r.wet_floor_protocol_rate).toBe(0);
-      expect(r.stairway_safety_rate).toBe(0);
-      expect(r.incident_learning_rate).toBe(0);
-      expect(r.staff_awareness_rate).toBe(0);
+      expect(r.wet_floor_protocol_rate).toBeNull();
+      expect(r.stairway_safety_rate).toBeNull();
+      expect(r.incident_learning_rate).toBeNull();
+      expect(r.staff_awareness_rate).toBeNull();
     });
 
     it("allEmpty + children produces two immediate recommendations", () => {
@@ -781,7 +781,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
 
     it("returns 0 with no records", () => {
       const r = computeSlipsTripsFallsPrevention({ ...baseInput });
-      expect(r.wet_floor_protocol_rate).toBe(0);
+      expect(r.wet_floor_protocol_rate).toBeNull();
     });
 
     it("returns 100 when all compliant", () => {
@@ -826,7 +826,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
 
     it("returns 0 with no records", () => {
       const r = computeSlipsTripsFallsPrevention({ ...baseInput });
-      expect(r.stairway_safety_rate).toBe(0);
+      expect(r.stairway_safety_rate).toBeNull();
     });
 
     it("returns 100 when all elements pass", () => {
@@ -846,6 +846,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
           makeStairwaySafety({ id: "1", handrail_secure: false, treads_non_slip: false, lighting_adequate: false, clutter_free: false, carpet_secure: false }),
         ],
       });
+      // record exists → 0, not null
       expect(r.stairway_safety_rate).toBe(0);
     });
   });
@@ -874,7 +875,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
 
     it("returns 0 with no incidents", () => {
       const r = computeSlipsTripsFallsPrevention({ ...baseInput });
-      expect(r.incident_learning_rate).toBe(0);
+      expect(r.incident_learning_rate).toBeNull();
     });
 
     it("returns 100 when all learning domains complete", () => {
@@ -901,6 +902,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
           }),
         ],
       });
+      // record exists → 0, not null
       expect(r.incident_learning_rate).toBe(0);
     });
   });
@@ -928,7 +930,7 @@ describe("computeSlipsTripsFallsPrevention", () => {
         ...baseInput,
         flooring_condition_records: [makeFlooringCondition()],
       });
-      expect(r.staff_awareness_rate).toBe(0);
+      expect(r.staff_awareness_rate).toBeNull();
     });
 
     it("includes lessonsSharedRate when incidents exist", () => {
@@ -2616,9 +2618,9 @@ describe("computeSlipsTripsFallsPrevention", () => {
       });
       expect(r.risk_assessment_rate).toBe(100);
       expect(r.flooring_condition_rate).toBe(0);
-      expect(r.wet_floor_protocol_rate).toBe(0);
-      expect(r.stairway_safety_rate).toBe(0);
-      expect(r.incident_learning_rate).toBe(0);
+      expect(r.wet_floor_protocol_rate).toBeNull();
+      expect(r.stairway_safety_rate).toBeNull();
+      expect(r.incident_learning_rate).toBeNull();
     });
 
     it("only flooring records populated", () => {

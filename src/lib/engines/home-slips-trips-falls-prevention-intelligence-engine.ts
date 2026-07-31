@@ -10,6 +10,8 @@
 //             slipTripFallIncidentRecords
 // ==============================================================================
 
+import { meets, below } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface SlipTripRiskAssessmentRecordInput {
@@ -156,10 +158,14 @@ export interface SlipsTripsFallsPreventionResult {
   headline: string;
   risk_assessment_rate: number;
   flooring_condition_rate: number;
-  wet_floor_protocol_rate: number;
-  stairway_safety_rate: number;
-  incident_learning_rate: number;
-  staff_awareness_rate: number;
+  // fab-0: null when no records.
+  wet_floor_protocol_rate: number | null;
+  // fab-0: null when no records.
+  stairway_safety_rate: number | null;
+  // fab-0: null when no records.
+  incident_learning_rate: number | null;
+  // fab-0: null when no records.
+  staff_awareness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SlipsTripsFallsRecommendation[];
@@ -203,10 +209,10 @@ function emptyResult(
     headline,
     risk_assessment_rate: 0,
     flooring_condition_rate: 0,
-    wet_floor_protocol_rate: 0,
-    stairway_safety_rate: 0,
-    incident_learning_rate: 0,
-    staff_awareness_rate: 0,
+    wet_floor_protocol_rate: null,
+    stairway_safety_rate: null,
+    incident_learning_rate: null,
+    staff_awareness_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -365,10 +371,11 @@ export function computeSlipsTripsFallsPrevention(
   const childrenWarned = wet_floor_records.filter((r) => r.children_warned).length;
   const childrenWarnedRate = pct(childrenWarned, totalWetFloorRecords);
 
-  const wetFloorProtocolRate =
+  // fab-0: null when no records.
+  const wetFloorProtocolRate: number | null =
     totalWetFloorRecords > 0
       ? Math.round((signageRate + cleaningRate + spillResponseRate + protocolDocRate) / 4)
-      : 0;
+      : null;
 
   // --- Stairway safety ---
   const totalStairwayRecords = stairway_safety_records.length;
@@ -402,10 +409,11 @@ export function computeSlipsTripsFallsPrevention(
   const childSpecificRisksAssessed = stairway_safety_records.filter((r) => r.child_specific_risks_assessed).length;
   const childSpecificRate = pct(childSpecificRisksAssessed, totalStairwayRecords);
 
-  const stairwaySafetyRate =
+  // fab-0: null when no records.
+  const stairwaySafetyRate: number | null =
     totalStairwayRecords > 0
       ? Math.round((handrailRate + treadsRate + stairLightingRate + clutterFreeRate + carpetSecureRate) / 5)
-      : 0;
+      : null;
 
   // --- Incident tracking and learning ---
   const totalIncidents = incident_records.length;
@@ -424,10 +432,11 @@ export function computeSlipsTripsFallsPrevention(
   const riskAssessmentUpdated = incident_records.filter((r) => r.risk_assessment_updated).length;
   const riskAssessmentUpdatedRate = pct(riskAssessmentUpdated, totalIncidents);
 
-  const incidentLearningRate =
+  // fab-0: null when no incidents.
+  const incidentLearningRate: number | null =
     totalIncidents > 0
       ? Math.round((investigationRate + rootCauseRate + lessonsDocRate + lessonsSharedRate + riskAssessmentUpdatedRate) / 5)
-      : 0;
+      : null;
 
   const seriousMajorIncidents = incident_records.filter(
     (r) => r.severity === "serious" || r.severity === "major",
@@ -467,10 +476,11 @@ export function computeSlipsTripsFallsPrevention(
   if (totalRiskAssessments > 0) staffAwarenessNumerators.push(signedOffRate);
   if (totalIncidents > 0) staffAwarenessNumerators.push(lessonsSharedRate);
   if (totalWetFloorRecords > 0) staffAwarenessNumerators.push(childrenWarnedRate);
-  const staffAwarenessRate =
+  // fab-0: null when no signals feed into the composite.
+  const staffAwarenessRate: number | null =
     staffAwarenessNumerators.length > 0
       ? Math.round(staffAwarenessNumerators.reduce((a, b) => a + b, 0) / staffAwarenessNumerators.length)
-      : 0;
+      : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -485,20 +495,20 @@ export function computeSlipsTripsFallsPrevention(
   else if (flooringConditionRate >= 70) score += 3;
 
   // --- Bonus 3: wetFloorProtocolRate (>=90: +5, >=70: +2) ---
-  if (wetFloorProtocolRate >= 90) score += 5;
-  else if (wetFloorProtocolRate >= 70) score += 2;
+  if (meets(wetFloorProtocolRate, 90)) score += 5;
+  else if (meets(wetFloorProtocolRate, 70)) score += 2;
 
   // --- Bonus 4: stairwaySafetyRate (>=90: +5, >=70: +2) ---
-  if (stairwaySafetyRate >= 90) score += 5;
-  else if (stairwaySafetyRate >= 70) score += 2;
+  if (meets(stairwaySafetyRate, 90)) score += 5;
+  else if (meets(stairwaySafetyRate, 70)) score += 2;
 
   // --- Bonus 5: incidentLearningRate (>=90: +4, >=70: +2) ---
-  if (incidentLearningRate >= 90) score += 4;
-  else if (incidentLearningRate >= 70) score += 2;
+  if (meets(incidentLearningRate, 90)) score += 4;
+  else if (meets(incidentLearningRate, 70)) score += 2;
 
   // --- Bonus 6: staffAwarenessRate (>=90: +4, >=70: +2) ---
-  if (staffAwarenessRate >= 90) score += 4;
-  else if (staffAwarenessRate >= 70) score += 2;
+  if (meets(staffAwarenessRate, 90)) score += 4;
+  else if (meets(staffAwarenessRate, 70)) score += 2;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
@@ -582,11 +592,11 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (wetFloorProtocolRate >= 90 && totalWetFloorRecords > 0) {
+  if (totalWetFloorRecords > 0 && meets(wetFloorProtocolRate, 90)) {
     strengths.push(
       `Wet floor protocol compliance at ${wetFloorProtocolRate}% -- signage, cleaning schedules, spill response, and documentation are consistently followed.`,
     );
-  } else if (wetFloorProtocolRate >= 70 && totalWetFloorRecords > 0) {
+  } else if (totalWetFloorRecords > 0 && meets(wetFloorProtocolRate, 70)) {
     strengths.push(
       `Wet floor protocol compliance at ${wetFloorProtocolRate}% -- good adherence to wet floor management procedures.`,
     );
@@ -604,11 +614,11 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (stairwaySafetyRate >= 90 && totalStairwayRecords > 0) {
+  if (totalStairwayRecords > 0 && meets(stairwaySafetyRate, 90)) {
     strengths.push(
       `Stairway safety compliance at ${stairwaySafetyRate}% -- handrails, treads, lighting, clutter management, and carpet security all meet standards.`,
     );
-  } else if (stairwaySafetyRate >= 70 && totalStairwayRecords > 0) {
+  } else if (totalStairwayRecords > 0 && meets(stairwaySafetyRate, 70)) {
     strengths.push(
       `Stairway safety compliance at ${stairwaySafetyRate}% -- most stairway safety elements meet required standards.`,
     );
@@ -632,11 +642,11 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (incidentLearningRate >= 90 && totalIncidents > 0) {
+  if (totalIncidents > 0 && meets(incidentLearningRate, 90)) {
     strengths.push(
       `Incident learning rate at ${incidentLearningRate}% -- investigations, root cause analysis, lessons learned, staff sharing, and risk assessment updates are consistently applied after each incident.`,
     );
-  } else if (incidentLearningRate >= 70 && totalIncidents > 0) {
+  } else if (totalIncidents > 0 && meets(incidentLearningRate, 70)) {
     strengths.push(
       `Incident learning rate at ${incidentLearningRate}% -- good evidence of organisational learning from slip, trip, and fall incidents.`,
     );
@@ -672,11 +682,11 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (staffAwarenessRate >= 90 && staffAwarenessNumerators.length > 0) {
+  if (staffAwarenessNumerators.length > 0 && meets(staffAwarenessRate, 90)) {
     strengths.push(
       `Staff awareness composite at ${staffAwarenessRate}% -- staff are trained, sign off assessments, share lessons, and warn children about hazards consistently.`,
     );
-  } else if (staffAwarenessRate >= 70 && staffAwarenessNumerators.length > 0) {
+  } else if (staffAwarenessNumerators.length > 0 && meets(staffAwarenessRate, 70)) {
     strengths.push(
       `Staff awareness composite at ${staffAwarenessRate}% -- good staff engagement with slips, trips, and falls prevention.`,
     );
@@ -766,11 +776,11 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (wetFloorProtocolRate < 50 && totalWetFloorRecords > 0) {
+  if (totalWetFloorRecords > 0 && below(wetFloorProtocolRate, 50)) {
     concerns.push(
       `Wet floor protocol compliance at only ${wetFloorProtocolRate}% -- signage, cleaning schedules, spill response, and documentation are not being consistently followed, leaving children at risk from wet surfaces.`,
     );
-  } else if (wetFloorProtocolRate < 70 && wetFloorProtocolRate >= 50 && totalWetFloorRecords > 0) {
+  } else if (totalWetFloorRecords > 0 && wetFloorProtocolRate !== null && wetFloorProtocolRate < 70 && wetFloorProtocolRate >= 50) {
     concerns.push(
       `Wet floor protocol compliance at ${wetFloorProtocolRate}% -- gaps in wet floor management procedures need to be addressed.`,
     );
@@ -800,11 +810,11 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (stairwaySafetyRate < 50 && totalStairwayRecords > 0) {
+  if (totalStairwayRecords > 0 && below(stairwaySafetyRate, 50)) {
     concerns.push(
       `Stairway safety compliance at only ${stairwaySafetyRate}% -- significant deficiencies in handrails, treads, lighting, clutter management, or carpet security on staircases.`,
     );
-  } else if (stairwaySafetyRate < 70 && stairwaySafetyRate >= 50 && totalStairwayRecords > 0) {
+  } else if (totalStairwayRecords > 0 && stairwaySafetyRate !== null && stairwaySafetyRate < 70 && stairwaySafetyRate >= 50) {
     concerns.push(
       `Stairway safety compliance at ${stairwaySafetyRate}% -- some stairway safety elements need improvement.`,
     );
@@ -846,11 +856,11 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (incidentLearningRate < 50 && totalIncidents > 0) {
+  if (totalIncidents > 0 && below(incidentLearningRate, 50)) {
     concerns.push(
       `Incident learning rate at only ${incidentLearningRate}% -- the home is not consistently investigating incidents, identifying root causes, documenting lessons, or updating risk assessments after slip, trip, and fall events.`,
     );
-  } else if (incidentLearningRate < 70 && incidentLearningRate >= 50 && totalIncidents > 0) {
+  } else if (totalIncidents > 0 && incidentLearningRate !== null && incidentLearningRate < 70 && incidentLearningRate >= 50) {
     concerns.push(
       `Incident learning rate at ${incidentLearningRate}% -- some aspects of post-incident learning need strengthening.`,
     );
@@ -874,7 +884,7 @@ export function computeSlipsTripsFallsPrevention(
     );
   }
 
-  if (staffAwarenessRate < 50 && staffAwarenessNumerators.length > 0) {
+  if (staffAwarenessNumerators.length > 0 && below(staffAwarenessRate, 50)) {
     concerns.push(
       `Staff awareness composite at only ${staffAwarenessRate}% -- staff training, sign-off, lesson sharing, and hazard warning practices are insufficient.`,
     );
@@ -991,7 +1001,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (wetFloorProtocolRate < 50 && totalWetFloorRecords > 0) {
+  if (totalWetFloorRecords > 0 && below(wetFloorProtocolRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1001,7 +1011,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (incidentLearningRate < 50 && totalIncidents > 0) {
+  if (totalIncidents > 0 && below(incidentLearningRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1041,7 +1051,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (staffAwarenessRate < 50 && staffAwarenessNumerators.length > 0) {
+  if (staffAwarenessNumerators.length > 0 && below(staffAwarenessRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1071,7 +1081,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (wetFloorProtocolRate >= 50 && wetFloorProtocolRate < 70 && totalWetFloorRecords > 0) {
+  if (totalWetFloorRecords > 0 && wetFloorProtocolRate !== null && wetFloorProtocolRate >= 50 && wetFloorProtocolRate < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1081,7 +1091,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (stairwaySafetyRate >= 50 && stairwaySafetyRate < 70 && totalStairwayRecords > 0) {
+  if (totalStairwayRecords > 0 && stairwaySafetyRate !== null && stairwaySafetyRate >= 50 && stairwaySafetyRate < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1205,21 +1215,21 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (wetFloorProtocolRate >= 50 && wetFloorProtocolRate < 90 && totalWetFloorRecords > 0) {
+  if (totalWetFloorRecords > 0 && wetFloorProtocolRate !== null && wetFloorProtocolRate >= 50 && wetFloorProtocolRate < 90) {
     insights.push({
       text: `Wet floor protocol compliance at ${wetFloorProtocolRate}% -- gaps in signage, cleaning, or spill response leave windows of risk. Consistent protocol adherence is essential given that wet surfaces are a leading cause of slips.`,
       severity: "warning",
     });
   }
 
-  if (stairwaySafetyRate >= 50 && stairwaySafetyRate < 90 && totalStairwayRecords > 0) {
+  if (totalStairwayRecords > 0 && stairwaySafetyRate !== null && stairwaySafetyRate >= 50 && stairwaySafetyRate < 90) {
     insights.push({
       text: `Stairway safety compliance at ${stairwaySafetyRate}% -- while most elements are satisfactory, specific deficiencies in handrails, lighting, or treads need targeted remediation.`,
       severity: "warning",
     });
   }
 
-  if (incidentLearningRate >= 50 && incidentLearningRate < 90 && totalIncidents > 0) {
+  if (totalIncidents > 0 && incidentLearningRate !== null && incidentLearningRate >= 50 && incidentLearningRate < 90) {
     insights.push({
       text: `Incident learning rate at ${incidentLearningRate}% -- some post-incident learning is happening but not consistently across all five learning domains. Strengthening root cause analysis and risk assessment updates would improve prevention.`,
       severity: "warning",
@@ -1247,7 +1257,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (staffAwarenessRate >= 50 && staffAwarenessRate < 90 && staffAwarenessNumerators.length > 0) {
+  if (staffAwarenessNumerators.length > 0 && staffAwarenessRate !== null && staffAwarenessRate >= 50 && staffAwarenessRate < 90) {
     insights.push({
       text: `Staff awareness composite at ${staffAwarenessRate}% -- while staff are engaged with some aspects of falls prevention, gaps in training, sign-off, or lesson sharing could undermine the home's overall safety culture.`,
       severity: "warning",
@@ -1291,21 +1301,21 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (wetFloorProtocolRate >= 90 && spillResponseRate >= 90 && totalWetFloorRecords > 0) {
+  if (totalWetFloorRecords > 0 && meets(wetFloorProtocolRate, 90) && spillResponseRate >= 90) {
     insights.push({
       text: `Wet floor protocol compliance at ${wetFloorProtocolRate}% with ${spillResponseRate}% of spills responded to within target time -- the home has embedded effective wet floor management into daily practice. This proactive approach minimises a common and preventable hazard.`,
       severity: "positive",
     });
   }
 
-  if (stairwaySafetyRate >= 90 && handrailRate >= 95 && totalStairwayRecords > 0) {
+  if (totalStairwayRecords > 0 && meets(stairwaySafetyRate, 90) && handrailRate >= 95) {
     insights.push({
       text: `Stairway safety at ${stairwaySafetyRate}% with ${handrailRate}% handrail security -- staircases throughout the home meet or exceed safety standards. This is particularly important for younger children and those with mobility considerations.`,
       severity: "positive",
     });
   }
 
-  if (incidentLearningRate >= 90 && recurrenceRate === 0 && totalIncidents > 0) {
+  if (totalIncidents > 0 && meets(incidentLearningRate, 90) && recurrenceRate === 0) {
     insights.push({
       text: `Incident learning rate at ${incidentLearningRate}% with zero recurrences -- the home demonstrates exemplary organisational learning from every slip, trip, and fall event. Investigations, root cause analysis, lessons learned, and risk assessment updates are driving genuine prevention.`,
       severity: "positive",
@@ -1319,7 +1329,7 @@ export function computeSlipsTripsFallsPrevention(
     });
   }
 
-  if (staffAwarenessRate >= 90 && staffAwarenessNumerators.length > 0) {
+  if (staffAwarenessNumerators.length > 0 && meets(staffAwarenessRate, 90)) {
     insights.push({
       text: `Staff awareness composite at ${staffAwarenessRate}% -- staff are fully engaged with falls prevention through training, risk assessment sign-off, lesson sharing, and proactive hazard warnings. This embedded safety culture protects children effectively.`,
       severity: "positive",
