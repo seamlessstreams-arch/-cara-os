@@ -409,8 +409,9 @@ describe("evaluatePlacementDuration", () => {
     expect(result.plannedEndingRate).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.unplannedEndingRate).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.emergencyPlacementRate).toBeNull(); // fab-0: null when the source population is empty.
-    expect(result.longestPlacementDays).toBe(0);
-    expect(result.shortestPlacementDays).toBe(0);
+    // fab-0: null (no durations to Math.max/min over).
+    expect(result.longestPlacementDays).toBeNull();
+    expect(result.shortestPlacementDays).toBeNull();
   });
 
   it("calculates ending rates with planned endings", () => {

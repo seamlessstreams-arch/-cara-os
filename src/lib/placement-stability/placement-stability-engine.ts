@@ -188,8 +188,8 @@ export interface PlacementDurationResult {
   plannedEndingRate: number | null;
   unplannedEndingRate: number | null;
   emergencyPlacementRate: number | null;
-  longestPlacementDays: number;
-  shortestPlacementDays: number;
+  longestPlacementDays: number | null;
+  shortestPlacementDays: number | null;
   endingReasons: Record<string, number>;
 }
 
@@ -340,8 +340,8 @@ export function evaluatePlacementDuration(
       ? Math.round((durations.reduce((s, d) => s + d, 0) / durations.length) * 10) / 10
       : null;
 
-  const longestPlacementDays = durations.length > 0 ? Math.max(...durations) : 0;
-  const shortestPlacementDays = durations.length > 0 ? Math.min(...durations) : 0;
+  const longestPlacementDays: number | null = durations.length > 0 ? Math.max(...durations) : null;
+  const shortestPlacementDays: number | null = durations.length > 0 ? Math.min(...durations) : null;
 
   // Ending reasons
   const endingReasons: Record<string, number> = {};
