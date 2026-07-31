@@ -205,7 +205,7 @@ describe("computePrivacyDignity", () => {
       expect(r.privacy_audit_compliance_rate).toBe(0);
       expect(r.knock_entry_rate).toBe(0);
       expect(r.boundary_respect_rate).toBe(0);
-      expect(r.confidentiality_rate).toBe(0);
+      expect(r.confidentiality_rate).toBeNull();
       expect(r.dignity_practice_rate).toBe(0);
       expect(r.child_satisfaction_rate).toBe(0);
     });
@@ -250,7 +250,7 @@ describe("computePrivacyDignity", () => {
       expect(r.privacy_audit_compliance_rate).toBe(0);
       expect(r.knock_entry_rate).toBe(0);
       expect(r.boundary_respect_rate).toBe(0);
-      expect(r.confidentiality_rate).toBe(0);
+      expect(r.confidentiality_rate).toBeNull();
       expect(r.dignity_practice_rate).toBe(0);
       expect(r.child_satisfaction_rate).toBe(0);
     });
@@ -275,7 +275,7 @@ describe("computePrivacyDignity", () => {
 
     it("confidentiality_rate is 0 when no confidentiality records", () => {
       const r = run({ privacy_audit_records: [makePrivacyAudit()] });
-      expect(r.confidentiality_rate).toBe(0);
+      expect(r.confidentiality_rate).toBeNull();
     });
 
     it("dignity_practice_rate is 0 when no dignity records", () => {
@@ -1035,14 +1035,14 @@ describe("computePrivacyDignity", () => {
           data_minimisation_applied: false,
         })),
       });
-      // confRate = round((0+0+0)/3) = 0
+      // record exists → 0, not null; below() gate still fires for penalty
       expect(r.confidentiality_rate).toBe(0);
       expect(r.privacy_score).toBe(52 - 4);
     });
 
     it("no penalty when confidentiality_records is empty", () => {
       const r = run({ confidentiality_records: [] });
-      expect(r.confidentiality_rate).toBe(0);
+      expect(r.confidentiality_rate).toBeNull();
     });
   });
 

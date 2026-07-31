@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PrivacyDignityRating } from "@/lib/engines/home-privacy-dignity-intelligence-engine";
+import { meets, formatRate } from "@/lib/metrics/rate";
 
 function useHomePrivacyDignityIntelligence() {
   return useQuery({
@@ -81,8 +82,8 @@ export function HomePrivacyDignityIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.boundary_respect_rate >= 90 ? "text-[--cs-success]" : d.boundary_respect_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.boundary_respect_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Boundary</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.confidentiality_rate >= 90 ? "bg-green-50" : d.confidentiality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.confidentiality_rate >= 90 ? "text-[--cs-success]" : d.confidentiality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.confidentiality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.confidentiality_rate, 90) ? "bg-green-50" : meets(d.confidentiality_rate, 70) ? "bg-amber-50" : d.confidentiality_rate === null ? "bg-muted" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.confidentiality_rate, 90) ? "text-[--cs-success]" : meets(d.confidentiality_rate, 70) ? "text-[--cs-warning]" : d.confidentiality_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.confidentiality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Confid.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.dignity_practice_rate >= 90 ? "bg-green-50" : d.dignity_practice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

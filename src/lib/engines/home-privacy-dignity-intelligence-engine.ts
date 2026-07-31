@@ -10,6 +10,8 @@
 //             confidentialityRecords, dignityCareRecords
 // ==============================================================================
 
+import { meets, below } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface PrivacyAuditRecordInput {
@@ -149,7 +151,8 @@ export interface PrivacyDignityResult {
   privacy_audit_compliance_rate: number;
   knock_entry_rate: number;
   boundary_respect_rate: number;
-  confidentiality_rate: number;
+  // fab-0: null when no confidentiality records.
+  confidentiality_rate: number | null;
   dignity_practice_rate: number;
   child_satisfaction_rate: number;
   strengths: string[];
@@ -189,7 +192,7 @@ function emptyResult(
     privacy_audit_compliance_rate: 0,
     knock_entry_rate: 0,
     boundary_respect_rate: 0,
-    confidentiality_rate: 0,
+    confidentiality_rate: null,
     dignity_practice_rate: 0,
     child_satisfaction_rate: 0,
     strengths: [],
@@ -306,10 +309,11 @@ export function computePrivacyDignity(
   const privacyAuditSatisfactionSum = privacy_audit_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const privacyAuditSatisfactionAvg =
+  // fab-0: null when no audits.
+  const privacyAuditSatisfactionAvg: number | null =
     totalPrivacyAudits > 0
       ? Math.round((privacyAuditSatisfactionSum / totalPrivacyAudits) * 100) / 100
-      : 0;
+      : null;
 
   const privacyIssuesTotal = privacy_audit_records.reduce(
     (sum, r) => sum + r.issues_identified.length, 0,
@@ -399,10 +403,11 @@ export function computePrivacyDignity(
   const boundarySatisfactionSum = boundary_respect_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const boundarySatisfactionAvg =
+  // fab-0: null when no boundary records.
+  const boundarySatisfactionAvg: number | null =
     totalBoundaryRecords > 0
       ? Math.round((boundarySatisfactionSum / totalBoundaryRecords) * 100) / 100
-      : 0;
+      : null;
 
   const childCommunicatedBoundary = boundary_respect_records.filter(
     (r) => r.child_communicated_boundary,
@@ -460,10 +465,11 @@ export function computePrivacyDignity(
   ).length;
   const childRecordAccessRate = pct(childRecordAccess, totalConfidentialityRecords);
 
-  const confidentialityRate =
+  // fab-0: null when no confidentiality records.
+  const confidentialityRate: number | null =
     totalConfidentialityRecords > 0
       ? Math.round((secureStorageRate + appropriateSharingRate + sharingConsentRate) / 3)
-      : 0;
+      : null;
 
   // --- Dignity in care ---
   const totalDignityRecords = dignity_care_records.length;
@@ -508,10 +514,11 @@ export function computePrivacyDignity(
   const dignitySatisfactionSum = dignity_care_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const dignitySatisfactionAvg =
+  // fab-0: null when no dignity records.
+  const dignitySatisfactionAvg: number | null =
     totalDignityRecords > 0
       ? Math.round((dignitySatisfactionSum / totalDignityRecords) * 100) / 100
-      : 0;
+      : null;
 
   const dignityComplaints = dignity_care_records.filter(
     (r) => r.complaint_raised,
@@ -548,8 +555,8 @@ export function computePrivacyDignity(
   else if (boundaryRespectRate >= 70) score += 1;
 
   // --- Bonus 4: confidentialityRate (>=90: +4, >=70: +2) ---
-  if (confidentialityRate >= 90) score += 4;
-  else if (confidentialityRate >= 70) score += 2;
+  if (meets(confidentialityRate, 90)) score += 4;
+  else if (meets(confidentialityRate, 70)) score += 2;
 
   // --- Bonus 5: dignityPracticeRate (>=90: +3, >=70: +1) ---
   if (dignityPracticeRate >= 90) score += 3;
@@ -580,7 +587,7 @@ export function computePrivacyDignity(
   if (boundaryRespectRate < 50 && boundary_respect_records.length > 0) score -= 5;
 
   // confidentialityRate < 50 -> -4
-  if (confidentialityRate < 50 && confidentiality_records.length > 0) score -= 4;
+  if (below(confidentialityRate, 50) && confidentiality_records.length > 0) score -= 4;
 
   // dignityPracticeRate < 50 -> -4
   if (dignityPracticeRate < 50 && dignity_care_records.length > 0) score -= 4;
@@ -619,7 +626,7 @@ export function computePrivacyDignity(
     );
   }
 
-  if (privacyAuditSatisfactionAvg >= 4.0 && totalPrivacyAudits > 0) {
+  if (totalPrivacyAudits > 0 && privacyAuditSatisfactionAvg !== null && privacyAuditSatisfactionAvg >= 4.0) {
     strengths.push(
       `Children's satisfaction with privacy provision averages ${privacyAuditSatisfactionAvg}/5 -- children feel their privacy is genuinely respected.`,
     );
@@ -727,7 +734,7 @@ export function computePrivacyDignity(
     strengths.push(`Same-gender carer provided in ${sameGenderRate}% of requests -- children's gender preferences for personal care are consistently honoured.`);
   }
 
-  if (dignityConsentRate >= 90 && dignitySatisfactionAvg >= 4.0 && totalDignityRecords > 0) {
+  if (totalDignityRecords > 0 && dignitySatisfactionAvg !== null && dignityConsentRate >= 90 && dignitySatisfactionAvg >= 4.0) {
     strengths.push(
       `Consent obtained in ${dignityConsentRate}% of care interactions with satisfaction averaging ${dignitySatisfactionAvg}/5 -- children feel respected and in control of their care.`,
     );
@@ -763,7 +770,7 @@ export function computePrivacyDignity(
     );
   }
 
-  if (privacyAuditSatisfactionAvg < 3.0 && totalPrivacyAudits > 0) {
+  if (totalPrivacyAudits > 0 && privacyAuditSatisfactionAvg !== null && privacyAuditSatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with privacy provision averages only ${privacyAuditSatisfactionAvg}/5 -- children do not feel their privacy is adequately respected.`,
     );
@@ -825,7 +832,7 @@ export function computePrivacyDignity(
     );
   }
 
-  if (boundarySatisfactionAvg < 3.0 && totalBoundaryRecords > 0) {
+  if (totalBoundaryRecords > 0 && boundarySatisfactionAvg !== null && boundarySatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with boundary respect averages only ${boundarySatisfactionAvg}/5 -- children do not feel their personal boundaries are being adequately honoured.`,
     );
@@ -871,7 +878,7 @@ export function computePrivacyDignity(
     );
   }
 
-  if (confidentialityRate < 50 && totalConfidentialityRecords > 0) {
+  if (totalConfidentialityRecords > 0 && below(confidentialityRate, 50)) {
     concerns.push(
       `Overall confidentiality rate at only ${confidentialityRate}% -- the home's information governance is failing to protect children's private information.`,
     );
@@ -899,7 +906,7 @@ export function computePrivacyDignity(
     );
   }
 
-  if (dignitySatisfactionAvg < 3.0 && totalDignityRecords > 0) {
+  if (totalDignityRecords > 0 && dignitySatisfactionAvg !== null && dignitySatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with dignity in care averages only ${dignitySatisfactionAvg}/5 -- children do not feel respected in how they are cared for.`,
     );
@@ -954,7 +961,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (confidentialityRate < 50 && confidentiality_records.length > 0) {
+  if (confidentiality_records.length > 0 && below(confidentialityRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1184,7 +1191,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (confidentialityRate < 50 && totalConfidentialityRecords > 0) {
+  if (totalConfidentialityRecords > 0 && below(confidentialityRate, 50)) {
     insights.push({
       text: `Overall confidentiality rate at only ${confidentialityRate}%. Systematic failures in record security, appropriate sharing, and consent undermine children's trust and breach their right to privacy under Reg 21. This also poses data protection and safeguarding risks.`,
       severity: "critical",
@@ -1242,7 +1249,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (confidentialityRate >= 50 && confidentialityRate < 80 && totalConfidentialityRecords > 0) {
+  if (totalConfidentialityRecords > 0 && confidentialityRate !== null && confidentialityRate >= 50 && confidentialityRate < 80) {
     insights.push({
       text: `Confidentiality rate at ${confidentialityRate}% -- while improving, gaps in record security, sharing consent, or appropriate disclosure put children's private information at risk.`,
       severity: "warning",
@@ -1321,14 +1328,14 @@ export function computePrivacyDignity(
     });
   }
 
-  if (confidentialityRate >= 90 && confidentialityBreaches === 0 && totalConfidentialityRecords > 0) {
+  if (totalConfidentialityRecords > 0 && meets(confidentialityRate, 90) && confidentialityBreaches === 0) {
     insights.push({
       text: `${confidentialityRate}% confidentiality rate with zero breaches -- the home's information governance is exemplary. Children can trust that their personal information is safe, which is essential for honest engagement with care planning and therapeutic support.`,
       severity: "positive",
     });
   }
 
-  if (dignityPracticeRate >= 90 && dignitySatisfactionAvg >= 4.0 && totalDignityRecords > 0) {
+  if (totalDignityRecords > 0 && dignitySatisfactionAvg !== null && dignityPracticeRate >= 90 && dignitySatisfactionAvg >= 4.0) {
     insights.push({
       text: `${dignityPracticeRate}% dignity practice rate with child satisfaction averaging ${dignitySatisfactionAvg}/5 -- care is delivered with consistent respect for children's self-worth. Children feel valued, respected, and treated as individuals with agency.`,
       severity: "positive",
