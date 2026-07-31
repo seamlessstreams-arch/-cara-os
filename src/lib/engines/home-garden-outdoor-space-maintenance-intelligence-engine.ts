@@ -13,6 +13,8 @@
 //             environmentalQualityRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface GardenConditionRecordInput {
@@ -337,24 +339,6 @@ export function computeGardenOutdoorSpaceMaintenance(
   ).length;
   const photosRate = pct(photosCount, totalGardenConditionRecords);
 
-  const avgConditionRating =
-    totalGardenConditionRecords > 0
-      ? Math.round(
-          (garden_condition_records.reduce((sum, g) => sum + g.condition_rating, 0) /
-            totalGardenConditionRecords) *
-            100,
-        ) / 100
-      : 0;
-
-  const avgCleanlinessRating =
-    totalGardenConditionRecords > 0
-      ? Math.round(
-          (garden_condition_records.reduce((sum, g) => sum + g.cleanliness_rating, 0) /
-            totalGardenConditionRecords) *
-            100,
-        ) / 100
-      : 0;
-
   // --- Equipment safety metrics ---
   const totalEquipmentSafetyRecords = equipment_safety_records.length;
 
@@ -461,14 +445,6 @@ export function computeGardenOutdoorSpaceMaintenance(
     space_utilisation_records.map((s) => s.activity_type),
   ).size;
 
-  const avgDuration =
-    totalSpaceUtilisationRecords > 0
-      ? Math.round(
-          space_utilisation_records.reduce((sum, s) => sum + s.duration_minutes, 0) /
-            totalSpaceUtilisationRecords,
-        )
-      : 0;
-
   // --- Child involvement metrics ---
   const totalChildInvolvementRecords = child_involvement_records.length;
 
@@ -512,14 +488,15 @@ export function computeGardenOutdoorSpaceMaintenance(
   ).length;
   const carePlanLinkRate = pct(linkedToCarePlanCount, totalChildInvolvementRecords);
 
-  const avgEnjoymentLevel =
+  // fab-0: null when no involvement records to average.
+  const avgEnjoymentLevel: number | null =
     totalChildInvolvementRecords > 0
       ? Math.round(
           (child_involvement_records.reduce((sum, c) => sum + c.enjoyment_level, 0) /
             totalChildInvolvementRecords) *
             100,
         ) / 100
-      : 0;
+      : null;
 
   // Count unique activity types in child involvement
   const uniqueInvolvementActivities = new Set(
@@ -562,15 +539,6 @@ export function computeGardenOutdoorSpaceMaintenance(
     (e) => e.wildlife_observed,
   ).length;
   const wildlifeRate = pct(wildlifeObservedCount, totalEnvironmentalQualityRecords);
-
-  const avgEnvironmentalRating =
-    totalEnvironmentalQualityRecords > 0
-      ? Math.round(
-          (environmental_quality_records.reduce((sum, e) => sum + e.rating, 0) /
-            totalEnvironmentalQualityRecords) *
-            100,
-        ) / 100
-      : 0;
 
   // Count unique environmental categories assessed
   const uniqueEnvCategories = new Set(
@@ -639,8 +607,8 @@ export function computeGardenOutdoorSpaceMaintenance(
   else if (defectResolutionRate >= 80 && defectsFoundCount > 0) score += 1;
 
   // --- Bonus 9: avgEnjoymentLevel (>=4.0: +2, >=3.0: +1) ---
-  if (avgEnjoymentLevel >= 4.0 && totalChildInvolvementRecords > 0) score += 2;
-  else if (avgEnjoymentLevel >= 3.0 && totalChildInvolvementRecords > 0) score += 1;
+  if (totalChildInvolvementRecords > 0 && meets(avgEnjoymentLevel, 4.0)) score += 2;
+  else if (totalChildInvolvementRecords > 0 && meets(avgEnjoymentLevel, 3.0)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
@@ -754,11 +722,11 @@ export function computeGardenOutdoorSpaceMaintenance(
     );
   }
 
-  if (avgEnjoymentLevel >= 4.0 && totalChildInvolvementRecords > 0) {
+  if (totalChildInvolvementRecords > 0 && meets(avgEnjoymentLevel, 4.0)) {
     strengths.push(
       `Children's enjoyment level averaging ${avgEnjoymentLevel}/5 in garden activities — gardening provides genuine pleasure and therapeutic benefit, contributing positively to children's wellbeing.`,
     );
-  } else if (avgEnjoymentLevel >= 3.0 && totalChildInvolvementRecords > 0) {
+  } else if (totalChildInvolvementRecords > 0 && meets(avgEnjoymentLevel, 3.0)) {
     strengths.push(
       `Children's enjoyment level averaging ${avgEnjoymentLevel}/5 — garden activities are generally enjoyable experiences for the children.`,
     );
@@ -1272,9 +1240,10 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
+    totalChildInvolvementRecords > 0 &&
+    avgEnjoymentLevel !== null &&
     avgEnjoymentLevel >= 2.0 &&
-    avgEnjoymentLevel < 3.0 &&
-    totalChildInvolvementRecords > 0
+    avgEnjoymentLevel < 3.0
   ) {
     insights.push({
       text: `Children's enjoyment level averaging ${avgEnjoymentLevel}/5 in garden activities — activities exist but are not consistently enjoyable for children. Reviewing activity design and incorporating children's preferences could significantly improve this.`,
@@ -1315,9 +1284,10 @@ export function computeGardenOutdoorSpaceMaintenance(
   }
 
   if (
+    totalChildInvolvementRecords > 0 &&
+    avgEnjoymentLevel !== null &&
     childInvolvementRate >= 90 &&
-    avgEnjoymentLevel >= 4.0 &&
-    totalChildInvolvementRecords > 0
+    avgEnjoymentLevel >= 4.0
   ) {
     insights.push({
       text: `${childInvolvementRate}% child engagement with enjoyment averaging ${avgEnjoymentLevel}/5 — children are genuinely engaged in and enjoying garden activities, demonstrating that outdoor involvement is meeting their needs and contributing to positive daily experiences.`,
