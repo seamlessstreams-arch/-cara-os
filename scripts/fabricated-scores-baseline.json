@@ -479,7 +479,6 @@
   "src/lib/engines/outcomes-progress-engine.ts:childReviews:0",
   "src/lib/engines/outcomes-progress-engine.ts:ratingChanges30d:0",
   "src/lib/engines/outcomes-progress-engine.ts:reviews:0",
-  "src/lib/engines/placement-stability-engine.ts:childProfiles:0",
   "src/lib/engines/policies-intelligence-engine.ts:totalRequired:0",
   "src/lib/engines/possessions-intelligence-engine.ts:children:0",
   "src/lib/engines/recording-quality-intelligence-engine.ts:allEntries:0",

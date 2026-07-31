@@ -97,14 +97,15 @@ export interface ChildStabilityProfile {
 
 export interface HomeStabilityMetrics {
   total_children: number;
-  average_placement_days: number;
-  average_stability_score: number;
+  // fab-0: null when no child profiles / nothing to average over.
+  average_placement_days: number | null;
+  average_stability_score: number | null;
   children_at_risk: number;
   children_critical: number;
   avg_mood_home: number | null;
-  incident_rate_per_child_30d: number;
-  keywork_frequency_per_child_30d: number;
-  placement_breakdown_risk: number; // percentage at moderate or below
+  incident_rate_per_child_30d: number | null;
+  keywork_frequency_per_child_30d: number | null;
+  placement_breakdown_risk: number | null; // percentage at moderate or below
 }
 
 export interface WellbeingDataPoint {
@@ -372,13 +373,13 @@ export function computePlacementStability(input: PlacementStabilityInput): Place
   childProfiles.sort((a, b) => a.stability_score - b.stability_score);
 
   // ── Home metrics ──────────────────────────────────────────────────────
-  const avgPlacementDays = childProfiles.length > 0
+  const avgPlacementDays: number | null = childProfiles.length > 0
     ? Math.round(childProfiles.reduce((sum, c) => sum + c.placement_days, 0) / childProfiles.length)
-    : 0;
+    : null;
 
-  const avgStabilityScore = childProfiles.length > 0
+  const avgStabilityScore: number | null = childProfiles.length > 0
     ? Math.round(childProfiles.reduce((sum, c) => sum + c.stability_score, 0) / childProfiles.length)
-    : 0;
+    : null;
 
   const moods = childProfiles.filter((c) => c.avg_mood_recent != null).map((c) => c.avg_mood_recent!);
   const avgMoodHome = moods.length > 0
@@ -389,21 +390,21 @@ export function computePlacementStability(input: PlacementStabilityInput): Place
   const critical = childProfiles.filter((c) => c.stability_level === "critical").length;
 
   const totalIncidents30d = childProfiles.reduce((sum, c) => sum + c.incident_count_30d, 0);
-  const incidentRate = childProfiles.length > 0
+  const incidentRate: number | null = childProfiles.length > 0
     ? Math.round((totalIncidents30d / childProfiles.length) * 10) / 10
-    : 0;
+    : null;
 
   const totalKeywork30d = childProfiles.reduce((sum, c) => sum + c.keywork_count_30d, 0);
-  const keyworkFrequency = childProfiles.length > 0
+  const keyworkFrequency: number | null = childProfiles.length > 0
     ? Math.round((totalKeywork30d / childProfiles.length) * 10) / 10
-    : 0;
+    : null;
 
   const atModerateOrBelow = childProfiles.filter(
     (c) => c.stability_level === "moderate" || c.stability_level === "at_risk" || c.stability_level === "critical"
   ).length;
-  const breakdownRisk = childProfiles.length > 0
+  const breakdownRisk: number | null = childProfiles.length > 0
     ? Math.round((atModerateOrBelow / childProfiles.length) * 100)
-    : 0;
+    : null;
 
   const homeMetrics: HomeStabilityMetrics = {
     total_children: currentChildren.length,
@@ -549,7 +550,7 @@ export function computePlacementStability(input: PlacementStabilityInput): Place
   }
 
   // Overall home stability
-  if (avgStabilityScore >= 70 && critical === 0 && atRisk === 0) {
+  if (avgStabilityScore !== null && avgStabilityScore >= 70 && critical === 0 && atRisk === 0) {
     insights.push({
       severity: "positive",
       text: `Home stability score ${avgStabilityScore}/100. All placements rated good or excellent. ${avgMoodHome ? `Average mood ${avgMoodHome}/10.` : ""} Reg 5 outcomes well evidenced.`,
