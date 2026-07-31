@@ -122,14 +122,16 @@ export interface SensoryProfileSummary {
   total_profiles: number;
   child_coverage: number;
   overdue_reviews: number;
-  avg_strategies: number;
+  // fab-0: null when no sensory profiles.
+  avg_strategies: number | null;
   child_views_rate: number;
 }
 
 export interface SleepAssessmentSummary {
   total_assessments: number;
   child_coverage: number;
-  avg_hours: number;
+  // fab-0: null when no sleep assessments.
+  avg_hours: number | null;
   good_quality_rate: number;
   improving_trend_rate: number;
   overdue_reviews: number;
@@ -138,7 +140,8 @@ export interface SleepAssessmentSummary {
 export interface EmotionalVocabSummary {
   total_records: number;
   child_coverage: number;
-  avg_feelings_recognised: number;
+  // fab-0: null when no emotional vocab records.
+  avg_feelings_recognised: number | null;
   breakthrough_count: number;
   child_voice_rate: number;
 }
@@ -155,7 +158,8 @@ export interface AttachmentSummary {
   total_profiles: number;
   child_coverage: number;
   overdue_reviews: number;
-  avg_therapeutic_approaches: number;
+  // fab-0: null when no attachment profiles.
+  avg_therapeutic_approaches: number | null;
   child_views_rate: number;
 }
 
@@ -223,11 +227,11 @@ export function computeHomeTherapeuticProgress(
       therapeutic_score: 0,
       headline: "No therapeutic data available for analysis.",
       behaviour_map: { total_entries_90d: 0, crisis_count: 0, high_count: 0, de_escalation_rate: 0, trigger_identification_rate: 0, children_mapped: 0 },
-      sensory: { total_profiles: 0, child_coverage: 0, overdue_reviews: 0, avg_strategies: 0, child_views_rate: 0 },
-      sleep: { total_assessments: 0, child_coverage: 0, avg_hours: 0, good_quality_rate: 0, improving_trend_rate: 0, overdue_reviews: 0 },
-      emotional_vocab: { total_records: 0, child_coverage: 0, avg_feelings_recognised: 0, breakthrough_count: 0, child_voice_rate: 0 },
+      sensory: { total_profiles: 0, child_coverage: 0, overdue_reviews: 0, avg_strategies: null, child_views_rate: 0 },
+      sleep: { total_assessments: 0, child_coverage: 0, avg_hours: null, good_quality_rate: 0, improving_trend_rate: 0, overdue_reviews: 0 },
+      emotional_vocab: { total_records: 0, child_coverage: 0, avg_feelings_recognised: null, breakthrough_count: 0, child_voice_rate: 0 },
       bereavement: { total_records: 0, children_supported: 0, external_support_rate: 0, memory_work_rate: 0, child_voice_rate: 0 },
-      attachment: { total_profiles: 0, child_coverage: 0, overdue_reviews: 0, avg_therapeutic_approaches: 0, child_views_rate: 0 },
+      attachment: { total_profiles: 0, child_coverage: 0, overdue_reviews: 0, avg_therapeutic_approaches: null, child_views_rate: 0 },
       self_soothing: { total_toolkits: 0, child_coverage: 0, child_led_rate: 0, effectiveness_rate: 0, child_voice_rate: 0 },
       strengths: [],
       concerns: [],
@@ -259,9 +263,10 @@ export function computeHomeTherapeuticProgress(
   const spChildIds = new Set(sensory_profiles.map(p => p.child_id));
   const spCoverage = pct(spChildIds.size, total_children);
   const spOverdue = sensory_profiles.filter(p => daysBetween(p.review_date, today) > 0).length;
-  const spAvgStrat = sensory_profiles.length > 0
+  // fab-0: null when no sensory profiles.
+  const spAvgStrat: number | null = sensory_profiles.length > 0
     ? Math.round(sensory_profiles.reduce((s, p) => s + p.strategies_count, 0) / sensory_profiles.length)
-    : 0;
+    : null;
   const spViewsRate = pct(
     sensory_profiles.filter(p => p.child_views_provided).length,
     sensory_profiles.length,
@@ -278,9 +283,10 @@ export function computeHomeTherapeuticProgress(
   // ── Sleep assessment analysis ────────────────────────────────────────
   const slChildIds = new Set(sleep_assessments.map(a => a.child_id));
   const slCoverage = pct(slChildIds.size, total_children);
-  const slAvgHours = sleep_assessments.length > 0
+  // fab-0: null when no sleep assessments.
+  const slAvgHours: number | null = sleep_assessments.length > 0
     ? Math.round((sleep_assessments.reduce((s, a) => s + a.average_hours, 0) / sleep_assessments.length) * 10) / 10
-    : 0;
+    : null;
   const slGoodQuality = sleep_assessments.filter(a => a.sleep_quality === "good" || a.sleep_quality === "excellent").length;
   const slGoodRate = pct(slGoodQuality, sleep_assessments.length);
   const slImproving = sleep_assessments.filter(a => a.trend === "improving").length;
@@ -299,9 +305,10 @@ export function computeHomeTherapeuticProgress(
   // ── Emotional vocabulary analysis ────────────────────────────────────
   const evChildIds = new Set(emotional_vocab_records.map(r => r.child_id));
   const evCoverage = pct(evChildIds.size, total_children);
-  const evAvgFeelings = emotional_vocab_records.length > 0
+  // fab-0: null when no emotional vocab records.
+  const evAvgFeelings: number | null = emotional_vocab_records.length > 0
     ? Math.round(emotional_vocab_records.reduce((s, r) => s + r.feelings_recognised_count, 0) / emotional_vocab_records.length)
-    : 0;
+    : null;
   const evBreakthroughs = emotional_vocab_records.reduce((s, r) => s + r.breakthroughs_count, 0);
   const evVoiceRate = pct(
     emotional_vocab_records.filter(r => r.child_voice_provided).length,
@@ -339,9 +346,10 @@ export function computeHomeTherapeuticProgress(
   const atChildIds = new Set(attachment_profiles.map(p => p.child_id));
   const atCoverage = pct(atChildIds.size, total_children);
   const atOverdue = attachment_profiles.filter(p => daysBetween(p.review_date, today) > 0).length;
-  const atAvgApproaches = attachment_profiles.length > 0
+  // fab-0: null when no attachment profiles.
+  const atAvgApproaches: number | null = attachment_profiles.length > 0
     ? Math.round(attachment_profiles.reduce((s, p) => s + p.therapeutic_approach_count, 0) / attachment_profiles.length)
-    : 0;
+    : null;
   const atViewsRate = pct(
     attachment_profiles.filter(p => p.child_views_provided).length,
     attachment_profiles.length,
@@ -415,8 +423,8 @@ export function computeHomeTherapeuticProgress(
       if (spOverdue === 0) m += 1;
       else if (spOverdue >= 3) m -= 2;
 
-      if (spAvgStrat >= 4) m += 1;
-      else if (spAvgStrat < 2) m -= 1;
+      if (spAvgStrat! >= 4) m += 1;
+      else if (spAvgStrat! < 2) m -= 1;
     } else {
       if (total_children >= 2) m -= 2;
     }
@@ -449,8 +457,8 @@ export function computeHomeTherapeuticProgress(
       if (evCoverage >= 80) m += 1;
       else if (evCoverage < 40) m -= 1;
 
-      if (evAvgFeelings >= 8) m += 1;
-      else if (evAvgFeelings < 3) m -= 1;
+      if (evAvgFeelings! >= 8) m += 1;
+      else if (evAvgFeelings! < 3) m -= 1;
 
       if (evBreakthroughs >= 3) m += 1;
     } else {
@@ -487,8 +495,8 @@ export function computeHomeTherapeuticProgress(
       if (atOverdue === 0) m += 1;
       else if (atOverdue >= 3) m -= 1;
 
-      if (atAvgApproaches >= 3) m += 1;
-      else if (atAvgApproaches < 1) m -= 1;
+      if (atAvgApproaches! >= 3) m += 1;
+      else if (atAvgApproaches! < 1) m -= 1;
     } else {
       if (total_children >= 2) m -= 1;
     }
@@ -591,7 +599,7 @@ export function computeHomeTherapeuticProgress(
   }
 
   // Emotional vocabulary
-  if (emotional_vocab_records.length > 0 && evAvgFeelings >= 8) {
+  if (emotional_vocab_records.length > 0 && evAvgFeelings! >= 8) {
     strengths.push(`Strong emotional literacy development — children recognise an average of ${evAvgFeelings} feelings.`);
   }
   if (evBreakthroughs >= 3) {
