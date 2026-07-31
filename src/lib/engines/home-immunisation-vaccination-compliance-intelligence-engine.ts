@@ -10,6 +10,8 @@
 //             childUnderstandingRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface VaccinationScheduleRecordInput {
@@ -154,12 +156,17 @@ export interface ImmunisationResult {
   immunisation_rating: ImmunisationRating;
   immunisation_score: number;
   headline: string;
+  // schedule_adherence_rate uses pct() directly (deterministic 0 on empty).
+  // The 5 composite rates below are null on empty: no source records ⇒ no
+  // signal. "0% catch-up / 0% consent / 0% GP liaison / 0% understanding /
+  // 0% documentation" would read as a home not administering, consenting,
+  // or documenting any vaccinations, not "unmeasured". Fab-0 doctrine.
   schedule_adherence_rate: number;
-  catch_up_rate: number;
-  consent_management_rate: number;
-  gp_liaison_rate: number;
-  child_understanding_rate: number;
-  documentation_rate: number;
+  catch_up_rate: number | null;
+  consent_management_rate: number | null;
+  gp_liaison_rate: number | null;
+  child_understanding_rate: number | null;
+  documentation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: ImmunisationRecommendation[];
@@ -195,11 +202,11 @@ function emptyResult(
     immunisation_score: score,
     headline,
     schedule_adherence_rate: 0,
-    catch_up_rate: 0,
-    consent_management_rate: 0,
-    gp_liaison_rate: 0,
-    child_understanding_rate: 0,
-    documentation_rate: 0,
+    catch_up_rate: null,
+    consent_management_rate: null,
+    gp_liaison_rate: null,
+    child_understanding_rate: null,
+    documentation_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -341,10 +348,10 @@ export function computeImmunisationVaccinationCompliance(
   );
   const catchUpVaccineProgressRate = pct(totalCatchUpVaccinesAdministered, totalCatchUpVaccinesRequired);
 
-  const catchUpRate =
+  const catchUpRate: number | null =
     totalCatchUpRecords > 0
       ? Math.round((catchUpCompletionRate + catchUpOnTrackRate + catchUpVaccineProgressRate) / 3)
-      : 0;
+      : null;
 
   const catchUpBarriersTotal = catch_up_programme_records.filter(
     (r) => r.barriers_identified.length > 0,
@@ -380,10 +387,10 @@ export function computeImmunisationVaccinationCompliance(
   ).length;
   const consentDocumentedRate = pct(consentDocumented, totalConsentRecords);
 
-  const consentManagementRate =
+  const consentManagementRate: number | null =
     totalConsentRecords > 0
       ? Math.round((consentObtainedRate + consentDocumentedRate) / 2)
-      : 0;
+      : null;
 
   const refusals = consent_management_records.filter(
     (r) => r.consent_type === "refused",
@@ -451,12 +458,12 @@ export function computeImmunisationVaccinationCompliance(
   ).length;
   const gpFollowUpCompletionRate = pct(gpFollowUpCompleted, gpFollowUpRequired);
 
-  const gpLiaisonRate =
+  const gpLiaisonRate: number | null =
     totalGpLiaisonRecords > 0
       ? Math.round(
           (gpRegistrationRate + gpResponsiveRate + infoSharedRate + responseTimelinessRate) / 4,
         )
-      : 0;
+      : null;
 
   // --- 5. Child understanding of immunisation ---
   const totalUnderstandingRecords = child_understanding_records.length;
@@ -506,10 +513,10 @@ export function computeImmunisationVaccinationCompliance(
   const childSatisfactionSum = child_understanding_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const childSatisfactionAvg =
+  const childSatisfactionAvg: number | null =
     totalUnderstandingRecords > 0
       ? Math.round((childSatisfactionSum / totalUnderstandingRecords) * 100) / 100
-      : 0;
+      : null;
 
   const visualAidsUsed = child_understanding_records.filter(
     (r) => r.visual_aids_used,
@@ -526,26 +533,25 @@ export function computeImmunisationVaccinationCompliance(
     understandingFollowUpCompleted, understandingFollowUpRequired,
   );
 
-  const childUnderstandingRate =
+  const childUnderstandingRate: number | null =
     totalUnderstandingRecords > 0
       ? Math.round(
           (purposeUnderstandingRate + feltInformedRate + ageAppropriateRate + childVoiceRate) / 4,
         )
-      : 0;
+      : null;
 
   // --- 6. Documentation rate (composite) ---
-  const docNumerator =
-    (totalScheduleRecords > 0 ? healthRecordDocRate : 0) +
-    (totalScheduleRecords > 0 ? redBookUpdateRate : 0) +
-    (totalScheduleRecords > 0 ? batchRecordingRate : 0) +
-    (totalConsentRecords > 0 ? consentDocumentedRate : 0);
-  const docDenominator =
-    (totalScheduleRecords > 0 ? 1 : 0) +
-    (totalScheduleRecords > 0 ? 1 : 0) +
-    (totalScheduleRecords > 0 ? 1 : 0) +
-    (totalConsentRecords > 0 ? 1 : 0);
-  const documentationRate =
-    docDenominator > 0 ? Math.round(docNumerator / docDenominator) : 0;
+  const docComponents: number[] = [];
+  if (totalScheduleRecords > 0) {
+    docComponents.push(healthRecordDocRate);
+    docComponents.push(redBookUpdateRate);
+    docComponents.push(batchRecordingRate);
+  }
+  if (totalConsentRecords > 0) docComponents.push(consentDocumentedRate);
+  const documentationRate: number | null =
+    docComponents.length > 0
+      ? Math.round(docComponents.reduce((a, b) => a + b, 0) / docComponents.length)
+      : null;
 
   // =========================================================================
   // SCORING: base 52, max bonuses +28, 4 penalties guarded by array.length>0
@@ -562,24 +568,24 @@ export function computeImmunisationVaccinationCompliance(
   else if (administrationRate >= 70) score += 2;
 
   // --- Bonus 3: catchUpRate (>=80: +3, >=60: +1) ---
-  if (catchUpRate >= 80) score += 3;
-  else if (catchUpRate >= 60) score += 1;
+  if (meets(catchUpRate, 80)) score += 3;
+  else if (meets(catchUpRate, 60)) score += 1;
 
   // --- Bonus 4: consentManagementRate (>=90: +4, >=70: +2) ---
-  if (consentManagementRate >= 90) score += 4;
-  else if (consentManagementRate >= 70) score += 2;
+  if (meets(consentManagementRate, 90)) score += 4;
+  else if (meets(consentManagementRate, 70)) score += 2;
 
   // --- Bonus 5: gpLiaisonRate (>=85: +3, >=65: +1) ---
-  if (gpLiaisonRate >= 85) score += 3;
-  else if (gpLiaisonRate >= 65) score += 1;
+  if (meets(gpLiaisonRate, 85)) score += 3;
+  else if (meets(gpLiaisonRate, 65)) score += 1;
 
   // --- Bonus 6: childUnderstandingRate (>=80: +3, >=60: +1) ---
-  if (childUnderstandingRate >= 80) score += 3;
-  else if (childUnderstandingRate >= 60) score += 1;
+  if (meets(childUnderstandingRate, 80)) score += 3;
+  else if (meets(childUnderstandingRate, 60)) score += 1;
 
   // --- Bonus 7: documentationRate (>=90: +3, >=70: +1) ---
-  if (documentationRate >= 90) score += 3;
-  else if (documentationRate >= 70) score += 1;
+  if (meets(documentationRate, 90)) score += 3;
+  else if (meets(documentationRate, 70)) score += 1;
 
   // --- Bonus 8: vaccinationCoverageRate (>=90: +3, >=70: +1) ---
   if (vaccinationCoverageRate >= 90) score += 3;
@@ -590,14 +596,14 @@ export function computeImmunisationVaccinationCompliance(
   // scheduleAdherenceRate < 50 -> -5
   if (scheduleAdherenceRate < 50 && vaccination_schedule_records.length > 0) score -= 5;
 
-  // consentManagementRate < 50 -> -5
-  if (consentManagementRate < 50 && consent_management_records.length > 0) score -= 5;
+  // below(consentManagementRate, 50) -> -5
+  if (below(consentManagementRate, 50) && consent_management_records.length > 0) score -= 5;
 
-  // gpLiaisonRate < 50 -> -4
-  if (gpLiaisonRate < 50 && gp_liaison_records.length > 0) score -= 4;
+  // below(gpLiaisonRate, 50) -> -4
+  if (below(gpLiaisonRate, 50) && gp_liaison_records.length > 0) score -= 4;
 
-  // childUnderstandingRate < 40 -> -4
-  if (childUnderstandingRate < 40 && child_understanding_records.length > 0) score -= 4;
+  // below(childUnderstandingRate, 40) -> -4
+  if (below(childUnderstandingRate, 40) && child_understanding_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -647,11 +653,11 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- Catch-up programme strengths --
 
-  if (catchUpRate >= 80 && totalCatchUpRecords > 0) {
+  if (meets(catchUpRate, 80) && totalCatchUpRecords > 0) {
     strengths.push(
       `Catch-up programme composite rate at ${catchUpRate}% -- programmes are well-managed with strong completion, on-track progress, and vaccine delivery.`,
     );
-  } else if (catchUpRate >= 60 && totalCatchUpRecords > 0) {
+  } else if (meets(catchUpRate, 60) && totalCatchUpRecords > 0) {
     strengths.push(
       `Catch-up programme rate at ${catchUpRate}% -- good progress in managing catch-up vaccination programmes for children who arrived with incomplete records.`,
     );
@@ -683,11 +689,11 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- Consent management strengths --
 
-  if (consentManagementRate >= 90 && totalConsentRecords > 0) {
+  if (meets(consentManagementRate, 90) && totalConsentRecords > 0) {
     strengths.push(
       `${consentManagementRate}% consent management rate -- consent is consistently obtained and documented for vaccinations, demonstrating robust governance.`,
     );
-  } else if (consentManagementRate >= 70 && totalConsentRecords > 0) {
+  } else if (meets(consentManagementRate, 70) && totalConsentRecords > 0) {
     strengths.push(
       `${consentManagementRate}% consent management rate -- good practice in obtaining and documenting vaccination consent.`,
     );
@@ -725,11 +731,11 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- GP liaison strengths --
 
-  if (gpLiaisonRate >= 85 && totalGpLiaisonRecords > 0) {
+  if (meets(gpLiaisonRate, 85) && totalGpLiaisonRecords > 0) {
     strengths.push(
       `GP liaison effectiveness at ${gpLiaisonRate}% -- excellent communication and coordination with GPs ensures children's immunisation needs are clinically managed.`,
     );
-  } else if (gpLiaisonRate >= 65 && totalGpLiaisonRecords > 0) {
+  } else if (meets(gpLiaisonRate, 65) && totalGpLiaisonRecords > 0) {
     strengths.push(
       `GP liaison rate at ${gpLiaisonRate}% -- good working relationships with GPs support children's vaccination management.`,
     );
@@ -773,11 +779,11 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- Child understanding strengths --
 
-  if (childUnderstandingRate >= 80 && totalUnderstandingRecords > 0) {
+  if (meets(childUnderstandingRate, 80) && totalUnderstandingRecords > 0) {
     strengths.push(
       `Child understanding composite rate at ${childUnderstandingRate}% -- children are well-informed about immunisation purpose, risks, and benefits through age-appropriate education.`,
     );
-  } else if (childUnderstandingRate >= 60 && totalUnderstandingRecords > 0) {
+  } else if (meets(childUnderstandingRate, 60) && totalUnderstandingRecords > 0) {
     strengths.push(
       `Child understanding rate at ${childUnderstandingRate}% -- good practice in helping children understand the purpose and importance of vaccinations.`,
     );
@@ -813,7 +819,7 @@ export function computeImmunisationVaccinationCompliance(
     );
   }
 
-  if (childSatisfactionAvg >= 4.0 && totalUnderstandingRecords > 0) {
+  if (meets(childSatisfactionAvg, 4.0) && totalUnderstandingRecords > 0) {
     strengths.push(
       `Children's satisfaction with immunisation education averages ${childSatisfactionAvg}/5 -- children feel positively about how vaccination information is communicated to them.`,
     );
@@ -827,11 +833,11 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- Documentation strengths --
 
-  if (documentationRate >= 90) {
+  if (meets(documentationRate, 90)) {
     strengths.push(
       `Documentation rate at ${documentationRate}% -- the home maintains exemplary vaccination records across health files, red books, batch numbers, and consent forms.`,
     );
-  } else if (documentationRate >= 70) {
+  } else if (meets(documentationRate, 70)) {
     strengths.push(
       `Documentation rate at ${documentationRate}% -- good record-keeping supports accountability and continuity of care for children's immunisation.`,
     );
@@ -897,11 +903,11 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- Catch-up programme concerns --
 
-  if (catchUpRate < 50 && totalCatchUpRecords > 0) {
+  if (below(catchUpRate, 50) && totalCatchUpRecords > 0) {
     concerns.push(
       `Catch-up programme composite rate at only ${catchUpRate}% -- children who arrived with incomplete vaccination histories are not being effectively brought up to date, perpetuating health inequalities.`,
     );
-  } else if (catchUpRate < 60 && catchUpRate >= 50 && totalCatchUpRecords > 0) {
+  } else if (below(catchUpRate, 60) && meets(catchUpRate, 50) && totalCatchUpRecords > 0) {
     concerns.push(
       `Catch-up programme rate at ${catchUpRate}% -- progress in bringing children's vaccinations up to date needs improvement.`,
     );
@@ -927,11 +933,11 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- Consent management concerns --
 
-  if (consentManagementRate < 50 && totalConsentRecords > 0) {
+  if (below(consentManagementRate, 50) && totalConsentRecords > 0) {
     concerns.push(
       `Consent management rate at only ${consentManagementRate}% -- the majority of vaccination consent decisions are not properly obtained or documented, creating significant governance risk.`,
     );
-  } else if (consentManagementRate < 70 && consentManagementRate >= 50 && totalConsentRecords > 0) {
+  } else if (below(consentManagementRate, 70) && meets(consentManagementRate, 50) && totalConsentRecords > 0) {
     concerns.push(
       `Consent management at ${consentManagementRate}% -- consent processes for vaccinations need strengthening.`,
     );
@@ -957,11 +963,11 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- GP liaison concerns --
 
-  if (gpLiaisonRate < 50 && totalGpLiaisonRecords > 0) {
+  if (below(gpLiaisonRate, 50) && totalGpLiaisonRecords > 0) {
     concerns.push(
       `GP liaison effectiveness at only ${gpLiaisonRate}% -- poor communication with GPs means children's immunisation needs are not being clinically managed, undermining the home's duty under Reg 14.`,
     );
-  } else if (gpLiaisonRate < 65 && gpLiaisonRate >= 50 && totalGpLiaisonRecords > 0) {
+  } else if (below(gpLiaisonRate, 65) && meets(gpLiaisonRate, 50) && totalGpLiaisonRecords > 0) {
     concerns.push(
       `GP liaison rate at ${gpLiaisonRate}% -- liaison with GPs about vaccination matters needs improvement.`,
     );
@@ -993,11 +999,11 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- Child understanding concerns --
 
-  if (childUnderstandingRate < 40 && totalUnderstandingRecords > 0) {
+  if (below(childUnderstandingRate, 40) && totalUnderstandingRecords > 0) {
     concerns.push(
       `Child understanding rate at only ${childUnderstandingRate}% -- children are not adequately informed about immunisation, undermining their capacity to participate in health decisions and potentially increasing anxiety.`,
     );
-  } else if (childUnderstandingRate < 60 && childUnderstandingRate >= 40 && totalUnderstandingRecords > 0) {
+  } else if (below(childUnderstandingRate, 60) && meets(childUnderstandingRate, 40) && totalUnderstandingRecords > 0) {
     concerns.push(
       `Child understanding rate at ${childUnderstandingRate}% -- more work is needed to help children understand the purpose and importance of their vaccinations.`,
     );
@@ -1021,7 +1027,7 @@ export function computeImmunisationVaccinationCompliance(
     );
   }
 
-  if (childSatisfactionAvg < 3.0 && totalUnderstandingRecords > 0) {
+  if (below(childSatisfactionAvg, 3.0) && totalUnderstandingRecords > 0) {
     concerns.push(
       `Children's satisfaction with immunisation education averages only ${childSatisfactionAvg}/5 -- children do not feel positively about how vaccination is communicated to them.`,
     );
@@ -1029,11 +1035,11 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- Documentation concerns --
 
-  if (documentationRate < 50) {
+  if (below(documentationRate, 50)) {
     concerns.push(
       `Documentation rate at only ${documentationRate}% -- poor record-keeping means the home cannot evidence vaccination compliance and children's health records are incomplete.`,
     );
-  } else if (documentationRate < 70 && documentationRate >= 50) {
+  } else if (below(documentationRate, 70) && meets(documentationRate, 50)) {
     concerns.push(
       `Documentation rate at ${documentationRate}% -- vaccination record-keeping needs improvement to meet regulatory expectations.`,
     );
@@ -1096,7 +1102,7 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (consentManagementRate < 50 && totalConsentRecords > 0) {
+  if (below(consentManagementRate, 50) && totalConsentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1106,7 +1112,7 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (gpLiaisonRate < 50 && totalGpLiaisonRecords > 0) {
+  if (below(gpLiaisonRate, 50) && totalGpLiaisonRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1116,7 +1122,7 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (childUnderstandingRate < 40 && totalUnderstandingRecords > 0) {
+  if (below(childUnderstandingRate, 40) && totalUnderstandingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1156,7 +1162,7 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (catchUpRate < 50 && totalCatchUpRecords > 0) {
+  if (below(catchUpRate, 50) && totalCatchUpRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1178,7 +1184,7 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (consentManagementRate >= 50 && consentManagementRate < 70 && totalConsentRecords > 0) {
+  if (meets(consentManagementRate, 50) && below(consentManagementRate, 70) && totalConsentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1188,7 +1194,7 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (gpLiaisonRate >= 50 && gpLiaisonRate < 65 && totalGpLiaisonRecords > 0) {
+  if (meets(gpLiaisonRate, 50) && below(gpLiaisonRate, 65) && totalGpLiaisonRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1198,7 +1204,7 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (childUnderstandingRate >= 40 && childUnderstandingRate < 60 && totalUnderstandingRecords > 0) {
+  if (meets(childUnderstandingRate, 40) && below(childUnderstandingRate, 60) && totalUnderstandingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1238,7 +1244,7 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (documentationRate < 50) {
+  if (below(documentationRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1280,7 +1286,7 @@ export function computeImmunisationVaccinationCompliance(
 
   // -- Planned recommendations --
 
-  if (documentationRate >= 50 && documentationRate < 70) {
+  if (meets(documentationRate, 50) && below(documentationRate, 70)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1290,7 +1296,7 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (catchUpRate >= 50 && catchUpRate < 80 && totalCatchUpRecords > 0) {
+  if (meets(catchUpRate, 50) && below(catchUpRate, 80) && totalCatchUpRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1355,14 +1361,14 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (consentManagementRate < 50 && totalConsentRecords > 0) {
+  if (below(consentManagementRate, 50) && totalConsentRecords > 0) {
     insights.push({
       text: `Consent management at only ${consentManagementRate}%. Without properly obtained and documented consent, vaccinations may have been administered unlawfully. This creates significant safeguarding and governance risk. Ofsted expects clear evidence of who consented to each vaccination and on what basis.`,
       severity: "critical",
     });
   }
 
-  if (gpLiaisonRate < 50 && totalGpLiaisonRecords > 0) {
+  if (below(gpLiaisonRate, 50) && totalGpLiaisonRecords > 0) {
     insights.push({
       text: `GP liaison effectiveness at only ${gpLiaisonRate}%. Poor coordination with GPs means children's immunisation needs are not being clinically managed. Ofsted expects homes to work proactively with health professionals to ensure children receive comprehensive health care under Reg 14.`,
       severity: "critical",
@@ -1406,35 +1412,35 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (consentManagementRate >= 50 && consentManagementRate < 70 && totalConsentRecords > 0) {
+  if (meets(consentManagementRate, 50) && below(consentManagementRate, 70) && totalConsentRecords > 0) {
     insights.push({
       text: `Consent management at ${consentManagementRate}% -- some vaccinations lack properly obtained or documented consent. Ofsted inspectors will want to see clear consent trails for every vaccination.`,
       severity: "warning",
     });
   }
 
-  if (catchUpRate >= 50 && catchUpRate < 80 && totalCatchUpRecords > 0) {
+  if (meets(catchUpRate, 50) && below(catchUpRate, 80) && totalCatchUpRecords > 0) {
     insights.push({
       text: `Catch-up programme rate at ${catchUpRate}% -- children are making some progress but catch-up programmes need more structured management to ensure all children achieve full vaccination status.`,
       severity: "warning",
     });
   }
 
-  if (gpLiaisonRate >= 50 && gpLiaisonRate < 65 && totalGpLiaisonRecords > 0) {
+  if (meets(gpLiaisonRate, 50) && below(gpLiaisonRate, 65) && totalGpLiaisonRecords > 0) {
     insights.push({
       text: `GP liaison at ${gpLiaisonRate}% -- communication with GPs about vaccination matters is inconsistent. The home should establish regular, structured liaison to ensure clinical oversight of immunisation management.`,
       severity: "warning",
     });
   }
 
-  if (childUnderstandingRate >= 40 && childUnderstandingRate < 60 && totalUnderstandingRecords > 0) {
+  if (meets(childUnderstandingRate, 40) && below(childUnderstandingRate, 60) && totalUnderstandingRecords > 0) {
     insights.push({
       text: `Child understanding at ${childUnderstandingRate}% -- children need more support to understand why immunisation matters. Looked-after children may have missed health education opportunities and deserve additional investment in their understanding.`,
       severity: "warning",
     });
   }
 
-  if (documentationRate >= 50 && documentationRate < 70) {
+  if (meets(documentationRate, 50) && below(documentationRate, 70)) {
     insights.push({
       text: `Documentation rate at ${documentationRate}% -- while some records are maintained, gaps in health record documentation, red book updates, or batch number recording could undermine inspection readiness.`,
       severity: "warning",
@@ -1485,35 +1491,35 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (consentManagementRate >= 90 && totalConsentRecords > 0) {
+  if (meets(consentManagementRate, 90) && totalConsentRecords > 0) {
     insights.push({
       text: `Consent management at ${consentManagementRate}% -- the home maintains exemplary consent governance for vaccinations. Every consent decision is properly obtained, documented, and traceable. Ofsted will view this as evidence of strong leadership and child-centred practice.`,
       severity: "positive",
     });
   }
 
-  if (gpLiaisonRate >= 85 && totalGpLiaisonRecords > 0) {
+  if (meets(gpLiaisonRate, 85) && totalGpLiaisonRecords > 0) {
     insights.push({
       text: `GP liaison effectiveness at ${gpLiaisonRate}% -- the home has established excellent working relationships with GPs that ensure children receive clinically informed, coordinated immunisation management.`,
       severity: "positive",
     });
   }
 
-  if (childUnderstandingRate >= 80 && totalUnderstandingRecords > 0) {
+  if (meets(childUnderstandingRate, 80) && totalUnderstandingRecords > 0) {
     insights.push({
       text: `Child understanding rate at ${childUnderstandingRate}% -- children are well-informed about immunisation and their views actively shape how vaccination information is communicated. This empowers children to participate meaningfully in their own health decisions.`,
       severity: "positive",
     });
   }
 
-  if (catchUpRate >= 80 && totalCatchUpRecords > 0) {
+  if (meets(catchUpRate, 80) && totalCatchUpRecords > 0) {
     insights.push({
       text: `Catch-up programme rate at ${catchUpRate}% -- the home is effectively bringing children's vaccinations up to date, addressing health inequalities and ensuring children in care receive the same standard of immunisation as their peers.`,
       severity: "positive",
     });
   }
 
-  if (documentationRate >= 90) {
+  if (meets(documentationRate, 90)) {
     insights.push({
       text: `Documentation rate at ${documentationRate}% -- vaccination records are exemplary across health files, red books, batch numbers, and consent forms. This level of documentation provides full traceability and strong inspection evidence.`,
       severity: "positive",
@@ -1534,7 +1540,7 @@ export function computeImmunisationVaccinationCompliance(
     });
   }
 
-  if (childVoiceRate >= 80 && childSatisfactionAvg >= 4.0 && totalUnderstandingRecords > 0) {
+  if (childVoiceRate >= 80 && meets(childSatisfactionAvg, 4.0) && totalUnderstandingRecords > 0) {
     insights.push({
       text: `Child voice captured in ${childVoiceRate}% of sessions with satisfaction averaging ${childSatisfactionAvg}/5 -- children feel heard and positive about how immunisation is discussed with them. This is exemplary child-centred health practice.`,
       severity: "positive",

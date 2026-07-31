@@ -14,6 +14,7 @@ import {
   type GpLiaisonRecordInput,
   type ChildUnderstandingRecordInput,
 } from "../home-immunisation-vaccination-compliance-intelligence-engine";
+import { above, below, meets } from "@/lib/metrics/rate";
 
 // ── Factories ──────────────────────────────────────────────────────────────
 
@@ -223,11 +224,11 @@ describe("insufficient data / empty special cases", () => {
       child_understanding_records: [],
     }));
     expect(r.schedule_adherence_rate).toBe(0);
-    expect(r.catch_up_rate).toBe(0);
-    expect(r.consent_management_rate).toBe(0);
-    expect(r.gp_liaison_rate).toBe(0);
-    expect(r.child_understanding_rate).toBe(0);
-    expect(r.documentation_rate).toBe(0);
+    expect(r.catch_up_rate).toBeNull();
+    expect(r.consent_management_rate).toBeNull();
+    expect(r.gp_liaison_rate).toBeNull();
+    expect(r.child_understanding_rate).toBeNull();
+    expect(r.documentation_rate).toBeNull();
   });
 
   it("returns empty strengths/concerns/recommendations/insights on insufficient_data", () => {
@@ -478,7 +479,7 @@ describe("catch-up rate", () => {
 
   it("0% when no catch-up records", () => {
     const r = compute(baseInput({ catch_up_programme_records: [] }));
-    expect(r.catch_up_rate).toBe(0);
+    expect(r.catch_up_rate).toBeNull();
   });
 
   it("0% when all programmes incomplete, off track, zero vaccines", () => {
@@ -487,6 +488,7 @@ describe("catch-up rate", () => {
         makeCatchUp({ programme_completed: false, on_track: false, vaccines_required: 5, vaccines_administered: 0 }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.catch_up_rate).toBe(0);
   });
 
@@ -524,7 +526,7 @@ describe("consent management rate", () => {
 
   it("0% when no consent records", () => {
     const r = compute(baseInput({ consent_management_records: [] }));
-    expect(r.consent_management_rate).toBe(0);
+    expect(r.consent_management_rate).toBeNull();
   });
 
   it("0% when no consent obtained and none documented", () => {
@@ -533,6 +535,7 @@ describe("consent management rate", () => {
         makeConsent({ consent_obtained: false, consent_documented: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.consent_management_rate).toBe(0);
   });
 
@@ -567,7 +570,7 @@ describe("GP liaison rate", () => {
 
   it("0% when no GP liaison records", () => {
     const r = compute(baseInput({ gp_liaison_records: [] }));
-    expect(r.gp_liaison_rate).toBe(0);
+    expect(r.gp_liaison_rate).toBeNull();
   });
 
   it("0% when all GP metrics are zero", () => {
@@ -576,6 +579,7 @@ describe("GP liaison rate", () => {
         makeGpLiaison({ gp_registered: false, gp_responsive: false, information_shared: false, response_within_target: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.gp_liaison_rate).toBe(0);
   });
 
@@ -611,7 +615,7 @@ describe("child understanding rate", () => {
 
   it("0% when no understanding records", () => {
     const r = compute(baseInput({ child_understanding_records: [] }));
-    expect(r.child_understanding_rate).toBe(0);
+    expect(r.child_understanding_rate).toBeNull();
   });
 
   it("0% when all understanding metrics are false", () => {
@@ -625,6 +629,7 @@ describe("child understanding rate", () => {
         }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.child_understanding_rate).toBe(0);
   });
 
@@ -673,7 +678,7 @@ describe("documentation rate", () => {
       vaccination_schedule_records: [],
       consent_management_records: [],
     }));
-    expect(r.documentation_rate).toBe(0);
+    expect(r.documentation_rate).toBeNull();
   });
 
   it("partial documentation when some fields are false", () => {
@@ -812,6 +817,7 @@ describe("scoring penalties", () => {
         makeConsent({ id: "cm_2", consent_obtained: false, consent_documented: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.consent_management_rate).toBe(0);
   });
 
@@ -821,6 +827,7 @@ describe("scoring penalties", () => {
         makeGpLiaison({ gp_registered: false, gp_responsive: false, information_shared: false, response_within_target: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.gp_liaison_rate).toBe(0);
   });
 
@@ -835,6 +842,7 @@ describe("scoring penalties", () => {
         }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.child_understanding_rate).toBe(0);
   });
 
@@ -952,7 +960,7 @@ describe("strengths -- catch-up", () => {
       ],
     }));
     // completion=50, onTrack=50, progress=4/6=67 => avg=56
-    if (r2.catch_up_rate >= 60 && r2.catch_up_rate < 80) {
+    if (meets(r2.catch_up_rate, 60) && below(r2.catch_up_rate, 80)) {
       expect(r2.strengths.some((s) => s.includes("good progress"))).toBe(true);
     }
   });
@@ -1581,6 +1589,7 @@ describe("concerns -- documentation", () => {
         makeConsent({ consent_documented: false }),
       ],
     }));
+    // record exists → 0, not null
     expect(r.documentation_rate).toBe(0);
     expect(r.concerns.some((c) => c.includes("Documentation rate") && c.includes("poor record-keeping"))).toBe(true);
   });
@@ -2120,7 +2129,7 @@ describe("insights -- warning", () => {
         makeCatchUp({ id: "cu_2", programme_completed: false, on_track: false, vaccines_required: 4, vaccines_administered: 2 }),
       ],
     }));
-    if (r.catch_up_rate >= 50 && r.catch_up_rate < 80) {
+    if (meets(r.catch_up_rate, 50) && below(r.catch_up_rate, 80)) {
       expect(r.insights.some((i) => i.severity === "warning" && i.text.includes("Catch-up programme rate"))).toBe(true);
     }
   });
@@ -2155,7 +2164,7 @@ describe("insights -- warning", () => {
         makeConsent({ consent_documented: false }),
       ],
     }));
-    if (r.documentation_rate >= 50 && r.documentation_rate < 70) {
+    if (meets(r.documentation_rate, 50) && below(r.documentation_rate, 70)) {
       expect(r.insights.some((i) => i.severity === "warning" && i.text.includes("Documentation rate"))).toBe(true);
     }
   });
