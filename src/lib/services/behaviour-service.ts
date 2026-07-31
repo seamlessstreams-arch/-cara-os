@@ -325,7 +325,8 @@ export function computePIAnalysis(entries: BehaviourEntry[]): {
   total_pi: number;
   by_technique: Record<string, number>;
   by_level: { low: number; medium: number; high: number };
-  avg_duration: number;
+  // fab-0: null when no PIs have a duration recorded.
+  avg_duration: number | null;
   injury_incidents: number;
   // fab-0: null when there are no PIs to compute over.
   debrief_rate: number | null;
@@ -364,7 +365,7 @@ export function computePIAnalysis(entries: BehaviourEntry[]): {
       durationCount++;
     }
   }
-  const avgDuration = durationCount > 0 ? Math.round(durationTotal / durationCount) : 0;
+  const avgDuration: number | null = durationCount > 0 ? Math.round(durationTotal / durationCount) : null;
 
   // Injury incidents
   let injuryIncidents = 0;
