@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DocumentRating, HomeDocumentResult } from "@/lib/engines/home-document-governance-intelligence-engine";
+import { meets, below, formatRate } from "@/lib/metrics/rate";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -85,7 +86,7 @@ export function HomeDocumentGovernanceIntelligenceCard() {
 
   const ratingStyle = RATING_STYLES[d.document_rating] ?? RATING_STYLES.insufficient_data;
   const hasExpired = d.inventory_profile.expired_count > 0;
-  const lowRead = d.read_compliance_profile.avg_read_rate < 50;
+  const lowRead = below(d.read_compliance_profile.avg_read_rate, 50);
   const isAlert = hasExpired || lowRead || d.document_rating === "inadequate";
 
   return (
@@ -127,10 +128,11 @@ export function HomeDocumentGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <BookOpen className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.read_compliance_profile.avg_read_rate >= 80 ? "text-[--cs-success]" :
-                  d.read_compliance_profile.avg_read_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.read_compliance_profile.avg_read_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.read_compliance_profile.avg_read_rate, 50) ? "text-[--cs-warning]" :
+                  d.read_compliance_profile.avg_read_rate === null ? "text-muted-foreground" : "text-[--cs-risk]"
                 )}>
-                  {d.read_compliance_profile.avg_read_rate}%
+                  {formatRate(d.read_compliance_profile.avg_read_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Read Rate</p>
@@ -141,10 +143,11 @@ export function HomeDocumentGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <PenLine className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.read_compliance_profile.avg_sign_rate >= 80 ? "text-[--cs-success]" :
-                  d.read_compliance_profile.avg_sign_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.read_compliance_profile.avg_sign_rate, 80) ? "text-[--cs-success]" :
+                  meets(d.read_compliance_profile.avg_sign_rate, 50) ? "text-[--cs-warning]" :
+                  d.read_compliance_profile.avg_sign_rate === null ? "text-muted-foreground" : "text-[--cs-risk]"
                 )}>
-                  {d.read_compliance_profile.avg_sign_rate}%
+                  {formatRate(d.read_compliance_profile.avg_sign_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Signed</p>

@@ -722,7 +722,8 @@ describe("Home Document Governance Intelligence Engine", () => {
       const docs = [makeDoc({ id: "doc_1", tags: ["optional"] })];
       const r = computeHomeDocumentGovernance(baseInput({ documents: docs }));
       expect(r.governance_profile.mandatory_tag_count).toBe(0);
-      expect(r.governance_profile.mandatory_read_rate).toBe(0);
+      // fab-0: null when no mandatory docs
+      expect(r.governance_profile.mandatory_read_rate).toBeNull();
     });
 
     it("plural forms for single expired document", () => {
