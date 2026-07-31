@@ -161,8 +161,8 @@ describe("computeHomeworkAcademicSupport", () => {
       expect(r.homework_completion_rate).toBe(0);
       expect(r.study_environment_quality_rate).toBe(0);
       expect(r.tutoring_coverage_rate).toBe(0);
-      expect(r.resource_availability_rate).toBe(0);
-      expect(r.school_liaison_rate).toBe(0);
+      expect(r.resource_availability_rate).toBeNull();
+      expect(r.school_liaison_rate).toBeNull();
       expect(r.child_engagement_rate).toBe(0);
       expect(r.strengths).toHaveLength(0);
       expect(r.concerns).toHaveLength(0);
@@ -218,8 +218,8 @@ describe("computeHomeworkAcademicSupport", () => {
       expect(r.homework_completion_rate).toBe(0);
       expect(r.study_environment_quality_rate).toBe(0);
       expect(r.tutoring_coverage_rate).toBe(0);
-      expect(r.resource_availability_rate).toBe(0);
-      expect(r.school_liaison_rate).toBe(0);
+      expect(r.resource_availability_rate).toBeNull();
+      expect(r.school_liaison_rate).toBeNull();
       expect(r.child_engagement_rate).toBe(0);
     });
   });
@@ -1531,7 +1531,7 @@ describe("computeHomeworkAcademicSupport", () => {
       const r = computeHomeworkAcademicSupport(baseInput({
         school_liaison_records: [makeLiaison()], // prevent allEmpty
       }));
-      expect(r.resource_availability_rate).toBe(0);
+      expect(r.resource_availability_rate).toBeNull();
     });
 
     it("school_liaison_rate = round((staffAttendance + actionCompletion + academicDiscussion) / 3)", () => {
@@ -1554,7 +1554,7 @@ describe("computeHomeworkAcademicSupport", () => {
       const r = computeHomeworkAcademicSupport(baseInput({
         homework_support_records: [makeHomeworkSupport()], // prevent allEmpty
       }));
-      expect(r.school_liaison_rate).toBe(0);
+      expect(r.school_liaison_rate).toBeNull();
     });
 
     it("child_engagement_rate spans homework + tutoring + resources", () => {

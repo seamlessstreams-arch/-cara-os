@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import type { AcademicSupportRating } from "@/lib/engines/home-homework-academic-support-intelligence-engine";
 
 const RATING_STYLES: Record<AcademicSupportRating, { bg: string; text: string; border: string; label: string }> = {
@@ -77,12 +78,12 @@ export function HomeHomeworkAcademicSupportIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.tutoring_coverage_rate >= 90 ? "text-[--cs-success]" : d.tutoring_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.tutoring_coverage_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Tutoring</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.resource_availability_rate >= 90 ? "bg-green-50" : d.resource_availability_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.resource_availability_rate >= 90 ? "text-[--cs-success]" : d.resource_availability_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.resource_availability_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.resource_availability_rate, 90) ? "bg-green-50" : meets(d.resource_availability_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.resource_availability_rate, 90) ? "text-[--cs-success]" : meets(d.resource_availability_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.resource_availability_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Resources</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.school_liaison_rate >= 90 ? "bg-green-50" : d.school_liaison_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.school_liaison_rate >= 90 ? "text-[--cs-success]" : d.school_liaison_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.school_liaison_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.school_liaison_rate, 90) ? "bg-green-50" : meets(d.school_liaison_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.school_liaison_rate, 90) ? "text-[--cs-success]" : meets(d.school_liaison_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.school_liaison_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Liaison</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_engagement_rate >= 90 ? "bg-green-50" : d.child_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

@@ -11,6 +11,8 @@
 //             schoolLiaisonRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface HomeworkSupportRecordInput {
@@ -140,11 +142,15 @@ export interface HomeworkAcademicSupportResult {
   academic_rating: AcademicSupportRating;
   academic_score: number;
   headline: string;
+  // Most rates use pct() directly (deterministic 0 on empty). The 2 composite
+  // rates below are null on empty: no source records ⇒ no signal. "0% resource
+  // availability / 0% school liaison" would read as a home not communicating
+  // with any school about any child, not "unmeasured". Fab-0 doctrine.
   homework_completion_rate: number;
   study_environment_quality_rate: number;
   tutoring_coverage_rate: number;
-  resource_availability_rate: number;
-  school_liaison_rate: number;
+  resource_availability_rate: number | null;
+  school_liaison_rate: number | null;
   child_engagement_rate: number;
   strengths: string[];
   concerns: string[];
@@ -183,8 +189,8 @@ function emptyResult(
     homework_completion_rate: 0,
     study_environment_quality_rate: 0,
     tutoring_coverage_rate: 0,
-    resource_availability_rate: 0,
-    school_liaison_rate: 0,
+    resource_availability_rate: null,
+    school_liaison_rate: null,
     child_engagement_rate: 0,
     strengths: [],
     concerns: [],
@@ -300,19 +306,19 @@ export function computeHomeworkAcademicSupport(
     (sum, r) => sum + (supportQualityScores[r.support_quality] ?? 3),
     0,
   );
-  const avgSupportQuality =
+  const avgSupportQuality: number | null =
     totalHomeworkRecords > 0
       ? Math.round((totalSupportQuality / totalHomeworkRecords) * 100) / 100
-      : 0;
+      : null;
 
   const totalTimeAllocated = homework_support_records.reduce(
     (sum, r) => sum + r.time_allocated_minutes,
     0,
   );
-  const avgTimeAllocated =
+  const avgTimeAllocated: number | null =
     totalHomeworkRecords > 0
       ? Math.round(totalTimeAllocated / totalHomeworkRecords)
-      : 0;
+      : null;
 
   const homeworkFullyCompleted = homework_support_records.filter(
     (r) => r.outcome === "completed",
@@ -343,10 +349,10 @@ export function computeHomeworkAcademicSupport(
     (sum, r) => sum + (qualityScores[r.overall_quality] ?? 2),
     0,
   );
-  const envQualityRate =
+  const envQualityRate: number | null =
     totalStudyEnvRecords > 0
       ? Math.round((totalEnvQuality / (totalStudyEnvRecords * 4)) * 100)
-      : 0;
+      : null;
 
   const quietSpaceAvailable = study_environment_records.filter(
     (r) => r.quiet_space_available,
@@ -387,10 +393,10 @@ export function computeHomeworkAcademicSupport(
     (sum, r) => sum + r.child_satisfaction,
     0,
   );
-  const envSatisfactionAvg =
+  const envSatisfactionAvg: number | null =
     totalStudyEnvRecords > 0
       ? Math.round((envSatisfactionSum / totalStudyEnvRecords) * 100) / 100
-      : 0;
+      : null;
 
   const envImprovementsNeeded = study_environment_records.filter(
     (r) => r.improvements_needed.length > 0,
@@ -426,10 +432,10 @@ export function computeHomeworkAcademicSupport(
     (sum, r) => sum + r.child_satisfaction,
     0,
   );
-  const tutoringSatisfactionAvg =
+  const tutoringSatisfactionAvg: number | null =
     totalTutoringRecords > 0
       ? Math.round((tutoringSatisfactionSum / totalTutoringRecords) * 100) / 100
-      : 0;
+      : null;
 
   const tutorFeedbackProvided = tutoring_records.filter(
     (r) => r.tutor_feedback_provided,
@@ -456,10 +462,10 @@ export function computeHomeworkAcademicSupport(
     (sum, r) => sum + r.session_duration_minutes,
     0,
   );
-  const avgSessionDuration =
+  const avgSessionDuration: number | null =
     totalTutoringRecords > 0
       ? Math.round(totalSessionDuration / totalTutoringRecords)
-      : 0;
+      : null;
 
   // --- Educational resource availability ---
   const totalResourceRecords = educational_resource_records.length;
@@ -496,10 +502,10 @@ export function computeHomeworkAcademicSupport(
   ).length;
   const resourceConditionRate = pct(goodConditionResources, totalResourceRecords);
 
-  const resourceAvailabilityRate =
+  const resourceAvailabilityRate: number | null =
     totalResourceRecords > 0
       ? Math.round((resourceFulfilmentRate + ageAppropriateRate + resourceUsageRate) / 3)
-      : 0;
+      : null;
 
   // --- School liaison ---
   const totalLiaisonRecords = school_liaison_records.length;
@@ -556,10 +562,10 @@ export function computeHomeworkAcademicSupport(
   ).length;
   const pepUpToDateRate = pct(pepUpToDate, totalLiaisonRecords);
 
-  const schoolLiaisonRate =
+  const schoolLiaisonRate: number | null =
     totalLiaisonRecords > 0
       ? Math.round((staffAttendanceRate + actionCompletionRate + academicDiscussionRate) / 3)
-      : 0;
+      : null;
 
   // --- Child engagement composite ---
   const engagementNumerator =
@@ -585,12 +591,12 @@ export function computeHomeworkAcademicSupport(
   else if (tutoringCoverageRate >= 60) score += 1;
 
   // --- Bonus 4: resourceAvailabilityRate (>=90: +4, >=70: +2) ---
-  if (resourceAvailabilityRate >= 90) score += 4;
-  else if (resourceAvailabilityRate >= 70) score += 2;
+  if (meets(resourceAvailabilityRate, 90)) score += 4;
+  else if (meets(resourceAvailabilityRate, 70)) score += 2;
 
   // --- Bonus 5: schoolLiaisonRate (>=90: +3, >=70: +1) ---
-  if (schoolLiaisonRate >= 90) score += 3;
-  else if (schoolLiaisonRate >= 70) score += 1;
+  if (meets(schoolLiaisonRate, 90)) score += 3;
+  else if (meets(schoolLiaisonRate, 70)) score += 1;
 
   // --- Bonus 6: childEngagementRate (>=90: +3, >=70: +2) ---
   if (childEngagementRate >= 90) score += 3;
@@ -616,8 +622,8 @@ export function computeHomeworkAcademicSupport(
   // studyEnvironmentQualityRate < 40 -> -5
   if (studyEnvironmentQualityRate < 40 && totalStudyEnvRecords > 0) score -= 5;
 
-  // schoolLiaisonRate < 40 -> -5
-  if (schoolLiaisonRate < 40 && totalLiaisonRecords > 0) score -= 5;
+  // below(schoolLiaisonRate, 40) -> -5
+  if (below(schoolLiaisonRate, 40) && totalLiaisonRecords > 0) score -= 5;
 
   // childEngagementRate < 30 -> -3
   if (childEngagementRate < 30 && engagementDenominator > 0) score -= 3;
@@ -650,7 +656,7 @@ export function computeHomeworkAcademicSupport(
     );
   }
 
-  if (avgSupportQuality >= 4.0 && totalHomeworkRecords > 0) {
+  if (meets(avgSupportQuality, 4.0) && totalHomeworkRecords > 0) {
     strengths.push(
       `Average homework support quality rated ${avgSupportQuality}/5 -- the quality of educational support provided is consistently high.`,
     );
@@ -682,7 +688,7 @@ export function computeHomeworkAcademicSupport(
     );
   }
 
-  if (envSatisfactionAvg >= 4.0 && totalStudyEnvRecords > 0) {
+  if (meets(envSatisfactionAvg, 4.0) && totalStudyEnvRecords > 0) {
     strengths.push(
       `Children's satisfaction with study environments averages ${envSatisfactionAvg}/5 -- children feel their learning spaces support their education well.`,
     );
@@ -714,7 +720,7 @@ export function computeHomeworkAcademicSupport(
     );
   }
 
-  if (tutoringSatisfactionAvg >= 4.0 && totalTutoringRecords > 0) {
+  if (meets(tutoringSatisfactionAvg, 4.0) && totalTutoringRecords > 0) {
     strengths.push(
       `Children's satisfaction with tutoring averages ${tutoringSatisfactionAvg}/5 -- children value the additional academic support they receive.`,
     );
@@ -842,7 +848,7 @@ export function computeHomeworkAcademicSupport(
     );
   }
 
-  if (envSatisfactionAvg < 3.0 && totalStudyEnvRecords > 0) {
+  if (below(envSatisfactionAvg, 3.0) && totalStudyEnvRecords > 0) {
     concerns.push(
       `Children's satisfaction with study environments averages only ${envSatisfactionAvg}/5 -- children do not feel their learning spaces are adequate.`,
     );
@@ -922,7 +928,7 @@ export function computeHomeworkAcademicSupport(
     );
   }
 
-  if (schoolLiaisonRate < 40 && totalLiaisonRecords > 0) {
+  if (below(schoolLiaisonRate, 40) && totalLiaisonRecords > 0) {
     concerns.push(
       `School liaison rate at only ${schoolLiaisonRate}% -- the home is not maintaining effective relationships with schools to support children's education.`,
     );
@@ -965,7 +971,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (schoolLiaisonRate < 40 && totalLiaisonRecords > 0) {
+  if (below(schoolLiaisonRate, 40) && totalLiaisonRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1185,7 +1191,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (schoolLiaisonRate < 40 && totalLiaisonRecords > 0) {
+  if (below(schoolLiaisonRate, 40) && totalLiaisonRecords > 0) {
     insights.push({
       text: `School liaison rate at only ${schoolLiaisonRate}%. Effective home-school communication is essential for looked-after children. Without regular liaison, the home cannot respond to emerging academic needs, attendance concerns, or additional support requirements. This is a significant Reg 8 gap.`,
       severity: "critical",
@@ -1309,7 +1315,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (studyEnvironmentQualityRate >= 90 && envSatisfactionAvg >= 4.0 && totalStudyEnvRecords > 0) {
+  if (studyEnvironmentQualityRate >= 90 && meets(envSatisfactionAvg, 4.0) && totalStudyEnvRecords > 0) {
     insights.push({
       text: `${studyEnvironmentQualityRate}% study environment quality with child satisfaction averaging ${envSatisfactionAvg}/5 -- children have access to excellent learning spaces and feel these support their education well. This creates optimal conditions for academic achievement.`,
       severity: "positive",
@@ -1323,14 +1329,14 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (resourceAvailabilityRate >= 90 && totalResourceRecords > 0) {
+  if (meets(resourceAvailabilityRate, 90) && totalResourceRecords > 0) {
     insights.push({
       text: `Resource availability rate at ${resourceAvailabilityRate}% -- children have access to the educational materials they need. Resources are provided, age-appropriate, and actively used for learning.`,
       severity: "positive",
     });
   }
 
-  if (schoolLiaisonRate >= 90 && pepUpToDateRate >= 90 && totalLiaisonRecords > 0) {
+  if (meets(schoolLiaisonRate, 90) && pepUpToDateRate >= 90 && totalLiaisonRecords > 0) {
     insights.push({
       text: `School liaison rate at ${schoolLiaisonRate}% with ${pepUpToDateRate}% PEPs up to date -- the home maintains exemplary relationships with schools and ensures educational planning is current and effective. This proactive approach ensures children's academic needs are identified and met.`,
       severity: "positive",
