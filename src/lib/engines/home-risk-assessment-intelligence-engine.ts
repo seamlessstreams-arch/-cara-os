@@ -256,13 +256,13 @@ export function computeHomeRiskAssessment(
   else if (totalOverdue >= 3) score -= 6;
   else score -= 2;
 
-  // Child views (±6)
-  const combinedViewsRate = currentRAs.length + activeBSPs.length > 0
+  // Child views (±6) — fab-0: null when no RAs or BSPs.
+  const combinedViewsRate: number | null = currentRAs.length + activeBSPs.length > 0
     ? Math.round(((raWithViews + bspWithViews) / (currentRAs.length + activeBSPs.length)) * 100)
-    : 0;
+    : null;
   if (combinedViewsRate === 100) score += 4;
-  else if (combinedViewsRate >= 80) score += 2;
-  else if (combinedViewsRate < 50) score -= 4;
+  else if (meets(combinedViewsRate, 80)) score += 2;
+  else if (below(combinedViewsRate, 50)) score -= 4;
 
   // Mitigation effectiveness (±6)
   if (meets(mitigationEffRate, 80)) score += 4;
@@ -299,7 +299,7 @@ export function computeHomeRiskAssessment(
   if (increasing > 0) concerns.push(`${increasing} risk assessment${increasing > 1 ? "s" : ""} with increasing trends — current strategies may not be effective.`);
   if (totalOverdue > 0) concerns.push(`${totalOverdue} overdue review${totalOverdue > 1 ? "s" : ""} — risk assessments and BSPs must be reviewed within agreed timescales.`);
   if (totalMitigations > 0 && below(mitigationEffRate, 50)) concerns.push(`Only ${mitigationEffRate}% mitigation effectiveness — strategies need reviewing and strengthening.`);
-  if (combinedViewsRate < 50 && (currentRAs.length + activeBSPs.length) > 0) concerns.push("Child views missing from many risk documents — the child's perspective is essential for effective risk management.");
+  if ((currentRAs.length + activeBSPs.length) > 0 && below(combinedViewsRate, 50)) concerns.push("Child views missing from many risk documents — the child's perspective is essential for effective risk management.");
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: RiskRecommendation[] = [];
