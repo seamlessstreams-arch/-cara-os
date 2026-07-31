@@ -17,6 +17,11 @@ const ratingLabels: Record<string, string> = {
   inadequate: "Inadequate",
 };
 
+function fmt(v: number | null | undefined): string {
+  if (v === null || v === undefined) return "—";
+  return String(v);
+}
+
 function ScoreBar({ score, label }: { score: number; label: string }) {
   const color =
     score >= 80 ? "bg-green-500" : score >= 60 ? "bg-blue-500" : score >= 40 ? "bg-amber-500" : "bg-red-500";
@@ -132,25 +137,25 @@ export function AdvocacyRepresentationDashboardWidget() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.accessToAdvocacy.activeAdvocacyRate}%
+            {fmt(data.accessToAdvocacy.activeAdvocacyRate)}%
           </div>
           <div className="text-xs text-gray-500 mt-1">Active Advocacy Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.independentVisitors.visitComplianceRate}%
+            {fmt(data.independentVisitors.visitComplianceRate)}%
           </div>
           <div className="text-xs text-gray-500 mt-1">IV Visit Compliance</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.awarenessAndUnderstanding.childrenInformedOfRightsRate}%
+            {fmt(data.awarenessAndUnderstanding.childrenInformedOfRightsRate)}%
           </div>
           <div className="text-xs text-gray-500 mt-1">Informed of Rights</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.accessToAdvocacy.childSatisfactionAverage}/10
+            {fmt(data.accessToAdvocacy.childSatisfactionAverage)}/10
           </div>
           <div className="text-xs text-gray-500 mt-1">Advocacy Satisfaction</div>
         </div>
@@ -192,7 +197,7 @@ export function AdvocacyRepresentationDashboardWidget() {
                   </div>
                   <div>
                     <span className="text-gray-400">IV Compliance:</span>{" "}
-                    {profile.hasIndependentVisitor ? `${profile.ivVisitCompliance}%` : "N/A"}
+                    {profile.hasIndependentVisitor ? `${fmt(profile.ivVisitCompliance)}%` : "N/A"}
                   </div>
                   <div>
                     <span className="text-gray-400">Informed of Rights:</span>{" "}
@@ -208,7 +213,7 @@ export function AdvocacyRepresentationDashboardWidget() {
                   </div>
                   <div>
                     <span className="text-gray-400">Satisfaction:</span>{" "}
-                    {profile.satisfaction > 0 ? `${profile.satisfaction}/10` : "N/A"}
+                    {profile.satisfaction !== null && profile.satisfaction > 0 ? `${profile.satisfaction}/10` : "N/A"}
                   </div>
                 </div>
                 {(profile.concerns?.length ?? 0) > 0 && (
@@ -234,15 +239,15 @@ export function AdvocacyRepresentationDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Avg Response Time:</span>{" "}
-              <span className="font-medium">{data.accessToAdvocacy.averageResponseTimeDays} days</span>
+              <span className="font-medium">{fmt(data.accessToAdvocacy.averageResponseTimeDays)} days</span>
             </div>
             <div>
               <span className="text-gray-500">Satisfaction:</span>{" "}
-              <span className="font-medium">{data.accessToAdvocacy.childSatisfactionAverage}/10</span>
+              <span className="font-medium">{fmt(data.accessToAdvocacy.childSatisfactionAverage)}/10</span>
             </div>
             <div>
               <span className="text-gray-500">Complaint Support:</span>{" "}
-              <span className="font-medium">{data.accessToAdvocacy.complaintSupportRate}%</span>
+              <span className="font-medium">{fmt(data.accessToAdvocacy.complaintSupportRate)}%</span>
             </div>
           </div>
           {data.accessToAdvocacy.childrenWithoutAdvocacy.length > 0 && (
@@ -267,11 +272,11 @@ export function AdvocacyRepresentationDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Visit Compliance:</span>{" "}
-              <span className="font-medium">{data.independentVisitors.visitComplianceRate}%</span>
+              <span className="font-medium">{fmt(data.independentVisitors.visitComplianceRate)}%</span>
             </div>
             <div>
               <span className="text-gray-500">Avg Engagement:</span>{" "}
-              <span className="font-medium">{data.independentVisitors.averageEngagement}/10</span>
+              <span className="font-medium">{fmt(data.independentVisitors.averageEngagement)}/10</span>
             </div>
           </div>
           {data.independentVisitors.childrenWithoutParentalContactMissingIV.length > 0 && (
@@ -285,11 +290,11 @@ export function AdvocacyRepresentationDashboardWidget() {
         {/* Awareness */}
         <Section title="Awareness &amp; Understanding">
           <div className="space-y-2">
-            <ScoreBar score={data.awarenessAndUnderstanding.understandsRightsRate} label="Understands Rights" />
-            <ScoreBar score={data.awarenessAndUnderstanding.informedOfAdvocacyRate} label="Informed of Advocacy" />
-            <ScoreBar score={data.awarenessAndUnderstanding.knowsHowToAccessRate} label="Knows How to Access" />
+            <ScoreBar score={data.awarenessAndUnderstanding.understandsRightsRate ?? 0} label="Understands Rights" />
+            <ScoreBar score={data.awarenessAndUnderstanding.informedOfAdvocacyRate ?? 0} label="Informed of Advocacy" />
+            <ScoreBar score={data.awarenessAndUnderstanding.knowsHowToAccessRate ?? 0} label="Knows How to Access" />
             <ScoreBar
-              score={data.awarenessAndUnderstanding.childrenInformedOfRightsRate}
+              score={data.awarenessAndUnderstanding.childrenInformedOfRightsRate ?? 0}
               label="Children Informed"
             />
           </div>

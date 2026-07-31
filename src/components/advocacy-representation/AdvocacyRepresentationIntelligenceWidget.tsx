@@ -1,3 +1,4 @@
+import { formatRate } from "@/lib/metrics/rate";
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,6 +12,11 @@ function ScoreBar({ label, value, max = 25 }: { label: string; value: number; ma
       <div className="w-full h-2 bg-gray-200 rounded"><div className={`${colour} h-2 rounded`} style={{ width: `${pct}%` }} /></div>
     </div>
   );
+}
+
+function fmt(v: unknown): string {
+  if (v === null || v === undefined) return "—";
+  return String(v);
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -79,10 +85,10 @@ export function AdvocacyRepresentationIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Referrals" value={access.totalReferrals as number} />
           <Stat label="Active Advocacy" value={access.activeAdvocacyCount as number} />
-          <Stat label="Active Advocacy Rate" value={`${access.activeAdvocacyRate}%`} />
-          <Stat label="Avg Response Days" value={access.averageResponseTimeDays as number} />
-          <Stat label="Child Satisfaction" value={access.childSatisfactionAverage as number} />
-          <Stat label="Complaint Support" value={`${access.complaintSupportRate}%`} />
+          <Stat label="Active Advocacy Rate" value={formatRate(access.activeAdvocacyRate as number | null)} />
+          <Stat label="Avg Response Days" value={fmt(access.averageResponseTimeDays)} />
+          <Stat label="Child Satisfaction" value={fmt(access.childSatisfactionAverage)} />
+          <Stat label="Complaint Support" value={formatRate(access.complaintSupportRate as number | null)} />
         </div>
       </Section>
 
@@ -91,8 +97,8 @@ export function AdvocacyRepresentationIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Visitors" value={iv.totalVisitors as number} />
           <Stat label="Children with IV" value={`${iv.childrenWithIV}/${iv.totalChildren}`} />
-          <Stat label="Visit Compliance" value={`${iv.visitComplianceRate}%`} />
-          <Stat label="Avg Engagement" value={iv.averageEngagement as number} />
+          <Stat label="Visit Compliance" value={formatRate(iv.visitComplianceRate as number | null)} />
+          <Stat label="Avg Engagement" value={fmt(iv.averageEngagement)} />
         </div>
       </Section>
 
@@ -100,10 +106,10 @@ export function AdvocacyRepresentationIntelligenceWidget() {
         <ScoreBar label="Awareness & Understanding" value={awareness.score as number} max={25} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Assessments" value={awareness.totalAssessments as number} />
-          <Stat label="Understands Rights" value={`${awareness.understandsRightsRate}%`} />
-          <Stat label="Informed of Advocacy" value={`${awareness.informedOfAdvocacyRate}%`} />
-          <Stat label="Knows How to Access" value={`${awareness.knowsHowToAccessRate}%`} />
-          <Stat label="Informed of Rights" value={`${awareness.childrenInformedOfRightsRate}%`} />
+          <Stat label="Understands Rights" value={formatRate(awareness.understandsRightsRate as number | null)} />
+          <Stat label="Informed of Advocacy" value={formatRate(awareness.informedOfAdvocacyRate as number | null)} />
+          <Stat label="Knows How to Access" value={formatRate(awareness.knowsHowToAccessRate as number | null)} />
+          <Stat label="Informed of Rights" value={formatRate(awareness.childrenInformedOfRightsRate as number | null)} />
         </div>
       </Section>
 
@@ -128,7 +134,7 @@ export function AdvocacyRepresentationIntelligenceWidget() {
           {profiles.map((p) => (
             <div key={p.childId as string} className="mb-2 p-2 bg-gray-50 rounded">
               <div className="flex justify-between text-sm font-medium"><span>{p.childName as string}</span><span>{p.overallScore as number}/100</span></div>
-              <p className="text-xs text-gray-500 mt-1">Advocacy: {p.hasActiveAdvocacy ? "✓" : "✗"} · IV: {p.hasIndependentVisitor ? "✓" : "✗"} · Rights: {p.informedOfRights ? "✓" : "✗"} · Satisfaction: {p.satisfaction as number}</p>
+              <p className="text-xs text-gray-500 mt-1">Advocacy: {p.hasActiveAdvocacy ? "✓" : "✗"} · IV: {p.hasIndependentVisitor ? "✓" : "✗"} · Rights: {p.informedOfRights ? "✓" : "✗"} · Satisfaction: {fmt(p.satisfaction)}</p>
               {(p.concerns as string[])?.length > 0 && <p className="text-xs text-orange-600 mt-1">{(p.concerns as string[]).join(", ")}</p>}
             </div>
           ))}

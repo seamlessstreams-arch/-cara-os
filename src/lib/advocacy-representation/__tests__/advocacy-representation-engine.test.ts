@@ -228,7 +228,7 @@ describe("evaluateAccessToAdvocacy", () => {
       },
     ];
     const result = evaluateAccessToAdvocacy(referrals, ["alex"]);
-    expect(result.averageResponseTimeDays).toBe(0);
+    expect(result.averageResponseTimeDays).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("ignores invalid satisfaction values", () => {
@@ -247,7 +247,7 @@ describe("evaluateAccessToAdvocacy", () => {
       },
     ];
     const result = evaluateAccessToAdvocacy(referrals, ["alex"]);
-    expect(result.childSatisfactionAverage).toBe(0);
+    expect(result.childSatisfactionAverage).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("gives higher score for faster response times", () => {
@@ -323,7 +323,7 @@ describe("evaluateIndependentVisitors", () => {
     const result = evaluateIndependentVisitors([], demoParentalContact, CHILD_IDS);
     expect(result.totalVisitors).toBe(0);
     expect(result.childrenWithIV).toBe(0);
-    expect(result.visitComplianceRate).toBe(0);
+    expect(result.visitComplianceRate).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("handles no visitors with children needing them", () => {
@@ -362,7 +362,7 @@ describe("evaluateIndependentVisitors", () => {
       },
     ];
     const result = evaluateIndependentVisitors(visitors, demoParentalContact, CHILD_IDS);
-    expect(result.visitComplianceRate).toBe(0);
+    expect(result.visitComplianceRate).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("handles engagement values outside 1-10 range", () => {
@@ -375,7 +375,7 @@ describe("evaluateIndependentVisitors", () => {
       },
     ];
     const result = evaluateIndependentVisitors(visitors, demoParentalContact, CHILD_IDS);
-    expect(result.averageEngagement).toBe(0);
+    expect(result.averageEngagement).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("handles all children having parental contact", () => {
@@ -483,7 +483,7 @@ describe("evaluateAwarenessAndUnderstanding", () => {
       format: "verbal" as const,
     }));
     const result = evaluateAwarenessAndUnderstanding(noAwareness, CHILD_IDS);
-    // Coverage is 100% but all metrics are 0
+    // Records exist with all-false → real 0 (denominator=CHILD_IDS.length, not fab).
     expect(result.understandsRightsRate).toBe(0);
     expect(result.informedOfAdvocacyRate).toBe(0);
     expect(result.knowsHowToAccessRate).toBe(0);

@@ -104,10 +104,10 @@ export interface AccessToAdvocacyResult {
   activeAdvocacyCount: number;
   childrenWithActiveAdvocacy: number;
   totalChildren: number;
-  activeAdvocacyRate: number;
-  averageResponseTimeDays: number;
-  childSatisfactionAverage: number;
-  complaintSupportRate: number;
+  activeAdvocacyRate: number | null;
+  averageResponseTimeDays: number | null;
+  childSatisfactionAverage: number | null;
+  complaintSupportRate: number | null;
   typeBreakdown: Record<string, number>;
   reasonBreakdown: Record<string, number>;
   childrenWithoutAdvocacy: string[];
@@ -118,8 +118,8 @@ export interface IndependentVisitorResult {
   totalVisitors: number;
   childrenWithIV: number;
   totalChildren: number;
-  visitComplianceRate: number;
-  averageEngagement: number;
+  visitComplianceRate: number | null;
+  averageEngagement: number | null;
   childrenWithoutParentalContactMissingIV: string[];
   score: number;
 }
@@ -128,10 +128,10 @@ export interface AwarenessAndUnderstandingResult {
   totalAssessments: number;
   childrenAssessed: number;
   totalChildren: number;
-  understandsRightsRate: number;
-  informedOfAdvocacyRate: number;
-  knowsHowToAccessRate: number;
-  childrenInformedOfRightsRate: number;
+  understandsRightsRate: number | null;
+  informedOfAdvocacyRate: number | null;
+  knowsHowToAccessRate: number | null;
+  childrenInformedOfRightsRate: number | null;
   formatBreakdown: Record<string, number>;
   childrenNotInformed: string[];
   score: number;
@@ -151,10 +151,12 @@ export interface AdvocacyChildProfile {
   hasActiveAdvocacy: boolean;
   advocacyTypes: AdvocacyType[];
   hasIndependentVisitor: boolean;
-  ivVisitCompliance: number;
+  // fab-0: null when the child has no IV or no visits recorded.
+  ivVisitCompliance: number | null;
   informedOfRights: boolean;
   knowsHowToAccess: boolean;
-  satisfaction: number;
+  // fab-0: null when the child has no advocacy referrals to score.
+  satisfaction: number | null;
   needsIV: boolean;
   overallScore: number;
   concerns: string[];
@@ -255,15 +257,15 @@ export function evaluateAccessToAdvocacy(
 
   const activeAdvocacyRate = totalChildren > 0
     ? Math.round((childrenWithActive.size / totalChildren) * 100)
-    : 0;
+    : null;
 
   const averageResponseTimeDays = responseCount > 0
     ? Math.round((responseTotalDays / responseCount) * 10) / 10
-    : 0;
+    : null;
 
   const childSatisfactionAverage = satisfactionCount > 0
     ? Math.round((satisfactionTotal / satisfactionCount) * 10) / 10
-    : 0;
+    : null;
 
   const complaintSupportRate = complaintReferrals > 0
     ? Math.round((complaintWithSupport / complaintReferrals) * 100)
@@ -274,15 +276,15 @@ export function evaluateAccessToAdvocacy(
   );
 
   // Score: active rate (30%) + response time (25%) + satisfaction (25%) + complaint support (20%)
-  const activeRateNorm = Math.min(activeAdvocacyRate / 100, 1);
+  const activeRateNorm = Math.min((activeAdvocacyRate ?? 0) / 100, 1);
   // Response time: 0 days = 100%, ≥14 days = 0%
   const responseNorm = responseCount > 0
-    ? Math.max(0, 1 - (averageResponseTimeDays / 14))
+    ? Math.max(0, 1 - ((averageResponseTimeDays ?? 0) / 14))
     : 0.5; // No response data = neutral
   const satNorm = satisfactionCount > 0
-    ? childSatisfactionAverage / 10
+    ? (childSatisfactionAverage ?? 0) / 10
     : 0.5;
-  const complaintNorm = complaintSupportRate / 100;
+  const complaintNorm = (complaintSupportRate ?? 0) / 100;
 
   const score = Math.round(
     (activeRateNorm * 0.30 + responseNorm * 0.25 + satNorm * 0.25 + complaintNorm * 0.20) * 100,
@@ -347,11 +349,11 @@ export function evaluateIndependentVisitors(
 
   const visitComplianceRate = complianceCount > 0
     ? Math.round((totalCompliance / complianceCount) * 100)
-    : 0;
+    : null;
 
   const averageEngagement = engagementCount > 0
     ? Math.round((totalEngagement / engagementCount) * 10) / 10
-    : 0;
+    : null;
 
   // Find children without parental contact who don't have an IV
   const childrenWithoutParentalContactMissingIV = parentalContact
@@ -363,8 +365,8 @@ export function evaluateIndependentVisitors(
   const coverageRate = childrenNeedingIV.length > 0
     ? childrenNeedingIV.filter((pc) => childrenWithIV.has(pc.childId)).length / childrenNeedingIV.length
     : (visitors.length > 0 ? 1 : 0.5); // No children needing IV: if IVs exist = full, else neutral
-  const complianceNorm = visitComplianceRate / 100;
-  const engagementNorm = engagementCount > 0 ? averageEngagement / 10 : 0.5;
+  const complianceNorm = (visitComplianceRate ?? 0) / 100;
+  const engagementNorm = engagementCount > 0 ? (averageEngagement ?? 0) / 10 : 0.5;
 
   const score = Math.round(
     (coverageRate * 0.40 + complianceNorm * 0.35 + engagementNorm * 0.25) * 100,
@@ -511,12 +513,12 @@ export function buildAdvocacyChildProfiles(
       .map((r) => r.childSatisfaction!);
     const satisfaction = satValues.length > 0
       ? Math.round((satValues.reduce((a, b) => a + b, 0) / satValues.length) * 10) / 10
-      : 0;
+      : null;
 
     // Independent Visitor
     const childVisitors = visitors.filter((v) => v.childId === childId);
     const hasIndependentVisitor = childVisitors.length > 0;
-    let ivVisitCompliance = 0;
+    let ivVisitCompliance: number | null = null;
     if (childVisitors.length > 0) {
       const totalVisits = childVisitors.reduce(
         (sum, v) => sum + v.visitsCompleted + v.visitsMissed, 0,
@@ -524,7 +526,7 @@ export function buildAdvocacyChildProfiles(
       const completed = childVisitors.reduce(
         (sum, v) => sum + v.visitsCompleted, 0,
       );
-      ivVisitCompliance = totalVisits > 0 ? Math.round((completed / totalVisits) * 100) : 0;
+      ivVisitCompliance = totalVisits > 0 ? Math.round((completed / totalVisits) * 100) : null;
     }
 
     // Awareness
@@ -557,7 +559,7 @@ export function buildAdvocacyChildProfiles(
     if (childReferrals.length === 0) {
       concerns.push("No advocacy referral on record");
     }
-    if (hasIndependentVisitor && ivVisitCompliance < 75) {
+    if (hasIndependentVisitor && ivVisitCompliance !== null && ivVisitCompliance < 75) {
       concerns.push("Independent Visitor visit compliance below 75%");
     }
 
@@ -565,11 +567,11 @@ export function buildAdvocacyChildProfiles(
     const advocacyScore = hasActiveAdvocacy ? 30 : (childReferrals.some((r) => r.status === "declined_by_child") ? 20 : 0);
     const ivScore = (() => {
       if (!needsIV) return 25; // Not required
-      if (hasIndependentVisitor) return Math.round((ivVisitCompliance / 100) * 25);
+      if (hasIndependentVisitor) return Math.round(((ivVisitCompliance ?? 0) / 100) * 25);
       return 0;
     })();
     const awarenessScore = ((informedOfRights ? 1 : 0) + (knowsHowToAccess ? 1 : 0)) / 2 * 25;
-    const satScore = satisfaction > 0 ? (satisfaction / 10) * 20 : 10; // Neutral if no data
+    const satScore = satisfaction !== null && satisfaction > 0 ? (satisfaction / 10) * 20 : 10; // Neutral if no data
     const overallScore = Math.round(advocacyScore + ivScore + awarenessScore + satScore);
 
     return {
@@ -645,19 +647,19 @@ export function generateAdvocacyRepresentationIntelligence(
   if (policyResult.score >= 80) {
     strengths.push("Robust advocacy policy in place with named provider and active contract");
   }
-  if (accessResult.childSatisfactionAverage >= 8) {
+  if ((accessResult.childSatisfactionAverage ?? 0) >= 8) {
     strengths.push("Child satisfaction with advocacy services is exceptionally high");
   }
-  if (accessResult.averageResponseTimeDays > 0 && accessResult.averageResponseTimeDays <= 2) {
+  if ((accessResult.averageResponseTimeDays ?? 0) > 0 && (accessResult.averageResponseTimeDays ?? 0) <= 2) {
     strengths.push("Advocacy referrals receive rapid responses within expected timescales");
   }
-  if (ivResult.visitComplianceRate >= 90) {
+  if ((ivResult.visitComplianceRate ?? 0) >= 90) {
     strengths.push("Independent Visitor visits are consistently maintained with high compliance");
   }
-  if (awarenessResult.childrenInformedOfRightsRate === 100) {
+  if ((awarenessResult.childrenInformedOfRightsRate ?? 0) === 100) {
     strengths.push("All children have been informed of their advocacy rights");
   }
-  if (accessResult.complaintSupportRate === 100 && referrals.some((r) => r.reason === "complaint")) {
+  if ((accessResult.complaintSupportRate ?? 0) === 100 && referrals.some((r) => r.reason === "complaint")) {
     strengths.push("All children making complaints are supported with advocacy");
   }
 
@@ -677,15 +679,15 @@ export function generateAdvocacyRepresentationIntelligence(
       `${awarenessResult.childrenNotInformed.length} child(ren) have not been informed of their advocacy rights`,
     );
   }
-  if (accessResult.averageResponseTimeDays > 5) {
+  if ((accessResult.averageResponseTimeDays ?? 0) > 5) {
     areasForImprovement.push(
       `Average advocacy referral response time of ${accessResult.averageResponseTimeDays} days exceeds expected timescales`,
     );
   }
-  if (accessResult.childSatisfactionAverage > 0 && accessResult.childSatisfactionAverage < 6) {
+  if ((accessResult.childSatisfactionAverage ?? 0) > 0 && (accessResult.childSatisfactionAverage ?? 0) < 6) {
     areasForImprovement.push("Child satisfaction with advocacy services is below expectations");
   }
-  if (ivResult.visitComplianceRate < 75 && ivResult.totalVisitors > 0) {
+  if ((ivResult.visitComplianceRate ?? 0) < 75 && ivResult.totalVisitors > 0) {
     areasForImprovement.push(
       `Independent Visitor visit compliance at ${ivResult.visitComplianceRate}% is below the 75% target`,
     );
@@ -707,7 +709,7 @@ export function generateAdvocacyRepresentationIntelligence(
   if (awarenessResult.score < 60) {
     actions.push("Deliver age-appropriate sessions to ensure all children understand their advocacy rights and how to access them");
   }
-  if (accessResult.averageResponseTimeDays > 5) {
+  if ((accessResult.averageResponseTimeDays ?? 0) > 5) {
     actions.push("Review advocacy provider response timescales and escalate delays");
   }
   if (!policyResult.policyReviewed) {
@@ -716,13 +718,13 @@ export function generateAdvocacyRepresentationIntelligence(
   if (!policyResult.contractInPlace) {
     actions.push("Establish a formal contract with an independent advocacy provider");
   }
-  if (ivResult.visitComplianceRate < 75 && ivResult.totalVisitors > 0) {
+  if ((ivResult.visitComplianceRate ?? 0) < 75 && ivResult.totalVisitors > 0) {
     actions.push("Work with Independent Visitors to improve visit consistency and address barriers to attendance");
   }
-  if (awarenessResult.knowsHowToAccessRate < 80) {
+  if ((awarenessResult.knowsHowToAccessRate ?? 0) < 80) {
     actions.push("Provide all children with clear, accessible information on how to access advocacy services");
   }
-  if (accessResult.childSatisfactionAverage > 0 && accessResult.childSatisfactionAverage < 6) {
+  if ((accessResult.childSatisfactionAverage ?? 0) > 0 && (accessResult.childSatisfactionAverage ?? 0) < 6) {
     actions.push("Seek detailed feedback from children on how advocacy services can be improved");
   }
 
