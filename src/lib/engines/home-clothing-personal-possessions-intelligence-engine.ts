@@ -11,6 +11,8 @@
 //             possessionSafeguardingRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ClothingAllowanceRecordInput {
@@ -325,10 +327,11 @@ export function computeClothingPersonalPossessions(
     (sum, r) => sum + r.quality_rating,
     0,
   );
-  const avgQualityRating =
+  // fab-0: null when no allowance records to average.
+  const avgQualityRating: number | null =
     totalAllowanceRecords > 0
       ? Math.round((qualitySum / totalAllowanceRecords) * 100) / 100
-      : 0;
+      : null;
 
   const uniqueChildrenWithAllowance = new Set(
     clothing_allowance_records.map((r) => r.child_id),
@@ -510,22 +513,11 @@ export function computeClothingPersonalPossessions(
     (sum, r) => sum + r.days_to_fulfil,
     0,
   );
-  const avgDaysToFulfil =
+  // fab-0: null when no requests have been fulfilled.
+  const avgDaysToFulfil: number | null =
     fulfilledRecords.length > 0
       ? Math.round((totalDaysToFulfil / fulfilledRecords.length) * 100) / 100
-      : 0;
-
-  const urgentFulfilledRecords = clothing_request_records.filter(
-    (r) => r.urgency === "urgent" && r.fulfilled,
-  );
-  const urgentDaysTotal = urgentFulfilledRecords.reduce(
-    (sum, r) => sum + r.days_to_fulfil,
-    0,
-  );
-  const avgUrgentDays =
-    urgentFulfilledRecords.length > 0
-      ? Math.round((urgentDaysTotal / urgentFulfilledRecords.length) * 100) / 100
-      : 0;
+      : null;
 
   const childSatisfiedRequest = clothing_request_records.filter(
     (r) => r.fulfilled && r.child_satisfied_with_outcome,
@@ -581,18 +573,6 @@ export function computeClothingPersonalPossessions(
   );
   const sentimentalResolved = sentimentalIncidents.filter((r) => r.resolved).length;
   const sentimentalResolvedRate = pct(sentimentalResolved, sentimentalIncidents.length);
-
-  const resolvedSafeguardingRecords = possession_safeguarding_records.filter(
-    (r) => r.resolved,
-  );
-  const totalDaysToResolve = resolvedSafeguardingRecords.reduce(
-    (sum, r) => sum + r.days_to_resolve,
-    0,
-  );
-  const avgDaysToResolve =
-    resolvedSafeguardingRecords.length > 0
-      ? Math.round((totalDaysToResolve / resolvedSafeguardingRecords.length) * 100) / 100
-      : 0;
 
   const confiscations = possession_safeguarding_records.filter(
     (r) => r.event_type === "confiscation",
@@ -663,8 +643,8 @@ export function computeClothingPersonalPossessions(
   else if (replacementRate >= 70) score += 1;
 
   // --- Bonus 9: avgQualityRating (>=4.0: +2, >=3.0: +1) ---
-  if (avgQualityRating >= 4.0) score += 2;
-  else if (avgQualityRating >= 3.0) score += 1;
+  if (meets(avgQualityRating, 4.0)) score += 2;
+  else if (meets(avgQualityRating, 3.0)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
@@ -768,11 +748,11 @@ export function computeClothingPersonalPossessions(
     );
   }
 
-  if (avgQualityRating >= 4.0 && totalAllowanceRecords > 0) {
+  if (totalAllowanceRecords > 0 && meets(avgQualityRating, 4.0)) {
     strengths.push(
       `Average clothing quality rating ${avgQualityRating}/5 — children are receiving good quality clothing that is durable and appropriate.`,
     );
-  } else if (avgQualityRating >= 3.0 && totalAllowanceRecords > 0) {
+  } else if (totalAllowanceRecords > 0 && meets(avgQualityRating, 3.0)) {
     strengths.push(
       `Average clothing quality rating ${avgQualityRating}/5 — clothing quality is satisfactory overall.`,
     );
@@ -848,7 +828,7 @@ export function computeClothingPersonalPossessions(
     );
   }
 
-  if (avgDaysToFulfil <= 3 && fulfilledRecords.length > 0) {
+  if (fulfilledRecords.length > 0 && avgDaysToFulfil !== null && avgDaysToFulfil <= 3) {
     strengths.push(
       `Average clothing request fulfilment in ${avgDaysToFulfil} days — the home responds rapidly to children's clothing needs.`,
     );
@@ -955,11 +935,11 @@ export function computeClothingPersonalPossessions(
     }
   }
 
-  if (avgDaysToFulfil > 14 && fulfilledRecords.length > 0) {
+  if (fulfilledRecords.length > 0 && avgDaysToFulfil !== null && avgDaysToFulfil > 14) {
     concerns.push(
       `Average clothing request fulfilment takes ${avgDaysToFulfil} days — children are waiting too long for clothing needs to be met, which can impact their dignity and wellbeing.`,
     );
-  } else if (avgDaysToFulfil > 7 && avgDaysToFulfil <= 14 && fulfilledRecords.length > 0) {
+  } else if (fulfilledRecords.length > 0 && avgDaysToFulfil !== null && avgDaysToFulfil > 7 && avgDaysToFulfil <= 14) {
     concerns.push(
       `Average clothing request fulfilment takes ${avgDaysToFulfil} days — response times could be improved to better meet children's needs promptly.`,
     );
@@ -1144,7 +1124,7 @@ export function computeClothingPersonalPossessions(
     });
   }
 
-  if (avgDaysToFulfil > 14 && fulfilledRecords.length > 0) {
+  if (fulfilledRecords.length > 0 && avgDaysToFulfil !== null && avgDaysToFulfil > 14) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1371,9 +1351,10 @@ export function computeClothingPersonalPossessions(
   }
 
   if (
+    fulfilledRecords.length > 0 &&
+    avgDaysToFulfil !== null &&
     avgDaysToFulfil > 7 &&
-    avgDaysToFulfil <= 14 &&
-    fulfilledRecords.length > 0
+    avgDaysToFulfil <= 14
   ) {
     insights.push({
       text: `Average clothing request fulfilment takes ${avgDaysToFulfil} days — while not excessive, children should not routinely wait more than a week for clothing needs. Consider maintaining a small stock of essentials or establishing relationships with local suppliers for faster procurement.`,
@@ -1503,10 +1484,11 @@ export function computeClothingPersonalPossessions(
   }
 
   if (
+    fulfilledRecords.length > 0 &&
+    avgDaysToFulfil !== null &&
     replacementRate >= 90 &&
     avgDaysToFulfil <= 3 &&
-    totalItemsNeedingReplacement > 0 &&
-    fulfilledRecords.length > 0
+    totalItemsNeedingReplacement > 0
   ) {
     insights.push({
       text: `${replacementRate}% replacement follow-through with average ${avgDaysToFulfil}-day fulfilment — the home acts quickly on identified needs and responds rapidly to clothing requests. Children are not left waiting for essential items.`,
