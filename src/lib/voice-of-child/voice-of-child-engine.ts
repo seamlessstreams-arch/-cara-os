@@ -121,20 +121,22 @@ export interface DomainCaptureResult {
   voiceRecordedCount: number;
   captureRate: number;
   influencedCount: number;
-  influenceRate: number;
+  // fab-0: null when nothing was voice-recorded for the domain (nothing to influence).
+  influenceRate: number | null;
 }
 
 export interface ChildVoiceResult {
   childId: string;
   childName: string;
   totalEntries: number;
-  voiceRecordedRate: number;
-  influenceRate: number;
+  // fab-0: null when the child has no entries/recordings/participation events in the period.
+  voiceRecordedRate: number | null;
+  influenceRate: number | null;
   preferredMethods: VoiceMethod[];
   domainsWithGaps: VoiceDomain[];
   hasAdvocate: boolean;
   hasIndependentVisitor: boolean;
-  participationRate: number;
+  participationRate: number | null;
   concerns: string[];
 }
 
@@ -150,8 +152,9 @@ export interface VoiceOfChildIntelligenceResult {
 
   // Aggregate metrics
   totalVoiceEntries: number;
-  overallCaptureRate: number;
-  overallInfluenceRate: number;
+  // fab-0: null when there are no entries / no recordings to compute the rate over.
+  overallCaptureRate: number | null;
+  overallInfluenceRate: number | null;
 
   // Domain analysis
   domainCapture: DomainCaptureResult[];
@@ -162,9 +165,10 @@ export interface VoiceOfChildIntelligenceResult {
   childResults: ChildVoiceResult[];
 
   // Advocacy & participation
-  advocacyAccessRate: number;
-  independentVisitorRate: number;
-  averageParticipationRate: number;
+  // fab-0: null when there are no children in the cohort / no results to average over.
+  advocacyAccessRate: number | null;
+  independentVisitorRate: number | null;
+  averageParticipationRate: number | null;
   childrenAwareOfRights: number;
 
   // Method diversity
@@ -205,11 +209,12 @@ export function analyseDomainCapture(
       domain,
       totalEntries: domainEntries.length,
       voiceRecordedCount,
-      captureRate: domainEntries.length > 0
-        ? Math.round((voiceRecordedCount / domainEntries.length) * 100) : 0,
+      // domainEntries is guaranteed non-empty (this map entry only exists if there was ≥ 1 record).
+      captureRate: Math.round((voiceRecordedCount / Math.max(domainEntries.length, 1)) * 100),
       influencedCount,
+      // fab-0: null when there's nothing voice-recorded to check for influence.
       influenceRate: voiceRecordedCount > 0
-        ? Math.round((influencedCount / voiceRecordedCount) * 100) : 0,
+        ? Math.round((influencedCount / voiceRecordedCount) * 100) : null,
     };
   }).sort((a, b) => b.totalEntries - a.totalEntries);
 }
@@ -273,15 +278,15 @@ export function buildChildVoiceResults(
     const fullOrPartial = childParticipation.filter(
       (p) => p.participationLevel === "full" || p.participationLevel === "partial" || p.participationLevel === "represented_by_advocate",
     );
-    const participationRate = childParticipation.length > 0
-      ? Math.round((fullOrPartial.length / childParticipation.length) * 100) : 0;
+    const participationRate: number | null = childParticipation.length > 0
+      ? Math.round((fullOrPartial.length / childParticipation.length) * 100) : null;
 
     // Concerns
     const concerns: string[] = [];
-    const captureRate = childEntries.length > 0
-      ? Math.round((recorded.length / childEntries.length) * 100) : 0;
+    const captureRate: number | null = childEntries.length > 0
+      ? Math.round((recorded.length / childEntries.length) * 100) : null;
 
-    if (captureRate < 50 && childEntries.length >= 3) {
+    if (captureRate !== null && captureRate < 50 && childEntries.length >= 3) {
       concerns.push(`Voice recorded in only ${captureRate}% of entries — child may not feel heard`);
     }
     if (influenced.length === 0 && recorded.length >= 3) {
@@ -305,8 +310,9 @@ export function buildChildVoiceResults(
       childName: child.childName,
       totalEntries: childEntries.length,
       voiceRecordedRate: captureRate,
+      // fab-0: null when nothing was recorded for the child (no denominator to influence over).
       influenceRate: recorded.length > 0
-        ? Math.round((influenced.length / recorded.length) * 100) : 0,
+        ? Math.round((influenced.length / recorded.length) * 100) : null,
       preferredMethods,
       domainsWithGaps,
       hasAdvocate: childAdvocacy?.hasAdvocate ?? false,
@@ -346,10 +352,11 @@ export function generateVoiceOfChildIntelligence(
     (e) => e.influence === "directly_influenced" || e.influence === "partially_influenced",
   ).length;
 
-  const overallCaptureRate = periodEntries.length > 0
-    ? Math.round((totalRecorded / periodEntries.length) * 100) : 0;
-  const overallInfluenceRate = totalRecorded > 0
-    ? Math.round((totalInfluenced / totalRecorded) * 100) : 0;
+  // fab-0: null when no entries / no recordings to compute the rate over.
+  const overallCaptureRate: number | null = periodEntries.length > 0
+    ? Math.round((totalRecorded / periodEntries.length) * 100) : null;
+  const overallInfluenceRate: number | null = totalRecorded > 0
+    ? Math.round((totalInfluenced / totalRecorded) * 100) : null;
 
   // Domain rankings
   const qualifiedDomains = domainCapture.filter((d) => d.totalEntries >= 2);
@@ -365,22 +372,23 @@ export function generateVoiceOfChildIntelligence(
     .map((d) => d.domain);
 
   // Advocacy & participation
-  const advocacyAccessRate = children.length > 0
+  // fab-0: null when no children in cohort → rates are unmeasured.
+  const advocacyAccessRate: number | null = children.length > 0
     ? Math.round(
       (advocacy.filter((a) => a.hasAdvocate && children.some((c) => c.childId === a.childId)).length /
         children.length) * 100,
-    ) : 0;
+    ) : null;
 
-  const independentVisitorRate = children.length > 0
+  const independentVisitorRate: number | null = children.length > 0
     ? Math.round(
       (advocacy.filter((a) => a.hasIndependentVisitor && children.some((c) => c.childId === a.childId)).length /
         children.length) * 100,
-    ) : 0;
+    ) : null;
 
-  const averageParticipationRate = childResults.length > 0
+  const averageParticipationRate: number | null = childResults.length > 0
     ? Math.round(
-      childResults.reduce((sum, c) => sum + c.participationRate, 0) / childResults.length,
-    ) : 0;
+      childResults.reduce((sum, c) => sum + (c.participationRate ?? 0), 0) / childResults.length,
+    ) : null;
 
   const childrenAwareOfRights = advocacy.filter(
     (a) => a.childAwareOfRights && children.some((c) => c.childId === a.childId),
@@ -446,10 +454,10 @@ export function generateVoiceOfChildIntelligence(
 // ── Scoring ────────────────────────────────────────────────────────────────
 
 function calculateVoiceScore(
-  captureRate: number,
-  influenceRate: number,
-  advocacyRate: number,
-  participationRate: number,
+  captureRate: number | null,
+  influenceRate: number | null,
+  advocacyRate: number | null,
+  participationRate: number | null,
   childrenAware: number,
   totalChildren: number,
   weakestDomains: VoiceDomain[],
@@ -458,19 +466,19 @@ function calculateVoiceScore(
   let score = 0;
 
   // Voice capture rate (max 30)
-  score += (captureRate / 100) * 30;
+  score += ((captureRate ?? 0) / 100) * 30;
 
   // Voice influence rate (max 25)
-  score += (influenceRate / 100) * 25;
+  score += ((influenceRate ?? 0) / 100) * 25;
 
   // Advocacy access (max 15)
-  score += (advocacyRate / 100) * 10;
+  score += ((advocacyRate ?? 0) / 100) * 10;
   if (totalChildren > 0) {
     score += (childrenAware / totalChildren) * 5;
   }
 
   // Participation (max 15)
-  score += (participationRate / 100) * 15;
+  score += ((participationRate ?? 0) / 100) * 15;
 
   // Consistency bonus (max 15)
   if (weakestDomains.length === 0) score += 15;
@@ -479,7 +487,7 @@ function calculateVoiceScore(
 
   // Penalties
   const tokenistic = childResults.filter(
-    (c) => c.voiceRecordedRate > 60 && c.influenceRate < 20 && c.totalEntries >= 3,
+    (c) => c.voiceRecordedRate !== null && c.influenceRate !== null && c.voiceRecordedRate > 60 && c.influenceRate < 20 && c.totalEntries >= 3,
   );
   score -= tokenistic.length * 5;
 
@@ -499,10 +507,10 @@ function getVoiceRating(score: number): "outstanding" | "good" | "requires_impro
 // ── Insight Generation ─────────────────────────────────────────────────────
 
 function generateVoiceStrengths(
-  captureRate: number,
-  influenceRate: number,
-  advocacyRate: number,
-  participationRate: number,
+  captureRate: number | null,
+  influenceRate: number | null,
+  advocacyRate: number | null,
+  participationRate: number | null,
   childrenAware: number,
   totalChildren: number,
   strongestDomains: VoiceDomain[],
@@ -510,16 +518,16 @@ function generateVoiceStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (captureRate >= 85) {
+  if (captureRate !== null && captureRate >= 85) {
     strengths.push("Children's voices are consistently captured across the home — embedded in daily practice");
   }
-  if (influenceRate >= 70) {
+  if (influenceRate !== null && influenceRate >= 70) {
     strengths.push("Children's views demonstrably influence decisions — evidence of child-centred practice");
   }
   if (advocacyRate === 100 && totalChildren > 0) {
     strengths.push("All children have access to an independent advocate — Reg 7(2)(b) fully met");
   }
-  if (participationRate >= 90) {
+  if (participationRate !== null && participationRate >= 90) {
     strengths.push("Excellent participation rates in reviews and meetings — children are active partners in their care");
   }
   if (childrenAware === totalChildren && totalChildren > 0) {
@@ -538,10 +546,10 @@ function generateVoiceStrengths(
 }
 
 function generateVoiceDevelopment(
-  captureRate: number,
-  influenceRate: number,
-  advocacyRate: number,
-  participationRate: number,
+  captureRate: number | null,
+  influenceRate: number | null,
+  advocacyRate: number | null,
+  participationRate: number | null,
   childrenAware: number,
   totalChildren: number,
   weakestDomains: VoiceDomain[],
@@ -549,19 +557,19 @@ function generateVoiceDevelopment(
 ): string[] {
   const areas: string[] = [];
 
-  if (captureRate < 70) {
+  if (captureRate !== null && captureRate < 70) {
     areas.push(`Overall voice capture rate is ${captureRate}% — embed routine voice recording in all interactions`);
   }
-  if (influenceRate < 50) {
+  if (influenceRate !== null && influenceRate < 50) {
     areas.push(`Voice influence rate is ${influenceRate}% — ensure children's views are not just recorded but demonstrably acted upon`);
   }
-  if (advocacyRate < 100 && totalChildren > 0) {
+  if (advocacyRate !== null && advocacyRate < 100 && totalChildren > 0) {
     areas.push("Not all children have access to an independent advocate — Reg 7(2)(b) compliance gap");
   }
   if (totalChildren > 0 && childrenAware < totalChildren) {
     areas.push(`${totalChildren - childrenAware} child(ren) not recorded as aware of their rights — review communication approach`);
   }
-  if (participationRate < 75) {
+  if (participationRate !== null && participationRate < 75) {
     areas.push(`Average participation rate is ${participationRate}% — review barriers to attendance and engagement`);
   }
   if (weakestDomains.length > 0) {
@@ -571,7 +579,7 @@ function generateVoiceDevelopment(
   }
 
   const tokenistic = childResults.filter(
-    (c) => c.voiceRecordedRate > 60 && c.influenceRate < 20 && c.totalEntries >= 3,
+    (c) => c.voiceRecordedRate !== null && c.influenceRate !== null && c.voiceRecordedRate > 60 && c.influenceRate < 20 && c.totalEntries >= 3,
   );
   if (tokenistic.length > 0) {
     areas.push(
@@ -584,7 +592,7 @@ function generateVoiceDevelopment(
 
 function generateVoiceActions(
   childResults: ChildVoiceResult[],
-  advocacyRate: number,
+  advocacyRate: number | null,
   totalChildren: number,
   weakestDomains: VoiceDomain[],
 ): string[] {
@@ -608,7 +616,7 @@ function generateVoiceActions(
 
   // Tokenistic practice
   const tokenistic = childResults.filter(
-    (c) => c.voiceRecordedRate > 60 && c.influenceRate < 20 && c.totalEntries >= 3,
+    (c) => c.voiceRecordedRate !== null && c.influenceRate !== null && c.voiceRecordedRate > 60 && c.influenceRate < 20 && c.totalEntries >= 3,
   );
   if (tokenistic.length > 0) {
     actions.push(
@@ -641,9 +649,9 @@ function generateVoiceActions(
 }
 
 function generateVoiceRegulatoryLinks(
-  advocacyRate: number,
+  advocacyRate: number | null,
   childResults: ChildVoiceResult[],
-  captureRate: number,
+  captureRate: number | null,
 ): string[] {
   const links = new Set<string>();
 
@@ -653,7 +661,7 @@ function generateVoiceRegulatoryLinks(
   links.add("CHR 2015, Reg 4(1)(a) — Quality of care centred on child's views");
   links.add("Children Act 1989, s22(4) — Duty to ascertain wishes and feelings");
 
-  if (advocacyRate < 100) {
+  if (advocacyRate !== null && advocacyRate < 100) {
     links.add("CHR 2015, Reg 7(2)(b) — Access to independent advocacy");
   }
 
@@ -661,7 +669,7 @@ function generateVoiceRegulatoryLinks(
     links.add("Care Planning Regulations 2010, Reg 7 — Child to participate in reviews");
   }
 
-  if (captureRate < 70) {
+  if (captureRate !== null && captureRate < 70) {
     links.add("UNCRC Article 12 — Right to express views and be heard");
     links.add("Working Together 2023 — Child-centred approach");
   }

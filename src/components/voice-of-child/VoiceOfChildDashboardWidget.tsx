@@ -15,6 +15,11 @@
 
 import { useState, useEffect } from "react";
 
+function fmt(v: number | null | undefined): string {
+  if (v === null || v === undefined) return "—";
+  return String(v);
+}
+
 interface DomainCaptureData {
   domain: string;
   domainLabel?: string;
@@ -22,7 +27,7 @@ interface DomainCaptureData {
   voiceRecordedCount: number;
   captureRate: number;
   influencedCount: number;
-  influenceRate: number;
+  influenceRate: number | null;
 }
 
 interface MethodData {
@@ -35,13 +40,13 @@ interface ChildVoiceData {
   childId: string;
   childName: string;
   totalEntries: number;
-  voiceRecordedRate: number;
-  influenceRate: number;
+  voiceRecordedRate: number | null;
+  influenceRate: number | null;
   preferredMethods: string[];
   domainsWithGaps: string[];
   hasAdvocate: boolean;
   hasIndependentVisitor: boolean;
-  participationRate: number;
+  participationRate: number | null;
   concerns: string[];
 }
 
@@ -52,15 +57,15 @@ interface VoiceData {
   overallScore: number;
   rating: string;
   totalVoiceEntries: number;
-  overallCaptureRate: number;
-  overallInfluenceRate: number;
+  overallCaptureRate: number | null;
+  overallInfluenceRate: number | null;
   domainCapture: DomainCaptureData[];
   weakestDomains: string[];
   strongestDomains: string[];
   childResults: ChildVoiceData[];
-  advocacyAccessRate: number;
-  independentVisitorRate: number;
-  averageParticipationRate: number;
+  advocacyAccessRate: number | null;
+  independentVisitorRate: number | null;
+  averageParticipationRate: number | null;
   childrenAwareOfRights: number;
   methodBreakdown: MethodData[];
   strengths: string[];
@@ -118,8 +123,13 @@ function DomainBar({ domain }: { domain: DomainCaptureData }) {
 
 function ChildVoiceCard({ child }: { child: ChildVoiceData }) {
   const hasConcerns = (child.concerns?.length ?? 0) > 0;
-  const rateColor = (r: number) =>
-    r >= 80 ? "text-green-700" : r >= 60 ? "text-blue-700" : r >= 40 ? "text-orange-700" : "text-red-700";
+  const rateColor = (r: number | null) =>
+    r === null ? "text-muted-foreground"
+      : r >= 80 ? "text-green-700"
+      : r >= 60 ? "text-blue-700"
+      : r >= 40 ? "text-orange-700"
+      : "text-red-700";
+  const pct = (r: number | null) => r === null ? "—" : `${r}%`;
 
   return (
     <div className={`rounded-lg border p-3 ${hasConcerns ? "border-orange-200 bg-orange-50" : "border-gray-200"}`}>
@@ -130,15 +140,15 @@ function ChildVoiceCard({ child }: { child: ChildVoiceData }) {
       <div className="grid grid-cols-3 gap-2 text-center mb-2">
         <div>
           <div className="text-xs text-gray-500">Captured</div>
-          <div className={`text-sm font-bold ${rateColor(child.voiceRecordedRate)}`}>{child.voiceRecordedRate}%</div>
+          <div className={`text-sm font-bold ${rateColor(child.voiceRecordedRate)}`}>{pct(child.voiceRecordedRate)}</div>
         </div>
         <div>
           <div className="text-xs text-gray-500">Influenced</div>
-          <div className={`text-sm font-bold ${rateColor(child.influenceRate)}`}>{child.influenceRate}%</div>
+          <div className={`text-sm font-bold ${rateColor(child.influenceRate)}`}>{pct(child.influenceRate)}</div>
         </div>
         <div>
           <div className="text-xs text-gray-500">Participation</div>
-          <div className={`text-sm font-bold ${rateColor(child.participationRate)}`}>{child.participationRate}%</div>
+          <div className={`text-sm font-bold ${rateColor(child.participationRate)}`}>{pct(child.participationRate)}</div>
         </div>
       </div>
       <div className="flex flex-wrap gap-1">
@@ -221,19 +231,19 @@ export function VoiceOfChildDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="text-xl font-bold text-green-700">{data.overallCaptureRate}%</div>
+          <div className="text-xl font-bold text-green-700">{fmt(data.overallCaptureRate)}{data.overallCaptureRate !== null ? "%" : ""}</div>
           <div className="text-[10px] text-gray-500 uppercase">Voice Captured</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="text-xl font-bold text-blue-700">{data.overallInfluenceRate}%</div>
+          <div className="text-xl font-bold text-blue-700">{fmt(data.overallInfluenceRate)}{data.overallInfluenceRate !== null ? "%" : ""}</div>
           <div className="text-[10px] text-gray-500 uppercase">Influenced Decisions</div>
         </div>
         <div className="text-center p-2 bg-purple-50 rounded-lg">
-          <div className="text-xl font-bold text-purple-700">{data.advocacyAccessRate}%</div>
+          <div className="text-xl font-bold text-purple-700">{fmt(data.advocacyAccessRate)}{data.advocacyAccessRate !== null ? "%" : ""}</div>
           <div className="text-[10px] text-gray-500 uppercase">Advocacy Access</div>
         </div>
         <div className="text-center p-2 bg-orange-50 rounded-lg">
-          <div className="text-xl font-bold text-orange-700">{data.averageParticipationRate}%</div>
+          <div className="text-xl font-bold text-orange-700">{fmt(data.averageParticipationRate)}{data.averageParticipationRate !== null ? "%" : ""}</div>
           <div className="text-[10px] text-gray-500 uppercase">Participation Rate</div>
         </div>
       </div>
@@ -289,7 +299,7 @@ export function VoiceOfChildDashboardWidget() {
       <div className="flex items-center gap-2 mb-4 p-2 bg-green-50 border border-green-200 rounded-lg">
         <span className="text-green-600 text-lg">📢</span>
         <span className="text-xs text-green-700 font-medium">
-          {data.childrenAwareOfRights} of {data.childResults.length} children recorded as aware of their rights | {data.independentVisitorRate}% have independent visitor access
+          {data.childrenAwareOfRights} of {data.childResults.length} children recorded as aware of their rights | {fmt(data.independentVisitorRate)}{data.independentVisitorRate !== null ? "%" : ""} have independent visitor access
         </span>
       </div>
 
