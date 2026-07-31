@@ -10,6 +10,8 @@
 //             clinicalWasteRecords, childSafetyRecords
 // ==============================================================================
 
+import { above, below, meets } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface SharpsBinRecordInput {
@@ -156,11 +158,13 @@ export interface SharpsDisposalHazardousWasteResult {
   sharps_rating: SharpsDisposalRating;
   sharps_score: number;
   headline: string;
-  sharps_bin_rate: number;
-  hazardous_waste_rate: number;
-  coshh_compliance_rate: number;
-  clinical_waste_rate: number;
-  child_safety_rate: number;
+  // staff_training_rate uses pct() directly. The 5 composite rates below
+  // are null on empty: no source records ⇒ no signal. Fab-0 doctrine.
+  sharps_bin_rate: number | null;
+  hazardous_waste_rate: number | null;
+  coshh_compliance_rate: number | null;
+  clinical_waste_rate: number | null;
+  child_safety_rate: number | null;
   staff_training_rate: number;
   strengths: string[];
   concerns: string[];
@@ -196,11 +200,11 @@ function emptyResult(
     sharps_rating: rating,
     sharps_score: score,
     headline,
-    sharps_bin_rate: 0,
-    hazardous_waste_rate: 0,
-    coshh_compliance_rate: 0,
-    clinical_waste_rate: 0,
-    child_safety_rate: 0,
+    sharps_bin_rate: null,
+    hazardous_waste_rate: null,
+    coshh_compliance_rate: null,
+    clinical_waste_rate: null,
+    child_safety_rate: null,
     staff_training_rate: 0,
     strengths: [],
     concerns: [],
@@ -310,12 +314,12 @@ export function computeSharpsDisposalHazardousWaste(
   const sharpsLicensedRate = pct(sharpsLicensedDisposal, totalSharpsRecords);
 
   // Composite sharps bin rate
-  const sharpsBinRate =
+  const sharpsBinRate: number | null =
     totalSharpsRecords > 0
       ? Math.round(
           (sharpsInspectionPassRate + sharpsLockedRate + sharpsLabelledRate + sharpsTamperRate + sharpsDisposalDocRate) / 5,
         )
-      : 0;
+      : null;
 
   // === HAZARDOUS WASTE DISPOSAL ===
   const totalHazardousRecords = hazardous_waste_records.length;
@@ -351,12 +355,12 @@ export function computeSharpsDisposalHazardousWaste(
   const hazIncidentResolutionRate = pct(hazTotalResolved, hazTotalIncidents);
 
   // Composite hazardous waste rate
-  const hazardousWasteRate =
+  const hazardousWasteRate: number | null =
     totalHazardousRecords > 0
       ? Math.round(
           (hazStorageRate + hazLabellingRate + hazContainmentRate + hazDisposalDocRate + hazRiskAssessRate) / 5,
         )
-      : 0;
+      : null;
 
   // === COSHH COMPLIANCE ===
   const totalCoshhRecords = coshh_records.length;
@@ -403,12 +407,12 @@ export function computeSharpsDisposalHazardousWaste(
   const coshhIncidentResolutionRate = pct(coshhTotalResolved, coshhTotalIncidents);
 
   // Composite COSHH compliance rate
-  const coshhComplianceRate =
+  const coshhComplianceRate: number | null =
     totalCoshhRecords > 0
       ? Math.round(
           (coshhAssessedRate + coshhLockedRate + coshhStorageRate + coshhLabelRate + coshhDataSheetRate) / 5,
         )
-      : 0;
+      : null;
 
   // === CLINICAL WASTE MANAGEMENT ===
   const totalClinicalRecords = clinical_waste_records.length;
@@ -450,12 +454,12 @@ export function computeSharpsDisposalHazardousWaste(
   const clinicalSpillageManagementRate = pct(clinicalSpillagesManaged, clinicalSpillages);
 
   // Composite clinical waste rate
-  const clinicalWasteRate =
+  const clinicalWasteRate: number | null =
     totalClinicalRecords > 0
       ? Math.round(
           (clinicalSegRate + clinicalContainerRate + clinicalSealedRate + clinicalLabelRate + clinicalStorageRate) / 5,
         )
-      : 0;
+      : null;
 
   // === CHILD SAFETY AWARENESS ===
   const totalChildSafetyRecords = child_safety_records.length;
@@ -492,12 +496,12 @@ export function computeSharpsDisposalHazardousWaste(
   const childSafetyCoverageRate = pct(uniqueChildrenWithSafety, total_children);
 
   // Composite child safety rate
-  const childSafetyRate =
+  const childSafetyRate: number | null =
     totalChildSafetyRecords > 0
       ? Math.round(
           (safetyCompletionRate + childUnderstandingRate + ageAppropriateRate + childReportingKnowledgeRate) / 4,
         )
-      : 0;
+      : null;
 
   // === STAFF TRAINING COMPOSITE ===
   const trainingDenominator = totalHazardousRecords + totalCoshhRecords + totalClinicalRecords;
@@ -509,24 +513,24 @@ export function computeSharpsDisposalHazardousWaste(
   let score = 52;
 
   // --- Bonus 1: sharpsBinRate (>=90: +5, >=70: +3) ---
-  if (sharpsBinRate >= 90) score += 5;
-  else if (sharpsBinRate >= 70) score += 3;
+  if (meets(sharpsBinRate, 90)) score += 5;
+  else if (meets(sharpsBinRate, 70)) score += 3;
 
   // --- Bonus 2: hazardousWasteRate (>=90: +5, >=70: +2) ---
-  if (hazardousWasteRate >= 90) score += 5;
-  else if (hazardousWasteRate >= 70) score += 2;
+  if (meets(hazardousWasteRate, 90)) score += 5;
+  else if (meets(hazardousWasteRate, 70)) score += 2;
 
   // --- Bonus 3: coshhComplianceRate (>=90: +4, >=70: +2) ---
-  if (coshhComplianceRate >= 90) score += 4;
-  else if (coshhComplianceRate >= 70) score += 2;
+  if (meets(coshhComplianceRate, 90)) score += 4;
+  else if (meets(coshhComplianceRate, 70)) score += 2;
 
   // --- Bonus 4: clinicalWasteRate (>=90: +4, >=70: +2) ---
-  if (clinicalWasteRate >= 90) score += 4;
-  else if (clinicalWasteRate >= 70) score += 2;
+  if (meets(clinicalWasteRate, 90)) score += 4;
+  else if (meets(clinicalWasteRate, 70)) score += 2;
 
   // --- Bonus 5: childSafetyRate (>=90: +3, >=70: +1) ---
-  if (childSafetyRate >= 90) score += 3;
-  else if (childSafetyRate >= 70) score += 1;
+  if (meets(childSafetyRate, 90)) score += 3;
+  else if (meets(childSafetyRate, 70)) score += 1;
 
   // --- Bonus 6: staffTrainingRate (>=90: +3, >=60: +1) ---
   if (staffTrainingRate >= 90) score += 3;
@@ -1386,35 +1390,35 @@ export function computeSharpsDisposalHazardousWaste(
 
   // --- Positive insights ---
 
-  if (sharpsBinRate >= 90 && totalSharpsRecords > 0) {
+  if (meets(sharpsBinRate, 90) && totalSharpsRecords > 0) {
     insights.push({
       text: `Sharps bin compliance at ${sharpsBinRate}%. The home demonstrates exemplary sharps management with consistent inspections, secure storage, proper labelling, and documented disposal. This level of compliance provides strong evidence of safe premises for Ofsted.`,
       severity: "positive",
     });
   }
 
-  if (hazardousWasteRate >= 90 && totalHazardousRecords > 0) {
+  if (meets(hazardousWasteRate, 90) && totalHazardousRecords > 0) {
     insights.push({
       text: `Hazardous waste management at ${hazardousWasteRate}%. The home has robust systems for storing, labelling, risk-assessing, and disposing of hazardous waste. This demonstrates compliance with environmental and health and safety regulations.`,
       severity: "positive",
     });
   }
 
-  if (coshhComplianceRate >= 90 && totalCoshhRecords > 0) {
+  if (meets(coshhComplianceRate, 90) && totalCoshhRecords > 0) {
     insights.push({
       text: `COSHH compliance at ${coshhComplianceRate}%. All hazardous substances are assessed, securely stored, properly labelled, and supported by safety data sheets. This is strong evidence of Reg 25 compliance and a well-managed premises.`,
       severity: "positive",
     });
   }
 
-  if (clinicalWasteRate >= 90 && totalClinicalRecords > 0) {
+  if (meets(clinicalWasteRate, 90) && totalClinicalRecords > 0) {
     insights.push({
       text: `Clinical waste management at ${clinicalWasteRate}%. Waste is correctly segregated, contained, labelled, and securely stored. This demonstrates the home's commitment to infection prevention and safe waste management.`,
       severity: "positive",
     });
   }
 
-  if (childSafetyRate >= 90 && totalChildSafetyRecords > 0) {
+  if (meets(childSafetyRate, 90) && totalChildSafetyRecords > 0) {
     insights.push({
       text: `Child safety awareness at ${childSafetyRate}%. Children are educated about hazard risks, understand how to report dangers, and are actively involved in the home's safety culture. This demonstrates the home nurtures safety-conscious young people.`,
       severity: "positive",

@@ -188,11 +188,11 @@ describe("empty and edge states", () => {
 
   it("3 -- all empty + 0 children has zero rates", () => {
     const r = run({ total_children: 0 });
-    expect(r.sharps_bin_rate).toBe(0);
-    expect(r.hazardous_waste_rate).toBe(0);
-    expect(r.coshh_compliance_rate).toBe(0);
-    expect(r.clinical_waste_rate).toBe(0);
-    expect(r.child_safety_rate).toBe(0);
+    expect(r.sharps_bin_rate).toBeNull();
+    expect(r.hazardous_waste_rate).toBeNull();
+    expect(r.coshh_compliance_rate).toBeNull();
+    expect(r.clinical_waste_rate).toBeNull();
+    expect(r.child_safety_rate).toBeNull();
     expect(r.staff_training_rate).toBe(0);
   });
 
@@ -255,6 +255,7 @@ describe("sharps bin rate composite", () => {
       disposal_documented: false,
     });
     const r = run({ sharps_bin_records: [bin] });
+    // record exists → 0, not null
     expect(r.sharps_bin_rate).toBe(0);
   });
 
@@ -273,7 +274,7 @@ describe("sharps bin rate composite", () => {
 
   it("14 -- sharps_bin_rate is 0 when no sharps records", () => {
     const r = run({ sharps_bin_records: [] });
-    expect(r.sharps_bin_rate).toBe(0);
+    expect(r.sharps_bin_rate).toBeNull();
   });
 });
 
@@ -294,12 +295,13 @@ describe("hazardous waste rate composite", () => {
       risk_assessment_completed: false,
     });
     const r = run({ hazardous_waste_records: [rec] });
+    // record exists → 0, not null
     expect(r.hazardous_waste_rate).toBe(0);
   });
 
   it("17 -- hazardous_waste_rate is 0 when no records", () => {
     const r = run({ hazardous_waste_records: [] });
-    expect(r.hazardous_waste_rate).toBe(0);
+    expect(r.hazardous_waste_rate).toBeNull();
   });
 
   it("18 -- mixed hazardous waste records average correctly", () => {
@@ -333,12 +335,13 @@ describe("COSHH compliance rate composite", () => {
       data_sheet_available: false,
     });
     const r = run({ coshh_records: [rec] });
+    // record exists → 0, not null
     expect(r.coshh_compliance_rate).toBe(0);
   });
 
   it("21 -- coshh_compliance_rate is 0 when no records", () => {
     const r = run({ coshh_records: [] });
-    expect(r.coshh_compliance_rate).toBe(0);
+    expect(r.coshh_compliance_rate).toBeNull();
   });
 
   it("22 -- mixed COSHH records average correctly", () => {
@@ -372,12 +375,13 @@ describe("clinical waste rate composite", () => {
       storage_location_secure: false,
     });
     const r = run({ clinical_waste_records: [rec] });
+    // record exists → 0, not null
     expect(r.clinical_waste_rate).toBe(0);
   });
 
   it("25 -- clinical_waste_rate is 0 when no records", () => {
     const r = run({ clinical_waste_records: [] });
-    expect(r.clinical_waste_rate).toBe(0);
+    expect(r.clinical_waste_rate).toBeNull();
   });
 
   it("26 -- mixed clinical waste records average correctly", () => {
@@ -410,12 +414,13 @@ describe("child safety rate composite", () => {
       child_knows_reporting_process: false,
     });
     const r = run({ child_safety_records: [rec] });
+    // record exists → 0, not null
     expect(r.child_safety_rate).toBe(0);
   });
 
   it("29 -- child_safety_rate is 0 when no records", () => {
     const r = run({ child_safety_records: [] });
-    expect(r.child_safety_rate).toBe(0);
+    expect(r.child_safety_rate).toBeNull();
   });
 
   it("30 -- mixed child safety records average correctly", () => {
@@ -1869,13 +1874,14 @@ describe("result shape", () => {
     expect(r).toHaveProperty("insights");
   });
 
-  it("197 -- rates are numeric", () => {
+  it("197 -- rates are numeric or null (fab-0)", () => {
     const r = run({ sharps_bin_records: [makeSharpsBin()] });
-    expect(typeof r.sharps_bin_rate).toBe("number");
-    expect(typeof r.hazardous_waste_rate).toBe("number");
-    expect(typeof r.coshh_compliance_rate).toBe("number");
-    expect(typeof r.clinical_waste_rate).toBe("number");
-    expect(typeof r.child_safety_rate).toBe("number");
+    // The 5 composite rates are number | null (see engine header). staff_training_rate is number.
+    expect(typeof r.sharps_bin_rate === "number" || r.sharps_bin_rate === null).toBe(true);
+    expect(typeof r.hazardous_waste_rate === "number" || r.hazardous_waste_rate === null).toBe(true);
+    expect(typeof r.coshh_compliance_rate === "number" || r.coshh_compliance_rate === null).toBe(true);
+    expect(typeof r.clinical_waste_rate === "number" || r.clinical_waste_rate === null).toBe(true);
+    expect(typeof r.child_safety_rate === "number" || r.child_safety_rate === null).toBe(true);
     expect(typeof r.staff_training_rate).toBe("number");
   });
 

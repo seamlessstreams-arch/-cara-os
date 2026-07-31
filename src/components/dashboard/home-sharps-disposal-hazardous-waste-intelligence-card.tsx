@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Syringe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { meets, formatRate } from "@/lib/metrics/rate";
 import { useQuery } from "@tanstack/react-query";
 import type { SharpsDisposalRating } from "@/lib/engines/home-sharps-disposal-hazardous-waste-intelligence-engine";
 
@@ -65,24 +66,24 @@ export function HomeSharpsDisposalHazardousWasteIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.sharps_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.sharps_bin_rate >= 90 ? "bg-green-50" : d.sharps_bin_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sharps_bin_rate >= 90 ? "text-[--cs-success]" : d.sharps_bin_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sharps_bin_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sharps_bin_rate, 90) ? "bg-green-50" : meets(d.sharps_bin_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sharps_bin_rate, 90) ? "text-[--cs-success]" : meets(d.sharps_bin_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sharps_bin_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Sharps</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.hazardous_waste_rate >= 90 ? "bg-green-50" : d.hazardous_waste_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hazardous_waste_rate >= 90 ? "text-[--cs-success]" : d.hazardous_waste_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hazardous_waste_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hazardous_waste_rate, 90) ? "bg-green-50" : meets(d.hazardous_waste_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hazardous_waste_rate, 90) ? "text-[--cs-success]" : meets(d.hazardous_waste_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hazardous_waste_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Haz. Waste</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.coshh_compliance_rate >= 90 ? "bg-green-50" : d.coshh_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.coshh_compliance_rate >= 90 ? "text-[--cs-success]" : d.coshh_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.coshh_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.coshh_compliance_rate, 90) ? "bg-green-50" : meets(d.coshh_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.coshh_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.coshh_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.coshh_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">COSHH</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.clinical_waste_rate >= 90 ? "bg-green-50" : d.clinical_waste_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.clinical_waste_rate >= 90 ? "text-[--cs-success]" : d.clinical_waste_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.clinical_waste_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.clinical_waste_rate, 90) ? "bg-green-50" : meets(d.clinical_waste_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.clinical_waste_rate, 90) ? "text-[--cs-success]" : meets(d.clinical_waste_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.clinical_waste_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Clinical</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_safety_rate >= 90 ? "bg-green-50" : d.child_safety_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_safety_rate >= 90 ? "text-[--cs-success]" : d.child_safety_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_safety_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_safety_rate, 90) ? "bg-green-50" : meets(d.child_safety_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_safety_rate, 90) ? "text-[--cs-success]" : meets(d.child_safety_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_safety_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Safe</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.staff_training_rate >= 90 ? "bg-green-50" : d.staff_training_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
