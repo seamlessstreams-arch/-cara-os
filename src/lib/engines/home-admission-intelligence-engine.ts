@@ -53,13 +53,15 @@ export interface AssessmentProfile {
   impact_assessment_rate: number;
   matching_consideration_rate: number;
   decision_documented_rate: number;
-  avg_days_to_decision: number;
+  // fab-0: null when no decided referrals.
+  avg_days_to_decision: number | null;
   pending_over_14_days: number;
 }
 
 export interface QualityProfile {
-  avg_needs_per_referral: number;
-  avg_risk_factors_per_referral: number;
+  // fab-0: null when no referrals.
+  avg_needs_per_referral: number | null;
+  avg_risk_factors_per_referral: number | null;
   declined_with_reason_rate: number;
   occupancy_rate: number;
 }
@@ -166,9 +168,10 @@ export function computeHomeAdmission(
 
   // Average days to decision for decided referrals
   const decisionDays = decided.filter(r => r.days_to_decision >= 0).map(r => r.days_to_decision);
-  const avgDaysToDecision = decisionDays.length > 0
+  // fab-0: null when no decided referrals.
+  const avgDaysToDecision: number | null = decisionDays.length > 0
     ? Math.round(decisionDays.reduce((a, b) => a + b, 0) / decisionDays.length)
-    : 0;
+    : null;
 
   // Pending referrals over 14 days old without decision
   const pendingOver14 = referrals.filter(r =>
@@ -194,13 +197,15 @@ export function computeHomeAdmission(
   };
 
   // ── Quality Profile ─────────────────────────────────────────────────
-  const avgNeeds = referrals.length > 0
+  // fab-0: null when no referrals.
+  const avgNeeds: number | null = referrals.length > 0
     ? Math.round((referrals.reduce((a, r) => a + r.presenting_needs_count, 0) / referrals.length) * 10) / 10
-    : 0;
+    : null;
 
-  const avgRisk = referrals.length > 0
+  // fab-0: null when no referrals.
+  const avgRisk: number | null = referrals.length > 0
     ? Math.round((referrals.reduce((a, r) => a + r.risk_factors_count, 0) / referrals.length) * 10) / 10
-    : 0;
+    : null;
 
   const declinedWithReason = referrals.filter(r => r.status === "declined" && r.has_decision_reason).length;
   const declinedReasonRate = pct(declinedWithReason, declined);
@@ -236,8 +241,8 @@ export function computeHomeAdmission(
 
   // 4. Decision timeliness (±3)
   if (decided.length > 0) {
-    if (avgDaysToDecision <= 14) score += 3;
-    else if (avgDaysToDecision <= 21) score += 1;
+    if (avgDaysToDecision !== null && avgDaysToDecision <= 14) score += 3;
+    else if (avgDaysToDecision !== null && avgDaysToDecision <= 21) score += 1;
     else score -= 2;
   }
 
@@ -275,7 +280,7 @@ export function computeHomeAdmission(
   if (impactRate >= 80) strengths.push(`Impact assessments completed for ${impactRate}% of referrals — matching decisions are evidence-based.`);
   if (matchingRate >= 80) strengths.push(`Matching considerations documented for ${matchingRate}% of referrals — placement stability is prioritised.`);
   if (decisionDocRate >= 80 && decided.length > 0) strengths.push(`Decision rationale documented for ${decisionDocRate}% of decisions — transparent governance.`);
-  if (avgDaysToDecision <= 14 && decided.length > 0) strengths.push(`Average decision time ${avgDaysToDecision} days — referrals are processed promptly.`);
+  if (decided.length > 0 && avgDaysToDecision !== null && avgDaysToDecision <= 14) strengths.push(`Average decision time ${avgDaysToDecision} days — referrals are processed promptly.`);
   if (declinedReasonRate === 100 && declined > 0) strengths.push("All declined referrals have documented rationale — accountability and transparency in admissions.");
   if (pendingOver14Days === 0) strengths.push("No referrals pending beyond 14 days — admission process is timely.");
   if (placed > 0 && impactRate >= 80) strengths.push(`${placed} successful placement${placed > 1 ? "s" : ""} with comprehensive impact assessment — safe, considered admissions.`);
@@ -285,7 +290,7 @@ export function computeHomeAdmission(
   if (impactRate < 60 && nonWithdrawn.length > 0) concerns.push(`Impact assessments completed for only ${impactRate}% of referrals — Reg 14 requires assessment of impact on existing children.`);
   if (matchingRate < 60 && nonWithdrawn.length > 0) concerns.push(`Matching considerations documented for only ${matchingRate}% of referrals — placement matching must be thorough.`);
   if (pendingOver14Days > 0) concerns.push(`${pendingOver14Days} referral${pendingOver14Days > 1 ? "s" : ""} pending over 14 days — children and placing authorities need timely responses.`);
-  if (avgDaysToDecision > 21 && decided.length > 0) concerns.push(`Average ${avgDaysToDecision} days to decision — referrals should be processed within 14 days where possible.`);
+  if (decided.length > 0 && avgDaysToDecision !== null && avgDaysToDecision > 21) concerns.push(`Average ${avgDaysToDecision} days to decision — referrals should be processed within 14 days where possible.`);
   if (declinedReasonRate < 100 && declined > 0) concerns.push("Not all declined referrals have a documented reason — transparency is essential.");
   if (emergencyPct > 40) concerns.push(`${emergencyPct}% of referrals are emergency — high emergency rate may indicate the home is being used as a last resort rather than a planned placement.`);
 
@@ -360,14 +365,14 @@ function emptyRefProfile(): ReferralProfile {
 function emptyAssProfile(): AssessmentProfile {
   return {
     impact_assessment_rate: 0, matching_consideration_rate: 0,
-    decision_documented_rate: 0, avg_days_to_decision: 0,
+    decision_documented_rate: 0, avg_days_to_decision: null,
     pending_over_14_days: 0,
   };
 }
 
 function emptyQualProfile(totalChildren: number, beds: number): QualityProfile {
   return {
-    avg_needs_per_referral: 0, avg_risk_factors_per_referral: 0,
+    avg_needs_per_referral: null, avg_risk_factors_per_referral: null,
     declined_with_reason_rate: 0,
     occupancy_rate: beds > 0 ? pct(totalChildren, beds) : 0,
   };

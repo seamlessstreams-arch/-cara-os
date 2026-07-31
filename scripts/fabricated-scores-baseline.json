@@ -231,8 +231,6 @@
   "src/lib/engines/finance-intelligence-engine.ts:totalSpending:0",
   "src/lib/engines/financial-management-intelligence-engine.ts:totalSpend:0",
   "src/lib/engines/health-wellbeing-engine.ts:waitingList:0",
-  "src/lib/engines/home-admission-intelligence-engine.ts:decisionDays:0",
-  "src/lib/engines/home-admission-intelligence-engine.ts:referrals:0",
   "src/lib/engines/home-allegations-investigations-management-intelligence-engine.ts:completedDays:0",
   "src/lib/engines/home-allegations-investigations-management-intelligence-engine.ts:timelinessComponents:0",
   "src/lib/engines/home-asthma-respiratory-management-intelligence-engine.ts:totalPeakFlowRecords:0",

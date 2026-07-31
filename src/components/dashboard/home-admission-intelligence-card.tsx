@@ -148,10 +148,11 @@ export function HomeAdmissionIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
+                  d.assessment_profile.avg_days_to_decision === null ? "text-muted-foreground" :
                   d.assessment_profile.avg_days_to_decision <= 14 ? "text-[--cs-success]" :
                   d.assessment_profile.avg_days_to_decision <= 21 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.assessment_profile.avg_days_to_decision}d
+                  {d.assessment_profile.avg_days_to_decision === null ? "—" : `${d.assessment_profile.avg_days_to_decision}d`}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Avg Decision</p>

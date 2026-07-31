@@ -348,7 +348,8 @@ describe("Home Admission Intelligence Engine", () => {
         makeReferral({ id: "r2", status: "under_assessment", referral_date: daysAgo(3), days_to_decision: -1 }),
       ];
       const r = computeHomeAdmission(baseInput({ referrals }));
-      expect(r.assessment_profile.avg_days_to_decision).toBe(0);
+      // fab-0: null (no decided referrals)
+      expect(r.assessment_profile.avg_days_to_decision).toBeNull();
     });
 
     it("score clamped to 0-100", () => {
