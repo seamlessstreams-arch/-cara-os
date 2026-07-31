@@ -300,8 +300,9 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
       expect(r.intervention_effectiveness_rate).toBe(0);
       expect(r.anniversary_management_rate).toBe(0);
       expect(r.child_coping_rate).toBe(0);
-      expect(r.counselling_wait_avg_days).toBe(0);
-      expect(r.intervention_progress_avg).toBe(0);
+      // fab-0: null (no records)
+      expect(r.counselling_wait_avg_days).toBeNull();
+      expect(r.intervention_progress_avg).toBeNull();
     });
   });
 
@@ -1238,11 +1239,11 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
       expect(r.counselling_wait_avg_days).toBe(15);
     });
 
-    it("returns 0 when no counselling records", () => {
+    it("returns null when no counselling records (fab-0)", () => {
       const r = computeGriefBereavementSupport(
         baseInput({ counselling_access_records: [] }),
       );
-      expect(r.counselling_wait_avg_days).toBe(0);
+      expect(r.counselling_wait_avg_days).toBeNull();
     });
 
     it("rounds to nearest integer", () => {
@@ -1296,11 +1297,11 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
       expect(r.intervention_progress_avg).toBe(0);
     });
 
-    it("returns 0 when no interventions", () => {
+    it("returns null when no interventions (fab-0)", () => {
       const r = computeGriefBereavementSupport(
         baseInput({ grief_intervention_records: [] }),
       );
-      expect(r.intervention_progress_avg).toBe(0);
+      expect(r.intervention_progress_avg).toBeNull();
     });
 
     it("clamps negative progress to 0", () => {
@@ -1323,8 +1324,8 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
           ],
         }),
       );
-      // baseline == target → excluded from progress calc
-      expect(r.intervention_progress_avg).toBe(0);
+      // baseline == target → excluded from progress calc, and with no eligible interventions → null (fab-0)
+      expect(r.intervention_progress_avg).toBeNull();
     });
   });
 
@@ -2631,7 +2632,8 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.intervention_progress_avg).toBe(0);
+      // fab-0: null when no eligible interventions remain after filter
+      expect(r.intervention_progress_avg).toBeNull();
     });
 
     it("intervention where target > baseline is excluded from progress calc", () => {
@@ -2642,8 +2644,8 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
           ],
         }),
       );
-      // baseline (3) < target (8) → excluded from progress calc (filter: baseline > target)
-      expect(r.intervention_progress_avg).toBe(0);
+      // baseline (3) < target (8) → excluded from progress calc (filter: baseline > target). fab-0: null.
+      expect(r.intervention_progress_avg).toBeNull();
     });
 
     it("handles large number of records", () => {

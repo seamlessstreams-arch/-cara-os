@@ -152,8 +152,9 @@ export interface GriefBereavementResult {
   intervention_effectiveness_rate: number;
   anniversary_management_rate: number;
   child_coping_rate: number;
-  counselling_wait_avg_days: number;
-  intervention_progress_avg: number;
+  // fab-0: null when no counselling records / no intervention data.
+  counselling_wait_avg_days: number | null;
+  intervention_progress_avg: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: GriefBereavementRecommendation[];
@@ -195,8 +196,8 @@ function emptyResult(
     intervention_effectiveness_rate: 0,
     anniversary_management_rate: 0,
     child_coping_rate: 0,
-    counselling_wait_avg_days: 0,
-    intervention_progress_avg: 0,
+    counselling_wait_avg_days: null,
+    intervention_progress_avg: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -339,27 +340,19 @@ export function computeGriefBereavementSupport(
   const counsellingWaitDays = counselling_access_records
     .filter((c) => c.waiting_days >= 0)
     .map((c) => c.waiting_days);
-  const counsellingWaitAvgDays =
+  // fab-0: null when no counselling wait times recorded.
+  const counsellingWaitAvgDays: number | null =
     counsellingWaitDays.length > 0
       ? Math.round(
           counsellingWaitDays.reduce((sum, d) => sum + d, 0) /
             counsellingWaitDays.length,
         )
-      : 0;
+      : null;
 
   const counsellingFoundHelpful = counselling_access_records.filter(
     (c) => c.child_found_helpful,
   ).length;
   const counsellingHelpfulRate = pct(counsellingFoundHelpful, totalCounselling);
-
-  const counsellingEngagementSum = counselling_access_records.reduce(
-    (sum, c) => sum + c.child_engagement_rating,
-    0,
-  );
-  const counsellingEngagementAvg =
-    totalCounselling > 0
-      ? Math.round((counsellingEngagementSum / totalCounselling) * 100) / 100
-      : 0;
 
   const overdueCounsellingReviews = counselling_access_records.filter(
     (c) => c.review_overdue && c.active,
@@ -397,15 +390,6 @@ export function computeGriefBereavementSupport(
   ).length;
   const memoryWorkBenefitRate = pct(memoryWorkStaffBenefit, totalMemoryWork);
 
-  const memoryWorkEngagementSum = memory_work_records.reduce(
-    (sum, m) => sum + m.child_engagement_rating,
-    0,
-  );
-  const memoryWorkEngagementAvg =
-    totalMemoryWork > 0
-      ? Math.round((memoryWorkEngagementSum / totalMemoryWork) * 100) / 100
-      : 0;
-
   const followUpPlanned = memory_work_records.filter(
     (m) => m.follow_up_planned,
   ).length;
@@ -442,13 +426,14 @@ export function computeGriefBereavementSupport(
       const progress = i.baseline_grief_score - i.current_grief_score;
       return clamp(Math.round((progress / range) * 100), 0, 100);
     });
-  const interventionProgressAvg =
+  // fab-0: null when no interventions with quantifiable progress ranges.
+  const interventionProgressAvg: number | null =
     interventionProgressValues.length > 0
       ? Math.round(
           interventionProgressValues.reduce((sum, v) => sum + v, 0) /
             interventionProgressValues.length,
         )
-      : 0;
+      : null;
 
   const childReportedImprovement = grief_intervention_records.filter(
     (i) => i.child_reported_improvement,
@@ -726,7 +711,7 @@ export function computeGriefBereavementSupport(
     );
   }
 
-  if (counsellingWaitAvgDays <= 14 && totalCounselling > 0) {
+  if (totalCounselling > 0 && counsellingWaitAvgDays !== null && counsellingWaitAvgDays <= 14) {
     strengths.push(
       `Average counselling waiting time of ${counsellingWaitAvgDays} days — children access bereavement counselling promptly when needed.`,
     );
@@ -808,11 +793,11 @@ export function computeGriefBereavementSupport(
     );
   }
 
-  if (counsellingWaitAvgDays > 42 && totalCounselling > 0) {
+  if (totalCounselling > 0 && counsellingWaitAvgDays !== null && counsellingWaitAvgDays > 42) {
     concerns.push(
       `Average counselling waiting time is ${counsellingWaitAvgDays} days — excessive delays in accessing bereavement counselling mean children are left without professional support during a critical period of grief.`,
     );
-  } else if (counsellingWaitAvgDays > 28 && counsellingWaitAvgDays <= 42 && totalCounselling > 0) {
+  } else if (totalCounselling > 0 && counsellingWaitAvgDays !== null && counsellingWaitAvgDays > 28 && counsellingWaitAvgDays <= 42) {
     concerns.push(
       `Average counselling waiting time of ${counsellingWaitAvgDays} days — delays in accessing bereavement support may prolong children's distress and complicate their grief recovery.`,
     );
@@ -927,7 +912,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (counsellingWaitAvgDays > 42 && totalCounselling > 0) {
+  if (totalCounselling > 0 && counsellingWaitAvgDays !== null && counsellingWaitAvgDays > 42) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1104,9 +1089,10 @@ export function computeGriefBereavementSupport(
   }
 
   if (
+    totalCounselling > 0 &&
+    counsellingWaitAvgDays !== null &&
     counsellingWaitAvgDays > 28 &&
-    counsellingWaitAvgDays <= 42 &&
-    totalCounselling > 0
+    counsellingWaitAvgDays <= 42
   ) {
     recommendations.push({
       rank: ++rank,
@@ -1158,7 +1144,7 @@ export function computeGriefBereavementSupport(
     });
   }
 
-  if (counsellingWaitAvgDays > 42 && totalCounselling > 0) {
+  if (totalCounselling > 0 && counsellingWaitAvgDays !== null && counsellingWaitAvgDays > 42) {
     insights.push({
       text: `Average counselling waiting time of ${counsellingWaitAvgDays} days exceeds 6 weeks. Research demonstrates that timely access to bereavement counselling is critical during the acute grief period. Prolonged delays risk grief becoming entrenched or complicated, with lasting impacts on children's emotional development.`,
       severity: "critical",
@@ -1223,9 +1209,10 @@ export function computeGriefBereavementSupport(
   }
 
   if (
+    totalCounselling > 0 &&
+    counsellingWaitAvgDays !== null &&
     counsellingWaitAvgDays > 28 &&
-    counsellingWaitAvgDays <= 42 &&
-    totalCounselling > 0
+    counsellingWaitAvgDays <= 42
   ) {
     insights.push({
       text: `Average counselling waiting time of ${counsellingWaitAvgDays} days. While within a manageable range, any delay in accessing bereavement support extends the period during which children cope without professional help. Consider interim support arrangements.`,
@@ -1423,9 +1410,10 @@ export function computeGriefBereavementSupport(
   }
 
   if (
+    totalCounselling > 0 &&
+    counsellingWaitAvgDays !== null &&
     counsellingWaitAvgDays <= 14 &&
-    counsellingAttendanceRate >= 90 &&
-    totalCounselling > 0
+    counsellingAttendanceRate >= 90
   ) {
     insights.push({
       text: `Average wait of ${counsellingWaitAvgDays} days with ${counsellingAttendanceRate}% attendance — children access bereavement counselling swiftly and engage consistently, creating optimal conditions for therapeutic benefit.`,
