@@ -12,6 +12,8 @@
 //             childPreparationRecords
 // ==============================================================================
 
+import { meets, below } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface AppointmentRecordInput {
@@ -147,8 +149,9 @@ export interface PersonalCalendarResult {
   calendar_accuracy_rate: number;
   medical_compliance_rate: number;
   transport_timeliness_rate: number;
-  child_preparation_rate: number;
-  child_autonomy_rate: number;
+  // fab-0: null when no preparation records exist.
+  child_preparation_rate: number | null;
+  child_autonomy_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: PersonalCalendarRecommendation[];
@@ -187,8 +190,8 @@ function emptyResult(
     calendar_accuracy_rate: 0,
     medical_compliance_rate: 0,
     transport_timeliness_rate: 0,
-    child_preparation_rate: 0,
-    child_autonomy_rate: 0,
+    child_preparation_rate: null,
+    child_autonomy_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -374,14 +377,6 @@ export function computePersonalCalendarAppointments(
   );
   const doubleBookingRate = pct(totalDoubleBookings, totalScheduled);
 
-  const avgAdvanceNotice =
-    totalCalendarRecords > 0
-      ? Math.round(
-          calendar_management_records.reduce((sum, r) => sum + r.advance_notice_days, 0) /
-            totalCalendarRecords,
-        )
-      : 0;
-
   // --- Medical compliance ---
   const totalMedicalCompliance = medical_compliance_records.length;
   const completedCompliance = medical_compliance_records.filter(
@@ -409,14 +404,15 @@ export function computePersonalCalendarAppointments(
   ).length;
   const complianceOutcomeRate = pct(complianceOutcomeDocumented, totalMedicalCompliance);
 
-  const avgDaysOverdue =
+  // fab-0: null when no overdue compliance items to average.
+  const avgDaysOverdue: number | null =
     overdueCompliance > 0
       ? Math.round(
           medical_compliance_records
             .filter((r) => r.overdue)
             .reduce((sum, r) => sum + r.days_overdue, 0) / overdueCompliance,
         )
-      : 0;
+      : null;
 
   // --- Compliance type breakdown ---
   const annualHealthAssessments = medical_compliance_records.filter(
@@ -469,14 +465,6 @@ export function computePersonalCalendarAppointments(
   ).length;
   const backupPlanRate = pct(backupPlan, totalTransportRecords);
 
-  const avgDelayMinutes =
-    totalTransportRecords > 0
-      ? Math.round(
-          transport_arrangement_records.reduce((sum, r) => sum + r.delay_minutes, 0) /
-            totalTransportRecords,
-        )
-      : 0;
-
   const lateTransport = transport_arrangement_records.filter(
     (r) => !r.on_time,
   ).length;
@@ -520,10 +508,11 @@ export function computePersonalCalendarAppointments(
   const childSatisfactionSum = child_preparation_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
   );
-  const childSatisfactionAvg =
+  // fab-0: null when no preparation records to average across.
+  const childSatisfactionAvg: number | null =
     totalPreparationRecords > 0
       ? Math.round((childSatisfactionSum / totalPreparationRecords) * 100) / 100
-      : 0;
+      : null;
 
   const autonomySupported = child_preparation_records.filter(
     (r) => r.autonomy_supported,
@@ -536,20 +525,20 @@ export function computePersonalCalendarAppointments(
   const ageAppropriateRate = pct(ageAppropriate, totalPreparationRecords);
 
   // --- Child preparation composite rate ---
-  const childPreparationRate =
+  const childPreparationRate: number | null =
     totalPreparationRecords > 0
       ? Math.round(
           (advanceInformationRate + anxietyAddressRate + preferencesCaptureRate + debriefRate) / 4,
         )
-      : 0;
+      : null;
 
   // --- Child autonomy composite rate ---
-  const childAutonomyRate =
+  const childAutonomyRate: number | null =
     totalPreparationRecords > 0
       ? Math.round(
           (autonomyRate + accompanimentChoiceRate + feedbackCaptureRate) / 3,
         )
-      : 0;
+      : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -572,12 +561,12 @@ export function computePersonalCalendarAppointments(
   else if (transportTimelinessRate >= 75) score += 1;
 
   // --- Bonus 5: childPreparationRate (>=85: +3, >=65: +1) ---
-  if (childPreparationRate >= 85) score += 3;
-  else if (childPreparationRate >= 65) score += 1;
+  if (meets(childPreparationRate, 85)) score += 3;
+  else if (meets(childPreparationRate, 65)) score += 1;
 
   // --- Bonus 6: childAutonomyRate (>=80: +3, >=60: +1) ---
-  if (childAutonomyRate >= 80) score += 3;
-  else if (childAutonomyRate >= 60) score += 1;
+  if (meets(childAutonomyRate, 80)) score += 3;
+  else if (meets(childAutonomyRate, 60)) score += 1;
 
   // --- Bonus 7: followUpCompletionRate (>=90: +3, >=70: +1) ---
   if (followUpCompletionRate >= 90) score += 3;
@@ -603,7 +592,7 @@ export function computePersonalCalendarAppointments(
   if (transportTimelinessRate < 50 && totalTransportRecords > 0) score -= 4;
 
   // childPreparationRate < 30 -> -4
-  if (childPreparationRate < 30 && totalPreparationRecords > 0) score -= 4;
+  if (below(childPreparationRate, 30) && totalPreparationRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -763,11 +752,11 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (childPreparationRate >= 85 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && meets(childPreparationRate, 85)) {
     strengths.push(
       `Child preparation rate at ${childPreparationRate}% -- children are consistently informed, supported, and debriefed around their appointments.`,
     );
-  } else if (childPreparationRate >= 65 && totalPreparationRecords > 0) {
+  } else if (totalPreparationRecords > 0 && meets(childPreparationRate, 65)) {
     strengths.push(
       `Child preparation rate at ${childPreparationRate}% -- good practice in preparing children for their appointments.`,
     );
@@ -779,7 +768,7 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (childSatisfactionAvg >= 4.0 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && childSatisfactionAvg !== null && childSatisfactionAvg >= 4.0) {
     strengths.push(
       `Children's satisfaction with appointment preparation averages ${childSatisfactionAvg}/5 -- children feel well informed and supported through the appointment process.`,
     );
@@ -803,7 +792,7 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (childAutonomyRate >= 80 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && meets(childAutonomyRate, 80)) {
     strengths.push(
       `Child autonomy rate at ${childAutonomyRate}% -- children's voices are central to how their appointments are managed, reflecting genuinely child-centred practice.`,
     );
@@ -911,7 +900,7 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (avgDaysOverdue >= 30 && overdueCompliance > 0) {
+  if (overdueCompliance > 0 && avgDaysOverdue !== null && avgDaysOverdue >= 30) {
     concerns.push(
       `Average overdue period is ${avgDaysOverdue} days -- significantly overdue medical requirements indicate systemic issues in appointment booking and follow-through.`,
     );
@@ -969,11 +958,11 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (childPreparationRate < 30 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && below(childPreparationRate, 30)) {
     concerns.push(
       `Child preparation rate at only ${childPreparationRate}% -- children are not being adequately informed, supported, or prepared for their appointments, causing unnecessary anxiety and disengagement.`,
     );
-  } else if (childPreparationRate < 65 && childPreparationRate >= 30 && totalPreparationRecords > 0) {
+  } else if (totalPreparationRecords > 0 && childPreparationRate !== null && childPreparationRate < 65 && childPreparationRate >= 30) {
     concerns.push(
       `Child preparation at ${childPreparationRate}% -- not all children are being adequately prepared for their appointments.`,
     );
@@ -985,13 +974,13 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (childSatisfactionAvg < 3.0 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && childSatisfactionAvg !== null && childSatisfactionAvg < 3.0) {
     concerns.push(
       `Children's satisfaction with appointment preparation averages only ${childSatisfactionAvg}/5 -- children do not feel well supported through the appointment process.`,
     );
   }
 
-  if (childAutonomyRate < 50 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && below(childAutonomyRate, 50)) {
     concerns.push(
       `Child autonomy rate at only ${childAutonomyRate}% -- children's choices and voices are not central to how their appointments are managed, undermining child-centred practice.`,
     );
@@ -1050,7 +1039,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (childPreparationRate < 30 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && below(childPreparationRate, 30)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1200,7 +1189,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (childPreparationRate >= 30 && childPreparationRate < 65 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && childPreparationRate !== null && childPreparationRate >= 30 && childPreparationRate < 65) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1210,7 +1199,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (childAutonomyRate < 50 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && below(childAutonomyRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1287,7 +1276,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (childPreparationRate < 30 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && below(childPreparationRate, 30)) {
     insights.push({
       text: `Child preparation rate at only ${childPreparationRate}%. Children are attending appointments without adequate information, anxiety support, or opportunity to express preferences. This is inconsistent with child-centred practice and undermines SCCIF health and wellbeing expectations.`,
       severity: "critical",
@@ -1345,7 +1334,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (childPreparationRate >= 30 && childPreparationRate < 65 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && childPreparationRate !== null && childPreparationRate >= 30 && childPreparationRate < 65) {
     insights.push({
       text: `Child preparation at ${childPreparationRate}% -- some children are attending appointments without adequate information or support. Appointment anxiety is a common experience for looked-after children and must be proactively managed.`,
       severity: "warning",
@@ -1359,7 +1348,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (childAutonomyRate >= 50 && childAutonomyRate < 80 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && childAutonomyRate !== null && childAutonomyRate >= 50 && childAutonomyRate < 80) {
     insights.push({
       text: `Child autonomy rate at ${childAutonomyRate}% -- while some choice is offered, not all children are consistently involved in decisions about their appointments. Increasing autonomy builds confidence and engagement.`,
       severity: "warning",
@@ -1421,14 +1410,14 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (childPreparationRate >= 85 && childAutonomyRate >= 80 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && meets(childPreparationRate, 85) && meets(childAutonomyRate, 80)) {
     insights.push({
       text: `${childPreparationRate}% child preparation with ${childAutonomyRate}% autonomy rate -- children are consistently prepared for their appointments and empowered to make choices about their care. This exemplifies child-centred practice.`,
       severity: "positive",
     });
   }
 
-  if (childSatisfactionAvg >= 4.0 && totalPreparationRecords > 0) {
+  if (totalPreparationRecords > 0 && childSatisfactionAvg !== null && childSatisfactionAvg >= 4.0) {
     insights.push({
       text: `Children's satisfaction with appointment preparation averages ${childSatisfactionAvg}/5 -- children feel genuinely supported through the appointment process. This positive experience makes children more likely to engage with health and education professionals.`,
       severity: "positive",

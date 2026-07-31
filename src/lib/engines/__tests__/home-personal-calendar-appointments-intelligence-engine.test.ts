@@ -171,8 +171,9 @@ describe("Home Personal Calendar & Appointments Intelligence Engine", () => {
       expect(r.calendar_accuracy_rate).toBe(0);
       expect(r.medical_compliance_rate).toBe(0);
       expect(r.transport_timeliness_rate).toBe(0);
-      expect(r.child_preparation_rate).toBe(0);
-      expect(r.child_autonomy_rate).toBe(0);
+      // fab-0: null (no preparation records)
+      expect(r.child_preparation_rate).toBeNull();
+      expect(r.child_autonomy_rate).toBeNull();
     });
   });
 
@@ -215,8 +216,9 @@ describe("Home Personal Calendar & Appointments Intelligence Engine", () => {
       expect(r.calendar_accuracy_rate).toBe(0);
       expect(r.medical_compliance_rate).toBe(0);
       expect(r.transport_timeliness_rate).toBe(0);
-      expect(r.child_preparation_rate).toBe(0);
-      expect(r.child_autonomy_rate).toBe(0);
+      // fab-0: null (no preparation records)
+      expect(r.child_preparation_rate).toBeNull();
+      expect(r.child_autonomy_rate).toBeNull();
     });
   });
 
@@ -253,18 +255,18 @@ describe("Home Personal Calendar & Appointments Intelligence Engine", () => {
       expect(r.transport_timeliness_rate).toBe(0);
     });
 
-    it("child_preparation_rate = 0 when no preparation records but other data exists", () => {
+    it("child_preparation_rate = null when no preparation records (fab-0)", () => {
       const r = computePersonalCalendarAppointments(baseInput({
         appointment_records: [makeAppointment()],
       }));
-      expect(r.child_preparation_rate).toBe(0);
+      expect(r.child_preparation_rate).toBeNull();
     });
 
-    it("child_autonomy_rate = 0 when no preparation records but other data exists", () => {
+    it("child_autonomy_rate = null when no preparation records (fab-0)", () => {
       const r = computePersonalCalendarAppointments(baseInput({
         appointment_records: [makeAppointment()],
       }));
-      expect(r.child_autonomy_rate).toBe(0);
+      expect(r.child_autonomy_rate).toBeNull();
     });
   });
 
@@ -3040,11 +3042,12 @@ describe("Home Personal Calendar & Appointments Intelligence Engine", () => {
       expect(r.transport_timeliness_rate).toBe(0);
     });
 
-    it("empty preparation records does not trigger preparation penalty", () => {
+    it("empty preparation records does not trigger preparation penalty (fab-0)", () => {
       const r = computePersonalCalendarAppointments(baseInput({
         appointment_records: [makeAppointment({ attended: true, outcome_recorded: false, follow_up_actions_identified: false, child_consented: false })],
       }));
-      expect(r.child_preparation_rate).toBe(0);
+      // fab-0: null (no preparation records) → below() penalty gate holds
+      expect(r.child_preparation_rate).toBeNull();
     });
   });
 
