@@ -136,37 +136,37 @@ export interface ReferralProcessingResult {
   withdrawnCount: number;
   onHoldCount: number;
   inProgressCount: number;
-  acceptanceRate: number;
+  acceptanceRate: number | null;
   declineReasons: Record<string, number>;
-  averageProcessingDays: number;
-  screeningTimelinessRate: number;
+  averageProcessingDays: number | null;
+  screeningTimelinessRate: number | null;
 }
 
 export interface MatchingQualityResult {
   totalAssessments: number;
-  averageOverallScore: number;
+  averageOverallScore: number | null;
   criterionBreakdown: { criterion: MatchingCriterion; averageScore: number; count: number }[];
-  fullCriteriaAssessedRate: number;
-  groupDynamicsConsiderationRate: number;
+  fullCriteriaAssessedRate: number | null;
+  groupDynamicsConsiderationRate: number | null;
   recommendationBreakdown: { accept: number; decline: number; further_info_needed: number };
 }
 
 export interface IntroductionPlanningResult {
   totalPlans: number;
-  welcomePackRate: number;
-  childrenConsultedRate: number;
-  childVoiceRate: number;
-  phaseCompletionRate: number;
-  averagePhasesCompleted: number;
-  keyWorkerAssignedRate: number;
+  welcomePackRate: number | null;
+  childrenConsultedRate: number | null;
+  childVoiceRate: number | null;
+  phaseCompletionRate: number | null;
+  averagePhasesCompleted: number | null;
+  keyWorkerAssignedRate: number | null;
 }
 
 export interface AdmissionOutcomesResult {
   totalOutcomes: number;
-  settlingInReviewRate: number;
-  initialCareplanRate: number;
-  placementPlanSignedRate: number;
-  existingChildrenFeedbackRate: number;
+  settlingInReviewRate: number | null;
+  initialCareplanRate: number | null;
+  placementPlanSignedRate: number | null;
+  existingChildrenFeedbackRate: number | null;
 }
 
 export interface ReferralTimelineEntry {
@@ -245,8 +245,8 @@ export function evaluateReferralProcessing(
   const decided = periodReferrals.filter(
     (r) => r.currentStatus === "accepted" || r.currentStatus === "declined",
   );
-  const acceptanceRate =
-    decided.length > 0 ? Math.round((acceptedCount / decided.length) * 100) : 0;
+  const acceptanceRate: number | null =
+    decided.length > 0 ? Math.round((acceptedCount / decided.length) * 100) : null;
 
   // Decline reasons breakdown
   const declineReasons: Record<string, number> = {};
@@ -263,7 +263,7 @@ export function evaluateReferralProcessing(
   const averageProcessingDays =
     processingDays.length > 0
       ? Math.round((processingDays.reduce((s, d) => s + d, 0) / processingDays.length) * 10) / 10
-      : 0;
+      : null;
 
   // Screening timeliness
   const screenedReferrals = periodReferrals.filter((r) => r.screeningCompletedDate);
@@ -273,7 +273,7 @@ export function evaluateReferralProcessing(
   const screeningTimelinessRate =
     screenedReferrals.length > 0
       ? Math.round((timelyScreenings.length / screenedReferrals.length) * 100)
-      : 0;
+      : null;
 
   return {
     totalReferrals,
@@ -301,7 +301,7 @@ export function evaluateMatchingQuality(
       ? Math.round(
           (assessments.reduce((s, a) => s + a.overallScore, 0) / totalAssessments) * 10,
         ) / 10
-      : 0;
+      : null;
 
   // Criterion-level breakdown
   const criterionMap = new Map<MatchingCriterion, { total: number; count: number }>();
@@ -333,7 +333,7 @@ export function evaluateMatchingQuality(
             totalAssessments) *
             100,
         )
-      : 0;
+      : null;
 
   // Group dynamics consideration rate
   const groupDynamicsConsiderationRate =
@@ -347,7 +347,7 @@ export function evaluateMatchingQuality(
             totalAssessments) *
             100,
         )
-      : 0;
+      : null;
 
   // Recommendation breakdown
   const recommendationBreakdown = {
@@ -376,17 +376,17 @@ export function evaluateIntroductionPlanning(
   const welcomePackRate =
     totalPlans > 0
       ? Math.round((plans.filter((p) => p.welcomePack).length / totalPlans) * 100)
-      : 0;
+      : null;
 
   const childrenConsultedRate =
     totalPlans > 0
       ? Math.round((plans.filter((p) => p.childrenConsulted).length / totalPlans) * 100)
-      : 0;
+      : null;
 
   const childVoiceRate =
     totalPlans > 0
       ? Math.round((plans.filter((p) => p.childVoiceRecorded).length / totalPlans) * 100)
-      : 0;
+      : null;
 
   // Phase completion rate: across all phases in all plans
   const allPhases = plans.flatMap((p) => p.phases);
@@ -394,7 +394,7 @@ export function evaluateIntroductionPlanning(
   const phaseCompletionRate =
     allPhases.length > 0
       ? Math.round((completedPhases.length / allPhases.length) * 100)
-      : 0;
+      : null;
 
   // Average phases completed per plan
   const averagePhasesCompleted =
@@ -407,7 +407,7 @@ export function evaluateIntroductionPlanning(
             totalPlans) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   // Key worker assignment rate
   const keyWorkerAssignedRate =
@@ -417,7 +417,7 @@ export function evaluateIntroductionPlanning(
             totalPlans) *
             100,
         )
-      : 0;
+      : null;
 
   return {
     totalPlans,
@@ -440,21 +440,21 @@ export function evaluateAdmissionOutcomes(
   const settlingInReviewRate =
     totalOutcomes > 0
       ? Math.round((outcomes.filter((o) => o.settlingInCompleted).length / totalOutcomes) * 100)
-      : 0;
+      : null;
 
   const initialCareplanRate =
     totalOutcomes > 0
       ? Math.round(
           (outcomes.filter((o) => o.initialCareplanCreated).length / totalOutcomes) * 100,
         )
-      : 0;
+      : null;
 
   const placementPlanSignedRate =
     totalOutcomes > 0
       ? Math.round(
           (outcomes.filter((o) => o.placementPlanSigned).length / totalOutcomes) * 100,
         )
-      : 0;
+      : null;
 
   const existingChildrenFeedbackRate =
     totalOutcomes > 0
@@ -465,7 +465,7 @@ export function evaluateAdmissionOutcomes(
             totalOutcomes) *
             100,
         )
-      : 0;
+      : null;
 
   return {
     totalOutcomes,
@@ -691,7 +691,7 @@ function calculateComponentScores(
   // Referral processing: max 20 points
   let rpScore = 0;
   // Timeliness: 10 pts
-  rpScore += (rp.screeningTimelinessRate / 100) * 10;
+  rpScore += ((rp.screeningTimelinessRate ?? 0) / 100) * 10;
   // Decision clarity: 10 pts — based on having decisions made (not stuck in progress)
   if (rp.totalReferrals > 0) {
     const decisionMadeRate =
@@ -705,11 +705,11 @@ function calculateComponentScores(
   let mqScore = 0;
   if (mq.totalAssessments > 0) {
     // Comprehensive assessment (avg score): 12 pts
-    mqScore += (Math.min(mq.averageOverallScore, 5) / 5) * 12;
+    mqScore += (Math.min(mq.averageOverallScore ?? 0, 5) / 5) * 12;
     // Criteria coverage: 10 pts
-    mqScore += (mq.fullCriteriaAssessedRate / 100) * 10;
+    mqScore += ((mq.fullCriteriaAssessedRate ?? 0) / 100) * 10;
     // Group dynamics consideration: 8 pts
-    mqScore += (mq.groupDynamicsConsiderationRate / 100) * 8;
+    mqScore += ((mq.groupDynamicsConsiderationRate ?? 0) / 100) * 8;
   } else {
     // No assessments — if there were referrals that needed them, this is bad
     mqScore = 0;
@@ -719,11 +719,11 @@ function calculateComponentScores(
   let ipScore = 0;
   if (ip.totalPlans > 0) {
     // Consultation: 8 pts
-    ipScore += (ip.childrenConsultedRate / 100) * 8;
+    ipScore += ((ip.childrenConsultedRate ?? 0) / 100) * 8;
     // Child voice: 9 pts
-    ipScore += (ip.childVoiceRate / 100) * 9;
+    ipScore += ((ip.childVoiceRate ?? 0) / 100) * 9;
     // Phase completion: 8 pts
-    ipScore += (ip.phaseCompletionRate / 100) * 8;
+    ipScore += ((ip.phaseCompletionRate ?? 0) / 100) * 8;
   } else {
     ipScore = 0;
   }
@@ -732,13 +732,13 @@ function calculateComponentScores(
   let aoScore = 0;
   if (ao.totalOutcomes > 0) {
     // Settling-in reviews: 8 pts
-    aoScore += (ao.settlingInReviewRate / 100) * 8;
+    aoScore += ((ao.settlingInReviewRate ?? 0) / 100) * 8;
     // Care plans: 7 pts
-    aoScore += (ao.initialCareplanRate / 100) * 7;
+    aoScore += ((ao.initialCareplanRate ?? 0) / 100) * 7;
     // Placement plan signed: 5 pts
-    aoScore += (ao.placementPlanSignedRate / 100) * 5;
+    aoScore += ((ao.placementPlanSignedRate ?? 0) / 100) * 5;
     // Existing children consulted: 5 pts
-    aoScore += (ao.existingChildrenFeedbackRate / 100) * 5;
+    aoScore += ((ao.existingChildrenFeedbackRate ?? 0) / 100) * 5;
   } else {
     aoScore = 0;
   }
@@ -770,73 +770,73 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (rp.screeningTimelinessRate >= 90) {
+  if ((rp.screeningTimelinessRate ?? 0) >= 90) {
     strengths.push(
       "Excellent referral screening timeliness: over 90% screened within target timeframe",
     );
   }
 
-  if (rp.averageProcessingDays > 0 && rp.averageProcessingDays <= 5) {
+  if ((rp.averageProcessingDays ?? 0) > 0 && (rp.averageProcessingDays ?? 0) <= 5) {
     strengths.push(
       `Efficient referral processing with average decision time of ${rp.averageProcessingDays} days`,
     );
   }
 
-  if (mq.averageOverallScore >= 4) {
+  if ((mq.averageOverallScore ?? 0) >= 4) {
     strengths.push(
       "High-quality matching assessments with strong average scores across criteria",
     );
   }
 
-  if (mq.fullCriteriaAssessedRate >= 80) {
+  if ((mq.fullCriteriaAssessedRate ?? 0) >= 80) {
     strengths.push(
       "Comprehensive matching practice: most assessments cover all required criteria",
     );
   }
 
-  if (mq.groupDynamicsConsiderationRate >= 90) {
+  if ((mq.groupDynamicsConsiderationRate ?? 0) >= 90) {
     strengths.push(
       "Group dynamics consistently considered in matching decisions, supporting Reg 12 compliance",
     );
   }
 
-  if (ip.childVoiceRate >= 90) {
+  if ((ip.childVoiceRate ?? 0) >= 90) {
     strengths.push(
       "Excellent child voice practice: children's views consistently recorded during introductions",
     );
   }
 
-  if (ip.childrenConsultedRate >= 90) {
+  if ((ip.childrenConsultedRate ?? 0) >= 90) {
     strengths.push(
       "Existing children consistently consulted before new admissions, supporting child-centred practice",
     );
   }
 
-  if (ip.welcomePackRate >= 90) {
+  if ((ip.welcomePackRate ?? 0) >= 90) {
     strengths.push(
       "Welcome packs consistently provided to new children, supporting positive transition experiences",
     );
   }
 
-  if (ao.settlingInReviewRate >= 90) {
+  if ((ao.settlingInReviewRate ?? 0) >= 90) {
     strengths.push(
       "Settling-in reviews consistently completed, ensuring new placements are monitored effectively",
     );
   }
 
-  if (ao.initialCareplanRate === 100) {
+  if ((ao.initialCareplanRate ?? 0) === 100) {
     strengths.push(
       "All admissions have initial care plans created, meeting Reg 14 requirements",
     );
   }
 
-  if (ao.placementPlanSignedRate >= 90) {
+  if ((ao.placementPlanSignedRate ?? 0) >= 90) {
     strengths.push(
       "Placement plans consistently signed on admission, demonstrating effective partnership with placing authorities",
     );
   }
 
-  if (ao.existingChildrenFeedbackRate >= 80) {
+  if ((ao.existingChildrenFeedbackRate ?? 0) >= 80) {
     strengths.push(
       "Strong practice in gathering existing children's feedback post-admission",
     );
@@ -853,73 +853,73 @@ function generateAreasForImprovement(
 ): string[] {
   const areas: string[] = [];
 
-  if (rp.screeningTimelinessRate < 70 && rp.totalReferrals > 0) {
+  if ((rp.screeningTimelinessRate ?? 0) < 70 && rp.totalReferrals > 0) {
     areas.push(
       "Referral screening timeliness below 70%: review process to ensure timely initial response to placing authorities",
     );
   }
 
-  if (rp.averageProcessingDays > 10 && rp.totalReferrals > 0) {
+  if ((rp.averageProcessingDays ?? 0) > 10 && rp.totalReferrals > 0) {
     areas.push(
       `Average referral processing time of ${rp.averageProcessingDays} days exceeds best practice: review decision-making workflow`,
     );
   }
 
-  if (mq.averageOverallScore < 3 && mq.totalAssessments > 0) {
+  if ((mq.averageOverallScore ?? 0) < 3 && mq.totalAssessments > 0) {
     areas.push(
       "Low average matching scores suggest placements may not be well matched to the home's statement of purpose",
     );
   }
 
-  if (mq.fullCriteriaAssessedRate < 60 && mq.totalAssessments > 0) {
+  if ((mq.fullCriteriaAssessedRate ?? 0) < 60 && mq.totalAssessments > 0) {
     areas.push(
       "Less than 60% of matching assessments cover all criteria: ensure comprehensive assessments including cultural, educational, and therapeutic needs",
     );
   }
 
-  if (mq.groupDynamicsConsiderationRate < 70 && mq.totalAssessments > 0) {
+  if ((mq.groupDynamicsConsiderationRate ?? 0) < 70 && mq.totalAssessments > 0) {
     areas.push(
       "Group dynamics not consistently considered in matching: strengthen impact assessment process per Reg 12",
     );
   }
 
-  if (ip.childVoiceRate < 70 && ip.totalPlans > 0) {
+  if ((ip.childVoiceRate ?? 0) < 70 && ip.totalPlans > 0) {
     areas.push(
       "Child voice not consistently recorded during introductions: ensure all children have opportunity to share their views",
     );
   }
 
-  if (ip.childrenConsultedRate < 70 && ip.totalPlans > 0) {
+  if ((ip.childrenConsultedRate ?? 0) < 70 && ip.totalPlans > 0) {
     areas.push(
       "Existing children not consistently consulted before new admissions: develop consultation processes",
     );
   }
 
-  if (ip.welcomePackRate < 70 && ip.totalPlans > 0) {
+  if ((ip.welcomePackRate ?? 0) < 70 && ip.totalPlans > 0) {
     areas.push(
       "Welcome packs not consistently provided: ensure all new children receive information about the home",
     );
   }
 
-  if (ao.settlingInReviewRate < 70 && ao.totalOutcomes > 0) {
+  if ((ao.settlingInReviewRate ?? 0) < 70 && ao.totalOutcomes > 0) {
     areas.push(
       "Settling-in reviews not consistently completed: implement tracking to ensure all new admissions are reviewed",
     );
   }
 
-  if (ao.initialCareplanRate < 80 && ao.totalOutcomes > 0) {
+  if ((ao.initialCareplanRate ?? 0) < 80 && ao.totalOutcomes > 0) {
     areas.push(
       "Not all admissions have initial care plans: ensure care plans are created promptly on admission per Reg 14",
     );
   }
 
-  if (ao.placementPlanSignedRate < 70 && ao.totalOutcomes > 0) {
+  if ((ao.placementPlanSignedRate ?? 0) < 70 && ao.totalOutcomes > 0) {
     areas.push(
       "Placement plans not consistently signed: strengthen liaison with placing authorities",
     );
   }
 
-  if (ao.existingChildrenFeedbackRate < 50 && ao.totalOutcomes > 0) {
+  if ((ao.existingChildrenFeedbackRate ?? 0) < 50 && ao.totalOutcomes > 0) {
     areas.push(
       "Existing children's feedback rarely gathered post-admission: develop post-placement feedback process",
     );
@@ -948,43 +948,43 @@ function generateActions(
     );
   }
 
-  if (mq.fullCriteriaAssessedRate < 80 && mq.totalAssessments > 0) {
+  if ((mq.fullCriteriaAssessedRate ?? 0) < 80 && mq.totalAssessments > 0) {
     actions.push(
       "Implement matching assessment checklist to ensure all 10 criteria are evaluated for every referral",
     );
   }
 
-  if (mq.groupDynamicsConsiderationRate < 80 && mq.totalAssessments > 0) {
+  if ((mq.groupDynamicsConsiderationRate ?? 0) < 80 && mq.totalAssessments > 0) {
     actions.push(
       "Strengthen group dynamics analysis: assess impact on each existing child before accepting new placements",
     );
   }
 
-  if (ip.childVoiceRate < 80 && ip.totalPlans > 0) {
+  if ((ip.childVoiceRate ?? 0) < 80 && ip.totalPlans > 0) {
     actions.push(
       "Develop child voice recording process for introduction phases, ensuring each child's views are documented",
     );
   }
 
-  if (ip.childrenConsultedRate < 80 && ip.totalPlans > 0) {
+  if ((ip.childrenConsultedRate ?? 0) < 80 && ip.totalPlans > 0) {
     actions.push(
       "Establish routine consultation with existing children before each new admission",
     );
   }
 
-  if (ao.settlingInReviewRate < 80 && ao.totalOutcomes > 0) {
+  if ((ao.settlingInReviewRate ?? 0) < 80 && ao.totalOutcomes > 0) {
     actions.push(
       "Schedule settling-in reviews within 72 hours of admission and track completion",
     );
   }
 
-  if (ao.initialCareplanRate < 100 && ao.totalOutcomes > 0) {
+  if ((ao.initialCareplanRate ?? 0) < 100 && ao.totalOutcomes > 0) {
     actions.push(
       "Ensure initial care plans are created for all new admissions on or before the admission date",
     );
   }
 
-  if (ao.placementPlanSignedRate < 80 && ao.totalOutcomes > 0) {
+  if ((ao.placementPlanSignedRate ?? 0) < 80 && ao.totalOutcomes > 0) {
     actions.push(
       "Follow up with placing authorities to ensure placement plans are signed within the first week",
     );
@@ -1035,7 +1035,7 @@ function generateRegulatoryLinks(
     "Working Together 2023 — Multi-agency working: placement decisions involve relevant professionals",
   );
 
-  if (mq.groupDynamicsConsiderationRate < 80 && mq.totalAssessments > 0) {
+  if ((mq.groupDynamicsConsiderationRate ?? 0) < 80 && mq.totalAssessments > 0) {
     links.push(
       "DfE Guide to Children's Homes Regulations — Matching: full impact assessment before every admission",
     );

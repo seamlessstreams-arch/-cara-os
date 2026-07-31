@@ -1,3 +1,4 @@
+import { formatRate } from "@/lib/metrics/rate";
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,6 +12,11 @@ function ScoreBar({ label, value, max = 25 }: { label: string; value: number; ma
       <div className="w-full h-2 bg-gray-200 rounded"><div className={`${colour} h-2 rounded`} style={{ width: `${pct}%` }} /></div>
     </div>
   );
+}
+
+function fmt(v: unknown): string {
+  if (v === null || v === undefined) return "—";
+  return String(v);
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -80,9 +86,9 @@ export function AdmissionsMatchingIntelligenceWidget() {
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Referrals" value={referral.totalReferrals as number} />
           <Stat label="Accepted" value={referral.acceptedCount as number} />
-          <Stat label="Acceptance Rate" value={`${referral.acceptanceRate}%`} />
-          <Stat label="Avg Processing Days" value={referral.averageProcessingDays as number} />
-          <Stat label="Screening Timeliness" value={`${referral.screeningTimelinessRate}%`} />
+          <Stat label="Acceptance Rate" value={formatRate(referral.acceptanceRate as number | null)} />
+          <Stat label="Avg Processing Days" value={fmt(referral.averageProcessingDays)} />
+          <Stat label="Screening Timeliness" value={formatRate(referral.screeningTimelinessRate as number | null)} />
           <Stat label="Declined" value={referral.declinedCount as number} />
         </div>
       </Section>
@@ -91,9 +97,9 @@ export function AdmissionsMatchingIntelligenceWidget() {
         <ScoreBar label="Matching Quality" value={scores.matchingQuality} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Assessments" value={matching.totalAssessments as number} />
-          <Stat label="Avg Overall Score" value={matching.averageOverallScore as number} />
-          <Stat label="Full Criteria Rate" value={`${matching.fullCriteriaAssessedRate}%`} />
-          <Stat label="Group Dynamics" value={`${matching.groupDynamicsConsiderationRate}%`} />
+          <Stat label="Avg Overall Score" value={fmt(matching.averageOverallScore)} />
+          <Stat label="Full Criteria Rate" value={formatRate(matching.fullCriteriaAssessedRate as number | null)} />
+          <Stat label="Group Dynamics" value={formatRate(matching.groupDynamicsConsiderationRate as number | null)} />
         </div>
       </Section>
 
@@ -101,11 +107,11 @@ export function AdmissionsMatchingIntelligenceWidget() {
         <ScoreBar label="Introduction Planning" value={scores.introductionPlanning} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Plans" value={intro.totalPlans as number} />
-          <Stat label="Welcome Pack" value={`${intro.welcomePackRate}%`} />
-          <Stat label="Children Consulted" value={`${intro.childrenConsultedRate}%`} />
-          <Stat label="Child Voice" value={`${intro.childVoiceRate}%`} />
-          <Stat label="Phase Completion" value={`${intro.phaseCompletionRate}%`} />
-          <Stat label="Key Worker Assigned" value={`${intro.keyWorkerAssignedRate}%`} />
+          <Stat label="Welcome Pack" value={formatRate(intro.welcomePackRate as number | null)} />
+          <Stat label="Children Consulted" value={formatRate(intro.childrenConsultedRate as number | null)} />
+          <Stat label="Child Voice" value={formatRate(intro.childVoiceRate as number | null)} />
+          <Stat label="Phase Completion" value={formatRate(intro.phaseCompletionRate as number | null)} />
+          <Stat label="Key Worker Assigned" value={formatRate(intro.keyWorkerAssignedRate as number | null)} />
         </div>
       </Section>
 
@@ -113,10 +119,10 @@ export function AdmissionsMatchingIntelligenceWidget() {
         <ScoreBar label="Admission Outcomes" value={scores.admissionOutcomes} />
         <div className="grid grid-cols-2 gap-2 mt-2">
           <Stat label="Total Outcomes" value={outcomes.totalOutcomes as number} />
-          <Stat label="Settling-In Review" value={`${outcomes.settlingInReviewRate}%`} />
-          <Stat label="Initial Careplan" value={`${outcomes.initialCareplanRate}%`} />
-          <Stat label="Placement Plan Signed" value={`${outcomes.placementPlanSignedRate}%`} />
-          <Stat label="Existing Children Feedback" value={`${outcomes.existingChildrenFeedbackRate}%`} />
+          <Stat label="Settling-In Review" value={formatRate(outcomes.settlingInReviewRate as number | null)} />
+          <Stat label="Initial Careplan" value={formatRate(outcomes.initialCareplanRate as number | null)} />
+          <Stat label="Placement Plan Signed" value={formatRate(outcomes.placementPlanSignedRate as number | null)} />
+          <Stat label="Existing Children Feedback" value={formatRate(outcomes.existingChildrenFeedbackRate as number | null)} />
         </div>
       </Section>
 

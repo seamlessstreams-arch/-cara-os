@@ -412,21 +412,21 @@ describe("evaluateReferralProcessing", () => {
     const result = evaluateReferralProcessing([], PERIOD_START, PERIOD_END);
     expect(result.totalReferrals).toBe(0);
     expect(result.acceptedCount).toBe(0);
-    expect(result.acceptanceRate).toBe(0);
-    expect(result.averageProcessingDays).toBe(0);
+    expect(result.acceptanceRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.averageProcessingDays).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("handles referrals with no decision date", () => {
     const refs = [makeReferral({ decisionDate: undefined, currentStatus: "assessment" })];
     const result = evaluateReferralProcessing(refs, PERIOD_START, PERIOD_END);
-    expect(result.averageProcessingDays).toBe(0);
+    expect(result.averageProcessingDays).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.inProgressCount).toBe(1);
   });
 
   it("handles referrals with no screening date", () => {
     const refs = [makeReferral({ screeningCompletedDate: undefined, currentStatus: "received" })];
     const result = evaluateReferralProcessing(refs, PERIOD_START, PERIOD_END);
-    expect(result.screeningTimelinessRate).toBe(0);
+    expect(result.screeningTimelinessRate).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("returns on-hold count", () => {
@@ -500,10 +500,10 @@ describe("evaluateMatchingQuality", () => {
   it("returns zeros for empty assessments", () => {
     const result = evaluateMatchingQuality([]);
     expect(result.totalAssessments).toBe(0);
-    expect(result.averageOverallScore).toBe(0);
+    expect(result.averageOverallScore).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.criterionBreakdown).toEqual([]);
-    expect(result.fullCriteriaAssessedRate).toBe(0);
-    expect(result.groupDynamicsConsiderationRate).toBe(0);
+    expect(result.fullCriteriaAssessedRate).toBeNull(); // fab-0: null.
+    expect(result.groupDynamicsConsiderationRate).toBeNull(); // fab-0: null (empty array).
   });
 
   it("handles single assessment", () => {
@@ -531,6 +531,7 @@ describe("evaluateMatchingQuality", () => {
       }),
     ];
     const result = evaluateMatchingQuality(noGroupAnalysis);
+    // Record exists → real 0 (denominator=1, no group analysis counted).
     expect(result.groupDynamicsConsiderationRate).toBe(0);
   });
 
@@ -542,6 +543,7 @@ describe("evaluateMatchingQuality", () => {
       }),
     ];
     const result = evaluateMatchingQuality(withTextButNoCriterion);
+    // Record exists → real 0 (denominator=1, no group analysis counted).
     expect(result.groupDynamicsConsiderationRate).toBe(0);
   });
 });
@@ -588,11 +590,11 @@ describe("evaluateIntroductionPlanning", () => {
   it("returns zeros for empty plans", () => {
     const result = evaluateIntroductionPlanning([]);
     expect(result.totalPlans).toBe(0);
-    expect(result.welcomePackRate).toBe(0);
-    expect(result.childrenConsultedRate).toBe(0);
-    expect(result.childVoiceRate).toBe(0);
-    expect(result.phaseCompletionRate).toBe(0);
-    expect(result.averagePhasesCompleted).toBe(0);
+    expect(result.welcomePackRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.childrenConsultedRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.childVoiceRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.phaseCompletionRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.averagePhasesCompleted).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("handles plan with no completed phases", () => {
@@ -603,6 +605,7 @@ describe("evaluateIntroductionPlanning", () => {
       ],
     });
     const result = evaluateIntroductionPlanning([plan]);
+    // Records exist → real 0 (0 of 2 phases completed).
     expect(result.phaseCompletionRate).toBe(0);
     expect(result.averagePhasesCompleted).toBe(0);
   });
@@ -644,6 +647,7 @@ describe("evaluateIntroductionPlanning", () => {
       makeIntroductionPlan({ id: "ip-1", keyWorkerAssigned: undefined }),
     ];
     const result = evaluateIntroductionPlanning(plans);
+    // Plan exists but key worker undefined → real 0 (0/1 assigned).
     expect(result.keyWorkerAssignedRate).toBe(0);
   });
 });
@@ -681,10 +685,10 @@ describe("evaluateAdmissionOutcomes", () => {
   it("returns zeros for empty outcomes", () => {
     const result = evaluateAdmissionOutcomes([]);
     expect(result.totalOutcomes).toBe(0);
-    expect(result.settlingInReviewRate).toBe(0);
-    expect(result.initialCareplanRate).toBe(0);
-    expect(result.placementPlanSignedRate).toBe(0);
-    expect(result.existingChildrenFeedbackRate).toBe(0);
+    expect(result.settlingInReviewRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.initialCareplanRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.placementPlanSignedRate).toBeNull(); // fab-0: null when the source population is empty.
+    expect(result.existingChildrenFeedbackRate).toBeNull(); // fab-0: null when the source population is empty.
   });
 
   it("handles all-positive outcomes", () => {
@@ -710,6 +714,7 @@ describe("evaluateAdmissionOutcomes", () => {
       }),
     ];
     const result = evaluateAdmissionOutcomes(outcomes);
+    // Records exist with all-false flags → real 0 (0/1).
     expect(result.settlingInReviewRate).toBe(0);
     expect(result.initialCareplanRate).toBe(0);
     expect(result.placementPlanSignedRate).toBe(0);
@@ -721,6 +726,7 @@ describe("evaluateAdmissionOutcomes", () => {
       makeAdmissionOutcome({ id: "ao-1", existingChildrenFeedback: "" }),
     ];
     const result = evaluateAdmissionOutcomes(outcomes);
+    // Record exists with empty feedback → real 0.
     expect(result.existingChildrenFeedbackRate).toBe(0);
   });
 });
