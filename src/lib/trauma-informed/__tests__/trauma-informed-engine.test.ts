@@ -1063,7 +1063,7 @@ describe("evaluateConsultation", () => {
     ];
     const result = evaluateConsultation(noActions, CHILD_IDS, PERIOD_START, PERIOD_END);
     expect(result.totalActionsAgreed).toBe(0);
-    expect(result.actionCompletionRate).toBe(0);
+    expect(result.actionCompletionRate).toBeNull();
   });
 
   it("frequency capped at practical levels", () => {

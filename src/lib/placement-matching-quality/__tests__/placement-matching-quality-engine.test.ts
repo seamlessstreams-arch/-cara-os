@@ -504,7 +504,7 @@ describe("evaluateCompatibility", () => {
       makeReview({ riskIdentified: false, managementPlanInPlace: false }),
     ];
     const result = evaluateCompatibility(reviews);
-    expect(result.managementPlanRate).toBe(0);
+    expect(result.managementPlanRate).toBeNull();
   });
 
   it("handles multiple risks with mixed management plans", () => {

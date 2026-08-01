@@ -104,7 +104,7 @@ describe("Contact & Relationships Intelligence Engine", () => {
       const result = analyseContact(makeInput());
       expect(result.totalSessions).toBe(0);
       expect(result.missedSessions).toBe(0);
-      expect(result.missedRate).toBe(0);
+      expect(result.missedRate).toBeNull();
     });
   });
 

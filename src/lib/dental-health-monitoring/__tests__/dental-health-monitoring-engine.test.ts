@@ -482,7 +482,7 @@ describe("evaluateTreatmentCompliance", () => {
       mkTreatmentPlan({ id: "tp-1", status: "completed", appointmentsRequired: 6, appointmentsCompleted: 6 }),
     ];
     const result = evaluateTreatmentCompliance(plans);
-    expect(result.activeTreatmentProgressRate).toBe(0);
+    expect(result.activeTreatmentProgressRate).toBeNull();
   });
 
   it("score capped at 25", () => {

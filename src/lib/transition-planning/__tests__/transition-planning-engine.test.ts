@@ -375,7 +375,7 @@ describe("evaluateTransitionPlanning", () => {
       makeAlexPlan({ goals: [] }),
     ];
     const result = evaluateTransitionPlanning(plans, REF_DATE);
-    expect(result.goalAchievementRate).toBe(0);
+    expect(result.goalAchievementRate).toBeNull();
   });
 });
 

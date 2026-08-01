@@ -73,7 +73,7 @@ describe("getDemoStats", () => {
 
 describe("computeApprovalRate", () => {
   it("returns 0 when no decisions", () => {
-    expect(computeApprovalRate(0, 0)).toBe(0);
+    expect(computeApprovalRate(0, 0)).toBeNull();
   });
 
   it("returns 100 when all approved", () => {

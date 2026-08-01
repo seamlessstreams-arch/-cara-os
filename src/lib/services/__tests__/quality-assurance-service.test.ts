@@ -282,7 +282,7 @@ describe("computeQAMetrics", () => {
     expect(result.total_audits).toBe(0);
     expect(result.completed).toBe(0);
     expect(result.overdue).toBe(0);
-    expect(result.avg_rating).toBe(0);
+    expect(result.avg_rating).toBeNull();
     expect(result.by_type).toEqual({});
     expect(result.total_recommendations).toBe(0);
     expect(result.recommendations_completed).toBe(0);
@@ -332,7 +332,7 @@ describe("computeQAMetrics", () => {
       makeAudit({ id: "a2", status: "in_progress" }),
     ];
     const result = computeQAMetrics(audits, []);
-    expect(result.avg_rating).toBe(0);
+    expect(result.avg_rating).toBeNull();
   });
 
   it("rounds avg_rating to 2 decimal places", () => {
@@ -386,7 +386,7 @@ describe("computeQAMetrics", () => {
       makeAudit({ id: "a1", audit_type: "medication", status: "planned" }),
     ];
     const result = computeQAMetrics(audits, []);
-    expect(result.by_type.medication.avg_rating).toBe(0);
+    expect(result.by_type.medication.avg_rating).toBeNull();
   });
 
   it("counts recommendations across all audits", () => {

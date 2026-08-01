@@ -422,7 +422,7 @@ describe("evaluateComplaintHandling", () => {
       makeComplaint({ id: "c-01", actualResolutionDays: null, status: "open" }),
     ];
     const result = evaluateComplaintHandling(complaints);
-    expect(result.averageResolutionDays).toBe(0);
+    expect(result.averageResolutionDays).toBeNull();
   });
 
   it("computes upheld/partially rate from outcomes", () => {

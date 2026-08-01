@@ -715,7 +715,7 @@ describe("evaluateAuditFindings", () => {
     expect(result.areaBreakdown.multi_agency.count).toBe(1);
     expect(result.areaBreakdown.multi_agency.avgRating).toBe(4); // outstanding=4
     expect(result.areaBreakdown.supervision.count).toBe(0);
-    expect(result.areaBreakdown.supervision.avgRating).toBe(0);
+    expect(result.areaBreakdown.supervision.avgRating).toBeNull();
   });
 
   it("returns score between 0 and 25", () => {

@@ -1174,7 +1174,7 @@ describe("Edge Cases", () => {
       staff, quals, [], [], [],
       "test-home", "2025-01-01", "2025-06-30",
     );
-    expect(result.staffProfiles[0].averageCompetencyLevel).toBe(0);
+    expect(result.staffProfiles[0].averageCompetencyLevel).toBeNull();
   });
 
   it("staff profile defaults to undefined performance rating when no reviews exist", () => {

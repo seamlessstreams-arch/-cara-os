@@ -901,7 +901,7 @@ describe("generateMedicationErrorPreventionIntelligence", () => {
 
     // No data in ANY pillar → nothing assessed → overall 0. (Previously a misleading
     // 25, because the "no errors = perfect" pillar masked the three empty pillars.)
-    expect(result.overallScore).toBe(0);
+    expect(result.overallScore).toBeNull();
     expect(result.childProfiles.length).toBe(0);
     expect(result.errorManagement.overallScore).toBe(25);
     expect(result.administrationQuality.overallScore).toBe(0);

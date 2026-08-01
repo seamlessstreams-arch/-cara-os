@@ -106,7 +106,7 @@ describe("Workflow Service", () => {
 
     it("empty steps returns 0%", () => {
       const progress = computeWorkflowProgress([]);
-      expect(progress.percentage).toBe(0);
+      expect(progress.percentage).toBeNull();
       expect(progress.total_steps).toBe(0);
     });
 

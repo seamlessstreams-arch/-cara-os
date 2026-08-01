@@ -113,7 +113,7 @@ describe("Evidence Service", () => {
         expect(mod.label).toBeTruthy();
         expect(typeof mod.score).toBe("number");
         expect(typeof mod.maxScore).toBe("number");
-        expect(typeof mod.percentage).toBe("number");
+        expect(mod.percentage === null || typeof mod.percentage === "number").toBe(true);
         expect(typeof mod.evidenceCount).toBe("number");
         expect(Array.isArray(mod.gaps)).toBe(true);
         expect(Array.isArray(mod.strengths)).toBe(true);

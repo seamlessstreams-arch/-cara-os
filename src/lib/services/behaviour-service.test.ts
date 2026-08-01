@@ -62,7 +62,7 @@ describe("computeBehaviourSummary", () => {
     expect(m.total_entries).toBe(0);
     expect(m.positive_count).toBe(0);
     expect(m.pi_count).toBe(0);
-    expect(m.de_escalation_success_rate).toBe(0);
+    expect(m.de_escalation_success_rate).toBeNull();
   });
 
   it("counts categories and PI stats", () => {
@@ -104,7 +104,7 @@ describe("computeChildBehaviourProfile", () => {
   it("returns zeroes when child has no entries", () => {
     const p = computeChildBehaviourProfile("child-x", [], []);
     expect(p.total_entries).toBe(0);
-    expect(p.positive_ratio).toBe(0);
+    expect(p.positive_ratio).toBeNull();
     expect(p.trend).toBe("stable");
   });
 
@@ -144,7 +144,7 @@ describe("computePIAnalysis", () => {
   it("returns zeroes for entries with no PI", () => {
     const a = computePIAnalysis([makeEntry()]);
     expect(a.total_pi).toBe(0);
-    expect(a.avg_duration).toBe(0);
+    expect(a.avg_duration).toBeNull();
   });
 
   it("computes PI technique breakdown and time pattern", () => {

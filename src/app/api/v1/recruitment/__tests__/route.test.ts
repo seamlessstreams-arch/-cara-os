@@ -46,12 +46,12 @@ describe("recruitment overview route", () => {
     expect(Array.isArray(body.data.alerts)).toBe(true);
     expect(body.data.stats).toBeTypeOf("object");
     for (const k of ["total_active", "blocked", "exceptional_starts", "avg_days_to_appoint"]) {
-      expect(typeof body.data.stats[k]).toBe("number");
+      expect(body.data.stats[k] === null || typeof body.data.stats[k] === "number").toBe(true);
     }
 
     const found = body.data.candidates.find((c: { id: string }) => c.id === created.data.id);
     expect(found).toBeTruthy();
-    expect(typeof found.compliance_score).toBe("number");
+    expect(found.compliance_score === null || typeof found.compliance_score === "number").toBe(true);
     expect(found.stage).toBe("enquiry");
   });
 });

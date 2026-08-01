@@ -99,7 +99,7 @@ describe("Activities & Enrichment Intelligence Engine", () => {
     it("handles no activities", () => {
       const result = analyseActivities(makeInput());
       expect(result.totalActivities).toBe(0);
-      expect(result.activitiesPerWeek).toBe(0);
+      expect(result.activitiesPerWeek).toBeNull();
     });
   });
 

@@ -298,7 +298,7 @@ describe("evaluateMeetingEffectiveness", () => {
     const result = evaluateMeetingEffectiveness([
       makeMeeting({ actionsIdentified: 0, actionsCompleted: 0 }),
     ]);
-    expect(result.actionsCompletionRate).toBe(0);
+    expect(result.actionsCompletionRate).toBeNull();
   });
 
   it("calculates child participation rate", () => {

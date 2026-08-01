@@ -626,7 +626,7 @@ describe("evaluateMeasurementQuality", () => {
     const result = evaluateMeasurementQuality([], [], CHILD_IDS);
     expect(result.baselineCoverageRate).toBe(0);
     expect(result.methodDiversityScore).toBe(0);
-    expect(result.measurementRegularity).toBe(0);
+    expect(result.measurementRegularity).toBeNull();
     expect(result.childVoiceInclusion).toBe(0);
   });
 

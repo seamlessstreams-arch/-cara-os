@@ -395,7 +395,7 @@ describe("analyzeRestraints", () => {
   it("leaves restraint rates unmeasured for empty incidents", () => {
     const result = analyzeRestraints([], "home-oak", FIXED_NOW);
     expect(result.totalRestraints).toBe(0);
-    expect(result.averageDurationMinutes).toBe(0);
+    expect(result.averageDurationMinutes).toBeNull();
     expect(result.approvedTechniqueRate).toBeNull();
     expect(result.injuryRate).toBeNull();
   });

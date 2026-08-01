@@ -58,7 +58,7 @@ describe("Outcome Tracker", () => {
       expect(result.childId).toBe("child_1");
       expect(result.childName).toBe("Test Child");
       expect(result.totalObjectives).toBe(0);
-      expect(result.overallProgress).toBe(0);
+      expect(result.overallProgress).toBeNull();
       expect(result.progressGrade).toBe("insufficient_data");
     });
 

@@ -595,7 +595,7 @@ describe("evaluateHydrationStandards", () => {
       makeHydration({ id: "h1", cupsConsumed: 5, targetCups: 0 }),
     ];
     const result = evaluateHydrationStandards(records);
-    expect(result.averageCupsVsTargetRate).toBe(0);
+    expect(result.averageCupsVsTargetRate).toBeNull();
   });
 });
 

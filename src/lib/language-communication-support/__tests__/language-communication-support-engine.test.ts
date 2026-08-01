@@ -326,7 +326,7 @@ describe("evaluateSupportProvision", () => {
   it("returns 0 average sessions when profileCount is 0", () => {
     const sessions = [mkSession()];
     const result = evaluateSupportProvision(sessions, 0);
-    expect(result.averageSessionsPerChild).toBe(0);
+    expect(result.averageSessionsPerChild).toBeNull();
   });
 
   it("score capped at 25", () => {

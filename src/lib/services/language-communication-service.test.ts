@@ -41,7 +41,7 @@ describe("computeLanguageMetrics", () => {
     expect(m.total_records).toBe(0);
     expect(m.children_with_needs).toBe(0);
     expect(m.needs_coverage).toBe(0);
-    expect(m.passport_in_place_rate).toBe(0);
+    expect(m.passport_in_place_rate).toBeNull();
     expect(m.interpreter_required_count).toBe(0);
   });
 
