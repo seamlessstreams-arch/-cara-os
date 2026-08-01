@@ -66,7 +66,7 @@ export interface TypeBreakdown {
   type: string;
   type_label: string;
   count: number;
-  percentage: number;
+  percentage: number | null;
 }
 
 export interface ChildBehaviourProfile {

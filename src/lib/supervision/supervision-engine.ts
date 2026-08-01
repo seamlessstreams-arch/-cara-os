@@ -500,10 +500,10 @@ export function generateSupervisionIntelligence(
   const staffReadiness = evaluateStaffSupervisionReadiness(training);
 
   const rawScore =
-    supervisionQuality.overallScore +
-    supervisionCompliance.overallScore +
-    supervisionPolicy.overallScore +
-    staffReadiness.overallScore;
+    (supervisionQuality.overallScore ?? 0) +
+    (supervisionCompliance.overallScore ?? 0) +
+    (supervisionPolicy.overallScore ?? 0) +
+    (staffReadiness.overallScore ?? 0);
 
   const overallScore = Math.min(Math.round(rawScore * 10) / 10, 100);
   const rating = getRating(overallScore);
@@ -513,22 +513,22 @@ export function generateSupervisionIntelligence(
   // ── Strengths (evaluator score >= 20) ──
   const strengths: string[] = [];
 
-  if (supervisionQuality.overallScore >= 20) {
+  if ((supervisionQuality.overallScore ?? 0) >= 20) {
     strengths.push(
       "Supervision sessions demonstrate high quality with strong content coverage, reflective practice, safeguarding discussion, and wellbeing checks",
     );
   }
-  if (supervisionCompliance.overallScore >= 20) {
+  if ((supervisionCompliance.overallScore ?? 0) >= 20) {
     strengths.push(
       "Supervision compliance is strong with sessions documented properly, delivered within timescales, and previous actions consistently reviewed",
     );
   }
-  if (supervisionPolicy.overallScore >= 20) {
+  if ((supervisionPolicy.overallScore ?? 0) >= 20) {
     strengths.push(
       "The supervision policy framework is comprehensive, covering scheduling, reflective practice, safeguarding, and wellbeing requirements",
     );
   }
-  if (staffReadiness.overallScore >= 20) {
+  if ((staffReadiness.overallScore ?? 0) >= 20) {
     strengths.push(
       "Staff are well-prepared to deliver and receive supervision, with strong supervisory skills, reflective practice, and safeguarding knowledge",
     );
@@ -537,22 +537,22 @@ export function generateSupervisionIntelligence(
   // ── Areas for Improvement (evaluator score < 15) ──
   const areasForImprovement: string[] = [];
 
-  if (supervisionQuality.overallScore < 15 && sessions.length > 0) {
+  if ((supervisionQuality.overallScore ?? 0) < 15 && sessions.length > 0) {
     areasForImprovement.push(
       "Supervision session quality needs improvement — content coverage, reflective practice, or safeguarding discussion rates are below expected standards",
     );
   }
-  if (supervisionCompliance.overallScore < 15 && sessions.length > 0) {
+  if ((supervisionCompliance.overallScore ?? 0) < 15 && sessions.length > 0) {
     areasForImprovement.push(
       "Supervision compliance requires attention — documentation, timescale adherence, or action review rates need to improve",
     );
   }
-  if (supervisionPolicy.overallScore < 15 && supervisionPolicy.overallScore > 0) {
+  if ((supervisionPolicy.overallScore ?? 0) < 15 && (supervisionPolicy.overallScore ?? 0) > 0) {
     areasForImprovement.push(
       "The supervision policy has gaps — review and strengthen scheduling, reflective practice, safeguarding, or wellbeing components",
     );
   }
-  if (staffReadiness.overallScore < 15 && training.length > 0) {
+  if ((staffReadiness.overallScore ?? 0) < 15 && training.length > 0) {
     areasForImprovement.push(
       "Staff supervision readiness needs development — invest in supervisory skills training, reflective practice, and safeguarding knowledge",
     );
@@ -574,32 +574,32 @@ export function generateSupervisionIntelligence(
   }
 
   // Conditional: rates < 50
-  if (supervisionQuality.contentRate < 50 && sessions.length > 0) {
+  if ((supervisionQuality.contentRate ?? 0) < 50 && sessions.length > 0) {
     actions.push(
       "Content coverage in supervision sessions is below 50% — introduce structured supervision agendas to ensure comprehensive coverage",
     );
   }
-  if (supervisionQuality.reflectiveRate < 50 && sessions.length > 0) {
+  if ((supervisionQuality.reflectiveRate ?? 0) < 50 && sessions.length > 0) {
     actions.push(
       "Reflective practice is included in fewer than half of sessions — provide training in reflective supervision techniques aligned to Munro Review recommendations",
     );
   }
-  if (supervisionQuality.safeguardingRate < 50 && sessions.length > 0) {
+  if ((supervisionQuality.safeguardingRate ?? 0) < 50 && sessions.length > 0) {
     actions.push(
       "Safeguarding is discussed in fewer than half of sessions — make safeguarding a mandatory standing agenda item in all supervision sessions",
     );
   }
-  if (supervisionQuality.wellbeingRate < 50 && sessions.length > 0) {
+  if ((supervisionQuality.wellbeingRate ?? 0) < 50 && sessions.length > 0) {
     actions.push(
       "Staff wellbeing is checked in fewer than half of sessions — embed wellbeing checks as a core component of every supervision session",
     );
   }
-  if (supervisionCompliance.documentedRate < 50 && sessions.length > 0) {
+  if ((supervisionCompliance.documentedRate ?? 0) < 50 && sessions.length > 0) {
     actions.push(
       "Documentation rate is below 50% — implement supervision recording templates and set clear expectations for timely completion",
     );
   }
-  if (supervisionCompliance.withinTimescaleRate < 50 && sessions.length > 0) {
+  if ((supervisionCompliance.withinTimescaleRate ?? 0) < 50 && sessions.length > 0) {
     actions.push(
       "Fewer than half of sessions are delivered within required timescales — review scheduling arrangements and ensure supervision is prioritised",
     );

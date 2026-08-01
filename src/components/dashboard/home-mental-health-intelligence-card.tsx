@@ -118,8 +118,8 @@ export function HomeMentalHealthIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <SmilePlus className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.check_ins.check_in_coverage_rate >= 100 ? "text-[--cs-success]" :
-                  d.check_ins.check_in_coverage_rate >= 75 ? "text-blue-600" : "text-[--cs-risk]"
+                  (d.check_ins.check_in_coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.check_ins.check_in_coverage_rate ?? 0) >= 75 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
                   {d.check_ins.check_in_coverage_rate}%
                 </p>
@@ -132,8 +132,8 @@ export function HomeMentalHealthIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <HeartPulse className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.check_ins.avg_mood_rating >= 3.5 ? "text-[--cs-success]" :
-                  d.check_ins.avg_mood_rating >= 2.5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.check_ins.avg_mood_rating ?? 0) >= 3.5 ? "text-[--cs-success]" :
+                  (d.check_ins.avg_mood_rating ?? 0) >= 2.5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.check_ins.avg_mood_rating || "—"}/5
                 </p>
@@ -160,8 +160,8 @@ export function HomeMentalHealthIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.therapy.attendance_rate >= 90 ? "text-[--cs-success]" :
-                  d.therapy.attendance_rate >= 75 ? "text-[--cs-warning]" :
+                  (d.therapy.attendance_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.therapy.attendance_rate ?? 0) >= 75 ? "text-[--cs-warning]" :
                   d.therapy.total_sessions_90d === 0 ? "text-slate-600" : "text-[--cs-risk]"
                 )}>
                   {d.therapy.total_sessions_90d > 0 ? `${d.therapy.attendance_rate}%` : "—"}
@@ -185,7 +185,7 @@ export function HomeMentalHealthIntelligenceCard() {
                 )}>{d.check_ins.low_mood_count}</span></p>
                 <p>Flagged: <span className="font-medium text-slate-600">{d.check_ins.flagged_check_ins}</span></p>
                 <p>Follow-up: <span className={cn("font-medium",
-                  d.check_ins.follow_up_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.check_ins.follow_up_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.check_ins.follow_up_rate}%</span></p>
               </div>
             </div>
@@ -200,9 +200,9 @@ export function HomeMentalHealthIntelligenceCard() {
                   d.safety_plans.overdue_reviews === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>{d.safety_plans.overdue_reviews}</span></p>
                 <p>Mood trend: <span className={cn("font-medium",
-                  d.therapy.avg_mood_improvement > 0 ? "text-[--cs-success]" :
+                  (d.therapy.avg_mood_improvement ?? 0) > 0 ? "text-[--cs-success]" :
                   d.therapy.avg_mood_improvement === 0 ? "text-slate-600" : "text-[--cs-risk]"
-                )}>{d.therapy.avg_mood_improvement > 0 ? "+" : ""}{d.therapy.avg_mood_improvement || "—"}</span></p>
+                )}>{(d.therapy.avg_mood_improvement ?? 0) > 0 ? "+" : ""}{d.therapy.avg_mood_improvement || "—"}</span></p>
               </div>
             </div>
           </div>

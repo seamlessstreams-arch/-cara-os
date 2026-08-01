@@ -75,7 +75,7 @@ export type AccessTier = "everyone" | "care_team" | "management";
 
 export interface AskCaraSource {
   label: string;
-  count: number;
+  count: number | null;
   href?: string;
 }
 
@@ -165,7 +165,7 @@ export interface AskCaraChildEvaluation {
 export interface AskCaraPracticeDigest {
   /** Care Language Audit — criminalising/moralising/labelling language scan. */
   careLanguage?: {
-    hitRate: number; // flags per 100 records scanned (whole home)
+    hitRate: number | null; // flags per 100 records scanned (whole home)
     totalHits: number;
     childrenAffected: number;
     topCategoryLabel?: string; // most-flagged category (home)
@@ -195,7 +195,7 @@ export interface AskCaraPracticeDigest {
   };
   /** Strengths Recording Index — strengths/achievement markers in the writing. */
   strengthsRecording?: {
-    overallRate: number; // % of records containing a strengths marker (home)
+    overallRate: number | null; // % of records containing a strengths marker (home)
     topPractitionerName?: string; // the recording champion
     topCategoryLabel?: string;
     perChild: { childId: string; rate: number | null; topPhrase?: string }[];
@@ -224,9 +224,9 @@ export interface AskCaraPracticeDigest {
     consistentCount: number;
     mixedCount: number;
     divergentCount: number;
-    overallTherapeuticRate: number; // 0–100
+    overallTherapeuticRate: number | null; // 0–100
     divergencePattern: string;
-    perChild: { childId: string; level: string; therapeuticRate: number; variance: number; mostTherapeutic?: string; leastTherapeutic?: string }[]; // divergent-first
+    perChild: { childId: string; level: string; therapeuticRate: number | null; variance: number; mostTherapeutic?: string; leastTherapeutic?: string }[]; // divergent-first
   };
   /** Practice Culture Scorecard — 5-dimension whole-home culture synthesis. */
   practiceCulture?: {

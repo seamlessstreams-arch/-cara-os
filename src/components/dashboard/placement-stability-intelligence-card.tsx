@@ -92,8 +92,8 @@ export function PlacementStabilityIntelligenceCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", hm.average_stability_score >= 70 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", hm.average_stability_score >= 70 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{hm.average_stability_score}</p>
+          <div className={cn("text-center rounded-lg p-2.5", (hm.average_stability_score ?? 0) >= 70 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (hm.average_stability_score ?? 0) >= 70 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{hm.average_stability_score}</p>
             <p className="text-[10px] text-muted-foreground">Stability</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">

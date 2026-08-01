@@ -133,8 +133,8 @@ export function HomeIndependenceLifeSkillsIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ChefHat className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.cooking.independent_or_teaching_rate >= 60 ? "text-[--cs-success]" :
-                  d.cooking.independent_or_teaching_rate >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.cooking.independent_or_teaching_rate ?? 0) >= 60 ? "text-[--cs-success]" :
+                  (d.cooking.independent_or_teaching_rate ?? 0) >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.cooking.total_records > 0 ? `${d.cooking.independent_or_teaching_rate}%` : "—"}
                 </p>
@@ -147,8 +147,8 @@ export function HomeIndependenceLifeSkillsIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Wallet className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.money.confident_or_independent_rate >= 60 ? "text-[--cs-success]" :
-                  d.money.confident_or_independent_rate >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.money.confident_or_independent_rate ?? 0) >= 60 ? "text-[--cs-success]" :
+                  (d.money.confident_or_independent_rate ?? 0) >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.money.total_records > 0 ? `${d.money.confident_or_independent_rate}%` : "—"}
                 </p>
@@ -161,8 +161,8 @@ export function HomeIndependenceLifeSkillsIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <WashingMachine className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.household.avg_completion >= 80 ? "text-[--cs-success]" :
-                  d.household.avg_completion >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.household.avg_completion ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.household.avg_completion ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.household.total_tasks > 0 ? `${d.household.avg_completion}%` : "—"}
                 </p>

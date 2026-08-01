@@ -48,7 +48,18 @@ const TREND_COLOUR: Record<PITrend, string> = {
 
 // ── Metric bar ────────────────────────────────────────────────────────────────
 
-function MetricBar({ label, value, good, warn }: { label: string; value: number; good: number; warn: number }) {
+function MetricBar({ label, value, good, warn }: { label: string; value: number | null; good: number; warn: number }) {
+  if (value === null) {
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-0.5">
+          <span className="text-xs text-gray-600">{label}</span>
+          <span className="text-xs font-semibold text-gray-400">—</span>
+        </div>
+        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden" />
+      </div>
+    );
+  }
   const colour = value >= good ? "bg-emerald-500" : value >= warn ? "bg-amber-400" : "bg-red-400";
   return (
     <div>
@@ -163,13 +174,13 @@ function StaffCard({ profile }: { profile: StaffPIProfile }) {
         <div>
           <div className="flex justify-between items-center mb-0.5">
             <span className="text-xs text-gray-500">De-escalation (on leads)</span>
-            <span className={`text-xs font-semibold ${profile.deEscalationRateOnLeads >= 80 ? "text-emerald-600" : profile.deEscalationRateOnLeads >= 50 ? "text-amber-600" : "text-red-600"}`}>
+            <span className={`text-xs font-semibold ${(profile.deEscalationRateOnLeads ?? 0) >= 80 ? "text-emerald-600" : (profile.deEscalationRateOnLeads ?? 0) >= 50 ? "text-amber-600" : "text-red-600"}`}>
               {profile.deEscalationRateOnLeads}%
             </span>
           </div>
           <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
             <div
-              className={`h-full rounded-full ${profile.deEscalationRateOnLeads >= 80 ? "bg-emerald-500" : profile.deEscalationRateOnLeads >= 50 ? "bg-amber-400" : "bg-red-400"}`}
+              className={`h-full rounded-full ${(profile.deEscalationRateOnLeads ?? 0) >= 80 ? "bg-emerald-500" : (profile.deEscalationRateOnLeads ?? 0) >= 50 ? "bg-amber-400" : "bg-red-400"}`}
               style={{ width: `${profile.deEscalationRateOnLeads}%` }}
             />
           </div>
@@ -255,7 +266,7 @@ export default function PhysicalInterventionPatternsPage() {
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">Injuries recorded</p>
               </div>
-              <div className={`rounded-xl border p-4 ${summary.avgDurationMinutes > 5 ? "border-amber-200 bg-amber-50" : "border-gray-200 bg-gray-50"}`}>
+              <div className={`rounded-xl border p-4 ${(summary.avgDurationMinutes ?? 0) > 5 ? "border-amber-200 bg-amber-50" : "border-gray-200 bg-gray-50"}`}>
                 <p className="text-2xl font-bold text-gray-800">{summary.avgDurationMinutes}m</p>
                 <p className="text-xs text-gray-500 mt-0.5">Average PI duration</p>
               </div>

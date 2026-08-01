@@ -210,7 +210,7 @@ export function ChildBehaviourSafetyIntelligenceCard({ childId }: { childId: str
         <div className="grid grid-cols-2 gap-1.5">
           {sp.entries_14d > 0 && (
             <div className="rounded border p-2 flex items-center gap-2 text-xs">
-              <Moon className={cn("h-3.5 w-3.5 shrink-0", sp.avg_quality >= 4 ? "text-blue-500" : sp.avg_quality < 2.5 ? "text-red-500" : "text-amber-500")} />
+              <Moon className={cn("h-3.5 w-3.5 shrink-0", (sp.avg_quality ?? 0) >= 4 ? "text-blue-500" : (sp.avg_quality ?? 0) < 2.5 ? "text-red-500" : "text-amber-500")} />
               <div className="min-w-0">
                 <p className="font-medium text-slate-700">Sleep (14d)</p>
                 <p className="text-[10px] text-muted-foreground">

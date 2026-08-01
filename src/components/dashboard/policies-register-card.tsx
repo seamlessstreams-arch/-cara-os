@@ -109,11 +109,11 @@ export function PoliciesRegisterCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.acknowledgement_rate >= 95 ? "bg-green-50" : o.acknowledgement_rate >= 80 ? "bg-amber-50" : "bg-red-50",
+            (o.acknowledgement_rate ?? 0) >= 95 ? "bg-green-50" : (o.acknowledgement_rate ?? 0) >= 80 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.acknowledgement_rate >= 95 ? "text-[--cs-success]" : o.acknowledgement_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (o.acknowledgement_rate ?? 0) >= 95 ? "text-[--cs-success]" : (o.acknowledgement_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {o.acknowledgement_rate}%
             </p>

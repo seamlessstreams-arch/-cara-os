@@ -861,7 +861,7 @@ export interface CaraAnnexASnapshot {
   period_end: string;
   generated_at: string;
   status: CaraAnnexASnapshotStatus;
-  readiness_score: number;
+  readiness_score: number | null;
   overall_readiness: CaraAnnexAReadiness;
   sections: CaraAnnexASectionReading[];
   total_gaps: number;

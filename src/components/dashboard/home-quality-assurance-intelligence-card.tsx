@@ -138,8 +138,8 @@ export function HomeQualityAssuranceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Star className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.audit_coverage.avg_score >= 3.5 ? "text-[--cs-success]" :
-                  d.audit_coverage.avg_score >= 2.5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.audit_coverage.avg_score ?? 0) >= 3.5 ? "text-[--cs-success]" :
+                  (d.audit_coverage.avg_score ?? 0) >= 2.5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.audit_coverage.avg_score}
                 </p>
@@ -152,8 +152,8 @@ export function HomeQualityAssuranceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle2 className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.action_plan.completion_rate >= 80 ? "text-[--cs-success]" :
-                  d.action_plan.completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.action_plan.completion_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.action_plan.completion_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.action_plan.completion_rate}%
                 </p>

@@ -85,7 +85,7 @@ export default function StaffChildContinuityPage() {
           {/* ── Overview ─────────────────────────────────────────────────── */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <OverviewStat label="Children" value={intel.overview.children_analysed} />
-            <OverviewStat label="Avg continuity" value={`${intel.overview.avg_continuity_index}/100`} tone={intel.overview.avg_continuity_index >= 75 ? "green" : intel.overview.avg_continuity_index >= 55 ? "neutral" : "amber"} />
+            <OverviewStat label="Avg continuity" value={`${intel.overview.avg_continuity_index}/100`} tone={(intel.overview.avg_continuity_index ?? 0) >= 75 ? "green" : (intel.overview.avg_continuity_index ?? 0) >= 55 ? "neutral" : "amber"} />
             <OverviewStat label="Strong" value={intel.overview.strong_count} tone={intel.overview.strong_count > 0 ? "green" : "gray"} />
             <OverviewStat label="Fragmented" value={intel.overview.fragmented_count} tone={intel.overview.fragmented_count > 0 ? "amber" : "green"} />
             <OverviewStat label="No key worker" value={intel.overview.no_key_worker_count} tone={intel.overview.no_key_worker_count > 0 ? "red" : "green"} />

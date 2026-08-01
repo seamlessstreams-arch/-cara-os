@@ -72,7 +72,7 @@ function SessionRow({ session }: { session: SessionSummary }) {
 function ChildKeyworkCard({ profile }: { profile: ChildKeyworkProfile }) {
   const cfg = SIGNAL_CONFIG[profile.signal];
   const improvementColour =
-    profile.avgMoodImprovement > 0 ? "text-green-700" : profile.avgMoodImprovement < 0 ? "text-red-700" : "text-gray-500";
+    (profile.avgMoodImprovement ?? 0) > 0 ? "text-green-700" : (profile.avgMoodImprovement ?? 0) < 0 ? "text-red-700" : "text-gray-500";
 
   return (
     <div className={`rounded-lg border p-4 space-y-3 ${cfg.bg} ${cfg.border}`}>
@@ -104,7 +104,7 @@ function ChildKeyworkCard({ profile }: { profile: ChildKeyworkProfile }) {
         </div>
         <div className="text-center">
           <p className={`font-bold text-lg ${improvementColour}`}>
-            {profile.avgMoodImprovement > 0 ? "+" : ""}{profile.avgMoodImprovement}
+            {(profile.avgMoodImprovement ?? 0) > 0 ? "+" : ""}{profile.avgMoodImprovement}
           </p>
           <p className="text-gray-500">Improvement</p>
         </div>
@@ -211,8 +211,8 @@ export default function KeyworkingQualityIntelligencePage() {
               <p className="text-gray-500 text-xs">Sessions</p>
             </div>
             <div className="text-center">
-              <p className={`font-bold text-xl ${summary.avgMoodImprovement > 0 ? "text-green-700" : "text-gray-900"}`}>
-                {summary.avgMoodImprovement > 0 ? "+" : ""}{summary.avgMoodImprovement}
+              <p className={`font-bold text-xl ${(summary.avgMoodImprovement ?? 0) > 0 ? "text-green-700" : "text-gray-900"}`}>
+                {(summary.avgMoodImprovement ?? 0) > 0 ? "+" : ""}{summary.avgMoodImprovement}
               </p>
               <p className="text-gray-500 text-xs">Avg mood Δ</p>
             </div>

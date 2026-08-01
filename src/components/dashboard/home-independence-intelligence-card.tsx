@@ -160,8 +160,8 @@ export function HomeIndependenceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.domain_analysis.avg_domain_score >= 6 ? "text-[--cs-success]" :
-                  d.domain_analysis.avg_domain_score >= 4 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.domain_analysis.avg_domain_score ?? 0) >= 6 ? "text-[--cs-success]" :
+                  (d.domain_analysis.avg_domain_score ?? 0) >= 4 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.domain_analysis.avg_domain_score}/10
                 </p>

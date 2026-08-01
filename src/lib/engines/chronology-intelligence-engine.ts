@@ -82,7 +82,7 @@ export interface CategoryBreakdown {
   critical: number;
   significant: number;
   routine: number;
-  pct_of_total: number;
+  pct_of_total: number | null;
 }
 
 export interface TimelinePattern {

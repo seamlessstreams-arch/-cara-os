@@ -74,7 +74,7 @@ export interface MoodImpact {
 export interface SessionTypeBreakdown {
   type: KeyworkSessionType;
   count: number;
-  percentage: number;
+  percentage: number | null;
 }
 
 export interface QualityMetrics {
@@ -120,7 +120,7 @@ export interface ChildKeyworkingResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number | null {
+function daysAgo(today: string, date: string): number {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -130,7 +130,7 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
+function pct(n: number, d: number): number | null {
   return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 

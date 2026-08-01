@@ -189,8 +189,8 @@ export function StaffWellbeingIntelligenceCard() {
               <p className="text-lg font-bold tabular-nums text-slate-600">{sick.average_per_staff_90d}</p>
               <p className="text-[10px] text-muted-foreground">Avg Days/Staff</p>
             </div>
-            <div className={cn("text-center rounded-lg p-2", sick.stress_related_pct > 30 ? "bg-red-50" : "bg-slate-50")}>
-              <p className={cn("text-lg font-bold tabular-nums", sick.stress_related_pct > 30 ? "text-[--cs-risk]" : "text-slate-600")}>{sick.stress_related_pct}%</p>
+            <div className={cn("text-center rounded-lg p-2", (sick.stress_related_pct ?? 0) > 30 ? "bg-red-50" : "bg-slate-50")}>
+              <p className={cn("text-lg font-bold tabular-nums", (sick.stress_related_pct ?? 0) > 30 ? "text-[--cs-risk]" : "text-slate-600")}>{sick.stress_related_pct}%</p>
               <p className="text-[10px] text-muted-foreground">Stress-Related</p>
             </div>
             <div className={cn("text-center rounded-lg p-2", sick.staff_with_patterns > 0 ? "bg-amber-50" : "bg-slate-50")}>

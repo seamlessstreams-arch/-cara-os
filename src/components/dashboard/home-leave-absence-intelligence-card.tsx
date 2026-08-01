@@ -85,7 +85,7 @@ export function HomeLeaveAbsenceIntelligenceCard() {
   }
 
   const ratingStyle = RATING_STYLES[d.leave_rating] ?? RATING_STYLES.insufficient_data;
-  const isAlert = d.leave_rating === "inadequate" || d.planning.current_absent_rate > 25;
+  const isAlert = d.leave_rating === "inadequate" || (d.planning.current_absent_rate ?? 0) > 25;
 
   return (
     <Card className={cn("overflow-hidden", isAlert ? "border-red-400 border-2" : "border-slate-200")}>
@@ -180,7 +180,7 @@ export function HomeLeaveAbsenceIntelligenceCard() {
                   d.sickness.active_sick_count === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>{d.sickness.active_sick_count}</span></p>
                 <p>RTW done: <span className={cn("font-medium",
-                  d.sickness.rtw_required === 0 || d.sickness.rtw_compliance_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-risk]"
+                  d.sickness.rtw_required === 0 || (d.sickness.rtw_compliance_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>{d.sickness.rtw_completed}/{d.sickness.rtw_required}</span></p>
               </div>
             </div>
@@ -192,7 +192,7 @@ export function HomeLeaveAbsenceIntelligenceCard() {
                 <p>Future booked: <span className="font-medium text-slate-600">{d.planning.future_leave_days}d</span></p>
                 <p>Absence rate: <span className={cn("font-medium",
                   d.planning.current_absent_rate === 0 ? "text-[--cs-success]" :
-                  d.planning.current_absent_rate <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.planning.current_absent_rate ?? 0) <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.planning.current_absent_rate}%</span></p>
               </div>
             </div>

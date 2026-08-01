@@ -135,8 +135,8 @@ export function HomeMultiAgencyIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.meetings.action_completion_rate >= 90 ? "text-[--cs-success]" :
-                  d.meetings.action_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.meetings.action_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.meetings.action_completion_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.meetings.total_meetings_90d > 0 ? `${d.meetings.action_completion_rate}%` : "—"}
                 </p>
@@ -149,8 +149,8 @@ export function HomeMultiAgencyIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Scale className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.iro.response_compliance_rate >= 100 ? "text-[--cs-success]" :
-                  d.iro.response_compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.iro.response_compliance_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.iro.response_compliance_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.iro.total_correspondence > 0 ? `${d.iro.response_compliance_rate}%` : "—"}
                 </p>
@@ -164,8 +164,8 @@ export function HomeMultiAgencyIntelligenceCard() {
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.police.total_contacts_90d === 0 ? "text-slate-600" :
-                  d.police.protocol_compliance_rate >= 100 ? "text-[--cs-success]" :
-                  d.police.protocol_compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.police.protocol_compliance_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.police.protocol_compliance_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.police.total_contacts_90d > 0 ? `${d.police.protocol_compliance_rate}%` : "—"}
                 </p>

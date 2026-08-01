@@ -118,23 +118,23 @@ export default function PlacementDisruptionPreventionPage() {
           />
           <Metric
             label="Disruption rate"
-            value={Math.round(d.disruption_rate)}
+            value={Math.round((d.disruption_rate ?? 0))}
             suffix="%"
-            warn={d.disruption_rate > 20}
+            warn={(d.disruption_rate ?? 0) > 20}
             good={d.disruption_rate === 0}
           />
           <Metric
             label="Planned endings"
-            value={Math.round(d.planned_ending_rate)}
+            value={Math.round((d.planned_ending_rate ?? 0))}
             suffix="%"
-            good={d.planned_ending_rate >= 80}
-            warn={d.planned_ending_rate < 50}
+            good={(d.planned_ending_rate ?? 0) >= 80}
+            warn={(d.planned_ending_rate ?? 0) < 50}
           />
           <Metric
             label="Average placement length"
-            value={Math.round(d.average_placement_months)}
+            value={Math.round((d.average_placement_months ?? 0))}
             suffix=" mo"
-            good={d.average_placement_months >= 6}
+            good={(d.average_placement_months ?? 0) >= 6}
           />
         </div>
 

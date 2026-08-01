@@ -389,12 +389,12 @@ export function computeChildHealthIntelligence(
   if (moodTrend === "improving") score += 5;
   else if (moodTrend === "declining") score -= 5;
 
-  if (wellbeing_trajectory.avg_mood >= 4) score += 3;
-  else if (wellbeing_trajectory.avg_mood > 0 && wellbeing_trajectory.avg_mood < 2.5) score -= 5;
+  if ((wellbeing_trajectory.avg_mood ?? 0) >= 4) score += 3;
+  else if ((wellbeing_trajectory.avg_mood ?? 0) > 0 && (wellbeing_trajectory.avg_mood ?? 0) < 2.5) score -= 5;
 
-  if (wellbeing_trajectory.avg_anxiety > 0 && wellbeing_trajectory.avg_anxiety > 3.5) score -= 3;
-  if (wellbeing_trajectory.avg_sleep >= 4) score += 2;
-  else if (wellbeing_trajectory.avg_sleep > 0 && wellbeing_trajectory.avg_sleep < 2.5) score -= 3;
+  if ((wellbeing_trajectory.avg_anxiety ?? 0) > 0 && (wellbeing_trajectory.avg_anxiety ?? 0) > 3.5) score -= 3;
+  if ((wellbeing_trajectory.avg_sleep ?? 0) >= 4) score += 2;
+  else if ((wellbeing_trajectory.avg_sleep ?? 0) > 0 && (wellbeing_trajectory.avg_sleep ?? 0) < 2.5) score -= 3;
 
   // Appointments
   if (appt90d.length > 0) {
@@ -502,7 +502,7 @@ export function computeChildHealthIntelligence(
     concerns.push(`${child_name}'s mood is declining — consider additional support, therapeutic review, or mental health referral.`);
   }
 
-  if (wellbeing_trajectory.avg_anxiety > 3.5 && mental_health_check_ins.length >= 3) {
+  if ((wellbeing_trajectory.avg_anxiety ?? 0) > 3.5 && mental_health_check_ins.length >= 3) {
     concerns.push(`Persistent high anxiety levels (avg ${wellbeing_trajectory.avg_anxiety}/5) — consider anxiety-specific intervention or CAMHS referral.`);
   }
 
@@ -628,7 +628,7 @@ export function computeChildHealthIntelligence(
     });
   }
 
-  if (moodTrend === "declining" && wellbeing_trajectory.avg_anxiety > 3) {
+  if (moodTrend === "declining" && (wellbeing_trajectory.avg_anxiety ?? 0) > 3) {
     insights.push({
       severity: "warning",
       text: `Declining mood combined with elevated anxiety levels indicates ${child_name} may be struggling. Review recent events (placement changes, contact issues, school difficulties) that might be driving this pattern. Consider referral for targeted anxiety intervention.`,

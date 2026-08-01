@@ -135,8 +135,8 @@ export function HomeSafeguardingIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.contextual_risk_profile.multi_agency_rate >= 80 ? "text-[--cs-success]" :
-                  d.contextual_risk_profile.multi_agency_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.contextual_risk_profile.multi_agency_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.contextual_risk_profile.multi_agency_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.contextual_risk_profile.multi_agency_rate}%
                 </p>
@@ -151,7 +151,7 @@ export function HomeSafeguardingIntelligenceCard() {
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.exploitation_profile.high_risk_count === 0 ? "text-[--cs-success]" :
                   d.exploitation_profile.safety_plan_rate === 100 ? "text-[--cs-success]" :
-                  d.exploitation_profile.safety_plan_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.exploitation_profile.safety_plan_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.exploitation_profile.high_risk_count === 0 ? "N/A" : `${d.exploitation_profile.safety_plan_rate}%`}
                 </p>
@@ -209,8 +209,8 @@ export function HomeSafeguardingIntelligenceCard() {
             <p className="font-medium text-slate-700 mb-1">Online Safety (90d)</p>
             <div className="grid grid-cols-3 gap-2 text-[10px] text-muted-foreground">
               <p>Incidents: <span className="font-medium text-slate-600">{d.online_safety_profile.total_incidents_90d}</span></p>
-              <p>Discussion: <span className={cn("font-medium", d.online_safety_profile.child_discussion_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.online_safety_profile.child_discussion_rate}%</span></p>
-              <p>Follow-up: <span className={cn("font-medium", d.online_safety_profile.follow_up_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.online_safety_profile.follow_up_rate}%</span></p>
+              <p>Discussion: <span className={cn("font-medium", (d.online_safety_profile.child_discussion_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.online_safety_profile.child_discussion_rate}%</span></p>
+              <p>Follow-up: <span className={cn("font-medium", (d.online_safety_profile.follow_up_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.online_safety_profile.follow_up_rate}%</span></p>
             </div>
           </div>
         )}

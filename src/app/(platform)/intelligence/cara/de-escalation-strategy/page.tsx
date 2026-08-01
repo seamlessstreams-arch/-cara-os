@@ -61,7 +61,7 @@ function StrategyBar({ strategies }: { strategies: StrategyResult[] }) {
           </div>
           <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
             <div
-              className={`h-2 rounded-full ${s.resolutionRate >= 70 ? "bg-emerald-500" : s.resolutionRate >= 40 ? "bg-amber-400" : "bg-red-500"}`}
+              className={`h-2 rounded-full ${(s.resolutionRate ?? 0) >= 70 ? "bg-emerald-500" : (s.resolutionRate ?? 0) >= 40 ? "bg-amber-400" : "bg-red-500"}`}
               style={{ width: `${s.resolutionRate}%` }}
             />
           </div>
@@ -325,7 +325,7 @@ export default function DeEscalationStrategyPage() {
                     <span className="text-sm w-36 shrink-0 truncate">{sp.staffName}</span>
                     <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                       <div
-                        className={`h-2 rounded-full ${sp.positiveRate >= 60 ? "bg-emerald-500" : sp.positiveRate >= 40 ? "bg-amber-400" : "bg-red-400"}`}
+                        className={`h-2 rounded-full ${(sp.positiveRate ?? 0) >= 60 ? "bg-emerald-500" : (sp.positiveRate ?? 0) >= 40 ? "bg-amber-400" : "bg-red-400"}`}
                         style={{ width: `${sp.positiveRate}%` }}
                       />
                     </div>

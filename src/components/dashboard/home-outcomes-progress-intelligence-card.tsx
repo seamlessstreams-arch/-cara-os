@@ -125,8 +125,8 @@ export function HomeOutcomesProgressIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <TrendingUp className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.progress_profile.improving_rate >= 60 ? "text-[--cs-success]" :
-                  d.progress_profile.improving_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.progress_profile.improving_rate ?? 0) >= 60 ? "text-[--cs-success]" :
+                  (d.progress_profile.improving_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.progress_profile.improving_rate}%
                 </p>
@@ -140,7 +140,7 @@ export function HomeOutcomesProgressIntelligenceCard() {
                 <TrendingDown className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.progress_profile.declining_count === 0 ? "text-[--cs-success]" :
-                  d.progress_profile.declining_rate <= 10 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.progress_profile.declining_rate ?? 0) <= 10 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.progress_profile.declining_count}
                 </p>
@@ -167,8 +167,8 @@ export function HomeOutcomesProgressIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.equity_profile.yp_voice_rate >= 80 ? "text-[--cs-success]" :
-                  d.equity_profile.yp_voice_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.equity_profile.yp_voice_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.equity_profile.yp_voice_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.equity_profile.yp_voice_rate}%
                 </p>
@@ -203,7 +203,7 @@ export function HomeOutcomesProgressIntelligenceCard() {
                   d.review_profile.overdue_targets > 0 ? "text-[--cs-risk]" : "text-[--cs-success]"
                 )}>{d.review_profile.overdue_targets}</span></p>
                 <p>Children covered: <span className={cn("font-medium",
-                  d.equity_profile.coverage_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.equity_profile.coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.equity_profile.children_with_targets}/{d.equity_profile.children_with_targets + d.equity_profile.children_without_targets}</span></p>
                 <p>Avg per child: <span className="font-medium text-slate-600">{d.equity_profile.avg_targets_per_child}</span></p>
               </div>

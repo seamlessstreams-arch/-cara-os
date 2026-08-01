@@ -28,7 +28,7 @@ const RATING_META: Record<NeighbourhoodSafetyRating, { label: string; color: str
   insufficient_data: { label: "Insufficient Data",  color: "text-slate-600",   bg: "bg-slate-50",   border: "border-slate-200" },
 };
 
-function RateBar({ label, value, warn = 80 }: { label: string; value: number | null; warn?: number }) {
+function RateBar({ label, value, warn = 80 }: { label: string; value: number | null | null; warn?: number }) {
   if (value === null) {
     return (
       <div className="space-y-1">

@@ -105,8 +105,8 @@ export function ChildHealthIntelligenceCard({ childId }: { childId: string }) {
         {/* Medication Compliance KPIs */}
         {med.active_medications > 0 && (
           <div className="grid grid-cols-4 gap-2">
-            <div className={cn("text-center rounded-lg p-2", med.given_rate >= 95 ? "bg-green-50" : med.given_rate >= 80 ? "bg-blue-50" : med.given_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-lg font-bold tabular-nums", med.given_rate >= 95 ? "text-green-600" : med.given_rate >= 80 ? "text-blue-600" : med.given_rate >= 70 ? "text-amber-600" : "text-red-600")}>{med.given_rate}%</p>
+            <div className={cn("text-center rounded-lg p-2", (med.given_rate ?? 0) >= 95 ? "bg-green-50" : (med.given_rate ?? 0) >= 80 ? "bg-blue-50" : (med.given_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-lg font-bold tabular-nums", (med.given_rate ?? 0) >= 95 ? "text-green-600" : (med.given_rate ?? 0) >= 80 ? "text-blue-600" : (med.given_rate ?? 0) >= 70 ? "text-amber-600" : "text-red-600")}>{med.given_rate}%</p>
               <p className="text-[10px] text-muted-foreground">Med Compliance</p>
             </div>
             <div className={cn("text-center rounded-lg p-2", med.refused_count_30d === 0 ? "bg-green-50" : "bg-red-50")}>

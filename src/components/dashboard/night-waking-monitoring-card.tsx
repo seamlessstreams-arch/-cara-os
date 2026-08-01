@@ -105,8 +105,8 @@ export function NightWakingMonitoringCard() {
             <p className={cn("text-lg font-bold tabular-nums", o.concern_count_7d === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{o.concern_count_7d}</p>
             <p className="text-[10px] text-muted-foreground">Concerns</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", sec.overall_compliance_rate >= 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", sec.overall_compliance_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{sec.overall_compliance_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", (sec.overall_compliance_rate ?? 0) >= 100 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (sec.overall_compliance_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{sec.overall_compliance_rate}%</p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
         </div>

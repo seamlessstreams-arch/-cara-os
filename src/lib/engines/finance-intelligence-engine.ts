@@ -83,7 +83,7 @@ export interface SpendingCategoryBreakdown {
   category: string;
   total_amount: number;
   transaction_count: number;
-  percentage: number;
+  percentage: number | null;
 }
 
 export interface FinanceAlert {

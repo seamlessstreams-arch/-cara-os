@@ -94,7 +94,7 @@ export function HomeParticipationIntelligenceCard() {
   const ratingStyle = RATING_STYLES[d.participation_rating] ?? RATING_STYLES.insufficient_data;
   const hasMissing = d.meeting_profile.children_never_attended.length > 0;
   const isLowFrequency = d.meeting_profile.meetings_per_month < 2;
-  const isLowAttendance = d.meeting_profile.avg_attendance_rate < 60;
+  const isLowAttendance = (d.meeting_profile.avg_attendance_rate ?? 0) < 60;
   const isAlert = hasMissing || isLowFrequency || isLowAttendance || d.participation_rating === "inadequate";
 
   return (
@@ -136,8 +136,8 @@ export function HomeParticipationIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.meeting_profile.avg_attendance_rate >= 80 ? "text-[--cs-success]" :
-                  d.meeting_profile.avg_attendance_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.meeting_profile.avg_attendance_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.meeting_profile.avg_attendance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.meeting_profile.avg_attendance_rate}%
                 </p>
@@ -150,8 +150,8 @@ export function HomeParticipationIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <HandHeart className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.meeting_profile.avg_child_raised_rate >= 40 ? "text-[--cs-success]" :
-                  d.meeting_profile.avg_child_raised_rate >= 20 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.meeting_profile.avg_child_raised_rate ?? 0) >= 40 ? "text-[--cs-success]" :
+                  (d.meeting_profile.avg_child_raised_rate ?? 0) >= 20 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.meeting_profile.avg_child_raised_rate}%
                 </p>
@@ -164,8 +164,8 @@ export function HomeParticipationIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <CheckCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.meeting_profile.action_completion_rate >= 80 ? "text-[--cs-success]" :
-                  d.meeting_profile.action_completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.meeting_profile.action_completion_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.meeting_profile.action_completion_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.meeting_profile.action_completion_rate}%
                 </p>
@@ -192,7 +192,7 @@ export function HomeParticipationIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Engagement</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Voice score: <span className={cn("font-medium", d.engagement_profile.child_voice_score >= 70 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.engagement_profile.child_voice_score}%</span></p>
+                <p>Voice score: <span className={cn("font-medium", (d.engagement_profile.child_voice_score ?? 0) >= 70 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.engagement_profile.child_voice_score}%</span></p>
                 <p>Feedback: <span className="font-medium text-slate-600">{d.meeting_profile.avg_feedback_per_meeting}/meeting</span></p>
                 <p>Total actions: <span className="font-medium text-slate-600">{d.engagement_profile.total_new_actions}</span></p>
               </div>

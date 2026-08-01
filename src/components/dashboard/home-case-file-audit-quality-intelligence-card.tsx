@@ -77,20 +77,20 @@ export function HomeCaseFileAuditQualityIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.children_audited > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_audited}</p>
               <p className="text-[9px] text-muted-foreground">Audited</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.average_audit_score >= 85 ? "bg-green-50" : d.average_audit_score >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.average_audit_score >= 85 ? "text-[--cs-success]" : d.average_audit_score >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_audit_score}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.average_audit_score ?? 0) >= 85 ? "bg-green-50" : (d.average_audit_score ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.average_audit_score ?? 0) >= 85 ? "text-[--cs-success]" : (d.average_audit_score ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_audit_score}%</p>
               <p className="text-[9px] text-muted-foreground">Avg Score</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.green_rag_rate >= 80 ? "bg-green-50" : d.green_rag_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.green_rag_rate >= 80 ? "text-[--cs-success]" : d.green_rag_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.green_rag_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.green_rag_rate ?? 0) >= 80 ? "bg-green-50" : (d.green_rag_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.green_rag_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.green_rag_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.green_rag_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Green RAG</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.policy_currency_rate >= 90 ? "bg-green-50" : d.policy_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.policy_currency_rate >= 90 ? "text-[--cs-success]" : d.policy_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.policy_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.policy_currency_rate ?? 0) >= 90 ? "bg-green-50" : (d.policy_currency_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.policy_currency_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.policy_currency_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.policy_currency_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Policies</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.ofsted_readiness_rate >= 90 ? "bg-green-50" : d.ofsted_readiness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.ofsted_readiness_rate >= 90 ? "text-[--cs-success]" : d.ofsted_readiness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.ofsted_readiness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.ofsted_readiness_rate ?? 0) >= 90 ? "bg-green-50" : (d.ofsted_readiness_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.ofsted_readiness_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.ofsted_readiness_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.ofsted_readiness_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Ofsted</p>
             </div>
           </div>

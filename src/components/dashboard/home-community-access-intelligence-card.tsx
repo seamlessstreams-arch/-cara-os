@@ -122,7 +122,7 @@ export function HomeCommunityAccessIntelligenceCard() {
           <div className="text-center rounded-lg bg-emerald-50 p-2">
             <div className="flex items-center justify-center gap-1">
               <Bus className="h-3.5 w-3.5 text-emerald-500" />
-              <p className={cn("text-lg font-bold tabular-nums", scoreColor(d.transport_safety.licence_checked_rate))}>
+              <p className={cn("text-lg font-bold tabular-nums", scoreColor((d.transport_safety.licence_checked_rate ?? 0)))}>
                 {d.transport_safety.total_logs}
               </p>
             </div>
@@ -131,7 +131,7 @@ export function HomeCommunityAccessIntelligenceCard() {
           <div className="text-center rounded-lg bg-slate-50 p-2">
             <div className="flex items-center justify-center gap-1">
               <Shield className="h-3.5 w-3.5 text-blue-500" />
-              <p className={cn("text-lg font-bold tabular-nums", scoreColor(d.transport_ra.signed_off_rate))}>
+              <p className={cn("text-lg font-bold tabular-nums", scoreColor((d.transport_ra.signed_off_rate ?? 0)))}>
                 {d.transport_ra.active_ras}
               </p>
             </div>
@@ -140,7 +140,7 @@ export function HomeCommunityAccessIntelligenceCard() {
           <div className="text-center rounded-lg bg-slate-50 p-2">
             <div className="flex items-center justify-center gap-1">
               <Route className="h-3.5 w-3.5 text-purple-500" />
-              <p className={cn("text-lg font-bold tabular-nums", scoreColor(d.independent_travel.solo_or_independent_rate))}>
+              <p className={cn("text-lg font-bold tabular-nums", scoreColor((d.independent_travel.solo_or_independent_rate ?? 0)))}>
                 {d.independent_travel.total_records}
               </p>
             </div>
@@ -149,7 +149,7 @@ export function HomeCommunityAccessIntelligenceCard() {
           <div className="text-center rounded-lg bg-slate-50 p-2">
             <div className="flex items-center justify-center gap-1">
               <ClipboardCheck className="h-3.5 w-3.5 text-amber-500" />
-              <p className={cn("text-lg font-bold tabular-nums", scoreColor(d.trip_planning.manager_approval_rate))}>
+              <p className={cn("text-lg font-bold tabular-nums", scoreColor((d.trip_planning.manager_approval_rate ?? 0)))}>
                 {d.trip_planning.total_trips}
               </p>
             </div>
@@ -158,7 +158,7 @@ export function HomeCommunityAccessIntelligenceCard() {
           <div className="text-center rounded-lg bg-slate-50 p-2">
             <div className="flex items-center justify-center gap-1">
               <Users className="h-3.5 w-3.5 text-emerald-500" />
-              <p className={cn("text-lg font-bold tabular-nums", scoreColor(d.community_engagement.builds_connections_rate))}>
+              <p className={cn("text-lg font-bold tabular-nums", scoreColor((d.community_engagement.builds_connections_rate ?? 0)))}>
                 {d.community_engagement.total_engagements_90d}
               </p>
             </div>

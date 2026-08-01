@@ -158,7 +158,7 @@ export default function PostIncidentReflectionPage() {
           <p className="text-xs text-slate-500 mt-0.5">Total incidents</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-3 text-center shadow-sm">
-          <p className={`text-2xl font-bold ${data.debriefCompletionRate >= 75 ? "text-green-700" : "text-amber-700"}`}>
+          <p className={`text-2xl font-bold ${(data.debriefCompletionRate ?? 0) >= 75 ? "text-green-700" : "text-amber-700"}`}>
             {data.debriefCompletionRate}%
           </p>
           <p className="text-xs text-slate-500 mt-0.5">Debrief rate</p>

@@ -132,8 +132,8 @@ export function HomeWorkforcePlanningIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Briefcase className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.staff_composition.permanent_rate >= 80 ? "text-[--cs-success]" :
-                  d.staff_composition.permanent_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.staff_composition.permanent_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.staff_composition.permanent_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.staff_composition.permanent_rate}%
                 </p>
@@ -146,8 +146,8 @@ export function HomeWorkforcePlanningIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.succession_profile.avg_readiness_score >= 70 ? "text-[--cs-success]" :
-                  d.succession_profile.avg_readiness_score >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.succession_profile.avg_readiness_score ?? 0) >= 70 ? "text-[--cs-success]" :
+                  (d.succession_profile.avg_readiness_score ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.succession_profile.total_plans > 0 ? `${d.succession_profile.avg_readiness_score}%` : "—"}
                 </p>
@@ -160,8 +160,8 @@ export function HomeWorkforcePlanningIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.staff_composition.dbs_update_service_rate >= 80 ? "text-[--cs-success]" :
-                  d.staff_composition.dbs_update_service_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.staff_composition.dbs_update_service_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.staff_composition.dbs_update_service_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.staff_composition.dbs_update_service_rate}%
                 </p>

@@ -161,8 +161,8 @@ export function HomeCulturalIdentityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Languages className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.heritage_language.home_support_rate >= 80 ? "text-[--cs-success]" :
-                  d.heritage_language.home_support_rate >= 50 ? "text-[--cs-warning]" : "text-slate-500"
+                  (d.heritage_language.home_support_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.heritage_language.home_support_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-slate-500"
                 )}>
                   {d.heritage_language.total_records > 0 ? `${d.heritage_language.home_support_rate}%` : "—"}
                 </p>

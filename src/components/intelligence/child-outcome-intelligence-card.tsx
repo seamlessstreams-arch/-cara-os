@@ -177,8 +177,8 @@ export function ChildOutcomeIntelligenceCard({ childId }: { childId: string }) {
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
-                <BarChart3 className={cn("h-3.5 w-3.5", d.progress_summary.yp_voice_rate >= 80 ? "text-green-500" : d.progress_summary.yp_voice_rate >= 50 ? "text-amber-500" : "text-red-500")} />
-                <p className={cn("text-lg font-bold tabular-nums", d.progress_summary.yp_voice_rate >= 80 ? "text-green-600" : d.progress_summary.yp_voice_rate >= 50 ? "text-amber-600" : "text-red-600")}>
+                <BarChart3 className={cn("h-3.5 w-3.5", (d.progress_summary.yp_voice_rate ?? 0) >= 80 ? "text-green-500" : (d.progress_summary.yp_voice_rate ?? 0) >= 50 ? "text-amber-500" : "text-red-500")} />
+                <p className={cn("text-lg font-bold tabular-nums", (d.progress_summary.yp_voice_rate ?? 0) >= 80 ? "text-green-600" : (d.progress_summary.yp_voice_rate ?? 0) >= 50 ? "text-amber-600" : "text-red-600")}>
                   {d.progress_summary.yp_voice_rate}%
                 </p>
               </div>

@@ -147,8 +147,8 @@ export function HomeDailyLogIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <SmilePlus className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.mood.avg_mood_score >= 7 ? "text-[--cs-success]" :
-                  d.mood.avg_mood_score >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.mood.avg_mood_score ?? 0) >= 7 ? "text-[--cs-success]" :
+                  (d.mood.avg_mood_score ?? 0) >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.mood.avg_mood_score || "—"}
                 </p>
@@ -161,8 +161,8 @@ export function HomeDailyLogIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.staff.staff_participation_rate >= 70 ? "text-[--cs-success]" :
-                  d.staff.staff_participation_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.staff.staff_participation_rate ?? 0) >= 70 ? "text-[--cs-success]" :
+                  (d.staff.staff_participation_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.staff.unique_staff_14d}
                 </p>
@@ -181,7 +181,7 @@ export function HomeDailyLogIntelligenceCard() {
                 <p>Per child/day: <span className="font-medium text-slate-600">{d.frequency.entries_per_child_per_day_avg}</span></p>
                 <p>Types used: <span className="font-medium text-slate-600">{d.entry_types.types_used.length}/{d.entry_types.types_used.length + d.entry_types.types_missing.length}</span></p>
                 <p>Mood tracked: <span className={cn("font-medium",
-                  d.mood.mood_tracking_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.mood.mood_tracking_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.mood.mood_tracking_rate}%</span></p>
                 <p>Significant: <span className="font-medium text-slate-600">{d.quality.significant_entries}</span></p>
               </div>
@@ -190,7 +190,7 @@ export function HomeDailyLogIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Coverage</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Children: <span className={cn("font-medium",
-                  d.child_coverage.child_coverage_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.child_coverage.child_coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.child_coverage.children_with_entries_14d}/{d.child_coverage.children_with_entries_14d + d.child_coverage.children_without}</span></p>
                 <p>Low mood: <span className={cn("font-medium",
                   d.mood.low_mood_count === 0 ? "text-[--cs-success]" :

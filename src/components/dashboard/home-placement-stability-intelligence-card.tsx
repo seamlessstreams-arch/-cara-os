@@ -140,7 +140,7 @@ export function HomePlacementStabilityIntelligenceCard() {
                 <Flame className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.incident_profile.total_incidents === 0 ? "text-[--cs-success]" :
-                  d.incident_profile.incident_rate <= 1.0 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.incident_profile.incident_rate ?? 0) <= 1.0 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.incident_profile.total_incidents}
                 </p>
@@ -167,8 +167,8 @@ export function HomePlacementStabilityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <BarChart3 className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.stability_profile.stability_rate >= 80 ? "text-[--cs-success]" :
-                  d.stability_profile.stability_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.stability_profile.stability_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.stability_profile.stability_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.stability_profile.stability_rate}%
                 </p>
@@ -203,8 +203,8 @@ export function HomePlacementStabilityIntelligenceCard() {
                 )}>{d.missing_profile.high_risk_count}</span></p>
                 <p>Return interviews: <span className={cn("font-medium",
                   d.missing_profile.total_episodes === 0 ? "text-slate-600" :
-                  d.missing_profile.return_interview_rate >= 90 ? "text-[--cs-success]" :
-                  d.missing_profile.return_interview_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.missing_profile.return_interview_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.missing_profile.return_interview_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.missing_profile.total_episodes === 0 ? "N/A" : `${d.missing_profile.return_interview_rate}%`}</span></p>
                 <p>Avg risk flags: <span className={cn("font-medium",
                   d.stability_profile.avg_risk_flags <= 1 ? "text-[--cs-success]" : "text-[--cs-warning]"

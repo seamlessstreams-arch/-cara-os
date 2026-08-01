@@ -136,7 +136,7 @@ export function HomeChronologyIntelligenceCard() {
                 <FolderOpen className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.coverage_profile.coverage_rate === 100 ? "text-[--cs-success]" :
-                  d.coverage_profile.coverage_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.coverage_profile.coverage_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.coverage_profile.coverage_rate}%
                 </p>
@@ -149,8 +149,8 @@ export function HomeChronologyIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <FileText className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.quality_profile.description_rate >= 90 ? "text-[--cs-success]" :
-                  d.quality_profile.description_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.quality_profile.description_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.quality_profile.description_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.quality_profile.description_rate}%
                 </p>
@@ -193,7 +193,7 @@ export function HomeChronologyIntelligenceCard() {
                 <p>Per month: <span className="font-medium text-slate-600">{d.timeliness_profile.entries_per_month}</span></p>
                 <p>Last 30d: <span className="font-medium text-slate-600">{d.timeliness_profile.entries_last_30_days}</span></p>
                 <p>Time recorded: <span className={cn("font-medium",
-                  d.quality_profile.time_recording_rate >= 70 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.quality_profile.time_recording_rate ?? 0) >= 70 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.quality_profile.time_recording_rate}%</span></p>
               </div>
             </div>

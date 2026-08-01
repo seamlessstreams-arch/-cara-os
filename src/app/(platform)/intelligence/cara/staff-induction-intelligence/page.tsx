@@ -40,7 +40,18 @@ const INSIGHT_BORDER: Record<string, string> = {
   positive: "border-green-300 bg-green-50 text-green-800",
 };
 
-function RateBar({ label, rate, alertBelow }: { label: string; rate: number; alertBelow?: number }) {
+function RateBar({ label, rate, alertBelow }: { label: string; rate: number | null; alertBelow?: number }) {
+  if (rate === null) {
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs">
+          <span className="text-slate-600">{label}</span>
+          <span className="font-semibold text-slate-500">—</span>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100" />
+      </div>
+    );
+  }
   const alert = alertBelow !== undefined && rate < alertBelow;
   const barColor = rate >= 90 ? "bg-green-400" : rate >= 70 ? "bg-blue-400" : rate >= 50 ? "bg-amber-400" : "bg-red-400";
   return (
@@ -96,9 +107,9 @@ export default function StaffInductionIntelligencePage() {
       </div>
 
       {/* Mandatory safeguarding alert */}
-      {d.safeguarding_coverage_rate < 100 && d.total_inductions > 0 && (
+      {(d.safeguarding_coverage_rate ?? 0) < 100 && d.total_inductions > 0 && (
         <div className="rounded-lg border border-red-400 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-          {100 - d.safeguarding_coverage_rate}% of induction records do not confirm safeguarding coverage — every member of staff must complete safeguarding training before working directly with children.
+          {100 - (d.safeguarding_coverage_rate ?? 0)}% of induction records do not confirm safeguarding coverage — every member of staff must complete safeguarding training before working directly with children.
         </div>
       )}
 
@@ -125,7 +136,7 @@ export default function StaffInductionIntelligencePage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {[
           { label: "Avg module completion", value: `${d.average_module_completion}%`, alert: d.average_module_completion < 80 },
-          { label: "Shadowing competency rate", value: `${d.shadowing_competency_rate}%`, alert: d.shadowing_competency_rate < 80 },
+          { label: "Shadowing competency rate", value: `${d.shadowing_competency_rate}%`, alert: (d.shadowing_competency_rate ?? 0) < 80 },
           { label: "Total inductions", value: d.total_inductions },
         ].map((m) => (
           <div key={m.label} className={`rounded-lg border p-4 ${m.alert ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"}`}>

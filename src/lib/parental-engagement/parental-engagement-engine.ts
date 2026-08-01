@@ -227,7 +227,7 @@ export interface FamilyProfile {
     feedbackGiven: number;
   }[];
   totalContacts: number;
-  positiveContactRate: number;
+  positiveContactRate: number | null;
   averageMoodUplift: number | null;
   activeFamilyPlan: boolean;
   goalAchievementRate: number | null;

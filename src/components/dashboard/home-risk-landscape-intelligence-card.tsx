@@ -126,8 +126,8 @@ export function HomeRiskLandscapeIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <TrendingDown className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.trend_profile.decreasing_rate >= 50 ? "text-[--cs-success]" :
-                  d.trend_profile.decreasing_rate >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.trend_profile.decreasing_rate ?? 0) >= 50 ? "text-[--cs-success]" :
+                  (d.trend_profile.decreasing_rate ?? 0) >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.trend_profile.decreasing_rate}%
                 </p>
@@ -153,8 +153,8 @@ export function HomeRiskLandscapeIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle2 className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.mitigation_profile.effectiveness_rate >= 70 ? "text-[--cs-success]" :
-                  d.mitigation_profile.effectiveness_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.mitigation_profile.effectiveness_rate ?? 0) >= 70 ? "text-[--cs-success]" :
+                  (d.mitigation_profile.effectiveness_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.mitigation_profile.effectiveness_rate}%
                 </p>
@@ -167,8 +167,8 @@ export function HomeRiskLandscapeIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.coverage_profile.child_voice_rate >= 90 ? "text-[--cs-success]" :
-                  d.coverage_profile.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.coverage_profile.child_voice_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.coverage_profile.child_voice_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.coverage_profile.child_voice_rate}%
                 </p>
@@ -203,7 +203,7 @@ export function HomeRiskLandscapeIntelligenceCard() {
                 )}>{d.currency_profile.upcoming_reviews_7d}</span></p>
                 <p>Avg age: <span className="font-medium text-slate-600">{d.currency_profile.avg_days_since_assessment}d</span></p>
                 <p>Contingency: <span className={cn("font-medium",
-                  d.coverage_profile.contingency_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.coverage_profile.contingency_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.coverage_profile.contingency_rate}%</span></p>
               </div>
             </div>

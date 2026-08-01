@@ -119,8 +119,8 @@ export function HomeMedicationManagementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.administration.compliance_rate >= 95 ? "text-[--cs-success]" :
-                  d.administration.compliance_rate >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.administration.compliance_rate ?? 0) >= 95 ? "text-[--cs-success]" :
+                  (d.administration.compliance_rate ?? 0) >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.administration.compliance_rate}%
                 </p>
@@ -133,8 +133,8 @@ export function HomeMedicationManagementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Eye className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.witnessing.witnessing_rate >= 95 ? "text-[--cs-success]" :
-                  d.witnessing.witnessing_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.witnessing.witnessing_rate ?? 0) >= 95 ? "text-[--cs-success]" :
+                  (d.witnessing.witnessing_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.witnessing.witnessing_rate}%
                 </p>
@@ -147,8 +147,8 @@ export function HomeMedicationManagementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.administration.on_time_rate >= 90 ? "text-[--cs-success]" :
-                  d.administration.on_time_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.administration.on_time_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.administration.on_time_rate ?? 0) >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.administration.on_time_rate}%
                 </p>
@@ -190,7 +190,7 @@ export function HomeMedicationManagementIntelligenceCard() {
                 <p>Active meds: <span className="font-medium text-slate-600">{d.coverage.active_medications}</span></p>
                 <p>Low stock: <span className={cn("font-medium", d.stock.low_stock_count === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.stock.low_stock_count}</span></p>
                 <p>Stock checks: <span className={cn("font-medium",
-                  d.stock.stock_check_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.stock.stock_check_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.stock.stock_check_rate}%</span></p>
                 <p>Children on meds: <span className="font-medium text-slate-600">{d.coverage.children_on_medication}</span></p>
               </div>

@@ -131,8 +131,8 @@ export interface PathwayPlanProgress {
 export interface SkillDevelopmentResult {
   overallScore: number; // 0-25
   totalAssessments: number;
-  independentMostlyRate: number; // %
-  improvementRate: number; // % showing improvement from previousLevel
+  independentMostlyRate: number | null; // %
+  improvementRate: number | null; // % showing improvement from previousLevel
   domainsAssessed: number;
   averageDomainsPerChild: number | null;
   notYetStartedCount: number;
@@ -141,11 +141,11 @@ export interface SkillDevelopmentResult {
 export interface GoalProgressResult {
   overallScore: number; // 0-25
   totalGoals: number;
-  achievedOnTrackRate: number; // %
+  achievedOnTrackRate: number | null; // %
   behindCount: number;
   abandonedCount: number;
-  childInvolvementRate: number; // %
-  ageAppropriateRate: number; // %
+  childInvolvementRate: number | null; // %
+  ageAppropriateRate: number | null; // %
 }
 
 export interface PracticalLearningResult {
@@ -352,9 +352,9 @@ export function evaluateSkillDevelopment(
   // Score calculation
   let score = 0;
   // Independent/mostly rate (0-8)
-  score += Math.round((independentMostlyRate / 100) * 8);
+  score += Math.round(((independentMostlyRate ?? 0) / 100) * 8);
   // Improvement rate (0-6)
-  score += withPrevious.length > 0 ? Math.round((improvementRate / 100) * 6) : null;
+  score += withPrevious.length > 0 ? Math.round(((improvementRate ?? 0) / 100) * 6) : 0;
   // Domain coverage (0-6): more domains = better
   const domainCoverage = Math.min(domainsAssessed / 8, 1);
   score += Math.round(domainCoverage * 6);
@@ -408,11 +408,11 @@ export function evaluateGoalProgress(
   // Score calculation
   let score = 0;
   // Achieved/on-track rate (0-10)
-  score += Math.round((achievedOnTrackRate / 100) * 10);
+  score += Math.round(((achievedOnTrackRate ?? 0) / 100) * 10);
   // Child involvement (0-6)
-  score += Math.round((childInvolvementRate / 100) * 6);
+  score += Math.round(((childInvolvementRate ?? 0) / 100) * 6);
   // Age appropriate (0-5)
-  score += Math.round((ageAppropriateRate / 100) * 5);
+  score += Math.round(((ageAppropriateRate ?? 0) / 100) * 5);
   // Review coverage (0-4): goals with review dates
   const reviewed = goals.filter((g) => g.reviewDate !== null).length;
   score += Math.round((pct(reviewed, goals.length) / 100) * 4);
@@ -624,21 +624,21 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (skill.independentMostlyRate >= 60) {
+  if ((skill.independentMostlyRate ?? 0) >= 60) {
     strengths.push(
       `${skill.independentMostlyRate}% of skill assessments show independent or mostly independent competence`,
     );
   }
-  if (skill.improvementRate >= 70) {
+  if ((skill.improvementRate ?? 0) >= 70) {
     strengths.push(`Strong skills improvement trajectory — ${skill.improvementRate}% of reassessed areas show progress`);
   }
   if (skill.domainsAssessed >= 8) {
     strengths.push(`Comprehensive skill assessment coverage across ${skill.domainsAssessed} domains`);
   }
-  if (goalProgress.achievedOnTrackRate >= 75) {
+  if ((goalProgress.achievedOnTrackRate ?? 0) >= 75) {
     strengths.push(`${goalProgress.achievedOnTrackRate}% of independence goals are achieved or on track`);
   }
-  if (goalProgress.childInvolvementRate >= 80) {
+  if ((goalProgress.childInvolvementRate ?? 0) >= 80) {
     strengths.push(`Excellent child involvement in goal setting at ${goalProgress.childInvolvementRate}%`);
   }
   if (practical.engagementRate >= 80) {
@@ -680,7 +680,7 @@ function generateAreasForImprovement(
   if (skill.notYetStartedCount > 0) {
     areas.push(`${skill.notYetStartedCount} skill assessment(s) show "not yet started" — development plans needed`);
   }
-  if (goalProgress.totalGoals > 0 && goalProgress.achievedOnTrackRate < 50) {
+  if (goalProgress.totalGoals > 0 && (goalProgress.achievedOnTrackRate ?? 0) < 50) {
     areas.push(`Only ${goalProgress.achievedOnTrackRate}% of independence goals are on track or achieved`);
   }
   if (goalProgress.behindCount > 0) {
@@ -689,7 +689,7 @@ function generateAreasForImprovement(
   if (goalProgress.abandonedCount > 0) {
     areas.push(`${goalProgress.abandonedCount} independence goal(s) have been abandoned — review and reset needed`);
   }
-  if (goalProgress.totalGoals > 0 && goalProgress.childInvolvementRate < 60) {
+  if (goalProgress.totalGoals > 0 && (goalProgress.childInvolvementRate ?? 0) < 60) {
     areas.push(
       `Child involvement in goal setting is low at ${goalProgress.childInvolvementRate}% — children must be central to their independence planning`,
     );
@@ -756,7 +756,7 @@ function generateActions(
     actions.push("Increase community-based learning opportunities for practical real-world experience");
   }
 
-  if (goalProgress.totalGoals > 0 && goalProgress.childInvolvementRate < 70) {
+  if (goalProgress.totalGoals > 0 && (goalProgress.childInvolvementRate ?? 0) < 70) {
     actions.push("Ensure children are actively involved in setting their own independence goals");
   }
 

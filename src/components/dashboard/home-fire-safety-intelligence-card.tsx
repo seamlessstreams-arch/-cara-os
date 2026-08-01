@@ -136,10 +136,10 @@ export function HomeFireSafetyIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Timer className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.evacuation.avg_evacuation_time > 0 && d.evacuation.avg_evacuation_time <= 120 ? "text-[--cs-success]" :
-                  d.evacuation.avg_evacuation_time > 120 ? "text-[--cs-risk]" : "text-slate-400"
+                  (d.evacuation.avg_evacuation_time ?? 0) > 0 && (d.evacuation.avg_evacuation_time ?? 0) <= 120 ? "text-[--cs-success]" :
+                  (d.evacuation.avg_evacuation_time ?? 0) > 120 ? "text-[--cs-risk]" : "text-slate-400"
                 )}>
-                  {d.evacuation.avg_evacuation_time > 0 ? `${d.evacuation.avg_evacuation_time}s` : "—"}
+                  {(d.evacuation.avg_evacuation_time ?? 0) > 0 ? `${d.evacuation.avg_evacuation_time}s` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Avg Evac</p>
@@ -150,8 +150,8 @@ export function HomeFireSafetyIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.results.satisfactory_rate >= 80 ? "text-[--cs-success]" :
-                  d.results.satisfactory_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.results.satisfactory_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.results.satisfactory_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.results.satisfactory_rate}%
                 </p>
@@ -191,12 +191,12 @@ export function HomeFireSafetyIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Evacuation</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Fastest: <span className="font-medium text-slate-600">{d.evacuation.fastest_evacuation > 0 ? `${d.evacuation.fastest_evacuation}s` : "—"}</span></p>
+                <p>Fastest: <span className="font-medium text-slate-600">{(d.evacuation.fastest_evacuation ?? 0) > 0 ? `${d.evacuation.fastest_evacuation}s` : "—"}</span></p>
                 <p>Slowest: <span className={cn("font-medium",
-                  d.evacuation.slowest_evacuation > 120 ? "text-[--cs-risk]" : "text-slate-600"
-                )}>{d.evacuation.slowest_evacuation > 0 ? `${d.evacuation.slowest_evacuation}s` : "—"}</span></p>
+                  (d.evacuation.slowest_evacuation ?? 0) > 120 ? "text-[--cs-risk]" : "text-slate-600"
+                )}>{(d.evacuation.slowest_evacuation ?? 0) > 0 ? `${d.evacuation.slowest_evacuation}s` : "—"}</span></p>
                 <p>Within target: <span className={cn("font-medium",
-                  d.evacuation.target_compliance_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.evacuation.target_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.evacuation.target_compliance_rate}%</span></p>
                 <p>All present: <span className="font-medium text-slate-600">{d.participation.all_present_rate}%</span></p>
               </div>

@@ -93,7 +93,7 @@ export function HomeFamilyEngagementIntelligenceCard() {
 
   const ratingStyle = RATING_STYLES[d.family_engagement_rating] ?? RATING_STYLES.insufficient_data;
   const hasDeclining = d.relationship_profile.declining_count > 0;
-  const hasUnsafe = d.contact_profile.safety_rate < 100 && d.contact_profile.total_sessions_90d > 0;
+  const hasUnsafe = (d.contact_profile.safety_rate ?? 0) < 100 && d.contact_profile.total_sessions_90d > 0;
   const isAlert = hasUnsafe || d.family_engagement_rating === "inadequate";
 
   return (
@@ -138,8 +138,8 @@ export function HomeFamilyEngagementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <MessageCircle className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.child_voice_profile.voice_capture_rate >= 80 ? "text-[--cs-success]" :
-                  d.child_voice_profile.voice_capture_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.child_voice_profile.voice_capture_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.child_voice_profile.voice_capture_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.child_voice_profile.voice_capture_rate}%
                 </p>
@@ -165,8 +165,8 @@ export function HomeFamilyEngagementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <TrendingUp className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.relationship_profile.avg_quality_score >= 7 ? "text-[--cs-success]" :
-                  d.relationship_profile.avg_quality_score >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.relationship_profile.avg_quality_score ?? 0) >= 7 ? "text-[--cs-success]" :
+                  (d.relationship_profile.avg_quality_score ?? 0) >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.relationship_profile.avg_quality_score}
                 </p>

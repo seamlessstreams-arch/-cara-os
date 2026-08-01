@@ -25,7 +25,16 @@ const qualityLabels: Record<string, string> = {
   none: "No Sessions",
 };
 
-function ScoreBar({ score, label, maxScore = 100 }: { score: number; label: string; maxScore?: number }) {
+function ScoreBar({ score, label, maxScore = 100 }: { score: number | null; label: string; maxScore?: number }) {
+  if (score === null) {
+    return (
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-gray-600 w-44 shrink-0">{label}</span>
+        <div className="flex-1 bg-gray-100 rounded-full h-2.5" />
+        <span className="text-sm font-medium w-12 text-right text-gray-400">—</span>
+      </div>
+    );
+  }
   const pctVal = (score / maxScore) * 100;
   const color = pctVal >= 80 ? "bg-green-500" : pctVal >= 60 ? "bg-blue-500" : pctVal >= 40 ? "bg-amber-500" : "bg-red-500";
   return (
@@ -217,7 +226,7 @@ export function SupervisionQualityDashboardWidget() {
             <div><span className="text-gray-500">Improvement Rate:</span> <span className="font-medium">{data.staffDevelopment.improvementRate}%</span></div>
             <div><span className="text-gray-500">With Plan:</span> <span className="font-medium">{data.staffDevelopment.withPlanRate}%</span></div>
             <div><span className="text-gray-500">Avg Skill Improvement:</span> <span className="font-medium">{data.staffDevelopment.averageSkillImprovement}</span></div>
-            <div><span className="text-gray-500">Wellbeing Concern Rate:</span> <span className={`font-medium ${data.staffDevelopment.wellbeingConcernRate > 10 ? "text-amber-600" : "text-green-600"}`}>{data.staffDevelopment.wellbeingConcernRate}%</span></div>
+            <div><span className="text-gray-500">Wellbeing Concern Rate:</span> <span className={`font-medium ${(data.staffDevelopment.wellbeingConcernRate ?? 0) > 10 ? "text-amber-600" : "text-green-600"}`}>{data.staffDevelopment.wellbeingConcernRate}%</span></div>
           </div>
         </Section>
 

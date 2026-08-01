@@ -158,7 +158,7 @@ export function ChildRiskProfileIntelligenceCard({ childId }: { childId: string 
               <p className="text-[10px] text-muted-foreground">Reducing</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", d.mitigation_profile.effectiveness_rate >= 80 ? "text-green-600" : d.mitigation_profile.effectiveness_rate >= 60 ? "text-amber-600" : "text-red-600")}>
+              <p className={cn("text-lg font-bold tabular-nums", (d.mitigation_profile.effectiveness_rate ?? 0) >= 80 ? "text-green-600" : (d.mitigation_profile.effectiveness_rate ?? 0) >= 60 ? "text-amber-600" : "text-red-600")}>
                 {d.mitigation_profile.effectiveness_rate}%
               </p>
               <p className="text-[10px] text-muted-foreground">Mitigations</p>

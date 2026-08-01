@@ -27,7 +27,18 @@ const RATING_META: Record<FamilySocialConnectivityRating, { label: string; color
   insufficient_data: { label: "Insufficient Data",  color: "text-slate-600",   bg: "bg-slate-50",   border: "border-slate-200" },
 };
 
-function RateBar({ label, value, warn = 75, inverse = false }: { label: string; value: number; warn?: number; inverse?: boolean }) {
+function RateBar({ label, value, warn = 75, inverse = false }: { label: string; value: number | null; warn?: number; inverse?: boolean }) {
+  if (value === null) {
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>{label}</span>
+          <span className="font-medium">—</span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden" />
+      </div>
+    );
+  }
   const pct = Math.round(value);
   const color = inverse
     ? (pct === 0 ? "bg-emerald-500" : pct <= 10 ? "bg-amber-400" : "bg-red-400")
@@ -98,12 +109,12 @@ export default function FamilySocialConnectivityPage() {
             <p className="text-xs text-muted-foreground mt-0.5">Total sessions</p>
           </div>
           <div className="rounded-lg border bg-muted/30 p-3 text-center">
-            <p className="text-2xl font-bold">{d.sessions_per_child.toFixed(1)}</p>
+            <p className="text-2xl font-bold">{(d.sessions_per_child ?? 0).toFixed(1)}</p>
             <p className="text-xs text-muted-foreground mt-0.5">Sessions per child</p>
           </div>
           <div className="rounded-lg border bg-muted/30 p-3 text-center">
-            <p className={`text-2xl font-bold ${d.session_quality_avg >= 7 ? "text-emerald-600" : d.session_quality_avg >= 5 ? "text-amber-600" : "text-red-500"}`}>
-              {d.session_quality_avg.toFixed(1)}
+            <p className={`text-2xl font-bold ${(d.session_quality_avg ?? 0) >= 7 ? "text-emerald-600" : (d.session_quality_avg ?? 0) >= 5 ? "text-amber-600" : "text-red-500"}`}>
+              {(d.session_quality_avg ?? 0).toFixed(1)}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">Avg session quality</p>
           </div>

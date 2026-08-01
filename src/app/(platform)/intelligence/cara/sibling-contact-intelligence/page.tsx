@@ -19,7 +19,18 @@ const RATING_META: Record<SiblingContactRating, { label: string; color: string; 
 
 // ── Rate bar ───────────────────────────────────────────────────────────────────
 
-function RateBar({ label, value, total, warn = 80 }: { label: string; value: number; total?: number; warn?: number }) {
+function RateBar({ label, value, total, warn = 80 }: { label: string; value: number | null; total?: number; warn?: number }) {
+  if (value === null) {
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>{label}</span>
+          <span className="font-medium">—</span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden" />
+      </div>
+    );
+  }
   const pct = Math.round(value);
   const color = pct >= warn ? "bg-emerald-500" : pct >= 50 ? "bg-amber-400" : "bg-red-400";
   return (

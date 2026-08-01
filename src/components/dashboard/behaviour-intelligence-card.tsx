@@ -104,8 +104,8 @@ export function BehaviourIntelligenceCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">Positive</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: p.de_escalation_success_rate >= 75 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", p.de_escalation_success_rate >= 75 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+          <div className="text-center rounded-lg p-2" style={{ background: (p.de_escalation_success_rate ?? 0) >= 75 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", (p.de_escalation_success_rate ?? 0) >= 75 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
               {p.de_escalation_success_rate}%
             </p>
             <p className="text-[10px] text-muted-foreground">De-escalation</p>

@@ -621,7 +621,7 @@ export function evaluateSchoolStability(
 
   // Exclusion impact
   const exclusionDays = exclusions.reduce(
-    (sum, e) => sum + e.durationDays,
+    (sum, e) => sum + (e.durationDays ?? 0),
     0,
   );
 
@@ -781,11 +781,11 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (att.attendanceRate >= 95) {
+  if ((att.attendanceRate ?? 0) >= 95) {
     strengths.push(
       "Excellent attendance rate — children consistently attending school at above-average levels",
     );
-  } else if (att.attendanceRate >= 90 && att.totalRecords > 0) {
+  } else if ((att.attendanceRate ?? 0) >= 90 && att.totalRecords > 0) {
     strengths.push(
       "Good attendance levels — above the persistent absence threshold across the home",
     );
@@ -797,41 +797,41 @@ function generateStrengths(
     );
   }
 
-  if (pep.currentRate >= 100 && pep.totalPEPs > 0) {
+  if ((pep.currentRate ?? 0) >= 100 && pep.totalPEPs > 0) {
     strengths.push(
       "All PEPs are current — meeting statutory requirement for termly review",
     );
   }
 
-  if (pep.childViewsRate >= 100 && pep.totalPEPs > 0) {
+  if ((pep.childViewsRate ?? 0) >= 100 && pep.totalPEPs > 0) {
     strengths.push(
       "Child views consistently included in all PEPs — children actively shaping their education plans",
     );
   }
 
-  if (pep.smartTargetsRate >= 100 && pep.totalPEPs > 0) {
+  if ((pep.smartTargetsRate ?? 0) >= 100 && pep.totalPEPs > 0) {
     strengths.push(
       "All PEP targets are SMART — clear, measurable goals supporting academic progress",
     );
   }
 
-  if (pep.virtualSchoolInvolvedRate >= 100 && pep.totalPEPs > 0) {
+  if ((pep.virtualSchoolInvolvedRate ?? 0) >= 100 && pep.totalPEPs > 0) {
     strengths.push(
       "Virtual school head involved in all PEPs — effective multi-agency collaboration",
     );
   }
 
-  if (academic.exceedingExpectedRate >= 80 && academic.totalOutcomes > 0) {
+  if ((academic.exceedingExpectedRate ?? 0) >= 80 && academic.totalOutcomes > 0) {
     strengths.push(
       "Excellent academic progress — the majority of children exceeding or meeting expected levels",
     );
-  } else if (academic.exceedingExpectedRate >= 60 && academic.totalOutcomes > 0) {
+  } else if ((academic.exceedingExpectedRate ?? 0) >= 60 && academic.totalOutcomes > 0) {
     strengths.push(
       "Good academic progress — most children making expected or better progress",
     );
   }
 
-  if (academic.subjectCoverage >= 5) {
+  if ((academic.subjectCoverage ?? 0) >= 5) {
     strengths.push(
       "Strong subject coverage — academic outcomes recorded across a broad curriculum",
     );
@@ -866,13 +866,13 @@ function generateAreasForImprovement(
 ): string[] {
   const areas: string[] = [];
 
-  if (att.attendanceRate < 90 && att.totalRecords > 0) {
+  if ((att.attendanceRate ?? 0) < 90 && att.totalRecords > 0) {
     areas.push(
       `Attendance at ${att.attendanceRate}% — below the 90% threshold. Address barriers to attendance for individual children`,
     );
   }
 
-  if (att.unauthorisedAbsenceRate > 3 && att.totalRecords > 0) {
+  if ((att.unauthorisedAbsenceRate ?? 0) > 3 && att.totalRecords > 0) {
     areas.push(
       `Unauthorised absence rate at ${att.unauthorisedAbsenceRate}% — needs immediate attention to prevent escalation`,
     );
@@ -884,25 +884,25 @@ function generateAreasForImprovement(
     );
   }
 
-  if (pep.currentRate < 100 && pep.totalPEPs > 0) {
+  if ((pep.currentRate ?? 0) < 100 && pep.totalPEPs > 0) {
     areas.push(
       `Only ${pep.currentRate}% of PEPs are current — statutory requirement is termly review for all LAC`,
     );
   }
 
-  if (pep.childViewsRate < 100 && pep.totalPEPs > 0) {
+  if ((pep.childViewsRate ?? 0) < 100 && pep.totalPEPs > 0) {
     areas.push(
       `Child views included in only ${pep.childViewsRate}% of PEPs — all children should contribute their voice`,
     );
   }
 
-  if (pep.smartTargetsRate < 100 && pep.totalPEPs > 0) {
+  if ((pep.smartTargetsRate ?? 0) < 100 && pep.totalPEPs > 0) {
     areas.push(
       `SMART targets in only ${pep.smartTargetsRate}% of PEPs — all targets should be specific, measurable, achievable, relevant, and time-bound`,
     );
   }
 
-  if (academic.belowExpectedRate > 30 && academic.totalOutcomes > 0) {
+  if ((academic.belowExpectedRate ?? 0) > 30 && academic.totalOutcomes > 0) {
     areas.push(
       `${academic.belowExpectedRate}% of academic outcomes below expected — additional support and intervention needed`,
     );
@@ -920,7 +920,7 @@ function generateAreasForImprovement(
     );
   }
 
-  if (stab.exclusionImpactDays > 0) {
+  if ((stab.exclusionImpactDays ?? 0) > 0) {
     areas.push(
       `${stab.exclusionImpactDays} days lost to exclusions — explore restorative and alternative approaches`,
     );
@@ -973,31 +973,31 @@ function generateActions(
     );
   }
 
-  if (att.unauthorisedAbsenceRate > 3 && att.totalRecords > 0) {
+  if ((att.unauthorisedAbsenceRate ?? 0) > 3 && att.totalRecords > 0) {
     actions.push(
       "Review unauthorised absence patterns — identify root causes and develop targeted support strategies",
     );
   }
 
-  if (pep.currentRate < 100 && pep.totalPEPs > 0) {
+  if ((pep.currentRate ?? 0) < 100 && pep.totalPEPs > 0) {
     actions.push(
       "Schedule overdue PEP reviews immediately — ensure virtual school head and designated teacher are invited",
     );
   }
 
-  if (pep.childViewsRate < 100 && pep.totalPEPs > 0) {
+  if ((pep.childViewsRate ?? 0) < 100 && pep.totalPEPs > 0) {
     actions.push(
       "Ensure all children contribute to their PEP — use child-friendly methods to capture views and aspirations",
     );
   }
 
-  if (pep.ppFundingUsedRate < 50 && pep.totalPEPs > 0) {
+  if ((pep.ppFundingUsedRate ?? 0) < 50 && pep.totalPEPs > 0) {
     actions.push(
       "Review Pupil Premium Plus usage — ensure funding is targeted at improving educational outcomes for each child",
     );
   }
 
-  if (academic.belowExpectedRate > 30 && academic.totalOutcomes > 0) {
+  if ((academic.belowExpectedRate ?? 0) > 30 && academic.totalOutcomes > 0) {
     actions.push(
       "Commission additional tutoring or intervention for children below expected progress — consider PP+ funding",
     );
@@ -1015,7 +1015,7 @@ function generateActions(
     );
   }
 
-  if (stab.exclusionImpactDays > 5) {
+  if ((stab.exclusionImpactDays ?? 0) > 5) {
     actions.push(
       "Review exclusion patterns — engage with schools on restorative approaches and ensure alternative provision is in place",
     );
@@ -1048,10 +1048,10 @@ export function generateEducationAchievementIntelligence(
   const stabResult = evaluateSchoolStability(stability, exclusions);
 
   const overallScore =
-    attResult.overallScore +
-    pepResult.overallScore +
-    academicResult.overallScore +
-    stabResult.overallScore;
+    (attResult.overallScore ?? 0) +
+    (pepResult.overallScore ?? 0) +
+    (academicResult.overallScore ?? 0) +
+    (stabResult.overallScore ?? 0);
 
   const childProfiles = buildChildEducationProfiles(
     attendance,

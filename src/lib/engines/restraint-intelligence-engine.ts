@@ -95,13 +95,13 @@ export interface ChildRestraintProfile {
 export interface ReasonBreakdown {
   reason: RestraintReason;
   count: number;
-  percentage: number;
+  percentage: number | null;
 }
 
 export interface TypeBreakdown {
   type: RestraintType;
   count: number;
-  percentage: number;
+  percentage: number | null;
 }
 
 export interface TimePattern {

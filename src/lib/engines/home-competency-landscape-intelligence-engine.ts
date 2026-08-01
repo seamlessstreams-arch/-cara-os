@@ -149,9 +149,9 @@ export function computeHomeCompetencyLandscape(
   const staffWithTarget = profiles.filter((p) => p.target_stage !== null).length;
 
   const readiness: ReadinessProfile = {
-    avg_readiness_score: avg((scores ?? 0)),
-    highest_readiness: scores.length > 0 ? Math.max(...scores) : null,
-    lowest_readiness: scores.length > 0 ? Math.min(...scores) : null,
+    avg_readiness_score: avg(scores.filter((v): v is number => v !== null)),
+    highest_readiness: scores.length > 0 ? Math.max(...scores.filter((v): v is number => v !== null)) : null,
+    lowest_readiness: scores.length > 0 ? Math.min(...scores.filter((v): v is number => v !== null)) : null,
     staff_above_70: staffAbove70,
     staff_above_70_rate: pct(staffAbove70, profiles.length),
     staff_with_target: staffWithTarget,

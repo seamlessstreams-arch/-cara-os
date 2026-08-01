@@ -527,7 +527,7 @@ export function computeChildEducationIntelligence(
   else if (homework.total_sessions_30d === 0) score -= 3;
 
   // Tutoring
-  if (tutor90d.length > 0 && tutoring.avg_progress_rating >= 3.5) score += 3;
+  if (tutor90d.length > 0 && (tutoring.avg_progress_rating ?? 0) >= 3.5) score += 3;
 
   // Achievements
   if (achievements.length >= 2) score += 5;
@@ -592,7 +592,7 @@ export function computeChildEducationIntelligence(
     strengths.push(`Homework completion rate at ${homework.completion_rate}% — consistent academic engagement at home.`);
   }
 
-  if (tutoring.avg_progress_rating >= 4 && tutor90d.length > 0) {
+  if ((tutoring.avg_progress_rating ?? 0) >= 4 && tutor90d.length > 0) {
     strengths.push(`Tutoring showing strong progress (avg rating ${tutoring.avg_progress_rating}/5) — additional support is making a difference.`);
   }
 
@@ -783,7 +783,7 @@ export function computeChildEducationIntelligence(
     });
   }
 
-  if (tutoring.avg_progress_rating >= 4 && tutor90d.length >= 3) {
+  if ((tutoring.avg_progress_rating ?? 0) >= 4 && tutor90d.length >= 3) {
     insights.push({
       severity: "positive",
       text: `Tutoring support is highly effective with average progress rating of ${tutoring.avg_progress_rating}/5 across ${tutor90d.length} sessions. Pupil premium is being well-used to close educational gaps.`,

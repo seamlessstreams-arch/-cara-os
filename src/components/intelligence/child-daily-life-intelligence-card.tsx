@@ -119,7 +119,7 @@ export function ChildDailyLifeIntelligenceCard({ childId }: { childId: string })
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.recording_frequency.recording_coverage_rate >= 90 ? "text-green-600" : d.recording_frequency.recording_coverage_rate >= 70 ? "text-amber-600" : "text-red-600")}>
+                <p className={cn("text-lg font-bold tabular-nums", (d.recording_frequency.recording_coverage_rate ?? 0) >= 90 ? "text-green-600" : (d.recording_frequency.recording_coverage_rate ?? 0) >= 70 ? "text-amber-600" : "text-red-600")}>
                   {d.recording_frequency.recording_coverage_rate}%
                 </p>
               </div>
@@ -174,7 +174,7 @@ export function ChildDailyLifeIntelligenceCard({ childId }: { childId: string })
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Recording Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Coverage: <span className={d.recording_frequency.recording_coverage_rate >= 90 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.recording_frequency.recording_coverage_rate}%</span></p>
+                <p>Coverage: <span className={(d.recording_frequency.recording_coverage_rate ?? 0) >= 90 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.recording_frequency.recording_coverage_rate}%</span></p>
                 <p>Staff recording: <span className="font-medium text-slate-600">{d.quality.staff_recording_count}</span></p>
                 <p>Significant: <span className="font-medium text-slate-600">{d.quality.significant_events_30d}</span></p>
                 <p>AM/PM/Eve: <span className="font-medium text-slate-600">{d.quality.morning_entries}/{d.quality.afternoon_entries}/{d.quality.evening_entries}</span></p>

@@ -143,8 +143,8 @@ export function HomeEmergencyPreparednessIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <FileCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.drill_readiness.satisfactory_rate >= 80 ? "text-[--cs-success]" :
-                  d.drill_readiness.satisfactory_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.drill_readiness.satisfactory_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.drill_readiness.satisfactory_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.drill_readiness.satisfactory_rate}%
                 </p>
@@ -157,8 +157,8 @@ export function HomeEmergencyPreparednessIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Timer className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.policy_compliance.avg_acknowledgement_rate >= 90 ? "text-[--cs-success]" :
-                  d.policy_compliance.avg_acknowledgement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.policy_compliance.avg_acknowledgement_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.policy_compliance.avg_acknowledgement_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.policy_compliance.avg_acknowledgement_rate}%
                 </p>

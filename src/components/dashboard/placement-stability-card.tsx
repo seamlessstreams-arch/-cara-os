@@ -99,8 +99,8 @@ export function PlacementStabilityCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg p-2" style={{ background: m.average_stability_score >= 65 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", m.average_stability_score >= 65 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+          <div className="text-center rounded-lg p-2" style={{ background: (m.average_stability_score ?? 0) >= 65 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", (m.average_stability_score ?? 0) >= 65 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
               {m.average_stability_score}
             </p>
             <p className="text-[10px] text-muted-foreground">Stability</p>

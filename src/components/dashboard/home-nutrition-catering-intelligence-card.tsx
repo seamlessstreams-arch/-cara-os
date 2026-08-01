@@ -121,8 +121,8 @@ export function HomeNutritionCateringIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.food_hygiene.pass_rate >= 95 ? "text-[--cs-success]" :
-                  d.food_hygiene.pass_rate >= 80 ? "text-blue-600" : "text-[--cs-risk]"
+                  (d.food_hygiene.pass_rate ?? 0) >= 95 ? "text-[--cs-success]" :
+                  (d.food_hygiene.pass_rate ?? 0) >= 80 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
                   {d.food_hygiene.total_checks_30d > 0 ? `${d.food_hygiene.pass_rate}%` : "—"}
                 </p>
@@ -135,8 +135,8 @@ export function HomeNutritionCateringIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Thermometer className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.kitchen.temperature_compliance_rate >= 100 ? "text-[--cs-success]" :
-                  d.kitchen.temperature_compliance_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.kitchen.temperature_compliance_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.kitchen.temperature_compliance_rate ?? 0) >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.kitchen.total_checks_30d > 0 ? `${d.kitchen.temperature_compliance_rate}%` : "—"}
                 </p>

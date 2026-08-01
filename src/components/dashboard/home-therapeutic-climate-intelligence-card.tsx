@@ -134,7 +134,7 @@ export function HomeTherapeuticClimateIntelligenceCard() {
                 <ShieldOff className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.restraint_profile.total_restraints === 0 ? "text-[--cs-success]" :
-                  d.restraint_profile.restraint_rate_per_child <= 0.5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.restraint_profile.restraint_rate_per_child ?? 0) <= 0.5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.restraint_profile.total_restraints}
                 </p>
@@ -148,7 +148,7 @@ export function HomeTherapeuticClimateIntelligenceCard() {
                 <Flame className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.safety_profile.total_incidents === 0 ? "text-[--cs-success]" :
-                  d.safety_profile.incident_rate_per_child <= 1.0 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.safety_profile.incident_rate_per_child ?? 0) <= 1.0 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.safety_profile.total_incidents}
                 </p>
@@ -161,8 +161,8 @@ export function HomeTherapeuticClimateIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Smile className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.pattern_profile.calm_rate >= 75 ? "text-[--cs-success]" :
-                  d.pattern_profile.calm_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.pattern_profile.calm_rate ?? 0) >= 75 ? "text-[--cs-success]" :
+                  (d.pattern_profile.calm_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.pattern_profile.calm_rate}%
                 </p>
@@ -193,11 +193,11 @@ export function HomeTherapeuticClimateIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Per child: <span className={cn("font-medium",
                   d.restraint_profile.restraint_rate_per_child === 0 ? "text-[--cs-success]" :
-                  d.restraint_profile.restraint_rate_per_child <= 0.5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.restraint_profile.restraint_rate_per_child ?? 0) <= 0.5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.restraint_profile.restraint_rate_per_child}</span></p>
                 <p>Child debrief: <span className={cn("font-medium",
                   !hasRestraints ? "text-slate-600" :
-                  d.restraint_profile.child_debrief_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.restraint_profile.child_debrief_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{hasRestraints ? `${d.restraint_profile.child_debrief_rate}%` : "N/A"}</span></p>
                 <p>Injuries: <span className={cn("font-medium",
                   d.restraint_profile.injuries_count > 0 ? "text-[--cs-risk]" : "text-[--cs-success]"

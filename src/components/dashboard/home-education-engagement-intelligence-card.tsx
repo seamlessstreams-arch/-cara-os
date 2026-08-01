@@ -113,8 +113,8 @@ export function HomeEducationEngagementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ClipboardCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.attendance.attendance_rate >= 95 ? "text-[--cs-success]" :
-                  d.attendance.attendance_rate >= 80 ? "text-blue-600" : "text-[--cs-risk]"
+                  (d.attendance.attendance_rate ?? 0) >= 95 ? "text-[--cs-success]" :
+                  (d.attendance.attendance_rate ?? 0) >= 80 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
                   {d.attendance.total_sessions_30d > 0 ? `${d.attendance.attendance_rate}%` : "—"}
                 </p>
@@ -141,8 +141,8 @@ export function HomeEducationEngagementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.homework.completion_rate >= 90 ? "text-[--cs-success]" :
-                  d.homework.completion_rate >= 75 ? "text-blue-600" : "text-[--cs-warning]"
+                  (d.homework.completion_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.homework.completion_rate ?? 0) >= 75 ? "text-blue-600" : "text-[--cs-warning]"
                 )}>
                   {d.homework.total_sessions_30d > 0 ? `${d.homework.completion_rate}%` : "—"}
                 </p>

@@ -90,7 +90,7 @@ export function HomeHandoverContinuityIntelligenceCard() {
 
   const ratingStyle = RATING_STYLES[d.handover_rating] ?? RATING_STYLES.insufficient_data;
   const hasIncomplete = d.completion_profile.incomplete_count > 0;
-  const lowSignOff = d.sign_off_profile.sign_off_rate < 50;
+  const lowSignOff = (d.sign_off_profile.sign_off_rate ?? 0) < 50;
   const isAlert = hasIncomplete || lowSignOff || d.handover_rating === "inadequate";
 
   return (
@@ -121,8 +121,8 @@ export function HomeHandoverContinuityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle2 className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.completion_profile.completion_rate >= 90 ? "text-[--cs-success]" :
-                  d.completion_profile.completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.completion_profile.completion_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.completion_profile.completion_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.completion_profile.completion_rate}%
                 </p>
@@ -135,8 +135,8 @@ export function HomeHandoverContinuityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.sign_off_profile.sign_off_rate >= 80 ? "text-[--cs-success]" :
-                  d.sign_off_profile.sign_off_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.sign_off_profile.sign_off_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.sign_off_profile.sign_off_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.sign_off_profile.sign_off_rate}%
                 </p>
@@ -149,8 +149,8 @@ export function HomeHandoverContinuityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Baby className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.child_coverage_profile.avg_child_coverage >= 90 ? "text-[--cs-success]" :
-                  d.child_coverage_profile.avg_child_coverage >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.child_coverage_profile.avg_child_coverage ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.child_coverage_profile.avg_child_coverage ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.child_coverage_profile.avg_child_coverage}%
                 </p>
@@ -163,8 +163,8 @@ export function HomeHandoverContinuityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <FileText className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.continuity_profile.notes_recording_rate >= 80 ? "text-[--cs-success]" :
-                  d.continuity_profile.notes_recording_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.continuity_profile.notes_recording_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.continuity_profile.notes_recording_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.continuity_profile.notes_recording_rate}%
                 </p>
@@ -191,12 +191,12 @@ export function HomeHandoverContinuityIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Sign-Off</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Manager: <span className={cn("font-medium",
-                  d.sign_off_profile.sign_off_rate >= 80 ? "text-[--cs-success]" :
-                  d.sign_off_profile.sign_off_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.sign_off_profile.sign_off_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.sign_off_profile.sign_off_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.sign_off_profile.sign_off_rate}%</span></p>
                 <p>Staff avg: <span className={cn("font-medium",
-                  d.sign_off_profile.avg_staff_sign_off_rate >= 80 ? "text-[--cs-success]" :
-                  d.sign_off_profile.avg_staff_sign_off_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.sign_off_profile.avg_staff_sign_off_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.sign_off_profile.avg_staff_sign_off_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.sign_off_profile.avg_staff_sign_off_rate}%</span></p>
                 <p>Fully signed: <span className="font-medium text-slate-600">{d.sign_off_profile.fully_signed_count}</span></p>
               </div>

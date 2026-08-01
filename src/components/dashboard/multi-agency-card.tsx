@@ -108,11 +108,11 @@ export function MultiAgencyCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.child_participation_rate >= 90 ? "bg-green-50" : "bg-amber-50",
+            (o.child_participation_rate ?? 0) >= 90 ? "bg-green-50" : "bg-amber-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.child_participation_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
+              (o.child_participation_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
             )}>
               {o.child_participation_rate}%
             </p>
@@ -176,7 +176,7 @@ export function MultiAgencyCard() {
                   <Badge variant="outline" className="text-[10px] tabular-nums">{mt.count}</Badge>
                   <Badge className={cn(
                     "text-[10px]",
-                    mt.actions_completion_rate >= 90 ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-warning-bg] text-[--cs-warning]",
+                    (mt.actions_completion_rate ?? 0) >= 90 ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-warning-bg] text-[--cs-warning]",
                   )}>
                     {mt.actions_completion_rate}% done
                   </Badge>
@@ -195,19 +195,19 @@ export function MultiAgencyCard() {
           </p>
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
-              <p className={cn("font-bold tabular-nums", o.home_report_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              <p className={cn("font-bold tabular-nums", (o.home_report_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
                 {o.home_report_rate}%
               </p>
               <p className="text-[10px] text-muted-foreground">Reports</p>
             </div>
             <div>
-              <p className={cn("font-bold tabular-nums", o.child_participation_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              <p className={cn("font-bold tabular-nums", (o.child_participation_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
                 {o.child_participation_rate}%
               </p>
               <p className="text-[10px] text-muted-foreground">Participation</p>
             </div>
             <div>
-              <p className={cn("font-bold tabular-nums", o.follow_up_completion_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              <p className={cn("font-bold tabular-nums", (o.follow_up_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
                 {o.follow_up_completion_rate}%
               </p>
               <p className="text-[10px] text-muted-foreground">Follow-ups</p>

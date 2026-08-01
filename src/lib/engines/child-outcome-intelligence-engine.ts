@@ -149,7 +149,7 @@ const DOMAIN_LABELS: Record<OutcomeDomain, string> = {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number | null {
+function daysAgo(today: string, date: string): number {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -159,7 +159,7 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
+function pct(n: number, d: number): number | null {
   return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
@@ -275,10 +275,10 @@ export function computeChildOutcome(
     const improvingRate = pct(improvingActive.length, activeTargets.length);
     const decliningRate = pct(decliningActive.length, activeTargets.length);
 
-    if (improvingRate >= 70) score += 15;
-    else if (improvingRate >= 50) score += 8;
-    if (decliningRate > 30) score -= 15;
-    else if (decliningRate > 0) score -= 5;
+    if ((improvingRate ?? 0) >= 70) score += 15;
+    else if ((improvingRate ?? 0) >= 50) score += 8;
+    if ((decliningRate ?? 0) > 30) score -= 15;
+    else if ((decliningRate ?? 0) > 0) score -= 5;
 
     // Average progress
     if (avgProgress >= 1.5) score += 10;
@@ -336,7 +336,7 @@ export function computeChildOutcome(
     strengths.push(`Outcome tracking rated ${progress_rating} (${score}%). ${child_name}'s targets show clear progress with evidence of real change in the child's life.`);
   }
 
-  if (improvingActive.length > 0 && pct(improvingActive.length, activeTargets.length) >= 60) {
+  if (improvingActive.length > 0 && (pct(improvingActive.length, activeTargets.length) ?? 0) >= 60) {
     strengths.push(`${pct(improvingActive.length, activeTargets.length)}% of active targets are improving. This demonstrates that interventions and care planning are translating into measurable progress for ${child_name}.`);
   }
 

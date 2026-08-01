@@ -72,28 +72,28 @@ export function HomeStaffDebriefingCriticalIncidentSupportIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.debriefing_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.debriefing_completion_rate >= 90 ? "bg-green-50" : d.debriefing_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.debriefing_completion_rate >= 90 ? "text-[--cs-success]" : d.debriefing_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.debriefing_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.debriefing_completion_rate ?? 0) >= 90 ? "bg-green-50" : (d.debriefing_completion_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.debriefing_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.debriefing_completion_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.debriefing_completion_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Debrief</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.incident_support_rate >= 90 ? "bg-green-50" : d.incident_support_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.incident_support_rate >= 90 ? "text-[--cs-success]" : d.incident_support_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.incident_support_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.incident_support_rate ?? 0) >= 90 ? "bg-green-50" : (d.incident_support_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.incident_support_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.incident_support_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.incident_support_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Incident</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.wellbeing_followup_rate >= 90 ? "bg-green-50" : d.wellbeing_followup_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.wellbeing_followup_rate >= 90 ? "text-[--cs-success]" : d.wellbeing_followup_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.wellbeing_followup_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.wellbeing_followup_rate ?? 0) >= 90 ? "bg-green-50" : (d.wellbeing_followup_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.wellbeing_followup_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.wellbeing_followup_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.wellbeing_followup_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Follow-up</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.learning_extraction_rate >= 90 ? "bg-green-50" : d.learning_extraction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.learning_extraction_rate >= 90 ? "text-[--cs-success]" : d.learning_extraction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.learning_extraction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.learning_extraction_rate ?? 0) >= 90 ? "bg-green-50" : (d.learning_extraction_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.learning_extraction_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.learning_extraction_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.learning_extraction_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Learning</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.support_access_rate >= 90 ? "bg-green-50" : d.support_access_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.support_access_rate >= 90 ? "text-[--cs-success]" : d.support_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.support_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.support_access_rate ?? 0) >= 90 ? "bg-green-50" : (d.support_access_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.support_access_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.support_access_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.support_access_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Access</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_satisfaction_rate >= 90 ? "bg-green-50" : d.staff_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.staff_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.staff_satisfaction_rate ?? 0) >= 90 ? "bg-green-50" : (d.staff_satisfaction_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.staff_satisfaction_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.staff_satisfaction_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_satisfaction_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

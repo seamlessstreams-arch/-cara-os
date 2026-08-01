@@ -119,7 +119,7 @@ export function HomeSupervisionIntelligenceCard() {
                 <CheckCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.supervision_profile.completion_rate === 100 ? "text-[--cs-success]" :
-                  d.supervision_profile.completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.supervision_profile.completion_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.supervision_profile.completed_count}
                 </p>
@@ -146,8 +146,8 @@ export function HomeSupervisionIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Eye className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.observation_profile.positive_outcome_rate >= 80 ? "text-[--cs-success]" :
-                  d.observation_profile.positive_outcome_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.observation_profile.positive_outcome_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.observation_profile.positive_outcome_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.observation_profile.total_observations_90d}
                 </p>
@@ -176,10 +176,10 @@ export function HomeSupervisionIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Actions completed: <span className={cn("font-medium", d.supervision_profile.action_completion_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.supervision_profile.action_completion_rate}%</span></p>
-                <p>Obs positive: <span className={cn("font-medium", d.observation_profile.positive_outcome_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.observation_profile.positive_outcome_rate}%</span></p>
-                {d.appraisal_profile.avg_competency_score > 0 && (
-                  <p>Competency: <span className={cn("font-medium", d.appraisal_profile.avg_competency_score >= 3.5 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.appraisal_profile.avg_competency_score}/5</span></p>
+                <p>Actions completed: <span className={cn("font-medium", (d.supervision_profile.action_completion_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.supervision_profile.action_completion_rate}%</span></p>
+                <p>Obs positive: <span className={cn("font-medium", (d.observation_profile.positive_outcome_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.observation_profile.positive_outcome_rate}%</span></p>
+                {(d.appraisal_profile.avg_competency_score ?? 0) > 0 && (
+                  <p>Competency: <span className={cn("font-medium", (d.appraisal_profile.avg_competency_score ?? 0) >= 3.5 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.appraisal_profile.avg_competency_score}/5</span></p>
                 )}
               </div>
             </div>
@@ -188,8 +188,8 @@ export function HomeSupervisionIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Signatures: <span className={cn("font-medium", d.supervision_profile.signature_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.supervision_profile.signature_rate}%</span></p>
                 {hasOverdue && <p>Overdue appraisals: <span className="font-medium text-red-600">{d.appraisal_profile.overdue_count}</span></p>}
-                {d.supervision_profile.avg_wellbeing_score > 0 && (
-                  <p>Wellbeing avg: <span className={cn("font-medium", d.supervision_profile.avg_wellbeing_score >= 7 ? "text-[--cs-success]" : d.supervision_profile.avg_wellbeing_score >= 4 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.supervision_profile.avg_wellbeing_score}/10</span></p>
+                {(d.supervision_profile.avg_wellbeing_score ?? 0) > 0 && (
+                  <p>Wellbeing avg: <span className={cn("font-medium", (d.supervision_profile.avg_wellbeing_score ?? 0) >= 7 ? "text-[--cs-success]" : (d.supervision_profile.avg_wellbeing_score ?? 0) >= 4 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.supervision_profile.avg_wellbeing_score}/10</span></p>
                 )}
               </div>
             </div>

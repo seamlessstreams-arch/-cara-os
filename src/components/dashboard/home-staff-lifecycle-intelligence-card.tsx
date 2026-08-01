@@ -135,8 +135,8 @@ export function HomeStaffLifecycleIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Thermometer className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.sickness.absence_rate <= 2 ? "text-[--cs-success]" :
-                  d.sickness.absence_rate <= 4 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.sickness.absence_rate ?? 0) <= 2 ? "text-[--cs-success]" :
+                  (d.sickness.absence_rate ?? 0) <= 4 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.sickness.absence_rate}%
                 </p>
@@ -149,10 +149,10 @@ export function HomeStaffLifecycleIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <DoorOpen className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.exit_interviews.avg_rating >= 4 ? "text-[--cs-success]" :
-                  d.exit_interviews.avg_rating >= 3 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.exit_interviews.avg_rating ?? 0) >= 4 ? "text-[--cs-success]" :
+                  (d.exit_interviews.avg_rating ?? 0) >= 3 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.exit_interviews.avg_rating > 0 ? `${d.exit_interviews.avg_rating}/5` : "—"}
+                  {(d.exit_interviews.avg_rating ?? 0) > 0 ? `${d.exit_interviews.avg_rating}/5` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Exit Rating</p>
@@ -163,8 +163,8 @@ export function HomeStaffLifecycleIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Award className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.recognition.events_per_staff >= 0.5 ? "text-[--cs-success]" :
-                  d.recognition.events_per_staff > 0 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.recognition.events_per_staff ?? 0) >= 0.5 ? "text-[--cs-success]" :
+                  (d.recognition.events_per_staff ?? 0) > 0 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.recognition.total_events_90d}
                 </p>

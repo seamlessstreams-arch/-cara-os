@@ -493,8 +493,8 @@ export function computeChildBehaviourSafety(
   else if (balanceRating === "sanctions_heavy") score -= 5;
 
   // Sleep
-  if (sleep_profile.avg_quality >= 4) score += 3;
-  else if (sleep_profile.avg_quality > 0 && sleep_profile.avg_quality < 2.5) score -= 5;
+  if ((sleep_profile.avg_quality ?? 0) >= 4) score += 3;
+  else if ((sleep_profile.avg_quality ?? 0) > 0 && (sleep_profile.avg_quality ?? 0) < 2.5) score -= 5;
 
   // BSP
   if (bsp_compliance.has_plan && bspCurrent) score += 3;
@@ -558,7 +558,7 @@ export function computeChildBehaviourSafety(
     strengths.push("Behaviour support plan is current with documented strategies and triggers — proactive care planning.");
   }
 
-  if (sleep_profile.avg_quality >= 4 && sleep14d.length >= 3) {
+  if ((sleep_profile.avg_quality ?? 0) >= 4 && sleep14d.length >= 3) {
     strengths.push(`Good sleep quality (avg ${sleep_profile.avg_quality}/5) — supporting ${child_name}'s emotional regulation and wellbeing.`);
   }
 
@@ -625,7 +625,7 @@ export function computeChildBehaviourSafety(
     concerns.push("Sanctions outweigh rewards — the approach may feel punitive to the child. Review whether positive behaviours are being recognised and rewarded (Reg 19).");
   }
 
-  if (sleep_profile.avg_quality > 0 && sleep_profile.avg_quality < 2.5 && sleep14d.length >= 3) {
+  if ((sleep_profile.avg_quality ?? 0) > 0 && (sleep_profile.avg_quality ?? 0) < 2.5 && sleep14d.length >= 3) {
     concerns.push(`Poor sleep quality (avg ${sleep_profile.avg_quality}/5) — disrupted sleep can escalate challenging behaviours. Review bedtime routine and environmental factors.`);
   }
 
@@ -707,7 +707,7 @@ export function computeChildBehaviourSafety(
     });
   }
 
-  if (sleep_profile.avg_quality > 0 && sleep_profile.avg_quality < 2.5 && sleep14d.length >= 3) {
+  if ((sleep_profile.avg_quality ?? 0) > 0 && (sleep_profile.avg_quality ?? 0) < 2.5 && sleep14d.length >= 3) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review sleep hygiene routine. Consider environmental factors (noise, temperature, light), screen time boundaries, and whether anxiety is disrupting sleep.",

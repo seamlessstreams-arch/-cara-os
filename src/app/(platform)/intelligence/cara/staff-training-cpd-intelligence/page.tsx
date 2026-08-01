@@ -31,7 +31,18 @@ const RATING_META: Record<TrainingComplianceRating, { label: string; color: stri
   insufficient_data: { label: "Insufficient Data",  color: "text-slate-600",   bg: "bg-slate-50",   border: "border-slate-200" },
 };
 
-function RateBar({ label, value, warn = 90 }: { label: string; value: number; warn?: number }) {
+function RateBar({ label, value, warn = 90 }: { label: string; value: number | null; warn?: number }) {
+  if (value === null) {
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>{label}</span>
+          <span className="font-medium">—</span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden" />
+      </div>
+    );
+  }
   const pct = Math.round(value);
   const color = pct >= warn ? "bg-emerald-500" : pct >= 60 ? "bg-amber-400" : "bg-red-400";
   return (
@@ -85,7 +96,7 @@ export default function StaffTrainingCpdIntelligencePage() {
               <div className="flex-1">
                 <p className="text-sm font-medium">{d.headline}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Training score: {d.training_score}/100 · {d.cpd_avg_hours_per_staff.toFixed(1)} CPD hrs/staff · {d.mandatory_training_compliance_rate}% mandatory compliance
+                  Training score: {d.training_score}/100 · {(d.cpd_avg_hours_per_staff ?? 0).toFixed(1)} CPD hrs/staff · {d.mandatory_training_compliance_rate}% mandatory compliance
                 </p>
               </div>
               <div className="text-right">
@@ -159,8 +170,8 @@ export default function StaffTrainingCpdIntelligencePage() {
               </div>
               <div className="flex items-center justify-between py-1.5 border-b">
                 <span className="text-xs text-muted-foreground">Avg hours per staff</span>
-                <span className={`text-sm font-medium ${d.cpd_avg_hours_per_staff < 10 ? "text-amber-600" : "text-foreground"}`}>
-                  {d.cpd_avg_hours_per_staff.toFixed(1)}h
+                <span className={`text-sm font-medium ${(d.cpd_avg_hours_per_staff ?? 0) < 10 ? "text-amber-600" : "text-foreground"}`}>
+                  {(d.cpd_avg_hours_per_staff ?? 0).toFixed(1)}h
                 </span>
               </div>
               <RateBar label="CPD completion rate" value={d.cpd_completion_rate} />

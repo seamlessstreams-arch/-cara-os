@@ -128,7 +128,7 @@ export function ChildKeyworkingIntelligenceCard({ childId }: { childId: string }
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
-                <Heart className={cn("h-3.5 w-3.5", d.mood_impact.positive_impact_rate >= 70 ? "text-green-500" : d.mood_impact.positive_impact_rate >= 50 ? "text-amber-500" : "text-red-500")} />
+                <Heart className={cn("h-3.5 w-3.5", (d.mood_impact.positive_impact_rate ?? 0) >= 70 ? "text-green-500" : (d.mood_impact.positive_impact_rate ?? 0) >= 50 ? "text-amber-500" : "text-red-500")} />
                 <p className={cn("text-lg font-bold tabular-nums", d.mood_impact.avg_improvement > 0 ? "text-green-600" : d.mood_impact.avg_improvement < 0 ? "text-red-600" : "text-slate-600")}>
                   {d.mood_impact.avg_improvement > 0 ? "+" : ""}{d.mood_impact.avg_improvement}
                 </p>
@@ -137,8 +137,8 @@ export function ChildKeyworkingIntelligenceCard({ childId }: { childId: string }
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
-                <MessageCircle className={cn("h-3.5 w-3.5", d.quality_metrics.child_voice_rate >= 80 ? "text-green-500" : "text-amber-500")} />
-                <p className={cn("text-lg font-bold tabular-nums", d.quality_metrics.child_voice_rate >= 80 ? "text-green-600" : d.quality_metrics.child_voice_rate >= 50 ? "text-amber-600" : "text-red-600")}>
+                <MessageCircle className={cn("h-3.5 w-3.5", (d.quality_metrics.child_voice_rate ?? 0) >= 80 ? "text-green-500" : "text-amber-500")} />
+                <p className={cn("text-lg font-bold tabular-nums", (d.quality_metrics.child_voice_rate ?? 0) >= 80 ? "text-green-600" : (d.quality_metrics.child_voice_rate ?? 0) >= 50 ? "text-amber-600" : "text-red-600")}>
                   {d.quality_metrics.child_voice_rate}%
                 </p>
               </div>
@@ -146,8 +146,8 @@ export function ChildKeyworkingIntelligenceCard({ childId }: { childId: string }
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
-                <CheckCircle2 className={cn("h-3.5 w-3.5", d.quality_metrics.follow_up_completion_rate >= 80 ? "text-green-500" : "text-amber-500")} />
-                <p className={cn("text-lg font-bold tabular-nums", d.quality_metrics.follow_up_completion_rate >= 80 ? "text-green-600" : d.quality_metrics.follow_up_completion_rate >= 50 ? "text-amber-600" : "text-red-600")}>
+                <CheckCircle2 className={cn("h-3.5 w-3.5", (d.quality_metrics.follow_up_completion_rate ?? 0) >= 80 ? "text-green-500" : "text-amber-500")} />
+                <p className={cn("text-lg font-bold tabular-nums", (d.quality_metrics.follow_up_completion_rate ?? 0) >= 80 ? "text-green-600" : (d.quality_metrics.follow_up_completion_rate ?? 0) >= 50 ? "text-amber-600" : "text-red-600")}>
                   {d.quality_metrics.follow_up_completion_rate}%
                 </p>
               </div>
@@ -173,7 +173,7 @@ export function ChildKeyworkingIntelligenceCard({ childId }: { childId: string }
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Before: <span className="font-medium text-slate-600">{d.mood_impact.avg_mood_before}/5</span> → After: <span className={cn("font-medium", d.mood_impact.avg_mood_after > d.mood_impact.avg_mood_before ? "text-green-600" : "text-slate-600")}>{d.mood_impact.avg_mood_after}/5</span></p>
                 <p>Positive: <span className="font-medium text-green-600">{d.mood_impact.positive_impact_rate}%</span></p>
-                {d.mood_impact.negative_impact_rate > 0 && (
+                {(d.mood_impact.negative_impact_rate ?? 0) > 0 && (
                   <p>Negative: <span className="font-medium text-red-600">{d.mood_impact.negative_impact_rate}%</span></p>
                 )}
                 <p>Key worker: <span className={d.key_worker_consistency ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.key_worker_consistency ? "Consistent" : "Mixed"}</span></p>

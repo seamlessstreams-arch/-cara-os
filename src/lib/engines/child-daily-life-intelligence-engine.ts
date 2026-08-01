@@ -62,7 +62,7 @@ export interface RecordingFrequency {
 export interface EntryTypeBreakdown {
   type: DailyEntryType;
   count: number;
-  percentage: number;
+  percentage: number | null;
 }
 
 export interface DailyLifeQuality {
@@ -107,7 +107,7 @@ export interface ChildDailyLifeResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number | null {
+function daysAgo(today: string, date: string): number {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -117,7 +117,7 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
+function pct(n: number, d: number): number | null {
   return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
@@ -243,10 +243,10 @@ export function computeChildDailyLife(
     score = 0;
   } else {
     // Recording coverage
-    if (coverageRate >= 90) score += 15;
-    else if (coverageRate >= 70) score += 8;
-    else if (coverageRate < 50) score -= 15;
-    else if (coverageRate < 70) score -= 5;
+    if ((coverageRate ?? 0) >= 90) score += 15;
+    else if ((coverageRate ?? 0) >= 70) score += 8;
+    else if ((coverageRate ?? 0) < 50) score -= 15;
+    else if ((coverageRate ?? 0) < 70) score -= 5;
 
     // Entry frequency
     if ((avgPerDay ?? 0) >= 3) score += 5;
@@ -254,8 +254,8 @@ export function computeChildDailyLife(
 
     // Mood recording
     const moodRate = pct(moods30d.length, entries30d.length);
-    if (moodRate >= 80) score += 5;
-    else if (moodRate < 30) score -= 5;
+    if ((moodRate ?? 0) >= 80) score += 5;
+    else if ((moodRate ?? 0) < 30) score -= 5;
 
     // Type variety
     if (typeCounts.size >= 6) score += 10;
@@ -307,7 +307,7 @@ export function computeChildDailyLife(
     strengths.push(`Daily recording rated ${daily_life_rating} (${score}%). ${child_name}'s daily life is comprehensively documented with good coverage, mood tracking, and varied entry types.`);
   }
 
-  if (coverageRate >= 90) {
+  if ((coverageRate ?? 0) >= 90) {
     strengths.push(`${coverageRate}% recording coverage over 30 days. Almost every day is documented, creating a rich, continuous picture of ${child_name}'s daily experience — exactly what inspectors want to see.`);
   }
 
@@ -334,7 +334,7 @@ export function computeChildDailyLife(
     concerns.push(`No daily log entries recorded for ${child_name}. Daily recording is a fundamental requirement — it evidences care, tracks wellbeing, and provides a contemporaneous account of the child's experience. This is a serious gap.`);
   }
 
-  if (coverageRate < 50 && entries.length > 0) {
+  if ((coverageRate ?? 0) < 50 && entries.length > 0) {
     concerns.push(`Only ${coverageRate}% recording coverage (${uniqueDays30d.size} out of 30 days). Gaps in recording mean gaps in oversight — significant events or changes in wellbeing could go unnoticed and undocumented.`);
   }
 
@@ -388,7 +388,7 @@ export function computeChildDailyLife(
     });
   }
 
-  if (coverageRate < 70 && entries.length > 0) {
+  if ((coverageRate ?? 0) < 70 && entries.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Improve recording coverage from ${coverageRate}% to at least 90%. Add daily recording to the handover checklist and ensure every shift contributes at least one entry.`,
@@ -432,7 +432,7 @@ export function computeChildDailyLife(
     });
   }
 
-  if (coverageRate >= 90 && typeCounts.size >= 5 && mood_profile.avg_mood_7d !== null && mood_profile.avg_mood_7d >= 6) {
+  if ((coverageRate ?? 0) >= 90 && typeCounts.size >= 5 && mood_profile.avg_mood_7d !== null && mood_profile.avg_mood_7d >= 6) {
     insights.push({
       severity: "positive",
       text: `Excellent recording quality with ${coverageRate}% coverage and ${typeCounts.size} entry types. Combined with a positive mood average (${mood_profile.avg_mood_7d}/10), this evidences both good care and good recording practice — the gold standard for residential care.`,

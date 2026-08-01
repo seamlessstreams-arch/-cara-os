@@ -77,16 +77,16 @@ export function HomeLadoAllegationManagementIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.open_referrals === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.open_referrals}</p>
               <p className="text-[9px] text-muted-foreground">Open</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.ofsted_notification_rate >= 95 ? "bg-green-50" : d.ofsted_notification_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.ofsted_notification_rate >= 95 ? "text-[--cs-success]" : d.ofsted_notification_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.ofsted_notification_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.ofsted_notification_rate ?? 0) >= 95 ? "bg-green-50" : (d.ofsted_notification_rate ?? 0) >= 80 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.ofsted_notification_rate ?? 0) >= 95 ? "text-[--cs-success]" : (d.ofsted_notification_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.ofsted_notification_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Notified</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.resolution_rate >= 90 ? "bg-green-50" : d.resolution_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.resolution_rate >= 90 ? "text-[--cs-success]" : d.resolution_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.resolution_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.resolution_rate ?? 0) >= 90 ? "bg-green-50" : (d.resolution_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.resolution_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.resolution_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.resolution_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Resolved</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.average_days_to_close <= 30 ? "bg-green-50" : d.average_days_to_close <= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.average_days_to_close <= 30 ? "text-[--cs-success]" : d.average_days_to_close <= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_days_to_close}d</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.average_days_to_close ?? 0) <= 30 ? "bg-green-50" : (d.average_days_to_close ?? 0) <= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.average_days_to_close ?? 0) <= 30 ? "text-[--cs-success]" : (d.average_days_to_close ?? 0) <= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_days_to_close}d</p>
               <p className="text-[9px] text-muted-foreground">Avg Close</p>
             </div>
           </div>

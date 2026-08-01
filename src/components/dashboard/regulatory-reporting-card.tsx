@@ -202,7 +202,7 @@ export function RegulatoryReportingCard() {
               <p className="text-[10px] text-muted-foreground">Completed</p>
             </div>
             <div>
-              <p className={cn("font-bold tabular-nums", o.notifications_on_time_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              <p className={cn("font-bold tabular-nums", (o.notifications_on_time_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
                 {o.notifications_on_time_rate}%
               </p>
               <p className="text-[10px] text-muted-foreground">Notifications</p>
@@ -219,8 +219,8 @@ export function RegulatoryReportingCard() {
               <div
                 className={cn(
                   "h-full rounded-full",
-                  o.overall_compliance_score >= 80 ? "bg-green-500"
-                    : o.overall_compliance_score >= 60 ? "bg-amber-500"
+                  (o.overall_compliance_score ?? 0) >= 80 ? "bg-green-500"
+                    : (o.overall_compliance_score ?? 0) >= 60 ? "bg-amber-500"
                     : "bg-red-500",
                 )}
                 style={{ width: `${o.overall_compliance_score}%` }}
@@ -228,8 +228,8 @@ export function RegulatoryReportingCard() {
             </div>
             <span className={cn(
               "text-sm font-bold tabular-nums",
-              o.overall_compliance_score >= 80 ? "text-[--cs-success]"
-                : o.overall_compliance_score >= 60 ? "text-[--cs-warning]"
+              (o.overall_compliance_score ?? 0) >= 80 ? "text-[--cs-success]"
+                : (o.overall_compliance_score ?? 0) >= 60 ? "text-[--cs-warning]"
                 : "text-[--cs-risk]",
             )}>
               {o.overall_compliance_score}%

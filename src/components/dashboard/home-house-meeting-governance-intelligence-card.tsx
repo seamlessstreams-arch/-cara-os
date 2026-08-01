@@ -74,20 +74,20 @@ export function HomeHouseMeetingGovernanceIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_meetings > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_meetings}</p>
               <p className="text-[9px] text-muted-foreground">Meetings</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_attendance_rate >= 85 ? "bg-green-50" : d.child_attendance_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_attendance_rate >= 85 ? "text-[--cs-success]" : d.child_attendance_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_attendance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.child_attendance_rate ?? 0) >= 85 ? "bg-green-50" : (d.child_attendance_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.child_attendance_rate ?? 0) >= 85 ? "text-[--cs-success]" : (d.child_attendance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_attendance_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Attend</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.action_completion_rate >= 90 ? "bg-green-50" : d.action_completion_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.action_completion_rate >= 90 ? "text-[--cs-success]" : d.action_completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.action_completion_rate ?? 0) >= 90 ? "bg-green-50" : (d.action_completion_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.action_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.action_completion_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_completion_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_feedback_rate >= 90 ? "bg-green-50" : d.child_feedback_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_feedback_rate >= 90 ? "text-[--cs-success]" : d.child_feedback_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_feedback_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.child_feedback_rate ?? 0) >= 90 ? "bg-green-50" : (d.child_feedback_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.child_feedback_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.child_feedback_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_feedback_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Feedback</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.average_duration >= 30 ? "bg-green-50" : d.average_duration >= 20 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.average_duration >= 30 ? "text-[--cs-success]" : d.average_duration >= 20 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_duration}m</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.average_duration ?? 0) >= 30 ? "bg-green-50" : (d.average_duration ?? 0) >= 20 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.average_duration ?? 0) >= 30 ? "text-[--cs-success]" : (d.average_duration ?? 0) >= 20 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_duration}m</p>
               <p className="text-[9px] text-muted-foreground">Duration</p>
             </div>
           </div>

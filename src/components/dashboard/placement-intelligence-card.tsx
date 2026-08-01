@@ -108,9 +108,9 @@ export function PlacementIntelligenceCard() {
             <p className="text-lg font-bold tabular-nums">{m.total_children}</p>
             <p className="text-[10px] text-muted-foreground">Children</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", m.average_stability_score >= 70 ? "bg-green-50" : m.average_stability_score >= 50 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", m.average_stability_score >= 70 ? "text-[--cs-success]" : m.average_stability_score >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-              {Math.round(m.average_stability_score)}
+          <div className={cn("text-center rounded-lg p-2.5", (m.average_stability_score ?? 0) >= 70 ? "bg-green-50" : (m.average_stability_score ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (m.average_stability_score ?? 0) >= 70 ? "text-[--cs-success]" : (m.average_stability_score ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+              {Math.round((m.average_stability_score ?? 0))}
             </p>
             <p className="text-[10px] text-muted-foreground">Stability</p>
           </div>
@@ -121,7 +121,7 @@ export function PlacementIntelligenceCard() {
             <p className="text-[10px] text-muted-foreground">At Risk</p>
           </div>
           <div className="text-center rounded-lg bg-gray-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums">{Math.round(m.average_placement_days)}d</p>
+            <p className="text-lg font-bold tabular-nums">{Math.round((m.average_placement_days ?? 0))}d</p>
             <p className="text-[10px] text-muted-foreground">Avg Stay</p>
           </div>
         </div>
@@ -131,11 +131,11 @@ export function PlacementIntelligenceCard() {
         <div className="flex items-center justify-between rounded-lg border p-3">
           <div className="flex items-center gap-4">
             <div>
-              <p className="text-xs font-medium">{m.incident_rate_per_child_30d.toFixed(1)}</p>
+              <p className="text-xs font-medium">{(m.incident_rate_per_child_30d ?? 0).toFixed(1)}</p>
               <p className="text-[10px] text-muted-foreground">Incidents/child</p>
             </div>
             <div>
-              <p className="text-xs font-medium">{m.keywork_frequency_per_child_30d.toFixed(1)}</p>
+              <p className="text-xs font-medium">{(m.keywork_frequency_per_child_30d ?? 0).toFixed(1)}</p>
               <p className="text-[10px] text-muted-foreground">Keywork/child</p>
             </div>
             {m.avg_mood_home !== null && (

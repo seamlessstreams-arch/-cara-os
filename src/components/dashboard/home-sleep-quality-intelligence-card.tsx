@@ -92,7 +92,7 @@ export function HomeSleepQualityIntelligenceCard() {
   }
 
   const ratingStyle = RATING_STYLES[d.sleep_rating] ?? RATING_STYLES.insufficient_data;
-  const isAlert = d.sleep_rating === "inadequate" || d.disturbances.significant_rate > 25;
+  const isAlert = d.sleep_rating === "inadequate" || (d.disturbances.significant_rate ?? 0) > 25;
 
   return (
     <Card className={cn("overflow-hidden", isAlert ? "border-red-400 border-2" : "border-slate-200")}>
@@ -122,8 +122,8 @@ export function HomeSleepQualityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Moon className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.disturbances.none_rate >= 60 ? "text-[--cs-success]" :
-                  d.disturbances.none_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.disturbances.none_rate ?? 0) >= 60 ? "text-[--cs-success]" :
+                  (d.disturbances.none_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.disturbances.none_rate}%
                 </p>
@@ -136,8 +136,8 @@ export function HomeSleepQualityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.check_compliance.check_compliance_rate >= 90 ? "text-[--cs-success]" :
-                  d.check_compliance.check_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.check_compliance.check_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.check_compliance.check_compliance_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.check_compliance.check_compliance_rate}%
                 </p>
@@ -150,8 +150,8 @@ export function HomeSleepQualityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Activity className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.disturbances.avg_per_night <= 0.5 ? "text-[--cs-success]" :
-                  d.disturbances.avg_per_night <= 1.5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.disturbances.avg_per_night ?? 0) <= 0.5 ? "text-[--cs-success]" :
+                  (d.disturbances.avg_per_night ?? 0) <= 1.5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.disturbances.avg_per_night}
                 </p>
@@ -194,10 +194,10 @@ export function HomeSleepQualityIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Avg checks: <span className="font-medium text-slate-600">{d.check_compliance.avg_checks_per_night}</span></p>
                 <p>Secure: <span className={cn("font-medium",
-                  d.check_compliance.building_secure_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-risk]"
+                  (d.check_compliance.building_secure_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>{d.check_compliance.building_secure_rate}%</span></p>
                 <p>Handover: <span className={cn("font-medium",
-                  d.handover.handover_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.handover.handover_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.handover.handover_rate}%</span></p>
                 <p>Staff: <span className="font-medium text-slate-600">{d.shifts.unique_staff}</span></p>
               </div>

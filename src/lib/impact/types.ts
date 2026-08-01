@@ -24,7 +24,7 @@ export interface ChildImpactView {
   assessment_date: string;
   placement_duration_days: number;
   overall_progress: "significant" | "good" | "some" | "limited" | "not_assessed";
-  overall_score: number;
+  overall_score: number | null;
   domains: ChildImpactDomain[];
   key_achievements: string[];
   outstanding_actions: string[];

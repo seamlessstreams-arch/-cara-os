@@ -138,8 +138,8 @@ export function HomeFinancialWellbeingIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Receipt className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.spending_profile.receipt_rate >= 80 ? "text-[--cs-success]" :
-                  d.spending_profile.receipt_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.spending_profile.receipt_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.spending_profile.receipt_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.spending_profile.receipt_rate}%
                 </p>
@@ -152,8 +152,8 @@ export function HomeFinancialWellbeingIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <PiggyBank className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.savings_profile.savings_participation_rate >= 60 ? "text-[--cs-success]" :
-                  d.savings_profile.savings_participation_rate >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.savings_profile.savings_participation_rate ?? 0) >= 60 ? "text-[--cs-success]" :
+                  (d.savings_profile.savings_participation_rate ?? 0) >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.savings_profile.savings_participation_rate}%
                 </p>
@@ -186,8 +186,8 @@ export function HomeFinancialWellbeingIntelligenceCard() {
                 <p>Total (90d): <span className="font-medium text-slate-600">£{d.allowance_profile.total_allowances_90d}</span></p>
                 <p>Avg/week: <span className="font-medium text-slate-600">£{d.allowance_profile.avg_weekly_per_child}</span></p>
                 <p>Regularity: <span className={cn("font-medium",
-                  d.allowance_profile.regularity_rate >= 80 ? "text-[--cs-success]" :
-                  d.allowance_profile.regularity_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.allowance_profile.regularity_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.allowance_profile.regularity_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.allowance_profile.regularity_rate}%</span></p>
               </div>
             </div>
@@ -197,8 +197,8 @@ export function HomeFinancialWellbeingIntelligenceCard() {
                 <p>Total (90d): <span className="font-medium text-slate-600">£{d.spending_profile.total_spending_90d}</span></p>
                 <p>Categories: <span className="font-medium text-slate-600">{d.spending_profile.category_count}</span></p>
                 <p>Approved: <span className={cn("font-medium",
-                  d.spending_profile.approval_rate >= 90 ? "text-[--cs-success]" :
-                  d.spending_profile.approval_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.spending_profile.approval_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.spending_profile.approval_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.spending_profile.approval_rate}%</span></p>
               </div>
             </div>

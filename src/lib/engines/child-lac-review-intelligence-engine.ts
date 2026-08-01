@@ -110,7 +110,7 @@ export interface ChildLACReviewResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number | null {
+function daysAgo(today: string, date: string): number {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -124,7 +124,7 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
+function pct(n: number, d: number): number | null {
   return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
@@ -240,7 +240,7 @@ export function computeChildLACReview(
 
   // Care plan
   if (care_plan_update_rate === 100 && reviews.length >= 1) score += 5;
-  if (care_plan_update_rate < 50 && reviews.length >= 2) score -= 5;
+  if ((care_plan_update_rate ?? 0) < 50 && reviews.length >= 2) score -= 5;
 
   // IRO consistency
   if (iroConsistency && reviews.length >= 2) score += 3;
@@ -321,7 +321,7 @@ export function computeChildLACReview(
     concerns.push(`${action_completion.overdue_count} review action${action_completion.overdue_count !== 1 ? "s" : ""} overdue. Incomplete actions mean agreed changes are not being delivered. This undermines the review process and the child's progress.`);
   }
 
-  if (care_plan_update_rate < 100 && reviews.length >= 2) {
+  if ((care_plan_update_rate ?? 0) < 100 && reviews.length >= 2) {
     concerns.push(`Care plan updated after only ${care_plan_update_rate}% of reviews. The care plan should be updated after every review to reflect agreed changes and new actions.`);
   }
 

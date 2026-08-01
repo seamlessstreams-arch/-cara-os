@@ -46,7 +46,7 @@ interface StaffSupervisionProfile {
   latestWellbeingScore: number | null;
   wellbeingTrend: WellbeingTrend | null;
   latestConfidenceScore: number | null;
-  paceEngagementRate: number;
+  paceEngagementRate: number | null;
   overdueActions: OverdueAction[];
   overdueActionCount: number;
   trainingNeeds: string[];

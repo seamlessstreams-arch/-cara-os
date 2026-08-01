@@ -138,8 +138,8 @@ export function HomeReg44IntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.recommendation_profile.completion_rate >= 80 ? "text-[--cs-success]" :
-                  d.recommendation_profile.completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.recommendation_profile.completion_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.recommendation_profile.completion_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.recommendation_profile.completion_rate}%
                 </p>
@@ -153,7 +153,7 @@ export function HomeReg44IntelligenceCard() {
                 <ClipboardList className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.quality_profile.ofsted_notification_rate === 100 ? "text-[--cs-success]" :
-                  d.quality_profile.ofsted_notification_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.quality_profile.ofsted_notification_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.quality_profile.ofsted_notification_rate}%
                 </p>

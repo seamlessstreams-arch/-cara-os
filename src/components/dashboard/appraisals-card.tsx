@@ -202,14 +202,14 @@ export function AppraisalsCard() {
                   <div
                     className={cn(
                       "h-full rounded-full",
-                      c.avg_score >= 4 ? "bg-green-400" : c.avg_score >= 3 ? "bg-blue-400" : "bg-amber-400",
+                      (c.avg_score ?? 0) >= 4 ? "bg-green-400" : (c.avg_score ?? 0) >= 3 ? "bg-blue-400" : "bg-amber-400",
                     )}
-                    style={{ width: `${(c.avg_score / 5) * 100}%` }}
+                    style={{ width: `${((c.avg_score ?? 0) / 5) * 100}%` }}
                   />
                 </div>
                 <span className={cn(
                   "font-bold tabular-nums w-8 text-right",
-                  c.avg_score >= 4 ? "text-[--cs-success]" : c.avg_score >= 3 ? "text-blue-600" : "text-[--cs-warning]",
+                  (c.avg_score ?? 0) >= 4 ? "text-[--cs-success]" : (c.avg_score ?? 0) >= 3 ? "text-blue-600" : "text-[--cs-warning]",
                 )}>
                   {c.avg_score}
                 </span>

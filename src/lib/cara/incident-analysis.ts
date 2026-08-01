@@ -73,10 +73,10 @@ export interface IncidentAnalysis {
   trendDescription: string;
 
   // Severity breakdown
-  severityBreakdown: { severity: string; count: number; percent: number }[];
+  severityBreakdown: { severity: string; count: number; percent: number | null }[];
 
   // Category breakdown
-  categoryBreakdown: { category: IncidentCategory; label: string; count: number; percent: number }[];
+  categoryBreakdown: { category: IncidentCategory; label: string; count: number; percent: number | null }[];
 
   // Restraint analysis
   restraintAnalysis: RestraintAnalysis;

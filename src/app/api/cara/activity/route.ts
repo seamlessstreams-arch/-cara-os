@@ -47,7 +47,7 @@ export function computeTopEntries<T extends Record<string, string>>(
     .map(([id, count]) => ({ id, count }));
 }
 
-export function computeApprovalRate(approved: number, rejected: number): number {
+export function computeApprovalRate(approved: number, rejected: number): number | null {
   const decided = approved + rejected;
   return decided > 0 ? Math.round((approved / decided) * 100) : null;
 }

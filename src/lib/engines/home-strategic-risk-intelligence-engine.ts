@@ -54,7 +54,7 @@ export interface HomeStrategicRiskInput {
 
 export type StrategicRiskRating = "outstanding" | "good" | "adequate" | "inadequate" | "insufficient_data";
 
-export interface BriefingSummary { total: number; recent_7_days: number; avg_child_risks: number; coverage_rate: number | null; }
+export interface BriefingSummary { total: number; recent_7_days: number; avg_child_risks: number | null; coverage_rate: number | null; }
 export interface RegisterSummary { total: number; critical_count: number; high_count: number; overdue_reviews: number; mitigated_rate: number | null; }
 export interface StrategicSummary { total: number; board_level_count: number; worsening_count: number; above_target_count: number; }
 export interface PlanSummary { total: number; active_rate: number | null; child_views_rate: number | null; overdue_reviews: number; }

@@ -339,37 +339,37 @@ export function computeStaffWellbeingRetention(
   const overallWellbeingScores = staff_wellbeing_survey_records.map(
     (r) => r.overall_wellbeing_score,
   );
-  const avgOverallWellbeing = avg((overallWellbeingScores ?? 0));
+  const avgOverallWellbeing = avg((overallWellbeingScores.filter((v): v is number => v !== null) ?? 0));
 
   const workloadScores = staff_wellbeing_survey_records.map(
     (r) => r.workload_score,
   );
-  const avgWorkload = avg((workloadScores ?? 0));
+  const avgWorkload = avg((workloadScores.filter((v): v is number => v !== null) ?? 0));
 
   const teamSupportScores = staff_wellbeing_survey_records.map(
     (r) => r.team_support_score,
   );
-  const avgTeamSupport = avg((teamSupportScores ?? 0));
+  const avgTeamSupport = avg((teamSupportScores.filter((v): v is number => v !== null) ?? 0));
 
   const managementSupportScores = staff_wellbeing_survey_records.map(
     (r) => r.management_support_score,
   );
-  const avgManagementSupport = avg((managementSupportScores ?? 0));
+  const avgManagementSupport = avg((managementSupportScores.filter((v): v is number => v !== null) ?? 0));
 
   const workLifeBalanceScores = staff_wellbeing_survey_records.map(
     (r) => r.work_life_balance_score,
   );
-  const avgWorkLifeBalance = avg((workLifeBalanceScores ?? 0));
+  const avgWorkLifeBalance = avg((workLifeBalanceScores.filter((v): v is number => v !== null) ?? 0));
 
   const jobSatisfactionScores = staff_wellbeing_survey_records.map(
     (r) => r.job_satisfaction_score,
   );
-  const avgJobSatisfaction = avg((jobSatisfactionScores ?? 0));
+  const avgJobSatisfaction = avg((jobSatisfactionScores.filter((v): v is number => v !== null) ?? 0));
 
   const moraleScores = staff_wellbeing_survey_records.map(
     (r) => r.morale_score,
   );
-  const avgMorale = avg((moraleScores ?? 0));
+  const avgMorale = avg((moraleScores.filter((v): v is number => v !== null) ?? 0));
 
   const feelsValued = staff_wellbeing_survey_records.filter(
     (r) => r.feels_valued,

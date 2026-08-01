@@ -180,7 +180,7 @@ export interface AuditFindingsResult {
   totalActionsRequired: number;
   totalActionsCompleted: number;
   actionCompletionRate: number | null;
-  areaBreakdown: Record<SafeguardingAuditArea, { count: number; avgRating: number }>;
+  areaBreakdown: Record<SafeguardingAuditArea, { count: number; avgRating: number | null }>;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -642,14 +642,14 @@ export function evaluateAuditFindings(
       totalActionsCompleted: 0,
       actionCompletionRate: null,
       areaBreakdown: {
-        policy: { count: 0, avgRating: 0 },
-        procedures: { count: 0, avgRating: 0 },
-        training: { count: 0, avgRating: 0 },
-        recording: { count: 0, avgRating: 0 },
-        information_sharing: { count: 0, avgRating: 0 },
-        supervision: { count: 0, avgRating: 0 },
-        culture: { count: 0, avgRating: 0 },
-        multi_agency: { count: 0, avgRating: 0 },
+        policy: { count: 0, avgRating: null },
+        procedures: { count: 0, avgRating: null },
+        training: { count: 0, avgRating: null },
+        recording: { count: 0, avgRating: null },
+        information_sharing: { count: 0, avgRating: null },
+        supervision: { count: 0, avgRating: null },
+        culture: { count: 0, avgRating: null },
+        multi_agency: { count: 0, avgRating: null },
       },
       score: 0,
       strengths: [],
@@ -711,7 +711,7 @@ export function evaluateAuditFindings(
     "policy", "procedures", "training", "recording",
     "information_sharing", "supervision", "culture", "multi_agency",
   ];
-  const areaBreakdown: Record<SafeguardingAuditArea, { count: number; avgRating: number }> = {} as any;
+  const areaBreakdown: Record<SafeguardingAuditArea, { count: number; avgRating: number | null }> = {} as any;
   for (const area of areas) {
     const areaAudits = audits.filter((a) => a.area === area);
     const count = areaAudits.length;

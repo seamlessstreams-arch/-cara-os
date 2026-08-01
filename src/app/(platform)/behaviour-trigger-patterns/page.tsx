@@ -172,7 +172,7 @@ export default function BehaviourTriggerPatternsPage() {
                       </div>
                     )}
                     <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--cs-text-muted)]">
-                      <span>De-escalation strategy recorded: <span className={cn("font-semibold", c.strategy_coverage_pct < 50 ? "text-amber-700" : "text-green-700")}>{c.strategy_coverage_pct}%</span></span>
+                      <span>De-escalation strategy recorded: <span className={cn("font-semibold", (c.strategy_coverage_pct ?? 0) < 50 ? "text-amber-700" : "text-green-700")}>{c.strategy_coverage_pct}%</span></span>
                       {c.high_intensity_unsupported > 0 && (
                         <span className="text-red-700 font-medium">{c.high_intensity_unsupported} high-intensity without strategy</span>
                       )}
@@ -216,7 +216,7 @@ function OverviewStat({
   label, value, tone = "neutral",
 }: {
   label: string;
-  value: string | number;
+  value: string | number | null;
   tone?: "neutral" | "red" | "amber" | "green" | "gray";
 }) {
   const toneCls: Record<string, string> = {
@@ -224,7 +224,7 @@ function OverviewStat({
   };
   return (
     <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4">
-      <p className={cn("text-2xl font-bold tabular-nums", toneCls[tone])}>{value}</p>
+      <p className={cn("text-2xl font-bold tabular-nums", toneCls[tone])}>{value ?? "—"}</p>
       <p className="text-[11px] text-[var(--cs-text-muted)] mt-0.5">{label}</p>
     </div>
   );

@@ -66,8 +66,8 @@ export function StaffExitInterviewManagementCard() {
       <CardContent className="space-y-4">
         {/* ── Summary strip ──────────────────────────────────────────── */}
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", profile.average_tenure_months < 12 ? "bg-amber-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", profile.average_tenure_months < 12 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{profile.average_tenure_months}m</p>
+          <div className={cn("text-center rounded-lg p-2", (profile.average_tenure_months ?? 0) < 12 ? "bg-amber-50" : "bg-green-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (profile.average_tenure_months ?? 0) < 12 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{profile.average_tenure_months}m</p>
             <p className="text-[10px] text-muted-foreground">Avg Tenure</p>
           </div>
           <div className={cn("text-center rounded-lg p-2", profile.on_probation > 0 ? "bg-amber-50" : "bg-green-50")}>

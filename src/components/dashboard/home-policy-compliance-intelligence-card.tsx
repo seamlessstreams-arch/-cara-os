@@ -152,8 +152,8 @@ export function HomePolicyComplianceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.acknowledgement_profile.avg_acknowledgement_rate >= 90 ? "text-[--cs-success]" :
-                  d.acknowledgement_profile.avg_acknowledgement_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.acknowledgement_profile.avg_acknowledgement_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.acknowledgement_profile.avg_acknowledgement_rate ?? 0) >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.acknowledgement_profile.avg_acknowledgement_rate}%
                 </p>
@@ -199,12 +199,12 @@ export function HomePolicyComplianceIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Governance</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Statutory basis: <span className={cn("font-medium",
-                  d.governance_profile.statutory_basis_rate >= 100 ? "text-[--cs-success]" :
-                  d.governance_profile.statutory_basis_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.governance_profile.statutory_basis_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.governance_profile.statutory_basis_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.governance_profile.statutory_basis_rate}%</span></p>
                 <p>Key points: <span className={cn("font-medium",
-                  d.governance_profile.key_points_rate >= 100 ? "text-[--cs-success]" :
-                  d.governance_profile.key_points_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.governance_profile.key_points_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.governance_profile.key_points_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.governance_profile.key_points_rate}%</span></p>
                 <p>Fully read: <span className="font-medium text-slate-600">
                   {d.acknowledgement_profile.fully_acknowledged_count}/{d.compliance_profile.active_count}

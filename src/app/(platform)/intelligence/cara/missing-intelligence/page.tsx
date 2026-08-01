@@ -102,7 +102,7 @@ export default function MissingIntelligencePage() {
   const d = data.data;
   const p = d.profile;
 
-  const rhiAlert = p.return_interview_completion_rate < 100;
+  const rhiAlert = (p.return_interview_completion_rate ?? 0) < 100;
   const activeAlert = p.active_episodes > 0;
 
   return (
@@ -134,7 +134,7 @@ export default function MissingIntelligencePage() {
           {
             label: "Police notified",
             value: `${p.police_notification_rate}%`,
-            alert: p.police_notification_rate < 100,
+            alert: (p.police_notification_rate ?? 0) < 100,
           },
         ].map((m) => (
           <div
@@ -155,7 +155,7 @@ export default function MissingIntelligencePage() {
           { label: "Children with episodes", value: p.children_with_episodes },
           { label: "Repeat missing (3+)", value: p.repeat_missing_children.length, alert: p.repeat_missing_children.length > 0 },
           { label: "Contextual safeguarding flags", value: p.contextual_safeguarding_flagged, alert: p.contextual_safeguarding_flagged > 0 },
-          { label: "Avg duration", value: p.avg_duration_minutes > 0 ? `${Math.round(p.avg_duration_minutes / 60)}h` : "—" },
+          { label: "Avg duration", value: (p.avg_duration_minutes ?? 0) > 0 ? `${Math.round((p.avg_duration_minutes ?? 0) / 60)}h` : "—" },
         ].map((m) => (
           <div
             key={m.label}

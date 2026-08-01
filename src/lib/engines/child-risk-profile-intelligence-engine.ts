@@ -152,7 +152,7 @@ const LEVEL_NUMERIC: Record<RiskLevel, number> = {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number | null {
+function daysAgo(today: string, date: string): number {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -166,7 +166,7 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number {
+function pct(n: number, d: number): number | null {
   return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
@@ -261,8 +261,8 @@ export function computeChildRiskProfile(
   } else {
     // Risk trajectory
     const improvingRate = pct(improving.length, current.length);
-    if (improvingRate >= 60) score += 15;
-    else if (improvingRate >= 40) score += 8;
+    if ((improvingRate ?? 0) >= 60) score += 15;
+    else if ((improvingRate ?? 0) >= 40) score += 8;
     if (escalating.length > 0) score -= escalating.length * 5;
 
     // Overall risk levels
@@ -319,7 +319,7 @@ export function computeChildRiskProfile(
     strengths.push(`Risk management rated ${management_rating} (${score}%). Risks are comprehensively assessed, mitigations are working, and ${child_name}'s risk profile is being actively managed and reduced.`);
   }
 
-  if (improving.length > 0 && pct(improving.length, current.length) >= 50) {
+  if (improving.length > 0 && (pct(improving.length, current.length) ?? 0) >= 50) {
     const improvingNames = improving.map((a) => DOMAIN_LABELS[a.domain]).join(", ");
     strengths.push(`${improving.length} risk${improving.length !== 1 ? "s" : ""} reducing (${improvingNames}). Active risk reduction demonstrates that interventions are working and the child's safety is improving.`);
   }

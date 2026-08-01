@@ -97,11 +97,11 @@ export function MeetingsCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.avg_attendance_rate >= 80 ? "bg-green-50" : o.avg_attendance_rate >= 60 ? "bg-amber-50" : "bg-red-50",
+            (o.avg_attendance_rate ?? 0) >= 80 ? "bg-green-50" : (o.avg_attendance_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.avg_attendance_rate >= 80 ? "text-[--cs-success]" : o.avg_attendance_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (o.avg_attendance_rate ?? 0) >= 80 ? "text-[--cs-success]" : (o.avg_attendance_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {o.avg_attendance_rate}%
             </p>
@@ -109,11 +109,11 @@ export function MeetingsCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.action_completion_rate >= 80 ? "bg-green-50" : o.action_completion_rate >= 60 ? "bg-amber-50" : "bg-red-50",
+            (o.action_completion_rate ?? 0) >= 80 ? "bg-green-50" : (o.action_completion_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.action_completion_rate >= 80 ? "text-[--cs-success]" : o.action_completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (o.action_completion_rate ?? 0) >= 80 ? "text-[--cs-success]" : (o.action_completion_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {o.action_completion_rate}%
             </p>
@@ -170,8 +170,8 @@ export function MeetingsCard() {
                     </span>
                     <Badge className={cn(
                       "text-[10px] tabular-nums",
-                      c.attendance_rate >= 80 ? "bg-[--cs-success-bg] text-[--cs-success]"
-                        : c.attendance_rate >= 50 ? "bg-[--cs-warning-bg] text-[--cs-warning]"
+                      (c.attendance_rate ?? 0) >= 80 ? "bg-[--cs-success-bg] text-[--cs-success]"
+                        : (c.attendance_rate ?? 0) >= 50 ? "bg-[--cs-warning-bg] text-[--cs-warning]"
                         : "bg-[--cs-risk-bg] text-[--cs-risk]",
                     )}>
                       {c.attendance_rate}%

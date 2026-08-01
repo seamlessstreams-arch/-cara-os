@@ -72,16 +72,16 @@ export function HomeLessonsLearnedImprovementIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_lessons > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_lessons}</p>
               <p className="text-[9px] text-muted-foreground">Lessons</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.embedded_rate >= 80 ? "bg-green-50" : d.embedded_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.embedded_rate >= 80 ? "text-[--cs-success]" : d.embedded_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.embedded_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.embedded_rate ?? 0) >= 80 ? "bg-green-50" : (d.embedded_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.embedded_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.embedded_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.embedded_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Embedded</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_briefing_rate >= 90 ? "bg-green-50" : d.staff_briefing_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_briefing_rate >= 90 ? "text-[--cs-success]" : d.staff_briefing_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_briefing_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.staff_briefing_rate ?? 0) >= 90 ? "bg-green-50" : (d.staff_briefing_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.staff_briefing_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.staff_briefing_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_briefing_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Briefed</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.objective_completion_rate >= 80 ? "bg-green-50" : d.objective_completion_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.objective_completion_rate >= 80 ? "text-[--cs-success]" : d.objective_completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.objective_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.objective_completion_rate ?? 0) >= 80 ? "bg-green-50" : (d.objective_completion_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.objective_completion_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.objective_completion_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.objective_completion_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Objectives</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.overdue_objectives === 0 ? "bg-green-50" : "bg-red-50")}>

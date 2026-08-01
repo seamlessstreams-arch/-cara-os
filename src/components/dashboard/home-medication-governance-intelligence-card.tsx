@@ -120,8 +120,8 @@ export function HomeMedicationGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ClipboardCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.audit.pass_rate >= 90 ? "text-[--cs-success]" :
-                  d.audit.pass_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.audit.pass_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.audit.pass_rate ?? 0) >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.audit.total_audits > 0 ? `${d.audit.pass_rate}%` : "—"}
                 </p>
@@ -134,8 +134,8 @@ export function HomeMedicationGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Thermometer className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.storage.pass_rate >= 90 ? "text-[--cs-success]" :
-                  d.storage.pass_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.storage.pass_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.storage.pass_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.storage.total_audits > 0 ? `${d.storage.pass_rate}%` : "—"}
                 </p>
@@ -148,8 +148,8 @@ export function HomeMedicationGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.stock.balanced_rate >= 90 ? "text-[--cs-success]" :
-                  d.stock.balanced_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.stock.balanced_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.stock.balanced_rate ?? 0) >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.stock.total_checks > 0 ? `${d.stock.balanced_rate}%` : "—"}
                 </p>
@@ -187,7 +187,7 @@ export function HomeMedicationGovernanceIntelligenceCard() {
                   {d.nearMisses.high_critical_count > 0 && <span className="text-[--cs-risk]"> ({d.nearMisses.high_critical_count} high/crit)</span>}
                 </p>
                 <p>Debrief rate: <span className={cn("font-medium",
-                  d.errors.debrief_rate >= 90 ? "text-[--cs-success]" : d.errors.debrief_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.errors.debrief_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.errors.debrief_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.errors.total_errors > 0 ? `${d.errors.debrief_rate}%` : "—"}</span></p>
               </div>
             </div>
@@ -202,8 +202,8 @@ export function HomeMedicationGovernanceIntelligenceCard() {
                   {d.emergencyProtocols.overdue_reviews > 0 && <span className="text-[--cs-risk]"> ({d.emergencyProtocols.overdue_reviews} overdue)</span>}
                 </p>
                 <p>CD governance: <span className={cn("font-medium",
-                  d.storage.controlled_drugs_correct_rate >= 100 ? "text-[--cs-success]" :
-                  d.storage.controlled_drugs_correct_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.storage.controlled_drugs_correct_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.storage.controlled_drugs_correct_rate ?? 0) >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.storage.total_audits > 0 ? `${d.storage.controlled_drugs_correct_rate}%` : "—"}</span></p>
               </div>
             </div>

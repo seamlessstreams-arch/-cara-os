@@ -68,7 +68,7 @@ interface ChildGoalsProfile {
   stableOutcomes: number;
   regressingOutcomes: number;
   outcomesWithChildVoice: number;
-  childVoiceRate: number;  // 0–100
+  childVoiceRate: number | null;  // 0–100, null when no records yet
   overdueReviewCount: number;
   aspirationsWithNoOutcome: string[];  // aspiration texts without linked domains
   overallSignal: "flourishing" | "progressing" | "developing" | "needs_attention";

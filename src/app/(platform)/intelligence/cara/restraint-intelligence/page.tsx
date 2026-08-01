@@ -115,14 +115,15 @@ function ChildCard({ p }: { p: ChildRestraintProfile }) {
   );
 }
 
-function BreakdownBar({ label, count, pct, color }: { label: string; count: number; pct: number; color: string }) {
+function BreakdownBar({ label, count, pct, color }: { label: string; count: number; pct: number | null; color: string }) {
+  const width = pct ?? 0;
   return (
     <div className="flex items-center gap-3">
       <p className="w-40 shrink-0 truncate text-xs text-slate-700 capitalize">{label.replace(/_/g, " ")}</p>
       <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${width}%` }} />
       </div>
-      <span className="w-16 shrink-0 text-right text-xs text-slate-500">{count} ({pct}%)</span>
+      <span className="w-16 shrink-0 text-right text-xs text-slate-500">{count} {pct !== null ? `(${pct}%)` : ""}</span>
     </div>
   );
 }

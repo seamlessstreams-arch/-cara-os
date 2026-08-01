@@ -669,10 +669,10 @@ export function generateEducationIntelligence(
   const overallScore = Math.min(
     100,
     Math.round(
-      educationQuality.score +
-      educationCompliance.score +
-      educationPolicy.score +
-      staffReadiness.score,
+      (educationQuality.score ?? 0) +
+      (educationCompliance.score ?? 0) +
+      (educationPolicy.score ?? 0) +
+      (staffReadiness.score ?? 0),
     ),
   );
 
@@ -733,16 +733,16 @@ function aggregateStrengths(
   }
 
   // Include evaluators with score >= 20
-  if (quality.score >= 20) {
+  if ((quality.score ?? 0) >= 20) {
     strengths.push("Education quality is strong (score " + quality.score + "/25)");
   }
-  if (compliance.score >= 20) {
+  if ((compliance.score ?? 0) >= 20) {
     strengths.push("Education compliance is strong (score " + compliance.score + "/25)");
   }
-  if (policy.score >= 20) {
+  if ((policy.score ?? 0) >= 20) {
     strengths.push("Education policy framework is robust (score " + policy.score + "/25)");
   }
-  if (staff.score >= 20) {
+  if ((staff.score ?? 0) >= 20) {
     strengths.push("Staff education readiness is strong (score " + staff.score + "/25)");
   }
 
@@ -772,16 +772,16 @@ function aggregateAreasForImprovement(
   }
 
   // Include evaluators with score < 15
-  if (quality.score < 15) {
+  if ((quality.score ?? 0) < 15) {
     areas.push("Education quality needs improvement (score " + quality.score + "/25)");
   }
-  if (compliance.score < 15) {
+  if ((compliance.score ?? 0) < 15) {
     areas.push("Education compliance needs improvement (score " + compliance.score + "/25)");
   }
-  if (policy.score < 15) {
+  if ((policy.score ?? 0) < 15) {
     areas.push("Education policy framework needs improvement (score " + policy.score + "/25)");
   }
-  if (staff.score < 15) {
+  if ((staff.score ?? 0) < 15) {
     areas.push("Staff education readiness needs improvement (score " + staff.score + "/25)");
   }
 
@@ -817,41 +817,41 @@ function generateActions(
 
   // URGENT when exclusions are high
   const exclusionRecords = records.filter((r) => r.exclusionThisTerm);
-  if (exclusionRecords.length > 0 && quality.noExclusionRate < 50) {
+  if (exclusionRecords.length > 0 && (quality.noExclusionRate ?? 0) < 50) {
     actions.push("URGENT: " + exclusionRecords.length + " exclusion(s) recorded — review exclusion prevention strategy and support plans for affected children");
   }
 
   // Conditional on rates < 50
-  if (quality.totalRecords > 0 && quality.attainmentRate < 50) {
+  if (quality.totalRecords > 0 && (quality.attainmentRate ?? 0) < 50) {
     actions.push("HIGH: Attainment rate at " + quality.attainmentRate + "% — review educational support and consider additional tutoring or interventions");
   }
 
-  if (quality.totalRecords > 0 && quality.attendanceRate < 50) {
+  if (quality.totalRecords > 0 && (quality.attendanceRate ?? 0) < 50) {
     actions.push("HIGH: Attendance rate at " + quality.attendanceRate + "% — convene attendance strategy meetings with schools and address barriers");
   }
 
-  if (compliance.totalRecords > 0 && compliance.pepRate < 50) {
+  if (compliance.totalRecords > 0 && (compliance.pepRate ?? 0) < 50) {
     actions.push("HIGH: PEP compliance at " + compliance.pepRate + "% — schedule overdue PEP reviews with Virtual School Head urgently");
   }
 
-  if (compliance.totalRecords > 0 && compliance.pupilPremiumRate < 50) {
+  if (compliance.totalRecords > 0 && (compliance.pupilPremiumRate ?? 0) < 50) {
     actions.push("HIGH: Pupil Premium allocation at " + compliance.pupilPremiumRate + "% — ensure PP+ funding is allocated for all eligible children");
   }
 
-  if (quality.totalRecords > 0 && quality.designatedTeacherRate < 50) {
+  if (quality.totalRecords > 0 && (quality.designatedTeacherRate ?? 0) < 50) {
     actions.push("MEDIUM: Designated teacher engagement at " + quality.designatedTeacherRate + "% — contact schools to identify and engage designated teachers");
   }
 
-  if (compliance.totalRecords > 0 && compliance.virtualSchoolRate < 50) {
+  if (compliance.totalRecords > 0 && (compliance.virtualSchoolRate ?? 0) < 50) {
     actions.push("MEDIUM: Virtual School involvement at " + compliance.virtualSchoolRate + "% — strengthen liaison with Virtual School Head");
   }
 
-  if (staff.totalStaff > 0 && staff.educationRegulationsRate < 50) {
+  if (staff.totalStaff > 0 && (staff.educationRegulationsRate ?? 0) < 50) {
     actions.push("MEDIUM: Staff education training at " + staff.educationRegulationsRate + "% — schedule refresher training for all staff");
   }
 
   // Children with low scores
-  const lowScoreChildren = childProfiles.filter((p) => p.educationScore <= 3);
+  const lowScoreChildren = childProfiles.filter((p) => (p.educationScore ?? 0) <= 3);
   if (lowScoreChildren.length > 0) {
     actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low education scores — review individual education support plans");
   }

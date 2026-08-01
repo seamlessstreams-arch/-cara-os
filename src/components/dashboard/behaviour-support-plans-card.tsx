@@ -118,9 +118,9 @@ export function BehaviourSupportPlansCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            p.de_escalation_success_rate >= 80 ? "bg-green-50" : "bg-amber-50",
+            (p.de_escalation_success_rate ?? 0) >= 80 ? "bg-green-50" : "bg-amber-50",
           )}>
-            <p className={cn("text-lg font-bold tabular-nums", p.de_escalation_success_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+            <p className={cn("text-lg font-bold tabular-nums", (p.de_escalation_success_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
               {p.de_escalation_success_rate}%
             </p>
             <p className="text-[10px] text-muted-foreground">De-escal.</p>
@@ -175,7 +175,7 @@ export function BehaviourSupportPlansCard() {
             <p className="text-xs font-semibold">Physical Intervention Compliance</p>
             <div className="grid grid-cols-3 gap-2 text-center text-xs">
               <div>
-                <p className={cn("font-bold tabular-nums", p.pi_debrief_completion_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+                <p className={cn("font-bold tabular-nums", (p.pi_debrief_completion_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
                   {p.pi_debrief_completion_rate}%
                 </p>
                 <p className="text-[10px] text-muted-foreground">Debriefed</p>

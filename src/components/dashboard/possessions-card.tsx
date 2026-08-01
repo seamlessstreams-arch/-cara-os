@@ -99,11 +99,11 @@ export function PossessionsCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.photo_compliance_rate >= 90 ? "bg-green-50" : o.photo_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50",
+            (o.photo_compliance_rate ?? 0) >= 90 ? "bg-green-50" : (o.photo_compliance_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.photo_compliance_rate >= 90 ? "text-[--cs-success]" : o.photo_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (o.photo_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : (o.photo_compliance_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {o.photo_compliance_rate}%
             </p>
@@ -185,7 +185,7 @@ export function PossessionsCard() {
 
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <div>
-            <p className="font-bold text-slate-700 tabular-nums">{o.avg_items_per_child.toFixed(1)}</p>
+            <p className="font-bold text-slate-700 tabular-nums">{(o.avg_items_per_child ?? 0).toFixed(1)}</p>
             <p className="text-[10px] text-muted-foreground">Avg/Child</p>
           </div>
           <div>
@@ -195,7 +195,7 @@ export function PossessionsCard() {
             <p className="text-[10px] text-muted-foreground">Damaged</p>
           </div>
           <div>
-            <p className={cn("font-bold tabular-nums", o.insurance_rate >= 50 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+            <p className={cn("font-bold tabular-nums", (o.insurance_rate ?? 0) >= 50 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
               {o.insurance_rate}%
             </p>
             <p className="text-[10px] text-muted-foreground">Insured</p>

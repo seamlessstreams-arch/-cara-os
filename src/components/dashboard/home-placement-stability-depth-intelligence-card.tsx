@@ -121,8 +121,8 @@ export function HomePlacementStabilityDepthIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.stability_risk_profile.low_risk_rate >= 80 ? "text-[--cs-success]" :
-                  d.stability_risk_profile.low_risk_rate >= 50 ? "text-blue-600" : "text-[--cs-risk]"
+                  (d.stability_risk_profile.low_risk_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.stability_risk_profile.low_risk_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
                   {d.stability_risk_profile.total_records > 0 ? `${d.stability_risk_profile.low_risk_rate}%` : "—"}
                 </p>
@@ -149,8 +149,8 @@ export function HomePlacementStabilityDepthIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.meeting_profile.child_view_rate >= 80 ? "text-[--cs-success]" :
-                  d.meeting_profile.child_view_rate >= 50 ? "text-blue-600" : "text-[--cs-warning]"
+                  (d.meeting_profile.child_view_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.meeting_profile.child_view_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-warning]"
                 )}>
                   {d.meeting_profile.total_meetings > 0 ? `${d.meeting_profile.child_view_rate}%` : "—"}
                 </p>
@@ -163,8 +163,8 @@ export function HomePlacementStabilityDepthIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Anchor className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.placement_end_profile.planned_rate >= 80 ? "text-[--cs-success]" :
-                  d.placement_end_profile.planned_rate >= 50 ? "text-blue-600" : "text-[--cs-risk]"
+                  (d.placement_end_profile.planned_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.placement_end_profile.planned_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
                   {d.placement_end_profile.total_ends > 0 ? `${d.placement_end_profile.planned_rate}%` : "—"}
                 </p>

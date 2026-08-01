@@ -109,21 +109,21 @@ export function MissingFromCareCard() {
           </div>
           <div className="text-center rounded-lg bg-gray-50 p-2">
             <p className="text-lg font-bold tabular-nums">
-              {Math.floor(p.avg_duration_minutes / 60)}h {p.avg_duration_minutes % 60}m
+              {Math.floor((p.avg_duration_minutes ?? 0) / 60)}h {(p.avg_duration_minutes ?? 0) % 60}m
             </p>
             <p className="text-[10px] text-muted-foreground">Avg Duration</p>
           </div>
           <div
             className="text-center rounded-lg p-2"
             style={{
-              background: p.return_interview_completion_rate >= 100
+              background: (p.return_interview_completion_rate ?? 0) >= 100
                 ? "hsl(var(--chart-2) / 0.1)"
                 : "hsl(var(--destructive) / 0.08)",
             }}
           >
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              p.return_interview_completion_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]",
+              (p.return_interview_completion_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]",
             )}>
               {p.return_interview_completion_rate}%
             </p>

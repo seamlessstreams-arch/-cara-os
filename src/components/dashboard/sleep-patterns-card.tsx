@@ -97,8 +97,8 @@ export function SleepPatternsCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", o.all_children_checked_rate >= 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.all_children_checked_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{o.all_children_checked_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", (o.all_children_checked_rate ?? 0) >= 100 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (o.all_children_checked_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{o.all_children_checked_rate}%</p>
             <p className="text-[10px] text-muted-foreground">Checks</p>
           </div>
           <div className="text-center rounded-lg bg-blue-50 p-2.5">
@@ -109,8 +109,8 @@ export function SleepPatternsCard() {
             <p className={cn("text-lg font-bold tabular-nums", o.concern_count_7d === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{o.concern_count_7d}</p>
             <p className="text-[10px] text-muted-foreground">Concerns</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.building_secure_rate >= 100 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.building_secure_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{o.building_secure_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", (o.building_secure_rate ?? 0) >= 100 ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (o.building_secure_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{o.building_secure_rate}%</p>
             <p className="text-[10px] text-muted-foreground">Secure</p>
           </div>
         </div>

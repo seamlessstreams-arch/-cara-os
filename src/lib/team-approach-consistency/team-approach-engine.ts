@@ -244,7 +244,8 @@ export function buildTeamApproachConsistency(store: ReturnType<typeof getStore>)
     // be a reliable signal. A single entry per staff is noise, not divergence.
     const reliableRates = staffProfiles
       .filter((p) => p.totalEntries >= MIN_ENTRIES_FOR_SIGNAL)
-      .map((p) => p.therapeuticRate);
+      .map((p) => p.therapeuticRate)
+      .filter((r): r is number => r !== null);
     const variance =
       reliableRates.length >= 2 ? Math.max(...reliableRates) - Math.min(...reliableRates) : 0;
 

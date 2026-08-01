@@ -146,8 +146,8 @@ export function HomeTransitionPlanningIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.child_coverage.coverage_rate >= 100 ? "text-[--cs-success]" :
-                  d.child_coverage.coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.child_coverage.coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.child_coverage.coverage_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.child_coverage.children_with_goals}/{d.child_coverage.total_children}
                 </p>
@@ -193,8 +193,8 @@ export function HomeTransitionPlanningIntelligenceCard() {
                   d.progress.goals_overdue === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>{d.progress.goals_overdue}</span></p>
                 <p>Review rate: <span className={cn("font-medium",
-                  d.progress.review_rate >= 80 ? "text-[--cs-success]" :
-                  d.progress.review_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.progress.review_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.progress.review_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.progress.review_rate}%</span></p>
                 <p>With actions: <span className="font-medium text-slate-600">{d.progress.goals_with_actions}</span></p>
               </div>

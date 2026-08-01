@@ -80,8 +80,8 @@ export function PlacementMatchingAssessmentCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{home_metrics.total_children}</p>
             <p className="text-[10px] text-muted-foreground">Placed</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", home_metrics.average_stability_score >= 70 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", home_metrics.average_stability_score >= 70 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{home_metrics.average_stability_score}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", (home_metrics.average_stability_score ?? 0) >= 70 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (home_metrics.average_stability_score ?? 0) >= 70 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{home_metrics.average_stability_score}%</p>
             <p className="text-[10px] text-muted-foreground">Stability</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", highDisruption === 0 ? "bg-green-50" : "bg-red-50")}>

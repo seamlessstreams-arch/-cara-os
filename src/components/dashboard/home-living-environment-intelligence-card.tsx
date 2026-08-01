@@ -128,8 +128,8 @@ export function HomeLivingEnvironmentIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Home className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.bedrooms.avg_satisfaction >= 4.0 ? "text-[--cs-success]" :
-                  d.bedrooms.avg_satisfaction >= 3.0 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.bedrooms.avg_satisfaction ?? 0) >= 4.0 ? "text-[--cs-success]" :
+                  (d.bedrooms.avg_satisfaction ?? 0) >= 3.0 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.bedrooms.total_profiles > 0 ? `${d.bedrooms.avg_satisfaction}` : "—"}
                 </p>
@@ -142,7 +142,7 @@ export function HomeLivingEnvironmentIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <PawPrint className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.pets.total_pets > 0 && d.pets.vaccination_rate >= 100 ? "text-[--cs-success]" :
+                  d.pets.total_pets > 0 && (d.pets.vaccination_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   d.pets.total_pets > 0 ? "text-[--cs-warning]" : "text-slate-400"
                 )}>
                   {d.pets.total_pets > 0 ? d.pets.total_pets : "—"}

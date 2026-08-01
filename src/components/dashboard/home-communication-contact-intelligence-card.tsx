@@ -121,8 +121,8 @@ export function HomeCommunicationContactIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <BookOpen className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.comm_book.action_completion_rate >= 90 ? "text-[--cs-success]" :
-                  d.comm_book.action_completion_rate >= 70 ? "text-blue-600" : "text-[--cs-risk]"
+                  (d.comm_book.action_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.comm_book.action_completion_rate ?? 0) >= 70 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
                   {d.comm_book.action_required_count > 0 ? `${d.comm_book.action_completion_rate}%` : "—"}
                 </p>
@@ -163,8 +163,8 @@ export function HomeCommunicationContactIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.comm_profiles.child_views_rate >= 90 ? "text-[--cs-success]" :
-                  d.comm_profiles.child_views_rate >= 70 ? "text-blue-600" : "text-[--cs-warning]"
+                  (d.comm_profiles.child_views_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.comm_profiles.child_views_rate ?? 0) >= 70 ? "text-blue-600" : "text-[--cs-warning]"
                 )}>
                   {d.comm_profiles.total_profiles > 0 ? `${d.comm_profiles.child_views_rate}%` : "—"}
                 </p>

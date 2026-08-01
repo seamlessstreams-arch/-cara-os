@@ -36,11 +36,11 @@ function RatingBadge({ rating, score }: { rating: string; score: number }) {
 
 // ── Metric Card ──────────────────────────────────────────────────────────────
 
-function MetricCard({ label, value, suffix, color }: { label: string; value: number | string; suffix?: string; color?: string }) {
+function MetricCard({ label, value, suffix, color }: { label: string; value: number | string | null; suffix?: string; color?: string }) {
   return (
     <div className="flex flex-col items-center rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
       <span className={`text-2xl font-bold ${color ?? "text-gray-900"}`}>
-        {value}{suffix}
+        {value ?? "—"}{value !== null ? suffix : ""}
       </span>
       <span className="mt-1 text-xs text-gray-500 text-center">{label}</span>
     </div>
@@ -184,7 +184,7 @@ export function ProfessionalDevelopmentDashboardWidget() {
           label="Avg Hours/Staff"
           value={data.cpdQuality.averageHoursPerStaff}
           suffix="h"
-          color={data.cpdQuality.averageHoursPerStaff >= 30 ? "text-green-600" : "text-amber-600"}
+          color={(data.cpdQuality.averageHoursPerStaff ?? 0) >= 30 ? "text-green-600" : "text-amber-600"}
         />
         <MetricCard
           label="Overdue Qualifications"

@@ -26,8 +26,8 @@ function formatLabel(key: string): string {
   return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function RateBar({ label, value }: { label: string; value: number }) {
-  const pct = Math.min(100, Math.round(value));
+function RateBar({ label, value }: { label: string; value: number | null }) {
+  const pct = Math.min(100, Math.round((value ?? 0)));
   const color = pct >= 90 ? "bg-emerald-500" : pct >= 60 ? "bg-amber-400" : "bg-red-400";
   return (
     <div className="space-y-1">

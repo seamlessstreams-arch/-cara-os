@@ -36,7 +36,7 @@ export interface OutcomeLoopSummary {
   actionsTotal: number;
   completionRate: number | null;
   followUpRate: number | null;
-  byType: { type: string; count: number; completionRate: number }[];
+  byType: { type: string; count: number; completionRate: number | null }[];
 }
 
 // ── Get outcome loop for a single artifact ──────────────────────────────────

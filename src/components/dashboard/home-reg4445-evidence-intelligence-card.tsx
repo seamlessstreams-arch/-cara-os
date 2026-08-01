@@ -74,11 +74,11 @@ export function HomeReg4445EvidenceIntelligenceCard() {
         {d.reg4445_rating !== "insufficient_data" && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", d.reg44_visits.visit_completed_rate >= 90 ? "text-[--cs-success]" : d.reg44_visits.visit_completed_rate >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.reg44_visits.total_packs > 0 ? `${d.reg44_visits.visit_completed_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", (d.reg44_visits.visit_completed_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.reg44_visits.visit_completed_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.reg44_visits.total_packs > 0 ? `${d.reg44_visits.visit_completed_rate}%` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Reg 44 Visits</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", d.reg45.strong_evidence_rate >= 70 ? "text-[--cs-success]" : d.reg45.strong_evidence_rate >= 40 ? "text-blue-600" : "text-[--cs-risk]")}>{d.reg45.total_evidence > 0 ? `${d.reg45.strong_evidence_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", (d.reg45.strong_evidence_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.reg45.strong_evidence_rate ?? 0) >= 40 ? "text-blue-600" : "text-[--cs-risk]")}>{d.reg45.total_evidence > 0 ? `${d.reg45.strong_evidence_rate}%` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Reg 45 Strong</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">

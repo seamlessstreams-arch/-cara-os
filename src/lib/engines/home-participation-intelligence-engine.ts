@@ -83,7 +83,7 @@ export interface HomeParticipationResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function clamp(v: number, lo: number, hi: number): number | null {
+function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
@@ -330,8 +330,8 @@ export function computeHomeParticipation(
 
 function emptyMeetingProfile(childIds: string[]): MeetingProfile {
   return {
-    total_meetings_90d: 0, avg_attendance_rate: 0, avg_child_raised_rate: 0,
-    avg_feedback_per_meeting: 0, action_completion_rate: 0, avg_duration: 0,
+    total_meetings_90d: 0, avg_attendance_rate: null, avg_child_raised_rate: null,
+    avg_feedback_per_meeting: 0, action_completion_rate: null, avg_duration: 0,
     meetings_per_month: 0, children_never_attended: childIds,
   };
 }

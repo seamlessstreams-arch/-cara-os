@@ -91,7 +91,7 @@ export function HomeExpenseGovernanceIntelligenceCard() {
   }
 
   const ratingStyle = RATING_STYLES[d.expense_rating] ?? RATING_STYLES.insufficient_data;
-  const isAlert = d.expense_rating === "inadequate" || d.compliance.receipt_rate < 50;
+  const isAlert = d.expense_rating === "inadequate" || (d.compliance.receipt_rate ?? 0) < 50;
 
   return (
     <Card className={cn("overflow-hidden", isAlert ? "border-red-400 border-2" : "border-slate-200")}>
@@ -121,8 +121,8 @@ export function HomeExpenseGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Receipt className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.compliance.receipt_rate >= 90 ? "text-[--cs-success]" :
-                  d.compliance.receipt_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.compliance.receipt_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.compliance.receipt_rate ?? 0) >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.compliance.receipt_rate}%
                 </p>
@@ -135,10 +135,10 @@ export function HomeExpenseGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.approval.avg_approval_days <= 2 ? "text-[--cs-success]" :
-                  d.approval.avg_approval_days <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.approval.avg_approval_days ?? 0) <= 2 ? "text-[--cs-success]" :
+                  (d.approval.avg_approval_days ?? 0) <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.approval.avg_approval_days > 0 ? `${d.approval.avg_approval_days}d` : "—"}
+                  {(d.approval.avg_approval_days ?? 0) > 0 ? `${d.approval.avg_approval_days}d` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Avg Approval</p>
@@ -192,12 +192,12 @@ export function HomeExpenseGovernanceIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Compliance</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Child-linked: <span className={cn("font-medium",
-                  d.compliance.child_linked_rate >= 40 ? "text-[--cs-success]" :
-                  d.compliance.child_linked_rate >= 25 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.compliance.child_linked_rate ?? 0) >= 40 ? "text-[--cs-success]" :
+                  (d.compliance.child_linked_rate ?? 0) >= 25 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.compliance.child_linked_rate}%</span></p>
                 <p>Controlled pay: <span className={cn("font-medium",
-                  (d.compliance.house_card_rate + d.compliance.petty_cash_rate) >= 50 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.compliance.house_card_rate + d.compliance.petty_cash_rate}%</span></p>
+                  ((d.compliance.house_card_rate ?? 0) + (d.compliance.petty_cash_rate ?? 0)) >= 50 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                )}>{(d.compliance.house_card_rate ?? 0) + (d.compliance.petty_cash_rate ?? 0)}%</span></p>
                 <p>Approvers: <span className={cn("font-medium",
                   d.approval.unique_approvers >= 2 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.approval.unique_approvers}</span></p>

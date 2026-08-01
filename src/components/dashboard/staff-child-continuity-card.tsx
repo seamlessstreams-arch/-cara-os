@@ -92,8 +92,8 @@ export function StaffChildContinuityCard() {
 
         {/* ── Summary strip ────────────────────────────────────────────── */}
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2.5", o.avg_continuity_index >= 75 ? "bg-green-50" : o.avg_continuity_index >= 55 ? "bg-blue-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.avg_continuity_index >= 75 ? "text-[--cs-success]" : o.avg_continuity_index >= 55 ? "text-blue-600" : "text-[--cs-warning]")}>{o.avg_continuity_index}</p>
+          <div className={cn("text-center rounded-lg p-2.5", (o.avg_continuity_index ?? 0) >= 75 ? "bg-green-50" : (o.avg_continuity_index ?? 0) >= 55 ? "bg-blue-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (o.avg_continuity_index ?? 0) >= 75 ? "text-[--cs-success]" : (o.avg_continuity_index ?? 0) >= 55 ? "text-blue-600" : "text-[--cs-warning]")}>{o.avg_continuity_index}</p>
             <p className="text-[10px] text-muted-foreground">Avg index</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", o.fragmented_count > 0 ? "bg-amber-50" : "bg-green-50")}>

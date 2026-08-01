@@ -52,7 +52,7 @@ function readinessFromCounts(recordCount: number, gapCount: number, isRequired: 
   return "green";
 }
 
-function readinessScore(sections: CaraAnnexASectionReading[]): number {
+function readinessScore(sections: CaraAnnexASectionReading[]): number | null {
   let total = 0;
   let earned = 0;
   for (const s of sections) {
@@ -378,7 +378,7 @@ export function buildAnnexASnapshotData(
   return {
     sections,
     readiness_score: score,
-    overall_readiness: overallReadiness(score),
+    overall_readiness: overallReadiness((score ?? 0)),
     total_gaps: sections.reduce((acc, s) => acc + s.gap_count, 0),
     total_stale: sections.reduce((acc, s) => acc + s.stale_count, 0),
     period_start: periodStart,

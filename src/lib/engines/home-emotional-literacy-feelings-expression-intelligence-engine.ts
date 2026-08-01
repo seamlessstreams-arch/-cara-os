@@ -360,7 +360,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
 
   // Average identification score (current_score out of 10, scaled to %)
   const idScores = emotion_identification_records.map((r) => r.current_score);
-  const avgIdScore = avg((idScores ?? 0));
+  const avgIdScore = avg((idScores.filter((v): v is number => v !== null) ?? 0));
 
   // Correct identification rate across all assessments
   const totalPresented = emotion_identification_records.reduce((s, r) => s + r.emotions_presented, 0);

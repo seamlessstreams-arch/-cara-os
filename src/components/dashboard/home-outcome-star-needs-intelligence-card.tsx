@@ -77,20 +77,20 @@ export function HomeOutcomeStarNeedsIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.children_assessed > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_assessed}</p>
               <p className="text-[9px] text-muted-foreground">Assessed</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.average_outcome_score >= 7 ? "bg-green-50" : d.average_outcome_score >= 5 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.average_outcome_score >= 7 ? "text-[--cs-success]" : d.average_outcome_score >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_outcome_score}</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.average_outcome_score ?? 0) >= 7 ? "bg-green-50" : (d.average_outcome_score ?? 0) >= 5 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.average_outcome_score ?? 0) >= 7 ? "text-[--cs-success]" : (d.average_outcome_score ?? 0) >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_outcome_score}</p>
               <p className="text-[9px] text-muted-foreground">Avg Score</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.children_improving > 0 ? "bg-green-50" : "bg-amber-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.children_improving > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_improving}</p>
               <p className="text-[9px] text-muted-foreground">Improving</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.needs_addressed_rate >= 85 ? "bg-green-50" : d.needs_addressed_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.needs_addressed_rate >= 85 ? "text-[--cs-success]" : d.needs_addressed_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.needs_addressed_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.needs_addressed_rate ?? 0) >= 85 ? "bg-green-50" : (d.needs_addressed_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.needs_addressed_rate ?? 0) >= 85 ? "text-[--cs-success]" : (d.needs_addressed_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.needs_addressed_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Needs Met</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.kpi_met_rate >= 80 ? "bg-green-50" : d.kpi_met_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.kpi_met_rate >= 80 ? "text-[--cs-success]" : d.kpi_met_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.kpi_met_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.kpi_met_rate ?? 0) >= 80 ? "bg-green-50" : (d.kpi_met_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.kpi_met_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.kpi_met_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.kpi_met_rate}%</p>
               <p className="text-[9px] text-muted-foreground">KPIs Met</p>
             </div>
           </div>

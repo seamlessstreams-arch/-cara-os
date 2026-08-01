@@ -170,7 +170,7 @@ export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsInt
   for (const p of latest) {
     for (const d of p.domains) {
       const entry = domainScores.get(d.name) ?? { total: 0, count: 0 };
-      entry.total += (d.max_score ?? 0) > 0 ? Math.round((d.score / (d.max_score ?? 0)) * 100) : null;
+      entry.total += (d.max_score ?? 0) > 0 ? Math.round(((d.score ?? 0) / (d.max_score ?? 0)) * 100) : 0;
       entry.count++;
       domainScores.set(d.name, entry);
     }
@@ -188,7 +188,7 @@ export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsInt
     .map((p) => {
       const domainPcts = p.domains
         .filter((d) => (d.max_score ?? 0) > 0)
-        .map((d) => ({ name: d.name, pct: Math.round((d.score / (d.max_score ?? 0)) * 100) }));
+        .map((d) => ({ name: d.name, pct: Math.round(((d.score ?? 0) / (d.max_score ?? 0)) * 100) }));
       const sorted = [...domainPcts].sort((a, b) => b.pct - a.pct);
       const strongest = sorted.length > 0 ? sorted[0].name : "N/A";
       const weakest = sorted.length > 0 ? sorted[sorted.length - 1].name : "N/A";

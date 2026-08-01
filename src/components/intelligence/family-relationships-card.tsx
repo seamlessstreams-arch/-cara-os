@@ -95,8 +95,8 @@ export function FamilyRelationshipsCard({ childId }: { childId: string }) {
             <p className="text-lg font-bold tabular-nums text-slate-600">{ca.unique_family_contacts}</p>
             <p className="text-[10px] text-muted-foreground">Family Members</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", ca.safe_pct === 100 ? "bg-green-50" : ca.safe_pct >= 80 ? "bg-amber-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", ca.safe_pct === 100 ? "text-green-600" : ca.safe_pct >= 80 ? "text-amber-600" : "text-red-600")}>{ca.safe_pct}%</p>
+          <div className={cn("text-center rounded-lg p-2", ca.safe_pct === 100 ? "bg-green-50" : (ca.safe_pct ?? 0) >= 80 ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", ca.safe_pct === 100 ? "text-green-600" : (ca.safe_pct ?? 0) >= 80 ? "text-amber-600" : "text-red-600")}>{ca.safe_pct}%</p>
             <p className="text-[10px] text-muted-foreground">Safe Sessions</p>
           </div>
           <div className={cn("text-center rounded-lg p-2", ca.concerns_raised_90d > 0 ? "bg-amber-50" : "bg-green-50")}>

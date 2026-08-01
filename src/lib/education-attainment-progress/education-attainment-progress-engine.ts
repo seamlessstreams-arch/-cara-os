@@ -532,10 +532,10 @@ export function generateEducationAttainmentProgressIntelligence(
   // Overall score (100 points)
   const overallScore = clamp(
     Math.round(
-      educationQuality.score +
-      educationCompliance.score +
-      educationPolicy.score +
-      staffEducationReadiness.score,
+      (educationQuality.score ?? 0) +
+      (educationCompliance.score ?? 0) +
+      (educationPolicy.score ?? 0) +
+      (staffEducationReadiness.score ?? 0),
     ),
     0,
     100,
@@ -601,16 +601,16 @@ function buildStrengths(
     strengths.push("Overall education attainment and progress rated Good (" + overallScore + "/100)");
   }
 
-  if (quality.progressRate >= 80) {
+  if ((quality.progressRate ?? 0) >= 80) {
     strengths.push("Strong educational progress with " + quality.progressRate + "% of records at expected level or above");
   }
-  if (quality.pepUpdatedRate >= 80) {
+  if ((quality.pepUpdatedRate ?? 0) >= 80) {
     strengths.push("PEP reviews consistently up to date");
   }
-  if (quality.attendanceRate >= 80) {
+  if ((quality.attendanceRate ?? 0) >= 80) {
     strengths.push("Good school attendance rates maintained across the home");
   }
-  if (compliance.documentedRate >= 80) {
+  if ((compliance.documentedRate ?? 0) >= 80) {
     strengths.push("Excellent education documentation in care plans");
   }
 
@@ -634,19 +634,19 @@ function buildAreasForImprovement(
     areas.push("Overall education attainment and progress Requires Improvement (" + overallScore + "/100)");
   }
 
-  if (quality.progressRate < 60 && quality.totalRecords > 0) {
+  if ((quality.progressRate ?? 0) < 60 && quality.totalRecords > 0) {
     areas.push("Educational progress rate at " + quality.progressRate + "% — below expected threshold");
   }
-  if (quality.pepUpdatedRate < 60 && quality.totalRecords > 0) {
+  if ((quality.pepUpdatedRate ?? 0) < 60 && quality.totalRecords > 0) {
     areas.push("PEP update rate at " + quality.pepUpdatedRate + "% — needs improvement");
   }
-  if (quality.attendanceRate < 60 && quality.totalRecords > 0) {
+  if ((quality.attendanceRate ?? 0) < 60 && quality.totalRecords > 0) {
     areas.push("School attendance rate at " + quality.attendanceRate + "% — below expected threshold");
   }
-  if (compliance.virtualSchoolRate < 60 && compliance.totalRecords > 0) {
+  if ((compliance.virtualSchoolRate ?? 0) < 60 && compliance.totalRecords > 0) {
     areas.push("Virtual school link rate at " + compliance.virtualSchoolRate + "% — needs strengthening");
   }
-  if (quality.childViewsRate < 60 && quality.totalRecords > 0) {
+  if ((quality.childViewsRate ?? 0) < 60 && quality.totalRecords > 0) {
     areas.push("Children's views captured in only " + quality.childViewsRate + "% of records");
   }
 
@@ -680,12 +680,12 @@ function buildActions(
   }
 
   // Low virtual school links
-  if (compliance.virtualSchoolRate < 60 && compliance.totalRecords > 0) {
+  if ((compliance.virtualSchoolRate ?? 0) < 60 && compliance.totalRecords > 0) {
     actions.push("Strengthen virtual school links to improve coordination and support for looked-after children");
   }
 
   // Low child views
-  if (quality.childViewsRate < 60 && quality.totalRecords > 0) {
+  if ((quality.childViewsRate ?? 0) < 60 && quality.totalRecords > 0) {
     actions.push("Embed children's views in education planning to ensure their voice is heard");
   }
 

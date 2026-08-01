@@ -114,8 +114,8 @@ export function HomeDigitalSafetyIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.agreements.agreement_coverage_rate >= 100 ? "text-[--cs-success]" :
-                  d.agreements.agreement_coverage_rate >= 75 ? "text-blue-600" : "text-[--cs-risk]"
+                  (d.agreements.agreement_coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.agreements.agreement_coverage_rate ?? 0) >= 75 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
                   {d.agreements.agreement_coverage_rate}%
                 </p>
@@ -128,8 +128,8 @@ export function HomeDigitalSafetyIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <FileCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.consents.photo_consent_coverage_rate >= 100 ? "text-[--cs-success]" :
-                  d.consents.photo_consent_coverage_rate >= 75 ? "text-blue-600" : "text-[--cs-risk]"
+                  (d.consents.photo_consent_coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.consents.photo_consent_coverage_rate ?? 0) >= 75 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
                   {d.consents.photo_consent_coverage_rate}%
                 </p>
@@ -174,7 +174,7 @@ export function HomeDigitalSafetyIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Agreements</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Signed: <span className={cn("font-medium",
-                  d.agreements.signed_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.agreements.signed_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.agreements.signed_rate}%</span></p>
                 <p>Controls: <span className="font-medium text-slate-600">{d.agreements.with_parental_controls}</span></p>
                 <p>Avg devices: <span className="font-medium text-slate-600">{d.agreements.avg_devices_per_child}</span></p>

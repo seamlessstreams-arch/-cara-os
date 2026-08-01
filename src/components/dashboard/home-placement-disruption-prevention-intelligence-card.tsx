@@ -77,16 +77,16 @@ export function HomePlacementDisruptionPreventionIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.children_with_plans > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_with_plans}</p>
               <p className="text-[9px] text-muted-foreground">Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.planned_ending_rate >= 90 ? "bg-green-50" : d.planned_ending_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.planned_ending_rate >= 90 ? "text-[--cs-success]" : d.planned_ending_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.planned_ending_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.planned_ending_rate ?? 0) >= 90 ? "bg-green-50" : (d.planned_ending_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.planned_ending_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.planned_ending_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.planned_ending_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Planned</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.disruption_rate === 0 ? "bg-green-50" : d.disruption_rate <= 10 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.disruption_rate === 0 ? "text-[--cs-success]" : d.disruption_rate <= 10 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.disruption_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.disruption_rate === 0 ? "bg-green-50" : (d.disruption_rate ?? 0) <= 10 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.disruption_rate === 0 ? "text-[--cs-success]" : (d.disruption_rate ?? 0) <= 10 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.disruption_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Disrupted</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.average_placement_months >= 12 ? "bg-green-50" : d.average_placement_months >= 6 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.average_placement_months >= 12 ? "text-[--cs-success]" : d.average_placement_months >= 6 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_placement_months}m</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.average_placement_months ?? 0) >= 12 ? "bg-green-50" : (d.average_placement_months ?? 0) >= 6 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.average_placement_months ?? 0) >= 12 ? "text-[--cs-success]" : (d.average_placement_months ?? 0) >= 6 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_placement_months}m</p>
               <p className="text-[9px] text-muted-foreground">Avg Stay</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.high_risk_children === 0 ? "bg-green-50" : "bg-red-50")}>

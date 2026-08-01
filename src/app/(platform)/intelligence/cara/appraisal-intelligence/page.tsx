@@ -63,9 +63,9 @@ function RatingBar({ rb }: { rb: RatingBreakdown }) {
 }
 
 function CompetencyRow({ c }: { c: CompetencyAnalysis }) {
-  const scoreColor = c.avg_score >= 4 ? "text-green-600" : c.avg_score >= 3 ? "text-blue-600" : c.avg_score > 0 ? "text-amber-600" : "text-slate-400";
-  const barWidth = c.avg_score > 0 ? `${(c.avg_score / 5) * 100}%` : "0%";
-  const barColor = c.avg_score >= 4 ? "bg-green-400" : c.avg_score >= 3 ? "bg-blue-400" : "bg-amber-400";
+  const scoreColor = (c.avg_score ?? 0) >= 4 ? "text-green-600" : (c.avg_score ?? 0) >= 3 ? "text-blue-600" : (c.avg_score ?? 0) > 0 ? "text-amber-600" : "text-slate-400";
+  const barWidth = (c.avg_score ?? 0) > 0 ? `${((c.avg_score ?? 0) / 5) * 100}%` : "0%";
+  const barColor = (c.avg_score ?? 0) >= 4 ? "bg-green-400" : (c.avg_score ?? 0) >= 3 ? "bg-blue-400" : "bg-amber-400";
   return (
     <div className="flex items-center gap-3">
       <p className="w-44 shrink-0 truncate text-xs text-slate-700">{c.domain_label}</p>
@@ -73,7 +73,7 @@ function CompetencyRow({ c }: { c: CompetencyAnalysis }) {
         <div className={`h-full rounded-full ${barColor}`} style={{ width: barWidth }} />
       </div>
       <span className={`w-12 shrink-0 text-right text-xs font-semibold ${scoreColor}`}>
-        {c.avg_score > 0 ? `${c.avg_score.toFixed(1)}/5` : "—"}
+        {(c.avg_score ?? 0) > 0 ? `${(c.avg_score ?? 0).toFixed(1)}/5` : "—"}
       </span>
     </div>
   );

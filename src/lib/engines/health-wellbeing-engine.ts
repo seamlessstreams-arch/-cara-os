@@ -428,8 +428,8 @@ export function computeHealthWellbeing(
     const currentEntries = entries.filter((e) => e.date >= sevenDaysAgo && e.date <= today);
     const previousEntries = entries.filter((e) => e.date >= fourteenDaysAgo && e.date < sevenDaysAgo);
 
-    const currentAvg = average(currentEntries.map((e) => e.mood_score));
-    const previousAvg = average(previousEntries.map((e) => e.mood_score));
+    const currentAvg = average(currentEntries.map((e) => e.mood_score).filter((s): s is number => s !== null));
+    const previousAvg = average(previousEntries.map((e) => e.mood_score).filter((s): s is number => s !== null));
     const latestScore = currentEntries.length > 0
       ? currentEntries.sort((a, b) => b.date.localeCompare(a.date))[0].mood_score
       : null;

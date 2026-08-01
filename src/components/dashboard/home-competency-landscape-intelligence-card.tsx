@@ -117,10 +117,10 @@ export function HomeCompetencyLandscapeIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Award className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.readiness.avg_readiness_score >= 70 ? "text-[--cs-success]" :
-                  d.readiness.avg_readiness_score >= 55 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.readiness.avg_readiness_score ?? 0) >= 70 ? "text-[--cs-success]" :
+                  (d.readiness.avg_readiness_score ?? 0) >= 55 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.readiness.avg_readiness_score > 0 ? d.readiness.avg_readiness_score : "—"}
+                  {(d.readiness.avg_readiness_score ?? 0) > 0 ? d.readiness.avg_readiness_score : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Avg Readiness</p>
@@ -158,8 +158,8 @@ export function HomeCompetencyLandscapeIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.readiness.staff_with_target_rate >= 80 ? "text-[--cs-success]" :
-                  d.readiness.staff_with_target_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.readiness.staff_with_target_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.readiness.staff_with_target_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.readiness.staff_with_target > 0 ? `${d.readiness.staff_with_target_rate}%` : "—"}
                 </p>
@@ -177,8 +177,8 @@ export function HomeCompetencyLandscapeIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Highest: <span className="font-medium text-green-600">{d.readiness.highest_readiness}</span></p>
                 <p>Lowest: <span className={cn("font-medium",
-                  d.readiness.lowest_readiness >= 60 ? "text-[--cs-success]" :
-                  d.readiness.lowest_readiness >= 45 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.readiness.lowest_readiness ?? 0) >= 60 ? "text-[--cs-success]" :
+                  (d.readiness.lowest_readiness ?? 0) >= 45 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.readiness.lowest_readiness}</span></p>
                 <p>Above 70: <span className="font-medium text-slate-600">{d.readiness.staff_above_70}</span></p>
                 <p>Overdue reviews: <span className={cn("font-medium",
@@ -190,8 +190,8 @@ export function HomeCompetencyLandscapeIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Progression</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Plan coverage: <span className={cn("font-medium",
-                  d.progression.plan_coverage_rate >= 60 ? "text-[--cs-success]" :
-                  d.progression.plan_coverage_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.progression.plan_coverage_rate ?? 0) >= 60 ? "text-[--cs-success]" :
+                  (d.progression.plan_coverage_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.progression.plan_coverage_rate}%</span></p>
                 <p>Actions done: <span className="font-medium text-slate-600">{d.progression.completed_actions}/{d.progression.total_actions}</span></p>
                 <p>Overdue actions: <span className={cn("font-medium",

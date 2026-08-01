@@ -17,7 +17,16 @@ const ratingLabels: Record<string, string> = {
   inadequate: "Inadequate",
 };
 
-function ScoreBar({ score, label, maxScore = 100 }: { score: number; label: string; maxScore?: number }) {
+function ScoreBar({ score, label, maxScore = 100 }: { score: number | null; label: string; maxScore?: number }) {
+  if (score === null) {
+    return (
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-gray-600 w-44 shrink-0">{label}</span>
+        <div className="flex-1 bg-gray-100 rounded-full h-2.5" />
+        <span className="text-sm font-medium w-12 text-right text-gray-400">—</span>
+      </div>
+    );
+  }
   const pct = (score / maxScore) * 100;
   const color = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
   return (
@@ -103,11 +112,11 @@ export function EducationAchievementDashboardWidget() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className={`text-2xl font-bold ${attendanceColor(data.attendance.attendanceRate)}`}>{data.attendance.attendanceRate}%</div>
+          <div className={`text-2xl font-bold ${attendanceColor((data.attendance.attendanceRate ?? 0))}`}>{data.attendance.attendanceRate}%</div>
           <div className="text-xs text-gray-500 mt-1">Attendance</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className={`text-2xl font-bold ${data.pepQuality.currentRate >= 100 ? "text-green-600" : "text-amber-600"}`}>{data.pepQuality.currentRate}%</div>
+          <div className={`text-2xl font-bold ${(data.pepQuality.currentRate ?? 0) >= 100 ? "text-green-600" : "text-amber-600"}`}>{data.pepQuality.currentRate}%</div>
           <div className="text-xs text-gray-500 mt-1">PEPs Current</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -135,7 +144,7 @@ export function EducationAchievementDashboardWidget() {
                 <div key={child.childId} className="border border-gray-100 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-gray-900">{child.childName}</span>
-                    <span className={`text-sm font-medium ${attendanceColor(child.attendanceRate)}`}>{child.attendanceRate}%</span>
+                    <span className={`text-sm font-medium ${attendanceColor((child.attendanceRate ?? 0))}`}>{child.attendanceRate}%</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>Type: <span className="font-medium">{String(child.schoolType).replace(/_/g, " ")}</span></div>

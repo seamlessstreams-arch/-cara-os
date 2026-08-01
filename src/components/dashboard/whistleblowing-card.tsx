@@ -115,11 +115,11 @@ export function WhistleblowingCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.protection_measures_rate >= 90 ? "bg-green-50" : o.protection_measures_rate >= 70 ? "bg-amber-50" : "bg-red-50",
+            (o.protection_measures_rate ?? 0) >= 90 ? "bg-green-50" : (o.protection_measures_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.protection_measures_rate >= 90 ? "text-[--cs-success]" : o.protection_measures_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (o.protection_measures_rate ?? 0) >= 90 ? "text-[--cs-success]" : (o.protection_measures_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {o.protection_measures_rate}%
             </p>
@@ -190,7 +190,7 @@ export function WhistleblowingCard() {
             <div>
               <p className={cn(
                 "font-bold tabular-nums",
-                o.lessons_recorded_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
+                (o.lessons_recorded_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]",
               )}>
                 {o.lessons_recorded_rate}%
               </p>

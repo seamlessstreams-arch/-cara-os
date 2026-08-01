@@ -222,7 +222,7 @@ export type IncidentReflection = {
 export type PostIncidentReflectionAnalysis = {
   totalIncidents: number;
   incidentsWithDebrief: number;
-  debriefCompletionRate: number;
+  debriefCompletionRate: number | null;
   avgDaysToDebrief: number | null;
   overdueDebriefs: number;
   reflections: IncidentReflection[];

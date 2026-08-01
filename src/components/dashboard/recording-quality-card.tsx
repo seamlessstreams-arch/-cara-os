@@ -121,11 +121,11 @@ export function RecordingQualityCard() {
           </div>
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.mood_capture_rate >= 80 ? "bg-green-50" : o.mood_capture_rate >= 60 ? "bg-amber-50" : "bg-red-50",
+            (o.mood_capture_rate ?? 0) >= 80 ? "bg-green-50" : (o.mood_capture_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.mood_capture_rate >= 80 ? "text-[--cs-success]" : o.mood_capture_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (o.mood_capture_rate ?? 0) >= 80 ? "text-[--cs-success]" : (o.mood_capture_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {o.mood_capture_rate}%
             </p>
@@ -226,7 +226,7 @@ export function RecordingQualityCard() {
 
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <div>
-            <p className="font-bold text-slate-700 tabular-nums">{o.avg_entries_per_day.toFixed(1)}</p>
+            <p className="font-bold text-slate-700 tabular-nums">{(o.avg_entries_per_day ?? 0).toFixed(1)}</p>
             <p className="text-[10px] text-muted-foreground">Avg/Day</p>
           </div>
           <div>

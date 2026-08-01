@@ -124,8 +124,8 @@ export function HomeRecordingQualityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Send className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.submission_profile.submission_rate >= 90 ? "text-[--cs-success]" :
-                  d.submission_profile.submission_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.submission_profile.submission_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.submission_profile.submission_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.submission_profile.submission_rate}%
                 </p>
@@ -138,8 +138,8 @@ export function HomeRecordingQualityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Eye className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.review_profile.review_rate >= 80 ? "text-[--cs-success]" :
-                  d.review_profile.review_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.review_profile.review_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.review_profile.review_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.review_profile.review_rate}%
                 </p>
@@ -152,8 +152,8 @@ export function HomeRecordingQualityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <BadgeCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.approval_profile.approval_rate >= 80 ? "text-[--cs-success]" :
-                  d.approval_profile.approval_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.approval_profile.approval_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.approval_profile.approval_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.approval_profile.approval_rate}%
                 </p>
@@ -198,8 +198,8 @@ export function HomeRecordingQualityIntelligenceCard() {
                   <p>Pending: <span className="font-medium text-amber-600">{d.review_profile.pending_review_count}</span></p>
                 )}
                 <p>Avg days: <span className={cn("font-medium",
-                  d.review_profile.avg_review_days <= 1 ? "text-[--cs-success]" :
-                  d.review_profile.avg_review_days <= 3 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.review_profile.avg_review_days ?? 0) <= 1 ? "text-[--cs-success]" :
+                  (d.review_profile.avg_review_days ?? 0) <= 3 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.review_profile.avg_review_days}</span></p>
               </div>
             </div>

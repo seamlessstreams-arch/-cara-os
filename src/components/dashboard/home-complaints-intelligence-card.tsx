@@ -119,8 +119,8 @@ export function HomeComplaintsIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.response_profile.within_10_days_rate >= 80 ? "text-[--cs-success]" :
-                  d.response_profile.within_10_days_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.response_profile.within_10_days_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.response_profile.within_10_days_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.response_profile.within_10_days_rate}%
                 </p>
@@ -133,8 +133,8 @@ export function HomeComplaintsIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ThumbsUp className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.outcome_profile.satisfaction_rate >= 80 ? "text-[--cs-success]" :
-                  d.outcome_profile.satisfaction_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.outcome_profile.satisfaction_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.outcome_profile.satisfaction_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.outcome_profile.satisfaction_rate}%
                 </p>
@@ -147,8 +147,8 @@ export function HomeComplaintsIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <FileSearch className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.learning_profile.findings_documented_rate >= 80 ? "text-[--cs-success]" :
-                  d.learning_profile.findings_documented_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.learning_profile.findings_documented_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.learning_profile.findings_documented_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.learning_profile.findings_documented_rate}%
                 </p>
@@ -161,8 +161,8 @@ export function HomeComplaintsIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.learning_profile.lessons_learned_rate >= 80 ? "text-[--cs-success]" :
-                  d.learning_profile.lessons_learned_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.learning_profile.lessons_learned_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.learning_profile.lessons_learned_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.learning_profile.lessons_learned_rate}%
                 </p>

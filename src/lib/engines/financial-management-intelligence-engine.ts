@@ -82,7 +82,7 @@ export interface CategorySpend {
   category: ExpenseCategory;
   total_amount: number;
   count: number;
-  pct_of_total: number;
+  pct_of_total: number | null;
   pending_count: number;
   missing_receipts: number;
 }

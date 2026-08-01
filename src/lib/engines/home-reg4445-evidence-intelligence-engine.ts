@@ -81,14 +81,14 @@ export interface Reg44VisitSummary {
   total_packs: number;
   visit_completed_rate: number | null;
   report_submitted_rate: number | null;
-  avg_areas_covered: number;
+  avg_areas_covered: number | null;
 }
 
 export interface Reg44ReportSummary {
   total_reports: number;
-  avg_children_interviewed: number;
+  avg_children_interviewed: number | null;
   child_voice_rate: number | null;
-  avg_concerns: number;
+  avg_concerns: number | null;
 }
 
 export interface Reg44ActionSummary {

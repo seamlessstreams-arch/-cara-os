@@ -96,8 +96,8 @@ export function MissingEpisodesIntelligenceCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{p.total_episodes}</p>
             <p className="text-[10px] text-muted-foreground">Total</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", p.return_interview_completion_rate >= 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", p.return_interview_completion_rate >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{p.return_interview_completion_rate}%</p>
+          <div className={cn("text-center rounded-lg p-2.5", (p.return_interview_completion_rate ?? 0) >= 100 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (p.return_interview_completion_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{p.return_interview_completion_rate}%</p>
             <p className="text-[10px] text-muted-foreground">RHI Done</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", p.contextual_safeguarding_flagged === 0 ? "bg-green-50" : "bg-amber-50")}>

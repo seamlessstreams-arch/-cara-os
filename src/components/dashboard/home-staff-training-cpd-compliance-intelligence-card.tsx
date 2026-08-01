@@ -73,28 +73,28 @@ export function HomeStaffTrainingCpdComplianceIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.training_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.mandatory_training_compliance_rate >= 90 ? "bg-green-50" : d.mandatory_training_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.mandatory_training_compliance_rate >= 90 ? "text-[--cs-success]" : d.mandatory_training_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.mandatory_training_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.mandatory_training_compliance_rate ?? 0) >= 90 ? "bg-green-50" : (d.mandatory_training_compliance_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.mandatory_training_compliance_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.mandatory_training_compliance_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.mandatory_training_compliance_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Mandatory</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.cpd_completion_rate >= 90 ? "bg-green-50" : d.cpd_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cpd_completion_rate >= 90 ? "text-[--cs-success]" : d.cpd_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cpd_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.cpd_completion_rate ?? 0) >= 90 ? "bg-green-50" : (d.cpd_completion_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.cpd_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.cpd_completion_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cpd_completion_rate}%</p>
               <p className="text-[9px] text-muted-foreground">CPD</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.training_needs_coverage_rate >= 90 ? "bg-green-50" : d.training_needs_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.training_needs_coverage_rate >= 90 ? "text-[--cs-success]" : d.training_needs_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.training_needs_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.training_needs_coverage_rate ?? 0) >= 90 ? "bg-green-50" : (d.training_needs_coverage_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.training_needs_coverage_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.training_needs_coverage_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.training_needs_coverage_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Needs</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.qualification_currency_rate >= 90 ? "bg-green-50" : d.qualification_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.qualification_currency_rate >= 90 ? "text-[--cs-success]" : d.qualification_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.qualification_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.qualification_currency_rate ?? 0) >= 90 ? "bg-green-50" : (d.qualification_currency_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.qualification_currency_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.qualification_currency_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.qualification_currency_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Quals</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.development_plan_coverage_rate >= 90 ? "bg-green-50" : d.development_plan_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.development_plan_coverage_rate >= 90 ? "text-[--cs-success]" : d.development_plan_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.development_plan_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.development_plan_coverage_rate ?? 0) >= 90 ? "bg-green-50" : (d.development_plan_coverage_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.development_plan_coverage_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.development_plan_coverage_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.development_plan_coverage_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Dev Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.training_effectiveness_rate >= 90 ? "bg-green-50" : d.training_effectiveness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.training_effectiveness_rate >= 90 ? "text-[--cs-success]" : d.training_effectiveness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.training_effectiveness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.training_effectiveness_rate ?? 0) >= 90 ? "bg-green-50" : (d.training_effectiveness_rate ?? 0) >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.training_effectiveness_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.training_effectiveness_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.training_effectiveness_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Effective</p>
             </div>
           </div>

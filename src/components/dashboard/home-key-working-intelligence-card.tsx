@@ -161,7 +161,7 @@ export function HomeKeyWorkingIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <SmilePlus className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.mood.positive_shift_rate >= 70 ? "text-[--cs-success]" : d.mood.positive_shift_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+                <p className={cn("text-lg font-bold tabular-nums", (d.mood.positive_shift_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.mood.positive_shift_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
                   {d.mood.positive_shift_rate}%
                 </p>
               </div>
@@ -189,7 +189,7 @@ export function HomeKeyWorkingIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Session Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Avg duration: <span className={cn("font-medium", meets(d.sessions.avg_duration_minutes, 30) ? "text-[--cs-success]" : meets(d.sessions.avg_duration_minutes, 20) ? "text-[--cs-warning]" : below(d.sessions.avg_duration_minutes, 20) ? "text-[--cs-risk]" : "text-slate-500")}>{typeof d.sessions.avg_duration_minutes === "number" ? `${d.sessions.avg_duration_minutes}min` : "—"}</span></p>
-                <p>Actions/session: <span className={cn("font-medium", d.sessions.actions_per_session >= 2 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.sessions.actions_per_session}</span></p>
+                <p>Actions/session: <span className={cn("font-medium", (d.sessions.actions_per_session ?? 0) >= 2 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.sessions.actions_per_session}</span></p>
                 <p>Follow-up: <span className={cn("font-medium", meets(d.sessions.follow_up_rate, 90) ? "text-[--cs-success]" : meets(d.sessions.follow_up_rate, 70) ? "text-[--cs-warning]" : below(d.sessions.follow_up_rate, 70) ? "text-[--cs-risk]" : "text-slate-500")}>{formatRate(d.sessions.follow_up_rate)}</span></p>
                 <p>Goal-linked: <span className={cn("font-medium", meets(d.sessions.goal_linked_rate, 70) ? "text-[--cs-success]" : meets(d.sessions.goal_linked_rate, 40) ? "text-[--cs-warning]" : below(d.sessions.goal_linked_rate, 40) ? "text-[--cs-risk]" : "text-slate-500")}>{formatRate(d.sessions.goal_linked_rate)}</span></p>
               </div>
@@ -200,8 +200,8 @@ export function HomeKeyWorkingIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Mood & Coverage</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Avg mood: <span className="font-medium text-slate-600">{d.mood.avg_mood_before} → {d.mood.avg_mood_after}</span></p>
-                <p>Improvement: <span className={cn("font-medium", d.mood.avg_improvement > 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>+{d.mood.avg_improvement}</span></p>
-                <p>Per child/30d: <span className={cn("font-medium", d.sessions.avg_per_child_30d >= 2 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.sessions.avg_per_child_30d}</span></p>
+                <p>Improvement: <span className={cn("font-medium", (d.mood.avg_improvement ?? 0) > 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>+{d.mood.avg_improvement}</span></p>
+                <p>Per child/30d: <span className={cn("font-medium", (d.sessions.avg_per_child_30d ?? 0) >= 2 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.sessions.avg_per_child_30d}</span></p>
                 {hasUncovered && (
                   <p className="text-red-600 font-medium">{d.coverage.children_without_sessions_30d.length} uncovered</p>
                 )}

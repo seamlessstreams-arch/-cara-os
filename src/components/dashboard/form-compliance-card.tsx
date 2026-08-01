@@ -153,7 +153,7 @@ export function FormComplianceCard() {
           <div>
             <p className={cn(
               "font-bold tabular-nums",
-              o.avg_review_days <= 2 ? "text-[--cs-success]" : o.avg_review_days <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (o.avg_review_days ?? 0) <= 2 ? "text-[--cs-success]" : (o.avg_review_days ?? 0) <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {o.avg_review_days}d
             </p>

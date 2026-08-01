@@ -35,7 +35,7 @@ interface ChildEducationProfile {
   presentCount: number;
   absentCount: number;
   excludedCount: number;
-  attendanceRate: number;
+  attendanceRate: number | null;
   exclusionCount: number;
   hasPEPInLast6Months: boolean;
   lastPEPDate: string | null;

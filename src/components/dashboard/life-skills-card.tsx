@@ -93,11 +93,11 @@ export function LifeSkillsCard() {
         <div className="grid grid-cols-4 gap-2">
           <div className={cn(
             "text-center rounded-lg p-2.5",
-            o.avg_readiness >= 60 ? "bg-green-50" : o.avg_readiness >= 40 ? "bg-amber-50" : "bg-red-50",
+            (o.avg_readiness ?? 0) >= 60 ? "bg-green-50" : (o.avg_readiness ?? 0) >= 40 ? "bg-amber-50" : "bg-red-50",
           )}>
             <p className={cn(
               "text-lg font-bold tabular-nums",
-              o.avg_readiness >= 60 ? "text-[--cs-success]" : o.avg_readiness >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (o.avg_readiness ?? 0) >= 60 ? "text-[--cs-success]" : (o.avg_readiness ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {o.avg_readiness}%
             </p>
@@ -191,7 +191,7 @@ export function LifeSkillsCard() {
                     <div
                       className={cn(
                         "h-full rounded-full",
-                        d.avg_pct >= 60 ? "bg-green-400" : d.avg_pct >= 40 ? "bg-amber-400" : "bg-red-400",
+                        (d.avg_pct ?? 0) >= 60 ? "bg-green-400" : (d.avg_pct ?? 0) >= 40 ? "bg-amber-400" : "bg-red-400",
                       )}
                       style={{ width: `${d.avg_pct}%` }}
                     />

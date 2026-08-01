@@ -154,7 +154,7 @@ export function StaffPerformanceDashboardWidget() {
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     <StatusBadge ok={profile.qualificationComplianceRate >= 90} label={`Quals ${profile.qualificationComplianceRate}%`} />
                     <StatusBadge ok={profile.pdpGoalAchievementRate >= 60} label={`PDP ${profile.pdpGoalAchievementRate}%`} />
-                    <StatusBadge ok={profile.averageCompetencyLevel >= 2.5} label={`Comp ${profile.averageCompetencyLevel}`} />
+                    <StatusBadge ok={(profile.averageCompetencyLevel ?? 0) >= 2.5} label={`Comp ${profile.averageCompetencyLevel}`} />
                     {profile.currentPerformanceRating && (
                       <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
                         {performanceRatingLabels[profile.currentPerformanceRating] || profile.currentPerformanceRating}

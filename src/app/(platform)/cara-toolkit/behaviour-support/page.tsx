@@ -26,7 +26,15 @@ const SIGNAL_STYLES: Record<SignalColour, { bg: string; border: string; text: st
   grey:  { bg: "bg-slate-50",  border: "border-slate-200",  text: "text-slate-600",  dot: "bg-slate-300"  },
 };
 
-function EffectivenessBar({ rate }: { rate: number }) {
+function EffectivenessBar({ rate }: { rate: number | null }) {
+  if (rate === null) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden" />
+        <span className="text-xs font-semibold text-slate-600 w-8 shrink-0">—</span>
+      </div>
+    );
+  }
   const colour = rate >= 75 ? "bg-green-400" : rate >= 50 ? "bg-amber-400" : "bg-red-400";
   return (
     <div className="flex items-center gap-2">

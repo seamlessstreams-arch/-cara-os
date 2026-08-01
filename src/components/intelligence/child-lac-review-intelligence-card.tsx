@@ -120,8 +120,8 @@ export function ChildLACReviewIntelligenceCard({ childId }: { childId: string })
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
-                <UserCheck className={cn("h-3.5 w-3.5", d.participation.attended_rate >= 80 ? "text-green-500" : d.participation.attended_rate >= 50 ? "text-amber-500" : "text-red-500")} />
-                <p className={cn("text-lg font-bold tabular-nums", d.participation.attended_rate >= 80 ? "text-green-600" : d.participation.attended_rate >= 50 ? "text-amber-600" : "text-red-600")}>
+                <UserCheck className={cn("h-3.5 w-3.5", (d.participation.attended_rate ?? 0) >= 80 ? "text-green-500" : (d.participation.attended_rate ?? 0) >= 50 ? "text-amber-500" : "text-red-500")} />
+                <p className={cn("text-lg font-bold tabular-nums", (d.participation.attended_rate ?? 0) >= 80 ? "text-green-600" : (d.participation.attended_rate ?? 0) >= 50 ? "text-amber-600" : "text-red-600")}>
                   {d.participation.attended_rate}%
                 </p>
               </div>
@@ -129,8 +129,8 @@ export function ChildLACReviewIntelligenceCard({ childId }: { childId: string })
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
-                <CheckCircle2 className={cn("h-3.5 w-3.5", d.action_completion.completion_rate >= 80 ? "text-green-500" : d.action_completion.completion_rate >= 50 ? "text-amber-500" : "text-red-500")} />
-                <p className={cn("text-lg font-bold tabular-nums", d.action_completion.completion_rate >= 80 ? "text-green-600" : d.action_completion.completion_rate >= 50 ? "text-amber-600" : "text-red-600")}>
+                <CheckCircle2 className={cn("h-3.5 w-3.5", (d.action_completion.completion_rate ?? 0) >= 80 ? "text-green-500" : (d.action_completion.completion_rate ?? 0) >= 50 ? "text-amber-500" : "text-red-500")} />
+                <p className={cn("text-lg font-bold tabular-nums", (d.action_completion.completion_rate ?? 0) >= 80 ? "text-green-600" : (d.action_completion.completion_rate ?? 0) >= 50 ? "text-amber-600" : "text-red-600")}>
                   {d.action_completion.completion_rate}%
                 </p>
               </div>
@@ -156,7 +156,7 @@ export function ChildLACReviewIntelligenceCard({ childId }: { childId: string })
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Attended: <span className="font-medium text-slate-600">{d.participation.attended_rate}%</span></p>
                 <p>Views submitted: <span className="font-medium text-slate-600">{d.participation.views_submitted_rate}%</span></p>
-                {d.participation.advocate_rate > 0 && (
+                {(d.participation.advocate_rate ?? 0) > 0 && (
                   <p>Advocate: <span className="font-medium text-slate-600">{d.participation.advocate_rate}%</span></p>
                 )}
                 <p>Views recorded: <span className={d.participation.views_recorded_rate === 100 ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.participation.views_recorded_rate}%</span></p>

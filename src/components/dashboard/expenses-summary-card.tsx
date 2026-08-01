@@ -185,9 +185,9 @@ export function ExpensesSummaryCard() {
                   <div
                     className={cn(
                       "h-full rounded-full",
-                      cs.pct_of_total >= 30 ? "bg-green-400" : cs.pct_of_total >= 15 ? "bg-blue-400" : "bg-slate-400",
+                      (cs.pct_of_total ?? 0) >= 30 ? "bg-green-400" : (cs.pct_of_total ?? 0) >= 15 ? "bg-blue-400" : "bg-slate-400",
                     )}
-                    style={{ width: `${Math.max(4, cs.pct_of_total)}%` }}
+                    style={{ width: `${Math.max(4, (cs.pct_of_total ?? 0))}%` }}
                   />
                 </div>
                 <span className="w-16 text-right font-medium tabular-nums">

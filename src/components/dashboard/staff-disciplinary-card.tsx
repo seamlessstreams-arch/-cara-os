@@ -189,7 +189,7 @@ export function StaffDisciplinaryCard() {
           </p>
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
-              <p className={cn("font-bold tabular-nums", o.support_offered_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+              <p className={cn("font-bold tabular-nums", (o.support_offered_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
                 {o.support_offered_rate}%
               </p>
               <p className="text-[10px] text-muted-foreground">Support</p>

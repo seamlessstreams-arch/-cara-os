@@ -57,8 +57,8 @@ export interface IndependenceProfile {
 export interface DomainAnalysis {
   avg_domain_score: number | null;                  // average across all children (0–10)
   low_scoring_total: number;                 // total low-scoring domains across all pathways
-  lowest_pathway_avg: number;                // lowest domain avg among pathways
-  highest_pathway_avg: number;               // highest domain avg among pathways
+  lowest_pathway_avg: number | null;                // lowest domain avg among pathways
+  highest_pathway_avg: number | null;               // highest domain avg among pathways
   readiness_gap: number;                     // highest - lowest overall_readiness
 }
 
@@ -163,9 +163,9 @@ export function computeHomeIndependence(
 
   const lowScoringTotal = pathways.reduce((s, p) => s + p.low_scoring_domains, 0);
 
-  const domainAvgs = pathways.map(p => p.domain_avg_score);
-  const lowestAvg = Math.min(...domainAvgs);
-  const highestAvg = Math.max(...domainAvgs);
+  const domainAvgs = pathways.map(p => p.domain_avg_score).filter((v): v is number => v !== null);
+  const lowestAvg = domainAvgs.length > 0 ? Math.min(...domainAvgs) : null;
+  const highestAvg = domainAvgs.length > 0 ? Math.max(...domainAvgs) : null;
 
   const readinessScores = pathways.map(p => p.overall_readiness);
   const readinessGap = Math.max(...readinessScores) - Math.min(...readinessScores);
@@ -173,8 +173,8 @@ export function computeHomeIndependence(
   const domainAnalysis: DomainAnalysis = {
     avg_domain_score: avgDomainScore,
     low_scoring_total: lowScoringTotal,
-    lowest_pathway_avg: Math.round(lowestAvg * 10) / 10,
-    highest_pathway_avg: Math.round(highestAvg * 10) / 10,
+    lowest_pathway_avg: lowestAvg !== null ? Math.round(lowestAvg * 10) / 10 : null,
+    highest_pathway_avg: highestAvg !== null ? Math.round(highestAvg * 10) / 10 : null,
     readiness_gap: readinessGap,
   };
 
@@ -331,6 +331,6 @@ function emptyProfile(childIds: string[]): IndependenceProfile {
 function emptyDomainAnalysis(): DomainAnalysis {
   return {
     avg_domain_score: 0, low_scoring_total: 0,
-    lowest_pathway_avg: 0, highest_pathway_avg: 0, readiness_gap: 0,
+    lowest_pathway_avg: null, highest_pathway_avg: null, readiness_gap: 0,
   };
 }

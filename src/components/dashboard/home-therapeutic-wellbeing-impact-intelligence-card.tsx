@@ -77,20 +77,20 @@ export function HomeTherapeuticWellbeingImpactIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.children_with_therapeutic_plans > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.children_with_therapeutic_plans}</p>
               <p className="text-[9px] text-muted-foreground">Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.average_wellbeing_score >= 7 ? "bg-green-50" : d.average_wellbeing_score >= 5 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.average_wellbeing_score >= 7 ? "text-[--cs-success]" : d.average_wellbeing_score >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_wellbeing_score}</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.average_wellbeing_score ?? 0) >= 7 ? "bg-green-50" : (d.average_wellbeing_score ?? 0) >= 5 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.average_wellbeing_score ?? 0) >= 7 ? "text-[--cs-success]" : (d.average_wellbeing_score ?? 0) >= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_wellbeing_score}</p>
               <p className="text-[9px] text-muted-foreground">Avg Score</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.improving_trend_rate >= 70 ? "bg-green-50" : d.improving_trend_rate >= 40 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.improving_trend_rate >= 70 ? "text-[--cs-success]" : d.improving_trend_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.improving_trend_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.improving_trend_rate ?? 0) >= 70 ? "bg-green-50" : (d.improving_trend_rate ?? 0) >= 40 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.improving_trend_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.improving_trend_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.improving_trend_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Improving</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.self_soothing_coverage_rate >= 80 ? "bg-green-50" : d.self_soothing_coverage_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.self_soothing_coverage_rate >= 80 ? "text-[--cs-success]" : d.self_soothing_coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.self_soothing_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.self_soothing_coverage_rate ?? 0) >= 80 ? "bg-green-50" : (d.self_soothing_coverage_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.self_soothing_coverage_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.self_soothing_coverage_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.self_soothing_coverage_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Soothing</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.grief_support_rate >= 90 ? "bg-green-50" : d.grief_support_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.grief_support_rate >= 90 ? "text-[--cs-success]" : d.grief_support_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.grief_support_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.grief_support_rate ?? 0) >= 90 ? "bg-green-50" : (d.grief_support_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.grief_support_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.grief_support_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.grief_support_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Grief</p>
             </div>
           </div>

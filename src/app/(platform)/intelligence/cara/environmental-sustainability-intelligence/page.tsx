@@ -27,7 +27,18 @@ const RATING_META: Record<SustainabilityRating, { label: string; color: string; 
   insufficient_data: { label: "Insufficient Data",  color: "text-slate-600",   bg: "bg-slate-50",   border: "border-slate-200" },
 };
 
-function RateBar({ label, value, warn = 75 }: { label: string; value: number; warn?: number }) {
+function RateBar({ label, value, warn = 75 }: { label: string; value: number | null; warn?: number }) {
+  if (value === null) {
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>{label}</span>
+          <span className="font-medium">—</span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden" />
+      </div>
+    );
+  }
   const pct = Math.round(value);
   const color = pct >= warn ? "bg-emerald-500" : pct >= 45 ? "bg-amber-400" : "bg-red-400";
   return (
@@ -81,7 +92,7 @@ export default function EnvironmentalSustainabilityIntelligencePage() {
               <div className="flex-1">
                 <p className="text-sm font-medium">{d.headline}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Sustainability score: {d.sustainability_score}/100 · energy efficiency {Math.round(d.energy_efficiency_rate)}% · recycling {Math.round(d.recycling_compliance_rate)}% · child participation {Math.round(d.child_participation_rate)}%
+                  Sustainability score: {d.sustainability_score}/100 · energy efficiency {Math.round((d.energy_efficiency_rate ?? 0))}% · recycling {Math.round((d.recycling_compliance_rate ?? 0))}% · child participation {Math.round((d.child_participation_rate ?? 0))}%
                 </p>
               </div>
               <div className="text-right">

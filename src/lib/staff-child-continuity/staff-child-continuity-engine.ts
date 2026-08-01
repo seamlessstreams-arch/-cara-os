@@ -67,7 +67,7 @@ export interface ChildContinuity {
   sessions_90d: number;
   distinct_staff: number;
   key_worker_sessions: number;
-  key_worker_share: number;            // % of sessions delivered by the assigned key worker
+  key_worker_share: number | null;            // % of sessions delivered by the assigned key worker
   days_since_last_session: number | null;
   days_since_last_keyworker_session: number | null;
   continuity_index: number;            // 0-100
@@ -350,7 +350,7 @@ function buildInsights(children: ChildContinuity[], overview: ContinuityOverview
   }
 
   const notDelivering = children.filter(
-    (c) => c.key_worker_active && c.sessions_90d > 0 && c.key_worker_share < 40,
+    (c) => c.key_worker_active && c.sessions_90d > 0 && (c.key_worker_share ?? 0) < 40,
   );
   if (notDelivering.length > 0) {
     const names = notDelivering.slice(0, 3).map((c) => c.child_name).join(", ");

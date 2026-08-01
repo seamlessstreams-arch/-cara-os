@@ -105,8 +105,8 @@ export function OutcomesCard() {
             <p className="text-lg font-bold tabular-nums text-green-600">{o.achieved_targets}</p>
             <p className="text-[10px] text-muted-foreground">Achieved</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", o.improving_pct >= 50 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", o.improving_pct >= 50 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+          <div className={cn("text-center rounded-lg p-2.5", (o.improving_pct ?? 0) >= 50 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (o.improving_pct ?? 0) >= 50 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
               {o.improving_pct}%
             </p>
             <p className="text-[10px] text-muted-foreground">Improving</p>
@@ -145,8 +145,8 @@ export function OutcomesCard() {
                   <div
                     className={cn(
                       "h-full rounded-full",
-                      d.avg_progress_pct >= 60 ? "bg-green-400"
-                        : d.avg_progress_pct >= 30 ? "bg-amber-400"
+                      (d.avg_progress_pct ?? 0) >= 60 ? "bg-green-400"
+                        : (d.avg_progress_pct ?? 0) >= 30 ? "bg-amber-400"
                         : "bg-red-400",
                     )}
                     style={{ width: `${d.avg_progress_pct}%` }}

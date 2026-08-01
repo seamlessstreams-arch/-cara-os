@@ -26,7 +26,18 @@ const INSIGHT_BORDER: Record<string, string> = {
   positive: "border-green-300 bg-green-50 text-green-800",
 };
 
-function RateBar({ label, rate, alertBelow }: { label: string; rate: number; alertBelow?: number }) {
+function RateBar({ label, rate, alertBelow }: { label: string; rate: number | null; alertBelow?: number }) {
+  if (rate === null) {
+    return (
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs">
+          <span className="text-slate-600">{label}</span>
+          <span className="font-semibold text-slate-500">—</span>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100" />
+      </div>
+    );
+  }
   const alert = alertBelow !== undefined && rate < alertBelow;
   const barColor = rate >= 80 ? "bg-green-400" : rate >= 60 ? "bg-blue-400" : rate >= 40 ? "bg-amber-400" : "bg-red-400";
   return (
@@ -97,9 +108,9 @@ export default function HouseMeetingGovernancePage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           { label: "Total meetings", value: d.total_meetings },
-          { label: "Avg agenda items", value: d.average_agenda_items.toFixed(1) },
-          { label: "Avg duration", value: d.average_duration > 0 ? `${d.average_duration}min` : "—" },
-          { label: "Action completion", value: `${d.action_completion_rate}%`, alert: d.action_completion_rate < 70 },
+          { label: "Avg agenda items", value: (d.average_agenda_items ?? 0).toFixed(1) },
+          { label: "Avg duration", value: (d.average_duration ?? 0) > 0 ? `${d.average_duration}min` : "—" },
+          { label: "Action completion", value: `${d.action_completion_rate}%`, alert: (d.action_completion_rate ?? 0) < 70 },
         ].map((m) => (
           <div key={m.label} className={`rounded-lg border p-4 ${m.alert ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"}`}>
             <p className="text-xs text-slate-500">{m.label}</p>

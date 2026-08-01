@@ -123,8 +123,8 @@ export function HealthWellbeingCard() {
             </p>
             <p className="text-[10px] text-muted-foreground">Health Assess.</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", intel.appointments.dna_rate <= 10 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", intel.appointments.dna_rate <= 10 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
+          <div className={cn("text-center rounded-lg p-2", (intel.appointments.dna_rate ?? 0) <= 10 ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (intel.appointments.dna_rate ?? 0) <= 10 ? "text-[--cs-success]" : "text-[--cs-risk]")}>
               {intel.appointments.dna_rate}%
             </p>
             <p className="text-[10px] text-muted-foreground">DNA Rate</p>

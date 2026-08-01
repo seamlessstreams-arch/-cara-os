@@ -125,7 +125,7 @@ export function WorkforcePlanningCard() {
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5 text-purple-500" />
               <div>
-                <p className="text-xs font-medium">{Math.round(p.average_tenure_months / 12 * 10) / 10}y</p>
+                <p className="text-xs font-medium">{Math.round((p.average_tenure_months ?? 0) / 12 * 10) / 10}y</p>
                 <p className="text-[10px] text-muted-foreground">Avg Tenure</p>
               </div>
             </div>

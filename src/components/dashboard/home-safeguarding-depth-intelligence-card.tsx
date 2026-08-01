@@ -108,8 +108,8 @@ export function HomeSafeguardingDepthIntelligenceCard() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <p className={cn("text-lg font-bold tabular-nums",
-                d.body_maps.manager_reviewed_rate >= 90 ? "text-[--cs-success]" :
-                d.body_maps.manager_reviewed_rate >= 50 ? "text-blue-600" : "text-[--cs-risk]"
+                (d.body_maps.manager_reviewed_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                (d.body_maps.manager_reviewed_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]"
               )}>
                 {d.body_maps.total > 0 ? `${d.body_maps.manager_reviewed_rate}%` : "—"}
               </p>
@@ -117,8 +117,8 @@ export function HomeSafeguardingDepthIntelligenceCard() {
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <p className={cn("text-lg font-bold tabular-nums",
-                d.disclosures.response_within_1h_rate >= 90 ? "text-[--cs-success]" :
-                d.disclosures.response_within_1h_rate >= 50 ? "text-blue-600" : "text-[--cs-risk]"
+                (d.disclosures.response_within_1h_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                (d.disclosures.response_within_1h_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]"
               )}>
                 {d.disclosures.total > 0 ? `${d.disclosures.response_within_1h_rate}%` : "—"}
               </p>
@@ -126,8 +126,8 @@ export function HomeSafeguardingDepthIntelligenceCard() {
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <p className={cn("text-lg font-bold tabular-nums",
-                d.lado.referred_timely_rate >= 90 ? "text-[--cs-success]" :
-                d.lado.referred_timely_rate >= 50 ? "text-blue-600" : "text-[--cs-risk]"
+                (d.lado.referred_timely_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                (d.lado.referred_timely_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]"
               )}>
                 {d.lado.total > 0 ? `${d.lado.referred_timely_rate}%` : "—"}
               </p>

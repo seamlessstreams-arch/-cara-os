@@ -149,8 +149,8 @@ export function HomeOnCallGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.coverage.has_backup_rate >= 90 ? "text-[--cs-success]" :
-                  d.coverage.has_backup_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.coverage.has_backup_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.coverage.has_backup_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.coverage.has_backup_rate}%
                 </p>
@@ -194,8 +194,8 @@ export function HomeOnCallGovernanceIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Quality</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Feedback rate: <span className={cn("font-medium",
-                  d.quality.feedback_rate >= 80 ? "text-[--cs-success]" :
-                  d.quality.feedback_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.quality.feedback_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.quality.feedback_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>{d.quality.feedback_rate}%</span></p>
                 <p>With notes: <span className="font-medium text-slate-600">{d.quality.shifts_with_review_notes}</span></p>
                 <p>Calls/shift: <span className="font-medium text-slate-600">{d.response.calls_per_shift}</span></p>

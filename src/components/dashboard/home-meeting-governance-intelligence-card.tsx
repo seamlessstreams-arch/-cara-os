@@ -89,7 +89,7 @@ export function HomeMeetingGovernanceIntelligenceCard() {
   }
 
   const ratingStyle = RATING_STYLES[d.meeting_rating] ?? RATING_STYLES.insufficient_data;
-  const hasLowAttendance = d.attendance_profile.avg_child_attendance_rate < 70;
+  const hasLowAttendance = (d.attendance_profile.avg_child_attendance_rate ?? 0) < 70;
   const hasLargeGap = d.regularity_profile.max_gap_days > 21;
   const isAlert = hasLowAttendance || hasLargeGap || d.meeting_rating === "inadequate";
 
@@ -132,8 +132,8 @@ export function HomeMeetingGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.attendance_profile.avg_child_attendance_rate >= 90 ? "text-[--cs-success]" :
-                  d.attendance_profile.avg_child_attendance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.attendance_profile.avg_child_attendance_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.attendance_profile.avg_child_attendance_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.attendance_profile.avg_child_attendance_rate}%
                 </p>
@@ -146,8 +146,8 @@ export function HomeMeetingGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle2 className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.action_profile.completion_rate >= 80 ? "text-[--cs-success]" :
-                  d.action_profile.completion_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.action_profile.completion_rate ?? 0) >= 80 ? "text-[--cs-success]" :
+                  (d.action_profile.completion_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.action_profile.completion_rate}%
                 </p>
@@ -160,8 +160,8 @@ export function HomeMeetingGovernanceIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.engagement_profile.child_raised_rate >= 50 ? "text-[--cs-success]" :
-                  d.engagement_profile.child_raised_rate >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.engagement_profile.child_raised_rate ?? 0) >= 50 ? "text-[--cs-success]" :
+                  (d.engagement_profile.child_raised_rate ?? 0) >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.engagement_profile.child_raised_rate}%
                 </p>

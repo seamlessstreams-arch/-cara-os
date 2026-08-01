@@ -135,8 +135,8 @@ export function HomeOrganizationalLearningIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.sir.action_completion_rate >= 90 ? "text-[--cs-success]" :
-                  d.sir.action_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.sir.action_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" :
+                  (d.sir.action_completion_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.sir.total_actions > 0 ? `${d.sir.action_completion_rate}%` : "—"}
                 </p>

@@ -364,7 +364,7 @@ export function generateStaffSupervisionEffectivenessIntelligence(
   const supervisionPolicy = evaluateSupervisionPolicy(policy);
   const supervisorReadiness = evaluateSupervisorReadiness(training);
 
-  const overallScore = Math.min(100, sessionEffectiveness.overallScore + supervisionCompliance.overallScore + supervisionPolicy.overallScore + supervisorReadiness.overallScore);
+  const overallScore = Math.min(100, (sessionEffectiveness.overallScore ?? 0) + (supervisionCompliance.overallScore ?? 0) + (supervisionPolicy.overallScore ?? 0) + (supervisorReadiness.overallScore ?? 0));
   const rating = getRating(overallScore);
 
   const staffProfiles = buildStaffSupervisionProfiles(sessions);
@@ -373,21 +373,21 @@ export function generateStaffSupervisionEffectivenessIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (sessionEffectiveness.effectivenessRate >= 80) strengths.push("Strong supervision effectiveness — sessions are consistently productive and outcome-focused");
-  if (sessionEffectiveness.safeguardingRate >= 80) strengths.push("Safeguarding is consistently discussed in supervision sessions");
-  if (sessionEffectiveness.wellbeingRate >= 80) strengths.push("Staff wellbeing is regularly checked during supervision");
-  if (supervisionCompliance.documentedRate >= 80) strengths.push("Excellent documentation of supervision sessions");
+  if ((sessionEffectiveness.effectivenessRate ?? 0) >= 80) strengths.push("Strong supervision effectiveness — sessions are consistently productive and outcome-focused");
+  if ((sessionEffectiveness.safeguardingRate ?? 0) >= 80) strengths.push("Safeguarding is consistently discussed in supervision sessions");
+  if ((sessionEffectiveness.wellbeingRate ?? 0) >= 80) strengths.push("Staff wellbeing is regularly checked during supervision");
+  if ((supervisionCompliance.documentedRate ?? 0) >= 80) strengths.push("Excellent documentation of supervision sessions");
 
-  if (sessions.length > 0 && sessionEffectiveness.effectivenessRate < 60) areasForImprovement.push("Supervision effectiveness needs improvement — review session structure and content");
-  if (sessions.length > 0 && sessionEffectiveness.safeguardingRate < 60) areasForImprovement.push("Safeguarding is not consistently discussed in supervision — embed in standard agenda");
-  if (sessions.length > 0 && supervisionCompliance.staffSatisfactionRate < 60) areasForImprovement.push("Staff satisfaction with supervision is low — seek feedback and adapt approach");
-  if (sessions.length > 0 && supervisionCompliance.previousActionsReviewedRate < 60) areasForImprovement.push("Previous action points are not consistently reviewed — improve follow-through");
+  if (sessions.length > 0 && (sessionEffectiveness.effectivenessRate ?? 0) < 60) areasForImprovement.push("Supervision effectiveness needs improvement — review session structure and content");
+  if (sessions.length > 0 && (sessionEffectiveness.safeguardingRate ?? 0) < 60) areasForImprovement.push("Safeguarding is not consistently discussed in supervision — embed in standard agenda");
+  if (sessions.length > 0 && (supervisionCompliance.staffSatisfactionRate ?? 0) < 60) areasForImprovement.push("Staff satisfaction with supervision is low — seek feedback and adapt approach");
+  if (sessions.length > 0 && (supervisionCompliance.previousActionsReviewedRate ?? 0) < 60) areasForImprovement.push("Previous action points are not consistently reviewed — improve follow-through");
 
   if (sessions.length === 0) actions.push("No supervision session records found — ensure regular supervision is taking place and recorded");
   if (!policy) actions.push("URGENT: No supervision policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No supervisor training recorded — arrange training for all supervisors");
-  if (sessions.length > 0 && sessionEffectiveness.actionPointsRate < 60) actions.push("Improve action point setting in supervision sessions");
-  if (sessions.length > 0 && sessionEffectiveness.wellbeingRate < 60) actions.push("Embed staff wellbeing checks into every supervision session");
+  if (sessions.length > 0 && (sessionEffectiveness.actionPointsRate ?? 0) < 60) actions.push("Improve action point setting in supervision sessions");
+  if (sessions.length > 0 && (sessionEffectiveness.wellbeingRate ?? 0) < 60) actions.push("Embed staff wellbeing checks into every supervision session");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 13 — Leadership and management",

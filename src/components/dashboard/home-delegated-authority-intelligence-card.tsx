@@ -114,8 +114,8 @@ export function HomeDelegatedAuthorityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.status_profile.granted_rate >= 70 ? "text-[--cs-success]" :
-                  d.status_profile.granted_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.status_profile.granted_rate ?? 0) >= 70 ? "text-[--cs-success]" :
+                  (d.status_profile.granted_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.status_profile.granted_rate}%
                 </p>
@@ -128,8 +128,8 @@ export function HomeDelegatedAuthorityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.child_coverage.coverage_rate >= 100 ? "text-[--cs-success]" :
-                  d.child_coverage.coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.child_coverage.coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.child_coverage.coverage_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.child_coverage.children_with_authority}/{d.child_coverage.total_children}
                 </p>

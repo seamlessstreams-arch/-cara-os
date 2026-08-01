@@ -37,7 +37,16 @@ const INSIGHT_STYLES: Record<string, string> = {
 
 // ── Compliance bar sub-component ────────────────────────────────────────────
 
-function ComplianceBar({ label, value }: { label: string; value: number }) {
+function ComplianceBar({ label, value }: { label: string; value: number | null }) {
+  if (value === null) {
+    return (
+      <div className="flex items-center gap-2 text-xs">
+        <span className="w-24 truncate">{label}</span>
+        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden" />
+        <span className="w-8 text-right tabular-nums font-medium text-gray-400">—</span>
+      </div>
+    );
+  }
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="w-24 truncate">{label}</span>
@@ -157,7 +166,7 @@ export function HealthIntelligenceCard() {
           <div className="text-right">
             <p className={cn(
               "text-sm font-bold tabular-nums",
-              appointments.dna_rate <= 5 ? "text-[--cs-success]" : appointments.dna_rate <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (appointments.dna_rate ?? 0) <= 5 ? "text-[--cs-success]" : (appointments.dna_rate ?? 0) <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {appointments.dna_rate}%
             </p>

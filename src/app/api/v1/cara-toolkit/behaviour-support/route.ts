@@ -139,7 +139,7 @@ export async function GET() {
       `${highIntensityProfiles.length} child${highIntensityProfiles.length > 1 ? "ren" : ""} ${highIntensityProfiles.length > 1 ? "show" : "shows"} a pattern of high-intensity behaviour. Review whether their behaviour support plans reflect current understanding of triggers and communication.`
     );
   }
-  if (topStrategies.length > 0 && topStrategies[0].effectivenessRate < 50) {
+  if (topStrategies.length > 0 && (topStrategies[0].effectivenessRate ?? 0) < 50) {
     insights.push(
       `The most frequently used strategy — "${topStrategies[0].strategy}" — has a ${topStrategies[0].effectivenessRate}% positive outcome rate. Reflective supervision may help the team consider alternative approaches.`
     );

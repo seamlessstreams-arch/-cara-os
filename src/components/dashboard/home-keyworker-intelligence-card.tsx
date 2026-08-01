@@ -88,7 +88,7 @@ export function HomeKeyworkerIntelligenceCard() {
   }
 
   const ratingStyle = RATING_STYLES[d.keyworker_rating] ?? RATING_STYLES.insufficient_data;
-  const hasLowCoverage = d.coverage_profile.coverage_rate < 50;
+  const hasLowCoverage = (d.coverage_profile.coverage_rate ?? 0) < 50;
   const hasLowSatisfaction = d.quality_profile.avg_satisfaction < 3.0 && d.coverage_profile.total_sessions > 0;
   const isAlert = hasLowCoverage || hasLowSatisfaction || d.keyworker_rating === "inadequate";
 
@@ -120,8 +120,8 @@ export function HomeKeyworkerIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.coverage_profile.coverage_rate >= 100 ? "text-[--cs-success]" :
-                  d.coverage_profile.coverage_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.coverage_profile.coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" :
+                  (d.coverage_profile.coverage_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.coverage_profile.coverage_rate}%
                 </p>
@@ -148,8 +148,8 @@ export function HomeKeyworkerIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <TrendingUp className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.therapeutic_profile.mood_improvement_rate >= 70 ? "text-[--cs-success]" :
-                  d.therapeutic_profile.mood_improvement_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  (d.therapeutic_profile.mood_improvement_rate ?? 0) >= 70 ? "text-[--cs-success]" :
+                  (d.therapeutic_profile.mood_improvement_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {d.therapeutic_profile.mood_improvement_rate}%
                 </p>
@@ -188,7 +188,7 @@ export function HomeKeyworkerIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Engagement</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Chose format: <span className={cn("font-medium",
-                  d.engagement_profile.child_chose_format_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]"
+                  (d.engagement_profile.child_chose_format_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{d.engagement_profile.child_chose_format_rate}%</span></p>
                 <p>Child raised: <span className="font-medium text-slate-600">{d.engagement_profile.child_brought_up_rate}%</span></p>
                 <p>Flags raised: <span className={cn("font-medium",

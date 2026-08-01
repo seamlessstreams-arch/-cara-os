@@ -76,24 +76,24 @@ export function HomeOutcomeStarAssessmentIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_assessments > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_assessments}</p>
               <p className="text-[9px] text-muted-foreground">Assessments</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.children_assessed_rate >= 80 ? "bg-green-50" : d.children_assessed_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.children_assessed_rate >= 80 ? "text-[--cs-success]" : d.children_assessed_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.children_assessed_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.children_assessed_rate ?? 0) >= 80 ? "bg-green-50" : (d.children_assessed_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.children_assessed_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.children_assessed_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.children_assessed_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Coverage</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.repeat_assessment_rate >= 70 ? "bg-green-50" : d.repeat_assessment_rate >= 40 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.repeat_assessment_rate >= 70 ? "text-[--cs-success]" : d.repeat_assessment_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.repeat_assessment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.repeat_assessment_rate ?? 0) >= 70 ? "bg-green-50" : (d.repeat_assessment_rate ?? 0) >= 40 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.repeat_assessment_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.repeat_assessment_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.repeat_assessment_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Repeats</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.improvement_rate >= 70 ? "bg-green-50" : d.improvement_rate >= 40 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.improvement_rate >= 70 ? "text-[--cs-success]" : d.improvement_rate >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.improvement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.improvement_rate ?? 0) >= 70 ? "bg-green-50" : (d.improvement_rate ?? 0) >= 40 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.improvement_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.improvement_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.improvement_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Improving</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.action_plan_rate >= 80 ? "bg-green-50" : d.action_plan_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.action_plan_rate >= 80 ? "text-[--cs-success]" : d.action_plan_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_plan_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.action_plan_rate ?? 0) >= 80 ? "bg-green-50" : (d.action_plan_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.action_plan_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.action_plan_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_plan_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate >= 80 ? "bg-green-50" : d.child_voice_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 80 ? "text-[--cs-success]" : d.child_voice_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", (d.child_voice_rate ?? 0) >= 80 ? "bg-green-50" : (d.child_voice_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", (d.child_voice_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.child_voice_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
           </div>
