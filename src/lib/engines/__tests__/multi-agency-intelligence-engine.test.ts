@@ -374,11 +374,11 @@ describe("computeMultiAgencyIntelligence — overview", () => {
     expect(result.overview.follow_up_completion_rate).toBe(80); // 8/10
   });
 
-  it("returns 0 rates for empty data", () => {
+  it("returns null rates for empty data", () => {
     const result = computeMultiAgencyIntelligence(makeInput());
-    expect(result.overview.child_participation_rate).toBe(0);
-    expect(result.overview.home_report_rate).toBe(0);
-    expect(result.overview.follow_up_completion_rate).toBe(0);
+    expect(result.overview.child_participation_rate).toBeNull();
+    expect(result.overview.home_report_rate).toBeNull();
+    expect(result.overview.follow_up_completion_rate).toBeNull();
     expect(result.overview.meetings_this_quarter).toBe(0);
   });
 });

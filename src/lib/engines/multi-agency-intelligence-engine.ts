@@ -73,17 +73,17 @@ export interface MultiAgencyOverview {
   total_children: number;
   overdue_contacts: number;
   lac_reviews_this_year: number;
-  child_participation_rate: number;
-  home_report_rate: number;
+  child_participation_rate: number | null;
+  home_report_rate: number | null;
   meetings_this_quarter: number;
-  follow_up_completion_rate: number;
+  follow_up_completion_rate: number | null;
 }
 
 export interface MeetingTypeSummary {
   meeting_type: string;
   type_label: string;
   count: number;
-  actions_completion_rate: number;
+  actions_completion_rate: number | null;
 }
 
 export interface ChildEngagementProfile {
@@ -93,7 +93,7 @@ export interface ChildEngagementProfile {
   overdue_contacts: number;
   last_review_date: string | null;
   next_review_due: string | null;
-  participation_rate: number;
+  participation_rate: number | null;
 }
 
 export interface UpcomingReview {
@@ -205,13 +205,13 @@ export function computeMultiAgencyIntelligence(input: MultiAgencyEngineInput): M
   const participatingReviews = reviewsThisYear.filter((r) => r.child_participated);
   const childParticipationRate = reviewsThisYear.length > 0
     ? Math.round((participatingReviews.length / reviewsThisYear.length) * 100)
-    : 0;
+    : null;
 
   // Home report submission rate
   const homeReportSubmitted = reviewsThisYear.filter((r) => r.home_report_submitted);
   const homeReportRate = reviewsThisYear.length > 0
     ? Math.round((homeReportSubmitted.length / reviewsThisYear.length) * 100)
-    : 0;
+    : null;
 
   // Meetings this quarter (90-day window ending at today)
   const meetingsThisQuarter = meetings.filter((m) => isWithinPastDays(m.date, today, 90));
@@ -221,7 +221,7 @@ export function computeMultiAgencyIntelligence(input: MultiAgencyEngineInput): M
   const completedActions = meetingsThisQuarter.reduce((sum, m) => sum + m.actions_completed, 0);
   const followUpCompletionRate = totalActions > 0
     ? Math.round((completedActions / totalActions) * 100)
-    : 0;
+    : null;
 
   const overview: MultiAgencyOverview = {
     total_professionals: totalProfessionals,
@@ -273,7 +273,7 @@ export function computeMultiAgencyIntelligence(input: MultiAgencyEngineInput): M
     const childParticipated = childReviews.filter((r) => r.child_participated);
     const participationRate = childReviews.length > 0
       ? Math.round((childParticipated.length / childReviews.length) * 100)
-      : 0;
+      : null;
 
     return {
       child_id: child.id,
@@ -357,7 +357,7 @@ export function computeMultiAgencyIntelligence(input: MultiAgencyEngineInput): M
   }
 
   // Medium: Follow-up actions completion rate below 70%
-  if (totalActions > 0 && followUpCompletionRate < 70) {
+  if (totalActions > 0 && followUpCompletionRate !== null && followUpCompletionRate < 70) {
     alerts.push({
       severity: "medium",
       message: `Meeting follow-up completion rate is ${followUpCompletionRate}% — below 70% threshold`,
@@ -404,7 +404,7 @@ export function computeMultiAgencyIntelligence(input: MultiAgencyEngineInput): M
   }
 
   // Warning: Home report submission rate below 100%
-  if (reviewsThisYear.length > 0 && homeReportRate < 100) {
+  if (reviewsThisYear.length > 0 && homeReportRate !== null && homeReportRate < 100) {
     insights.push({
       severity: "warning",
       text: `Home report submission rate at ${homeReportRate}% — preparation gap identified`,
