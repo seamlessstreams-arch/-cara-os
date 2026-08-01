@@ -727,8 +727,8 @@ export function buildFamilyProfiles(
 
     const parents = [...parentMap.values()].map((p) => {
       const positiveContacts = p.contacts.filter((c) => c.outcome === "positive").length;
-      const positiveContactRate =
-        p.contacts.length > 0 ? Math.round((positiveContacts / p.contacts.length) * 100) : 0;
+      const positiveContactRate: number | null =
+        p.contacts.length > 0 ? Math.round((positiveContacts / p.contacts.length) * 100) : null;
       const averageEngagementScore =
         p.contacts.length > 0
           ? roundTo2(p.contacts.reduce((sum, c) => sum + c.parentEngagement, 0) / p.contacts.length)
