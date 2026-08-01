@@ -321,17 +321,17 @@ describe("computeAttendanceMetrics", () => {
 
     it("returns attendance_rate = 0", () => {
       const m = computeAttendanceMetrics([], 5);
-      expect(m.attendance_rate).toBe(0);
+      expect(m.attendance_rate).toBeNull();
     });
 
     it("returns punctuality_rate = 0", () => {
       const m = computeAttendanceMetrics([], 5);
-      expect(m.punctuality_rate).toBe(0);
+      expect(m.punctuality_rate).toBeNull();
     });
 
     it("returns average_late_minutes = 0", () => {
       const m = computeAttendanceMetrics([], 5);
-      expect(m.average_late_minutes).toBe(0);
+      expect(m.average_late_minutes).toBeNull();
     });
 
     it("returns total_overtime_hours = 0", () => {
@@ -351,17 +351,17 @@ describe("computeAttendanceMetrics", () => {
 
     it("returns minimum_staffing_met_rate = 0", () => {
       const m = computeAttendanceMetrics([], 5);
-      expect(m.minimum_staffing_met_rate).toBe(0);
+      expect(m.minimum_staffing_met_rate).toBeNull();
     });
 
     it("returns handover_completed_rate = 0", () => {
       const m = computeAttendanceMetrics([], 5);
-      expect(m.handover_completed_rate).toBe(0);
+      expect(m.handover_completed_rate).toBeNull();
     });
 
     it("returns compliance_rate = 0", () => {
       const m = computeAttendanceMetrics([], 5);
-      expect(m.compliance_rate).toBe(0);
+      expect(m.compliance_rate).toBeNull();
     });
 
     it("returns non_compliant_count = 0", () => {
@@ -376,7 +376,7 @@ describe("computeAttendanceMetrics", () => {
 
     it("returns staff_coverage = 0 when totalStaff = 0", () => {
       const m = computeAttendanceMetrics([], 0);
-      expect(m.staff_coverage).toBe(0);
+      expect(m.staff_coverage).toBeNull();
     });
 
     it("returns empty by_attendance_status", () => {
@@ -439,7 +439,7 @@ describe("computeAttendanceMetrics", () => {
 
     it("returns average_late_minutes = 0 (no late records)", () => {
       const m = computeAttendanceMetrics([rec], 4);
-      expect(m.average_late_minutes).toBe(0);
+      expect(m.average_late_minutes).toBeNull();
     });
 
     it("returns total_overtime_hours = 1", () => {
@@ -577,7 +577,7 @@ describe("computeAttendanceMetrics", () => {
         makeRecord({ attendance_status: "training", staff_id: "s2" }),
       ];
       const m = computeAttendanceMetrics(recs, 2);
-      expect(m.attendance_rate).toBe(0);
+      expect(m.attendance_rate).toBeNull();
     });
   });
 
@@ -659,7 +659,7 @@ describe("computeAttendanceMetrics", () => {
         makeRecord({ attendance_status: "annual_leave", staff_id: "s1" }),
       ];
       const m = computeAttendanceMetrics(recs, 1);
-      expect(m.punctuality_rate).toBe(0);
+      expect(m.punctuality_rate).toBeNull();
     });
   });
 
@@ -671,7 +671,7 @@ describe("computeAttendanceMetrics", () => {
         makeRecord({ late_minutes: 0 }),
       ];
       const m = computeAttendanceMetrics(recs, 1);
-      expect(m.average_late_minutes).toBe(0);
+      expect(m.average_late_minutes).toBeNull();
     });
 
     it("returns the value itself for a single late record", () => {
@@ -717,7 +717,7 @@ describe("computeAttendanceMetrics", () => {
 
     it("returns 0 for empty records", () => {
       const m = computeAttendanceMetrics([], 1);
-      expect(m.average_late_minutes).toBe(0);
+      expect(m.average_late_minutes).toBeNull();
     });
   });
 
@@ -984,7 +984,7 @@ describe("computeAttendanceMetrics", () => {
     it("returns 0 when totalStaff = 0", () => {
       const recs = [makeRecord()];
       const m = computeAttendanceMetrics(recs, 0);
-      expect(m.staff_coverage).toBe(0);
+      expect(m.staff_coverage).toBeNull();
     });
 
     it("returns 100 when all staff have records", () => {

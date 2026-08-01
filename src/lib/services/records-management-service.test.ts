@@ -64,15 +64,15 @@ describe("computeRecordsMetrics", () => {
   it("returns zeroes for empty inputs", () => {
     const m = computeRecordsMetrics([], [], 0);
     expect(m.children_audited).toBe(0);
-    expect(m.avg_completeness_rate).toBe(0);
-    expect(m.avg_data_quality).toBe(0);
+    expect(m.avg_completeness_rate).toBeNull();
+    expect(m.avg_data_quality).toBeNull();
     expect(m.children_with_poor_quality).toBe(0);
     expect(m.total_access_requests).toBe(0);
     expect(m.open_access_requests).toBe(0);
-    expect(m.avg_response_days).toBe(0);
+    expect(m.avg_response_days).toBeNull(); // fab-0.
     expect(m.overdue_access_requests).toBe(0);
     expect(m.overdue_audits).toBe(0);
-    expect(m.chronology_compliance).toBe(0);
+    expect(m.chronology_compliance).toBeNull(); // fab-0.
   });
 
   it("counts unique children audited", () => {

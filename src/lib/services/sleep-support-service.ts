@@ -283,17 +283,17 @@ export function computeMetrics(
   by_record_type: Record<string, number>;
   by_sleep_quality: Record<string, number>;
   by_status: Record<string, number>;
-  average_sleep_quality: number;
-  average_estimated_hours: number;
-  average_disturbances: number;
-  medication_rate: number;
-  environment_suitable_rate: number;
-  screen_time_managed_rate: number;
-  routine_followed_rate: number;
-  young_person_input_rate: number;
-  referral_rate: number;
-  poor_sleep_rate: number;
-  good_sleep_rate: number;
+  average_sleep_quality: number | null;
+  average_estimated_hours: number | null;
+  average_disturbances: number | null;
+  medication_rate: number | null;
+  environment_suitable_rate: number | null;
+  screen_time_managed_rate: number | null;
+  routine_followed_rate: number | null;
+  young_person_input_rate: number | null;
+  referral_rate: number | null;
+  poor_sleep_rate: number | null;
+  good_sleep_rate: number | null;
   children_with_disturbances: number;
   overdue_reviews: number;
   active_records: number;
@@ -324,22 +324,22 @@ export function computeMetrics(
   const qualityValues = rows.map((r) => SLEEP_QUALITY_NUMERIC[r.sleep_quality] ?? 0).filter((v) => v > 0);
   const avgSleepQuality = qualityValues.length > 0
     ? Math.round((qualityValues.reduce((a, b) => a + b, 0) / qualityValues.length) * 10) / 10
-    : 0;
+    : null;
 
   // Average estimated hours
   const hoursValues = rows.filter((r) => r.estimated_hours !== null).map((r) => r.estimated_hours!);
   const avgEstimatedHours = hoursValues.length > 0
     ? Math.round((hoursValues.reduce((a, b) => a + b, 0) / hoursValues.length) * 10) / 10
-    : 0;
+    : null;
 
   // Average disturbances
   const disturbanceValues = rows.filter((r) => r.night_disturbances !== null).map((r) => r.night_disturbances!);
   const avgDisturbances = disturbanceValues.length > 0
     ? Math.round((disturbanceValues.reduce((a, b) => a + b, 0) / disturbanceValues.length) * 10) / 10
-    : 0;
+    : null;
 
   // Boolean rates
-  const pct = (count: number) => total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+  const pct = (count: number): number | null => total > 0 ? Math.round((count / total) * 1000) / 10 : null;
 
   const medicationRate = pct(rows.filter((r) => r.medication_involved).length);
   const environmentRate = pct(rows.filter((r) => r.sleep_environment_suitable).length);
@@ -659,7 +659,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.poor_sleep_rate > 40 && metrics.total_records > 0) {
+  if ((metrics.poor_sleep_rate ?? 0) > 40 && metrics.total_records > 0) {
     insights.push(
       `[reflect] ${metrics.poor_sleep_rate}% of sleep records show poor or very poor quality. ` +
         `Is the home doing enough to address the root causes of sleep difficulties? ` +
@@ -670,7 +670,7 @@ export function generateCaraInsights(
         `sleep — quiet, dark, comfortable? Are staff trained in sleep hygiene approaches? ` +
         `Has the home considered whether the current waking night provision is adequate?`,
     );
-  } else if (metrics.routine_followed_rate < 50 && metrics.total_records > 0) {
+  } else if ((metrics.routine_followed_rate ?? 0) < 50 && metrics.total_records > 0) {
     insights.push(
       `[reflect] Bedtime routines are only being followed in ${metrics.routine_followed_rate}% of records. ` +
         `Consistent routines are one of the most effective non-pharmacological interventions ` +
@@ -681,7 +681,7 @@ export function generateCaraInsights(
         `maintained even when staffing is stretched? Is there a shared understanding among all ` +
         `staff of each child's routine?`,
     );
-  } else if (metrics.screen_time_managed_rate < 50 && metrics.total_records > 0) {
+  } else if ((metrics.screen_time_managed_rate ?? 0) < 50 && metrics.total_records > 0) {
     insights.push(
       `[reflect] Screen time is being managed in only ${metrics.screen_time_managed_rate}% of records. ` +
         `Research consistently identifies screen use before bed as a major contributor to ` +

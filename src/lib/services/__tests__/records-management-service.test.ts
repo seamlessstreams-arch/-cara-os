@@ -394,17 +394,17 @@ describe("computeRecordsMetrics", () => {
   it("returns zeroed metrics for empty arrays", () => {
     const m = computeRecordsMetrics([], [], 0);
     expect(m.children_audited).toBe(0);
-    expect(m.avg_completeness_rate).toBe(0);
-    expect(m.avg_data_quality).toBe(0);
+    expect(m.avg_completeness_rate).toBeNull();
+    expect(m.avg_data_quality).toBeNull();
     expect(m.children_with_poor_quality).toBe(0);
     expect(m.total_access_requests).toBe(0);
     expect(m.open_access_requests).toBe(0);
-    expect(m.avg_response_days).toBe(0);
+    expect(m.avg_response_days).toBeNull(); // fab-0.;
     expect(m.overdue_access_requests).toBe(0);
     expect(m.overdue_audits).toBe(0);
     expect(Object.keys(m.by_quality_rating)).toHaveLength(0);
     expect(Object.keys(m.by_request_type)).toHaveLength(0);
-    expect(m.chronology_compliance).toBe(0);
+    expect(m.chronology_compliance).toBeNull(); // fab-0.;
   });
 
   // ── children_audited ──────────────────────────────────────────────────
@@ -464,7 +464,7 @@ describe("computeRecordsMetrics", () => {
       makeAudit({ records_reviewed: 0, records_complete: 0 }),
     ];
     const m = computeRecordsMetrics(audits, [], 0);
-    expect(m.avg_completeness_rate).toBe(0);
+    expect(m.avg_completeness_rate).toBeNull();
   });
 
   it("rounds avg_completeness_rate to one decimal place", () => {
@@ -536,7 +536,7 @@ describe("computeRecordsMetrics", () => {
       makeAudit({ id: "a2", data_quality_rating: "not_assessed" }),
     ];
     const m = computeRecordsMetrics(audits, [], 0);
-    expect(m.avg_data_quality).toBe(0);
+    expect(m.avg_data_quality).toBeNull();
   });
 
   it("calculates avg_data_quality for mixed ratings", () => {
@@ -696,7 +696,7 @@ describe("computeRecordsMetrics", () => {
       makeRequest({ id: "r1", status: "received", date_completed: null }),
     ];
     const m = computeRecordsMetrics([], requests, 0);
-    expect(m.avg_response_days).toBe(0);
+    expect(m.avg_response_days).toBeNull();
   });
 
   it("ignores requests without date_completed for avg_response_days", () => {
@@ -897,7 +897,7 @@ describe("computeRecordsMetrics", () => {
 
   it("returns 0 chronology_compliance when no audits", () => {
     const m = computeRecordsMetrics([], [], 0);
-    expect(m.chronology_compliance).toBe(0);
+    expect(m.chronology_compliance).toBeNull();
   });
 
   // ── Combined scenario ─────────────────────────────────────────────────

@@ -287,25 +287,25 @@ export function computeMetrics(
   by_arrangement_type: Record<string, number>;
   by_provider_type: Record<string, number>;
   by_experience_rating: Record<string, number>;
-  risk_assessment_rate: number;
-  care_plan_shared_rate: number;
-  medication_plan_shared_rate: number;
-  dietary_needs_shared_rate: number;
-  emergency_contacts_rate: number;
-  child_prepared_rate: number;
-  child_views_rate: number;
-  social_worker_approved_rate: number;
-  handover_rate: number;
-  return_debrief_rate: number;
-  positive_experience_rate: number;
-  negative_experience_rate: number;
-  concerns_raised_rate: number;
+  risk_assessment_rate: number | null;
+  care_plan_shared_rate: number | null;
+  medication_plan_shared_rate: number | null;
+  dietary_needs_shared_rate: number | null;
+  emergency_contacts_rate: number | null;
+  child_prepared_rate: number | null;
+  child_views_rate: number | null;
+  social_worker_approved_rate: number | null;
+  handover_rate: number | null;
+  return_debrief_rate: number | null;
+  positive_experience_rate: number | null;
+  negative_experience_rate: number | null;
+  concerns_raised_rate: number | null;
   planned_count: number;
   emergency_count: number;
   specialist_count: number;
-  average_per_child: number;
-  average_break_duration_days: number;
-  next_break_scheduled_rate: number;
+  average_per_child: number | null;
+  average_break_duration_days: number | null;
+  next_break_scheduled_rate: number | null;
 } {
   const total = rows.length;
 
@@ -328,8 +328,8 @@ export function computeMetrics(
   for (const r of ratedRows) byExperience[r.child_experience_rating!] = (byExperience[r.child_experience_rating!] || 0) + 1;
 
   // Boolean rates
-  const pct = (filter: (r: RespiteArrangementRow) => boolean) =>
-    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : 0;
+  const pct = (filter: (r: RespiteArrangementRow) => boolean): number | null =>
+    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
   const riskAssessmentRate = pct((r) => r.risk_assessment_completed);
   const carePlanSharedRate = pct((r) => r.care_plan_shared);
@@ -350,7 +350,7 @@ export function computeMetrics(
           ratedRows.length) *
           1000,
       ) / 10
-    : 0;
+    : null;
 
   const negativeExperienceRate = ratedRows.length > 0
     ? Math.round(
@@ -358,7 +358,7 @@ export function computeMetrics(
           ratedRows.length) *
           1000,
       ) / 10
-    : 0;
+    : null;
 
   // Category counts
   const plannedCount = rows.filter((r) => (PLANNED_TYPES as string[]).includes(r.arrangement_type)).length;
@@ -367,7 +367,7 @@ export function computeMetrics(
 
   const avgPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   // Average duration in days
   const durations = rows.map((r) => {
@@ -377,7 +377,7 @@ export function computeMetrics(
   }).filter((d) => d >= 0);
   const avgDuration = durations.length > 0
     ? Math.round((durations.reduce((a, b) => a + b, 0) / durations.length) * 10) / 10
-    : 0;
+    : null;
 
   const nextBreakRate = pct((r) => r.next_break_date !== null);
 
@@ -633,7 +633,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.concerns_raised_rate > 15 && metrics.total_arrangements > 5) {
+  if ((metrics.concerns_raised_rate ?? 0) > 15 && metrics.total_arrangements > 5) {
     insights.push(
       `[reflect] Concerns have been raised in ${metrics.concerns_raised_rate}% of respite ` +
         `arrangements. While it is positive that concerns are being identified ` +
@@ -660,7 +660,7 @@ export function generateCaraInsights(
         `sometimes necessary, does not provide the same quality of experience ` +
         `as a well-planned break with a known provider.`,
     );
-  } else if (metrics.child_prepared_rate < 50 && metrics.total_arrangements > 5) {
+  } else if ((metrics.child_prepared_rate ?? 0) < 50 && metrics.total_arrangements > 5) {
     insights.push(
       `[reflect] Children recorded as prepared for only ${metrics.child_prepared_rate}% of respite ` +
         `breaks. For looked-after children, any change in living arrangements ` +

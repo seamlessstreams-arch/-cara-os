@@ -43,12 +43,12 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_arrangements).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.risk_assessment_rate).toBe(0);
-    expect(m.positive_experience_rate).toBe(0);
+    expect(m.risk_assessment_rate).toBeNull();
+    expect(m.positive_experience_rate).toBeNull();
     expect(m.planned_count).toBe(0);
     expect(m.emergency_count).toBe(0);
-    expect(m.average_per_child).toBe(0);
-    expect(m.average_break_duration_days).toBe(0);
+    expect(m.average_per_child).toBeNull(); // fab-0.;
+    expect(m.average_break_duration_days).toBeNull(); // fab-0.;
   });
 
   it("counts arrangement and provider type breakdowns", () => {

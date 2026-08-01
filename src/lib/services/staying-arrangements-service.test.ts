@@ -50,12 +50,12 @@ describe("computeMetrics", () => {
   it("returns zeroes for empty array", () => {
     const r = computeMetrics([]);
     expect(r.total_arrangements).toBe(0);
-    expect(r.pathway_plan_rate).toBe(0);
-    expect(r.satisfaction_rate).toBe(0);
+    expect(r.pathway_plan_rate).toBeNull();
+    expect(r.satisfaction_rate).toBeNull();
     expect(r.breakdown_risk_count).toBe(0);
     expect(r.neet_count).toBe(0);
-    expect(r.successful_completion_rate).toBe(0);
-    expect(r.average_duration_days).toBe(0);
+    expect(r.successful_completion_rate).toBeNull(); // fab-0.;
+    expect(r.average_duration_days).toBeNull(); // fab-0.;
     expect(r.active_arrangements).toBe(0);
     expect(r.unique_young_people).toBe(0);
     expect(r.extended_count).toBe(0);

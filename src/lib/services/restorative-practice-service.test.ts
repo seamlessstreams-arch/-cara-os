@@ -51,11 +51,11 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_sessions).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.harm_acknowledged_rate).toBe(0);
-    expect(m.positive_outcome_rate).toBe(0);
-    expect(m.average_outcome_score).toBe(0);
+    expect(m.harm_acknowledged_rate).toBeNull();
+    expect(m.positive_outcome_rate).toBeNull();
+    expect(m.average_outcome_score).toBeNull(); // fab-0.;
     expect(m.formal_session_count).toBe(0);
-    expect(m.average_sessions_per_child).toBe(0);
+    expect(m.average_sessions_per_child).toBeNull(); // fab-0.;
     expect(m.overdue_follow_ups).toBe(0);
     expect(m.negative_outcome_count).toBe(0);
   });

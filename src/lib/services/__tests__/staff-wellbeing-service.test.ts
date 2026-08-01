@@ -328,13 +328,13 @@ describe("computeWellbeingMetrics", () => {
     const m = computeWellbeingMetrics([], [], 0);
     expect(m.staff_checked).toBe(0);
     expect(m.checks_this_quarter).toBe(0);
-    expect(m.avg_wellbeing_score).toBe(0);
-    expect(m.avg_stress_score).toBe(0);
+    expect(m.avg_wellbeing_score).toBeNull();
+    expect(m.avg_stress_score).toBeNull();
     expect(m.staff_struggling_or_crisis).toBe(0);
     expect(m.high_stress_count).toBe(0);
-    expect(m.workload_manageable_rate).toBe(0);
-    expect(m.feeling_supported_rate).toBe(0);
-    expect(m.support_acceptance_rate).toBe(0);
+    expect(m.workload_manageable_rate).toBeNull(); // fab-0.;
+    expect(m.feeling_supported_rate).toBeNull(); // fab-0.;
+    expect(m.support_acceptance_rate).toBeNull(); // fab-0.;
     expect(m.debriefs_this_quarter).toBe(0);
     expect(Object.keys(m.by_wellbeing_rating)).toHaveLength(0);
     expect(Object.keys(m.by_stress_level)).toHaveLength(0);
@@ -468,7 +468,7 @@ describe("computeWellbeingMetrics", () => {
 
   it("returns 0 avg_wellbeing_score when no checks", () => {
     const m = computeWellbeingMetrics([], [], 5);
-    expect(m.avg_wellbeing_score).toBe(0);
+    expect(m.avg_wellbeing_score).toBeNull();
   });
 
   it("avg_wellbeing_score with good and struggling rounds correctly", () => {
@@ -540,7 +540,7 @@ describe("computeWellbeingMetrics", () => {
 
   it("returns 0 avg_stress_score when no checks", () => {
     const m = computeWellbeingMetrics([], [], 5);
-    expect(m.avg_stress_score).toBe(0);
+    expect(m.avg_stress_score).toBeNull();
   });
 
   it("rounds avg_stress_score to one decimal place", () => {
@@ -667,7 +667,7 @@ describe("computeWellbeingMetrics", () => {
 
   it("returns 0 workload_manageable_rate when no checks", () => {
     const m = computeWellbeingMetrics([], [], 5);
-    expect(m.workload_manageable_rate).toBe(0);
+    expect(m.workload_manageable_rate).toBeNull();
   });
 
   // ── feeling_supported_rate ──────────────────────────────────────────────
@@ -702,7 +702,7 @@ describe("computeWellbeingMetrics", () => {
 
   it("returns 0 feeling_supported_rate when no checks", () => {
     const m = computeWellbeingMetrics([], [], 5);
-    expect(m.feeling_supported_rate).toBe(0);
+    expect(m.feeling_supported_rate).toBeNull();
   });
 
   // ── support_acceptance_rate ─────────────────────────────────────────────
@@ -713,7 +713,7 @@ describe("computeWellbeingMetrics", () => {
       makeCheck({ id: "c2", support_offered: [], support_accepted: false }),
     ];
     const m = computeWellbeingMetrics(checks, [], 5);
-    expect(m.support_acceptance_rate).toBe(0);
+    expect(m.support_acceptance_rate).toBeNull();
   });
 
   it("calculates 100% support_acceptance_rate when all accepted", () => {

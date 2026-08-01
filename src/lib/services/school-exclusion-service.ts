@@ -271,21 +271,21 @@ export function computeMetrics(
   formal_exclusion_count: number;
   unlawful_exclusion_count: number;
   alternative_provision_count: number;
-  average_duration_days: number;
+  average_duration_days: number | null;
   total_lost_days: number;
-  virtual_school_head_notification_rate: number;
-  social_worker_informed_rate: number;
-  child_views_obtained_rate: number;
-  parent_carer_views_rate: number;
-  advocacy_provided_rate: number;
-  reintegration_plan_rate: number;
-  alternative_provision_arranged_rate: number;
+  virtual_school_head_notification_rate: number | null;
+  social_worker_informed_rate: number | null;
+  child_views_obtained_rate: number | null;
+  parent_carer_views_rate: number | null;
+  advocacy_provided_rate: number | null;
+  reintegration_plan_rate: number | null;
+  alternative_provision_arranged_rate: number | null;
   active_exclusion_count: number;
   resolved_count: number;
-  average_education_hours_when_excluded: number;
+  average_education_hours_when_excluded: number | null;
   independent_review_requested_count: number;
   children_with_multiple_exclusions: number;
-  repeat_exclusion_rate: number;
+  repeat_exclusion_rate: number | null;
 } {
   const total = rows.length;
   const uniqueChildren = new Set(rows.map((r) => r.child_name.toLowerCase().trim()));
@@ -308,11 +308,11 @@ export function computeMetrics(
   // Duration metrics
   const durationRows = rows.filter((r) => r.duration_days !== null && r.duration_days > 0);
   const totalLostDays = durationRows.reduce((sum, r) => sum + (r.duration_days || 0), 0);
-  const avgDuration = durationRows.length > 0 ? Math.round((totalLostDays / durationRows.length) * 10) / 10 : 0;
+  const avgDuration = durationRows.length > 0 ? Math.round((totalLostDays / durationRows.length) * 10) / 10 : null;
 
   // Boolean rates
-  const pct = (filter: (r: SchoolExclusionRow) => boolean) =>
-    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : 0;
+  const pct = (filter: (r: SchoolExclusionRow) => boolean): number | null =>
+    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
   const vshRate = pct((r) => r.virtual_school_head_notified);
   const swRate = pct((r) => r.social_worker_informed);
@@ -330,7 +330,7 @@ export function computeMetrics(
   const hoursRows = rows.filter((r) => r.education_hours_per_week !== null);
   const avgHours = hoursRows.length > 0
     ? Math.round((hoursRows.reduce((sum, r) => sum + (r.education_hours_per_week || 0), 0) / hoursRows.length) * 10) / 10
-    : 0;
+    : null;
 
   // Independent review
   const irpCount = rows.filter((r) => r.independent_review_requested === true).length;
@@ -344,7 +344,7 @@ export function computeMetrics(
   const multipleExclusionChildren = Array.from(childExclusionMap.values()).filter((c) => c > 1).length;
   const repeatRate = uniqueChildren.size > 0
     ? Math.round((multipleExclusionChildren / uniqueChildren.size) * 1000) / 10
-    : 0;
+    : null;
 
   return {
     total_records: total,
@@ -602,7 +602,7 @@ export function generateCaraInsights(
         `the signs of off-rolling (pressure to move schools, reduced ` +
         `timetables without review, suggestions of elective home education)?`,
     );
-  } else if (metrics.repeat_exclusion_rate > 30) {
+  } else if ((metrics.repeat_exclusion_rate ?? 0) > 30) {
     insights.push(
       `[reflect] ${metrics.repeat_exclusion_rate}% of children have multiple exclusions. ` +
         `Repeat exclusion is a strong signal that the current approach is not ` +
@@ -614,7 +614,7 @@ export function generateCaraInsights(
         `involved? Are therapeutic supports in place at school? Is the school ` +
         `genuinely inclusive or is it the wrong placement for this child?`,
     );
-  } else if (metrics.child_views_obtained_rate < 60 && metrics.total_records > 3) {
+  } else if ((metrics.child_views_obtained_rate ?? 0) < 60 && metrics.total_records > 3) {
     insights.push(
       `[reflect] Child views recorded in only ${metrics.child_views_obtained_rate}% of exclusions. ` +
         `Exclusion is often experienced as rejection, punishment, or ` +

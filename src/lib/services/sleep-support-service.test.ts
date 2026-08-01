@@ -47,12 +47,12 @@ describe("computeMetrics (sleep-support)", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.average_sleep_quality).toBe(0);
-    expect(m.average_estimated_hours).toBe(0);
-    expect(m.average_disturbances).toBe(0);
-    expect(m.medication_rate).toBe(0);
-    expect(m.poor_sleep_rate).toBe(0);
-    expect(m.good_sleep_rate).toBe(0);
+    expect(m.average_sleep_quality).toBeNull();
+    expect(m.average_estimated_hours).toBeNull();
+    expect(m.average_disturbances).toBeNull(); // fab-0.;
+    expect(m.medication_rate).toBeNull(); // fab-0.;
+    expect(m.poor_sleep_rate).toBeNull(); // fab-0.;
+    expect(m.good_sleep_rate).toBeNull(); // fab-0.;
     expect(m.sleep_quality_trend).toBe("stable");
   });
 

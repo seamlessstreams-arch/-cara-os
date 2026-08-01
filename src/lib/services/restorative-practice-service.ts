@@ -249,23 +249,23 @@ export function computeMetrics(
   unique_children: number;
   by_session_type: Record<string, number>;
   by_outcome_rating: Record<string, number>;
-  harm_acknowledged_rate: number;
-  perspectives_shared_rate: number;
-  agreement_reached_rate: number;
-  follow_up_required_rate: number;
-  follow_up_completion_rate: number;
-  child_satisfaction_rate: number;
-  positive_outcome_rate: number;
-  relationship_improved_rate: number;
-  young_person_voice_rate: number;
-  staff_reflective_rate: number;
-  average_outcome_score: number;
+  harm_acknowledged_rate: number | null;
+  perspectives_shared_rate: number | null;
+  agreement_reached_rate: number | null;
+  follow_up_required_rate: number | null;
+  follow_up_completion_rate: number | null;
+  child_satisfaction_rate: number | null;
+  positive_outcome_rate: number | null;
+  relationship_improved_rate: number | null;
+  young_person_voice_rate: number | null;
+  staff_reflective_rate: number | null;
+  average_outcome_score: number | null;
   formal_session_count: number;
   informal_session_count: number;
   mediation_session_count: number;
   group_session_count: number;
   overdue_follow_ups: number;
-  average_sessions_per_child: number;
+  average_sessions_per_child: number | null;
   negative_outcome_count: number;
 } {
   const total = rows.length;
@@ -284,7 +284,7 @@ export function computeMetrics(
   for (const r of rows) byOutcomeRating[r.outcome_rating] = (byOutcomeRating[r.outcome_rating] || 0) + 1;
 
   // Boolean rates
-  const pct = (count: number) => total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+  const pct = (count: number): number | null => total > 0 ? Math.round((count / total) * 1000) / 10 : null;
 
   const harmAckRate = pct(rows.filter((r) => r.harm_acknowledged).length);
   const perspectivesRate = pct(rows.filter((r) => r.perspectives_shared).length);
@@ -295,7 +295,7 @@ export function computeMetrics(
   const followUpRequired = rows.filter((r) => r.follow_up_required);
   const followUpCompletionRate = followUpRequired.length > 0
     ? Math.round((followUpRequired.filter((r) => r.follow_up_completed).length / followUpRequired.length) * 1000) / 10
-    : 0;
+    : null;
 
   const childSatisfactionRate = pct(rows.filter((r) => r.child_satisfied_with_process).length);
 
@@ -313,7 +313,7 @@ export function computeMetrics(
   const outcomeScores = rows.map((r) => OUTCOME_NUMERIC[r.outcome_rating] ?? 0).filter((v) => v > 0);
   const avgOutcomeScore = outcomeScores.length > 0
     ? Math.round((outcomeScores.reduce((a, b) => a + b, 0) / outcomeScores.length) * 10) / 10
-    : 0;
+    : null;
 
   // Session category counts
   const formalCount = rows.filter(
@@ -342,7 +342,7 @@ export function computeMetrics(
   // Average sessions per child
   const avgSessionsPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   // Negative outcome count
   const negativeOutcomeCount = rows.filter(
@@ -624,7 +624,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.child_satisfaction_rate < 50 && metrics.total_sessions > 0) {
+  if ((metrics.child_satisfaction_rate ?? 0) < 50 && metrics.total_sessions > 0) {
     insights.push(
       `[reflect] Only ${metrics.child_satisfaction_rate}% of children reported satisfaction with ` +
         `the restorative process. Is the home truly practising restorative justice, or has it ` +
@@ -636,7 +636,7 @@ export function generateCaraInsights(
         `being given genuine agency in how conflicts are resolved? Are facilitators trained ` +
         `to create safe, non-judgemental spaces?`,
     );
-  } else if (metrics.young_person_voice_rate < 60 && metrics.total_sessions > 0) {
+  } else if ((metrics.young_person_voice_rate ?? 0) < 60 && metrics.total_sessions > 0) {
     insights.push(
       `[reflect] Young people's voices were heard in only ${metrics.young_person_voice_rate}% of sessions. ` +
         `Restorative practice is fundamentally about giving everyone affected a voice. ` +
@@ -647,7 +647,7 @@ export function generateCaraInsights(
         `Would some children benefit from having an advocate present? Is the physical ` +
         `environment of sessions conducive to young people feeling safe to speak?`,
     );
-  } else if (metrics.follow_up_completion_rate < 50 && metrics.follow_up_required_rate > 30) {
+  } else if ((metrics.follow_up_completion_rate ?? 0) < 50 && (metrics.follow_up_required_rate ?? 0) > 30) {
     insights.push(
       `[reflect] Follow-up completion rate is only ${metrics.follow_up_completion_rate}% despite ` +
         `${metrics.follow_up_required_rate}% of sessions requiring follow-up. Following through ` +

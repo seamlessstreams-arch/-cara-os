@@ -84,16 +84,16 @@ describe("computeRecruitmentCompliance", () => {
     expect(r.dbs_expired_count).toBe(0);
     expect(r.dbs_pending_count).toBe(0);
     expect(r.dbs_flagged_count).toBe(0);
-    expect(r.dbs_validity_rate).toBe(0);
+    expect(r.dbs_validity_rate).toBeNull();
     expect(r.references_verified_count).toBe(0);
     expect(r.references_outstanding_count).toBe(0);
     expect(r.references_unsatisfactory_count).toBe(0);
-    expect(r.reference_completion_rate).toBe(0);
+    expect(r.reference_completion_rate).toBeNull();
     expect(r.checks_completed_count).toBe(0);
     expect(r.checks_pending_count).toBe(0);
     expect(r.checks_concern_count).toBe(0);
-    expect(r.check_completion_rate).toBe(0);
-    expect(r.overall_compliance_rate).toBe(0);
+    expect(r.check_completion_rate).toBeNull(); // fab-0.;
+    expect(r.overall_compliance_rate).toBeNull(); // fab-0.;
   });
 
   it("counts DBS statuses correctly", () => {

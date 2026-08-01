@@ -311,26 +311,26 @@ export function computeMetrics(
   by_financial_arrangement: Record<string, number>;
   by_independent_living_skills: Record<string, number>;
   by_status: Record<string, number>;
-  pathway_plan_rate: number;
-  satisfaction_rate: number;
+  pathway_plan_rate: number | null;
+  satisfaction_rate: number | null;
   breakdown_risk_count: number;
   neet_count: number;
-  successful_completion_rate: number;
-  average_duration_days: number;
+  successful_completion_rate: number | null;
+  average_duration_days: number | null;
   active_arrangements: number;
-  health_needs_met_rate: number;
-  mental_health_support_rate: number;
-  social_network_maintained_rate: number;
-  regular_contact_rate: number;
+  health_needs_met_rate: number | null;
+  mental_health_support_rate: number | null;
+  social_network_maintained_rate: number | null;
+  regular_contact_rate: number | null;
   overdue_pathway_reviews: number;
   unique_young_people: number;
   extended_count: number;
 } {
   const total = rows.length;
 
-  const boolRate = (field: keyof StayingArrangementsRow) => {
+  const boolRate = (field: keyof StayingArrangementsRow): number | null => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   // Arrangement type breakdown
@@ -372,7 +372,7 @@ export function computeMetrics(
   // Successful completion rate (of all ended arrangements)
   const ended = rows.filter((r) => r.status === "Ended Successfully" || r.status === "Ended Prematurely" || r.status === "Transitioned");
   const successfulEnded = rows.filter((r) => r.status === "Ended Successfully" || r.status === "Transitioned").length;
-  const successfulCompletionRate = ended.length > 0 ? Math.round((successfulEnded / ended.length) * 1000) / 10 : 0;
+  const successfulCompletionRate = ended.length > 0 ? Math.round((successfulEnded / ended.length) * 1000) / 10 : null;
 
   // Average duration in days (for arrangements with end dates)
   const durationsMs = rows
@@ -384,8 +384,7 @@ export function computeMetrics(
     })
     .filter((d) => d > 0);
   const avgDurationDays = durationsMs.length > 0
-    ? Math.round(durationsMs.reduce((a, b) => a + b, 0) / durationsMs.length / (1000 * 60 * 60 * 24))
-    : 0;
+    ? Math.round(durationsMs.reduce((a, b) => a + b, 0) / durationsMs.length / (1000 * 60 * 60 * 24)) : null;
 
   // Active arrangements
   const activeArrangements = rows.filter((r) => r.status === "Active" || r.status === "Extended").length;
@@ -628,8 +627,7 @@ export function generateCaraInsights(
   // Insight 3: Reflective question
   if (metrics.neet_count > 0) {
     const neetRate = metrics.active_arrangements > 0
-      ? Math.round((metrics.neet_count / metrics.active_arrangements) * 100)
-      : 0;
+      ? Math.round((metrics.neet_count / metrics.active_arrangements) * 100) : null;
     insights.push(
       `[reflect] ${metrics.neet_count} young ${metrics.neet_count === 1 ? "person is" : "people are"} currently NEET ` +
         `(${neetRate}% of active arrangements). What targeted support is being offered to help ` +

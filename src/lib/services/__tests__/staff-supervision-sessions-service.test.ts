@@ -308,7 +308,7 @@ describe("computeSupervisionSessionMetrics", () => {
 
     it("returns supervision_coverage = 0 when totalStaff = 0", () => {
       const m = computeSupervisionSessionMetrics([], 0);
-      expect(m.supervision_coverage).toBe(0);
+      expect(m.supervision_coverage).toBeNull();
     });
 
     it("returns completed_count = 0", () => {
@@ -328,32 +328,32 @@ describe("computeSupervisionSessionMetrics", () => {
 
     it("returns completion_rate = 0", () => {
       const m = computeSupervisionSessionMetrics([], 5);
-      expect(m.completion_rate).toBe(0);
+      expect(m.completion_rate).toBeNull();
     });
 
     it("returns average_duration = 0", () => {
       const m = computeSupervisionSessionMetrics([], 5);
-      expect(m.average_duration).toBe(0);
+      expect(m.average_duration).toBeNull();
     });
 
     it("returns safeguarding_discussed_rate = 0", () => {
       const m = computeSupervisionSessionMetrics([], 5);
-      expect(m.safeguarding_discussed_rate).toBe(0);
+      expect(m.safeguarding_discussed_rate).toBeNull();
     });
 
     it("returns reflective_practice_rate = 0", () => {
       const m = computeSupervisionSessionMetrics([], 5);
-      expect(m.reflective_practice_rate).toBe(0);
+      expect(m.reflective_practice_rate).toBeNull();
     });
 
     it("returns training_needs_rate = 0", () => {
       const m = computeSupervisionSessionMetrics([], 5);
-      expect(m.training_needs_rate).toBe(0);
+      expect(m.training_needs_rate).toBeNull();
     });
 
     it("returns signed_rate = 0", () => {
       const m = computeSupervisionSessionMetrics([], 5);
-      expect(m.signed_rate).toBe(0);
+      expect(m.signed_rate).toBeNull();
     });
 
     it("returns total_actions_set = 0", () => {
@@ -368,7 +368,7 @@ describe("computeSupervisionSessionMetrics", () => {
 
     it("returns action_completion_rate = 0", () => {
       const m = computeSupervisionSessionMetrics([], 5);
-      expect(m.action_completion_rate).toBe(0);
+      expect(m.action_completion_rate).toBeNull();
     });
 
     it("returns wellbeing_concerns_count = 0", () => {
@@ -678,7 +678,7 @@ describe("computeSupervisionSessionMetrics", () => {
     it("returns 0 when totalStaff = 0", () => {
       const sess = [makeSession()];
       const m = computeSupervisionSessionMetrics(sess, 0);
-      expect(m.supervision_coverage).toBe(0);
+      expect(m.supervision_coverage).toBeNull();
     });
 
     it("returns 100 when all staff supervised", () => {
@@ -722,7 +722,7 @@ describe("computeSupervisionSessionMetrics", () => {
   describe("completion_rate", () => {
     it("returns 0 when no sessions", () => {
       const m = computeSupervisionSessionMetrics([], 5);
-      expect(m.completion_rate).toBe(0);
+      expect(m.completion_rate).toBeNull();
     });
 
     it("returns 100 when all completed", () => {
@@ -773,7 +773,7 @@ describe("computeSupervisionSessionMetrics", () => {
         makeSession({ session_status: "overdue", duration_minutes: 60 }),
       ];
       const m = computeSupervisionSessionMetrics(sess, 1);
-      expect(m.average_duration).toBe(0);
+      expect(m.average_duration).toBeNull();
     });
 
     it("returns the value itself for a single completed session", () => {
@@ -820,7 +820,7 @@ describe("computeSupervisionSessionMetrics", () => {
         makeSession({ session_status: "overdue", safeguarding_discussed: true }),
       ];
       const m = computeSupervisionSessionMetrics(sess, 1);
-      expect(m.safeguarding_discussed_rate).toBe(0);
+      expect(m.safeguarding_discussed_rate).toBeNull();
     });
 
     it("returns 100 when all completed discuss safeguarding", () => {
@@ -860,7 +860,7 @@ describe("computeSupervisionSessionMetrics", () => {
         makeSession({ session_status: "scheduled", reflective_practice_included: true }),
       ];
       const m = computeSupervisionSessionMetrics(sess, 1);
-      expect(m.reflective_practice_rate).toBe(0);
+      expect(m.reflective_practice_rate).toBeNull();
     });
 
     it("returns 100 when all completed include reflective practice", () => {
@@ -891,7 +891,7 @@ describe("computeSupervisionSessionMetrics", () => {
         makeSession({ session_status: "rescheduled", training_needs_identified: true }),
       ];
       const m = computeSupervisionSessionMetrics(sess, 1);
-      expect(m.training_needs_rate).toBe(0);
+      expect(m.training_needs_rate).toBeNull();
     });
 
     it("returns 100 when all completed identify training needs", () => {
@@ -919,7 +919,7 @@ describe("computeSupervisionSessionMetrics", () => {
         makeSession({ session_status: "overdue", signed_by_supervisee: true }),
       ];
       const m = computeSupervisionSessionMetrics(sess, 1);
-      expect(m.signed_rate).toBe(0);
+      expect(m.signed_rate).toBeNull();
     });
 
     it("returns 100 when all completed are signed", () => {
@@ -959,7 +959,7 @@ describe("computeSupervisionSessionMetrics", () => {
         makeSession({ actions_set: 0, actions_completed_from_last: 0 }),
       ];
       const m = computeSupervisionSessionMetrics(sess, 1);
-      expect(m.action_completion_rate).toBe(0);
+      expect(m.action_completion_rate).toBeNull();
     });
 
     it("returns 100 when all actions completed", () => {

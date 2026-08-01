@@ -48,11 +48,11 @@ describe("computeSupervisionSessionMetrics", () => {
     expect(m.completed_count).toBe(0);
     expect(m.cancelled_count).toBe(0);
     expect(m.overdue_count).toBe(0);
-    expect(m.completion_rate).toBe(0);
-    expect(m.average_duration).toBe(0);
-    expect(m.safeguarding_discussed_rate).toBe(0);
+    expect(m.completion_rate).toBeNull();
+    expect(m.average_duration).toBeNull();
+    expect(m.safeguarding_discussed_rate).toBeNull(); // fab-0.;
     expect(m.total_actions_set).toBe(0);
-    expect(m.action_completion_rate).toBe(0);
+    expect(m.action_completion_rate).toBeNull(); // fab-0.;
     expect(m.wellbeing_concerns_count).toBe(0);
     expect(m.struggling_or_crisis_count).toBe(0);
   });

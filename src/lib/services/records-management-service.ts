@@ -187,17 +187,17 @@ export function computeRecordsMetrics(
   totalChildren: number,
 ): {
   children_audited: number;
-  avg_completeness_rate: number;
-  avg_data_quality: number;
+  avg_completeness_rate: number | null;
+  avg_data_quality: number | null;
   children_with_poor_quality: number;
   total_access_requests: number;
   open_access_requests: number;
-  avg_response_days: number;
+  avg_response_days: number | null;
   overdue_access_requests: number;
   overdue_audits: number;
   by_quality_rating: Record<string, number>;
   by_request_type: Record<string, number>;
-  chronology_compliance: number;
+  chronology_compliance: number | null;
 } {
   const now = new Date();
 
@@ -214,7 +214,7 @@ export function computeRecordsMetrics(
   const avgCompleteness =
     totalReviewed > 0
       ? Math.round((totalComplete / totalReviewed) * 1000) / 10
-      : 0;
+      : null;
 
   // Quality rating score (excellent=5, good=4, adequate=3, poor=2, not_assessed=0)
   const qualityScores: Record<string, number> = {
@@ -241,7 +241,7 @@ export function computeRecordsMetrics(
   const avgDataQuality =
     assessedCount > 0
       ? Math.round((totalQuality / assessedCount) * 10) / 10
-      : 0;
+      : null;
 
   // Access requests
   const openStatuses = new Set(["received", "acknowledged", "in_progress", "redacting"]);
@@ -271,8 +271,7 @@ export function computeRecordsMetrics(
   }
   const avgResponseDays =
     completedResponses > 0
-      ? Math.round(totalResponseDays / completedResponses)
-      : 0;
+      ? Math.round(totalResponseDays / completedResponses) : null;
 
   // Overdue audits
   let overdueAudits = 0;
@@ -290,7 +289,7 @@ export function computeRecordsMetrics(
   const chronologyCompliance =
     audits.length > 0
       ? Math.round((chronologyCount / audits.length) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     children_audited: auditedChildren.size,

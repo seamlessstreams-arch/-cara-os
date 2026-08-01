@@ -131,19 +131,19 @@ export function computeSupervisionSessionMetrics(
 ): {
   total_sessions: number;
   staff_supervised: number;
-  supervision_coverage: number;
+  supervision_coverage: number | null;
   completed_count: number;
   cancelled_count: number;
   overdue_count: number;
-  completion_rate: number;
-  average_duration: number;
-  safeguarding_discussed_rate: number;
-  reflective_practice_rate: number;
-  training_needs_rate: number;
-  signed_rate: number;
+  completion_rate: number | null;
+  average_duration: number | null;
+  safeguarding_discussed_rate: number | null;
+  reflective_practice_rate: number | null;
+  training_needs_rate: number | null;
+  signed_rate: number | null;
   total_actions_set: number;
   total_actions_completed: number;
-  action_completion_rate: number;
+  action_completion_rate: number | null;
   wellbeing_concerns_count: number;
   struggling_or_crisis_count: number;
   by_supervision_type: Record<string, number>;
@@ -154,7 +154,7 @@ export function computeSupervisionSessionMetrics(
   const coverage =
     totalStaff > 0
       ? Math.round((uniqueStaff / totalStaff) * 1000) / 10
-      : 0;
+      : null;
 
   const completed = sessions.filter((s) => s.session_status === "completed").length;
   const cancelled = sessions.filter(
@@ -165,44 +165,44 @@ export function computeSupervisionSessionMetrics(
   const completionRate =
     sessions.length > 0
       ? Math.round((completed / sessions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const completedSessions = sessions.filter((s) => s.session_status === "completed");
   const avgDuration =
     completedSessions.length > 0
       ? Math.round((completedSessions.reduce((sum, s) => sum + s.duration_minutes, 0) / completedSessions.length) * 10) / 10
-      : 0;
+      : null;
 
   const sgDiscussed = completedSessions.filter((s) => s.safeguarding_discussed).length;
   const sgRate =
     completedSessions.length > 0
       ? Math.round((sgDiscussed / completedSessions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const reflective = completedSessions.filter((s) => s.reflective_practice_included).length;
   const reflectiveRate =
     completedSessions.length > 0
       ? Math.round((reflective / completedSessions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const trainingNeeds = completedSessions.filter((s) => s.training_needs_identified).length;
   const trainingRate =
     completedSessions.length > 0
       ? Math.round((trainingNeeds / completedSessions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const signed = completedSessions.filter((s) => s.signed_by_supervisee).length;
   const signedRate =
     completedSessions.length > 0
       ? Math.round((signed / completedSessions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const totalActionsSet = sessions.reduce((sum, s) => sum + s.actions_set, 0);
   const totalActionsCompleted = sessions.reduce((sum, s) => sum + s.actions_completed_from_last, 0);
   const actionRate =
     totalActionsSet > 0
       ? Math.round((totalActionsCompleted / totalActionsSet) * 1000) / 10
-      : 0;
+      : null;
 
   const wellbeingConcerns = sessions.filter((s) => s.wellbeing_concerns_raised).length;
   const strugglingOrCrisis = sessions.filter(

@@ -159,13 +159,13 @@ export function computeWellbeingMetrics(
 ): {
   staff_checked: number;
   checks_this_quarter: number;
-  avg_wellbeing_score: number;
-  avg_stress_score: number;
+  avg_wellbeing_score: number | null;
+  avg_stress_score: number | null;
   staff_struggling_or_crisis: number;
   high_stress_count: number;
-  workload_manageable_rate: number;
-  feeling_supported_rate: number;
-  support_acceptance_rate: number;
+  workload_manageable_rate: number | null;
+  feeling_supported_rate: number | null;
+  support_acceptance_rate: number | null;
   debriefs_this_quarter: number;
   by_wellbeing_rating: Record<string, number>;
   by_stress_level: Record<string, number>;
@@ -202,7 +202,7 @@ export function computeWellbeingMetrics(
   const avgWellbeingScore =
     wellbeingCount > 0
       ? Math.round((totalWellbeing / wellbeingCount) * 10) / 10
-      : 0;
+      : null;
 
   // Stress score (very_low=1, low=2, moderate=3, high=4, very_high=5)
   const stressScores: Record<string, number> = {
@@ -226,7 +226,7 @@ export function computeWellbeingMetrics(
   const avgStressScore =
     stressCount > 0
       ? Math.round((totalStress / stressCount) * 10) / 10
-      : 0;
+      : null;
 
   // Manageable workload
   let manageableCount = 0;
@@ -246,17 +246,17 @@ export function computeWellbeingMetrics(
   const workloadManageableRate =
     checks.length > 0
       ? Math.round((manageableCount / checks.length) * 1000) / 10
-      : 0;
+      : null;
 
   const feelingSupportedRate =
     checks.length > 0
       ? Math.round((supportedCount / checks.length) * 1000) / 10
-      : 0;
+      : null;
 
   const supportAcceptanceRate =
     supportOffered > 0
       ? Math.round((supportAccepted / supportOffered) * 1000) / 10
-      : 0;
+      : null;
 
   // Debriefs
   const debriefsThisQuarter = debriefs.filter(

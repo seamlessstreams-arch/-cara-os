@@ -148,17 +148,17 @@ export function computeAttendanceMetrics(
   absent_sick_count: number;
   absent_unauthorised_count: number;
   late_arrival_count: number;
-  attendance_rate: number;
-  punctuality_rate: number;
-  average_late_minutes: number;
+  attendance_rate: number | null;
+  punctuality_rate: number | null;
+  average_late_minutes: number | null;
   total_overtime_hours: number;
   average_hours_worked: number;
   agency_staff_used_count: number;
-  minimum_staffing_met_rate: number;
-  handover_completed_rate: number;
-  compliance_rate: number;
+  minimum_staffing_met_rate: number | null;
+  handover_completed_rate: number | null;
+  compliance_rate: number | null;
   non_compliant_count: number;
-  staff_coverage: number;
+  staff_coverage: number | null;
   by_attendance_status: Record<string, number>;
   by_shift_type: Record<string, number>;
   by_compliance_flag: Record<string, number>;
@@ -178,7 +178,7 @@ export function computeAttendanceMetrics(
   const attendanceRate =
     workingRecords.length > 0
       ? Math.round((attendedRecords.length / workingRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   const onTimeRecords = workingRecords.filter(
     (r) => r.attendance_status === "present" || r.attendance_status === "early_departure",
@@ -186,13 +186,13 @@ export function computeAttendanceMetrics(
   const punctualityRate =
     workingRecords.length > 0
       ? Math.round((onTimeRecords.length / workingRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   const lateRecords = records.filter((r) => r.late_minutes > 0);
   const avgLate =
     lateRecords.length > 0
       ? Math.round((lateRecords.reduce((sum, r) => sum + r.late_minutes, 0) / lateRecords.length) * 10) / 10
-      : 0;
+      : null;
 
   const totalOvertime = Math.round(records.reduce((sum, r) => sum + r.overtime_hours, 0) * 10) / 10;
 
@@ -208,19 +208,19 @@ export function computeAttendanceMetrics(
   const minStaffRate =
     records.length > 0
       ? Math.round((minStaffMet / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const handoverDone = records.filter((r) => r.handover_completed).length;
   const handoverRate =
     records.length > 0
       ? Math.round((handoverDone / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const compliant = records.filter((r) => r.compliance_flag === "compliant").length;
   const complianceRate =
     records.length > 0
       ? Math.round((compliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const nonCompliant = records.filter(
     (r) => r.compliance_flag !== "compliant" && r.compliance_flag !== "not_checked",
@@ -230,7 +230,7 @@ export function computeAttendanceMetrics(
   const staffCoverage =
     totalStaff > 0
       ? Math.round((uniqueStaff / totalStaff) * 1000) / 10
-      : 0;
+      : null;
 
   const byStatus: Record<string, number> = {};
   for (const r of records) byStatus[r.attendance_status] = (byStatus[r.attendance_status] ?? 0) + 1;

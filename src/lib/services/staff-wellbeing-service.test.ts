@@ -65,13 +65,13 @@ describe("computeWellbeingMetrics", () => {
     const r = computeWellbeingMetrics([], [], 10);
     expect(r.staff_checked).toBe(0);
     expect(r.checks_this_quarter).toBe(0);
-    expect(r.avg_wellbeing_score).toBe(0);
-    expect(r.avg_stress_score).toBe(0);
+    expect(r.avg_wellbeing_score).toBeNull();
+    expect(r.avg_stress_score).toBeNull();
     expect(r.staff_struggling_or_crisis).toBe(0);
     expect(r.high_stress_count).toBe(0);
-    expect(r.workload_manageable_rate).toBe(0);
-    expect(r.feeling_supported_rate).toBe(0);
-    expect(r.support_acceptance_rate).toBe(0);
+    expect(r.workload_manageable_rate).toBeNull(); // fab-0.;
+    expect(r.feeling_supported_rate).toBeNull(); // fab-0.;
+    expect(r.support_acceptance_rate).toBeNull(); // fab-0.;
     expect(r.debriefs_this_quarter).toBe(0);
     expect(r.overdue_follow_ups).toBe(0);
   });

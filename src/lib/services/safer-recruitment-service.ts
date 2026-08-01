@@ -149,16 +149,16 @@ export interface RecruitmentComplianceResult {
   dbs_expired_count: number;
   dbs_pending_count: number;
   dbs_flagged_count: number;
-  dbs_validity_rate: number;
+  dbs_validity_rate: number | null;
   references_verified_count: number;
   references_outstanding_count: number;
   references_unsatisfactory_count: number;
-  reference_completion_rate: number;
+  reference_completion_rate: number | null;
   checks_completed_count: number;
   checks_pending_count: number;
   checks_concern_count: number;
-  check_completion_rate: number;
-  overall_compliance_rate: number;
+  check_completion_rate: number | null;
+  overall_compliance_rate: number | null;
 }
 
 /**
@@ -195,8 +195,7 @@ export function computeRecruitmentCompliance(
 
   const dbsTotal = dbsChecks.length;
   const dbsValidityRate = dbsTotal > 0
-    ? Math.round(((dbsValid + dbsExpiring) / dbsTotal) * 100)
-    : 0;
+    ? Math.round(((dbsValid + dbsExpiring) / dbsTotal) * 100) : null;
 
   // Reference metrics
   let refsVerified = 0;
@@ -211,8 +210,7 @@ export function computeRecruitmentCompliance(
 
   const refsTotal = references.length;
   const referenceCompletionRate = refsTotal > 0
-    ? Math.round((refsVerified / refsTotal) * 100)
-    : 0;
+    ? Math.round((refsVerified / refsTotal) * 100) : null;
 
   // Pre-employment check metrics
   let checksCompleted = 0;
@@ -227,8 +225,7 @@ export function computeRecruitmentCompliance(
 
   const checksTotal = preEmploymentChecks.length;
   const checkCompletionRate = checksTotal > 0
-    ? Math.round((checksCompleted / checksTotal) * 100)
-    : 0;
+    ? Math.round((checksCompleted / checksTotal) * 100) : null;
 
   // Overall compliance is the average of the three rates
   const rateCount = [dbsTotal, refsTotal, checksTotal].filter((n) => n > 0).length;
@@ -236,9 +233,9 @@ export function computeRecruitmentCompliance(
     ? Math.round(
         ([dbsValidityRate, referenceCompletionRate, checkCompletionRate]
           .slice(0, rateCount)
-          .reduce((sum, r) => sum + r, 0)) / rateCount,
+          .reduce((sum, r) => (sum ?? 0) + (r ?? 0), 0) ?? 0) / rateCount,
       )
-    : 0;
+      : null;
 
   return {
     total_staff: totalStaff,

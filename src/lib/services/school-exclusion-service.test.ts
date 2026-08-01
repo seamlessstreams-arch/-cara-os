@@ -49,11 +49,11 @@ describe("computeMetrics", () => {
     expect(m.unique_children).toBe(0);
     expect(m.formal_exclusion_count).toBe(0);
     expect(m.unlawful_exclusion_count).toBe(0);
-    expect(m.average_duration_days).toBe(0);
+    expect(m.average_duration_days).toBeNull();
     expect(m.total_lost_days).toBe(0);
-    expect(m.virtual_school_head_notification_rate).toBe(0);
+    expect(m.virtual_school_head_notification_rate).toBeNull();
     expect(m.active_exclusion_count).toBe(0);
-    expect(m.repeat_exclusion_rate).toBe(0);
+    expect(m.repeat_exclusion_rate).toBeNull(); // fab-0.;
   });
 
   it("counts formal, unlawful, and alternative exclusion types", () => {
