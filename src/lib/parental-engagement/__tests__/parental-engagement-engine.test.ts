@@ -908,7 +908,7 @@ describe("buildFamilyProfiles", () => {
     const profiles = buildFamilyProfiles([], OAK_HOUSE_SUPPORTS, OAK_HOUSE_PLANS, OAK_HOUSE_FEEDBACK, [ALEX_ID]);
     const alex = profiles.find((p) => p.childId === ALEX_ID)!;
     expect(alex.totalContacts).toBe(0);
-    expect(alex.positiveContactRate).toBe(0);
+    expect(alex.positiveContactRate).toBeNull(); // fab-0.
   });
 
   it("handles empty data for all inputs", () => {
