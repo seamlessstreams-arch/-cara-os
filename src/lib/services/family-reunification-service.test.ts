@@ -45,12 +45,12 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.risk_assessment_rate).toBe(0);
-    expect(m.safeguarding_cleared_rate).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.risk_assessment_rate).toBeNull(); // fab-0.
+    expect(m.safeguarding_cleared_rate).toBeNull(); // fab-0.
+    expect(m.child_views_rate).toBeNull(); // fab-0.
     expect(m.successful_reunification_count).toBe(0);
     expect(m.failed_reunification_count).toBe(0);
-    expect(m.success_rate).toBe(0);
+    expect(m.success_rate).toBeNull(); // fab-0.
     expect(m.active_planning_count).toBe(0);
     expect(m.on_hold_count).toBe(0);
   });

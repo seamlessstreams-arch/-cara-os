@@ -330,23 +330,23 @@ export function computeMetrics(
   by_planning_stage: Record<string, number>;
   by_relationship: Record<string, number>;
   by_status: Record<string, number>;
-  risk_assessment_rate: number;
-  safeguarding_cleared_rate: number;
-  child_views_rate: number;
-  child_wishes_return_rate: number;
-  family_support_rate: number;
-  parenting_assessment_rate: number;
-  home_suitability_assessed_rate: number;
-  la_support_plan_rate: number;
-  school_transition_rate: number;
-  health_transfer_rate: number;
-  iro_rate: number;
-  legal_advice_rate: number;
+  risk_assessment_rate: number | null;
+  safeguarding_cleared_rate: number | null;
+  child_views_rate: number | null;
+  child_wishes_return_rate: number | null;
+  family_support_rate: number | null;
+  parenting_assessment_rate: number | null;
+  home_suitability_assessed_rate: number | null;
+  la_support_plan_rate: number | null;
+  school_transition_rate: number | null;
+  health_transfer_rate: number | null;
+  iro_rate: number | null;
+  legal_advice_rate: number | null;
   successful_reunification_count: number;
   failed_reunification_count: number;
-  success_rate: number;
-  average_time_assessment_to_return: number;
-  post_return_monitoring_rate: number;
+  success_rate: number | null;
+  average_time_assessment_to_return: number | null;
+  post_return_monitoring_rate: number | null;
   unique_children: number;
   active_planning_count: number;
   on_hold_count: number;
@@ -376,54 +376,54 @@ export function computeMetrics(
   // Boolean rates
   const riskRate = total > 0
     ? Math.round((rows.filter((r) => r.risk_assessment_current).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const safeguardingRate = total > 0
     ? Math.round((rows.filter((r) => r.safeguarding_cleared).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const childViewsRate = total > 0
     ? Math.round((rows.filter((r) => r.child_views_obtained).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Child wishes to return rate (of those where views were obtained)
   const viewsObtained = rows.filter((r) => r.child_views_obtained);
   const wishesReturn = viewsObtained.filter((r) => r.child_wishes_to_return === true);
   const childWishesRate = viewsObtained.length > 0
     ? Math.round((wishesReturn.length / viewsObtained.length) * 1000) / 10
-    : 0;
+    : null;
 
   const familySupportRate = total > 0
     ? Math.round((rows.filter((r) => r.family_support_services).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const parentingAssessmentRate = total > 0
     ? Math.round((rows.filter((r) => r.parenting_assessment_completed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const homeSuitabilityRate = total > 0
     ? Math.round((rows.filter((r) => r.home_suitable !== null).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const laSupportRate = total > 0
     ? Math.round((rows.filter((r) => r.local_authority_support_plan).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const schoolTransitionRate = total > 0
     ? Math.round((rows.filter((r) => r.school_transition_planned).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const healthTransferRate = total > 0
     ? Math.round((rows.filter((r) => r.health_services_transferred).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const iroRate = total > 0
     ? Math.round((rows.filter((r) => r.independent_reviewing_officer_consulted).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const legalRate = total > 0
     ? Math.round((rows.filter((r) => r.legal_advice_obtained).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Successful and failed reunification counts
   const successfulCount = rows.filter((r) => r.status === "Reunification Successful").length;
@@ -431,7 +431,7 @@ export function computeMetrics(
   const concludedCount = successfulCount + failedCount;
   const successRate = concludedCount > 0
     ? Math.round((successfulCount / concludedCount) * 1000) / 10
-    : 0;
+    : null;
 
   // Average time from assessment to return (days)
   const returnsWithDates = rows.filter(
@@ -461,7 +461,7 @@ export function computeMetrics(
   }
   const avgTimeToReturn = returnsWithAssessment > 0
     ? Math.round((totalDaysToReturn / returnsWithAssessment) * 10) / 10
-    : 0;
+    : null;
 
   // Post-return monitoring rate
   const postReturnRows = rows.filter(
@@ -474,7 +474,7 @@ export function computeMetrics(
   ).length;
   const postReturnMonitoringRate = postReturnRows.length > 0
     ? Math.round((monitoredCount / postReturnRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Active planning and on hold counts
   const activePlanningCount = rows.filter((r) => r.status === "Active Planning").length;
@@ -830,7 +830,7 @@ export function generateCaraInsights(
         `sufficient? Were warning signs acted on? What lessons can inform future ` +
         `reunification planning?`,
     );
-  } else if (metrics.risk_assessment_rate < 70 && metrics.total_records > 3) {
+  } else if ((metrics.risk_assessment_rate ?? 0) < 70 && metrics.total_records > 3) {
     insights.push(
       `[reflect] Risk assessment rate is ${metrics.risk_assessment_rate}% across ` +
         `reunification records. The child entered care for a reason — and that ` +
@@ -842,7 +842,7 @@ export function generateCaraInsights(
         `is preceded by an updated risk assessment? Are assessments genuinely ` +
         `analytical or merely procedural?`,
     );
-  } else if (metrics.post_return_monitoring_rate < 50 && metrics.successful_reunification_count > 0) {
+  } else if ((metrics.post_return_monitoring_rate ?? 0) < 50 && metrics.successful_reunification_count > 0) {
     insights.push(
       `[reflect] Post-return monitoring rate is ${metrics.post_return_monitoring_rate}% ` +
         `for completed reunifications. The DfE reunification practice framework ` +
