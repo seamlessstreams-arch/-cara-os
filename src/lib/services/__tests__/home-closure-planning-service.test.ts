@@ -42,11 +42,11 @@ describe("home-closure-planning-service", () => {
       expect(m.not_started_count).toBe(0);
       expect(m.children_without_plan_count).toBe(0);
       expect(m.regulatory_not_sent_count).toBe(0);
-      expect(m.child_views_rate).toBe(0);
-      expect(m.transition_plan_rate).toBe(0);
-      expect(m.risk_assessment_rate).toBe(0);
-      expect(m.staff_consultation_rate).toBe(0);
-      expect(m.child_wishes_rate).toBe(0);
+      expect(m.child_views_rate).toBeNull();;
+      expect(m.transition_plan_rate).toBeNull();;
+      expect(m.risk_assessment_rate).toBeNull();;
+      expect(m.staff_consultation_rate).toBeNull();;
+      expect(m.child_wishes_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
 

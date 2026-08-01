@@ -366,22 +366,22 @@ describe("computeLiftEquipmentSafetyMetrics", () => {
 
     it("returns zero remedial_completion_rate", () => {
       const m = computeLiftEquipmentSafetyMetrics([]);
-      expect(m.remedial_completion_rate).toBe(0);
+      expect(m.remedial_completion_rate).toBeNull();;
     });
 
     it("returns zero certificate_rate", () => {
       const m = computeLiftEquipmentSafetyMetrics([]);
-      expect(m.certificate_rate).toBe(0);
+      expect(m.certificate_rate).toBeNull();;
     });
 
     it("returns zero swl_confirmed_rate", () => {
       const m = computeLiftEquipmentSafetyMetrics([]);
-      expect(m.swl_confirmed_rate).toBe(0);
+      expect(m.swl_confirmed_rate).toBeNull();;
     });
 
     it("returns zero next_inspection_rate", () => {
       const m = computeLiftEquipmentSafetyMetrics([]);
-      expect(m.next_inspection_rate).toBe(0);
+      expect(m.next_inspection_rate).toBeNull();;
     });
 
     it("returns zero non_compliant_count", () => {
@@ -461,7 +461,7 @@ describe("computeLiftEquipmentSafetyMetrics", () => {
 
     it("returns remedial_completion_rate = 0 (no defects so no applicable records)", () => {
       const m = computeLiftEquipmentSafetyMetrics([record]);
-      expect(m.remedial_completion_rate).toBe(0);
+      expect(m.remedial_completion_rate).toBeNull();;
     });
 
     it("returns swl_confirmed_rate = 100", () => {
@@ -747,7 +747,7 @@ describe("computeLiftEquipmentSafetyMetrics", () => {
         makeRecord({ defects_found: 0, remedial_completed: false }),
       ];
       const m = computeLiftEquipmentSafetyMetrics(records);
-      expect(m.remedial_completion_rate).toBe(0);
+      expect(m.remedial_completion_rate).toBeNull();;
     });
 
     it("returns 0 when all defective records are unremediated", () => {

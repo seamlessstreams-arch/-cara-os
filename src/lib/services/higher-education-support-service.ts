@@ -309,15 +309,15 @@ export function computeMetrics(
   by_record_type: Record<string, number>;
   by_qualification_level: Record<string, number>;
   by_application_status: Record<string, number>;
-  finance_applied_rate: number;
-  bursary_rate: number;
-  accommodation_rate: number;
-  pa_involvement_rate: number;
-  pathway_plan_rate: number;
-  engagement_rate: number;
-  mentoring_rate: number;
+  finance_applied_rate: number | null;
+  bursary_rate: number | null;
+  accommodation_rate: number | null;
+  pa_involvement_rate: number | null;
+  pathway_plan_rate: number | null;
+  engagement_rate: number | null;
+  mentoring_rate: number | null;
   enrolled_count: number;
-  offer_rate: number;
+  offer_rate: number | null;
 } {
   const total = rows.length;
 
@@ -342,31 +342,31 @@ export function computeMetrics(
   // Boolean rates
   const financeRate = total > 0
     ? Math.round((rows.filter((r) => r.student_finance_applied).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const bursaryRate = total > 0
     ? Math.round((rows.filter((r) => r.bursary_applied).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const accommodationRate = total > 0
     ? Math.round((rows.filter((r) => r.accommodation_secured).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const paRate = total > 0
     ? Math.round((rows.filter((r) => r.personal_adviser_involved).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const pathwayRate = total > 0
     ? Math.round((rows.filter((r) => r.pathway_plan_updated).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const engagementRate = total > 0
     ? Math.round((rows.filter((r) => r.young_person_engaged).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const mentoringRate = total > 0
     ? Math.round((rows.filter((r) => r.mentoring_in_place).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Enrolled count
   const enrolledCount = rows.filter((r) => r.application_status === "Enrolled").length;
@@ -385,7 +385,7 @@ export function computeMetrics(
   );
   const offerRate = applicants.length > 0
     ? Math.round((offersReceived.length / applicants.length) * 1000) / 10
-    : 0;
+    : null;
 
   return {
     total_records: total,
@@ -622,7 +622,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.enrolled_count > 0 && metrics.accommodation_rate < 50) {
+  if (metrics.enrolled_count > 0 && (metrics.accommodation_rate ?? 0) < 50) {
     insights.push(
       `[reflect] ${metrics.enrolled_count} young ${metrics.enrolled_count === 1 ? "person is" : "people are"} enrolled ` +
         `but accommodation secured rate is only ${metrics.accommodation_rate}%. Are care leavers ` +
@@ -630,7 +630,7 @@ export function generateCaraInsights(
         `a duty on local authorities to assist with accommodation, and the DfE guidance 2023 ` +
         `emphasises that settled accommodation is critical to HE retention for care leavers.`,
     );
-  } else if (metrics.pa_involvement_rate < 50 && metrics.total_records > 0) {
+  } else if ((metrics.pa_involvement_rate ?? 0) < 50 && metrics.total_records > 0) {
     insights.push(
       `[reflect] Personal adviser involvement is only ${metrics.pa_involvement_rate}% across ` +
         `${metrics.total_records} education support records. Are personal advisers being routinely ` +
@@ -639,7 +639,7 @@ export function generateCaraInsights(
         `is the key professional coordinating this support. SCCIF inspectors will expect evidence ` +
         `of proactive PA involvement in educational aspirations.`,
     );
-  } else if (metrics.bursary_rate < 30 && metrics.enrolled_count > 0) {
+  } else if ((metrics.bursary_rate ?? 0) < 30 && metrics.enrolled_count > 0) {
     insights.push(
       `[reflect] Care leaver bursary application rate is only ${metrics.bursary_rate}%. ` +
         `Are all eligible young people being supported to apply for the care leaver bursary ` +

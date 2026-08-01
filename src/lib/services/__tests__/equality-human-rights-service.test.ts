@@ -312,7 +312,7 @@ describe("computeEqualityMetrics", () => {
 
     it("returns zero fully_compliant_rate", () => {
       const m = computeEqualityMetrics([]);
-      expect(m.fully_compliant_rate).toBe(0);
+      expect(m.fully_compliant_rate).toBeNull();;
     });
 
     it("returns zero non_compliant_count", () => {
@@ -327,12 +327,12 @@ describe("computeEqualityMetrics", () => {
 
     it("returns zero actions_completed_rate", () => {
       const m = computeEqualityMetrics([]);
-      expect(m.actions_completed_rate).toBe(0);
+      expect(m.actions_completed_rate).toBeNull();;
     });
 
     it("returns zero reasonable_adjustment_rate", () => {
       const m = computeEqualityMetrics([]);
-      expect(m.reasonable_adjustment_rate).toBe(0);
+      expect(m.reasonable_adjustment_rate).toBeNull();;
     });
 
     it("returns zero impact_on_child_count", () => {
@@ -730,7 +730,7 @@ describe("computeEqualityMetrics", () => {
         makeRecord({ actions_required: [], actions_completed: [] }),
       ];
       const m = computeEqualityMetrics(records);
-      expect(m.actions_completed_rate).toBe(0);
+      expect(m.actions_completed_rate).toBeNull();;
     });
 
     it("sums across multiple records (2+1)/(3+2) = 60%", () => {

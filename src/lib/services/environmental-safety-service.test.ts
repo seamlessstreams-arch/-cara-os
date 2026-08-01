@@ -58,7 +58,7 @@ describe("computeSafetyMetrics", () => {
     const m = computeSafetyMetrics([], []);
     expect(m.total_checks).toBe(0);
     expect(m.compliant_count).toBe(0);
-    expect(m.compliance_rate).toBe(0);
+    expect(m.compliance_rate).toBeNull();;
     expect(m.overdue_checks).toBe(0);
     expect(m.non_compliant_checks).toBe(0);
     expect(m.certificates_expiring_soon).toBe(0);
@@ -66,7 +66,7 @@ describe("computeSafetyMetrics", () => {
     expect(m.open_remedial_actions).toBe(0);
     expect(m.critical_actions).toBe(0);
     expect(m.drills_this_year).toBe(0);
-    expect(m.avg_evacuation_time).toBe(0);
+    expect(m.avg_evacuation_time).toBeNull();;
   });
 
   it("computes correct counts and rates for populated data", () => {

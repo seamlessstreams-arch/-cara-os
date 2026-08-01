@@ -40,8 +40,8 @@ describe("computeMetrics", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.high_risk_count).toBe(0);
     expect(m.intolerable_count).toBe(0);
-    expect(m.temperature_compliance_rate).toBe(0);
-    expect(m.negative_test_rate).toBe(0);
+    expect(m.temperature_compliance_rate).toBeNull();;
+    expect(m.negative_test_rate).toBeNull();;
     expect(m.unique_assessors).toBe(0);
     expect(m.risk_breakdown).toEqual({});
   });

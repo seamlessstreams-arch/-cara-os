@@ -84,7 +84,7 @@ describe("emergency-drill-service", () => {
       });
 
       it("returns successful_rate = 0", () => {
-        expect(computeDrillMetrics([]).successful_rate).toBe(0);
+        expect(computeDrillMetrics([]).successful_rate).toBeNull();;
       });
 
       it("returns failed_count = 0", () => {
@@ -96,19 +96,19 @@ describe("emergency-drill-service", () => {
       });
 
       it("returns all_children_accounted_rate = 0", () => {
-        expect(computeDrillMetrics([]).all_children_accounted_rate).toBe(0);
+        expect(computeDrillMetrics([]).all_children_accounted_rate).toBeNull();;
       });
 
       it("returns all_staff_participated_rate = 0", () => {
-        expect(computeDrillMetrics([]).all_staff_participated_rate).toBe(0);
+        expect(computeDrillMetrics([]).all_staff_participated_rate).toBeNull();;
       });
 
       it("returns assembly_point_used_rate = 0", () => {
-        expect(computeDrillMetrics([]).assembly_point_used_rate).toBe(0);
+        expect(computeDrillMetrics([]).assembly_point_used_rate).toBeNull();;
       });
 
       it("returns equipment_working_rate = 0", () => {
-        expect(computeDrillMetrics([]).equipment_working_rate).toBe(0);
+        expect(computeDrillMetrics([]).equipment_working_rate).toBeNull();;
       });
 
       it("returns children_distressed_count = 0", () => {
@@ -116,11 +116,11 @@ describe("emergency-drill-service", () => {
       });
 
       it("returns average_evacuation_time = 0", () => {
-        expect(computeDrillMetrics([]).average_evacuation_time).toBe(0);
+        expect(computeDrillMetrics([]).average_evacuation_time).toBeNull();;
       });
 
       it("returns fully_prepared_rate = 0", () => {
-        expect(computeDrillMetrics([]).fully_prepared_rate).toBe(0);
+        expect(computeDrillMetrics([]).fully_prepared_rate).toBeNull();;
       });
 
       it("returns unprepared_count = 0", () => {
@@ -447,7 +447,7 @@ describe("emergency-drill-service", () => {
           makeRecord({ evacuation_time_seconds: null }),
           makeRecord({ evacuation_time_seconds: null }),
         ];
-        expect(computeDrillMetrics(records).average_evacuation_time).toBe(0);
+        expect(computeDrillMetrics(records).average_evacuation_time).toBeNull();;
       });
 
       it("returns the single time when only one recorded", () => {
@@ -505,7 +505,7 @@ describe("emergency-drill-service", () => {
         const records = [
           makeRecord({ evacuation_time_seconds: null }),
         ];
-        expect(computeDrillMetrics(records).average_evacuation_time).toBe(0);
+        expect(computeDrillMetrics(records).average_evacuation_time).toBeNull();;
       });
     });
 

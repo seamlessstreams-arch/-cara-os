@@ -42,7 +42,7 @@ describe("emotional-wellbeing-outcome-service", () => {
       expect(m.crisis_count).toBe(0);
       expect(m.declining_count).toBe(0);
       expect(m.improving_count).toBe(0);
-      expect(m.child_self_reported_rate).toBe(0);
+      expect(m.child_self_reported_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
 

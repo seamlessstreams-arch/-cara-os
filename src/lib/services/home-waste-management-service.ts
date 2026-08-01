@@ -301,22 +301,22 @@ export function computeMetrics(
   non_compliant_count: number;
   action_required_count: number;
   under_review_count: number;
-  compliance_rate: number;
-  contamination_rate: number;
+  compliance_rate: number | null;
+  contamination_rate: number | null;
   contamination_count: number;
-  young_people_involvement_rate: number;
+  young_people_involvement_rate: number | null;
   total_annual_cost: number;
-  average_annual_cost: number;
+  average_annual_cost: number | null;
   by_waste_category: Record<string, number>;
   by_collection_frequency: Record<string, number>;
   by_bin_condition: Record<string, number>;
   by_compliance_status: Record<string, number>;
   bin_replacement_needed_count: number;
   poor_bin_count: number;
-  duty_of_care_rate: number;
-  waste_transfer_note_rate: number;
-  carrier_licence_checked_rate: number;
-  storage_compliant_rate: number;
+  duty_of_care_rate: number | null;
+  waste_transfer_note_rate: number | null;
+  carrier_licence_checked_rate: number | null;
+  storage_compliant_rate: number | null;
   regulated_waste_count: number;
   unique_providers: number;
   unique_auditors: number;
@@ -332,26 +332,26 @@ export function computeMetrics(
   // Compliance rate
   const complianceRate = total > 0
     ? Math.round((compliantCount / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Contamination rate
   const contaminationCount = rows.filter((r) => r.contamination_found).length;
   const contaminationRate = total > 0
     ? Math.round((contaminationCount / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Young people involvement rate
   const ypInvolved = rows.filter((r) => r.young_people_involved).length;
   const ypRate = total > 0
     ? Math.round((ypInvolved / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Annual cost totals
   const withCosts = rows.filter((r) => r.annual_cost !== null && r.annual_cost > 0);
   const totalCost = withCosts.reduce((sum, r) => sum + (r.annual_cost ?? 0), 0);
   const avgCost = withCosts.length > 0
     ? Math.round((totalCost / withCosts.length) * 100) / 100
-    : 0;
+    : null;
 
   // By waste category
   const byCategory: Record<string, number> = {};
@@ -379,19 +379,19 @@ export function computeMetrics(
 
   // Duty of care rate
   const docCompliant = rows.filter((r) => r.duty_of_care_compliant).length;
-  const docRate = total > 0 ? Math.round((docCompliant / total) * 1000) / 10 : 0;
+  const docRate = total > 0 ? Math.round((docCompliant / total) * 1000) / 10 : null;
 
   // Waste transfer note rate
   const wtnHeld = rows.filter((r) => r.waste_transfer_note_held).length;
-  const wtnRate = total > 0 ? Math.round((wtnHeld / total) * 1000) / 10 : 0;
+  const wtnRate = total > 0 ? Math.round((wtnHeld / total) * 1000) / 10 : null;
 
   // Carrier licence checked rate
   const carrierChecked = rows.filter((r) => r.waste_carrier_licence_checked).length;
-  const carrierRate = total > 0 ? Math.round((carrierChecked / total) * 1000) / 10 : 0;
+  const carrierRate = total > 0 ? Math.round((carrierChecked / total) * 1000) / 10 : null;
 
   // Storage compliant rate
   const storageCompliant = rows.filter((r) => r.storage_compliant).length;
-  const storageRate = total > 0 ? Math.round((storageCompliant / total) * 1000) / 10 : 0;
+  const storageRate = total > 0 ? Math.round((storageCompliant / total) * 1000) / 10 : null;
 
   // Regulated waste count
   const regulatedCount = rows.filter((r) =>
@@ -664,13 +664,13 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.contamination_rate > 20) {
+  if ((metrics.contamination_rate ?? 0) > 20) {
     insights.push(
       `[reflect] Contamination was found in ${metrics.contamination_rate}% of waste audits. ` +
         `Are recycling instructions clearly displayed and accessible to children and staff? ` +
         `Could involving young people in designing recycling signage or monitoring reduce contamination rates while building environmental awareness?`,
     );
-  } else if (metrics.young_people_involvement_rate < 30) {
+  } else if ((metrics.young_people_involvement_rate ?? 0) < 30) {
     insights.push(
       `[reflect] Young people were involved in only ${metrics.young_people_involvement_rate}% of waste audits. ` +
         `Waste management and recycling provide practical opportunities for environmental education and life skills. ` +

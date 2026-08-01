@@ -324,9 +324,9 @@ describe("computePIAnalysis", () => {
     expect(result.total_pi).toBe(0);
     expect(result.unique_children).toBe(0);
     expect(result.unique_staff).toBe(0);
-    expect(result.avg_duration_minutes).toBe(0);
-    expect(result.injury_rate).toBe(0);
-    expect(result.debrief_completion_rate).toBe(0);
+    expect(result.avg_duration_minutes).toBeNull();;
+    expect(result.injury_rate).toBeNull();;
+    expect(result.debrief_completion_rate).toBeNull();;
     expect(result.repeat_children).toEqual([]);
     expect(result.by_technique).toEqual({});
     expect(result.trend_direction).toBe("stable");

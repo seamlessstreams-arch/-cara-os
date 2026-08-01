@@ -37,10 +37,10 @@ describe("computeMetrics (radon)", () => {
     expect(m.above_action_count).toBe(0);
     expect(m.above_target_count).toBe(0);
     expect(m.mitigation_required_count).toBe(0);
-    expect(m.mitigation_installed_rate).toBe(0);
-    expect(m.avg_radon_level).toBe(0);
-    expect(m.max_radon_level).toBe(0);
-    expect(m.retest_scheduled_rate).toBe(0);
+    expect(m.mitigation_installed_rate).toBeNull();;
+    expect(m.avg_radon_level).toBeNull();;
+    expect(m.max_radon_level).toBeNull();;
+    expect(m.retest_scheduled_rate).toBeNull();;
     expect(m.compliant_count).toBe(0);
     expect(m.non_compliant_count).toBe(0);
     expect(m.unique_testers).toBe(0);

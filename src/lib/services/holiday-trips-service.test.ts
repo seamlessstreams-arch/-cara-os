@@ -52,9 +52,9 @@ describe("computeTripMetrics", () => {
     expect(result.day_trip_count).toBe(0);
     expect(result.overnight_count).toBe(0);
     expect(result.completed_count).toBe(0);
-    expect(result.loved_it_rate).toBe(0);
+    expect(result.loved_it_rate).toBeNull();;
     expect(result.total_cost).toBe(0);
-    expect(result.average_cost).toBe(0);
+    expect(result.average_cost).toBeNull();;
     expect(result.unique_children).toBe(0);
     expect(result.incident_count).toBe(0);
   });

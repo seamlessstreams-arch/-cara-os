@@ -263,9 +263,9 @@ describe("computeEngagementMetrics", () => {
       expect(m.contacts_this_month).toBe(0);
       expect(m.contacts_this_quarter).toBe(0);
       expect(m.children_with_contact).toBe(0);
-      expect(m.positive_contact_rate).toBe(0);
-      expect(m.cancelled_dna_rate).toBe(0);
-      expect(m.avg_contact_duration).toBe(0);
+      expect(m.positive_contact_rate).toBeNull();;
+      expect(m.cancelled_dna_rate).toBeNull();;
+      expect(m.avg_contact_duration).toBeNull();;
       expect(m.relationships_strong).toBe(0);
       expect(m.relationships_fragile).toBe(0);
       expect(m.relationships_no_contact).toBe(0);
@@ -436,7 +436,7 @@ describe("computeEngagementMetrics", () => {
         makeContact({ outcome: "dna_family" }),
       ];
       const m = computeEngagementMetrics(contacts, [], 1, NOW);
-      expect(m.positive_contact_rate).toBe(0);
+      expect(m.positive_contact_rate).toBeNull();;
     });
 
     it("excludes cancelled/dna contacts from the denominator", () => {
@@ -506,7 +506,7 @@ describe("computeEngagementMetrics", () => {
 
     it("returns 0 for empty contacts", () => {
       const m = computeEngagementMetrics([], [], 0, NOW);
-      expect(m.cancelled_dna_rate).toBe(0);
+      expect(m.cancelled_dna_rate).toBeNull();;
     });
 
     it("counts all five cancelled/dna types", () => {
@@ -554,12 +554,12 @@ describe("computeEngagementMetrics", () => {
         makeContact({ outcome: "cancelled_family", duration_minutes: 30 }),
       ];
       const m = computeEngagementMetrics(contacts, [], 1, NOW);
-      expect(m.avg_contact_duration).toBe(0);
+      expect(m.avg_contact_duration).toBeNull();;
     });
 
     it("returns 0 for empty contacts", () => {
       const m = computeEngagementMetrics([], [], 0, NOW);
-      expect(m.avg_contact_duration).toBe(0);
+      expect(m.avg_contact_duration).toBeNull();;
     });
 
     it("handles single completed contact", () => {

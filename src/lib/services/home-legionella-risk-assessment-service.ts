@@ -204,12 +204,12 @@ export function computeMetrics(
   high_risk_count: number;
   intolerable_count: number;
   non_compliant_count: number;
-  temperature_compliance_rate: number;
-  flushing_compliance_rate: number;
-  water_treatment_rate: number;
-  legionella_test_rate: number;
+  temperature_compliance_rate: number | null;
+  flushing_compliance_rate: number | null;
+  water_treatment_rate: number | null;
+  legionella_test_rate: number | null;
   remedial_action_count: number;
-  negative_test_rate: number;
+  negative_test_rate: number | null;
   unique_assessors: number;
   risk_breakdown: Record<string, number>;
   system_type_breakdown: Record<string, number>;
@@ -223,7 +223,7 @@ export function computeMetrics(
 
   const boolRate = (field: keyof HomeLegionellaRiskAssessmentRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const remedialActionCount = rows.filter((r) => r.remedial_action_required === true).length;
@@ -234,7 +234,7 @@ export function computeMetrics(
   const negativeTestRate =
     testedRows.length > 0
       ? Math.round((negativeTests / testedRows.length) * 1000) / 10
-      : 0;
+      : null;
 
   const uniqueAssessors = new Set(rows.map((r) => r.assessor_name)).size;
 
@@ -369,7 +369,7 @@ export function computeCaraInsights(
         `What immediate steps are being taken to reduce risk to an acceptable level, ` +
         `and is the home's written scheme for legionella control under ACOP L8 up to date?`,
     );
-  } else if (metrics.temperature_compliance_rate < 100 || metrics.flushing_compliance_rate < 100) {
+  } else if ((metrics.temperature_compliance_rate ?? 0) < 100 || (metrics.flushing_compliance_rate ?? 0) < 100) {
     insights.push(
       `Temperature compliance is at ${metrics.temperature_compliance_rate}% and flushing compliance is at ${metrics.flushing_compliance_rate}%. ` +
         `How can the home improve water safety monitoring routines to ensure full compliance with ACOP L8, ` +

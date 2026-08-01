@@ -133,14 +133,14 @@ export function computeAdmissionMetrics(
   emergency_count: number;
   crisis_count: number;
   planned_count: number;
-  risk_assessment_rate: number;
-  placement_plan_rate: number;
-  social_worker_contacted_rate: number;
-  ofsted_notified_rate: number;
-  existing_children_consulted_rate: number;
-  staff_briefed_rate: number;
-  child_views_captured_rate: number;
-  good_match_rate: number;
+  risk_assessment_rate: number | null;
+  placement_plan_rate: number | null;
+  social_worker_contacted_rate: number | null;
+  ofsted_notified_rate: number | null;
+  existing_children_consulted_rate: number | null;
+  staff_briefed_rate: number | null;
+  child_views_captured_rate: number | null;
+  good_match_rate: number | null;
   poor_match_count: number;
   significant_impact_count: number;
   disruption_count: number;
@@ -157,50 +157,50 @@ export function computeAdmissionMetrics(
   const riskRate =
     admissions.length > 0
       ? Math.round((riskDone / admissions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const planDone = admissions.filter((a) => a.placement_plan_within_24h).length;
   const planRate =
     admissions.length > 0
       ? Math.round((planDone / admissions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const swContacted = admissions.filter((a) => a.social_worker_contacted).length;
   const swRate =
     admissions.length > 0
       ? Math.round((swContacted / admissions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const ofstedNotified = admissions.filter((a) => a.ofsted_notified).length;
   const ofstedRate =
     admissions.length > 0
       ? Math.round((ofstedNotified / admissions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const consulted = admissions.filter((a) => a.existing_children_consulted).length;
   const consultedRate =
     admissions.length > 0
       ? Math.round((consulted / admissions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const briefed = admissions.filter((a) => a.staff_briefed).length;
   const briefedRate =
     admissions.length > 0
       ? Math.round((briefed / admissions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const viewsCaptured = admissions.filter((a) => a.child_views_captured).length;
   const viewsRate =
     admissions.length > 0
       ? Math.round((viewsCaptured / admissions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const assessed = admissions.filter((a) => a.matching_outcome !== "not_assessed");
   const goodMatch = assessed.filter((a) => a.matching_outcome === "good_match").length;
   const goodMatchRate =
     assessed.length > 0
       ? Math.round((goodMatch / assessed.length) * 1000) / 10
-      : 0;
+      : null;
 
   const poorMatch = admissions.filter((a) => a.matching_outcome === "poor_match").length;
   const sigImpact = admissions.filter((a) => a.impact_on_existing_children === "significant_impact").length;

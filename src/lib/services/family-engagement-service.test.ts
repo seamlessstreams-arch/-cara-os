@@ -61,9 +61,9 @@ describe("computeEngagementMetrics", () => {
     expect(m.contacts_this_month).toBe(0);
     expect(m.contacts_this_quarter).toBe(0);
     expect(m.children_with_contact).toBe(0);
-    expect(m.positive_contact_rate).toBe(0);
-    expect(m.cancelled_dna_rate).toBe(0);
-    expect(m.avg_contact_duration).toBe(0);
+    expect(m.positive_contact_rate).toBeNull();;
+    expect(m.cancelled_dna_rate).toBeNull();;
+    expect(m.avg_contact_duration).toBeNull();;
     expect(m.relationships_strong).toBe(0);
     expect(m.relationships_fragile).toBe(0);
     expect(m.relationships_no_contact).toBe(0);

@@ -148,12 +148,12 @@ describe("computeHandoverCompliance", () => {
     const result = computeHandoverCompliance([], FROM, TO);
     expect(result.total_handovers).toBe(0);
     expect(result.completed_count).toBe(0);
-    expect(result.completion_rate).toBe(0);
+    expect(result.completion_rate).toBeNull();;
     expect(result.by_type).toEqual({});
-    expect(result.avg_children_covered).toBe(0);
+    expect(result.avg_children_covered).toBeNull();;
     expect(result.with_safeguarding_flags).toBe(0);
     expect(result.with_incidents).toBe(0);
-    expect(result.avg_tasks_carried_forward).toBe(0);
+    expect(result.avg_tasks_carried_forward).toBeNull();;
   });
 
   it("filters handovers by date range — excludes out-of-range", () => {
@@ -252,8 +252,8 @@ describe("computeHandoverCompliance", () => {
     ];
     const result = computeHandoverCompliance(handovers, FROM, TO);
     expect(result.total_handovers).toBe(0);
-    expect(result.completion_rate).toBe(0);
-    expect(result.avg_children_covered).toBe(0);
+    expect(result.completion_rate).toBeNull();;
+    expect(result.avg_children_covered).toBeNull();;
   });
 });
 
@@ -263,11 +263,11 @@ describe("computeHandoverQuality", () => {
   it("returns zeroed stats for empty array", () => {
     const result = computeHandoverQuality([]);
     expect(result.total).toBe(0);
-    expect(result.with_mood_notes_rate).toBe(0);
-    expect(result.with_medication_notes_rate).toBe(0);
-    expect(result.with_behaviour_notes_rate).toBe(0);
-    expect(result.with_risk_changes_rate).toBe(0);
-    expect(result.fully_detailed_rate).toBe(0);
+    expect(result.with_mood_notes_rate).toBeNull();;
+    expect(result.with_medication_notes_rate).toBeNull();;
+    expect(result.with_behaviour_notes_rate).toBeNull();;
+    expect(result.with_risk_changes_rate).toBeNull();;
+    expect(result.fully_detailed_rate).toBeNull();;
     expect(result.priority_breakdown).toEqual({});
   });
 

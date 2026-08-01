@@ -156,8 +156,8 @@ export function computeIVMetrics(
   active_assignments: number;
   overdue_visits: number;
   visits_this_quarter: number;
-  avg_visit_duration: number;
-  child_attendance_rate: number;
+  avg_visit_duration: number | null;
+  child_attendance_rate: number | null;
   concerns_raised_count: number;
   by_visit_type: Record<string, number>;
   by_assignment_reason: Record<string, number>;
@@ -209,7 +209,7 @@ export function computeIVMetrics(
   const avgVisitDuration =
     durationCount > 0
       ? Math.round((totalDuration / durationCount) * 10) / 10
-      : 0;
+      : null;
 
   // Child attendance rate
   let attendedCount = 0;
@@ -219,7 +219,7 @@ export function computeIVMetrics(
   const childAttendanceRate =
     visits.length > 0
       ? Math.round((attendedCount / visits.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Concerns raised count
   let concernsRaisedCount = 0;

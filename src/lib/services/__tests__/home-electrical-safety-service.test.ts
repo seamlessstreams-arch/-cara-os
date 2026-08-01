@@ -305,17 +305,17 @@ describe("computeElectricalSafetyMetrics", () => {
 
     it("returns zero remedial_completion_rate", () => {
       const m = computeElectricalSafetyMetrics([]);
-      expect(m.remedial_completion_rate).toBe(0);
+      expect(m.remedial_completion_rate).toBeNull();;
     });
 
     it("returns zero satisfactory_rate", () => {
       const m = computeElectricalSafetyMetrics([]);
-      expect(m.satisfactory_rate).toBe(0);
+      expect(m.satisfactory_rate).toBeNull();;
     });
 
     it("returns zero next_inspection_scheduled_rate", () => {
       const m = computeElectricalSafetyMetrics([]);
-      expect(m.next_inspection_scheduled_rate).toBe(0);
+      expect(m.next_inspection_scheduled_rate).toBeNull();;
     });
 
     it("returns zero non_compliant_count", () => {
@@ -391,7 +391,7 @@ describe("computeElectricalSafetyMetrics", () => {
 
     it("returns remedial_completion_rate = 0 (no defects so no applicable records)", () => {
       const m = computeElectricalSafetyMetrics([record]);
-      expect(m.remedial_completion_rate).toBe(0);
+      expect(m.remedial_completion_rate).toBeNull();;
     });
 
     it("returns satisfactory_rate = 100", () => {
@@ -635,7 +635,7 @@ describe("computeElectricalSafetyMetrics", () => {
         makeRecord({ defects_found: 0, remedial_completed: false }),
       ];
       const m = computeElectricalSafetyMetrics(records);
-      expect(m.remedial_completion_rate).toBe(0);
+      expect(m.remedial_completion_rate).toBeNull();;
     });
 
     it("returns 0 when all defective records are unremediated", () => {

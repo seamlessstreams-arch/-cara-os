@@ -106,22 +106,22 @@ describe("computeMetrics", () => {
 
     it("returns zero mitigation_installed_rate", () => {
       const m = computeMetrics([]);
-      expect(m.mitigation_installed_rate).toBe(0);
+      expect(m.mitigation_installed_rate).toBeNull();;
     });
 
     it("returns zero avg_radon_level", () => {
       const m = computeMetrics([]);
-      expect(m.avg_radon_level).toBe(0);
+      expect(m.avg_radon_level).toBeNull();;
     });
 
     it("returns zero max_radon_level", () => {
       const m = computeMetrics([]);
-      expect(m.max_radon_level).toBe(0);
+      expect(m.max_radon_level).toBeNull();;
     });
 
     it("returns zero retest_scheduled_rate", () => {
       const m = computeMetrics([]);
-      expect(m.retest_scheduled_rate).toBe(0);
+      expect(m.retest_scheduled_rate).toBeNull();;
     });
 
     it("returns zero compliant_count", () => {
@@ -174,7 +174,7 @@ describe("computeMetrics", () => {
 
     it("returns mitigation_installed_rate = 0 when none require mitigation", () => {
       const m = computeMetrics([row]);
-      expect(m.mitigation_installed_rate).toBe(0);
+      expect(m.mitigation_installed_rate).toBeNull();;
     });
 
     it("returns avg_radon_level = 50", () => {
@@ -376,7 +376,7 @@ describe("computeMetrics", () => {
         makeRow({ mitigation_required: false, mitigation_installed: false }),
       ];
       const m = computeMetrics(rows);
-      expect(m.mitigation_installed_rate).toBe(0);
+      expect(m.mitigation_installed_rate).toBeNull();;
     });
 
     it("calculates 50% for half installed", () => {
@@ -436,7 +436,7 @@ describe("computeMetrics", () => {
 
     it("returns 0 for empty array", () => {
       const m = computeMetrics([]);
-      expect(m.avg_radon_level).toBe(0);
+      expect(m.avg_radon_level).toBeNull();;
     });
 
     it("handles zero radon levels", () => {
@@ -496,7 +496,7 @@ describe("computeMetrics", () => {
 
     it("returns 0 for empty array", () => {
       const m = computeMetrics([]);
-      expect(m.max_radon_level).toBe(0);
+      expect(m.max_radon_level).toBeNull();;
     });
 
     it("handles all zero levels", () => {

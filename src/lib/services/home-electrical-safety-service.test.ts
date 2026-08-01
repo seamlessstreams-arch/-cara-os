@@ -38,8 +38,8 @@ describe("computeElectricalSafetyMetrics", () => {
     expect(m.total_inspections).toBe(0);
     expect(m.unsatisfactory_count).toBe(0);
     expect(m.c1_total).toBe(0);
-    expect(m.satisfactory_rate).toBe(0);
-    expect(m.remedial_completion_rate).toBe(0);
+    expect(m.satisfactory_rate).toBeNull();;
+    expect(m.remedial_completion_rate).toBeNull();;
     expect(m.unique_inspectors).toBe(0);
   });
 

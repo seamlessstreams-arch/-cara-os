@@ -325,21 +325,21 @@ export function computeMetrics(
   by_record_type: Record<string, number>;
   by_immigration_status: Record<string, number>;
   by_case_status: Record<string, number>;
-  legal_representation_rate: number;
-  legal_aid_rate: number;
-  interpreter_rate: number;
+  legal_representation_rate: number | null;
+  legal_aid_rate: number | null;
+  interpreter_rate: number | null;
   active_cases: number;
   pending_decisions: number;
   deadline_within_30_days: number;
-  emotional_support_rate: number;
-  social_worker_informed_rate: number;
-  personal_adviser_rate: number;
+  emotional_support_rate: number | null;
+  social_worker_informed_rate: number | null;
+  personal_adviser_rate: number | null;
   precarious_status_count: number;
   settled_status_count: number;
   time_limited_status_count: number;
   urgent_record_count: number;
   application_count: number;
-  average_records_per_child: number;
+  average_records_per_child: number | null;
 } {
   const total = rows.length;
 
@@ -366,27 +366,27 @@ export function computeMetrics(
   // Boolean rates
   const legalRepRate = total > 0
     ? Math.round((rows.filter((r) => r.legal_representation).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const legalAidRate = total > 0
     ? Math.round((rows.filter((r) => r.legal_aid_funded).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const interpreterRate = total > 0
     ? Math.round((rows.filter((r) => r.interpreter_required).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const emotionalSupportRate = total > 0
     ? Math.round((rows.filter((r) => r.emotional_support_provided).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const socialWorkerRate = total > 0
     ? Math.round((rows.filter((r) => r.social_worker_informed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const personalAdviserRate = total > 0
     ? Math.round((rows.filter((r) => r.personal_adviser_involved).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Active cases and pending decisions
   const activeCases = rows.filter((r) => r.status === "Active" || r.status === "Escalated").length;
@@ -436,7 +436,7 @@ export function computeMetrics(
   // Average records per child
   const avgPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   return {
     total_records: total,
@@ -750,7 +750,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.precarious_status_count > 0 && metrics.legal_representation_rate < 80) {
+  if (metrics.precarious_status_count > 0 && (metrics.legal_representation_rate ?? 0) < 80) {
     insights.push(
       `[reflect] ${metrics.precarious_status_count} ${metrics.precarious_status_count === 1 ? "child has" : "children have"} ` +
         `a precarious immigration status but legal representation rate is only ` +
@@ -775,7 +775,7 @@ export function generateCaraInsights(
         `from UASC leave to adult immigration status requires particularly careful ` +
         `planning and timely action.`,
     );
-  } else if (metrics.emotional_support_rate < 50 && metrics.total_records > 3) {
+  } else if ((metrics.emotional_support_rate ?? 0) < 50 && metrics.total_records > 3) {
     insights.push(
       `[reflect] Emotional support is recorded in only ${metrics.emotional_support_rate}% of ` +
         `immigration-related records. The immigration process is inherently stressful ` +

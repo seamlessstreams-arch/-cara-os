@@ -29,7 +29,7 @@ function makeRow(overrides?: Partial<EmotionalWellbeingOutcomeRow>): EmotionalWe
 
 describe("emotional-wellbeing-outcome-service", () => {
   describe("computeEmotionalWellbeingMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeEmotionalWellbeingMetrics([]); expect(m.total_assessments).toBe(0); expect(m.clinical_count).toBe(0); expect(m.crisis_count).toBe(0); expect(m.declining_count).toBe(0); expect(m.improving_count).toBe(0); expect(m.child_self_reported_rate).toBe(0); expect(m.discussed_with_child_rate).toBe(0); expect(m.informed_care_plan_rate).toBe(0); expect(m.referral_made_rate).toBe(0); expect(m.unique_children).toBe(0); });
+    it("returns zeros for empty", () => { const m = computeEmotionalWellbeingMetrics([]); expect(m.total_assessments).toBe(0); expect(m.clinical_count).toBe(0); expect(m.crisis_count).toBe(0); expect(m.declining_count).toBe(0); expect(m.improving_count).toBe(0); expect(m.child_self_reported_rate).toBeNull(); expect(m.discussed_with_child_rate).toBeNull(); expect(m.informed_care_plan_rate).toBeNull(); expect(m.referral_made_rate).toBeNull(); expect(m.unique_children).toBe(0); });
     it("returns empty breakdowns for empty", () => { const m = computeEmotionalWellbeingMetrics([]); expect(m.clinical_band_breakdown).toEqual({}); expect(m.measure_breakdown).toEqual({}); });
     it("total_assessments counts rows", () => { expect(computeEmotionalWellbeingMetrics([makeRow(), makeRow(), makeRow()]).total_assessments).toBe(3); });
     it("counts clinical band as clinical_count", () => { expect(computeEmotionalWellbeingMetrics([makeRow({ clinical_band: "clinical" })]).clinical_count).toBe(1); });

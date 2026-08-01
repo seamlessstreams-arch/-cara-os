@@ -127,12 +127,12 @@ function computeEmergencyPreparedness(
 ): {
   total_drills: number;
   drills_by_type: Record<string, number>;
-  avg_evacuation_time: number;
-  all_accounted_rate: number;
+  avg_evacuation_time: number | null;
+  all_accounted_rate: number | null;
   drills_with_issues: number;
   active_contacts: number;
   contacts_verified: number;
-  contacts_verification_rate: number;
+  contacts_verification_rate: number | null;
   current_plans: number;
   expired_plans: number;
   total_plan_types_covered: number;
@@ -148,13 +148,13 @@ function computeEmergencyPreparedness(
   // Average evacuation time
   let totalTime = 0;
   for (const d of drills) totalTime += d.evacuation_time_seconds;
-  const avgTime = totalDrills > 0 ? Math.round(totalTime / totalDrills) : 0;
+  const avgTime = totalDrills > 0 ? Math.round(totalTime / totalDrills) : null;
 
   // All accounted for
   const allAccounted = drills.filter((d) => d.all_accounted_for).length;
   const accountedRate = totalDrills > 0
     ? Math.round((allAccounted / totalDrills) * 100)
-    : 0;
+    : null;
 
   // Drills with issues
   const withIssues = drills.filter((d) => d.issues_identified.length > 0).length;
@@ -168,7 +168,7 @@ function computeEmergencyPreparedness(
   ).length;
   const verificationRate = activeContacts.length > 0
     ? Math.round((verified / activeContacts.length) * 100)
-    : 0;
+    : null;
 
   // Plans
   const currentPlans = plans.filter((p) => p.status === "current").length;

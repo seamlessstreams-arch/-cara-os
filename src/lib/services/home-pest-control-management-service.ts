@@ -142,11 +142,11 @@ export function computePestControlManagementMetrics(
   active_issue_count: number;
   infestation_count: number;
   treatment_required_count: number;
-  treatment_completion_rate: number;
-  proofing_rate: number;
-  hygiene_rate: number;
-  food_storage_rate: number;
-  waste_management_rate: number;
+  treatment_completion_rate: number | null;
+  proofing_rate: number | null;
+  hygiene_rate: number | null;
+  food_storage_rate: number | null;
+  waste_management_rate: number | null;
   re_inspection_due_count: number;
   unique_locations: number;
   unique_inspectors: number;
@@ -170,31 +170,31 @@ export function computePestControlManagementMetrics(
   const treatmentCompletionRate =
     treatmentRequiredRows.length > 0
       ? Math.round((treatmentCompleted / treatmentRequiredRows.length) * 1000) / 10
-      : 0;
+      : null;
 
   const proofingAdequate = rows.filter((r) => r.proofing_adequate).length;
   const proofingRate =
     total > 0
       ? Math.round((proofingAdequate / total) * 1000) / 10
-      : 0;
+      : null;
 
   const hygieneSatisfactory = rows.filter((r) => r.hygiene_satisfactory).length;
   const hygieneRate =
     total > 0
       ? Math.round((hygieneSatisfactory / total) * 1000) / 10
-      : 0;
+      : null;
 
   const foodStorageAdequate = rows.filter((r) => r.food_storage_adequate).length;
   const foodStorageRate =
     total > 0
       ? Math.round((foodStorageAdequate / total) * 1000) / 10
-      : 0;
+      : null;
 
   const wasteManagementOk = rows.filter((r) => r.waste_management_ok).length;
   const wasteManagementRate =
     total > 0
       ? Math.round((wasteManagementOk / total) * 1000) / 10
-      : 0;
+      : null;
 
   const reInspectionDue = rows.filter(
     (r) => r.re_inspection_required,

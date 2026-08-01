@@ -41,7 +41,7 @@ describe("computeMetrics (immigration)", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.legal_representation_rate).toBe(0);
+    expect(m.legal_representation_rate).toBeNull();;
     expect(m.active_cases).toBe(0);
     expect(m.pending_decisions).toBe(0);
     expect(m.precarious_status_count).toBe(0);

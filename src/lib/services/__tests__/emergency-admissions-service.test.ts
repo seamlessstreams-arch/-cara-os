@@ -289,35 +289,35 @@ describe("computeAdmissionMetrics", () => {
     });
 
     it("returns zero risk_assessment_rate", () => {
-      expect(computeAdmissionMetrics([]).risk_assessment_rate).toBe(0);
+      expect(computeAdmissionMetrics([]).risk_assessment_rate).toBeNull();;
     });
 
     it("returns zero placement_plan_rate", () => {
-      expect(computeAdmissionMetrics([]).placement_plan_rate).toBe(0);
+      expect(computeAdmissionMetrics([]).placement_plan_rate).toBeNull();;
     });
 
     it("returns zero social_worker_contacted_rate", () => {
-      expect(computeAdmissionMetrics([]).social_worker_contacted_rate).toBe(0);
+      expect(computeAdmissionMetrics([]).social_worker_contacted_rate).toBeNull();;
     });
 
     it("returns zero ofsted_notified_rate", () => {
-      expect(computeAdmissionMetrics([]).ofsted_notified_rate).toBe(0);
+      expect(computeAdmissionMetrics([]).ofsted_notified_rate).toBeNull();;
     });
 
     it("returns zero existing_children_consulted_rate", () => {
-      expect(computeAdmissionMetrics([]).existing_children_consulted_rate).toBe(0);
+      expect(computeAdmissionMetrics([]).existing_children_consulted_rate).toBeNull();;
     });
 
     it("returns zero staff_briefed_rate", () => {
-      expect(computeAdmissionMetrics([]).staff_briefed_rate).toBe(0);
+      expect(computeAdmissionMetrics([]).staff_briefed_rate).toBeNull();;
     });
 
     it("returns zero child_views_captured_rate", () => {
-      expect(computeAdmissionMetrics([]).child_views_captured_rate).toBe(0);
+      expect(computeAdmissionMetrics([]).child_views_captured_rate).toBeNull();;
     });
 
     it("returns zero good_match_rate", () => {
-      expect(computeAdmissionMetrics([]).good_match_rate).toBe(0);
+      expect(computeAdmissionMetrics([]).good_match_rate).toBeNull();;
     });
 
     it("returns zero poor_match_count", () => {
@@ -851,7 +851,7 @@ describe("computeAdmissionMetrics", () => {
         makeAdmission({ id: "1", matching_outcome: "not_assessed" }),
         makeAdmission({ id: "2", matching_outcome: "not_assessed" }),
       ];
-      expect(computeAdmissionMetrics(records).good_match_rate).toBe(0);
+      expect(computeAdmissionMetrics(records).good_match_rate).toBeNull();;
     });
 
     it("excludes not_assessed from denominator", () => {
@@ -1102,14 +1102,14 @@ describe("computeAdmissionMetrics", () => {
 
     it("rates are 0 for empty array", () => {
       const m = computeAdmissionMetrics([]);
-      expect(m.risk_assessment_rate).toBe(0);
-      expect(m.placement_plan_rate).toBe(0);
-      expect(m.social_worker_contacted_rate).toBe(0);
-      expect(m.ofsted_notified_rate).toBe(0);
-      expect(m.existing_children_consulted_rate).toBe(0);
-      expect(m.staff_briefed_rate).toBe(0);
-      expect(m.child_views_captured_rate).toBe(0);
-      expect(m.good_match_rate).toBe(0);
+      expect(m.risk_assessment_rate).toBeNull();;
+      expect(m.placement_plan_rate).toBeNull();;
+      expect(m.social_worker_contacted_rate).toBeNull();;
+      expect(m.ofsted_notified_rate).toBeNull();;
+      expect(m.existing_children_consulted_rate).toBeNull();;
+      expect(m.staff_briefed_rate).toBeNull();;
+      expect(m.child_views_captured_rate).toBeNull();;
+      expect(m.good_match_rate).toBeNull();;
     });
   });
 });

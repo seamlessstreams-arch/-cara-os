@@ -122,10 +122,10 @@ export function computeLiftEquipmentSafetyMetrics(
   prohibited_count: number;
   major_defects_count: number;
   minor_defects_count: number;
-  remedial_completion_rate: number;
-  certificate_rate: number;
-  swl_confirmed_rate: number;
-  next_inspection_rate: number;
+  remedial_completion_rate: number | null;
+  certificate_rate: number | null;
+  swl_confirmed_rate: number | null;
+  next_inspection_rate: number | null;
   non_compliant_count: number;
   defects_total: number;
   unique_inspectors: number;
@@ -145,25 +145,25 @@ export function computeLiftEquipmentSafetyMetrics(
   const remedialRate =
     remedialApplicable.length > 0
       ? Math.round((remedialCompleted / remedialApplicable.length) * 1000) / 10
-      : 0;
+      : null;
 
   const certificateIssued = rows.filter((r) => r.certificate_issued).length;
   const certificateRate =
     total > 0
       ? Math.round((certificateIssued / total) * 1000) / 10
-      : 0;
+      : null;
 
   const swlConfirmed = rows.filter((r) => r.safe_working_load_confirmed).length;
   const swlRate =
     total > 0
       ? Math.round((swlConfirmed / total) * 1000) / 10
-      : 0;
+      : null;
 
   const scheduled = rows.filter((r) => r.next_inspection_date !== null).length;
   const scheduledRate =
     total > 0
       ? Math.round((scheduled / total) * 1000) / 10
-      : 0;
+      : null;
 
   const nonCompliant = rows.filter(
     (r) =>
@@ -317,7 +317,7 @@ export function generateLiftEquipmentSafetyCaraInsights(
         `What steps are being taken to ensure all prohibited equipment is taken out of service and major defects are remediated promptly, ` +
         `and is there a clear process for verifying completed remedial work?`,
     );
-  } else if (metrics.defects_total > 0 && metrics.remedial_completion_rate < 100) {
+  } else if (metrics.defects_total > 0 && (metrics.remedial_completion_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Remedial completion stands at ${metrics.remedial_completion_rate}% for inspections with defects. ` +
         `How can the home improve its tracking and completion of lift equipment remedial works, ` +

@@ -186,9 +186,9 @@ export function computeEngagementMetrics(
   contacts_this_month: number;
   contacts_this_quarter: number;
   children_with_contact: number;
-  positive_contact_rate: number;
-  cancelled_dna_rate: number;
-  avg_contact_duration: number;
+  positive_contact_rate: number | null;
+  cancelled_dna_rate: number | null;
+  avg_contact_duration: number | null;
   relationships_strong: number;
   relationships_fragile: number;
   relationships_no_contact: number;
@@ -234,11 +234,11 @@ export function computeEngagementMetrics(
   const positiveRate =
     completedContacts.length > 0
       ? Math.round((positiveContacts / completedContacts.length) * 1000) / 10
-      : 0;
+      : null;
   const cancelledDnaRate =
     contacts.length > 0
       ? Math.round((cancelledDna / contacts.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Duration
   const avgDuration =
@@ -247,7 +247,7 @@ export function computeEngagementMetrics(
           completedContacts.reduce((sum, c) => sum + c.duration_minutes, 0) /
             completedContacts.length,
         )
-      : 0;
+      : null;
 
   // Relationship quality
   let strong = 0;

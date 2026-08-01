@@ -39,9 +39,9 @@ describe("computeMetrics (waste management)", () => {
     const m = computeMetrics([]);
     expect(m.total_audits).toBe(0);
     expect(m.compliant_count).toBe(0);
-    expect(m.compliance_rate).toBe(0);
-    expect(m.contamination_rate).toBe(0);
-    expect(m.young_people_involvement_rate).toBe(0);
+    expect(m.compliance_rate).toBeNull();;
+    expect(m.contamination_rate).toBeNull();;
+    expect(m.young_people_involvement_rate).toBeNull();;
     expect(m.total_annual_cost).toBe(0);
     expect(m.unique_providers).toBe(0);
     expect(m.unique_auditors).toBe(0);

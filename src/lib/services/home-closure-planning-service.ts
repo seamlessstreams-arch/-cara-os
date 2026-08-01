@@ -106,11 +106,11 @@ export function computeHomeClosurePlanningMetrics(
   not_started_count: number;
   children_without_plan_count: number;
   regulatory_not_sent_count: number;
-  child_views_rate: number;
-  transition_plan_rate: number;
-  risk_assessment_rate: number;
-  staff_consultation_rate: number;
-  child_wishes_rate: number;
+  child_views_rate: number | null;
+  transition_plan_rate: number | null;
+  risk_assessment_rate: number | null;
+  staff_consultation_rate: number | null;
+  child_wishes_rate: number | null;
   phase_breakdown: Record<string, number>;
   transfer_status_breakdown: Record<string, number>;
   unique_children: number;
@@ -124,7 +124,7 @@ export function computeHomeClosurePlanningMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const phaseBreakdown: Record<string, number> = {};
@@ -224,7 +224,7 @@ export function generateHomeClosurePlanningCaraInsights(
   const disruptedPct =
     metrics.total_records > 0
       ? Math.round((metrics.disrupted_count / metrics.total_records) * 1000) / 10
-      : 0;
+      : null;
   insights.push(
     `[pink] ${metrics.total_records} home closure planning records across ${metrics.unique_children} ${metrics.unique_children === 1 ? "child" : "children"}. ` +
       `${metrics.disrupted_count} (${disruptedPct}%) transfers disrupted. ` +

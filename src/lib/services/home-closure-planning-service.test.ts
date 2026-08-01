@@ -45,8 +45,8 @@ describe("computeHomeClosurePlanningMetrics", () => {
     expect(result.not_started_count).toBe(0);
     expect(result.children_without_plan_count).toBe(0);
     expect(result.regulatory_not_sent_count).toBe(0);
-    expect(result.child_views_rate).toBe(0);
-    expect(result.transition_plan_rate).toBe(0);
+    expect(result.child_views_rate).toBeNull();;
+    expect(result.transition_plan_rate).toBeNull();;
     expect(result.unique_children).toBe(0);
   });
 

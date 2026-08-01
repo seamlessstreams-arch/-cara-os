@@ -392,27 +392,27 @@ describe("computePestControlManagementMetrics", () => {
 
     it("returns zero treatment_completion_rate", () => {
       const m = computePestControlManagementMetrics([]);
-      expect(m.treatment_completion_rate).toBe(0);
+      expect(m.treatment_completion_rate).toBeNull();;
     });
 
     it("returns zero proofing_rate", () => {
       const m = computePestControlManagementMetrics([]);
-      expect(m.proofing_rate).toBe(0);
+      expect(m.proofing_rate).toBeNull();;
     });
 
     it("returns zero hygiene_rate", () => {
       const m = computePestControlManagementMetrics([]);
-      expect(m.hygiene_rate).toBe(0);
+      expect(m.hygiene_rate).toBeNull();;
     });
 
     it("returns zero food_storage_rate", () => {
       const m = computePestControlManagementMetrics([]);
-      expect(m.food_storage_rate).toBe(0);
+      expect(m.food_storage_rate).toBeNull();;
     });
 
     it("returns zero waste_management_rate", () => {
       const m = computePestControlManagementMetrics([]);
-      expect(m.waste_management_rate).toBe(0);
+      expect(m.waste_management_rate).toBeNull();;
     });
 
     it("returns zero re_inspection_due_count", () => {
@@ -469,7 +469,7 @@ describe("computePestControlManagementMetrics", () => {
 
     it("returns treatment_completion_rate = 0 (no treatment required)", () => {
       const m = computePestControlManagementMetrics([record]);
-      expect(m.treatment_completion_rate).toBe(0);
+      expect(m.treatment_completion_rate).toBeNull();;
     });
 
     it("returns proofing_rate = 100", () => {
@@ -603,7 +603,7 @@ describe("computePestControlManagementMetrics", () => {
         makeRow({ treatment_required: false, treatment_completed: false }),
       ];
       const m = computePestControlManagementMetrics(records);
-      expect(m.treatment_completion_rate).toBe(0);
+      expect(m.treatment_completion_rate).toBeNull();;
     });
 
     it("calculates mixed rate (1/3 = 33.3%)", () => {

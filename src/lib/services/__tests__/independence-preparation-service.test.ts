@@ -255,16 +255,16 @@ describe("computeIndependenceMetrics", () => {
     const m = computeIndependenceMetrics([], 0);
     expect(m.total_assessments).toBe(0);
     expect(m.children_assessed).toBe(0);
-    expect(m.assessment_coverage).toBe(0);
+    expect(m.assessment_coverage).toBeNull();;
     expect(m.not_started_count).toBe(0);
     expect(m.emerging_count).toBe(0);
     expect(m.developing_count).toBe(0);
     expect(m.competent_count).toBe(0);
     expect(m.independent_count).toBe(0);
     expect(m.on_target_count).toBe(0);
-    expect(m.mentor_assigned_rate).toBe(0);
-    expect(m.young_person_views_rate).toBe(0);
-    expect(m.average_activities_per_skill).toBe(0);
+    expect(m.mentor_assigned_rate).toBeNull();;
+    expect(m.young_person_views_rate).toBeNull();;
+    expect(m.average_activities_per_skill).toBeNull();;
     expect(m.skills_at_target).toBe(0);
     expect(Object.keys(m.by_skill_area)).toHaveLength(0);
     expect(Object.keys(m.by_competency_level)).toHaveLength(0);
@@ -340,7 +340,7 @@ describe("computeIndependenceMetrics", () => {
 
   it("assessment_coverage is 0 when totalChildren is 0", () => {
     const m = computeIndependenceMetrics([], 0);
-    expect(m.assessment_coverage).toBe(0);
+    expect(m.assessment_coverage).toBeNull();;
   });
 
   it("assessment_coverage rounds to one decimal place", () => {
@@ -551,7 +551,7 @@ describe("computeIndependenceMetrics", () => {
 
   it("mentor_assigned_rate is 0 for empty skills", () => {
     const m = computeIndependenceMetrics([], 0);
-    expect(m.mentor_assigned_rate).toBe(0);
+    expect(m.mentor_assigned_rate).toBeNull();;
   });
 
   // ── young_person_views_rate ──────────────────────────────────────────
@@ -595,7 +595,7 @@ describe("computeIndependenceMetrics", () => {
 
   it("young_person_views_rate is 0 for empty skills", () => {
     const m = computeIndependenceMetrics([], 0);
-    expect(m.young_person_views_rate).toBe(0);
+    expect(m.young_person_views_rate).toBeNull();;
   });
 
   // ── average_activities_per_skill ─────────────────────────────────────
@@ -630,7 +630,7 @@ describe("computeIndependenceMetrics", () => {
 
   it("average_activities_per_skill is 0 for empty skills", () => {
     const m = computeIndependenceMetrics([], 0);
-    expect(m.average_activities_per_skill).toBe(0);
+    expect(m.average_activities_per_skill).toBeNull();;
   });
 
   it("average_activities_per_skill with single skill and many activities", () => {

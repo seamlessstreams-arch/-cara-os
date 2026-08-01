@@ -78,12 +78,12 @@ function computeHandoverCompliance(
 ): {
   total_handovers: number;
   completed_count: number;
-  completion_rate: number;
+  completion_rate: number | null;
   by_type: Record<string, number>;
-  avg_children_covered: number;
+  avg_children_covered: number | null;
   with_safeguarding_flags: number;
   with_incidents: number;
-  avg_tasks_carried_forward: number;
+  avg_tasks_carried_forward: number | null;
 } {
   const fromDate = new Date(dateFrom);
   const toDate = new Date(dateTo);
@@ -113,16 +113,16 @@ function computeHandoverCompliance(
   return {
     total_handovers: total,
     completed_count: completedCount,
-    completion_rate: total > 0 ? Math.round((completedCount / total) * 100) : 0,
+    completion_rate: total > 0 ? Math.round((completedCount / total) * 100) : null,
     by_type: byType,
     avg_children_covered: total > 0
       ? Math.round((totalChildUpdates / total) * 10) / 10
-      : 0,
+      : null,
     with_safeguarding_flags: withSafeguarding,
     with_incidents: withIncidents,
     avg_tasks_carried_forward: total > 0
       ? Math.round((totalTasksCarried / total) * 10) / 10
-      : 0,
+      : null,
   };
 }
 
@@ -131,11 +131,11 @@ function computeHandoverCompliance(
  */
 function computeHandoverQuality(handovers: Handover[]): {
   total: number;
-  with_mood_notes_rate: number;
-  with_medication_notes_rate: number;
-  with_behaviour_notes_rate: number;
-  with_risk_changes_rate: number;
-  fully_detailed_rate: number;
+  with_mood_notes_rate: number | null;
+  with_medication_notes_rate: number | null;
+  with_behaviour_notes_rate: number | null;
+  with_risk_changes_rate: number | null;
+  fully_detailed_rate: number | null;
   priority_breakdown: Record<string, number>;
 } {
   const total = handovers.length;
@@ -179,19 +179,19 @@ function computeHandoverQuality(handovers: Handover[]): {
     total,
     with_mood_notes_rate: updateCount > 0
       ? Math.round((withMood / updateCount) * 100)
-      : 0,
+      : null,
     with_medication_notes_rate: updateCount > 0
       ? Math.round((withMedication / updateCount) * 100)
-      : 0,
+      : null,
     with_behaviour_notes_rate: updateCount > 0
       ? Math.round((withBehaviour / updateCount) * 100)
-      : 0,
+      : null,
     with_risk_changes_rate: updateCount > 0
       ? Math.round((withRisk / updateCount) * 100)
-      : 0,
+      : null,
     fully_detailed_rate: total > 0
       ? Math.round((fullyDetailedCount / total) * 100)
-      : 0,
+      : null,
     priority_breakdown: priorityBreakdown,
   };
 }

@@ -299,8 +299,8 @@ describe("computeIVMetrics", () => {
     expect(m.active_assignments).toBe(0);
     expect(m.overdue_visits).toBe(0);
     expect(m.visits_this_quarter).toBe(0);
-    expect(m.avg_visit_duration).toBe(0);
-    expect(m.child_attendance_rate).toBe(0);
+    expect(m.avg_visit_duration).toBeNull();;
+    expect(m.child_attendance_rate).toBeNull();;
     expect(m.concerns_raised_count).toBe(0);
     expect(m.by_visit_type).toEqual({});
     expect(m.by_assignment_reason).toEqual({});
@@ -505,12 +505,12 @@ describe("computeIVMetrics", () => {
       makeVisit({ id: "v2", visit_duration_minutes: null }),
     ];
     const m = computeIVMetrics([], visits);
-    expect(m.avg_visit_duration).toBe(0);
+    expect(m.avg_visit_duration).toBeNull();;
   });
 
   it("returns 0 avg_visit_duration when no visits provided", () => {
     const m = computeIVMetrics([], []);
-    expect(m.avg_visit_duration).toBe(0);
+    expect(m.avg_visit_duration).toBeNull();;
   });
 
   it("rounds avg_visit_duration to 1 decimal place", () => {
@@ -581,7 +581,7 @@ describe("computeIVMetrics", () => {
 
   it("returns 0 attendance rate when no visits provided", () => {
     const m = computeIVMetrics([], []);
-    expect(m.child_attendance_rate).toBe(0);
+    expect(m.child_attendance_rate).toBeNull();;
   });
 
   it("rounds attendance rate to 1 decimal place", () => {

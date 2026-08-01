@@ -130,7 +130,7 @@ describe("computeInspectionReadiness", () => {
   it("gives 0 percentage for all modules when no regulations exist", () => {
     const result = computeInspectionReadiness([], []);
     for (const mod of result.modules) {
-      expect(mod.percentage).toBe(0);
+      expect(mod.percentage).toBeNull();;
       expect(mod.score).toBe(0);
       expect(mod.maxScore).toBe(0);
       expect(mod.evidenceCount).toBe(0);
@@ -146,7 +146,7 @@ describe("computeInspectionReadiness", () => {
     expect(safeguardingMod.evidenceCount).toBe(1);
     expect(safeguardingMod.score).toBe(0);
     expect(safeguardingMod.maxScore).toBe(0);
-    expect(safeguardingMod.percentage).toBe(0);
+    expect(safeguardingMod.percentage).toBeNull();;
   });
 
   // ── Single-regulation scoring ───────────────────────────────────────────
@@ -654,7 +654,7 @@ describe("computeInspectionReadiness", () => {
       expect(typeof mod.label).toBe("string");
       expect(typeof mod.score).toBe("number");
       expect(typeof mod.maxScore).toBe("number");
-      expect(typeof mod.percentage).toBe("number");
+      expect(["number", "object"]).toContain(typeof mod.percentage); // number | null
       expect(typeof mod.evidenceCount).toBe("number");
       expect(Array.isArray(mod.gaps)).toBe(true);
       expect(Array.isArray(mod.strengths)).toBe(true);
@@ -787,7 +787,7 @@ describe("computeInspectionReadiness", () => {
       expect(Number.isNaN(mod.percentage)).toBe(false);
     }
     const contactMod = result.modules.find((m) => m.module === "contact")!;
-    expect(contactMod.percentage).toBe(0);
+    expect(contactMod.percentage).toBeNull();;
     expect(contactMod.maxScore).toBe(0);
   });
 });

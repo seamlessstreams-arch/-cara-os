@@ -131,16 +131,16 @@ export function computeDrillMetrics(
   fire_evacuation_count: number;
   lockdown_count: number;
   missing_child_count: number;
-  successful_rate: number;
+  successful_rate: number | null;
   failed_count: number;
   cancelled_count: number;
-  all_children_accounted_rate: number;
-  all_staff_participated_rate: number;
-  assembly_point_used_rate: number;
-  equipment_working_rate: number;
+  all_children_accounted_rate: number | null;
+  all_staff_participated_rate: number | null;
+  assembly_point_used_rate: number | null;
+  equipment_working_rate: number | null;
   children_distressed_count: number;
-  average_evacuation_time: number;
-  fully_prepared_rate: number;
+  average_evacuation_time: number | null;
+  fully_prepared_rate: number | null;
   unprepared_count: number;
   drill_overdue_count: number;
   by_drill_type: Record<string, number>;
@@ -156,7 +156,7 @@ export function computeDrillMetrics(
   const successRate =
     records.length > 0
       ? Math.round((successful / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const failed = records.filter((r) => r.drill_outcome === "failed").length;
   const cancelled = records.filter((r) => r.drill_outcome === "cancelled").length;
@@ -165,25 +165,25 @@ export function computeDrillMetrics(
   const childrenRate =
     records.length > 0
       ? Math.round((childrenAccounted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffParticipated = records.filter((r) => r.all_staff_participated).length;
   const staffRate =
     records.length > 0
       ? Math.round((staffParticipated / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const assemblyUsed = records.filter((r) => r.assembly_point_used).length;
   const assemblyRate =
     records.length > 0
       ? Math.round((assemblyUsed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const equipWorking = records.filter((r) => r.equipment_working).length;
   const equipRate =
     records.length > 0
       ? Math.round((equipWorking / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const distressed = records.filter((r) => r.children_distressed).length;
 
@@ -191,13 +191,13 @@ export function computeDrillMetrics(
   const avgEvacTime =
     evacTimes.length > 0
       ? Math.round((evacTimes.reduce((a, b) => a + b, 0) / evacTimes.length) * 10) / 10
-      : 0;
+      : null;
 
   const fullyPrepared = records.filter((r) => r.staff_readiness === "fully_prepared").length;
   const preparedRate =
     records.length > 0
       ? Math.round((fullyPrepared / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const unprepared = records.filter((r) => r.staff_readiness === "unprepared").length;
 

@@ -42,8 +42,8 @@ describe("emergency-drill-service", () => {
       const m = computeDrillMetrics([]);
       expect(m.total_drills).toBe(0);
       expect(m.fire_evacuation_count).toBe(0);
-      expect(m.successful_rate).toBe(0);
-      expect(m.average_evacuation_time).toBe(0);
+      expect(m.successful_rate).toBeNull();;
+      expect(m.average_evacuation_time).toBeNull();;
       expect(m.unprepared_count).toBe(0);
     });
 

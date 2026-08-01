@@ -184,10 +184,10 @@ export function computeAssessmentMetrics(
   accepted: number;
   rejected: number;
   accepted_with_conditions: number;
-  avg_risk_level: number;
+  avg_risk_level: number | null;
   high_risk_count: number;
-  children_consulted_rate: number;
-  staff_consulted_rate: number;
+  children_consulted_rate: number | null;
+  staff_consulted_rate: number | null;
   open_mitigations: number;
   by_risk_level: Record<string, number>;
   by_recommendation: Record<string, number>;
@@ -255,17 +255,17 @@ export function computeAssessmentMetrics(
   const avgRiskLevel =
     riskCount > 0
       ? Math.round((totalRisk / riskCount) * 10) / 10
-      : 0;
+      : null;
 
   const childrenConsultedRate =
     assessments.length > 0
       ? Math.round((childrenConsulted / assessments.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffConsultedRate =
     assessments.length > 0
       ? Math.round((staffConsulted / assessments.length) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     total_assessments: assessments.length,

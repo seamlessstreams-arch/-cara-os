@@ -107,9 +107,9 @@ export function computeElectricalSafetyMetrics(
   c2_total: number;
   c3_total: number;
   fi_total: number;
-  remedial_completion_rate: number;
-  satisfactory_rate: number;
-  next_inspection_scheduled_rate: number;
+  remedial_completion_rate: number | null;
+  satisfactory_rate: number | null;
+  next_inspection_scheduled_rate: number | null;
   non_compliant_count: number;
   unique_inspectors: number;
   by_inspection_type: Record<string, number>;
@@ -132,19 +132,19 @@ export function computeElectricalSafetyMetrics(
   const remedialRate =
     remedialApplicable.length > 0
       ? Math.round((remedialCompleted / remedialApplicable.length) * 1000) / 10
-      : 0;
+      : null;
 
   const satisfactory = rows.filter((r) => r.result === "Satisfactory").length;
   const satisfactoryRate =
     total > 0
       ? Math.round((satisfactory / total) * 1000) / 10
-      : 0;
+      : null;
 
   const scheduled = rows.filter((r) => r.next_inspection_date !== null).length;
   const scheduledRate =
     total > 0
       ? Math.round((scheduled / total) * 1000) / 10
-      : 0;
+      : null;
 
   const nonCompliant = rows.filter(
     (r) =>
@@ -307,7 +307,7 @@ export function generateElectricalSafetyCaraInsights(
         `What steps are being taken to ensure all dangerous and potentially dangerous defects are remediated promptly, ` +
         `and is there a clear process for verifying completed remedial work?`,
     );
-  } else if (hasDefectiveRecords && metrics.remedial_completion_rate < 100) {
+  } else if (hasDefectiveRecords && (metrics.remedial_completion_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Remedial completion stands at ${metrics.remedial_completion_rate}% for inspections with defects. ` +
         `How can the home improve its tracking and completion of remedial works, ` +

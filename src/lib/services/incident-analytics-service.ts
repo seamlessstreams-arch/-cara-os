@@ -271,9 +271,9 @@ export function computePIAnalysis(
   total_pi: number;
   unique_children: number;
   unique_staff: number;
-  avg_duration_minutes: number;
-  injury_rate: number;
-  debrief_completion_rate: number;
+  avg_duration_minutes: number | null;
+  injury_rate: number | null;
+  debrief_completion_rate: number | null;
   repeat_children: { child_id: string; count: number }[];
   by_technique: Record<string, number>;
   trend_direction: IncidentTrendDirection;
@@ -313,13 +313,13 @@ export function computePIAnalysis(
   const unique_staff = staffSet.size;
   const avg_duration_minutes = durationCount > 0
     ? Math.round((totalDuration / durationCount) * 100) / 100
-    : 0;
+    : null;
   const injury_rate = total_pi > 0
     ? Math.round((injuryCount / total_pi) * 10000) / 100
-    : 0;
+    : null;
   const debrief_completion_rate = total_pi > 0
     ? Math.round((debriefCount / total_pi) * 10000) / 100
-    : 0;
+    : null;
 
   const repeat_children = Object.entries(childCounts)
     .filter(([, count]) => count > 1)

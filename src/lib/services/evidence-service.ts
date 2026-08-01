@@ -228,7 +228,7 @@ export interface ReadinessModuleScore {
   label: string;
   score: number;
   maxScore: number;
-  percentage: number;
+  percentage: number | null;
   evidenceCount: number;
   gaps: string[];
   strengths: string[];
@@ -236,7 +236,7 @@ export interface ReadinessModuleScore {
 
 export interface InspectionReadinessResult {
   overallScore: number;
-  overallPercentage: number;
+  overallPercentage: number | null;
   grade: "Outstanding" | "Good" | "Requires Improvement" | "Inadequate";
   modules: ReadinessModuleScore[];
   criticalGaps: string[];
@@ -313,7 +313,7 @@ export function computeInspectionReadiness(
       else score += 10;
     }
 
-    const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+    const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : null;
 
     modules.push({
       module: mod.key,
@@ -326,26 +326,26 @@ export function computeInspectionReadiness(
       strengths,
     });
 
-    totalWeightedScore += percentage * mod.weight;
+    totalWeightedScore += (percentage ?? 0) * mod.weight;
     totalWeight += mod.weight;
 
     // Populate global gaps/strengths
-    if (percentage < 50) {
+    if ((percentage ?? 0) < 50) {
       criticalGaps.push(`${mod.label}: ${percentage}% — needs urgent attention`);
       recommendations.push(`Upload evidence for ${mod.label} — currently ${gaps.length} gap(s) identified`);
     }
-    if (percentage >= 80) {
+    if ((percentage ?? 0) >= 80) {
       topStrengths.push(`${mod.label}: Strong at ${percentage}%`);
     }
   }
 
-  const overallPercentage = totalWeight > 0 ? Math.round(totalWeightedScore / totalWeight) : 0;
-  const overallScore = Math.round(overallPercentage / 10 * 10) / 10;
+  const overallPercentage = totalWeight > 0 ? Math.round(totalWeightedScore / totalWeight) : null;
+  const overallScore = Math.round((overallPercentage ?? 0) / 10 * 10) / 10;
 
   const grade: InspectionReadinessResult["grade"] =
-    overallPercentage >= 85 ? "Outstanding" :
-    overallPercentage >= 65 ? "Good" :
-    overallPercentage >= 40 ? "Requires Improvement" : "Inadequate";
+    (overallPercentage ?? 0) >= 85 ? "Outstanding" :
+    (overallPercentage ?? 0) >= 65 ? "Good" :
+    (overallPercentage ?? 0) >= 40 ? "Requires Improvement" : "Inadequate";
 
   return {
     overallScore,
@@ -381,7 +381,7 @@ export async function runInspectionReadinessScan(
   // Store the scan
   const moduleScores: Record<string, { score: number; gaps: string[]; strengths: string[] }> = {};
   for (const m of result.modules) {
-    moduleScores[m.module] = { score: m.percentage, gaps: m.gaps, strengths: m.strengths };
+    moduleScores[m.module] = { score: m.percentage ?? 0, gaps: m.gaps, strengths: m.strengths };
   }
 
   const { data, error } = await (s.from("cs_inspection_readiness_scans") as SB)

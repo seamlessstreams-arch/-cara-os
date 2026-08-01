@@ -72,8 +72,8 @@ describe("independent-visitors-service", () => {
       expect(m.active_assignments).toBe(0);
       expect(m.overdue_visits).toBe(0);
       expect(m.visits_this_quarter).toBe(0);
-      expect(m.avg_visit_duration).toBe(0);
-      expect(m.child_attendance_rate).toBe(0);
+      expect(m.avg_visit_duration).toBeNull();;
+      expect(m.child_attendance_rate).toBeNull();;
       expect(m.concerns_raised_count).toBe(0);
     });
 

@@ -99,7 +99,7 @@ describe("computeInspectionReadiness", () => {
     for (const mod of result.modules) {
       expect(mod.score).toBe(0);
       expect(mod.maxScore).toBe(0);
-      expect(mod.percentage).toBe(0);
+      expect(mod.percentage).toBeNull();;
     }
     // With no regulations, each module has 0 maxScore so percentage=0 => all flagged as critical gaps
     expect(result.criticalGaps).toHaveLength(8);

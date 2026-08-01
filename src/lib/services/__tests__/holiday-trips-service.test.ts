@@ -216,25 +216,25 @@ describe("computeTripMetrics — empty input", () => {
   it("completed_count is 0", () => expect(m.completed_count).toBe(0));
   it("cancelled_count is 0", () => expect(m.cancelled_count).toBe(0));
   it("planned_count is 0", () => expect(m.planned_count).toBe(0));
-  it("loved_it_rate is 0", () => expect(m.loved_it_rate).toBe(0));
-  it("enjoyed_rate is 0", () => expect(m.enjoyed_rate).toBe(0));
+  it("loved_it_rate is 0", () => expect(m.loved_it_rate).toBeNull());
+  it("enjoyed_rate is 0", () => expect(m.enjoyed_rate).toBeNull());
   it("did_not_enjoy_count is 0", () => expect(m.did_not_enjoy_count).toBe(0));
-  it("child_chose_rate is 0", () => expect(m.child_chose_rate).toBe(0));
-  it("consent_obtained_rate is 0", () => expect(m.consent_obtained_rate).toBe(0));
+  it("child_chose_rate is 0", () => expect(m.child_chose_rate).toBeNull());
+  it("consent_obtained_rate is 0", () => expect(m.consent_obtained_rate).toBeNull());
   it("risk_assessment_completed_rate is 0", () =>
-    expect(m.risk_assessment_completed_rate).toBe(0));
+    expect(m.risk_assessment_completed_rate).toBeNull());
   it("risk_assessment_overdue_count is 0", () =>
     expect(m.risk_assessment_overdue_count).toBe(0));
   it("social_worker_informed_rate is 0", () =>
-    expect(m.social_worker_informed_rate).toBe(0));
+    expect(m.social_worker_informed_rate).toBeNull());
   it("parent_carer_informed_rate is 0", () =>
-    expect(m.parent_carer_informed_rate).toBe(0));
+    expect(m.parent_carer_informed_rate).toBeNull());
   it("emergency_contacts_rate is 0", () =>
-    expect(m.emergency_contacts_rate).toBe(0));
-  it("first_aid_rate is 0", () => expect(m.first_aid_rate).toBe(0));
+    expect(m.emergency_contacts_rate).toBeNull());
+  it("first_aid_rate is 0", () => expect(m.first_aid_rate).toBeNull());
   it("incident_count is 0", () => expect(m.incident_count).toBe(0));
   it("total_cost is 0", () => expect(m.total_cost).toBe(0));
-  it("average_cost is 0", () => expect(m.average_cost).toBe(0));
+  it("average_cost is 0", () => expect(m.average_cost).toBeNull());
   it("unique_children is 0", () => expect(m.unique_children).toBe(0));
   it("by_trip_type is empty", () =>
     expect(Object.keys(m.by_trip_type)).toHaveLength(0));
@@ -282,7 +282,7 @@ describe("computeTripMetrics — single default record", () => {
   it("first_aid_rate is 100", () => expect(m.first_aid_rate).toBe(100));
   it("incident_count is 0", () => expect(m.incident_count).toBe(0));
   it("total_cost is 0", () => expect(m.total_cost).toBe(0));
-  it("average_cost is 0", () => expect(m.average_cost).toBe(0));
+  it("average_cost is 0", () => expect(m.average_cost).toBeNull());
   it("unique_children is 1", () => expect(m.unique_children).toBe(1));
   it("by_trip_type has day_trip=1", () =>
     expect(m.by_trip_type.day_trip).toBe(1));
@@ -561,7 +561,7 @@ describe("computeTripMetrics — costs", () => {
     const records = [makeRecord(), makeRecord()];
     const m = computeTripMetrics(records);
     expect(m.total_cost).toBe(0);
-    expect(m.average_cost).toBe(0);
+    expect(m.average_cost).toBeNull();;
   });
 
   it("handles a single record with cost", () => {

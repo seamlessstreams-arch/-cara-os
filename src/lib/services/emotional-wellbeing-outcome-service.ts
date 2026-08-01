@@ -81,7 +81,7 @@ export interface EmotionalWellbeingOutcomeRow {
   child_id: string | null;
   assessment_date: string;
   outcome_measure: string;
-  raw_score: number;
+  raw_score: number | null;
   clinical_band: string;
   trend_direction: string;
   assessment_context: string;
@@ -106,10 +106,10 @@ export function computeEmotionalWellbeingMetrics(
   crisis_count: number;
   declining_count: number;
   improving_count: number;
-  child_self_reported_rate: number;
-  discussed_with_child_rate: number;
-  informed_care_plan_rate: number;
-  referral_made_rate: number;
+  child_self_reported_rate: number | null;
+  discussed_with_child_rate: number | null;
+  informed_care_plan_rate: number | null;
+  referral_made_rate: number | null;
   clinical_band_breakdown: Record<string, number>;
   measure_breakdown: Record<string, number>;
   unique_children: number;
@@ -128,7 +128,7 @@ export function computeEmotionalWellbeingMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
@@ -229,7 +229,7 @@ export function generateEmotionalWellbeingCaraInsights(
   const clinicalPct =
     metrics.total_assessments > 0
       ? Math.round((metrics.clinical_count / metrics.total_assessments) * 1000) / 10
-      : 0;
+      : null;
   insights.push(
     `[pink] ${metrics.total_assessments} emotional wellbeing assessments recorded across ${metrics.unique_children} ${metrics.unique_children === 1 ? "child" : "children"}. ` +
       `${metrics.clinical_count} (${clinicalPct}%) scored in clinical/high-clinical/crisis bands. ` +

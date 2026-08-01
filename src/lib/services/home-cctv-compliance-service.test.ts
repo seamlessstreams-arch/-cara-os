@@ -45,12 +45,12 @@ describe("computeCctvComplianceMetrics", () => {
     expect(result.total_reviews).toBe(0);
     expect(result.non_compliant_count).toBe(0);
     expect(result.action_required_count).toBe(0);
-    expect(result.dpia_rate).toBe(0);
-    expect(result.signage_rate).toBe(0);
-    expect(result.encryption_rate).toBe(0);
+    expect(result.dpia_rate).toBeNull();;
+    expect(result.signage_rate).toBeNull();;
+    expect(result.encryption_rate).toBeNull();;
     expect(result.sar_count).toBe(0);
-    expect(result.sar_response_rate).toBe(0);
-    expect(result.avg_retention_days).toBe(0);
+    expect(result.sar_response_rate).toBeNull();;
+    expect(result.avg_retention_days).toBeNull();;
     expect(result.unique_locations).toBe(0);
     expect(result.unique_reviewers).toBe(0);
   });

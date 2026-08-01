@@ -183,7 +183,7 @@ export function computeSafetyMetrics(
 ): {
   total_checks: number;
   compliant_count: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
   overdue_checks: number;
   non_compliant_checks: number;
   certificates_expiring_soon: number;
@@ -191,7 +191,7 @@ export function computeSafetyMetrics(
   open_remedial_actions: number;
   critical_actions: number;
   drills_this_year: number;
-  avg_evacuation_time: number;
+  avg_evacuation_time: number | null;
   by_category: Record<string, { total: number; compliant: number }>;
 } {
   const now = new Date();
@@ -238,7 +238,7 @@ export function computeSafetyMetrics(
   const complianceRate =
     checks.length > 0
       ? Math.round((compliantCount / checks.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Fire drills this year
   const drillsThisYear = drills.filter(
@@ -251,7 +251,7 @@ export function computeSafetyMetrics(
     totalEvacTime += d.evacuation_time_seconds;
   }
   const avgEvacuationTime =
-    drills.length > 0 ? Math.round(totalEvacTime / drills.length) : 0;
+    drills.length > 0 ? Math.round(totalEvacTime / drills.length) : null;
 
   return {
     total_checks: checks.length,

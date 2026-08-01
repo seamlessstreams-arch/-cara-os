@@ -143,11 +143,11 @@ export function computeEqualityMetrics(
   human_rights_audit_count: number;
   discrimination_incident_count: number;
   reasonable_adjustment_count: number;
-  fully_compliant_rate: number;
+  fully_compliant_rate: number | null;
   non_compliant_count: number;
   actions_overdue_count: number;
-  actions_completed_rate: number;
-  reasonable_adjustment_rate: number;
+  actions_completed_rate: number | null;
+  reasonable_adjustment_rate: number | null;
   impact_on_child_count: number;
   review_overdue_count: number;
   by_assessment_type: Record<string, number>;
@@ -164,7 +164,7 @@ export function computeEqualityMetrics(
   const fullyCompliantRate =
     records.length > 0
       ? Math.round((fullyCompliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const nonCompliant = records.filter((r) => r.compliance_level === "non_compliant").length;
   const overdue = records.filter((r) => r.action_status === "overdue").length;
@@ -174,13 +174,13 @@ export function computeEqualityMetrics(
   const actionsCompletedRate =
     totalActionsRequired > 0
       ? Math.round((totalActionsCompleted / totalActionsRequired) * 1000) / 10
-      : 0;
+      : null;
 
   const adjustmentsMade = records.filter((r) => r.reasonable_adjustment_made).length;
   const adjustmentRate =
     records.length > 0
       ? Math.round((adjustmentsMade / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const impactOnChild = records.filter((r) => r.impact_on_child).length;
 

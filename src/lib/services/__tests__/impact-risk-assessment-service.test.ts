@@ -432,10 +432,10 @@ describe("computeAssessmentMetrics", () => {
     expect(m.accepted).toBe(0);
     expect(m.rejected).toBe(0);
     expect(m.accepted_with_conditions).toBe(0);
-    expect(m.avg_risk_level).toBe(0);
+    expect(m.avg_risk_level).toBeNull();;
     expect(m.high_risk_count).toBe(0);
-    expect(m.children_consulted_rate).toBe(0);
-    expect(m.staff_consulted_rate).toBe(0);
+    expect(m.children_consulted_rate).toBeNull();;
+    expect(m.staff_consulted_rate).toBeNull();;
     expect(m.open_mitigations).toBe(0);
     expect(Object.keys(m.by_risk_level)).toHaveLength(0);
     expect(Object.keys(m.by_recommendation)).toHaveLength(0);
@@ -663,7 +663,7 @@ describe("computeAssessmentMetrics", () => {
 
   it("avg_risk_level is 0 for empty array", () => {
     const m = computeAssessmentMetrics([]);
-    expect(m.avg_risk_level).toBe(0);
+    expect(m.avg_risk_level).toBeNull();;
   });
 
   // ── high_risk_count ──────────────────────────────────────────────────
@@ -753,7 +753,7 @@ describe("computeAssessmentMetrics", () => {
 
   it("children_consulted_rate is 0 for empty array", () => {
     const m = computeAssessmentMetrics([]);
-    expect(m.children_consulted_rate).toBe(0);
+    expect(m.children_consulted_rate).toBeNull();;
   });
 
   // ── staff_consulted_rate ─────────────────────────────────────────────
@@ -788,7 +788,7 @@ describe("computeAssessmentMetrics", () => {
 
   it("staff_consulted_rate is 0 for empty array", () => {
     const m = computeAssessmentMetrics([]);
-    expect(m.staff_consulted_rate).toBe(0);
+    expect(m.staff_consulted_rate).toBeNull();;
   });
 
   // ── open_mitigations ─────────────────────────────────────────────────

@@ -96,17 +96,17 @@ export function computeCctvComplianceMetrics(
   total_reviews: number;
   non_compliant_count: number;
   action_required_count: number;
-  dpia_rate: number;
-  signage_rate: number;
-  retention_compliant_rate: number;
-  encryption_rate: number;
-  access_log_rate: number;
-  children_informed_rate: number;
-  staff_informed_rate: number;
-  privacy_zones_rate: number;
+  dpia_rate: number | null;
+  signage_rate: number | null;
+  retention_compliant_rate: number | null;
+  encryption_rate: number | null;
+  access_log_rate: number | null;
+  children_informed_rate: number | null;
+  staff_informed_rate: number | null;
+  privacy_zones_rate: number | null;
   sar_count: number;
-  sar_response_rate: number;
-  avg_retention_days: number;
+  sar_response_rate: number | null;
+  avg_retention_days: number | null;
   unique_locations: number;
   unique_reviewers: number;
 } {
@@ -124,49 +124,49 @@ export function computeCctvComplianceMetrics(
   const dpiaRate =
     total > 0
       ? Math.round((dpiaCompleted / total) * 1000) / 10
-      : 0;
+      : null;
 
   const signageInPlace = rows.filter((r) => r.signage_in_place).length;
   const signageRate =
     total > 0
       ? Math.round((signageInPlace / total) * 1000) / 10
-      : 0;
+      : null;
 
   const retentionCompliant = rows.filter((r) => r.retention_compliant).length;
   const retentionCompliantRate =
     total > 0
       ? Math.round((retentionCompliant / total) * 1000) / 10
-      : 0;
+      : null;
 
   const encrypted = rows.filter((r) => r.footage_encrypted).length;
   const encryptionRate =
     total > 0
       ? Math.round((encrypted / total) * 1000) / 10
-      : 0;
+      : null;
 
   const accessLogMaintained = rows.filter((r) => r.access_log_maintained).length;
   const accessLogRate =
     total > 0
       ? Math.round((accessLogMaintained / total) * 1000) / 10
-      : 0;
+      : null;
 
   const childrenInformed = rows.filter((r) => r.children_informed).length;
   const childrenInformedRate =
     total > 0
       ? Math.round((childrenInformed / total) * 1000) / 10
-      : 0;
+      : null;
 
   const staffInformed = rows.filter((r) => r.staff_informed).length;
   const staffInformedRate =
     total > 0
       ? Math.round((staffInformed / total) * 1000) / 10
-      : 0;
+      : null;
 
   const privacyZonesSet = rows.filter((r) => r.privacy_zones_set).length;
   const privacyZonesRate =
     total > 0
       ? Math.round((privacyZonesSet / total) * 1000) / 10
-      : 0;
+      : null;
 
   const sarCount = rows.filter((r) => r.sar_received).length;
 
@@ -179,7 +179,7 @@ export function computeCctvComplianceMetrics(
   const sarResponseRate =
     sarRespondedRows.length > 0
       ? Math.round((sarRespondedInTime / sarRespondedRows.length) * 1000) / 10
-      : 0;
+      : null;
 
   const totalRetentionDays = rows.reduce(
     (sum, r) => sum + r.retention_period_days,
@@ -188,7 +188,7 @@ export function computeCctvComplianceMetrics(
   const avgRetentionDays =
     total > 0
       ? Math.round((totalRetentionDays / total) * 10) / 10
-      : 0;
+      : null;
 
   const uniqueLocations = new Set(rows.map((r) => r.camera_location)).size;
   const uniqueReviewers = new Set(rows.map((r) => r.reviewer_name)).size;

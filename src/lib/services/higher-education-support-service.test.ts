@@ -45,9 +45,9 @@ describe("computeMetrics", () => {
     expect(result.total_records).toBe(0);
     expect(result.unique_young_people).toBe(0);
     expect(result.enrolled_count).toBe(0);
-    expect(result.offer_rate).toBe(0);
-    expect(result.finance_applied_rate).toBe(0);
-    expect(result.engagement_rate).toBe(0);
+    expect(result.offer_rate).toBeNull();;
+    expect(result.finance_applied_rate).toBeNull();;
+    expect(result.engagement_rate).toBeNull();;
   });
 
   it("computes correct counts and rates with populated data", () => {

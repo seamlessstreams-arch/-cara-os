@@ -158,12 +158,12 @@ describe("computeEmergencyPreparedness", () => {
     expect(result).toEqual({
       total_drills: 0,
       drills_by_type: {},
-      avg_evacuation_time: 0,
-      all_accounted_rate: 0,
+      avg_evacuation_time: null,
+      all_accounted_rate: null,
       drills_with_issues: 0,
       active_contacts: 0,
       contacts_verified: 0,
-      contacts_verification_rate: 0,
+      contacts_verification_rate: null,
       current_plans: 0,
       expired_plans: 0,
       total_plan_types_covered: 0,
@@ -218,7 +218,7 @@ describe("computeEmergencyPreparedness", () => {
 
   it("returns 0 avg_evacuation_time when no drills exist", () => {
     const result = computeEmergencyPreparedness([], [], []);
-    expect(result.avg_evacuation_time).toBe(0);
+    expect(result.avg_evacuation_time).toBeNull();;
   });
 
   it("calculates all_accounted_rate as a rounded percentage", () => {
@@ -306,7 +306,7 @@ describe("computeEmergencyPreparedness", () => {
       makeContact({ id: "c1", status: "inactive" }),
     ];
     const result = computeEmergencyPreparedness([], contacts, []);
-    expect(result.contacts_verification_rate).toBe(0);
+    expect(result.contacts_verification_rate).toBeNull();;
   });
 
   it("counts current and expired plans correctly", () => {

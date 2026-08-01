@@ -108,9 +108,9 @@ describe("computePIAnalysis", () => {
     expect(r.total_pi).toBe(0);
     expect(r.unique_children).toBe(0);
     expect(r.unique_staff).toBe(0);
-    expect(r.avg_duration_minutes).toBe(0);
-    expect(r.injury_rate).toBe(0);
-    expect(r.debrief_completion_rate).toBe(0);
+    expect(r.avg_duration_minutes).toBeNull();;
+    expect(r.injury_rate).toBeNull();;
+    expect(r.debrief_completion_rate).toBeNull();;
   });
 
   it("computes correctly for populated data", () => {

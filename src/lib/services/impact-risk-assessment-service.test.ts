@@ -45,10 +45,10 @@ describe("computeAssessmentMetrics", () => {
     expect(m.pending_assessments).toBe(0);
     expect(m.accepted).toBe(0);
     expect(m.rejected).toBe(0);
-    expect(m.avg_risk_level).toBe(0);
+    expect(m.avg_risk_level).toBeNull();;
     expect(m.high_risk_count).toBe(0);
-    expect(m.children_consulted_rate).toBe(0);
-    expect(m.staff_consulted_rate).toBe(0);
+    expect(m.children_consulted_rate).toBeNull();;
+    expect(m.staff_consulted_rate).toBeNull();;
     expect(m.open_mitigations).toBe(0);
   });
 

@@ -221,42 +221,42 @@ describe("computeCctvComplianceMetrics", () => {
 
     it("returns zero dpia_rate", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.dpia_rate).toBe(0);
+      expect(m.dpia_rate).toBeNull();;
     });
 
     it("returns zero signage_rate", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.signage_rate).toBe(0);
+      expect(m.signage_rate).toBeNull();;
     });
 
     it("returns zero retention_compliant_rate", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.retention_compliant_rate).toBe(0);
+      expect(m.retention_compliant_rate).toBeNull();;
     });
 
     it("returns zero encryption_rate", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.encryption_rate).toBe(0);
+      expect(m.encryption_rate).toBeNull();;
     });
 
     it("returns zero access_log_rate", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.access_log_rate).toBe(0);
+      expect(m.access_log_rate).toBeNull();;
     });
 
     it("returns zero children_informed_rate", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.children_informed_rate).toBe(0);
+      expect(m.children_informed_rate).toBeNull();;
     });
 
     it("returns zero staff_informed_rate", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.staff_informed_rate).toBe(0);
+      expect(m.staff_informed_rate).toBeNull();;
     });
 
     it("returns zero privacy_zones_rate", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.privacy_zones_rate).toBe(0);
+      expect(m.privacy_zones_rate).toBeNull();;
     });
 
     it("returns zero sar_count", () => {
@@ -266,12 +266,12 @@ describe("computeCctvComplianceMetrics", () => {
 
     it("returns zero sar_response_rate", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.sar_response_rate).toBe(0);
+      expect(m.sar_response_rate).toBeNull();;
     });
 
     it("returns zero avg_retention_days", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.avg_retention_days).toBe(0);
+      expect(m.avg_retention_days).toBeNull();;
     });
 
     it("returns zero unique_locations", () => {
@@ -365,7 +365,7 @@ describe("computeCctvComplianceMetrics", () => {
 
     it("returns sar_response_rate = 0 (no SARs)", () => {
       const m = computeCctvComplianceMetrics([record]);
-      expect(m.sar_response_rate).toBe(0);
+      expect(m.sar_response_rate).toBeNull();;
     });
 
     it("returns avg_retention_days = 30", () => {
@@ -920,7 +920,7 @@ describe("computeCctvComplianceMetrics", () => {
         makeRow({ sar_received: false }),
       ];
       const m = computeCctvComplianceMetrics(records);
-      expect(m.sar_response_rate).toBe(0);
+      expect(m.sar_response_rate).toBeNull();;
     });
 
     it("excludes rows where sar_responded_in_time is null", () => {
@@ -1001,7 +1001,7 @@ describe("computeCctvComplianceMetrics", () => {
 
     it("returns 0 for empty array", () => {
       const m = computeCctvComplianceMetrics([]);
-      expect(m.avg_retention_days).toBe(0);
+      expect(m.avg_retention_days).toBeNull();;
     });
 
     it("handles all same values", () => {

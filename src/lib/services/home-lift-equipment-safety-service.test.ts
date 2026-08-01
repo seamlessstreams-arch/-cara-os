@@ -36,10 +36,10 @@ describe("computeLiftEquipmentSafetyMetrics", () => {
     expect(m.prohibited_count).toBe(0);
     expect(m.major_defects_count).toBe(0);
     expect(m.minor_defects_count).toBe(0);
-    expect(m.remedial_completion_rate).toBe(0);
-    expect(m.certificate_rate).toBe(0);
-    expect(m.swl_confirmed_rate).toBe(0);
-    expect(m.next_inspection_rate).toBe(0);
+    expect(m.remedial_completion_rate).toBeNull();;
+    expect(m.certificate_rate).toBeNull();;
+    expect(m.swl_confirmed_rate).toBeNull();;
+    expect(m.next_inspection_rate).toBeNull();;
     expect(m.non_compliant_count).toBe(0);
     expect(m.defects_total).toBe(0);
     expect(m.unique_inspectors).toBe(0);

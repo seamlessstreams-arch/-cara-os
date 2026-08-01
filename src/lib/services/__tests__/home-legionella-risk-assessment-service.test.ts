@@ -137,22 +137,22 @@ describe("computeMetrics", () => {
 
     it("returns zero temperature_compliance_rate", () => {
       const m = computeMetrics([]);
-      expect(m.temperature_compliance_rate).toBe(0);
+      expect(m.temperature_compliance_rate).toBeNull();;
     });
 
     it("returns zero flushing_compliance_rate", () => {
       const m = computeMetrics([]);
-      expect(m.flushing_compliance_rate).toBe(0);
+      expect(m.flushing_compliance_rate).toBeNull();;
     });
 
     it("returns zero water_treatment_rate", () => {
       const m = computeMetrics([]);
-      expect(m.water_treatment_rate).toBe(0);
+      expect(m.water_treatment_rate).toBeNull();;
     });
 
     it("returns zero legionella_test_rate", () => {
       const m = computeMetrics([]);
-      expect(m.legionella_test_rate).toBe(0);
+      expect(m.legionella_test_rate).toBeNull();;
     });
 
     it("returns zero remedial_action_count", () => {
@@ -162,7 +162,7 @@ describe("computeMetrics", () => {
 
     it("returns zero negative_test_rate", () => {
       const m = computeMetrics([]);
-      expect(m.negative_test_rate).toBe(0);
+      expect(m.negative_test_rate).toBeNull();;
     });
 
     it("returns zero unique_assessors", () => {
@@ -564,7 +564,7 @@ describe("computeMetrics", () => {
         makeRow({ legionella_test_completed: false }),
       ];
       const m = computeMetrics(rows);
-      expect(m.negative_test_rate).toBe(0);
+      expect(m.negative_test_rate).toBeNull();;
     });
 
     it("calculates 50% for mixed results", () => {

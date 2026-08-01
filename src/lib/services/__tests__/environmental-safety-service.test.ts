@@ -374,7 +374,7 @@ describe("computeSafetyMetrics", () => {
     const m = computeSafetyMetrics([], []);
     expect(m.total_checks).toBe(0);
     expect(m.compliant_count).toBe(0);
-    expect(m.compliance_rate).toBe(0);
+    expect(m.compliance_rate).toBeNull();;
     expect(m.overdue_checks).toBe(0);
     expect(m.non_compliant_checks).toBe(0);
     expect(m.certificates_expiring_soon).toBe(0);
@@ -382,7 +382,7 @@ describe("computeSafetyMetrics", () => {
     expect(m.open_remedial_actions).toBe(0);
     expect(m.critical_actions).toBe(0);
     expect(m.drills_this_year).toBe(0);
-    expect(m.avg_evacuation_time).toBe(0);
+    expect(m.avg_evacuation_time).toBeNull();;
     expect(Object.keys(m.by_category)).toHaveLength(0);
   });
 
@@ -462,7 +462,7 @@ describe("computeSafetyMetrics", () => {
 
   it("compliance_rate is 0 for empty checks array", () => {
     const m = computeSafetyMetrics([], []);
-    expect(m.compliance_rate).toBe(0);
+    expect(m.compliance_rate).toBeNull();;
   });
 
   it("compliance_rate calculates correctly for mixed statuses", () => {
@@ -759,7 +759,7 @@ describe("computeSafetyMetrics", () => {
 
   it("avg_evacuation_time is 0 when no drills exist", () => {
     const m = computeSafetyMetrics([], []);
-    expect(m.avg_evacuation_time).toBe(0);
+    expect(m.avg_evacuation_time).toBeNull();;
   });
 
   it("avg_evacuation_time rounds to nearest integer", () => {

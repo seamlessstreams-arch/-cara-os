@@ -123,16 +123,16 @@ export function computeIndependenceMetrics(
 ): {
   total_assessments: number;
   children_assessed: number;
-  assessment_coverage: number;
+  assessment_coverage: number | null;
   not_started_count: number;
   emerging_count: number;
   developing_count: number;
   competent_count: number;
   independent_count: number;
   on_target_count: number;
-  mentor_assigned_rate: number;
-  young_person_views_rate: number;
-  average_activities_per_skill: number;
+  mentor_assigned_rate: number | null;
+  young_person_views_rate: number | null;
+  average_activities_per_skill: number | null;
   skills_at_target: number;
   by_skill_area: Record<string, number>;
   by_competency_level: Record<string, number>;
@@ -148,7 +148,7 @@ export function computeIndependenceMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   // Skills at or above target
   const levelOrder: Record<CompetencyLevel, number> = {
@@ -166,19 +166,19 @@ export function computeIndependenceMetrics(
   const mentorRate =
     skills.length > 0
       ? Math.round((mentorAssigned / skills.length) * 1000) / 10
-      : 0;
+      : null;
 
   const viewsRecorded = skills.filter((s) => s.young_person_views !== null).length;
   const viewsRate =
     skills.length > 0
       ? Math.round((viewsRecorded / skills.length) * 1000) / 10
-      : 0;
+      : null;
 
   const totalActivities = skills.reduce((sum, s) => sum + s.activities_completed.length, 0);
   const avgActivities =
     skills.length > 0
       ? Math.round((totalActivities / skills.length) * 10) / 10
-      : 0;
+      : null;
 
   // By skill area
   const bySkillArea: Record<string, number> = {};

@@ -40,10 +40,10 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.complaint_count).toBe(0);
-    expect(m.upheld_rate).toBe(0);
-    expect(m.training_rate).toBe(0);
-    expect(m.policy_update_rate).toBe(0);
-    expect(m.reasonable_adjustment_rate).toBe(0);
+    expect(m.upheld_rate).toBeNull();;
+    expect(m.training_rate).toBeNull();;
+    expect(m.policy_update_rate).toBeNull();;
+    expect(m.reasonable_adjustment_rate).toBeNull();;
     expect(m.positive_practice_count).toBe(0);
     expect(m.incident_count).toBe(0);
     expect(m.young_person_feedback_count).toBe(0);

@@ -41,11 +41,11 @@ describe("computeEqualityMetrics", () => {
     expect(m.human_rights_audit_count).toBe(0);
     expect(m.discrimination_incident_count).toBe(0);
     expect(m.reasonable_adjustment_count).toBe(0);
-    expect(m.fully_compliant_rate).toBe(0);
+    expect(m.fully_compliant_rate).toBeNull();;
     expect(m.non_compliant_count).toBe(0);
     expect(m.actions_overdue_count).toBe(0);
-    expect(m.actions_completed_rate).toBe(0);
-    expect(m.reasonable_adjustment_rate).toBe(0);
+    expect(m.actions_completed_rate).toBeNull();;
+    expect(m.reasonable_adjustment_rate).toBeNull();;
     expect(m.impact_on_child_count).toBe(0);
     expect(m.review_overdue_count).toBe(0);
   });

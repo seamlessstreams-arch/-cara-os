@@ -44,8 +44,8 @@ describe("emergency-admissions-service", () => {
       expect(m.emergency_count).toBe(0);
       expect(m.crisis_count).toBe(0);
       expect(m.planned_count).toBe(0);
-      expect(m.risk_assessment_rate).toBe(0);
-      expect(m.good_match_rate).toBe(0);
+      expect(m.risk_assessment_rate).toBeNull();;
+      expect(m.good_match_rate).toBeNull();;
     });
 
     it("counts admission types correctly", () => {

@@ -142,20 +142,20 @@ export function computeTripMetrics(
   completed_count: number;
   cancelled_count: number;
   planned_count: number;
-  loved_it_rate: number;
-  enjoyed_rate: number;
+  loved_it_rate: number | null;
+  enjoyed_rate: number | null;
   did_not_enjoy_count: number;
-  child_chose_rate: number;
-  consent_obtained_rate: number;
-  risk_assessment_completed_rate: number;
+  child_chose_rate: number | null;
+  consent_obtained_rate: number | null;
+  risk_assessment_completed_rate: number | null;
   risk_assessment_overdue_count: number;
-  social_worker_informed_rate: number;
-  parent_carer_informed_rate: number;
-  emergency_contacts_rate: number;
-  first_aid_rate: number;
+  social_worker_informed_rate: number | null;
+  parent_carer_informed_rate: number | null;
+  emergency_contacts_rate: number | null;
+  first_aid_rate: number | null;
   incident_count: number;
   total_cost: number;
-  average_cost: number;
+  average_cost: number | null;
   unique_children: number;
   by_trip_type: Record<string, number>;
   by_trip_status: Record<string, number>;
@@ -175,13 +175,13 @@ export function computeTripMetrics(
   const lovedItRate =
     records.length > 0
       ? Math.round((lovedIt / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const enjoyed = records.filter((r) => r.child_enjoyment === "enjoyed").length;
   const enjoyedRate =
     records.length > 0
       ? Math.round((enjoyed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const didNotEnjoy = records.filter((r) => r.child_enjoyment === "did_not_enjoy").length;
 
@@ -189,14 +189,14 @@ export function computeTripMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const raCompleted = records.filter((r) => r.risk_assessment_status === "completed").length;
   const raCompletedRate =
     records.length > 0
       ? Math.round((raCompleted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const raOverdue = records.filter((r) => r.risk_assessment_status === "overdue").length;
 
@@ -207,7 +207,7 @@ export function computeTripMetrics(
   const avgCost =
     costs.length > 0
       ? Math.round((totalCost / costs.length) * 100) / 100
-      : 0;
+      : null;
 
   const allChildren = records.flatMap((r) => r.children_names);
   const uniqueChildren = new Set(allChildren).size;

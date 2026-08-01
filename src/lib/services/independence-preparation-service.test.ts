@@ -40,9 +40,9 @@ describe("computeIndependenceMetrics", () => {
     expect(m.developing_count).toBe(0);
     expect(m.competent_count).toBe(0);
     expect(m.independent_count).toBe(0);
-    expect(m.mentor_assigned_rate).toBe(0);
-    expect(m.young_person_views_rate).toBe(0);
-    expect(m.average_activities_per_skill).toBe(0);
+    expect(m.mentor_assigned_rate).toBeNull();;
+    expect(m.young_person_views_rate).toBeNull();;
+    expect(m.average_activities_per_skill).toBeNull();;
   });
 
   it("counts correctly for populated data", () => {

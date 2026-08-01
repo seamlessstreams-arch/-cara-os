@@ -40,11 +40,11 @@ describe("computePestControlManagementMetrics", () => {
     expect(m.active_issue_count).toBe(0);
     expect(m.infestation_count).toBe(0);
     expect(m.treatment_required_count).toBe(0);
-    expect(m.treatment_completion_rate).toBe(0);
-    expect(m.proofing_rate).toBe(0);
-    expect(m.hygiene_rate).toBe(0);
-    expect(m.food_storage_rate).toBe(0);
-    expect(m.waste_management_rate).toBe(0);
+    expect(m.treatment_completion_rate).toBeNull();;
+    expect(m.proofing_rate).toBeNull();;
+    expect(m.hygiene_rate).toBeNull();;
+    expect(m.food_storage_rate).toBeNull();;
+    expect(m.waste_management_rate).toBeNull();;
     expect(m.re_inspection_due_count).toBe(0);
     expect(m.unique_locations).toBe(0);
     expect(m.unique_inspectors).toBe(0);

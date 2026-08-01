@@ -282,10 +282,10 @@ export function computeMetrics(
   by_record_type: Record<string, number>;
   by_protected_characteristic: Record<string, number>;
   complaint_count: number;
-  upheld_rate: number;
-  training_rate: number;
-  policy_update_rate: number;
-  reasonable_adjustment_rate: number;
+  upheld_rate: number | null;
+  training_rate: number | null;
+  policy_update_rate: number | null;
+  reasonable_adjustment_rate: number | null;
   positive_practice_count: number;
   incident_count: number;
   by_status: Record<string, number>;
@@ -315,22 +315,22 @@ export function computeMetrics(
   const complaintsWithUpheld = complaints.filter((r) => r.complaint_upheld !== null);
   const upheldRate = complaintsWithUpheld.length > 0
     ? Math.round((complaintsWithUpheld.filter((r) => r.complaint_upheld === true).length / complaintsWithUpheld.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Training rate (proportion of records where training was delivered)
   const trainingRate = total > 0
     ? Math.round((rows.filter((r) => r.training_delivered).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Policy update rate
   const policyUpdateRate = total > 0
     ? Math.round((rows.filter((r) => r.policy_updated).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Reasonable adjustment rate
   const reasonableAdjustmentRate = total > 0
     ? Math.round((rows.filter((r) => r.reasonable_adjustments_made).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Positive practice count
   const positivePracticeCount = rows.filter(
@@ -552,7 +552,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective safeguarding question
-  if (metrics.incident_count > 0 && metrics.training_rate < 50) {
+  if (metrics.incident_count > 0 && (metrics.training_rate ?? 0) < 50) {
     insights.push(
       `[reflect] There have been ${metrics.incident_count} hate crime ${metrics.incident_count === 1 ? "incident" : "incidents"} ` +
         `but training delivery rate is only ${metrics.training_rate}%. Is the home investing sufficiently in ` +
@@ -561,7 +561,7 @@ export function generateCaraInsights(
         `and gender identity, are understood and met. SCCIF leadership standards expect the home to ` +
         `actively promote equality and diversity through informed, well-trained staff teams.`,
     );
-  } else if (metrics.complaint_count > 0 && metrics.upheld_rate > 50) {
+  } else if (metrics.complaint_count > 0 && (metrics.upheld_rate ?? 0) > 50) {
     insights.push(
       `[reflect] ${metrics.complaint_count} discrimination ${metrics.complaint_count === 1 ? "complaint has" : "complaints have"} ` +
         `been recorded with an upheld rate of ${metrics.upheld_rate}%. What systemic factors may be ` +

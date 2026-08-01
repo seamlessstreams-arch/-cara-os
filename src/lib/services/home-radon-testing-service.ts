@@ -179,10 +179,10 @@ export function computeMetrics(
   above_action_count: number;
   above_target_count: number;
   mitigation_required_count: number;
-  mitigation_installed_rate: number;
-  avg_radon_level: number;
-  max_radon_level: number;
-  retest_scheduled_rate: number;
+  mitigation_installed_rate: number | null;
+  avg_radon_level: number | null;
+  max_radon_level: number | null;
+  retest_scheduled_rate: number | null;
   compliant_count: number;
   non_compliant_count: number;
   unique_testers: number;
@@ -200,21 +200,21 @@ export function computeMetrics(
   const mitigationInstalledRate =
     mitigationRequiredRows.length > 0
       ? Math.round((mitigationInstalledCount / mitigationRequiredRows.length) * 1000) / 10
-      : 0;
+      : null;
 
   const avgRadonLevel =
     total > 0
       ? Math.round((rows.reduce((sum, r) => sum + r.radon_level_bq_m3, 0) / total) * 10) / 10
-      : 0;
+      : null;
 
   const maxRadonLevel =
     total > 0
       ? Math.round(Math.max(...rows.map((r) => r.radon_level_bq_m3)) * 10) / 10
-      : 0;
+      : null;
 
   const retestScheduled = rows.filter((r) => r.retest_date !== null).length;
   const retestScheduledRate =
-    total > 0 ? Math.round((retestScheduled / total) * 1000) / 10 : 0;
+    total > 0 ? Math.round((retestScheduled / total) * 1000) / 10 : null;
 
   const compliantCount = rows.filter((r) => r.compliance_status === "Compliant").length;
   const nonCompliantCount = rows.filter((r) => r.compliance_status === "Non-Compliant").length;
