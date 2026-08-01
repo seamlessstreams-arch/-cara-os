@@ -308,15 +308,15 @@ describe("computeSleepMetrics", () => {
     const m = computeSleepMetrics([], [], 0);
     expect(m.total_night_checks).toBe(0);
     expect(m.checks_this_week).toBe(0);
-    expect(m.avg_checks_per_night).toBe(0);
-    expect(m.environment_compliance_rate).toBe(0);
-    expect(m.avg_sleep_quality_score).toBe(0);
+    expect(m.avg_checks_per_night).toBeNull(); // fab-0.
+    expect(m.environment_compliance_rate).toBeNull(); // fab-0.
+    expect(m.avg_sleep_quality_score).toBeNull(); // fab-0.
     expect(m.children_with_concerns).toBe(0);
     expect(m.total_disturbances_this_week).toBe(0);
     expect(Object.keys(m.by_sleep_quality)).toHaveLength(0);
     expect(Object.keys(m.by_disturbance_type)).toHaveLength(0);
-    expect(m.avg_sleep_hours).toBe(0);
-    expect(m.poor_sleep_rate).toBe(0);
+    expect(m.avg_sleep_hours).toBeNull(); // fab-0.
+    expect(m.poor_sleep_rate).toBeNull(); // fab-0.
   });
 
   // ── total_night_checks ──────────────────────────────────────────────
@@ -379,7 +379,7 @@ describe("computeSleepMetrics", () => {
   it("avg_checks_per_night is 0 when no checks this week", () => {
     const checks = [makeCheck({ id: "c1", check_date: daysAgo(14) })];
     const m = computeSleepMetrics(checks, [], 0);
-    expect(m.avg_checks_per_night).toBe(0);
+    expect(m.avg_checks_per_night).toBeNull(); // fab-0.
   });
 
   it("avg_checks_per_night rounds to 1 decimal", () => {
@@ -424,7 +424,7 @@ describe("computeSleepMetrics", () => {
       makeCheck({ id: "c2", environment_ok: true, security_checked: false, temperature_ok: true }),
     ];
     const m = computeSleepMetrics(checks, [], 0);
-    expect(m.environment_compliance_rate).toBe(0);
+    expect(m.environment_compliance_rate).toBe(0); // records exist → real 0.
   });
 
   it("environment_compliance_rate requires all three booleans true", () => {
@@ -442,7 +442,7 @@ describe("computeSleepMetrics", () => {
       makeCheck({ id: "c1", environment_ok: false, security_checked: true, temperature_ok: true }),
     ];
     const m = computeSleepMetrics(checks, [], 0);
-    expect(m.environment_compliance_rate).toBe(0);
+    expect(m.environment_compliance_rate).toBe(0); // records exist → real 0.
   });
 
   it("environment_compliance_rate fails when only security_checked is false", () => {
@@ -450,7 +450,7 @@ describe("computeSleepMetrics", () => {
       makeCheck({ id: "c1", environment_ok: true, security_checked: false, temperature_ok: true }),
     ];
     const m = computeSleepMetrics(checks, [], 0);
-    expect(m.environment_compliance_rate).toBe(0);
+    expect(m.environment_compliance_rate).toBe(0); // records exist → real 0.
   });
 
   it("environment_compliance_rate fails when only temperature_ok is false", () => {
@@ -458,12 +458,12 @@ describe("computeSleepMetrics", () => {
       makeCheck({ id: "c1", environment_ok: true, security_checked: true, temperature_ok: false }),
     ];
     const m = computeSleepMetrics(checks, [], 0);
-    expect(m.environment_compliance_rate).toBe(0);
+    expect(m.environment_compliance_rate).toBe(0); // records exist → real 0.
   });
 
   it("environment_compliance_rate is 0 when no checks exist", () => {
     const m = computeSleepMetrics([], [], 0);
-    expect(m.environment_compliance_rate).toBe(0);
+    expect(m.environment_compliance_rate).toBeNull(); // fab-0.
   });
 
   it("environment_compliance_rate rounds to one decimal place", () => {
@@ -546,7 +546,7 @@ describe("computeSleepMetrics", () => {
 
   it("avg_sleep_quality_score is 0 when no records exist", () => {
     const m = computeSleepMetrics([], [], 0);
-    expect(m.avg_sleep_quality_score).toBe(0);
+    expect(m.avg_sleep_quality_score).toBeNull(); // fab-0.
   });
 
   // ── children_with_concerns ──────────────────────────────────────────
@@ -756,12 +756,12 @@ describe("computeSleepMetrics", () => {
       makeRecord({ id: "r2", total_sleep_hours: null }),
     ];
     const m = computeSleepMetrics([], records, 0);
-    expect(m.avg_sleep_hours).toBe(0);
+    expect(m.avg_sleep_hours).toBeNull(); // fab-0.
   });
 
   it("avg_sleep_hours is 0 when no records exist", () => {
     const m = computeSleepMetrics([], [], 0);
-    expect(m.avg_sleep_hours).toBe(0);
+    expect(m.avg_sleep_hours).toBeNull(); // fab-0.
   });
 
   it("avg_sleep_hours rounds to one decimal place", () => {
@@ -796,7 +796,7 @@ describe("computeSleepMetrics", () => {
       makeRecord({ id: "r3", sleep_quality: "fair" }),
     ];
     const m = computeSleepMetrics([], records, 0);
-    expect(m.poor_sleep_rate).toBe(0);
+    expect(m.poor_sleep_rate).toBe(0); // records exist → real 0.
   });
 
   it("poor_sleep_rate is 100 when all sleep is poor/very_poor", () => {
@@ -810,7 +810,7 @@ describe("computeSleepMetrics", () => {
 
   it("poor_sleep_rate is 0 when no records exist", () => {
     const m = computeSleepMetrics([], [], 0);
-    expect(m.poor_sleep_rate).toBe(0);
+    expect(m.poor_sleep_rate).toBeNull(); // fab-0.
   });
 
   it("poor_sleep_rate does not count fair as poor", () => {
@@ -819,7 +819,7 @@ describe("computeSleepMetrics", () => {
       makeRecord({ id: "r2", sleep_quality: "fair" }),
     ];
     const m = computeSleepMetrics([], records, 0);
-    expect(m.poor_sleep_rate).toBe(0);
+    expect(m.poor_sleep_rate).toBe(0); // records exist → real 0.
   });
 
   it("poor_sleep_rate rounds to one decimal place", () => {

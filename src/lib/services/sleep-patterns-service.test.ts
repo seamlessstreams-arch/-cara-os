@@ -53,11 +53,11 @@ describe("computeSleepMetrics", () => {
   it("returns zeroes for empty arrays", () => {
     const m = computeSleepMetrics([], [], 5);
     expect(m.total_night_checks).toBe(0);
-    expect(m.avg_checks_per_night).toBe(0);
-    expect(m.environment_compliance_rate).toBe(0);
-    expect(m.avg_sleep_quality_score).toBe(0);
-    expect(m.avg_sleep_hours).toBe(0);
-    expect(m.poor_sleep_rate).toBe(0);
+    expect(m.avg_checks_per_night).toBeNull(); // fab-0.
+    expect(m.environment_compliance_rate).toBeNull(); // fab-0.
+    expect(m.avg_sleep_quality_score).toBeNull(); // fab-0.
+    expect(m.avg_sleep_hours).toBeNull(); // fab-0.
+    expect(m.poor_sleep_rate).toBeNull(); // fab-0.
     expect(m.children_with_concerns).toBe(0);
   });
 

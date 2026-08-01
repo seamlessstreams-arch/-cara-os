@@ -158,15 +158,15 @@ export function computeSleepMetrics(
 ): {
   total_night_checks: number;
   checks_this_week: number;
-  avg_checks_per_night: number;
-  environment_compliance_rate: number;
-  avg_sleep_quality_score: number;
+  avg_checks_per_night: number | null;
+  environment_compliance_rate: number | null;
+  avg_sleep_quality_score: number | null;
   children_with_concerns: number;
   total_disturbances_this_week: number;
   by_sleep_quality: Record<string, number>;
   by_disturbance_type: Record<string, number>;
-  avg_sleep_hours: number;
-  poor_sleep_rate: number;
+  avg_sleep_hours: number | null;
+  poor_sleep_rate: number | null;
 } {
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 86400000);
@@ -186,7 +186,7 @@ export function computeSleepMetrics(
   const avgChecksPerNight =
     nightsThisWeek > 0
       ? Math.round((checksThisWeek / nightsThisWeek) * 10) / 10
-      : 0;
+      : null;
 
   // Environment compliance
   let envOk = 0;
@@ -196,7 +196,7 @@ export function computeSleepMetrics(
   const envComplianceRate =
     checks.length > 0
       ? Math.round((envOk / checks.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Sleep quality score (excellent=5, good=4, fair=3, poor=2, very_poor=1)
   const qualityScores: Record<string, number> = {
@@ -224,12 +224,12 @@ export function computeSleepMetrics(
   const avgSleepQualityScore =
     qualityCount > 0
       ? Math.round((totalQuality / qualityCount) * 10) / 10
-      : 0;
+      : null;
 
   const poorSleepRate =
     records.length > 0
       ? Math.round((poorSleepCount / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Children with concerns
   const childrenWithConcerns = new Set(
@@ -260,7 +260,7 @@ export function computeSleepMetrics(
   const avgSleepHours =
     hoursCount > 0
       ? Math.round((totalHours / hoursCount) * 10) / 10
-      : 0;
+      : null;
 
   return {
     total_night_checks: checks.length,
