@@ -280,18 +280,18 @@ export function computeMetrics(
   weapons_found_count: number;
   weapons_threat_count: number;
   weapons_brought_in_count: number;
-  kitchen_compliance_rate: number;
-  sharp_objects_secured_rate: number;
-  tool_storage_rate: number;
-  search_consent_rate: number;
-  police_notification_rate: number;
-  reg_40_rate: number;
+  kitchen_compliance_rate: number | null;
+  sharp_objects_secured_rate: number | null;
+  tool_storage_rate: number | null;
+  search_consent_rate: number | null;
+  police_notification_rate: number | null;
+  reg_40_rate: number | null;
   educational_session_count: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
   overdue_audit_count: number;
-  social_worker_informed_rate: number;
-  parent_carer_informed_rate: number;
-  safety_plan_update_rate: number;
+  social_worker_informed_rate: number | null;
+  parent_carer_informed_rate: number | null;
+  safety_plan_update_rate: number | null;
   unique_children_involved: number;
   environmental_changes_count: number;
 } {
@@ -329,7 +329,7 @@ export function computeMetrics(
   const kitchenAudits = rows.filter((r) => r.record_type === "Kitchen Knife Audit");
   const kitchenComplianceRate = kitchenAudits.length > 0
     ? Math.round((kitchenAudits.filter((r) => r.kitchen_knives_accounted_for).length / kitchenAudits.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Sharp objects secured rate (for sharp object checks)
   const sharpChecks = rows.filter((r) => r.record_type === "Sharp Object Check");
@@ -345,17 +345,17 @@ export function computeMetrics(
   const searches = rows.filter((r) => r.record_type === "Bedroom Search — with consent");
   const searchConsentRate = searches.length > 0
     ? Math.round((searches.filter((r) => r.search_consent_obtained === true).length / searches.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Police notification rate (for incidents only)
   const policeNotificationRate = incidents.length > 0
     ? Math.round((incidents.filter((r) => r.police_notified).length / incidents.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Reg 40 rate (for incidents only)
   const reg40Rate = incidents.length > 0
     ? Math.round((incidents.filter((r) => r.reg_40_notification).length / incidents.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Educational session count
   const educationalSessionCount = rows.filter((r) => r.record_type === "Educational Session").length;
@@ -363,7 +363,7 @@ export function computeMetrics(
   // Overall compliance rate
   const complianceRate = total > 0
     ? Math.round((rows.filter((r) => r.compliance_status === "Compliant").length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Overdue audit count
   const today = new Date();
@@ -377,17 +377,17 @@ export function computeMetrics(
   // Social worker informed rate (for incidents)
   const socialWorkerInformedRate = incidents.length > 0
     ? Math.round((incidents.filter((r) => r.social_worker_informed).length / incidents.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Parent/carer informed rate (for incidents)
   const parentCarerInformedRate = incidents.length > 0
     ? Math.round((incidents.filter((r) => r.parent_carer_informed).length / incidents.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Safety plan update rate (for incidents)
   const safetyPlanUpdateRate = incidents.length > 0
     ? Math.round((incidents.filter((r) => r.child_safety_plan_updated).length / incidents.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Unique children involved in incidents
   const uniqueChildrenInvolved = new Set(
@@ -655,7 +655,7 @@ export function generateCaraInsights(
         `weapon possession under the Offensive Weapons Act 2019, and the impact of knife crime? ` +
         `The Serious Violence Duty 2022 requires a preventative, educational approach alongside enforcement.`,
     );
-  } else if (metrics.kitchen_compliance_rate < 100 && metrics.kitchen_compliance_rate > 0) {
+  } else if ((metrics.kitchen_compliance_rate ?? 0) < 100 && (metrics.kitchen_compliance_rate ?? 0) > 0) {
     insights.push(
       `[reflect] Kitchen knife audit compliance is at ${metrics.kitchen_compliance_rate}%, below the ` +
         `required 100% standard. What systems are in place to ensure all kitchen knives are ` +

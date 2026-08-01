@@ -44,8 +44,8 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.incidents_count).toBe(0);
-    expect(m.kitchen_compliance_rate).toBe(0);
-    expect(m.compliance_rate).toBe(0);
+    expect(m.kitchen_compliance_rate).toBeNull(); // fab-0.
+    expect(m.compliance_rate).toBeNull(); // fab-0.
     expect(m.educational_session_count).toBe(0);
     expect(m.unique_children_involved).toBe(0);
   });
