@@ -48,7 +48,7 @@ describe("emergency-placement-service", () => {
       expect(m.admitted_count).toBe(0);
       expect(m.declined_count).toBe(0);
       expect(m.pending_count).toBe(0);
-      expect(m.admission_rate).toBe(0);
+      expect(m.admission_rate).toBeNull(); // fab-0.
       expect(m.out_of_hours_count).toBe(0);
     });
 
@@ -109,6 +109,7 @@ describe("emergency-placement-service", () => {
       expect(m.existing_children_consulted_rate).toBe(50);
       expect(m.impact_assessed_rate).toBe(50);
       expect(m.essential_info_rate).toBe(50);
+      // 2 admitted, 0 care_plan_received → real 0.
       expect(m.care_plan_rate).toBe(0);
     });
 

@@ -325,19 +325,19 @@ describe("computeEmergencyMetrics", () => {
     expect(m.admitted_count).toBe(0);
     expect(m.declined_count).toBe(0);
     expect(m.pending_count).toBe(0);
-    expect(m.admission_rate).toBe(0);
+    expect(m.admission_rate).toBeNull(); // fab-0.
     expect(m.out_of_hours_count).toBe(0);
-    expect(m.out_of_hours_rate).toBe(0);
+    expect(m.out_of_hours_rate).toBeNull(); // fab-0.
     expect(m.risk_completed_pre_admission).toBe(0);
     expect(m.risk_not_completed).toBe(0);
-    expect(m.existing_children_consulted_rate).toBe(0);
-    expect(m.impact_assessed_rate).toBe(0);
-    expect(m.essential_info_rate).toBe(0);
-    expect(m.care_plan_rate).toBe(0);
-    expect(m.post_review_completed_rate).toBe(0);
+    expect(m.existing_children_consulted_rate).toBeNull(); // fab-0.
+    expect(m.impact_assessed_rate).toBeNull(); // fab-0.
+    expect(m.essential_info_rate).toBeNull(); // fab-0.
+    expect(m.care_plan_rate).toBeNull(); // fab-0.
+    expect(m.post_review_completed_rate).toBeNull(); // fab-0.
     expect(m.post_review_overdue).toBe(0);
     expect(m.active_emergencies).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull(); // fab-0.
     expect(Object.keys(m.by_emergency_reason)).toHaveLength(0);
     expect(Object.keys(m.by_placement_decision)).toHaveLength(0);
     expect(Object.keys(m.by_risk_status)).toHaveLength(0);
@@ -473,7 +473,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep2", placement_decision: "declined_risk" }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.admission_rate).toBe(0);
+    expect(m.admission_rate).toBe(0); // records exist → real 0.
   });
 
   it("admission_rate is 50 when half are admitted", () => {
@@ -497,7 +497,7 @@ describe("computeEmergencyMetrics", () => {
 
   it("admission_rate is 0 for empty placements", () => {
     const m = computeEmergencyMetrics([]);
-    expect(m.admission_rate).toBe(0);
+    expect(m.admission_rate).toBeNull(); // fab-0.
   });
 
   // ── out_of_hours_count & out_of_hours_rate ─────────────────────────
@@ -535,7 +535,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep2", out_of_hours: false }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.out_of_hours_rate).toBe(0);
+    expect(m.out_of_hours_rate).toBe(0); // records exist → real 0.
   });
 
   it("out_of_hours_rate rounds to one decimal place", () => {
@@ -550,7 +550,7 @@ describe("computeEmergencyMetrics", () => {
 
   it("out_of_hours_rate is 0 for empty placements", () => {
     const m = computeEmergencyMetrics([]);
-    expect(m.out_of_hours_rate).toBe(0);
+    expect(m.out_of_hours_rate).toBeNull(); // fab-0.
   });
 
   // ── risk_completed_pre_admission ───────────────────────────────────
@@ -612,7 +612,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep2", placement_decision: "admitted", existing_children_consulted: false }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.existing_children_consulted_rate).toBe(0);
+    expect(m.existing_children_consulted_rate).toBe(0); // records exist → real 0.
   });
 
   it("existing_children_consulted_rate is 50 when half of admitted have consulted", () => {
@@ -639,7 +639,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep1", placement_decision: "pending", existing_children_consulted: true }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.existing_children_consulted_rate).toBe(0);
+    expect(m.existing_children_consulted_rate).toBeNull(); // fab-0.
   });
 
   it("existing_children_consulted_rate rounds to one decimal place", () => {
@@ -668,7 +668,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep1", placement_decision: "admitted", impact_assessment_completed: false }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.impact_assessed_rate).toBe(0);
+    expect(m.impact_assessed_rate).toBe(0); // records exist → real 0.
   });
 
   it("impact_assessed_rate ignores non-admitted placements", () => {
@@ -685,7 +685,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep1", placement_decision: "pending", impact_assessment_completed: true }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.impact_assessed_rate).toBe(0);
+    expect(m.impact_assessed_rate).toBeNull(); // fab-0.
   });
 
   it("impact_assessed_rate rounds to one decimal place", () => {
@@ -714,7 +714,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep1", placement_decision: "admitted", essential_info_received: false }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.essential_info_rate).toBe(0);
+    expect(m.essential_info_rate).toBe(0); // records exist → real 0.
   });
 
   it("essential_info_rate ignores non-admitted placements", () => {
@@ -731,7 +731,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep1", placement_decision: "declined_matching", essential_info_received: true }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.essential_info_rate).toBe(0);
+    expect(m.essential_info_rate).toBeNull(); // fab-0.
   });
 
   it("essential_info_rate rounds to one decimal place", () => {
@@ -760,7 +760,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep1", placement_decision: "admitted", care_plan_received: false }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.care_plan_rate).toBe(0);
+    expect(m.care_plan_rate).toBe(0); // records exist → real 0.
   });
 
   it("care_plan_rate ignores non-admitted placements", () => {
@@ -777,7 +777,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep1", placement_decision: "declined_capacity", care_plan_received: true }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.care_plan_rate).toBe(0);
+    expect(m.care_plan_rate).toBeNull(); // fab-0.
   });
 
   it("care_plan_rate rounds to one decimal place", () => {
@@ -806,7 +806,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep1", placement_decision: "admitted", post_admission_review: "overdue" }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.post_review_completed_rate).toBe(0);
+    expect(m.post_review_completed_rate).toBe(0); // records exist → real 0.
   });
 
   it("post_review_completed_rate excludes not_applicable from denominator", () => {
@@ -832,7 +832,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep1", placement_decision: "admitted", post_admission_review: "not_applicable" }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.post_review_completed_rate).toBe(0);
+    expect(m.post_review_completed_rate).toBeNull(); // fab-0.
   });
 
   it("post_review_completed_rate is 0 when all are not_due", () => {
@@ -840,7 +840,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep1", placement_decision: "admitted", post_admission_review: "not_due" }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.post_review_completed_rate).toBe(0);
+    expect(m.post_review_completed_rate).toBeNull(); // fab-0.
   });
 
   it("post_review_completed_rate rounds to one decimal place", () => {
@@ -940,7 +940,7 @@ describe("computeEmergencyMetrics", () => {
       makePlacement({ id: "ep2", child_views: null }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBe(0); // records exist → real 0.
   });
 
   it("child_views_rate is 50 when half have child views", () => {
@@ -964,7 +964,7 @@ describe("computeEmergencyMetrics", () => {
 
   it("child_views_rate is 0 for empty placements", () => {
     const m = computeEmergencyMetrics([]);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull(); // fab-0.
   });
 
   it("child_views_rate counts non-null values including empty string", () => {
@@ -1279,10 +1279,11 @@ describe("computeEmergencyMetrics", () => {
       }),
     ];
     const m = computeEmergencyMetrics(placements);
-    expect(m.existing_children_consulted_rate).toBe(0);
-    expect(m.impact_assessed_rate).toBe(0);
-    expect(m.essential_info_rate).toBe(0);
-    expect(m.care_plan_rate).toBe(0);
+    expect(m.existing_children_consulted_rate).toBe(0); // records exist → real 0.
+    expect(m.impact_assessed_rate).toBe(0); // records exist → real 0.
+    expect(m.essential_info_rate).toBe(0); // records exist → real 0.
+    expect(m.care_plan_rate).toBe(0); // records exist → real 0.
+    // 1 reviewable (overdue), 0 completed → real 0.
     expect(m.post_review_completed_rate).toBe(0);
   });
 });
@@ -2107,7 +2108,7 @@ describe("Edge cases", () => {
     expect(m.admitted_count).toBe(0);
     expect(m.declined_count).toBe(3);
     expect(m.pending_count).toBe(0);
-    expect(m.admission_rate).toBe(0);
+    expect(m.admission_rate).toBe(0); // records exist → real 0.
   });
 
   it("computeEmergencyMetrics with all placements pending", () => {
@@ -2119,6 +2120,7 @@ describe("Edge cases", () => {
     expect(m.admitted_count).toBe(0);
     expect(m.declined_count).toBe(0);
     expect(m.pending_count).toBe(2);
+    // 2 placements, 0 admitted → real 0.
     expect(m.admission_rate).toBe(0);
   });
 

@@ -154,19 +154,19 @@ export function computeEmergencyMetrics(
   admitted_count: number;
   declined_count: number;
   pending_count: number;
-  admission_rate: number;
+  admission_rate: number | null;
   out_of_hours_count: number;
-  out_of_hours_rate: number;
+  out_of_hours_rate: number | null;
   risk_completed_pre_admission: number;
   risk_not_completed: number;
-  existing_children_consulted_rate: number;
-  impact_assessed_rate: number;
-  essential_info_rate: number;
-  care_plan_rate: number;
-  post_review_completed_rate: number;
+  existing_children_consulted_rate: number | null;
+  impact_assessed_rate: number | null;
+  essential_info_rate: number | null;
+  care_plan_rate: number | null;
+  post_review_completed_rate: number | null;
   post_review_overdue: number;
   active_emergencies: number;
-  child_views_rate: number;
+  child_views_rate: number | null;
   by_emergency_reason: Record<string, number>;
   by_placement_decision: Record<string, number>;
   by_risk_status: Record<string, number>;
@@ -181,13 +181,13 @@ export function computeEmergencyMetrics(
   const admissionRate =
     placements.length > 0
       ? Math.round((admitted / placements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const outOfHours = placements.filter((p) => p.out_of_hours).length;
   const oohRate =
     placements.length > 0
       ? Math.round((outOfHours / placements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const riskPre = placements.filter((p) => p.risk_assessment_status === "completed_pre_admission").length;
   const riskNot = placements.filter((p) => p.risk_assessment_status === "not_completed").length;
@@ -198,25 +198,25 @@ export function computeEmergencyMetrics(
   const consultedRate =
     admittedPlacements.length > 0
       ? Math.round((consulted / admittedPlacements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const impactAssessed = admittedPlacements.filter((p) => p.impact_assessment_completed).length;
   const impactRate =
     admittedPlacements.length > 0
       ? Math.round((impactAssessed / admittedPlacements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const essentialInfo = admittedPlacements.filter((p) => p.essential_info_received).length;
   const essentialRate =
     admittedPlacements.length > 0
       ? Math.round((essentialInfo / admittedPlacements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const carePlan = admittedPlacements.filter((p) => p.care_plan_received).length;
   const carePlanRate =
     admittedPlacements.length > 0
       ? Math.round((carePlan / admittedPlacements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const reviewable = admittedPlacements.filter(
     (p) => p.post_admission_review !== "not_applicable" && p.post_admission_review !== "not_due",
@@ -227,7 +227,7 @@ export function computeEmergencyMetrics(
   const reviewRate =
     reviewable.length > 0
       ? Math.round((reviewed / reviewable.length) * 1000) / 10
-      : 0;
+      : null;
   const reviewOverdue = admittedPlacements.filter((p) => p.post_admission_review === "overdue").length;
 
   const active = placements.filter((p) => p.emergency_status === "active").length;
@@ -236,7 +236,7 @@ export function computeEmergencyMetrics(
   const childRate =
     placements.length > 0
       ? Math.round((childViews / placements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const byReason: Record<string, number> = {};
   for (const p of placements) byReason[p.emergency_reason] = (byReason[p.emergency_reason] ?? 0) + 1;
