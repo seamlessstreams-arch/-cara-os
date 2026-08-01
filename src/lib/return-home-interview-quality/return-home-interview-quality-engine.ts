@@ -636,8 +636,8 @@ export function buildChildMissingProfiles(
       // Safety plan contributes 0-3
       const safetyScore = hasSafetyPlan ? 3 : 0;
       // Factors identified contributes 0-3
-      const factorsScore = commonFactors.length > 0 ? Math.min(3, commonFactors.length) : 0;
-      score = Math.min(10, rhiScore + safetyScore + factorsScore);
+      const factorsScore: number | null = commonFactors.length > 0 ? Math.min(3, commonFactors.length) : null;
+      score = Math.min(10, rhiScore + safetyScore + (factorsScore ?? 0));
     }
 
     return {
