@@ -765,8 +765,8 @@ export function buildFamilyProfiles(
       (s, p) => s + p.goalsAchieved + p.goalsPartiallyAchieved * 0.5,
       0,
     );
-    const goalAchievementRate =
-      totalGoals > 0 ? Math.round((achievedGoals / totalGoals) * 100) : 0;
+    const goalAchievementRate: number | null =
+      totalGoals > 0 ? Math.round((achievedGoals / totalGoals) * 100) : null;
 
     return {
       childId,
