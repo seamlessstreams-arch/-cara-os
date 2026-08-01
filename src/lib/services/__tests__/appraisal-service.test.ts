@@ -94,7 +94,8 @@ describe("computeAppraisalCompliance", () => {
 
   it("returns zero compliance with staff but no appraisals", () => {
     const result = computeAppraisalCompliance([], 5);
-    expect(result.compliance_rate).toBeNull(); // fab-0.
+    // Staff exist → real 0/5.
+    expect(result.compliance_rate).toBe(0);
     expect(result.staff_without_appraisal).toBe(5);
   });
 
@@ -271,7 +272,8 @@ describe("computeGoalProgress", () => {
       makePerformanceGoal({ id: "g2", status: "overdue" }),
     ];
     const result = computeGoalProgress(goals);
-    expect(result.achievement_rate).toBeNull(); // fab-0.
+    // 2 goals exist → real 0/2.
+    expect(result.achievement_rate).toBe(0);
   });
 
   it("returns 0% when all goals are cancelled", () => {

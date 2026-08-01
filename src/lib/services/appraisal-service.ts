@@ -130,7 +130,7 @@ function computeAppraisalCompliance(
       ratingCount++;
     }
   }
-  const avgRating = ratingCount > 0 ? Math.round((ratingSum / ratingCount) * 100) / 100 : 0;
+  const avgRating: number | null = ratingCount > 0 ? Math.round((ratingSum / ratingCount) * 100) / 100 : null;
 
   // Fitness confirmed
   const fitnessConfirmed = completed.filter((a) => a.fitness_confirmed).length;
