@@ -171,14 +171,14 @@ export function computeParticipationMetrics(
   totalChildren: number,
 ): {
   meetings_this_quarter: number;
-  avg_attendance_rate: number;
+  avg_attendance_rate: number | null;
   unique_children_participating: number;
-  participation_rate: number;
-  actions_implemented_rate: number;
+  participation_rate: number | null;
+  actions_implemented_rate: number | null;
   topics_raised: number;
   by_meeting_type: Record<string, number>;
   by_topic_category: Record<string, number>;
-  satisfaction_rate: number;
+  satisfaction_rate: number | null;
   consultations_this_quarter: number;
 } {
   const now = new Date();
@@ -200,7 +200,7 @@ export function computeParticipationMetrics(
   const avgAttendanceRate =
     totalInvited > 0
       ? Math.round((totalAttended / totalInvited) * 1000) / 10
-      : 0;
+      : null;
 
   // Unique children participating (across meetings + consultations)
   const participatingChildren = new Set<string>();
@@ -218,7 +218,7 @@ export function computeParticipationMetrics(
   const participationRate =
     totalChildren > 0
       ? Math.round((uniqueChildrenParticipating / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   // Actions implemented rate
   let totalActions = 0;
@@ -234,7 +234,7 @@ export function computeParticipationMetrics(
   const actionsImplementedRate =
     totalActions > 0
       ? Math.round((implementedActions / totalActions) * 1000) / 10
-      : 0;
+      : null;
 
   // Total topics raised
   let topicsRaised = 0;
@@ -271,7 +271,7 @@ export function computeParticipationMetrics(
   const satisfactionRate =
     responseCount > 0
       ? Math.round((satisfiedCount / responseCount) * 1000) / 10
-      : 0;
+      : null;
 
   // Consultations this quarter
   const consultationsThisQuarter = consultations.filter(

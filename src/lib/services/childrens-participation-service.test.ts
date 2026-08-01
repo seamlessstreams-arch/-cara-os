@@ -81,12 +81,12 @@ describe("computeParticipationMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeParticipationMetrics([], [], 4);
     expect(m.meetings_this_quarter).toBe(0);
-    expect(m.avg_attendance_rate).toBe(0);
+    expect(m.avg_attendance_rate).toBeNull(); // fab-0.
     expect(m.unique_children_participating).toBe(0);
-    expect(m.participation_rate).toBe(0);
-    expect(m.actions_implemented_rate).toBe(0);
+    expect(m.participation_rate).toBeNull(); // fab-0.
+    expect(m.actions_implemented_rate).toBeNull(); // fab-0.
     expect(m.topics_raised).toBe(0);
-    expect(m.satisfaction_rate).toBe(0);
+    expect(m.satisfaction_rate).toBeNull(); // fab-0.
     expect(m.consultations_this_quarter).toBe(0);
   });
 

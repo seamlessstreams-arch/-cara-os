@@ -295,12 +295,12 @@ describe("computeParticipationMetrics", () => {
     it("returns zeroed metrics for empty arrays", () => {
       const result = computeParticipationMetrics([], [], 0);
       expect(result.meetings_this_quarter).toBe(0);
-      expect(result.avg_attendance_rate).toBe(0);
+      expect(result.avg_attendance_rate).toBeNull(); // fab-0.
       expect(result.unique_children_participating).toBe(0);
-      expect(result.participation_rate).toBe(0);
-      expect(result.actions_implemented_rate).toBe(0);
+      expect(result.participation_rate).toBeNull(); // fab-0.
+      expect(result.actions_implemented_rate).toBeNull(); // fab-0.
       expect(result.topics_raised).toBe(0);
-      expect(result.satisfaction_rate).toBe(0);
+      expect(result.satisfaction_rate).toBeNull(); // fab-0.
       expect(result.consultations_this_quarter).toBe(0);
     });
 
@@ -316,7 +316,7 @@ describe("computeParticipationMetrics", () => {
 
     it("returns 0 participation_rate when totalChildren is 0", () => {
       const result = computeParticipationMetrics([], [], 0);
-      expect(result.participation_rate).toBe(0);
+      expect(result.participation_rate).toBeNull(); // fab-0.
     });
   });
 
@@ -377,7 +377,7 @@ describe("computeParticipationMetrics", () => {
         children_attended: [],
       });
       const result = computeParticipationMetrics([m], [], 0);
-      expect(result.avg_attendance_rate).toBe(0);
+      expect(result.avg_attendance_rate).toBeNull(); // fab-0.
     });
 
     it("aggregates attendance across multiple meetings", () => {
@@ -403,7 +403,7 @@ describe("computeParticipationMetrics", () => {
         children_attended: [],
       });
       const result = computeParticipationMetrics([m], [], 2);
-      expect(result.avg_attendance_rate).toBe(0);
+      expect(result.avg_attendance_rate).toBeNull(); // fab-0.
     });
 
     it("rounds to one decimal place", () => {
@@ -482,7 +482,7 @@ describe("computeParticipationMetrics", () => {
 
     it("returns 0 when totalChildren is 0", () => {
       const result = computeParticipationMetrics([], [], 0);
-      expect(result.participation_rate).toBe(0);
+      expect(result.participation_rate).toBeNull(); // fab-0.
     });
 
     it("includes consultation-only children in rate", () => {
@@ -522,7 +522,7 @@ describe("computeParticipationMetrics", () => {
         ],
       });
       const result = computeParticipationMetrics([m], [], 3);
-      expect(result.actions_implemented_rate).toBe(0);
+      expect(result.actions_implemented_rate).toBeNull(); // fab-0.
     });
 
     it("computes mixed rate correctly", () => {
@@ -541,7 +541,7 @@ describe("computeParticipationMetrics", () => {
     it("returns 0 when there are no actions", () => {
       const m = makeMeeting({ actions: [] });
       const result = computeParticipationMetrics([m], [], 3);
-      expect(result.actions_implemented_rate).toBe(0);
+      expect(result.actions_implemented_rate).toBeNull(); // fab-0.
     });
 
     it("excludes actions from non-completed meetings", () => {
@@ -552,7 +552,7 @@ describe("computeParticipationMetrics", () => {
         ],
       });
       const result = computeParticipationMetrics([m], [], 3);
-      expect(result.actions_implemented_rate).toBe(0);
+      expect(result.actions_implemented_rate).toBeNull(); // fab-0.
     });
   });
 
@@ -682,7 +682,7 @@ describe("computeParticipationMetrics", () => {
     it("returns 0% when none satisfied", () => {
       const c1 = makeConsultation({ id: "c-1", child_satisfied_with_response: false });
       const result = computeParticipationMetrics([], [c1], 3);
-      expect(result.satisfaction_rate).toBe(0);
+      expect(result.satisfaction_rate).toBeNull(); // fab-0.
     });
 
     it("computes mixed satisfaction correctly", () => {
@@ -702,7 +702,7 @@ describe("computeParticipationMetrics", () => {
     it("returns 0 when all satisfaction values null", () => {
       const c1 = makeConsultation({ id: "c-1", child_satisfied_with_response: null });
       const result = computeParticipationMetrics([], [c1], 3);
-      expect(result.satisfaction_rate).toBe(0);
+      expect(result.satisfaction_rate).toBeNull(); // fab-0.
     });
   });
 
@@ -1654,7 +1654,7 @@ describe("Edge cases", () => {
       children_attended: [],
     });
     const result = computeParticipationMetrics([m], [], 0);
-    expect(result.avg_attendance_rate).toBe(0);
+    expect(result.avg_attendance_rate).toBeNull(); // fab-0.
     expect(result.unique_children_participating).toBe(0);
   });
 
@@ -1675,7 +1675,7 @@ describe("Edge cases", () => {
     const m = makeMeeting({ status: "rescheduled" });
     const result = computeParticipationMetrics([m], [], 3);
     expect(result.meetings_this_quarter).toBe(0);
-    expect(result.avg_attendance_rate).toBe(0);
+    expect(result.avg_attendance_rate).toBeNull(); // fab-0.
     expect(result.topics_raised).toBe(0);
   });
 
