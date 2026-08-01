@@ -154,19 +154,19 @@ export interface ContactQualityResult {
   totalContacts: number;
   contactsByType: Record<ContactType, number>;
   outcomeDistribution: Record<ContactOutcome, number>;
-  positiveOutcomeRate: number;
-  averageMoodBefore: number;
-  averageMoodAfter: number;
-  moodUpliftRate: number;
-  averageParentEngagement: number;
+  positiveOutcomeRate: number | null;
+  averageMoodBefore: number | null;
+  averageMoodAfter: number | null;
+  moodUpliftRate: number | null;
+  averageParentEngagement: number | null;
   followUpNeededCount: number;
   followUpCompletedCount: number;
   followUpCompletionRate: number | null;   // null when no contact needed a follow-up
   childRefusalCount: number;
-  childRefusalRate: number;
+  childRefusalRate: number | null;
   parentNoShowCount: number;
-  parentNoShowRate: number;
-  averageDurationMinutes: number;
+  parentNoShowRate: number | null;
+  averageDurationMinutes: number | null;
   contactFrequencyPerChild: Record<string, number>;
   score: number;
 }
@@ -190,7 +190,7 @@ export interface FamilyPlanningResult {
   totalGoalsSet: number;
   totalGoalsAchieved: number;
   totalGoalsPartiallyAchieved: number;
-  goalAchievementRate: number;
+  goalAchievementRate: number | null;
   familyInvolvementRate: number;
   childInvolvementRate: number;
   professionalInvolvementRate: number;
@@ -222,15 +222,15 @@ export interface FamilyProfile {
     engagementLevel: EngagementLevel;
     contactCount: number;
     positiveContactRate: number;
-    averageEngagementScore: number;
+    averageEngagementScore: number | null;
     supportsProvided: number;
     feedbackGiven: number;
   }[];
   totalContacts: number;
   positiveContactRate: number;
-  averageMoodUplift: number;
+  averageMoodUplift: number | null;
   activeFamilyPlan: boolean;
-  goalAchievementRate: number;
+  goalAchievementRate: number | null;
 }
 
 export interface ParentalEngagementIntelligenceResult {
@@ -263,11 +263,11 @@ export function evaluateContactQuality(contacts: ContactRecord[]): ContactQualit
       totalContacts: 0,
       contactsByType: buildContactTypeMap(),
       outcomeDistribution: buildOutcomeMap(),
-      positiveOutcomeRate: 0,
-      averageMoodBefore: 0,
-      averageMoodAfter: 0,
-      moodUpliftRate: 0,
-      averageParentEngagement: 0,
+      positiveOutcomeRate: null,
+      averageMoodBefore: null,
+      averageMoodAfter: null,
+      moodUpliftRate: null,
+      averageParentEngagement: null,
       followUpNeededCount: 0,
       followUpCompletedCount: 0,
       followUpCompletionRate: null,
@@ -338,8 +338,8 @@ export function evaluateContactQuality(contacts: ContactRecord[]): ContactQualit
   // Frequency: at least some contacts exist — up to 6 points
   const avgContactsPerChild = Object.keys(contactFrequencyPerChild).length > 0
     ? Object.values(contactFrequencyPerChild).reduce((s, v) => s + v, 0) / Object.keys(contactFrequencyPerChild).length
-    : 0;
-  score += Math.min(6, avgContactsPerChild * 1.5);
+    : null;
+  score += Math.min(6, (avgContactsPerChild ?? 0) * 1.5);
 
   // Positive outcomes, mood uplift and follow-up completion — 20 points between
   // them. Follow-up drops out when nothing needed following up, and the other
@@ -474,7 +474,7 @@ export function evaluateFamilyPlanning(
       totalGoalsSet: 0,
       totalGoalsAchieved: 0,
       totalGoalsPartiallyAchieved: 0,
-      goalAchievementRate: 0,
+      goalAchievementRate: null,
       familyInvolvementRate: 0,
       childInvolvementRate: 0,
       professionalInvolvementRate: 0,
@@ -493,7 +493,7 @@ export function evaluateFamilyPlanning(
   const goalAchievementRate =
     totalGoalsSet > 0
       ? Math.round(((totalGoalsAchieved + totalGoalsPartiallyAchieved * 0.5) / totalGoalsSet) * 100)
-      : 0;
+      : null;
 
   const familyInvolvementRate = Math.round(
     (plans.filter((p) => p.familyInvolved).length / plans.length) * 100,
@@ -536,7 +536,7 @@ export function evaluateFamilyPlanning(
   let score = 0;
 
   // Goal achievement — up to 10 points
-  score += (goalAchievementRate / 100) * 10;
+  score += ((goalAchievementRate ?? 0) / 100) * 10;
 
   // Plan currency — up to 5 points
   const currencyRate = plans.length > 0 ? currentPlans / plans.length : 0;
@@ -732,13 +732,13 @@ export function buildFamilyProfiles(
       const averageEngagementScore =
         p.contacts.length > 0
           ? roundTo2(p.contacts.reduce((sum, c) => sum + c.parentEngagement, 0) / p.contacts.length)
-          : 0;
+          : null;
 
       return {
         parentId: p.parentId,
         parentName: p.parentName,
         relationship: p.relationship,
-        engagementLevel: assessEngagementLevel(p.contacts, averageEngagementScore),
+        engagementLevel: assessEngagementLevel(p.contacts, averageEngagementScore ?? 0),
         contactCount: p.contacts.length,
         positiveContactRate,
         averageEngagementScore,
@@ -756,7 +756,7 @@ export function buildFamilyProfiles(
     const averageMoodUplift =
       moodDiffs.length > 0
         ? roundTo2(moodDiffs.reduce((s, d) => s + d, 0) / moodDiffs.length)
-        : 0;
+        : null;
 
     const childPlans = plans.filter((p) => p.childId === childId);
     const activeFamilyPlan = childPlans.length > 0;
@@ -890,10 +890,10 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (cq.positiveOutcomeRate >= 70) {
+  if ((cq.positiveOutcomeRate ?? 0) >= 70) {
     strengths.push("High proportion of positive contact outcomes demonstrates effective family engagement");
   }
-  if (cq.moodUpliftRate >= 60) {
+  if ((cq.moodUpliftRate ?? 0) >= 60) {
     strengths.push("Children consistently show mood improvement following family contact");
   }
   if (meets(cq.followUpCompletionRate, 90) && cq.followUpNeededCount > 0) {
@@ -902,7 +902,7 @@ function generateStrengths(
   if (ps.effectiveRate >= 70) {
     strengths.push("Parental support interventions are showing positive effectiveness rates");
   }
-  if (fp.goalAchievementRate >= 60) {
+  if ((fp.goalAchievementRate ?? 0) >= 60) {
     strengths.push("Family plans are achieving or partially achieving the majority of set goals");
   }
   if (fp.familyInvolvementRate >= 80) {
@@ -925,7 +925,7 @@ function generateStrengths(
     );
   }
 
-  if (cq.parentNoShowRate === 0 && cq.totalContacts > 0) {
+  if ((cq.parentNoShowRate ?? 0) === 0 && cq.totalContacts > 0) {
     strengths.push("No parent no-shows recorded — all parents are attending scheduled contact");
   }
 
@@ -941,18 +941,18 @@ function generateAreasForImprovement(
 ): string[] {
   const areas: string[] = [];
 
-  if (cq.positiveOutcomeRate < 50 && cq.totalContacts > 0) {
+  if ((cq.positiveOutcomeRate ?? 0) < 50 && cq.totalContacts > 0) {
     areas.push("Positive contact outcome rate below 50% — review contact arrangements and support strategies");
   }
   if (below(cq.followUpCompletionRate, 70) && cq.followUpNeededCount > 0) {
     areas.push("Follow-up completion rate below 70% — embed systematic follow-up tracking");
   }
-  if (cq.childRefusalRate > 20) {
+  if ((cq.childRefusalRate ?? 0) > 20) {
     areas.push(
       `Child refusal rate at ${cq.childRefusalRate}% — explore reasons sensitively and ensure wishes and feelings are documented`,
     );
   }
-  if (cq.parentNoShowRate > 20) {
+  if ((cq.parentNoShowRate ?? 0) > 20) {
     areas.push(
       `Parent no-show rate at ${cq.parentNoShowRate}% — consider additional support to maintain contact commitment`,
     );
@@ -960,7 +960,7 @@ function generateAreasForImprovement(
   if (ps.effectiveRate < 50 && ps.totalSupports > 0) {
     areas.push("Support effectiveness below 50% — review and adjust support strategies");
   }
-  if (fp.goalAchievementRate < 40) {
+  if ((fp.goalAchievementRate ?? 0) < 40) {
     areas.push("Family plan goal achievement rate below 40% — review goal-setting approach and barriers");
   }
   if (fp.overduePlans > 0) {

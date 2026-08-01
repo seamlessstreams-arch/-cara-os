@@ -319,9 +319,9 @@ describe("evaluateContactQuality", () => {
   it("returns zeroed result for empty contacts", () => {
     const result = evaluateContactQuality([]);
     expect(result.totalContacts).toBe(0);
-    expect(result.positiveOutcomeRate).toBe(0);
-    expect(result.averageMoodBefore).toBe(0);
-    expect(result.averageMoodAfter).toBe(0);
+    expect(result.positiveOutcomeRate).toBeNull(); // fab-0.
+    expect(result.averageMoodBefore).toBeNull(); // fab-0.
+    expect(result.averageMoodAfter).toBeNull(); // fab-0.
     expect(result.score).toBe(0);
   });
 
@@ -592,7 +592,7 @@ describe("evaluateFamilyPlanning", () => {
   it("returns zeroed result for empty plans", () => {
     const result = evaluateFamilyPlanning([]);
     expect(result.totalPlans).toBe(0);
-    expect(result.goalAchievementRate).toBe(0);
+    expect(result.goalAchievementRate).toBeNull(); // fab-0.
     expect(result.score).toBe(0);
   });
 
@@ -667,7 +667,7 @@ describe("evaluateFamilyPlanning", () => {
   it("gives zero goal achievement when no goals set", () => {
     const plans = [makePlan({ goalsSet: 0, goalsAchieved: 0, goalsPartiallyAchieved: 0 })];
     const result = evaluateFamilyPlanning(plans, REFERENCE_DATE);
-    expect(result.goalAchievementRate).toBe(0);
+    expect(result.goalAchievementRate).toBeNull(); // fab-0.
   });
 
   it("gives 100% goal achievement when all achieved", () => {
