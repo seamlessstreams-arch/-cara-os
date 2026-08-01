@@ -362,12 +362,12 @@ function computeWorkforcePulse(activeStaff: StaffMemberInput[], input: StaffWell
   const { today, supervisions, wellbeing_checks, recognition_records, grievance_records } = input;
 
   const tenures = activeStaff.map((s) => monthsBetween(s.start_date, today));
-  const avgTenure = tenures.length > 0 ? Math.round(tenures.reduce((s, t) => s + t, 0) / tenures.length) : 0;
+  const avgTenure: number | null = tenures.length > 0 ? Math.round(tenures.reduce((s, t) => s + t, 0) / tenures.length) : null;
   const firstYear = tenures.filter((t) => t < 12).length;
 
   const shifts30d = input.shifts.filter((s) => withinDays(s.date, today, 30) && s.status !== "cancelled");
   const totalOvertime = shifts30d.reduce((s, sh) => s + sh.overtime_minutes, 0);
-  const avgOvertime = activeStaff.length > 0 ? Math.round(totalOvertime / activeStaff.length / 60 * 10) / 10 : 0;
+  const avgOvertime: number | null = activeStaff.length > 0 ? Math.round(totalOvertime / activeStaff.length / 60 * 10) / 10 : null;
 
   const noSup60d = activeStaff.filter((s) => {
     const sups = supervisions.filter((sv) => sv.staff_id === s.id && sv.status === "completed" && sv.actual_date);
@@ -377,13 +377,13 @@ function computeWorkforcePulse(activeStaff: StaffMemberInput[], input: StaffWell
   }).length;
 
   const staffWithWb = new Set(wellbeing_checks.map((w) => w.staff_id));
-  const wbCoverage = activeStaff.length > 0 ? Math.round((staffWithWb.size / activeStaff.length) * 100) : 0;
+  const wbCoverage: number | null = activeStaff.length > 0 ? Math.round((staffWithWb.size / activeStaff.length) * 100) : null;
 
   const rec90 = recognition_records.filter((r) => withinDays(r.date, today, 90)).length;
-  const recRate = activeStaff.length > 0 ? Math.round((rec90 / activeStaff.length) * 100) / 100 : 0;
+  const recRate: number | null = activeStaff.length > 0 ? Math.round((rec90 / activeStaff.length) * 100) / 100 : null;
 
   const grv90 = grievance_records.filter((g) => withinDays(g.date, today, 90)).length;
-  const grvRate = activeStaff.length > 0 ? Math.round((grv90 / activeStaff.length) * 100) / 100 : 0;
+  const grvRate: number | null = activeStaff.length > 0 ? Math.round((grv90 / activeStaff.length) * 100) / 100 : null;
 
   return {
     total_active_staff: activeStaff.length,
