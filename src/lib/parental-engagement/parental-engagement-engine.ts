@@ -221,7 +221,7 @@ export interface FamilyProfile {
     relationship: Relationship;
     engagementLevel: EngagementLevel;
     contactCount: number;
-    positiveContactRate: number;
+    positiveContactRate: number | null;
     averageEngagementScore: number | null;
     supportsProvided: number;
     feedbackGiven: number;
@@ -749,8 +749,8 @@ export function buildFamilyProfiles(
 
     const totalContacts = childContacts.length;
     const positiveContacts = childContacts.filter((c) => c.outcome === "positive").length;
-    const positiveContactRate =
-      totalContacts > 0 ? Math.round((positiveContacts / totalContacts) * 100) : 0;
+    const positiveContactRate: number | null =
+      totalContacts > 0 ? Math.round((positiveContacts / totalContacts) * 100) : null;
 
     const moodDiffs = childContacts.map((c) => c.childMoodAfter - c.childMoodBefore);
     const averageMoodUplift =
