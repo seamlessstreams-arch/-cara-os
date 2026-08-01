@@ -33,11 +33,11 @@ export interface DisciplinaryOverview {
   total_cases: number;
   open_cases: number;
   concluded_cases: number;
-  avg_days_to_resolution: number;
+  avg_days_to_resolution: number | null;
   lado_referrals: number;
   suspensions_active: number;
   cases_last_90_days: number;
-  support_offered_rate: number;
+  support_offered_rate: number | null;
 }
 
 export interface DisciplinaryCategoryBreakdown {
@@ -161,7 +161,7 @@ export function computeStaffDisciplinaryIntelligence(input: {
   const avgDaysToResolution =
     resolvedWithDays.length > 0
       ? Math.round(resolvedWithDays.reduce((sum, c) => sum + (c.days_to_resolution ?? 0), 0) / resolvedWithDays.length)
-      : 0;
+      : null;
 
   const ladoReferrals = cases.filter((c) => c.lado_referral).length;
   const suspensionsActive = openCases.filter((c) => c.suspension).length;
@@ -176,7 +176,7 @@ export function computeStaffDisciplinaryIntelligence(input: {
   );
   const formalWithSupport = formalCases.filter((c) => c.support_offered.length > 0);
   const supportOfferedRate =
-    formalCases.length > 0 ? Math.round((formalWithSupport.length / formalCases.length) * 100) : 0;
+    formalCases.length > 0 ? Math.round((formalWithSupport.length / formalCases.length) * 100) : null;
 
   const overview: DisciplinaryOverview = {
     total_cases: cases.length,
@@ -341,7 +341,7 @@ export function computeStaffDisciplinaryIntelligence(input: {
   }
 
   // WARNING: Average resolution time > 20 days
-  if (avgDaysToResolution > 20) {
+  if ((avgDaysToResolution ?? 0) > 20) {
     insights.push({
       severity: "warning",
       text: `Average resolution time of ${avgDaysToResolution} days exceeds 20-day target — procedural efficiency concern`,
@@ -377,7 +377,7 @@ export function computeStaffDisciplinaryIntelligence(input: {
   }
 
   // POSITIVE: Average resolution time <= 14 days
-  if (concludedCases.length > 0 && avgDaysToResolution > 0 && avgDaysToResolution <= 14) {
+  if (concludedCases.length > 0 && (avgDaysToResolution ?? 0) > 0 && (avgDaysToResolution ?? 0) <= 14) {
     insights.push({
       severity: "positive",
       text: `Average resolution time of ${avgDaysToResolution} days — efficient disciplinary process`,

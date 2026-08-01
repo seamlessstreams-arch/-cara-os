@@ -48,14 +48,14 @@ export interface GoalStatusProfile {
   at_risk: number;
   achieved: number;
   paused: number;
-  achievement_rate: number; // % achieved of total
-  active_rate: number; // % in_progress + on_track of total
+  achievement_rate: number | null; // % achieved of total
+  active_rate: number | null; // % in_progress + on_track of total
 }
 
 export interface AreaCoverageProfile {
   areas_covered: number;
   total_possible_areas: number;
-  coverage_rate: number; // %
+  coverage_rate: number | null; // %
   area_distribution: Record<string, number>; // area → count
   gaps: string[]; // areas with 0 goals
 }
@@ -63,19 +63,19 @@ export interface AreaCoverageProfile {
 export interface ChildCoverageProfile {
   children_with_goals: number;
   total_children: number;
-  coverage_rate: number;
+  coverage_rate: number | null;
   goals_per_child: Record<string, number>; // child_id → goal count
   children_without_goals: number;
 }
 
 export interface ProgressProfile {
-  avg_percent_complete: number;
+  avg_percent_complete: number | null;
   goals_overdue: number; // target_date past and not achieved
   goals_with_reviews: number;
-  review_rate: number; // % with review_date populated
+  review_rate: number | null; // % with review_date populated
   reviews_overdue: number; // review_date > 30 days ago
   goals_with_actions: number;
-  action_coverage_rate: number; // % with at least 1 action
+  action_coverage_rate: number | null; // % with at least 1 action
 }
 
 export interface Insight {
@@ -92,7 +92,7 @@ export interface Recommendation {
 
 export interface HomeTransitionPlanningResult {
   transition_rating: TransitionRating;
-  transition_score: number;
+  transition_score: number | null;
   headline: string;
   goal_status: GoalStatusProfile;
   area_coverage: AreaCoverageProfile;
@@ -235,7 +235,7 @@ export function computeHomeTransitionPlanning(
   const avgPercent =
     percentages.length > 0
       ? Math.round(percentages.reduce((s, n) => s + n, 0) / percentages.length)
-      : 0;
+      : null;
 
   // Overdue: target_date is past AND status is not achieved/paused
   const overdue = transition_goals.filter(
@@ -274,10 +274,10 @@ export function computeHomeTransitionPlanning(
   // mod1: Child coverage (±5)
   // All children should have transition goals
   const mod1 =
-    child_coverage.coverage_rate >= 100 ? 5 :
-    child_coverage.coverage_rate >= 75 ? 3 :
-    child_coverage.coverage_rate >= 50 ? 1 :
-    child_coverage.coverage_rate > 0 ? -2 : -5;
+    (child_coverage.coverage_rate ?? 0) >= 100 ? 5 :
+    (child_coverage.coverage_rate ?? 0) >= 75 ? 3 :
+    (child_coverage.coverage_rate ?? 0) >= 50 ? 1 :
+    (child_coverage.coverage_rate ?? 0) > 0 ? -2 : -5;
   score += mod1;
 
   // mod2: Area coverage breadth (±4)
@@ -290,17 +290,17 @@ export function computeHomeTransitionPlanning(
 
   // mod3: Goal achievement rate (±4)
   const mod3 =
-    goal_status.achievement_rate >= 40 ? 4 :
-    goal_status.achievement_rate >= 20 ? 2 :
-    goal_status.achievement_rate >= 10 ? 0 : -2;
+    (goal_status.achievement_rate ?? 0) >= 40 ? 4 :
+    (goal_status.achievement_rate ?? 0) >= 20 ? 2 :
+    (goal_status.achievement_rate ?? 0) >= 10 ? 0 : -2;
   score += mod3;
 
   // mod4: Active engagement (±4)
   // High proportion of goals actively being worked on
   const mod4 =
-    goal_status.active_rate >= 50 ? 4 :
-    goal_status.active_rate >= 30 ? 2 :
-    goal_status.active_rate >= 15 ? 0 : -3;
+    (goal_status.active_rate ?? 0) >= 50 ? 4 :
+    (goal_status.active_rate ?? 0) >= 30 ? 2 :
+    (goal_status.active_rate ?? 0) >= 15 ? 0 : -3;
   score += mod4;
 
   // mod5: At-risk goals (±3)
@@ -314,17 +314,17 @@ export function computeHomeTransitionPlanning(
   // mod6: Review compliance (±3)
   // Goals should have recent reviews
   const mod6 =
-    progress.review_rate >= 80 ? 3 :
-    progress.review_rate >= 60 ? 1 :
-    progress.review_rate >= 40 ? 0 : -2;
+    (progress.review_rate ?? 0) >= 80 ? 3 :
+    (progress.review_rate ?? 0) >= 60 ? 1 :
+    (progress.review_rate ?? 0) >= 40 ? 0 : -2;
   score += mod6;
 
   // mod7: Action planning (±3)
   // Every goal should have concrete actions
   const mod7 =
-    progress.action_coverage_rate >= 90 ? 3 :
-    progress.action_coverage_rate >= 70 ? 1 :
-    progress.action_coverage_rate >= 50 ? 0 : -2;
+    (progress.action_coverage_rate ?? 0) >= 90 ? 3 :
+    (progress.action_coverage_rate ?? 0) >= 70 ? 1 :
+    (progress.action_coverage_rate ?? 0) >= 50 ? 0 : -2;
   score += mod7;
 
   // mod8: Overdue goals (±4)
@@ -342,15 +342,15 @@ export function computeHomeTransitionPlanning(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (child_coverage.coverage_rate >= 100)
+  if ((child_coverage.coverage_rate ?? 0) >= 100)
     strengths.push("All children have transition planning goals in place — excellent Reg 14 compliance.");
   if (area_coverage.areas_covered >= 6)
     strengths.push(`Transition planning covers ${area_coverage.areas_covered} of ${ALL_AREAS.length} life areas — holistic approach.`);
-  if (goal_status.achievement_rate >= 30 && statusCounts.achieved > 0)
+  if ((goal_status.achievement_rate ?? 0) >= 30 && statusCounts.achieved > 0)
     strengths.push(`${statusCounts.achieved} goal(s) achieved (${goal_status.achievement_rate}%) — tangible progress towards independence.`);
-  if (progress.action_coverage_rate >= 90)
+  if ((progress.action_coverage_rate ?? 0) >= 90)
     strengths.push("All goals have concrete action plans — clear pathways to achievement.");
-  if (progress.review_rate >= 80)
+  if ((progress.review_rate ?? 0) >= 80)
     strengths.push(`${progress.review_rate}% of goals have been reviewed — strong oversight.`);
   if (overdueRate === 0 && transition_goals.length > 0)
     strengths.push("No overdue goals — all transition targets remain on schedule.");
@@ -414,7 +414,7 @@ export function computeHomeTransitionPlanning(
       regulatory_ref: "Reg 14(2)(b)",
     });
 
-  if (progress.action_coverage_rate < 90)
+  if ((progress.action_coverage_rate ?? 0) < 90)
     recommendations.push({
       rank: rank++,
       recommendation: "Ensure all goals have documented action steps for accountability.",
@@ -437,7 +437,7 @@ export function computeHomeTransitionPlanning(
       severity: "warning",
     });
 
-  if (avgPercent >= 40 && statusCounts.achieved > 0)
+  if ((avgPercent ?? 0) >= 40 && statusCounts.achieved > 0)
     insights.push({
       text: `Average goal completion is ${avgPercent}% with ${statusCounts.achieved} achieved. This demonstrates meaningful, evidence-based progress towards independence.`,
       severity: "positive",

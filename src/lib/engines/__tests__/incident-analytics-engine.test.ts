@@ -151,7 +151,7 @@ describe("computeIncidentAnalytics — empty input", () => {
   it("returns zero totals", () => {
     expect(result.summary.total_30d).toBe(0);
     expect(result.summary.total_90d).toBe(0);
-    expect(result.summary.average_per_week_30d).toBe(0);
+    expect(result.summary.average_per_week_30d).toBeNull();;
   });
 
   it("returns stable trend", () => {

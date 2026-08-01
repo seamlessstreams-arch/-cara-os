@@ -210,7 +210,7 @@ export interface DomainScore {
   domain: string;
   domain_label: string;
   rag: DomainRAG;
-  score: number;
+  score: number | null;
   trend: "improving" | "stable" | "declining";
   summary: string;
 }
@@ -268,7 +268,7 @@ export interface OutcomesProfile {
   targets_on_track: number;
   targets_off_track: number;
   targets_achieved: number;
-  average_progress_pct: number;
+  average_progress_pct: number | null;
   domains_covered: string[];
   yp_participation_rate: number | null;
 }
@@ -563,7 +563,7 @@ function computeOutcomes(input: Child360Input): OutcomesProfile {
   });
   const avgProgress = progressPcts.length > 0
     ? Math.round(progressPcts.reduce((s, p) => s + p, 0) / progressPcts.length)
-    : 0;
+    : null;
 
   const domains = [...new Set(outcome_targets.map((t) => t.domain))];
 
@@ -694,7 +694,7 @@ function buildDomainScores(
   scores.push({
     domain: "outcomes",
     domain_label: "Outcomes & Progress",
-    rag: outcomes.total_active_targets === 0 ? "amber" : outScore >= 60 ? "green" : outScore >= 30 ? "amber" : "red",
+    rag: outcomes.total_active_targets === 0 ? "amber" : (outScore ?? 0) >= 60 ? "green" : (outScore ?? 0) >= 30 ? "amber" : "red",
     score: outScore,
     trend: outcomes.targets_on_track > outcomes.targets_off_track ? "improving" :
            outcomes.targets_off_track > outcomes.targets_on_track ? "declining" : "stable",
@@ -778,7 +778,7 @@ function computeEngagementScore(e: EngagementProfile): number {
 function computeOverallWellbeing(domains: DomainScore[], safety: SafetyProfile): OverallWellbeingLevel {
   const redCount = domains.filter((d) => d.rag === "red").length;
   const amberCount = domains.filter((d) => d.rag === "amber").length;
-  const avgScore = Math.round(domains.reduce((s, d) => s + d.score, 0) / domains.length);
+  const avgScore = Math.round(domains.reduce((s, d) => s + (d.score ?? 0), 0) / domains.length);
 
   if (safety.risk_level === "critical" || redCount >= 3) return "critical";
   if (safety.risk_level === "high" || redCount >= 2) return "concerning";

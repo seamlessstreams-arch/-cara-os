@@ -128,19 +128,19 @@ export interface SustainabilityRecommendation {
 
 export interface EnvironmentalSustainabilityEcoAwarenessResult {
   sustainability_rating: SustainabilityRating;
-  sustainability_score: number;
+  sustainability_score: number | null;
   headline: string;
   total_energy_records: number;
   total_recycling_records: number;
   total_eco_education_records: number;
   total_sustainability_practices: number;
   total_carbon_records: number;
-  energy_efficiency_rate: number;
-  recycling_compliance_rate: number;
-  eco_education_engagement_rate: number;
-  sustainability_practice_score: number;
-  carbon_awareness_rate: number;
-  child_participation_rate: number;
+  energy_efficiency_rate: number | null;
+  recycling_compliance_rate: number | null;
+  eco_education_engagement_rate: number | null;
+  sustainability_practice_score: number | null;
+  carbon_awareness_rate: number | null;
+  child_participation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SustainabilityRecommendation[];
@@ -351,7 +351,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   const avgEffectiveness =
     implementedPractices > 0
       ? Math.round((effectivenessSum / implementedPractices) * 100) / 100
-      : 0;
+      : null;
 
   // Compute composite sustainability_practice_score
   // Average of implementation rate, documentation rate, children involvement, staff training
@@ -360,7 +360,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
       ? Math.round(
           (practiceImplementationRate + documentedRate + childrenInvolvedRate + staffTrainedRate) / 4,
         )
-      : 0;
+      : null;
 
   // --- Carbon footprint metrics ---
   const totalCarbonRecords = carbon_footprint_records.length;
@@ -426,8 +426,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   else if (ecoEducationEngagementRate >= 70) score += 1;
 
   // --- Bonus 4: sustainabilityPracticeScore (>=80: +3, >=60: +1) ---
-  if (sustainabilityPracticeScore >= 80) score += 3;
-  else if (sustainabilityPracticeScore >= 60) score += 1;
+  if ((sustainabilityPracticeScore ?? 0) >= 80) score += 3;
+  else if ((sustainabilityPracticeScore ?? 0) >= 60) score += 1;
 
   // --- Bonus 5: carbonAwarenessRate (>=90: +3, >=70: +1) ---
   if (carbonAwarenessRate >= 90) score += 3;
@@ -446,8 +446,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   else if (savingMeasuresRate >= 70) score += 1;
 
   // --- Bonus 9: avgEffectiveness (>=4.0: +2, >=3.0: +1) ---
-  if (avgEffectiveness >= 4.0) score += 2;
-  else if (avgEffectiveness >= 3.0) score += 1;
+  if ((avgEffectiveness ?? 0) >= 4.0) score += 2;
+  else if ((avgEffectiveness ?? 0) >= 3.0) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
@@ -501,11 +501,11 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     );
   }
 
-  if (sustainabilityPracticeScore >= 80 && totalSustainabilityPractices > 0) {
+  if ((sustainabilityPracticeScore ?? 0) >= 80 && totalSustainabilityPractices > 0) {
     strengths.push(
       `Sustainability practice score at ${sustainabilityPracticeScore}% — practices are well-implemented, documented, and involve both staff and children.`,
     );
-  } else if (sustainabilityPracticeScore >= 60 && totalSustainabilityPractices > 0) {
+  } else if ((sustainabilityPracticeScore ?? 0) >= 60 && totalSustainabilityPractices > 0) {
     strengths.push(
       `Sustainability practice score at ${sustainabilityPracticeScore}% — the home has a reasonable framework of sustainability practices in place.`,
     );
@@ -551,11 +551,11 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     );
   }
 
-  if (avgEffectiveness >= 4.0 && implementedPractices > 0) {
+  if ((avgEffectiveness ?? 0) >= 4.0 && implementedPractices > 0) {
     strengths.push(
       `Sustainability practices averaging ${avgEffectiveness}/5 effectiveness — implemented practices are delivering measurable environmental benefits.`,
     );
-  } else if (avgEffectiveness >= 3.0 && implementedPractices > 0) {
+  } else if ((avgEffectiveness ?? 0) >= 3.0 && implementedPractices > 0) {
     strengths.push(
       `Sustainability practices averaging ${avgEffectiveness}/5 effectiveness — practices are having a positive environmental impact.`,
     );
@@ -639,11 +639,11 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     );
   }
 
-  if (sustainabilityPracticeScore < 40 && totalSustainabilityPractices > 0) {
+  if ((sustainabilityPracticeScore ?? 0) < 40 && totalSustainabilityPractices > 0) {
     concerns.push(
       `Sustainability practice score at only ${sustainabilityPracticeScore}% — sustainability practices are poorly implemented, undocumented, or failing to involve staff and children.`,
     );
-  } else if (sustainabilityPracticeScore < 60 && sustainabilityPracticeScore >= 40 && totalSustainabilityPractices > 0) {
+  } else if ((sustainabilityPracticeScore ?? 0) < 60 && (sustainabilityPracticeScore ?? 0) >= 40 && totalSustainabilityPractices > 0) {
     concerns.push(
       `Sustainability practice score at ${sustainabilityPracticeScore}% — implementation, documentation, or involvement of staff and children in sustainability practices needs improvement.`,
     );
@@ -970,8 +970,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    sustainabilityPracticeScore >= 40 &&
-    sustainabilityPracticeScore < 60 &&
+    (sustainabilityPracticeScore ?? 0) >= 40 &&
+    (sustainabilityPracticeScore ?? 0) < 60 &&
     totalSustainabilityPractices > 0
   ) {
     insights.push({
@@ -1025,8 +1025,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    avgEffectiveness >= 2.0 &&
-    avgEffectiveness < 3.0 &&
+    (avgEffectiveness ?? 0) >= 2.0 &&
+    (avgEffectiveness ?? 0) < 3.0 &&
     implementedPractices > 0
   ) {
     insights.push({
@@ -1133,8 +1133,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    sustainabilityPracticeScore >= 80 &&
-    avgEffectiveness >= 4.0 &&
+    (sustainabilityPracticeScore ?? 0) >= 80 &&
+    (avgEffectiveness ?? 0) >= 4.0 &&
     totalSustainabilityPractices > 0
   ) {
     insights.push({

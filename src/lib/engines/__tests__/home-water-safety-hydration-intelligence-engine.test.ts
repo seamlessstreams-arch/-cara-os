@@ -273,14 +273,14 @@ describe("pct(0,0) = 0 — zero-denominator safety", () => {
     const r = run({
       water_temperature_records: [makeTemp()],
     });
-    expect(r.swimming_competency_rate).toBe(0);
+    expect(r.swimming_competency_rate).toBeNull();;
   });
 
   it("water_activity_safety_rate is 0 when no activity records", () => {
     const r = run({
       water_temperature_records: [makeTemp()],
     });
-    expect(r.water_activity_safety_rate).toBe(0);
+    expect(r.water_activity_safety_rate).toBeNull();;
   });
 
   it("child_awareness_rate is 0 when no relevant records contribute", () => {
@@ -1142,7 +1142,7 @@ describe("swimming_competency_rate — composite", () => {
 
   it("0% when no swimming records", () => {
     const r = run({ water_temperature_records: [makeTemp()] });
-    expect(r.swimming_competency_rate).toBe(0);
+    expect(r.swimming_competency_rate).toBeNull();;
   });
 });
 

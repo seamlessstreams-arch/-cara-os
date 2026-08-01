@@ -954,7 +954,7 @@ describe("Metric calculations", () => {
 
   it("average_strengths_per_area: 0 when no areas", () => {
     const r = computeSelfEvaluationImprovement(baseInput({ areas: [] }));
-    expect(r.average_strengths_per_area).toBe(0);
+    expect(r.average_strengths_per_area).toBeNull();;
   });
 
   it("total_areas matches length of areas array", () => {

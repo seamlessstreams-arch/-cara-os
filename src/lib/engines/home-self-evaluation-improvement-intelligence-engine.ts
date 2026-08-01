@@ -35,14 +35,14 @@ export type SelfEvaluationRating =
 
 export interface SelfEvaluationResult {
   evaluation_rating: SelfEvaluationRating;
-  evaluation_score: number;
+  evaluation_score: number | null;
   headline: string;
   total_areas: number;
-  good_or_outstanding_rate: number;
-  action_completion_rate: number;
-  evidence_coverage_rate: number;
+  good_or_outstanding_rate: number | null;
+  action_completion_rate: number | null;
+  evidence_coverage_rate: number | null;
   areas_with_development_plans: number;
-  average_strengths_per_area: number;
+  average_strengths_per_area: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -115,7 +115,7 @@ export function computeSelfEvaluationImprovement(
   const withDevAreas = areas.filter(a => a.development_areas_count > 0).length;
 
   const totalStrengths = areas.reduce((s, a) => s + a.strengths_count, 0);
-  const avgStrengths = total > 0 ? Math.round((totalStrengths / total) * 10) / 10 : 0;
+  const avgStrengths = total > 0 ? Math.round((totalStrengths / total) * 10) / 10 : null;
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -162,9 +162,9 @@ export function computeSelfEvaluationImprovement(
   if (total === 0) {
     score -= 1;
   } else {
-    if (avgStrengths >= 5) score += 4;
-    else if (avgStrengths >= 3) score += 1;
-    else if (avgStrengths < 1) score -= 4;
+    if ((avgStrengths ?? 0) >= 5) score += 4;
+    else if ((avgStrengths ?? 0) >= 3) score += 1;
+    else if ((avgStrengths ?? 0) < 1) score -= 4;
   }
 
   // Modifier 6: Area coverage breadth
@@ -200,7 +200,7 @@ export function computeSelfEvaluationImprovement(
   if (actionCompletionRate >= 90 && totalActions > 0) strengths.push("Improvement actions are completed promptly — self-evaluation drives real change");
   if (evidenceCoverageRate >= 90 && total > 0) strengths.push("Every evaluated area is supported by documented evidence");
   if (withDevAreas >= total && total > 0) strengths.push("All areas include honest identification of development needs — a mature improvement culture");
-  if (avgStrengths >= 5 && total > 0) strengths.push("Strengths are richly documented with detailed examples of good practice");
+  if ((avgStrengths ?? 0) >= 5 && total > 0) strengths.push("Strengths are richly documented with detailed examples of good practice");
   if (total >= 5) strengths.push("Comprehensive self-evaluation covers all key domains of children's home practice");
 
   // ── Concerns ───────────────────────────────────────────────────────────
@@ -210,7 +210,7 @@ export function computeSelfEvaluationImprovement(
   if (actionCompletionRate < 50 && totalActions > 0) concerns.push("Improvement actions are not being completed — self-evaluation lacks follow-through");
   if (evidenceCoverageRate < 50 && total > 0) concerns.push("Most evaluated areas lack evidence — self-grades cannot be substantiated");
   if (withDevAreas === 0 && total > 0) concerns.push("No development areas identified — this suggests complacency rather than genuine reflection");
-  if (avgStrengths < 1 && total > 0) concerns.push("Strengths are poorly documented — good practice is not being captured");
+  if ((avgStrengths ?? 0) < 1 && total > 0) concerns.push("Strengths are poorly documented — good practice is not being captured");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: SelfEvaluationResult["recommendations"] = [];

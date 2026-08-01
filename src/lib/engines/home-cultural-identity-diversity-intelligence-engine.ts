@@ -118,18 +118,18 @@ export interface CulturalIdentityRecommendation {
 
 export interface CulturalIdentityDiversityResult {
   identity_rating: CulturalIdentityRating;
-  identity_score: number;
+  identity_score: number | null;
   headline: string;
   total_cultural_plans: number;
-  cultural_plan_coverage_rate: number;
-  mentor_assignment_rate: number;
-  cultural_visits_per_child: number;
-  diversity_participation_rate: number;
-  life_story_work_rate: number;
-  religious_observance_rate: number;
-  identity_review_timeliness_rate: number;
-  personal_passport_currency_rate: number;
-  child_voice_in_plans_rate: number;
+  cultural_plan_coverage_rate: number | null;
+  mentor_assignment_rate: number | null;
+  cultural_visits_per_child: number | null;
+  diversity_participation_rate: number | null;
+  life_story_work_rate: number | null;
+  religious_observance_rate: number | null;
+  identity_review_timeliness_rate: number | null;
+  personal_passport_currency_rate: number | null;
+  child_voice_in_plans_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: CulturalIdentityRecommendation[];
@@ -266,7 +266,7 @@ export function computeCulturalIdentityDiversity(
   const culturalVisitsPerChild =
     total_children > 0
       ? Math.round((totalVisits / total_children) * 100) / 100
-      : 0;
+      : null;
 
   // --- Diversity event participation ---
   // Collect unique child IDs who participated in any diversity event
@@ -333,8 +333,8 @@ export function computeCulturalIdentityDiversity(
   else if (mentorAssignmentRate >= 80) score += 1;
 
   // --- Bonus: culturalVisitFrequency (>=4 per child: +3, >=2: +1) ---
-  if (culturalVisitsPerChild >= 4) score += 3;
-  else if (culturalVisitsPerChild >= 2) score += 1;
+  if ((culturalVisitsPerChild ?? 0) >= 4) score += 3;
+  else if ((culturalVisitsPerChild ?? 0) >= 2) score += 1;
 
   // --- Bonus: diversityEventParticipation (>=90: +3, >=70: +1) ---
   if (diversityParticipationRate >= 90) score += 3;
@@ -402,11 +402,11 @@ export function computeCulturalIdentityDiversity(
     );
   }
 
-  if (culturalVisitsPerChild >= 4) {
+  if ((culturalVisitsPerChild ?? 0) >= 4) {
     strengths.push(
       `${culturalVisitsPerChild} cultural visits per child — rich programme of cultural experiences enabling children to explore and celebrate their heritage.`,
     );
-  } else if (culturalVisitsPerChild >= 2) {
+  } else if ((culturalVisitsPerChild ?? 0) >= 2) {
     strengths.push(
       `${culturalVisitsPerChild} cultural visits per child — children are regularly accessing cultural activities and experiences.`,
     );
@@ -526,11 +526,11 @@ export function computeCulturalIdentityDiversity(
     );
   }
 
-  if (culturalVisitsPerChild < 1 && total_children > 0) {
+  if ((culturalVisitsPerChild ?? 0) < 1 && total_children > 0) {
     concerns.push(
       `Only ${culturalVisitsPerChild} cultural visits per child — children are not accessing sufficient cultural activities and experiences to support their identity development.`,
     );
-  } else if (culturalVisitsPerChild >= 1 && culturalVisitsPerChild < 2 && total_children > 0) {
+  } else if ((culturalVisitsPerChild ?? 0) >= 1 && (culturalVisitsPerChild ?? 0) < 2 && total_children > 0) {
     concerns.push(
       `Cultural visits averaging ${culturalVisitsPerChild} per child — more frequent cultural experiences are needed to sustain identity development.`,
     );
@@ -693,7 +693,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (culturalVisitsPerChild < 2 && total_children > 0) {
+  if ((culturalVisitsPerChild ?? 0) < 2 && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -830,7 +830,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (culturalVisitsPerChild >= 1 && culturalVisitsPerChild < 2 && total_children > 0) {
+  if ((culturalVisitsPerChild ?? 0) >= 1 && (culturalVisitsPerChild ?? 0) < 2 && total_children > 0) {
     insights.push({
       text: `Cultural visits averaging ${culturalVisitsPerChild} per child — children benefit from more frequent, varied cultural experiences to deepen their connection to their heritage.`,
       severity: "warning",
@@ -937,7 +937,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (culturalVisitsPerChild >= 4 && total_children > 0) {
+  if ((culturalVisitsPerChild ?? 0) >= 4 && total_children > 0) {
     insights.push({
       text: `${culturalVisitsPerChild} cultural visits per child demonstrates an exceptionally rich programme of cultural experiences — children are immersed in activities that connect them to their heritage and broaden their cultural understanding.`,
       severity: "positive",

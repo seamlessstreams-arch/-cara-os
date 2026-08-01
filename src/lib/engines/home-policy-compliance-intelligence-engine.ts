@@ -41,11 +41,11 @@ export interface ComplianceProfile {
   due_review_count: number;
   draft_count: number;
   archived_count: number;
-  currency_rate: number;
+  currency_rate: number | null;
 }
 
 export interface AcknowledgementProfile {
-  avg_acknowledgement_rate: number;
+  avg_acknowledgement_rate: number | null;
   fully_acknowledged_count: number;
   below_threshold_count: number;    // policies where ack < 80%
 }
@@ -62,9 +62,9 @@ export interface CoverageProfile {
 }
 
 export interface GovernanceProfile {
-  statutory_basis_rate: number;
-  key_points_rate: number;
-  avg_days_since_review: number;
+  statutory_basis_rate: number | null;
+  key_points_rate: number | null;
+  avg_days_since_review: number | null;
 }
 
 export interface PolicyInsight {
@@ -81,7 +81,7 @@ export interface PolicyRecommendation {
 
 export interface HomePolicyResult {
   policy_rating: PolicyRating;
-  policy_score: number;
+  policy_score: number | null;
   headline: string;
   compliance_profile: ComplianceProfile;
   acknowledgement_profile: AcknowledgementProfile;
@@ -194,7 +194,7 @@ export function computeHomePolicyCompliance(
     if (rate < 80) belowThreshold++;
   }
 
-  const avgAckRate = active.length > 0 ? Math.round(totalAckRate / active.length) : 0;
+  const avgAckRate = active.length > 0 ? Math.round(totalAckRate / active.length) : null;
 
   const acknowledgementProfile: AcknowledgementProfile = {
     avg_acknowledgement_rate: avgAckRate,
@@ -237,7 +237,7 @@ export function computeHomePolicyCompliance(
   }
   const avgDaysSinceReview = reviewedCount > 0
     ? Math.round(totalDaysSinceReview / reviewedCount)
-    : 0;
+    : null;
 
   const governanceProfile: GovernanceProfile = {
     statutory_basis_rate: statutoryRate,
@@ -265,8 +265,8 @@ export function computeHomePolicyCompliance(
   else score -= 3;
 
   // 3. Staff acknowledgement avg (±4)
-  if (avgAckRate >= 90) score += 4;
-  else if (avgAckRate >= 75) score += 2;
+  if ((avgAckRate ?? 0) >= 90) score += 4;
+  else if ((avgAckRate ?? 0) >= 75) score += 2;
   else score -= 2;
 
   // 4. Fully acknowledged policies (±3)
@@ -303,7 +303,7 @@ export function computeHomePolicyCompliance(
   const strengths: string[] = [];
   if (currencyRate >= 90) strengths.push(`${currencyRate}% of policies current — well-maintained policy framework.`);
   if (overdueCount === 0) strengths.push("No overdue policies — review schedule is being followed.");
-  if (avgAckRate >= 90) strengths.push(`${avgAckRate}% average staff acknowledgement — staff are reading and signing policies.`);
+  if ((avgAckRate ?? 0) >= 90) strengths.push(`${(avgAckRate ?? 0)}% average staff acknowledgement — staff are reading and signing policies.`);
   if (fullyAckRate >= 90 && active.length > 0) strengths.push(`${fullyAck} of ${active.length} policies fully acknowledged by all staff.`);
   if (coveredRequired >= 7) strengths.push(`All ${coveredRequired} required regulatory areas covered — comprehensive policy framework.`);
   if (statutoryRate >= 100) strengths.push("All policies reference statutory basis — strong regulatory alignment.");
@@ -313,7 +313,7 @@ export function computeHomePolicyCompliance(
   const concerns: string[] = [];
   if (overdueCount > 0) concerns.push(`${overdueCount} polic${overdueCount > 1 ? "ies" : "y"} overdue for review — immediate action needed.`);
   if (currencyRate < 75) concerns.push(`Only ${currencyRate}% of policies are current — significant policy maintenance gap.`);
-  if (avgAckRate < 75) concerns.push(`Only ${avgAckRate}% average staff acknowledgement — staff may not be aware of current policies.`);
+  if ((avgAckRate ?? 0) < 75) concerns.push(`Only ${(avgAckRate ?? 0)}% average staff acknowledgement — staff may not be aware of current policies.`);
   if (belowThreshold > 0) concerns.push(`${belowThreshold} polic${belowThreshold > 1 ? "ies" : "y"} with less than 80% staff acknowledgement.`);
   if (!safeguardingExists) concerns.push("No safeguarding policy found — this is a critical governance failure.");
   if (safeguardingExists && !safeguardingCurrent) concerns.push("Safeguarding policy is overdue for review — this must be addressed immediately.");
@@ -332,7 +332,7 @@ export function computeHomePolicyCompliance(
   if (overdueCount > 0) {
     recs.push({ rank: rank++, recommendation: `Review ${overdueCount} overdue polic${overdueCount > 1 ? "ies" : "y"} — schedule reviews and assign owners for each.`, urgency: "immediate", regulatory_ref: "Reg 35" });
   }
-  if (avgAckRate < 75) {
+  if ((avgAckRate ?? 0) < 75) {
     recs.push({ rank: rank++, recommendation: "Improve staff policy acknowledgement — include policy reading in supervision and induction.", urgency: "soon", regulatory_ref: "Reg 35" });
   }
   if (coveredRequired < 5) {
@@ -342,7 +342,7 @@ export function computeHomePolicyCompliance(
   // ── Insights ──────────────────────────────────────────────────────
   const insights: PolicyInsight[] = [];
 
-  if (overdueCount === 0 && avgAckRate >= 90 && coveredRequired >= 7) {
+  if (overdueCount === 0 && (avgAckRate ?? 0) >= 90 && coveredRequired >= 7) {
     insights.push({ text: `All policies current, ${avgAckRate}% staff acknowledgement, and ${coveredRequired} regulatory areas covered. This evidences outstanding governance — Ofsted will see a well-led home where policies are living documents, not filed and forgotten.`, severity: "positive" });
   }
   if (overdueCount >= 2) {
@@ -351,10 +351,10 @@ export function computeHomePolicyCompliance(
   if (!safeguardingExists || (safeguardingExists && !safeguardingCurrent)) {
     insights.push({ text: "The safeguarding policy is missing or overdue. This is the most critical policy in any children's home — Ofsted will view this as a serious leadership and management failure.", severity: "critical" });
   }
-  if (avgAckRate < 75) {
+  if ((avgAckRate ?? 0) < 75) {
     insights.push({ text: `Only ${avgAckRate}% staff acknowledgement rate. Policies are only effective if staff know them. Ofsted may ask individual staff about policies during inspection — low acknowledgement rates leave the home vulnerable.`, severity: "warning" });
   }
-  if (belowThreshold > 0 && avgAckRate >= 75) {
+  if (belowThreshold > 0 && (avgAckRate ?? 0) >= 75) {
     insights.push({ text: `${belowThreshold} polic${belowThreshold > 1 ? "ies have" : "y has"} below 80% staff acknowledgement. While overall rates are reasonable, specific gaps may leave some staff unaware of important procedures.`, severity: "warning" });
   }
 

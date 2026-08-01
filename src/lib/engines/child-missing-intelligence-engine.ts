@@ -69,10 +69,10 @@ export interface RiskProfile {
 // Note: `avg_ri_delay_days` widened to `number | null` in the fab-0 batch —
 // see [[project_fabricated_scores]]. Consumers must null-guard.
 export interface ResponseQuality {
-  return_interview_rate: number;     // % of returned episodes with RI completed
+  return_interview_rate: number | null;     // % of returned episodes with RI completed
   avg_ri_delay_days: number | null;  // null when no completed RIs to time; avg days between return and RI otherwise
-  police_reporting_rate: number;     // % reported to police when high/critical
-  la_notification_rate: number;      // % notified to LA
+  police_reporting_rate: number | null;     // % reported to police when high/critical
+  la_notification_rate: number | null;      // % notified to LA
 }
 
 export interface MissingPattern {
@@ -98,7 +98,7 @@ export interface ChildMissingResult {
   child_id: string;
   child_name: string;
   missing_risk: MissingRiskLevel;
-  missing_risk_score: number;        // 0-100 (higher = more concern)
+  missing_risk_score: number | null;        // 0-100 (higher = more concern)
   headline: string;
   frequency: FrequencyProfile;
   duration: DurationProfile;
@@ -114,7 +114,7 @@ export interface ChildMissingResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number {
+function daysAgo(today: string, date: string): number | null {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -122,7 +122,7 @@ function daysAgo(today: string, date: string): number {
 
 function isWithin(today: string, date: string, days: number): boolean {
   const da = daysAgo(today, date);
-  return da >= 0 && da <= days;
+  return (da ?? 0) >= 0 && (da ?? 0) <= days;
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -130,11 +130,11 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 function avg(values: number[]): number | null {
-  return values.length > 0 ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10 : null;
+  return values.length > 0  ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10  : null;
 }
 
-function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 0;
+function pct(n: number, d: number): number | null {
+  return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
 const RISK_ORDER: Record<string, number> = {
@@ -177,7 +177,7 @@ export function computeChildMissing(
   const recent90d = sorted.filter((e) => isWithin(today, e.date, 90));
   const older90d = sorted.filter((e) => {
     const da = daysAgo(today, e.date);
-    return da > 90 && da <= 180;
+    return (da ?? 0) > 90 && (da ?? 0) <= 180;
   });
 
   let frequencyTrend: FrequencyProfile["trend"];
@@ -271,7 +271,7 @@ export function computeChildMissing(
   for (const ep of riCompleted) {
     if (ep.return_interview_date) {
       const delay = daysAgo(ep.return_interview_date, ep.date);
-      if (delay >= 0) riDelays.push(Math.abs(delay));
+      if ((delay ?? 0) >= 0) riDelays.push(Math.abs((delay ?? 0)));
     }
   }
 
@@ -363,7 +363,7 @@ export function computeChildMissing(
 
   // Response quality mitigations
   if (response_quality.return_interview_rate === 100 && returnedEpisodes.length > 0) riskScore -= 5;
-  if (response_quality.return_interview_rate < 50 && returnedEpisodes.length >= 2) riskScore += 10;
+  if ((response_quality.return_interview_rate ?? 0) < 50 && returnedEpisodes.length >= 2) riskScore += 10;
 
   riskScore = clamp(riskScore, 0, 100);
 
@@ -433,7 +433,7 @@ export function computeChildMissing(
     concerns.push("Risk level is escalating across episodes. Each new episode is assessed as higher risk — the protective factors are diminishing and the child is becoming more vulnerable.");
   }
 
-  if (response_quality.return_interview_rate < 100 && returnedEpisodes.length >= 2) {
+  if ((response_quality.return_interview_rate ?? 0) < 100 && returnedEpisodes.length >= 2) {
     concerns.push(`Return interviews completed for only ${response_quality.return_interview_rate}% of episodes. Every return must include an independent RI within 72 hours — this is statutory guidance.`);
   }
 
@@ -471,7 +471,7 @@ export function computeChildMissing(
     });
   }
 
-  if (response_quality.return_interview_rate < 100 && returnedEpisodes.length >= 2) {
+  if ((response_quality.return_interview_rate ?? 0) < 100 && returnedEpisodes.length >= 2) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure every return from a missing episode includes an independent return interview within 72 hours. Record the interview, document any disclosures, and update the risk assessment.",

@@ -12,7 +12,7 @@ export interface CaseFileAuditInput {
   child_id: string;
   date: string;
   overall_rag: string;            // "green" | "amber" | "red"
-  overall_score: number;           // 0-100
+  overall_score: number | null;           // 0-100
   gaps_found: number;
   child_contributed: boolean;
 }
@@ -20,7 +20,7 @@ export interface CaseFileAuditInput {
 export interface HandoverAuditInput {
   id: string;
   date: string;
-  quality_score: number;           // 0-100
+  quality_score: number | null;           // 0-100
   actions_completed: boolean;
   issues_found: number;
 }
@@ -62,13 +62,13 @@ export type CaseFileAuditRating =
 
 export interface CaseFileAuditResult {
   audit_rating: CaseFileAuditRating;
-  audit_score: number;
+  audit_score: number | null;
   headline: string;
   children_audited: number;
-  average_audit_score: number;
-  green_rag_rate: number;
-  policy_currency_rate: number;
-  ofsted_readiness_rate: number;
+  average_audit_score: number | null;
+  green_rag_rate: number | null;
+  policy_currency_rate: number | null;
+  ofsted_readiness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -124,15 +124,15 @@ export function computeCaseFileAuditQuality(
   const greenCount = audits.filter(a => a.overall_rag === "green").length;
   const greenRate = audits.length > 0 ? pct(greenCount, audits.length) : 0;
   const avgScore = audits.length > 0
-    ? Math.round((audits.reduce((sum, a) => sum + a.overall_score, 0) / audits.length) * 10) / 10
-    : 0;
+    ? Math.round((audits.reduce((sum, a) => sum + (a.overall_score ?? 0), 0) / audits.length) * 10) / 10
+    : null;
   const childContribCount = audits.filter(a => a.child_contributed).length;
   const childContribRate = audits.length > 0 ? pct(childContribCount, audits.length) : 0;
 
   // ── Handover Audit Metrics ──────────────────────────────────────────
   const avgHandoverScore = handover_audits.length > 0
-    ? Math.round((handover_audits.reduce((sum, h) => sum + h.quality_score, 0) / handover_audits.length) * 10) / 10
-    : 0;
+    ? Math.round((handover_audits.reduce((sum, h) => sum + (h.quality_score ?? 0), 0) / handover_audits.length) * 10) / 10
+    : null;
 
   // ── Policy Review Metrics ───────────────────────────────────────────
   const currentPolicies = policy_reviews.filter(p => p.is_current).length;
@@ -159,7 +159,7 @@ export function computeCaseFileAuditQuality(
     else if (greenRate >= 40) score += 0;
     else score -= 6;
 
-    if (avgScore >= 85) score += 1;
+    if ((avgScore ?? 0) >= 85) score += 1;
   }
 
   // Mod 3: Child involvement in audits (±4)
@@ -172,9 +172,9 @@ export function computeCaseFileAuditQuality(
 
   // Mod 4: Handover audit quality (±4)
   if (handover_audits.length > 0) {
-    if (avgHandoverScore >= 85) score += 4;
-    else if (avgHandoverScore >= 70) score += 2;
-    else if (avgHandoverScore >= 50) score += 0;
+    if ((avgHandoverScore ?? 0) >= 85) score += 4;
+    else if ((avgHandoverScore ?? 0) >= 70) score += 2;
+    else if ((avgHandoverScore ?? 0) >= 50) score += 0;
     else score -= 4;
   }
 
@@ -205,9 +205,9 @@ export function computeCaseFileAuditQuality(
   const strengths: string[] = [];
   if (coverageRate >= 90) strengths.push(`${coverageRate}% of children's case files audited — comprehensive audit coverage.`);
   if (greenRate >= 80 && audits.length > 0) strengths.push(`${greenRate}% of audits rated green — consistently high case file quality.`);
-  if (avgScore >= 85 && audits.length > 0) strengths.push(`Average audit score ${avgScore}/100 — case files are well-maintained.`);
+  if ((avgScore ?? 0) >= 85 && audits.length > 0) strengths.push(`Average audit score ${(avgScore ?? 0)}/100 — case files are well-maintained.`);
   if (childContribRate >= 80 && audits.length > 0) strengths.push(`${childContribRate}% of audits include child contribution — children's voices are central to the audit process.`);
-  if (avgHandoverScore >= 85 && handover_audits.length > 0) strengths.push(`Handover audit quality score ${avgHandoverScore}/100 — strong continuity of care.`);
+  if ((avgHandoverScore ?? 0) >= 85 && handover_audits.length > 0) strengths.push(`Handover audit quality score ${(avgHandoverScore ?? 0)}/100 — strong continuity of care.`);
   if (policyCurrencyRate >= 95 && policy_reviews.length > 0) strengths.push(`${policyCurrencyRate}% of policies current — robust policy governance.`);
   if (ofstedCompletedRate >= 90 && ofsted_engagement.length > 0) strengths.push(`${ofstedCompletedRate}% of Ofsted engagement activities completed — excellent inspection preparedness.`);
 
@@ -217,7 +217,7 @@ export function computeCaseFileAuditQuality(
   if (coverageRate < 50 && audits.length === 0) concerns.push("No case file audits conducted — Ofsted expects regular case file auditing under Reg 40.");
   if (greenRate < 40 && audits.length > 0) concerns.push(`Only ${greenRate}% of audits rated green — case file quality needs urgent improvement.`);
   if (childContribRate < 40 && audits.length > 0) concerns.push(`Only ${childContribRate}% of audits include child contribution — children must be involved in reviewing their own records.`);
-  if (avgHandoverScore < 50 && handover_audits.length > 0) concerns.push(`Handover audit quality score ${avgHandoverScore}/100 — handover quality is inadequate.`);
+  if ((avgHandoverScore ?? 0) < 50 && handover_audits.length > 0) concerns.push(`Handover audit quality score ${(avgHandoverScore ?? 0)}/100 — handover quality is inadequate.`);
   if (policyCurrencyRate < 60 && policy_reviews.length > 0) concerns.push(`Only ${policyCurrencyRate}% of policies current — policy review schedule has lapsed.`);
   if (policy_reviews.length === 0) concerns.push("No policy reviews recorded — Ofsted expects policies to be regularly reviewed and current.");
   if (ofstedCompletedRate < 50 && ofsted_engagement.length > 0) concerns.push(`Only ${ofstedCompletedRate}% of Ofsted engagement activities completed — inspection preparedness is weak.`);
@@ -239,7 +239,7 @@ export function computeCaseFileAuditQuality(
   if (childContribRate < 40 && audits.length > 0) {
     recs.push({ rank: rank++, recommendation: "Ensure children contribute to their case file audits — their views on records about them should be sought and recorded.", urgency: "soon", regulatory_ref: "Reg 45" });
   }
-  if (avgHandoverScore < 50 && handover_audits.length > 0) {
+  if ((avgHandoverScore ?? 0) < 50 && handover_audits.length > 0) {
     recs.push({ rank: rank++, recommendation: "Improve handover audit quality — ensure critical information is transferred accurately between shifts.", urgency: "soon", regulatory_ref: "Reg 40" });
   }
   if (policy_reviews.length === 0 || policyCurrencyRate < 60) {

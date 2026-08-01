@@ -22,8 +22,8 @@ export interface EmotionIdentificationInput {
   assessor_id: string;
   emotions_presented: number;          // total emotions shown/tested
   emotions_correctly_identified: number;
-  baseline_score: number;              // 1-10
-  current_score: number;               // 1-10
+  baseline_score: number | null;              // 1-10
+  current_score: number | null;               // 1-10
   method: "visual_cards" | "role_play" | "story_based" | "digital_tool" | "observation" | "other";
   child_engaged: boolean;
   child_enjoyed: boolean;
@@ -141,52 +141,52 @@ export interface EmotionalLiteracyRecommendation {
 
 export interface EmotionalLiteracyResult {
   emotional_literacy_rating: EmotionalLiteracyRating;
-  emotional_literacy_score: number;
+  emotional_literacy_score: number | null;
   headline: string;
 
   // ── Core rates ──
-  emotion_identification_rate: number;
-  vocabulary_breadth_rate: number;
-  expression_tool_rate: number;
-  journal_engagement_rate: number;
-  staff_attunement_rate: number;
-  child_progress_rate: number;
+  emotion_identification_rate: number | null;
+  vocabulary_breadth_rate: number | null;
+  expression_tool_rate: number | null;
+  journal_engagement_rate: number | null;
+  staff_attunement_rate: number | null;
+  child_progress_rate: number | null;
 
   // ── Supplementary metrics ──
   total_assessments: number;
   children_assessed: number;
-  avg_identification_score: number;
-  nuanced_emotion_rate: number;
-  self_recognition_rate: number;
-  empathy_rate: number;
-  context_understanding_rate: number;
+  avg_identification_score: number | null;
+  nuanced_emotion_rate: number | null;
+  self_recognition_rate: number | null;
+  empathy_rate: number | null;
+  context_understanding_rate: number | null;
 
   avg_vocabulary_words: number;
-  spontaneous_use_rate: number;
-  creative_expression_rate: number;
-  vocabulary_progress_rate: number;
+  spontaneous_use_rate: number | null;
+  creative_expression_rate: number | null;
+  vocabulary_progress_rate: number | null;
 
   total_tools_available: number;
   unique_tool_types: number;
-  child_initiated_tool_use_rate: number;
-  tool_accessibility_rate: number;
+  child_initiated_tool_use_rate: number | null;
+  tool_accessibility_rate: number | null;
   avg_tool_effectiveness: number;
 
   total_journal_entries: number;
   children_journaling: number;
-  child_initiated_journal_rate: number;
-  staff_response_rate: number;
+  child_initiated_journal_rate: number | null;
+  staff_response_rate: number | null;
   avg_journal_depth: number;
-  journal_keywork_link_rate: number;
+  journal_keywork_link_rate: number | null;
 
   total_attunement_observations: number;
-  emotional_recognition_rate: number;
-  appropriate_response_rate: number;
-  validation_rate: number;
-  co_regulation_rate: number;
-  missed_cues_rate: number;
-  repair_rate: number;
-  staff_training_rate: number;
+  emotional_recognition_rate: number | null;
+  appropriate_response_rate: number | null;
+  validation_rate: number | null;
+  co_regulation_rate: number | null;
+  missed_cues_rate: number | null;
+  repair_rate: number | null;
+  staff_training_rate: number | null;
 
   strengths: string[];
   concerns: string[];
@@ -542,7 +542,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
   );
   const avgEmotionsPerEntry = totalJournalEntries > 0
     ? Math.round((totalEmotionsExpressed / totalJournalEntries) * 100) / 100
-    : 0;
+    : null;
 
   // ════════════════════════════════════════════════════════════════════════
   // DOMAIN 5: Staff Attunement Metrics
@@ -613,7 +613,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
   const childProgressRate =
     progressIndicators.length > 0
       ? Math.round(progressIndicators.reduce((s, v) => s + v, 0) / progressIndicators.length)
-      : 0;
+      : null;
 
   // ════════════════════════════════════════════════════════════════════════
   // SCORING: base = 52, max bonuses = +28, 4 penalties
@@ -642,8 +642,8 @@ export function computeEmotionalLiteracyFeelingsExpression(
   else if (staffAttunementRate >= 70) score += 3;
 
   // --- Bonus 6: Child progress rate (+3 / +1) ---
-  if (childProgressRate >= 80) score += 3;
-  else if (childProgressRate >= 60) score += 1;
+  if ((childProgressRate ?? 0) >= 80) score += 3;
+  else if ((childProgressRate ?? 0) >= 60) score += 1;
 
   // --- Bonus 7: Self-recognition & empathy (+3 / +1) ---
   if (selfRecognitionRate >= 80 && empathyRate >= 80) score += 3;
@@ -891,7 +891,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
   }
 
   // --- Progress strengths ---
-  if (childProgressRate >= 80) {
+  if ((childProgressRate ?? 0) >= 80) {
     strengths.push(
       `${childProgressRate}% child progress rate across emotional literacy domains — children are demonstrably growing in their emotional capabilities.`,
     );
@@ -1087,7 +1087,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
   }
 
   // --- Progress concerns ---
-  if (childProgressRate < 30 && childProgressRate > 0) {
+  if ((childProgressRate ?? 0) < 30 && (childProgressRate ?? 0) > 0) {
     concerns.push(
       `Only ${childProgressRate}% child progress rate — most children are not demonstrating improvement in emotional literacy, suggesting interventions may need reviewing.`,
     );
@@ -1376,7 +1376,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (childProgressRate < 60 && childProgressRate >= 30) {
+  if ((childProgressRate ?? 0) < 60 && (childProgressRate ?? 0) >= 30) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1522,7 +1522,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (childProgressRate >= 30 && childProgressRate < 60) {
+  if ((childProgressRate ?? 0) >= 30 && (childProgressRate ?? 0) < 60) {
     insights.push({
       text: `Child progress rate at ${childProgressRate}% — improvement is happening but not for all children. Individual review of children not progressing may identify barriers or need for specialist input.`,
       severity: "warning",
@@ -1608,7 +1608,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (childProgressRate >= 80) {
+  if ((childProgressRate ?? 0) >= 80) {
     insights.push({
       text: `${childProgressRate}% child progress rate across emotional literacy domains — the home's approach is producing measurable improvement in children's emotional capabilities. This is strong SCCIF evidence of positive experiences and progress.`,
       severity: "positive",

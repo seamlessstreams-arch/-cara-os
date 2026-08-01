@@ -147,17 +147,17 @@ export interface YouthJusticeRecommendation {
 
 export interface YouthJusticeResult {
   justice_rating: YouthJusticeRating;
-  justice_score: number;
+  justice_score: number | null;
   headline: string;
   total_yot_records: number;
   total_court_orders: number;
   total_prevention_programmes: number;
-  yot_engagement_rate: number;
-  behaviour_plan_compliance_rate: number;
-  restorative_justice_rate: number;
-  court_order_adherence_rate: number;
-  prevention_effectiveness_rate: number;
-  child_engagement_rate: number;
+  yot_engagement_rate: number | null;
+  behaviour_plan_compliance_rate: number | null;
+  restorative_justice_rate: number | null;
+  court_order_adherence_rate: number | null;
+  prevention_effectiveness_rate: number | null;
+  child_engagement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: YouthJusticeRecommendation[];
@@ -301,7 +301,7 @@ export function computeYouthJusticeOffending(
   const avgYotQualityRating =
     totalYotRecords > 0
       ? Math.round((yotQualitySum / totalYotRecords) * 100) / 100
-      : 0;
+      : null;
 
   // YOT engagement composite: attended + actions completed + info shared + child views
   const yotEngagementNumerator = yotMeetingsAttended + yotActionsCompleted + yotInfoShared + yotChildViewsCaptured;
@@ -336,7 +336,7 @@ export function computeYouthJusticeOffending(
   const avgProgressRating =
     totalBehaviourPlans > 0
       ? Math.round((progressSum / totalBehaviourPlans) * 100) / 100
-      : 0;
+      : null;
 
   // Behaviour plan compliance composite: targets met rate + reviewed + child engaged + evidence of change
   const bpComplianceNumerator = totalTargetsMet + plansReviewed + childEngagedWithPlan + evidenceOfChange;
@@ -624,7 +624,7 @@ export function computeYouthJusticeOffending(
     );
   }
 
-  if (avgYotQualityRating >= 4.0 && totalYotRecords > 0) {
+  if ((avgYotQualityRating ?? 0) >= 4.0 && totalYotRecords > 0) {
     strengths.push(
       `Average YOT liaison quality rating of ${avgYotQualityRating}/5 — the quality of multi-agency working with Youth Offending Teams is consistently high, supporting effective case management.`,
     );
@@ -759,7 +759,7 @@ export function computeYouthJusticeOffending(
     );
   }
 
-  if (avgProgressRating < 2.5 && totalBehaviourPlans > 0) {
+  if ((avgProgressRating ?? 0) < 2.5 && totalBehaviourPlans > 0) {
     concerns.push(
       `Average behaviour plan progress rating at only ${avgProgressRating}/5 — children are not making sufficient progress against their offending behaviour targets, indicating plans may need restructuring.`,
     );
@@ -1158,8 +1158,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    avgProgressRating >= 2.5 &&
-    avgProgressRating < 3.5 &&
+    (avgProgressRating ?? 0) >= 2.5 &&
+    (avgProgressRating ?? 0) < 3.5 &&
     totalBehaviourPlans > 0
   ) {
     insights.push({
@@ -1322,8 +1322,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    avgYotQualityRating >= 4.0 &&
-    avgProgressRating >= 4.0 &&
+    (avgYotQualityRating ?? 0) >= 4.0 &&
+    (avgProgressRating ?? 0) >= 4.0 &&
     totalYotRecords > 0 &&
     totalBehaviourPlans > 0
   ) {

@@ -43,9 +43,9 @@ export interface InterventionOutcomeInput {
   start_date: string;
   end_date: string | null;
   active: boolean;
-  baseline_score: number; // 0-100
-  current_score: number; // 0-100
-  target_score: number; // 0-100
+  baseline_score: number | null; // 0-100
+  current_score: number | null; // 0-100
+  target_score: number | null; // 0-100
   measurement_tool: string;
   positive_outcome: boolean;
   outcome_measured: boolean;
@@ -110,7 +110,7 @@ export interface TherapeuticRelationshipInput {
   child_feedback_positive: boolean;
   child_feels_heard: boolean;
   child_feels_safe: boolean;
-  therapeutic_alliance_score: number; // 0-100
+  therapeutic_alliance_score: number | null; // 0-100
   continuity_maintained: boolean;
   therapist_changes: number;
   assessment_date: string;
@@ -150,28 +150,28 @@ export interface TherapeuticRecommendation {
 
 export interface TherapeuticInterventionEffectivenessResult {
   therapeutic_rating: TherapeuticRating;
-  therapeutic_score: number;
+  therapeutic_score: number | null;
   headline: string;
   total_sessions: number;
   total_interventions: number;
   total_progress_assessments: number;
   total_treatment_plans: number;
   total_relationships: number;
-  therapy_attendance_rate: number;
-  intervention_effectiveness_rate: number;
-  progress_assessment_coverage_rate: number;
-  treatment_adherence_rate: number;
-  therapeutic_relationship_quality_rate: number;
-  child_engagement_rate: number;
-  session_quality_avg: number;
-  goals_achievement_rate: number;
-  follow_up_completion_rate: number;
-  progress_improvement_rate: number;
-  plan_review_compliance_rate: number;
-  therapeutic_alliance_avg: number;
-  therapist_continuity_rate: number;
-  child_involvement_rate: number;
-  evidence_documentation_rate: number;
+  therapy_attendance_rate: number | null;
+  intervention_effectiveness_rate: number | null;
+  progress_assessment_coverage_rate: number | null;
+  treatment_adherence_rate: number | null;
+  therapeutic_relationship_quality_rate: number | null;
+  child_engagement_rate: number | null;
+  session_quality_avg: number | null;
+  goals_achievement_rate: number | null;
+  follow_up_completion_rate: number | null;
+  progress_improvement_rate: number | null;
+  plan_review_compliance_rate: number | null;
+  therapeutic_alliance_avg: number | null;
+  therapist_continuity_rate: number | null;
+  child_involvement_rate: number | null;
+  evidence_documentation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: TherapeuticRecommendation[];
@@ -314,7 +314,7 @@ export function computeTherapeuticInterventionEffectiveness(
   const sessionQualityAvg =
     totalSessions > 0
       ? Math.round((sessionQualitySum / totalSessions) * 100) / 100
-      : 0;
+      : null;
 
   const childEngagementSum = therapy_sessions.reduce(
     (sum, s) => sum + s.child_engagement_rating,
@@ -323,9 +323,9 @@ export function computeTherapeuticInterventionEffectiveness(
   const childEngagementAvg =
     totalSessions > 0
       ? Math.round((childEngagementSum / totalSessions) * 100) / 100
-      : 0;
+      : null;
   // Convert engagement avg (1-5) to a percentage for the card display
-  const childEngagementRate = totalSessions > 0 ? Math.round(childEngagementAvg * 20) : 0;
+  const childEngagementRate = totalSessions > 0 ? Math.round((childEngagementAvg ?? 0) * 20) : null;
 
   const totalGoalsAddressed = therapy_sessions.reduce(
     (sum, s) => sum + s.goals_addressed,
@@ -379,13 +379,13 @@ export function computeTherapeuticInterventionEffectiveness(
 
   // --- Intervention improvement analysis ---
   const interventionsWithImprovement = intervention_outcomes.filter(
-    (i) => i.current_score > i.baseline_score,
+    (i) => (i.current_score ?? 0) > (i.baseline_score ?? 0),
   ).length;
   const interventionsDeclined = intervention_outcomes.filter(
-    (i) => i.current_score < i.baseline_score,
+    (i) => (i.current_score ?? 0) < (i.baseline_score ?? 0),
   ).length;
   const interventionsOnTarget = intervention_outcomes.filter(
-    (i) => i.current_score >= i.target_score,
+    (i) => (i.current_score ?? 0) >= (i.target_score ?? 0),
   ).length;
 
   // --- Therapeutic progress metrics ---
@@ -513,36 +513,36 @@ export function computeTherapeuticInterventionEffectiveness(
   const avgTrust =
     totalRelationships > 0
       ? Math.round((trustSum / totalRelationships) * 100) / 100
-      : 0;
+      : null;
   const avgRapport =
     totalRelationships > 0
       ? Math.round((rapportSum / totalRelationships) * 100) / 100
-      : 0;
+      : null;
   const avgCommunication =
     totalRelationships > 0
       ? Math.round((communicationSum / totalRelationships) * 100) / 100
-      : 0;
+      : null;
   const avgConsistency =
     totalRelationships > 0
       ? Math.round((consistencySum / totalRelationships) * 100) / 100
-      : 0;
+      : null;
 
   // Overall relationship quality: average of all four sub-ratings, scaled to percentage
   const overallRelationshipAvg =
     totalRelationships > 0
-      ? (avgTrust + avgRapport + avgCommunication + avgConsistency) / 4
-      : 0;
+      ? ((avgTrust ?? 0) + (avgRapport ?? 0) + (avgCommunication ?? 0) + (avgConsistency ?? 0)) / 4
+      : null;
   const therapeuticRelationshipQualityRate =
-    totalRelationships > 0 ? Math.round(overallRelationshipAvg * 20) : 0;
+    totalRelationships > 0 ? Math.round((overallRelationshipAvg ?? 0) * 20) : null;
 
   const allianceScoreSum = therapeutic_relationship_records.reduce(
-    (sum, r) => sum + r.therapeutic_alliance_score,
+    (sum, r) => sum + (r.therapeutic_alliance_score ?? 0),
     0,
   );
   const therapeuticAllianceAvg =
     totalRelationships > 0
       ? Math.round((allianceScoreSum / totalRelationships) * 100) / 100
-      : 0;
+      : null;
 
   const continuityMaintained = therapeutic_relationship_records.filter(
     (r) => r.continuity_maintained,
@@ -597,12 +597,12 @@ export function computeTherapeuticInterventionEffectiveness(
   else if (treatmentAdherenceRate >= 70) score += 1;
 
   // --- Bonus 5: therapeuticRelationshipQualityRate (>=80: +3, >=60: +1) ---
-  if (therapeuticRelationshipQualityRate >= 80) score += 3;
-  else if (therapeuticRelationshipQualityRate >= 60) score += 1;
+  if ((therapeuticRelationshipQualityRate ?? 0) >= 80) score += 3;
+  else if ((therapeuticRelationshipQualityRate ?? 0) >= 60) score += 1;
 
   // --- Bonus 6: childEngagementRate (>=80: +3, >=60: +1) ---
-  if (childEngagementRate >= 80) score += 3;
-  else if (childEngagementRate >= 60) score += 1;
+  if ((childEngagementRate ?? 0) >= 80) score += 3;
+  else if ((childEngagementRate ?? 0) >= 60) score += 1;
 
   // --- Bonus 7: followUpCompletionRate (>=90: +3, >=70: +1) ---
   if (followUpCompletionRate >= 90) score += 3;
@@ -630,7 +630,7 @@ export function computeTherapeuticInterventionEffectiveness(
   if (treatmentAdherenceRate < 40 && totalPlanGoals > 0) score -= 5;
 
   // Penalty 4: therapeuticRelationshipQualityRate < 40 → -3 (guard: totalRelationships > 0)
-  if (therapeuticRelationshipQualityRate < 40 && totalRelationships > 0) score -= 3;
+  if ((therapeuticRelationshipQualityRate ?? 0) < 40 && totalRelationships > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -685,22 +685,22 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Therapeutic relationship quality strengths
-  if (therapeuticRelationshipQualityRate >= 80 && totalRelationships > 0) {
+  if ((therapeuticRelationshipQualityRate ?? 0) >= 80 && totalRelationships > 0) {
     strengths.push(
       `Therapeutic relationship quality at ${therapeuticRelationshipQualityRate}% — children have strong, trusting relationships with their therapists, which is the foundation of effective therapeutic work.`,
     );
-  } else if (therapeuticRelationshipQualityRate >= 60 && totalRelationships > 0) {
+  } else if ((therapeuticRelationshipQualityRate ?? 0) >= 60 && totalRelationships > 0) {
     strengths.push(
       `Therapeutic relationship quality at ${therapeuticRelationshipQualityRate}% — positive therapeutic relationships are supporting children's engagement with therapy.`,
     );
   }
 
   // Child engagement strengths
-  if (childEngagementRate >= 80 && totalSessions > 0) {
+  if ((childEngagementRate ?? 0) >= 80 && totalSessions > 0) {
     strengths.push(
       `Child engagement rated at ${childEngagementRate}% across therapy sessions — children are actively participating in and benefiting from their therapeutic work.`,
     );
-  } else if (childEngagementRate >= 60 && totalSessions > 0) {
+  } else if ((childEngagementRate ?? 0) >= 60 && totalSessions > 0) {
     strengths.push(
       `Child engagement at ${childEngagementRate}% — most children are engaging meaningfully in their therapy sessions.`,
     );
@@ -740,22 +740,22 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Session quality strengths
-  if (sessionQualityAvg >= 4.0 && totalSessions > 0) {
+  if ((sessionQualityAvg ?? 0) >= 4.0 && totalSessions > 0) {
     strengths.push(
       `Session quality averaging ${sessionQualityAvg}/5 — high-quality therapeutic sessions that effectively address children's needs.`,
     );
-  } else if (sessionQualityAvg >= 3.0 && totalSessions > 0) {
+  } else if ((sessionQualityAvg ?? 0) >= 3.0 && totalSessions > 0) {
     strengths.push(
       `Session quality averaging ${sessionQualityAvg}/5 — competent therapeutic sessions supporting children's progress.`,
     );
   }
 
   // Therapeutic alliance strengths
-  if (therapeuticAllianceAvg >= 80 && totalRelationships > 0) {
+  if ((therapeuticAllianceAvg ?? 0) >= 80 && totalRelationships > 0) {
     strengths.push(
       `Therapeutic alliance scores averaging ${therapeuticAllianceAvg}/100 — children have strong working alliances with their therapists, supporting effective therapeutic outcomes.`,
     );
-  } else if (therapeuticAllianceAvg >= 60 && totalRelationships > 0) {
+  } else if ((therapeuticAllianceAvg ?? 0) >= 60 && totalRelationships > 0) {
     strengths.push(
       `Therapeutic alliance averaging ${therapeuticAllianceAvg}/100 — adequate working alliances support ongoing therapeutic engagement.`,
     );
@@ -892,13 +892,13 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Therapeutic relationship quality concerns
-  if (therapeuticRelationshipQualityRate < 40 && totalRelationships > 0) {
+  if ((therapeuticRelationshipQualityRate ?? 0) < 40 && totalRelationships > 0) {
     concerns.push(
       `Therapeutic relationship quality at only ${therapeuticRelationshipQualityRate}% — poor therapeutic relationships undermine the foundation of effective therapy and may leave children feeling unsupported.`,
     );
   } else if (
-    therapeuticRelationshipQualityRate < 60 &&
-    therapeuticRelationshipQualityRate >= 40 &&
+    (therapeuticRelationshipQualityRate ?? 0) < 60 &&
+    (therapeuticRelationshipQualityRate ?? 0) >= 40 &&
     totalRelationships > 0
   ) {
     concerns.push(
@@ -907,11 +907,11 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   // Child engagement concerns
-  if (childEngagementRate < 40 && totalSessions > 0) {
+  if ((childEngagementRate ?? 0) < 40 && totalSessions > 0) {
     concerns.push(
       `Child engagement at only ${childEngagementRate}% — children are not actively engaging in their therapy sessions, which significantly limits the therapeutic benefit.`,
     );
-  } else if (childEngagementRate < 60 && childEngagementRate >= 40 && totalSessions > 0) {
+  } else if ((childEngagementRate ?? 0) < 60 && (childEngagementRate ?? 0) >= 40 && totalSessions > 0) {
     concerns.push(
       `Child engagement at ${childEngagementRate}% — engagement levels suggest some children are not fully benefiting from their therapeutic sessions.`,
     );
@@ -1061,7 +1061,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (therapeuticRelationshipQualityRate < 40 && totalRelationships > 0) {
+  if ((therapeuticRelationshipQualityRate ?? 0) < 40 && totalRelationships > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1220,8 +1220,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    therapeuticRelationshipQualityRate >= 40 &&
-    therapeuticRelationshipQualityRate < 60 &&
+    (therapeuticRelationshipQualityRate ?? 0) >= 40 &&
+    (therapeuticRelationshipQualityRate ?? 0) < 60 &&
     totalRelationships > 0
   ) {
     recommendations.push({
@@ -1268,8 +1268,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    childEngagementRate >= 40 &&
-    childEngagementRate < 60 &&
+    (childEngagementRate ?? 0) >= 40 &&
+    (childEngagementRate ?? 0) < 60 &&
     totalSessions > 0
   ) {
     recommendations.push({
@@ -1308,7 +1308,7 @@ export function computeTherapeuticInterventionEffectiveness(
     });
   }
 
-  if (therapeuticRelationshipQualityRate < 40 && totalRelationships > 0) {
+  if ((therapeuticRelationshipQualityRate ?? 0) < 40 && totalRelationships > 0) {
     insights.push({
       text: `Therapeutic relationship quality at ${therapeuticRelationshipQualityRate}%. Research consistently shows that the quality of the therapeutic relationship is the single strongest predictor of therapeutic outcomes for children in care. Poor relationship quality undermines all other therapeutic investment.`,
       severity: "critical",
@@ -1386,8 +1386,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    therapeuticRelationshipQualityRate >= 40 &&
-    therapeuticRelationshipQualityRate < 60 &&
+    (therapeuticRelationshipQualityRate ?? 0) >= 40 &&
+    (therapeuticRelationshipQualityRate ?? 0) < 60 &&
     totalRelationships > 0
   ) {
     insights.push({
@@ -1397,8 +1397,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    childEngagementRate >= 40 &&
-    childEngagementRate < 60 &&
+    (childEngagementRate ?? 0) >= 40 &&
+    (childEngagementRate ?? 0) < 60 &&
     totalSessions > 0
   ) {
     insights.push({
@@ -1487,7 +1487,7 @@ export function computeTherapeuticInterventionEffectiveness(
 
   if (
     therapyAttendanceRate >= 90 &&
-    childEngagementRate >= 80 &&
+    (childEngagementRate ?? 0) >= 80 &&
     scheduledSessions > 0 &&
     totalSessions > 0
   ) {
@@ -1522,8 +1522,8 @@ export function computeTherapeuticInterventionEffectiveness(
   }
 
   if (
-    therapeuticRelationshipQualityRate >= 80 &&
-    therapeuticAllianceAvg >= 80 &&
+    (therapeuticRelationshipQualityRate ?? 0) >= 80 &&
+    (therapeuticAllianceAvg ?? 0) >= 80 &&
     totalRelationships > 0
   ) {
     insights.push({

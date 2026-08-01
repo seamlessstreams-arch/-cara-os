@@ -50,7 +50,7 @@ export type LACReviewRating =
 
 export interface ReviewComplianceProfile {
   total_reviews_180d: number;
-  reviews_per_child: number;
+  reviews_per_child: number | null;
   children_with_reviews: string[];
   children_without_reviews: string[];
   first_reviews: number;
@@ -94,7 +94,7 @@ export interface LACReviewRecommendation {
 
 export interface HomeLACReviewResult {
   lac_review_rating: LACReviewRating;
-  lac_review_score: number;
+  lac_review_score: number | null;
   headline: string;
   compliance: ReviewComplianceProfile;
   participation: ParticipationProfile;
@@ -183,7 +183,7 @@ export function computeHomeLACReview(
 
   const reviewsPerChild = total_children > 0
     ? Math.round((workingReviews.length / total_children) * 10) / 10
-    : 0;
+    : null;
 
   const complianceProfile: ReviewComplianceProfile = {
     total_reviews_180d: revs180d.length,

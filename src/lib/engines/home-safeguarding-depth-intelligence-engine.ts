@@ -102,60 +102,60 @@ export type SafeguardingDepthRating =
 
 export interface BodyMapSummary {
   total: number;
-  photo_evidence_rate: number;
-  manager_reviewed_rate: number;
-  child_explanation_rate: number;
+  photo_evidence_rate: number | null;
+  manager_reviewed_rate: number | null;
+  child_explanation_rate: number | null;
 }
 
 export interface DisclosureSummary {
   total: number;
-  response_within_1h_rate: number;
-  escalated_rate: number;
-  child_informed_rate: number;
-  written_up_within_24h_rate: number;
+  response_within_1h_rate: number | null;
+  escalated_rate: number | null;
+  child_informed_rate: number | null;
+  written_up_within_24h_rate: number | null;
 }
 
 export interface EscalationSummary {
   total: number;
-  multi_agency_rate: number;
-  resolved_rate: number;
-  learning_captured_rate: number;
-  avg_resolution_days: number;
+  multi_agency_rate: number | null;
+  resolved_rate: number | null;
+  learning_captured_rate: number | null;
+  avg_resolution_days: number | null;
 }
 
 export interface LADOSummary {
   total: number;
-  referred_timely_rate: number;
-  outcome_recorded_rate: number;
-  learning_shared_rate: number;
+  referred_timely_rate: number | null;
+  outcome_recorded_rate: number | null;
+  learning_shared_rate: number | null;
   overdue_reviews: number;
 }
 
 export interface SupervisionSummary {
   total_sessions: number;
   staff_coverage: number;
-  avg_actions_completion_rate: number;
-  reflective_practice_rate: number;
+  avg_actions_completion_rate: number | null;
+  reflective_practice_rate: number | null;
 }
 
 export interface SafeTouchSummary {
   total: number;
   child_coverage: number;
-  consent_rate: number;
-  child_voice_rate: number;
+  consent_rate: number | null;
+  child_voice_rate: number | null;
   overdue_reviews: number;
 }
 
 export interface SubstanceScreeningSummary {
   total_90d: number;
-  positive_rate: number;
-  follow_up_rate: number;
-  child_supported_rate: number;
+  positive_rate: number | null;
+  follow_up_rate: number | null;
+  child_supported_rate: number | null;
 }
 
 export interface HomeSafeguardingDepthResult {
   safeguarding_depth_rating: SafeguardingDepthRating;
-  safeguarding_depth_score: number;
+  safeguarding_depth_score: number | null;
   headline: string;
   body_maps: BodyMapSummary;
   disclosures: DisclosureSummary;
@@ -278,7 +278,7 @@ export function computeHomeSafeguardingDepth(
   const resolvedWithDates = escalations.filter(e => e.resolution_date && e.resolution_date.length > 0);
   const avgResDays = resolvedWithDates.length > 0
     ? Math.round((resolvedWithDates.reduce((s, e) => s + Math.max(0, daysBetween(e.date, e.resolution_date)), 0) / resolvedWithDates.length) * 10) / 10
-    : 0;
+    : null;
 
   const escalation_summary: EscalationSummary = {
     total: escalations.length,
@@ -313,7 +313,7 @@ export function computeHomeSafeguardingDepth(
   );
   const ssAvgActComp = ssActionsComp.length > 0
     ? Math.round(ssActionsComp.reduce((s, v) => s + v, 0) / ssActionsComp.length)
-    : 0;
+    : null;
   const ssReflective = safeguarding_supervisions.filter(s => s.reflective_practice).length;
   const ssReflectiveRate = pct(ssReflective, safeguarding_supervisions.length);
 
@@ -422,7 +422,7 @@ export function computeHomeSafeguardingDepth(
     let m = 0;
     if (safeguarding_supervisions.length > 0) {
       if (ssCoverage >= 80) m += 1; else if (ssCoverage < 40) m -= 1;
-      if (ssAvgActComp >= 80) m += 1; else if (ssAvgActComp < 40) m -= 1;
+      if ((ssAvgActComp ?? 0) >= 80) m += 1; else if ((ssAvgActComp ?? 0) < 40) m -= 1;
       if (ssReflectiveRate >= 70) m += 1; else if (ssReflectiveRate < 30) m -= 1;
     } else {
       if (total_staff >= 3) m -= 2;

@@ -89,48 +89,48 @@ export type IndependenceLifeSkillsRating =
 export interface AssessmentSummary {
   total_assessments: number;
   child_coverage: number;
-  competent_or_independent_rate: number;
-  child_agreed_rate: number;
+  competent_or_independent_rate: number | null;
+  child_agreed_rate: number | null;
   overdue_assessments: number;
 }
 
 export interface CookingSummary {
   total_records: number;
   child_coverage: number;
-  independent_or_teaching_rate: number;
-  hygiene_certificate_rate: number;
-  led_family_meal_rate: number;
-  child_voice_rate: number;
+  independent_or_teaching_rate: number | null;
+  hygiene_certificate_rate: number | null;
+  led_family_meal_rate: number | null;
+  child_voice_rate: number | null;
 }
 
 export interface LaundrySummary {
   total_records: number;
   child_coverage: number;
-  independent_or_mastered_rate: number;
-  owns_basket_rate: number;
-  knows_care_symbols_rate: number;
-  iron_competent_rate: number;
+  independent_or_mastered_rate: number | null;
+  owns_basket_rate: number | null;
+  knows_care_symbols_rate: number | null;
+  iron_competent_rate: number | null;
 }
 
 export interface MoneySummary {
   total_records: number;
   child_coverage: number;
-  confident_or_independent_rate: number;
-  real_world_application_rate: number;
-  child_voice_rate: number;
+  confident_or_independent_rate: number | null;
+  real_world_application_rate: number | null;
+  child_voice_rate: number | null;
 }
 
 export interface HouseholdSummary {
   total_tasks: number;
   child_coverage: number;
-  avg_completion: number;
-  child_chose_rate: number;
-  independent_or_role_model_rate: number;
+  avg_completion: number | null;
+  child_chose_rate: number | null;
+  independent_or_role_model_rate: number | null;
 }
 
 export interface HomeIndependenceLifeSkillsResult {
   independence_rating: IndependenceLifeSkillsRating;
-  independence_score: number;
+  independence_score: number | null;
   headline: string;
   assessments: AssessmentSummary;
   cooking: CookingSummary;
@@ -280,7 +280,7 @@ export function computeHomeIndependenceLifeSkills(
   const htCoverage = pct(htChildIds.size, total_children);
   const htAvgCompletion = household_tasks.length > 0
     ? Math.round(household_tasks.reduce((s, t) => s + t.completion_recent, 0) / household_tasks.length)
-    : 0;
+    : null;
   const htChose = household_tasks.filter(t => t.child_chose).length;
   const htChoseRate = pct(htChose, household_tasks.length);
   const htIndepRole = household_tasks.filter(t =>
@@ -405,8 +405,8 @@ export function computeHomeIndependenceLifeSkills(
     let m = 0;
     if (household_tasks.length > 0) {
       // Completion average
-      if (htAvgCompletion >= 80) m += 1;
-      else if (htAvgCompletion < 40) m -= 1;
+      if ((htAvgCompletion ?? 0) >= 80) m += 1;
+      else if ((htAvgCompletion ?? 0) < 40) m -= 1;
 
       // Child chose
       if (htChoseRate >= 70) m += 1;
@@ -589,10 +589,10 @@ export function computeHomeIndependenceLifeSkills(
   }
 
   // Household tasks
-  if (household_tasks.length > 0 && htAvgCompletion >= 80 && htChoseRate >= 70) {
+  if (household_tasks.length > 0 && (htAvgCompletion ?? 0) >= 80 && htChoseRate >= 70) {
     strengths.push(`Excellent household task engagement — ${htAvgCompletion}% average completion with ${htChoseRate}% child-chosen.`);
   }
-  if (household_tasks.length > 0 && htAvgCompletion < 40) {
+  if (household_tasks.length > 0 && (htAvgCompletion ?? 0) < 40) {
     concerns.push(`Low household task completion — average only ${htAvgCompletion}%.`);
     recommendations.push({ rank: ++rank, recommendation: "Review household task expectations and motivation strategies — completion rates are low.", urgency: "soon", regulatory_ref: null });
   }

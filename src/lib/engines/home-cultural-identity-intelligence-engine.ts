@@ -80,42 +80,42 @@ export interface IdentityPlanProfile {
   total_plans: number;
   child_coverage: number;
   overdue_reviews: number;
-  avg_identity_areas: number;
-  child_contribution_rate: number;
+  avg_identity_areas: number | null;
+  child_contribution_rate: number | null;
 }
 
 export interface CulturalVisitProfile {
   total_visits_90d: number;
-  avg_children_per_visit: number;
-  learning_outcomes_rate: number;
-  repeat_interest_rate: number;
+  avg_children_per_visit: number | null;
+  learning_outcomes_rate: number | null;
+  repeat_interest_rate: number | null;
 }
 
 export interface ReligiousObservanceProfile {
   total_records: number;
   child_coverage: number;
-  avg_practices_supported: number;
-  child_authored_rate: number;
+  avg_practices_supported: number | null;
+  child_authored_rate: number | null;
   overdue_reviews: number;
 }
 
 export interface HeritageLanguageProfile {
   total_records: number;
   child_coverage: number;
-  home_support_rate: number;
-  child_voice_rate: number;
+  home_support_rate: number | null;
+  child_voice_rate: number | null;
   overdue_reviews: number;
 }
 
 export interface DiversityCalendarProfile {
   total_events: number;
-  completed_rate: number;
+  completed_rate: number | null;
   upcoming_count: number;
 }
 
 export interface HomeCulturalIdentityResult {
   cultural_identity_rating: CulturalIdentityRating;
-  cultural_identity_score: number;
+  cultural_identity_score: number | null;
   headline: string;
   identity_plans: IdentityPlanProfile;
   cultural_visits: CulturalVisitProfile;
@@ -182,7 +182,7 @@ export function computeHomeCulturalIdentity(
   const ipOverdue = cultural_identity_plans.filter(p => daysBetween(p.next_review, today) > 0).length;
   const ipAvgAreas = cultural_identity_plans.length > 0
     ? Math.round(cultural_identity_plans.reduce((s, p) => s + p.identity_areas_count, 0) / cultural_identity_plans.length)
-    : 0;
+    : null;
   const ipContribRate = pct(
     cultural_identity_plans.filter(p => p.child_contributed).length,
     cultural_identity_plans.length,
@@ -200,7 +200,7 @@ export function computeHomeCulturalIdentity(
   const cv90 = cultural_visits.filter(v => daysBetween(v.date, today) >= 0 && daysBetween(v.date, today) <= 90);
   const cvAvgChildren = cv90.length > 0
     ? Math.round((cv90.reduce((s, v) => s + v.children_attended_count, 0) / cv90.length) * 10) / 10
-    : 0;
+    : null;
   const cvLearningRate = pct(
     cv90.filter(v => v.learning_outcomes_count > 0).length,
     cv90.length,
@@ -222,7 +222,7 @@ export function computeHomeCulturalIdentity(
   const roCoverage = pct(roChildIds.size, total_children);
   const roAvgSupported = religious_observance_records.length > 0
     ? Math.round(religious_observance_records.reduce((s, r) => s + r.practices_supported_count, 0) / religious_observance_records.length)
-    : 0;
+    : null;
   const roAuthoredRate = pct(
     religious_observance_records.filter(r => r.child_authored).length,
     religious_observance_records.length,
@@ -322,8 +322,8 @@ export function computeHomeCulturalIdentity(
       if (roAuthoredRate >= 80) m += 1;
       else if (roAuthoredRate < 30) m -= 1;
 
-      if (roAvgSupported >= 3) m += 1;
-      else if (roAvgSupported < 1) m -= 1;
+      if ((roAvgSupported ?? 0) >= 3) m += 1;
+      else if ((roAvgSupported ?? 0) < 1) m -= 1;
 
       if (roOverdue === 0) m += 1;
       else if (roOverdue >= 3) m -= 1;

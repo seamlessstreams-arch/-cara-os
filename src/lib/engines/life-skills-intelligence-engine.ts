@@ -8,7 +8,7 @@
 export interface PathwayDomainInput {
   name: string;
   score: number;
-  max_score: number;
+  max_score: number | null;
 }
 
 export interface IndependencePathwayInput {
@@ -36,7 +36,7 @@ export interface StaffRef {
 export interface LifeSkillsOverview {
   total_children: number;
   children_assessed: number;
-  avg_readiness: number;
+  avg_readiness: number | null;
   pathway_plans_active: number;
   children_on_track: number;
   children_attention_needed: number;
@@ -45,7 +45,7 @@ export interface LifeSkillsOverview {
 
 export interface DomainAverage {
   domain: string;
-  avg_pct: number;
+  avg_pct: number | null;
   children_assessed: number;
 }
 
@@ -145,7 +145,7 @@ export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsInt
   // ── Overview ────────────────────────────────────────────────────────────
   const avgReadiness = latest.length > 0
     ? Math.round(latest.reduce((sum, p) => sum + p.overall_readiness, 0) / latest.length)
-    : 0;
+    : null;
   const withPathwayPlan = latest.filter((p) => p.pathway_plan_linked).length;
   const onTrack = latest.filter((p) => p.status === "on_track").length;
   const attentionNeeded = latest.filter((p) => p.status === "attention_needed").length;
@@ -170,7 +170,7 @@ export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsInt
   for (const p of latest) {
     for (const d of p.domains) {
       const entry = domainScores.get(d.name) ?? { total: 0, count: 0 };
-      entry.total += d.max_score > 0 ? Math.round((d.score / d.max_score) * 100) : 0;
+      entry.total += (d.max_score ?? 0) > 0 ? Math.round((d.score / (d.max_score ?? 0)) * 100) : null;
       entry.count++;
       domainScores.set(d.name, entry);
     }
@@ -187,8 +187,8 @@ export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsInt
   const child_profiles: ChildReadinessProfile[] = latest
     .map((p) => {
       const domainPcts = p.domains
-        .filter((d) => d.max_score > 0)
-        .map((d) => ({ name: d.name, pct: Math.round((d.score / d.max_score) * 100) }));
+        .filter((d) => (d.max_score ?? 0) > 0)
+        .map((d) => ({ name: d.name, pct: Math.round((d.score / (d.max_score ?? 0)) * 100) }));
       const sorted = [...domainPcts].sort((a, b) => b.pct - a.pct);
       const strongest = sorted.length > 0 ? sorted[0].name : "N/A";
       const weakest = sorted.length > 0 ? sorted[sorted.length - 1].name : "N/A";
@@ -249,7 +249,7 @@ export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsInt
   }
 
   // Medium: low domain averages
-  const weakDomains = domain_averages.filter((d) => d.avg_pct < 40);
+  const weakDomains = domain_averages.filter((d) => (d.avg_pct ?? 0) < 40);
   if (weakDomains.length > 0) {
     alerts.push({
       type: "weak_domains",
@@ -299,7 +299,7 @@ export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsInt
   }
 
   // Positive: high average readiness
-  if (avgReadiness >= 60 && latest.length > 0) {
+  if ((avgReadiness ?? 0) >= 60 && latest.length > 0) {
     insights.push({
       severity: "positive",
       text: `Average independence readiness of ${avgReadiness}% across ${latest.length} children. Strong foundation for transition preparation.`,
@@ -323,7 +323,7 @@ export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsInt
   }
 
   // Positive: strong domains
-  const strongDomains = domain_averages.filter((d) => d.avg_pct >= 70);
+  const strongDomains = domain_averages.filter((d) => (d.avg_pct ?? 0) >= 70);
   if (strongDomains.length > 0) {
     insights.push({
       severity: "positive",

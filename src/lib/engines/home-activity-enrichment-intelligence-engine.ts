@@ -112,7 +112,7 @@ export interface HomeActivityEnrichmentResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number {
+function daysAgo(today: string, date: string): number | null {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -129,7 +129,7 @@ function clamp(v: number, lo: number, hi: number): number {
 
 // fab-0: null when denominator is 0 — "not measured" is not "0%".
 function pct(n: number, d: number): number | null {
-  return d > 0 ? Math.round((n / d) * 100) : null;
+  return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
 // fab-0: null on empty — no data to average.

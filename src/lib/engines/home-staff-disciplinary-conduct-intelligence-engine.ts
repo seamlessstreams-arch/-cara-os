@@ -63,7 +63,7 @@ export interface DisciplinaryRecommendation {
 
 export interface StaffDisciplinaryConductResult {
   disciplinary_rating: StaffDisciplinaryRating;
-  disciplinary_score: number;
+  disciplinary_score: number | null;
   headline: string;
   total_cases: number;
   open_cases: number;
@@ -71,11 +71,11 @@ export interface StaffDisciplinaryConductResult {
   gross_misconduct_count: number;
   serious_misconduct_count: number;
   suspended_count: number;
-  lado_referral_rate: number;
-  investigation_completion_rate: number;
-  average_investigation_days: number;
-  outcome_recording_rate: number;
-  lessons_learned_rate: number;
+  lado_referral_rate: number | null;
+  investigation_completion_rate: number | null;
+  average_investigation_days: number | null;
+  outcome_recording_rate: number | null;
+  lessons_learned_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: DisciplinaryRecommendation[];
@@ -216,7 +216,7 @@ export function computeStaffDisciplinaryConductIntelligence(
                 0,
               ) / completed.length,
             )
-          : 0;
+          : null;
       })(),
       outcome_recording_rate: pct(
         cases.filter(
@@ -296,7 +296,7 @@ export function computeStaffDisciplinaryConductIntelligence(
             0,
           ) / completedInvestigations.length,
         )
-      : 0;
+      : null;
 
   const outcomeRecordingRate = pct(
     resolvedCases.filter((c) => c.outcome_recorded).length,

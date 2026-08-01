@@ -101,7 +101,7 @@ export interface SelfRegulationRecordInput {
   asks_for_help_when_struggling: boolean;
   balances_screen_offline_activities: boolean;
   recognises_impact_on_mood: boolean;
-  self_regulation_score: number; // 1-5
+  self_regulation_score: number | null; // 1-5
   improvement_since_last: "improved" | "maintained" | "declined" | "first_assessment";
   support_plan_in_place: boolean;
   staff_member: string;
@@ -142,16 +142,16 @@ export interface ScreenTimeRecommendation {
 
 export interface MobilePhoneScreenTimeResult {
   screen_time_rating: MobilePhoneScreenTimeRating;
-  screen_time_score: number;
+  screen_time_score: number | null;
   headline: string;
   total_screen_time_records: number;
   total_content_checks: number;
-  screen_time_management_rate: number;
-  content_monitoring_rate: number;
-  usage_agreement_rate: number;
-  digital_wellbeing_rate: number;
-  self_regulation_rate: number;
-  child_satisfaction_rate: number;
+  screen_time_management_rate: number | null;
+  content_monitoring_rate: number | null;
+  usage_agreement_rate: number | null;
+  digital_wellbeing_rate: number | null;
+  self_regulation_rate: number | null;
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: ScreenTimeRecommendation[];
@@ -295,7 +295,7 @@ export function computeMobilePhoneScreenTime(
   const avgDailyUsageMinutes =
     totalScreenTimeRecords > 0
       ? Math.round(totalUsageMinutes / totalScreenTimeRecords)
-      : 0;
+      : null;
 
   // Screen time management composite: limit adherence + bedtime handover
   const screenTimeManagementNumerator = limitAdhered + bedtimeHandover;
@@ -373,7 +373,7 @@ export function computeMobilePhoneScreenTime(
   const usageAgreementRate =
     totalAgreements > 0
       ? Math.round((agreementCoverageRate + childContributionRate + agreementComprehensivenessRate) / 3)
-      : 0;
+      : null;
 
   // --- Digital wellbeing metrics ---
   const totalWellbeingSessions = digital_wellbeing_records.length;
@@ -402,7 +402,7 @@ export function computeMobilePhoneScreenTime(
   const digitalWellbeingRate =
     digitalWellbeingDenominator > 0
       ? pct(digitalWellbeingNumerator, digitalWellbeingDenominator)
-      : 0;
+      : null;
 
   // --- Self-regulation metrics ---
   const totalSelfRegRecords = self_regulation_records.length;
@@ -424,11 +424,11 @@ export function computeMobilePhoneScreenTime(
   }
   const selfRegulationRate = pct(totalSelfRegChecksPassed, totalSelfRegChecksPossible);
 
-  const selfRegScoreSum = self_regulation_records.reduce((sum, r) => sum + r.self_regulation_score, 0);
+  const selfRegScoreSum = self_regulation_records.reduce((sum, r) => sum + (r.self_regulation_score ?? 0), 0);
   const avgSelfRegScore =
     totalSelfRegRecords > 0
       ? Math.round((selfRegScoreSum / totalSelfRegRecords) * 100) / 100
-      : 0;
+      : null;
 
   const improved = self_regulation_records.filter((r) => r.improvement_since_last === "improved").length;
   const improvementRate = pct(improved, totalSelfRegRecords);
@@ -452,12 +452,12 @@ export function computeMobilePhoneScreenTime(
   else if (contentMonitoringRate >= 70) score += 3;
 
   // --- Bonus 3: usageAgreementRate (>=85: +5, >=65: +2) ---
-  if (usageAgreementRate >= 85) score += 5;
-  else if (usageAgreementRate >= 65) score += 2;
+  if ((usageAgreementRate ?? 0) >= 85) score += 5;
+  else if ((usageAgreementRate ?? 0) >= 65) score += 2;
 
   // --- Bonus 4: digitalWellbeingRate (>=85: +4, >=65: +2) ---
-  if (digitalWellbeingRate >= 85) score += 4;
-  else if (digitalWellbeingRate >= 65) score += 2;
+  if ((digitalWellbeingRate ?? 0) >= 85) score += 4;
+  else if ((digitalWellbeingRate ?? 0) >= 65) score += 2;
 
   // --- Bonus 5: selfRegulationRate (>=85: +5, >=65: +2) ---
   if (selfRegulationRate >= 85) score += 5;
@@ -509,21 +509,21 @@ export function computeMobilePhoneScreenTime(
     );
   }
 
-  if (usageAgreementRate >= 85 && totalAgreements > 0) {
+  if ((usageAgreementRate ?? 0) >= 85 && totalAgreements > 0) {
     strengths.push(
       `${usageAgreementRate}% usage agreement quality — comprehensive, child-contributed agreements are in place covering screen time limits, content boundaries, online safety, and consequences.`,
     );
-  } else if (usageAgreementRate >= 65 && totalAgreements > 0) {
+  } else if ((usageAgreementRate ?? 0) >= 65 && totalAgreements > 0) {
     strengths.push(
       `${usageAgreementRate}% usage agreement quality — most children have adequate device usage agreements in place.`,
     );
   }
 
-  if (digitalWellbeingRate >= 85 && totalWellbeingSessions > 0) {
+  if ((digitalWellbeingRate ?? 0) >= 85 && totalWellbeingSessions > 0) {
     strengths.push(
       `${digitalWellbeingRate}% digital wellbeing effectiveness — children are actively engaged in digital wellbeing education with strong learning outcomes and consistent follow-up.`,
     );
-  } else if (digitalWellbeingRate >= 65 && totalWellbeingSessions > 0) {
+  } else if ((digitalWellbeingRate ?? 0) >= 65 && totalWellbeingSessions > 0) {
     strengths.push(
       `${digitalWellbeingRate}% digital wellbeing effectiveness — the home provides generally effective digital wellbeing education for children.`,
     );
@@ -649,21 +649,21 @@ export function computeMobilePhoneScreenTime(
     );
   }
 
-  if (usageAgreementRate < 40 && totalAgreements > 0) {
+  if ((usageAgreementRate ?? 0) < 40 && totalAgreements > 0) {
     concerns.push(
       `Only ${usageAgreementRate}% usage agreement quality — agreements lack comprehensiveness, child participation, or adequate coverage. Children do not have clear, jointly-agreed digital boundaries.`,
     );
-  } else if (usageAgreementRate < 65 && usageAgreementRate >= 40 && totalAgreements > 0) {
+  } else if ((usageAgreementRate ?? 0) < 65 && (usageAgreementRate ?? 0) >= 40 && totalAgreements > 0) {
     concerns.push(
       `Usage agreement quality at ${usageAgreementRate}% — agreements need improvement in coverage, child involvement, or comprehensiveness.`,
     );
   }
 
-  if (digitalWellbeingRate < 40 && totalWellbeingSessions > 0) {
+  if ((digitalWellbeingRate ?? 0) < 40 && totalWellbeingSessions > 0) {
     concerns.push(
       `Only ${digitalWellbeingRate}% digital wellbeing effectiveness — children are not engaging with digital wellbeing education, learning outcomes are not being achieved, and follow-up is inconsistent. Children are not being equipped to navigate the digital world safely.`,
     );
-  } else if (digitalWellbeingRate < 65 && digitalWellbeingRate >= 40 && totalWellbeingSessions > 0) {
+  } else if ((digitalWellbeingRate ?? 0) < 65 && (digitalWellbeingRate ?? 0) >= 40 && totalWellbeingSessions > 0) {
     concerns.push(
       `Digital wellbeing effectiveness at ${digitalWellbeingRate}% — sessions need improvement in engagement, learning outcomes, or follow-up to better support children's digital safety skills.`,
     );
@@ -872,8 +872,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    usageAgreementRate >= 40 &&
-    usageAgreementRate < 65 &&
+    (usageAgreementRate ?? 0) >= 40 &&
+    (usageAgreementRate ?? 0) < 65 &&
     totalAgreements > 0
   ) {
     recommendations.push({
@@ -886,8 +886,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    digitalWellbeingRate >= 40 &&
-    digitalWellbeingRate < 65 &&
+    (digitalWellbeingRate ?? 0) >= 40 &&
+    (digitalWellbeingRate ?? 0) < 65 &&
     totalWellbeingSessions > 0
   ) {
     recommendations.push({
@@ -1076,8 +1076,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    usageAgreementRate >= 40 &&
-    usageAgreementRate < 65 &&
+    (usageAgreementRate ?? 0) >= 40 &&
+    (usageAgreementRate ?? 0) < 65 &&
     totalAgreements > 0
   ) {
     insights.push({
@@ -1087,8 +1087,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    digitalWellbeingRate >= 40 &&
-    digitalWellbeingRate < 65 &&
+    (digitalWellbeingRate ?? 0) >= 40 &&
+    (digitalWellbeingRate ?? 0) < 65 &&
     totalWellbeingSessions > 0
   ) {
     insights.push({
@@ -1227,7 +1227,7 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    usageAgreementRate >= 85 &&
+    (usageAgreementRate ?? 0) >= 85 &&
     childContributionRate >= 90 &&
     totalAgreements > 0
   ) {
@@ -1238,7 +1238,7 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    digitalWellbeingRate >= 85 &&
+    (digitalWellbeingRate ?? 0) >= 85 &&
     childSatisfactionRate >= 90 &&
     totalWellbeingSessions > 0
   ) {

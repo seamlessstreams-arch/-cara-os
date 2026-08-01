@@ -37,7 +37,7 @@ export type LeaveAbsenceRating =
 export interface VolumeProfile {
   total_requests: number;
   total_days_requested: number;
-  avg_days_per_request: number;
+  avg_days_per_request: number | null;
   pending_count: number;
   approved_count: number;
   rejected_count: number;
@@ -47,11 +47,11 @@ export interface VolumeProfile {
 export interface SicknessProfile {
   sick_requests: number;
   sick_days: number;
-  sick_rate: number;
+  sick_rate: number | null;
   active_sick_count: number;
   rtw_required: number;
   rtw_completed: number;
-  rtw_compliance_rate: number;
+  rtw_compliance_rate: number | null;
 }
 
 export interface PlanningProfile {
@@ -60,7 +60,7 @@ export interface PlanningProfile {
   future_leave_count: number;
   future_leave_days: number;
   current_absent_count: number;
-  current_absent_rate: number;
+  current_absent_rate: number | null;
 }
 
 export interface TypeDistribution {
@@ -82,7 +82,7 @@ export interface Insight {
 }
 
 export interface HomeLeaveAbsenceResult {
-  leave_score: number;
+  leave_score: number | null;
   leave_rating: LeaveAbsenceRating;
   headline: string;
   volume: VolumeProfile;
@@ -155,7 +155,7 @@ export function computeHomeLeaveAbsence(
     avg_days_per_request:
       leave_requests.length > 0
         ? Math.round((totalDays / leave_requests.length) * 10) / 10
-        : 0,
+        : null,
     pending_count: pending.length,
     approved_count: approved.length,
     rejected_count: rejected.length,
@@ -251,8 +251,8 @@ export function computeHomeLeaveAbsence(
 
   // Modifier 4: RTW compliance (±4)
   if (rtwRequired.length === 0) score += 4; // No RTW needed = excellent
-  else if (sickness.rtw_compliance_rate >= 80) score += 4;
-  else if (sickness.rtw_compliance_rate >= 50) score += 1;
+  else if ((sickness.rtw_compliance_rate ?? 0) >= 80) score += 4;
+  else if ((sickness.rtw_compliance_rate ?? 0) >= 50) score += 1;
   else score -= 3;
 
   // Modifier 5: Future planning (±3)
@@ -307,7 +307,7 @@ export function computeHomeLeaveAbsence(
     strengths.push("No staff currently absent — full team availability.");
   if (pending.length === 0 && leave_requests.length > 0)
     strengths.push("All leave requests processed — no pending approvals.");
-  if (rtwRequired.length > 0 && sickness.rtw_compliance_rate >= 80)
+  if (rtwRequired.length > 0 && (sickness.rtw_compliance_rate ?? 0) >= 80)
     strengths.push(`${sickness.rtw_compliance_rate}% return-to-work compliance — good governance.`);
   if (rtwRequired.length === 0 && sickRequests.length === 0)
     strengths.push("No return-to-work processes required — clean absence record.");
@@ -324,7 +324,7 @@ export function computeHomeLeaveAbsence(
     concerns.push(`${activeSick.length} staff member(s) currently on sick leave — monitor coverage impact.`);
   if (pending.length > 0)
     concerns.push(`${pending.length} leave request(s) awaiting approval — delays affect staff planning.`);
-  if (rtwRequired.length > 0 && sickness.rtw_compliance_rate < 50)
+  if (rtwRequired.length > 0 && (sickness.rtw_compliance_rate ?? 0) < 50)
     concerns.push(`Return-to-work compliance at ${sickness.rtw_compliance_rate}% — non-compliance creates governance risk.`);
   if (currentAbsentRate > 25)
     concerns.push(`${currentAbsentRate}% of staff currently absent — staffing adequacy may be compromised.`);
@@ -343,7 +343,7 @@ export function computeHomeLeaveAbsence(
       urgency: pending.length > 2 ? "immediate" : "soon",
       regulatory_ref: "Reg 33",
     });
-  if (rtwRequired.length > 0 && sickness.rtw_compliance_rate < 80)
+  if (rtwRequired.length > 0 && (sickness.rtw_compliance_rate ?? 0) < 80)
     recommendations.push({
       rank: rank++,
       recommendation: "Complete outstanding return-to-work meetings — these are essential for staff welfare and identifying support needs.",

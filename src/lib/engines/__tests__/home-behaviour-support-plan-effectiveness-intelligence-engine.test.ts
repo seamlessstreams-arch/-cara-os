@@ -1251,7 +1251,7 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
           behaviour_support_plans: [makeBSP({ id: "b1", child_id: "c1", status: "active" })],
           positive_reinforcement_records: [makePositiveReinforcement({ child_response: "negative" })],
         }));
-        expect(r.intervention_success_rate).toBe(0);
+        expect(r.intervention_success_rate).toBeNull();;
         // No penalty because totalInterventions = 0
       });
     });
@@ -1276,7 +1276,7 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
           behaviour_support_plans: [makeBSP({ id: "b1", child_id: "c1", status: "active" })],
           intervention_records: [makeIntervention({ outcome: "unsuccessful" })],
         }));
-        expect(r.deescalation_effectiveness_rate).toBe(0);
+        expect(r.deescalation_effectiveness_rate).toBeNull();;
       });
     });
 
@@ -1389,7 +1389,7 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
           behaviour_support_plans: [makeBSP({ id: "b1", child_id: "c1", status: "active" })],
           positive_reinforcement_records: [makePositiveReinforcement({ child_response: "negative" })],
         }));
-        expect(r.intervention_success_rate).toBe(0);
+        expect(r.intervention_success_rate).toBeNull();;
       });
 
       it("returns 100 when all successful", () => {
@@ -1426,7 +1426,7 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
           behaviour_support_plans: [makeBSP({ id: "b1", child_id: "c1", status: "active" })],
           intervention_records: [makeIntervention({ outcome: "unsuccessful" })],
         }));
-        expect(r.deescalation_effectiveness_rate).toBe(0);
+        expect(r.deescalation_effectiveness_rate).toBeNull();;
       });
     });
 

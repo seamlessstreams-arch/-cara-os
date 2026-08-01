@@ -79,49 +79,49 @@ export type Reg4445Rating = "outstanding" | "good" | "adequate" | "inadequate" |
 
 export interface Reg44VisitSummary {
   total_packs: number;
-  visit_completed_rate: number;
-  report_submitted_rate: number;
+  visit_completed_rate: number | null;
+  report_submitted_rate: number | null;
   avg_areas_covered: number;
 }
 
 export interface Reg44ReportSummary {
   total_reports: number;
   avg_children_interviewed: number;
-  child_voice_rate: number;
+  child_voice_rate: number | null;
   avg_concerns: number;
 }
 
 export interface Reg44ActionSummary {
   total_actions: number;
-  completed_rate: number;
+  completed_rate: number | null;
   overdue_count: number;
   high_priority_open: number;
 }
 
 export interface Reg45Summary {
   total_evidence: number;
-  strong_evidence_rate: number;
-  child_voice_rate: number;
+  strong_evidence_rate: number | null;
+  child_voice_rate: number | null;
   overdue_reviews: number;
   unique_quality_areas: number;
 }
 
 export interface Reg46Summary {
   total_reviews: number;
-  action_completion_rate: number;
+  action_completion_rate: number | null;
   overdue_reviews: number;
 }
 
 export interface AnnexASummary {
   total_standards: number;
-  evidence_present_rate: number;
-  evidence_current_rate: number;
+  evidence_present_rate: number | null;
+  evidence_current_rate: number | null;
   gaps_identified: number;
 }
 
 export interface HomeReg4445EvidenceResult {
   reg4445_rating: Reg4445Rating;
-  reg4445_score: number;
+  reg4445_score: number | null;
   headline: string;
   reg44_visits: Reg44VisitSummary;
   reg44_reports: Reg44ReportSummary;
@@ -173,15 +173,15 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   const p44Submitted = reg44_packs.filter(p => p.report_submitted).length;
   const p44SubmitRate = pct(p44Submitted, reg44_packs.length);
   const p44AvgAreas = reg44_packs.length > 0
-    ? Math.round((reg44_packs.reduce((s, p) => s + p.areas_covered, 0) / reg44_packs.length) * 10) / 10 : 0;
+    ? Math.round((reg44_packs.reduce((s, p) => s + p.areas_covered, 0) / reg44_packs.length) * 10) / 10 : null;
 
   // Reg 44 Reports
   const r44AvgChildren = reg44_visit_reports.length > 0
-    ? Math.round((reg44_visit_reports.reduce((s, r) => s + r.children_interviewed, 0) / reg44_visit_reports.length) * 10) / 10 : 0;
+    ? Math.round((reg44_visit_reports.reduce((s, r) => s + r.children_interviewed, 0) / reg44_visit_reports.length) * 10) / 10 : null;
   const r44Voice = reg44_visit_reports.filter(r => r.child_voice_included).length;
   const r44VoiceRate = pct(r44Voice, reg44_visit_reports.length);
   const r44AvgConcerns = reg44_visit_reports.length > 0
-    ? Math.round((reg44_visit_reports.reduce((s, r) => s + r.concerns_raised, 0) / reg44_visit_reports.length) * 10) / 10 : 0;
+    ? Math.round((reg44_visit_reports.reduce((s, r) => s + r.concerns_raised, 0) / reg44_visit_reports.length) * 10) / 10 : null;
 
   // Reg 44 Actions
   const a44Completed = reg44_actions.filter(a => a.status === "completed").length;
@@ -230,7 +230,7 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
     if (reg44_packs.length > 0) {
       if (p44CompRate >= 90) m += 2; else if (p44CompRate < 50) m -= 2;
       if (p44SubmitRate >= 90) m += 2; else if (p44SubmitRate < 50) m -= 2;
-      if (p44AvgAreas >= 5) m += 1; else if (p44AvgAreas < 2) m -= 1;
+      if ((p44AvgAreas ?? 0) >= 5) m += 1; else if ((p44AvgAreas ?? 0) < 2) m -= 1;
     } else {
       if (total_children >= 1) m -= 3;
     }
@@ -242,7 +242,7 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
     let m = 0;
     if (reg44_visit_reports.length > 0) {
       if (r44VoiceRate >= 80) m += 2; else if (r44VoiceRate < 40) m -= 1;
-      if (r44AvgChildren >= 3) m += 1; else if (r44AvgChildren < 1) m -= 1;
+      if ((r44AvgChildren ?? 0) >= 3) m += 1; else if ((r44AvgChildren ?? 0) < 1) m -= 1;
       const avgAreas = reg44_visit_reports.length > 0
         ? reg44_visit_reports.reduce((s, r) => s + r.areas_inspected.length, 0) / reg44_visit_reports.length : 0;
       if (avgAreas >= 5) m += 1; else if (avgAreas < 2) m -= 1;

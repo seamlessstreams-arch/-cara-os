@@ -105,18 +105,18 @@ export interface InductionRecommendation {
 
 export interface StaffInductionOnboardingResult {
   induction_rating: InductionOnboardingRating;
-  induction_score: number;
+  induction_score: number | null;
   headline: string;
   total_inductions: number;
-  completion_rate: number;
-  agency_induction_completion_rate: number;
-  safeguarding_coverage_rate: number;
-  medication_coverage_rate: number;
-  fire_safety_coverage_rate: number;
-  shadowing_completion_rate: number;
-  shadowing_competency_rate: number;
-  handbook_acknowledgement_rate: number;
-  lone_working_readiness_rate: number;
+  completion_rate: number | null;
+  agency_induction_completion_rate: number | null;
+  safeguarding_coverage_rate: number | null;
+  medication_coverage_rate: number | null;
+  fire_safety_coverage_rate: number | null;
+  shadowing_completion_rate: number | null;
+  shadowing_competency_rate: number | null;
+  handbook_acknowledgement_rate: number | null;
+  lone_working_readiness_rate: number | null;
   average_module_completion: number;
   strengths: string[];
   concerns: string[];
@@ -352,8 +352,8 @@ export function computeStaffInductionOnboarding(
             const moduleRate =
               i.modules_total > 0
                 ? (i.modules_completed / i.modules_total) * 100
-                : 0;
-            return sum + moduleRate;
+                : null;
+            return sum + (moduleRate ?? 0);
           }, 0) / totalInductions,
         )
       : 0;
@@ -884,8 +884,8 @@ export function computeStaffInductionOnboarding(
     const avgHours =
       totalShadowing > 0
         ? Math.round(totalShadowHours / totalShadowing)
-        : 0;
-    if (avgHours >= 8) {
+        : null;
+    if ((avgHours ?? 0) >= 8) {
       insights.push({
         text: `Shadowing programme is robust — averaging ${avgHours} hours per staff member with ${loneWorkingReadiness}% lone working readiness. This provides strong evidence that staff are properly prepared through supervised practice.`,
         severity: "positive",

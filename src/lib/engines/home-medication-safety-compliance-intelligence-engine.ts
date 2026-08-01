@@ -105,18 +105,18 @@ export interface MedicationSafetyRecommendation {
 
 export interface MedicationSafetyComplianceResult {
   safety_rating: MedicationSafetyRating;
-  safety_score: number;
+  safety_score: number | null;
   headline: string;
   total_administrations: number;
-  administration_accuracy_rate: number;
-  error_rate: number;
-  audit_compliance_rate: number;
-  storage_pass_rate: number;
-  emergency_protocol_currency_rate: number;
-  witness_rate: number;
-  controlled_drug_compliance_rate: number;
-  prn_documentation_rate: number;
-  staff_competency_rate: number;
+  administration_accuracy_rate: number | null;
+  error_rate: number | null;
+  audit_compliance_rate: number | null;
+  storage_pass_rate: number | null;
+  emergency_protocol_currency_rate: number | null;
+  witness_rate: number | null;
+  controlled_drug_compliance_rate: number | null;
+  prn_documentation_rate: number | null;
+  staff_competency_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: MedicationSafetyRecommendation[];
@@ -376,7 +376,7 @@ export function computeMedicationSafetyCompliance(
   );
   const avgStaffTrained = totalProtocols > 0
     ? Math.round(totalStaffTrained / totalProtocols)
-    : 0;
+    : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
   // Bonuses sum to exactly 28: 4+3+3+3+3+3+3+3+3 = 28

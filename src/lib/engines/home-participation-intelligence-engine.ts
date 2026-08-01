@@ -40,10 +40,10 @@ export type ParticipationRating =
 
 export interface MeetingProfile {
   total_meetings_90d: number;
-  avg_attendance_rate: number;               // % children attending
-  avg_child_raised_rate: number;             // % agenda items raised by children
+  avg_attendance_rate: number | null;               // % children attending
+  avg_child_raised_rate: number | null;             // % agenda items raised by children
   avg_feedback_per_meeting: number;
-  action_completion_rate: number;            // % previous actions completed
+  action_completion_rate: number | null;            // % previous actions completed
   avg_duration: number;                      // minutes
   meetings_per_month: number;                // rate
   children_never_attended: string[];
@@ -54,7 +54,7 @@ export interface EngagementProfile {
   total_child_raised: number;
   total_feedback: number;
   total_new_actions: number;
-  child_voice_score: number;                 // 0–100 composite
+  child_voice_score: number | null;                 // 0–100 composite
 }
 
 export interface ParticipationInsight {
@@ -71,7 +71,7 @@ export interface ParticipationRecommendation {
 
 export interface HomeParticipationResult {
   participation_rating: ParticipationRating;
-  participation_score: number;
+  participation_score: number | null;
   headline: string;
   meeting_profile: MeetingProfile;
   engagement_profile: EngagementProfile;
@@ -83,7 +83,7 @@ export interface HomeParticipationResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function clamp(v: number, lo: number, hi: number): number {
+function clamp(v: number, lo: number, hi: number): number | null {
   return Math.max(lo, Math.min(hi, v));
 }
 
@@ -129,21 +129,23 @@ export function computeHomeParticipation(
   const attendanceRates = meetings90d.map(m => {
     const totalAttendees = m.children_present.length + m.children_absent.length;
     return totalAttendees > 0
-      ? Math.round((m.children_present.length / totalAttendees) * 100)
-      : 0;
-  });
-  const avgAttendance = Math.round(
-    attendanceRates.reduce((s, r) => s + r, 0) / attendanceRates.length,
-  );
+       ? Math.round((m.children_present.length / totalAttendees) * 100)
+       : null;
+});
+  const attendanceRatesNumeric = attendanceRates.filter((r): r is number => r !== null);
+  const avgAttendance = attendanceRatesNumeric.length > 0 ? Math.round(
+    attendanceRatesNumeric.reduce((s, r) => s + r, 0) / attendanceRatesNumeric.length,
+  ) : null;
 
   const childRaisedRates = meetings90d.map(m =>
     m.total_agenda_items > 0
       ? Math.round((m.child_raised_items / m.total_agenda_items) * 100)
-      : 0,
+      : null,
   );
-  const avgChildRaised = Math.round(
-    childRaisedRates.reduce((s, r) => s + r, 0) / childRaisedRates.length,
-  );
+  const childRaisedRatesNumeric = childRaisedRates.filter((r): r is number => r !== null);
+  const avgChildRaised = childRaisedRatesNumeric.length > 0 ? Math.round(
+    childRaisedRatesNumeric.reduce((s, r) => s + r, 0) / childRaisedRatesNumeric.length,
+  ) : null;
 
   const avgFeedback = Math.round(
     (meetings90d.reduce((s, m) => s + m.feedback_count, 0) / meetings90d.length) * 10,
@@ -185,7 +187,7 @@ export function computeHomeParticipation(
 
   // Child voice composite: attendance + child-raised + feedback weighting
   const voiceScore = clamp(
-    Math.round((avgAttendance * 0.4) + (avgChildRaised * 0.3) + (Math.min(avgFeedback / 3, 1) * 30)),
+    Math.round(((avgAttendance ?? 0) * 0.4) + ((avgChildRaised ?? 0) * 0.3) + (Math.min(avgFeedback / 3, 1) * 30)),
     0,
     100,
   );
@@ -208,14 +210,14 @@ export function computeHomeParticipation(
   else score -= 2;
 
   // Attendance (±10)
-  if (avgAttendance >= 90) score += 6;
-  else if (avgAttendance >= 70) score += 3;
-  else if (avgAttendance < 50) score -= 6;
+  if ((avgAttendance ?? 0) >= 90) score += 6;
+  else if ((avgAttendance ?? 0) >= 70) score += 3;
+  else if ((avgAttendance ?? 0) < 50) score -= 6;
   else score -= 2;
 
   // Child-raised agenda (±8)
-  if (avgChildRaised >= 50) score += 5;
-  else if (avgChildRaised >= 25) score += 2;
+  if ((avgChildRaised ?? 0) >= 50) score += 5;
+  else if ((avgChildRaised ?? 0) >= 25) score += 2;
   else if (avgChildRaised === 0) score -= 5;
   else score -= 1;
 
@@ -245,8 +247,8 @@ export function computeHomeParticipation(
   const strengths: string[] = [];
   if (meetingsPerMonth >= 4) strengths.push(`House meetings held weekly (${meetingsPerMonth}/month) — excellent regularity.`);
   else if (meetingsPerMonth >= 2) strengths.push(`House meetings held regularly (${meetingsPerMonth}/month).`);
-  if (avgAttendance >= 85) strengths.push(`${avgAttendance}% average attendance — children are well engaged in meetings.`);
-  if (avgChildRaised >= 40) strengths.push(`${avgChildRaised}% of agenda items raised by children — their voice shapes the home.`);
+  if ((avgAttendance ?? 0) >= 85) strengths.push(`${(avgAttendance ?? 0)}% average attendance — children are well engaged in meetings.`);
+  if ((avgChildRaised ?? 0) >= 40) strengths.push(`${(avgChildRaised ?? 0)}% of agenda items raised by children — their voice shapes the home.`);
   if (neverAttended.length === 0 && total_children > 0) strengths.push("All children have attended at least one meeting in the past 90 days.");
   if (actionCompletionRate >= 80 && totalPrevActions > 0) strengths.push(`${actionCompletionRate}% action completion — the home follows through on children's requests.`);
   if (avgFeedback >= 2) strengths.push("Strong feedback from children — average of " + avgFeedback + " feedback entries per meeting.");
@@ -254,9 +256,9 @@ export function computeHomeParticipation(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (meetingsPerMonth < 2) concerns.push(`House meetings only ${meetingsPerMonth}/month — regularity is below expectations for good practice.`);
-  if (avgAttendance < 60) concerns.push(`Low average attendance (${avgAttendance}%) — barriers to participation need investigating.`);
+  if ((avgAttendance ?? 0) < 60) concerns.push(`Low average attendance (${(avgAttendance ?? 0)}%) — barriers to participation need investigating.`);
   if (neverAttended.length > 0) concerns.push(`${neverAttended.length} child${neverAttended.length > 1 ? "ren have" : " has"} never attended a meeting — every child's voice matters.`);
-  if (avgChildRaised < 20 && totalAgenda > 0) concerns.push("Very few agenda items raised by children — meetings may be staff-dominated.");
+  if ((avgChildRaised ?? 0) < 20 && totalAgenda > 0) concerns.push("Very few agenda items raised by children — meetings may be staff-dominated.");
   if (actionCompletionRate < 50 && totalPrevActions > 0) concerns.push(`Only ${actionCompletionRate}% of actions completed — follow-through is essential for children to trust the process.`);
   if (avgFeedback < 1) concerns.push("Low feedback from children — consider using creative methods to gather views.");
 
@@ -270,7 +272,7 @@ export function computeHomeParticipation(
   if (neverAttended.length > 0) {
     recs.push({ rank: rank++, recommendation: `Engage ${neverAttended.length} child${neverAttended.length > 1 ? "ren" : ""} who have not attended — explore barriers and alternative participation methods.`, urgency: "soon", regulatory_ref: "Reg 7" });
   }
-  if (avgChildRaised < 25 && totalAgenda > 0) {
+  if ((avgChildRaised ?? 0) < 25 && totalAgenda > 0) {
     recs.push({ rank: rank++, recommendation: "Encourage children to set agenda items — use suggestion boxes or pre-meeting prompts.", urgency: "soon", regulatory_ref: "Reg 9" });
   }
   if (actionCompletionRate < 60 && totalPrevActions > 0) {
@@ -289,13 +291,13 @@ export function computeHomeParticipation(
   if (meetingsPerMonth < 1) {
     insights.push({ text: "Fewer than 1 meeting per month. Ofsted expects regular children's meetings as evidence of participatory care practice.", severity: "critical" });
   }
-  if (avgChildRaised >= 40 && avgAttendance >= 80) {
+  if ((avgChildRaised ?? 0) >= 40 && (avgAttendance ?? 0) >= 80) {
     insights.push({ text: `${avgChildRaised}% of agenda items raised by children with ${avgAttendance}% attendance — this demonstrates genuine child-led participation.`, severity: "positive" });
   }
   if (actionCompletionRate >= 80 && totalPrevActions > 0) {
     insights.push({ text: `${actionCompletionRate}% action completion demonstrates that the home listens to children and follows through — excellent evidence of responsive care.`, severity: "positive" });
   }
-  if (voiceScore >= 70) {
+  if ((voiceScore ?? 0) >= 70) {
     insights.push({ text: `Child voice score of ${voiceScore}% indicates strong participatory practice — children are influencing decisions in their home.`, severity: "positive" });
   }
 

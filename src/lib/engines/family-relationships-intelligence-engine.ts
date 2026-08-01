@@ -95,7 +95,7 @@ export interface FamilyRelationshipsResult {
   child_name: string;
 
   relationship_health: RelationshipHealth;
-  relationship_score: number;
+  relationship_score: number | null;
   headline: string;
 
   contact_analysis: ContactAnalysis;
@@ -114,10 +114,10 @@ export interface ContactAnalysis {
   total_sessions_90d: number;
   sessions_last_30d: number;
   unique_family_contacts: number;
-  average_session_minutes: number;
-  supervised_pct: number;
-  safe_pct: number;
-  positive_presentation_pct: number;
+  average_session_minutes: number | null;
+  supervised_pct: number | null;
+  safe_pct: number | null;
+  positive_presentation_pct: number | null;
   concerns_raised_90d: number;
   child_voice_captured: boolean;
   contact_frequency_trend: "increasing" | "stable" | "decreasing" | "no_data";
@@ -140,8 +140,8 @@ export interface ProfessionalEngagement {
   social_worker_last_contact: string | null;
   irp_last_contact: string | null;
   lac_reviews_last_12m: number;
-  family_attended_lac_pct: number;
-  child_participated_lac_pct: number;
+  family_attended_lac_pct: number | null;
+  child_participated_lac_pct: number | null;
 }
 
 export interface ContactComplianceSummary {
@@ -235,20 +235,20 @@ function computeContactAnalysis(input: FamilyRelationshipsInput): ContactAnalysi
   const uniqueContacts = new Set(sessions90d.map((s) => s.family_member || s.family_member_name));
   const avgDuration = sessions90d.length > 0
     ? Math.round(sessions90d.reduce((s, f) => s + f.duration_minutes, 0) / sessions90d.length)
-    : 0;
+    : null;
 
   const supervised = sessions90d.filter((s) => s.supervision_level !== "none" && s.supervision_level !== "unsupervised");
-  const supervisedPct = sessions90d.length > 0 ? Math.round((supervised.length / sessions90d.length) * 100) : 0;
+  const supervisedPct = sessions90d.length > 0 ? Math.round((supervised.length / sessions90d.length) * 100) : null;
 
   const safe = sessions90d.filter((s) => s.was_it_safe);
-  const safePct = sessions90d.length > 0 ? Math.round((safe.length / sessions90d.length) * 100) : 0;
+  const safePct = sessions90d.length > 0 ? Math.round((safe.length / sessions90d.length) * 100) : null;
 
   const positive = sessions90d.filter((s) =>
     s.child_presentation_after === "happy" || s.child_presentation_after === "content" ||
     s.child_presentation_after === "settled" || s.child_presentation_after === "positive" ||
     s.positive_observations.length > 0,
   );
-  const positivePct = sessions90d.length > 0 ? Math.round((positive.length / sessions90d.length) * 100) : 0;
+  const positivePct = sessions90d.length > 0 ? Math.round((positive.length / sessions90d.length) * 100) : null;
 
   const allConcerns = sessions90d.reduce((sum, s) => sum + s.concerns.length, 0);
   const hasVoice = sessions90d.some((s) => s.child_voice && s.child_voice.trim().length > 0);
@@ -324,8 +324,8 @@ function computeProfessionalEngagement(input: FamilyRelationshipsInput): Profess
     social_worker_last_contact: sw?.last_contact_date ?? null,
     irp_last_contact: irp?.last_contact_date ?? null,
     lac_reviews_last_12m: reviews12m.length,
-    family_attended_lac_pct: reviews12m.length > 0 ? Math.round((familyAttended.length / reviews12m.length) * 100) : 0,
-    child_participated_lac_pct: reviews12m.length > 0 ? Math.round((childPart.length / reviews12m.length) * 100) : 0,
+    family_attended_lac_pct: reviews12m.length > 0 ? Math.round((familyAttended.length / reviews12m.length) * 100) : null,
+    child_participated_lac_pct: reviews12m.length > 0 ? Math.round((childPart.length / reviews12m.length) * 100) : null,
   };
 }
 
@@ -391,8 +391,8 @@ function computeScore(
   else if (contact.total_sessions_90d >= 3) score += 5;
   else if (contact.total_sessions_90d === 0) score -= 5;
   if (contact.safe_pct === 100 && contact.total_sessions_90d > 0) score += 5;
-  else if (contact.safe_pct < 80 && contact.total_sessions_90d > 0) score -= 5;
-  if (contact.positive_presentation_pct > 70) score += 5;
+  else if ((contact.safe_pct ?? 0) < 80 && contact.total_sessions_90d > 0) score -= 5;
+  if ((contact.positive_presentation_pct ?? 0) > 70) score += 5;
   if (contact.concerns_raised_90d > 3) score -= 10;
   else if (contact.concerns_raised_90d > 0) score -= 3;
 
@@ -404,7 +404,7 @@ function computeScore(
 
   // Professional engagement (+/- 10)
   if (professional.lac_reviews_last_12m >= 2) score += 5;
-  if (professional.child_participated_lac_pct >= 80) score += 5;
+  if ((professional.child_participated_lac_pct ?? 0) >= 80) score += 5;
   if (professional.active_professionals === 0) score -= 5;
 
   // Compliance (+/- 5)
@@ -443,7 +443,7 @@ function identifyStrengths(
   if (contact.safe_pct === 100 && contact.total_sessions_90d > 0) {
     strengths.push("All contact sessions assessed as safe");
   }
-  if (contact.positive_presentation_pct > 70) {
+  if ((contact.positive_presentation_pct ?? 0) > 70) {
     strengths.push(`Child presents positively after ${contact.positive_presentation_pct}% of contact sessions`);
   }
   if (contact.child_voice_captured) {
@@ -455,7 +455,7 @@ function identifyStrengths(
   if (family.child_contributed_to_genogram) {
     strengths.push("Child contributed to their genogram — identity work supported");
   }
-  if (professional.child_participated_lac_pct >= 80) {
+  if ((professional.child_participated_lac_pct ?? 0) >= 80) {
     strengths.push(`Child participated in ${professional.child_participated_lac_pct}% of LAC reviews`);
   }
   if (contact.unique_family_contacts >= 3) {
@@ -480,8 +480,8 @@ function identifyConcerns(
   if (contact.total_sessions_90d === 0 && input.contact_arrangements.length > 0) {
     concerns.push("No family contact sessions recorded in 90 days despite active arrangements");
   }
-  if (contact.safe_pct < 80 && contact.total_sessions_90d > 0) {
-    concerns.push(`${100 - contact.safe_pct}% of contact sessions flagged safety concerns`);
+  if ((contact.safe_pct ?? 0) < 80 && contact.total_sessions_90d > 0) {
+    concerns.push(`${100 - (contact.safe_pct ?? 0)}% of contact sessions flagged safety concerns`);
   }
   if (contact.concerns_raised_90d > 3) {
     concerns.push(`${contact.concerns_raised_90d} concerns raised across contact sessions in 90 days`);
@@ -525,7 +525,7 @@ function buildRecommendations(
   const recs: RelationshipRecommendation[] = [];
   let rank = 0;
 
-  if (contact.safe_pct < 70 && contact.total_sessions_90d > 2) {
+  if ((contact.safe_pct ?? 0) < 70 && contact.total_sessions_90d > 2) {
     recs.push({
       rank: ++rank,
       recommendation: "Review contact safety — multiple sessions flagged as unsafe requires immediate risk assessment",
@@ -673,14 +673,14 @@ function generateInsights(
     });
   }
 
-  if (professional.family_attended_lac_pct >= 80 && professional.lac_reviews_last_12m >= 2) {
+  if ((professional.family_attended_lac_pct ?? 0) >= 80 && professional.lac_reviews_last_12m >= 2) {
     insights.push({
       text: `Family attending ${professional.family_attended_lac_pct}% of LAC reviews — strong parental engagement in care planning.`,
       severity: "positive",
     });
   }
 
-  if (contact.positive_presentation_pct > 80 && contact.total_sessions_90d >= 3) {
+  if ((contact.positive_presentation_pct ?? 0) > 80 && contact.total_sessions_90d >= 3) {
     insights.push({
       text: "Consistently positive presentation after family contact — evidence of therapeutic value of maintained relationships.",
       severity: "positive",

@@ -1708,7 +1708,7 @@ describe("computeConsentCapacityManagement", () => {
           capacity_review_records: capacityForChildren(2),
           informed_consent_records: informedConsentForChildren(2),
         });
-        expect(r.withdrawal_handling_rate).toBe(0);
+        expect(r.withdrawal_handling_rate).toBeNull();;
       });
     });
 

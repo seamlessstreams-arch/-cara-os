@@ -149,16 +149,16 @@ export interface DentalOralHealthRecommendation {
 
 export interface DentalOralHealthResult {
   dental_rating: DentalOralHealthRating;
-  dental_score: number;
+  dental_score: number | null;
   headline: string;
   total_checkup_records: number;
   total_treatment_records: number;
-  checkup_compliance_rate: number;
-  oral_hygiene_rate: number;
-  treatment_completion_rate: number;
-  orthodontic_compliance_rate: number;
-  anxiety_support_rate: number;
-  child_engagement_rate: number;
+  checkup_compliance_rate: number | null;
+  oral_hygiene_rate: number | null;
+  treatment_completion_rate: number | null;
+  orthodontic_compliance_rate: number | null;
+  anxiety_support_rate: number | null;
+  child_engagement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: DentalOralHealthRecommendation[];
@@ -427,7 +427,7 @@ export function computeDentalOralHealth(
   const avgAnxietyLevel =
     totalAnxietyRecords > 0
       ? Math.round((anxietyLevelSum / totalAnxietyRecords) * 100) / 100
-      : 0;
+      : null;
 
   // --- Child engagement composite ---
   // Composite across: hygiene engagement + checkup consent + treatment consent + ortho engagement
@@ -741,11 +741,11 @@ export function computeDentalOralHealth(
     );
   }
 
-  if (avgAnxietyLevel >= 4.0 && totalAnxietyRecords > 0) {
+  if ((avgAnxietyLevel ?? 0) >= 4.0 && totalAnxietyRecords > 0) {
     concerns.push(
       `Average dental anxiety level at ${avgAnxietyLevel}/5 — children are experiencing high levels of dental anxiety that require specialist intervention and trauma-informed approaches.`,
     );
-  } else if (avgAnxietyLevel >= 3.0 && avgAnxietyLevel < 4.0 && totalAnxietyRecords > 0) {
+  } else if ((avgAnxietyLevel ?? 0) >= 3.0 && (avgAnxietyLevel ?? 0) < 4.0 && totalAnxietyRecords > 0) {
     concerns.push(
       `Average dental anxiety level at ${avgAnxietyLevel}/5 — dental anxiety is moderate across the home and may be preventing some children from fully engaging with dental care.`,
     );
@@ -1126,8 +1126,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    avgAnxietyLevel >= 3.0 &&
-    avgAnxietyLevel < 4.0 &&
+    (avgAnxietyLevel ?? 0) >= 3.0 &&
+    (avgAnxietyLevel ?? 0) < 4.0 &&
     totalAnxietyRecords > 0
   ) {
     insights.push({

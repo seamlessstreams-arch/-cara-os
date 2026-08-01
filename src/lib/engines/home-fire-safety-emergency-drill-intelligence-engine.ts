@@ -130,19 +130,19 @@ export interface FireSafetyRecommendation {
 
 export interface FireSafetyResult {
   fire_safety_rating: FireSafetyRating;
-  fire_safety_score: number;
+  fire_safety_score: number | null;
   headline: string;
   total_drill_records: number;
   total_risk_assessment_records: number;
   total_equipment_check_records: number;
   total_training_records: number;
   total_document_records: number;
-  drill_compliance_rate: number;
-  evacuation_time_rate: number;
-  risk_assessment_currency_rate: number;
-  equipment_check_rate: number;
-  staff_training_rate: number;
-  documentation_compliance_rate: number;
+  drill_compliance_rate: number | null;
+  evacuation_time_rate: number | null;
+  risk_assessment_currency_rate: number | null;
+  equipment_check_rate: number | null;
+  staff_training_rate: number | null;
+  documentation_compliance_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: FireSafetyRecommendation[];
@@ -323,7 +323,7 @@ export function computeFireSafetyEmergencyDrill(
   const avgEvacTime =
     evacTimes.length > 0
       ? Math.round(evacTimes.reduce((a, b) => a + b, 0) / evacTimes.length)
-      : 0;
+      : null;
 
   // --- Fire risk assessment metrics ---
   const totalRiskAssessments = fire_risk_assessment_records.length;
@@ -474,7 +474,7 @@ export function computeFireSafetyEmergencyDrill(
   const documentationComplianceRate =
     totalDocumentRecords > 0
       ? Math.round((documentCurrencyRate + staffAccessRate + approvedDocRate) / 3)
-      : 0;
+      : null;
 
   // Document type coverage
   const docTypes = new Set(fire_safety_document_records.map((d) => d.document_type));
@@ -514,8 +514,8 @@ export function computeFireSafetyEmergencyDrill(
   else if (staffTrainingRate >= 70) score += 1;
 
   // --- Bonus 6: documentationComplianceRate (>=90: +3, >=70: +1) ---
-  if (documentationComplianceRate >= 90) score += 3;
-  else if (documentationComplianceRate >= 70) score += 1;
+  if ((documentationComplianceRate ?? 0) >= 90) score += 3;
+  else if ((documentationComplianceRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 7: issueResolutionRate (>=90: +3, >=70: +1) ---
   if (issueResolutionRate >= 90) score += 3;
@@ -601,11 +601,11 @@ export function computeFireSafetyEmergencyDrill(
     );
   }
 
-  if (documentationComplianceRate >= 90 && totalDocumentRecords > 0) {
+  if ((documentationComplianceRate ?? 0) >= 90 && totalDocumentRecords > 0) {
     strengths.push(
       `${documentationComplianceRate}% fire safety documentation compliance — fire safety documents are current, accessible, and properly approved.`,
     );
-  } else if (documentationComplianceRate >= 70 && totalDocumentRecords > 0) {
+  } else if ((documentationComplianceRate ?? 0) >= 70 && totalDocumentRecords > 0) {
     strengths.push(
       `${documentationComplianceRate}% documentation compliance rate — fire safety documentation is generally well-maintained and accessible.`,
     );
@@ -739,11 +739,11 @@ export function computeFireSafetyEmergencyDrill(
     );
   }
 
-  if (documentationComplianceRate < 50 && totalDocumentRecords > 0) {
+  if ((documentationComplianceRate ?? 0) < 50 && totalDocumentRecords > 0) {
     concerns.push(
       `Fire safety documentation compliance at only ${documentationComplianceRate}% — fire safety documents are not current, not accessible to staff, or lack proper approval.`,
     );
-  } else if (documentationComplianceRate < 70 && documentationComplianceRate >= 50 && totalDocumentRecords > 0) {
+  } else if ((documentationComplianceRate ?? 0) < 70 && (documentationComplianceRate ?? 0) >= 50 && totalDocumentRecords > 0) {
     concerns.push(
       `Documentation compliance at ${documentationComplianceRate}% — fire safety documentation requires improvement in currency, accessibility, or approval processes.`,
     );
@@ -971,8 +971,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    documentationComplianceRate >= 50 &&
-    documentationComplianceRate < 70 &&
+    (documentationComplianceRate ?? 0) >= 50 &&
+    (documentationComplianceRate ?? 0) < 70 &&
     totalDocumentRecords > 0
   ) {
     recommendations.push({
@@ -1199,8 +1199,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    documentationComplianceRate >= 50 &&
-    documentationComplianceRate < 70 &&
+    (documentationComplianceRate ?? 0) >= 50 &&
+    (documentationComplianceRate ?? 0) < 70 &&
     totalDocumentRecords > 0
   ) {
     insights.push({
@@ -1314,7 +1314,7 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    documentationComplianceRate >= 90 &&
+    (documentationComplianceRate ?? 0) >= 90 &&
     keyDocRate >= 80 &&
     totalDocumentRecords > 0
   ) {

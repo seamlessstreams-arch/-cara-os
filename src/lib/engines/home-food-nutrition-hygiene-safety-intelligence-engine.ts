@@ -54,13 +54,13 @@ export type FoodHygieneSafetyRating =
 
 export interface FoodHygieneSafetyResult {
   food_rating: FoodHygieneSafetyRating;
-  food_score: number;
+  food_score: number | null;
   headline: string;
-  hygiene_pass_rate: number;
-  budget_adherence_rate: number;
-  scratch_cooking_rate: number;
-  dietary_compliance_rate: number;
-  cultural_inclusion_rate: number;
+  hygiene_pass_rate: number | null;
+  budget_adherence_rate: number | null;
+  scratch_cooking_rate: number | null;
+  dietary_compliance_rate: number | null;
+  cultural_inclusion_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: "immediate" | "soon" | "planned"; regulatory_ref: string }[];
@@ -112,7 +112,7 @@ export function computeFoodNutritionHygieneSafety(
   // Scratch cooking: average cook_from_scratch_proportion
   const scratchCookingRate = budgets.length > 0
     ? Math.round(budgets.reduce((s, b) => s + b.cook_from_scratch_proportion, 0) / budgets.length)
-    : 0;
+    : null;
 
   // Dietary compliance: meal_plans with dietary_needs_met
   const dietaryMetPlans = meal_plans.filter(m => m.dietary_needs_met);
@@ -160,11 +160,11 @@ export function computeFoodNutritionHygieneSafety(
   // mod3: Scratch cooking (+5/-4)
   if (budgets.length === 0) {
     score += 0;
-  } else if (scratchCookingRate >= 70) {
+  } else if ((scratchCookingRate ?? 0) >= 70) {
     score += 5;
-  } else if (scratchCookingRate >= 50) {
+  } else if ((scratchCookingRate ?? 0) >= 50) {
     score += 2;
-  } else if (scratchCookingRate >= 30) {
+  } else if ((scratchCookingRate ?? 0) >= 30) {
     score += 0;
   } else {
     score -= 4;
@@ -233,7 +233,7 @@ export function computeFoodNutritionHygieneSafety(
   if (budgetAdherenceRate >= 90 && budgets.length > 0) {
     strengths.push(`${budgetAdherenceRate}% of weeks within food budget — strong financial governance.`);
   }
-  if (scratchCookingRate >= 70 && budgets.length > 0) {
+  if ((scratchCookingRate ?? 0) >= 70 && budgets.length > 0) {
     strengths.push(`${scratchCookingRate}% scratch cooking rate — children receive freshly prepared, home-cooked meals.`);
   }
   if (dietaryComplianceRate >= 90 && meal_plans.length > 0) {
@@ -260,7 +260,7 @@ export function computeFoodNutritionHygieneSafety(
   if (budgetAdherenceRate < 50 && budgets.length > 0) {
     concerns.push(`Only ${budgetAdherenceRate}% of weeks within budget — food spending is poorly controlled.`);
   }
-  if (scratchCookingRate < 30 && budgets.length > 0) {
+  if ((scratchCookingRate ?? 0) < 30 && budgets.length > 0) {
     concerns.push(`Scratch cooking rate is only ${scratchCookingRate}% — over-reliance on pre-prepared foods.`);
   }
   if (dietaryComplianceRate < 40 && meal_plans.length > 0) {
@@ -289,7 +289,7 @@ export function computeFoodNutritionHygieneSafety(
   if (dietaryComplianceRate < 70 && meal_plans.length > 0 && rank < 5) {
     recommendations.push({ rank: ++rank, recommendation: "Review meal planning to ensure every child's dietary needs are consistently met — this is a fundamental requirement of Reg 9.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 9" });
   }
-  if (scratchCookingRate < 50 && budgets.length > 0 && rank < 5) {
+  if ((scratchCookingRate ?? 0) < 50 && budgets.length > 0 && rank < 5) {
     recommendations.push({ rank: ++rank, recommendation: "Increase the proportion of meals cooked from scratch to promote healthier eating and life skills development.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 9" });
   }
   if (culturalInclusionRate < 50 && budgets.length > 0 && rank < 5) {
@@ -306,16 +306,16 @@ export function computeFoodNutritionHygieneSafety(
   }
 
   // Insights (up to 3)
-  if (hygienePassRate >= 95 && dietaryComplianceRate >= 90 && scratchCookingRate >= 70 && culturalInclusionRate >= 80) {
+  if (hygienePassRate >= 95 && dietaryComplianceRate >= 90 && (scratchCookingRate ?? 0) >= 70 && culturalInclusionRate >= 80) {
     insights.push({ text: "Food safety, nutrition, cultural inclusion, and scratch cooking are all at exemplary levels. This demonstrates outstanding child-centred nutritional care that Ofsted would recognise.", severity: "positive" });
   }
   if (failChecks.length >= 3 && actionCompletionRate < 50) {
     insights.push({ text: `${failChecks.length} hygiene failures with only ${actionCompletionRate}% action completion — this indicates systemic food safety governance failure that would be a serious regulatory concern.`, severity: "critical" });
   }
-  if (scratchCookingRate < 30 && budgets.length > 0 && dietaryComplianceRate < 70 && meal_plans.length > 0) {
+  if ((scratchCookingRate ?? 0) < 30 && budgets.length > 0 && dietaryComplianceRate < 70 && meal_plans.length > 0) {
     insights.push({ text: `Low scratch cooking (${scratchCookingRate}%) combined with poor dietary compliance (${dietaryComplianceRate}%) suggests children are not receiving adequate nutritional care.`, severity: "warning" });
   }
-  if (budgetAdherenceRate >= 90 && scratchCookingRate >= 70 && budgets.length > 0) {
+  if (budgetAdherenceRate >= 90 && (scratchCookingRate ?? 0) >= 70 && budgets.length > 0) {
     insights.push({ text: "Strong budget discipline alongside high scratch cooking rates shows effective food governance — resources are being well managed to benefit children.", severity: "positive" });
   }
   if (hygienePassRate < 60 && nonNAChecks.length >= 5) {

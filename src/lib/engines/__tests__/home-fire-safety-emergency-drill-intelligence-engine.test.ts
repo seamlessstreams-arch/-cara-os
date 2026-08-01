@@ -1271,7 +1271,7 @@ describe("rate computations", () => {
 
     it("returns 0 when no documents", () => {
       const r = computeFireSafetyEmergencyDrill(baseInput({ fire_safety_document_records: [] }));
-      expect(r.documentation_compliance_rate).toBe(0);
+      expect(r.documentation_compliance_rate).toBeNull();;
     });
 
     it("returns 100 when all current, all accessible, all approved", () => {

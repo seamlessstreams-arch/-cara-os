@@ -113,18 +113,18 @@ export interface NightCareRecommendation {
 
 export interface NightCareQualityResult {
   night_care_rating: NightCareRating;
-  night_care_score: number;
+  night_care_score: number | null;
   headline: string;
   total_night_checks: number;
-  night_check_compliance_rate: number;
-  night_log_completion_rate: number;
-  handover_completion_rate: number;
-  handover_quality_avg: number;
+  night_check_compliance_rate: number | null;
+  night_log_completion_rate: number | null;
+  handover_completion_rate: number | null;
+  handover_quality_avg: number | null;
   sleep_assessment_coverage: number;
-  anxiety_support_response_rate: number;
-  check_timeliness_rate: number;
-  incident_documentation_rate: number;
-  child_wellbeing_check_rate: number;
+  anxiety_support_response_rate: number | null;
+  check_timeliness_rate: number | null;
+  incident_documentation_rate: number | null;
+  child_wellbeing_check_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: NightCareRecommendation[];
@@ -288,7 +288,7 @@ export function computeNightCareQuality(
   const handoverQualityAvg =
     totalHandovers > 0
       ? Math.round((handoverQualitySum / totalHandovers) * 100) / 100
-      : 0;
+      : null;
 
   // --- Sleep assessment metrics ---
   const totalSleepAssessments = sleep_assessments.length;
@@ -321,8 +321,8 @@ export function computeNightCareQuality(
   else if (handoverCompletionRate >= 80) score += 1;
 
   // --- Bonus: handoverQualityAvg (>=4.0: +3, >=3.0: +1) ---
-  if (handoverQualityAvg >= 4.0) score += 3;
-  else if (handoverQualityAvg >= 3.0) score += 1;
+  if ((handoverQualityAvg ?? 0) >= 4.0) score += 3;
+  else if ((handoverQualityAvg ?? 0) >= 3.0) score += 1;
 
   // --- Bonus: sleepAssessmentCoverage (>=100: +3, >=80: +1) ---
   if (sleepAssessmentCoverage >= 100) score += 3;
@@ -396,7 +396,7 @@ export function computeNightCareQuality(
     );
   }
 
-  if (handoverQualityAvg >= 4.0 && totalHandovers > 0) {
+  if ((handoverQualityAvg ?? 0) >= 4.0 && totalHandovers > 0) {
     strengths.push(
       `Handover quality averages ${handoverQualityAvg}/5 — detailed and informative shift handovers supporting consistent care.`,
     );
@@ -520,7 +520,7 @@ export function computeNightCareQuality(
     );
   }
 
-  if (handoverQualityAvg < 3.0 && totalHandovers > 0) {
+  if ((handoverQualityAvg ?? 0) < 3.0 && totalHandovers > 0) {
     concerns.push(
       `Handover quality averages only ${handoverQualityAvg}/5 — handovers may lack the detail needed to ensure safe continuity of care.`,
     );
@@ -691,7 +691,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (handoverQualityAvg < 3.0 && totalHandovers > 0) {
+  if ((handoverQualityAvg ?? 0) < 3.0 && totalHandovers > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -842,7 +842,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (handoverQualityAvg >= 3.0 && handoverQualityAvg < 4.0 && totalHandovers > 0) {
+  if ((handoverQualityAvg ?? 0) >= 3.0 && (handoverQualityAvg ?? 0) < 4.0 && totalHandovers > 0) {
     insights.push({
       text: `Handover quality averaging ${handoverQualityAvg}/5 — competent but could be more detailed. High-quality handovers should cover all children, medication, incidents, mood, and sleep patterns.`,
       severity: "warning",
@@ -921,7 +921,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (handoverCompletionRate >= 100 && handoverQualityAvg >= 4.0 && totalHandovers > 0) {
+  if (handoverCompletionRate >= 100 && (handoverQualityAvg ?? 0) >= 4.0 && totalHandovers > 0) {
     insights.push({
       text: `Every handover completed with ${handoverQualityAvg}/5 average quality — exemplary continuity of care between night and day shifts. Ofsted will view this positively under Reg 12.`,
       severity: "positive",

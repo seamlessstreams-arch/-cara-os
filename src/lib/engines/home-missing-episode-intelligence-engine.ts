@@ -57,20 +57,20 @@ export interface MissingEpisodeRecommendation {
 
 export interface MissingEpisodeResult {
   missing_rating: MissingEpisodeRating;
-  missing_score: number;
+  missing_score: number | null;
   headline: string;
   total_episodes: number;
   unique_children_missing: number;
   episodes_last_90_days: number;
   high_risk_count: number;
   still_missing_count: number;
-  return_interview_rate: number;
-  return_interview_timeliness_rate: number;
-  la_notification_rate: number;
+  return_interview_rate: number | null;
+  return_interview_timeliness_rate: number | null;
+  la_notification_rate: number | null;
   police_report_rate_high_risk: number;
-  contextual_safeguarding_flag_rate: number;
-  pattern_analysis_rate: number;
-  average_duration_hours: number;
+  contextual_safeguarding_flag_rate: number | null;
+  pattern_analysis_rate: number | null;
+  average_duration_hours: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: MissingEpisodeRecommendation[];
@@ -240,7 +240,7 @@ export function computeMissingEpisode(
   const avgDuration =
     totalEpisodes > 0
       ? Math.round((totalDuration / totalEpisodes) * 10) / 10
-      : 0;
+      : null;
 
   // ── Per-child episode counts (for pattern detection) ──────────────────
   const childCounts: Record<string, number> = {};
@@ -312,11 +312,11 @@ export function computeMissingEpisode(
   // Modifier 6: Duration + resolution
   if (totalEpisodes === 0) {
     score -= 2;
-  } else if (avgDuration <= 3 && stillMissingCount === 0) {
+  } else if ((avgDuration ?? 0) <= 3 && stillMissingCount === 0) {
     score += 5;
-  } else if (avgDuration <= 6 || stillMissingCount === 0) {
+  } else if ((avgDuration ?? 0) <= 6 || stillMissingCount === 0) {
     score += 2;
-  } else if (avgDuration > 12 || stillMissingCount > 0) {
+  } else if ((avgDuration ?? 0) > 12 || stillMissingCount > 0) {
     score -= 3;
   }
 
@@ -359,7 +359,7 @@ export function computeMissingEpisode(
       `Pattern analysis documented for ${patternRate}% of episodes — evidence of analytical practice.`,
     );
   }
-  if (avgDuration <= 3 && totalEpisodes > 0) {
+  if ((avgDuration ?? 0) <= 3 && totalEpisodes > 0) {
     strengths.push(
       `Average episode duration is ${avgDuration} hours — children return quickly.`,
     );
@@ -408,7 +408,7 @@ export function computeMissingEpisode(
       `Only ${policeHighRate}% of high-risk episodes reported to police — all high-risk episodes must be reported.`,
     );
   }
-  if (avgDuration > 12 && totalEpisodes > 0) {
+  if ((avgDuration ?? 0) > 12 && totalEpisodes > 0) {
     concerns.push(
       `Average episode duration is ${avgDuration} hours — prolonged absences significantly increase safeguarding risk.`,
     );
@@ -506,7 +506,7 @@ export function computeMissingEpisode(
     });
   }
 
-  if (avgDuration > 12 && totalEpisodes > 0) {
+  if ((avgDuration ?? 0) > 12 && totalEpisodes > 0) {
     recs.push({
       rank: rank++,
       recommendation:
@@ -572,7 +572,7 @@ export function computeMissingEpisode(
     });
   }
 
-  if (avgDuration > 12) {
+  if ((avgDuration ?? 0) > 12) {
     insights.push({
       text: `Average absence duration of ${avgDuration} hours indicates children are missing for extended periods. This significantly increases exposure to exploitation, harm, and substance misuse.`,
       severity: "warning",
@@ -633,7 +633,7 @@ export function computeMissingEpisode(
   }
 
   if (
-    avgDuration <= 3 &&
+    (avgDuration ?? 0) <= 3 &&
     stillMissingCount === 0 &&
     totalEpisodes > 0
   ) {

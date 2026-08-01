@@ -453,7 +453,7 @@ describe("Home Chronology Intelligence Engine", () => {
     it("handles zero total_children", () => {
       const entries = [makeEntry()];
       const r = computeHomeChronology(baseInput({ entries, total_children: 0 }));
-      expect(r.coverage_profile.avg_entries_per_child).toBe(0);
+      expect(r.coverage_profile.avg_entries_per_child).toBeNull();;
     });
 
     it("filters entries outside lookback window", () => {

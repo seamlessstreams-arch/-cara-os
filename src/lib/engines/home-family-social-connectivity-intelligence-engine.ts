@@ -91,17 +91,17 @@ export type FamilySocialConnectivityRating =
 
 export interface FamilySocialConnectivityResult {
   connectivity_rating: FamilySocialConnectivityRating;
-  connectivity_score: number; // 0-100
+  connectivity_score: number | null; // 0-100
   headline: string;
   total_sessions: number;
-  sessions_per_child: number;
-  session_quality_avg: number;
+  sessions_per_child: number | null;
+  session_quality_avg: number | null;
   contact_plan_coverage: number; // % of children with active plan
-  parent_engagement_rate: number; // % with high/medium engagement
-  social_worker_contact_rate: number; // % of children seen by SW recently
+  parent_engagement_rate: number | null; // % with high/medium engagement
+  social_worker_contact_rate: number | null; // % of children seen by SW recently
   sibling_contact_compliance: number; // % where contact maintained
-  child_voice_capture_rate: number;
-  post_contact_distress_rate: number;
+  child_voice_capture_rate: number | null;
+  post_contact_distress_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: "immediate" | "soon" | "planned"; regulatory_ref?: string }[];
@@ -243,12 +243,12 @@ export function computeFamilySocialConnectivity(
   const totalSessions = family_time_sessions.length;
   const sessionsPerChild = total_children > 0
     ? Math.round((totalSessions / total_children) * 10) / 10
-    : 0;
+    : null;
 
   const qualityRatings = family_time_sessions.map((s) => s.quality_rating);
   const sessionQualityAvg = qualityRatings.length > 0
     ? Math.round((qualityRatings.reduce((a, b) => a + b, 0) / qualityRatings.length) * 10) / 10
-    : 0;
+    : null;
 
   const childVoiceCaptured = family_time_sessions.filter((s) => s.child_voice_captured).length;
   const childVoiceCaptureRate = pct(childVoiceCaptured, totalSessions);
@@ -327,8 +327,8 @@ export function computeFamilySocialConnectivity(
   let score = 52;
 
   // Session quality bonus
-  if (sessionQualityAvg >= 4.0) score += 4;
-  else if (sessionQualityAvg >= 3.0) score += 2;
+  if ((sessionQualityAvg ?? 0) >= 4.0) score += 4;
+  else if ((sessionQualityAvg ?? 0) >= 3.0) score += 2;
 
   // Contact plan coverage bonus
   if (contactPlanCoverage >= 95) score += 4;
@@ -351,8 +351,8 @@ export function computeFamilySocialConnectivity(
   else if (childVoiceCaptureRate >= 70) score += 1;
 
   // Sessions per child bonus
-  if (sessionsPerChild >= 4) score += 3;
-  else if (sessionsPerChild >= 2) score += 1;
+  if ((sessionsPerChild ?? 0) >= 4) score += 3;
+  else if ((sessionsPerChild ?? 0) >= 2) score += 1;
 
   // Post-contact distress (lower is better)
   if (postContactDistressRate <= 10) score += 2;
@@ -374,9 +374,9 @@ export function computeFamilySocialConnectivity(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (sessionQualityAvg >= 4.0 && totalSessions > 0) {
+  if ((sessionQualityAvg ?? 0) >= 4.0 && totalSessions > 0) {
     strengths.push(`Average family time quality rating of ${sessionQualityAvg}/5 — sessions are consistently positive and well-facilitated.`);
-  } else if (sessionQualityAvg >= 3.0 && totalSessions > 0) {
+  } else if ((sessionQualityAvg ?? 0) >= 3.0 && totalSessions > 0) {
     strengths.push(`Average family time quality rating of ${sessionQualityAvg}/5 — sessions are generally positive.`);
   }
 
@@ -410,9 +410,9 @@ export function computeFamilySocialConnectivity(
     strengths.push(`Child's voice captured in ${childVoiceCaptureRate}% of sessions — good practice in recording children's views.`);
   }
 
-  if (sessionsPerChild >= 4) {
+  if ((sessionsPerChild ?? 0) >= 4) {
     strengths.push(`${sessionsPerChild} sessions per child on average — frequent, regular family contact is being facilitated.`);
-  } else if (sessionsPerChild >= 2) {
+  } else if ((sessionsPerChild ?? 0) >= 2) {
     strengths.push(`${sessionsPerChild} sessions per child on average — reasonable family contact frequency.`);
   }
 
@@ -495,7 +495,7 @@ export function computeFamilySocialConnectivity(
     concerns.push(`In ${swChildNotSeenRate}% of social worker contacts, the child was not seen — this undermines the purpose of statutory visiting.`);
   }
 
-  if (sessionsPerChild < 1 && total_children > 0 && totalSessions > 0) {
+  if ((sessionsPerChild ?? 0) < 1 && total_children > 0 && totalSessions > 0) {
     concerns.push(`Only ${sessionsPerChild} sessions per child on average — family contact frequency is below expectations.`);
   }
 
@@ -621,7 +621,7 @@ export function computeFamilySocialConnectivity(
     });
   }
 
-  if (sessionsPerChild < 2 && sessionsPerChild > 0 && total_children > 0) {
+  if ((sessionsPerChild ?? 0) < 2 && (sessionsPerChild ?? 0) > 0 && total_children > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Increase family contact frequency — aim for at least 2 sessions per child to ensure regular, sustained family involvement.",
@@ -785,14 +785,14 @@ export function computeFamilySocialConnectivity(
     });
   }
 
-  if (sessionsPerChild >= 4) {
+  if ((sessionsPerChild ?? 0) >= 4) {
     insights.push({
       text: `${sessionsPerChild} sessions per child indicates frequent, regular family contact — this supports relationship continuity and demonstrates the home actively facilitates contact.`,
       severity: "positive",
     });
   }
 
-  if (sessionsPerChild < 1 && totalSessions > 0 && total_children > 0) {
+  if ((sessionsPerChild ?? 0) < 1 && totalSessions > 0 && total_children > 0) {
     insights.push({
       text: `Family time sessions average less than 1 per child. This may indicate that contact is infrequent or not being recorded consistently. Contact frequency should be aligned with each child's care plan.`,
       severity: "warning",

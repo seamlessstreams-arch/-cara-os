@@ -97,7 +97,7 @@ export interface ActivityAnalysis {
   new_experiences_30d: number;
   engagement_breakdown: { level: string; count: number }[];
   children_with_zero_activities: number;
-  avg_activities_per_child_30d: number;
+  avg_activities_per_child_30d: number | null;
 }
 
 export interface EducationAlert {
@@ -486,7 +486,7 @@ export function computeEducationIntelligence(
 
   const avgPerChild = children.length > 0
     ? Math.round((activities30d.length / children.length) * 10) / 10
-    : 0;
+    : null;
 
   const activityAnalysis: ActivityAnalysis = {
     total_activities_30d: activities30d.length,

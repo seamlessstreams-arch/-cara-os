@@ -57,25 +57,25 @@ export interface ResultProfile {
   issues_identified: number;
   failed: number;
   not_completed: number;
-  satisfactory_rate: number;
+  satisfactory_rate: number | null;
   issues_actioned: number; // issues with actions_taken populated
-  issue_response_rate: number;
+  issue_response_rate: number | null;
 }
 
 export interface EvacuationProfile {
   total_evacuations: number;
-  avg_evacuation_time: number; // seconds
-  fastest_evacuation: number;
-  slowest_evacuation: number;
+  avg_evacuation_time: number | null; // seconds
+  fastest_evacuation: number | null;
+  slowest_evacuation: number | null;
   within_target: number;       // <= 120 seconds (2 minutes)
-  target_compliance_rate: number;
+  target_compliance_rate: number | null;
 }
 
 export interface ParticipationProfile {
   drills_all_present: number;
-  all_present_rate: number;
-  avg_children_per_drill: number;
-  avg_staff_per_drill: number;
+  all_present_rate: number | null;
+  avg_children_per_drill: number | null;
+  avg_staff_per_drill: number | null;
   night_drills: number;       // time >= 20:00 or < 06:00
   daytime_drills: number;
 }
@@ -94,7 +94,7 @@ export interface Recommendation {
 
 export interface HomeFireSafetyResult {
   fire_safety_rating: FireSafetyRating;
-  fire_safety_score: number;
+  fire_safety_score: number | null;
   headline: string;
   frequency: DrillFrequencyProfile;
   results: ResultProfile;
@@ -246,9 +246,9 @@ export function computeHomeFireSafety(
     avg_evacuation_time:
       evacuationTimes.length > 0
         ? Math.round(evacuationTimes.reduce((s, n) => s + n, 0) / evacuationTimes.length)
-        : 0,
-    fastest_evacuation: evacuationTimes.length > 0 ? Math.min(...evacuationTimes) : 0,
-    slowest_evacuation: evacuationTimes.length > 0 ? Math.max(...evacuationTimes) : 0,
+        : null,
+    fastest_evacuation: evacuationTimes.length > 0 ? Math.min(...evacuationTimes) : null,
+    slowest_evacuation: evacuationTimes.length > 0 ? Math.max(...evacuationTimes) : null,
     within_target: withinTarget.length,
     target_compliance_rate: pct(withinTarget.length, evacuationTimes.length),
   };
@@ -271,11 +271,11 @@ export function computeHomeFireSafety(
     avg_children_per_drill:
       childCounts.length > 0
         ? Math.round((childCounts.reduce((s, n) => s + n, 0) / childCounts.length) * 10) / 10
-        : 0,
+        : null,
     avg_staff_per_drill:
       staffCounts.length > 0
         ? Math.round((staffCounts.reduce((s, n) => s + n, 0) / staffCounts.length) * 10) / 10
-        : 0,
+        : null,
     night_drills: nightDrills.length,
     daytime_drills: daytimeDrills.length,
   };
@@ -294,32 +294,32 @@ export function computeHomeFireSafety(
   // mod2: Results quality (±4)
   const mod2 =
     resultCounts.failed > 0 ? -4 :
-    results.satisfactory_rate >= 80 ? 4 :
-    results.satisfactory_rate >= 60 ? 2 :
-    results.satisfactory_rate >= 40 ? 0 : -2;
+    (results.satisfactory_rate ?? 0) >= 80 ? 4 :
+    (results.satisfactory_rate ?? 0) >= 60 ? 2 :
+    (results.satisfactory_rate ?? 0) >= 40 ? 0 : -2;
   score += mod2;
 
   // mod3: Issue response (±3)
   const mod3 =
     withIssues.length === 0 ? 2 :
-    results.issue_response_rate >= 100 ? 3 :
-    results.issue_response_rate >= 75 ? 1 : -3;
+    (results.issue_response_rate ?? 0) >= 100 ? 3 :
+    (results.issue_response_rate ?? 0) >= 75 ? 1 : -3;
   score += mod3;
 
   // mod4: Evacuation time compliance (±4)
   const mod4 =
     evacuationTimes.length === 0 ? 0 :
-    evacuation.target_compliance_rate >= 90 ? 4 :
-    evacuation.target_compliance_rate >= 70 ? 2 :
-    evacuation.target_compliance_rate >= 50 ? 0 : -4;
+    (evacuation.target_compliance_rate ?? 0) >= 90 ? 4 :
+    (evacuation.target_compliance_rate ?? 0) >= 70 ? 2 :
+    (evacuation.target_compliance_rate ?? 0) >= 50 ? 0 : -4;
   score += mod4;
 
   // mod5: Participation — all present (±3)
   const mod5 =
     participationDrills.length === 0 ? 0 :
-    participation.all_present_rate >= 80 ? 3 :
-    participation.all_present_rate >= 50 ? 1 :
-    participation.all_present_rate >= 25 ? 0 : -3;
+    (participation.all_present_rate ?? 0) >= 80 ? 3 :
+    (participation.all_present_rate ?? 0) >= 50 ? 1 :
+    (participation.all_present_rate ?? 0) >= 25 ? 0 : -3;
   score += mod5;
 
   // mod6: Night drill coverage (±3)
@@ -347,11 +347,11 @@ export function computeHomeFireSafety(
   const strengths: string[] = [];
   if (frequency.drills_last_30_days >= 2)
     strengths.push(`${frequency.drills_last_30_days} drills/checks in last 30 days — excellent frequency.`);
-  if (results.satisfactory_rate >= 80 && fire_drills.length > 1)
+  if ((results.satisfactory_rate ?? 0) >= 80 && fire_drills.length > 1)
     strengths.push(`${results.satisfactory_rate}% of drills achieved satisfactory result.`);
-  if (results.issue_response_rate >= 100 && withIssues.length > 0)
+  if ((results.issue_response_rate ?? 0) >= 100 && withIssues.length > 0)
     strengths.push("All identified issues have documented actions — proactive safety management.");
-  if (evacuation.target_compliance_rate >= 90 && evacuationTimes.length > 0)
+  if ((evacuation.target_compliance_rate ?? 0) >= 90 && evacuationTimes.length > 0)
     strengths.push(`${evacuation.target_compliance_rate}% of evacuations within ${EVACUATION_TARGET_SECONDS}s target — excellent response times.`);
   if (participation.night_drills >= 1)
     strengths.push(`${participation.night_drills} night drill(s) conducted — testing realistic scenarios.`);
@@ -370,9 +370,9 @@ export function computeHomeFireSafety(
     concerns.push("Fewer than 2 drills in the last 90 days — Reg 25 requires regular fire drills.");
   if (participation.night_drills === 0 && participationDrills.length > 0)
     concerns.push("No night drills conducted — SCCIF expects drills at varied times including night.");
-  if (evacuationTimes.length > 0 && evacuation.target_compliance_rate < 70)
+  if (evacuationTimes.length > 0 && (evacuation.target_compliance_rate ?? 0) < 70)
     concerns.push(`Only ${evacuation.target_compliance_rate}% of evacuations met the ${EVACUATION_TARGET_SECONDS}s target.`);
-  if (withIssues.length > 0 && results.issue_response_rate < 100)
+  if (withIssues.length > 0 && (results.issue_response_rate ?? 0) < 100)
     concerns.push(`${withIssues.length - issuesActioned.length} issue(s) identified but not actioned.`);
   if (equipmentChecks.length === 0)
     concerns.push("No fire equipment checks recorded — extinguishers, alarms, and lighting must be checked regularly.");
@@ -436,7 +436,7 @@ export function computeHomeFireSafety(
       severity: "critical",
     });
 
-  if (participation.night_drills >= 1 && results.issue_response_rate >= 100)
+  if (participation.night_drills >= 1 && (results.issue_response_rate ?? 0) >= 100)
     insights.push({
       text: `Night drills conducted and all issues actioned — this demonstrates thorough fire safety management that goes beyond minimum compliance.`,
       severity: "positive",

@@ -18,7 +18,7 @@ export interface LessonInput {
   source: string; // "incident"|"complaint"|"audit"|"reflective_practice"|"reg_44"|"external_feedback"|"critical_incident_review"
   theme_area: string; // "safeguarding"|"practice"|"communication"|"recording"|"training"|"environment"|"wellbeing"|"multi_agency"
   status: string; // "identified"|"in_progress"|"embedded"|"monitoring"
-  embedding_score: number; // 0-100
+  embedding_score: number | null; // 0-100
   staff_briefed: boolean;
   policies_updated_count: number;
   training_delivered_count: number;
@@ -35,7 +35,7 @@ export interface ImprovementObjectiveInput {
 
 export interface QualityAuditInput {
   id: string;
-  audit_score: number; // 0-100
+  audit_score: number | null; // 0-100
   actions_identified: number;
   actions_completed: number;
 }
@@ -54,14 +54,14 @@ export type LessonsLearnedRating = "outstanding" | "good" | "adequate" | "inadeq
 
 export interface LessonsLearnedResult {
   lessons_rating: LessonsLearnedRating;
-  lessons_score: number;
+  lessons_score: number | null;
   headline: string;
   total_lessons: number;
-  embedded_rate: number;
-  staff_briefing_rate: number;
-  objective_completion_rate: number;
+  embedded_rate: number | null;
+  staff_briefing_rate: number | null;
+  objective_completion_rate: number | null;
   overdue_objectives: number;
-  average_audit_score: number;
+  average_audit_score: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: "immediate" | "soon" | "planned"; regulatory_ref: string }[];
@@ -118,8 +118,8 @@ export function computeLessonsLearnedImprovement(
 
   const averageAuditScore =
     audits.length > 0
-      ? Math.round(audits.reduce((sum, a) => sum + a.audit_score, 0) / audits.length)
-      : 0;
+      ? Math.round(audits.reduce((sum, a) => sum + (a.audit_score ?? 0), 0) / audits.length)
+      : null;
 
   // ── Scoring ───────────────────────────────────────────────────────────
   // Base 52 + 6 modifiers (max ~+30 → outstanding reachable at ~82)
@@ -238,7 +238,7 @@ export function computeLessonsLearnedImprovement(
   if (objectiveCompletionRate >= 80 && objectives.length > 0) {
     strengths.push(`${objectiveCompletionRate}% objective completion rate — improvement goals are being achieved.`);
   }
-  if (averageAuditScore >= 80 && audits.length > 0) {
+  if ((averageAuditScore ?? 0) >= 80 && audits.length > 0) {
     strengths.push(`Average audit score of ${averageAuditScore}% — quality assurance outcomes are consistently strong.`);
   }
   if (totalLessons > 0) {
@@ -262,7 +262,7 @@ export function computeLessonsLearnedImprovement(
   if (staffBriefingRate < 50 && totalLessons > 0) {
     concerns.push(`Staff briefing rate is only ${staffBriefingRate}% — lessons are not being consistently shared with the team.`);
   }
-  if (averageAuditScore < 50 && audits.length > 0) {
+  if ((averageAuditScore ?? 0) < 50 && audits.length > 0) {
     concerns.push(`Average audit score of ${averageAuditScore}% — quality assurance outcomes indicate significant areas for improvement.`);
   }
   if (totalLessons === 0 && total_staff > 0) {
@@ -313,7 +313,7 @@ export function computeLessonsLearnedImprovement(
       regulatory_ref: "CHR 2015 Reg 40",
     });
   }
-  if (averageAuditScore < 50 && audits.length > 0) {
+  if ((averageAuditScore ?? 0) < 50 && audits.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Address low audit scores with targeted improvement plans — review findings, assign actions, and schedule follow-up audits.",

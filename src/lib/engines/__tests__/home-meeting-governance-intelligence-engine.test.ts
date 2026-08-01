@@ -229,7 +229,7 @@ describe("computeHomeMeetingGovernance", () => {
     it("returns 0 avg_days_between for a single meeting", () => {
       const meetings = [makeMeeting({ date: "2026-05-01" })];
       const r = computeHomeMeetingGovernance(baseInput({ meetings }));
-      expect(r.regularity_profile.avg_days_between).toBe(0);
+      expect(r.regularity_profile.avg_days_between).toBeNull();;
     });
 
     it("includes gap from last meeting to today in max_gap calculation", () => {

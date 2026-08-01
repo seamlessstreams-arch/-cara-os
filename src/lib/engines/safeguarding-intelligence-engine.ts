@@ -98,7 +98,7 @@ export interface RestraintProfile {
   total_restraints_90d: number;
   total_restraints_30d: number;
   children_restrained: number;
-  average_duration_minutes: number;
+  average_duration_minutes: number | null;
   injuries_during_restraint: number;
   debrief_completion_rate: number | null; // percentage — null when no restraints to debrief
   review_completion_rate: number | null; // percentage — null when no restraints to review
@@ -247,7 +247,7 @@ export function computeSafeguardingIntelligence(
 
   const avgDuration = restraints90d.length > 0
     ? Math.round((restraints90d.reduce((sum, r) => sum + r.duration, 0) / restraints90d.length) * 10) / 10
-    : 0;
+    : null;
 
   const totalInjuries = restraints90d.reduce((sum, r) => sum + r.injuries.length, 0);
 

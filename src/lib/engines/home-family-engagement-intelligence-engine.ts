@@ -58,16 +58,16 @@ export interface ContactProfile {
   children_with_contact: string[];
   children_without_contact: string[];
   contact_coverage: number;
-  avg_duration_minutes: number;
-  safety_rate: number;
+  avg_duration_minutes: number | null;
+  safety_rate: number | null;
   concern_count: number;
-  positive_observation_rate: number;
+  positive_observation_rate: number | null;
 }
 
 export interface ChildVoiceProfile {
-  voice_capture_rate: number;
-  sw_notification_rate: number;
-  recommendation_rate: number;
+  voice_capture_rate: number | null;
+  sw_notification_rate: number | null;
+  recommendation_rate: number | null;
 }
 
 export interface RelationshipProfile {
@@ -75,13 +75,13 @@ export interface RelationshipProfile {
   children_assessed: string[];
   children_not_assessed: string[];
   assessment_coverage: number;
-  avg_quality_score: number;
+  avg_quality_score: number | null;
   improving_count: number;
   declining_count: number;
   volatile_count: number;
   overdue_reviews: number;
-  intervention_rate: number;
-  child_wishes_rate: number;
+  intervention_rate: number | null;
+  child_wishes_rate: number | null;
 }
 
 export interface FamilyInsight {
@@ -98,7 +98,7 @@ export interface FamilyRecommendation {
 
 export interface HomeFamilyEngagementResult {
   family_engagement_rating: FamilyEngagementRating;
-  family_engagement_score: number;
+  family_engagement_score: number | null;
   headline: string;
   contact_profile: ContactProfile;
   child_voice_profile: ChildVoiceProfile;
@@ -176,7 +176,7 @@ export function computeHomeFamilyEngagement(
 
   const avgDuration = sessions90d.length > 0
     ? Math.round(sessions90d.reduce((a, s) => a + s.duration_minutes, 0) / sessions90d.length)
-    : 0;
+    : null;
 
   const safeSessions = sessions90d.filter(s => s.was_safe).length;
   const safetyRate = pct(safeSessions, sessions90d.length);
@@ -221,7 +221,7 @@ export function computeHomeFamilyEngagement(
   const qualityScores = latestRelationships.map(r => r.quality_1_to_10).filter(q => q > 0);
   const avgQuality = qualityScores.length > 0
     ? Math.round((qualityScores.reduce((a, b) => a + b, 0) / qualityScores.length) * 10) / 10
-    : 0;
+    : null;
 
   const improvingCount = latestRelationships.filter(r => r.trajectory === "improving").length;
   const decliningCount = latestRelationships.filter(r => r.trajectory === "declining").length;
@@ -288,8 +288,8 @@ export function computeHomeFamilyEngagement(
 
   // 6. Relationship quality (±3)
   if (qualityScores.length > 0) {
-    if (avgQuality >= 7) score += 3;
-    else if (avgQuality >= 5) score += 1;
+    if ((avgQuality ?? 0) >= 7) score += 3;
+    else if ((avgQuality ?? 0) >= 5) score += 1;
     else score -= 2;
   }
 
@@ -329,7 +329,7 @@ export function computeHomeFamilyEngagement(
   if (voiceRate >= 80 && sessions90d.length > 0) strengths.push(`Child voice captured after ${voiceRate}% of family time sessions — children's feelings about contact are actively sought.`);
   if (swRate >= 80 && sessions90d.length > 0) strengths.push(`Social worker notified after ${swRate}% of sessions — communication with placing authorities is consistent.`);
   if (assessmentCoverage >= 80 && latestRelationships.length > 0) strengths.push(`${assessmentCoverage}% of children have family relationship assessments — proactive understanding of family dynamics.`);
-  if (avgQuality >= 7 && qualityScores.length > 0) strengths.push(`Average relationship quality score ${avgQuality}/10 — family relationships are generally positive.`);
+  if ((avgQuality ?? 0) >= 7 && qualityScores.length > 0) strengths.push(`Average relationship quality score ${(avgQuality ?? 0)}/10 — family relationships are generally positive.`);
   if (improvingCount > 0 && decliningCount === 0) strengths.push(`${improvingCount} family relationship${improvingCount > 1 ? "s" : ""} on an improving trajectory — the home is positively influencing family connections.`);
   if (overdueReviews === 0 && latestRelationships.length > 0) strengths.push("All family relationship reviews are current — management oversight of family links is timely.");
   if (positiveRate >= 80 && sessions90d.length > 0) strengths.push(`Positive observations recorded in ${positiveRate}% of sessions — quality of contact recording is thorough.`);

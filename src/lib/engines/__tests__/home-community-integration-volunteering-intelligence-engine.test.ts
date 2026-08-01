@@ -1498,7 +1498,7 @@ describe("computeCommunityIntegrationVolunteering", () => {
         neighbourhood_records: [makeNeighbourhood({ id: "nr1" })],
         local_service_records: [],
       });
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.child_satisfaction_rate).toBeNull();;
     });
   });
 

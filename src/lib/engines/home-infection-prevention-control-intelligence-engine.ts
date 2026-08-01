@@ -26,7 +26,7 @@ export interface HygieneAuditRecordInput {
   food_hygiene_compliant: boolean;
   personal_protective_equipment_available: boolean;
   infection_control_signage_displayed: boolean;
-  overall_compliance_score: number; // 1-5
+  overall_compliance_score: number | null; // 1-5
   issues_identified: string[];
   issues_resolved: boolean;
   resolution_date: string | null;
@@ -142,19 +142,19 @@ export interface InfectionPreventionRecommendation {
 
 export interface InfectionPreventionResult {
   infection_rating: InfectionPreventionRating;
-  infection_score: number;
+  infection_score: number | null;
   headline: string;
   total_audits: number;
   total_outbreaks: number;
   total_hand_hygiene_observations: number;
   total_cleaning_records: number;
   total_immunisation_records: number;
-  hygiene_audit_compliance_rate: number;
-  outbreak_management_rate: number;
-  hand_hygiene_rate: number;
-  cleaning_compliance_rate: number;
-  immunisation_coverage_rate: number;
-  staff_training_rate: number;
+  hygiene_audit_compliance_rate: number | null;
+  outbreak_management_rate: number | null;
+  hand_hygiene_rate: number | null;
+  cleaning_compliance_rate: number | null;
+  immunisation_coverage_rate: number | null;
+  staff_training_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: InfectionPreventionRecommendation[];
@@ -306,13 +306,13 @@ export function computeInfectionPreventionControl(
   const auditIssueResolutionRate = pct(auditIssuesResolved, auditIssuesIdentified);
 
   const auditScoreSum = hygiene_audit_records.reduce(
-    (sum, a) => sum + a.overall_compliance_score,
+    (sum, a) => sum + (a.overall_compliance_score ?? 0),
     0,
   );
   const avgAuditScore =
     totalAudits > 0
       ? Math.round((auditScoreSum / totalAudits) * 100) / 100
-      : 0;
+      : null;
 
   const auditsWithCorrectiveActions = hygiene_audit_records.filter(
     (a) => a.corrective_actions !== null && a.corrective_actions !== "",

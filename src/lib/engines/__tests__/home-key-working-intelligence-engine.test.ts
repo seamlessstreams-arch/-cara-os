@@ -252,8 +252,8 @@ describe("Home Key Working Intelligence Engine", () => {
       ];
       const r = computeHomeKeyWorking(baseInput({ sessions }));
       expect(r.mood.sessions_with_mood).toBe(0);
-      expect(r.mood.avg_mood_before).toBe(0);
-      expect(r.mood.positive_shift_rate).toBe(0);
+      expect(r.mood.avg_mood_before).toBeNull();;
+      expect(r.mood.positive_shift_rate).toBeNull();;
     });
   });
 
@@ -579,7 +579,7 @@ describe("Home Key Working Intelligence Engine", () => {
 
     it("handles zero total children", () => {
       const r = computeHomeKeyWorking(baseInput({ total_children: 0, child_ids: [] }));
-      expect(r.sessions.avg_per_child_30d).toBe(0);
+      expect(r.sessions.avg_per_child_30d).toBeNull();;
     });
 
     it("handles all sessions for one child", () => {

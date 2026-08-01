@@ -1446,7 +1446,7 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
         ],
         // No tools, no journals → only id/vocab with first_assessment → 0 progressIndicators
       }));
-      expect(r.child_progress_rate).toBe(0);
+      expect(r.child_progress_rate).toBeNull();;
     });
   });
 
@@ -3349,7 +3349,7 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
         ],
       }));
       // idNonFirst = 0, so no progress indicator added
-      expect(r.child_progress_rate).toBe(0);
+      expect(r.child_progress_rate).toBeNull();;
     });
 
     it("partial domains still contribute to progress", () => {

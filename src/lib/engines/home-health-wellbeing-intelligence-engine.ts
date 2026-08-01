@@ -53,7 +53,7 @@ export type HealthWellbeingRating =
 
 export interface HealthRecordsProfile {
   total_records_180d: number;
-  records_per_child: number;
+  records_per_child: number | null;
   record_types: Record<string, number>;
   children_with_records: string[];
   children_without_records: string[];
@@ -98,7 +98,7 @@ export interface HealthRecommendation {
 
 export interface HomeHealthWellbeingResult {
   health_rating: HealthWellbeingRating;
-  health_score: number;
+  health_score: number | null;
   headline: string;
   records: HealthRecordsProfile;
   medication: MedicationProfile;
@@ -178,7 +178,7 @@ export function computeHomeHealthWellbeing(
 
   const recordsPerChild = total_children > 0
     ? Math.round((recs180d.length / total_children) * 10) / 10
-    : 0;
+    : null;
 
   const recordsProfile: HealthRecordsProfile = {
     total_records_180d: recs180d.length,
@@ -242,9 +242,9 @@ export function computeHomeHealthWellbeing(
   let score = 50;
 
   // Record volume (±12)
-  if (recordsPerChild >= 3) score += 8;
-  else if (recordsPerChild >= 2) score += 4;
-  else if (recordsPerChild < 1) score -= 8;
+  if ((recordsPerChild ?? 0) >= 3) score += 8;
+  else if ((recordsPerChild ?? 0) >= 2) score += 4;
+  else if ((recordsPerChild ?? 0) < 1) score -= 8;
 
   // Coverage — children with records (±10)
   if (childrenWithoutRecords.length === 0 && total_children > 0) score += 6;
@@ -352,7 +352,7 @@ export function computeHomeHealthWellbeing(
   if (overdueFollowUps >= 2) {
     insights.push({ text: `${overdueFollowUps} overdue follow-ups suggest health actions are not being tracked effectively. This undermines the health action plan.`, severity: "warning" });
   }
-  if (childrenWithoutRecords.length === 0 && total_children > 0 && recordsPerChild >= 2) {
+  if (childrenWithoutRecords.length === 0 && total_children > 0 && (recordsPerChild ?? 0) >= 2) {
     insights.push({ text: "Comprehensive health monitoring across all children with strong recording practice. This evidences a proactive approach to health outcomes.", severity: "positive" });
   }
   if (adminRate === 100 && activeMeds.length > 0 && missed === 0) {
@@ -361,7 +361,7 @@ export function computeHomeHealthWellbeing(
   if (coverageProfile.dental_coverage && coverageProfile.optical_coverage && coverageProfile.mental_health_monitored) {
     insights.push({ text: "Full health coverage: dental, optical, and mental health all actively monitored. This is Ofsted-outstanding standard.", severity: "positive" });
   }
-  if (recordsPerChild >= 3 && followUpCompliance === 100 && recsWithFollowUp.length > 0) {
+  if ((recordsPerChild ?? 0) >= 3 && followUpCompliance === 100 && recsWithFollowUp.length > 0) {
     insights.push({ text: "High record volume with complete follow-up tracking. The home can confidently evidence health outcomes to Ofsted.", severity: "positive" });
   }
 

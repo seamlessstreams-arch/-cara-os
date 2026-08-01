@@ -42,22 +42,22 @@ export interface ResponseProfile {
   total_complaints: number;
   resolved_count: number;
   ongoing_count: number;
-  avg_response_time_days: number;
-  within_10_days_rate: number;
+  avg_response_time_days: number | null;
+  within_10_days_rate: number | null;
 }
 
 export interface OutcomeProfile {
   upheld_count: number;
   partially_upheld_count: number;
   not_upheld_count: number;
-  satisfaction_rate: number;
+  satisfaction_rate: number | null;
   escalation_count: number;
 }
 
 export interface LearningProfile {
-  findings_documented_rate: number;
-  lessons_learned_rate: number;
-  practice_change_rate: number;
+  findings_documented_rate: number | null;
+  lessons_learned_rate: number | null;
+  practice_change_rate: number | null;
   total_practice_changes: number;
 }
 
@@ -84,7 +84,7 @@ export interface ComplaintsRecommendation {
 
 export interface HomeComplaintsResult {
   complaints_rating: ComplaintsRating;
-  complaints_score: number;
+  complaints_score: number | null;
   headline: string;
   response_profile: ResponseProfile;
   outcome_profile: OutcomeProfile;
@@ -144,7 +144,7 @@ export function computeHomeComplaints(
   const responseTimes = resolved.filter(c => c.response_time_days > 0);
   const avgResponse = responseTimes.length > 0
     ? Math.round(responseTimes.reduce((a, c) => a + c.response_time_days, 0) / responseTimes.length)
-    : 0;
+    : null;
 
   const within10 = resolved.filter(c => c.response_time_days > 0 && c.response_time_days <= 10).length;
   const within10Rate = pct(within10, responseTimes.length);

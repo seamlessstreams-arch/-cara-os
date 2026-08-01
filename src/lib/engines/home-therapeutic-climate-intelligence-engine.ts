@@ -73,11 +73,11 @@ export interface BehaviourClimateProfile {
 
 export interface RestraintClimateProfile {
   total_restraints: number;
-  restraint_rate_per_child: number;
-  avg_duration_minutes: number;
-  avg_de_escalation_attempts: number;
-  child_debrief_rate: number;
-  staff_debrief_rate: number;
+  restraint_rate_per_child: number | null;
+  avg_duration_minutes: number | null;
+  avg_de_escalation_attempts: number | null;
+  child_debrief_rate: number | null;
+  staff_debrief_rate: number | null;
   injuries_count: number;
   children_restrained: number;
 }
@@ -86,14 +86,14 @@ export interface SafetyClimateProfile {
   total_incidents: number;
   high_severity_count: number;
   missing_episodes: number;
-  incident_rate_per_child: number;
-  combined_event_rate: number;   // (incidents + missing) / children
+  incident_rate_per_child: number | null;
+  combined_event_rate: number | null;   // (incidents + missing) / children
 }
 
 export interface PatternProfile {
   most_active_children: number;  // children with ≥3 combined events
   children_with_no_events: number;
-  calm_rate: number;             // % of children with no concerning behaviour, incidents, or restraints
+  calm_rate: number | null;             // % of children with no concerning behaviour, incidents, or restraints
 }
 
 export interface TherapeuticClimateInsight {
@@ -110,7 +110,7 @@ export interface TherapeuticClimateRecommendation {
 
 export interface HomeTherapeuticClimateResult {
   climate_rating: TherapeuticClimateRating;
-  climate_score: number;
+  climate_score: number | null;
   headline: string;
   behaviour_profile: BehaviourClimateProfile;
   restraint_profile: RestraintClimateProfile;
@@ -210,13 +210,13 @@ export function computeHomeTherapeuticClimate(
   const totalRestraints = restraints.length;
   const restraintRate = total_children > 0
     ? Math.round((totalRestraints / total_children) * 10) / 10
-    : 0;
+    : null;
   const avgDuration = totalRestraints > 0
     ? Math.round((restraints.reduce((s, r) => s + r.duration_minutes, 0) / totalRestraints) * 10) / 10
-    : 0;
+    : null;
   const avgDeEscalation = totalRestraints > 0
     ? Math.round((restraints.reduce((s, r) => s + r.de_escalation_count, 0) / totalRestraints) * 10) / 10
-    : 0;
+    : null;
   const childDebriefed = restraints.filter(r => r.child_debriefed).length;
   const staffDebriefed = restraints.filter(r => r.staff_debriefed).length;
   const childDebriefRate = pct(childDebriefed, totalRestraints);
@@ -243,10 +243,10 @@ export function computeHomeTherapeuticClimate(
   const totalMissing = missing.length;
   const incidentRate = total_children > 0
     ? Math.round((totalIncidents / total_children) * 10) / 10
-    : 0;
+    : null;
   const combinedRate = total_children > 0
     ? Math.round(((totalIncidents + totalMissing) / total_children) * 10) / 10
-    : 0;
+    : null;
 
   const safetyProfile: SafetyClimateProfile = {
     total_incidents: totalIncidents,
@@ -296,8 +296,8 @@ export function computeHomeTherapeuticClimate(
 
   // 2. Restraint frequency (±4)
   if (totalRestraints === 0) score += 4;
-  else if (restraintRate <= 0.5) score += 2;
-  else if (restraintRate <= 1.0) score += 0;
+  else if ((restraintRate ?? 0) <= 0.5) score += 2;
+  else if ((restraintRate ?? 0) <= 1.0) score += 0;
   else score -= 3;
 
   // 3. Debrief compliance (±3)
@@ -308,8 +308,8 @@ export function computeHomeTherapeuticClimate(
 
   // 4. Incident rate (±4)
   if (totalIncidents === 0) score += 4;
-  else if (incidentRate <= 1.0) score += 2;
-  else if (incidentRate <= 2.0) score += 0;
+  else if ((incidentRate ?? 0) <= 1.0) score += 2;
+  else if ((incidentRate ?? 0) <= 2.0) score += 0;
   else score -= 3;
 
   // 5. High severity incidents (±3)
@@ -352,7 +352,7 @@ export function computeHomeTherapeuticClimate(
   // ── Concerns ──────────────────────────────────────────────────
   const concerns: string[] = [];
   if (positiveRatio < 30 && behaviour.length > 0) concerns.push(`Only ${positiveRatio}% of behaviour entries are positive — the atmosphere may feel punitive rather than therapeutic.`);
-  if (restraintRate > 1.0) concerns.push(`Restraint rate of ${restraintRate} per child — frequency suggests de-escalation strategies need strengthening.`);
+  if ((restraintRate ?? 0) > 1.0) concerns.push(`Restraint rate of ${(restraintRate ?? 0)} per child — frequency suggests de-escalation strategies need strengthening.`);
   if (totalRestraints > 0 && childDebriefRate < 70) concerns.push(`Only ${childDebriefRate}% of children debriefed after restraint — their voice and wellbeing after intervention is being missed.`);
   if (injuriesCount > 1) concerns.push(`${injuriesCount} injuries during restraints — review technique and proportionality urgently.`);
   if (highSeverity > 1) concerns.push(`${highSeverity} high-severity incidents — pattern suggests escalation risk.`);
@@ -375,7 +375,7 @@ export function computeHomeTherapeuticClimate(
   if (mostActive > 0) {
     recs.push({ rank: rank++, recommendation: `${mostActive} child${mostActive > 1 ? "ren show" : " shows"} concentrated concerning patterns — convene therapeutic planning meetings to review individual interventions.`, urgency: "soon", regulatory_ref: "Reg 35" });
   }
-  if (restraintRate > 1.0) {
+  if ((restraintRate ?? 0) > 1.0) {
     recs.push({ rank: rank++, recommendation: `Restraint rate of ${restraintRate} per child exceeds therapeutic standard — review behaviour support plans and invest in de-escalation refresher training.`, urgency: "soon", regulatory_ref: "Reg 19" });
   }
 
@@ -388,7 +388,7 @@ export function computeHomeTherapeuticClimate(
   if (injuriesCount > 0) {
     insights.push({ text: `${injuriesCount} restraint injur${injuriesCount > 1 ? "ies" : "y"} recorded in the review period. Under Regulation 20, any injury during physical intervention requires investigation, notification, and review. Inspectors will scrutinise whether restraint is proportionate and whether alternatives were exhausted.`, severity: "critical" });
   }
-  if (totalRestraints > 0 && avgDeEscalation < 1) {
+  if (totalRestraints > 0 && (avgDeEscalation ?? 0) < 1) {
     insights.push({ text: `Average de-escalation attempts before restraint is ${avgDeEscalation}. The Guide to the Children's Homes Regulations states that physical intervention must be used 'only when other methods of managing the behaviour have been attempted and failed.' Low de-escalation evidence raises proportionality concerns.`, severity: "critical" });
   }
   if (positiveRatio >= 70 && behaviour.length >= 5) {
@@ -408,7 +408,7 @@ export function computeHomeTherapeuticClimate(
   } else if (rating === "adequate") {
     headline = `Adequate therapeutic climate — ${concerning > 0 ? "mixed behaviour patterns" : "some safety concerns"} need targeted attention.`;
   } else {
-    headline = `Inadequate therapeutic climate — ${restraintRate > 1 ? "high restraint frequency" : "concerning behaviour patterns"} suggest the therapeutic approach needs significant review.`;
+    headline = `Inadequate therapeutic climate — ${(restraintRate ?? 0) > 1 ? "high restraint frequency" : "concerning behaviour patterns"} suggest the therapeutic approach needs significant review.`;
   }
 
   return {

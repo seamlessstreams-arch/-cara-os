@@ -49,7 +49,7 @@ export interface LinenAdequacyRecordInput {
   seasonal_bedding_provided: boolean;
   mattress_condition_good: boolean;
   pillow_condition_good: boolean;
-  overall_adequacy_score: number; // 1-5
+  overall_adequacy_score: number | null; // 1-5
   issues_identified: string[];
   issues_resolved: boolean;
   resolution_date: string | null;
@@ -92,7 +92,7 @@ export interface HygieneComplianceRecordInput {
   storage_clean_appropriate: boolean;
   staff_trained: boolean;
   hand_hygiene_observed: boolean;
-  overall_compliance_score: number; // 1-5
+  overall_compliance_score: number | null; // 1-5
   issues_identified: string[];
   issues_resolved: boolean;
   resolution_date: string | null;
@@ -153,19 +153,19 @@ export interface LaundryLinenRecommendation {
 
 export interface LaundryLinenResult {
   laundry_rating: LaundryLinenRating;
-  laundry_score: number;
+  laundry_score: number | null;
   headline: string;
   total_service_records: number;
   total_linen_assessments: number;
   total_clothing_care_records: number;
   total_hygiene_assessments: number;
   total_satisfaction_records: number;
-  laundry_timeliness_rate: number;
-  linen_adequacy_rate: number;
-  clothing_care_rate: number;
-  hygiene_compliance_rate: number;
-  child_satisfaction_rate: number;
-  child_independence_rate: number;
+  laundry_timeliness_rate: number | null;
+  linen_adequacy_rate: number | null;
+  clothing_care_rate: number | null;
+  hygiene_compliance_rate: number | null;
+  child_satisfaction_rate: number | null;
+  child_independence_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: LaundryLinenRecommendation[];
@@ -357,13 +357,13 @@ export function computeLaundryLinenManagement(
   const linenIssueResolutionRate = pct(linenIssuesResolved, linenIssuesIdentified);
 
   const linenScoreSum = linen_adequacy_records.reduce(
-    (sum, r) => sum + r.overall_adequacy_score,
+    (sum, r) => sum + (r.overall_adequacy_score ?? 0),
     0,
   );
   const avgLinenScore =
     totalLinenAssessments > 0
       ? Math.round((linenScoreSum / totalLinenAssessments) * 100) / 100
-      : 0;
+      : null;
 
   // ── 3. Clothing care metrics ───────────────────────────────────────────
   const totalClothingCareRecords = clothing_care_records.length;
@@ -436,13 +436,13 @@ export function computeLaundryLinenManagement(
   const hygieneIssueResolutionRate = pct(hygieneIssuesResolved, hygieneIssuesIdentified);
 
   const hygieneScoreSum = hygiene_compliance_records.reduce(
-    (sum, r) => sum + r.overall_compliance_score,
+    (sum, r) => sum + (r.overall_compliance_score ?? 0),
     0,
   );
   const avgHygieneScore =
     totalHygieneAssessments > 0
       ? Math.round((hygieneScoreSum / totalHygieneAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const infectionControlMet = hygiene_compliance_records.filter((r) => r.infection_control_measures_met).length;
   const infectionControlRate = pct(infectionControlMet, totalHygieneAssessments);
@@ -460,7 +460,7 @@ export function computeLaundryLinenManagement(
   const avgSatisfactionRating =
     totalSatisfactionRecords > 0
       ? Math.round((satisfactionSum / totalSatisfactionRecords) * 100) / 100
-      : 0;
+      : null;
 
   const clothingCleanEnough = child_satisfaction_records.filter((r) => r.clothing_clean_enough).length;
   const cleanEnoughRate = pct(clothingCleanEnough, totalSatisfactionRecords);
@@ -722,11 +722,11 @@ export function computeLaundryLinenManagement(
   }
 
   // -- Average satisfaction rating --
-  if (avgSatisfactionRating >= 4.0 && totalSatisfactionRecords > 0) {
+  if ((avgSatisfactionRating ?? 0) >= 4.0 && totalSatisfactionRecords > 0) {
     strengths.push(
       `Average child satisfaction rating of ${avgSatisfactionRating}/5 — children consistently rate the laundry and linen service positively, indicating the home meets their expectations for clothing care and comfort.`,
     );
-  } else if (avgSatisfactionRating >= 3.5 && totalSatisfactionRecords > 0) {
+  } else if ((avgSatisfactionRating ?? 0) >= 3.5 && totalSatisfactionRecords > 0) {
     strengths.push(
       `Average child satisfaction rating of ${avgSatisfactionRating}/5 — children generally rate the laundry and linen service favourably.`,
     );
@@ -874,11 +874,11 @@ export function computeLaundryLinenManagement(
   }
 
   // -- Average satisfaction rating concern --
-  if (avgSatisfactionRating < 2.5 && totalSatisfactionRecords > 0) {
+  if ((avgSatisfactionRating ?? 0) < 2.5 && totalSatisfactionRecords > 0) {
     concerns.push(
       `Average child satisfaction rating at only ${avgSatisfactionRating}/5 — children consistently rate the laundry and linen service poorly, indicating systemic issues with how the home manages clothing and linen.`,
     );
-  } else if (avgSatisfactionRating < 3.0 && avgSatisfactionRating >= 2.5 && totalSatisfactionRecords > 0) {
+  } else if ((avgSatisfactionRating ?? 0) < 3.0 && (avgSatisfactionRating ?? 0) >= 2.5 && totalSatisfactionRecords > 0) {
     concerns.push(
       `Average satisfaction rating at ${avgSatisfactionRating}/5 — children's ratings of the laundry and linen service are below acceptable standards.`,
     );
@@ -1320,8 +1320,8 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    avgSatisfactionRating >= 2.5 &&
-    avgSatisfactionRating < 3.5 &&
+    (avgSatisfactionRating ?? 0) >= 2.5 &&
+    (avgSatisfactionRating ?? 0) < 3.5 &&
     totalSatisfactionRecords > 0
   ) {
     insights.push({
@@ -1475,7 +1475,7 @@ export function computeLaundryLinenManagement(
   }
 
   if (
-    avgSatisfactionRating >= 4.0 &&
+    (avgSatisfactionRating ?? 0) >= 4.0 &&
     totalSatisfactionRecords > 0
   ) {
     insights.push({

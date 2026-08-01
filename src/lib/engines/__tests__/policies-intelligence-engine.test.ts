@@ -242,7 +242,7 @@ describe("Policies Intelligence Engine", () => {
         makePolicy({ acknowledgement_count: 0, total_staff_required: 0 }),
       ];
       const result = run(policies);
-      expect(result.overview.acknowledgement_rate).toBe(0);
+      expect(result.overview.acknowledgement_rate).toBeNull();;
     });
 
     it("calculates draft_count", () => {
@@ -604,7 +604,7 @@ describe("Policies Intelligence Engine", () => {
       expect(result.overview.active_policies).toBe(0);
       expect(result.overview.overdue_reviews).toBe(0);
       expect(result.overview.due_within_30_days).toBe(0);
-      expect(result.overview.acknowledgement_rate).toBe(0);
+      expect(result.overview.acknowledgement_rate).toBeNull();;
       expect(result.overview.draft_count).toBe(0);
       expect(result.overview.categories_covered).toBe(0);
       expect(result.overview.total_categories_required).toBe(13);

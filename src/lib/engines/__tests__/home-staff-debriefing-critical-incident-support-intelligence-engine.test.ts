@@ -1653,7 +1653,7 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
 
       it("0 when no learning records (pct(0,0)=0)", () => {
         const r = run(baseInput({ learning_extraction_records: [] }));
-        expect(r.learning_extraction_rate).toBe(0);
+        expect(r.learning_extraction_rate).toBeNull();;
       });
 
       it("calculates composite correctly: round((sharedRate+implRate+docRate)/3)", () => {
@@ -1703,7 +1703,7 @@ describe("Home Staff Debriefing & Critical Incident Support Intelligence Engine"
           critical_incident_records: [],
           learning_extraction_records: [],
         }));
-        expect(r.staff_satisfaction_rate).toBe(0);
+        expect(r.staff_satisfaction_rate).toBeNull();;
       });
 
       it("averages only available components", () => {

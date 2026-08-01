@@ -116,18 +116,18 @@ export interface ComplaintAdvocacyRecommendation {
 
 export interface ComplaintAdvocacyResponsivenessResult {
   responsiveness_rating: ComplaintAdvocacyRating;
-  responsiveness_score: number;
+  responsiveness_score: number | null;
   headline: string;
   total_complaints: number;
-  complaint_resolution_rate: number;
-  complaint_timeliness_rate: number;
-  advocacy_access_rate: number;
-  child_satisfaction_rate: number;
-  feedback_loop_completion_rate: number;
-  participation_rate: number;
-  complaint_acknowledgement_rate: number;
-  learning_implemented_rate: number;
-  advocacy_quality_avg: number;
+  complaint_resolution_rate: number | null;
+  complaint_timeliness_rate: number | null;
+  advocacy_access_rate: number | null;
+  child_satisfaction_rate: number | null;
+  feedback_loop_completion_rate: number | null;
+  participation_rate: number | null;
+  complaint_acknowledgement_rate: number | null;
+  learning_implemented_rate: number | null;
+  advocacy_quality_avg: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: ComplaintAdvocacyRecommendation[];
@@ -291,7 +291,7 @@ export function computeComplaintAdvocacyResponsiveness(
   const advocacyQualityAvg =
     advocacy_records.length > 0
       ? Math.round((advocacyQualitySum / advocacy_records.length) * 100) / 100
-      : 0;
+      : null;
 
   // --- Feedback loop metrics ---
   const totalFeedbackLoops = child_feedback_loops.length;
@@ -340,8 +340,8 @@ export function computeComplaintAdvocacyResponsiveness(
   else if (learningImplementedRate >= 70) score += 1;
 
   // --- Bonus: advocacyQualityAvg (>=4.0: +3, >=3.0: +1) ---
-  if (advocacyQualityAvg >= 4.0) score += 3;
-  else if (advocacyQualityAvg >= 3.0) score += 1;
+  if ((advocacyQualityAvg ?? 0) >= 4.0) score += 3;
+  else if ((advocacyQualityAvg ?? 0) >= 3.0) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
@@ -445,11 +445,11 @@ export function computeComplaintAdvocacyResponsiveness(
     );
   }
 
-  if (advocacyQualityAvg >= 4.0 && advocacy_records.length > 0) {
+  if ((advocacyQualityAvg ?? 0) >= 4.0 && advocacy_records.length > 0) {
     strengths.push(
       `Advocacy quality averages ${advocacyQualityAvg}/5 — high-quality advocacy provision that effectively represents children's voices.`,
     );
-  } else if (advocacyQualityAvg >= 3.0 && advocacy_records.length > 0) {
+  } else if ((advocacyQualityAvg ?? 0) >= 3.0 && advocacy_records.length > 0) {
     strengths.push(
       `Advocacy quality averages ${advocacyQualityAvg}/5 — competent advocacy provision supporting children's voices.`,
     );
@@ -554,7 +554,7 @@ export function computeComplaintAdvocacyResponsiveness(
     );
   }
 
-  if (advocacyQualityAvg < 3.0 && advocacy_records.length > 0) {
+  if ((advocacyQualityAvg ?? 0) < 3.0 && advocacy_records.length > 0) {
     concerns.push(
       `Advocacy quality averaging only ${advocacyQualityAvg}/5 — the quality of advocacy provision may not be adequately serving children's interests.`,
     );
@@ -661,7 +661,7 @@ export function computeComplaintAdvocacyResponsiveness(
     });
   }
 
-  if (advocacyQualityAvg < 3.0 && advocacy_records.length > 0) {
+  if ((advocacyQualityAvg ?? 0) < 3.0 && advocacy_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -864,8 +864,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    advocacyQualityAvg >= 3.0 &&
-    advocacyQualityAvg < 4.0 &&
+    (advocacyQualityAvg ?? 0) >= 3.0 &&
+    (advocacyQualityAvg ?? 0) < 4.0 &&
     advocacy_records.length > 0
   ) {
     insights.push({
@@ -912,7 +912,7 @@ export function computeComplaintAdvocacyResponsiveness(
 
   if (
     advocacyAccessRate >= 100 &&
-    advocacyQualityAvg >= 4.0 &&
+    (advocacyQualityAvg ?? 0) >= 4.0 &&
     total_children > 0 &&
     advocacy_records.length > 0
   ) {

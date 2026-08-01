@@ -20,7 +20,7 @@ export interface DailySummaryInput {
   date: string;
   event_count: number;
   significant_count: number;
-  avg_mood_score: number;           // 0-10
+  avg_mood_score: number | null;           // 0-10
   category_count: number;           // number of distinct categories
   requires_followup: boolean;
 }
@@ -30,7 +30,7 @@ export interface DailyLogEntryInput {
   child_id: string;
   date: string;
   has_content: boolean;
-  mood_score: number;               // 1-10
+  mood_score: number | null;               // 1-10
   is_significant: boolean;
 }
 
@@ -76,19 +76,19 @@ export interface WellbeingRecommendation {
 
 export interface YoungPersonDailyWellbeingResult {
   wellbeing_rating: YPDailyWellbeingRating;
-  wellbeing_score: number;
+  wellbeing_score: number | null;
   headline: string;
   total_daily_logs: number;
   logs_last_30_days: number;
   total_behaviour_logs: number;
   behaviour_logs_last_30_days: number;
   total_summaries: number;
-  average_mood_score: number;
-  daily_coverage_rate: number;
-  mood_tracking_rate: number;
-  behaviour_documentation_rate: number;
-  de_escalation_rate: number;
-  child_coverage_rate: number;
+  average_mood_score: number | null;
+  daily_coverage_rate: number | null;
+  mood_tracking_rate: number | null;
+  behaviour_documentation_rate: number | null;
+  de_escalation_rate: number | null;
+  child_coverage_rate: number | null;
   high_severity_count: number;
   strengths: string[];
   concerns: string[];
@@ -200,13 +200,13 @@ export function computeYoungPersonDailyWellbeing(
   const dailyCoverageRate = pct(uniqueLogDays, 30);
 
   // Mood tracking quality: logs with mood_score > 0
-  const logsWithMood = logs30d.filter(l => l.mood_score > 0);
+  const logsWithMood = logs30d.filter(l => (l.mood_score ?? 0) > 0);
   const moodTrackingRate = pct(logsWithMood.length, logs30d.length);
 
   // Average mood score across all daily logs with mood
   const averageMoodScore = logsWithMood.length > 0
-    ? Math.round((logsWithMood.reduce((sum, l) => sum + l.mood_score, 0) / logsWithMood.length) * 10) / 10
-    : 0;
+    ? Math.round((logsWithMood.reduce((sum, l) => sum + (l.mood_score ?? 0), 0) / logsWithMood.length) * 10) / 10
+    : null;
 
   // Behaviour documentation: has_antecedent AND has_consequence AND has_outcome
   const fullyDocBeh = beh30d.filter(b => b.has_antecedent && b.has_consequence && b.has_outcome);
@@ -353,7 +353,7 @@ export function computeYoungPersonDailyWellbeing(
   if (childCoverageRate >= 100 && logs30d.length > 0) {
     strengths.push("Every child has daily log entries — no child is invisible in the recording system.");
   }
-  if (averageMoodScore >= 7 && logsWithMood.length >= 5) {
+  if ((averageMoodScore ?? 0) >= 7 && logsWithMood.length >= 5) {
     strengths.push(`Average mood score of ${averageMoodScore}/10 across the home — children are reporting positive wellbeing.`);
   }
   if (followupSummaries.length > 0) {
@@ -386,7 +386,7 @@ export function computeYoungPersonDailyWellbeing(
   if (highSeverityCount >= 5) {
     concerns.push(`${highSeverityCount} high/critical severity behaviour incidents in 30 days — escalating behaviour patterns require review of care plans and risk assessments.`);
   }
-  if (averageMoodScore > 0 && averageMoodScore < 4 && logsWithMood.length >= 3) {
+  if ((averageMoodScore ?? 0) > 0 && (averageMoodScore ?? 0) < 4 && logsWithMood.length >= 3) {
     concerns.push(`Average mood score of ${averageMoodScore}/10 — persistently low mood across the home suggests unmet emotional needs.`);
   }
   if (followupSummaries.length > 0) {
@@ -512,7 +512,7 @@ export function computeYoungPersonDailyWellbeing(
       severity: "critical",
     });
   }
-  if (moodTrackingRate < 50 && logs30d.length > 0 && averageMoodScore > 0 && averageMoodScore < 4) {
+  if (moodTrackingRate < 50 && logs30d.length > 0 && (averageMoodScore ?? 0) > 0 && (averageMoodScore ?? 0) < 4) {
     insights.push({
       text: `Low mood tracking rate (${moodTrackingRate}%) combined with low average mood (${averageMoodScore}/10) suggests both poor monitoring and concerning emotional wellbeing. Immediate therapeutic intervention and enhanced monitoring are needed.`,
       severity: "critical",

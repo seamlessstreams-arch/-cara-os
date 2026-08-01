@@ -31,11 +31,11 @@ export interface WhistleblowingOverview {
   total_reports: number;
   open_reports: number;
   resolved_reports: number;
-  avg_resolution_days: number;
+  avg_resolution_days: number | null;
   external_referral_count: number;
   anonymous_count: number;
-  protection_measures_rate: number;
-  lessons_recorded_rate: number;
+  protection_measures_rate: number | null;
+  lessons_recorded_rate: number | null;
 }
 
 export interface CategoryBreakdown {
@@ -145,7 +145,7 @@ export function computeWhistleblowingIntelligence(input: {
     0,
   );
   const avgResolutionDays =
-    resolvedWithDates.length > 0 ? Math.round(totalResolutionDays / resolvedWithDates.length) : 0;
+    resolvedWithDates.length > 0 ? Math.round(totalResolutionDays / resolvedWithDates.length) : null;
 
   const externalReferralCount = reports.filter((r) => r.external_referral !== null && r.external_referral.trim().length > 0).length;
   const anonymousCount = reports.filter((r) => r.anonymous).length;

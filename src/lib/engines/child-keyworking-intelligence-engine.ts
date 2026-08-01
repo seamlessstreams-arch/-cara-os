@@ -66,9 +66,9 @@ export interface MoodImpact {
   avg_mood_before: number;
   avg_mood_after: number;
   avg_improvement: number;        // avg (after - before)
-  positive_impact_rate: number;   // % sessions where mood improved
-  no_change_rate: number;
-  negative_impact_rate: number;
+  positive_impact_rate: number | null;   // % sessions where mood improved
+  no_change_rate: number | null;
+  negative_impact_rate: number | null;
 }
 
 export interface SessionTypeBreakdown {
@@ -78,9 +78,9 @@ export interface SessionTypeBreakdown {
 }
 
 export interface QualityMetrics {
-  child_voice_rate: number;       // % with child voice
-  follow_up_set_rate: number;     // % with follow-up set
-  follow_up_completion_rate: number; // % of set follow-ups completed
+  child_voice_rate: number | null;       // % with child voice
+  follow_up_set_rate: number | null;     // % with follow-up set
+  follow_up_completion_rate: number | null; // % of set follow-ups completed
   avg_duration_minutes: number;
   avg_actions_per_session: number;
   topic_variety: number;          // unique topics count
@@ -104,7 +104,7 @@ export interface ChildKeyworkingResult {
   child_id: string;
   child_name: string;
   quality_rating: KeyworkingQualityRating;
-  quality_score: number;           // 0-100
+  quality_score: number | null;           // 0-100
   headline: string;
   frequency: FrequencyProfile;
   mood_impact: MoodImpact;
@@ -120,7 +120,7 @@ export interface ChildKeyworkingResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number {
+function daysAgo(today: string, date: string): number | null {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -131,7 +131,7 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 0;
+  return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
 function avg(nums: number[]): number {
@@ -246,18 +246,18 @@ export function computeChildKeyworking(
     else score -= 5;
 
     // Mood impact
-    if (mood_impact.positive_impact_rate >= 80) score += 10;
-    else if (mood_impact.positive_impact_rate >= 50) score += 5;
-    if (mood_impact.negative_impact_rate > 20) score -= 5;
+    if ((mood_impact.positive_impact_rate ?? 0) >= 80) score += 10;
+    else if ((mood_impact.positive_impact_rate ?? 0) >= 50) score += 5;
+    if ((mood_impact.negative_impact_rate ?? 0) > 20) score -= 5;
 
     // Child voice
     if (quality_metrics.child_voice_rate === 100) score += 10;
-    else if (quality_metrics.child_voice_rate >= 80) score += 5;
-    else if (quality_metrics.child_voice_rate < 50) score -= 10;
+    else if ((quality_metrics.child_voice_rate ?? 0) >= 80) score += 5;
+    else if ((quality_metrics.child_voice_rate ?? 0) < 50) score -= 10;
 
     // Follow-up completion
-    if (quality_metrics.follow_up_completion_rate >= 80 && withFollowUp.length >= 2) score += 5;
-    else if (quality_metrics.follow_up_completion_rate < 50 && withFollowUp.length >= 2) score -= 5;
+    if ((quality_metrics.follow_up_completion_rate ?? 0) >= 80 && withFollowUp.length >= 2) score += 5;
+    else if ((quality_metrics.follow_up_completion_rate ?? 0) < 50 && withFollowUp.length >= 2) score -= 5;
 
     // Session variety
     if (session_types.length >= 4) score += 5;
@@ -303,7 +303,7 @@ export function computeChildKeyworking(
     strengths.push(`Keyworking quality rated ${quality_rating} (${score}%). Sessions are regular, the child's voice is captured, and there's clear evidence of positive impact on ${child_name}'s mood and engagement.`);
   }
 
-  if (mood_impact.positive_impact_rate >= 70 && sessions.length >= 3) {
+  if ((mood_impact.positive_impact_rate ?? 0) >= 70 && sessions.length >= 3) {
     strengths.push(`${mood_impact.positive_impact_rate}% of sessions result in improved mood (avg +${mood_impact.avg_improvement}). This demonstrates that keywork sessions are a positive, therapeutic experience for ${child_name} — not just procedural check-ins.`);
   }
 
@@ -311,7 +311,7 @@ export function computeChildKeyworking(
     strengths.push(`${child_name}'s voice is captured in 100% of sessions. The child's perspective, feelings, and wishes are consistently recorded — evidencing genuine child-centred practice.`);
   }
 
-  if (quality_metrics.follow_up_completion_rate >= 80 && withFollowUp.length >= 2) {
+  if ((quality_metrics.follow_up_completion_rate ?? 0) >= 80 && withFollowUp.length >= 2) {
     strengths.push(`${quality_metrics.follow_up_completion_rate}% of agreed follow-ups completed. This shows that keywork sessions drive action — they're not just conversations, they lead to real change.`);
   }
 
@@ -334,15 +334,15 @@ export function computeChildKeyworking(
     concerns.push(`No keyworking sessions in the last 30 days. This means ${child_name} has not had structured 1:1 time with their key worker for over a month — this is below the minimum expected standard.`);
   }
 
-  if (quality_metrics.child_voice_rate < 80 && sessions.length >= 2) {
+  if ((quality_metrics.child_voice_rate ?? 0) < 80 && sessions.length >= 2) {
     concerns.push(`${child_name}'s voice captured in only ${quality_metrics.child_voice_rate}% of sessions. Every keywork session should record the child's own words, feelings, and views — this is what makes keywork meaningful and what inspectors look for.`);
   }
 
-  if (quality_metrics.follow_up_completion_rate < 50 && withFollowUp.length >= 2) {
+  if ((quality_metrics.follow_up_completion_rate ?? 0) < 50 && withFollowUp.length >= 2) {
     concerns.push(`Only ${quality_metrics.follow_up_completion_rate}% of follow-ups completed. When agreed actions aren't followed through, it undermines the child's trust and reduces the effectiveness of keywork.`);
   }
 
-  if (mood_impact.negative_impact_rate > 20 && sessions.length >= 3) {
+  if ((mood_impact.negative_impact_rate ?? 0) > 20 && sessions.length >= 3) {
     concerns.push(`${mood_impact.negative_impact_rate}% of sessions resulted in worse mood. While some difficult conversations are necessary, a pattern of negative mood impact may indicate that sessions need adapting or that ${child_name} needs additional support.`);
   }
 
@@ -378,7 +378,7 @@ export function computeChildKeyworking(
     });
   }
 
-  if (quality_metrics.child_voice_rate < 80 && sessions.length >= 2) {
+  if ((quality_metrics.child_voice_rate ?? 0) < 80 && sessions.length >= 2) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Ensure ${child_name}'s voice is recorded in every session. Use open questions, sentence starters, or creative tools (drawing, writing) to capture the child's perspective in their own words.`,
@@ -388,7 +388,7 @@ export function computeChildKeyworking(
     });
   }
 
-  if (quality_metrics.follow_up_completion_rate < 50 && withFollowUp.length >= 2) {
+  if ((quality_metrics.follow_up_completion_rate ?? 0) < 50 && withFollowUp.length >= 2) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Improve follow-up completion. Track agreed actions in a visible system and review at the start of each session. Unfulfilled promises damage the child's trust in key workers.",
@@ -432,7 +432,7 @@ export function computeChildKeyworking(
     });
   }
 
-  if (mood_impact.positive_impact_rate >= 80 && quality_metrics.child_voice_rate >= 90 && sessions.length >= 4) {
+  if ((mood_impact.positive_impact_rate ?? 0) >= 80 && (quality_metrics.child_voice_rate ?? 0) >= 90 && sessions.length >= 4) {
     insights.push({
       severity: "positive",
       text: `${mood_impact.positive_impact_rate}% positive mood impact combined with ${quality_metrics.child_voice_rate}% voice capture demonstrates therapeutic-quality keywork. Sessions are clearly meeting ${child_name}'s emotional needs and providing a safe space for expression.`,

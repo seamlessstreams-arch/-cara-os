@@ -1992,7 +1992,7 @@ describe("metric calculations", () => {
         }),
       ],
     });
-    expect(r.training_effectiveness_rate).toBe(0);
+    expect(r.training_effectiveness_rate).toBeNull();;
   });
 
   it("pct(0, 0) = 0", () => {

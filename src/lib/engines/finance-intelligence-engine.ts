@@ -65,7 +65,7 @@ export interface FinanceOverview {
   total_savings: number;
   total_spending_this_period: number;
   receipt_compliance_rate: number | null; // null = no spending recorded to receipt
-  avg_spending_per_child: number;
+  avg_spending_per_child: number | null;
 }
 
 export interface ChildSpendingProfile {
@@ -139,7 +139,7 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
   const receiptComplianceRate = rateOf(receiptsHeld, spendingTransactions);
 
   const totalChildren = children.length;
-  const avgSpendingPerChild = totalChildren > 0 ? Math.round((totalSpending / totalChildren) * 100) / 100 : 0;
+  const avgSpendingPerChild = totalChildren > 0 ? Math.round((totalSpending / totalChildren) * 100) / 100 : null;
 
   // ── Overview ──────────────────────────────────────────────────────────
   const overview: FinanceOverview = {
@@ -169,7 +169,7 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
       total_spending: childSpendingTotal,
       total_savings: childSavings,
       monthly_allowance: childAllowance,
-      spending_above_average: childSpendingTotal > avgSpendingPerChild * 1.15,
+      spending_above_average: childSpendingTotal > (avgSpendingPerChild ?? 0) * 1.15,
       receipt_rate: childReceiptRate,
       transaction_count: childPeriodTx.length,
     };
@@ -189,7 +189,7 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
       category,
       total_amount: data.total,
       transaction_count: data.count,
-      percentage: totalSpending > 0 ? Math.round((data.total / totalSpending) * 100) : 0,
+      percentage: totalSpending > 0 ? Math.round((data.total / totalSpending) * 100) : null,
     }))
     .sort((a, b) => b.total_amount - a.total_amount);
 
@@ -197,7 +197,7 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
   const alerts: FinanceAlert[] = [];
 
   for (const profile of child_spending) {
-    if (avgSpendingPerChild > 0 && profile.total_spending > avgSpendingPerChild * 2) {
+    if ((avgSpendingPerChild ?? 0) > 0 && profile.total_spending > (avgSpendingPerChild ?? 0) * 2) {
       alerts.push({
         severity: "high",
         message: `High spending alert: ${profile.child_name} spent £${profile.total_spending.toFixed(2)}, more than double the average`,
@@ -266,7 +266,7 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
   }
 
   for (const profile of child_spending) {
-    if (avgSpendingPerChild > 0 && profile.total_spending > avgSpendingPerChild * 2) {
+    if ((avgSpendingPerChild ?? 0) > 0 && profile.total_spending > (avgSpendingPerChild ?? 0) * 2) {
       insights.push({
         severity: "warning",
         text: `${profile.child_name} is spending significantly above average — review spending consultation records`,

@@ -70,8 +70,8 @@ export interface ContextualRiskProfile {
   escalated_count: number;
   high_very_high_count: number;
   overdue_reviews: number;
-  multi_agency_rate: number;
-  protective_action_rate: number;
+  multi_agency_rate: number | null;
+  protective_action_rate: number | null;
 }
 
 export interface ExploitationProfile {
@@ -80,19 +80,19 @@ export interface ExploitationProfile {
   children_not_screened: string[];
   screening_coverage: number;
   high_risk_count: number;
-  safety_plan_rate: number;
-  social_worker_notification_rate: number;
+  safety_plan_rate: number | null;
+  social_worker_notification_rate: number | null;
   nrm_referral_count: number;
-  avg_multi_agency: number;
+  avg_multi_agency: number | null;
 }
 
 export interface OnlineSafetyProfile {
   total_incidents_90d: number;
   high_critical_count: number;
   unresolved_high_critical: number;
-  child_discussion_rate: number;
-  follow_up_rate: number;
-  parent_notification_rate: number;
+  child_discussion_rate: number | null;
+  follow_up_rate: number | null;
+  parent_notification_rate: number | null;
   children_affected: string[];
 }
 
@@ -110,7 +110,7 @@ export interface SafeguardingRecommendation {
 
 export interface HomeSafeguardingResult {
   safeguarding_rating: SafeguardingRating;
-  safeguarding_score: number;
+  safeguarding_score: number | null;
   headline: string;
   contextual_risk_profile: ContextualRiskProfile;
   exploitation_profile: ExploitationProfile;
@@ -219,7 +219,7 @@ export function computeHomeSafeguarding(
   const multiAgencyCounts = latestScreenings.map(s => s.multi_agency_count);
   const avgMultiAgency = multiAgencyCounts.length > 0
     ? Math.round((multiAgencyCounts.reduce((a, b) => a + b, 0) / multiAgencyCounts.length) * 10) / 10
-    : 0;
+    : null;
 
   const expProfile: ExploitationProfile = {
     total_screenings: latestScreenings.length,

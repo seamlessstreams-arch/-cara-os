@@ -56,12 +56,12 @@ export type DisruptionPreventionRating =
 
 export interface DisruptionPreventionResult {
   disruption_rating: DisruptionPreventionRating;
-  disruption_score: number;
+  disruption_score: number | null;
   headline: string;
   children_with_plans: number;
-  planned_ending_rate: number;
-  disruption_rate: number;
-  average_placement_months: number;
+  planned_ending_rate: number | null;
+  disruption_rate: number | null;
+  average_placement_months: number | null;
   high_risk_children: number;
   strengths: string[];
   concerns: string[];
@@ -152,7 +152,7 @@ export function computePlacementDisruptionPrevention(
       ? Math.round(
           (placement_ends.reduce((s, e) => s + e.duration_months, 0) / totalEndings) * 10,
         ) / 10
-      : 0;
+      : null;
 
   // High risk children (heightened or acute)
   const highRiskChildIds = new Set(

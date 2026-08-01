@@ -46,9 +46,9 @@ export interface MissingProfile {
   total_episodes: number;
   active_episodes: number;
   resolved_this_month: number;
-  avg_duration_minutes: number;
-  police_notification_rate: number; // percentage
-  return_interview_completion_rate: number; // percentage
+  avg_duration_minutes: number | null;
+  police_notification_rate: number | null; // percentage
+  return_interview_completion_rate: number | null; // percentage
   contextual_safeguarding_flagged: number;
   children_with_episodes: number;
   repeat_missing_children: string[]; // child IDs with 3+ episodes
@@ -231,12 +231,12 @@ export function computeMissingIntelligence(input: MissingEngineInput): MissingIn
     .map((e) => e.duration_hours!);
   const avgDurationMinutes = durations.length > 0
     ? Math.round((durations.reduce((a, b) => a + b, 0) / durations.length) * 60)
-    : 0;
+    : null;
 
   const policeReported = episodes.filter((e) => e.reported_to_police).length;
   const policeNotificationRate = episodes.length > 0
     ? Math.round((policeReported / episodes.length) * 100)
-    : 0;
+    : null;
 
   const closedEpisodes = closed.length;
   const interviewsCompleted = closed.filter((e) => e.return_interview_completed).length;

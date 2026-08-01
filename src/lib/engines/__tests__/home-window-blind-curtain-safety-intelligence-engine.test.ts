@@ -828,7 +828,7 @@ describe("child safety rate", () => {
 
   it("0 when no relevant data", () => {
     const r = run({ window_restrictor_records: [makeRestrictor({ floor_level: 0 })] });
-    expect(r.child_safety_rate).toBe(0);
+    expect(r.child_safety_rate).toBeNull();;
   });
 
   it(">=90 gives +4 bonus", () => {

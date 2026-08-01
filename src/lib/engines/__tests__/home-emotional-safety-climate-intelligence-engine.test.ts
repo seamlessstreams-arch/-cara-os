@@ -737,7 +737,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       const r = computeEmotionalSafetyClimate(
         baseInput({ sanction_rewards: [] }),
       );
-      expect(r.reward_to_sanction_ratio).toBe(0);
+      expect(r.reward_to_sanction_ratio).toBeNull();;
       expect(r.safety_score).toBeGreaterThanOrEqual(52);
     });
 
@@ -1012,7 +1012,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
 
     it("returns 0 average_restraint_duration when no restraints", () => {
       const r = computeEmotionalSafetyClimate(baseInput({ restraints: [] }));
-      expect(r.average_restraint_duration).toBe(0);
+      expect(r.average_restraint_duration).toBeNull();;
     });
 
     it("calculates restraint_review_rate as percentage", () => {
@@ -1090,7 +1090,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       const r = computeEmotionalSafetyClimate(
         baseInput({ sanction_rewards: [] }),
       );
-      expect(r.reward_to_sanction_ratio).toBe(0);
+      expect(r.reward_to_sanction_ratio).toBeNull();;
     });
 
     it("calculates positive_achievement_count", () => {
@@ -1155,7 +1155,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       const r = computeEmotionalSafetyClimate(
         baseInput({ post_incident_debriefs: [] }),
       );
-      expect(r.post_incident_quality_avg).toBe(0);
+      expect(r.post_incident_quality_avg).toBeNull();;
     });
 
     it("calculates injury_rate correctly", () => {
@@ -2528,7 +2528,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       const r = computeEmotionalSafetyClimate(
         baseInput({ sanction_rewards: [] }),
       );
-      expect(r.reward_to_sanction_ratio).toBe(0);
+      expect(r.reward_to_sanction_ratio).toBeNull();;
     });
 
     it("clamps score to minimum 0", () => {

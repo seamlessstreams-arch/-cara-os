@@ -21,7 +21,7 @@ export interface WellbeingPulseInput {
   id: string;
   child_id: string;
   date: string;
-  overall_score: number; /* 1-10 */
+  overall_score: number | null; /* 1-10 */
   trend: string; /* "improving"|"stable"|"declining" */
   follow_up_needed: boolean;
   follow_up_actioned: boolean;
@@ -64,13 +64,13 @@ export type TherapeuticWellbeingRating =
 
 export interface TherapeuticWellbeingResult {
   wellbeing_rating: TherapeuticWellbeingRating;
-  wellbeing_score: number;
+  wellbeing_score: number | null;
   headline: string;
   children_with_therapeutic_plans: number;
-  average_wellbeing_score: number;
-  improving_trend_rate: number;
-  self_soothing_coverage_rate: number;
-  grief_support_rate: number;
+  average_wellbeing_score: number | null;
+  improving_trend_rate: number | null;
+  self_soothing_coverage_rate: number | null;
+  grief_support_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -175,15 +175,15 @@ export function computeTherapeuticWellbeingImpact(
   const avgWellbeing =
     wellbeing_pulses.length > 0
       ? round1(
-          wellbeing_pulses.reduce((s, p) => s + p.overall_score, 0) /
+          wellbeing_pulses.reduce((s, p) => s + (p.overall_score ?? 0), 0) /
             wellbeing_pulses.length,
         )
-      : 0;
+      : null;
 
   if (wellbeing_pulses.length === 0) score += 0;
-  else if (avgWellbeing >= 7) score += 6;
-  else if (avgWellbeing >= 5) score += 3;
-  else if (avgWellbeing >= 3) score += 0;
+  else if ((avgWellbeing ?? 0) >= 7) score += 6;
+  else if ((avgWellbeing ?? 0) >= 5) score += 3;
+  else if ((avgWellbeing ?? 0) >= 3) score += 0;
   else score -= 5;
 
   // -- Mod 3: Wellbeing trends -----------------------------------------------
@@ -256,7 +256,7 @@ export function computeTherapeuticWellbeingImpact(
       `${therapeuticCoverageRate}% of children have therapeutic plans with key outcomes and evidence of progress -- therapeutic approaches are well embedded.`,
     );
   }
-  if (avgWellbeing >= 7 && wellbeing_pulses.length > 0) {
+  if ((avgWellbeing ?? 0) >= 7 && wellbeing_pulses.length > 0) {
     strengths.push(
       `Average wellbeing score of ${avgWellbeing}/10 -- children are reporting positive emotional states.`,
     );
@@ -295,12 +295,12 @@ export function computeTherapeuticWellbeingImpact(
       `Only ${therapeuticCoverageRate}% of children have therapeutic plans with key outcomes and progress evidence -- therapeutic approaches are not embedded.`,
     );
   }
-  if (avgWellbeing < 3 && wellbeing_pulses.length > 0) {
+  if ((avgWellbeing ?? 0) < 3 && wellbeing_pulses.length > 0) {
     concerns.push(
       `Average wellbeing score is ${avgWellbeing}/10 -- children's emotional states are critically low.`,
     );
   }
-  if (avgWellbeing >= 3 && avgWellbeing < 5 && wellbeing_pulses.length > 0) {
+  if ((avgWellbeing ?? 0) >= 3 && (avgWellbeing ?? 0) < 5 && wellbeing_pulses.length > 0) {
     concerns.push(
       `Average wellbeing score of ${avgWellbeing}/10 is below the expected standard for positive emotional health.`,
     );
@@ -364,7 +364,7 @@ export function computeTherapeuticWellbeingImpact(
     });
   }
 
-  if (avgWellbeing < 5 && wellbeing_pulses.length > 0) {
+  if ((avgWellbeing ?? 0) < 5 && wellbeing_pulses.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Average wellbeing score is ${avgWellbeing}/10 -- convene a multi-disciplinary review to address children's emotional needs and consider additional specialist input.`,
@@ -458,7 +458,7 @@ export function computeTherapeuticWellbeingImpact(
     });
   }
 
-  if (avgWellbeing < 3 && wellbeing_pulses.length > 0) {
+  if ((avgWellbeing ?? 0) < 3 && wellbeing_pulses.length > 0) {
     insights.push({
       text: `Critical wellbeing concern: average score of ${avgWellbeing}/10 indicates children are experiencing significant emotional distress. Under CHR 2015 Reg 9, the registered person must ensure that children receive care which meets their emotional needs. Immediate multi-agency intervention is warranted.`,
       severity: "critical",
@@ -491,7 +491,7 @@ export function computeTherapeuticWellbeingImpact(
 
   if (
     improvingRate >= 60 &&
-    avgWellbeing >= 7 &&
+    (avgWellbeing ?? 0) >= 7 &&
     wellbeing_pulses.length > 0
   ) {
     insights.push({

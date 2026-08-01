@@ -192,16 +192,16 @@ export type TrainingComplianceRating =
 
 export interface StaffTrainingCpdComplianceResult {
   training_rating: TrainingComplianceRating;
-  training_score: number;
+  training_score: number | null;
   headline: string;
 
   // ── Key Metrics ──────────────────────────────────────────────────────
-  mandatory_training_compliance_rate: number;
-  cpd_completion_rate: number;
-  training_needs_coverage_rate: number;
-  qualification_currency_rate: number;
-  development_plan_coverage_rate: number;
-  training_effectiveness_rate: number;
+  mandatory_training_compliance_rate: number | null;
+  cpd_completion_rate: number | null;
+  training_needs_coverage_rate: number | null;
+  qualification_currency_rate: number | null;
+  development_plan_coverage_rate: number | null;
+  training_effectiveness_rate: number | null;
 
   // ── Detailed Metrics ─────────────────────────────────────────────────
   mandatory_training_valid_count: number;
@@ -209,7 +209,7 @@ export interface StaffTrainingCpdComplianceResult {
   mandatory_training_overdue_count: number;
   mandatory_training_total: number;
   cpd_total_hours: number;
-  cpd_avg_hours_per_staff: number;
+  cpd_avg_hours_per_staff: number | null;
   cpd_records_with_reflection: number;
   cpd_records_with_evidence: number;
   cpd_learning_applied_count: number;
@@ -220,7 +220,7 @@ export interface StaffTrainingCpdComplianceResult {
   qualifications_expired_count: number;
   development_plans_active_count: number;
   development_plans_current_count: number;
-  development_objectives_achievement_rate: number;
+  development_objectives_achievement_rate: number | null;
 
   // ── Narrative ────────────────────────────────────────────────────────
   strengths: string[];
@@ -515,7 +515,7 @@ export function computeStaffTrainingCpdCompliance(
   const ratedProviders = mandatory_training_records.filter(r => r.provider_quality_rating > 0);
   const avgProviderQuality = ratedProviders.length > 0
     ? ratedProviders.reduce((sum, r) => sum + r.provider_quality_rating, 0) / ratedProviders.length
-    : 0;
+    : null;
 
   // Delivery method diversity
   const deliveryMethods = new Set<string>();
@@ -564,7 +564,7 @@ export function computeStaffTrainingCpdCompliance(
   const ratedCpd = cpd_records.filter(r => r.quality_rating > 0);
   const avgCpdQuality = ratedCpd.length > 0
     ? ratedCpd.reduce((sum, r) => sum + r.quality_rating, 0) / ratedCpd.length
-    : 0;
+    : null;
 
   // CPD activity type diversity
   const cpdActivityTypes = new Set<string>();
@@ -678,7 +678,7 @@ export function computeStaffTrainingCpdCompliance(
     .map(r => r.level);
   const avgQualLevel = qualLevels.length > 0
     ? qualLevels.reduce((sum, l) => sum + l, 0) / qualLevels.length
-    : 0;
+    : null;
 
   // Expiring soon (within 90 days)
   const qualExpiringSoon = qualification_records.filter(r =>
@@ -722,7 +722,7 @@ export function computeStaffTrainingCpdCompliance(
   const ratedPlans = development_plan_records.filter(r => r.quality_rating > 0);
   const avgPlanQuality = ratedPlans.length > 0
     ? ratedPlans.reduce((sum, r) => sum + r.quality_rating, 0) / ratedPlans.length
-    : 0;
+    : null;
 
   // Stale plans (plan exists but not current)
   const stalePlans = development_plan_records.filter(r => r.plan_exists && !r.is_current).length;
@@ -750,7 +750,7 @@ export function computeStaffTrainingCpdCompliance(
 
   const trainingEffectivenessRate = effectivenessComponents.length > 0
     ? Math.round(effectivenessComponents.reduce((s, v) => s + v, 0) / effectivenessComponents.length)
-    : 0;
+    : null;
 
   // ══════════════════════════════════════════════════════════════════════
   // SCORING — Base 52 + 9 bonus categories (max 28) = max 80
@@ -827,8 +827,8 @@ export function computeStaffTrainingCpdCompliance(
 
   // ── Bonus 9: Training effectiveness composite (0–2) ─────────────────
   if (effectivenessComponents.length > 0) {
-    if (trainingEffectivenessRate >= 80) score += 2;
-    else if (trainingEffectivenessRate >= 60) score += 1;
+    if ((trainingEffectivenessRate ?? 0) >= 80) score += 2;
+    else if ((trainingEffectivenessRate ?? 0) >= 60) score += 1;
     // else +0
   }
 
@@ -1000,7 +1000,7 @@ export function computeStaffTrainingCpdCompliance(
     );
   }
 
-  if (trainingEffectivenessRate >= 80 && effectivenessComponents.length >= 3) {
+  if ((trainingEffectivenessRate ?? 0) >= 80 && effectivenessComponents.length >= 3) {
     strengths.push(
       `Overall training effectiveness rate is ${trainingEffectivenessRate}% — training investment is delivering measurable impact.`
     );
@@ -1543,7 +1543,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (trainingEffectivenessRate >= 80 && effectivenessComponents.length >= 4) {
+  if ((trainingEffectivenessRate ?? 0) >= 80 && effectivenessComponents.length >= 4) {
     insights.push({
       text: `Training effectiveness rate is ${trainingEffectivenessRate}% across ${effectivenessComponents.length} measures. This indicates training investment is delivering real impact on practice quality.`,
       severity: "positive",

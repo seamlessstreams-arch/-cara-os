@@ -60,13 +60,13 @@ export type StaffCompetencyRating =
 
 export interface StaffCompetencyResult {
   competency_rating: StaffCompetencyRating;
-  competency_score: number;
+  competency_score: number | null;
   headline: string;
-  staff_assessed_rate: number;
-  training_compliance_rate: number;
-  cpd_engagement_rate: number;
-  handbook_acknowledgement_rate: number;
-  competent_or_above_rate: number;
+  staff_assessed_rate: number | null;
+  training_compliance_rate: number | null;
+  cpd_engagement_rate: number | null;
+  handbook_acknowledgement_rate: number | null;
+  competent_or_above_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -130,7 +130,7 @@ export function computeStaffCompetencyTraining(
   const assessedCount = competencies.filter(c => c.assessed).length;
   const staffAssessedRate = totalCompetencies > 0
     ? pct(assessedCount, totalCompetencies)
-    : 0;
+    : null;
 
   // ── Metric 2: Competent or above rate ─────────────────────────────────
   const assessedCompetencies = competencies.filter(c => c.assessed);
@@ -139,7 +139,7 @@ export function computeStaffCompetencyTraining(
   ).length;
   const competentOrAboveRate = assessedCompetencies.length > 0
     ? pct(competentOrAboveCount, assessedCompetencies.length)
-    : 0;
+    : null;
 
   // ── Metric 3: Training compliance ─────────────────────────────────────
   const totalMatrixRows = training_matrix.length;
@@ -148,7 +148,7 @@ export function computeStaffCompetencyTraining(
   const nonCompliantRows = training_matrix.filter(t => t.overall_compliance === "non_compliant").length;
   const trainingComplianceRate = totalMatrixRows > 0
     ? pct(compliantRows, totalMatrixRows)
-    : 0;
+    : null;
 
   const totalExpiredCourses = training_matrix.reduce((sum, t) => sum + t.expired_count, 0);
   const totalExpiringCourses = training_matrix.reduce((sum, t) => sum + t.expiring_count, 0);
@@ -160,7 +160,7 @@ export function computeStaffCompetencyTraining(
   const inProgressCpd = cpd_records.filter(c => c.status === "in_progress").length;
   const cpdEngagementRate = totalCpd > 0
     ? pct(completedCpd, totalCpd)
-    : 0;
+    : null;
 
   const totalCpdHours = cpd_records.reduce((sum, c) => sum + c.cpd_hours, 0);
   const avgCpdHoursPerStaff = totalCpdHours / total_staff;
@@ -173,33 +173,33 @@ export function computeStaffCompetencyTraining(
     .map(h => h.acknowledged_count / h.total_staff_required);
   const avgHandbookRate = handbookRates.length > 0
     ? Math.round((handbookRates.reduce((s, v) => s + v, 0) / handbookRates.length) * 100)
-    : 0;
+    : null;
 
   // ── Scoring (base 52, 6 mods) ────────────────────────────────────────
   let score = 52;
 
   // Mod 1: Assessment coverage
-  if (staffAssessedRate >= 90) score += 5;
-  else if (staffAssessedRate >= 70) score += 2;
-  else if (staffAssessedRate >= 50) score += 0;
+  if ((staffAssessedRate ?? 0) >= 90) score += 5;
+  else if ((staffAssessedRate ?? 0) >= 70) score += 2;
+  else if ((staffAssessedRate ?? 0) >= 50) score += 0;
   else score -= 5;
 
   // Mod 2: Competency level
-  if (competentOrAboveRate >= 85) score += 6;
-  else if (competentOrAboveRate >= 65) score += 3;
-  else if (competentOrAboveRate >= 45) score += 0;
+  if ((competentOrAboveRate ?? 0) >= 85) score += 6;
+  else if ((competentOrAboveRate ?? 0) >= 65) score += 3;
+  else if ((competentOrAboveRate ?? 0) >= 45) score += 0;
   else score -= 5;
 
   // Mod 3: Training compliance
-  if (trainingComplianceRate >= 90) score += 5;
-  else if (trainingComplianceRate >= 70) score += 2;
-  else if (trainingComplianceRate >= 50) score += 0;
+  if ((trainingComplianceRate ?? 0) >= 90) score += 5;
+  else if ((trainingComplianceRate ?? 0) >= 70) score += 2;
+  else if ((trainingComplianceRate ?? 0) >= 50) score += 0;
   else score -= 5;
 
   // Mod 4: CPD engagement
-  if (cpdEngagementRate >= 80) score += 5;
-  else if (cpdEngagementRate >= 50) score += 2;
-  else if (cpdEngagementRate >= 30) score += 0;
+  if ((cpdEngagementRate ?? 0) >= 80) score += 5;
+  else if ((cpdEngagementRate ?? 0) >= 50) score += 2;
+  else if ((cpdEngagementRate ?? 0) >= 30) score += 0;
   else score -= 4;
 
   // Mod 5: CPD hours per staff
@@ -209,9 +209,9 @@ export function computeStaffCompetencyTraining(
   else score -= 4;
 
   // Mod 6: Handbook acknowledgement
-  if (avgHandbookRate >= 90) score += 5;
-  else if (avgHandbookRate >= 70) score += 2;
-  else if (avgHandbookRate >= 50) score += 0;
+  if ((avgHandbookRate ?? 0) >= 90) score += 5;
+  else if ((avgHandbookRate ?? 0) >= 70) score += 2;
+  else if ((avgHandbookRate ?? 0) >= 50) score += 0;
   else score -= 5;
 
   score = clamp(score, 0, 100);
@@ -220,22 +220,22 @@ export function computeStaffCompetencyTraining(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (staffAssessedRate >= 90 && totalCompetencies > 0) {
+  if ((staffAssessedRate ?? 0) >= 90 && totalCompetencies > 0) {
     strengths.push(`${staffAssessedRate}% of competency assessments completed — strong assessment coverage across the team.`);
   }
-  if (competentOrAboveRate >= 85 && assessedCompetencies.length > 0) {
+  if ((competentOrAboveRate ?? 0) >= 85 && assessedCompetencies.length > 0) {
     strengths.push(`${competentOrAboveRate}% of assessed staff are competent or above — workforce demonstrates strong capability.`);
   }
-  if (trainingComplianceRate >= 90 && totalMatrixRows > 0) {
+  if ((trainingComplianceRate ?? 0) >= 90 && totalMatrixRows > 0) {
     strengths.push(`Training compliance at ${trainingComplianceRate}% — staff are up-to-date with mandatory training requirements.`);
   }
-  if (cpdEngagementRate >= 80 && totalCpd > 0) {
+  if ((cpdEngagementRate ?? 0) >= 80 && totalCpd > 0) {
     strengths.push(`CPD engagement rate is ${cpdEngagementRate}% — staff are actively pursuing professional development.`);
   }
   if (avgCpdHoursPerStaff >= 20) {
     strengths.push(`Average CPD hours per staff is ${Math.round(avgCpdHoursPerStaff)} — exceeds expected threshold for continuous learning.`);
   }
-  if (avgHandbookRate >= 90 && handbook_records.length > 0) {
+  if ((avgHandbookRate ?? 0) >= 90 && handbook_records.length > 0) {
     strengths.push(`Handbook acknowledgement at ${avgHandbookRate}% — staff are aware of key policies and procedures.`);
   }
   if (totalExpiredCourses === 0 && totalMatrixRows > 0) {
@@ -248,10 +248,10 @@ export function computeStaffCompetencyTraining(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (staffAssessedRate < 50 && totalCompetencies > 0) {
+  if ((staffAssessedRate ?? 0) < 50 && totalCompetencies > 0) {
     concerns.push(`Only ${staffAssessedRate}% of competency assessments completed — Reg 32 requires staff fitness to be evidenced.`);
   }
-  if (competentOrAboveRate < 45 && assessedCompetencies.length > 0) {
+  if ((competentOrAboveRate ?? 0) < 45 && assessedCompetencies.length > 0) {
     concerns.push(`Only ${competentOrAboveRate}% of assessed staff are competent or above — significant skills gap identified.`);
   }
   if (nonCompliantRows > 0) {
@@ -269,7 +269,7 @@ export function computeStaffCompetencyTraining(
   if (avgCpdHoursPerStaff < 5) {
     concerns.push(`Average CPD hours per staff is only ${Math.round(avgCpdHoursPerStaff * 10) / 10} — well below expected levels.`);
   }
-  if (avgHandbookRate < 50 && handbook_records.length > 0) {
+  if ((avgHandbookRate ?? 0) < 50 && handbook_records.length > 0) {
     concerns.push(`Handbook acknowledgement is only ${avgHandbookRate}% — staff may not be aware of key policies and procedures.`);
   }
 
@@ -283,16 +283,16 @@ export function computeStaffCompetencyTraining(
   if (nonCompliantRows > 0) {
     recs.push({ rank: rank++, recommendation: `Address training non-compliance for ${nonCompliantRows} staff member${nonCompliantRows > 1 ? "s" : ""} — ensure all mandatory training is current.`, urgency: "immediate", regulatory_ref: "CHR 2015 Reg 32" });
   }
-  if (staffAssessedRate < 70 && totalCompetencies > 0) {
+  if ((staffAssessedRate ?? 0) < 70 && totalCompetencies > 0) {
     recs.push({ rank: rank++, recommendation: `Complete outstanding competency assessments — currently at ${staffAssessedRate}%. Reg 32 requires evidence of staff fitness.`, urgency: "immediate", regulatory_ref: "CHR 2015 Reg 32" });
   }
   if (overdueCpd > 0) {
     recs.push({ rank: rank++, recommendation: `Follow up on ${overdueCpd} overdue CPD record${overdueCpd > 1 ? "s" : ""} to maintain professional development standards.`, urgency: "soon", regulatory_ref: "CHR 2015 Reg 33" });
   }
-  if (competentOrAboveRate < 65 && assessedCompetencies.length > 0) {
-    recs.push({ rank: rank++, recommendation: `Implement targeted development plans for staff assessed below competent level. ${100 - competentOrAboveRate}% of assessed staff need upskilling.`, urgency: "soon", regulatory_ref: "CHR 2015 Reg 33" });
+  if ((competentOrAboveRate ?? 0) < 65 && assessedCompetencies.length > 0) {
+    recs.push({ rank: rank++, recommendation: `Implement targeted development plans for staff assessed below competent level. ${100 - (competentOrAboveRate ?? 0)}% of assessed staff need upskilling.`, urgency: "soon", regulatory_ref: "CHR 2015 Reg 33" });
   }
-  if (avgHandbookRate < 70 && handbook_records.length > 0) {
+  if ((avgHandbookRate ?? 0) < 70 && handbook_records.length > 0) {
     recs.push({ rank: rank++, recommendation: `Improve handbook acknowledgement rate from ${avgHandbookRate}% — ensure all staff read and sign key policies.`, urgency: "soon", regulatory_ref: "CHR 2015 Reg 32" });
   }
   if (totalExpiringCourses > 0) {
@@ -317,7 +317,7 @@ export function computeStaffCompetencyTraining(
     insights.push({ text: `${nonCompliantRows} staff member${nonCompliantRows > 1 ? "s are" : " is"} non-compliant with training requirements — address before inspection.`, severity: "warning" });
   }
 
-  if (staffAssessedRate >= 90 && competentOrAboveRate >= 85 && trainingComplianceRate >= 90 && avgHandbookRate >= 90) {
+  if ((staffAssessedRate ?? 0) >= 90 && (competentOrAboveRate ?? 0) >= 85 && (trainingComplianceRate ?? 0) >= 90 && (avgHandbookRate ?? 0) >= 90) {
     insights.push({ text: `Strong competency and training position: ${staffAssessedRate}% assessed, ${competentOrAboveRate}% competent or above, ${trainingComplianceRate}% training compliant, ${avgHandbookRate}% handbook acknowledgement. Well-placed for inspection.`, severity: "positive" });
   }
 
@@ -327,11 +327,11 @@ export function computeStaffCompetencyTraining(
     insights.push({ text: `${overdueCpd} CPD record${overdueCpd > 1 ? "s are" : " is"} overdue — follow up promptly to maintain development standards.`, severity: "warning" });
   }
 
-  if (avgCpdHoursPerStaff >= 20 && cpdEngagementRate >= 80) {
+  if (avgCpdHoursPerStaff >= 20 && (cpdEngagementRate ?? 0) >= 80) {
     insights.push({ text: `CPD programme is strong — averaging ${Math.round(avgCpdHoursPerStaff)} hours per staff with ${cpdEngagementRate}% completion rate. Evidence of commitment to professional development.`, severity: "positive" });
   }
 
-  if (competentOrAboveRate < 45 && assessedCompetencies.length > 0) {
+  if ((competentOrAboveRate ?? 0) < 45 && assessedCompetencies.length > 0) {
     insights.push({ text: `Fewer than half of assessed staff are competent or above. Reg 32 requires staff to be fit to perform their duties — this is a critical gap.`, severity: "critical" });
   }
 

@@ -132,19 +132,19 @@ export interface DailyRoutineRecommendation {
 
 export interface DailyRoutineResult {
   routine_rating: DailyRoutineRating;
-  routine_score: number;
+  routine_score: number | null;
   headline: string;
   total_routine_records: number;
   total_activity_records: number;
   total_meal_records: number;
   total_bedtime_records: number;
   total_participation_records: number;
-  routine_consistency_rate: number;
-  activity_completion_rate: number;
-  meal_regularity_rate: number;
-  bedtime_adherence_rate: number;
-  child_participation_rate: number;
-  flexibility_rate: number;
+  routine_consistency_rate: number | null;
+  activity_completion_rate: number | null;
+  meal_regularity_rate: number | null;
+  bedtime_adherence_rate: number | null;
+  child_participation_rate: number | null;
+  flexibility_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: DailyRoutineRecommendation[];
@@ -281,7 +281,7 @@ export function computeDailyRoutineStructure(
   const avgConsistencyRating =
     totalRoutineRecords > 0
       ? Math.round((consistencySum / totalRoutineRecords) * 100) / 100
-      : 0;
+      : null;
 
   const routinesOnTime = routine_schedule_records.filter(
     (r) => r.actual_start_time !== null && r.actual_start_time !== "",
@@ -575,7 +575,7 @@ export function computeDailyRoutineStructure(
     );
   }
 
-  if (avgConsistencyRating >= 4.0 && totalRoutineRecords > 0) {
+  if ((avgConsistencyRating ?? 0) >= 4.0 && totalRoutineRecords > 0) {
     strengths.push(
       `Average consistency rating of ${avgConsistencyRating}/5 — staff rate daily routine consistency highly, reflecting embedded good practice across the home.`,
     );
@@ -1201,7 +1201,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (avgConsistencyRating >= 2.5 && avgConsistencyRating < 3.5 && totalRoutineRecords > 0) {
+  if ((avgConsistencyRating ?? 0) >= 2.5 && (avgConsistencyRating ?? 0) < 3.5 && totalRoutineRecords > 0) {
     insights.push({
       text: `Average consistency rating at ${avgConsistencyRating}/5 — routine consistency is mediocre across the home. This suggests systemic factors may be affecting the delivery of structured daily care rather than isolated individual issues.`,
       severity: "warning",

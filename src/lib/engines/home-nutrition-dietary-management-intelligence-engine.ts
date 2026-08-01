@@ -82,7 +82,7 @@ export interface FoodHygieneRecordInput {
   waste_disposal_compliant: boolean;
   pest_control_adequate: boolean;
   staff_food_hygiene_trained: boolean;
-  overall_score: number; // 0-100
+  overall_score: number | null; // 0-100
   corrective_actions_required: number;
   corrective_actions_completed: number;
   next_inspection_due: string | null;
@@ -141,30 +141,30 @@ export interface NutritionRecommendation {
 
 export interface NutritionDietaryManagementResult {
   nutrition_rating: NutritionRating;
-  nutrition_score: number;
+  nutrition_score: number | null;
   headline: string;
   total_meal_plans: number;
   total_dietary_requirements: number;
   total_nutrition_assessments: number;
   total_food_hygiene_inspections: number;
   total_special_diets: number;
-  meal_plan_compliance_rate: number;
-  dietary_requirement_coverage_rate: number;
-  nutrition_assessment_rate: number;
-  food_hygiene_score: number;
-  special_diet_adherence_rate: number;
-  child_choice_rate: number;
-  meal_nutritional_guideline_rate: number;
-  allergen_check_rate: number;
-  fresh_ingredient_rate: number;
-  cultural_needs_met_rate: number;
-  staff_food_hygiene_training_rate: number;
-  corrective_action_completion_rate: number;
-  dietary_documentation_rate: number;
-  dietary_staff_informed_rate: number;
-  emergency_plan_rate: number;
-  nutrition_goals_met_rate: number;
-  dietitian_referral_completion_rate: number;
+  meal_plan_compliance_rate: number | null;
+  dietary_requirement_coverage_rate: number | null;
+  nutrition_assessment_rate: number | null;
+  food_hygiene_score: number | null;
+  special_diet_adherence_rate: number | null;
+  child_choice_rate: number | null;
+  meal_nutritional_guideline_rate: number | null;
+  allergen_check_rate: number | null;
+  fresh_ingredient_rate: number | null;
+  cultural_needs_met_rate: number | null;
+  staff_food_hygiene_training_rate: number | null;
+  corrective_action_completion_rate: number | null;
+  dietary_documentation_rate: number | null;
+  dietary_staff_informed_rate: number | null;
+  emergency_plan_rate: number | null;
+  nutrition_goals_met_rate: number | null;
+  dietitian_referral_completion_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: NutritionRecommendation[];
@@ -190,7 +190,7 @@ function toRating(score: number): NutritionRating {
 
 function avgScore(records: FoodHygieneRecordInput[]): number {
   if (records.length === 0) return 0;
-  const total = records.reduce((sum, r) => sum + r.overall_score, 0);
+  const total = records.reduce((sum, r) => sum + (r.overall_score ?? 0), 0);
   return Math.round(total / records.length);
 }
 
@@ -394,7 +394,7 @@ export function computeNutritionDietaryManagement(
   const dietaryRequirementCoverageRate =
     total_children > 0
       ? pct(uniqueChildrenWithDietaryReqs, total_children)
-      : 0;
+      : null;
 
   // Documentation completeness
   const documentedRequirements = activeDietaryRequirements.filter(
@@ -466,7 +466,7 @@ export function computeNutritionDietaryManagement(
   const nutritionAssessmentRate =
     total_children > 0
       ? pct(uniqueChildrenAssessed, total_children)
-      : 0;
+      : null;
 
   // BMI recorded
   const bmiRecorded = nutrition_assessment_records.filter(
@@ -625,7 +625,7 @@ export function computeNutritionDietaryManagement(
   const mostRecentHygieneScore =
     sortedHygieneRecords.length > 0
       ? sortedHygieneRecords[0].overall_score
-      : 0;
+      : null;
 
   // ─── Special Diet Metrics ─────────────────────────────────────────────
 
@@ -726,8 +726,8 @@ export function computeNutritionDietaryManagement(
   else if (dietaryDocumentationRate >= 80) score += 1;
 
   // --- Bonus 4: nutritionAssessmentRate (>=100: +4, >=80: +2) ---
-  if (nutritionAssessmentRate >= 100) score += 4;
-  else if (nutritionAssessmentRate >= 80) score += 2;
+  if ((nutritionAssessmentRate ?? 0) >= 100) score += 4;
+  else if ((nutritionAssessmentRate ?? 0) >= 80) score += 2;
 
   // --- Bonus 5: foodHygieneScore (>=90: +3, >=70: +1) ---
   if (foodHygieneScore >= 90) score += 3;
@@ -871,11 +871,11 @@ export function computeNutritionDietaryManagement(
   }
 
   // Nutrition assessment coverage
-  if (nutritionAssessmentRate >= 100 && total_children > 0) {
+  if ((nutritionAssessmentRate ?? 0) >= 100 && total_children > 0) {
     strengths.push(
       "Every child has received a nutrition assessment — the home ensures comprehensive nutritional monitoring for all children on placement.",
     );
-  } else if (nutritionAssessmentRate >= 80 && total_children > 0) {
+  } else if ((nutritionAssessmentRate ?? 0) >= 80 && total_children > 0) {
     strengths.push(
       `${nutritionAssessmentRate}% nutrition assessment coverage — the majority of children have received nutritional assessments.`,
     );
@@ -1067,11 +1067,11 @@ export function computeNutritionDietaryManagement(
   }
 
   // Nutrition assessment coverage concerns
-  if (nutritionAssessmentRate < 50 && total_children > 0) {
+  if ((nutritionAssessmentRate ?? 0) < 50 && total_children > 0) {
     concerns.push(
       `Only ${nutritionAssessmentRate}% of children have received a nutrition assessment — the majority of children's nutritional needs have not been formally assessed.`,
     );
-  } else if (nutritionAssessmentRate < 80 && nutritionAssessmentRate >= 50 && total_children > 0) {
+  } else if ((nutritionAssessmentRate ?? 0) < 80 && (nutritionAssessmentRate ?? 0) >= 50 && total_children > 0) {
     concerns.push(
       `Nutrition assessment coverage at ${nutritionAssessmentRate}% — some children have not received a nutritional assessment.`,
     );
@@ -1306,7 +1306,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (nutritionAssessmentRate < 50 && total_children > 0) {
+  if ((nutritionAssessmentRate ?? 0) < 50 && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1425,8 +1425,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    nutritionAssessmentRate >= 50 &&
-    nutritionAssessmentRate < 80 &&
+    (nutritionAssessmentRate ?? 0) >= 50 &&
+    (nutritionAssessmentRate ?? 0) < 80 &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1605,7 +1605,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (nutritionAssessmentRate < 30 && total_children > 0 && totalNutritionAssessments > 0) {
+  if ((nutritionAssessmentRate ?? 0) < 30 && total_children > 0 && totalNutritionAssessments > 0) {
     insights.push({
       text: `Nutrition assessment coverage at only ${nutritionAssessmentRate}% — the vast majority of children have not had their nutritional needs formally assessed. Without assessments, the home cannot set or monitor nutritional goals.`,
       severity: "critical",
@@ -1681,8 +1681,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    nutritionAssessmentRate >= 50 &&
-    nutritionAssessmentRate < 80 &&
+    (nutritionAssessmentRate ?? 0) >= 50 &&
+    (nutritionAssessmentRate ?? 0) < 80 &&
     total_children > 0
   ) {
     insights.push({
@@ -1753,8 +1753,8 @@ export function computeNutritionDietaryManagement(
     const avgConcernsPerAssessment =
       totalNutritionAssessments > 0
         ? Math.round((totalConcernsIdentified / totalNutritionAssessments) * 10) / 10
-        : 0;
-    if (avgConcernsPerAssessment >= 2) {
+        : null;
+    if ((avgConcernsPerAssessment ?? 0) >= 2) {
       insights.push({
         text: `An average of ${avgConcernsPerAssessment} nutritional concerns identified per assessment — a high concern density may indicate systemic nutritional issues requiring strategic intervention.`,
         severity: "warning",
@@ -1863,7 +1863,7 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    nutritionAssessmentRate >= 100 &&
+    (nutritionAssessmentRate ?? 0) >= 100 &&
     nutritionGoalsMetRate >= 90 &&
     total_children > 0 &&
     assessmentsWithGoals > 0

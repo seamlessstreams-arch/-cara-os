@@ -1075,7 +1075,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
         reference_verification_records: [],
       }));
       // no completed DBS, no enhanced on update, no barred, no overseas, no refs → no components → 0
-      expect(r.renewal_timeliness_rate).toBe(0);
+      expect(r.renewal_timeliness_rate).toBeNull();;
     });
 
     it("timeliness includes DBS processing timeliness", () => {

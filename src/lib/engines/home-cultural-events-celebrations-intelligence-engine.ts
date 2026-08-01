@@ -44,7 +44,7 @@ export interface DiversityCelebrationRecordInput {
   children_involved_in_planning: boolean;
   children_participated: string[];  // child_ids
   total_children_invited: number;
-  participation_rate_pct: number;
+  participation_rate_pct: number | null;
   educational_component: boolean;
   external_speaker_or_visitor: boolean;
   food_or_cuisine_included: boolean;
@@ -79,7 +79,7 @@ export interface FestivalInclusionRecordInput {
   faith_or_tradition: "christian" | "muslim" | "hindu" | "sikh" | "jewish" | "buddhist" | "pagan" | "secular" | "multi_faith" | "cultural" | "other";
   children_participated: string[];  // child_ids
   total_children_eligible: number;
-  participation_rate_pct: number;
+  participation_rate_pct: number | null;
   inclusive_planning: boolean;
   dietary_needs_accommodated: boolean;
   religious_sensitivity_observed: boolean;
@@ -141,19 +141,19 @@ export interface CulturalEventsRecommendation {
 
 export interface CulturalEventsResult {
   cultural_rating: CulturalEventsRating;
-  cultural_score: number;
+  cultural_score: number | null;
   headline: string;
   total_cultural_events: number;
   total_diversity_celebrations: number;
   total_heritage_days: number;
   total_festival_inclusions: number;
   total_child_led_activities: number;
-  event_participation_rate: number;
-  diversity_celebration_rate: number;
-  heritage_acknowledgement_rate: number;
-  festival_inclusion_rate: number;
-  child_led_rate: number;
-  child_satisfaction_rate: number;
+  event_participation_rate: number | null;
+  diversity_celebration_rate: number | null;
+  heritage_acknowledgement_rate: number | null;
+  festival_inclusion_rate: number | null;
+  child_led_rate: number | null;
+  child_satisfaction_rate: number | null;
   unique_event_types: number;
   unique_faiths_represented: number;
   unique_heritage_types: number;
@@ -360,10 +360,10 @@ export function computeCulturalEventsCelebrations(
 
   const avgCelebrationParticipation = totalDiversityCelebrations > 0
     ? Math.round(
-        diversity_celebration_records.reduce((sum, c) => sum + c.participation_rate_pct, 0) /
+        diversity_celebration_records.reduce((sum, c) => sum + (c.participation_rate_pct ?? 0), 0) /
           totalDiversityCelebrations,
       )
-    : 0;
+    : null;
 
   const celebrationQualityRatings = diversity_celebration_records.map((c) => c.quality_rating);
   const avgCelebrationQuality = avgRating(celebrationQualityRatings);
@@ -374,7 +374,7 @@ export function computeCulturalEventsCelebrations(
   ).size;
   const diversityCelebrationRate = total_children > 0
     ? pct(childrenInCelebrations, total_children)
-    : 0;
+    : null;
 
   // Unique celebration types
   const uniqueCelebrationTypes = new Set(
@@ -447,10 +447,10 @@ export function computeCulturalEventsCelebrations(
 
   const avgFestivalParticipation = totalFestivalInclusions > 0
     ? Math.round(
-        festival_inclusion_records.reduce((sum, f) => sum + f.participation_rate_pct, 0) /
+        festival_inclusion_records.reduce((sum, f) => sum + (f.participation_rate_pct ?? 0), 0) /
           totalFestivalInclusions,
       )
-    : 0;
+    : null;
 
   const festivalQualityRatings = festival_inclusion_records.map((f) => f.quality_rating);
   const avgFestivalQuality = avgRating(festivalQualityRatings);
@@ -466,7 +466,7 @@ export function computeCulturalEventsCelebrations(
   ).size;
   const festivalInclusionRate = total_children > 0
     ? pct(childrenInFestivals, total_children)
-    : 0;
+    : null;
 
   // --- Child-led activity metrics ---
   const childInitiatedActivities = child_led_activity_records.filter(
@@ -507,7 +507,7 @@ export function computeCulturalEventsCelebrations(
   // Child-led rate: proportion of children who have led at least one cultural activity
   const childLedRate = total_children > 0
     ? pct(childrenLeadingActivities, total_children)
-    : 0;
+    : null;
 
   // Unique child-led activity types
   const uniqueChildLedTypes = new Set(
@@ -537,20 +537,20 @@ export function computeCulturalEventsCelebrations(
   else if (eventParticipationRate >= 70) score += 2;
 
   // --- Bonus 2: diversityCelebrationRate (>=90: +4, >=70: +2) ---
-  if (diversityCelebrationRate >= 90) score += 4;
-  else if (diversityCelebrationRate >= 70) score += 2;
+  if ((diversityCelebrationRate ?? 0) >= 90) score += 4;
+  else if ((diversityCelebrationRate ?? 0) >= 70) score += 2;
 
   // --- Bonus 3: heritageAcknowledgementRate (>=90: +3, >=70: +1) ---
   if (heritageAcknowledgementRate >= 90) score += 3;
   else if (heritageAcknowledgementRate >= 70) score += 1;
 
   // --- Bonus 4: festivalInclusionRate (>=90: +3, >=70: +1) ---
-  if (festivalInclusionRate >= 90) score += 3;
-  else if (festivalInclusionRate >= 70) score += 1;
+  if ((festivalInclusionRate ?? 0) >= 90) score += 3;
+  else if ((festivalInclusionRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 5: childLedRate (>=60: +4, >=30: +2) ---
-  if (childLedRate >= 60) score += 4;
-  else if (childLedRate >= 30) score += 2;
+  if ((childLedRate ?? 0) >= 60) score += 4;
+  else if ((childLedRate ?? 0) >= 30) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
   if (childSatisfactionRate >= 90) score += 3;
@@ -577,7 +577,7 @@ export function computeCulturalEventsCelebrations(
   if (heritageAcknowledgementRate < 50 && heritage_day_records.length > 0) score -= 5;
 
   // Penalty 3: Low festival inclusion
-  if (festivalInclusionRate < 40 && festival_inclusion_records.length > 0) score -= 4;
+  if ((festivalInclusionRate ?? 0) < 40 && festival_inclusion_records.length > 0) score -= 4;
 
   // Penalty 4: Low child satisfaction
   if (childSatisfactionRate < 40 && satisfactionDenominator > 0) score -= 4;
@@ -600,11 +600,11 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (diversityCelebrationRate >= 90 && totalDiversityCelebrations > 0) {
+  if ((diversityCelebrationRate ?? 0) >= 90 && totalDiversityCelebrations > 0) {
     strengths.push(
       `${diversityCelebrationRate}% of children have participated in diversity celebrations — the home demonstrates an inclusive approach to celebrating the breadth of cultural diversity.`,
     );
-  } else if (diversityCelebrationRate >= 70 && totalDiversityCelebrations > 0) {
+  } else if ((diversityCelebrationRate ?? 0) >= 70 && totalDiversityCelebrations > 0) {
     strengths.push(
       `${diversityCelebrationRate}% of children participating in diversity celebrations — good reach ensures most children experience cultural celebration.`,
     );
@@ -620,21 +620,21 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (festivalInclusionRate >= 90 && totalFestivalInclusions > 0) {
+  if ((festivalInclusionRate ?? 0) >= 90 && totalFestivalInclusions > 0) {
     strengths.push(
       `${festivalInclusionRate}% of children included in multi-faith and cultural festivals — outstanding inclusive practice ensuring all children experience a diverse range of celebrations.`,
     );
-  } else if (festivalInclusionRate >= 70 && totalFestivalInclusions > 0) {
+  } else if ((festivalInclusionRate ?? 0) >= 70 && totalFestivalInclusions > 0) {
     strengths.push(
       `${festivalInclusionRate}% festival inclusion — good practice in ensuring children access multi-faith and cultural celebrations.`,
     );
   }
 
-  if (childLedRate >= 60 && totalChildLedActivities > 0) {
+  if ((childLedRate ?? 0) >= 60 && totalChildLedActivities > 0) {
     strengths.push(
       `${childLedRate}% of children have led cultural activities — the home empowers children to share their own cultural knowledge and identity, demonstrating genuine respect for children's cultural voices under Reg 7.`,
     );
-  } else if (childLedRate >= 30 && totalChildLedActivities > 0) {
+  } else if ((childLedRate ?? 0) >= 30 && totalChildLedActivities > 0) {
     strengths.push(
       `${childLedRate}% of children leading cultural activities — the home is developing a culture where children feel confident to share their heritage and cultural knowledge.`,
     );
@@ -754,11 +754,11 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (diversityCelebrationRate < 50 && totalDiversityCelebrations > 0) {
+  if ((diversityCelebrationRate ?? 0) < 50 && totalDiversityCelebrations > 0) {
     concerns.push(
       `Only ${diversityCelebrationRate}% of children have participated in diversity celebrations — the majority of children are missing out on cultural celebration experiences. Ofsted expects all children to benefit from celebrating diversity.`,
     );
-  } else if (diversityCelebrationRate < 70 && diversityCelebrationRate >= 50 && totalDiversityCelebrations > 0) {
+  } else if ((diversityCelebrationRate ?? 0) < 70 && (diversityCelebrationRate ?? 0) >= 50 && totalDiversityCelebrations > 0) {
     concerns.push(
       `Diversity celebration participation at ${diversityCelebrationRate}% — not all children are accessing diversity celebrations. Ensure inclusion planning reaches every child.`,
     );
@@ -774,11 +774,11 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (festivalInclusionRate < 40 && totalFestivalInclusions > 0) {
+  if ((festivalInclusionRate ?? 0) < 40 && totalFestivalInclusions > 0) {
     concerns.push(
       `Only ${festivalInclusionRate}% of children included in festivals — the majority of children are excluded from multi-faith and cultural festival experiences. This limits their exposure to diversity and may leave some children's own faith traditions unrecognised.`,
     );
-  } else if (festivalInclusionRate < 70 && festivalInclusionRate >= 40 && totalFestivalInclusions > 0) {
+  } else if ((festivalInclusionRate ?? 0) < 70 && (festivalInclusionRate ?? 0) >= 40 && totalFestivalInclusions > 0) {
     concerns.push(
       `Festival inclusion at ${festivalInclusionRate}% — not all children are accessing festival celebrations. Review whether festival planning actively includes every child.`,
     );
@@ -788,7 +788,7 @@ export function computeCulturalEventsCelebrations(
     concerns.push(
       "No child-led cultural activities recorded — children are not being given opportunities to share their own cultural knowledge and heritage. Empowering children to lead cultural expression is essential for positive identity development under Reg 7.",
     );
-  } else if (childLedRate < 20 && childLedRate > 0 && total_children > 0) {
+  } else if ((childLedRate ?? 0) < 20 && (childLedRate ?? 0) > 0 && total_children > 0) {
     concerns.push(
       `Only ${childLedRate}% of children have led cultural activities — the home should create more opportunities for all children to share their cultural heritage and knowledge with peers.`,
     );
@@ -913,7 +913,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (festivalInclusionRate < 40 && totalFestivalInclusions > 0) {
+  if ((festivalInclusionRate ?? 0) < 40 && totalFestivalInclusions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -923,7 +923,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (diversityCelebrationRate < 50 && totalDiversityCelebrations > 0) {
+  if ((diversityCelebrationRate ?? 0) < 50 && totalDiversityCelebrations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -951,7 +951,7 @@ export function computeCulturalEventsCelebrations(
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 7 — Children's views",
     });
-  } else if (childLedRate < 30 && childLedRate > 0 && total_children > 0) {
+  } else if ((childLedRate ?? 0) < 30 && (childLedRate ?? 0) > 0 && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1088,7 +1088,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (festivalInclusionRate < 40 && totalFestivalInclusions > 0) {
+  if ((festivalInclusionRate ?? 0) < 40 && totalFestivalInclusions > 0) {
     insights.push({
       text: `Only ${festivalInclusionRate}% of children included in festival celebrations. Excluding the majority of children from multi-faith and cultural festivals limits their exposure to diversity and may leave some children's own faith traditions unacknowledged. This is a concern under SCCIF experiences and progress.`,
       severity: "critical",
@@ -1111,7 +1111,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (diversityCelebrationRate >= 50 && diversityCelebrationRate < 70 && totalDiversityCelebrations > 0) {
+  if ((diversityCelebrationRate ?? 0) >= 50 && (diversityCelebrationRate ?? 0) < 70 && totalDiversityCelebrations > 0) {
     insights.push({
       text: `Diversity celebration reach at ${diversityCelebrationRate}% — not all children are being included in diversity celebrations. Ensure celebration planning actively considers how to engage every child, including those who may be reluctant or unfamiliar with certain cultures.`,
       severity: "warning",
@@ -1125,7 +1125,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (festivalInclusionRate >= 40 && festivalInclusionRate < 70 && totalFestivalInclusions > 0) {
+  if ((festivalInclusionRate ?? 0) >= 40 && (festivalInclusionRate ?? 0) < 70 && totalFestivalInclusions > 0) {
     insights.push({
       text: `Festival inclusion at ${festivalInclusionRate}% — some children are not accessing festival celebrations. Review whether practical barriers (timing, understanding, interest) or cultural sensitivity concerns are preventing full participation.`,
       severity: "warning",
@@ -1250,7 +1250,7 @@ export function computeCulturalEventsCelebrations(
   }
 
   if (
-    festivalInclusionRate >= 90 &&
+    (festivalInclusionRate ?? 0) >= 90 &&
     uniqueFaithsRepresented >= 4 &&
     totalFestivalInclusions > 0
   ) {
@@ -1261,7 +1261,7 @@ export function computeCulturalEventsCelebrations(
   }
 
   if (
-    childLedRate >= 60 &&
+    (childLedRate ?? 0) >= 60 &&
     confidenceImprovementRate >= 70 &&
     totalChildLedActivities > 0
   ) {
@@ -1272,7 +1272,7 @@ export function computeCulturalEventsCelebrations(
   }
 
   if (
-    diversityCelebrationRate >= 90 &&
+    (diversityCelebrationRate ?? 0) >= 90 &&
     avgCelebrationQuality >= 4.0 &&
     totalDiversityCelebrations > 0
   ) {

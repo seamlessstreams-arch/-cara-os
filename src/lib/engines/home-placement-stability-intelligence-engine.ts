@@ -56,23 +56,23 @@ export interface TenureProfile {
 
 export interface IncidentProfile {
   total_incidents: number;
-  incident_rate: number;              // per child
+  incident_rate: number | null;              // per child
   high_severity_count: number;
   children_with_incidents: number;
 }
 
 export interface MissingProfile {
   total_episodes: number;
-  episodes_per_child: number;
-  avg_duration_hours: number;
+  episodes_per_child: number | null;
+  avg_duration_hours: number | null;
   high_risk_count: number;
-  return_interview_rate: number;
+  return_interview_rate: number | null;
   cs_risk_count: number;
 }
 
 export interface StabilityProfile {
   children_with_no_events: number;    // no incidents AND no missing
-  stability_rate: number;
+  stability_rate: number | null;
   avg_risk_flags: number;
 }
 
@@ -90,7 +90,7 @@ export interface StabilityRecommendation {
 
 export interface HomePlacementStabilityResult {
   stability_rating: PlacementStabilityRating;
-  stability_score: number;
+  stability_score: number | null;
   headline: string;
   tenure_profile: TenureProfile;
   incident_profile: IncidentProfile;
@@ -190,10 +190,10 @@ export function computeHomePlacementStability(
   const totalEpisodes = episodes.length;
   const episodesPerChild = children.length > 0
     ? Math.round((totalEpisodes / children.length) * 10) / 10
-    : 0;
+    : null;
   const avgDuration = totalEpisodes > 0
     ? Math.round((episodes.reduce((s, e) => s + e.duration_hours, 0) / totalEpisodes) * 10) / 10
-    : 0;
+    : null;
   const highRiskEpisodes = episodes.filter(
     e => e.risk_level === "high" || e.risk_level === "critical",
   ).length;

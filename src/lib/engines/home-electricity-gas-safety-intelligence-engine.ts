@@ -119,7 +119,7 @@ export interface ChildSafetyInput {
   awareness_type: "electrical_safety" | "gas_safety" | "co_awareness" | "fire_safety" | "appliance_use" | "emergency_procedure";
   assessment_date: string;
   assessed_by: string;
-  knowledge_score: number; // 1-10
+  knowledge_score: number | null; // 1-10
   practical_demonstration: boolean;
   can_identify_hazards: boolean;
   knows_emergency_procedure: boolean;
@@ -167,20 +167,20 @@ export interface ElectricityGasSafetyRecommendation {
 
 export interface ElectricityGasSafetyResult {
   electrical_rating: ElectricityGasSafetyRating;
-  electrical_score: number;
+  electrical_score: number | null;
   headline: string;
   total_appliances_tested: number;
-  pat_testing_rate: number;
-  gas_certificate_rate: number;
-  electrical_inspection_rate: number;
-  co_detector_rate: number;
-  child_safety_rate: number;
-  staff_training_rate: number;
-  pat_pass_rate: number;
-  gas_satisfactory_rate: number;
-  electrical_satisfactory_rate: number;
-  co_functioning_rate: number;
-  defect_resolution_rate: number;
+  pat_testing_rate: number | null;
+  gas_certificate_rate: number | null;
+  electrical_inspection_rate: number | null;
+  co_detector_rate: number | null;
+  child_safety_rate: number | null;
+  staff_training_rate: number | null;
+  pat_pass_rate: number | null;
+  gas_satisfactory_rate: number | null;
+  electrical_satisfactory_rate: number | null;
+  co_functioning_rate: number | null;
+  defect_resolution_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: ElectricityGasSafetyRecommendation[];
@@ -510,13 +510,13 @@ export function computeElectricityGasSafety(
   const uniqueChildrenAssessed = new Set(child_safety_records.map((c) => c.child_id)).size;
   const childSafetyRate = total_children > 0 ? pct(uniqueChildrenAssessed, total_children) : 0;
 
-  const childKnowledgeScores = child_safety_records.map((c) => c.knowledge_score);
+  const childKnowledgeScores = child_safety_records.map((c) => c.knowledge_score).filter((s): s is number => s !== null);
   const avgKnowledgeScore =
     childKnowledgeScores.length > 0
       ? Math.round(
-          (childKnowledgeScores.reduce((sum, s) => sum + s, 0) / childKnowledgeScores.length) * 100,
+          (childKnowledgeScores.reduce((sum: number, s: number) => sum + s, 0) / childKnowledgeScores.length) * 100,
         ) / 100
-      : 0;
+      : null;
 
   const practicalDemoRate = pct(
     child_safety_records.filter((c) => c.practical_demonstration).length,
@@ -788,11 +788,11 @@ export function computeElectricityGasSafety(
     );
   }
 
-  if (avgKnowledgeScore >= 8.0 && totalChildSafetyRecords > 0) {
+  if ((avgKnowledgeScore ?? 0) >= 8.0 && totalChildSafetyRecords > 0) {
     strengths.push(
       `Average child safety knowledge score ${avgKnowledgeScore}/10 — children demonstrate excellent understanding of electrical and gas safety.`,
     );
-  } else if (avgKnowledgeScore >= 6.0 && totalChildSafetyRecords > 0) {
+  } else if ((avgKnowledgeScore ?? 0) >= 6.0 && totalChildSafetyRecords > 0) {
     strengths.push(
       `Average child safety knowledge score ${avgKnowledgeScore}/10 — children generally demonstrate good safety understanding.`,
     );
@@ -1029,11 +1029,11 @@ export function computeElectricityGasSafety(
     );
   }
 
-  if (avgKnowledgeScore < 4.0 && totalChildSafetyRecords > 0) {
+  if ((avgKnowledgeScore ?? 0) < 4.0 && totalChildSafetyRecords > 0) {
     concerns.push(
       `Average child safety knowledge score only ${avgKnowledgeScore}/10 — children generally lack adequate understanding of electrical and gas safety, requiring intensified safety education.`,
     );
-  } else if (avgKnowledgeScore < 6.0 && avgKnowledgeScore >= 4.0 && totalChildSafetyRecords > 0) {
+  } else if ((avgKnowledgeScore ?? 0) < 6.0 && (avgKnowledgeScore ?? 0) >= 4.0 && totalChildSafetyRecords > 0) {
     concerns.push(
       `Average child safety knowledge score ${avgKnowledgeScore}/10 — children's safety understanding needs strengthening to ensure they can protect themselves from hazards.`,
     );
@@ -1469,7 +1469,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (avgKnowledgeScore >= 4.0 && avgKnowledgeScore < 6.0 && totalChildSafetyRecords > 0) {
+  if ((avgKnowledgeScore ?? 0) >= 4.0 && (avgKnowledgeScore ?? 0) < 6.0 && totalChildSafetyRecords > 0) {
     insights.push({
       text: `Average child safety knowledge score ${avgKnowledgeScore}/10 — children's understanding of electrical and gas safety could be strengthened. Consider using practical demonstrations, visual aids, and scenario-based learning to improve engagement and retention.`,
       severity: "warning",

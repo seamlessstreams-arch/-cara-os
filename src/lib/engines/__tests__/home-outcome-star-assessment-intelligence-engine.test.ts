@@ -128,7 +128,7 @@ describe("computeOutcomeStarAssessment", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments: [] }),
       );
-      expect(result.average_score_across_home).toBe(0);
+      expect(result.average_score_across_home).toBeNull();;
     });
   });
 
@@ -2096,7 +2096,7 @@ describe("computeOutcomeStarAssessment", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments: [] }),
       );
-      expect(result.average_score_across_home).toBe(0);
+      expect(result.average_score_across_home).toBeNull();;
     });
 
     it("rounds 3.55 to 3.6 (Math.round behavior)", () => {

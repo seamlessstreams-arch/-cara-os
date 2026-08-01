@@ -470,7 +470,7 @@ describe("computeTherapeuticWellbeingImpact", () => {
         baseInput({ wellbeing_pulses: [] }),
       );
       // Mods 2 and 3 both become 0 (was +6 and +5, delta -11)
-      expect(r.average_wellbeing_score).toBe(0);
+      expect(r.average_wellbeing_score).toBeNull();;
       expect(r.wellbeing_score).toBe(71);
     });
   });

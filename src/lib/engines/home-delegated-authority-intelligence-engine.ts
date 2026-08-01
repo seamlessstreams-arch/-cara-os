@@ -48,13 +48,13 @@ export interface StatusProfile {
   not_granted: number;
   partial: number;
   pending: number;
-  granted_rate: number; // % granted of total
+  granted_rate: number | null; // % granted of total
 }
 
 export interface CategoryCoverageProfile {
   total_possible_categories: number;
   categories_addressed: number; // at least 1 item in that category across all children
-  coverage_rate: number;
+  coverage_rate: number | null;
   category_distribution: Record<string, number>;
   gaps: string[];
 }
@@ -62,7 +62,7 @@ export interface CategoryCoverageProfile {
 export interface ChildCoverageProfile {
   children_with_authority: number;
   total_children: number;
-  coverage_rate: number;
+  coverage_rate: number | null;
   items_per_child: Record<string, number>;
   children_without_authority: number;
 }
@@ -71,7 +71,7 @@ export interface ReviewProfile {
   total_authorities: number;
   reviews_overdue: number; // next_review is past today
   reviews_due_soon: number; // next_review within 30 days
-  avg_days_since_review: number;
+  avg_days_since_review: number | null;
   last_reviewed_stale: number; // last_reviewed > 90 days ago
 }
 
@@ -89,7 +89,7 @@ export interface Recommendation {
 
 export interface HomeDelegatedAuthorityResult {
   authority_rating: DelegatedAuthorityRating;
-  authority_score: number;
+  authority_score: number | null;
   headline: string;
   status_profile: StatusProfile;
   category_coverage: CategoryCoverageProfile;
@@ -240,7 +240,7 @@ export function computeHomeDelegatedAuthority(
   const avgDaysSinceReview =
     daysSinceReviews.length > 0
       ? Math.round(daysSinceReviews.reduce((s, n) => s + n, 0) / daysSinceReviews.length)
-      : 0;
+      : null;
   const staleReviews = delegated_authorities.filter(
     (da) =>
       da.last_reviewed &&
@@ -262,9 +262,9 @@ export function computeHomeDelegatedAuthority(
 
   // mod1: Child coverage (±5)
   const mod1 =
-    child_coverage.coverage_rate >= 100 ? 5 :
-    child_coverage.coverage_rate >= 75 ? 3 :
-    child_coverage.coverage_rate >= 50 ? 1 : -5;
+    (child_coverage.coverage_rate ?? 0) >= 100 ? 5 :
+    (child_coverage.coverage_rate ?? 0) >= 75 ? 3 :
+    (child_coverage.coverage_rate ?? 0) >= 50 ? 1 : -5;
   score += mod1;
 
   // mod2: Category breadth (±4)
@@ -276,9 +276,9 @@ export function computeHomeDelegatedAuthority(
 
   // mod3: Granted rate (±4)
   const mod3 =
-    status_profile.granted_rate >= 70 ? 4 :
-    status_profile.granted_rate >= 50 ? 2 :
-    status_profile.granted_rate >= 30 ? 0 : -3;
+    (status_profile.granted_rate ?? 0) >= 70 ? 4 :
+    (status_profile.granted_rate ?? 0) >= 50 ? 2 :
+    (status_profile.granted_rate ?? 0) >= 30 ? 0 : -3;
   score += mod3;
 
   // mod4: Pending items (±3)
@@ -299,9 +299,9 @@ export function computeHomeDelegatedAuthority(
 
   // mod6: Review freshness (±3)
   const mod6 =
-    avgDaysSinceReview <= 30 ? 3 :
-    avgDaysSinceReview <= 60 ? 1 :
-    avgDaysSinceReview <= 90 ? 0 : -3;
+    (avgDaysSinceReview ?? 0) <= 30 ? 3 :
+    (avgDaysSinceReview ?? 0) <= 60 ? 1 :
+    (avgDaysSinceReview ?? 0) <= 90 ? 0 : -3;
   score += mod6;
 
   // mod7: Detail quality — items per child (±3)
@@ -311,11 +311,11 @@ export function computeHomeDelegatedAuthority(
           Object.values(itemsPerChild).reduce((s, n) => s + n, 0) /
             childrenWithAuthority,
         )
-      : 0;
+      : null;
   const mod7 =
-    avgItemsPerChild >= 8 ? 3 :
-    avgItemsPerChild >= 5 ? 1 :
-    avgItemsPerChild >= 3 ? 0 : -2;
+    (avgItemsPerChild ?? 0) >= 8 ? 3 :
+    (avgItemsPerChild ?? 0) >= 5 ? 1 :
+    (avgItemsPerChild ?? 0) >= 3 ? 0 : -2;
   score += mod7;
 
   // mod8: Conditions documented (±4)
@@ -336,17 +336,17 @@ export function computeHomeDelegatedAuthority(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (child_coverage.coverage_rate >= 100)
+  if ((child_coverage.coverage_rate ?? 0) >= 100)
     strengths.push("All children have delegated authority records — full Reg 22 compliance.");
   if (category_coverage.categories_addressed >= 10)
     strengths.push(`${category_coverage.categories_addressed} of ${ALL_CATEGORIES.length} authority categories addressed — comprehensive coverage.`);
-  if (status_profile.granted_rate >= 70)
+  if ((status_profile.granted_rate ?? 0) >= 70)
     strengths.push(`${status_profile.granted_rate}% of authority items are granted — staff have clear day-to-day decision-making power.`);
   if (conditionsRate >= 80)
     strengths.push(`${conditionsRate}% of authority items have documented conditions — clear boundaries.`);
   if (overdueRate === 0 && delegated_authorities.length > 0)
     strengths.push("All delegated authority reviews are up to date.");
-  if (avgItemsPerChild >= 8)
+  if ((avgItemsPerChild ?? 0) >= 8)
     strengths.push(`Average ${avgItemsPerChild} authority items per child — thorough coverage of daily decisions.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -421,7 +421,7 @@ export function computeHomeDelegatedAuthority(
       severity: "warning",
     });
 
-  if (child_coverage.coverage_rate >= 100 && category_coverage.categories_addressed >= 8)
+  if ((child_coverage.coverage_rate ?? 0) >= 100 && category_coverage.categories_addressed >= 8)
     insights.push({
       text: `All children have delegated authority across ${category_coverage.categories_addressed} categories — staff can make confident, timely decisions that promote children's welfare and enjoyment.`,
       severity: "positive",
@@ -433,7 +433,7 @@ export function computeHomeDelegatedAuthority(
       severity: "warning",
     });
 
-  if (avgItemsPerChild >= 8 && conditionsRate >= 80)
+  if ((avgItemsPerChild ?? 0) >= 8 && conditionsRate >= 80)
     insights.push({
       text: `Comprehensive delegated authority with clear conditions demonstrates that the home understands and applies Reg 22 effectively — a strong indicator for Ofsted.`,
       severity: "positive",

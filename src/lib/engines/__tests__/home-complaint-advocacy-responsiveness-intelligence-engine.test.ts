@@ -1487,7 +1487,7 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
           advocacy_records: [],
         }),
       );
-      expect(r.advocacy_quality_avg).toBe(0);
+      expect(r.advocacy_quality_avg).toBeNull();;
     });
 
     it("feedback_loop_completion_rate = pct(closed, total loops)", () => {

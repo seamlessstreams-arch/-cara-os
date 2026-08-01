@@ -786,7 +786,7 @@ describe("computeStaffLoneWorkingSafety", () => {
         risk_assessment_records: [makeRiskAssessment()],
       });
       // Not allEmpty so doesn't hit special case; total_staff=0 means confidenceFactors empty
-      expect(r.staff_confidence_rate).toBe(0);
+      expect(r.staff_confidence_rate).toBeNull();;
     });
 
     it("averages partial coverage", () => {

@@ -46,14 +46,14 @@ export type CamhsSpecialistRating = "outstanding" | "good" | "adequate" | "inade
 
 export interface CamhsSpecialistResult {
   camhs_rating: CamhsSpecialistRating;
-  camhs_score: number;
+  camhs_score: number | null;
   headline: string;
   active_referrals: number;
   children_waiting: number;
   average_wait_days: number;
-  appointment_attendance_rate: number;
-  emergency_response_rate: number;
-  specialist_coverage_rate: number;
+  appointment_attendance_rate: number | null;
+  emergency_response_rate: number | null;
+  specialist_coverage_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -84,7 +84,7 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   const allAppts = camhs_referrals.reduce((s, r) => s + r.appointments_offered, 0);
   const allAttended = camhs_referrals.reduce((s, r) => s + r.appointments_attended, 0);
   const attendRate = pct(allAttended, allAppts);
-  const avgWait = waiting.length > 0 ? Math.round(waiting.reduce((s, r) => s + r.waiting_days, 0) / waiting.length) : 0;
+  const avgWait = waiting.length > 0 ? Math.round(waiting.reduce((s, r) => s + r.waiting_days, 0) / waiting.length) : null;
   const outcomeRecorded = camhs_referrals.filter(r => r.outcome_recorded).length;
   const outcomeRate = pct(outcomeRecorded, camhs_referrals.length);
 
@@ -117,9 +117,9 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
 
   // Mod 2: Waiting times (±5)
   if (waiting.length === 0) score += 5;
-  else if (avgWait <= 28) score += 3;
-  else if (avgWait <= 56) score += 0;
-  else if (avgWait <= 90) score -= 2;
+  else if ((avgWait ?? 0) <= 28) score += 3;
+  else if ((avgWait ?? 0) <= 56) score += 0;
+  else if ((avgWait ?? 0) <= 90) score -= 2;
   else score -= 5;
 
   // Mod 3: Emergency response (±6)
@@ -168,7 +168,7 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   const concerns: string[] = [];
   if (waiting.length >= 3) concerns.push(`${waiting.length} children waiting for CAMHS services — delay in accessing mental health support.`);
   else if (waiting.length >= 1) concerns.push(`${waiting.length} child(ren) waiting for CAMHS — monitor waiting times closely.`);
-  if (avgWait > 56) concerns.push(`Average CAMHS wait of ${avgWait} days exceeds 8-week target — children's mental health needs not met promptly.`);
+  if ((avgWait ?? 0) > 56) concerns.push(`Average CAMHS wait of ${(avgWait ?? 0)} days exceeds 8-week target — children's mental health needs not met promptly.`);
   if (emergency_referrals.length > 0 && emergResponseRate < 80) concerns.push(`Emergency mental health response at ${emergResponseRate}% — children in crisis must receive immediate support.`);
   if (rejected.length >= 2) concerns.push(`${rejected.length} CAMHS referrals rejected — consider referral quality or re-referral with additional evidence.`);
   if (allAppts > 0 && attendRate < 60) concerns.push(`CAMHS attendance at ${attendRate}% — low engagement may reflect barriers or reluctance.`);
@@ -177,7 +177,7 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 0;
   if (emergency_referrals.length > 0 && emergResponseRate < 100) recommendations.push({ rank: ++rank, recommendation: "Ensure 100% emergency mental health response within 24 hours — review crisis protocols.", urgency: "immediate", regulatory_ref: "Reg 34" });
-  if (avgWait > 56) recommendations.push({ rank: ++rank, recommendation: `Escalate CAMHS waiting list (avg ${avgWait} days) — consider alternative therapeutic provision.`, urgency: "immediate", regulatory_ref: "Reg 10" });
+  if ((avgWait ?? 0) > 56) recommendations.push({ rank: ++rank, recommendation: `Escalate CAMHS waiting list (avg ${(avgWait ?? 0)} days) — consider alternative therapeutic provision.`, urgency: "immediate", regulatory_ref: "Reg 10" });
   if (allAppts > 0 && attendRate < 70) recommendations.push({ rank: ++rank, recommendation: `Investigate low CAMHS attendance (${attendRate}%) — identify and address barriers to engagement.`, urgency: "soon", regulatory_ref: "Reg 33" });
   if (rejected.length >= 2) recommendations.push({ rank: ++rank, recommendation: `Review ${rejected.length} rejected referrals — strengthen referral evidence or consider alternative services.`, urgency: "soon", regulatory_ref: "Reg 10" });
   if (score < 65) recommendations.push({ rank: ++rank, recommendation: "Develop mental health pathway improvement plan with CAMHS and specialist services.", urgency: "planned", regulatory_ref: "Reg 10" });
@@ -187,7 +187,7 @@ export function computeCamhsSpecialistReferral(input: CamhsSpecialistInput): Cam
   if (camhs_rating === "outstanding") insights.push({ text: "CAMHS and specialist referral pathways are outstanding — children's mental health and specialist needs are proactively managed.", severity: "positive" });
   if (camhs_rating === "inadequate") insights.push({ text: "CAMHS and specialist access is inadequate — children's mental health and specialist needs are significantly unmet.", severity: "critical" });
   if (emergency_referrals.length >= 3) insights.push({ text: `${emergency_referrals.length} emergency mental health referrals suggest high therapeutic need — consider whether current placement support is sufficient.`, severity: "warning" });
-  if (rejected.length >= 2 && avgWait > 28) insights.push({ text: "Rejected referrals combined with long waits suggest systemic access barriers — joint commissioning review recommended.", severity: "warning" });
+  if (rejected.length >= 2 && (avgWait ?? 0) > 28) insights.push({ text: "Rejected referrals combined with long waits suggest systemic access barriers — joint commissioning review recommended.", severity: "warning" });
 
   // ── Headline ────────────────────────────────────────────────────────────
   let headline = "";

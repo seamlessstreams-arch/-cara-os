@@ -259,7 +259,7 @@ describe("aggregate metrics — output field accuracy", () => {
 
   it("computes average_disturbance_duration = 0 when no disturbances", () => {
     const r = computeSleepNightCare(baseInput());
-    expect(r.average_disturbance_duration).toBe(0);
+    expect(r.average_disturbance_duration).toBeNull();;
   });
 
   it("rounds average_disturbance_duration to 1 decimal place", () => {
@@ -1907,7 +1907,7 @@ describe("edge cases", () => {
     expect(r.quiet_night_rate).toBe(100);
     expect(r.significant_disturbance_count).toBe(0);
     expect(r.disturbance_response_rate).toBe(0); // no disturbances
-    expect(r.average_disturbance_duration).toBe(0);
+    expect(r.average_disturbance_duration).toBeNull();;
   });
 
   it("handles all significant disturbances", () => {

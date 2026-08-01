@@ -124,7 +124,7 @@ export interface IncidentProfile {
   total_90d: number;
   by_type: { type: string; count: number }[];
   severity_breakdown: { severity: string; count: number }[];
-  de_escalation_rate: number;     // 0-100
+  de_escalation_rate: number | null;     // 0-100
   trend: "increasing" | "stable" | "decreasing" | "insufficient_data";
   open_count: number;
 }
@@ -132,9 +132,9 @@ export interface IncidentProfile {
 export interface RestraintProfile {
   total_30d: number;
   total_90d: number;
-  avg_duration_minutes: number;
-  de_escalation_rate: number;     // 0-100
-  debrief_rate: number;           // 0-100
+  avg_duration_minutes: number | null;
+  de_escalation_rate: number | null;     // 0-100
+  debrief_rate: number | null;           // 0-100
   injury_count: number;
   unreviewed_count: number;
   trend: "increasing" | "stable" | "decreasing" | "insufficient_data";
@@ -143,8 +143,8 @@ export interface RestraintProfile {
 export interface MissingProfile {
   total_30d: number;
   total_90d: number;
-  avg_duration_hours: number;
-  return_interview_rate: number;  // 0-100
+  avg_duration_hours: number | null;
+  return_interview_rate: number | null;  // 0-100
   high_risk_count: number;
   repeat_missing: boolean;
 }
@@ -153,14 +153,14 @@ export interface SanctionRewardBalance {
   rewards_30d: number;
   sanctions_30d: number;
   ratio: number;                  // rewards:sanctions (e.g., 3.0 means 3 rewards per sanction)
-  proportionate_rate: number;     // 0-100
+  proportionate_rate: number | null;     // 0-100
   balance_rating: "positive" | "balanced" | "sanctions_heavy" | "insufficient_data";
 }
 
 export interface SleepProfile {
   entries_14d: number;
-  avg_quality: number;            // 1-5
-  avg_disturbances: number;
+  avg_quality: number | null;            // 1-5
+  avg_disturbances: number | null;
   trend: "improving" | "stable" | "declining" | "insufficient_data";
 }
 
@@ -192,7 +192,7 @@ export interface ChildBehaviourSafetyResult {
   child_id: string;
   child_name: string;
   safety_status: SafetyStatus;
-  safety_score: number;           // 0-100
+  safety_score: number | null;           // 0-100
   headline: string;
   behaviour_profile: BehaviourProfile;
   incident_profile: IncidentProfile;
@@ -228,8 +228,8 @@ function pct(n: number, d: number): number {
   return d > 0 ? Math.round((n / d) * 100) : 100;
 }
 
-function avg(arr: number[]): number {
-  return arr.length > 0 ? Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 10) / 10 : 0;
+function avg(arr: number[]): number | null {
+  return arr.length > 0 ? Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 10) / 10 : null;
 }
 
 function timeToSlot(time: string): string {
@@ -428,8 +428,8 @@ export function computeChildBehaviourSafety(
 
   const sleepTrend: "improving" | "stable" | "declining" | "insufficient_data" =
     sleep_entries.length < 4 ? "insufficient_data" :
-    recentSleepAvg > olderSleepAvg + 0.3 ? "improving" :
-    recentSleepAvg < olderSleepAvg - 0.3 ? "declining" :
+    (recentSleepAvg ?? 0) > (olderSleepAvg ?? 0) + 0.3 ? "improving" :
+    (recentSleepAvg ?? 0) < (olderSleepAvg ?? 0) - 0.3 ? "declining" :
     "stable";
 
   const sleep_profile: SleepProfile = {
@@ -478,7 +478,7 @@ export function computeChildBehaviourSafety(
   else if (rst30d.length >= 2) score -= 5;
   if (rstInjuries > 0) score -= 5;
   if (restraint_profile.debrief_rate === 100 && rst90d.length > 0) score += 3;
-  else if (restraint_profile.debrief_rate < 80 && rst90d.length > 0) score -= 3;
+  else if ((restraint_profile.debrief_rate ?? 0) < 80 && rst90d.length > 0) score -= 3;
   if (rstUnreviewed > 0) score -= 3;
 
   // Missing
@@ -601,7 +601,7 @@ export function computeChildBehaviourSafety(
     concerns.push(`${rstInjuries} injury/ies recorded during restraints — each must be documented, medically assessed, and reported to the Registered Manager (Reg 20).`);
   }
 
-  if (restraint_profile.debrief_rate < 80 && rst90d.length >= 2) {
+  if ((restraint_profile.debrief_rate ?? 0) < 80 && rst90d.length >= 2) {
     concerns.push(`Restraint debrief rate at ${restraint_profile.debrief_rate}% — debriefs must occur after every physical intervention to support the child and review necessity (Reg 20).`);
   }
 
@@ -617,7 +617,7 @@ export function computeChildBehaviourSafety(
     concerns.push(`${highRisk} high-risk/CS-risk missing episode${highRisk !== 1 ? "s" : ""} in 90 days — escalation to placing authority and police is mandatory.`);
   }
 
-  if (missing_profile.return_interview_rate < 100 && miss90d.length > 0) {
+  if ((missing_profile.return_interview_rate ?? 0) < 100 && miss90d.length > 0) {
     concerns.push(`Return interview completion rate at ${missing_profile.return_interview_rate}% — all children returning from missing must receive an independent return interview.`);
   }
 
@@ -647,7 +647,7 @@ export function computeChildBehaviourSafety(
     });
   }
 
-  if (rst30d.length >= 2 && restraint_profile.debrief_rate < 100) {
+  if (rst30d.length >= 2 && (restraint_profile.debrief_rate ?? 0) < 100) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Complete outstanding restraint debriefs. Review restraint reduction strategy with team. Consider whether additional de-escalation training is needed.",
@@ -657,7 +657,7 @@ export function computeChildBehaviourSafety(
     });
   }
 
-  if (highRisk > 0 && missing_profile.return_interview_rate < 100) {
+  if (highRisk > 0 && (missing_profile.return_interview_rate ?? 0) < 100) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Arrange independent return interviews for all outstanding missing episodes. Update missing risk assessment and share with placing authority.",

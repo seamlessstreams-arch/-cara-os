@@ -89,9 +89,9 @@ export interface SensoryInterventionInput {
   active: boolean;
   sessions_planned: number;
   sessions_completed: number;
-  baseline_score: number; // 1-10
-  current_score: number; // 1-10
-  target_score: number; // 1-10
+  baseline_score: number | null; // 1-10
+  current_score: number | null; // 1-10
+  target_score: number | null; // 1-10
   child_reported_improvement: boolean;
   staff_reported_improvement: boolean;
   professional_involved: boolean;
@@ -133,17 +133,17 @@ export interface SensoryAccessibilityRecommendation {
 
 export interface SensoryAccessibilitySupportResult {
   sensory_rating: SensoryAccessibilityRating;
-  sensory_score: number;
+  sensory_score: number | null;
   headline: string;
   total_profiles: number;
-  sensory_profile_coverage_rate: number;
-  accessibility_adaptation_rate: number;
-  sensory_room_utilisation_rate: number;
-  equipment_maintenance_rate: number;
-  intervention_effectiveness_rate: number;
-  child_feedback_rate: number;
-  adaptation_effectiveness_avg: number;
-  intervention_progress_avg: number;
+  sensory_profile_coverage_rate: number | null;
+  accessibility_adaptation_rate: number | null;
+  sensory_room_utilisation_rate: number | null;
+  equipment_maintenance_rate: number | null;
+  intervention_effectiveness_rate: number | null;
+  child_feedback_rate: number | null;
+  adaptation_effectiveness_avg: number | null;
+  intervention_progress_avg: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SensoryAccessibilityRecommendation[];
@@ -287,7 +287,7 @@ export function computeSensoryAccessibilitySupport(
   ).length;
   const profileReviewComplianceRate = totalProfiles > 0
     ? pct(totalProfiles - overdueProfileReviews, totalProfiles)
-    : 0;
+    : null;
 
   // --- Accessibility adaptations ---
   const totalAdaptations = accessibility_adaptation_records.length;
@@ -302,7 +302,7 @@ export function computeSensoryAccessibilitySupport(
   const adaptationEffectivenessAvg =
     implementedAdaptations > 0
       ? Math.round((adaptationEffectivenessSum / implementedAdaptations) * 100) / 100
-      : 0;
+      : null;
 
   const adaptationChildFeedbackPositive = accessibility_adaptation_records.filter(
     (a) => a.implemented && a.child_feedback_positive,
@@ -343,7 +343,7 @@ export function computeSensoryAccessibilitySupport(
   const sessionEngagementAvg =
     totalSessions > 0
       ? Math.round((sessionEngagementSum / totalSessions) * 100) / 100
-      : 0;
+      : null;
 
   const sessionOutcomeSum = sensory_room_records.reduce(
     (sum, s) => sum + s.outcome_rating,
@@ -352,7 +352,7 @@ export function computeSensoryAccessibilitySupport(
   const sessionOutcomeAvg =
     totalSessions > 0
       ? Math.round((sessionOutcomeSum / totalSessions) * 100) / 100
-      : 0;
+      : null;
 
   // --- Equipment maintenance ---
   const totalEquipment = sensory_equipment_records.length;
@@ -365,7 +365,7 @@ export function computeSensoryAccessibilitySupport(
   const equipmentMaintenanceRate =
     activeEquipment > 0
       ? pct(activeEquipment - overdueMaintenanceEquipment, activeEquipment)
-      : 0;
+      : null;
 
   const safetyCheckedEquipment = sensory_equipment_records.filter(
     (e) => e.safety_checked && e.in_use,
@@ -383,7 +383,7 @@ export function computeSensoryAccessibilitySupport(
   ).length;
 
   const interventionsShowingImprovement = sensory_intervention_records.filter(
-    (i) => i.current_score > i.baseline_score,
+    (i) => (i.current_score ?? 0) > (i.baseline_score ?? 0),
   ).length;
   const interventionEffectivenessRate = pct(
     interventionsShowingImprovement,
@@ -391,10 +391,10 @@ export function computeSensoryAccessibilitySupport(
   );
 
   const interventionProgressValues = sensory_intervention_records
-    .filter((i) => i.target_score > i.baseline_score)
+    .filter((i) => (i.target_score ?? 0) > (i.baseline_score ?? 0))
     .map((i) => {
-      const range = i.target_score - i.baseline_score;
-      const progress = i.current_score - i.baseline_score;
+      const range = (i.target_score ?? 0) - (i.baseline_score ?? 0);
+      const progress = (i.current_score ?? 0) - (i.baseline_score ?? 0);
       return clamp(Math.round((progress / range) * 100), 0, 100);
     });
   const interventionProgressAvg =
@@ -403,7 +403,7 @@ export function computeSensoryAccessibilitySupport(
           interventionProgressValues.reduce((sum, v) => sum + v, 0) /
             interventionProgressValues.length,
         )
-      : 0;
+      : null;
 
   const childReportedImprovement = sensory_intervention_records.filter(
     (i) => i.child_reported_improvement,
@@ -456,8 +456,8 @@ export function computeSensoryAccessibilitySupport(
   else if (sensoryRoomUtilisationRate >= 60) score += 1;
 
   // --- Bonus 4: equipmentMaintenanceRate (>=100: +3, >=80: +1) ---
-  if (equipmentMaintenanceRate >= 100) score += 3;
-  else if (equipmentMaintenanceRate >= 80) score += 1;
+  if ((equipmentMaintenanceRate ?? 0) >= 100) score += 3;
+  else if ((equipmentMaintenanceRate ?? 0) >= 80) score += 1;
 
   // --- Bonus 5: interventionEffectivenessRate (>=90: +4, >=70: +2) ---
   if (interventionEffectivenessRate >= 90) score += 4;
@@ -468,12 +468,12 @@ export function computeSensoryAccessibilitySupport(
   else if (childFeedbackRate >= 70) score += 1;
 
   // --- Bonus 7: adaptationEffectivenessAvg (>=4.0: +3, >=3.0: +1) ---
-  if (adaptationEffectivenessAvg >= 4.0) score += 3;
-  else if (adaptationEffectivenessAvg >= 3.0) score += 1;
+  if ((adaptationEffectivenessAvg ?? 0) >= 4.0) score += 3;
+  else if ((adaptationEffectivenessAvg ?? 0) >= 3.0) score += 1;
 
   // --- Bonus 8: profileReviewComplianceRate (>=100: +2, >=80: +1) ---
-  if (profileReviewComplianceRate >= 100) score += 2;
-  else if (profileReviewComplianceRate >= 80) score += 1;
+  if ((profileReviewComplianceRate ?? 0) >= 100) score += 2;
+  else if ((profileReviewComplianceRate ?? 0) >= 80) score += 1;
 
   // --- Bonus 9: sessionCompletionRate (>=90: +2, >=70: +1) ---
   if (sessionCompletionRate >= 90) score += 2;
@@ -488,7 +488,7 @@ export function computeSensoryAccessibilitySupport(
   if (accessibilityAdaptationRate < 50 && totalAdaptations > 0) score -= 5;
 
   // equipmentMaintenanceRate < 50 → -4
-  if (equipmentMaintenanceRate < 50 && activeEquipment > 0) score -= 4;
+  if ((equipmentMaintenanceRate ?? 0) < 50 && activeEquipment > 0) score -= 4;
 
   // interventionEffectivenessRate < 40 → -4
   if (interventionEffectivenessRate < 40 && totalInterventions > 0) score -= 4;
@@ -531,11 +531,11 @@ export function computeSensoryAccessibilitySupport(
     );
   }
 
-  if (equipmentMaintenanceRate >= 100 && activeEquipment > 0) {
+  if ((equipmentMaintenanceRate ?? 0) >= 100 && activeEquipment > 0) {
     strengths.push(
       "All active sensory equipment is maintained and up to date — the home ensures safe, reliable access to sensory resources.",
     );
-  } else if (equipmentMaintenanceRate >= 80 && activeEquipment > 0) {
+  } else if ((equipmentMaintenanceRate ?? 0) >= 80 && activeEquipment > 0) {
     strengths.push(
       `${equipmentMaintenanceRate}% equipment maintenance compliance — the home generally maintains sensory equipment to a good standard.`,
     );
@@ -561,11 +561,11 @@ export function computeSensoryAccessibilitySupport(
     );
   }
 
-  if (adaptationEffectivenessAvg >= 4.0 && implementedAdaptations > 0) {
+  if ((adaptationEffectivenessAvg ?? 0) >= 4.0 && implementedAdaptations > 0) {
     strengths.push(
       `Adaptation effectiveness averages ${adaptationEffectivenessAvg}/5 — high-quality adaptations that are making a real difference to children's daily experiences.`,
     );
-  } else if (adaptationEffectivenessAvg >= 3.0 && implementedAdaptations > 0) {
+  } else if ((adaptationEffectivenessAvg ?? 0) >= 3.0 && implementedAdaptations > 0) {
     strengths.push(
       `Adaptation effectiveness averages ${adaptationEffectivenessAvg}/5 — competent delivery of accessibility adaptations.`,
     );
@@ -581,11 +581,11 @@ export function computeSensoryAccessibilitySupport(
     );
   }
 
-  if (profileReviewComplianceRate >= 100 && totalProfiles > 0) {
+  if ((profileReviewComplianceRate ?? 0) >= 100 && totalProfiles > 0) {
     strengths.push(
       "All sensory profile reviews are up to date — the home ensures assessments remain current and reflective of children's evolving needs.",
     );
-  } else if (profileReviewComplianceRate >= 80 && totalProfiles > 0) {
+  } else if ((profileReviewComplianceRate ?? 0) >= 80 && totalProfiles > 0) {
     strengths.push(
       `${profileReviewComplianceRate}% of sensory profile reviews on schedule — strong compliance with review timescales.`,
     );
@@ -661,11 +661,11 @@ export function computeSensoryAccessibilitySupport(
     );
   }
 
-  if (equipmentMaintenanceRate < 50 && activeEquipment > 0) {
+  if ((equipmentMaintenanceRate ?? 0) < 50 && activeEquipment > 0) {
     concerns.push(
       `Only ${equipmentMaintenanceRate}% of active sensory equipment has current maintenance — overdue maintenance poses safety risks and may render equipment ineffective.`,
     );
-  } else if (equipmentMaintenanceRate < 80 && equipmentMaintenanceRate >= 50 && activeEquipment > 0) {
+  } else if ((equipmentMaintenanceRate ?? 0) < 80 && (equipmentMaintenanceRate ?? 0) >= 50 && activeEquipment > 0) {
     concerns.push(
       `Equipment maintenance rate at ${equipmentMaintenanceRate}% — some sensory equipment has overdue maintenance, which may affect safety and effectiveness.`,
     );
@@ -764,7 +764,7 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (equipmentMaintenanceRate < 50 && activeEquipment > 0) {
+  if ((equipmentMaintenanceRate ?? 0) < 50 && activeEquipment > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -907,8 +907,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    equipmentMaintenanceRate >= 50 &&
-    equipmentMaintenanceRate < 80 &&
+    (equipmentMaintenanceRate ?? 0) >= 50 &&
+    (equipmentMaintenanceRate ?? 0) < 80 &&
     activeEquipment > 0
   ) {
     recommendations.push({
@@ -964,7 +964,7 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (equipmentMaintenanceRate < 50 && activeEquipment > 0) {
+  if ((equipmentMaintenanceRate ?? 0) < 50 && activeEquipment > 0) {
     insights.push({
       text: `Only ${equipmentMaintenanceRate}% of active sensory equipment has current maintenance. Poorly maintained equipment poses safety risks to children and may be ineffective. This is a health and safety concern that Ofsted will view seriously under Reg 25.`,
       severity: "critical",
@@ -1032,8 +1032,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    equipmentMaintenanceRate >= 50 &&
-    equipmentMaintenanceRate < 80 &&
+    (equipmentMaintenanceRate ?? 0) >= 50 &&
+    (equipmentMaintenanceRate ?? 0) < 80 &&
     activeEquipment > 0
   ) {
     insights.push({
@@ -1129,7 +1129,7 @@ export function computeSensoryAccessibilitySupport(
 
   if (
     accessibilityAdaptationRate >= 100 &&
-    adaptationEffectivenessAvg >= 4.0 &&
+    (adaptationEffectivenessAvg ?? 0) >= 4.0 &&
     totalAdaptations > 0
   ) {
     insights.push({
@@ -1150,7 +1150,7 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    equipmentMaintenanceRate >= 100 &&
+    (equipmentMaintenanceRate ?? 0) >= 100 &&
     safetyCheckRate >= 100 &&
     activeEquipment > 0
   ) {

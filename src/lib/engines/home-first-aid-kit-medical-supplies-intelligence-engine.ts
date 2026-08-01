@@ -142,22 +142,22 @@ export interface FirstAidKitRecommendation {
 
 export interface FirstAidKitMedicalSuppliesResult {
   first_aid_rating: FirstAidKitRating;
-  first_aid_score: number;
+  first_aid_score: number | null;
   headline: string;
   total_kits: number;
   total_stock_items: number;
   total_expiry_items: number;
   total_trained_staff: number;
-  kit_check_rate: number;
-  stock_adequacy_rate: number;
-  expiry_monitoring_rate: number;
-  accessibility_rate: number;
-  staff_training_rate: number;
-  child_awareness_rate: number;
-  critical_stock_adequacy_rate: number;
+  kit_check_rate: number | null;
+  stock_adequacy_rate: number | null;
+  expiry_monitoring_rate: number | null;
+  accessibility_rate: number | null;
+  staff_training_rate: number | null;
+  child_awareness_rate: number | null;
+  critical_stock_adequacy_rate: number | null;
   expired_items_count: number;
   near_expiry_items_count: number;
-  paediatric_trained_rate: number;
+  paediatric_trained_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: FirstAidKitRecommendation[];
@@ -477,7 +477,7 @@ export function computeFirstAidKitMedicalSupplies(
   const avgDistanceMetres =
     totalAccessibilityAudits > 0
       ? Math.round((totalDistance / totalAccessibilityAudits) * 10) / 10
-      : 0;
+      : null;
 
   // Kits too far from main area (> 50 metres)
   const kitsTooFar = accessibility_records.filter(

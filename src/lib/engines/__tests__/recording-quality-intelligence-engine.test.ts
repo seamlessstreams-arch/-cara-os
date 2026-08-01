@@ -329,9 +329,9 @@ describe("Recording Quality Intelligence Engine", () => {
       const result = run([]);
       expect(result.overview.total_entries).toBe(0);
       expect(result.overview.entries_last_7_days).toBe(0);
-      expect(result.overview.avg_entries_per_day).toBe(0);
-      expect(result.overview.avg_content_length).toBe(0);
-      expect(result.overview.mood_capture_rate).toBe(0);
+      expect(result.overview.avg_entries_per_day).toBeNull();;
+      expect(result.overview.avg_content_length).toBeNull();;
+      expect(result.overview.mood_capture_rate).toBeNull();;
     });
 
     it("returns zero quality breakdown with no entries", () => {

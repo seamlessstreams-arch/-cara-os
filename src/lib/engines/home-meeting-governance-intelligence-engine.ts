@@ -46,33 +46,33 @@ export type MeetingRating =
 export interface RegularityProfile {
   total_meetings: number;
   meetings_per_month: number;
-  avg_days_between: number;
+  avg_days_between: number | null;
   max_gap_days: number;
   regular_count: number;
   extraordinary_count: number;
 }
 
 export interface AttendanceProfile {
-  avg_child_attendance_rate: number;
+  avg_child_attendance_rate: number | null;
   full_attendance_count: number;         // meetings where all children present
-  avg_staff_present: number;
-  lowest_attendance_rate: number;
+  avg_staff_present: number | null;
+  lowest_attendance_rate: number | null;
 }
 
 export interface ActionProfile {
   total_previous_actions: number;
   completed_count: number;
-  completion_rate: number;
+  completion_rate: number | null;
   total_new_actions: number;
-  avg_new_per_meeting: number;
+  avg_new_per_meeting: number | null;
 }
 
 export interface EngagementProfile {
-  avg_agenda_items: number;
-  child_raised_rate: number;             // % of agenda items raised by children
-  avg_feedback_count: number;
+  avg_agenda_items: number | null;
+  child_raised_rate: number | null;             // % of agenda items raised by children
+  avg_feedback_count: number | null;
   meetings_with_feedback: number;
-  avg_duration: number;
+  avg_duration: number | null;
 }
 
 export interface MeetingInsight {
@@ -89,7 +89,7 @@ export interface MeetingRecommendation {
 
 export interface HomeMeetingGovernanceResult {
   meeting_rating: MeetingRating;
-  meeting_score: number;
+  meeting_score: number | null;
   headline: string;
   regularity_profile: RegularityProfile;
   attendance_profile: AttendanceProfile;
@@ -173,7 +173,7 @@ export function computeHomeMeetingGovernance(
   }
   const avgDaysBetween = sorted.length > 1
     ? Math.round(totalGap / (sorted.length - 1))
-    : 0;
+    : null;
 
   const regular = meetings.filter(m => m.meeting_type === "regular");
   const extraordinary = meetings.filter(m => m.meeting_type !== "regular");
@@ -194,12 +194,12 @@ export function computeHomeMeetingGovernance(
   });
   const avgAttendance = attendanceRates.length > 0
     ? Math.round(attendanceRates.reduce((s, r) => s + r, 0) / attendanceRates.length)
-    : 0;
+    : null;
   const fullAttendance = meetings.filter(m => m.children_absent_count === 0).length;
   const avgStaff = meetings.length > 0
     ? Math.round((meetings.reduce((s, m) => s + m.staff_present_count, 0) / meetings.length) * 10) / 10
-    : 0;
-  const lowestRate = attendanceRates.length > 0 ? Math.min(...attendanceRates) : 0;
+    : null;
+  const lowestRate = attendanceRates.length > 0 ? Math.min(...attendanceRates) : null;
 
   const attendanceProfile: AttendanceProfile = {
     avg_child_attendance_rate: avgAttendance,
@@ -214,7 +214,7 @@ export function computeHomeMeetingGovernance(
   const totalNewActions = meetings.reduce((s, m) => s + m.new_actions_count, 0);
   const avgNewPerMeeting = meetings.length > 0
     ? Math.round((totalNewActions / meetings.length) * 10) / 10
-    : 0;
+    : null;
 
   const actionProfile: ActionProfile = {
     total_previous_actions: allPrevActions.length,
@@ -231,12 +231,12 @@ export function computeHomeMeetingGovernance(
   const meetingsWithFeedback = meetings.filter(m => m.feedback_count > 0).length;
   const avgDuration = meetings.length > 0
     ? Math.round(meetings.reduce((s, m) => s + m.duration_minutes, 0) / meetings.length)
-    : 0;
+    : null;
 
   const engagementProfile: EngagementProfile = {
-    avg_agenda_items: meetings.length > 0 ? Math.round((totalAgendaItems / meetings.length) * 10) / 10 : 0,
+    avg_agenda_items: meetings.length > 0 ? Math.round((totalAgendaItems / meetings.length) * 10) / 10 : null,
     child_raised_rate: pct(totalChildRaised, totalAgendaItems),
-    avg_feedback_count: meetings.length > 0 ? Math.round((totalFeedback / meetings.length) * 10) / 10 : 0,
+    avg_feedback_count: meetings.length > 0 ? Math.round((totalFeedback / meetings.length) * 10) / 10 : null,
     meetings_with_feedback: meetingsWithFeedback,
     avg_duration: avgDuration,
   };
@@ -252,15 +252,15 @@ export function computeHomeMeetingGovernance(
   else score -= 4;
 
   // 2. Child attendance (±4)
-  if (avgAttendance >= 90) score += 4;
-  else if (avgAttendance >= 70) score += 2;
-  else if (avgAttendance >= 50) score -= 1;
+  if ((avgAttendance ?? 0) >= 90) score += 4;
+  else if ((avgAttendance ?? 0) >= 70) score += 2;
+  else if ((avgAttendance ?? 0) >= 50) score -= 1;
   else score -= 3;
 
   // 3. Action completion (±3)
   if (allPrevActions.length > 0) {
-    if (actionProfile.completion_rate >= 80) score += 3;
-    else if (actionProfile.completion_rate >= 50) score += 1;
+    if ((actionProfile.completion_rate ?? 0) >= 80) score += 3;
+    else if ((actionProfile.completion_rate ?? 0) >= 50) score += 1;
     else score -= 2;
   } else {
     score += 1; // No previous actions = no concern
@@ -268,9 +268,9 @@ export function computeHomeMeetingGovernance(
 
   // 4. Child engagement / items raised by children (±4)
   if (totalAgendaItems > 0) {
-    if (engagementProfile.child_raised_rate >= 50) score += 4;
-    else if (engagementProfile.child_raised_rate >= 30) score += 2;
-    else if (engagementProfile.child_raised_rate >= 10) score += 0;
+    if ((engagementProfile.child_raised_rate ?? 0) >= 50) score += 4;
+    else if ((engagementProfile.child_raised_rate ?? 0) >= 30) score += 2;
+    else if ((engagementProfile.child_raised_rate ?? 0) >= 10) score += 0;
     else score -= 2;
   } else {
     score -= 2;
@@ -291,8 +291,8 @@ export function computeHomeMeetingGovernance(
   else score -= 3;
 
   // 7. Duration quality (±3)
-  if (avgDuration >= 25 && avgDuration <= 60) score += 3;
-  else if (avgDuration >= 15) score += 1;
+  if ((avgDuration ?? 0) >= 25 && (avgDuration ?? 0) <= 60) score += 3;
+  else if ((avgDuration ?? 0) >= 15) score += 1;
   else score -= 2;
 
   // 8. Comments / documentation (±3)
@@ -310,20 +310,20 @@ export function computeHomeMeetingGovernance(
   // ── Strengths ─────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (meetingsPerMonth >= 3) strengths.push(`${meetingsPerMonth} meetings per month — frequent, regular engagement with children.`);
-  if (avgAttendance >= 90) strengths.push(`${avgAttendance}% average child attendance — children are actively participating in meetings.`);
-  if (actionProfile.completion_rate >= 80 && allPrevActions.length > 0) strengths.push(`${actionProfile.completion_rate}% action completion rate — children see their concerns followed through.`);
-  if (engagementProfile.child_raised_rate >= 50 && totalAgendaItems > 0) strengths.push(`${engagementProfile.child_raised_rate}% of agenda items raised by children — child-led governance.`);
+  if ((avgAttendance ?? 0) >= 90) strengths.push(`${(avgAttendance ?? 0)}% average child attendance — children are actively participating in meetings.`);
+  if ((actionProfile.completion_rate ?? 0) >= 80 && allPrevActions.length > 0) strengths.push(`${(actionProfile.completion_rate ?? 0)}% action completion rate — children see their concerns followed through.`);
+  if ((engagementProfile.child_raised_rate ?? 0) >= 50 && totalAgendaItems > 0) strengths.push(`${(engagementProfile.child_raised_rate ?? 0)}% of agenda items raised by children — child-led governance.`);
   if (meetingsWithFeedback === meetings.length && meetings.length > 0) strengths.push("Child feedback recorded at every meeting — views are systematically captured.");
   if (maxGap <= 10) strengths.push("No gap exceeds 10 days between meetings — consistent governance rhythm.");
 
   // ── Concerns ──────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (meetingsPerMonth < 1) concerns.push(`Only ${meetingsPerMonth} meetings per month — house meetings should be held at least weekly.`);
-  if (avgAttendance < 70) concerns.push(`Only ${avgAttendance}% average child attendance — many children are missing opportunities to have their voice heard.`);
-  if (allPrevActions.length > 0 && actionProfile.completion_rate < 50) concerns.push(`Only ${actionProfile.completion_rate}% of actions completed — children may lose trust if their concerns are not followed through.`);
+  if ((avgAttendance ?? 0) < 70) concerns.push(`Only ${(avgAttendance ?? 0)}% average child attendance — many children are missing opportunities to have their voice heard.`);
+  if (allPrevActions.length > 0 && (actionProfile.completion_rate ?? 0) < 50) concerns.push(`Only ${(actionProfile.completion_rate ?? 0)}% of actions completed — children may lose trust if their concerns are not followed through.`);
   if (maxGap > 21) concerns.push(`Longest gap between meetings is ${maxGap} days — regularity is essential for governance.`);
   if (meetingsWithFeedback === 0 && meetings.length > 0) concerns.push("No child feedback recorded at any meeting — children's views must be captured.");
-  if (totalAgendaItems > 0 && engagementProfile.child_raised_rate < 10) concerns.push(`Only ${engagementProfile.child_raised_rate}% of items raised by children — meetings may be staff-driven rather than child-led.`);
+  if (totalAgendaItems > 0 && (engagementProfile.child_raised_rate ?? 0) < 10) concerns.push(`Only ${(engagementProfile.child_raised_rate ?? 0)}% of items raised by children — meetings may be staff-driven rather than child-led.`);
 
   // ── Recommendations ───────────────────────────────────────────────
   const recs: MeetingRecommendation[] = [];
@@ -332,29 +332,29 @@ export function computeHomeMeetingGovernance(
   if (meetingsPerMonth < 1) {
     recs.push({ rank: rank++, recommendation: "Increase meeting frequency to at least weekly — children need regular opportunities to contribute.", urgency: "immediate", regulatory_ref: "Reg 45" });
   }
-  if (allPrevActions.length > 0 && actionProfile.completion_rate < 50) {
+  if (allPrevActions.length > 0 && (actionProfile.completion_rate ?? 0) < 50) {
     recs.push({ rank: rank++, recommendation: `Improve action follow-through — only ${actionProfile.completion_rate}% of agreed actions completed. Review actions at every meeting.`, urgency: "soon", regulatory_ref: "Reg 45" });
   }
   if (meetingsWithFeedback === 0 && meetings.length > 0) {
     recs.push({ rank: rank++, recommendation: "Capture child feedback at every meeting — build a template with prompts for views.", urgency: "soon", regulatory_ref: "Reg 45" });
   }
-  if (avgAttendance < 70) {
+  if ((avgAttendance ?? 0) < 70) {
     recs.push({ rank: rank++, recommendation: `Address low attendance (${avgAttendance}%) — seek individual views from absent children and make meetings more engaging.`, urgency: "planned", regulatory_ref: "Reg 45" });
   }
 
   // ── Insights ──────────────────────────────────────────────────────
   const insights: MeetingInsight[] = [];
 
-  if (meetingsPerMonth >= 3 && avgAttendance >= 90 && engagementProfile.child_raised_rate >= 50) {
+  if (meetingsPerMonth >= 3 && (avgAttendance ?? 0) >= 90 && (engagementProfile.child_raised_rate ?? 0) >= 50) {
     insights.push({ text: `House meeting governance is exemplary — ${meetingsPerMonth} meetings per month, ${avgAttendance}% attendance, and ${engagementProfile.child_raised_rate}% child-led agenda. Ofsted will recognise a home where children genuinely influence decisions and feel heard. This supports both participation rights and placement stability.`, severity: "positive" });
   }
   if (meetingsPerMonth < 1) {
     insights.push({ text: `Only ${meetingsPerMonth} meetings per month. Regular house meetings are a key mechanism for children to exercise their right to participate in decisions about their home. Without them, Ofsted will question whether the home listens to children and involves them in shaping their own care.`, severity: "critical" });
   }
-  if (allPrevActions.length > 0 && actionProfile.completion_rate < 50) {
+  if (allPrevActions.length > 0 && (actionProfile.completion_rate ?? 0) < 50) {
     insights.push({ text: `Only ${actionProfile.completion_rate}% of meeting actions have been completed. When children raise concerns and see no follow-through, they learn that their voice doesn't matter. This damages trust and engagement. Ofsted will specifically check whether actions are completed.`, severity: "warning" });
   }
-  if (avgAttendance < 70) {
+  if ((avgAttendance ?? 0) < 70) {
     insights.push({ text: `Average attendance is ${avgAttendance}%. Low attendance may indicate that meetings aren't engaging, aren't accessible, or that some children's views are being overlooked. Individual catch-ups should be offered to absent children.`, severity: "warning" });
   }
 

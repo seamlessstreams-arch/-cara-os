@@ -37,7 +37,7 @@ export interface AppraisalInput {
   staff_id: string;
   status: string;                            // completed | scheduled | in_progress | overdue
   overall_rating: string | null;             // outstanding | good | requires_improvement | inadequate
-  avg_competency_score: number;              // 0-5 scale
+  avg_competency_score: number | null;              // 0-5 scale
   signed: boolean;
   next_review_date: string | null;
 }
@@ -63,11 +63,11 @@ export type SupervisionRating =
 export interface SupervisionProfile {
   total_supervisions_90d: number;
   completed_count: number;
-  completion_rate: number;
+  completion_rate: number | null;
   formal_count: number;
-  action_completion_rate: number;
-  avg_wellbeing_score: number;
-  signature_rate: number;
+  action_completion_rate: number | null;
+  avg_wellbeing_score: number | null;
+  signature_rate: number | null;
   staff_with_supervision: string[];
   staff_without_supervision: string[];
 }
@@ -78,17 +78,17 @@ export interface ObservationProfile {
   meets_standard_count: number;
   developing_count: number;
   requires_support_count: number;
-  positive_outcome_rate: number;             // % outstanding + meets_standard
+  positive_outcome_rate: number | null;             // % outstanding + meets_standard
   staff_observed: string[];
   staff_not_observed: string[];
-  sign_off_rate: number;
+  sign_off_rate: number | null;
 }
 
 export interface AppraisalProfile {
   total_appraisals: number;
   completed_count: number;
   overdue_count: number;
-  avg_competency_score: number;
+  avg_competency_score: number | null;
   staff_with_appraisal: string[];
   staff_without_appraisal: string[];
 }
@@ -107,7 +107,7 @@ export interface SupervisionRecommendation {
 
 export interface HomeSupervisionResult {
   supervision_rating: SupervisionRating;
-  supervision_score: number;
+  supervision_score: number | null;
   headline: string;
   supervision_profile: SupervisionProfile;
   observation_profile: ObservationProfile;
@@ -194,7 +194,7 @@ export function computeHomeSupervision(
   const wellbeingScores = completedSups.map(s => s.wellbeing_score).filter((w): w is number => w !== null);
   const avgWellbeing = wellbeingScores.length > 0
     ? Math.round((wellbeingScores.reduce((a, b) => a + b, 0) / wellbeingScores.length) * 10) / 10
-    : 0;
+    : null;
 
   const signedSups = completedSups.filter(s => s.both_signatures).length;
   const signatureRate = pct(signedSups, completedSups.length);
@@ -245,10 +245,10 @@ export function computeHomeSupervision(
   const completedAppraisals = latestAppraisals.filter(a => a.status === "completed");
   const overdueAppraisals = latestAppraisals.filter(a => a.status === "overdue").length;
 
-  const competencyScores = completedAppraisals.map(a => a.avg_competency_score).filter(s => s > 0);
+  const competencyScores = completedAppraisals.map(a => a.avg_competency_score).filter((s): s is number => s !== null && s > 0);
   const avgCompetency = competencyScores.length > 0
     ? Math.round((competencyScores.reduce((a, b) => a + b, 0) / competencyScores.length) * 10) / 10
-    : 0;
+    : null;
 
   const staffWithAppraisal = [...new Set(completedAppraisals.map(a => a.staff_id))];
   const staffWithoutAppraisal = staff_ids.filter(id => !staffWithAppraisal.includes(id));
@@ -305,8 +305,8 @@ export function computeHomeSupervision(
   else score -= 3;
 
   // Competency scores (±3)
-  if (avgCompetency >= 3.5) score += 3;
-  else if (avgCompetency >= 2.5) score += 1;
+  if ((avgCompetency ?? 0) >= 3.5) score += 3;
+  else if ((avgCompetency ?? 0) >= 2.5) score += 1;
   else if (competencyScores.length > 0) score -= 2;
 
   // Signature quality (±2)
@@ -314,8 +314,8 @@ export function computeHomeSupervision(
   else if (completedSups.length > 0 && signatureRate < 80) score -= 2;
 
   // Wellbeing monitoring (±2)
-  if (wellbeingScores.length > 0 && avgWellbeing >= 7) score += 2;
-  else if (wellbeingScores.length > 0 && avgWellbeing < 4) score -= 2;
+  if (wellbeingScores.length > 0 && (avgWellbeing ?? 0) >= 7) score += 2;
+  else if (wellbeingScores.length > 0 && (avgWellbeing ?? 0) < 4) score -= 2;
 
   score = clamp(score, 0, 100);
   const rating = toRating(score);
@@ -326,8 +326,8 @@ export function computeHomeSupervision(
   if (completionRate === 100 && sups90d.length > 0) strengths.push("All scheduled supervisions completed — demonstrating strong management oversight.");
   if (actionCompletionRate >= 80 && totalActions > 0) strengths.push(`Supervision action completion rate is ${actionCompletionRate}% — staff are following through on agreed actions.`);
   if (positiveOutcomeRate >= 80 && obs90d.length > 0) strengths.push(`${positiveOutcomeRate}% of practice observations rated as meeting standard or above — workforce competence is strong.`);
-  if (avgCompetency >= 3.5 && competencyScores.length > 0) strengths.push(`Average appraisal competency score is ${avgCompetency}/5 — staff are performing at or above expected levels.`);
-  if (avgWellbeing >= 7 && wellbeingScores.length > 0) strengths.push(`Average staff wellbeing score is ${avgWellbeing}/10 — the home is monitoring and supporting staff welfare.`);
+  if ((avgCompetency ?? 0) >= 3.5 && competencyScores.length > 0) strengths.push(`Average appraisal competency score is ${(avgCompetency ?? 0)}/5 — staff are performing at or above expected levels.`);
+  if ((avgWellbeing ?? 0) >= 7 && wellbeingScores.length > 0) strengths.push(`Average staff wellbeing score is ${(avgWellbeing ?? 0)}/10 — the home is monitoring and supporting staff welfare.`);
   if (formalCount >= 3) strengths.push(`${formalCount} formal supervisions conducted — structured professional development is embedded.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -338,7 +338,7 @@ export function computeHomeSupervision(
   if (staffNotObserved.length > 0 && total_staff > 0) concerns.push(`${staffNotObserved.length} staff member${staffNotObserved.length > 1 ? "s have" : " has"} not been observed in practice — observation is essential for quality assurance.`);
   if (reqSupportObs > 0) concerns.push(`${reqSupportObs} practice observation${reqSupportObs > 1 ? "s" : ""} rated 'requires support' — targeted development needed.`);
   if (overdueAppraisals > 0) concerns.push(`${overdueAppraisals} appraisal${overdueAppraisals > 1 ? "s are" : " is"} overdue — all staff must have a current appraisal.`);
-  if (avgWellbeing > 0 && avgWellbeing < 4) concerns.push(`Average staff wellbeing score is ${avgWellbeing}/10 — this indicates significant workforce stress.`);
+  if ((avgWellbeing ?? 0) > 0 && (avgWellbeing ?? 0) < 4) concerns.push(`Average staff wellbeing score is ${(avgWellbeing ?? 0)}/10 — this indicates significant workforce stress.`);
   if (signatureRate < 80 && completedSups.length > 0) concerns.push(`Only ${signatureRate}% of supervisions are fully signed — both parties must sign to evidence the session.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
@@ -379,7 +379,7 @@ export function computeHomeSupervision(
   if (positiveOutcomeRate >= 80 && obs90d.length > 0) {
     insights.push({ text: `${positiveOutcomeRate}% positive observation outcomes demonstrate strong workforce competence. Ofsted values evidence of staff skill and therapeutic practice.`, severity: "positive" });
   }
-  if (avgCompetency >= 3.5 && competencyScores.length > 0) {
+  if ((avgCompetency ?? 0) >= 3.5 && competencyScores.length > 0) {
     insights.push({ text: `Average competency score of ${avgCompetency}/5 across appraisals shows a highly skilled workforce. This evidences investment in staff development.`, severity: "positive" });
   }
 

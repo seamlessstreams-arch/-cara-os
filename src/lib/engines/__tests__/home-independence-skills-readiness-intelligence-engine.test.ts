@@ -1658,7 +1658,7 @@ describe("category coverage computation", () => {
         makeRecord({ id: "rec_1", child_id: "child_1", skills: [] }),
       ],
     }));
-    expect(r.category_coverage).toBe(0);
+    expect(r.category_coverage).toBeNull();;
   });
 
   it("multiple records for same child merge categories", () => {

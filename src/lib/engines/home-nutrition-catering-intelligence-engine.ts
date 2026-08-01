@@ -100,54 +100,54 @@ export type NutritionRating =
 export interface MealPlanProfile {
   total_plans_30d: number;
   unique_meals_covered: number;
-  avg_dietary_flags: number;
-  avg_child_preferences: number;
+  avg_dietary_flags: number | null;
+  avg_child_preferences: number | null;
 }
 
 export interface DietaryPlanProfile {
   total_plans: number;
   child_coverage: number;         // pct of total_children
-  reviewed_with_child_rate: number;
-  child_agreed_rate: number;
-  dietitian_sign_off_rate: number;
+  reviewed_with_child_rate: number | null;
+  child_agreed_rate: number | null;
+  dietitian_sign_off_rate: number | null;
   overdue_reviews: number;
 }
 
 export interface FoodHygieneProfile {
   total_checks_30d: number;
-  pass_rate: number;
+  pass_rate: number | null;
   fail_count: number;
-  action_completion_rate: number;
+  action_completion_rate: number | null;
   check_type_diversity: number;
 }
 
 export interface KitchenProfile {
   total_checks_30d: number;
-  pass_rate: number;
-  temperature_compliance_rate: number;
-  allergen_labelling_rate: number;
+  pass_rate: number | null;
+  temperature_compliance_rate: number | null;
+  allergen_labelling_rate: number | null;
   expired_items_total: number;
 }
 
 export interface EatingSupportProfile {
   total_plans: number;
-  child_choice_rate: number;
+  child_choice_rate: number | null;
   overdue_reviews: number;
   flags_for_review_total: number;
 }
 
 export interface BudgetProfile {
   weeks_tracked_90d: number;
-  avg_variance: number;
-  within_budget_rate: number;
-  cultural_inclusion_rate: number;
-  sensory_options_rate: number;
-  avg_scratch_proportion: number;
+  avg_variance: number | null;
+  within_budget_rate: number | null;
+  cultural_inclusion_rate: number | null;
+  sensory_options_rate: number | null;
+  avg_scratch_proportion: number | null;
 }
 
 export interface HomeNutritionCateringResult {
   nutrition_rating: NutritionRating;
-  nutrition_score: number;
+  nutrition_score: number | null;
   headline: string;
   meal_plans: MealPlanProfile;
   dietary_plans: DietaryPlanProfile;
@@ -216,10 +216,10 @@ export function computeHomeNutritionCatering(
   const uniqueMeals = new Set(mealPlans30d.map(m => m.meal));
   const avgDietaryFlags = mealPlans30d.length > 0
     ? Math.round((mealPlans30d.reduce((s, m) => s + m.dietary_flags_count, 0) / mealPlans30d.length) * 10) / 10
-    : 0;
+    : null;
   const avgChildPrefs = mealPlans30d.length > 0
     ? Math.round((mealPlans30d.reduce((s, m) => s + m.child_preferences_count, 0) / mealPlans30d.length) * 10) / 10
-    : 0;
+    : null;
 
   const mealPlanProfile: MealPlanProfile = {
     total_plans_30d: mealPlans30d.length,
@@ -336,7 +336,7 @@ export function computeHomeNutritionCatering(
 
   const avgVariance = budgets90d.length > 0
     ? Math.round((budgets90d.reduce((s, b) => s + b.variance, 0) / budgets90d.length) * 100) / 100
-    : 0;
+    : null;
   const withinBudgetRate = pct(
     budgets90d.filter(b => b.variance >= 0).length,
     budgets90d.length,
@@ -351,7 +351,7 @@ export function computeHomeNutritionCatering(
   );
   const avgScratch = budgets90d.length > 0
     ? Math.round(budgets90d.reduce((s, b) => s + b.cook_from_scratch_proportion, 0) / budgets90d.length)
-    : 0;
+    : null;
 
   const budgetProfile: BudgetProfile = {
     weeks_tracked_90d: budgets90d.length,
@@ -440,7 +440,7 @@ export function computeHomeNutritionCatering(
   if (budgets90d.length === 0) {
     score += 0;
   } else {
-    if (withinBudgetRate >= 90 && avgScratch >= 50) score += 3;
+    if (withinBudgetRate >= 90 && (avgScratch ?? 0) >= 50) score += 3;
     else if (withinBudgetRate >= 70) score += 1;
     else if (withinBudgetRate >= 50) score += 0;
     else score -= 3;
@@ -480,7 +480,7 @@ export function computeHomeNutritionCatering(
   if (dietaryCoverage >= 90 && dietary_plans.length > 0) strengths.push(`${dietaryCoverage}% dietary plan coverage — every child's nutritional needs are documented.`);
   if (allergenLabellingRate >= 100 && kitchenChecks30d.length > 0) strengths.push("100% allergen labelling compliance — protecting children with allergies.");
   if (culturalRate >= 80 && budgets90d.length > 0) strengths.push(`${culturalRate}% of weeks include cultural ingredients — dietary diversity is valued.`);
-  if (avgScratch >= 70 && budgets90d.length > 0) strengths.push(`${avgScratch}% average cook-from-scratch rate — promoting healthy, home-cooked meals.`);
+  if ((avgScratch ?? 0) >= 70 && budgets90d.length > 0) strengths.push(`${(avgScratch ?? 0)}% average cook-from-scratch rate — promoting healthy, home-cooked meals.`);
 
   // Concerns
   if (hygieneFailCount >= 3) concerns.push(`${hygieneFailCount} food hygiene failures in 30 days — food safety requires immediate review.`);
@@ -518,7 +518,7 @@ export function computeHomeNutritionCatering(
   if (culturalRate >= 80 && reviewedWithChildRate >= 80 && childAgreedRate >= 80) {
     insights.push({ text: "Children's cultural dietary needs are being met and their voices are shaping meal planning — this demonstrates genuinely child-centred nutritional care.", severity: "positive" });
   }
-  if (avgScratch < 30 && budgets90d.length >= 4) {
+  if ((avgScratch ?? 0) < 30 && budgets90d.length >= 4) {
     insights.push({ text: `Only ${avgScratch}% of meals cooked from scratch on average. Over-reliance on pre-prepared food may not promote healthy eating or life skills development.`, severity: "warning" });
   }
 

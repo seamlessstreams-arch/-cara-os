@@ -81,32 +81,32 @@ export interface IncidentProfile {
   escalated_incidents: number;
   high_severity_count: number;
   by_category: Record<string, number>;
-  safeguarding_referral_rate: number;
-  parent_notification_rate: number;
-  resolution_rate: number;
+  safeguarding_referral_rate: number | null;
+  parent_notification_rate: number | null;
+  resolution_rate: number | null;
 }
 
 export interface AgreementProfile {
   children_with_agreements: number;
-  agreement_coverage_rate: number;
-  signed_rate: number;
+  agreement_coverage_rate: number | null;
+  signed_rate: number | null;
   overdue_reviews: number;
   with_parental_controls: number;
-  avg_devices_per_child: number;
+  avg_devices_per_child: number | null;
 }
 
 export interface ConsentProfile {
   children_with_photo_consent: number;
-  photo_consent_coverage_rate: number;
+  photo_consent_coverage_rate: number | null;
   overdue_photo_reviews: number;
   media_consents_active: number;
   expired_media_consents: number;
-  child_consent_rate: number;
+  child_consent_rate: number | null;
 }
 
 export interface HomeDigitalSafetyResult {
   digital_safety_rating: DigitalSafetyRating;
-  digital_safety_score: number;
+  digital_safety_score: number | null;
   headline: string;
   incidents: IncidentProfile;
   agreements: AgreementProfile;
@@ -194,7 +194,7 @@ export function computeHomeDigitalSafety(
   const totalDevices = agreements.reduce((sum, a) => sum + a.devices.length, 0);
   const avgDevicesPerChild = agreements.length > 0
     ? Math.round((totalDevices / agreements.length) * 10) / 10
-    : 0;
+    : null;
 
   const agreementProfile: AgreementProfile = {
     children_with_agreements: childrenWithAgreements,

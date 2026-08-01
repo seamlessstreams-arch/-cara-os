@@ -77,22 +77,22 @@ export interface AdministrationProfile {
   total_refused: number;
   total_missed: number;
   total_withheld: number;
-  compliance_rate: number;            // given / (scheduled that aren't status "scheduled")
-  on_time_rate: number;               // given / (given + late)
-  refusal_rate: number;
+  compliance_rate: number | null;            // given / (scheduled that aren't status "scheduled")
+  on_time_rate: number | null;               // given / (given + late)
+  refusal_rate: number | null;
 }
 
 export interface WitnessingProfile {
   total_administered: number;         // given + late
   witnessed_count: number;
-  witnessing_rate: number;
+  witnessing_rate: number | null;
 }
 
 export interface StockProfile {
   active_medications: number;
   with_stock_data: number;
   low_stock_count: number;            // stock_count <= 7
-  stock_check_rate: number;           // checked in last 7 days
+  stock_check_rate: number | null;           // checked in last 7 days
   overdue_stock_checks: number;
 }
 
@@ -100,7 +100,7 @@ export interface ErrorProfile {
   total_errors_90d: number;
   by_severity: Record<string, number>;
   open_errors: number;
-  error_rate: number;                 // errors per 100 administrations
+  error_rate: number | null;                 // errors per 100 administrations
 }
 
 export interface MedicationCoverageProfile {
@@ -114,7 +114,7 @@ export interface MedicationCoverageProfile {
 
 export interface HomeMedicationManagementResult {
   medication_rating: MedicationManagementRating;
-  medication_score: number;
+  medication_score: number | null;
   headline: string;
   administration: AdministrationProfile;
   witnessing: WitnessingProfile;
@@ -213,7 +213,7 @@ export function computeHomeMedicationManagement(
     bySeverity[e.severity] = (bySeverity[e.severity] ?? 0) + 1;
   }
   const openErrors = errors90d.filter(e => e.status === "open" || e.status === "investigating").length;
-  const errorRate = totalScheduled > 0 ? Math.round((errors90d.length / totalScheduled) * 100) : 0;
+  const errorRate = totalScheduled > 0 ? Math.round((errors90d.length / totalScheduled) * 100) : null;
 
   // ── Build profiles ────────────────────────────────────────────────────
   const administration: AdministrationProfile = {
@@ -285,9 +285,9 @@ export function computeHomeMedicationManagement(
 
   // mod4: Error rate (±4)
   if (errors90d.length === 0) score += 4;
-  else if (errorRate <= 2) score += 2;
-  else if (errorRate <= 5) score += 0;
-  else if (errorRate <= 10) score -= 2;
+  else if ((errorRate ?? 0) <= 2) score += 2;
+  else if ((errorRate ?? 0) <= 5) score += 0;
+  else if ((errorRate ?? 0) <= 10) score -= 2;
   else score -= 4;
 
   // mod5: Stock management (±3)

@@ -704,6 +704,6 @@ describe("Home LAC Review Intelligence Engine", () => {
       child_ids: [],
       lac_reviews: [makeReview({ id: "l1" })],
     }));
-    expect(r.compliance.reviews_per_child).toBe(0);
+    expect(r.compliance.reviews_per_child).toBeNull();;
   });
 });

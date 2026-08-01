@@ -145,19 +145,19 @@ export interface AsthmaRespiratoryRecommendation {
 
 export interface AsthmaRespiratoryResult {
   respiratory_rating: AsthmaRespiratoryRating;
-  respiratory_score: number;
+  respiratory_score: number | null;
   headline: string;
   total_action_plan_records: number;
   total_inhaler_technique_records: number;
   total_trigger_management_records: number;
   total_peak_flow_records: number;
   total_emergency_preparedness_records: number;
-  action_plan_coverage_rate: number;
-  inhaler_technique_rate: number;
-  trigger_management_rate: number;
-  peak_flow_monitoring_rate: number;
-  emergency_preparedness_rate: number;
-  child_self_management_rate: number;
+  action_plan_coverage_rate: number | null;
+  inhaler_technique_rate: number | null;
+  trigger_management_rate: number | null;
+  peak_flow_monitoring_rate: number | null;
+  emergency_preparedness_rate: number | null;
+  child_self_management_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: AsthmaRespiratoryRecommendation[];
@@ -571,7 +571,7 @@ export function computeAsthmaRespiratoryManagement(
             actionTakenRate) /
             4,
         )
-      : 0;
+      : null;
 
   // Unique children doing peak flow
   const uniqueChildrenPeakFlow = new Set(
@@ -714,8 +714,8 @@ export function computeAsthmaRespiratoryManagement(
   else if (triggerManagementRate >= 65) score += 2;
 
   // --- Bonus 4: peakFlowMonitoringRate (>=85: +4, >=65: +2) ---
-  if (peakFlowMonitoringRate >= 85) score += 4;
-  else if (peakFlowMonitoringRate >= 65) score += 2;
+  if ((peakFlowMonitoringRate ?? 0) >= 85) score += 4;
+  else if ((peakFlowMonitoringRate ?? 0) >= 65) score += 2;
 
   // --- Bonus 5: emergencyPreparednessRate (>=90: +5, >=75: +3) ---
   if (emergencyPreparednessRate >= 90) score += 5;
@@ -781,11 +781,11 @@ export function computeAsthmaRespiratoryManagement(
     );
   }
 
-  if (peakFlowMonitoringRate >= 85 && totalPeakFlowRecords > 0) {
+  if ((peakFlowMonitoringRate ?? 0) >= 85 && totalPeakFlowRecords > 0) {
     strengths.push(
       `${peakFlowMonitoringRate}% peak flow monitoring quality — consistent technique, diary recording, and appropriate action when readings deteriorate.`,
     );
-  } else if (peakFlowMonitoringRate >= 65 && totalPeakFlowRecords > 0) {
+  } else if ((peakFlowMonitoringRate ?? 0) >= 65 && totalPeakFlowRecords > 0) {
     strengths.push(
       `${peakFlowMonitoringRate}% peak flow monitoring rate — the home maintains reasonable peak flow monitoring practices.`,
     );
@@ -907,11 +907,11 @@ export function computeAsthmaRespiratoryManagement(
     );
   }
 
-  if (peakFlowMonitoringRate < 40 && totalPeakFlowRecords > 0) {
+  if ((peakFlowMonitoringRate ?? 0) < 40 && totalPeakFlowRecords > 0) {
     concerns.push(
       `Only ${peakFlowMonitoringRate}% peak flow monitoring quality — poor technique, inconsistent diary recording, or failure to act on abnormal readings means children's respiratory status is not being effectively tracked.`,
     );
-  } else if (peakFlowMonitoringRate < 65 && peakFlowMonitoringRate >= 40 && totalPeakFlowRecords > 0) {
+  } else if ((peakFlowMonitoringRate ?? 0) < 65 && (peakFlowMonitoringRate ?? 0) >= 40 && totalPeakFlowRecords > 0) {
     concerns.push(
       `Peak flow monitoring at ${peakFlowMonitoringRate}% — monitoring consistency, recording, or response to abnormal readings requires improvement.`,
     );
@@ -1143,8 +1143,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    peakFlowMonitoringRate >= 40 &&
-    peakFlowMonitoringRate < 65 &&
+    (peakFlowMonitoringRate ?? 0) >= 40 &&
+    (peakFlowMonitoringRate ?? 0) < 65 &&
     totalPeakFlowRecords > 0
   ) {
     recommendations.push({
@@ -1353,8 +1353,8 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    peakFlowMonitoringRate >= 40 &&
-    peakFlowMonitoringRate < 65 &&
+    (peakFlowMonitoringRate ?? 0) >= 40 &&
+    (peakFlowMonitoringRate ?? 0) < 65 &&
     totalPeakFlowRecords > 0
   ) {
     insights.push({
@@ -1508,7 +1508,7 @@ export function computeAsthmaRespiratoryManagement(
   }
 
   if (
-    peakFlowMonitoringRate >= 85 &&
+    (peakFlowMonitoringRate ?? 0) >= 85 &&
     greenZoneRate >= 80 &&
     totalPeakFlowRecords > 0
   ) {

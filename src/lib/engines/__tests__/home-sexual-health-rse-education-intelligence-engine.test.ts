@@ -1357,7 +1357,7 @@ describe("six core rates", () => {
 describe("screening_compliance_avg", () => {
   it("is 0 when no screenings", () => {
     const r = run(baseInput({ total_children: 2, rse_education_records: [makeRseRecord({ child_id: "yp_1" })], consent_education_records: [makeConsentRecord({ child_id: "yp_1" })], safeguarding_awareness_records: [makeSafeguardingRecord({ child_id: "yp_1" })] }));
-    expect(r.screening_compliance_avg).toBe(0);
+    expect(r.screening_compliance_avg).toBeNull();;
   });
 
   it("averages completion + consent + confidentiality rates", () => {
@@ -1385,7 +1385,7 @@ describe("screening_compliance_avg", () => {
 describe("consent_understanding_avg", () => {
   it("is 0 when no consent sessions", () => {
     const r = run(baseInput({ total_children: 2, rse_education_records: [makeRseRecord({ child_id: "yp_1" })], safeguarding_awareness_records: [makeSafeguardingRecord({ child_id: "yp_1" })] }));
-    expect(r.consent_understanding_avg).toBe(0);
+    expect(r.consent_understanding_avg).toBeNull();;
   });
 
   it("averages 4 consent metrics", () => {

@@ -129,14 +129,14 @@ export interface LoneWorkingRecommendation {
 
 export interface StaffLoneWorkingResult {
   lone_working_rating: StaffLoneWorkingRating;
-  lone_working_score: number;
+  lone_working_score: number | null;
   headline: string;
-  risk_assessment_rate: number;
-  check_in_compliance_rate: number;
-  safety_protocol_rate: number;
-  communication_device_rate: number;
-  incident_reporting_rate: number;
-  staff_confidence_rate: number;
+  risk_assessment_rate: number | null;
+  check_in_compliance_rate: number | null;
+  safety_protocol_rate: number | null;
+  communication_device_rate: number | null;
+  incident_reporting_rate: number | null;
+  staff_confidence_rate: number | null;
   total_risk_assessments: number;
   current_assessments: number;
   expired_assessments: number;
@@ -385,7 +385,7 @@ export function computeStaffLoneWorkingSafety(
             0,
           ) / totalRiskAssessments,
         )
-      : 0;
+      : null;
 
   // Average hazards identified
   const avgHazards =
@@ -396,7 +396,7 @@ export function computeStaffLoneWorkingSafety(
             0,
           ) / totalRiskAssessments,
         )
-      : 0;
+      : null;
 
   // Shift type coverage in risk assessments
   const assessmentShiftTypes = new Set(
@@ -631,7 +631,7 @@ export function computeStaffLoneWorkingSafety(
           confidenceFactors.reduce((s, v) => s + v, 0) /
             confidenceFactors.length,
         )
-      : 0;
+      : null;
 
   // ════════════════════════════════════════════════════════════════════════
   // SCORING — base 52, max bonuses +28

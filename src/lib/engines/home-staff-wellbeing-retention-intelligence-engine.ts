@@ -33,13 +33,13 @@ export interface StaffWellbeingSurveyRecordInput {
   id: string;
   staff_id: string;
   date: string;                         // YYYY-MM-DD
-  overall_wellbeing_score: number;      // 1-10
-  workload_score: number;               // 1-10
-  team_support_score: number;           // 1-10
-  management_support_score: number;     // 1-10
-  work_life_balance_score: number;      // 1-10
-  job_satisfaction_score: number;       // 1-10
-  morale_score: number;                 // 1-10
+  overall_wellbeing_score: number | null;      // 1-10
+  workload_score: number | null;               // 1-10
+  team_support_score: number | null;           // 1-10
+  management_support_score: number | null;     // 1-10
+  work_life_balance_score: number | null;      // 1-10
+  job_satisfaction_score: number | null;       // 1-10
+  morale_score: number | null;                 // 1-10
   feels_valued: boolean;
   would_recommend_employer: boolean;
   stress_factors: string[];
@@ -133,19 +133,19 @@ export interface StaffWellbeingRetentionRecommendation {
 
 export interface StaffWellbeingRetentionResult {
   wellbeing_rating: StaffWellbeingRating;
-  wellbeing_score: number;
+  wellbeing_score: number | null;
   headline: string;
   total_sickness_records: number;
   total_survey_records: number;
   total_retention_events: number;
   total_support_records: number;
   total_exit_interviews: number;
-  sickness_absence_rate: number;
-  wellbeing_survey_completion_rate: number;
-  retention_rate: number;
-  wellbeing_support_uptake_rate: number;
-  exit_interview_completion_rate: number;
-  staff_satisfaction_rate: number;
+  sickness_absence_rate: number | null;
+  wellbeing_survey_completion_rate: number | null;
+  retention_rate: number | null;
+  wellbeing_support_uptake_rate: number | null;
+  exit_interview_completion_rate: number | null;
+  staff_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: StaffWellbeingRetentionRecommendation[];
@@ -383,19 +383,19 @@ export function computeStaffWellbeingRetention(
 
   // Staff satisfaction: composite of feels_valued + would_recommend + job_satisfaction >= 7
   const highJobSatisfaction = staff_wellbeing_survey_records.filter(
-    (r) => r.job_satisfaction_score >= 7,
+    (r) => (r.job_satisfaction_score ?? 0) >= 7,
   ).length;
   const satisfiedCount = feelsValued + wouldRecommend + highJobSatisfaction;
   const satisfiedDenominator = totalSurveyRecords * 3;
   const staffSatisfactionRate = pct(satisfiedCount, satisfiedDenominator);
 
   const lowMoraleStaff = staff_wellbeing_survey_records.filter(
-    (r) => r.overall_wellbeing_score <= 4,
+    (r) => (r.overall_wellbeing_score ?? 0) <= 4,
   ).length;
   const lowMoraleRate = pct(lowMoraleStaff, totalSurveyRecords);
 
   const highMoraleStaff = staff_wellbeing_survey_records.filter(
-    (r) => r.overall_wellbeing_score >= 7,
+    (r) => (r.overall_wellbeing_score ?? 0) >= 7,
   ).length;
   const highMoraleRate = pct(highMoraleStaff, totalSurveyRecords);
 
@@ -413,7 +413,7 @@ export function computeStaffWellbeingRetention(
   // If no "left" events, retention = 100%
   const retentionRate = total_staff > 0
     ? pct(Math.max(0, total_staff - leftEvents), total_staff)
-    : 0;
+    : null;
 
   const promotions = staff_retention_records.filter(
     (r) => r.event_type === "promotion",
@@ -569,8 +569,8 @@ export function computeStaffWellbeingRetention(
   else if (wellbeingSurveyCompletionRate >= 60) score += 1;
 
   // --- Bonus 3: Strong retention rate (>=90: +5, >=75: +2) ---
-  if (retentionRate >= 90) score += 5;
-  else if (retentionRate >= 75) score += 2;
+  if ((retentionRate ?? 0) >= 90) score += 5;
+  else if ((retentionRate ?? 0) >= 75) score += 2;
 
   // --- Bonus 4: High wellbeing support uptake (>=80: +3, >=60: +1) ---
   if (wellbeingSupportUptakeRate >= 80) score += 3;
@@ -602,7 +602,7 @@ export function computeStaffWellbeingRetention(
   if (sicknessAbsenceRate > 50 && totalSicknessRecords > 0) score -= 6;
 
   // Poor retention rate → -5
-  if (retentionRate < 60 && totalRetentionEvents > 0) score -= 5;
+  if ((retentionRate ?? 0) < 60 && totalRetentionEvents > 0) score -= 5;
 
   // Low staff satisfaction → -4
   if (staffSatisfactionRate < 30 && totalSurveyRecords > 0) score -= 4;
@@ -687,11 +687,11 @@ export function computeStaffWellbeingRetention(
   }
 
   // Retention strengths
-  if (retentionRate >= 90 && total_staff > 0) {
+  if ((retentionRate ?? 0) >= 90 && total_staff > 0) {
     strengths.push(
       `${retentionRate}% staff retention rate — the home retains the vast majority of its workforce, ensuring continuity of care for children and stability within the staff team.`,
     );
-  } else if (retentionRate >= 75 && total_staff > 0) {
+  } else if ((retentionRate ?? 0) >= 75 && total_staff > 0) {
     strengths.push(
       `${retentionRate}% retention rate — staff turnover is within acceptable levels, supporting workforce stability.`,
     );
@@ -834,11 +834,11 @@ export function computeStaffWellbeingRetention(
   }
 
   // Retention concerns
-  if (retentionRate < 60 && totalRetentionEvents > 0) {
+  if ((retentionRate ?? 0) < 60 && totalRetentionEvents > 0) {
     concerns.push(
       `Staff retention rate at only ${retentionRate}% — high turnover destabilises the home, disrupts children's attachments, increases agency staff reliance, and places unsustainable pressure on remaining staff. This is a critical workforce sustainability issue.`,
     );
-  } else if (retentionRate < 75 && retentionRate >= 60 && totalRetentionEvents > 0) {
+  } else if ((retentionRate ?? 0) < 75 && (retentionRate ?? 0) >= 60 && totalRetentionEvents > 0) {
     concerns.push(
       `Retention rate at ${retentionRate}% — turnover is higher than expected and may be affecting continuity of care and team stability.`,
     );
@@ -914,7 +914,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (retentionRate < 60 && totalRetentionEvents > 0) {
+  if ((retentionRate ?? 0) < 60 && totalRetentionEvents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1015,8 +1015,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    retentionRate >= 60 &&
-    retentionRate < 75 &&
+    (retentionRate ?? 0) >= 60 &&
+    (retentionRate ?? 0) < 75 &&
     totalRetentionEvents > 0
   ) {
     recommendations.push({
@@ -1117,7 +1117,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (retentionRate < 60 && totalRetentionEvents > 0) {
+  if ((retentionRate ?? 0) < 60 && totalRetentionEvents > 0) {
     insights.push({
       text: `Staff retention at only ${retentionRate}%. High turnover is one of the most damaging factors in residential childcare — children experience repeated loss of trusted adults, staff knowledge is continually lost, and remaining team members face increased workload and burnout. Ofsted under the SCCIF specifically assesses whether staff turnover undermines care quality.`,
       severity: "critical",
@@ -1173,8 +1173,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    retentionRate >= 60 &&
-    retentionRate < 75 &&
+    (retentionRate ?? 0) >= 60 &&
+    (retentionRate ?? 0) < 75 &&
     totalRetentionEvents > 0
   ) {
     insights.push({
@@ -1315,7 +1315,7 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    retentionRate >= 90 &&
+    (retentionRate ?? 0) >= 90 &&
     staffSatisfactionRate >= 80 &&
     total_staff > 0 &&
     totalSurveyRecords > 0

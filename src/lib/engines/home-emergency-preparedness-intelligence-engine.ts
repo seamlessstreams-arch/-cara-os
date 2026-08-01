@@ -63,17 +63,17 @@ export interface PolicyComplianceProfile {
   current_count: number;
   overdue_count: number;
   review_due_count: number;
-  avg_acknowledgement_rate: number;
+  avg_acknowledgement_rate: number | null;
   full_acknowledgement_count: number;
 }
 
 export interface DrillReadinessProfile {
   total_drills_12m: number;
-  satisfactory_rate: number;
-  protocol_followed_rate: number;
+  satisfactory_rate: number | null;
+  protocol_followed_rate: number | null;
   drills_overdue: number;
   unique_scenario_types: number;
-  avg_response_time: number;
+  avg_response_time: number | null;
 }
 
 export interface PlanCoverageProfile {
@@ -99,7 +99,7 @@ export interface EmergencyRecommendation {
 
 export interface HomeEmergencyResult {
   emergency_rating: EmergencyRating;
-  emergency_score: number;
+  emergency_score: number | null;
   headline: string;
   policy_compliance: PolicyComplianceProfile;
   drill_readiness: DrillReadinessProfile;
@@ -160,7 +160,7 @@ export function computeHomeEmergencyPreparedness(
     .map(p => pct(p.read_acknowledgement_count, p.total_staff_required));
   const avgAckRate = ackRates.length > 0
     ? Math.round(ackRates.reduce((a, b) => a + b, 0) / ackRates.length)
-    : 0;
+    : null;
   const fullAckCount = ackRates.filter(r => r >= 100).length;
 
   const policyProfile: PolicyComplianceProfile = {
@@ -192,7 +192,7 @@ export function computeHomeEmergencyPreparedness(
   const responseTimes = recentDrills.map(d => d.response_time_minutes);
   const avgResponseTime = responseTimes.length > 0
     ? Math.round((responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length) * 10) / 10
-    : 0;
+    : null;
 
   const drillProfile: DrillReadinessProfile = {
     total_drills_12m: recentDrills.length,
@@ -237,8 +237,8 @@ export function computeHomeEmergencyPreparedness(
 
   // 2. Staff acknowledgement rate (±4)
   if (policies.length > 0) {
-    if (avgAckRate >= 90) score += 4;
-    else if (avgAckRate >= 70) score += 2;
+    if ((avgAckRate ?? 0) >= 90) score += 4;
+    else if ((avgAckRate ?? 0) >= 70) score += 2;
     else score -= 3;
   }
 
@@ -291,7 +291,7 @@ export function computeHomeEmergencyPreparedness(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (policyOverdueRate === 0 && policies.length > 0) strengths.push(`All ${policies.length} policies are current — demonstrating proactive governance.`);
-  if (avgAckRate >= 90 && policies.length > 0) strengths.push(`${avgAckRate}% average staff acknowledgement rate — all staff are informed of current policies.`);
+  if ((avgAckRate ?? 0) >= 90 && policies.length > 0) strengths.push(`${(avgAckRate ?? 0)}% average staff acknowledgement rate — all staff are informed of current policies.`);
   if (recentDrills.length >= 6) strengths.push(`${recentDrills.length} drills completed in 12 months — comprehensive emergency readiness programme.`);
   if (satisfactoryRate >= 80 && recentDrills.length > 0) strengths.push(`${satisfactoryRate}% of drills rated satisfactory — staff respond well to emergencies.`);
   if (protocolRate >= 90 && recentDrills.length > 0) strengths.push(`Protocol followed in ${protocolRate}% of drills — procedures are embedded.`);
@@ -302,7 +302,7 @@ export function computeHomeEmergencyPreparedness(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (overduePolicies > 0) concerns.push(`${overduePolicies} polic${overduePolicies > 1 ? "ies" : "y"} overdue for review — Ofsted expects all policies to be current.`);
-  if (avgAckRate < 70 && policies.length > 0) concerns.push(`Average staff acknowledgement rate at ${avgAckRate}% — policies must be read and understood by all staff.`);
+  if ((avgAckRate ?? 0) < 70 && policies.length > 0) concerns.push(`Average staff acknowledgement rate at ${(avgAckRate ?? 0)}% — policies must be read and understood by all staff.`);
   if (recentDrills.length < 4 && recentDrills.length > 0) concerns.push(`Only ${recentDrills.length} drill${recentDrills.length === 1 ? "" : "s"} completed in 12 months — Ofsted expects regular, varied emergency drills.`);
   if (overdueDrills > 0) concerns.push(`${overdueDrills} drill${overdueDrills > 1 ? "s" : ""} overdue — emergency rehearsal schedule is behind.`);
   if (satisfactoryRate < 60 && recentDrills.length > 0) concerns.push(`Only ${satisfactoryRate}% of drills rated satisfactory — staff may not respond effectively in a real emergency.`);
@@ -319,7 +319,7 @@ export function computeHomeEmergencyPreparedness(
   if (overdueDrills > 0) {
     recs.push({ rank: rank++, recommendation: `Schedule and complete ${overdueDrills} overdue drill${overdueDrills > 1 ? "s" : ""}.`, urgency: "immediate", regulatory_ref: "Reg 25" });
   }
-  if (avgAckRate < 70 && policies.length > 0) {
+  if ((avgAckRate ?? 0) < 70 && policies.length > 0) {
     recs.push({ rank: rank++, recommendation: "Ensure all staff read and acknowledge current policies — arrange policy briefings.", urgency: "soon", regulatory_ref: "Reg 22" });
   }
   if (recentDrills.length < 4) {
@@ -341,7 +341,7 @@ export function computeHomeEmergencyPreparedness(
   if (overdueDrills >= 2) {
     insights.push({ text: `${overdueDrills} drills overdue. Ofsted expects regular emergency rehearsals to ensure staff can respond effectively. Overdue drills suggest the home may not be adequately prepared for emergencies — this is a Reg 25 concern.`, severity: "warning" });
   }
-  if (avgAckRate >= 90 && policyOverdueRate === 0 && policies.length >= 5) {
+  if ((avgAckRate ?? 0) >= 90 && policyOverdueRate === 0 && policies.length >= 5) {
     insights.push({ text: `All ${policies.length} policies current with ${avgAckRate}% staff acknowledgement rate. This evidences outstanding governance — all staff are informed, policies are reviewed on schedule, and the home operates within a clear regulatory framework.`, severity: "positive" });
   }
 

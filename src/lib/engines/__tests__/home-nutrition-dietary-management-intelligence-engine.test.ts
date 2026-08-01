@@ -1649,7 +1649,7 @@ describe("computeNutritionDietaryManagement", () => {
         nutrition_assessment_records: [makeNutritionAssessment()],
       }));
       // nutritionAssessmentRate = total_children > 0 ? pct(...) : 0 => 0
-      expect(r.nutrition_assessment_rate).toBe(0);
+      expect(r.nutrition_assessment_rate).toBeNull();;
     });
   });
 

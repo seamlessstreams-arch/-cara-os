@@ -87,7 +87,7 @@ export interface MitigationProfile {
   effective_count: number;
   partially_effective_count: number;
   not_effective_count: number;
-  effectiveness_rate: number;     // % effective or partially
+  effectiveness_rate: number | null;     // % effective or partially
   not_yet_assessed_count: number;
 }
 
@@ -95,7 +95,7 @@ export interface ReviewComplianceProfile {
   total_current: number;
   overdue_count: number;
   reviews_with_child_views: number;
-  child_views_rate: number;       // %
+  child_views_rate: number | null;       // %
 }
 
 export interface RiskRecommendation {
@@ -116,7 +116,7 @@ export interface ChildRiskProfileResult {
   child_id: string;
   child_name: string;
   management_rating: RiskManagementRating;
-  management_score: number;       // 0-100
+  management_score: number | null;       // 0-100
   headline: string;
   overview: RiskOverview;
   domain_profiles: DomainRiskProfile[];
@@ -152,7 +152,7 @@ const LEVEL_NUMERIC: Record<RiskLevel, number> = {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number {
+function daysAgo(today: string, date: string): number | null {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -167,7 +167,7 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 0;
+  return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
 // ── Main Computation ────────────────────────────────────────────────────────
@@ -270,13 +270,13 @@ export function computeChildRiskProfile(
     if (highOrVH.length > 0) score -= highOrVH.length * 3;
 
     // Mitigation effectiveness
-    if (mitigation_profile.effectiveness_rate >= 80 && allMitigations.length >= 3) score += 10;
-    else if (mitigation_profile.effectiveness_rate >= 60) score += 5;
+    if ((mitigation_profile.effectiveness_rate ?? 0) >= 80 && allMitigations.length >= 3) score += 10;
+    else if ((mitigation_profile.effectiveness_rate ?? 0) >= 60) score += 5;
     if (notEffectiveM.length > 0) score -= notEffectiveM.length * 3;
 
     // Child views
     if (review_compliance.child_views_rate === 100 && current.length >= 2) score += 5;
-    else if (review_compliance.child_views_rate < 50 && current.length >= 2) score -= 5;
+    else if ((review_compliance.child_views_rate ?? 0) < 50 && current.length >= 2) score -= 5;
 
     // Review compliance
     if (overdueReviews.length > 0) score -= overdueReviews.length * 4;
@@ -324,7 +324,7 @@ export function computeChildRiskProfile(
     strengths.push(`${improving.length} risk${improving.length !== 1 ? "s" : ""} reducing (${improvingNames}). Active risk reduction demonstrates that interventions are working and the child's safety is improving.`);
   }
 
-  if (mitigation_profile.effectiveness_rate >= 80 && allMitigations.length >= 3) {
+  if ((mitigation_profile.effectiveness_rate ?? 0) >= 80 && allMitigations.length >= 3) {
     strengths.push(`${mitigation_profile.effectiveness_rate}% mitigation effectiveness. Strategies are being implemented and are making a measurable difference to risk levels — this is evidence of high-quality safeguarding practice.`);
   }
 
@@ -356,7 +356,7 @@ export function computeChildRiskProfile(
     concerns.push(`${notEffectiveM.length} mitigation${notEffectiveM.length !== 1 ? "s" : ""} assessed as not effective. Ineffective strategies must be replaced — continuing with strategies that don't work leaves the child exposed to known risks.`);
   }
 
-  if (review_compliance.child_views_rate < 100 && current.length >= 2) {
+  if ((review_compliance.child_views_rate ?? 0) < 100 && current.length >= 2) {
     const missing = current.length - withViews.length;
     concerns.push(`${child_name}'s views missing from ${missing} risk assessment${missing !== 1 ? "s" : ""}. The child's understanding of their own risks is essential for effective safety planning.`);
   }
@@ -410,7 +410,7 @@ export function computeChildRiskProfile(
     });
   }
 
-  if (review_compliance.child_views_rate < 100 && current.length >= 1) {
+  if ((review_compliance.child_views_rate ?? 0) < 100 && current.length >= 1) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Capture ${child_name}'s views for all risk assessments. Use keywork sessions or direct conversations to explore the child's understanding of their risks and what helps them feel safe.`,
@@ -452,7 +452,7 @@ export function computeChildRiskProfile(
     });
   }
 
-  if (improving.length >= 2 && mitigation_profile.effectiveness_rate >= 80) {
+  if (improving.length >= 2 && (mitigation_profile.effectiveness_rate ?? 0) >= 80) {
     insights.push({
       severity: "positive",
       text: `${improving.length} risks reducing with ${mitigation_profile.effectiveness_rate}% mitigation effectiveness. This powerful combination shows that risk assessment isn't just paperwork — it's driving real improvements in ${child_name}'s safety and wellbeing.`,

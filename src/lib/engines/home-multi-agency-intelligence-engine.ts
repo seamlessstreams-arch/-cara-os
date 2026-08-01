@@ -77,37 +77,37 @@ export interface MeetingProfile {
   total_meetings_90d: number;
   completed_meetings: number;
   cancelled_meetings: number;
-  child_participation_rate: number;
-  action_completion_rate: number;
+  child_participation_rate: number | null;
+  action_completion_rate: number | null;
   by_type: Record<string, number>;
 }
 
 export interface ProfMeetingProfile {
   total_90d: number;
-  child_attendance_rate: number;
-  report_submission_rate: number;
-  avg_agencies_per_meeting: number;
+  child_attendance_rate: number | null;
+  report_submission_rate: number | null;
+  avg_agencies_per_meeting: number | null;
   unique_agencies: number;
 }
 
 export interface IROProfile {
   total_correspondence: number;
-  response_compliance_rate: number;
+  response_compliance_rate: number | null;
   overdue_responses: number;
   formal_disputes: number;
 }
 
 export interface PoliceContactProfile {
   total_contacts_90d: number;
-  protocol_compliance_rate: number;
-  concordat_rate: number;
-  appropriate_adult_rate: number;
-  restorative_rate: number;
+  protocol_compliance_rate: number | null;
+  concordat_rate: number | null;
+  appropriate_adult_rate: number | null;
+  restorative_rate: number | null;
 }
 
 export interface HomeMultiAgencyResult {
   multi_agency_rating: MultiAgencyRating;
-  multi_agency_score: number;
+  multi_agency_score: number | null;
   headline: string;
   meetings: MeetingProfile;
   professional_meetings: ProfMeetingProfile;
@@ -207,7 +207,7 @@ export function computeHomeMultiAgency(
   }
   const avgAgencies = profMeetings90d.length > 0
     ? Math.round((totalAgencies / profMeetings90d.length) * 10) / 10
-    : 0;
+    : null;
 
   const profMeetingProfile: ProfMeetingProfile = {
     total_90d: profMeetings90d.length,

@@ -2200,7 +2200,7 @@ describe("Edge cases: pct(0,0) = 0", () => {
     // child consult 100% -> +3
     // 52 + 4 + 3 + 3 + 3 + 3 + 2 + 3 - 3 = 70
     expect(r.cleaning_completion_rate).toBe(0);
-    expect(r.cleaning_quality_avg).toBe(0);
+    expect(r.cleaning_quality_avg).toBeNull();;
     expect(r.environment_score).toBe(70);
   });
 
@@ -2561,7 +2561,7 @@ describe("Cleaning quality avg edge cases", () => {
       makeCleaning({ completed: true, quality_rating: 6 }),
     ];
     const r = computeLivingEnvironmentStandards(baseInput({ cleaning_entries: cleaning }));
-    expect(r.cleaning_quality_avg).toBe(0);
+    expect(r.cleaning_quality_avg).toBeNull();;
   });
 
   it("issues_noted with whitespace only does not count as issues", () => {

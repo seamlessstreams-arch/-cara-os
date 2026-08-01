@@ -1549,7 +1549,7 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
             makeRetention({ id: "r1", staff_id: "s1", event_type: "joined" }),
           ],
         }));
-        expect(r.retention_rate).toBe(0);
+        expect(r.retention_rate).toBeNull();;
       });
 
       it("calculates correctly with mixed event types", () => {

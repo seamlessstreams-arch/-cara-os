@@ -38,14 +38,14 @@ export type HouseMeetingRating =
 
 export interface HouseMeetingGovernanceResult {
   meeting_rating: HouseMeetingRating;
-  meeting_score: number;
+  meeting_score: number | null;
   headline: string;
   total_meetings: number;
-  child_attendance_rate: number;
-  action_completion_rate: number;
-  child_feedback_rate: number;
-  average_agenda_items: number;
-  average_duration: number;
+  child_attendance_rate: number | null;
+  action_completion_rate: number | null;
+  child_feedback_rate: number | null;
+  average_agenda_items: number | null;
+  average_duration: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -115,10 +115,10 @@ export function computeHouseMeetingGovernance(
   const childFeedbackRate = pct(withChildFeedback, total);
 
   const totalAgendaItems = meetings.reduce((s, m) => s + m.agenda_items_count, 0);
-  const avgAgendaItems = total > 0 ? Math.round((totalAgendaItems / total) * 10) / 10 : 0;
+  const avgAgendaItems = total > 0 ? Math.round((totalAgendaItems / total) * 10) / 10 : null;
 
   const totalDuration = meetings.reduce((s, m) => s + m.duration_minutes, 0);
-  const avgDuration = total > 0 ? Math.round(totalDuration / total) : 0;
+  const avgDuration = total > 0 ? Math.round(totalDuration / total) : null;
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -161,18 +161,18 @@ export function computeHouseMeetingGovernance(
   if (total === 0) {
     score -= 1;
   } else {
-    if (avgAgendaItems >= 3) score += 4;
-    else if (avgAgendaItems >= 2) score += 1;
-    else if (avgAgendaItems < 1) score -= 4;
+    if ((avgAgendaItems ?? 0) >= 3) score += 4;
+    else if ((avgAgendaItems ?? 0) >= 2) score += 1;
+    else if ((avgAgendaItems ?? 0) < 1) score -= 4;
   }
 
   // Modifier 6: Meeting duration (adequate time for meaningful participation)
   if (total === 0) {
     score -= 2;
   } else {
-    if (avgDuration >= 30) score += 5;
-    else if (avgDuration >= 20) score += 2;
-    else if (avgDuration < 10) score -= 3;
+    if ((avgDuration ?? 0) >= 30) score += 5;
+    else if ((avgDuration ?? 0) >= 20) score += 2;
+    else if ((avgDuration ?? 0) < 10) score -= 3;
   }
 
   score = clamp(score, 0, 100);
@@ -203,8 +203,8 @@ export function computeHouseMeetingGovernance(
   if (childAttendanceRate >= 85 && total > 0) strengths.push("High child attendance demonstrates meaningful engagement — children want to participate");
   if (actionCompletionRate >= 90 && totalPrevActions > 0) strengths.push("Actions from meetings are completed reliably — children see their input makes a difference");
   if (childFeedbackRate >= 90 && total > 0) strengths.push("Children's feedback is routinely captured and recorded at every meeting");
-  if (avgAgendaItems >= 3 && total > 0) strengths.push("Meetings cover a broad range of topics — children influence many aspects of home life");
-  if (avgDuration >= 30 && total > 0) strengths.push("Meetings are given adequate time for meaningful discussion and child participation");
+  if ((avgAgendaItems ?? 0) >= 3 && total > 0) strengths.push("Meetings cover a broad range of topics — children influence many aspects of home life");
+  if ((avgDuration ?? 0) >= 30 && total > 0) strengths.push("Meetings are given adequate time for meaningful discussion and child participation");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
@@ -212,8 +212,8 @@ export function computeHouseMeetingGovernance(
   if (childAttendanceRate < 40 && total > 0) concerns.push("Low child attendance suggests meetings are not engaging or accessible to children");
   if (actionCompletionRate < 50 && totalPrevActions > 0) concerns.push("Actions from meetings are not followed through — children's requests are ignored in practice");
   if (childFeedbackRate < 40 && total > 0) concerns.push("Children's feedback is rarely captured in meeting records");
-  if (avgAgendaItems < 1 && total > 0) concerns.push("Meetings have minimal agenda items — discussions lack substance");
-  if (avgDuration < 10 && total > 0) concerns.push("Meetings are too brief for meaningful participation — they appear tokenistic");
+  if ((avgAgendaItems ?? 0) < 1 && total > 0) concerns.push("Meetings have minimal agenda items — discussions lack substance");
+  if ((avgDuration ?? 0) < 10 && total > 0) concerns.push("Meetings are too brief for meaningful participation — they appear tokenistic");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: HouseMeetingGovernanceResult["recommendations"] = [];
@@ -230,7 +230,7 @@ export function computeHouseMeetingGovernance(
   if (childFeedbackRate < 60 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Record children's individual feedback at each meeting as evidence of their voice", urgency: "planned", regulatory_ref: "SCCIF Voice of Child" });
   }
-  if (avgDuration < 20 && total > 0) {
+  if ((avgDuration ?? 0) < 20 && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Allow more time for meetings to enable genuine discussion rather than rushed updates", urgency: "planned", regulatory_ref: "CHR 2015 Reg 7" });
   }
   if (total > 0 && total < 2) {
@@ -254,7 +254,7 @@ export function computeHouseMeetingGovernance(
   if (childFeedbackRate >= 90 && childAttendanceRate >= 85 && total > 0) {
     insights.push({ text: "Children attend, contribute and see their feedback recorded — this is authentic participation", severity: "positive" });
   }
-  if (avgDuration < 10 && total > 0) {
+  if ((avgDuration ?? 0) < 10 && total > 0) {
     insights.push({ text: "Meetings under 10 minutes cannot accommodate meaningful child participation — consider restructuring", severity: "warning" });
   }
 

@@ -85,7 +85,7 @@ describe("empty state", () => {
     expect(r.overview.total_forms).toBe(0);
     // No forms to action — completion is unmeasured, not 100% complete.
     expect(r.overview.completion_rate).toBeNull();
-    expect(r.overview.avg_review_days).toBe(0);
+    expect(r.overview.avg_review_days).toBeNull();;
     expect(r.form_type_analysis).toHaveLength(0);
     expect(r.form_profiles).toHaveLength(0);
     expect(r.alerts).toHaveLength(0);

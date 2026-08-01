@@ -59,8 +59,8 @@ export interface TrendProfile {
   decreasing_count: number;
   stable_count: number;
   increasing_count: number;
-  decreasing_rate: number;
-  increasing_rate: number;
+  decreasing_rate: number | null;
+  increasing_rate: number | null;
 }
 
 export interface MitigationProfile {
@@ -68,23 +68,23 @@ export interface MitigationProfile {
   effective_count: number;
   partially_effective_count: number;
   not_effective_count: number;
-  effectiveness_rate: number;    // % effective
-  avg_mitigations_per_assessment: number;
+  effectiveness_rate: number | null;    // % effective
+  avg_mitigations_per_assessment: number | null;
 }
 
 export interface CurrencyProfile {
   overdue_reviews: number;
-  overdue_rate: number;
+  overdue_rate: number | null;
   upcoming_reviews_7d: number;
-  avg_days_since_assessment: number;
+  avg_days_since_assessment: number | null;
 }
 
 export interface CoverageProfile {
   children_with_assessments: number;
   children_without_assessments: number;
-  child_coverage_rate: number;
-  child_voice_rate: number;      // % of assessments with child views
-  contingency_rate: number;      // % with contingency plan
+  child_coverage_rate: number | null;
+  child_voice_rate: number | null;      // % of assessments with child views
+  contingency_rate: number | null;      // % with contingency plan
 }
 
 export interface RiskLandscapeInsight {
@@ -101,7 +101,7 @@ export interface RiskLandscapeRecommendation {
 
 export interface HomeRiskLandscapeResult {
   risk_rating: RiskLandscapeRating;
-  risk_score: number;
+  risk_score: number | null;
   headline: string;
   distribution_profile: RiskDistributionProfile;
   trend_profile: TrendProfile;
@@ -227,7 +227,7 @@ export function computeHomeRiskLandscape(
   const notEffective = allMitigations.filter(m => m.effectiveness === "not_effective").length;
   const avgMitPerAssessment = current.length > 0
     ? Math.round((allMitigations.length / current.length) * 10) / 10
-    : 0;
+    : null;
 
   const mitigationProfile: MitigationProfile = {
     total_mitigations: allMitigations.length,
@@ -252,7 +252,7 @@ export function computeHomeRiskLandscape(
   const daysSinceAssessments = current.map(a => Math.max(0, daysBetween(a.assessed_date, today)));
   const avgDaysSince = daysSinceAssessments.length > 0
     ? Math.round(daysSinceAssessments.reduce((s, d) => s + d, 0) / daysSinceAssessments.length)
-    : 0;
+    : null;
 
   const currencyProfile: CurrencyProfile = {
     overdue_reviews: overdue,
@@ -335,9 +335,9 @@ export function computeHomeRiskLandscape(
   else score -= 2;
 
   // 8. Mitigation depth (±3) — avg mitigations per assessment
-  if (avgMitPerAssessment >= 2.5) score += 3;
-  else if (avgMitPerAssessment >= 2.0) score += 1;
-  else if (avgMitPerAssessment >= 1.0) score += 0;
+  if ((avgMitPerAssessment ?? 0) >= 2.5) score += 3;
+  else if ((avgMitPerAssessment ?? 0) >= 2.0) score += 1;
+  else if ((avgMitPerAssessment ?? 0) >= 1.0) score += 0;
   else score -= 2;
 
   score = clamp(score, 0, 100);

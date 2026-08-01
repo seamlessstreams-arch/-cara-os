@@ -104,11 +104,11 @@ export interface AuditProfile {
   pass_count: number;
   fail_count: number;
   action_required_count: number;
-  pass_rate: number;
+  pass_rate: number | null;
   discrepancy_count: number;
-  storage_correct_rate: number;
-  temperature_ok_rate: number;
-  labelling_correct_rate: number;
+  storage_correct_rate: number | null;
+  temperature_ok_rate: number | null;
+  labelling_correct_rate: number | null;
   follow_up_required_count: number;
 }
 
@@ -119,9 +119,9 @@ export interface ErrorProfile {
   minor_harm_count: number;
   moderate_harm_count: number;
   major_harm_count: number;
-  debrief_rate: number;
-  root_cause_rate: number;
-  preventive_embedded_rate: number;
+  debrief_rate: number | null;
+  root_cause_rate: number | null;
+  preventive_embedded_rate: number | null;
   open_investigations: number;
   ofsted_notifiable_count: number;
 }
@@ -130,8 +130,8 @@ export interface NearMissProfile {
   total_near_misses: number;
   by_risk_grade: Record<string, number>;
   high_critical_count: number;
-  debrief_rate: number;
-  avg_learning_points: number;
+  debrief_rate: number | null;
+  avg_learning_points: number | null;
 }
 
 export interface StockProfile {
@@ -139,7 +139,7 @@ export interface StockProfile {
   balanced_count: number;
   discrepancy_count: number;
   action_required_count: number;
-  balanced_rate: number;
+  balanced_rate: number | null;
   weekly_checks: number;
   monthly_audits: number;
   total_discrepant_items: number;
@@ -150,14 +150,14 @@ export interface StorageProfile {
   pass_count: number;
   pass_with_minor_count: number;
   fail_count: number;
-  pass_rate: number;
-  temperature_compliance_rate: number;
-  expiry_check_rate: number;
+  pass_rate: number | null;
+  temperature_compliance_rate: number | null;
+  expiry_check_rate: number | null;
   total_expired_items: number;
-  controlled_drugs_correct_rate: number;
-  security_pass_rate: number;
-  keys_accounted_rate: number;
-  record_keeping_rate: number;
+  controlled_drugs_correct_rate: number | null;
+  security_pass_rate: number | null;
+  keys_accounted_rate: number | null;
+  record_keeping_rate: number | null;
   overdue_audits: number;
   open_follow_ups: number;
 }
@@ -165,8 +165,8 @@ export interface StorageProfile {
 export interface EmergencyProtocolProfile {
   total_protocols: number;
   unique_children: number;
-  gp_signed_off_rate: number;
-  avg_staff_trained: number;
+  gp_signed_off_rate: number | null;
+  avg_staff_trained: number | null;
   self_administer_count: number;
   recognises_symptoms_count: number;
   overdue_reviews: number;
@@ -175,7 +175,7 @@ export interface EmergencyProtocolProfile {
 
 export interface HomeMedicationGovernanceResult {
   governance_rating: MedicationGovernanceRating;
-  governance_score: number;
+  governance_score: number | null;
   headline: string;
   audit: AuditProfile;
   errors: ErrorProfile;
@@ -295,7 +295,7 @@ export function computeHomeMedicationGovernance(
   const highCriticalNM = nearMisses.filter(nm => nm.risk_grade === "high" || nm.risk_grade === "critical").length;
   const debriefedNM = nearMisses.filter(nm => nm.debrief_held).length;
   const totalLP = nearMisses.reduce((sum, nm) => sum + nm.learning_points_count, 0);
-  const avgLP = nearMisses.length > 0 ? Math.round(totalLP / nearMisses.length) : 0;
+  const avgLP = nearMisses.length > 0 ? Math.round(totalLP / nearMisses.length) : null;
 
   const nearMissProfile: NearMissProfile = {
     total_near_misses: nearMisses.length,
@@ -360,7 +360,7 @@ export function computeHomeMedicationGovernance(
   const uniqueChildren = new Set(emergencyProtocols.map(p => p.child_id)).size;
   const gpSignedOff = emergencyProtocols.filter(p => p.signed_off_by_gp).length;
   const totalStaffTrained = emergencyProtocols.reduce((sum, p) => sum + p.staff_trained_count, 0);
-  const avgStaffTrained = emergencyProtocols.length > 0 ? Math.round(totalStaffTrained / emergencyProtocols.length) : 0;
+  const avgStaffTrained = emergencyProtocols.length > 0 ? Math.round(totalStaffTrained / emergencyProtocols.length) : null;
   const selfAdministerCount = emergencyProtocols.filter(p => p.child_self_administer).length;
   const recognisesSymptoms = emergencyProtocols.filter(p => p.child_recognises_symptoms).length;
   const overdueReviews = emergencyProtocols.filter(p => daysBetween(p.next_review_due, today) > 0).length;
@@ -415,9 +415,9 @@ export function computeHomeMedicationGovernance(
   // mod3: Near miss learning (±3)
   if (nearMisses.length === 0) {
     score += 1;  // no near misses — slightly positive
-  } else if (avgLP >= 3 && pct(debriefedNM, nearMisses.length) >= 90) {
+  } else if ((avgLP ?? 0) >= 3 && pct(debriefedNM, nearMisses.length) >= 90) {
     score += 3;  // strong learning culture
-  } else if (avgLP >= 2 && pct(debriefedNM, nearMisses.length) >= 70) {
+  } else if ((avgLP ?? 0) >= 2 && pct(debriefedNM, nearMisses.length) >= 70) {
     score += 1;
   } else if (pct(debriefedNM, nearMisses.length) >= 50) {
     score += 0;
@@ -525,11 +525,11 @@ export function computeHomeMedicationGovernance(
   // Strengths
   if (audits.length > 0 && auditPassRate >= 90) strengths.push(`Audit pass rate at ${auditPassRate}% — medication audits demonstrate consistently high governance standards.`);
   if (errors.length === 0) strengths.push("No medication errors recorded — strong safety culture in medication management.");
-  if (errors.length > 0 && errorProfile.root_cause_rate >= 90) strengths.push(`Root cause analysis completed for ${errorProfile.root_cause_rate}% of errors — thorough investigation practice embedded.`);
-  if (nearMisses.length > 0 && nearMissProfile.debrief_rate >= 90) strengths.push(`Near miss debrief rate at ${nearMissProfile.debrief_rate}% — learning from near misses is embedded in practice.`);
-  if (stockChecks.length > 0 && stock.balanced_rate >= 90) strengths.push(`Stock checks balanced at ${stock.balanced_rate}% — robust stock management and pharmacy liaison.`);
+  if (errors.length > 0 && (errorProfile.root_cause_rate ?? 0) >= 90) strengths.push(`Root cause analysis completed for ${(errorProfile.root_cause_rate ?? 0)}% of errors — thorough investigation practice embedded.`);
+  if (nearMisses.length > 0 && (nearMissProfile.debrief_rate ?? 0) >= 90) strengths.push(`Near miss debrief rate at ${(nearMissProfile.debrief_rate ?? 0)}% — learning from near misses is embedded in practice.`);
+  if (stockChecks.length > 0 && (stock.balanced_rate ?? 0) >= 90) strengths.push(`Stock checks balanced at ${(stock.balanced_rate ?? 0)}% — robust stock management and pharmacy liaison.`);
   if (storageAudits.length > 0 && stFail === 0 && stPassRate >= 90) strengths.push(`Storage audits achieving ${stPassRate}% pass rate with zero failures — excellent storage governance.`);
-  if (emergencyProtocols.length > 0 && epProfile.gp_signed_off_rate >= 90 && overdueReviews === 0) strengths.push(`All emergency protocols GP-signed and reviews up to date — children with emergency medications are well protected.`);
+  if (emergencyProtocols.length > 0 && (epProfile.gp_signed_off_rate ?? 0) >= 90 && overdueReviews === 0) strengths.push(`All emergency protocols GP-signed and reviews up to date — children with emergency medications are well protected.`);
   if (totalDebriefable > 0 && debriefRate >= 90) strengths.push(`Debrief culture at ${debriefRate}% — staff consistently learn from errors and near misses.`);
   if (storageAudits.length > 0 && stCdCorrectRate === 100 && stSecurityRate === 100 && stKeysRate === 100) strengths.push("Controlled drugs governance is exemplary — balances correct, security maintained, all keys accounted for.");
 
@@ -550,19 +550,19 @@ export function computeHomeMedicationGovernance(
   if (audits.length > 0 && auditPassRate < 75) {
     recommendations.push({ rank: ++rank, recommendation: "Increase frequency of medication audits and implement corrective action plans for failed audits.", urgency: auditPassRate < 60 ? "immediate" : "soon", regulatory_ref: "Reg 12" });
   }
-  if (errors.length > 0 && errorProfile.root_cause_rate < 80) {
+  if (errors.length > 0 && (errorProfile.root_cause_rate ?? 0) < 80) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure root cause analysis is completed for every medication error — this is essential for preventing recurrence.", urgency: "immediate", regulatory_ref: "Reg 12" });
   }
-  if (errors.length > 0 && errorProfile.preventive_embedded_rate < 70) {
+  if (errors.length > 0 && (errorProfile.preventive_embedded_rate ?? 0) < 70) {
     recommendations.push({ rank: ++rank, recommendation: "Embed preventive actions from error investigations into daily practice — close the loop on lessons learned.", urgency: "soon", regulatory_ref: "Reg 12" });
   }
   if (openInvestigations > 0) {
     recommendations.push({ rank: ++rank, recommendation: `Close ${openInvestigations} outstanding medication error investigation${openInvestigations > 1 ? "s" : ""} and implement findings.`, urgency: "immediate", regulatory_ref: "Reg 12" });
   }
-  if (nearMisses.length > 0 && nearMissProfile.debrief_rate < 70) {
+  if (nearMisses.length > 0 && (nearMissProfile.debrief_rate ?? 0) < 70) {
     recommendations.push({ rank: ++rank, recommendation: "Hold debriefs for all near misses — near miss learning is a key indicator of proactive safety culture.", urgency: "soon", regulatory_ref: "Reg 12" });
   }
-  if (stockChecks.length > 0 && stock.balanced_rate < 75) {
+  if (stockChecks.length > 0 && (stock.balanced_rate ?? 0) < 75) {
     recommendations.push({ rank: ++rank, recommendation: "Review stock check processes — high discrepancy rates indicate weaknesses in medication counting and recording.", urgency: "soon", regulatory_ref: "Reg 12" });
   }
   if (stFail > 0) {
@@ -574,7 +574,7 @@ export function computeHomeMedicationGovernance(
   if (overdueReviews > 0) {
     recommendations.push({ rank: ++rank, recommendation: `Review ${overdueReviews} overdue emergency medication protocol${overdueReviews > 1 ? "s" : ""} with prescriber and update training records.`, urgency: "immediate", regulatory_ref: "Reg 12" });
   }
-  if (emergencyProtocols.length > 0 && epProfile.gp_signed_off_rate < 80) {
+  if (emergencyProtocols.length > 0 && (epProfile.gp_signed_off_rate ?? 0) < 80) {
     recommendations.push({ rank: ++rank, recommendation: "Obtain GP sign-off for all emergency medication protocols — unsigned protocols may not reflect current medical advice.", urgency: "soon", regulatory_ref: "Reg 12" });
   }
 
@@ -585,13 +585,13 @@ export function computeHomeMedicationGovernance(
   if (majorHarm > 0 || (moderateHarm >= 2)) {
     insights.push({ text: `${majorHarm + moderateHarm} moderate/major harm medication error${(majorHarm + moderateHarm) > 1 ? "s" : ""} signal a systemic governance failure. Ofsted inspectors will examine whether leadership acted swiftly on root causes and whether children were safeguarded. This is likely to impact the Leadership & Management judgement.`, severity: "critical" });
   }
-  if (errors.length > 0 && errorProfile.root_cause_rate >= 90 && errorProfile.preventive_embedded_rate >= 80) {
+  if (errors.length > 0 && (errorProfile.root_cause_rate ?? 0) >= 90 && (errorProfile.preventive_embedded_rate ?? 0) >= 80) {
     insights.push({ text: `Despite ${errors.length} error${errors.length > 1 ? "s" : ""}, root cause analysis at ${errorProfile.root_cause_rate}% and preventive actions embedded at ${errorProfile.preventive_embedded_rate}% show a mature learning organisation. Ofsted will look favourably on how errors are used to drive improvement.`, severity: "positive" });
   }
-  if (nearMisses.length >= 3 && nearMissProfile.debrief_rate >= 80 && avgLP >= 2) {
+  if (nearMisses.length >= 3 && (nearMissProfile.debrief_rate ?? 0) >= 80 && (avgLP ?? 0) >= 2) {
     insights.push({ text: `${nearMisses.length} near misses reported with ${nearMissProfile.debrief_rate}% debrief rate and average ${avgLP} learning points — the home has a healthy reporting culture. This is a sign of a learning organisation under SCCIF.`, severity: "positive" });
   }
-  if (nearMisses.length >= 3 && nearMissProfile.debrief_rate < 50) {
+  if (nearMisses.length >= 3 && (nearMissProfile.debrief_rate ?? 0) < 50) {
     insights.push({ text: `${nearMisses.length} near misses recorded but only ${nearMissProfile.debrief_rate}% debriefed. Near misses are opportunities to prevent future harm — a weak debrief culture suggests lessons are not being embedded.`, severity: "warning" });
   }
   if (stFail >= 2) {

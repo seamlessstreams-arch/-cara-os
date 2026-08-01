@@ -53,15 +53,15 @@ export interface HomeLifeStoryIdentityInput {
 
 export type LifeStoryIdentityRating = "outstanding" | "good" | "adequate" | "inadequate" | "insufficient_data";
 
-export interface LifeStorySummary { total: number; completed_rate: number; child_voice_rate: number; linked_to_book_rate: number; }
-export interface PassportSummary { total: number; child_authored_rate: number; reviewed_rate: number; avg_sections: number; }
-export interface FriendshipSummary { total: number; avg_friends: number; high_isolation_count: number; reviewed_rate: number; }
-export interface AspirationSummary { total: number; child_chosen_rate: number; active_steps_rate: number; overdue_reviews: number; }
-export interface LgbtqSummary { total: number; pronouns_consistent_rate: number; affirming_actions_rate: number; child_voice_rate: number; }
-export interface StyleSummary { total: number; child_voice_rate: number; avg_descriptors: number; }
+export interface LifeStorySummary { total: number; completed_rate: number | null; child_voice_rate: number | null; linked_to_book_rate: number | null; }
+export interface PassportSummary { total: number; child_authored_rate: number | null; reviewed_rate: number | null; avg_sections: number | null; }
+export interface FriendshipSummary { total: number; avg_friends: number | null; high_isolation_count: number; reviewed_rate: number | null; }
+export interface AspirationSummary { total: number; child_chosen_rate: number | null; active_steps_rate: number | null; overdue_reviews: number; }
+export interface LgbtqSummary { total: number; pronouns_consistent_rate: number | null; affirming_actions_rate: number | null; child_voice_rate: number | null; }
+export interface StyleSummary { total: number; child_voice_rate: number | null; avg_descriptors: number | null; }
 
 export interface HomeLifeStoryIdentityResult {
-  life_story_rating: LifeStoryIdentityRating; life_story_score: number; headline: string;
+  life_story_rating: LifeStoryIdentityRating; life_story_score: number | null; headline: string;
   life_stories: LifeStorySummary; passports: PassportSummary; friendships: FriendshipSummary;
   aspirations: AspirationSummary; lgbtq: LgbtqSummary; style: StyleSummary;
   strengths: string[]; concerns: string[];
@@ -102,7 +102,7 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
 
   const ppAuthored = personal_passports.filter(p => p.child_authored).length;
   const ppReviewed = personal_passports.filter(p => p.reviewed_with_child).length;
-  const ppSections = personal_passports.length > 0 ? Math.round(personal_passports.reduce((s, p) => s + p.sections_completed, 0) / personal_passports.length) : 0;
+  const ppSections = personal_passports.length > 0 ? Math.round(personal_passports.reduce((s, p) => s + p.sections_completed, 0) / personal_passports.length) : null;
   const passports: PassportSummary = {
     total: personal_passports.length,
     child_authored_rate: pct(ppAuthored, personal_passports.length),
@@ -110,7 +110,7 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
     avg_sections: ppSections,
   };
 
-  const fAvgFriends = friendship_maps.length > 0 ? Math.round(friendship_maps.reduce((s, f) => s + f.friends_count, 0) / friendship_maps.length) : 0;
+  const fAvgFriends = friendship_maps.length > 0 ? Math.round(friendship_maps.reduce((s, f) => s + f.friends_count, 0) / friendship_maps.length) : null;
   const fHighIso = friendship_maps.filter(f => f.isolation_risk === "high").length;
   const fReviewed = friendship_maps.filter(f => f.reviewed).length;
   const friendships: FriendshipSummary = {
@@ -141,7 +141,7 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   };
 
   const stVoice = style_identities.filter(s => s.child_voice.trim().length > 0).length;
-  const stAvgDesc = style_identities.length > 0 ? Math.round(style_identities.reduce((s, r) => s + r.style_descriptors_count, 0) / style_identities.length) : 0;
+  const stAvgDesc = style_identities.length > 0 ? Math.round(style_identities.reduce((s, r) => s + r.style_descriptors_count, 0) / style_identities.length) : null;
   const style: StyleSummary = {
     total: style_identities.length,
     child_voice_rate: pct(stVoice, style_identities.length),
@@ -154,11 +154,11 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   // Mod 1: Life story work quality (±5)
   let mod1 = 0;
   if (life_story_entries.length > 0) {
-    if (life_stories.completed_rate >= 80 && life_stories.child_voice_rate >= 80) mod1 = 5;
-    else if (life_stories.completed_rate >= 60 && life_stories.child_voice_rate >= 60) mod1 = 3;
-    else if (life_stories.completed_rate >= 40) mod1 = 1;
-    else if (life_stories.completed_rate < 20 && life_stories.child_voice_rate < 20) mod1 = -5;
-    else if (life_stories.completed_rate < 40) mod1 = -3;
+    if ((life_stories.completed_rate ?? 0) >= 80 && (life_stories.child_voice_rate ?? 0) >= 80) mod1 = 5;
+    else if ((life_stories.completed_rate ?? 0) >= 60 && (life_stories.child_voice_rate ?? 0) >= 60) mod1 = 3;
+    else if ((life_stories.completed_rate ?? 0) >= 40) mod1 = 1;
+    else if ((life_stories.completed_rate ?? 0) < 20 && (life_stories.child_voice_rate ?? 0) < 20) mod1 = -5;
+    else if ((life_stories.completed_rate ?? 0) < 40) mod1 = -3;
     else mod1 = -1;
   } else if (total_children >= 2) {
     mod1 = -2;
@@ -168,10 +168,10 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   // Mod 2: Personal passports (±4)
   let mod2 = 0;
   if (personal_passports.length > 0) {
-    if (passports.child_authored_rate >= 80 && passports.reviewed_rate >= 80) mod2 = 4;
-    else if (passports.child_authored_rate >= 60 && passports.reviewed_rate >= 60) mod2 = 2;
-    else if (passports.child_authored_rate >= 40) mod2 = 1;
-    else if (passports.child_authored_rate < 20) mod2 = -4;
+    if ((passports.child_authored_rate ?? 0) >= 80 && (passports.reviewed_rate ?? 0) >= 80) mod2 = 4;
+    else if ((passports.child_authored_rate ?? 0) >= 60 && (passports.reviewed_rate ?? 0) >= 60) mod2 = 2;
+    else if ((passports.child_authored_rate ?? 0) >= 40) mod2 = 1;
+    else if ((passports.child_authored_rate ?? 0) < 20) mod2 = -4;
     else mod2 = -1;
   } else if (total_children >= 2) {
     mod2 = -2;
@@ -181,8 +181,8 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   // Mod 3: Friendship mapping (±3)
   let mod3 = 0;
   if (friendship_maps.length > 0) {
-    if (fHighIso === 0 && friendships.reviewed_rate >= 80) mod3 = 3;
-    else if (fHighIso <= 1 && friendships.reviewed_rate >= 60) mod3 = 1;
+    if (fHighIso === 0 && (friendships.reviewed_rate ?? 0) >= 80) mod3 = 3;
+    else if (fHighIso <= 1 && (friendships.reviewed_rate ?? 0) >= 60) mod3 = 1;
     else if (fHighIso >= 3) mod3 = -3;
     else if (fHighIso >= 2) mod3 = -1;
     else mod3 = 0;
@@ -194,11 +194,11 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   // Mod 4: Aspirations (±4)
   let mod4 = 0;
   if (aspirations.length > 0) {
-    if (aspSummary.child_chosen_rate >= 80 && aspSummary.active_steps_rate >= 70) mod4 = 4;
-    else if (aspSummary.child_chosen_rate >= 60 && aspSummary.active_steps_rate >= 50) mod4 = 2;
-    else if (aspSummary.child_chosen_rate >= 40) mod4 = 1;
-    else if (aspSummary.child_chosen_rate < 20 && aspSummary.active_steps_rate < 20) mod4 = -4;
-    else if (aspSummary.child_chosen_rate < 40) mod4 = -2;
+    if ((aspSummary.child_chosen_rate ?? 0) >= 80 && (aspSummary.active_steps_rate ?? 0) >= 70) mod4 = 4;
+    else if ((aspSummary.child_chosen_rate ?? 0) >= 60 && (aspSummary.active_steps_rate ?? 0) >= 50) mod4 = 2;
+    else if ((aspSummary.child_chosen_rate ?? 0) >= 40) mod4 = 1;
+    else if ((aspSummary.child_chosen_rate ?? 0) < 20 && (aspSummary.active_steps_rate ?? 0) < 20) mod4 = -4;
+    else if ((aspSummary.child_chosen_rate ?? 0) < 40) mod4 = -2;
     else mod4 = -1;
   } else if (total_children >= 2) {
     mod4 = -1;
@@ -208,9 +208,9 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   // Mod 5: LGBTQ+ inclusion (±3) — neutral if no records (not every home has LGBTQ+ CYP)
   let mod5 = 0;
   if (lgbtq_inclusions.length > 0) {
-    if (lgbtq.pronouns_consistent_rate >= 90 && lgbtq.affirming_actions_rate >= 80) mod5 = 3;
-    else if (lgbtq.pronouns_consistent_rate >= 70) mod5 = 1;
-    else if (lgbtq.pronouns_consistent_rate < 50) mod5 = -3;
+    if ((lgbtq.pronouns_consistent_rate ?? 0) >= 90 && (lgbtq.affirming_actions_rate ?? 0) >= 80) mod5 = 3;
+    else if ((lgbtq.pronouns_consistent_rate ?? 0) >= 70) mod5 = 1;
+    else if ((lgbtq.pronouns_consistent_rate ?? 0) < 50) mod5 = -3;
     else mod5 = 0;
   }
   // No records = neutral (mod5 = 0)
@@ -219,9 +219,9 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   // Mod 6: Style & identity (±3)
   let mod6 = 0;
   if (style_identities.length > 0) {
-    if (style.child_voice_rate >= 80 && stAvgDesc >= 4) mod6 = 3;
-    else if (style.child_voice_rate >= 60) mod6 = 1;
-    else if (style.child_voice_rate < 30) mod6 = -3;
+    if ((style.child_voice_rate ?? 0) >= 80 && (stAvgDesc ?? 0) >= 4) mod6 = 3;
+    else if ((style.child_voice_rate ?? 0) >= 60) mod6 = 1;
+    else if ((style.child_voice_rate ?? 0) < 30) mod6 = -3;
     else mod6 = 0;
   } else if (total_children >= 2) {
     mod6 = -1;
@@ -231,11 +231,11 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   // Mod 7: Child voice across identity domains (±3)
   let mod7 = 0;
   const voiceSources: boolean[] = [];
-  if (life_story_entries.length > 0) voiceSources.push(life_stories.child_voice_rate >= 60);
-  if (personal_passports.length > 0) voiceSources.push(passports.child_authored_rate >= 60);
-  if (aspirations.length > 0) voiceSources.push(aspSummary.child_chosen_rate >= 60);
-  if (lgbtq_inclusions.length > 0) voiceSources.push(lgbtq.child_voice_rate >= 60);
-  if (style_identities.length > 0) voiceSources.push(style.child_voice_rate >= 60);
+  if (life_story_entries.length > 0) voiceSources.push((life_stories.child_voice_rate ?? 0) >= 60);
+  if (personal_passports.length > 0) voiceSources.push((passports.child_authored_rate ?? 0) >= 60);
+  if (aspirations.length > 0) voiceSources.push((aspSummary.child_chosen_rate ?? 0) >= 60);
+  if (lgbtq_inclusions.length > 0) voiceSources.push((lgbtq.child_voice_rate ?? 0) >= 60);
+  if (style_identities.length > 0) voiceSources.push((style.child_voice_rate ?? 0) >= 60);
   if (voiceSources.length > 0) {
     const voiceRate = pct(voiceSources.filter(Boolean).length, voiceSources.length);
     if (voiceRate >= 80) mod7 = 3;
@@ -269,23 +269,23 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
 
   // ── Strengths ────────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (life_stories.child_voice_rate >= 80) strengths.push("Excellent child voice in life story work — children actively shaping their narratives.");
-  if (passports.child_authored_rate >= 80) strengths.push("Personal passports are child-authored, giving children ownership of their identity documents.");
+  if ((life_stories.child_voice_rate ?? 0) >= 80) strengths.push("Excellent child voice in life story work — children actively shaping their narratives.");
+  if ((passports.child_authored_rate ?? 0) >= 80) strengths.push("Personal passports are child-authored, giving children ownership of their identity documents.");
   if (fHighIso === 0 && friendship_maps.length > 0) strengths.push("No children at high isolation risk — friendship mapping demonstrates strong social connections.");
-  if (aspSummary.child_chosen_rate >= 80) strengths.push("Aspirations are overwhelmingly child-chosen, showing genuine child participation in goal-setting.");
-  if (lgbtq.pronouns_consistent_rate >= 90 && lgbtq_inclusions.length > 0) strengths.push("Outstanding LGBTQ+ inclusion — pronouns and preferred names used consistently across the home.");
-  if (style.child_voice_rate >= 80 && style_identities.length > 0) strengths.push("Style and identity records centred on children's own words and preferences.");
+  if ((aspSummary.child_chosen_rate ?? 0) >= 80) strengths.push("Aspirations are overwhelmingly child-chosen, showing genuine child participation in goal-setting.");
+  if ((lgbtq.pronouns_consistent_rate ?? 0) >= 90 && lgbtq_inclusions.length > 0) strengths.push("Outstanding LGBTQ+ inclusion — pronouns and preferred names used consistently across the home.");
+  if ((style.child_voice_rate ?? 0) >= 80 && style_identities.length > 0) strengths.push("Style and identity records centred on children's own words and preferences.");
   if (mod7 >= 3) strengths.push("Child voice is strong across all identity domains — children's views genuinely shape practice.");
   if (mod8 >= 3) strengths.push("All identity documentation is current and regularly reviewed.");
 
   // ── Concerns ─────────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (life_story_entries.length === 0 && total_children >= 2) concerns.push("No life story work recorded — children need support to understand their narrative and identity.");
-  if (life_stories.child_voice_rate < 30 && life_story_entries.length > 0) concerns.push(`Only ${life_stories.child_voice_rate}% of life story entries include the child's voice — this should be child-led.`);
-  if (passports.child_authored_rate < 30 && personal_passports.length > 0) concerns.push("Most personal passports are not child-authored — these should reflect children's own perspectives.");
+  if ((life_stories.child_voice_rate ?? 0) < 30 && life_story_entries.length > 0) concerns.push(`Only ${(life_stories.child_voice_rate ?? 0)}% of life story entries include the child's voice — this should be child-led.`);
+  if ((passports.child_authored_rate ?? 0) < 30 && personal_passports.length > 0) concerns.push("Most personal passports are not child-authored — these should reflect children's own perspectives.");
   if (fHighIso >= 2) concerns.push(`${fHighIso} children at high isolation risk — urgent friendship support needed.`);
   if (aspSummary.overdue_reviews >= 3) concerns.push(`${aspSummary.overdue_reviews} aspirations have overdue reviews — children's goals may have changed.`);
-  if (lgbtq.pronouns_consistent_rate < 50 && lgbtq_inclusions.length > 0) concerns.push("Pronouns not used consistently for some LGBTQ+ young people — fundamental to affirming practice.");
+  if ((lgbtq.pronouns_consistent_rate ?? 0) < 50 && lgbtq_inclusions.length > 0) concerns.push("Pronouns not used consistently for some LGBTQ+ young people — fundamental to affirming practice.");
   if (personal_passports.length === 0 && total_children >= 2) concerns.push("No personal passports created — children need a document that captures who they are.");
   if (mod8 <= -3) concerns.push("Over 60% of identity documentation is stale (>6 months) — children's identities evolve rapidly.");
 
@@ -293,7 +293,7 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 0;
   if (fHighIso >= 2) recommendations.push({ rank: ++rank, recommendation: "Develop targeted friendship-building plans for children at high isolation risk.", urgency: "immediate", regulatory_ref: "Reg 9" });
-  if (lgbtq.pronouns_consistent_rate < 50 && lgbtq_inclusions.length > 0) recommendations.push({ rank: ++rank, recommendation: "Provide staff training on consistent use of pronouns and preferred names.", urgency: "immediate", regulatory_ref: "Reg 7" });
+  if ((lgbtq.pronouns_consistent_rate ?? 0) < 50 && lgbtq_inclusions.length > 0) recommendations.push({ rank: ++rank, recommendation: "Provide staff training on consistent use of pronouns and preferred names.", urgency: "immediate", regulatory_ref: "Reg 7" });
   if (life_story_entries.length === 0 && total_children >= 2) recommendations.push({ rank: ++rank, recommendation: "Initiate life story work for every child — this is fundamental to identity development.", urgency: "soon", regulatory_ref: "Reg 7" });
   if (personal_passports.length === 0 && total_children >= 2) recommendations.push({ rank: ++rank, recommendation: "Create child-authored personal passports so each child's identity is captured in their own words.", urgency: "soon", regulatory_ref: "Reg 7" });
   if (aspSummary.overdue_reviews >= 2) recommendations.push({ rank: ++rank, recommendation: `Review ${aspSummary.overdue_reviews} overdue aspiration records to ensure goals remain relevant.`, urgency: "soon", regulatory_ref: "Reg 9" });
@@ -305,9 +305,9 @@ export function computeHomeLifeStoryIdentity(input: HomeLifeStoryIdentityInput):
   if (life_story_rating === "outstanding") insights.push({ text: "Identity practice is outstanding — children's voices drive every aspect of their life story and identity work.", severity: "positive" });
   if (life_story_rating === "inadequate") insights.push({ text: "Identity and life story practice falls below acceptable standards — children's sense of self is not being adequately supported.", severity: "critical" });
   if (mod7 >= 3 && mod1 >= 3) insights.push({ text: "The integration of child voice across life story, passports, and aspirations suggests a genuinely child-centred identity culture.", severity: "positive" });
-  if (fHighIso >= 2 && aspSummary.active_steps_rate < 40) insights.push({ text: "High isolation risk combined with low aspiration activity suggests children may be disengaging — consider therapeutic identity work.", severity: "critical" });
-  if (lgbtq_inclusions.length > 0 && lgbtq.affirming_actions_rate >= 80) insights.push({ text: "LGBTQ+ affirming practice is embedded — identity-affirming actions are consistently recorded.", severity: "positive" });
-  if (life_stories.linked_to_book_rate >= 70 && life_story_entries.length >= 5) insights.push({ text: "Life story books are well-maintained with strong linkage — children have tangible records of their narrative.", severity: "positive" });
+  if (fHighIso >= 2 && (aspSummary.active_steps_rate ?? 0) < 40) insights.push({ text: "High isolation risk combined with low aspiration activity suggests children may be disengaging — consider therapeutic identity work.", severity: "critical" });
+  if (lgbtq_inclusions.length > 0 && (lgbtq.affirming_actions_rate ?? 0) >= 80) insights.push({ text: "LGBTQ+ affirming practice is embedded — identity-affirming actions are consistently recorded.", severity: "positive" });
+  if ((life_stories.linked_to_book_rate ?? 0) >= 70 && life_story_entries.length >= 5) insights.push({ text: "Life story books are well-maintained with strong linkage — children have tangible records of their narrative.", severity: "positive" });
 
   // ── Headline ─────────────────────────────────────────────────────────────
   let headline = "";

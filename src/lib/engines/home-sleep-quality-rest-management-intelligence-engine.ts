@@ -43,7 +43,7 @@ export interface SleepEnvironmentRecordInput {
   room_personalised: boolean;
   electronic_devices_managed: boolean;
   ventilation_adequate: boolean;
-  overall_environment_score: number; // 1-5
+  overall_environment_score: number | null; // 1-5
   issues_identified: string[];
   issues_resolved: boolean;
   resolution_date: string | null;
@@ -133,16 +133,16 @@ export interface SleepQualityRecommendation {
 
 export interface SleepQualityRestManagementResult {
   sleep_rating: SleepQualityRating;
-  sleep_score: number;
+  sleep_score: number | null;
   headline: string;
   total_routine_records: number;
   total_disturbances: number;
-  routine_adherence_rate: number;
-  environment_quality_rate: number;
-  disturbance_resolution_rate: number;
-  bedtime_support_quality_rate: number;
-  improvement_plan_coverage_rate: number;
-  child_satisfaction_rate: number;
+  routine_adherence_rate: number | null;
+  environment_quality_rate: number | null;
+  disturbance_resolution_rate: number | null;
+  bedtime_support_quality_rate: number | null;
+  improvement_plan_coverage_rate: number | null;
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SleepQualityRecommendation[];
@@ -276,7 +276,7 @@ export function computeSleepQualityRestManagement(
   const avgSleepQualityRating =
     totalRoutineRecords > 0
       ? Math.round((sleepQualitySum / totalRoutineRecords) * 100) / 100
-      : 0;
+      : null;
 
   // --- Environment metrics ---
   const totalEnvironmentRecords = sleep_environment_records.length;
@@ -308,13 +308,13 @@ export function computeSleepQualityRestManagement(
   const envIssueResolutionRate = pct(envIssuesResolved, envIssuesIdentified);
 
   const envScoreSum = sleep_environment_records.reduce(
-    (sum, e) => sum + e.overall_environment_score,
+    (sum, e) => sum + (e.overall_environment_score ?? 0),
     0,
   );
   const avgEnvironmentScore =
     totalEnvironmentRecords > 0
       ? Math.round((envScoreSum / totalEnvironmentRecords) * 100) / 100
-      : 0;
+      : null;
 
   // --- Disturbance metrics ---
   const totalDisturbances = sleep_disturbance_records.length;
@@ -388,7 +388,7 @@ export function computeSleepQualityRestManagement(
   const avgProgressRating =
     totalImprovementPlans > 0
       ? Math.round((progressSum / totalImprovementPlans) * 100) / 100
-      : 0;
+      : null;
 
   const outcomesDocumented = sleep_improvement_records.filter((p) => p.outcomes_documented).length;
   const outcomesDocumentedRate = pct(outcomesDocumented, totalImprovementPlans);
@@ -567,11 +567,11 @@ export function computeSleepQualityRestManagement(
     );
   }
 
-  if (avgSleepQualityRating >= 4.0 && totalRoutineRecords > 0) {
+  if ((avgSleepQualityRating ?? 0) >= 4.0 && totalRoutineRecords > 0) {
     strengths.push(
       `Average sleep quality rating of ${avgSleepQualityRating}/5 — children are consistently achieving good-quality sleep, reflecting effective rest management across the home.`,
     );
-  } else if (avgSleepQualityRating >= 3.5 && totalRoutineRecords > 0) {
+  } else if ((avgSleepQualityRating ?? 0) >= 3.5 && totalRoutineRecords > 0) {
     strengths.push(
       `Average sleep quality rating of ${avgSleepQualityRating}/5 — children generally experience reasonable quality sleep.`,
     );
@@ -689,11 +689,11 @@ export function computeSleepQualityRestManagement(
     );
   }
 
-  if (avgSleepQualityRating < 2.5 && totalRoutineRecords > 0) {
+  if ((avgSleepQualityRating ?? 0) < 2.5 && totalRoutineRecords > 0) {
     concerns.push(
       `Average sleep quality rating at only ${avgSleepQualityRating}/5 — children are consistently experiencing poor-quality sleep, which has implications for their health, behaviour, and development.`,
     );
-  } else if (avgSleepQualityRating < 3.0 && avgSleepQualityRating >= 2.5 && totalRoutineRecords > 0) {
+  } else if ((avgSleepQualityRating ?? 0) < 3.0 && (avgSleepQualityRating ?? 0) >= 2.5 && totalRoutineRecords > 0) {
     concerns.push(
       `Average sleep quality rating at ${avgSleepQualityRating}/5 — sleep quality across the home is below acceptable standards and requires targeted intervention.`,
     );
@@ -1055,8 +1055,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    avgSleepQualityRating >= 2.5 &&
-    avgSleepQualityRating < 3.5 &&
+    (avgSleepQualityRating ?? 0) >= 2.5 &&
+    (avgSleepQualityRating ?? 0) < 3.5 &&
     totalRoutineRecords > 0
   ) {
     insights.push({
@@ -1154,7 +1154,7 @@ export function computeSleepQualityRestManagement(
 
   if (
     planReviewRate >= 90 &&
-    avgProgressRating >= 4.0 &&
+    (avgProgressRating ?? 0) >= 4.0 &&
     totalImprovementPlans > 0
   ) {
     insights.push({

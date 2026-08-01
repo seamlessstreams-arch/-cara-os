@@ -112,15 +112,15 @@ export interface SupervisionRecommendation {
 
 export interface StaffSupervisionReflectivePracticeResult {
   supervision_rating: SupervisionRating;
-  supervision_score: number;
+  supervision_score: number | null;
   headline: string;
   total_supervisions: number;
-  supervision_timeliness_rate: number;
-  supervision_quality_avg: number;
-  safeguarding_supervision_coverage_rate: number;
-  reflective_practice_engagement_rate: number;
+  supervision_timeliness_rate: number | null;
+  supervision_quality_avg: number | null;
+  safeguarding_supervision_coverage_rate: number | null;
+  reflective_practice_engagement_rate: number | null;
   theme_coverage_breadth: number;
-  action_completion_rate: number;
+  action_completion_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SupervisionRecommendation[];
@@ -251,7 +251,7 @@ export function computeStaffSupervisionReflectivePractice(
   const supervisionQualityAvg =
     totalSupervisions > 0
       ? Math.round((qualitySum / totalSupervisions) * 10) / 10
-      : 0;
+      : null;
 
   // --- Safeguarding supervision coverage ---
   // Unique staff who have received at least one safeguarding supervision
@@ -382,8 +382,8 @@ export function computeStaffSupervisionReflectivePractice(
   else if (supervisionTimelinessRate >= 75) score += 2;
 
   // --- Bonus 2: supervisionQualityAvg (>=4.0: +3, >=3.0: +1) ---
-  if (supervisionQualityAvg >= 4.0) score += 3;
-  else if (supervisionQualityAvg >= 3.0) score += 1;
+  if ((supervisionQualityAvg ?? 0) >= 4.0) score += 3;
+  else if ((supervisionQualityAvg ?? 0) >= 3.0) score += 1;
 
   // --- Bonus 3: safeguardingSupervisionCoverageRate (>=100: +3, >=80: +1) ---
   if (safeguardingSupervisionCoverageRate >= 100) score += 3;
@@ -445,11 +445,11 @@ export function computeStaffSupervisionReflectivePractice(
     );
   }
 
-  if (supervisionQualityAvg >= 4.0 && totalSupervisions > 0) {
+  if ((supervisionQualityAvg ?? 0) >= 4.0 && totalSupervisions > 0) {
     strengths.push(
       `Average supervision quality rating of ${supervisionQualityAvg}/5.0 — supervisions are consistently high quality, indicating meaningful, reflective, and developmental sessions.`,
     );
-  } else if (supervisionQualityAvg >= 3.0 && totalSupervisions > 0) {
+  } else if ((supervisionQualityAvg ?? 0) >= 3.0 && totalSupervisions > 0) {
     strengths.push(
       `Average supervision quality rating of ${supervisionQualityAvg}/5.0 — supervision sessions are of a satisfactory standard.`,
     );
@@ -583,11 +583,11 @@ export function computeStaffSupervisionReflectivePractice(
     );
   }
 
-  if (supervisionQualityAvg < 2.5 && totalSupervisions > 0) {
+  if ((supervisionQualityAvg ?? 0) < 2.5 && totalSupervisions > 0) {
     concerns.push(
       `Average supervision quality rating of ${supervisionQualityAvg}/5.0 — supervision quality is poor, suggesting sessions lack depth, structure, or meaningful engagement.`,
     );
-  } else if (supervisionQualityAvg < 3.0 && supervisionQualityAvg >= 2.5 && totalSupervisions > 0) {
+  } else if ((supervisionQualityAvg ?? 0) < 3.0 && (supervisionQualityAvg ?? 0) >= 2.5 && totalSupervisions > 0) {
     concerns.push(
       `Average supervision quality rating of ${supervisionQualityAvg}/5.0 — supervision quality is below the expected standard and needs improvement.`,
     );
@@ -894,7 +894,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (supervisionQualityAvg >= 2.5 && supervisionQualityAvg < 3.0 && totalSupervisions > 0) {
+  if ((supervisionQualityAvg ?? 0) >= 2.5 && (supervisionQualityAvg ?? 0) < 3.0 && totalSupervisions > 0) {
     insights.push({
       text: `Average supervision quality rating of ${supervisionQualityAvg}/5.0 — supervision sessions are below the expected quality standard. Consider providing supervision training for supervisors and implementing a supervision quality framework.`,
       severity: "warning",
@@ -994,7 +994,7 @@ export function computeStaffSupervisionReflectivePractice(
     });
   }
 
-  if (supervisionQualityAvg >= 4.0 && totalSupervisions > 0) {
+  if ((supervisionQualityAvg ?? 0) >= 4.0 && totalSupervisions > 0) {
     insights.push({
       text: `Average supervision quality of ${supervisionQualityAvg}/5.0 indicates that supervision sessions are meaningful, structured, and developmental — not just a compliance exercise. This is evidence of strong supervisory practice.`,
       severity: "positive",

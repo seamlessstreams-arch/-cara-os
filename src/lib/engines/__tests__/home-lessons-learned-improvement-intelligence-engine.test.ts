@@ -903,7 +903,7 @@ describe("Home Lessons Learned & Improvement Intelligence Engine", () => {
 
     it("average_audit_score is 0 when no audits", () => {
       const r = computeLessonsLearnedImprovement(baseInput({ audits: [] }));
-      expect(r.average_audit_score).toBe(0);
+      expect(r.average_audit_score).toBeNull();;
     });
 
     it("embedded_rate is 0 when no lessons", () => {

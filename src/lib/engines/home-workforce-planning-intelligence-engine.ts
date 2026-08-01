@@ -29,7 +29,7 @@ export interface SuccessionPlanInput {
 
 export interface SuccessionCandidateInput {
   staff_id: string;
-  readiness_score: number;         // 0-100
+  readiness_score: number | null;         // 0-100
   ready_now: boolean;
   estimated_ready_date: string | null;
 }
@@ -72,9 +72,9 @@ export interface StaffCompositionProfile {
   fixed_term_count: number;
   agency_count: number;
   bank_count: number;
-  permanent_rate: number;
-  avg_contracted_hours: number;
-  dbs_update_service_rate: number;
+  permanent_rate: number | null;
+  avg_contracted_hours: number | null;
+  dbs_update_service_rate: number | null;
   new_staff_count: number;            // started within last 6 months
   long_serving_count: number;         // > 2 years
 }
@@ -83,7 +83,7 @@ export interface SuccessionProfile {
   total_plans: number;
   roles_covered: number;
   total_candidates: number;
-  avg_readiness_score: number;
+  avg_readiness_score: number | null;
   ready_now_count: number;
   overdue_review_count: number;       // review_date < today
   urgent_plans_count: number;         // immediate | six_months
@@ -94,7 +94,7 @@ export interface VacancyCoverageProfile {
   open_count: number;
   on_hold_count: number;
   closed_count: number;
-  vacancy_rate: number;               // open / (total_active + open)
+  vacancy_rate: number | null;               // open / (total_active + open)
 }
 
 export interface InductionProfile {
@@ -102,9 +102,9 @@ export interface InductionProfile {
   completed_count: number;
   in_progress_count: number;
   overdue_count: number;              // in_progress + target_completion_date < today
-  completion_rate: number;
-  probation_passed_rate: number;
-  avg_item_completion_rate: number;
+  completion_rate: number | null;
+  probation_passed_rate: number | null;
+  avg_item_completion_rate: number | null;
 }
 
 export interface WorkforceInsight {
@@ -121,7 +121,7 @@ export interface WorkforceRecommendation {
 
 export interface HomeWorkforcePlanningResult {
   workforce_rating: WorkforcePlanningRating;
-  workforce_score: number;
+  workforce_score: number | null;
   headline: string;
   staff_composition: StaffCompositionProfile;
   succession_profile: SuccessionProfile;
@@ -200,7 +200,7 @@ export function computeHomeWorkforcePlanning(
   const dbsUpdateCount = activeStaff.filter(s => s.dbs_update_service).length;
 
   const totalHours = activeStaff.reduce((sum, s) => sum + s.contracted_hours, 0);
-  const avgHours = activeStaff.length > 0 ? Math.round(totalHours / activeStaff.length) : 0;
+  const avgHours = activeStaff.length > 0 ? Math.round(totalHours / activeStaff.length) : null;
 
   const staffComposition: StaffCompositionProfile = {
     total_active: activeStaff.length,
@@ -219,8 +219,8 @@ export function computeHomeWorkforcePlanning(
   const allSuccCandidates = succession_plans.flatMap(p => p.candidates);
   const readyNow = allSuccCandidates.filter(c => c.ready_now);
   const avgReadiness = allSuccCandidates.length > 0
-    ? Math.round(allSuccCandidates.reduce((s, c) => s + c.readiness_score, 0) / allSuccCandidates.length)
-    : 0;
+    ? Math.round(allSuccCandidates.reduce((s, c) => s + (c.readiness_score ?? 0), 0) / allSuccCandidates.length)
+    : null;
   const overdueReviews = succession_plans.filter(p => p.review_date < today);
   const urgentPlans = succession_plans.filter(p =>
     p.urgency === "immediate" || p.urgency === "six_months"
@@ -257,7 +257,7 @@ export function computeHomeWorkforcePlanning(
   const probationPassed = inductions.filter(i => i.probation_passed);
   const avgItemRate = inductions.length > 0
     ? Math.round(inductions.reduce((s, i) => s + pct(i.completed_items, i.total_items), 0) / inductions.length)
-    : 0;
+    : null;
 
   const inductionProfile: InductionProfile = {
     total_inductions: inductions.length,
@@ -274,16 +274,16 @@ export function computeHomeWorkforcePlanning(
   let score = 52;
 
   // 1. Permanent staff rate (±5)
-  if (staffComposition.permanent_rate >= 80) score += 5;
-  else if (staffComposition.permanent_rate >= 60) score += 2;
-  else if (staffComposition.permanent_rate >= 40) score -= 1;
+  if ((staffComposition.permanent_rate ?? 0) >= 80) score += 5;
+  else if ((staffComposition.permanent_rate ?? 0) >= 60) score += 2;
+  else if ((staffComposition.permanent_rate ?? 0) >= 40) score -= 1;
   else score -= 4;
 
   // 2. Succession planning (±4)
   if (succession_plans.length > 0) {
-    if (avgReadiness >= 70 && readyNow.length > 0) score += 4;
-    else if (avgReadiness >= 50) score += 2;
-    else if (avgReadiness >= 30) score += 0;
+    if ((avgReadiness ?? 0) >= 70 && readyNow.length > 0) score += 4;
+    else if ((avgReadiness ?? 0) >= 50) score += 2;
+    else if ((avgReadiness ?? 0) >= 30) score += 0;
     else score -= 3;
   } else {
     score -= 2; // No succession planning = risk
@@ -297,16 +297,16 @@ export function computeHomeWorkforcePlanning(
 
   // 4. Induction completion (±4)
   if (inductions.length > 0) {
-    if (inductionProfile.completion_rate >= 80 && overdueInductions.length === 0) score += 4;
-    else if (inductionProfile.completion_rate >= 50) score += 1;
+    if ((inductionProfile.completion_rate ?? 0) >= 80 && overdueInductions.length === 0) score += 4;
+    else if ((inductionProfile.completion_rate ?? 0) >= 50) score += 1;
     else score -= 2;
   } else {
     score += 1; // No inductions needed
   }
 
   // 5. DBS update service (±3)
-  if (staffComposition.dbs_update_service_rate >= 80) score += 3;
-  else if (staffComposition.dbs_update_service_rate >= 50) score += 1;
+  if ((staffComposition.dbs_update_service_rate ?? 0) >= 80) score += 3;
+  else if ((staffComposition.dbs_update_service_rate ?? 0) >= 50) score += 1;
   else score -= 2;
 
   // 6. Workforce stability (±3) — balance of new vs long-serving
@@ -333,13 +333,13 @@ export function computeHomeWorkforcePlanning(
 
   // ── Strengths ─────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (staffComposition.permanent_rate >= 80) strengths.push(`${staffComposition.permanent_rate}% permanent staff rate — a stable, committed workforce.`);
+  if ((staffComposition.permanent_rate ?? 0) >= 80) strengths.push(`${(staffComposition.permanent_rate ?? 0)}% permanent staff rate — a stable, committed workforce.`);
   if (agency.length === 0) strengths.push("No agency staff reliance — all care is delivered by the home's own team.");
-  if (succession_plans.length > 0 && avgReadiness >= 70) strengths.push(`Succession planning in place with ${avgReadiness}% average readiness — strong leadership continuity.`);
+  if (succession_plans.length > 0 && (avgReadiness ?? 0) >= 70) strengths.push(`Succession planning in place with ${(avgReadiness ?? 0)}% average readiness — strong leadership continuity.`);
   if (succession_plans.length > 0 && readyNow.length > 0) strengths.push(`${readyNow.length} succession candidate${readyNow.length > 1 ? "s" : ""} ready now — immediate cover available for key roles.`);
   if (vacancyRate === 0) strengths.push("No open vacancies — the home is fully staffed.");
-  if (inductionProfile.completion_rate >= 80 && inductions.length > 0) strengths.push(`${inductionProfile.completion_rate}% induction completion rate — new staff are properly supported.`);
-  if (staffComposition.dbs_update_service_rate >= 80) strengths.push(`${staffComposition.dbs_update_service_rate}% DBS update service registration — proactive safeguarding compliance.`);
+  if ((inductionProfile.completion_rate ?? 0) >= 80 && inductions.length > 0) strengths.push(`${(inductionProfile.completion_rate ?? 0)}% induction completion rate — new staff are properly supported.`);
+  if ((staffComposition.dbs_update_service_rate ?? 0) >= 80) strengths.push(`${(staffComposition.dbs_update_service_rate ?? 0)}% DBS update service registration — proactive safeguarding compliance.`);
   if (longServing.length > 0) strengths.push(`${longServing.length} long-serving staff (2+ years) — experienced team providing continuity for children.`);
 
   // ── Concerns ──────────────────────────────────────────────────────
@@ -349,8 +349,8 @@ export function computeHomeWorkforcePlanning(
   if (overdueReviews.length > 0) concerns.push(`${overdueReviews.length} succession plan review${overdueReviews.length > 1 ? "s" : ""} overdue — plans must be kept current.`);
   if (openVacancies.length > 0) concerns.push(`${openVacancies.length} open vacanc${openVacancies.length > 1 ? "ies" : "y"} — unfilled positions may create staffing pressure.`);
   if (overdueInductions.length > 0) concerns.push(`${overdueInductions.length} induction${overdueInductions.length > 1 ? "s" : ""} overdue — new staff may be working without full preparation.`);
-  if (staffComposition.permanent_rate < 60) concerns.push(`Only ${staffComposition.permanent_rate}% permanent staff — a high proportion of temporary workers affects stability.`);
-  if (staffComposition.dbs_update_service_rate < 50) concerns.push(`Only ${staffComposition.dbs_update_service_rate}% of staff on DBS update service — annual re-checks require manual processing.`);
+  if ((staffComposition.permanent_rate ?? 0) < 60) concerns.push(`Only ${(staffComposition.permanent_rate ?? 0)}% permanent staff — a high proportion of temporary workers affects stability.`);
+  if ((staffComposition.dbs_update_service_rate ?? 0) < 50) concerns.push(`Only ${(staffComposition.dbs_update_service_rate ?? 0)}% of staff on DBS update service — annual re-checks require manual processing.`);
 
   // ── Recommendations ───────────────────────────────────────────────
   const recs: WorkforceRecommendation[] = [];
@@ -375,7 +375,7 @@ export function computeHomeWorkforcePlanning(
   // ── Insights ──────────────────────────────────────────────────────
   const insights: WorkforceInsight[] = [];
 
-  if (staffComposition.permanent_rate >= 80 && agency.length === 0 && succession_plans.length > 0 && avgReadiness >= 70) {
+  if ((staffComposition.permanent_rate ?? 0) >= 80 && agency.length === 0 && succession_plans.length > 0 && (avgReadiness ?? 0) >= 70) {
     insights.push({ text: `Workforce planning is exemplary — ${staffComposition.permanent_rate}% permanent staff, no agency reliance, and active succession planning with ${avgReadiness}% average readiness. Ofsted will recognise a home that invests in its people and plans for continuity, providing children with a stable, familiar team.`, severity: "positive" });
   }
   if (agency.length > 0 && pct(agency.length, activeStaff.length) > 20) {

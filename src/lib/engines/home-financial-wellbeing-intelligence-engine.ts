@@ -45,21 +45,21 @@ export type FinancialRating =
 export interface AllowanceProfile {
   children_count: number;
   total_allowances_90d: number;
-  regularity_rate: number;          // % children with >=8 allowance payments in 90d
+  regularity_rate: number | null;          // % children with >=8 allowance payments in 90d
   avg_weekly_per_child: number;
 }
 
 export interface SpendingProfile {
   total_spending_90d: number;
-  receipt_rate: number;
-  approval_rate: number;
+  receipt_rate: number | null;
+  approval_rate: number | null;
   category_count: number;
   avg_per_child_90d: number;
 }
 
 export interface SavingsProfile {
   children_saving: number;
-  savings_participation_rate: number;
+  savings_participation_rate: number | null;
   total_deposits_90d: number;
 }
 
@@ -84,7 +84,7 @@ export interface FinancialRecommendation {
 
 export interface HomeFinancialResult {
   financial_rating: FinancialRating;
-  financial_score: number;
+  financial_score: number | null;
   headline: string;
   allowance_profile: AllowanceProfile;
   spending_profile: SpendingProfile;
@@ -165,13 +165,13 @@ export function computeHomeFinancial(
   const weeksInWindow = 90 / 7;
   const avgWeeklyPerChild = childrenReceiving > 0
     ? Math.round((totalAllowances90d / childrenReceiving / weeksInWindow) * 100) / 100
-    : 0;
+    : null;
 
   const allowanceProfile: AllowanceProfile = {
     children_count: childrenReceiving,
     total_allowances_90d: totalAllowances90d,
     regularity_rate: regularityRate,
-    avg_weekly_per_child: Math.round(avgWeeklyPerChild * 10) / 10,
+    avg_weekly_per_child: Math.round((avgWeeklyPerChild ?? 0) * 10) / 10,
   };
 
   // ── Spending Profile ──────────────────────────────────────────────
@@ -183,14 +183,14 @@ export function computeHomeFinancial(
   const spendingChildCount = new Set(spendingTxns.map(t => t.child_id)).size;
   const avgSpendPerChild = spendingChildCount > 0
     ? Math.round((totalSpending / spendingChildCount) * 100) / 100
-    : 0;
+    : null;
 
   const spendingProfile: SpendingProfile = {
     total_spending_90d: Math.round(totalSpending * 100) / 100,
     receipt_rate: receiptRate,
     approval_rate: approvalRate,
     category_count: spendingCategories.size,
-    avg_per_child_90d: Math.round(avgSpendPerChild * 100) / 100,
+    avg_per_child_90d: Math.round((avgSpendPerChild ?? 0) * 100) / 100,
   };
 
   // ── Savings Profile ───────────────────────────────────────────────

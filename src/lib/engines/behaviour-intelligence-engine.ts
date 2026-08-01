@@ -110,10 +110,10 @@ export interface BehaviourProfile {
   concerning_count: number;
   positive_percentage: number;
   pi_count: number;
-  pi_injury_rate: number; // percentage
-  pi_debrief_completion_rate: number; // percentage
-  pi_avg_duration_minutes: number;
-  de_escalation_success_rate: number; // percentage
+  pi_injury_rate: number | null; // percentage
+  pi_debrief_completion_rate: number | null; // percentage
+  pi_avg_duration_minutes: number | null;
+  de_escalation_success_rate: number | null; // percentage
   children_with_entries: number;
   children_with_repeat_escalation: string[]; // child IDs with 3+ concerning in 14 days
 }
@@ -121,7 +121,7 @@ export interface BehaviourProfile {
 export interface CategoryBreakdown {
   category: BehaviourCategory;
   count: number;
-  percentage: number;
+  percentage: number | null;
 }
 
 export interface PIEntry {
@@ -417,7 +417,7 @@ export function computeBehaviourIntelligence(input: BehaviourEngineInput): Behav
       count: categoryCounts.get(cat) ?? 0,
       percentage: totalWithIncidents > 0
         ? Math.round(((categoryCounts.get(cat) ?? 0) / totalWithIncidents) * 100)
-        : 0,
+        : null,
     }));
 
   // ── PI Analysis ────────────────────────────────────────────────────────
@@ -485,13 +485,13 @@ export function computeBehaviourIntelligence(input: BehaviourEngineInput): Behav
   // PI stats
   const piCount = piEntries.length;
   const piWithInjury = piEntries.filter((p) => p.injury).length;
-  const piInjuryRate = piCount > 0 ? Math.round((piWithInjury / piCount) * 100) : 0;
+  const piInjuryRate = piCount > 0 ? Math.round((piWithInjury / piCount) * 100) : null;
   const piDebriefed = piEntries.filter((p) => p.debriefed).length;
   const piDebriefRate = piCount > 0 ? Math.round((piDebriefed / piCount) * 100) : 100;
   const piDurations = piEntries.filter((p) => p.duration_minutes > 0).map((p) => p.duration_minutes);
   const piAvgDuration = piDurations.length > 0
     ? Math.round(piDurations.reduce((a, b) => a + b, 0) / piDurations.length)
-    : 0;
+    : null;
 
   // ── De-escalation success rate ─────────────────────────────────────────
   const entriesWithStrategy = concerningEntries.filter(
@@ -767,16 +767,16 @@ export function computeBehaviourIntelligence(input: BehaviourEngineInput): Behav
     const parts: string[] = [];
     if (piInjuryRate === 0) parts.push("zero injuries from physical interventions this period");
     if (piDebriefRate === 100) parts.push("all debriefs completed within timeframe");
-    if (piAvgDuration > 0 && piAvgDuration <= 5) parts.push(`average PI duration ${piAvgDuration} minutes (proportionate)`);
+    if ((piAvgDuration ?? 0) > 0 && (piAvgDuration ?? 0) <= 5) parts.push(`average PI duration ${(piAvgDuration ?? 0)} minutes (proportionate)`);
 
     if (parts.length >= 2) {
       insights.push({
         severity: "positive",
         text: `Positive: ${parts.join(". ")}. Reg 20 restraint standards well evidenced.`,
       });
-    } else if (piInjuryRate > 0 || piDebriefRate < 100) {
+    } else if ((piInjuryRate ?? 0) > 0 || piDebriefRate < 100) {
       const concerns: string[] = [];
-      if (piInjuryRate > 0) concerns.push(`${piInjuryRate}% of PIs resulted in injury`);
+      if ((piInjuryRate ?? 0) > 0) concerns.push(`${(piInjuryRate ?? 0)}% of PIs resulted in injury`);
       if (piDebriefRate < 100) concerns.push(`debrief completion at ${piDebriefRate}%`);
       insights.push({
         severity: "warning",

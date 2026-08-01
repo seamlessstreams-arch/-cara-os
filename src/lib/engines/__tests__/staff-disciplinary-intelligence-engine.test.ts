@@ -250,7 +250,7 @@ describe("Staff Disciplinary Intelligence Engine", () => {
         makeDisciplinary({ severity: "informal", support_offered: [] }),
       ];
       const result = run(cases);
-      expect(result.overview.support_offered_rate).toBe(0);
+      expect(result.overview.support_offered_rate).toBeNull();;
     });
   });
 
@@ -773,7 +773,7 @@ describe("Staff Disciplinary Intelligence Engine", () => {
       ];
       const result = run(cases);
       // 0 is not > 0 so excluded from avg
-      expect(result.overview.avg_days_to_resolution).toBe(0);
+      expect(result.overview.avg_days_to_resolution).toBeNull();;
     });
 
     it("correctly identifies cases at boundary of 90-day window", () => {

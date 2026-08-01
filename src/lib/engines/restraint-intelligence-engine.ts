@@ -259,7 +259,7 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
     .map(([reason, count]) => ({
       reason,
       count,
-      percentage: total90d > 0 ? Math.round((count / total90d) * 100) : 0,
+      percentage: total90d > 0 ? Math.round((count / total90d) * 100) : null,
     }))
     .sort((a, b) => b.count - a.count);
 
@@ -272,7 +272,7 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
     .map(([type, count]) => ({
       type,
       count,
-      percentage: total90d > 0 ? Math.round((count / total90d) * 100) : 0,
+      percentage: total90d > 0 ? Math.round((count / total90d) * 100) : null,
     }))
     .sort((a, b) => b.count - a.count);
 

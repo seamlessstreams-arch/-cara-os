@@ -173,17 +173,17 @@ export interface PocketMoneyAuditRecommendation {
 
 export interface PocketMoneyAuditResult {
   audit_rating: PocketMoneyAuditRating;
-  audit_score: number;
+  audit_score: number | null;
   headline: string;
   total_audits: number;
   total_reconciliations: number;
   total_discrepancies: number;
-  audit_compliance_rate: number;
-  reconciliation_accuracy_rate: number;
-  discrepancy_resolution_rate: number;
-  transparency_rate: number;
-  child_awareness_rate: number;
-  timeliness_rate: number;
+  audit_compliance_rate: number | null;
+  reconciliation_accuracy_rate: number | null;
+  discrepancy_resolution_rate: number | null;
+  transparency_rate: number | null;
+  child_awareness_rate: number | null;
+  timeliness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: PocketMoneyAuditRecommendation[];
@@ -584,7 +584,7 @@ export function computePocketMoneyAuditReconciliation(
   const avgConfidence =
     totalAwareness > 0
       ? Math.round((confidenceSum / totalAwareness) * 100) / 100
-      : 0;
+      : null;
 
   const childrenWithConcerns = child_awareness_records.filter((c) => c.has_raised_concerns).length;
   const concernsAddressed = child_awareness_records.filter(

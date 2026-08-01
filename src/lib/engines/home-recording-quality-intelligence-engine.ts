@@ -40,28 +40,28 @@ export interface SubmissionProfile {
   total_forms: number;
   submitted_count: number;
   draft_count: number;
-  submission_rate: number;
+  submission_rate: number | null;
   overdue_count: number;             // past due_date and not approved
 }
 
 export interface ReviewProfile {
   pending_review_count: number;
   reviewed_count: number;
-  review_rate: number;               // % of submitted forms that have been reviewed
-  avg_review_days: number;           // avg days from submission to review
+  review_rate: number | null;               // % of submitted forms that have been reviewed
+  avg_review_days: number | null;           // avg days from submission to review
 }
 
 export interface ApprovalProfile {
   approved_count: number;
-  approval_rate: number;             // % of reviewed forms approved
-  avg_approval_days: number;         // avg days from submission to approval
+  approval_rate: number | null;             // % of reviewed forms approved
+  avg_approval_days: number | null;         // avg days from submission to approval
 }
 
 export interface QualityProfile {
   urgent_count: number;
   high_priority_count: number;
-  child_linked_rate: number;
-  incident_linked_rate: number;
+  child_linked_rate: number | null;
+  incident_linked_rate: number | null;
   form_type_count: number;
   urgent_unreviewed_count: number;
 }
@@ -80,7 +80,7 @@ export interface RecordingRecommendation {
 
 export interface HomeRecordingResult {
   recording_rating: RecordingRating;
-  recording_score: number;
+  recording_score: number | null;
   headline: string;
   submission_profile: SubmissionProfile;
   review_profile: ReviewProfile;
@@ -177,7 +177,7 @@ export function computeHomeRecordingQuality(
   }
   const avgReviewDays = reviewDays.length > 0
     ? Math.round((reviewDays.reduce((a, b) => a + b, 0) / reviewDays.length) * 10) / 10
-    : 0;
+    : null;
 
   const reviewProfile: ReviewProfile = {
     pending_review_count: pendingReview.length,
@@ -198,7 +198,7 @@ export function computeHomeRecordingQuality(
   }
   const avgApprovalDays = approvalDays.length > 0
     ? Math.round((approvalDays.reduce((a, b) => a + b, 0) / approvalDays.length) * 10) / 10
-    : 0;
+    : null;
 
   const approvalProfile: ApprovalProfile = {
     approved_count: approved.length,
@@ -243,9 +243,9 @@ export function computeHomeRecordingQuality(
 
   // 3. Review timeliness (±3)
   if (reviewDays.length > 0) {
-    if (avgReviewDays <= 1) score += 3;
-    else if (avgReviewDays <= 3) score += 1;
-    else if (avgReviewDays <= 7) score -= 1;
+    if ((avgReviewDays ?? 0) <= 1) score += 3;
+    else if ((avgReviewDays ?? 0) <= 3) score += 1;
+    else if ((avgReviewDays ?? 0) <= 7) score -= 1;
     else score -= 2;
   }
 
@@ -290,7 +290,7 @@ export function computeHomeRecordingQuality(
   const strengths: string[] = [];
   if (submissionRate >= 90) strengths.push(`${submissionRate}% submission rate — comprehensive recording practice with minimal drafts.`);
   if (reviewRate >= 80 && submitted.length > 0) strengths.push(`${reviewRate}% review rate — consistent management oversight of recordings.`);
-  if (avgReviewDays <= 1 && reviewDays.length > 0) strengths.push(`Average review within ${avgReviewDays} days — rapid management response to submissions.`);
+  if ((avgReviewDays ?? 0) <= 1 && reviewDays.length > 0) strengths.push(`Average review within ${(avgReviewDays ?? 0)} days — rapid management response to submissions.`);
   if (approvalRate >= 80 && reviewed.length > 0) strengths.push(`${approvalRate}% approval rate — strong quality assurance workflow.`);
   if (overdue.length === 0) strengths.push("No overdue forms — all recording deadlines met.");
   if (urgentUnreviewed.length === 0 && urgent.length > 0) strengths.push("All urgent forms reviewed — critical recordings prioritised appropriately.");
@@ -303,7 +303,7 @@ export function computeHomeRecordingQuality(
   if (reviewRate < 50 && submitted.length > 0) concerns.push(`Only ${reviewRate}% review rate — most submitted forms lack management oversight.`);
   if (pendingReview.length > 0) concerns.push(`${pendingReview.length} form${pendingReview.length > 1 ? "s" : ""} awaiting review — management review backlog.`);
   if (urgentUnreviewed.length > 0) concerns.push(`${urgentUnreviewed.length} urgent form${urgentUnreviewed.length > 1 ? "s" : ""} not yet reviewed — critical recordings need immediate attention.`);
-  if (avgReviewDays > 7 && reviewDays.length > 0) concerns.push(`Average review taking ${avgReviewDays} days — significant delay in management oversight.`);
+  if ((avgReviewDays ?? 0) > 7 && reviewDays.length > 0) concerns.push(`Average review taking ${(avgReviewDays ?? 0)} days — significant delay in management oversight.`);
   if (submissionRate < 50) concerns.push("Fewer than half of forms have been submitted — significant recording gap.");
 
   // ── Recommendations ───────────────────────────────────────────────

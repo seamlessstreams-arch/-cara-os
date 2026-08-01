@@ -86,7 +86,7 @@ export interface DomainProfile {
 export interface ReviewCompliance {
   total_reviews: number;
   reviews_with_yp: number;
-  yp_participation_rate: number;  // %
+  yp_participation_rate: number | null;  // %
   reviews_with_barriers: number;
   overdue_reviews: number;        // targets past review_date without recent review
   avg_days_between_reviews: number | null;
@@ -102,7 +102,7 @@ export interface ProgressSummary {
   declining_count: number;
   avg_progress: number;           // avg (current - baseline) across active targets
   targets_with_yp_voice: number;
-  yp_voice_rate: number;          // % of targets with child's voice captured
+  yp_voice_rate: number | null;          // % of targets with child's voice captured
 }
 
 export interface OutcomeRecommendation {
@@ -123,7 +123,7 @@ export interface ChildOutcomeResult {
   child_id: string;
   child_name: string;
   progress_rating: OutcomeProgressRating;
-  progress_score: number;           // 0-100
+  progress_score: number | null;           // 0-100
   headline: string;
   progress_summary: ProgressSummary;
   domain_profiles: DomainProfile[];
@@ -149,7 +149,7 @@ const DOMAIN_LABELS: Record<OutcomeDomain, string> = {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number {
+function daysAgo(today: string, date: string): number | null {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -160,7 +160,7 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 0;
+  return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
 function avg(nums: number[]): number {
@@ -240,7 +240,7 @@ export function computeChildOutcome(
   // Overdue reviews: active targets where review_date is in the past
   const overdueTargets = activeTargets.filter((t) => {
     const da = daysAgo(today, t.review_date);
-    return da > 0;
+    return (da ?? 0) > 0;
   });
 
   // Average days between reviews per target
@@ -252,7 +252,7 @@ export function computeChildOutcome(
 
     for (let i = 1; i < targetReviews.length; i++) {
       const gap = daysAgo(targetReviews[i].review_date, targetReviews[i - 1].review_date);
-      if (gap > 0) targetReviewGaps.push(gap);
+      if ((gap ?? 0) > 0) targetReviewGaps.push((gap ?? 0));
     }
   }
 
@@ -290,11 +290,11 @@ export function computeChildOutcome(
 
     // YP voice
     if (progress_summary.yp_voice_rate === 100 && targets.length >= 2) score += 5;
-    else if (progress_summary.yp_voice_rate < 50) score -= 5;
+    else if ((progress_summary.yp_voice_rate ?? 0) < 50) score -= 5;
 
     // Review compliance — YP participation
     if (review_compliance.yp_participation_rate === 100 && reviews.length >= 2) score += 5;
-    else if (review_compliance.yp_participation_rate < 50 && reviews.length >= 2) score -= 5;
+    else if ((review_compliance.yp_participation_rate ?? 0) < 50 && reviews.length >= 2) score -= 5;
 
     // Overdue reviews
     if (overdueTargets.length > 0) score -= overdueTargets.length * 3;
@@ -344,7 +344,7 @@ export function computeChildOutcome(
     strengths.push(`${achievedTargets.length} outcome target${achievedTargets.length !== 1 ? "s" : ""} achieved. Achieving targets is the clearest evidence that the placement is making a positive difference — exactly what Ofsted wants to see.`);
   }
 
-  if (progress_summary.yp_voice_rate >= 80 && targets.length >= 3) {
+  if ((progress_summary.yp_voice_rate ?? 0) >= 80 && targets.length >= 3) {
     strengths.push(`${child_name}'s voice is captured in ${progress_summary.yp_voice_rate}% of outcome targets. The child's perspective is central to outcome planning — this evidences genuine participation, not tokenism.`);
   }
 
@@ -378,11 +378,11 @@ export function computeChildOutcome(
     concerns.push(`${overdueTargets.length} outcome review${overdueTargets.length !== 1 ? "s" : ""} overdue. Regular reviews are essential to track progress, identify barriers, and adjust targets. Overdue reviews mean the child's progress is not being monitored.`);
   }
 
-  if (progress_summary.yp_voice_rate < 50 && targets.length >= 2) {
+  if ((progress_summary.yp_voice_rate ?? 0) < 50 && targets.length >= 2) {
     concerns.push(`${child_name}'s voice captured in only ${progress_summary.yp_voice_rate}% of targets. The child should be central to their own outcome planning — their views help ensure targets are meaningful and motivating.`);
   }
 
-  if (review_compliance.yp_participation_rate < 50 && reviews.length >= 2) {
+  if ((review_compliance.yp_participation_rate ?? 0) < 50 && reviews.length >= 2) {
     concerns.push(`${child_name} participated in only ${review_compliance.yp_participation_rate}% of reviews. Low participation may indicate disengagement or that reviews are not being conducted in a child-friendly way.`);
   }
 
@@ -429,7 +429,7 @@ export function computeChildOutcome(
     });
   }
 
-  if (progress_summary.yp_voice_rate < 80 && targets.length >= 2) {
+  if ((progress_summary.yp_voice_rate ?? 0) < 80 && targets.length >= 2) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Capture ${child_name}'s views for all outcome targets. Use keywork sessions, direct conversations, or creative methods (art, journals) to ensure the child's perspective is recorded.`,
@@ -485,7 +485,7 @@ export function computeChildOutcome(
     });
   }
 
-  if (improvingActive.length >= 3 && progress_summary.yp_voice_rate >= 80) {
+  if (improvingActive.length >= 3 && (progress_summary.yp_voice_rate ?? 0) >= 80) {
     insights.push({
       severity: "positive",
       text: `${improvingActive.length} targets improving with the child's voice captured throughout. This is the gold standard of outcomes-focused care — measurable progress, child-centred planning, and the young person's perspective driving their own journey.`,

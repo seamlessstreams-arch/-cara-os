@@ -85,7 +85,7 @@ export interface SkillsOverview {
   developing_count: number;
   emerging_count: number;
   not_started_count: number;
-  readiness_score: number;       // 0-100
+  readiness_score: number | null;       // 0-100
   skills_by_category: SkillSummary[];
   strengths: string[];
   development_areas: string[];
@@ -127,7 +127,7 @@ export interface ChildIndependenceResult {
   child_name: string;
   child_age: number;
   readiness_status: ReadinessStatus;
-  readiness_score: number;          // 0-100
+  readiness_score: number | null;          // 0-100
   headline: string;
   skills_overview: SkillsOverview;
   pathway_compliance: PathwayCompliance;
@@ -182,7 +182,7 @@ export function computeChildIndependenceIntelligence(
   const skillScores = skills.map((s) => PROF_SCORES[s.proficiency] ?? 0);
   const readinessScore = skills.length > 0
     ? Math.round(skillScores.reduce((a, b) => a + b, 0) / skills.length)
-    : 0;
+    : null;
 
   const skillsByCategory: SkillSummary[] = skills.map((s) => ({
     category: s.category,
@@ -233,7 +233,7 @@ export function computeChildIndependenceIntelligence(
 
   // Skills readiness (max 50 points)
   if (skills.length > 0) {
-    score += Math.round(readinessScore * 0.5); // Scale 0-100 to 0-50
+    score += Math.round((readinessScore ?? 0) * 0.5); // Scale 0-100 to 0-50
   }
 
   // Pathway plan (max 30 points)
@@ -293,7 +293,7 @@ export function computeChildIndependenceIntelligence(
     strengths.push(`${child_name} is fully independent in ${independentCount} skill area${independentCount !== 1 ? "s" : ""}: ${indNames}.`);
   }
 
-  if (readinessScore >= 70) {
+  if ((readinessScore ?? 0) >= 70) {
     strengths.push(`Overall readiness score of ${readinessScore}% — ${child_name} is making strong progress toward independent living.`);
   }
 

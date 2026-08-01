@@ -172,7 +172,7 @@ export function computeSanctionsRewardsIntelligence(
         type,
         type_label: formatType(type),
         count,
-        percentage: total > 0 ? Math.round((count / total) * 100) : 0,
+        percentage: total > 0 ? Math.round((count / total) * 100) : null,
       }))
       .sort((a, b) => b.count - a.count);
   }

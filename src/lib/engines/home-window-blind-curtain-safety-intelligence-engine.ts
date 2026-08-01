@@ -153,19 +153,19 @@ export interface WindowBlindCurtainRecommendation {
 
 export interface WindowBlindCurtainSafetyResult {
   window_safety_rating: WindowBlindCurtainRating;
-  window_safety_score: number;
+  window_safety_score: number | null;
   headline: string;
   total_restrictor_records: number;
   total_blind_records: number;
   total_curtain_records: number;
   total_blackout_records: number;
   total_inspection_records: number;
-  window_restrictor_rate: number;
-  blind_cord_safety_rate: number;
-  curtain_condition_rate: number;
-  blackout_provision_rate: number;
-  child_safety_rate: number;
-  inspection_compliance_rate: number;
+  window_restrictor_rate: number | null;
+  blind_cord_safety_rate: number | null;
+  curtain_condition_rate: number | null;
+  blackout_provision_rate: number | null;
+  child_safety_rate: number | null;
+  inspection_compliance_rate: number | null;
   window_restrictor_records: WindowRestrictorRecordInput[];
   blind_cord_records: BlindCordRecordInput[];
   curtain_condition_records: CurtainConditionRecordInput[];
@@ -470,7 +470,7 @@ export function computeWindowBlindCurtainSafety(
 
   const childSafetyRate = childSafetyDenominator > 0
     ? Math.round(childSafetyNumerator / childSafetyDenominator)
-    : 0;
+    : null;
 
   // --- Inspection compliance metrics ---
   const inspectionsPassed = inspection_records.filter((r) => r.overall_pass).length;
@@ -527,8 +527,8 @@ export function computeWindowBlindCurtainSafety(
   else if (blackoutProvisionRate >= 70) score += 1;
 
   // --- Bonus 5: childSafetyRate (>=90: +4, >=70: +2) ---
-  if (childSafetyRate >= 90) score += 4;
-  else if (childSafetyRate >= 70) score += 2;
+  if ((childSafetyRate ?? 0) >= 90) score += 4;
+  else if ((childSafetyRate ?? 0) >= 70) score += 2;
 
   // --- Bonus 6: inspectionComplianceRate (>=90: +4, >=70: +2) ---
   if (inspectionComplianceRate >= 90) score += 4;
@@ -1288,7 +1288,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (childSafetyRate >= 90 && childSafetyDenominator > 0) {
+  if ((childSafetyRate ?? 0) >= 90 && childSafetyDenominator > 0) {
     insights.push({
       text: `${childSafetyRate}% composite child safety rate — the home achieves excellent scores across upper-floor window compliance, blind cord elimination, child-safe curtain rails, and individualised blackout provision. Children's specific safety needs are being met comprehensively.`,
       severity: "positive",

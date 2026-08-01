@@ -14,7 +14,7 @@ export interface CompetencyProfileInput {
   staff_id: string;
   current_stage: string;
   target_stage: string | null;
-  readiness_score: number;
+  readiness_score: number | null;
   strengths_count: number;
   development_areas_count: number;
   last_assessed_date: string;
@@ -47,13 +47,13 @@ export type CompetencyLandscapeRating =
   | "insufficient_data";
 
 export interface ReadinessProfile {
-  avg_readiness_score: number;
-  highest_readiness: number;
-  lowest_readiness: number;
+  avg_readiness_score: number | null;
+  highest_readiness: number | null;
+  lowest_readiness: number | null;
   staff_above_70: number;
-  staff_above_70_rate: number;
+  staff_above_70_rate: number | null;
   staff_with_target: number;
-  staff_with_target_rate: number;
+  staff_with_target_rate: number | null;
 }
 
 export interface StageDistribution {
@@ -65,17 +65,17 @@ export interface ProgressionProfile {
   active_plans: number;
   completed_plans: number;
   paused_plans: number;
-  plan_coverage_rate: number;
+  plan_coverage_rate: number | null;
   total_actions: number;
   completed_actions: number;
   overdue_actions: number;
-  action_completion_rate: number;
-  overdue_action_rate: number;
+  action_completion_rate: number | null;
+  overdue_action_rate: number | null;
 }
 
 export interface CurrencyProfile {
   overdue_assessments: number;
-  overdue_assessment_rate: number;
+  overdue_assessment_rate: number | null;
   avg_days_since_assessment: number;
 }
 
@@ -92,7 +92,7 @@ export interface CompLandscapeInsight {
 }
 
 export interface HomeCompetencyLandscapeResult {
-  competency_score: number;
+  competency_score: number | null;
   competency_rating: CompetencyLandscapeRating;
   headline: string;
 
@@ -145,13 +145,13 @@ export function computeHomeCompetencyLandscape(
 
   // ── Readiness Profile ────────────────────────────────────────────────────
   const scores = profiles.map((p) => p.readiness_score);
-  const staffAbove70 = profiles.filter((p) => p.readiness_score >= 70).length;
+  const staffAbove70 = profiles.filter((p) => (p.readiness_score ?? 0) >= 70).length;
   const staffWithTarget = profiles.filter((p) => p.target_stage !== null).length;
 
   const readiness: ReadinessProfile = {
     avg_readiness_score: avg(scores),
-    highest_readiness: scores.length > 0 ? Math.max(...scores) : 0,
-    lowest_readiness: scores.length > 0 ? Math.min(...scores) : 0,
+    highest_readiness: scores.length > 0 ? Math.max(...scores) : null,
+    lowest_readiness: scores.length > 0 ? Math.min(...scores) : null,
     staff_above_70: staffAbove70,
     staff_above_70_rate: pct(staffAbove70, profiles.length),
     staff_with_target: staffWithTarget,
@@ -218,11 +218,11 @@ export function computeHomeCompetencyLandscape(
   // Modifier 1: Average readiness score (±5)
   if (profiles.length === 0) {
     // no profiles → neutral
-  } else if (readiness.avg_readiness_score >= 75) {
+  } else if ((readiness.avg_readiness_score ?? 0) >= 75) {
     bonuses += 5;
-  } else if (readiness.avg_readiness_score >= 65) {
+  } else if ((readiness.avg_readiness_score ?? 0) >= 65) {
     bonuses += 3;
-  } else if (readiness.avg_readiness_score >= 55) {
+  } else if ((readiness.avg_readiness_score ?? 0) >= 55) {
     // +0
   } else {
     bonuses -= 4;
@@ -231,11 +231,11 @@ export function computeHomeCompetencyLandscape(
   // Modifier 2: Pathway coverage — staff with target stage (±3)
   if (profiles.length === 0) {
     // neutral
-  } else if (readiness.staff_with_target_rate >= 80) {
+  } else if ((readiness.staff_with_target_rate ?? 0) >= 80) {
     bonuses += 3;
-  } else if (readiness.staff_with_target_rate >= 60) {
+  } else if ((readiness.staff_with_target_rate ?? 0) >= 60) {
     bonuses += 1;
-  } else if (readiness.staff_with_target_rate >= 40) {
+  } else if ((readiness.staff_with_target_rate ?? 0) >= 40) {
     // +0
   } else {
     bonuses -= 2;
@@ -244,11 +244,11 @@ export function computeHomeCompetencyLandscape(
   // Modifier 3: Development plan engagement (±4)
   if (total_staff === 0) {
     // neutral
-  } else if (progression.plan_coverage_rate >= 60) {
+  } else if ((progression.plan_coverage_rate ?? 0) >= 60) {
     bonuses += 4;
-  } else if (progression.plan_coverage_rate >= 40) {
+  } else if ((progression.plan_coverage_rate ?? 0) >= 40) {
     bonuses += 2;
-  } else if (progression.plan_coverage_rate >= 20) {
+  } else if ((progression.plan_coverage_rate ?? 0) >= 20) {
     // +0
   } else {
     bonuses -= 3;
@@ -259,9 +259,9 @@ export function computeHomeCompetencyLandscape(
     // neutral — no plans to have overdue actions
   } else if (overdueActions === 0) {
     bonuses += 3;
-  } else if (progression.overdue_action_rate <= 15) {
+  } else if ((progression.overdue_action_rate ?? 0) <= 15) {
     bonuses += 1;
-  } else if (progression.overdue_action_rate <= 30) {
+  } else if ((progression.overdue_action_rate ?? 0) <= 30) {
     // +0
   } else {
     bonuses -= 2;
@@ -272,9 +272,9 @@ export function computeHomeCompetencyLandscape(
     // neutral
   } else if (overdueAssessments === 0) {
     bonuses += 3;
-  } else if (currencyProfile.overdue_assessment_rate <= 25) {
+  } else if ((currencyProfile.overdue_assessment_rate ?? 0) <= 25) {
     bonuses += 1;
-  } else if (currencyProfile.overdue_assessment_rate <= 50) {
+  } else if ((currencyProfile.overdue_assessment_rate ?? 0) <= 50) {
     // +0
   } else {
     bonuses -= 2;
@@ -307,11 +307,11 @@ export function computeHomeCompetencyLandscape(
   // Modifier 8: High-readiness staff rate (±3)
   if (profiles.length === 0) {
     // neutral
-  } else if (readiness.staff_above_70_rate >= 50) {
+  } else if ((readiness.staff_above_70_rate ?? 0) >= 50) {
     bonuses += 3;
-  } else if (readiness.staff_above_70_rate >= 30) {
+  } else if ((readiness.staff_above_70_rate ?? 0) >= 30) {
     bonuses += 1;
-  } else if (readiness.staff_above_70_rate >= 15) {
+  } else if ((readiness.staff_above_70_rate ?? 0) >= 15) {
     // +0
   } else {
     bonuses -= 2;
@@ -325,7 +325,7 @@ export function computeHomeCompetencyLandscape(
 
   // ── Strengths ────────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (readiness.avg_readiness_score >= 70 && profiles.length > 0)
+  if ((readiness.avg_readiness_score ?? 0) >= 70 && profiles.length > 0)
     strengths.push(
       `Team average readiness score is ${readiness.avg_readiness_score}/100 — indicating a capable and well-prepared workforce.`,
     );
@@ -333,7 +333,7 @@ export function computeHomeCompetencyLandscape(
     strengths.push(
       "All competency assessments are current — no overdue reviews, demonstrating proactive workforce management.",
     );
-  if (readiness.staff_with_target_rate >= 80 && profiles.length > 0)
+  if ((readiness.staff_with_target_rate ?? 0) >= 80 && profiles.length > 0)
     strengths.push(
       `${readiness.staff_with_target_rate}% of staff have a defined progression target — strong workforce development ambition.`,
     );
@@ -352,7 +352,7 @@ export function computeHomeCompetencyLandscape(
 
   // ── Concerns ─────────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (readiness.avg_readiness_score < 60 && profiles.length > 0)
+  if ((readiness.avg_readiness_score ?? 0) < 60 && profiles.length > 0)
     concerns.push(
       `Average readiness score is ${readiness.avg_readiness_score}/100 — below the expected standard. Focused development needed.`,
     );
@@ -360,7 +360,7 @@ export function computeHomeCompetencyLandscape(
     concerns.push(
       `${overdueAssessments} competency assessment${overdueAssessments > 1 ? "s are" : " is"} overdue — profiles may not reflect current capability.`,
     );
-  if (progression.plan_coverage_rate < 40 && total_staff > 0)
+  if ((progression.plan_coverage_rate ?? 0) < 40 && total_staff > 0)
     concerns.push(
       `Only ${progression.plan_coverage_rate}% of staff have development plans — limited structured progression in place.`,
     );
@@ -368,7 +368,7 @@ export function computeHomeCompetencyLandscape(
     concerns.push(
       `${overdueActions} development plan action${overdueActions > 1 ? "s are" : " is"} overdue — may indicate stalled progression or insufficient management oversight.`,
     );
-  if (readiness.staff_above_70_rate < 30 && profiles.length > 0)
+  if ((readiness.staff_above_70_rate ?? 0) < 30 && profiles.length > 0)
     concerns.push(
       `Only ${readiness.staff_above_70_rate}% of staff have readiness scores above 70 — team capability may be insufficient for complex work.`,
     );
@@ -397,7 +397,7 @@ export function computeHomeCompetencyLandscape(
       regulatory_ref: "Reg 33",
     });
 
-  if (progression.plan_coverage_rate < 60 && total_staff > 0)
+  if ((progression.plan_coverage_rate ?? 0) < 60 && total_staff > 0)
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -406,7 +406,7 @@ export function computeHomeCompetencyLandscape(
       regulatory_ref: "Reg 33",
     });
 
-  if (readiness.staff_with_target_rate < 60 && profiles.length > 0)
+  if ((readiness.staff_with_target_rate ?? 0) < 60 && profiles.length > 0)
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -415,7 +415,7 @@ export function computeHomeCompetencyLandscape(
       regulatory_ref: "Reg 33",
     });
 
-  if (readiness.avg_readiness_score < 65 && profiles.length > 0)
+  if ((readiness.avg_readiness_score ?? 0) < 65 && profiles.length > 0)
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -427,7 +427,7 @@ export function computeHomeCompetencyLandscape(
   // ── Insights ─────────────────────────────────────────────────────────────
   const insights: CompLandscapeInsight[] = [];
 
-  if (readiness.avg_readiness_score >= 70 && uniqueStages >= 3)
+  if ((readiness.avg_readiness_score ?? 0) >= 70 && uniqueStages >= 3)
     insights.push({
       text: `The team's average readiness of ${readiness.avg_readiness_score}/100 across ${uniqueStages} role stages demonstrates a mature, multi-level workforce — an inspector would view this as evidence of effective succession planning.`,
       severity: "positive",
@@ -459,8 +459,8 @@ export function computeHomeCompetencyLandscape(
     });
 
   if (
-    progression.plan_coverage_rate >= 60 &&
-    readiness.staff_with_target_rate >= 80
+    (progression.plan_coverage_rate ?? 0) >= 60 &&
+    (readiness.staff_with_target_rate ?? 0) >= 80
   )
     insights.push({
       text: "Strong alignment between target-setting and development planning — the home demonstrates a structured approach to workforce progression that would evidence Reg 33 compliance.",

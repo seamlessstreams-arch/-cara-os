@@ -66,7 +66,7 @@ export interface IndependencePathwayInput {
   self_care_assessed: boolean;
   travel_skills_assessed: boolean;
   social_skills_assessed: boolean;
-  overall_readiness_score: number;
+  overall_readiness_score: number | null;
   created_at: string;
 }
 
@@ -115,15 +115,15 @@ export interface TransitionReadinessRecommendation {
 
 export interface TransitionLeavingCareReadinessResult {
   readiness_rating: TransitionReadinessRating;
-  readiness_score: number;
+  readiness_score: number | null;
   headline: string;
   total_transition_plans: number;
-  transition_plan_coverage_rate: number;
-  pathway_plan_currency_rate: number;
-  leaving_care_completion_rate: number;
-  independence_assessment_rate: number;
-  aftercare_contact_rate: number;
-  child_voice_in_transition_rate: number;
+  transition_plan_coverage_rate: number | null;
+  pathway_plan_currency_rate: number | null;
+  leaving_care_completion_rate: number | null;
+  independence_assessment_rate: number | null;
+  aftercare_contact_rate: number | null;
+  child_voice_in_transition_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: TransitionReadinessRecommendation[];
@@ -278,7 +278,7 @@ export function computeTransitionLeavingCareReadiness(
   ).length;
   const reviewTimelinessRate = plansWithReviewDate > 0
     ? pct(plansWithReviewDate - overduePlans, plansWithReviewDate)
-    : 0;
+    : null;
 
   // Plans with goals set
   const plansWithGoals = transition_planning_records.filter(
@@ -386,7 +386,7 @@ export function computeTransitionLeavingCareReadiness(
   );
   const avgReadinessScore = totalIndependencePathways > 0
     ? Math.round(totalReadinessScore / totalIndependencePathways)
-    : 0;
+    : null;
 
   // --- Aftercare metrics ---
   const totalAftercareRecords = aftercare_records.length;
@@ -455,8 +455,8 @@ export function computeTransitionLeavingCareReadiness(
   else if (keyWorkerAllocationRate >= 80) score += 1;
 
   // --- Bonus 9: reviewTimelinessRate (>=90: +3, >=70: +1) ---
-  if (reviewTimelinessRate >= 90) score += 3;
-  else if (reviewTimelinessRate >= 70) score += 1;
+  if ((reviewTimelinessRate ?? 0) >= 90) score += 3;
+  else if ((reviewTimelinessRate ?? 0) >= 70) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
@@ -560,7 +560,7 @@ export function computeTransitionLeavingCareReadiness(
     );
   }
 
-  if (reviewTimelinessRate >= 90 && plansWithReviewDate > 0) {
+  if ((reviewTimelinessRate ?? 0) >= 90 && plansWithReviewDate > 0) {
     strengths.push(
       `${reviewTimelinessRate}% of transition plan reviews are on schedule — the home proactively maintains review timelines.`,
     );

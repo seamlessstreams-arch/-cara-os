@@ -156,19 +156,19 @@ export interface HomeworkEnvironmentRecommendation {
 
 export interface HomeworkEnvironmentResult {
   study_rating: HomeworkEnvironmentRating;
-  study_score: number;
+  study_score: number | null;
   headline: string;
   total_space_assessments: number;
   total_noise_assessments: number;
   total_equipment_assessments: number;
   total_lighting_assessments: number;
   total_satisfaction_surveys: number;
-  study_space_rate: number;
-  noise_environment_rate: number;
-  equipment_rate: number;
-  lighting_rate: number;
-  child_satisfaction_rate: number;
-  utilisation_rate: number;
+  study_space_rate: number | null;
+  noise_environment_rate: number | null;
+  equipment_rate: number | null;
+  lighting_rate: number | null;
+  child_satisfaction_rate: number | null;
+  utilisation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: HomeworkEnvironmentRecommendation[];
@@ -471,7 +471,7 @@ export function computeHomeworkEnvironmentStudySpace(
   const avgOverallSatisfaction =
     totalSatisfactionSurveys > 0
       ? Math.round((overallSatisfactionSum / totalSatisfactionSurveys) * 100) / 100
-      : 0;
+      : null;
 
   // Child satisfaction rate: proportion scoring 4 or 5 out of 5
   const satisfiedChildren = child_satisfaction_records.filter(
@@ -506,7 +506,7 @@ export function computeHomeworkEnvironmentStudySpace(
             totalSatisfactionSurveys) *
             100,
         ) / 100
-      : 0;
+      : null;
 
   const avgHomeworkCompletion =
     totalSatisfactionSurveys > 0
@@ -516,7 +516,7 @@ export function computeHomeworkEnvironmentStudySpace(
             0,
           ) / totalSatisfactionSurveys,
         )
-      : 0;
+      : null;
 
   // --- Utilisation rate ---
   // How many unique children have at least one study space assessment
@@ -700,11 +700,11 @@ export function computeHomeworkEnvironmentStudySpace(
     );
   }
 
-  if (avgHomeworkCompletion >= 85 && totalSatisfactionSurveys > 0) {
+  if ((avgHomeworkCompletion ?? 0) >= 85 && totalSatisfactionSurveys > 0) {
     strengths.push(
       `Average self-reported homework completion at ${avgHomeworkCompletion}% — children's high homework completion rate reflects effective study environment support and academic engagement.`,
     );
-  } else if (avgHomeworkCompletion >= 70 && totalSatisfactionSurveys > 0) {
+  } else if ((avgHomeworkCompletion ?? 0) >= 70 && totalSatisfactionSurveys > 0) {
     strengths.push(
       `Average self-reported homework completion at ${avgHomeworkCompletion}% — most children are completing their homework, indicating reasonable study support.`,
     );
@@ -812,11 +812,11 @@ export function computeHomeworkEnvironmentStudySpace(
     );
   }
 
-  if (avgHomeworkCompletion < 50 && totalSatisfactionSurveys > 0) {
+  if ((avgHomeworkCompletion ?? 0) < 50 && totalSatisfactionSurveys > 0) {
     concerns.push(
       `Average self-reported homework completion at only ${avgHomeworkCompletion}% — children are not completing homework, which may reflect inadequate study environment support, equipment shortages, or insufficient staff encouragement.`,
     );
-  } else if (avgHomeworkCompletion < 70 && avgHomeworkCompletion >= 50 && totalSatisfactionSurveys > 0) {
+  } else if ((avgHomeworkCompletion ?? 0) < 70 && (avgHomeworkCompletion ?? 0) >= 50 && totalSatisfactionSurveys > 0) {
     concerns.push(
       `Average homework completion at ${avgHomeworkCompletion}% — homework completion is below expected levels, suggesting barriers in the study environment.`,
     );
@@ -1269,8 +1269,8 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    avgHomeworkCompletion >= 50 &&
-    avgHomeworkCompletion < 70 &&
+    (avgHomeworkCompletion ?? 0) >= 50 &&
+    (avgHomeworkCompletion ?? 0) < 70 &&
     totalSatisfactionSurveys > 0
   ) {
     insights.push({
@@ -1405,7 +1405,7 @@ export function computeHomeworkEnvironmentStudySpace(
   }
 
   if (
-    avgHomeworkCompletion >= 85 &&
+    (avgHomeworkCompletion ?? 0) >= 85 &&
     totalSatisfactionSurveys > 0
   ) {
     insights.push({

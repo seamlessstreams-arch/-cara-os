@@ -3192,7 +3192,7 @@ describe("Metric calculations", () => {
         }),
       ],
     });
-    expect(r.average_investigation_days).toBe(0);
+    expect(r.average_investigation_days).toBeNull();;
   });
 
   it("excludes duration_days of 0 from average calculation", () => {

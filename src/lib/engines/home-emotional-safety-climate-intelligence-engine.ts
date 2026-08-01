@@ -111,20 +111,20 @@ export interface EmotionalSafetyRecommendation {
 
 export interface EmotionalSafetyClimateResult {
   safety_rating: EmotionalSafetyRating;
-  safety_score: number;
+  safety_score: number | null;
   headline: string;
   total_restraints: number;
-  average_restraint_duration: number;
-  restraint_review_rate: number;
-  child_debrief_rate: number;
-  staff_debrief_rate: number;
-  reward_to_sanction_ratio: number;
+  average_restraint_duration: number | null;
+  restraint_review_rate: number | null;
+  child_debrief_rate: number | null;
+  staff_debrief_rate: number | null;
+  reward_to_sanction_ratio: number | null;
   positive_achievement_count: number;
-  achievement_celebration_rate: number;
-  de_escalation_attempt_rate: number;
-  body_map_completion_rate: number;
-  post_incident_quality_avg: number;
-  injury_rate: number;
+  achievement_celebration_rate: number | null;
+  de_escalation_attempt_rate: number | null;
+  body_map_completion_rate: number | null;
+  post_incident_quality_avg: number | null;
+  injury_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: EmotionalSafetyRecommendation[];
@@ -255,7 +255,7 @@ export function computeEmotionalSafetyClimate(
       ? Math.round(
           restraints.reduce((sum, r) => sum + r.duration, 0) / totalRestraints,
         )
-      : 0;
+      : null;
 
   const reviewedRestraints = restraints.filter(
     (r) => r.review_status === "reviewed",
@@ -299,7 +299,7 @@ export function computeEmotionalSafetyClimate(
       ? Math.round((rewardCount / sanctionCount) * 100) / 100
       : rewardCount > 0
         ? rewardCount
-        : 0;
+        : null;
 
   // --- Post-incident debrief metrics ---
   const totalPostIncidentDebriefs = post_incident_debriefs.length;
@@ -311,7 +311,7 @@ export function computeEmotionalSafetyClimate(
   const postIncidentQualityAvg =
     totalPostIncidentDebriefs > 0
       ? Math.round((qualitySum / totalPostIncidentDebriefs) * 100) / 100
-      : 0;
+      : null;
 
   const debriefVoiceCaptured = post_incident_debriefs.filter(
     (d) => d.child_voice_captured,
@@ -376,8 +376,8 @@ export function computeEmotionalSafetyClimate(
 
   // --- Bonus: reward-to-sanction ratio ---
   // >= 4.0 → +4, >= 2.0 → +2
-  if (rewardToSanctionRatio >= 4.0) score += 4;
-  else if (rewardToSanctionRatio >= 2.0) score += 2;
+  if ((rewardToSanctionRatio ?? 0) >= 4.0) score += 4;
+  else if ((rewardToSanctionRatio ?? 0) >= 2.0) score += 2;
 
   // --- Bonus: de-escalation attempt rate ---
   // >= 100 → +3, >= 90 → +1
@@ -401,8 +401,8 @@ export function computeEmotionalSafetyClimate(
 
   // --- Bonus: post-incident quality average ---
   // >= 4.0 → +3, >= 3.0 → +1
-  if (postIncidentQualityAvg >= 4.0) score += 3;
-  else if (postIncidentQualityAvg >= 3.0) score += 1;
+  if ((postIncidentQualityAvg ?? 0) >= 4.0) score += 3;
+  else if ((postIncidentQualityAvg ?? 0) >= 3.0) score += 1;
 
   // --- Bonus: no injuries ---
   if (totalRestraints > 0 && injuryRate === 0) score += 2;
@@ -416,7 +416,7 @@ export function computeEmotionalSafetyClimate(
   if (childDebriefRate < 50 && totalRestraints > 0) score -= 5;
 
   // rewardToSanctionRatio < 1.0 → -5
-  if (rewardToSanctionRatio < 1.0 && sanctionCount > 0) score -= 5;
+  if ((rewardToSanctionRatio ?? 0) < 1.0 && sanctionCount > 0) score -= 5;
 
   // bodyMapRate < 50 → -5
   if (bodyMapRate < 50 && totalRestraints > 0) score -= 5;
@@ -452,11 +452,11 @@ export function computeEmotionalSafetyClimate(
     );
   }
 
-  if (rewardToSanctionRatio >= 4.0 && sanctionCount > 0) {
+  if ((rewardToSanctionRatio ?? 0) >= 4.0 && sanctionCount > 0) {
     strengths.push(
       `Reward-to-sanction ratio of ${rewardToSanctionRatio}:1 — the home operates a strongly positive behaviour culture where children's good choices are recognised and celebrated.`,
     );
-  } else if (rewardToSanctionRatio >= 2.0 && sanctionCount > 0) {
+  } else if ((rewardToSanctionRatio ?? 0) >= 2.0 && sanctionCount > 0) {
     strengths.push(
       `Reward-to-sanction ratio of ${rewardToSanctionRatio}:1 — rewards outweigh sanctions, supporting a positive behaviour management approach.`,
     );
@@ -496,7 +496,7 @@ export function computeEmotionalSafetyClimate(
     );
   }
 
-  if (postIncidentQualityAvg >= 4.0 && totalPostIncidentDebriefs > 0) {
+  if ((postIncidentQualityAvg ?? 0) >= 4.0 && totalPostIncidentDebriefs > 0) {
     strengths.push(
       `Post-incident debrief quality averages ${postIncidentQualityAvg}/5 — high-quality reflective practice after incidents.`,
     );
@@ -555,7 +555,7 @@ export function computeEmotionalSafetyClimate(
     );
   }
 
-  if (rewardToSanctionRatio < 1.0 && sanctionCount > 0) {
+  if ((rewardToSanctionRatio ?? 0) < 1.0 && sanctionCount > 0) {
     concerns.push(
       `Reward-to-sanction ratio of ${rewardToSanctionRatio}:1 — sanctions outweigh rewards, indicating a punitive rather than positive behaviour culture.`,
     );
@@ -595,7 +595,7 @@ export function computeEmotionalSafetyClimate(
     );
   }
 
-  if (postIncidentQualityAvg < 3.0 && totalPostIncidentDebriefs > 0) {
+  if ((postIncidentQualityAvg ?? 0) < 3.0 && totalPostIncidentDebriefs > 0) {
     concerns.push(
       `Post-incident debrief quality averages only ${postIncidentQualityAvg}/5 — debriefs are not adequately exploring children's experiences after incidents.`,
     );
@@ -662,7 +662,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (rewardToSanctionRatio < 1.0 && sanctionCount > 0) {
+  if ((rewardToSanctionRatio ?? 0) < 1.0 && sanctionCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -738,7 +738,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (postIncidentQualityAvg < 3.0 && totalPostIncidentDebriefs > 0) {
+  if ((postIncidentQualityAvg ?? 0) < 3.0 && totalPostIncidentDebriefs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -843,7 +843,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (rewardToSanctionRatio < 1.0 && sanctionCount > 0) {
+  if ((rewardToSanctionRatio ?? 0) < 1.0 && sanctionCount > 0) {
     insights.push({
       text: `The reward-to-sanction ratio of ${rewardToSanctionRatio}:1 indicates a punitive culture. Research consistently shows that positive reinforcement is more effective than sanctions in supporting children's behavioural development. Ofsted expects a positive behaviour culture under Reg 12.`,
       severity: "critical",
@@ -903,8 +903,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    rewardToSanctionRatio >= 1.0 &&
-    rewardToSanctionRatio < 2.0 &&
+    (rewardToSanctionRatio ?? 0) >= 1.0 &&
+    (rewardToSanctionRatio ?? 0) < 2.0 &&
     sanctionCount > 0
   ) {
     insights.push({
@@ -932,8 +932,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    postIncidentQualityAvg >= 3.0 &&
-    postIncidentQualityAvg < 4.0 &&
+    (postIncidentQualityAvg ?? 0) >= 3.0 &&
+    (postIncidentQualityAvg ?? 0) < 4.0 &&
     totalPostIncidentDebriefs > 0
   ) {
     insights.push({
@@ -984,7 +984,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (rewardToSanctionRatio >= 4.0 && sanctionCount > 0) {
+  if ((rewardToSanctionRatio ?? 0) >= 4.0 && sanctionCount > 0) {
     insights.push({
       text: `A ${rewardToSanctionRatio}:1 reward-to-sanction ratio demonstrates a genuinely positive behaviour culture. Ofsted will view this as strong evidence of child-centred practice under Reg 12.`,
       severity: "positive",
@@ -1031,7 +1031,7 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    postIncidentQualityAvg >= 4.0 &&
+    (postIncidentQualityAvg ?? 0) >= 4.0 &&
     totalPostIncidentDebriefs > 0 &&
     pct(debriefVoiceCaptured, totalPostIncidentDebriefs) >= 90
   ) {

@@ -811,7 +811,7 @@ describe("Home Missing Person & Absent Without Authority Intelligence Engine", (
       const r = computeMissingPersonAbsentAuthority(baseInput({
         missing_protocol_records: makeEpisodeSet(3),
       }));
-      expect(r.return_interview_quality_avg).toBe(0);
+      expect(r.return_interview_quality_avg).toBeNull();;
     });
   });
 
@@ -897,7 +897,7 @@ describe("Home Missing Person & Absent Without Authority Intelligence Engine", (
         missing_protocol_records: [],
         pattern_analysis_records: [makePattern()],
       }));
-      expect(r.pattern_analysis_rate).toBe(0);
+      expect(r.pattern_analysis_rate).toBeNull();;
     });
   });
 
@@ -920,7 +920,7 @@ describe("Home Missing Person & Absent Without Authority Intelligence Engine", (
       const r = computeMissingPersonAbsentAuthority(baseInput({
         missing_protocol_records: makeEpisodeSet(3),
       }));
-      expect(r.prevention_rate).toBe(0);
+      expect(r.prevention_rate).toBeNull();;
     });
   });
 

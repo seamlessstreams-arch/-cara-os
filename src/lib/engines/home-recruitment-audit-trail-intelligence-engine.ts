@@ -73,17 +73,17 @@ export type RecruitmentAuditRating =
 
 export interface RecruitmentAuditTrailResult {
   audit_rating: RecruitmentAuditRating;
-  audit_score: number;
+  audit_score: number | null;
   headline: string;
   total_audit_entries: number;
   unique_candidates_audited: number;
-  audit_completeness_rate: number;
-  notes_coverage_rate: number;
-  state_tracking_rate: number;
-  offers_with_conditions_rate: number;
+  audit_completeness_rate: number | null;
+  notes_coverage_rate: number | null;
+  state_tracking_rate: number | null;
+  offers_with_conditions_rate: number | null;
   exceptional_start_compliance: number;
-  average_audit_depth: number;
-  vacancy_fill_rate: number;
+  average_audit_depth: number | null;
+  vacancy_fill_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -261,7 +261,7 @@ export function computeRecruitmentAuditTrail(
   const averageAuditDepth =
     candidateCount > 0
       ? Math.round((totalAuditEntries / candidateCount) * 10) / 10
-      : 0;
+      : null;
 
   // Vacancy fill rate
   const filledVacancies = vacancies.filter((v) => v.status === "filled");
@@ -284,8 +284,8 @@ export function computeRecruitmentAuditTrail(
   else if (auditCompletenessRate >= 70) score += 3;
 
   // Bonus: average audit depth
-  if (averageAuditDepth >= 4) score += 4;
-  else if (averageAuditDepth >= 2) score += 2;
+  if ((averageAuditDepth ?? 0) >= 4) score += 4;
+  else if ((averageAuditDepth ?? 0) >= 2) score += 2;
 
   // Bonus: offers with conditions
   if (offers.length > 0) {
@@ -367,7 +367,7 @@ export function computeRecruitmentAuditTrail(
     );
   }
 
-  if (averageAuditDepth >= 4) {
+  if ((averageAuditDepth ?? 0) >= 4) {
     strengths.push(
       `Deep audit trail with an average of ${averageAuditDepth} entries per candidate, showing comprehensive journey documentation.`,
     );
@@ -452,7 +452,7 @@ export function computeRecruitmentAuditTrail(
     );
   }
 
-  if (averageAuditDepth < 2 && candidates.length > 0) {
+  if ((averageAuditDepth ?? 0) < 2 && candidates.length > 0) {
     concerns.push(
       `Average audit depth of ${averageAuditDepth} entries per candidate is very low — recruitment journeys are not being comprehensively logged.`,
     );
@@ -544,7 +544,7 @@ export function computeRecruitmentAuditTrail(
     });
   }
 
-  if (averageAuditDepth < 2 && candidates.length > 0) {
+  if ((averageAuditDepth ?? 0) < 2 && candidates.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -640,12 +640,12 @@ export function computeRecruitmentAuditTrail(
     });
   }
 
-  if (averageAuditDepth >= 4) {
+  if ((averageAuditDepth ?? 0) >= 4) {
     insights.push({
       text: `An average of ${averageAuditDepth} audit entries per candidate indicates comprehensive logging of the recruitment journey from application to appointment.`,
       severity: "positive",
     });
-  } else if (averageAuditDepth < 2 && candidates.length > 0) {
+  } else if ((averageAuditDepth ?? 0) < 2 && candidates.length > 0) {
     insights.push({
       text: `With only ${averageAuditDepth} entries per candidate on average, the audit trail is shallow. Aim for at least 4 entries per candidate to evidence a thorough recruitment process.`,
       severity: "warning",

@@ -141,19 +141,19 @@ export interface PhysicalActivityRecommendation {
 
 export interface PhysicalActivityRecreationResult {
   activity_rating: PhysicalActivityRating;
-  activity_score: number;
+  activity_score: number | null;
   headline: string;
   total_exercise_programmes: number;
   total_recreational_activities: number;
   total_outdoor_engagements: number;
   total_fitness_assessments: number;
   total_accessibility_records: number;
-  exercise_engagement_rate: number;
-  recreational_diversity_score: number;
-  outdoor_participation_rate: number;
-  fitness_assessment_coverage_rate: number;
-  activity_accessibility_rate: number;
-  child_choice_rate: number;
+  exercise_engagement_rate: number | null;
+  recreational_diversity_score: number | null;
+  outdoor_participation_rate: number | null;
+  fitness_assessment_coverage_rate: number | null;
+  activity_accessibility_rate: number | null;
+  child_choice_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: PhysicalActivityRecommendation[];
@@ -408,7 +408,7 @@ export function computePhysicalActivityRecreation(
   const outdoorEnjoymentAvg =
     totalOutdoorEngagements > 0
       ? Math.round((outdoorEnjoymentSum / totalOutdoorEngagements) * 100) / 100
-      : 0;
+      : null;
 
   const outdoorPhysicalBenefit = outdoor_engagement_records.filter(
     (o) => o.physical_benefit,
@@ -446,7 +446,7 @@ export function computePhysicalActivityRecreation(
           outdoor_engagement_records.reduce((sum, o) => sum + o.duration_minutes, 0) /
             totalOutdoorEngagements,
         )
-      : 0;
+      : null;
 
   // --- Fitness assessment metrics ---
   const totalFitnessAssessments = fitness_assessment_records.length;
@@ -742,7 +742,7 @@ export function computePhysicalActivityRecreation(
   }
 
   // Outdoor enjoyment strengths
-  if (outdoorEnjoymentAvg >= 4.0 && totalOutdoorEngagements > 0) {
+  if ((outdoorEnjoymentAvg ?? 0) >= 4.0 && totalOutdoorEngagements > 0) {
     strengths.push(
       `Outdoor enjoyment averages ${outdoorEnjoymentAvg}/5 — children genuinely value and enjoy their outdoor experiences.`,
     );
@@ -1544,7 +1544,7 @@ export function computePhysicalActivityRecreation(
 
   if (
     outdoorParticipationRate >= 100 &&
-    outdoorEnjoymentAvg >= 4.0 &&
+    (outdoorEnjoymentAvg ?? 0) >= 4.0 &&
     total_children > 0 &&
     totalOutdoorEngagements > 0
   ) {

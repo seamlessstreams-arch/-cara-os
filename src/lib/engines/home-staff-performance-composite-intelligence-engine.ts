@@ -17,7 +17,7 @@ export interface AppraisalInput {
   date: string;
   status: string;                    // "completed" | "scheduled" | "overdue"
   overall_rating: string;            // "outstanding" | "good" | "requires_improvement" | "inadequate"
-  average_competency_score: number;  // average of all competency scores (1-5)
+  average_competency_score: number | null;  // average of all competency scores (1-5)
   objectives_set: number;
   objectives_met: number;
   has_development_plan: boolean;
@@ -75,20 +75,20 @@ export interface PerformanceRecommendation {
 
 export interface StaffPerformanceCompositeResult {
   performance_rating: StaffPerformanceRating;
-  performance_score: number;
+  performance_score: number | null;
   headline: string;
   total_appraisals: number;
-  appraisal_completion_rate: number;
-  average_competency_score: number;
+  appraisal_completion_rate: number | null;
+  average_competency_score: number | null;
   total_supervisions: number;
-  supervision_completion_rate: number;
-  safeguarding_discussion_rate: number;
-  action_completion_rate: number;
-  wellbeing_check_rate: number;
+  supervision_completion_rate: number | null;
+  safeguarding_discussion_rate: number | null;
+  action_completion_rate: number | null;
+  wellbeing_check_rate: number | null;
   total_training: number;
-  training_compliance_rate: number;
+  training_compliance_rate: number | null;
   expired_mandatory_count: number;
-  objective_achievement_rate: number;
+  objective_achievement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: PerformanceRecommendation[];
@@ -188,10 +188,10 @@ export function computeStaffPerformanceComposite(
 
   const competencyScores = completedAppraisals
     .map(a => a.average_competency_score)
-    .filter(s => s > 0);
+    .filter((s): s is number => s !== null && s > 0);
   const averageCompetencyScore = competencyScores.length > 0
     ? Math.round((competencyScores.reduce((sum, s) => sum + s, 0) / competencyScores.length) * 10) / 10
-    : 0;
+    : null;
 
   const devPlanCount = completedAppraisals.filter(a => a.has_development_plan).length;
   const devPlanRate = pct(devPlanCount, completedAppraisals.length);
@@ -234,11 +234,11 @@ export function computeStaffPerformanceComposite(
   } else {
     const appraisalExcellent =
       appraisalCompletionRate >= 90 &&
-      averageCompetencyScore >= 3.5 &&
+      (averageCompetencyScore ?? 0) >= 3.5 &&
       devPlanRate >= 90;
     const appraisalGood =
       appraisalCompletionRate >= 70 &&
-      averageCompetencyScore >= 3.0;
+      (averageCompetencyScore ?? 0) >= 3.0;
 
     if (appraisalExcellent) {
       score += 6;
@@ -344,7 +344,7 @@ export function computeStaffPerformanceComposite(
   if (appraisalCompletionRate >= 90 && totalAppraisals > 0) {
     strengths.push(`Appraisal completion rate at ${appraisalCompletionRate}% — strong staff review cycle.`);
   }
-  if (averageCompetencyScore >= 4.0 && competencyScores.length > 0) {
+  if ((averageCompetencyScore ?? 0) >= 4.0 && competencyScores.length > 0) {
     strengths.push(`Average competency score of ${averageCompetencyScore} out of 5 — staff demonstrate high capability.`);
   }
   if (supervisionCompletionRate >= 95 && nonScheduledSupervisions.length > 0) {
@@ -398,7 +398,7 @@ export function computeStaffPerformanceComposite(
   if (objectiveAchievementRate < 40 && totalObjSet > 0) {
     concerns.push(`Objective achievement at ${objectiveAchievementRate}% — staff are not meeting development targets.`);
   }
-  if (averageCompetencyScore < 2.5 && competencyScores.length > 0) {
+  if ((averageCompetencyScore ?? 0) < 2.5 && competencyScores.length > 0) {
     concerns.push(`Average competency score of ${averageCompetencyScore} — staff capability is below expected standard.`);
   }
   if (totalAppraisals === 0 && total_staff > 0) {
@@ -445,7 +445,7 @@ export function computeStaffPerformanceComposite(
   if (objectiveAchievementRate < 40 && totalObjSet > 0) {
     recommendations.push({ rank: rank++, recommendation: `Review and support staff in meeting development objectives — currently at ${objectiveAchievementRate}% achievement.`, urgency: "planned", regulatory_ref: "CHR 2015 Reg 34" });
   }
-  if (averageCompetencyScore < 3.0 && competencyScores.length > 0) {
+  if ((averageCompetencyScore ?? 0) < 3.0 && competencyScores.length > 0) {
     recommendations.push({ rank: rank++, recommendation: `Address competency gaps — average score is ${averageCompetencyScore} and needs targeted development.`, urgency: "soon", regulatory_ref: "CHR 2015 Reg 32" });
   }
   if (devPlanRate < 50 && completedAppraisals.length > 0) {
@@ -483,7 +483,7 @@ export function computeStaffPerformanceComposite(
     insights.push({ text: "Supervision sessions are regular but action follow-through is poor — the value of supervision is undermined when agreed actions are not completed.", severity: "warning" });
   }
 
-  if (appraisalCompletionRate >= 90 && averageCompetencyScore >= 3.5 && devPlanRate >= 90 && totalAppraisals > 0) {
+  if (appraisalCompletionRate >= 90 && (averageCompetencyScore ?? 0) >= 3.5 && devPlanRate >= 90 && totalAppraisals > 0) {
     insights.push({ text: "Appraisal programme is strong — high completion, good competency scores, and development plans in place. Evidence of effective staff performance management.", severity: "positive" });
   }
 

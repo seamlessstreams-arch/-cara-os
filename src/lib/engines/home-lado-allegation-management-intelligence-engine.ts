@@ -58,13 +58,13 @@ export type LadoAllegationRating =
 
 export interface LadoAllegationResult {
   lado_rating: LadoAllegationRating;
-  lado_score: number;
+  lado_score: number | null;
   headline: string;
   total_referrals: number;
   open_referrals: number;
-  ofsted_notification_rate: number;
-  resolution_rate: number;
-  average_days_to_close: number;
+  ofsted_notification_rate: number | null;
+  resolution_rate: number | null;
+  average_days_to_close: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -148,7 +148,7 @@ export function computeLadoAllegationManagement(
           closedWithDays.reduce((sum, r) => sum + r.days_to_close, 0) /
             closedWithDays.length,
         )
-      : 0;
+      : null;
 
   // ── Strategy meeting rate ──────────────────────────────────────────
   const strategyMeetingHeld = referrals.filter(
@@ -192,9 +192,9 @@ export function computeLadoAllegationManagement(
 
   // 3. Timeliness (avg days to close) (+5/-5)
   if (closedWithDays.length > 0) {
-    if (averageDaysToClose <= 30) score += 5;
-    else if (averageDaysToClose <= 60) score += 2;
-    else if (averageDaysToClose <= 90) score += 0;
+    if ((averageDaysToClose ?? 0) <= 30) score += 5;
+    else if ((averageDaysToClose ?? 0) <= 60) score += 2;
+    else if ((averageDaysToClose ?? 0) <= 90) score += 0;
     else score -= 5;
   } else {
     score += 2; // no closed referrals
@@ -391,7 +391,7 @@ export function computeLadoAllegationManagement(
   }
 
   // Warning: slow resolution
-  if (averageDaysToClose > 60 && closedWithDays.length > 0) {
+  if ((averageDaysToClose ?? 0) > 60 && closedWithDays.length > 0) {
     insights.push({
       text: `Average resolution time is ${averageDaysToClose} days — exceeds 60-day best practice target. Escalate with LADO to improve timeliness.`,
       severity: "warning",

@@ -105,10 +105,10 @@ export interface ConditionAuditRecordInput {
   area_inspected: string;
   auditor: string;
   overall_condition: "excellent" | "good" | "fair" | "poor" | "critical";
-  cleanliness_score: number; // 1-5
-  decoration_score: number; // 1-5
-  structural_score: number; // 1-5
-  safety_score: number; // 1-5
+  cleanliness_score: number | null; // 1-5
+  decoration_score: number | null; // 1-5
+  structural_score: number | null; // 1-5
+  safety_score: number | null; // 1-5
   child_friendly: boolean;
   issues_found: number;
   issues_resolved: number;
@@ -186,19 +186,19 @@ export interface MinorRepairsRecommendation {
 
 export interface MinorRepairsResult {
   maintenance_rating: MinorRepairsRating;
-  maintenance_score: number;
+  maintenance_score: number | null;
   headline: string;
   total_maintenance_requests: number;
   total_repair_completions: number;
   total_safety_checks: number;
   total_condition_audits: number;
   total_preventative_tasks: number;
-  request_response_rate: number;
-  repair_completion_rate: number;
-  safety_check_rate: number;
-  condition_compliance_rate: number;
-  preventative_maintenance_rate: number;
-  child_environment_rate: number;
+  request_response_rate: number | null;
+  repair_completion_rate: number | null;
+  safety_check_rate: number | null;
+  condition_compliance_rate: number | null;
+  preventative_maintenance_rate: number | null;
+  child_environment_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: MinorRepairsRecommendation[];
@@ -427,7 +427,7 @@ export function computeMinorRepairsMaintenance(
           repair_completion_records.reduce((sum, r) => sum + r.actual_days, 0) /
             totalRepairCompletions,
         )
-      : 0;
+      : null;
 
   // --- Safety check compliance metrics ---
   const totalSafetyChecks = safety_check_records.length;
@@ -490,35 +490,35 @@ export function computeMinorRepairsMaintenance(
   const avgCleanlinessScore =
     totalConditionAudits > 0
       ? Math.round(
-          (condition_audit_records.reduce((sum, a) => sum + a.cleanliness_score, 0) /
+          (condition_audit_records.reduce((sum, a) => sum + (a.cleanliness_score ?? 0), 0) /
             totalConditionAudits) *
             100,
         ) / 100
-      : 0;
+      : null;
   const avgDecorationScore =
     totalConditionAudits > 0
       ? Math.round(
-          (condition_audit_records.reduce((sum, a) => sum + a.decoration_score, 0) /
+          (condition_audit_records.reduce((sum, a) => sum + (a.decoration_score ?? 0), 0) /
             totalConditionAudits) *
             100,
         ) / 100
-      : 0;
+      : null;
   const avgStructuralScore =
     totalConditionAudits > 0
       ? Math.round(
-          (condition_audit_records.reduce((sum, a) => sum + a.structural_score, 0) /
+          (condition_audit_records.reduce((sum, a) => sum + (a.structural_score ?? 0), 0) /
             totalConditionAudits) *
             100,
         ) / 100
-      : 0;
+      : null;
   const avgSafetyScore =
     totalConditionAudits > 0
       ? Math.round(
-          (condition_audit_records.reduce((sum, a) => sum + a.safety_score, 0) /
+          (condition_audit_records.reduce((sum, a) => sum + (a.safety_score ?? 0), 0) /
             totalConditionAudits) *
             100,
         ) / 100
-      : 0;
+      : null;
 
   const totalConditionIssuesFound = condition_audit_records.reduce(
     (sum, a) => sum + a.issues_found,
@@ -975,7 +975,7 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (avgSafetyScore < 3.0 && totalConditionAudits > 0) {
+  if ((avgSafetyScore ?? 0) < 3.0 && totalConditionAudits > 0) {
     concerns.push(
       `Average safety score from condition audits is ${avgSafetyScore}/5 — the premises safety standard as observed during audits is below acceptable levels.`,
     );
@@ -1399,7 +1399,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (avgActualDays > 14 && totalRepairCompletions > 0) {
+  if ((avgActualDays ?? 0) > 14 && totalRepairCompletions > 0) {
     insights.push({
       text: `Average repair time is ${avgActualDays} days. While some repairs legitimately take time, a high average suggests systemic delays. Review whether contractor availability, material procurement, or internal prioritisation is causing bottlenecks.`,
       severity: "warning",

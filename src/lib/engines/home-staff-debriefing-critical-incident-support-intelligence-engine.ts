@@ -103,7 +103,7 @@ export type StaffDebriefingRating =
 
 export interface StaffDebriefingResult {
   debriefing_rating: StaffDebriefingRating;
-  debriefing_score: number;
+  debriefing_score: number | null;
   headline: string;
 
   // Counts
@@ -114,20 +114,20 @@ export interface StaffDebriefingResult {
   total_support_accesses: number;
 
   // 6 rates
-  debriefing_completion_rate: number;
-  incident_support_rate: number;
-  wellbeing_followup_rate: number;
-  learning_extraction_rate: number;
-  support_access_rate: number;
-  staff_satisfaction_rate: number;
+  debriefing_completion_rate: number | null;
+  incident_support_rate: number | null;
+  wellbeing_followup_rate: number | null;
+  learning_extraction_rate: number | null;
+  support_access_rate: number | null;
+  staff_satisfaction_rate: number | null;
 
   // Sub-metrics
-  offered_within_24h_rate: number;
-  completed_within_48h_rate: number;
-  management_response_rate: number;
-  followup_on_time_rate: number;
-  learning_implemented_rate: number;
-  support_barriers_rate: number;
+  offered_within_24h_rate: number | null;
+  completed_within_48h_rate: number | null;
+  management_response_rate: number | null;
+  followup_on_time_rate: number | null;
+  learning_implemented_rate: number | null;
+  support_barriers_rate: number | null;
 
   // Qualitative
   strengths: string[];
@@ -488,7 +488,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
           completedFollowupDays.reduce((s, d) => s + d, 0) /
             completedFollowupDays.length,
         )
-      : 0;
+      : null;
 
   // Unique staff receiving follow-up
   const uniqueStaffFollowup = new Set(
@@ -547,7 +547,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
   const learningExtractionQuality =
     totalLearningExtractions > 0
       ? Math.round((learningSharedRate + learningImplementedRate + documentedInLogRate) / 3)
-      : 0;
+      : null;
 
   // ══════════════════════════════════════════════════════════════════════
   // SECTION 5: SUPPORT ACCESS METRICS
@@ -637,7 +637,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
           satisfactionComponents.reduce((s, v) => s + v, 0) /
             satisfactionComponents.length,
         )
-      : 0;
+      : null;
 
   // ══════════════════════════════════════════════════════════════════════
   // SCORING — base=52, max bonuses=+28, 4 penalties guarded by .length>0
@@ -690,18 +690,18 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     const accessScore = totalSupportAccesses > 0 ? supportAccessRate : 0;
     const combinedAccessLearning =
       totalLearningExtractions > 0 && totalSupportAccesses > 0
-        ? Math.round((learningScore + accessScore) / 2)
+        ? Math.round(((learningScore ?? 0) + accessScore) / 2)
         : totalLearningExtractions > 0
           ? learningScore
           : accessScore;
 
-    if (combinedAccessLearning >= 85 && uniqueSupportTypes >= 4) {
+    if ((combinedAccessLearning ?? 0) >= 85 && uniqueSupportTypes >= 4) {
       score += 7;
-    } else if (combinedAccessLearning >= 70) {
+    } else if ((combinedAccessLearning ?? 0) >= 70) {
       score += 5;
-    } else if (combinedAccessLearning >= 55) {
+    } else if ((combinedAccessLearning ?? 0) >= 55) {
       score += 3;
-    } else if (combinedAccessLearning >= 40) {
+    } else if ((combinedAccessLearning ?? 0) >= 40) {
       score += 1;
     }
   }
@@ -909,7 +909,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
 
   // Composite / cross-cutting strengths
   if (
-    staffSatisfactionRate >= 85 &&
+    (staffSatisfactionRate ?? 0) >= 85 &&
     satisfactionComponents.length >= 2
   ) {
     strengths.push(
@@ -1087,7 +1087,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
 
   // Composite concerns
   if (
-    staffSatisfactionRate < 40 &&
+    (staffSatisfactionRate ?? 0) < 40 &&
     satisfactionComponents.length >= 2
   ) {
     concerns.push(
@@ -1394,7 +1394,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     });
   }
   if (
-    avgDaysSinceIncident > 14 &&
+    (avgDaysSinceIncident ?? 0) > 14 &&
     completedFollowupDays.length > 0
   ) {
     insights.push({
@@ -1447,7 +1447,7 @@ export function computeStaffDebriefingCriticalIncidentSupport(
     });
   }
   if (
-    staffSatisfactionRate >= 90 &&
+    (staffSatisfactionRate ?? 0) >= 90 &&
     satisfactionComponents.length >= 3
   ) {
     insights.push({

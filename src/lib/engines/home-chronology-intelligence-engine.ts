@@ -47,23 +47,23 @@ export interface EventDistributionProfile {
 export interface CoverageProfile {
   children_with_entries: number;
   children_without_entries: number;
-  coverage_rate: number;
-  avg_entries_per_child: number;
-  min_entries: number;
-  max_entries: number;
+  coverage_rate: number | null;
+  avg_entries_per_child: number | null;
+  min_entries: number | null;
+  max_entries: number | null;
 }
 
 export interface QualityProfile {
-  description_rate: number;
-  time_recording_rate: number;
-  incident_linked_rate: number;
-  critical_with_incident_rate: number;
+  description_rate: number | null;
+  time_recording_rate: number | null;
+  incident_linked_rate: number | null;
+  critical_with_incident_rate: number | null;
 }
 
 export interface TimelinessProfile {
   entries_last_30_days: number;
   entries_last_90_days: number;
-  entries_per_month: number;        // avg across lookback
+  entries_per_month: number | null;        // avg across lookback
   recording_gap_days: number;       // longest gap between consecutive entries (all children)
 }
 
@@ -81,7 +81,7 @@ export interface ChronologyRecommendation {
 
 export interface HomeChronologyResult {
   chronology_rating: ChronologyRating;
-  chronology_score: number;
+  chronology_score: number | null;
   headline: string;
   event_distribution: EventDistributionProfile;
   coverage_profile: CoverageProfile;
@@ -174,11 +174,11 @@ export function computeHomeChronology(
   const childrenWithEntries = Object.keys(childEntryMap).length;
   const childrenWithout = Math.max(0, total_children - childrenWithEntries);
   const entryCounts = Object.values(childEntryMap);
-  const minEntries = entryCounts.length > 0 ? Math.min(...entryCounts) : 0;
-  const maxEntries = entryCounts.length > 0 ? Math.max(...entryCounts) : 0;
+  const minEntries = entryCounts.length > 0 ? Math.min(...entryCounts) : null;
+  const maxEntries = entryCounts.length > 0 ? Math.max(...entryCounts) : null;
   const avgEntries = total_children > 0
     ? Math.round((entries.length / total_children) * 10) / 10
-    : 0;
+    : null;
 
   const coverageProfile: CoverageProfile = {
     children_with_entries: childrenWithEntries,
@@ -215,7 +215,7 @@ export function computeHomeChronology(
   const last90 = entries.filter(e => e.date >= ninetyStr);
 
   const months = lookback_days / 30;
-  const entriesPerMonth = months > 0 ? Math.round((entries.length / months) * 10) / 10 : 0;
+  const entriesPerMonth = months > 0 ? Math.round((entries.length / months) * 10) / 10 : null;
 
   // Recording gap: largest gap between consecutive entries
   const sortedDates = [...entries].sort((a, b) => a.date.localeCompare(b.date)).map(e => e.date);
@@ -243,20 +243,20 @@ export function computeHomeChronology(
 
   // 1. Child coverage (±5)
   if (coverageProfile.coverage_rate === 100) score += 5;
-  else if (coverageProfile.coverage_rate >= 80) score += 2;
-  else if (coverageProfile.coverage_rate >= 50) score -= 1;
+  else if ((coverageProfile.coverage_rate ?? 0) >= 80) score += 2;
+  else if ((coverageProfile.coverage_rate ?? 0) >= 50) score -= 1;
   else score -= 4;
 
   // 2. Description quality (±4)
-  if (qualityProfile.description_rate >= 90) score += 4;
-  else if (qualityProfile.description_rate >= 70) score += 2;
-  else if (qualityProfile.description_rate >= 50) score -= 1;
+  if ((qualityProfile.description_rate ?? 0) >= 90) score += 4;
+  else if ((qualityProfile.description_rate ?? 0) >= 70) score += 2;
+  else if ((qualityProfile.description_rate ?? 0) >= 50) score -= 1;
   else score -= 3;
 
   // 3. Recording frequency (±3)
-  if (entriesPerMonth >= 3) score += 3;
-  else if (entriesPerMonth >= 1.5) score += 1;
-  else if (entriesPerMonth >= 0.5) score -= 1;
+  if ((entriesPerMonth ?? 0) >= 3) score += 3;
+  else if ((entriesPerMonth ?? 0) >= 1.5) score += 1;
+  else if ((entriesPerMonth ?? 0) >= 0.5) score -= 1;
   else score -= 3;
 
   // 4. Category diversity (±3)
@@ -265,14 +265,14 @@ export function computeHomeChronology(
   else score -= 2;
 
   // 5. Time recording (±3)
-  if (qualityProfile.time_recording_rate >= 70) score += 3;
-  else if (qualityProfile.time_recording_rate >= 40) score += 1;
+  if ((qualityProfile.time_recording_rate ?? 0) >= 70) score += 3;
+  else if ((qualityProfile.time_recording_rate ?? 0) >= 40) score += 1;
   else score -= 2;
 
   // 6. Critical event documentation (±4)
   if (critical.length > 0) {
-    if (qualityProfile.critical_with_incident_rate >= 80) score += 4;
-    else if (qualityProfile.critical_with_incident_rate >= 50) score += 1;
+    if ((qualityProfile.critical_with_incident_rate ?? 0) >= 80) score += 4;
+    else if ((qualityProfile.critical_with_incident_rate ?? 0) >= 50) score += 1;
     else score -= 2;
   } else {
     score += 1; // No critical events = no concern
@@ -286,7 +286,7 @@ export function computeHomeChronology(
 
   // 8. Balance across children (±3)
   if (total_children > 1 && entryCounts.length >= total_children) {
-    const ratio = minEntries / maxEntries;
+    const ratio = (minEntries ?? 0) / (maxEntries ?? 0);
     if (ratio >= 0.5) score += 3;
     else if (ratio >= 0.25) score += 1;
     else score -= 2;
@@ -302,20 +302,20 @@ export function computeHomeChronology(
   // ── Strengths ─────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (coverageProfile.coverage_rate === 100) strengths.push(`All ${total_children} children have chronology entries — comprehensive event recording.`);
-  if (qualityProfile.description_rate >= 90) strengths.push(`${qualityProfile.description_rate}% of entries include descriptions — detailed event documentation.`);
-  if (entriesPerMonth >= 3) strengths.push(`${entriesPerMonth} entries per month — proactive event recording.`);
+  if ((qualityProfile.description_rate ?? 0) >= 90) strengths.push(`${(qualityProfile.description_rate ?? 0)}% of entries include descriptions — detailed event documentation.`);
+  if ((entriesPerMonth ?? 0) >= 3) strengths.push(`${(entriesPerMonth ?? 0)} entries per month — proactive event recording.`);
   if (eventDist.categories_used >= 5) strengths.push(`Events recorded across ${eventDist.categories_used} categories — comprehensive life-event tracking.`);
-  if (qualityProfile.time_recording_rate >= 70) strengths.push(`${qualityProfile.time_recording_rate}% of entries record the time — detailed contemporaneous records.`);
-  if (critical.length > 0 && qualityProfile.critical_with_incident_rate >= 80) strengths.push(`${qualityProfile.critical_with_incident_rate}% of critical events linked to incidents — robust cross-referencing.`);
+  if ((qualityProfile.time_recording_rate ?? 0) >= 70) strengths.push(`${(qualityProfile.time_recording_rate ?? 0)}% of entries record the time — detailed contemporaneous records.`);
+  if (critical.length > 0 && (qualityProfile.critical_with_incident_rate ?? 0) >= 80) strengths.push(`${(qualityProfile.critical_with_incident_rate ?? 0)}% of critical events linked to incidents — robust cross-referencing.`);
   if (maxGap <= 14) strengths.push("No recording gap exceeds 14 days — consistent chronology maintenance.");
 
   // ── Concerns ──────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (childrenWithout > 0) concerns.push(`${childrenWithout} child${childrenWithout > 1 ? "ren have" : " has"} no chronology entries — every child's significant events must be recorded.`);
-  if (qualityProfile.description_rate < 70) concerns.push(`Only ${qualityProfile.description_rate}% of entries include descriptions — events lack sufficient detail.`);
+  if ((qualityProfile.description_rate ?? 0) < 70) concerns.push(`Only ${(qualityProfile.description_rate ?? 0)}% of entries include descriptions — events lack sufficient detail.`);
   if (maxGap > 30) concerns.push(`Longest recording gap is ${maxGap} days — significant periods unrecorded.`);
-  if (entriesPerMonth < 1) concerns.push(`Only ${entriesPerMonth} entries per month — recording frequency is too low to capture significant events.`);
-  if (critical.length > 0 && qualityProfile.critical_with_incident_rate < 50) concerns.push(`Only ${qualityProfile.critical_with_incident_rate}% of critical events linked to incidents — critical events must be cross-referenced.`);
+  if ((entriesPerMonth ?? 0) < 1) concerns.push(`Only ${(entriesPerMonth ?? 0)} entries per month — recording frequency is too low to capture significant events.`);
+  if (critical.length > 0 && (qualityProfile.critical_with_incident_rate ?? 0) < 50) concerns.push(`Only ${(qualityProfile.critical_with_incident_rate ?? 0)}% of critical events linked to incidents — critical events must be cross-referenced.`);
   if (eventDist.categories_used < 3) concerns.push(`Events recorded in only ${eventDist.categories_used} categor${eventDist.categories_used === 1 ? "y" : "ies"} — chronologies should capture placement, health, education, safeguarding and more.`);
 
   // ── Recommendations ───────────────────────────────────────────────
@@ -328,10 +328,10 @@ export function computeHomeChronology(
   if (maxGap > 30) {
     recs.push({ rank: rank++, recommendation: `Address ${maxGap}-day recording gap — implement weekly chronology review to prevent lapses.`, urgency: "soon", regulatory_ref: "Reg 36" });
   }
-  if (qualityProfile.description_rate < 70) {
+  if ((qualityProfile.description_rate ?? 0) < 70) {
     recs.push({ rank: rank++, recommendation: "Improve event descriptions — staff should record the what, who, when, and outcome for every chronology entry.", urgency: "soon", regulatory_ref: "Reg 36" });
   }
-  if (critical.length > 0 && qualityProfile.critical_with_incident_rate < 50) {
+  if (critical.length > 0 && (qualityProfile.critical_with_incident_rate ?? 0) < 50) {
     recs.push({ rank: rank++, recommendation: "Link critical chronology events to incident records — ensures regulatory traceability.", urgency: "soon", regulatory_ref: "Reg 36" });
   }
   if (eventDist.categories_used < 3) {
@@ -341,7 +341,7 @@ export function computeHomeChronology(
   // ── Insights ──────────────────────────────────────────────────────
   const insights: ChronologyInsight[] = [];
 
-  if (coverageProfile.coverage_rate === 100 && qualityProfile.description_rate >= 90 && entriesPerMonth >= 3) {
+  if (coverageProfile.coverage_rate === 100 && (qualityProfile.description_rate ?? 0) >= 90 && (entriesPerMonth ?? 0) >= 3) {
     insights.push({ text: `Chronology practice is exemplary — all ${total_children} children covered, ${qualityProfile.description_rate}% detailed descriptions, and ${entriesPerMonth} entries per month. Ofsted will see a home that maintains thorough, contemporaneous records of every child's significant life events, supporting both daily practice and statutory reviews.`, severity: "positive" });
   }
   if (childrenWithout > 0) {
@@ -350,7 +350,7 @@ export function computeHomeChronology(
   if (maxGap > 30) {
     insights.push({ text: `A ${maxGap}-day gap in chronology recording suggests events may have occurred without being documented. Regulation 36 requires that records are kept of significant events — gaps this long risk missing important patterns or failing to evidence the home's response to events.`, severity: "warning" });
   }
-  if (critical.length > 0 && qualityProfile.critical_with_incident_rate < 50) {
+  if (critical.length > 0 && (qualityProfile.critical_with_incident_rate ?? 0) < 50) {
     insights.push({ text: `Only ${qualityProfile.critical_with_incident_rate}% of critical chronology events are linked to incident records. Cross-referencing is essential — it allows reviewers to trace from chronology to incident detail, demonstrating the home's systematic approach to documenting and responding to serious events.`, severity: "warning" });
   }
 

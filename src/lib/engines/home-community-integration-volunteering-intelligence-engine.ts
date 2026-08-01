@@ -199,19 +199,19 @@ export interface CommunityIntegrationRecommendation {
 
 export interface CommunityIntegrationResult {
   community_rating: CommunityIntegrationRating;
-  community_score: number;
+  community_score: number | null;
   headline: string;
   total_community_activities: number;
   total_volunteering_records: number;
   total_social_inclusion_records: number;
   total_neighbourhood_records: number;
   total_local_service_records: number;
-  community_participation_rate: number;
-  volunteering_rate: number;
-  social_inclusion_rate: number;
-  neighbourhood_relation_rate: number;
-  local_service_rate: number;
-  child_satisfaction_rate: number;
+  community_participation_rate: number | null;
+  volunteering_rate: number | null;
+  social_inclusion_rate: number | null;
+  neighbourhood_relation_rate: number | null;
+  local_service_rate: number | null;
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: CommunityIntegrationRecommendation[];
@@ -415,7 +415,7 @@ export function computeCommunityIntegrationVolunteering(
   const volFeedbackRate = pct(volFeedback, vol90d.length);
 
   const volTotalHours = vol90d.reduce((s, r) => s + r.hours, 0);
-  const volAvgHours = vol90d.length > 0 ? Math.round((volTotalHours / vol90d.length) * 10) / 10 : 0;
+  const volAvgHours = vol90d.length > 0 ? Math.round((volTotalHours / vol90d.length) * 10) / 10 : null;
 
   const volUniqueTypes = new Set(vol90d.map((r) => r.volunteering_type));
 
@@ -532,7 +532,7 @@ export function computeCommunityIntegrationVolunteering(
   const childSatisfactionRate =
     satisfactionSources.length > 0
       ? Math.round(satisfactionSources.reduce((s, v) => s + v, 0) / satisfactionSources.length)
-      : 0;
+      : null;
 
   // ═══════════════════════════════════════════════════════════════════════
   // SCORING — base 52 + bonuses (max +28) + 4 penalties
@@ -561,8 +561,8 @@ export function computeCommunityIntegrationVolunteering(
   else if (localServiceRate >= 50) score += 1;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if ((childSatisfactionRate ?? 0) >= 90) score += 3;
+  else if ((childSatisfactionRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 7: caFriendshipRate (>=70: +3, >=50: +1) ---
   if (caAttended > 0 && caFriendshipRate >= 70) score += 3;
@@ -588,7 +588,7 @@ export function computeCommunityIntegrationVolunteering(
   if (neighbourhoodRelationRate < 40 && nr90d.length > 0) score -= 5;
 
   // Penalty 4: childSatisfactionRate < 40 -> -4
-  if (childSatisfactionRate < 40 && satisfactionSources.length > 0) score -= 4;
+  if ((childSatisfactionRate ?? 0) < 40 && satisfactionSources.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -762,11 +762,11 @@ export function computeCommunityIntegrationVolunteering(
   }
 
   // Cross-domain strengths
-  if (childSatisfactionRate >= 90 && satisfactionSources.length >= 3) {
+  if ((childSatisfactionRate ?? 0) >= 90 && satisfactionSources.length >= 3) {
     strengths.push(
       `${childSatisfactionRate}% overall child satisfaction across community engagement domains — children consistently report positive experiences in their community interactions.`,
     );
-  } else if (childSatisfactionRate >= 70 && satisfactionSources.length >= 2) {
+  } else if ((childSatisfactionRate ?? 0) >= 70 && satisfactionSources.length >= 2) {
     strengths.push(
       `${childSatisfactionRate}% overall child satisfaction — most children report positive community experiences across multiple domains.`,
     );
@@ -932,11 +932,11 @@ export function computeCommunityIntegrationVolunteering(
   }
 
   // Child satisfaction concerns
-  if (childSatisfactionRate < 40 && satisfactionSources.length > 0) {
+  if ((childSatisfactionRate ?? 0) < 40 && satisfactionSources.length > 0) {
     concerns.push(
       `Overall child satisfaction with community engagement at only ${childSatisfactionRate}% — children do not feel positive about their community experiences, suggesting activities are not meeting their needs.`,
     );
-  } else if (childSatisfactionRate < 60 && childSatisfactionRate >= 40 && satisfactionSources.length > 0) {
+  } else if ((childSatisfactionRate ?? 0) < 60 && (childSatisfactionRate ?? 0) >= 40 && satisfactionSources.length > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — a significant proportion of children are not reporting positive community experiences.`,
     );
@@ -1059,7 +1059,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (childSatisfactionRate < 40 && satisfactionSources.length > 0) {
+  if ((childSatisfactionRate ?? 0) < 40 && satisfactionSources.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1178,7 +1178,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (childSatisfactionRate < 40 && satisfactionSources.length > 0) {
+  if ((childSatisfactionRate ?? 0) < 40 && satisfactionSources.length > 0) {
     insights.push({
       text: `Overall child satisfaction with community engagement at only ${childSatisfactionRate}%. When children do not enjoy or value their community experiences, this signals that engagement is tokenistic rather than genuinely meaningful. Children's views must shape community integration planning.`,
       severity: "critical",
@@ -1236,7 +1236,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (childSatisfactionRate >= 40 && childSatisfactionRate < 60 && satisfactionSources.length > 0) {
+  if ((childSatisfactionRate ?? 0) >= 40 && (childSatisfactionRate ?? 0) < 60 && satisfactionSources.length > 0) {
     insights.push({
       text: `Child satisfaction at ${childSatisfactionRate}% — a notable proportion of children do not feel positive about their community experiences. Community engagement should be enjoyable and meaningful, not obligatory.`,
       severity: "warning",
@@ -1350,7 +1350,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (childSatisfactionRate >= 90 && satisfactionSources.length >= 3) {
+  if ((childSatisfactionRate ?? 0) >= 90 && satisfactionSources.length >= 3) {
     insights.push({
       text: `${childSatisfactionRate}% child satisfaction across ${satisfactionSources.length} community engagement domains — children consistently report positive, meaningful experiences in their community interactions. Their voices demonstrate genuine, child-centred community integration.`,
       severity: "positive",

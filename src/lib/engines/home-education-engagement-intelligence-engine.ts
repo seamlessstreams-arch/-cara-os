@@ -94,7 +94,7 @@ export interface AttendanceProfile {
   present_count: number;
   late_count: number;
   absent_count: number;
-  attendance_rate: number;
+  attendance_rate: number | null;
   unauthorised_absences: number;
 }
 
@@ -103,40 +103,40 @@ export interface PepComplianceProfile {
   current_count: number;
   overdue_count: number;
   child_coverage: number;
-  avg_attendance_from_pep: number;
+  avg_attendance_from_pep: number | null;
 }
 
 export interface EhcpProfile {
   total_ehcps: number;
   on_time_reviews: number;
   overdue_reviews: number;
-  child_contribution_rate: number;
+  child_contribution_rate: number | null;
 }
 
 export interface SchoolEngagementProfile {
   total_events_90d: number;
   unique_children_engaged: number;
-  sw_attendance_rate: number;
+  sw_attendance_rate: number | null;
   achievements_count: number;
 }
 
 export interface TutoringProfile {
   active_tutors: number;
   children_with_tutor: number;
-  high_motivation_rate: number;
-  dbs_compliance_rate: number;
+  high_motivation_rate: number | null;
+  dbs_compliance_rate: number | null;
 }
 
 export interface HomeworkProfile {
   total_sessions_30d: number;
-  completion_rate: number;
-  self_started_rate: number;
-  strong_effort_rate: number;
+  completion_rate: number | null;
+  self_started_rate: number | null;
+  strong_effort_rate: number | null;
 }
 
 export interface HomeEducationEngagementResult {
   education_rating: EducationRating;
-  education_score: number;
+  education_score: number | null;
   headline: string;
   attendance: AttendanceProfile;
   pep_compliance: PepComplianceProfile;
@@ -233,7 +233,7 @@ export function computeHomeEducationEngagement(
   const pepCoverage = pct(uniquePepChildren.size, total_children);
   const avgPepAttendance = pep_records.length > 0
     ? Math.round(pep_records.reduce((s, p) => s + p.attendance, 0) / pep_records.length)
-    : 0;
+    : null;
 
   const pepComplianceProfile: PepComplianceProfile = {
     total_peps: pep_records.length,

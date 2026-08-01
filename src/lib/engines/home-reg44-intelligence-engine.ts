@@ -71,7 +71,7 @@ export interface RecommendationProfile {
   completed: number;
   in_progress: number;
   outstanding: number;
-  completion_rate: number;
+  completion_rate: number | null;
   high_priority_outstanding: number;
 }
 
@@ -80,15 +80,15 @@ export interface ActionPlanProfile {
   completed: number;
   overdue: number;
   carried_forward: number;
-  completion_rate: number;
+  completion_rate: number | null;
   overdue_high_critical: number;
 }
 
 export interface QualityProfile {
-  avg_duration_hours: number;
-  avg_children_spoken_pct: number;
-  avg_records_reviewed: number;
-  ofsted_notification_rate: number;
+  avg_duration_hours: number | null;
+  avg_children_spoken_pct: number | null;
+  avg_records_reviewed: number | null;
+  ofsted_notification_rate: number | null;
   child_voice_every_visit: boolean;
   judgement_trend: string;                      // improving | stable | declining
 }
@@ -107,7 +107,7 @@ export interface Reg44Recommendation {
 
 export interface HomeReg44Result {
   reg44_rating: Reg44Rating;
-  reg44_score: number;
+  reg44_score: number | null;
   headline: string;
   visit_frequency_profile: VisitFrequencyProfile;
   recommendation_profile: RecommendationProfile;
@@ -233,18 +233,18 @@ export function computeHomeReg44(
   // ── Quality Profile ─────────────────────────────────────────────────
   const avgDuration = visits.length > 0
     ? Math.round((visits.reduce((a, v) => a + v.duration_hours, 0) / visits.length) * 10) / 10
-    : 0;
+    : null;
 
   const childSpokenPcts = visits.map(v =>
     v.total_children > 0 ? pct(v.children_spoken_count, v.total_children) : 0,
   );
   const avgChildSpoken = childSpokenPcts.length > 0
     ? Math.round(childSpokenPcts.reduce((a, b) => a + b, 0) / childSpokenPcts.length)
-    : 0;
+    : null;
 
   const avgRecordsReviewed = visits.length > 0
     ? Math.round((visits.reduce((a, v) => a + v.records_reviewed_count, 0) / visits.length) * 10) / 10
-    : 0;
+    : null;
 
   const sentToOfsted = visits.filter(v => v.report_sent_to_ofsted).length;
   const ofstedRate = pct(sentToOfsted, visits.length);
@@ -308,12 +308,12 @@ export function computeHomeReg44(
 
   // 7. Child voice capture (±3)
   if (childVoiceEvery) score += 3;
-  else if (avgChildSpoken >= 80) score += 1;
+  else if ((avgChildSpoken ?? 0) >= 80) score += 1;
   else score -= 2;
 
   // 8. Visit quality — duration (±2)
-  if (avgDuration >= 3) score += 2;
-  else if (avgDuration >= 2) score += 1;
+  if ((avgDuration ?? 0) >= 3) score += 2;
+  else if ((avgDuration ?? 0) >= 2) score += 1;
   else score -= 1;
 
   // 9. Judgement trend (±2)
@@ -332,7 +332,7 @@ export function computeHomeReg44(
   if (childVoiceEvery) strengths.push("Children spoken to at every visit — their voice is central to independent monitoring.");
   if (overdueActions === 0 && action_records.length > 0) strengths.push("No overdue actions from Reg 44 visits — action plan management is thorough.");
   if (judgementTrend === "improving") strengths.push("Visitor judgements show an improving trend — quality of care is progressing positively.");
-  if (avgDuration >= 3) strengths.push(`Average visit duration ${avgDuration} hours — visits are thorough and comprehensive.`);
+  if ((avgDuration ?? 0) >= 3) strengths.push(`Average visit duration ${(avgDuration ?? 0)} hours — visits are thorough and comprehensive.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
@@ -380,7 +380,7 @@ export function computeHomeReg44(
   if (monthlyCompliance && recCompletionRate >= 80 && ofstedRate === 100) {
     insights.push({ text: `Monthly visits achieved with ${recCompletionRate}% recommendation completion and full Ofsted notification. This demonstrates strong governance and responsiveness to independent monitoring — a hallmark of outstanding leadership.`, severity: "positive" });
   }
-  if (childVoiceEvery && avgChildSpoken >= 80) {
+  if (childVoiceEvery && (avgChildSpoken ?? 0) >= 80) {
     insights.push({ text: `Children spoken to at every visit with ${avgChildSpoken}% average engagement. The child's voice is embedded in the independent monitoring process — Ofsted's key expectation.`, severity: "positive" });
   }
 

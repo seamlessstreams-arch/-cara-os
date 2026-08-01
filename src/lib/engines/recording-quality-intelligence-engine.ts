@@ -48,9 +48,9 @@ export interface RecordingQualityIntelligenceResult {
 export interface RecordingOverview {
   total_entries: number;
   entries_last_7_days: number;
-  avg_entries_per_day: number;
-  avg_content_length: number;
-  mood_capture_rate: number;
+  avg_entries_per_day: number | null;
+  avg_content_length: number | null;
+  mood_capture_rate: number | null;
   significant_events_count: number;
   entry_type_coverage: number;
   children_with_entries_today: number;
@@ -68,7 +68,7 @@ export interface StaffRecordingProfile {
   staff_name: string;
   total_records: number;
   avg_word_count: number;
-  mood_capture_rate: number;
+  mood_capture_rate: number | null;
   quality_label: string;
   trend: "improving" | "stable" | "declining";
 }
@@ -176,13 +176,13 @@ export function computeRecordingQualityIntelligence(input: {
   // Unique days with entries in the last 7
   const uniqueDays = new Set(recent.map((e) => e.date));
   const avgEntriesPerDay =
-    uniqueDays.size > 0 ? round1(entriesLast7 / 7) : 0;
+    uniqueDays.size > 0 ? round1(entriesLast7 / 7) : null;
 
   const wordCounts = allEntries.map((e) => wordCount(e.content));
   const avgContentLength =
     wordCounts.length > 0
       ? round1(wordCounts.reduce((a, b) => a + b, 0) / wordCounts.length)
-      : 0;
+      : null;
 
   const withMood = allEntries.filter(
     (e) => e.mood_score !== null && e.mood_score !== undefined,
@@ -190,7 +190,7 @@ export function computeRecordingQualityIntelligence(input: {
   const moodCaptureRate =
     allEntries.length > 0
       ? round1((withMood.length / allEntries.length) * 100)
-      : 0;
+      : null;
 
   const significantEventsCount = allEntries.filter((e) => e.is_significant).length;
 
@@ -330,7 +330,7 @@ export function computeRecordingQualityIntelligence(input: {
   }
 
   // Medium: avg content length < 30 words
-  if (avgContentLength < 30 && allEntries.length > 0) {
+  if ((avgContentLength ?? 0) < 30 && allEntries.length > 0) {
     alerts.push({
       severity: "medium",
       message: `Average recording length ${avgContentLength} words — below minimum standard`,
@@ -338,7 +338,7 @@ export function computeRecordingQualityIntelligence(input: {
   }
 
   // Medium: mood capture rate < 50%
-  if (moodCaptureRate < 50 && allEntries.length > 0) {
+  if ((moodCaptureRate ?? 0) < 50 && allEntries.length > 0) {
     alerts.push({
       severity: "medium",
       message: `Mood score recorded in only ${moodCaptureRate}% of entries — target 80%`,
@@ -369,7 +369,7 @@ export function computeRecordingQualityIntelligence(input: {
   }
 
   // Warning: low word count
-  if (avgContentLength < 30 && allEntries.length > 0) {
+  if ((avgContentLength ?? 0) < 30 && allEntries.length > 0) {
     insights.push({
       severity: "warning",
       text: `Average recording length is ${avgContentLength} words. Recordings should capture sufficient detail to evidence day-to-day experiences.`,
@@ -377,7 +377,7 @@ export function computeRecordingQualityIntelligence(input: {
   }
 
   // Warning: low mood capture
-  if (moodCaptureRate < 50 && allEntries.length > 0) {
+  if ((moodCaptureRate ?? 0) < 50 && allEntries.length > 0) {
     insights.push({
       severity: "warning",
       text: `Mood scores are captured in only ${moodCaptureRate}% of entries. Target is 80% to evidence child wellbeing monitoring.`,
@@ -388,8 +388,8 @@ export function computeRecordingQualityIntelligence(input: {
   const poorRate =
     allEntries.length > 0
       ? round1((qualityBreakdown.poor / allEntries.length) * 100)
-      : 0;
-  if (poorRate > 20) {
+      : null;
+  if ((poorRate ?? 0) > 20) {
     insights.push({
       severity: "warning",
       text: `${poorRate}% of recordings are classified as poor quality. Targeted recording training is recommended.`,
@@ -406,7 +406,7 @@ export function computeRecordingQualityIntelligence(input: {
   }
 
   // Positive: high mood capture >=80%
-  if (moodCaptureRate >= 80 && allEntries.length > 0) {
+  if ((moodCaptureRate ?? 0) >= 80 && allEntries.length > 0) {
     insights.push({
       severity: "positive",
       text: `Mood capture rate is ${moodCaptureRate}%. Strong evidence of child wellbeing monitoring.`,
@@ -414,7 +414,7 @@ export function computeRecordingQualityIntelligence(input: {
   }
 
   // Positive: high avg word count >=50
-  if (avgContentLength >= 50 && allEntries.length > 0) {
+  if ((avgContentLength ?? 0) >= 50 && allEntries.length > 0) {
     insights.push({
       severity: "positive",
       text: `Average recording length is ${avgContentLength} words. Recordings are detailed and evidence-rich.`,

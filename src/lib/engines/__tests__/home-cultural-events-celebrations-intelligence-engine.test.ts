@@ -1393,7 +1393,7 @@ describe("computeCulturalEventsCelebrations", () => {
         festival_inclusion_records: [],
         child_led_activity_records: [],
       });
-      expect(r.diversity_celebration_rate).toBe(0);
+      expect(r.diversity_celebration_rate).toBeNull();;
     });
 
     it("festival_inclusion_rate is 0 when total_children is 0", () => {
@@ -1406,7 +1406,7 @@ describe("computeCulturalEventsCelebrations", () => {
         festival_inclusion_records: [makeFestivalInclusion("f1")],
         child_led_activity_records: [],
       });
-      expect(r.festival_inclusion_rate).toBe(0);
+      expect(r.festival_inclusion_rate).toBeNull();;
     });
 
     it("child_led_rate is 0 when total_children is 0", () => {
@@ -1419,7 +1419,7 @@ describe("computeCulturalEventsCelebrations", () => {
         festival_inclusion_records: [],
         child_led_activity_records: [makeChildLedActivity("cla1")],
       });
-      expect(r.child_led_rate).toBe(0);
+      expect(r.child_led_rate).toBeNull();;
     });
   });
 
@@ -2664,9 +2664,9 @@ describe("computeCulturalEventsCelebrations", () => {
       expect(r.cultural_rating).not.toBe("insufficient_data");
       expect(r.total_cultural_events).toBe(1);
       // Diversity celebration rate, festival inclusion rate, child-led rate = 0 (total_children=0)
-      expect(r.diversity_celebration_rate).toBe(0);
-      expect(r.festival_inclusion_rate).toBe(0);
-      expect(r.child_led_rate).toBe(0);
+      expect(r.diversity_celebration_rate).toBeNull();;
+      expect(r.festival_inclusion_rate).toBeNull();;
+      expect(r.child_led_rate).toBeNull();;
     });
 
     it("duplicate child_ids in different celebrations are de-duplicated for diversity_celebration_rate", () => {

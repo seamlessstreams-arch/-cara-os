@@ -129,18 +129,18 @@ export interface BehaviourSupportRecommendation {
 
 export interface BehaviourSupportPlanEffectivenessResult {
   behaviour_rating: BehaviourSupportRating;
-  behaviour_score: number;
+  behaviour_score: number | null;
   headline: string;
   total_bsps: number;
-  bsp_coverage_rate: number;
-  intervention_success_rate: number;
-  deescalation_effectiveness_rate: number;
-  positive_reinforcement_rate: number;
-  restrictive_practice_reduction_rate: number;
-  child_involvement_rate: number;
-  bsp_review_compliance_rate: number;
-  staff_training_rate: number;
-  child_debrief_rate: number;
+  bsp_coverage_rate: number | null;
+  intervention_success_rate: number | null;
+  deescalation_effectiveness_rate: number | null;
+  positive_reinforcement_rate: number | null;
+  restrictive_practice_reduction_rate: number | null;
+  child_involvement_rate: number | null;
+  bsp_review_compliance_rate: number | null;
+  staff_training_rate: number | null;
+  child_debrief_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: BehaviourSupportRecommendation[];
@@ -318,7 +318,7 @@ export function computeBehaviourSupportPlanEffectiveness(
   const interventionSuccessWeighted = successfulInterventions + partiallySuccessful * 0.5;
   const interventionSuccessRate = totalInterventions > 0
     ? Math.round((interventionSuccessWeighted / totalInterventions) * 100)
-    : 0;
+    : null;
 
   const proactiveInterventions = intervention_records.filter(
     (i) => i.intervention_type === "proactive",
@@ -348,7 +348,7 @@ export function computeBehaviourSupportPlanEffectiveness(
   const deescalationEffectivenessWeighted = fullyDeescalated + partiallyDeescalated * 0.5;
   const deescalationEffectivenessRate = totalDeescalations > 0
     ? Math.round((deescalationEffectivenessWeighted / totalDeescalations) * 100)
-    : 0;
+    : null;
 
   const deescalationsAvoidingRestraint = deescalation_records.filter(
     (d) => d.restrictive_practice_avoided,
@@ -442,12 +442,12 @@ export function computeBehaviourSupportPlanEffectiveness(
   else if (bspCoverageRate >= 80) score += 2;
 
   // --- Bonus 2: interventionSuccessRate (>=90: +3, >=70: +1) ---
-  if (interventionSuccessRate >= 90) score += 3;
-  else if (interventionSuccessRate >= 70) score += 1;
+  if ((interventionSuccessRate ?? 0) >= 90) score += 3;
+  else if ((interventionSuccessRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 3: deescalationEffectivenessRate (>=90: +4, >=70: +2) ---
-  if (deescalationEffectivenessRate >= 90) score += 4;
-  else if (deescalationEffectivenessRate >= 70) score += 2;
+  if ((deescalationEffectivenessRate ?? 0) >= 90) score += 4;
+  else if ((deescalationEffectivenessRate ?? 0) >= 70) score += 2;
 
   // --- Bonus 4: positiveReinforcementRate (>=90: +3, >=70: +1) ---
   if (positiveReinforcementRate >= 90) score += 3;
@@ -484,10 +484,10 @@ export function computeBehaviourSupportPlanEffectiveness(
   if (bspCoverageRate < 50 && total_children > 0) score -= 5;
 
   // interventionSuccessRate < 40 -> -5 (guard: totalInterventions > 0)
-  if (interventionSuccessRate < 40 && totalInterventions > 0) score -= 5;
+  if ((interventionSuccessRate ?? 0) < 40 && totalInterventions > 0) score -= 5;
 
   // deescalationEffectivenessRate < 40 -> -5 (guard: totalDeescalations > 0)
-  if (deescalationEffectivenessRate < 40 && totalDeescalations > 0) score -= 5;
+  if ((deescalationEffectivenessRate ?? 0) < 40 && totalDeescalations > 0) score -= 5;
 
   // restrictive compliance composite < 50 -> -3 (guard: totalRestrictive > 0)
   if (restrictiveComplianceItems < 50 && totalRestrictive > 0) score -= 3;
@@ -510,21 +510,21 @@ export function computeBehaviourSupportPlanEffectiveness(
     );
   }
 
-  if (interventionSuccessRate >= 90 && totalInterventions > 0) {
+  if ((interventionSuccessRate ?? 0) >= 90 && totalInterventions > 0) {
     strengths.push(
       `${interventionSuccessRate}% intervention success rate -- behavioural interventions are highly effective, demonstrating well-matched strategies to children's needs.`,
     );
-  } else if (interventionSuccessRate >= 70 && totalInterventions > 0) {
+  } else if ((interventionSuccessRate ?? 0) >= 70 && totalInterventions > 0) {
     strengths.push(
       `${interventionSuccessRate}% intervention success rate -- interventions are generally effective in managing behaviour.`,
     );
   }
 
-  if (deescalationEffectivenessRate >= 90 && totalDeescalations > 0) {
+  if ((deescalationEffectivenessRate ?? 0) >= 90 && totalDeescalations > 0) {
     strengths.push(
       `${deescalationEffectivenessRate}% de-escalation effectiveness -- staff are highly skilled at de-escalating situations before they reach crisis point.`,
     );
-  } else if (deescalationEffectivenessRate >= 70 && totalDeescalations > 0) {
+  } else if ((deescalationEffectivenessRate ?? 0) >= 70 && totalDeescalations > 0) {
     strengths.push(
       `${deescalationEffectivenessRate}% de-escalation effectiveness -- staff demonstrate competent de-escalation practice.`,
     );
@@ -632,21 +632,21 @@ export function computeBehaviourSupportPlanEffectiveness(
     );
   }
 
-  if (interventionSuccessRate < 40 && totalInterventions > 0) {
+  if ((interventionSuccessRate ?? 0) < 40 && totalInterventions > 0) {
     concerns.push(
       `Intervention success rate at only ${interventionSuccessRate}% -- the majority of behavioural interventions are not achieving their intended outcomes, indicating strategies may not be appropriately matched to children's needs.`,
     );
-  } else if (interventionSuccessRate < 70 && interventionSuccessRate >= 40 && totalInterventions > 0) {
+  } else if ((interventionSuccessRate ?? 0) < 70 && (interventionSuccessRate ?? 0) >= 40 && totalInterventions > 0) {
     concerns.push(
       `Intervention success rate at ${interventionSuccessRate}% -- a significant proportion of interventions are not fully effective, suggesting BSP strategies may need review.`,
     );
   }
 
-  if (deescalationEffectivenessRate < 40 && totalDeescalations > 0) {
+  if ((deescalationEffectivenessRate ?? 0) < 40 && totalDeescalations > 0) {
     concerns.push(
       `De-escalation effectiveness at only ${deescalationEffectivenessRate}% -- most de-escalation attempts are not resolving situations, which may be leading to unnecessary escalation and restrictive practices.`,
     );
-  } else if (deescalationEffectivenessRate < 70 && deescalationEffectivenessRate >= 40 && totalDeescalations > 0) {
+  } else if ((deescalationEffectivenessRate ?? 0) < 70 && (deescalationEffectivenessRate ?? 0) >= 40 && totalDeescalations > 0) {
     concerns.push(
       `De-escalation effectiveness at ${deescalationEffectivenessRate}% -- a notable proportion of situations are not being de-escalated successfully.`,
     );
@@ -745,7 +745,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (interventionSuccessRate < 40 && totalInterventions > 0) {
+  if ((interventionSuccessRate ?? 0) < 40 && totalInterventions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -755,7 +755,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (deescalationEffectivenessRate < 40 && totalDeescalations > 0) {
+  if ((deescalationEffectivenessRate ?? 0) < 40 && totalDeescalations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -835,7 +835,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (interventionSuccessRate >= 40 && interventionSuccessRate < 70 && totalInterventions > 0) {
+  if ((interventionSuccessRate ?? 0) >= 40 && (interventionSuccessRate ?? 0) < 70 && totalInterventions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -845,7 +845,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (deescalationEffectivenessRate >= 40 && deescalationEffectivenessRate < 70 && totalDeescalations > 0) {
+  if ((deescalationEffectivenessRate ?? 0) >= 40 && (deescalationEffectivenessRate ?? 0) < 70 && totalDeescalations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -918,14 +918,14 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (interventionSuccessRate < 40 && totalInterventions > 0) {
+  if ((interventionSuccessRate ?? 0) < 40 && totalInterventions > 0) {
     insights.push({
       text: `Intervention success rate at only ${interventionSuccessRate}%. When the majority of interventions fail, children experience repeated unsuccessful attempts to manage their behaviour, which can increase distress and undermine trust. BSP strategies require urgent multi-disciplinary review.`,
       severity: "critical",
     });
   }
 
-  if (deescalationEffectivenessRate < 40 && totalDeescalations > 0) {
+  if ((deescalationEffectivenessRate ?? 0) < 40 && totalDeescalations > 0) {
     insights.push({
       text: `De-escalation effectiveness at only ${deescalationEffectivenessRate}%. Failed de-escalation often leads to restrictive practices or crisis situations. Ofsted will question whether staff have sufficient skills, training, and confidence in de-escalation, and whether the home's behaviour management approach is fundamentally effective.`,
       severity: "critical",
@@ -962,14 +962,14 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (interventionSuccessRate >= 40 && interventionSuccessRate < 70 && totalInterventions > 0) {
+  if ((interventionSuccessRate ?? 0) >= 40 && (interventionSuccessRate ?? 0) < 70 && totalInterventions > 0) {
     insights.push({
       text: `Intervention success rate at ${interventionSuccessRate}% -- while some interventions work, a significant proportion do not achieve intended outcomes. Regular BSP review and strategy adaptation could improve this.`,
       severity: "warning",
     });
   }
 
-  if (deescalationEffectivenessRate >= 40 && deescalationEffectivenessRate < 70 && totalDeescalations > 0) {
+  if ((deescalationEffectivenessRate ?? 0) >= 40 && (deescalationEffectivenessRate ?? 0) < 70 && totalDeescalations > 0) {
     insights.push({
       text: `De-escalation effectiveness at ${deescalationEffectivenessRate}% -- staff are having mixed results with de-escalation. Reflective practice sessions and technique-specific supervision could help improve consistency.`,
       severity: "warning",
@@ -1041,7 +1041,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (interventionSuccessRate >= 90 && deescalationEffectivenessRate >= 90 && totalInterventions > 0 && totalDeescalations > 0) {
+  if ((interventionSuccessRate ?? 0) >= 90 && (deescalationEffectivenessRate ?? 0) >= 90 && totalInterventions > 0 && totalDeescalations > 0) {
     insights.push({
       text: `Intervention success at ${interventionSuccessRate}% and de-escalation effectiveness at ${deescalationEffectivenessRate}% -- the home's behaviour management strategies are highly effective, demonstrating well-matched, evidence-based approaches that genuinely support children.`,
       severity: "positive",

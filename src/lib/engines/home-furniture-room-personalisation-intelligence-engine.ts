@@ -158,23 +158,23 @@ export interface FurnitureRoomRecommendation {
 
 export interface FurnitureRoomResult {
   room_rating: FurnitureRoomRating;
-  room_score: number;
+  room_score: number | null;
   headline: string;
   total_furniture_assessments: number;
   total_personalisation_assessments: number;
   total_choice_records: number;
   total_comfort_assessments: number;
   total_dignity_assessments: number;
-  furniture_adequacy_rate: number;
-  personalisation_rate: number;
-  child_choice_rate: number;
-  comfort_rate: number;
-  dignity_rate: number;
-  child_satisfaction_rate: number;
-  furniture_condition_avg: number;
-  comfort_rating_avg: number;
-  personalisation_budget_utilisation_rate: number;
-  choice_fulfilment_rate: number;
+  furniture_adequacy_rate: number | null;
+  personalisation_rate: number | null;
+  child_choice_rate: number | null;
+  comfort_rate: number | null;
+  dignity_rate: number | null;
+  child_satisfaction_rate: number | null;
+  furniture_condition_avg: number | null;
+  comfort_rating_avg: number | null;
+  personalisation_budget_utilisation_rate: number | null;
+  choice_fulfilment_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: FurnitureRoomRecommendation[];
@@ -350,7 +350,7 @@ export function computeFurnitureRoomPersonalisation(
   const furnitureConditionAvg =
     totalFurnitureAssessments > 0
       ? Math.round((furnitureConditionSum / totalFurnitureAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const replacementNeeded = furniture_adequacy_records.filter(
     (f) => f.replacement_needed,
@@ -512,7 +512,7 @@ export function computeFurnitureRoomPersonalisation(
   const comfortRatingAvg =
     totalComfortAssessments > 0
       ? Math.round((comfortRatingSum / totalComfortAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const childReportedComfort = comfort_assessment_records.filter(
     (c) => c.child_reported,
@@ -646,8 +646,8 @@ export function computeFurnitureRoomPersonalisation(
   else if (childSatisfactionRate >= 70) score += 1;
 
   // --- Bonus 7: furnitureConditionAvg (>=3.5: +2, >=2.5: +1) ---
-  if (furnitureConditionAvg >= 3.5) score += 2;
-  else if (furnitureConditionAvg >= 2.5) score += 1;
+  if ((furnitureConditionAvg ?? 0) >= 3.5) score += 2;
+  else if ((furnitureConditionAvg ?? 0) >= 2.5) score += 1;
 
   // ── Penalties (guarded by array.length > 0) ───────────────────────────
 
@@ -731,11 +731,11 @@ export function computeFurnitureRoomPersonalisation(
     );
   }
 
-  if (furnitureConditionAvg >= 3.5 && totalFurnitureAssessments > 0) {
+  if ((furnitureConditionAvg ?? 0) >= 3.5 && totalFurnitureAssessments > 0) {
     strengths.push(
       `Average furniture condition rating of ${furnitureConditionAvg}/4 — furnishings are maintained in good to excellent condition throughout the home.`,
     );
-  } else if (furnitureConditionAvg >= 2.5 && totalFurnitureAssessments > 0) {
+  } else if ((furnitureConditionAvg ?? 0) >= 2.5 && totalFurnitureAssessments > 0) {
     strengths.push(
       `Average furniture condition rating of ${furnitureConditionAvg}/4 — furnishings are generally maintained to a reasonable standard.`,
     );
@@ -1295,8 +1295,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    furnitureConditionAvg > 0 &&
-    furnitureConditionAvg < 2.5 &&
+    (furnitureConditionAvg ?? 0) > 0 &&
+    (furnitureConditionAvg ?? 0) < 2.5 &&
     totalFurnitureAssessments > 0
   ) {
     insights.push({
@@ -1333,7 +1333,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (furnitureAdequacyRate >= 95 && furnitureConditionAvg >= 3.5 && totalFurnitureAssessments > 0) {
+  if (furnitureAdequacyRate >= 95 && (furnitureConditionAvg ?? 0) >= 3.5 && totalFurnitureAssessments > 0) {
     insights.push({
       text: `${furnitureAdequacyRate}% furniture adequacy with condition ${furnitureConditionAvg}/4 — bedrooms are comprehensively and well-furnished to a high standard.`,
       severity: "positive",
@@ -1354,7 +1354,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (comfortRate >= 95 && comfortRatingAvg >= 4.0 && totalComfortAssessments > 0) {
+  if (comfortRate >= 95 && (comfortRatingAvg ?? 0) >= 4.0 && totalComfortAssessments > 0) {
     insights.push({
       text: `${comfortRate}% comfort compliance with rating ${comfortRatingAvg}/5 — bedrooms consistently provide a comfortable environment for sleep and relaxation.`,
       severity: "positive",

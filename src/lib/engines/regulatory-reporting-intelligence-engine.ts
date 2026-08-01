@@ -64,11 +64,11 @@ export interface RegulatoryReportingIntelligenceInput {
 // ── Output Types ────────────────────────────────────────────────────────────
 
 export interface RegulatoryReportingOverview {
-  overall_compliance_score: number; // 0-100
+  overall_compliance_score: number | null; // 0-100
   reg44_visits_last_12_months: number;
   reg44_compliant: boolean; // 12 visits in 12 months
   reg45_compliant: boolean; // submitted within 6-month cycle
-  notifications_on_time_rate: number;
+  notifications_on_time_rate: number | null;
   outstanding_recommendations: number;
 }
 
@@ -87,14 +87,14 @@ export interface Reg45Status {
   next_due: string | null;
   days_until_due: number | null;
   status: string; // on_track, due_soon, overdue, in_progress
-  current_progress: number;
+  current_progress: number | null;
   reports_last_12_months: number;
 }
 
 export interface NotificationCompliance {
   total_notifications: number;
   notified_on_time: number;
-  on_time_rate: number;
+  on_time_rate: number | null;
   pending_notifications: number;
   overdue_notifications: number;
 }
@@ -103,7 +103,7 @@ export interface RecommendationTracker {
   total_recommendations: number;
   completed: number;
   outstanding: number;
-  completion_rate: number;
+  completion_rate: number | null;
 }
 
 export interface RegulatoryAlert {
@@ -203,8 +203,8 @@ export function computeRegulatoryReportingIntelligence(
     .filter((v) => v > 0);
   const avgRatingNum = ratingValues.length > 0
     ? ratingValues.reduce((s, v) => s + v, 0) / ratingValues.length
-    : 0;
-  const averageRating = avgRatingNum >= 2.5 ? "good" : avgRatingNum >= 1.5 ? "satisfactory" : avgRatingNum > 0 ? "requires_improvement" : "none";
+    : null;
+  const averageRating = (avgRatingNum ?? 0) >= 2.5 ? "good" : (avgRatingNum ?? 0) >= 1.5 ? "satisfactory" : (avgRatingNum ?? 0) > 0 ? "requires_improvement" : "none";
 
   const reg44Compliant = reg44InLast12.length >= 12;
 
@@ -251,13 +251,13 @@ export function computeRegulatoryReportingIntelligence(
   );
   const currentProgress = inProgressReg45.length > 0
     ? inProgressReg45.reduce((max, r) => Math.max(max, r.progress_percentage), 0)
-    : 0;
+    : null;
 
   // Reg 45 status logic
   let reg45StatusValue: string;
   if (reg45DaysUntilDue !== null && reg45DaysUntilDue < 0) {
     reg45StatusValue = "overdue";
-  } else if (currentProgress > 0 && inProgressReg45.some((r) => r.status === "in_progress")) {
+  } else if ((currentProgress ?? 0) > 0 && inProgressReg45.some((r) => r.status === "in_progress")) {
     reg45StatusValue = "in_progress";
   } else if (reg45DaysUntilDue !== null && reg45DaysUntilDue <= 30) {
     reg45StatusValue = "due_soon";
@@ -380,7 +380,7 @@ export function computeRegulatoryReportingIntelligence(
     reg45DaysUntilDue !== null &&
     reg45DaysUntilDue >= 0 &&
     reg45DaysUntilDue <= 30 &&
-    currentProgress < 50
+    (currentProgress ?? 0) < 50
   ) {
     alerts.push({
       severity: "medium",

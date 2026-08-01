@@ -749,7 +749,7 @@ describe("Home Health & Wellbeing Intelligence Engine", () => {
         makeHealthRecord({ id: "h2", date: "2026-04-10" }),
       ],
     }));
-    expect(r.records.records_per_child).toBe(0);
+    expect(r.records.records_per_child).toBeNull();;
     expect(r.health_score).toBeGreaterThanOrEqual(0);
   });
 

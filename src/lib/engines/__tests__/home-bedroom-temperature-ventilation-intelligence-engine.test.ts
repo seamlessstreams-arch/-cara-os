@@ -282,9 +282,9 @@ describe("pct(0,0) = 0 edge case", () => {
       temperature_monitoring_records: manyTemp(5),
     });
     expect(r.ventilation_rate).toBe(0);
-    expect(r.heating_check_rate).toBe(0);
+    expect(r.heating_check_rate).toBeNull();;
     expect(r.window_compliance_rate).toBe(0);
-    expect(r.child_comfort_rate).toBe(0);
+    expect(r.child_comfort_rate).toBeNull();;
   });
 });
 

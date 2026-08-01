@@ -194,16 +194,16 @@ export type DbsVettingRating =
 
 export interface DbsVettingResult {
   vetting_rating: DbsVettingRating;
-  vetting_score: number;
+  vetting_score: number | null;
   headline: string;
 
   // ── Key Metrics ──────────────────────────────────────────────────────
-  dbs_currency_rate: number;
-  enhanced_dbs_rate: number;
-  overseas_check_rate: number;
-  barred_list_rate: number;
-  reference_verification_rate: number;
-  renewal_timeliness_rate: number;
+  dbs_currency_rate: number | null;
+  enhanced_dbs_rate: number | null;
+  overseas_check_rate: number | null;
+  barred_list_rate: number | null;
+  reference_verification_rate: number | null;
+  renewal_timeliness_rate: number | null;
 
   // ── Detailed Metrics ─────────────────────────────────────────────────
   dbs_total_records: number;
@@ -939,7 +939,7 @@ export function computeDbsRenewalStaffVetting(
 
   const renewalTimelinessRate = timelinessComponents.length > 0
     ? Math.round(timelinessComponents.reduce((s, v) => s + v, 0) / timelinessComponents.length)
-    : 0;
+    : null;
 
   // ══════════════════════════════════════════════════════════════════════
   // FULLY VETTED STAFF COUNT
@@ -1060,8 +1060,8 @@ export function computeDbsRenewalStaffVetting(
 
   // ── Bonus 9: Renewal timeliness composite (0–2) ────────────────────
   if (timelinessComponents.length > 0) {
-    if (renewalTimelinessRate >= 85) score += 2;
-    else if (renewalTimelinessRate >= 65) score += 1;
+    if ((renewalTimelinessRate ?? 0) >= 85) score += 2;
+    else if ((renewalTimelinessRate ?? 0) >= 65) score += 1;
     // else +0
   }
 
@@ -1215,7 +1215,7 @@ export function computeDbsRenewalStaffVetting(
     );
   }
 
-  if (renewalTimelinessRate >= 85 && timelinessComponents.length >= 3) {
+  if ((renewalTimelinessRate ?? 0) >= 85 && timelinessComponents.length >= 3) {
     strengths.push(
       `Overall renewal timeliness rate is ${renewalTimelinessRate}% — DBS renewals and vetting updates are managed proactively.`
     );
@@ -1841,7 +1841,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (renewalTimelinessRate >= 90 && timelinessComponents.length >= 4) {
+  if ((renewalTimelinessRate ?? 0) >= 90 && timelinessComponents.length >= 4) {
     insights.push({
       text: `Renewal timeliness rate is ${renewalTimelinessRate}% across ${timelinessComponents.length} measures — proactive management of DBS renewals and vetting updates is embedded in practice.`,
       severity: "positive",

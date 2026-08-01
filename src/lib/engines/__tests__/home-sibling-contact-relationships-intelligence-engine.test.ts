@@ -284,7 +284,7 @@ describe("computeSiblingContactRelationships", () => {
           sibling_placement_records: [makePlacement()],
         }),
       );
-      expect(r.child_wishes_rate).toBe(0);
+      expect(r.child_wishes_rate).toBeNull();;
       expect(r.child_satisfaction_rate).toBe(0);
     });
 

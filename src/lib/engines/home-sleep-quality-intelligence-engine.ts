@@ -50,32 +50,32 @@ export type SleepQualityRating =
 export interface DisturbanceProfile {
   total_disturbances: number;
   total_duration_mins: number;
-  avg_per_night: number;
+  avg_per_night: number | null;
   level_distribution: Record<string, number>; // none, minor, moderate, significant
-  none_rate: number;           // % of nights with no disturbances
-  significant_rate: number;    // % with significant
+  none_rate: number | null;           // % of nights with no disturbances
+  significant_rate: number | null;    // % with significant
   children_disturbed: Record<string, number>; // child_id → count
 }
 
 export interface CheckComplianceProfile {
   total_logs: number;
-  avg_checks_per_night: number;
+  avg_checks_per_night: number | null;
   logs_with_5_plus_checks: number;
-  check_compliance_rate: number; // % with >= 5 checks
-  building_secure_rate: number;  // %
-  alarms_set_rate: number;       // %
+  check_compliance_rate: number | null; // % with >= 5 checks
+  building_secure_rate: number | null;  // %
+  alarms_set_rate: number | null;       // %
 }
 
 export interface HandoverProfile {
   with_handover_notes: number;
   with_morning_handover: number;
-  handover_rate: number;         // % with both handover notes and morning handover
+  handover_rate: number | null;         // % with both handover notes and morning handover
 }
 
 export interface ShiftProfile {
   waking_nights: number;
   sleep_ins: number;
-  waking_night_rate: number;     // %
+  waking_night_rate: number | null;     // %
   unique_staff: number;
   logs_last_7_days: number;
   logs_last_14_days: number;
@@ -95,7 +95,7 @@ export interface Recommendation {
 
 export interface HomeSleepQualityResult {
   sleep_rating: SleepQualityRating;
-  sleep_score: number;
+  sleep_score: number | null;
   headline: string;
   disturbances: DisturbanceProfile;
   check_compliance: CheckComplianceProfile;
@@ -189,7 +189,7 @@ export function computeHomeSleepQuality(
     avg_per_night:
       sleep_logs.length > 0
         ? Math.round((allDisturbances.length / sleep_logs.length) * 10) / 10
-        : 0,
+        : null,
     level_distribution: levelDist,
     none_rate: pct(noneNights.length, sleep_logs.length),
     significant_rate: pct(significantNights.length, sleep_logs.length),
@@ -201,7 +201,7 @@ export function computeHomeSleepQuality(
   const avgChecks =
     checkCounts.length > 0
       ? Math.round((checkCounts.reduce((s, n) => s + n, 0) / checkCounts.length) * 10) / 10
-      : 0;
+      : null;
   const with5Plus = sleep_logs.filter((l) => l.checks_completed.length >= 5);
   const buildingSecure = sleep_logs.filter((l) => l.building_secure);
   const alarmsSet = sleep_logs.filter((l) => l.alarms_set);
@@ -261,30 +261,30 @@ export function computeHomeSleepQuality(
 
   // mod1: Disturbance level (±5)
   const mod1 =
-    disturbances.none_rate >= 70 ? 5 :
-    disturbances.none_rate >= 50 ? 3 :
-    disturbances.none_rate >= 30 ? 1 :
-    disturbances.significant_rate >= 30 ? -5 : -2;
+    (disturbances.none_rate ?? 0) >= 70 ? 5 :
+    (disturbances.none_rate ?? 0) >= 50 ? 3 :
+    (disturbances.none_rate ?? 0) >= 30 ? 1 :
+    (disturbances.significant_rate ?? 0) >= 30 ? -5 : -2;
   score += mod1;
 
   // mod2: Check compliance (±4)
   const mod2 =
-    check_compliance.check_compliance_rate >= 90 ? 4 :
-    check_compliance.check_compliance_rate >= 70 ? 2 :
-    check_compliance.check_compliance_rate >= 50 ? 0 : -3;
+    (check_compliance.check_compliance_rate ?? 0) >= 90 ? 4 :
+    (check_compliance.check_compliance_rate ?? 0) >= 70 ? 2 :
+    (check_compliance.check_compliance_rate ?? 0) >= 50 ? 0 : -3;
   score += mod2;
 
   // mod3: Building security (±3)
   const mod3 =
-    check_compliance.building_secure_rate >= 100 ? 3 :
-    check_compliance.building_secure_rate >= 90 ? 1 : -3;
+    (check_compliance.building_secure_rate ?? 0) >= 100 ? 3 :
+    (check_compliance.building_secure_rate ?? 0) >= 90 ? 1 : -3;
   score += mod3;
 
   // mod4: Handover quality (±3)
   const mod4 =
-    handover.handover_rate >= 90 ? 3 :
-    handover.handover_rate >= 70 ? 1 :
-    handover.handover_rate >= 50 ? 0 : -2;
+    (handover.handover_rate ?? 0) >= 90 ? 3 :
+    (handover.handover_rate ?? 0) >= 70 ? 1 :
+    (handover.handover_rate ?? 0) >= 50 ? 0 : -2;
   score += mod4;
 
   // mod5: Logging frequency (±4)
@@ -314,8 +314,8 @@ export function computeHomeSleepQuality(
   // mod8: Significant night rate (±3)
   const mod8 =
     disturbances.significant_rate === 0 ? 3 :
-    disturbances.significant_rate <= 15 ? 1 :
-    disturbances.significant_rate <= 30 ? -1 : -3;
+    (disturbances.significant_rate ?? 0) <= 15 ? 1 :
+    (disturbances.significant_rate ?? 0) <= 30 ? -1 : -3;
   score += mod8;
 
   // Clamp
@@ -325,13 +325,13 @@ export function computeHomeSleepQuality(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (disturbances.none_rate >= 50)
+  if ((disturbances.none_rate ?? 0) >= 50)
     strengths.push(`${disturbances.none_rate}% of nights had no disturbances — children are sleeping well.`);
-  if (check_compliance.check_compliance_rate >= 90)
+  if ((check_compliance.check_compliance_rate ?? 0) >= 90)
     strengths.push(`${check_compliance.check_compliance_rate}% of nights have 5+ welfare checks — excellent compliance.`);
-  if (check_compliance.building_secure_rate >= 100)
+  if ((check_compliance.building_secure_rate ?? 0) >= 100)
     strengths.push("Building confirmed secure on every night — consistent security practice.");
-  if (handover.handover_rate >= 90)
+  if ((handover.handover_rate ?? 0) >= 90)
     strengths.push(`${handover.handover_rate}% of logs have complete handover notes — strong communication.`);
   if (responseRate >= 100 && allDisturbances.length > 0)
     strengths.push("All disturbances have documented response actions — reflective, child-centred care.");
@@ -340,13 +340,13 @@ export function computeHomeSleepQuality(
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (disturbances.significant_rate > 20)
+  if ((disturbances.significant_rate ?? 0) > 20)
     concerns.push(`${disturbances.significant_rate}% of nights have significant disturbances — pattern requires clinical review.`);
-  if (check_compliance.check_compliance_rate < 70)
+  if ((check_compliance.check_compliance_rate ?? 0) < 70)
     concerns.push(`Only ${check_compliance.check_compliance_rate}% of nights have 5+ welfare checks — below expected standard.`);
-  if (check_compliance.building_secure_rate < 100)
-    concerns.push(`Building security not confirmed on ${100 - check_compliance.building_secure_rate}% of nights.`);
-  if (handover.handover_rate < 70)
+  if ((check_compliance.building_secure_rate ?? 0) < 100)
+    concerns.push(`Building security not confirmed on ${100 - (check_compliance.building_secure_rate ?? 0)}% of nights.`);
+  if ((handover.handover_rate ?? 0) < 70)
     concerns.push(`Only ${handover.handover_rate}% of logs have complete handovers — information may be lost.`);
   if (shifts.logs_last_7_days < 5)
     concerns.push(`Only ${shifts.logs_last_7_days} sleep logs in last 7 days — expected nightly logging.`);
@@ -370,7 +370,7 @@ export function computeHomeSleepQuality(
       regulatory_ref: "Reg 10",
     });
 
-  if (disturbances.significant_rate > 20)
+  if ((disturbances.significant_rate ?? 0) > 20)
     recommendations.push({
       rank: rank++,
       recommendation: "High significant disturbance rate — discuss with therapist and review bedtime routines.",
@@ -378,7 +378,7 @@ export function computeHomeSleepQuality(
       regulatory_ref: "Reg 7",
     });
 
-  if (check_compliance.check_compliance_rate < 70)
+  if ((check_compliance.check_compliance_rate ?? 0) < 70)
     recommendations.push({
       rank: rank++,
       recommendation: "Ensure minimum 5 welfare checks per night are completed and documented.",
@@ -394,7 +394,7 @@ export function computeHomeSleepQuality(
       regulatory_ref: "Reg 36",
     });
 
-  if (handover.handover_rate < 70)
+  if ((handover.handover_rate ?? 0) < 70)
     recommendations.push({
       rank: rank++,
       recommendation: "Improve handover completion — both evening and morning notes should be documented.",
@@ -411,19 +411,19 @@ export function computeHomeSleepQuality(
       severity: "warning",
     });
 
-  if (disturbances.none_rate >= 60)
+  if ((disturbances.none_rate ?? 0) >= 60)
     insights.push({
       text: `${disturbances.none_rate}% of nights are undisturbed — this suggests a calm, settled home environment where children feel safe enough to sleep well.`,
       severity: "positive",
     });
 
-  if (disturbances.significant_rate >= 20)
+  if ((disturbances.significant_rate ?? 0) >= 20)
     insights.push({
       text: `${disturbances.significant_rate}% of nights have significant disturbances. Persistent sleep disruption affects emotional regulation, education, and wellbeing — this is a safeguarding concern.`,
       severity: "critical",
     });
 
-  if (check_compliance.check_compliance_rate >= 90 && handover.handover_rate >= 90)
+  if ((check_compliance.check_compliance_rate ?? 0) >= 90 && (handover.handover_rate ?? 0) >= 90)
     insights.push({
       text: `Excellent night-time governance: ${check_compliance.check_compliance_rate}% check compliance, ${handover.handover_rate}% handover completion. This demonstrates robust overnight care.`,
       severity: "positive",

@@ -196,7 +196,7 @@ describe("Whistleblowing Intelligence Engine", () => {
         makeReport({ status: "investigating", date_closed: null }),
       ];
       const result = run(reports);
-      expect(result.overview.avg_resolution_days).toBe(0);
+      expect(result.overview.avg_resolution_days).toBeNull();;
     });
 
     it("excludes empty-string external referrals from count", () => {
@@ -607,7 +607,7 @@ describe("Whistleblowing Intelligence Engine", () => {
       const result = run(reports);
       expect(result.overview.open_reports).toBe(3);
       expect(result.overview.resolved_reports).toBe(0);
-      expect(result.overview.avg_resolution_days).toBe(0);
+      expect(result.overview.avg_resolution_days).toBeNull();;
       expect(result.open_cases).toHaveLength(3);
     });
 

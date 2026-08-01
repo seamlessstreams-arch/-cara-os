@@ -1214,7 +1214,7 @@ describe("computeTherapeuticInterventionEffectiveness", () => {
           ],
         }),
       );
-      expect(r.therapeutic_relationship_quality_rate).toBe(0);
+      expect(r.therapeutic_relationship_quality_rate).toBeNull();;
       expect(r.therapeutic_score).toBe(52);
     });
   });

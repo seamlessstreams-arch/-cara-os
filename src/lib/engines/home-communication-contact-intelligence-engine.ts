@@ -73,8 +73,8 @@ export interface CommBookProfile {
   total_entries_30d: number;
   urgent_count: number;
   action_required_count: number;
-  action_completion_rate: number;
-  child_related_rate: number;
+  action_completion_rate: number | null;
+  child_related_rate: number | null;
 }
 
 export interface CorrespondenceProfile {
@@ -82,7 +82,7 @@ export interface CorrespondenceProfile {
   incoming_count: number;
   outgoing_count: number;
   overdue_actions: number;
-  actioned_rate: number;
+  actioned_rate: number | null;
 }
 
 export interface ContactPlanProfile {
@@ -90,7 +90,7 @@ export interface ContactPlanProfile {
   active_count: number;
   child_coverage: number;
   overdue_reviews: number;
-  child_wishes_rate: number;
+  child_wishes_rate: number | null;
   upcoming_contacts_count: number;
 }
 
@@ -99,13 +99,13 @@ export interface CommProfileSummary {
   child_coverage: number;
   interpreter_needed_count: number;
   salt_involved_count: number;
-  child_views_rate: number;
-  avg_strategies: number;
+  child_views_rate: number | null;
+  avg_strategies: number | null;
 }
 
 export interface HomeCommunicationContactResult {
   communication_rating: CommunicationRating;
-  communication_score: number;
+  communication_score: number | null;
   headline: string;
   comm_book: CommBookProfile;
   correspondence: CorrespondenceProfile;
@@ -245,7 +245,7 @@ export function computeHomeCommunicationContact(
   );
   const avgStrategies = communication_profiles.length > 0
     ? Math.round((communication_profiles.reduce((s, p) => s + p.strategies_count, 0) / communication_profiles.length) * 10) / 10
-    : 0;
+    : null;
 
   const commProfileSummary: CommProfileSummary = {
     total_profiles: communication_profiles.length,

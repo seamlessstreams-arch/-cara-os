@@ -168,14 +168,14 @@ export interface BirthdayCelebrationRecommendation {
 
 export interface BirthdayCelebrationResult {
   celebration_rating: BirthdayCelebrationRating;
-  celebration_score: number;
+  celebration_score: number | null;
   headline: string;
-  birthday_planning_rate: number;
-  celebration_execution_rate: number;
-  gift_provision_rate: number;
-  memory_making_rate: number;
-  child_satisfaction_rate: number;
-  child_choice_rate: number;
+  birthday_planning_rate: number | null;
+  celebration_execution_rate: number | null;
+  gift_provision_rate: number | null;
+  memory_making_rate: number | null;
+  child_satisfaction_rate: number | null;
+  child_choice_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: BirthdayCelebrationRecommendation[];
@@ -356,7 +356,7 @@ export function computeBirthdaySpecialOccasionCelebration(
   const staffEnthusiasmAvg =
     totalCelebrations > 0
       ? Math.round((staffEnthusiasmSum / totalCelebrations) * 100) / 100
-      : 0;
+      : null;
 
   const peersParticipated = celebration_execution_records.filter((r) => r.peers_participated).length;
   const peerParticipationRate = pct(peersParticipated, totalCelebrations);
@@ -376,7 +376,7 @@ export function computeBirthdaySpecialOccasionCelebration(
   const atmosphereAvg =
     totalCelebrations > 0
       ? Math.round((atmosphereSum / totalCelebrations) * 100) / 100
-      : 0;
+      : null;
 
   const culturallyAppropriate = celebration_execution_records.filter((r) => r.cultural_appropriateness).length;
   const culturalAppropriatenessRate = pct(culturallyAppropriate, totalCelebrations);
@@ -453,7 +453,7 @@ export function computeBirthdaySpecialOccasionCelebration(
   const memoryQualityAvg =
     totalMemoryRecords > 0
       ? Math.round((qualitySum / totalMemoryRecords) * 100) / 100
-      : 0;
+      : null;
 
   const staffFacilitatedMemory = memory_making_records.filter((r) => r.staff_facilitated).length;
   const staffFacilitationMemoryRate = pct(staffFacilitatedMemory, totalMemoryRecords);
@@ -466,7 +466,7 @@ export function computeBirthdaySpecialOccasionCelebration(
   const satisfactionAvg =
     totalSatisfactionRecords > 0
       ? Math.round((satisfactionSum / totalSatisfactionRecords) * 100) / 100
-      : 0;
+      : null;
   const childSatisfactionRate =
     totalSatisfactionRecords > 0
       ? pct(
@@ -626,7 +626,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     );
   }
 
-  if (staffEnthusiasmAvg >= 4.0 && totalCelebrations > 0) {
+  if ((staffEnthusiasmAvg ?? 0) >= 4.0 && totalCelebrations > 0) {
     strengths.push(
       `Staff enthusiasm for celebrations averages ${staffEnthusiasmAvg}/5 -- staff demonstrate genuine warmth and engagement in celebrating children's milestones.`,
     );
@@ -650,7 +650,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     );
   }
 
-  if (atmosphereAvg >= 4.0 && totalCelebrations > 0) {
+  if ((atmosphereAvg ?? 0) >= 4.0 && totalCelebrations > 0) {
     strengths.push(
       `Celebration atmosphere averages ${atmosphereAvg}/5 -- celebrations are joyful occasions that create positive memories for children.`,
     );
@@ -716,7 +716,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     );
   }
 
-  if (memoryQualityAvg >= 4.0 && totalMemoryRecords > 0) {
+  if ((memoryQualityAvg ?? 0) >= 4.0 && totalMemoryRecords > 0) {
     strengths.push(
       `Memory-making quality averages ${memoryQualityAvg}/5 -- celebration memories are high quality and meaningful.`,
     );
@@ -852,13 +852,13 @@ export function computeBirthdaySpecialOccasionCelebration(
     );
   }
 
-  if (staffEnthusiasmAvg < 3.0 && totalCelebrations > 0) {
+  if ((staffEnthusiasmAvg ?? 0) < 3.0 && totalCelebrations > 0) {
     concerns.push(
       `Staff enthusiasm for celebrations averages only ${staffEnthusiasmAvg}/5 -- children will notice when staff are not genuinely engaged in their special occasions, undermining the sense that celebrations matter.`,
     );
   }
 
-  if (atmosphereAvg < 3.0 && totalCelebrations > 0) {
+  if ((atmosphereAvg ?? 0) < 3.0 && totalCelebrations > 0) {
     concerns.push(
       `Celebration atmosphere averages only ${atmosphereAvg}/5 -- celebrations are not creating the joyful, warm experiences that children deserve.`,
     );
@@ -1307,7 +1307,7 @@ export function computeBirthdaySpecialOccasionCelebration(
     });
   }
 
-  if (staffEnthusiasmAvg >= 3.0 && staffEnthusiasmAvg < 4.0 && totalCelebrations > 0) {
+  if ((staffEnthusiasmAvg ?? 0) >= 3.0 && (staffEnthusiasmAvg ?? 0) < 4.0 && totalCelebrations > 0) {
     insights.push({
       text: `Staff enthusiasm at ${staffEnthusiasmAvg}/5 -- adequate but not outstanding. Children thrive when staff are genuinely excited and engaged in their celebrations. Consider staff training on creating celebratory atmospheres.`,
       severity: "warning",

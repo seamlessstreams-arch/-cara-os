@@ -1366,7 +1366,7 @@ describe("Home Night Care Quality Intelligence Engine", () => {
 
       it("returns 0 when no handovers", () => {
         const r = computeNightCareQuality(baseInput({ night_staff_handovers: [] }));
-        expect(r.handover_quality_avg).toBe(0);
+        expect(r.handover_quality_avg).toBeNull();;
       });
 
       it("handles non-round averages with Math.round(*100)/100", () => {

@@ -20,12 +20,12 @@ export interface PeerAssessmentInput {
   child_id: string;
   assessment_date: string;
   assessor_role: "keyworker" | "therapist" | "teacher" | "social_worker" | "other";
-  relationship_quality_score: number; // 1-5
-  social_confidence_score: number; // 1-5
-  conflict_resolution_score: number; // 1-5
-  empathy_score: number; // 1-5
-  cooperation_score: number; // 1-5
-  peer_acceptance_score: number; // 1-5
+  relationship_quality_score: number | null; // 1-5
+  social_confidence_score: number | null; // 1-5
+  conflict_resolution_score: number | null; // 1-5
+  empathy_score: number | null; // 1-5
+  cooperation_score: number | null; // 1-5
+  peer_acceptance_score: number | null; // 1-5
   areas_of_strength: string[];
   areas_of_concern: string[];
   recommended_interventions: string[];
@@ -156,25 +156,25 @@ export interface PeerRelationshipRecommendation {
 
 export interface PeerRelationshipSocialDevelopmentResult {
   peer_rating: PeerRelationshipRating;
-  peer_score: number;
+  peer_score: number | null;
   headline: string;
   total_assessments: number;
   total_programmes: number;
   total_bullying_incidents: number;
   total_friendship_plans: number;
   total_social_activities: number;
-  peer_assessment_coverage_rate: number;
-  social_skills_engagement_rate: number;
-  bullying_resolution_rate: number;
-  friendship_plan_coverage_rate: number;
-  social_activity_participation_rate: number;
-  child_voice_in_plans_rate: number;
-  average_relationship_quality: number;
-  average_social_confidence: number;
-  programme_attendance_rate: number;
-  bullying_investigation_rate: number;
-  friendship_goal_achievement_rate: number;
-  activity_enjoyment_rate: number;
+  peer_assessment_coverage_rate: number | null;
+  social_skills_engagement_rate: number | null;
+  bullying_resolution_rate: number | null;
+  friendship_plan_coverage_rate: number | null;
+  social_activity_participation_rate: number | null;
+  child_voice_in_plans_rate: number | null;
+  average_relationship_quality: number | null;
+  average_social_confidence: number | null;
+  programme_attendance_rate: number | null;
+  bullying_investigation_rate: number | null;
+  friendship_goal_achievement_rate: number | null;
+  activity_enjoyment_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: PeerRelationshipRecommendation[];
@@ -311,58 +311,58 @@ export function computePeerRelationshipSocialDevelopment(
     total_children > 0 ? pct(uniqueChildrenAssessed, total_children) : 0;
 
   const relationshipQualitySum = peer_assessments.reduce(
-    (sum, a) => sum + a.relationship_quality_score,
+    (sum, a) => sum + (a.relationship_quality_score ?? 0),
     0,
   );
   const averageRelationshipQuality =
     totalAssessments > 0
       ? Math.round((relationshipQualitySum / totalAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const socialConfidenceSum = peer_assessments.reduce(
-    (sum, a) => sum + a.social_confidence_score,
+    (sum, a) => sum + (a.social_confidence_score ?? 0),
     0,
   );
   const averageSocialConfidence =
     totalAssessments > 0
       ? Math.round((socialConfidenceSum / totalAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const conflictResolutionSum = peer_assessments.reduce(
-    (sum, a) => sum + a.conflict_resolution_score,
+    (sum, a) => sum + (a.conflict_resolution_score ?? 0),
     0,
   );
   const averageConflictResolution =
     totalAssessments > 0
       ? Math.round((conflictResolutionSum / totalAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const empathySum = peer_assessments.reduce(
-    (sum, a) => sum + a.empathy_score,
+    (sum, a) => sum + (a.empathy_score ?? 0),
     0,
   );
   const averageEmpathy =
     totalAssessments > 0
       ? Math.round((empathySum / totalAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const cooperationSum = peer_assessments.reduce(
-    (sum, a) => sum + a.cooperation_score,
+    (sum, a) => sum + (a.cooperation_score ?? 0),
     0,
   );
   const averageCooperation =
     totalAssessments > 0
       ? Math.round((cooperationSum / totalAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const peerAcceptanceSum = peer_assessments.reduce(
-    (sum, a) => sum + a.peer_acceptance_score,
+    (sum, a) => sum + (a.peer_acceptance_score ?? 0),
     0,
   );
   const averagePeerAcceptance =
     totalAssessments > 0
       ? Math.round((peerAcceptanceSum / totalAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const assessmentChildVoice = peer_assessments.filter(
     (a) => a.child_voice_captured,
@@ -403,7 +403,7 @@ export function computePeerRelationshipSocialDevelopment(
   const averageProgressRating =
     totalProgrammes > 0
       ? Math.round((progressRatingSum / totalProgrammes) * 100) / 100
-      : 0;
+      : null;
 
   const programmesWithImprovement = social_skills_programmes.filter(
     (p) => p.measurable_improvement,
@@ -606,7 +606,7 @@ export function computePeerRelationshipSocialDevelopment(
   const averagePeerInteractionQuality =
     attendedActivities > 0
       ? Math.round((peerInteractionQualitySum / attendedActivities) * 100) / 100
-      : 0;
+      : null;
 
   const refusedActivities = social_activity_records.filter(
     (a) => a.attendance_status === "refused",
@@ -655,8 +655,8 @@ export function computePeerRelationshipSocialDevelopment(
 
   // --- Bonus 7: averageRelationshipQuality (>=4.0: +3, >=3.0: +1) ---
   // Max bonus: 3
-  if (averageRelationshipQuality >= 4.0) score += 3;
-  else if (averageRelationshipQuality >= 3.0) score += 1;
+  if ((averageRelationshipQuality ?? 0) >= 4.0) score += 3;
+  else if ((averageRelationshipQuality ?? 0) >= 3.0) score += 1;
 
   // --- Bonus 8: programmeAttendanceRate (>=90: +3, >=70: +1) ---
   // Max bonus: 3
@@ -704,18 +704,18 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   // Relationship quality strengths
-  if (averageRelationshipQuality >= 4.0 && totalAssessments > 0) {
+  if ((averageRelationshipQuality ?? 0) >= 4.0 && totalAssessments > 0) {
     strengths.push(
       `Peer relationship quality averages ${averageRelationshipQuality}/5 — children are forming and maintaining high-quality peer relationships within the home.`,
     );
-  } else if (averageRelationshipQuality >= 3.0 && totalAssessments > 0) {
+  } else if ((averageRelationshipQuality ?? 0) >= 3.0 && totalAssessments > 0) {
     strengths.push(
       `Peer relationship quality averages ${averageRelationshipQuality}/5 — children generally have positive peer relationships.`,
     );
   }
 
   // Social confidence strengths
-  if (averageSocialConfidence >= 4.0 && totalAssessments > 0) {
+  if ((averageSocialConfidence ?? 0) >= 4.0 && totalAssessments > 0) {
     strengths.push(
       `Social confidence averages ${averageSocialConfidence}/5 — children demonstrate strong social confidence and self-assurance in peer interactions.`,
     );
@@ -881,7 +881,7 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   // Peer interaction quality strengths
-  if (averagePeerInteractionQuality >= 4.0 && attendedActivities > 0) {
+  if ((averagePeerInteractionQuality ?? 0) >= 4.0 && attendedActivities > 0) {
     strengths.push(
       `Peer interaction quality during activities averages ${averagePeerInteractionQuality}/5 — children demonstrate strong social skills in activity settings.`,
     );
@@ -895,14 +895,14 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   // Empathy and cooperation strengths
-  if (averageEmpathy >= 4.0 && averageCooperation >= 4.0 && totalAssessments > 0) {
+  if ((averageEmpathy ?? 0) >= 4.0 && (averageCooperation ?? 0) >= 4.0 && totalAssessments > 0) {
     strengths.push(
       `Empathy (${averageEmpathy}/5) and cooperation (${averageCooperation}/5) scores are both strong — children demonstrate well-developed prosocial skills.`,
     );
   }
 
   // Conflict resolution strengths
-  if (averageConflictResolution >= 4.0 && totalAssessments > 0) {
+  if ((averageConflictResolution ?? 0) >= 4.0 && totalAssessments > 0) {
     strengths.push(
       `Conflict resolution skills average ${averageConflictResolution}/5 — children can manage disagreements constructively with their peers.`,
     );
@@ -931,22 +931,22 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   // Relationship quality concerns
-  if (averageRelationshipQuality < 2.5 && totalAssessments > 0) {
+  if ((averageRelationshipQuality ?? 0) < 2.5 && totalAssessments > 0) {
     concerns.push(
       `Peer relationship quality averages only ${averageRelationshipQuality}/5 — children are experiencing poor-quality peer relationships, which may affect their emotional wellbeing and placement stability.`,
     );
-  } else if (averageRelationshipQuality < 3.0 && averageRelationshipQuality >= 2.5 && totalAssessments > 0) {
+  } else if ((averageRelationshipQuality ?? 0) < 3.0 && (averageRelationshipQuality ?? 0) >= 2.5 && totalAssessments > 0) {
     concerns.push(
       `Peer relationship quality at ${averageRelationshipQuality}/5 — below the expected standard, indicating some children may be struggling with peer relationships.`,
     );
   }
 
   // Social confidence concerns
-  if (averageSocialConfidence < 2.5 && totalAssessments > 0) {
+  if ((averageSocialConfidence ?? 0) < 2.5 && totalAssessments > 0) {
     concerns.push(
       `Social confidence averages only ${averageSocialConfidence}/5 — children lack confidence in social situations, which may limit their ability to form friendships and integrate into the wider community.`,
     );
-  } else if (averageSocialConfidence < 3.0 && averageSocialConfidence >= 2.5 && totalAssessments > 0) {
+  } else if ((averageSocialConfidence ?? 0) < 3.0 && (averageSocialConfidence ?? 0) >= 2.5 && totalAssessments > 0) {
     concerns.push(
       `Social confidence at ${averageSocialConfidence}/5 — some children may benefit from additional support to build confidence in peer interactions.`,
     );
@@ -1093,28 +1093,28 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   // Peer interaction quality concerns
-  if (averagePeerInteractionQuality < 2.5 && attendedActivities > 0) {
+  if ((averagePeerInteractionQuality ?? 0) < 2.5 && attendedActivities > 0) {
     concerns.push(
       `Peer interaction quality during activities averages only ${averagePeerInteractionQuality}/5 — children may be struggling with social skills in activity settings.`,
     );
   }
 
   // Conflict resolution concerns
-  if (averageConflictResolution < 2.5 && totalAssessments > 0) {
+  if ((averageConflictResolution ?? 0) < 2.5 && totalAssessments > 0) {
     concerns.push(
       `Conflict resolution skills average only ${averageConflictResolution}/5 — children lack the skills to manage peer disagreements constructively, increasing the risk of escalation.`,
     );
   }
 
   // Empathy concerns
-  if (averageEmpathy < 2.5 && totalAssessments > 0) {
+  if ((averageEmpathy ?? 0) < 2.5 && totalAssessments > 0) {
     concerns.push(
       `Empathy scores average only ${averageEmpathy}/5 — children may need targeted support to develop empathy and understanding of others' perspectives.`,
     );
   }
 
   // Peer acceptance concerns
-  if (averagePeerAcceptance < 2.5 && totalAssessments > 0) {
+  if ((averagePeerAcceptance ?? 0) < 2.5 && totalAssessments > 0) {
     concerns.push(
       `Peer acceptance scores average only ${averagePeerAcceptance}/5 — some children may be experiencing social rejection or isolation within the home.`,
     );
@@ -1392,8 +1392,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    averageRelationshipQuality < 3.0 &&
-    averageRelationshipQuality >= 2.0 &&
+    (averageRelationshipQuality ?? 0) < 3.0 &&
+    (averageRelationshipQuality ?? 0) >= 2.0 &&
     totalAssessments > 0
   ) {
     recommendations.push({
@@ -1425,7 +1425,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (averageConflictResolution < 3.0 && totalAssessments > 0) {
+  if ((averageConflictResolution ?? 0) < 3.0 && totalAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1476,7 +1476,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (averagePeerAcceptance < 2.0 && totalAssessments > 0) {
+  if ((averagePeerAcceptance ?? 0) < 2.0 && totalAssessments > 0) {
     insights.push({
       text: `Peer acceptance averaging only ${averagePeerAcceptance}/5. Low peer acceptance indicates children may be experiencing social rejection or isolation within the home. This poses risks to emotional wellbeing and requires immediate therapeutic intervention.`,
       severity: "critical",
@@ -1504,8 +1504,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    averageRelationshipQuality >= 2.5 &&
-    averageRelationshipQuality < 3.0 &&
+    (averageRelationshipQuality ?? 0) >= 2.5 &&
+    (averageRelationshipQuality ?? 0) < 3.0 &&
     totalAssessments > 0
   ) {
     insights.push({
@@ -1617,8 +1617,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    averageConflictResolution >= 2.5 &&
-    averageConflictResolution < 3.0 &&
+    (averageConflictResolution ?? 0) >= 2.5 &&
+    (averageConflictResolution ?? 0) < 3.0 &&
     totalAssessments > 0
   ) {
     insights.push({
@@ -1678,8 +1678,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    averageRelationshipQuality >= 4.0 &&
-    averageSocialConfidence >= 4.0 &&
+    (averageRelationshipQuality ?? 0) >= 4.0 &&
+    (averageSocialConfidence ?? 0) >= 4.0 &&
     totalAssessments > 0
   ) {
     insights.push({
@@ -1787,9 +1787,9 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    averageEmpathy >= 4.0 &&
-    averageCooperation >= 4.0 &&
-    averageConflictResolution >= 4.0 &&
+    (averageEmpathy ?? 0) >= 4.0 &&
+    (averageCooperation ?? 0) >= 4.0 &&
+    (averageConflictResolution ?? 0) >= 4.0 &&
     totalAssessments > 0
   ) {
     insights.push({

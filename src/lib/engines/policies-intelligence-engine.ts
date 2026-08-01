@@ -34,7 +34,7 @@ export interface PoliciesOverview {
   active_policies: number;
   overdue_reviews: number;
   due_within_30_days: number;
-  acknowledgement_rate: number;
+  acknowledgement_rate: number | null;
   draft_count: number;
   categories_covered: number;
   total_categories_required: number;
@@ -165,7 +165,7 @@ export function computePoliciesIntelligence(input: {
     totalAck += p.acknowledgement_count;
     totalRequired += p.total_staff_required;
   }
-  const acknowledgementRate = totalRequired > 0 ? round1((totalAck / totalRequired) * 100) : 0;
+  const acknowledgementRate = totalRequired > 0 ? round1((totalAck / totalRequired) * 100) : null;
 
   // Categories covered: unique categories with at least one active policy
   const coveredCategories = new Set<string>();
@@ -244,7 +244,7 @@ export function computePoliciesIntelligence(input: {
   }
 
   // Medium: low acknowledgement rate
-  if (acknowledgementRate < 90 && ackPolicies.length > 0) {
+  if ((acknowledgementRate ?? 0) < 90 && ackPolicies.length > 0) {
     alerts.push({
       severity: "medium",
       message: `Staff policy acknowledgement rate at ${acknowledgementRate}% — target 100%`,
@@ -300,7 +300,7 @@ export function computePoliciesIntelligence(input: {
   }
 
   // Warning: low acknowledgement rate
-  if (acknowledgementRate < 90 && ackPolicies.length > 0) {
+  if ((acknowledgementRate ?? 0) < 90 && ackPolicies.length > 0) {
     insights.push({
       severity: "warning",
       text: `Staff policy acknowledgement rate is ${acknowledgementRate}%. All staff must read and acknowledge current policies to demonstrate competence under Reg 13.`,
@@ -324,7 +324,7 @@ export function computePoliciesIntelligence(input: {
   }
 
   // Positive: high acknowledgement
-  if (acknowledgementRate >= 95 && ackPolicies.length > 0) {
+  if ((acknowledgementRate ?? 0) >= 95 && ackPolicies.length > 0) {
     insights.push({
       severity: "positive",
       text: `Staff policy acknowledgement rate is ${acknowledgementRate}%. Strong evidence of workforce policy awareness under Reg 13.`,

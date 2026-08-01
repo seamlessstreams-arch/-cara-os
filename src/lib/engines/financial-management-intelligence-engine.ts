@@ -206,7 +206,7 @@ export function computeFinancialManagementIntelligence(
         category,
         total_amount: amount,
         count: items.length,
-        pct_of_total: totalSpend > 0 ? Math.round((amount / totalSpend) * 100) : 0,
+        pct_of_total: totalSpend > 0 ? Math.round((amount / totalSpend) * 100) : null,
         pending_count: items.filter((e) => e.status === "submitted").length,
         missing_receipts: items.filter((e) => e.status !== "draft" && !e.receipt_url).length,
       };

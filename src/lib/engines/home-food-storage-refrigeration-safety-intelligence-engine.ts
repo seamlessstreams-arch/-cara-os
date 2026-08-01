@@ -88,7 +88,7 @@ export interface HygieneRatingRecordInput {
   cleaning_schedule_followed: boolean;
   pest_control_satisfactory: boolean;
   waste_disposal_correct: boolean;
-  overall_hygiene_score: number; // 1-5
+  overall_hygiene_score: number | null; // 1-5
   issues_identified: string[];
   issues_resolved: boolean;
   resolution_date: string | null;
@@ -151,19 +151,19 @@ export interface FoodStorageRecommendation {
 
 export interface FoodStorageRefrigerationSafetyResult {
   food_storage_rating: FoodStorageRating;
-  food_storage_score: number;
+  food_storage_score: number | null;
   headline: string;
   total_temperature_logs: number;
   total_storage_checks: number;
   total_date_checks: number;
   total_hygiene_assessments: number;
   total_cross_contamination_checks: number;
-  temperature_logging_rate: number;
-  storage_compliance_rate: number;
-  date_checking_rate: number;
-  hygiene_rating_rate: number;
-  cross_contamination_rate: number;
-  staff_training_rate: number;
+  temperature_logging_rate: number | null;
+  storage_compliance_rate: number | null;
+  date_checking_rate: number | null;
+  hygiene_rating_rate: number | null;
+  cross_contamination_rate: number | null;
+  staff_training_rate: number | null;
   temperature_log_records: TemperatureLogRecordInput[];
   storage_compliance_records: StorageComplianceRecordInput[];
   date_check_records: DateCheckRecordInput[];
@@ -404,35 +404,35 @@ export function computeFoodStorageRefrigerationSafety(
   // --- Hygiene rating metrics ---
   const totalHygieneAssessments = hygiene_rating_records.length;
 
-  const hygieneScoreSum = hygiene_rating_records.reduce((sum, h) => sum + h.overall_hygiene_score, 0);
+  const hygieneScoreSum = hygiene_rating_records.reduce((sum, h) => sum + (h.overall_hygiene_score ?? 0), 0);
   const avgHygieneScore =
     totalHygieneAssessments > 0
       ? Math.round((hygieneScoreSum / totalHygieneAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const fridgeCleanlinessSum = hygiene_rating_records.reduce((sum, h) => sum + h.fridge_cleanliness, 0);
   const avgFridgeCleanliness =
     totalHygieneAssessments > 0
       ? Math.round((fridgeCleanlinessSum / totalHygieneAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const freezerCleanlinessSum = hygiene_rating_records.reduce((sum, h) => sum + h.freezer_cleanliness, 0);
   const avgFreezerCleanliness =
     totalHygieneAssessments > 0
       ? Math.round((freezerCleanlinessSum / totalHygieneAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const storageAreaCleanlinessSum = hygiene_rating_records.reduce((sum, h) => sum + h.storage_area_cleanliness, 0);
   const avgStorageCleanliness =
     totalHygieneAssessments > 0
       ? Math.round((storageAreaCleanlinessSum / totalHygieneAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const foodHandlingSum = hygiene_rating_records.reduce((sum, h) => sum + h.food_handling_practice, 0);
   const avgFoodHandling =
     totalHygieneAssessments > 0
       ? Math.round((foodHandlingSum / totalHygieneAssessments) * 100) / 100
-      : 0;
+      : null;
 
   const handWashingCompliant = hygiene_rating_records.filter((h) => h.hand_washing_compliance).length;
   const handWashingRate = pct(handWashingCompliant, totalHygieneAssessments);
@@ -455,7 +455,7 @@ export function computeFoodStorageRefrigerationSafety(
   const hygieneIssueResolutionRate = pct(hygieneIssuesResolved, hygieneIssuesIdentified);
 
   // Composite hygiene rating rate: avg score scaled to percent
-  const hygieneRatingRate = totalHygieneAssessments > 0 ? Math.round(avgHygieneScore * 20) : 0;
+  const hygieneRatingRate = totalHygieneAssessments > 0 ? Math.round((avgHygieneScore ?? 0) * 20) : null;
 
   // EHO rating analysis
   const ehoInspections = hygiene_rating_records.filter((h) => h.eho_rating !== null);
@@ -555,9 +555,9 @@ export function computeFoodStorageRefrigerationSafety(
   else if (dateCheckingRate >= 70 && totalDateChecks > 0) score += 2;
 
   // --- Bonus 4: hygieneRatingRate (>=90: +5, >=70: +3, >=50: +1) ---
-  if (hygieneRatingRate >= 90 && totalHygieneAssessments > 0) score += 5;
-  else if (hygieneRatingRate >= 70 && totalHygieneAssessments > 0) score += 3;
-  else if (hygieneRatingRate >= 50 && totalHygieneAssessments > 0) score += 1;
+  if ((hygieneRatingRate ?? 0) >= 90 && totalHygieneAssessments > 0) score += 5;
+  else if ((hygieneRatingRate ?? 0) >= 70 && totalHygieneAssessments > 0) score += 3;
+  else if ((hygieneRatingRate ?? 0) >= 50 && totalHygieneAssessments > 0) score += 1;
 
   // --- Bonus 5: crossContaminationRate (>=90: +5, >=75: +3, >=60: +1) ---
   if (crossContaminationRate >= 90 && totalCrossContamChecks > 0) score += 5;
@@ -636,11 +636,11 @@ export function computeFoodStorageRefrigerationSafety(
     );
   }
 
-  if (hygieneRatingRate >= 90 && totalHygieneAssessments > 0) {
+  if ((hygieneRatingRate ?? 0) >= 90 && totalHygieneAssessments > 0) {
     strengths.push(
       `${hygieneRatingRate}% hygiene rating across assessments — fridges, freezers, and storage areas are consistently clean, with food handling practices meeting high standards.`,
     );
-  } else if (hygieneRatingRate >= 70 && totalHygieneAssessments > 0) {
+  } else if ((hygieneRatingRate ?? 0) >= 70 && totalHygieneAssessments > 0) {
     strengths.push(
       `${hygieneRatingRate}% hygiene rating — the home maintains generally good hygiene standards across food storage and preparation areas.`,
     );
@@ -784,11 +784,11 @@ export function computeFoodStorageRefrigerationSafety(
     );
   }
 
-  if (hygieneRatingRate < 50 && totalHygieneAssessments > 0) {
+  if ((hygieneRatingRate ?? 0) < 50 && totalHygieneAssessments > 0) {
     concerns.push(
       `Overall hygiene rating at only ${hygieneRatingRate}% — food storage areas, fridges, and freezers are not meeting acceptable cleanliness standards, which directly impacts food safety.`,
     );
-  } else if (hygieneRatingRate < 70 && hygieneRatingRate >= 50 && totalHygieneAssessments > 0) {
+  } else if ((hygieneRatingRate ?? 0) < 70 && (hygieneRatingRate ?? 0) >= 50 && totalHygieneAssessments > 0) {
     concerns.push(
       `Hygiene rating at ${hygieneRatingRate}% — some areas of food storage and preparation do not consistently meet required hygiene standards.`,
     );
@@ -1078,8 +1078,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    hygieneRatingRate >= 50 &&
-    hygieneRatingRate < 70 &&
+    (hygieneRatingRate ?? 0) >= 50 &&
+    (hygieneRatingRate ?? 0) < 70 &&
     totalHygieneAssessments > 0
   ) {
     recommendations.push({
@@ -1220,8 +1220,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    hygieneRatingRate >= 50 &&
-    hygieneRatingRate < 70 &&
+    (hygieneRatingRate ?? 0) >= 50 &&
+    (hygieneRatingRate ?? 0) < 70 &&
     totalHygieneAssessments > 0
   ) {
     insights.push({
@@ -1379,7 +1379,7 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    hygieneRatingRate >= 90 &&
+    (hygieneRatingRate ?? 0) >= 90 &&
     cleaningScheduleRate >= 90 &&
     totalHygieneAssessments > 0
   ) {

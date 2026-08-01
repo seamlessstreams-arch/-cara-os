@@ -124,19 +124,19 @@ export interface FinancialLiteracyRecommendation {
 
 export interface PocketMoneyFinancialLiteracyResult {
   financial_rating: FinancialLiteracyRating;
-  financial_score: number;
+  financial_score: number | null;
   headline: string;
   total_pocket_money_records: number;
   total_savings_programmes: number;
   total_financial_education_sessions: number;
   total_budgeting_records: number;
   total_money_handling_records: number;
-  pocket_money_compliance_rate: number;
-  savings_engagement_rate: number;
-  financial_education_rate: number;
-  budgeting_coverage_rate: number;
-  money_handling_accuracy_rate: number;
-  child_autonomy_rate: number;
+  pocket_money_compliance_rate: number | null;
+  savings_engagement_rate: number | null;
+  financial_education_rate: number | null;
+  budgeting_coverage_rate: number | null;
+  money_handling_accuracy_rate: number | null;
+  child_autonomy_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: FinancialLiteracyRecommendation[];
@@ -351,7 +351,7 @@ export function computePocketMoneyFinancialLiteracy(
   const childAutonomyRate =
     autonomyNumerators.length > 0
       ? Math.round(autonomyNumerators.reduce((a, b) => a + b, 0) / autonomyNumerators.length)
-      : 0;
+      : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
@@ -378,8 +378,8 @@ export function computePocketMoneyFinancialLiteracy(
   else if (moneyHandlingAccuracyRate >= 80) score += 1;
 
   // --- Bonus 6: childAutonomyRate (>=80: +3, >=60: +1) ---
-  if (childAutonomyRate >= 80) score += 3;
-  else if (childAutonomyRate >= 60) score += 1;
+  if ((childAutonomyRate ?? 0) >= 80) score += 3;
+  else if ((childAutonomyRate ?? 0) >= 60) score += 1;
 
   // --- Bonus 7: learningEvidencedRate (>=90: +3, >=70: +1) ---
   if (learningEvidencedRate >= 90) score += 3;
@@ -465,11 +465,11 @@ export function computePocketMoneyFinancialLiteracy(
     );
   }
 
-  if (childAutonomyRate >= 80) {
+  if ((childAutonomyRate ?? 0) >= 80) {
     strengths.push(
       "Children demonstrate high levels of financial autonomy — they are actively involved in budgeting decisions, savings choices, and financial learning, supporting preparation for adulthood.",
     );
-  } else if (childAutonomyRate >= 60) {
+  } else if ((childAutonomyRate ?? 0) >= 60) {
     strengths.push(
       `${childAutonomyRate}% child financial autonomy rate — children are developing appropriate independence in financial decision-making.`,
     );
@@ -597,7 +597,7 @@ export function computePocketMoneyFinancialLiteracy(
     );
   }
 
-  if (childAutonomyRate < 40) {
+  if ((childAutonomyRate ?? 0) < 40) {
     concerns.push(
       `Child financial autonomy rate at ${childAutonomyRate}% — children have limited involvement in financial decisions affecting them, which restricts independence development.`,
     );
@@ -714,7 +714,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (childAutonomyRate < 40) {
+  if ((childAutonomyRate ?? 0) < 40) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -898,7 +898,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (childAutonomyRate >= 40 && childAutonomyRate < 60) {
+  if ((childAutonomyRate ?? 0) >= 40 && (childAutonomyRate ?? 0) < 60) {
     insights.push({
       text: `Child financial autonomy at ${childAutonomyRate}% — children have moderate involvement in financial decisions but could be given greater ownership of budgeting and savings to build independence.`,
       severity: "warning",
@@ -1006,7 +1006,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (childAutonomyRate >= 80) {
+  if ((childAutonomyRate ?? 0) >= 80) {
     insights.push({
       text: `Child financial autonomy at ${childAutonomyRate}% — children are meaningfully involved in financial decisions, demonstrating the home's commitment to promoting independence and preparing young people for managing their own finances.`,
       severity: "positive",

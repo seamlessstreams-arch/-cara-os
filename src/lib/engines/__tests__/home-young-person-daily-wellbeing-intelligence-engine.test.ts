@@ -1032,7 +1032,7 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
         ],
         behaviour_logs: [],
       });
-      expect(result.average_mood_score).toBe(0);
+      expect(result.average_mood_score).toBeNull();;
     });
 
     it("single log mood score is exact", () => {

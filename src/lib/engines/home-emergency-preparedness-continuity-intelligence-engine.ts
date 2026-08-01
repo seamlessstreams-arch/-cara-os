@@ -133,14 +133,14 @@ export interface EmergencyRecommendation {
 
 export interface EmergencyPreparednessContinuityResult {
   emergency_rating: EmergencyRating;
-  emergency_score: number;
+  emergency_score: number | null;
   headline: string;
-  fire_drill_compliance_rate: number;
-  evacuation_plan_currency_rate: number;
-  emergency_contact_accuracy_rate: number;
-  business_continuity_score: number;
-  first_aid_coverage_rate: number;
-  equipment_maintenance_rate: number;
+  fire_drill_compliance_rate: number | null;
+  evacuation_plan_currency_rate: number | null;
+  emergency_contact_accuracy_rate: number | null;
+  business_continuity_score: number | null;
+  first_aid_coverage_rate: number | null;
+  equipment_maintenance_rate: number | null;
   total_drills: number;
   total_evacuation_plans: number;
   total_emergency_contacts: number;
@@ -312,7 +312,7 @@ export function computeEmergencyPreparednessContinuity(
           fire_drill_records.reduce((sum, d) => sum + d.evacuation_time_seconds, 0) /
             totalDrills,
         )
-      : 0;
+      : null;
   const avgTargetTime =
     totalDrills > 0
       ? Math.round(
@@ -321,7 +321,7 @@ export function computeEmergencyPreparednessContinuity(
             0,
           ) / totalDrills,
         )
-      : 0;
+      : null;
 
   // Check if most recent drill is overdue (> 30 days ago)
   const sortedDrills = [...fire_drill_records].sort(
@@ -473,7 +473,7 @@ export function computeEmergencyPreparednessContinuity(
     : [];
   const businessContinuityScore = bcpComponents.length > 0
     ? Math.round(bcpComponents.reduce((s, v) => s + v, 0) / bcpComponents.length)
-    : 0;
+    : null;
 
   // Scenario coverage
   const scenariosCovered = new Set(business_continuity_plans.map((p) => p.scenario)).size;
@@ -567,8 +567,8 @@ export function computeEmergencyPreparednessContinuity(
   else if (emergencyContactAccuracyRate >= 80) score += 1;
 
   // --- Bonus 4: businessContinuityScore (>=80: +3, >=60: +1) --- [max 3]
-  if (businessContinuityScore >= 80) score += 3;
-  else if (businessContinuityScore >= 60) score += 1;
+  if ((businessContinuityScore ?? 0) >= 80) score += 3;
+  else if ((businessContinuityScore ?? 0) >= 60) score += 1;
 
   // --- Bonus 5: firstAidCoverageRate (>=100: +3, >=80: +1) --- [max 3]
   if (firstAidCoverageRate >= 100) score += 3;
@@ -769,11 +769,11 @@ export function computeEmergencyPreparednessContinuity(
   }
 
   // Business continuity
-  if (businessContinuityScore >= 80 && totalContinuityPlans > 0) {
+  if ((businessContinuityScore ?? 0) >= 80 && totalContinuityPlans > 0) {
     strengths.push(
       `Business continuity score at ${businessContinuityScore}% — comprehensive continuity planning covering testing, communications, staffing, and data backup.`,
     );
-  } else if (businessContinuityScore >= 60 && totalContinuityPlans > 0) {
+  } else if ((businessContinuityScore ?? 0) >= 60 && totalContinuityPlans > 0) {
     strengths.push(
       `Business continuity score at ${businessContinuityScore}% — solid continuity planning foundations in place.`,
     );
@@ -1000,11 +1000,11 @@ export function computeEmergencyPreparednessContinuity(
   }
 
   // Business continuity concerns
-  if (businessContinuityScore < 40 && totalContinuityPlans > 0) {
+  if ((businessContinuityScore ?? 0) < 40 && totalContinuityPlans > 0) {
     concerns.push(
       `Business continuity score at only ${businessContinuityScore}% — continuity planning is inadequate to protect children if the home faces a major disruption.`,
     );
-  } else if (businessContinuityScore >= 40 && businessContinuityScore < 60 && totalContinuityPlans > 0) {
+  } else if ((businessContinuityScore ?? 0) >= 40 && (businessContinuityScore ?? 0) < 60 && totalContinuityPlans > 0) {
     concerns.push(
       `Business continuity score at ${businessContinuityScore}% — continuity planning needs strengthening to ensure the home can maintain care during disruptions.`,
     );
@@ -1360,7 +1360,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (businessContinuityScore >= 40 && businessContinuityScore < 60 && totalContinuityPlans > 0) {
+  if ((businessContinuityScore ?? 0) >= 40 && (businessContinuityScore ?? 0) < 60 && totalContinuityPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1523,7 +1523,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (businessContinuityScore >= 40 && businessContinuityScore < 60 && totalContinuityPlans > 0) {
+  if ((businessContinuityScore ?? 0) >= 40 && (businessContinuityScore ?? 0) < 60 && totalContinuityPlans > 0) {
     insights.push({
       text: `Business continuity score at ${businessContinuityScore}% — while plans exist, they need strengthening. The COVID-19 pandemic demonstrated that children's homes must be able to maintain safe care through major disruptions. Untested or incomplete plans may fail when needed most.`,
       severity: "warning",
@@ -1609,7 +1609,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (businessContinuityScore >= 80 && totalContinuityPlans > 0) {
+  if ((businessContinuityScore ?? 0) >= 80 && totalContinuityPlans > 0) {
     insights.push({
       text: `Business continuity score at ${businessContinuityScore}% — the home has comprehensive, tested contingency plans covering communications, alternative accommodation, data backup, and staffing. This resilience ensures children's care continues through disruptions.`,
       severity: "positive",

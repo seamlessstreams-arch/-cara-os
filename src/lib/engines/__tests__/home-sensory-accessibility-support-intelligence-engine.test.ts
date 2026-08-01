@@ -1415,7 +1415,7 @@ describe("metric calculations", () => {
       ],
     });
     // target == baseline → filtered out → avg = 0
-    expect(r.intervention_progress_avg).toBe(0);
+    expect(r.intervention_progress_avg).toBeNull();;
   });
 
   it("pct(0,0) returns 0", () => {
@@ -1429,15 +1429,15 @@ describe("metric calculations", () => {
     // No sensory room → utilisationRate = pct(0, total_children) but total_children>0 so pct(0,1)=0
     expect(r.sensory_room_utilisation_rate).toBe(0);
     // No equipment → maintenanceRate = 0 (activeEquipment=0 guard)
-    expect(r.equipment_maintenance_rate).toBe(0);
+    expect(r.equipment_maintenance_rate).toBeNull();;
     // No interventions → effectivenessRate = pct(0,0) = 0
     expect(r.intervention_effectiveness_rate).toBe(0);
     // childFeedback = pct(0, 0) = 0
     expect(r.child_feedback_rate).toBe(0);
     // adaptationEffAvg = 0 (no implemented)
-    expect(r.adaptation_effectiveness_avg).toBe(0);
+    expect(r.adaptation_effectiveness_avg).toBeNull();;
     // interventionProgressAvg = 0 (no interventions)
-    expect(r.intervention_progress_avg).toBe(0);
+    expect(r.intervention_progress_avg).toBeNull();;
   });
 });
 
@@ -3381,7 +3381,7 @@ describe("edge cases", () => {
       ],
     });
     // activeEquipment = 0 → rate = 0 but no penalty
-    expect(r.equipment_maintenance_rate).toBe(0);
+    expect(r.equipment_maintenance_rate).toBeNull();;
   });
 
   it("all adaptations not implemented", () => {
@@ -3394,7 +3394,7 @@ describe("edge cases", () => {
       ],
     });
     expect(r.accessibility_adaptation_rate).toBe(0);
-    expect(r.adaptation_effectiveness_avg).toBe(0);
+    expect(r.adaptation_effectiveness_avg).toBeNull();;
     // childFeedback: implementedAdaptations=0, totalInterventions=0, opportunities=0, pct(0,0)=0
     expect(r.child_feedback_rate).toBe(0);
   });
@@ -3514,7 +3514,7 @@ describe("edge cases", () => {
         makeAdaptation({ implemented: false, effectiveness_rating: 5 }),
       ],
     });
-    expect(r.adaptation_effectiveness_avg).toBe(0);
+    expect(r.adaptation_effectiveness_avg).toBeNull();;
   });
 
   it("mixed profile types still counted", () => {

@@ -76,42 +76,42 @@ export interface AssessmentProfile {
   total_assessments: number;
   recent_365d: number;
   children_assessed: number;
-  completion_rate: number;             // % completed within deadline
-  immunisations_up_to_date_rate: number;
-  dental_up_to_date_rate: number;
-  optical_up_to_date_rate: number;
-  la_sign_off_rate: number;
-  report_shared_rate: number;
-  avg_recommendations: number;
+  completion_rate: number | null;             // % completed within deadline
+  immunisations_up_to_date_rate: number | null;
+  dental_up_to_date_rate: number | null;
+  optical_up_to_date_rate: number | null;
+  la_sign_off_rate: number | null;
+  report_shared_rate: number | null;
+  avg_recommendations: number | null;
 }
 
 export interface ImmunisationProfile {
   total_records: number;
-  gp_registered_rate: number;
+  gp_registered_rate: number | null;
   missed_total: number;
   caught_up_total: number;
   upcoming_due_total: number;
-  child_consent_rate: number;
-  gp_reviewed_rate: number;
+  child_consent_rate: number | null;
+  gp_reviewed_rate: number | null;
   catch_up_ratio: number;              // caught_up / missed (capped at 100)
 }
 
 export interface DentalProfile {
   total_records: number;
-  registered_rate: number;
+  registered_rate: number | null;
   overdue_checkups: number;
   anxiety_count: number;
-  avg_adjustments: number;
+  avg_adjustments: number | null;
   children_with_dental: number;
 }
 
 export interface PassportProfile {
   total_passports: number;
-  currency_rate: number;               // % updated within 6 months
-  avg_medications: number;
-  avg_conditions: number;
-  consent_given_rate: number;
-  immunisations_up_to_date_rate: number;
+  currency_rate: number | null;               // % updated within 6 months
+  avg_medications: number | null;
+  avg_conditions: number | null;
+  consent_given_rate: number | null;
+  immunisations_up_to_date_rate: number | null;
 }
 
 export interface HealthMonitoringInsight {
@@ -128,7 +128,7 @@ export interface HealthMonitoringRecommendation {
 
 export interface HomeHealthMonitoringResult {
   health_monitoring_rating: HomeHealthMonitoringRating;
-  health_monitoring_score: number;
+  health_monitoring_score: number | null;
   headline: string;
   assessment: AssessmentProfile;
   immunisation: ImmunisationProfile;
@@ -201,7 +201,7 @@ export function computeHomeHealthMonitoring(
   const reportSharedRate = pct(recent365.filter(a => a.report_shared).length, recent365.length);
   const avgRecs = recent365.length > 0
     ? Math.round((recent365.reduce((s, a) => s + a.recommendations_count, 0) / recent365.length) * 10) / 10
-    : 0;
+    : null;
 
   const assessmentProfile: AssessmentProfile = {
     total_assessments: annual_health_assessments.length,
@@ -245,7 +245,7 @@ export function computeHomeHealthMonitoring(
   const anxietyCount = dental_records.filter(d => d.has_anxiety).length;
   const avgAdjustments = dental_records.length > 0
     ? Math.round((dental_records.reduce((s, d) => s + d.adjustments_count, 0) / dental_records.length) * 10) / 10
-    : 0;
+    : null;
   const childrenWithDental = [...new Set(dental_records.map(d => d.child_id))].length;
 
   const dentalProfile: DentalProfile = {
@@ -265,10 +265,10 @@ export function computeHomeHealthMonitoring(
   const currencyRate = pct(currentPassports, health_passports.length);
   const avgMeds = health_passports.length > 0
     ? Math.round((health_passports.reduce((s, p) => s + p.medications_count, 0) / health_passports.length) * 10) / 10
-    : 0;
+    : null;
   const avgConditions = health_passports.length > 0
     ? Math.round((health_passports.reduce((s, p) => s + p.conditions_count, 0) / health_passports.length) * 10) / 10
-    : 0;
+    : null;
   const consentGiven = health_passports.filter(p => p.consent_status === "given" || p.consent_status === "consented").length;
   const passportImmunUp = health_passports.filter(p => p.immunisations_up_to_date).length;
 

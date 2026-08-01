@@ -41,7 +41,7 @@ export interface CommunicationLogRecordInput {
   date: string;
   staff_id: string;
   log_type: "daily_log" | "shift_summary" | "incident_note" | "professional_contact" | "family_contact" | "internal_memo" | "other";
-  completeness_score: number; // 1-5
+  completeness_score: number | null; // 1-5
   timely_entry: boolean;
   relevant_detail_included: boolean;
   professional_language_used: boolean;
@@ -137,17 +137,17 @@ export interface HandoverRecommendation {
 
 export interface HandoverCommunicationQualityResult {
   handover_rating: HandoverRating;
-  handover_score: number;
+  handover_score: number | null;
   headline: string;
   total_handover_records: number;
   total_communication_logs: number;
   total_critical_info_transfers: number;
-  handover_quality_rate: number;
-  communication_log_rate: number;
-  critical_info_rate: number;
-  handover_timeliness_rate: number;
-  staff_satisfaction_rate: number;
-  action_completion_rate: number;
+  handover_quality_rate: number | null;
+  communication_log_rate: number | null;
+  critical_info_rate: number | null;
+  handover_timeliness_rate: number | null;
+  staff_satisfaction_rate: number | null;
+  action_completion_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: HandoverRecommendation[];
@@ -297,7 +297,7 @@ export function computeHandoverCommunicationQuality(
   const avgQualityRating =
     totalHandovers > 0
       ? Math.round((qualitySum / totalHandovers) * 100) / 100
-      : 0;
+      : null;
 
   const managerReviewedHandovers = handover_records.filter((r) => r.manager_reviewed).length;
   const managerReviewRate = pct(managerReviewedHandovers, totalHandovers);
@@ -320,7 +320,7 @@ export function computeHandoverCommunicationQuality(
   const totalCommLogs = communication_log_records.length;
 
   const completeCommLogs = communication_log_records.filter(
-    (r) => r.completeness_score >= 4,
+    (r) => (r.completeness_score ?? 0) >= 4,
   ).length;
   const logCompletenessRate = pct(completeCommLogs, totalCommLogs);
 
@@ -355,7 +355,7 @@ export function computeHandoverCommunicationQuality(
   const qualityLogs = communication_log_records.filter(
     (r) =>
       r.timely_entry &&
-      r.completeness_score >= 4 &&
+      (r.completeness_score ?? 0) >= 4 &&
       r.relevant_detail_included &&
       r.professional_language_used,
   ).length;
@@ -441,7 +441,7 @@ export function computeHandoverCommunicationQuality(
           timeliness_records.reduce((sum, r) => sum + r.handover_duration_minutes, 0) /
             totalTimeliness,
         )
-      : 0;
+      : null;
 
   // Composite timeliness rate: on time + adequate duration + both present + no rushing
   const timelyHandovers = timeliness_records.filter(

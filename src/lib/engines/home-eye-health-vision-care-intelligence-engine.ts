@@ -159,19 +159,19 @@ export interface EyeHealthRecommendation {
 
 export interface EyeHealthResult {
   eye_health_rating: EyeHealthRating;
-  eye_health_score: number;
+  eye_health_score: number | null;
   headline: string;
   total_eye_test_records: number;
   total_prescription_records: number;
   total_referral_records: number;
   total_visual_aid_records: number;
   total_engagement_records: number;
-  eye_test_compliance_rate: number;
-  prescription_management_rate: number;
-  optician_referral_rate: number;
-  visual_aid_rate: number;
-  child_engagement_rate: number;
-  follow_up_rate: number;
+  eye_test_compliance_rate: number | null;
+  prescription_management_rate: number | null;
+  optician_referral_rate: number | null;
+  visual_aid_rate: number | null;
+  child_engagement_rate: number | null;
+  follow_up_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: EyeHealthRecommendation[];
@@ -392,7 +392,7 @@ export function computeEyeHealthVisionCare(
   const avgWaitingTime =
     totalReferralRecords > 0
       ? Math.round(optician_referral_records.reduce((sum, r) => sum + r.waiting_time_days, 0) / totalReferralRecords)
-      : 0;
+      : null;
 
   // Composite optician referral rate: attended + consented + parent informed + social worker informed
   const referralNumerator = referralsAttended + referralsConsented + parentInformed + socialWorkerInformed;
@@ -757,7 +757,7 @@ export function computeEyeHealthVisionCare(
     );
   }
 
-  if (avgWaitingTime > 42 && totalReferralRecords > 0) {
+  if ((avgWaitingTime ?? 0) > 42 && totalReferralRecords > 0) {
     concerns.push(
       `Average optician referral waiting time is ${avgWaitingTime} days — extended waiting times mean children's vision issues are not being addressed promptly, which may impact their education, wellbeing, and daily functioning.`,
     );
@@ -1008,7 +1008,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (avgWaitingTime > 42 && totalReferralRecords > 0) {
+  if ((avgWaitingTime ?? 0) > 42 && totalReferralRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1173,8 +1173,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    avgWaitingTime > 28 &&
-    avgWaitingTime <= 42 &&
+    (avgWaitingTime ?? 0) > 28 &&
+    (avgWaitingTime ?? 0) <= 42 &&
     totalReferralRecords > 0
   ) {
     insights.push({

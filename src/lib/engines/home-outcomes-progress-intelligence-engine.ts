@@ -58,15 +58,15 @@ export interface DomainProfile {
   total_domains_covered: number;
   domains_represented: string[];
   domains_missing: string[];
-  avg_targets_per_domain: number;
+  avg_targets_per_domain: number | null;
 }
 
 export interface ProgressProfile {
   improving_count: number;
   stable_count: number;
   declining_count: number;
-  improving_rate: number;
-  declining_rate: number;
+  improving_rate: number | null;
+  declining_rate: number | null;
   avg_current_rating: number;
   avg_baseline_rating: number;
   avg_progress: number;          // avg(current - baseline)
@@ -77,10 +77,10 @@ export interface ProgressProfile {
 export interface ReviewProfile {
   total_reviews: number;
   reviews_in_window: number;
-  avg_reviews_per_target: number;
+  avg_reviews_per_target: number | null;
   overdue_targets: number;       // review_date < today
-  overdue_rate: number;
-  yp_participation_rate: number; // % of reviews where YP participated
+  overdue_rate: number | null;
+  yp_participation_rate: number | null; // % of reviews where YP participated
   reviews_with_barriers: number;
   reviews_with_next_steps: number;
 }
@@ -88,11 +88,11 @@ export interface ReviewProfile {
 export interface EquityProfile {
   children_with_targets: number;
   children_without_targets: number;
-  coverage_rate: number;         // % of total_children with ≥1 target
-  avg_targets_per_child: number;
-  min_targets: number;
-  max_targets: number;
-  yp_voice_rate: number;         // % of targets with YP voice recorded
+  coverage_rate: number | null;         // % of total_children with ≥1 target
+  avg_targets_per_child: number | null;
+  min_targets: number | null;
+  max_targets: number | null;
+  yp_voice_rate: number | null;         // % of targets with YP voice recorded
 }
 
 export interface OutcomesInsight {
@@ -109,7 +109,7 @@ export interface OutcomesRecommendation {
 
 export interface HomeOutcomesProgressResult {
   outcomes_rating: OutcomesRating;
-  outcomes_score: number;
+  outcomes_score: number | null;
   headline: string;
   domain_profile: DomainProfile;
   progress_profile: ProgressProfile;
@@ -203,7 +203,7 @@ export function computeHomeOutcomesProgress(
   const domainsMissing = ALL_DOMAINS.filter(d => !domainSet.has(d));
   const avgTargetsPerDomain = domainsRepresented.length > 0
     ? Math.round((activeTargets.length / domainsRepresented.length) * 10) / 10
-    : 0;
+    : null;
 
   const domainProfile: DomainProfile = {
     total_domains_covered: domainsRepresented.length,
@@ -243,7 +243,7 @@ export function computeHomeOutcomesProgress(
 
   const avgReviewsPerTarget = activeTargets.length > 0
     ? Math.round((recentReviews.length / activeTargets.length) * 10) / 10
-    : 0;
+    : null;
 
   const reviewProfile: ReviewProfile = {
     total_reviews: reviews.length,
@@ -265,13 +265,13 @@ export function computeHomeOutcomesProgress(
   const childrenWithout = Math.max(0, total_children - childrenWithTargets);
   const coverageRate = total_children > 0
     ? pct(childrenWithTargets, total_children)
-    : (childrenWithTargets > 0 ? 100 : 0);
+    : (childrenWithTargets > 0 ? 100  : null);
   const perChildCounts = Object.values(childMap);
-  const minTargets = perChildCounts.length > 0 ? Math.min(...perChildCounts) : 0;
-  const maxTargets = perChildCounts.length > 0 ? Math.max(...perChildCounts) : 0;
+  const minTargets = perChildCounts.length > 0 ? Math.min(...perChildCounts) : null;
+  const maxTargets = perChildCounts.length > 0 ? Math.max(...perChildCounts) : null;
   const avgPerChild = perChildCounts.length > 0
     ? Math.round((perChildCounts.reduce((s, c) => s + c, 0) / perChildCounts.length) * 10) / 10
-    : 0;
+    : null;
 
   const targetsWithVoice = activeTargets.filter(t => t.has_yp_voice).length;
   const ypVoiceRate = pct(targetsWithVoice, activeTargets.length);
@@ -331,15 +331,15 @@ export function computeHomeOutcomesProgress(
   else score -= 3;
 
   // 7. Child coverage (±3)
-  if (coverageRate >= 100) score += 3;
-  else if (coverageRate >= 75) score += 1;
-  else if (coverageRate >= 50) score += 0;
+  if ((coverageRate ?? 0) >= 100) score += 3;
+  else if ((coverageRate ?? 0) >= 75) score += 1;
+  else if ((coverageRate ?? 0) >= 50) score += 0;
   else score -= 2;
 
   // 8. Review activity (±3)
-  if (avgReviewsPerTarget >= 0.5) score += 3;
-  else if (avgReviewsPerTarget >= 0.3) score += 1;
-  else if (avgReviewsPerTarget >= 0.1) score += 0;
+  if ((avgReviewsPerTarget ?? 0) >= 0.5) score += 3;
+  else if ((avgReviewsPerTarget ?? 0) >= 0.3) score += 1;
+  else if ((avgReviewsPerTarget ?? 0) >= 0.1) score += 0;
   else score -= 2;
 
   score = clamp(score, 0, 100);
@@ -351,7 +351,7 @@ export function computeHomeOutcomesProgress(
   if (improvingRate >= 60) strengths.push(`${improvingRate}% of targets are improving — children are making meaningful progress.`);
   if (decliningCount === 0) strengths.push("No targets are declining — all children are maintaining or building on progress.");
   if (ypVoiceRate >= 80) strengths.push(`${ypVoiceRate}% of targets include young person voice — excellent child participation.`);
-  if (coverageRate >= 100) strengths.push("All children have individual outcome targets — equitable focus on every child's progress.");
+  if ((coverageRate ?? 0) >= 100) strengths.push("All children have individual outcome targets — equitable focus on every child's progress.");
   if (overdueRate === 0 && activeForOverdue > 0) strengths.push("All target reviews are up to date — strong review discipline.");
   if (avgProg >= 1.5) strengths.push(`Average rating improvement of ${avgProg} points — strong upward trajectory across all children.`);
 

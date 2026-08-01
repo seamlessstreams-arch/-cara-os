@@ -72,7 +72,7 @@ export interface CareFormOverview {
   child_linked_count: number;
   incident_linked_count: number;
   completion_rate: number | null; // approved / (total - draft - archived) %, null when nothing is awaiting or through review
-  avg_review_days: number;        // avg days from submitted_at to reviewed_at
+  avg_review_days: number | null;        // avg days from submitted_at to reviewed_at
   form_types_used: number;
 }
 
@@ -171,7 +171,7 @@ export function computeCareFormIntelligence(
   );
   const avgReviewDays = reviewDays.length > 0
     ? Math.round(reviewDays.reduce((s, v) => s + v, 0) / reviewDays.length)
-    : 0;
+    : null;
 
   // ── Form types ───────────────────────────────────────────────────────
   const typeSet = new Set(forms.map((f) => f.form_type));
@@ -351,7 +351,7 @@ export function computeCareFormIntelligence(
   }
 
   // Positive: fast review turnaround
-  if (avgReviewDays <= 2 && reviewedForms.length > 0) {
+  if ((avgReviewDays ?? 0) <= 2 && reviewedForms.length > 0) {
     insights.push({
       severity: "positive",
       text: `Average form review turnaround is ${avgReviewDays} day(s). Prompt managerial review ensures documentation accuracy and supports responsive care planning.`,

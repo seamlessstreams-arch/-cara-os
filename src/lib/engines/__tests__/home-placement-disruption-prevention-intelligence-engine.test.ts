@@ -983,7 +983,7 @@ describe("computePlacementDisruptionPrevention", () => {
     it("returns 0 average_placement_months when no placement ends", () => {
       const input = baseInput({ placement_ends: [] });
       const r = computePlacementDisruptionPrevention(input);
-      expect(r.average_placement_months).toBe(0);
+      expect(r.average_placement_months).toBeNull();;
     });
 
     it("calculates high_risk_children as unique children with heightened or acute", () => {

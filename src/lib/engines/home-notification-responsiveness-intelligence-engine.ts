@@ -39,16 +39,16 @@ export type NotificationResponsivenessRating =
 
 export interface NotificationResponsivenessResult {
   responsiveness_rating: NotificationResponsivenessRating;
-  responsiveness_score: number; // 0-100
+  responsiveness_score: number | null; // 0-100
   headline: string;
   total_notifications: number;
-  read_rate: number; // % of notifications that have been read
-  urgent_read_rate: number; // % of urgent/high priority notifications read
-  average_response_hours: number; // avg hours from created_at to read_at for read notifications
-  urgent_response_hours: number; // avg hours for urgent/high priority only
+  read_rate: number | null; // % of notifications that have been read
+  urgent_read_rate: number | null; // % of urgent/high priority notifications read
+  average_response_hours: number | null; // avg hours from created_at to read_at for read notifications
+  urgent_response_hours: number | null; // avg hours for urgent/high priority only
   unread_count: number;
   urgent_unread_count: number;
-  staff_coverage_rate: number; // % of staff who have at least one notification
+  staff_coverage_rate: number | null; // % of staff who have at least one notification
   notification_type_diversity: number; // distinct types
   oldest_unread_hours: number; // hours since oldest unread notification was created
   strengths: string[];
@@ -165,14 +165,14 @@ export function computeNotificationResponsiveness(
   const averageResponseHours =
     allResponseHours.length > 0
       ? Math.round((allResponseHours.reduce((a, b) => a + b, 0) / allResponseHours.length) * 10) / 10
-      : 0;
+      : null;
 
   const urgentHighReadWithTimes = urgentHighRead.filter((n) => n.read_at !== null);
   const urgentResponseHoursArr = urgentHighReadWithTimes.map((n) => hoursBetween(n.created_at, n.read_at!));
   const urgentResponseHours =
     urgentResponseHoursArr.length > 0
       ? Math.round((urgentResponseHoursArr.reduce((a, b) => a + b, 0) / urgentResponseHoursArr.length) * 10) / 10
-      : 0;
+      : null;
 
   // ── Staff coverage ────────────────────────────────────────────────────
   const distinctRecipients = new Set(notifications.map((n) => n.recipient_id));
@@ -201,12 +201,12 @@ export function computeNotificationResponsiveness(
   else if (urgentReadRate >= 90) score += 3;
 
   // Average response hours bonus
-  if (averageResponseHours <= 2) score += 4;
-  else if (averageResponseHours <= 6) score += 2;
+  if ((averageResponseHours ?? 0) <= 2) score += 4;
+  else if ((averageResponseHours ?? 0) <= 6) score += 2;
 
   // Urgent response hours bonus
-  if (urgentResponseHours <= 1) score += 4;
-  else if (urgentResponseHours <= 3) score += 2;
+  if ((urgentResponseHours ?? 0) <= 1) score += 4;
+  else if ((urgentResponseHours ?? 0) <= 3) score += 2;
 
   // Unread count bonus
   if (unreadCount === 0) score += 4;
@@ -241,9 +241,9 @@ export function computeNotificationResponsiveness(
   else if (readRate >= 85) strengths.push(`${readRate}% read rate shows good staff engagement with notifications.`);
   if (urgentReadRate === 100 && urgentHighNotifications.length > 0) strengths.push("All urgent and high-priority notifications have been read — safeguarding alerts are being acknowledged.");
   else if (urgentReadRate >= 90 && urgentHighNotifications.length > 0) strengths.push(`${urgentReadRate}% of urgent/high-priority notifications read — strong responsiveness to critical alerts.`);
-  if (averageResponseHours <= 2 && readWithTimes.length > 0) strengths.push(`Average response time of ${averageResponseHours} hours — notifications are being actioned promptly.`);
-  else if (averageResponseHours <= 6 && readWithTimes.length > 0) strengths.push(`Average response time of ${averageResponseHours} hours — reasonable turnaround on notifications.`);
-  if (urgentResponseHours <= 1 && urgentHighReadWithTimes.length > 0) strengths.push(`Urgent notifications responded to in ${urgentResponseHours} hours on average — excellent prioritisation.`);
+  if ((averageResponseHours ?? 0) <= 2 && readWithTimes.length > 0) strengths.push(`Average response time of ${(averageResponseHours ?? 0)} hours — notifications are being actioned promptly.`);
+  else if ((averageResponseHours ?? 0) <= 6 && readWithTimes.length > 0) strengths.push(`Average response time of ${(averageResponseHours ?? 0)} hours — reasonable turnaround on notifications.`);
+  if ((urgentResponseHours ?? 0) <= 1 && urgentHighReadWithTimes.length > 0) strengths.push(`Urgent notifications responded to in ${(urgentResponseHours ?? 0)} hours on average — excellent prioritisation.`);
   if (unreadCount === 0) strengths.push("Zero unread notifications — all items have been acknowledged.");
   if (staffCoverageRate >= 80) strengths.push(`${staffCoverageRate}% staff coverage — the majority of the team are using the platform.`);
   if (typeDiversity >= 4) strengths.push(`Notifications span ${typeDiversity} different types — the platform is being used across care domains.`);
@@ -256,8 +256,8 @@ export function computeNotificationResponsiveness(
   if (readRate < 50) concerns.push(`Only ${readRate}% of notifications have been read — more than half are being ignored or missed.`);
   if (urgentReadRate < 70 && urgentHighNotifications.length > 0) concerns.push(`Only ${urgentReadRate}% of urgent/high-priority notifications read — critical alerts may be going unacknowledged.`);
   if (staffCoverageRate < 50 && total_staff > 0) concerns.push(`Only ${staffCoverageRate}% of staff have notifications — limited platform engagement across the team.`);
-  if (averageResponseHours > 24 && readWithTimes.length > 0) concerns.push(`Average response time is ${averageResponseHours} hours — significantly above the recommended 6-hour threshold.`);
-  if (urgentResponseHours > 6 && urgentHighReadWithTimes.length > 0) concerns.push(`Urgent notification response time averages ${urgentResponseHours} hours — this should be under 1 hour.`);
+  if ((averageResponseHours ?? 0) > 24 && readWithTimes.length > 0) concerns.push(`Average response time is ${(averageResponseHours ?? 0)} hours — significantly above the recommended 6-hour threshold.`);
+  if ((urgentResponseHours ?? 0) > 6 && urgentHighReadWithTimes.length > 0) concerns.push(`Urgent notification response time averages ${(urgentResponseHours ?? 0)} hours — this should be under 1 hour.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: NotificationResponsivenessResult["recommendations"] = [];
@@ -309,7 +309,7 @@ export function computeNotificationResponsiveness(
       urgency: "soon",
     });
   }
-  if (averageResponseHours > 6 && readWithTimes.length > 0) {
+  if ((averageResponseHours ?? 0) > 6 && readWithTimes.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Reduce average response time to under 6 hours by encouraging staff to check notifications at shift start and end.",
@@ -367,7 +367,7 @@ export function computeNotificationResponsiveness(
       severity: "positive",
     });
   }
-  if (averageResponseHours <= 2 && readWithTimes.length > 0) {
+  if ((averageResponseHours ?? 0) <= 2 && readWithTimes.length > 0) {
     insights.push({
       text: `Average response time of ${averageResponseHours} hours is well within best-practice thresholds. Staff are acting on notifications promptly.`,
       severity: "positive",
@@ -385,7 +385,7 @@ export function computeNotificationResponsiveness(
       severity: "warning",
     });
   }
-  if (urgentResponseHours > 6 && urgentHighReadWithTimes.length > 0) {
+  if ((urgentResponseHours ?? 0) > 6 && urgentHighReadWithTimes.length > 0) {
     insights.push({
       text: `Urgent notifications are taking an average of ${urgentResponseHours} hours to be read. For safeguarding alerts, this should be under 1 hour.`,
       severity: "warning",

@@ -415,7 +415,7 @@ describe("computeFoodNutritionHygieneSafety", () => {
 
     it("returns 0 when no budgets", () => {
       const r = computeFoodNutritionHygieneSafety(baseInput({ budgets: [] }));
-      expect(r.scratch_cooking_rate).toBe(0);
+      expect(r.scratch_cooking_rate).toBeNull();;
     });
 
     it("rounds to nearest integer", () => {

@@ -486,7 +486,7 @@ describe("computeMissingIntelligence — edge cases", () => {
     const result = computeMissingIntelligence(baseInput());
 
     expect(result.profile.total_episodes).toBe(0);
-    expect(result.profile.avg_duration_minutes).toBe(0);
+    expect(result.profile.avg_duration_minutes).toBeNull();;
     expect(result.recent_episodes).toEqual([]);
     expect(result.push_pull.push).toEqual([]);
     expect(result.push_pull.pull).toEqual([]);

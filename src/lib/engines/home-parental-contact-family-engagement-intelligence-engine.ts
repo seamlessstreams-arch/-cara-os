@@ -147,23 +147,23 @@ export interface FamilyEngagementRecommendation {
 
 export interface ParentalContactFamilyEngagementResult {
   engagement_rating: FamilyEngagementRating;
-  engagement_score: number;
+  engagement_score: number | null;
   headline: string;
   total_scheduled_contacts: number;
   total_family_visits: number;
   total_supervised_sessions: number;
-  contact_compliance_rate: number;
-  family_visit_quality_rate: number;
-  parental_engagement_rate: number;
-  supervised_contact_adherence_rate: number;
-  family_support_coverage_rate: number;
-  child_voice_in_contact_rate: number;
+  contact_compliance_rate: number | null;
+  family_visit_quality_rate: number | null;
+  parental_engagement_rate: number | null;
+  supervised_contact_adherence_rate: number | null;
+  family_support_coverage_rate: number | null;
+  child_voice_in_contact_rate: number | null;
   contact_quality_avg: number;
-  visit_risk_assessment_rate: number;
-  parent_invitation_rate: number;
-  parent_views_incorporation_rate: number;
-  supervised_boundary_adherence_rate: number;
-  family_support_attendance_rate: number;
+  visit_risk_assessment_rate: number | null;
+  parent_invitation_rate: number | null;
+  parent_views_incorporation_rate: number | null;
+  supervised_boundary_adherence_rate: number | null;
+  family_support_attendance_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: FamilyEngagementRecommendation[];
@@ -435,7 +435,7 @@ export function computeParentalContactFamilyEngagement(
       ? Math.round(
           (supervisorPresenceRate + contactPlanAdherenceRate + supervisedBoundaryAdherenceRate) / 3,
         )
-      : 0;
+      : null;
 
   const childDistressed = supervised_contact_records.filter(
     (s) => s.child_distressed,
@@ -572,8 +572,8 @@ export function computeParentalContactFamilyEngagement(
   else if (parentalEngagementRate >= 70) score += 1;
 
   // --- Bonus 4: supervisedContactAdherenceRate (>=95: +4, >=80: +2) — max 4 ---
-  if (supervisedContactAdherenceRate >= 95) score += 4;
-  else if (supervisedContactAdherenceRate >= 80) score += 2;
+  if ((supervisedContactAdherenceRate ?? 0) >= 95) score += 4;
+  else if ((supervisedContactAdherenceRate ?? 0) >= 80) score += 2;
 
   // --- Bonus 5: familySupportCoverageRate (>=100: +3, >=80: +1) — max 3 ---
   if (familySupportCoverageRate >= 100) score += 3;
@@ -603,7 +603,7 @@ export function computeParentalContactFamilyEngagement(
   if (contactComplianceRate < 50 && totalScheduledContacts > 0) score -= 5;
 
   // Penalty 2: supervisedContactAdherenceRate < 50 → -5 (guard: totalSupervisedSessions > 0)
-  if (supervisedContactAdherenceRate < 50 && totalSupervisedSessions > 0) score -= 5;
+  if ((supervisedContactAdherenceRate ?? 0) < 50 && totalSupervisedSessions > 0) score -= 5;
 
   // Penalty 3: familySupportCoverageRate < 30 → -4 (guard: total_children > 0)
   if (familySupportCoverageRate < 30 && total_children > 0) score -= 4;
@@ -686,11 +686,11 @@ export function computeParentalContactFamilyEngagement(
   }
 
   // Supervised contact strengths
-  if (supervisedContactAdherenceRate >= 95 && totalSupervisedSessions > 0) {
+  if ((supervisedContactAdherenceRate ?? 0) >= 95 && totalSupervisedSessions > 0) {
     strengths.push(
       `${supervisedContactAdherenceRate}% supervised contact adherence — supervision arrangements are meticulously maintained, ensuring children's safety during family contact.`,
     );
-  } else if (supervisedContactAdherenceRate >= 80 && totalSupervisedSessions > 0) {
+  } else if ((supervisedContactAdherenceRate ?? 0) >= 80 && totalSupervisedSessions > 0) {
     strengths.push(
       `${supervisedContactAdherenceRate}% supervised contact adherence — strong compliance with supervision requirements during family contact.`,
     );
@@ -857,11 +857,11 @@ export function computeParentalContactFamilyEngagement(
   }
 
   // Low supervised contact adherence
-  if (supervisedContactAdherenceRate < 50 && totalSupervisedSessions > 0) {
+  if ((supervisedContactAdherenceRate ?? 0) < 50 && totalSupervisedSessions > 0) {
     concerns.push(
       `Only ${supervisedContactAdherenceRate}% supervised contact adherence — supervision requirements are not being consistently met, potentially compromising children's safety during family contact.`,
     );
-  } else if (supervisedContactAdherenceRate < 80 && supervisedContactAdherenceRate >= 50 && totalSupervisedSessions > 0) {
+  } else if ((supervisedContactAdherenceRate ?? 0) < 80 && (supervisedContactAdherenceRate ?? 0) >= 50 && totalSupervisedSessions > 0) {
     concerns.push(
       `Supervised contact adherence at ${supervisedContactAdherenceRate}% — some supervision requirements are not being met, which may create safeguarding gaps during family contact.`,
     );
@@ -966,7 +966,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (supervisedContactAdherenceRate < 50 && totalSupervisedSessions > 0) {
+  if ((supervisedContactAdherenceRate ?? 0) < 50 && totalSupervisedSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1115,8 +1115,8 @@ export function computeParentalContactFamilyEngagement(
   // Planned recommendations
 
   if (
-    supervisedContactAdherenceRate >= 50 &&
-    supervisedContactAdherenceRate < 80 &&
+    (supervisedContactAdherenceRate ?? 0) >= 50 &&
+    (supervisedContactAdherenceRate ?? 0) < 80 &&
     totalSupervisedSessions > 0
   ) {
     recommendations.push({
@@ -1220,7 +1220,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (supervisedContactAdherenceRate < 50 && totalSupervisedSessions > 0) {
+  if ((supervisedContactAdherenceRate ?? 0) < 50 && totalSupervisedSessions > 0) {
     insights.push({
       text: `Only ${supervisedContactAdherenceRate}% supervised contact adherence. Supervision requirements exist to protect children — failure to maintain supervisor presence, follow contact plans, and enforce boundaries creates serious safeguarding risks during family contact.`,
       severity: "critical",
@@ -1305,8 +1305,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    supervisedContactAdherenceRate >= 50 &&
-    supervisedContactAdherenceRate < 80 &&
+    (supervisedContactAdherenceRate ?? 0) >= 50 &&
+    (supervisedContactAdherenceRate ?? 0) < 80 &&
     totalSupervisedSessions > 0
   ) {
     insights.push({
@@ -1423,7 +1423,7 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    supervisedContactAdherenceRate >= 95 &&
+    (supervisedContactAdherenceRate ?? 0) >= 95 &&
     childPositiveResponseRate >= 80 &&
     totalSupervisedSessions > 0
   ) {

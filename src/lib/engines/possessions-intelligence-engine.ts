@@ -34,13 +34,13 @@ export interface StaffRef {
 export interface PossessionsOverview {
   total_items: number;
   items_with_photos: number;
-  photo_compliance_rate: number;
+  photo_compliance_rate: number | null;
   items_insured: number;
-  insurance_rate: number;
+  insurance_rate: number | null;
   missing_items: number;
   damaged_items: number;
   total_value_estimate: number;
-  avg_items_per_child: number;
+  avg_items_per_child: number | null;
 }
 
 export interface ChildInventoryProfile {
@@ -145,7 +145,7 @@ export function computePossessionsIntelligence(input: {
   const missingItems = possessions.filter((p) => p.condition === "missing").length;
   const damagedItems = possessions.filter((p) => p.condition === "poor").length;
   const totalValueEstimate = round2(possessions.reduce((sum, p) => sum + p.value_estimate, 0));
-  const avgItemsPerChild = children.length > 0 ? round2(totalItems / children.length) : 0;
+  const avgItemsPerChild = children.length > 0 ? round2(totalItems / children.length) : null;
 
   const overview: PossessionsOverview = {
     total_items: totalItems,

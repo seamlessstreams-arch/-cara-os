@@ -139,19 +139,19 @@ export interface MissingPersonRecommendation {
 
 export interface MissingPersonResult {
   missing_rating: MissingPersonRating;
-  missing_score: number;
+  missing_score: number | null;
   headline: string;
   total_episodes: number;
-  protocol_adherence_rate: number;
-  return_interview_rate: number;
-  risk_update_rate: number;
-  police_liaison_rate: number;
-  pattern_analysis_rate: number;
-  prevention_rate: number;
-  notification_timeliness_rate: number;
-  return_interview_quality_avg: number;
-  risk_assessment_timeliness_rate: number;
-  exploitation_screening_rate: number;
+  protocol_adherence_rate: number | null;
+  return_interview_rate: number | null;
+  risk_update_rate: number | null;
+  police_liaison_rate: number | null;
+  pattern_analysis_rate: number | null;
+  prevention_rate: number | null;
+  notification_timeliness_rate: number | null;
+  return_interview_quality_avg: number | null;
+  risk_assessment_timeliness_rate: number | null;
+  exploitation_screening_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: MissingPersonRecommendation[];
@@ -360,7 +360,7 @@ export function computeMissingPersonAbsentAuthority(
   const avgDurationHours =
     totalEpisodes > 0
       ? Math.round((totalDuration / totalEpisodes) * 100) / 100
-      : 0;
+      : null;
 
   // ── Return Interview Metrics ──────────────────────────────────────────
 
@@ -430,7 +430,7 @@ export function computeMissingPersonAbsentAuthority(
   const returnInterviewQualityAvg =
     totalReturnInterviews > 0
       ? Math.round((qualitySum / totalReturnInterviews) * 100) / 100
-      : 0;
+      : null;
 
   // --- Information shared with placing authority ---
   const infoSharedWithPA = return_interview_records.filter(
@@ -534,7 +534,7 @@ export function computeMissingPersonAbsentAuthority(
   const infoQualityAvg =
     totalPoliceLiaisons > 0
       ? Math.round((infoQualitySum / totalPoliceLiaisons) * 100) / 100
-      : 0;
+      : null;
 
   // --- Joint risk assessment ---
   const jointRiskAssessment = police_liaison_records.filter(
@@ -576,7 +576,7 @@ export function computeMissingPersonAbsentAuthority(
   const patternAnalysisRate =
     uniqueChildrenWithEpisodes > 0
       ? pct(uniqueChildrenWithAnalysis, uniqueChildrenWithEpisodes)
-      : 0;
+      : null;
 
   // --- Patterns identified ---
   const patternsIdentified = pattern_analysis_records.filter(
@@ -602,7 +602,7 @@ export function computeMissingPersonAbsentAuthority(
   ).length;
   const preventionRate = totalPatternAnalyses > 0
     ? pct(preventionEffective, totalPatternAnalyses)
-    : 0;
+    : null;
 
   // --- Multi-agency mapping ---
   const multiAgencyMapping = pattern_analysis_records.filter(
@@ -664,16 +664,16 @@ export function computeMissingPersonAbsentAuthority(
   else if (policeLiaisonRate >= 70) score += 2;
 
   // --- Bonus 5: patternAnalysisRate (>=90: +3, >=70: +1) ---
-  if (patternAnalysisRate >= 90) score += 3;
-  else if (patternAnalysisRate >= 70) score += 1;
+  if ((patternAnalysisRate ?? 0) >= 90) score += 3;
+  else if ((patternAnalysisRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 6: preventionRate (>=80: +3, >=60: +1) ---
-  if (preventionRate >= 80) score += 3;
-  else if (preventionRate >= 60) score += 1;
+  if ((preventionRate ?? 0) >= 80) score += 3;
+  else if ((preventionRate ?? 0) >= 60) score += 1;
 
   // --- Bonus 7: returnInterviewQualityAvg (>=4.0: +2, >=3.0: +1) ---
-  if (returnInterviewQualityAvg >= 4.0) score += 2;
-  else if (returnInterviewQualityAvg >= 3.0) score += 1;
+  if ((returnInterviewQualityAvg ?? 0) >= 4.0) score += 2;
+  else if ((returnInterviewQualityAvg ?? 0) >= 3.0) score += 1;
 
   // --- Bonus 8: exploitationScreeningRate (>=90: +2, >=70: +1) ---
   if (exploitationScreeningRate >= 90) score += 2;
@@ -741,31 +741,31 @@ export function computeMissingPersonAbsentAuthority(
     );
   }
 
-  if (patternAnalysisRate >= 90 && uniqueChildrenWithEpisodes > 0) {
+  if ((patternAnalysisRate ?? 0) >= 90 && uniqueChildrenWithEpisodes > 0) {
     strengths.push(
       `Pattern analysis completed for ${patternAnalysisRate}% of children with episodes — the home proactively analyses missing and absent patterns to inform prevention strategies and identify exploitation risks.`,
     );
-  } else if (patternAnalysisRate >= 70 && uniqueChildrenWithEpisodes > 0) {
+  } else if ((patternAnalysisRate ?? 0) >= 70 && uniqueChildrenWithEpisodes > 0) {
     strengths.push(
       `${patternAnalysisRate}% pattern analysis coverage — the home analyses patterns for the majority of children who go missing or are absent without authority.`,
     );
   }
 
-  if (preventionRate >= 80 && totalPatternAnalyses > 0) {
+  if ((preventionRate ?? 0) >= 80 && totalPatternAnalyses > 0) {
     strengths.push(
       `${preventionRate}% of pattern analyses have led to effective prevention — the home demonstrates strong evidence that analysis translates into reduced missing and absent episodes for children.`,
     );
-  } else if (preventionRate >= 60 && totalPatternAnalyses > 0) {
+  } else if ((preventionRate ?? 0) >= 60 && totalPatternAnalyses > 0) {
     strengths.push(
       `${preventionRate}% prevention effectiveness — pattern analysis is delivering measurable reductions in missing and absent episodes for the majority of children analysed.`,
     );
   }
 
-  if (returnInterviewQualityAvg >= 4.0 && totalReturnInterviews > 0) {
+  if ((returnInterviewQualityAvg ?? 0) >= 4.0 && totalReturnInterviews > 0) {
     strengths.push(
       `Return interview quality averages ${returnInterviewQualityAvg}/5 — interviews are conducted to a high standard, ensuring children's voices are meaningfully heard and safeguarding concerns are thoroughly explored.`,
     );
-  } else if (returnInterviewQualityAvg >= 3.0 && totalReturnInterviews > 0) {
+  } else if ((returnInterviewQualityAvg ?? 0) >= 3.0 && totalReturnInterviews > 0) {
     strengths.push(
       `Return interview quality averages ${returnInterviewQualityAvg}/5 — competent interview practice with scope for further development.`,
     );
@@ -891,11 +891,11 @@ export function computeMissingPersonAbsentAuthority(
     );
   }
 
-  if (patternAnalysisRate < 50 && uniqueChildrenWithEpisodes > 0) {
+  if ((patternAnalysisRate ?? 0) < 50 && uniqueChildrenWithEpisodes > 0) {
     concerns.push(
       `Pattern analysis covers only ${patternAnalysisRate}% of children with episodes — without systematic analysis, the home cannot identify trends, triggers, or exploitation indicators that would inform prevention.`,
     );
-  } else if (patternAnalysisRate < 70 && patternAnalysisRate >= 50 && uniqueChildrenWithEpisodes > 0) {
+  } else if ((patternAnalysisRate ?? 0) < 70 && (patternAnalysisRate ?? 0) >= 50 && uniqueChildrenWithEpisodes > 0) {
     concerns.push(
       `Pattern analysis coverage at ${patternAnalysisRate}% — some children who go missing or are absent without authority do not have their patterns formally analysed.`,
     );
@@ -970,7 +970,7 @@ export function computeMissingPersonAbsentAuthority(
     );
   }
 
-  if (preventionRate < 30 && totalPatternAnalyses > 0) {
+  if ((preventionRate ?? 0) < 30 && totalPatternAnalyses > 0) {
     concerns.push(
       `Prevention strategies effective in only ${preventionRate}% of cases — pattern analysis is not translating into effective prevention, questioning whether the right interventions are being deployed.`,
     );
@@ -1144,8 +1144,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    patternAnalysisRate >= 50 &&
-    patternAnalysisRate < 70 &&
+    (patternAnalysisRate ?? 0) >= 50 &&
+    (patternAnalysisRate ?? 0) < 70 &&
     uniqueChildrenWithEpisodes > 0
   ) {
     recommendations.push({
@@ -1157,7 +1157,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (patternAnalysisRate < 50 && uniqueChildrenWithEpisodes > 0) {
+  if ((patternAnalysisRate ?? 0) < 50 && uniqueChildrenWithEpisodes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1336,8 +1336,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    patternAnalysisRate >= 50 &&
-    patternAnalysisRate < 70 &&
+    (patternAnalysisRate ?? 0) >= 50 &&
+    (patternAnalysisRate ?? 0) < 70 &&
     uniqueChildrenWithEpisodes > 0
   ) {
     insights.push({
@@ -1459,7 +1459,7 @@ export function computeMissingPersonAbsentAuthority(
 
   if (
     returnInterviewRate >= 95 &&
-    returnInterviewQualityAvg >= 4.0 &&
+    (returnInterviewQualityAvg ?? 0) >= 4.0 &&
     closedEpisodes > 0 &&
     totalReturnInterviews > 0
   ) {
@@ -1481,8 +1481,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    patternAnalysisRate >= 90 &&
-    preventionRate >= 80 &&
+    (patternAnalysisRate ?? 0) >= 90 &&
+    (preventionRate ?? 0) >= 80 &&
     uniqueChildrenWithEpisodes > 0 &&
     totalPatternAnalyses > 0
   ) {

@@ -47,7 +47,7 @@ export interface PlacementEndInput {
   end_reason: string;
   duration_months: number;
   child_reflection_provided: boolean;
-  avg_outcome_rating: number;
+  avg_outcome_rating: number | null;
 }
 
 export interface ImpactAssessmentInput {
@@ -93,43 +93,43 @@ export interface StabilityRiskProfile {
   medium_risk_count: number;
   high_risk_count: number;
   critical_risk_count: number;
-  low_risk_rate: number;
+  low_risk_rate: number | null;
 }
 
 export interface DisruptionPlanProfile {
   total_plans: number;
   child_coverage: number;
-  child_aware_rate: number;
-  la_sign_off_rate: number;
-  avg_proactive_actions: number;
+  child_aware_rate: number | null;
+  la_sign_off_rate: number | null;
+  avg_proactive_actions: number | null;
 }
 
 export interface MeetingProfile {
   total_meetings: number;
-  avg_agreements: number;
-  child_view_rate: number;
-  stabilised_rate: number;
+  avg_agreements: number | null;
+  child_view_rate: number | null;
+  stabilised_rate: number | null;
 }
 
 export interface PlacementEndProfile {
   total_ends: number;
-  planned_rate: number;
-  avg_outcome_rating: number;
-  avg_duration_months: number;
-  child_reflection_rate: number;
+  planned_rate: number | null;
+  avg_outcome_rating: number | null;
+  avg_duration_months: number | null;
+  child_reflection_rate: number | null;
 }
 
 export interface ImpactAssessmentProfile {
   total_assessments: number;
-  completion_rate: number;
-  low_risk_rate: number;
-  conditions_adherence_rate: number;
+  completion_rate: number | null;
+  low_risk_rate: number | null;
+  conditions_adherence_rate: number | null;
 }
 
 export interface MatchingProfile {
   total_referrals: number;
-  strong_good_match_rate: number;
-  low_concerns_rate: number;
+  strong_good_match_rate: number | null;
+  low_concerns_rate: number | null;
 }
 
 export interface DepthInsight {
@@ -146,7 +146,7 @@ export interface DepthRecommendation {
 
 export interface HomePlacementStabilityDepthResult {
   depth_rating: PlacementStabilityDepthRating;
-  depth_score: number;
+  depth_score: number | null;
   headline: string;
   stability_risk_profile: StabilityRiskProfile;
   disruption_plan_profile: DisruptionPlanProfile;
@@ -249,7 +249,7 @@ export function computeHomePlacementStabilityDepth(
   const laSignOffRate = pct(laSignOffCount, disruption_plans.length);
   const avgProactiveActions = disruption_plans.length > 0
     ? Math.round((disruption_plans.reduce((s, p) => s + p.proactive_actions_count, 0) / disruption_plans.length) * 10) / 10
-    : 0;
+    : null;
 
   const disruptionPlanProfile: DisruptionPlanProfile = {
     total_plans: disruption_plans.length,
@@ -263,7 +263,7 @@ export function computeHomePlacementStabilityDepth(
   const totalMeetings = stability_meetings.length;
   const avgAgreements = totalMeetings > 0
     ? Math.round((stability_meetings.reduce((s, m) => s + m.agreements_count, 0) / totalMeetings) * 10) / 10
-    : 0;
+    : null;
   const childViewCount = stability_meetings.filter(m => m.child_view_provided).length;
   const childViewRate = pct(childViewCount, totalMeetings);
   const stabilisedCount = stability_meetings.filter(m => m.status === "placement_stable" || m.status === "stabilised").length;
@@ -281,11 +281,11 @@ export function computeHomePlacementStabilityDepth(
   const plannedEnds = placement_ends.filter(e => PLANNED_END_REASONS.has(e.end_reason)).length;
   const plannedRate = pct(plannedEnds, totalEnds);
   const avgOutcomeRating = totalEnds > 0
-    ? Math.round((placement_ends.reduce((s, e) => s + e.avg_outcome_rating, 0) / totalEnds) * 10) / 10
-    : 0;
+    ? Math.round((placement_ends.reduce((s, e) => s + (e.avg_outcome_rating ?? 0), 0) / totalEnds) * 10) / 10
+    : null;
   const avgDuration = totalEnds > 0
     ? Math.round((placement_ends.reduce((s, e) => s + e.duration_months, 0) / totalEnds) * 10) / 10
-    : 0;
+    : null;
   const childReflectionCount = placement_ends.filter(e => e.child_reflection_provided).length;
   const childReflectionRate = pct(childReflectionCount, totalEnds);
 
@@ -308,7 +308,7 @@ export function computeHomePlacementStabilityDepth(
   const withConditions = impact_assessments.filter(a => a.status === "approved_with_conditions").length;
   const conditionsAdherenceRate = totalAssessments > 0
     ? pct(totalAssessments - withConditions, totalAssessments)
-    : 0;
+    : null;
 
   const impactAssessmentProfile: ImpactAssessmentProfile = {
     total_assessments: totalAssessments,
@@ -357,8 +357,8 @@ export function computeHomePlacementStabilityDepth(
 
   // 3. Stability meeting responsiveness (±3): agreements tracked, child views
   if (totalMeetings > 0) {
-    if (avgAgreements >= 3 && childViewRate >= 80) score += 3;
-    else if (avgAgreements >= 2 && childViewRate >= 60) score += 1;
+    if ((avgAgreements ?? 0) >= 3 && childViewRate >= 80) score += 3;
+    else if ((avgAgreements ?? 0) >= 2 && childViewRate >= 60) score += 1;
     else if (childViewRate < 40) score -= 3;
     else score -= 1;
   }
@@ -366,8 +366,8 @@ export function computeHomePlacementStabilityDepth(
 
   // 4. Placement end quality (±4): planned endings rate, good outcome ratings
   if (totalEnds > 0) {
-    if (plannedRate >= 80 && avgOutcomeRating >= 4) score += 4;
-    else if (plannedRate >= 60 && avgOutcomeRating >= 3) score += 2;
+    if (plannedRate >= 80 && (avgOutcomeRating ?? 0) >= 4) score += 4;
+    else if (plannedRate >= 60 && (avgOutcomeRating ?? 0) >= 3) score += 2;
     else if (plannedRate >= 40) score += 0;
     else score -= 4;
   }
@@ -375,7 +375,7 @@ export function computeHomePlacementStabilityDepth(
 
   // 5. Impact assessment thoroughness (±3): completion rate, conditions adherence
   if (totalAssessments > 0) {
-    if (completionRate >= 90 && conditionsAdherenceRate >= 80) score += 3;
+    if (completionRate >= 90 && (conditionsAdherenceRate ?? 0) >= 80) score += 3;
     else if (completionRate >= 70) score += 1;
     else if (completionRate < 50) score -= 3;
     else score -= 1;

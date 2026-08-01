@@ -41,7 +41,7 @@ export interface AdvocacyOverview {
   pending_referrals: number;
   children_with_active_advocate: number;
   children_without_any_referral: number;
-  avg_days_to_start: number;
+  avg_days_to_start: number | null;
   total_visits: number;
 }
 
@@ -159,7 +159,7 @@ export function computeAdvocacyIntelligence(input: {
         withStartDate.reduce((sum, r) => sum + daysBetween(r.referral_date, r.start_date!), 0) /
           withStartDate.length
       )
-    : 0;
+    : null;
 
   const totalVisits = referrals.reduce((sum, r) => sum + r.visit_count, 0);
 

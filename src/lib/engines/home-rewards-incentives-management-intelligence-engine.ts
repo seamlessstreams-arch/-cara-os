@@ -153,19 +153,19 @@ export interface RewardsIncentivesRecommendation {
 
 export interface RewardsIncentivesResult {
   rewards_rating: RewardsIncentivesRating;
-  rewards_score: number;
+  rewards_score: number | null;
   headline: string;
   total_scheme_records: number;
   total_reinforcement_records: number;
   total_programme_records: number;
   total_participation_records: number;
   total_equity_reviews: number;
-  reward_fairness_rate: number;
-  reinforcement_consistency_rate: number;
-  programme_effectiveness_rate: number;
-  child_participation_rate: number;
-  equity_rate: number;
-  child_satisfaction_rate: number;
+  reward_fairness_rate: number | null;
+  reinforcement_consistency_rate: number | null;
+  programme_effectiveness_rate: number | null;
+  child_participation_rate: number | null;
+  equity_rate: number | null;
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: RewardsIncentivesRecommendation[];
@@ -404,7 +404,7 @@ export function computeRewardsIncentivesManagement(
   const avgEffectivenessRating =
     totalProgrammeRecords > 0
       ? Math.round((effectivenessSum / totalProgrammeRecords) * 100) / 100
-      : 0;
+      : null;
 
   const programmeOutcomesDocumented = incentive_programme_records.filter((p) => p.outcomes_documented).length;
   const programmeOutcomesDocumentedRate = pct(programmeOutcomesDocumented, totalProgrammeRecords);
@@ -508,7 +508,7 @@ export function computeRewardsIncentivesManagement(
   const avgEquityRating =
     totalEquityReviews > 0
       ? Math.round((equityScoreSum / totalEquityReviews) * 100) / 100
-      : 0;
+      : null;
 
   const totalChildrenExcluded = equity_review_records.reduce(
     (sum, e) => sum + e.children_excluded_from_schemes_count,
@@ -1241,7 +1241,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (avgEffectivenessRating >= 2.5 && avgEffectivenessRating < 3.5 && totalProgrammeRecords > 0) {
+  if ((avgEffectivenessRating ?? 0) >= 2.5 && (avgEffectivenessRating ?? 0) < 3.5 && totalProgrammeRecords > 0) {
     insights.push({
       text: `Average programme effectiveness rating at ${avgEffectivenessRating}/5 — incentive programmes are performing at a mediocre level. Consider whether programme design, participation, or celebration of achievements needs strengthening.`,
       severity: "warning",

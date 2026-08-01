@@ -43,34 +43,34 @@ export type KeyworkerRating =
 export interface CoverageProfile {
   total_sessions: number;
   children_with_sessions: number;
-  coverage_rate: number;
-  avg_sessions_per_child: number;
-  min_sessions_per_child: number;
-  max_sessions_per_child: number;
+  coverage_rate: number | null;
+  avg_sessions_per_child: number | null;
+  min_sessions_per_child: number | null;
+  max_sessions_per_child: number | null;
 }
 
 export interface QualityProfile {
   avg_duration: number;
   avg_satisfaction: number;
   avg_themes: number;
-  adequate_duration_rate: number;   // % of sessions ≥ 20 minutes
+  adequate_duration_rate: number | null;   // % of sessions ≥ 20 minutes
 }
 
 export interface EngagementProfile {
-  child_chose_format_rate: number;
-  child_brought_up_rate: number;
-  child_actions_rate: number;       // % with at least 1 child action
+  child_chose_format_rate: number | null;
+  child_brought_up_rate: number | null;
+  child_actions_rate: number | null;       // % with at least 1 child action
 }
 
 export interface TherapeuticProfile {
   avg_mood_before: number;
   avg_mood_after: number;
-  mood_improvement_rate: number;    // % that improved
+  mood_improvement_rate: number | null;    // % that improved
   sessions_with_improvement: number;
 }
 
 export interface FollowUpProfile {
-  follow_up_set_rate: number;
+  follow_up_set_rate: number | null;
   overdue_follow_ups: number;
   flags_raised_total: number;
 }
@@ -89,7 +89,7 @@ export interface KeyworkerRecommendation {
 
 export interface HomeKeyworkerResult {
   keyworker_rating: KeyworkerRating;
-  keyworker_score: number;
+  keyworker_score: number | null;
   headline: string;
   coverage_profile: CoverageProfile;
   quality_profile: QualityProfile;
@@ -165,9 +165,9 @@ export function computeHomeKeyworker(
   const perChildCounts = [...childMap.values()];
   const avgPerChild = perChildCounts.length > 0
     ? Math.round((perChildCounts.reduce((s, v) => s + v, 0) / perChildCounts.length) * 10) / 10
-    : 0;
-  const minPerChild = perChildCounts.length > 0 ? Math.min(...perChildCounts) : 0;
-  const maxPerChild = perChildCounts.length > 0 ? Math.max(...perChildCounts) : 0;
+    : null;
+  const minPerChild = perChildCounts.length > 0 ? Math.min(...perChildCounts) : null;
+  const maxPerChild = perChildCounts.length > 0 ? Math.max(...perChildCounts) : null;
 
   const coverageProfile: CoverageProfile = {
     total_sessions: sessions.length,
@@ -240,9 +240,9 @@ export function computeHomeKeyworker(
   else score -= 4;
 
   // 2. Session frequency per child (±4)
-  if (avgPerChild >= 4) score += 4;
-  else if (avgPerChild >= 2) score += 2;
-  else if (avgPerChild >= 1) score += 0;
+  if ((avgPerChild ?? 0) >= 4) score += 4;
+  else if ((avgPerChild ?? 0) >= 2) score += 2;
+  else if ((avgPerChild ?? 0) >= 1) score += 0;
   else score -= 3;
 
   // 3. Duration quality (±3)
@@ -266,8 +266,8 @@ export function computeHomeKeyworker(
   }
 
   // 6. Child format choice (±3)
-  if (engagementProfile.child_chose_format_rate >= 80) score += 3;
-  else if (engagementProfile.child_chose_format_rate >= 50) score += 1;
+  if ((engagementProfile.child_chose_format_rate ?? 0) >= 80) score += 3;
+  else if ((engagementProfile.child_chose_format_rate ?? 0) >= 50) score += 1;
   else score -= 2;
 
   // 7. Follow-up currency (±3)
@@ -293,8 +293,8 @@ export function computeHomeKeyworker(
   if (coverageRate >= 100) strengths.push("Every child in the home is receiving keyworker sessions — full coverage achieved.");
   if (avgSatisfaction >= 4.0) strengths.push(`Children report high satisfaction (${avgSatisfaction}/5) — sessions are meaningful to them.`);
   if (moodImprovementRate >= 70 && validMood.length > 0) strengths.push(`${moodImprovementRate}% of sessions show mood improvement — genuine therapeutic benefit.`);
-  if (engagementProfile.child_chose_format_rate >= 80) strengths.push(`Children choose session format ${engagementProfile.child_chose_format_rate}% of the time — child-centred practice.`);
-  if (avgPerChild >= 4) strengths.push(`Average ${avgPerChild} sessions per child — consistent, regular engagement.`);
+  if ((engagementProfile.child_chose_format_rate ?? 0) >= 80) strengths.push(`Children choose session format ${(engagementProfile.child_chose_format_rate ?? 0)}% of the time — child-centred practice.`);
+  if ((avgPerChild ?? 0) >= 4) strengths.push(`Average ${(avgPerChild ?? 0)} sessions per child — consistent, regular engagement.`);
   if (adequateDurationRate >= 90) strengths.push(`${adequateDurationRate}% of sessions are 20+ minutes — sufficient time for meaningful work.`);
 
   // ── Concerns ──────────────────────────────────────────────────
@@ -303,7 +303,7 @@ export function computeHomeKeyworker(
   if (avgSatisfaction < 3.0 && sessions.length > 0) concerns.push(`Average satisfaction is ${avgSatisfaction}/5 — children may not find sessions helpful.`);
   if (validMood.length > 0 && moodImprovementRate < 50) concerns.push(`Only ${moodImprovementRate}% of sessions show mood improvement — review therapeutic approach.`);
   if (adequateDurationRate < 70) concerns.push(`Only ${adequateDurationRate}% of sessions reach 20 minutes — sessions may be too brief for meaningful engagement.`);
-  if (engagementProfile.child_chose_format_rate < 50) concerns.push(`Children choose their session format only ${engagementProfile.child_chose_format_rate}% of the time — sessions may feel imposed.`);
+  if ((engagementProfile.child_chose_format_rate ?? 0) < 50) concerns.push(`Children choose their session format only ${(engagementProfile.child_chose_format_rate ?? 0)}% of the time — sessions may feel imposed.`);
   if (withFollowUp.length > 0 && pct(overdueFollowUps, withFollowUp.length) > 30) concerns.push(`${overdueFollowUps} follow-up sessions are overdue — continuity of therapeutic support is at risk.`);
 
   // ── Recommendations ───────────────────────────────────────────
@@ -319,7 +319,7 @@ export function computeHomeKeyworker(
   if (adequateDurationRate < 70) {
     recs.push({ rank: rank++, recommendation: "Increase session duration — aim for at least 20 minutes to allow meaningful therapeutic engagement.", urgency: "soon", regulatory_ref: "Reg 44" });
   }
-  if (engagementProfile.child_chose_format_rate < 50) {
+  if ((engagementProfile.child_chose_format_rate ?? 0) < 50) {
     recs.push({ rank: rank++, recommendation: "Offer children a choice of session format — this promotes agency and increases engagement.", urgency: "planned", regulatory_ref: "Reg 44" });
   }
 

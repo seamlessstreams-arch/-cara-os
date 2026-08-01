@@ -74,7 +74,7 @@ export interface MealPreparationRecordInput {
   waste_minimal: boolean;
   served_others: boolean;
   received_positive_feedback: boolean;
-  staff_assessment_score: number; // 1-5
+  staff_assessment_score: number | null; // 1-5
   progression_from_last: "improved" | "maintained" | "declined" | "first_assessment";
   notes: string;
   created_at: string;
@@ -148,19 +148,19 @@ export interface CookingKitchenRecommendation {
 
 export interface CookingKitchenResult {
   cooking_rating: CookingKitchenRating;
-  cooking_score: number;
+  cooking_score: number | null;
   headline: string;
   total_cooking_sessions: number;
   total_kitchen_safety_records: number;
   total_meal_preparation_records: number;
   total_nutritional_records: number;
   total_independence_records: number;
-  cooking_participation_rate: number;
-  kitchen_safety_rate: number;
-  meal_preparation_rate: number;
-  nutritional_understanding_rate: number;
-  independence_rate: number;
-  child_enjoyment_rate: number;
+  cooking_participation_rate: number | null;
+  kitchen_safety_rate: number | null;
+  meal_preparation_rate: number | null;
+  nutritional_understanding_rate: number | null;
+  independence_rate: number | null;
+  child_enjoyment_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: CookingKitchenRecommendation[];
@@ -443,10 +443,10 @@ export function computeCookingKitchenSkills(
   const positiveFeedback = meal_preparation_records.filter((m) => m.received_positive_feedback).length;
   const positiveFeedbackRate = pct(positiveFeedback, totalMealPrepRecords);
 
-  const staffScoreSum = meal_preparation_records.reduce((sum, m) => sum + m.staff_assessment_score, 0);
+  const staffScoreSum = meal_preparation_records.reduce((sum, m) => sum + (m.staff_assessment_score ?? 0), 0);
   const avgStaffScore = totalMealPrepRecords > 0
     ? Math.round((staffScoreSum / totalMealPrepRecords) * 100) / 100
-    : 0;
+    : null;
 
   // Progression tracking
   const improved = meal_preparation_records.filter((m) => m.progression_from_last === "improved").length;
@@ -497,7 +497,7 @@ export function computeCookingKitchenSkills(
         nutritional_understanding_records.reduce((sum, n) => sum + n.score_achieved, 0) /
           totalNutritionalRecords,
       )
-    : 0;
+    : null;
 
   // Topic variety
   const uniqueTopics = new Set(nutritional_understanding_records.map((n) => n.topic)).size;
@@ -639,8 +639,8 @@ export function computeCookingKitchenSkills(
   else if (goalAchievementRate >= 60) score += 1;
 
   // --- Bonus 9: avgStaffScore (>=4.0: +2, >=3.0: +1) ---
-  if (avgStaffScore >= 4.0) score += 2;
-  else if (avgStaffScore >= 3.0) score += 1;
+  if ((avgStaffScore ?? 0) >= 4.0) score += 2;
+  else if ((avgStaffScore ?? 0) >= 3.0) score += 1;
 
   // ── Penalties (4 penalties, all guarded by array.length > 0) ──────────
 
@@ -755,11 +755,11 @@ export function computeCookingKitchenSkills(
   }
 
   // Staff assessment strengths
-  if (avgStaffScore >= 4.0 && totalMealPrepRecords > 0) {
+  if ((avgStaffScore ?? 0) >= 4.0 && totalMealPrepRecords > 0) {
     strengths.push(
       `Staff assessment scores averaging ${avgStaffScore}/5 — staff consistently rate children's meal preparation skills highly, reflecting genuine competency development.`,
     );
-  } else if (avgStaffScore >= 3.0 && totalMealPrepRecords > 0) {
+  } else if ((avgStaffScore ?? 0) >= 3.0 && totalMealPrepRecords > 0) {
     strengths.push(
       `Staff assessment scores averaging ${avgStaffScore}/5 — staff rate children's meal preparation skills positively.`,
     );
@@ -1451,8 +1451,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    avgStaffScore >= 2.0 &&
-    avgStaffScore < 3.0 &&
+    (avgStaffScore ?? 0) >= 2.0 &&
+    (avgStaffScore ?? 0) < 3.0 &&
     totalMealPrepRecords > 0
   ) {
     insights.push({

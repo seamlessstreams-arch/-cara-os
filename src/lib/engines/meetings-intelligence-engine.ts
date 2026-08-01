@@ -44,12 +44,12 @@ export interface StaffRef {
 export interface MeetingsOverview {
   total_meetings: number;
   meetings_last_30_days: number;
-  avg_attendance_rate: number;
+  avg_attendance_rate: number | null;
   total_actions: number;
   actions_completed: number;
   actions_overdue: number;
-  action_completion_rate: number;
-  avg_duration_minutes: number;
+  action_completion_rate: number | null;
+  avg_duration_minutes: number | null;
   children_never_attended: number;
 }
 
@@ -64,7 +64,7 @@ export interface ChildParticipationProfile {
   child_name: string;
   meetings_attended: number;
   meetings_absent: number;
-  attendance_rate: number;
+  attendance_rate: number | null;
   feedback_given: number;
   risk_flags: string[];
 }
@@ -150,7 +150,7 @@ export function computeMeetingsIntelligence(input: EngineInput): MeetingsIntelli
     totalPresent += m.children_present.length;
     totalExpected += m.children_present.length + m.children_absent.length;
   }
-  const avgAttendanceRate = totalExpected > 0 ? Math.round((totalPresent / totalExpected) * 100) : 0;
+  const avgAttendanceRate = totalExpected > 0 ? Math.round((totalPresent / totalExpected) * 100) : null;
 
   // Actions
   let totalActions = 0;
@@ -174,7 +174,7 @@ export function computeMeetingsIntelligence(input: EngineInput): MeetingsIntelli
 
   const avgDuration = meetings.length > 0
     ? Math.round(meetings.reduce((sum, m) => sum + m.duration, 0) / meetings.length)
-    : 0;
+    : null;
 
   // Children who never attended any meeting
   const allAttendees = new Set<string>();
@@ -239,11 +239,11 @@ export function computeMeetingsIntelligence(input: EngineInput): MeetingsIntelli
   const child_participation: ChildParticipationProfile[] = [...childStats.entries()]
     .map(([childId, stat]) => {
       const total = stat.attended + stat.absent;
-      const attendanceRate = total > 0 ? Math.round((stat.attended / total) * 100) : 0;
+      const attendanceRate = total > 0 ? Math.round((stat.attended / total) * 100) : null;
 
       const risk_flags: string[] = [];
       if (stat.attended === 0 && meetings.length > 0) risk_flags.push("never_attended");
-      if (attendanceRate < 50 && total > 0) risk_flags.push("low_attendance");
+      if ((attendanceRate ?? 0) < 50 && total > 0) risk_flags.push("low_attendance");
       if (stat.feedback === 0 && meetings.length > 0) risk_flags.push("no_feedback");
 
       return {
@@ -310,7 +310,7 @@ export function computeMeetingsIntelligence(input: EngineInput): MeetingsIntelli
   }
 
   // Warning: low attendance rate
-  if (avgAttendanceRate < 70 && meetings.length > 0) {
+  if ((avgAttendanceRate ?? 0) < 70 && meetings.length > 0) {
     insights.push({
       severity: "warning",
       text: `Average attendance rate is ${avgAttendanceRate}%. Review barriers to participation — timing, engagement, or relationship issues may be affecting children's willingness to attend.`,
@@ -326,7 +326,7 @@ export function computeMeetingsIntelligence(input: EngineInput): MeetingsIntelli
   }
 
   // Positive: high attendance
-  if (avgAttendanceRate >= 80 && meetings.length > 0) {
+  if ((avgAttendanceRate ?? 0) >= 80 && meetings.length > 0) {
     insights.push({
       severity: "positive",
       text: `${avgAttendanceRate}% attendance rate at house meetings. Children are actively engaging with consultation processes. Reg 16 participation requirements met.`,

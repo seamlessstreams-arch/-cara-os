@@ -81,7 +81,7 @@ export interface CamhsReferralInput {
 export interface MoodEntryInput {
   child_id: string;
   date: string;
-  mood_score: number; // 1-10
+  mood_score: number | null; // 1-10
 }
 
 // ── Output Types ────────────────────────────────────────────────────────────
@@ -92,7 +92,7 @@ export interface HealthComplianceSummary {
   dental_up_to_date: number;
   optician_up_to_date: number;
   health_assessment_current: number;
-  overall_compliance_rate: number; // percentage
+  overall_compliance_rate: number | null; // percentage
 }
 
 export interface AppointmentAnalysis {
@@ -100,7 +100,7 @@ export interface AppointmentAnalysis {
   attended: number;
   missed: number;
   cancelled: number;
-  dna_rate: number; // percentage (missed / (attended + missed))
+  dna_rate: number | null; // percentage (missed / (attended + missed))
   upcoming_7d: number;
 }
 
@@ -110,7 +110,7 @@ export interface WellbeingTrend {
   current_avg: number; // last 7 days
   previous_avg: number; // 8-14 days ago
   trend: "improving" | "stable" | "declining";
-  latest_score: number;
+  latest_score: number | null;
   data_points_30d: number;
 }
 
@@ -135,7 +135,7 @@ export interface CamhsSummary {
   active_referrals: number;
   waiting_list: number;
   total_sessions_held: number;
-  avg_waiting_weeks: number;
+  avg_waiting_weeks: number | null;
   disengaged_count: number;
 }
 
@@ -432,7 +432,7 @@ export function computeHealthWellbeing(
     const previousAvg = average(previousEntries.map((e) => e.mood_score));
     const latestScore = currentEntries.length > 0
       ? currentEntries.sort((a, b) => b.date.localeCompare(a.date))[0].mood_score
-      : 0;
+      : null;
 
     if (entries30d.length > 0) {
       wellbeingTrends.push({
@@ -492,7 +492,7 @@ export function computeHealthWellbeing(
   const totalSessionsHeld = camhsReferrals.reduce((sum, r) => sum + r.sessions_held, 0);
   const waitingWeeks = waitingList.length > 0
     ? Math.round(waitingList.reduce((sum, r) => sum + r.waiting_time_weeks, 0) / waitingList.length)
-    : 0;
+    : null;
 
   const camhs: CamhsSummary = {
     active_referrals: activeReferrals.length,
@@ -597,7 +597,7 @@ export function computeHealthWellbeing(
   }
 
   // 2. DNA rate concern
-  if (appointmentAnalysis.dna_rate > 10) {
+  if ((appointmentAnalysis.dna_rate ?? 0) > 10) {
     insights.push({
       severity: "warning",
       text: `Appointment DNA rate is ${appointmentAnalysis.dna_rate}% (${missed} missed in 90 days). Investigate patterns — consider transport barriers, appointment timing, anxiety, or relationship with professionals. A rate above 10% warrants team discussion.`,
@@ -615,7 +615,7 @@ export function computeHealthWellbeing(
   }
 
   // 4. CAMHS waiting time concern
-  if (camhs.waiting_list > 0 && camhs.avg_waiting_weeks > 12) {
+  if (camhs.waiting_list > 0 && (camhs.avg_waiting_weeks ?? 0) > 12) {
     insights.push({
       severity: "warning",
       text: `${camhs.waiting_list} child(ren) on CAMHS waiting list with average wait of ${camhs.avg_waiting_weeks} weeks. Consider interim therapeutic support, advocacy for priority assessment, or private/third-sector alternatives.`,
@@ -665,7 +665,7 @@ export function computeHealthWellbeing(
   }
 
   // 9. Low DNA rate
-  if (appointmentAnalysis.total_appointments_90d >= 3 && appointmentAnalysis.dna_rate <= 5) {
+  if (appointmentAnalysis.total_appointments_90d >= 3 && (appointmentAnalysis.dna_rate ?? 0) <= 5) {
     insights.push({
       severity: "positive",
       text: `Appointment DNA rate is only ${appointmentAnalysis.dna_rate}%. Children are well-supported to attend health appointments. Continue current transport and preparation strategies.`,

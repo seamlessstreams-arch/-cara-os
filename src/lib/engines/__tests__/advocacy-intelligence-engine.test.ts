@@ -268,7 +268,7 @@ describe("Advocacy Intelligence Engine", () => {
         makeReferral({ start_date: null, status: "pending_referral", referral_date: "2026-05-01" }),
       ];
       const result = run(referrals);
-      expect(result.overview.avg_days_to_start).toBe(0);
+      expect(result.overview.avg_days_to_start).toBeNull();;
     });
   });
 

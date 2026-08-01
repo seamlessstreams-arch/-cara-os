@@ -43,7 +43,7 @@ export interface ChildRef {
 export interface PeriodSummary {
   total_30d: number;
   total_90d: number;
-  average_per_week_30d: number;
+  average_per_week_30d: number | null;
   trend_direction: "increasing" | "stable" | "decreasing";
   percentage_change: number; // positive = increase, negative = decrease
 }
@@ -221,7 +221,7 @@ export function computeIncidentAnalytics(
   const weeksIn30d = 30 / 7;
   const avgPerWeek = incidents30d.length > 0
     ? Math.round((incidents30d.length / weeksIn30d) * 10) / 10
-    : 0;
+    : null;
 
   const summary: PeriodSummary = {
     total_30d: incidents30d.length,

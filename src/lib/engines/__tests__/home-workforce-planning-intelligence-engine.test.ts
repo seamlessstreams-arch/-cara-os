@@ -612,7 +612,7 @@ describe("Home Workforce Planning Intelligence Engine", () => {
       const plans = [makeSuccession({ candidates: [] })];
       const r = computeHomeWorkforcePlanning(baseInput({ succession_plans: plans }));
       expect(r.succession_profile.total_candidates).toBe(0);
-      expect(r.succession_profile.avg_readiness_score).toBe(0);
+      expect(r.succession_profile.avg_readiness_score).toBeNull();;
     });
 
     it("handles inductions with zero total items", () => {

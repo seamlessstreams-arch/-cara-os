@@ -23,14 +23,14 @@ export interface LifeSkillsAssessmentInput {
   assessor_name: string;
   assessment_type: "initial" | "review" | "annual" | "transition" | "specialist";
   // Skill area scores (1-5 each)
-  cooking_score: number;
-  cleaning_score: number;
-  laundry_score: number;
-  budgeting_score: number;
-  personal_hygiene_score: number;
-  travel_score: number;
-  social_skills_score: number;
-  overall_independence_score: number; // 1-10
+  cooking_score: number | null;
+  cleaning_score: number | null;
+  laundry_score: number | null;
+  budgeting_score: number | null;
+  personal_hygiene_score: number | null;
+  travel_score: number | null;
+  social_skills_score: number | null;
+  overall_independence_score: number | null; // 1-10
   previous_overall_score: number | null; // 1-10 or null if first assessment
   child_involved: boolean;
   goals_set: number;
@@ -139,14 +139,14 @@ export interface IndependenceLifeSkillsRecommendation {
 
 export interface IndependenceLifeSkillsResult {
   independence_rating: IndependenceLifeSkillsRating;
-  independence_score: number;
+  independence_score: number | null;
   headline: string;
-  skills_assessment_coverage_rate: number;
-  cooking_competency_rate: number;
-  travel_independence_rate: number;
-  personal_care_rate: number;
-  milestone_achievement_rate: number;
-  child_engagement_rate: number;
+  skills_assessment_coverage_rate: number | null;
+  cooking_competency_rate: number | null;
+  travel_independence_rate: number | null;
+  personal_care_rate: number | null;
+  milestone_achievement_rate: number | null;
+  child_engagement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: IndependenceLifeSkillsRecommendation[];
@@ -287,7 +287,7 @@ export function computeIndependenceLifeSkillsDevelopment(
   ).length;
   const assessmentReviewComplianceRate = totalAssessments > 0
     ? pct(totalAssessments - overdueAssessmentReviews, totalAssessments)
-    : 0;
+    : null;
 
   const assessmentChildFeedbackPositive = life_skills_assessment_records.filter(
     (a) => a.child_feedback_positive,
@@ -299,7 +299,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     (a) => a.previous_overall_score !== null,
   );
   const assessmentsShowingImprovement = assessmentsWithPreviousScore.filter(
-    (a) => a.overall_independence_score > (a.previous_overall_score ?? 0),
+    (a) => (a.overall_independence_score ?? 0) > (a.previous_overall_score ?? 0),
   ).length;
   const skillsImprovementRate = pct(assessmentsShowingImprovement, assessmentsWithPreviousScore.length);
 
@@ -315,39 +315,39 @@ export function computeIndependenceLifeSkillsDevelopment(
   // --- Average skill scores ---
   const avgCookingScore = totalAssessments > 0
     ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + a.cooking_score, 0) / totalAssessments) * 100,
+        (life_skills_assessment_records.reduce((s, a) => s + (a.cooking_score ?? 0), 0) / totalAssessments) * 100,
       ) / 100
-    : 0;
+    : null;
   const avgCleaningScore = totalAssessments > 0
     ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + a.cleaning_score, 0) / totalAssessments) * 100,
+        (life_skills_assessment_records.reduce((s, a) => s + (a.cleaning_score ?? 0), 0) / totalAssessments) * 100,
       ) / 100
-    : 0;
+    : null;
   const avgLaundryScore = totalAssessments > 0
     ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + a.laundry_score, 0) / totalAssessments) * 100,
+        (life_skills_assessment_records.reduce((s, a) => s + (a.laundry_score ?? 0), 0) / totalAssessments) * 100,
       ) / 100
-    : 0;
+    : null;
   const avgBudgetingScore = totalAssessments > 0
     ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + a.budgeting_score, 0) / totalAssessments) * 100,
+        (life_skills_assessment_records.reduce((s, a) => s + (a.budgeting_score ?? 0), 0) / totalAssessments) * 100,
       ) / 100
-    : 0;
+    : null;
   const avgPersonalHygieneScore = totalAssessments > 0
     ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + a.personal_hygiene_score, 0) / totalAssessments) * 100,
+        (life_skills_assessment_records.reduce((s, a) => s + (a.personal_hygiene_score ?? 0), 0) / totalAssessments) * 100,
       ) / 100
-    : 0;
+    : null;
   const avgTravelScore = totalAssessments > 0
     ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + a.travel_score, 0) / totalAssessments) * 100,
+        (life_skills_assessment_records.reduce((s, a) => s + (a.travel_score ?? 0), 0) / totalAssessments) * 100,
       ) / 100
-    : 0;
+    : null;
   const avgSocialSkillsScore = totalAssessments > 0
     ? Math.round(
-        (life_skills_assessment_records.reduce((s, a) => s + a.social_skills_score, 0) / totalAssessments) * 100,
+        (life_skills_assessment_records.reduce((s, a) => s + (a.social_skills_score ?? 0), 0) / totalAssessments) * 100,
       ) / 100
-    : 0;
+    : null;
 
   // --- Cooking programme metrics ---
   const totalCookingSessions = cooking_programme_records.length;
@@ -431,7 +431,7 @@ export function computeIndependenceLifeSkillsDevelopment(
   const travelChildConfidenceAvg =
     totalTravelSessions > 0
       ? Math.round((travelChildConfidenceSum / totalTravelSessions) * 100) / 100
-      : 0;
+      : null;
 
   const travelStaffConfidenceSum = travel_training_records.reduce(
     (sum, t) => sum + t.staff_confidence_rating, 0,
@@ -439,7 +439,7 @@ export function computeIndependenceLifeSkillsDevelopment(
   const travelStaffConfidenceAvg =
     totalTravelSessions > 0
       ? Math.round((travelStaffConfidenceSum / totalTravelSessions) * 100) / 100
-      : 0;
+      : null;
 
   const travelIndependentJourneys = travel_training_records.filter(
     (t) => t.competency_level === "independent" && !t.accompanied,
@@ -575,8 +575,8 @@ export function computeIndependenceLifeSkillsDevelopment(
   else if (goalsAchievementRate >= 60) score += 1;
 
   // --- Bonus 8: assessmentReviewComplianceRate (>=100: +2, >=80: +1) ---
-  if (assessmentReviewComplianceRate >= 100) score += 2;
-  else if (assessmentReviewComplianceRate >= 80) score += 1;
+  if ((assessmentReviewComplianceRate ?? 0) >= 100) score += 2;
+  else if ((assessmentReviewComplianceRate ?? 0) >= 80) score += 1;
 
   // --- Bonus 9: skillsImprovementRate (>=80: +2, >=60: +1) ---
   if (skillsImprovementRate >= 80) score += 2;
@@ -686,7 +686,7 @@ export function computeIndependenceLifeSkillsDevelopment(
     );
   }
 
-  if (travelChildConfidenceAvg >= 4.0 && totalTravelSessions > 0) {
+  if ((travelChildConfidenceAvg ?? 0) >= 4.0 && totalTravelSessions > 0) {
     strengths.push(
       `Average child travel confidence of ${travelChildConfidenceAvg}/5 — children feel confident in their developing travel skills.`,
     );
@@ -698,11 +698,11 @@ export function computeIndependenceLifeSkillsDevelopment(
     );
   }
 
-  if (assessmentReviewComplianceRate >= 100 && totalAssessments > 0) {
+  if ((assessmentReviewComplianceRate ?? 0) >= 100 && totalAssessments > 0) {
     strengths.push(
       "All life skills assessment reviews are up to date — the home ensures assessments remain current and reflective of children's developing skills.",
     );
-  } else if (assessmentReviewComplianceRate >= 80 && totalAssessments > 0) {
+  } else if ((assessmentReviewComplianceRate ?? 0) >= 80 && totalAssessments > 0) {
     strengths.push(
       `${assessmentReviewComplianceRate}% of assessment reviews on schedule — strong compliance with review timescales.`,
     );
@@ -1246,7 +1246,7 @@ export function computeIndependenceLifeSkillsDevelopment(
 
   if (
     travelIndependenceRate >= 80 &&
-    travelChildConfidenceAvg >= 4.0 &&
+    (travelChildConfidenceAvg ?? 0) >= 4.0 &&
     totalTravelSessions > 0
   ) {
     insights.push({

@@ -97,7 +97,7 @@ export interface WorkforceProfile {
   dbs_compliance_rate: number | null; // percentage
   staff_on_leave_today: number;
   staff_on_shift_today: number;
-  average_tenure_months: number;
+  average_tenure_months: number | null;
 }
 
 export interface TrainingCompliance {
@@ -127,7 +127,7 @@ export interface StaffingCoverage {
   coverage_rate: number | null; // percentage, null when no shifts are rostered
   overtime_hours_this_month: number;
   no_shows_this_month: number;
-  avg_shifts_per_staff_per_week: number;
+  avg_shifts_per_staff_per_week: number | null;
 }
 
 export interface DBSCompliance {
@@ -261,7 +261,7 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
   const tenures = activeStaff.map((s) => daysBetween(s.start_date, today));
   const avgTenureMonths = tenures.length > 0
     ? Math.round((tenures.reduce((a, b) => a + b, 0) / tenures.length) / 30.44)
-    : 0;
+    : null;
 
   // ── Training Compliance ────────────────────────────────────────────────
   const mandatoryTraining = training.filter((t) => t.is_mandatory);
@@ -393,7 +393,7 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
   const uniqueStaffThisWeek = new Set(thisWeekShifts.filter((s) => s.status !== "cancelled").map((s) => s.staff_id)).size;
   const avgShiftsPerStaff = uniqueStaffThisWeek > 0
     ? Math.round((filledShifts / uniqueStaffThisWeek) * 10) / 10
-    : 0;
+    : null;
 
   const staffingResult: StaffingCoverage = {
     shifts_this_week: totalWeekShifts,

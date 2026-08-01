@@ -2131,7 +2131,7 @@ describe("rate calculations", () => {
           financial_education_records: [],
         }),
       );
-      expect(r.child_autonomy_rate).toBe(0);
+      expect(r.child_autonomy_rate).toBeNull();;
     });
 
     it("averages two sub-rates when only two categories have records", () => {

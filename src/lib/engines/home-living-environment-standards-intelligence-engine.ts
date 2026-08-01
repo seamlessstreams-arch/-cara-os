@@ -92,31 +92,31 @@ export type LivingEnvironmentRating =
 
 export interface LivingEnvironmentStandardsResult {
   environment_rating: LivingEnvironmentRating;
-  environment_score: number;
+  environment_score: number | null;
   headline: string;
 
   // Cleaning metrics
   total_cleaning_entries: number;
-  cleaning_completion_rate: number;
-  cleaning_quality_avg: number;
+  cleaning_completion_rate: number | null;
+  cleaning_quality_avg: number | null;
 
   // Maintenance metrics
   total_maintenance_items: number;
-  maintenance_completion_rate: number;
+  maintenance_completion_rate: number | null;
   overdue_maintenance_count: number;
   safety_maintenance_open: number;
 
   // Kitchen hygiene
-  kitchen_hygiene_pass_rate: number;
+  kitchen_hygiene_pass_rate: number | null;
 
   // Bedroom personalisation
-  bedroom_personalisation_rate: number;
-  bedroom_condition_good_rate: number;
+  bedroom_personalisation_rate: number | null;
+  bedroom_condition_good_rate: number | null;
 
   // Room allocation
-  room_suitability_rate: number;
-  room_risk_assessment_rate: number;
-  child_consultation_rate: number;
+  room_suitability_rate: number | null;
+  room_risk_assessment_rate: number | null;
+  child_consultation_rate: number | null;
 
   strengths: string[];
   concerns: string[];
@@ -223,7 +223,7 @@ export function computeLivingEnvironmentStandards(
       ? Math.round(
           (ratedEntries.reduce((sum, c) => sum + c.quality_rating, 0) / ratedEntries.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   const cleaningIssuesCount = cleaning_entries.filter(
     c => c.issues_noted !== null && c.issues_noted.trim().length > 0,
@@ -306,8 +306,8 @@ export function computeLivingEnvironmentStandards(
   else if (cleaningCompletionRate >= 80) score += 2;
 
   // Bonus: Cleaning quality average
-  if (cleaningQualityAvg >= 4.0) score += 3;
-  else if (cleaningQualityAvg >= 3.0) score += 1;
+  if ((cleaningQualityAvg ?? 0) >= 4.0) score += 3;
+  else if ((cleaningQualityAvg ?? 0) >= 3.0) score += 1;
 
   // Bonus: Maintenance completion rate
   if (maintenanceCompletionRate >= 90) score += 4;
@@ -363,7 +363,7 @@ export function computeLivingEnvironmentStandards(
       `${cleaningCompletionRate}% cleaning completion rate — the home is consistently maintained to a high standard.`,
     );
   }
-  if (cleaningQualityAvg >= 4.0 && ratedEntries.length > 0) {
+  if ((cleaningQualityAvg ?? 0) >= 4.0 && ratedEntries.length > 0) {
     strengths.push(
       `Average cleaning quality rating of ${cleaningQualityAvg}/5 — quality is rigorously upheld across all areas.`,
     );
@@ -468,7 +468,7 @@ export function computeLivingEnvironmentStandards(
       `Cleaning completion at ${cleaningCompletionRate}% — missed tasks risk a decline in living standards.`,
     );
   }
-  if (cleaningQualityAvg < 3.0 && ratedEntries.length > 0) {
+  if ((cleaningQualityAvg ?? 0) < 3.0 && ratedEntries.length > 0) {
     concerns.push(
       `Average cleaning quality only ${cleaningQualityAvg}/5 — quality of completed cleaning is below acceptable standards.`,
     );
@@ -647,7 +647,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (cleaningQualityAvg < 3.0 && ratedEntries.length > 0) {
+  if ((cleaningQualityAvg ?? 0) < 3.0 && ratedEntries.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -759,7 +759,7 @@ export function computeLivingEnvironmentStandards(
   // Positive composite insights
   if (
     cleaningCompletionRate >= 95 &&
-    cleaningQualityAvg >= 4.0 &&
+    (cleaningQualityAvg ?? 0) >= 4.0 &&
     maintenanceCompletionRate >= 90 &&
     kitchenHygienePassRate >= 100 &&
     cleaning_entries.length > 0 &&
@@ -812,7 +812,7 @@ export function computeLivingEnvironmentStandards(
   // Warning insights
   if (
     cleaningCompletionRate < 80 &&
-    cleaningQualityAvg < 3.0 &&
+    (cleaningQualityAvg ?? 0) < 3.0 &&
     cleaning_entries.length > 0
   ) {
     insights.push({

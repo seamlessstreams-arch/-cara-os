@@ -89,10 +89,10 @@ export interface RatingBreakdown {
 export interface CompetencyAnalysis {
   domain: CompetencyDomain;
   domain_label: string;
-  avg_score: number;
+  avg_score: number | null;
   staff_assessed: number;
-  lowest_score: number;
-  highest_score: number;
+  lowest_score: number | null;
+  highest_score: number | null;
 }
 
 export interface StaffAppraisalProfile {
@@ -259,13 +259,13 @@ export function computeAppraisalIntelligence(
     return {
       domain,
       domain_label: DOMAIN_LABELS[domain],
-      avg_score: scores.length > 0 ? round1(average(scores)) : 0,
+      avg_score: scores.length > 0 ? round1(average(scores)) : null,
       staff_assessed: scores.length,
-      lowest_score: scores.length > 0 ? Math.min(...scores) : 0,
-      highest_score: scores.length > 0 ? Math.max(...scores) : 0,
+      lowest_score: scores.length > 0 ? Math.min(...scores) : null,
+      highest_score: scores.length > 0 ? Math.max(...scores) : null,
     };
   }).filter((c) => c.staff_assessed > 0)
-    .sort((a, b) => a.avg_score - b.avg_score); // lowest-scoring domains first
+    .sort((a, b) => (a.avg_score ?? 0) - (b.avg_score ?? 0)); // lowest-scoring domains first
 
   // ── Staff Profiles ─────────────────────────────────────────────────────
   const staffAppraisalMap = new Map<string, AppraisalInput[]>();
@@ -375,7 +375,7 @@ export function computeAppraisalIntelligence(
   }
 
   // Medium: low competency scores (avg < 3 = below "competent")
-  const lowDomains = competency_analysis.filter((c) => c.avg_score > 0 && c.avg_score < 3);
+  const lowDomains = competency_analysis.filter((c) => (c.avg_score ?? 0) > 0 && (c.avg_score ?? 0) < 3);
   if (lowDomains.length > 0) {
     const names = lowDomains.map((d) => d.domain_label).join(", ");
     alerts.push({

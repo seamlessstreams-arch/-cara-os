@@ -125,7 +125,7 @@ export type HomeRiskLevel = "critical" | "elevated" | "moderate" | "managed" | "
 
 export interface RiskLandscapeOverview {
   home_risk_level: HomeRiskLevel;
-  home_risk_score: number;          // 0-100 (100 = highest risk)
+  home_risk_score: number | null;          // 0-100 (100 = highest risk)
   total_active_risks: number;
   very_high_risks: number;
   high_risks: number;
@@ -163,8 +163,8 @@ export interface MissingOverview {
   total_90d: number;
   total_30d: number;
   unique_children_30d: number;
-  avg_duration_hours: number;
-  return_interview_rate: number;   // 0-100
+  avg_duration_hours: number | null;
+  return_interview_rate: number | null;   // 0-100
   cs_risk_episodes: number;
   repeat_missing: boolean;
 }
@@ -173,9 +173,9 @@ export interface RestraintOverview {
   total_90d: number;
   total_30d: number;
   unique_children_90d: number;
-  avg_duration_minutes: number;
+  avg_duration_minutes: number | null;
   trend: "increasing" | "stable" | "decreasing";
-  debrief_rate: number;            // 0-100 (child debriefed)
+  debrief_rate: number | null;            // 0-100 (child debriefed)
   injuries_count: number;
   unreviewed_count: number;
 }
@@ -184,7 +184,7 @@ export interface ChildRiskProfile {
   child_id: string;
   child_name: string;
   risk_level: HomeRiskLevel;
-  risk_score: number;              // 0-100
+  risk_score: number | null;              // 0-100
   active_risk_assessments: number;
   highest_risk_domain: string;
   highest_risk_level: RiskLevel;
@@ -450,7 +450,7 @@ export function computeRiskIntelligenceDashboard(
   const uniqueMissing30d = new Set(missing30d.map((m) => m.child_id));
   const avgDuration = missing90d.length > 0
     ? Math.round((missing90d.reduce((s, m) => s + m.duration_hours, 0) / missing90d.length) * 10) / 10
-    : 0;
+    : null;
   const returnInterviewRate = pct(
     missing90d.filter((m) => m.return_interview_completed).length,
     missing90d.length,
@@ -478,7 +478,7 @@ export function computeRiskIntelligenceDashboard(
   const uniqueRestraintChildren = new Set(restraints90d.map((r) => r.child_id));
   const avgRestraintDuration = restraints90d.length > 0
     ? Math.round(restraints90d.reduce((s, r) => s + r.duration_minutes, 0) / restraints90d.length)
-    : 0;
+    : null;
   const childDebriefed = restraints90d.filter((r) => r.child_debriefed);
   const totalInjuries = restraints90d.reduce((s, r) => s + r.injuries, 0);
   const unreviewedRestraints = restraints90d.filter((r) => r.review_status === "pending");
@@ -862,7 +862,7 @@ export function computeRiskIntelligenceDashboard(
     }
   }
 
-  if (restraints90d.length > 0 && restraint_overview.debrief_rate < 100) {
+  if (restraints90d.length > 0 && (restraint_overview.debrief_rate ?? 0) < 100) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure child debrief is completed for all restraint episodes. Debriefs should happen within 24 hours of the incident.",

@@ -20,7 +20,7 @@ export interface RiskRegisterEntryInput {
 export interface StrategicRiskInput {
   id: string; category: string;
   current_likelihood: number; current_impact: number;
-  residual_risk_score: number; target_risk_score: number;
+  residual_risk_score: number | null; target_risk_score: number | null;
   controls_count: number; additional_controls_needed: number;
   last_reviewed: string; next_review_date: string;
   board_level: boolean; trend: string; // "improving" | "stable" | "worsening"
@@ -54,14 +54,14 @@ export interface HomeStrategicRiskInput {
 
 export type StrategicRiskRating = "outstanding" | "good" | "adequate" | "inadequate" | "insufficient_data";
 
-export interface BriefingSummary { total: number; recent_7_days: number; avg_child_risks: number; coverage_rate: number; }
-export interface RegisterSummary { total: number; critical_count: number; high_count: number; overdue_reviews: number; mitigated_rate: number; }
+export interface BriefingSummary { total: number; recent_7_days: number; avg_child_risks: number; coverage_rate: number | null; }
+export interface RegisterSummary { total: number; critical_count: number; high_count: number; overdue_reviews: number; mitigated_rate: number | null; }
 export interface StrategicSummary { total: number; board_level_count: number; worsening_count: number; above_target_count: number; }
-export interface PlanSummary { total: number; active_rate: number; child_views_rate: number; overdue_reviews: number; }
+export interface PlanSummary { total: number; active_rate: number | null; child_views_rate: number | null; overdue_reviews: number; }
 export interface AppetiteSummary { total: number; domains_with_red_lines: number; }
 
 export interface HomeStrategicRiskResult {
-  strategic_risk_rating: StrategicRiskRating; strategic_risk_score: number; headline: string;
+  strategic_risk_rating: StrategicRiskRating; strategic_risk_score: number | null; headline: string;
   briefings: BriefingSummary; register: RegisterSummary; strategic: StrategicSummary;
   plans: PlanSummary; appetite: AppetiteSummary;
   strengths: string[]; concerns: string[];
@@ -90,7 +90,7 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
 
   // ── Summaries ────────────────────────────────────────────────────────────
   const recent7 = daily_risk_briefings.filter(b => b.date && daysBetween(b.date, today) <= 7 && daysBetween(b.date, today) >= 0).length;
-  const avgChildRisks = daily_risk_briefings.length > 0 ? Math.round(daily_risk_briefings.reduce((s, b) => s + b.child_risks_count, 0) / daily_risk_briefings.length) : 0;
+  const avgChildRisks = daily_risk_briefings.length > 0 ? Math.round(daily_risk_briefings.reduce((s, b) => s + b.child_risks_count, 0) / daily_risk_briefings.length) : null;
   // Coverage: assume 2 briefings per day (day + night) for 7 days = 14 expected
   const coverageRate = pct(recent7, 14);
   const briefings: BriefingSummary = { total: daily_risk_briefings.length, recent_7_days: recent7, avg_child_risks: avgChildRisks, coverage_rate: coverageRate };
@@ -108,7 +108,7 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
 
   const boardLevel = strategic_risks.filter(s => s.board_level).length;
   const worsening = strategic_risks.filter(s => s.trend === "worsening").length;
-  const aboveTarget = strategic_risks.filter(s => s.residual_risk_score > s.target_risk_score).length;
+  const aboveTarget = strategic_risks.filter(s => (s.residual_risk_score ?? 0) > (s.target_risk_score ?? 0)).length;
   const strategic: StrategicSummary = { total: strategic_risks.length, board_level_count: boardLevel, worsening_count: worsening, above_target_count: aboveTarget };
 
   const planActive = risk_management_plans.filter(p => p.status === "active").length;
@@ -130,9 +130,9 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
   // Mod 1: Daily risk briefing coverage (±5)
   let mod1 = 0;
   if (daily_risk_briefings.length > 0) {
-    if (briefings.coverage_rate >= 80) mod1 = 5;
-    else if (briefings.coverage_rate >= 50) mod1 = 3;
-    else if (briefings.coverage_rate >= 30) mod1 = 1;
+    if ((briefings.coverage_rate ?? 0) >= 80) mod1 = 5;
+    else if ((briefings.coverage_rate ?? 0) >= 50) mod1 = 3;
+    else if ((briefings.coverage_rate ?? 0) >= 30) mod1 = 1;
     else if (briefings.coverage_rate === 0) mod1 = -5;
     else mod1 = -2;
   } else if (total_staff >= 3) {
@@ -143,7 +143,7 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
   // Mod 2: Risk register management (±4)
   let mod2 = 0;
   if (risk_register_entries.length > 0) {
-    if (critCount === 0 && regOverdue === 0 && register.mitigated_rate >= 50) mod2 = 4;
+    if (critCount === 0 && regOverdue === 0 && (register.mitigated_rate ?? 0) >= 50) mod2 = 4;
     else if (critCount <= 1 && regOverdue <= 2) mod2 = 2;
     else if (critCount <= 2) mod2 = 0;
     else if (critCount >= 4 || regOverdue >= 5) mod2 = -4;
@@ -168,10 +168,10 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
   // Mod 4: Risk management plans (±4)
   let mod4 = 0;
   if (risk_management_plans.length > 0) {
-    if (plans.active_rate >= 80 && plans.child_views_rate >= 80 && planOverdue === 0) mod4 = 4;
-    else if (plans.active_rate >= 60 && plans.child_views_rate >= 60) mod4 = 2;
-    else if (plans.active_rate >= 40) mod4 = 0;
-    else if (plans.active_rate < 30 || planOverdue >= 5) mod4 = -4;
+    if ((plans.active_rate ?? 0) >= 80 && (plans.child_views_rate ?? 0) >= 80 && planOverdue === 0) mod4 = 4;
+    else if ((plans.active_rate ?? 0) >= 60 && (plans.child_views_rate ?? 0) >= 60) mod4 = 2;
+    else if ((plans.active_rate ?? 0) >= 40) mod4 = 0;
+    else if ((plans.active_rate ?? 0) < 30 || planOverdue >= 5) mod4 = -4;
     else mod4 = -2;
   } else if (total_children >= 2) {
     mod4 = -1;
@@ -203,9 +203,9 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
   // Mod 7: Child voice in risk management (±3)
   let mod7 = 0;
   if (risk_management_plans.length > 0) {
-    if (plans.child_views_rate >= 80) mod7 = 3;
-    else if (plans.child_views_rate >= 60) mod7 = 1;
-    else if (plans.child_views_rate < 30) mod7 = -3;
+    if ((plans.child_views_rate ?? 0) >= 80) mod7 = 3;
+    else if ((plans.child_views_rate ?? 0) >= 60) mod7 = 1;
+    else if ((plans.child_views_rate ?? 0) < 30) mod7 = -3;
     else mod7 = 0;
   }
   score += mod7;
@@ -230,25 +230,25 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
 
   // ── Strengths ────────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (briefings.coverage_rate >= 80) strengths.push("Excellent daily risk briefing coverage — shifts consistently briefed on current risks.");
+  if ((briefings.coverage_rate ?? 0) >= 80) strengths.push("Excellent daily risk briefing coverage — shifts consistently briefed on current risks.");
   if (critCount === 0 && risk_register_entries.length > 0) strengths.push("No critical risks on the register — effective risk mitigation strategy.");
   if (worsening === 0 && strategic_risks.length > 0) strengths.push("All strategic risks stable or improving — proactive risk governance.");
-  if (plans.child_views_rate >= 80 && risk_management_plans.length > 0) strengths.push("Child voice strongly represented in risk management plans.");
+  if ((plans.child_views_rate ?? 0) >= 80 && risk_management_plans.length > 0) strengths.push("Child voice strongly represented in risk management plans.");
   if (risk_appetite_domains.length >= 5) strengths.push("Comprehensive risk appetite framework with clear domains and red lines.");
   if (mod8 >= 3) strengths.push("All risk reviews are current — no overdue assessments.");
   if (critActive === 0 && risk_register_entries.length > 0) strengths.push("No unresolved critical risks — all critical items have been escalated or mitigated.");
-  if (register.mitigated_rate >= 60) strengths.push("Strong risk resolution — over 60% of register entries are mitigated or closed.");
+  if ((register.mitigated_rate ?? 0) >= 60) strengths.push("Strong risk resolution — over 60% of register entries are mitigated or closed.");
 
   // ── Concerns ─────────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (daily_risk_briefings.length === 0 && total_staff >= 3) concerns.push("No daily risk briefings recorded — staff may not be aware of current risks at shift handover.");
   if (critCount >= 3) concerns.push(`${critCount} critical risks on the register — these require urgent board-level attention.`);
   if (worsening >= 2) concerns.push(`${worsening} strategic risks are worsening — trend analysis shows deteriorating risk profile.`);
-  if (plans.child_views_rate < 30 && risk_management_plans.length > 0) concerns.push("Children's views are missing from most risk management plans — their perspective is essential.");
+  if ((plans.child_views_rate ?? 0) < 30 && risk_management_plans.length > 0) concerns.push("Children's views are missing from most risk management plans — their perspective is essential.");
   if (planOverdue >= 3) concerns.push(`${planOverdue} risk management plans have overdue reviews — plans may not reflect current risk levels.`);
   if (regOverdue >= 5) concerns.push(`${regOverdue} risk register entries have overdue reviews — risk oversight is lapsing.`);
   if (risk_register_entries.length === 0 && total_children >= 2) concerns.push("No risk register in place — the home lacks a systematic approach to tracking risks.");
-  if (briefings.coverage_rate < 30 && daily_risk_briefings.length > 0) concerns.push("Risk briefing coverage is below 30% — significant gaps in shift-to-shift risk communication.");
+  if ((briefings.coverage_rate ?? 0) < 30 && daily_risk_briefings.length > 0) concerns.push("Risk briefing coverage is below 30% — significant gaps in shift-to-shift risk communication.");
 
   // ── Recommendations ──────────────────────────────────────────────────────
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
@@ -256,7 +256,7 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
   if (critCount >= 3) recommendations.push({ rank: ++rank, recommendation: "Convene emergency risk review for all critical register entries.", urgency: "immediate", regulatory_ref: "Reg 35" });
   if (worsening >= 2) recommendations.push({ rank: ++rank, recommendation: "Conduct root cause analysis on worsening strategic risks and strengthen controls.", urgency: "immediate", regulatory_ref: "Reg 40" });
   if (daily_risk_briefings.length === 0 && total_staff >= 3) recommendations.push({ rank: ++rank, recommendation: "Implement daily risk briefings at every shift handover.", urgency: "soon", regulatory_ref: "Reg 35" });
-  if (plans.child_views_rate < 50 && risk_management_plans.length > 0) recommendations.push({ rank: ++rank, recommendation: "Ensure every risk management plan includes the child's views and feelings about the risks.", urgency: "soon", regulatory_ref: "Reg 35" });
+  if ((plans.child_views_rate ?? 0) < 50 && risk_management_plans.length > 0) recommendations.push({ rank: ++rank, recommendation: "Ensure every risk management plan includes the child's views and feelings about the risks.", urgency: "soon", regulatory_ref: "Reg 35" });
   if (risk_appetite_domains.length === 0) recommendations.push({ rank: ++rank, recommendation: "Develop a risk appetite framework to guide proportionate risk-taking decisions.", urgency: "planned", regulatory_ref: "Reg 40" });
   if (totalOverdue >= 3) recommendations.push({ rank: ++rank, recommendation: `Complete ${totalOverdue} overdue risk reviews to ensure all assessments are current.`, urgency: "soon", regulatory_ref: "Reg 35" });
   if (risk_register_entries.length === 0 && total_children >= 2) recommendations.push({ rank: ++rank, recommendation: "Establish a risk register to systematically track and mitigate identified risks.", urgency: "soon", regulatory_ref: "Reg 35" });
@@ -266,8 +266,8 @@ export function computeHomeStrategicRisk(input: HomeStrategicRiskInput): HomeStr
   if (strategic_risk_rating === "outstanding") insights.push({ text: "Strategic risk governance is outstanding — comprehensive oversight with proactive controls and strong child voice.", severity: "positive" });
   if (strategic_risk_rating === "inadequate") insights.push({ text: "Risk management falls below acceptable standards — the home may be exposed to unmitigated safeguarding and operational risks.", severity: "critical" });
   if (critCount >= 2 && worsening >= 1) insights.push({ text: "Multiple critical risks combined with worsening trends suggest systemic risk management failure requiring board intervention.", severity: "critical" });
-  if (briefings.coverage_rate >= 80 && plans.child_views_rate >= 80) insights.push({ text: "Strong integration of daily briefings with child-centred risk plans — information flows effectively from strategy to frontline.", severity: "positive" });
-  if (register.mitigated_rate >= 70 && mod8 >= 3) insights.push({ text: "Risk register shows strong closure rates with current reviews — a mature risk management culture is evidenced.", severity: "positive" });
+  if ((briefings.coverage_rate ?? 0) >= 80 && (plans.child_views_rate ?? 0) >= 80) insights.push({ text: "Strong integration of daily briefings with child-centred risk plans — information flows effectively from strategy to frontline.", severity: "positive" });
+  if ((register.mitigated_rate ?? 0) >= 70 && mod8 >= 3) insights.push({ text: "Risk register shows strong closure rates with current reviews — a mature risk management culture is evidenced.", severity: "positive" });
 
   // ── Headline ─────────────────────────────────────────────────────────────
   let headline = "";

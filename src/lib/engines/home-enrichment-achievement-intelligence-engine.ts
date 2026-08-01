@@ -23,7 +23,7 @@ export interface ExtracurricularClubInput {
   child_id: string;
   ongoing: boolean;
   child_initiated: boolean;
-  attendance_rate: number; // 0-100
+  attendance_rate: number | null; // 0-100
   skills_built_count: number;
   child_voice_provided: boolean;
   review_date: string;
@@ -78,32 +78,32 @@ export type EnrichmentRating =
 export interface CreativeProjectProfile {
   total_projects: number;
   child_coverage: number;
-  active_rate: number;
+  active_rate: number | null;
   showcase_count: number;
 }
 
 export interface ClubProfile {
   total_clubs: number;
   child_coverage: number;
-  avg_attendance: number;
-  child_initiated_rate: number;
+  avg_attendance: number | null;
+  child_initiated_rate: number | null;
 }
 
 export interface AchievementProfile {
   total_achievements_90d: number;
   child_coverage: number;
-  celebration_rate: number;
+  celebration_rate: number | null;
 }
 
 export interface RewardSanctionProfile {
   total_90d: number;
   reward_ratio: number;
-  proportionate_rate: number;
+  proportionate_rate: number | null;
 }
 
 export interface HomeEnrichmentAchievementResult {
   enrichment_rating: EnrichmentRating;
-  enrichment_score: number;
+  enrichment_score: number | null;
   headline: string;
   creative_projects: CreativeProjectProfile;
   clubs: ClubProfile;
@@ -185,13 +185,13 @@ export function computeHomeEnrichmentAchievement(
 
   const ecOngoing = extracurricular_clubs.filter(c => c.ongoing);
   const ecAvgAttendance = ecOngoing.length > 0
-    ? Math.round(ecOngoing.reduce((s, c) => s + c.attendance_rate, 0) / ecOngoing.length)
-    : 0;
+    ? Math.round(ecOngoing.reduce((s, c) => s + (c.attendance_rate ?? 0), 0) / ecOngoing.length)
+    : null;
 
   const crActive = club_records.filter(c => c.ongoing_status === "active");
   const crAvgEnjoyment = crActive.length > 0
     ? Math.round((crActive.reduce((s, c) => s + c.child_enjoyment_rating, 0) / crActive.length) * 10) / 10
-    : 0;
+    : null;
 
   const ecInitiatedRate = pct(
     extracurricular_clubs.filter(c => c.child_initiated).length,
@@ -253,8 +253,8 @@ export function computeHomeEnrichmentAchievement(
   // ── Modifier 2: Club & Extracurricular Engagement (±4) ──────────────
   let mod2 = 0;
   if (extracurricular_clubs.length + club_records.length > 0) {
-    if (clubCoverage >= 80 && ecAvgAttendance >= 80) mod2 += 3;
-    else if (clubCoverage >= 60 && ecAvgAttendance >= 60) mod2 += 1;
+    if (clubCoverage >= 80 && (ecAvgAttendance ?? 0) >= 80) mod2 += 3;
+    else if (clubCoverage >= 60 && (ecAvgAttendance ?? 0) >= 60) mod2 += 1;
     else if (clubCoverage < 30) mod2 -= 2;
     // Child-initiated bonus
     if (ecInitiatedRate >= 60) mod2 += 1;
@@ -329,12 +329,12 @@ export function computeHomeEnrichmentAchievement(
   const totalSkillsBuilt = extracurricular_clubs.reduce((s, c) => s + c.skills_built_count, 0);
   const avgSkills = (creative_projects.length + extracurricular_clubs.length) > 0
     ? (totalSkillsGrowing + totalSkillsBuilt) / (creative_projects.length + extracurricular_clubs.length)
-    : 0;
+    : null;
 
-  if (avgSkills >= 3 && crAvgEnjoyment >= 4) mod7 = 3;
-  else if (avgSkills >= 2 && crAvgEnjoyment >= 3) mod7 = 2;
-  else if (avgSkills >= 1) mod7 = 1;
-  else if (creative_projects.length + extracurricular_clubs.length > 0 && avgSkills < 1) mod7 = -1;
+  if ((avgSkills ?? 0) >= 3 && (crAvgEnjoyment ?? 0) >= 4) mod7 = 3;
+  else if ((avgSkills ?? 0) >= 2 && (crAvgEnjoyment ?? 0) >= 3) mod7 = 2;
+  else if ((avgSkills ?? 0) >= 1) mod7 = 1;
+  else if (creative_projects.length + extracurricular_clubs.length > 0 && (avgSkills ?? 0) < 1) mod7 = -1;
   mod7 = Math.max(-3, Math.min(3, mod7));
 
   // ── Modifier 8: Achievement Sharing & Community (±3) ─────────────────
@@ -412,7 +412,7 @@ export function computeHomeEnrichmentAchievement(
   if (sr90.length > 0 && srRewardRatio < 30) {
     insights.push({ text: "Sanctions significantly outweigh rewards. Trauma-informed practice suggests a minimum 4:1 positive-to-corrective ratio.", severity: "critical" });
   }
-  if (ecAvgAttendance >= 85) {
+  if ((ecAvgAttendance ?? 0) >= 85) {
     insights.push({ text: `Excellent club attendance at ${ecAvgAttendance}% — children are consistently engaging with community activities.`, severity: "positive" });
   }
 

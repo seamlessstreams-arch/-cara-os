@@ -322,7 +322,7 @@ describe("exit interview profile", () => {
         makeExit({ id: "e1", status: "scheduled", overall_rating: 5 }),
       ],
     }));
-    expect(r.exit_interviews.avg_rating).toBe(0);
+    expect(r.exit_interviews.avg_rating).toBeNull();;
   });
 });
 
@@ -385,7 +385,7 @@ describe("recognition profile", () => {
       total_staff: 0,
       recognition_records: [makeRecognition({ date: "2026-05-10" })],
     }));
-    expect(r.recognition.events_per_staff).toBe(0);
+    expect(r.recognition.events_per_staff).toBeNull();;
   });
 });
 
@@ -1478,7 +1478,7 @@ describe("edge cases", () => {
         makeInduction({ tasks_total: 0, tasks_completed: 0 }),
       ],
     }));
-    expect(r.induction.avg_task_completion).toBe(0);
+    expect(r.induction.avg_task_completion).toBeNull();;
   });
 
   it("single sickness record on boundary day 90 is included", () => {

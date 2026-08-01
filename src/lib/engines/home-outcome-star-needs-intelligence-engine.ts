@@ -11,7 +11,7 @@ export interface OutcomeStarInput {
   id: string;
   child_id: string;
   date: string;
-  average_score: number;            // 1-10 average across domains
+  average_score: number | null;            // 1-10 average across domains
   previous_average_score: number | null;
   has_action_plan: boolean;
   child_participated: boolean;
@@ -53,13 +53,13 @@ export type OutcomeStarRating =
 
 export interface OutcomeStarResult {
   outcome_rating: OutcomeStarRating;
-  outcome_score: number;
+  outcome_score: number | null;
   headline: string;
   children_assessed: number;
-  average_outcome_score: number;
+  average_outcome_score: number | null;
   children_improving: number;
-  needs_addressed_rate: number;
-  kpi_met_rate: number;
+  needs_addressed_rate: number | null;
+  kpi_met_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[];
@@ -134,13 +134,13 @@ export function computeOutcomeStarNeeds(
 
   // Average outcome score across all stars
   const avgOutcomeScore = outcome_stars.length > 0
-    ? Math.round((outcome_stars.reduce((s, os) => s + os.average_score, 0) / outcome_stars.length) * 10) / 10
-    : 0;
+    ? Math.round((outcome_stars.reduce((s, os) => s + (os.average_score ?? 0), 0) / outcome_stars.length) * 10) / 10
+    : null;
 
   // Improvement trajectory: children where current > previous (only those with previous)
   const starsWithPrevious = outcome_stars.filter(s => s.previous_average_score !== null);
   const childrenImproving = starsWithPrevious.filter(
-    s => s.average_score > (s.previous_average_score as number),
+    s => (s.average_score ?? 0) > (s.previous_average_score as number),
   ).length;
   const improvementRate = pct(childrenImproving, starsWithPrevious.length);
 
@@ -171,9 +171,9 @@ export function computeOutcomeStarNeeds(
 
   // ── Mod 2: Outcome score quality (±5) ───────────────────────────────
   if (outcome_stars.length > 0) {
-    if (avgOutcomeScore >= 7) score += 5;
-    else if (avgOutcomeScore >= 5) score += 2;
-    else if (avgOutcomeScore >= 4) score += 0;
+    if ((avgOutcomeScore ?? 0) >= 7) score += 5;
+    else if ((avgOutcomeScore ?? 0) >= 5) score += 2;
+    else if ((avgOutcomeScore ?? 0) >= 4) score += 0;
     else score -= 5;
   }
   // If no stars, +0
@@ -233,7 +233,7 @@ export function computeOutcomeStarNeeds(
   if (assessmentCoverage >= 90) {
     strengths.push(`${assessmentCoverage}% of children have Outcome Star assessments — comprehensive assessment coverage across the home.`);
   }
-  if (avgOutcomeScore >= 7 && outcome_stars.length > 0) {
+  if ((avgOutcomeScore ?? 0) >= 7 && outcome_stars.length > 0) {
     strengths.push(`Average Outcome Star score of ${avgOutcomeScore} out of 10 — children are achieving strong outcomes across assessed domains.`);
   }
   if (starsWithPrevious.length > 0 && improvementRate >= 70) {
@@ -260,7 +260,7 @@ export function computeOutcomeStarNeeds(
   if (assessmentCoverage < 50) {
     concerns.push(`Only ${assessmentCoverage}% of children have Outcome Star assessments — majority of children's outcomes are not being tracked.`);
   }
-  if (avgOutcomeScore < 4 && outcome_stars.length > 0) {
+  if ((avgOutcomeScore ?? 0) < 4 && outcome_stars.length > 0) {
     concerns.push(`Average Outcome Star score of ${avgOutcomeScore} out of 10 — children's outcomes are significantly below expectations.`);
   }
   if (starsWithPrevious.length > 0 && improvementRate < 30) {

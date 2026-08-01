@@ -146,16 +146,16 @@ export interface HolidayTripRecommendation {
 
 export interface HolidayTripResult {
   holiday_rating: HolidayTripRating;
-  holiday_score: number;
+  holiday_score: number | null;
   headline: string;
   total_holiday_plans: number;
   total_risk_assessments: number;
-  holiday_planning_rate: number;
-  risk_assessment_rate: number;
-  consent_compliance_rate: number;
-  experience_quality_rate: number;
-  child_participation_rate: number;
-  child_enjoyment_rate: number;
+  holiday_planning_rate: number | null;
+  risk_assessment_rate: number | null;
+  consent_compliance_rate: number | null;
+  experience_quality_rate: number | null;
+  child_participation_rate: number | null;
+  child_enjoyment_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: HolidayTripRecommendation[];
@@ -401,7 +401,7 @@ export function computeHolidayTripPlanning(
   const avgEnjoymentRating =
     totalExperiences > 0
       ? Math.round((enjoymentSum / totalExperiences) * 100) / 100
-      : 0;
+      : null;
 
   const positiveFeedback = experience_records.filter((e) => e.child_feedback_positive).length;
   const positiveFeedbackRate = pct(positiveFeedback, totalExperiences);
@@ -449,7 +449,7 @@ export function computeHolidayTripPlanning(
   const avgEnthusiasmRating =
     totalParticipation > 0
       ? Math.round((enthusiasmSum / totalParticipation) * 100) / 100
-      : 0;
+      : null;
 
   const barriersIdentified = child_participation_records.filter(
     (p) => p.barriers_to_participation !== null && p.barriers_to_participation !== "",
@@ -664,11 +664,11 @@ export function computeHolidayTripPlanning(
     );
   }
 
-  if (avgEnjoymentRating >= 4.0 && totalExperiences > 0) {
+  if ((avgEnjoymentRating ?? 0) >= 4.0 && totalExperiences > 0) {
     strengths.push(
       `Average child enjoyment rating of ${avgEnjoymentRating}/5 — children consistently derive high levels of enjoyment from their holiday and trip experiences.`,
     );
-  } else if (avgEnjoymentRating >= 3.5 && totalExperiences > 0) {
+  } else if ((avgEnjoymentRating ?? 0) >= 3.5 && totalExperiences > 0) {
     strengths.push(
       `Average child enjoyment rating of ${avgEnjoymentRating}/5 — children generally enjoy their holiday and trip experiences.`,
     );
@@ -776,11 +776,11 @@ export function computeHolidayTripPlanning(
     );
   }
 
-  if (avgEnjoymentRating < 2.5 && totalExperiences > 0) {
+  if ((avgEnjoymentRating ?? 0) < 2.5 && totalExperiences > 0) {
     concerns.push(
       `Average child enjoyment rating at only ${avgEnjoymentRating}/5 — children are consistently reporting poor enjoyment levels, which has implications for the home's ability to evidence enriching experiences.`,
     );
-  } else if (avgEnjoymentRating < 3.0 && avgEnjoymentRating >= 2.5 && totalExperiences > 0) {
+  } else if ((avgEnjoymentRating ?? 0) < 3.0 && (avgEnjoymentRating ?? 0) >= 2.5 && totalExperiences > 0) {
     concerns.push(
       `Average child enjoyment rating at ${avgEnjoymentRating}/5 — overall enjoyment across holidays and trips is below acceptable standards.`,
     );
@@ -1208,8 +1208,8 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    avgEnjoymentRating >= 2.5 &&
-    avgEnjoymentRating < 3.5 &&
+    (avgEnjoymentRating ?? 0) >= 2.5 &&
+    (avgEnjoymentRating ?? 0) < 3.5 &&
     totalExperiences > 0
   ) {
     insights.push({
@@ -1382,7 +1382,7 @@ export function computeHolidayTripPlanning(
   }
 
   if (
-    avgEnthusiasmRating >= 4.0 &&
+    (avgEnthusiasmRating ?? 0) >= 4.0 &&
     totalParticipation > 0
   ) {
     insights.push({

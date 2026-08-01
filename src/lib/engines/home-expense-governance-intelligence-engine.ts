@@ -48,22 +48,22 @@ export interface VolumeProfile {
 }
 
 export interface ApprovalProfile {
-  avg_approval_days: number;
-  fastest_approval_days: number;
-  slowest_approval_days: number;
+  avg_approval_days: number | null;
+  fastest_approval_days: number | null;
+  slowest_approval_days: number | null;
   pending_count: number;
   pending_amount: number;
   unique_approvers: number;
 }
 
 export interface ComplianceProfile {
-  receipt_rate: number;
-  child_linked_rate: number;
+  receipt_rate: number | null;
+  child_linked_rate: number | null;
   child_linked_amount: number;
-  personal_card_rate: number;
-  house_card_rate: number;
-  petty_cash_rate: number;
-  mileage_rate: number;
+  personal_card_rate: number | null;
+  house_card_rate: number | null;
+  petty_cash_rate: number | null;
+  mileage_rate: number | null;
 }
 
 export interface CategoryDistribution {
@@ -85,7 +85,7 @@ export interface Insight {
 }
 
 export interface HomeExpenseGovernanceResult {
-  expense_score: number;
+  expense_score: number | null;
   expense_rating: ExpenseGovernanceRating;
   headline: string;
   volume: VolumeProfile;
@@ -179,9 +179,9 @@ export function computeHomeExpenseGovernance(
   const avgApprovalDays =
     approvalDays.length > 0
       ? Math.round((approvalDays.reduce((s, d) => s + d, 0) / approvalDays.length) * 10) / 10
-      : 0;
-  const fastest = approvalDays.length > 0 ? Math.min(...approvalDays) : 0;
-  const slowest = approvalDays.length > 0 ? Math.max(...approvalDays) : 0;
+      : null;
+  const fastest = approvalDays.length > 0 ? Math.min(...approvalDays) : null;
+  const slowest = approvalDays.length > 0 ? Math.max(...approvalDays) : null;
 
   const pending = submitted; // "submitted" means awaiting approval
   const pendingAmount = pending.reduce((s, e) => s + e.amount, 0);
@@ -244,9 +244,9 @@ export function computeHomeExpenseGovernance(
   // Modifier 1: Approval turnaround (±4)
   // Fast = ≤2 days, moderate = ≤5, slow = ≤10, very slow > 10
   if (approvalDays.length > 0) {
-    if (avgApprovalDays <= 2) score += 4;
-    else if (avgApprovalDays <= 5) score += 2;
-    else if (avgApprovalDays <= 10) score += 0;
+    if ((avgApprovalDays ?? 0) <= 2) score += 4;
+    else if ((avgApprovalDays ?? 0) <= 5) score += 2;
+    else if ((avgApprovalDays ?? 0) <= 10) score += 0;
     else score -= 3;
   }
   // No approved = neutral (0)
@@ -311,7 +311,7 @@ export function computeHomeExpenseGovernance(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (avgApprovalDays <= 2 && approvalDays.length > 0)
+  if ((avgApprovalDays ?? 0) <= 2 && approvalDays.length > 0)
     strengths.push(`Expenses approved within ${avgApprovalDays} days on average — excellent turnaround.`);
   if (receiptRate >= 90 && nonDraft.length > 0)
     strengths.push(`${receiptRate}% receipt compliance across submitted expenses.`);
@@ -332,7 +332,7 @@ export function computeHomeExpenseGovernance(
   const concerns: string[] = [];
   if (receiptRate < 50 && nonDraft.length > 0)
     concerns.push(`Only ${receiptRate}% of submitted expenses have receipts — audit risk under Reg 36.`);
-  if (avgApprovalDays > 10 && approvalDays.length > 0)
+  if ((avgApprovalDays ?? 0) > 10 && approvalDays.length > 0)
     concerns.push(`Average approval turnaround is ${avgApprovalDays} days — staff reimbursement significantly delayed.`);
   if (pendingRate > 40)
     concerns.push(`${pending.length} expenses (${pendingRate}% of total) pending approval — backlog needs attention.`);
@@ -401,7 +401,7 @@ export function computeHomeExpenseGovernance(
       text: `£${childLinkedAmount.toFixed(2)} in expenses directly benefit individual children (${childLinkedRate}% of claims). This demonstrates the home is actively investing in young people's experiences.`,
       severity: "positive",
     });
-  if (avgApprovalDays <= 2 && approvalDays.length >= 2)
+  if ((avgApprovalDays ?? 0) <= 2 && approvalDays.length >= 2)
     insights.push({
       text: `Approval turnaround averages ${avgApprovalDays} days — well within best practice of 48 hours. This supports prompt staff reimbursement and financial confidence.`,
       severity: "positive",

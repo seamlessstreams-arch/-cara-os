@@ -142,19 +142,19 @@ export interface WaterSafetyRecommendation {
 
 export interface WaterSafetyResult {
   water_safety_rating: WaterSafetyRating;
-  water_safety_score: number;
+  water_safety_score: number | null;
   headline: string;
   total_temperature_records: number;
   total_legionella_records: number;
   total_hydration_records: number;
   total_swimming_competency_records: number;
   total_water_activity_records: number;
-  temperature_check_rate: number;
-  legionella_compliance_rate: number;
-  hydration_monitoring_rate: number;
-  swimming_competency_rate: number;
-  water_activity_safety_rate: number;
-  child_awareness_rate: number;
+  temperature_check_rate: number | null;
+  legionella_compliance_rate: number | null;
+  hydration_monitoring_rate: number | null;
+  swimming_competency_rate: number | null;
+  water_activity_safety_rate: number | null;
+  child_awareness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: WaterSafetyRecommendation[];
@@ -375,7 +375,7 @@ export function computeWaterSafetyHydration(
   ).length;
   const waterSafetyKnowledgeRate = waterSafetyKnowledgeAssessed > 0
     ? pct(waterSafetyKnowledgePassed, waterSafetyKnowledgeAssessed)
-    : 0;
+    : null;
 
   const totalLessonsOffered = swimming_competency_records.reduce((sum, s) => sum + s.lessons_offered, 0);
   const totalLessonsAttended = swimming_competency_records.reduce((sum, s) => sum + s.lessons_attended, 0);
@@ -390,7 +390,7 @@ export function computeWaterSafetyHydration(
   const confidenceSum = swimming_competency_records.reduce((sum, s) => sum + s.water_confidence_rating, 0);
   const avgWaterConfidence = totalSwimmingRecords > 0
     ? Math.round((confidenceSum / totalSwimmingRecords) * 100) / 100
-    : 0;
+    : null;
 
   const canSwim25m = swimming_competency_records.filter((s) => s.can_swim_25m).length;
   const canSwim25mRate = pct(canSwim25m, totalSwimmingRecords);
@@ -403,7 +403,7 @@ export function computeWaterSafetyHydration(
   if (totalLessonsOffered > 0) swimmingCompetencyComponents.push(lessonAttendanceRate);
   const swimmingCompetencyRate = swimmingCompetencyComponents.length > 0
     ? Math.round(swimmingCompetencyComponents.reduce((a, b) => a + b, 0) / swimmingCompetencyComponents.length)
-    : 0;
+    : null;
 
   const uniqueChildrenSwimming = new Set(
     swimming_competency_records.map((s) => s.child_id),
@@ -460,7 +460,7 @@ export function computeWaterSafetyHydration(
   }
   const waterActivitySafetyRate = activitySafetyComponents.length > 0
     ? Math.round(activitySafetyComponents.reduce((a, b) => a + b, 0) / activitySafetyComponents.length)
-    : 0;
+    : null;
 
   // --- Child awareness composite ---
   // Composite across water safety knowledge, hydration encouragement, and activity safety briefings
@@ -501,12 +501,12 @@ export function computeWaterSafetyHydration(
   else if (hydrationMonitoringRate >= 70) score += 1;
 
   // --- Bonus 4: swimmingCompetencyRate (>=90: +3, >=70: +1) ---
-  if (swimmingCompetencyRate >= 90) score += 3;
-  else if (swimmingCompetencyRate >= 70) score += 1;
+  if ((swimmingCompetencyRate ?? 0) >= 90) score += 3;
+  else if ((swimmingCompetencyRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 5: waterActivitySafetyRate (>=95: +4, >=80: +2) ---
-  if (waterActivitySafetyRate >= 95) score += 4;
-  else if (waterActivitySafetyRate >= 80) score += 2;
+  if ((waterActivitySafetyRate ?? 0) >= 95) score += 4;
+  else if ((waterActivitySafetyRate ?? 0) >= 80) score += 2;
 
   // --- Bonus 6: childAwarenessRate (>=90: +3, >=70: +1) ---
   if (childAwarenessRate >= 90) score += 3;
@@ -534,7 +534,7 @@ export function computeWaterSafetyHydration(
   if (legionellaComplianceRate < 50 && legionella_assessment_records.length > 0) score -= 5;
 
   // waterActivitySafetyRate < 50 → -5 (guarded)
-  if (waterActivitySafetyRate < 50 && water_activity_safety_records.length > 0) score -= 5;
+  if ((waterActivitySafetyRate ?? 0) < 50 && water_activity_safety_records.length > 0) score -= 5;
 
   // hydrationMonitoringRate < 40 → -3 (guarded)
   if (hydrationMonitoringRate < 40 && hydration_monitoring_records.length > 0) score -= 3;
@@ -577,21 +577,21 @@ export function computeWaterSafetyHydration(
     );
   }
 
-  if (swimmingCompetencyRate >= 90 && totalSwimmingRecords > 0) {
+  if ((swimmingCompetencyRate ?? 0) >= 90 && totalSwimmingRecords > 0) {
     strengths.push(
       `Swimming competency rate at ${swimmingCompetencyRate}% — children's swimming abilities are thoroughly assessed, water safety knowledge is strong, and lesson attendance is high.`,
     );
-  } else if (swimmingCompetencyRate >= 70 && totalSwimmingRecords > 0) {
+  } else if ((swimmingCompetencyRate ?? 0) >= 70 && totalSwimmingRecords > 0) {
     strengths.push(
       `Swimming competency rate at ${swimmingCompetencyRate}% — good levels of swimming assessment, water safety knowledge, and lesson attendance.`,
     );
   }
 
-  if (waterActivitySafetyRate >= 95 && totalWaterActivityRecords > 0) {
+  if ((waterActivitySafetyRate ?? 0) >= 95 && totalWaterActivityRecords > 0) {
     strengths.push(
       `${waterActivitySafetyRate}% water activity safety compliance — exemplary safety management for all water-based activities with comprehensive risk assessments, qualified supervision, and safety measures.`,
     );
-  } else if (waterActivitySafetyRate >= 80 && totalWaterActivityRecords > 0) {
+  } else if ((waterActivitySafetyRate ?? 0) >= 80 && totalWaterActivityRecords > 0) {
     strengths.push(
       `${waterActivitySafetyRate}% water activity safety rate — strong safety management practices for water-based activities.`,
     );
@@ -731,11 +731,11 @@ export function computeWaterSafetyHydration(
     );
   }
 
-  if (waterActivitySafetyRate < 50 && totalWaterActivityRecords > 0) {
+  if ((waterActivitySafetyRate ?? 0) < 50 && totalWaterActivityRecords > 0) {
     concerns.push(
       `Only ${waterActivitySafetyRate}% water activity safety compliance — the majority of water activities lack adequate safety measures, creating unacceptable risk for children.`,
     );
-  } else if (waterActivitySafetyRate < 80 && waterActivitySafetyRate >= 50 && totalWaterActivityRecords > 0) {
+  } else if ((waterActivitySafetyRate ?? 0) < 80 && (waterActivitySafetyRate ?? 0) >= 50 && totalWaterActivityRecords > 0) {
     concerns.push(
       `Water activity safety at ${waterActivitySafetyRate}% — not all water-based activities meet required safety standards for risk assessment, supervision, and safety equipment.`,
     );
@@ -882,7 +882,7 @@ export function computeWaterSafetyHydration(
     });
   }
 
-  if (waterActivitySafetyRate < 50 && totalWaterActivityRecords > 0) {
+  if ((waterActivitySafetyRate ?? 0) < 50 && totalWaterActivityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1022,7 +1022,7 @@ export function computeWaterSafetyHydration(
     });
   }
 
-  if (waterActivitySafetyRate >= 50 && waterActivitySafetyRate < 80 && totalWaterActivityRecords > 0) {
+  if ((waterActivitySafetyRate ?? 0) >= 50 && (waterActivitySafetyRate ?? 0) < 80 && totalWaterActivityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1112,7 +1112,7 @@ export function computeWaterSafetyHydration(
     });
   }
 
-  if (waterActivitySafetyRate < 50 && totalWaterActivityRecords > 0) {
+  if ((waterActivitySafetyRate ?? 0) < 50 && totalWaterActivityRecords > 0) {
     insights.push({
       text: `Only ${waterActivitySafetyRate}% water activity safety compliance. Water activities present the highest risk of serious harm or death for children in care. Every water activity must have comprehensive safety measures including qualified supervision, risk assessment, safety equipment, and an emergency plan. Failure to evidence these puts children's lives at risk.`,
       severity: "critical",
@@ -1170,7 +1170,7 @@ export function computeWaterSafetyHydration(
     });
   }
 
-  if (waterActivitySafetyRate >= 50 && waterActivitySafetyRate < 80 && totalWaterActivityRecords > 0) {
+  if ((waterActivitySafetyRate ?? 0) >= 50 && (waterActivitySafetyRate ?? 0) < 80 && totalWaterActivityRecords > 0) {
     insights.push({
       text: `Water activity safety at ${waterActivitySafetyRate}% — some safety measures are in place but gaps exist. Given the potentially fatal consequences of water activity incidents, every safety requirement must be met for every activity without exception.`,
       severity: "warning",
@@ -1198,7 +1198,7 @@ export function computeWaterSafetyHydration(
     });
   }
 
-  if (swimmingCompetencyRate >= 50 && swimmingCompetencyRate < 70 && totalSwimmingRecords > 0) {
+  if ((swimmingCompetencyRate ?? 0) >= 50 && (swimmingCompetencyRate ?? 0) < 70 && totalSwimmingRecords > 0) {
     insights.push({
       text: `Swimming competency rate at ${swimmingCompetencyRate}% — assessment coverage, water safety knowledge, and lesson attendance need strengthening to ensure children are adequately prepared for water activities.`,
       severity: "warning",
@@ -1281,7 +1281,7 @@ export function computeWaterSafetyHydration(
     });
   }
 
-  if (waterActivitySafetyRate >= 95 && incidentRate === 0 && totalWaterActivityRecords > 0) {
+  if ((waterActivitySafetyRate ?? 0) >= 95 && incidentRate === 0 && totalWaterActivityRecords > 0) {
     insights.push({
       text: `${waterActivitySafetyRate}% water activity safety compliance with zero incidents — comprehensive safety planning and supervision are enabling children to enjoy water activities safely. This demonstrates that rigorous safety measures allow enriching experiences without compromising child safety.`,
       severity: "positive",
@@ -1295,7 +1295,7 @@ export function computeWaterSafetyHydration(
     });
   }
 
-  if (swimmingCompetencyRate >= 90 && swimmingChildCoverage >= 100 && total_children > 0 && totalSwimmingRecords > 0) {
+  if ((swimmingCompetencyRate ?? 0) >= 90 && swimmingChildCoverage >= 100 && total_children > 0 && totalSwimmingRecords > 0) {
     insights.push({
       text: `Swimming competency fully assessed for all children with a ${swimmingCompetencyRate}% competency rate — every child's swimming ability is known, water safety knowledge is strong, and lesson attendance is high. This enables safe and informed planning of water activities.`,
       severity: "positive",

@@ -51,21 +51,21 @@ export interface ReviewTimeliness {
   next_review_date: string | null;
   days_until_next: number | null;
   is_overdue: boolean;
-  reviews_on_time_rate: number;       // % of reviews held within statutory timescales
+  reviews_on_time_rate: number | null;       // % of reviews held within statutory timescales
 }
 
 export interface ParticipationProfile {
-  attended_rate: number;
-  views_submitted_rate: number;
-  advocate_rate: number;
-  did_not_participate_rate: number;
-  views_recorded_rate: number;
+  attended_rate: number | null;
+  views_submitted_rate: number | null;
+  advocate_rate: number | null;
+  did_not_participate_rate: number | null;
+  views_recorded_rate: number | null;
 }
 
 export interface ActionCompletionProfile {
   total_actions: number;
   completed_count: number;
-  completion_rate: number;
+  completion_rate: number | null;
   overdue_count: number;
   overdue_actions: string[];           // action descriptions
 }
@@ -94,13 +94,13 @@ export interface ChildLACReviewResult {
   child_id: string;
   child_name: string;
   compliance_rating: ReviewComplianceRating;
-  compliance_score: number;             // 0-100
+  compliance_score: number | null;             // 0-100
   headline: string;
   timeliness: ReviewTimeliness;
   participation: ParticipationProfile;
   action_completion: ActionCompletionProfile;
   iro: IROProfile;
-  care_plan_update_rate: number;        // %
+  care_plan_update_rate: number | null;        // %
   placement_stability_current: string;
   strengths: string[];
   concerns: string[];
@@ -110,7 +110,7 @@ export interface ChildLACReviewResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number {
+function daysAgo(today: string, date: string): number | null {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -125,7 +125,7 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 0;
+  return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
 // ── Main Computation ────────────────────────────────────────────────────────
@@ -158,7 +158,7 @@ export function computeChildLACReview(
       onTimeCount++;
     } else {
       const gap = daysAgo(sorted[i].date, sorted[i + 1].date);
-      if (gap <= 200) onTimeCount++;
+      if ((gap ?? 0) <= 200) onTimeCount++;
     }
   }
 
@@ -190,7 +190,7 @@ export function computeChildLACReview(
   const overdueActions = allActions.filter((a) => {
     if (a.completed) return false;
     const da = daysAgo(today, a.due_date);
-    return da > 0;
+    return (da ?? 0) > 0;
   });
 
   const action_completion: ActionCompletionProfile = {
@@ -224,18 +224,18 @@ export function computeChildLACReview(
 
   // Timeliness
   if (timeliness.reviews_on_time_rate === 100 && reviews.length >= 1) score += 10;
-  else if (timeliness.reviews_on_time_rate < 50 && reviews.length >= 2) score -= 10;
+  else if ((timeliness.reviews_on_time_rate ?? 0) < 50 && reviews.length >= 2) score -= 10;
   if (isOverdue) score -= 10;
 
   // Participation
-  if (participation.attended_rate >= 80) score += 10;
-  else if (participation.attended_rate >= 50) score += 5;
-  if (participation.did_not_participate_rate > 50) score -= 10;
+  if ((participation.attended_rate ?? 0) >= 80) score += 10;
+  else if ((participation.attended_rate ?? 0) >= 50) score += 5;
+  if ((participation.did_not_participate_rate ?? 0) > 50) score -= 10;
   if (participation.views_recorded_rate === 100 && reviews.length >= 1) score += 5;
 
   // Actions
-  if (action_completion.completion_rate >= 80) score += 10;
-  else if (action_completion.completion_rate >= 50) score += 3;
+  if ((action_completion.completion_rate ?? 0) >= 80) score += 10;
+  else if ((action_completion.completion_rate ?? 0) >= 50) score += 3;
   if (action_completion.overdue_count > 0) score -= action_completion.overdue_count * 2;
 
   // Care plan
@@ -278,7 +278,7 @@ export function computeChildLACReview(
     strengths.push(`LAC review process rated ${compliance_rating} (${score}%). Reviews are timely, the child participates effectively, and actions are being completed. This evidences strong Reg 45 compliance.`);
   }
 
-  if (participation.attended_rate >= 80 && reviews.length >= 2) {
+  if ((participation.attended_rate ?? 0) >= 80 && reviews.length >= 2) {
     strengths.push(`${child_name} has attended ${participation.attended_rate}% of reviews. Direct participation demonstrates the child's voice is central to care planning — exactly what inspectors look for.`);
   }
 
@@ -286,7 +286,7 @@ export function computeChildLACReview(
     strengths.push("Child views recorded in 100% of reviews. Whether attending or not, the child's perspective is consistently captured and evidenced.");
   }
 
-  if (action_completion.completion_rate >= 80 && allActions.length >= 3) {
+  if ((action_completion.completion_rate ?? 0) >= 80 && allActions.length >= 3) {
     strengths.push(`${action_completion.completion_rate}% of review actions completed. High action completion demonstrates that reviews drive real change, not just generate paperwork.`);
   }
 
@@ -313,7 +313,7 @@ export function computeChildLACReview(
     concerns.push(`Next review is overdue by ${Math.abs(daysUntilNext)} days. An overdue LAC review means the care plan has not been formally scrutinised within statutory timescales. Contact the IRO immediately.`);
   }
 
-  if (participation.did_not_participate_rate > 0 && reviews.length >= 1) {
+  if ((participation.did_not_participate_rate ?? 0) > 0 && reviews.length >= 1) {
     concerns.push(`${child_name} did not participate in ${participation.did_not_participate_rate}% of reviews. Every effort must be made to include the child — through attendance, written views, advocates, or creative methods.`);
   }
 
@@ -357,7 +357,7 @@ export function computeChildLACReview(
     });
   }
 
-  if (participation.did_not_participate_rate > 0 && reviews.length >= 1) {
+  if ((participation.did_not_participate_rate ?? 0) > 0 && reviews.length >= 1) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Explore creative ways to include ${child_name} in future reviews. Options include: attending part of the review, submitting written views, using an advocate, a pre-review meeting, or a child-friendly review format.`,
@@ -411,7 +411,7 @@ export function computeChildLACReview(
     });
   }
 
-  if (participation.attended_rate >= 80 && action_completion.completion_rate >= 80 && reviews.length >= 2) {
+  if ((participation.attended_rate ?? 0) >= 80 && (action_completion.completion_rate ?? 0) >= 80 && reviews.length >= 2) {
     insights.push({
       severity: "positive",
       text: `Strong child participation (${participation.attended_rate}% attendance) combined with high action completion (${action_completion.completion_rate}%) shows that reviews are meaningful, not just procedural. The child's voice is heard and acted upon.`,

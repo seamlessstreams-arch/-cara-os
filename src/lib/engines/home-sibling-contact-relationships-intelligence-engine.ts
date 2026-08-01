@@ -160,19 +160,19 @@ export interface SiblingContactRecommendation {
 
 export interface SiblingContactResult {
   sibling_rating: SiblingContactRating;
-  sibling_score: number;
+  sibling_score: number | null;
   headline: string;
   total_placement_records: number;
   total_contact_records: number;
   total_assessment_records: number;
   total_event_records: number;
   total_wishes_records: number;
-  placement_consideration_rate: number;
-  contact_facilitation_rate: number;
-  relationship_quality_rate: number;
-  event_participation_rate: number;
-  child_wishes_rate: number;
-  child_satisfaction_rate: number;
+  placement_consideration_rate: number | null;
+  contact_facilitation_rate: number | null;
+  relationship_quality_rate: number | null;
+  event_participation_rate: number | null;
+  child_wishes_rate: number | null;
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SiblingContactRecommendation[];
@@ -355,7 +355,7 @@ export function computeSiblingContactRelationships(
   const avgContactQuality =
     nonCancelled.length > 0
       ? Math.round((qualitySum / nonCancelled.length) * 100) / 100
-      : 0;
+      : null;
 
   const transportProvided = nonCancelled.filter((c) => c.transport_provided).length;
   const transportRate = pct(transportProvided, nonCancelled.length);
@@ -467,7 +467,7 @@ export function computeSiblingContactRelationships(
   const avgEventQuality =
     totalEventRecords > 0
       ? Math.round((eventQualitySum / totalEventRecords) * 100) / 100
-      : 0;
+      : null;
 
   const plannedEvents = sibling_event_records.filter((e) => e.planned_in_advance).length;
   const plannedRate = pct(plannedEvents, totalEventRecords);
@@ -510,7 +510,7 @@ export function computeSiblingContactRelationships(
   const childWishesRate =
     totalWishesRecords > 0
       ? Math.round((wishAcknowledgedRate + wishActedUponRate) / 2)
-      : 0;
+      : null;
 
   const outcomeRecorded = child_wishes_records.filter((w) => w.outcome_recorded).length;
   const outcomeRecordedRate = pct(outcomeRecorded, totalWishesRecords);
@@ -563,8 +563,8 @@ export function computeSiblingContactRelationships(
   else if (eventParticipationRate >= 70) score += 1;
 
   // --- Bonus 5: childWishesRate (>=90: +3, >=70: +1) ---
-  if (childWishesRate >= 90) score += 3;
-  else if (childWishesRate >= 70) score += 1;
+  if ((childWishesRate ?? 0) >= 90) score += 3;
+  else if ((childWishesRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
   if (childSatisfactionRate >= 90) score += 3;
@@ -579,8 +579,8 @@ export function computeSiblingContactRelationships(
   else if (childEnjoyedRate >= 70) score += 1;
 
   // --- Bonus 9: avgContactQuality (>=4.0: +2, >=3.0: +1) ---
-  if (avgContactQuality >= 4.0) score += 2;
-  else if (avgContactQuality >= 3.0) score += 1;
+  if ((avgContactQuality ?? 0) >= 4.0) score += 2;
+  else if ((avgContactQuality ?? 0) >= 3.0) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
@@ -591,7 +591,7 @@ export function computeSiblingContactRelationships(
   if (contactFacilitationRate < 50 && contact_facilitation_records.length > 0) score -= 5;
 
   // childWishesRate < 40 → -4 (guarded)
-  if (childWishesRate < 40 && child_wishes_records.length > 0) score -= 4;
+  if ((childWishesRate ?? 0) < 40 && child_wishes_records.length > 0) score -= 4;
 
   // relationshipQualityRate < 30 → -4 (guarded)
   if (relationshipQualityRate < 30 && relationship_assessment_records.length > 0) score -= 4;
@@ -644,11 +644,11 @@ export function computeSiblingContactRelationships(
     );
   }
 
-  if (childWishesRate >= 90 && totalWishesRecords > 0) {
+  if ((childWishesRate ?? 0) >= 90 && totalWishesRecords > 0) {
     strengths.push(
       `${childWishesRate}% of children's wishes about sibling contact acknowledged and acted upon — the home demonstrates outstanding practice in listening to and responding to what children want from their sibling relationships.`,
     );
-  } else if (childWishesRate >= 70 && totalWishesRecords > 0) {
+  } else if ((childWishesRate ?? 0) >= 70 && totalWishesRecords > 0) {
     strengths.push(
       `${childWishesRate}% child wishes response rate — good evidence that the home captures children's views about sibling contact and takes meaningful action in response.`,
     );
@@ -684,11 +684,11 @@ export function computeSiblingContactRelationships(
     );
   }
 
-  if (avgContactQuality >= 4.0 && nonCancelled.length > 0) {
+  if ((avgContactQuality ?? 0) >= 4.0 && nonCancelled.length > 0) {
     strengths.push(
       `Average contact quality rating of ${avgContactQuality}/5 — the home consistently facilitates high-quality sibling contacts that support relationship maintenance and child wellbeing.`,
     );
-  } else if (avgContactQuality >= 3.0 && nonCancelled.length > 0) {
+  } else if ((avgContactQuality ?? 0) >= 3.0 && nonCancelled.length > 0) {
     strengths.push(
       `Average contact quality rating of ${avgContactQuality}/5 — contact sessions are generally well-facilitated and appropriate for the children's needs.`,
     );
@@ -794,11 +794,11 @@ export function computeSiblingContactRelationships(
     );
   }
 
-  if (childWishesRate < 40 && totalWishesRecords > 0) {
+  if ((childWishesRate ?? 0) < 40 && totalWishesRecords > 0) {
     concerns.push(
       `Only ${childWishesRate}% of children's wishes about sibling contact acknowledged and acted upon — children's views are not being heard or responded to, undermining the child-centred approach required by Reg 11 and the SCCIF.`,
     );
-  } else if (childWishesRate >= 40 && childWishesRate < 70 && totalWishesRecords > 0) {
+  } else if ((childWishesRate ?? 0) >= 40 && (childWishesRate ?? 0) < 70 && totalWishesRecords > 0) {
     concerns.push(
       `Child wishes response rate at ${childWishesRate}% — not all children's expressed wishes about sibling contact are being acknowledged or acted upon, weakening the home's child-centred practice.`,
     );
@@ -915,7 +915,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (childWishesRate < 40 && totalWishesRecords > 0) {
+  if ((childWishesRate ?? 0) < 40 && totalWishesRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -995,7 +995,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (childWishesRate >= 40 && childWishesRate < 70 && totalWishesRecords > 0) {
+  if ((childWishesRate ?? 0) >= 40 && (childWishesRate ?? 0) < 70 && totalWishesRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1125,7 +1125,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (childWishesRate < 40 && totalWishesRecords > 0) {
+  if ((childWishesRate ?? 0) < 40 && totalWishesRecords > 0) {
     insights.push({
       text: `Children's wishes about sibling contact are being acknowledged and acted upon in only ${childWishesRate}% of cases. The home is not demonstrating that children's views are central to sibling contact arrangements, undermining the child-centred approach that Ofsted expects to see in practice.`,
       severity: "critical",
@@ -1190,7 +1190,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (childWishesRate >= 40 && childWishesRate < 70 && totalWishesRecords > 0) {
+  if ((childWishesRate ?? 0) >= 40 && (childWishesRate ?? 0) < 70 && totalWishesRecords > 0) {
     insights.push({
       text: `Child wishes response rate at ${childWishesRate}% — not all children's expressed wishes about sibling contact are receiving acknowledgement and action. Strengthening the wishes process would demonstrate more consistent child-centred practice.`,
       severity: "warning",
@@ -1306,7 +1306,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (childWishesRate >= 90 && childSatisfactionRate >= 90 && totalWishesRecords > 0) {
+  if ((childWishesRate ?? 0) >= 90 && childSatisfactionRate >= 90 && totalWishesRecords > 0) {
     insights.push({
       text: `${childWishesRate}% wishes response rate with ${childSatisfactionRate}% child satisfaction — children's voices are genuinely central to sibling contact decisions. The home demonstrates that listening to children leads to better outcomes and higher satisfaction.`,
       severity: "positive",
@@ -1320,7 +1320,7 @@ export function computeSiblingContactRelationships(
     });
   }
 
-  if (eventTypeDiversity >= 4 && avgEventQuality >= 4.0 && totalEventRecords > 0) {
+  if (eventTypeDiversity >= 4 && (avgEventQuality ?? 0) >= 4.0 && totalEventRecords > 0) {
     insights.push({
       text: `${eventTypeDiversity} different event types with an average quality of ${avgEventQuality}/5 — the home creates diverse, high-quality opportunities for siblings to share meaningful experiences together, strengthening bonds through birthdays, celebrations, activities, and milestones.`,
       severity: "positive",

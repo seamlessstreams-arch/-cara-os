@@ -14,9 +14,9 @@ export interface OutcomeStarRecordInput {
   child_id: string;
   date: string; // ISO date
   domain_count: number; // how many domains were scored (out of 10)
-  average_score: number; // average across scored domains (1-10)
-  lowest_domain_score: number; // min score across domains
-  highest_domain_score: number; // max score across domains
+  average_score: number | null; // average across scored domains (1-10)
+  lowest_domain_score: number | null; // min score across domains
+  highest_domain_score: number | null; // max score across domains
   domains_improved_count: number; // domains where score > previous_score
   domains_declined_count: number; // domains where score < previous_score
   domains_stable_count: number; // domains unchanged
@@ -43,15 +43,15 @@ export type OutcomeStarRating =
 
 export interface OutcomeStarResult {
   star_rating: OutcomeStarRating;
-  star_score: number;
+  star_score: number | null;
   headline: string;
   total_assessments: number;
-  children_assessed_rate: number;
-  repeat_assessment_rate: number;
-  average_score_across_home: number;
-  improvement_rate: number;
-  action_plan_rate: number;
-  child_voice_rate: number;
+  children_assessed_rate: number | null;
+  repeat_assessment_rate: number | null;
+  average_score_across_home: number | null;
+  improvement_rate: number | null;
+  action_plan_rate: number | null;
+  child_voice_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: {
@@ -117,8 +117,8 @@ export function computeOutcomeStarAssessment(
   const repeatAssessmentRate = pct(withPrevious.length, total);
 
   // Average score across all assessments
-  const avgScoreSum = assessments.reduce((s, a) => s + a.average_score, 0);
-  const averageScoreAcrossHome = total > 0 ? Math.round((avgScoreSum / total) * 10) / 10 : 0;
+  const avgScoreSum = assessments.reduce((s, a) => s + (a.average_score ?? 0), 0);
+  const averageScoreAcrossHome = total > 0 ? Math.round((avgScoreSum / total) * 10) / 10 : null;
 
   // Improvement rate: assessments where domains_improved > domains_declined
   const improving = withPrevious.filter(a => a.domains_improved_count > a.domains_declined_count);
@@ -268,7 +268,7 @@ export function computeOutcomeStarAssessment(
     insights.push({ text: "Both child and staff perspectives are captured — assessments provide a rounded view of each child's progress", severity: "positive" });
   if (pct(fullDomainAssessments, total) >= 80 && total > 0)
     insights.push({ text: "Full 10-domain assessments show the home takes a holistic approach to understanding each child's needs", severity: "positive" });
-  if (total > 0 && averageScoreAcrossHome < 4)
+  if (total > 0 && (averageScoreAcrossHome ?? 0) < 4)
     insights.push({ text: "Low average scores across the home suggest children have significant unmet needs requiring intensive support", severity: "warning" });
 
   // ── Headline ───────────────────────────────────────────────────────────

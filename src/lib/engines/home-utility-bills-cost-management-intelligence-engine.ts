@@ -50,7 +50,7 @@ export interface EnergyEfficiencyRecordInput {
   thermostat_programmed: boolean;
   windows_double_glazed: boolean;
   energy_certificate_current: boolean;
-  efficiency_score: number; // 1-5
+  efficiency_score: number | null; // 1-5
   improvements_identified: string[];
   improvements_completed: boolean;
   completion_date: string | null;
@@ -85,7 +85,7 @@ export interface UtilityBudgetRecordInput {
   budgeted_amount_gbp: number;
   actual_amount_gbp: number;
   variance_gbp: number;
-  variance_pct: number;
+  variance_pct: number | null;
   within_budget: boolean;
   overspend_reason: string | null;
   corrective_action_taken: string | null;
@@ -145,16 +145,16 @@ export interface UtilityBillsRecommendation {
 
 export interface UtilityBillsCostManagementResult {
   utility_rating: UtilityBillsRating;
-  utility_score: number;
+  utility_score: number | null;
   headline: string;
   total_bill_records: number;
   total_payment_records: number;
-  cost_monitoring_rate: number;
-  energy_efficiency_rate: number;
-  bill_payment_rate: number;
-  budget_adherence_rate: number;
-  sustainability_rate: number;
-  child_awareness_rate: number;
+  cost_monitoring_rate: number | null;
+  energy_efficiency_rate: number | null;
+  bill_payment_rate: number | null;
+  budget_adherence_rate: number | null;
+  sustainability_rate: number | null;
+  child_awareness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: UtilityBillsRecommendation[];
@@ -336,13 +336,13 @@ export function computeUtilityBillsCostManagement(
   const improvementCompletionRate = pct(improvementsCompleted, improvementsIdentified);
 
   const effScoreSum = energy_efficiency_records.reduce(
-    (sum, e) => sum + e.efficiency_score,
+    (sum, e) => sum + (e.efficiency_score ?? 0),
     0,
   );
   const avgEfficiencyScore =
     totalEfficiencyRecords > 0
       ? Math.round((effScoreSum / totalEfficiencyRecords) * 100) / 100
-      : 0;
+      : null;
 
   const certificatesCurrent = energy_efficiency_records.filter(
     (e) => e.energy_certificate_current,
@@ -404,7 +404,7 @@ export function computeUtilityBillsCostManagement(
             totalBudgetRecords *
             100,
         ) / 100
-      : 0;
+      : null;
 
   // --- Sustainability metrics ---
   const totalSustainabilityRecords = sustainability_records.length;
@@ -604,11 +604,11 @@ export function computeUtilityBillsCostManagement(
     );
   }
 
-  if (avgEfficiencyScore >= 4.0 && totalEfficiencyRecords > 0) {
+  if ((avgEfficiencyScore ?? 0) >= 4.0 && totalEfficiencyRecords > 0) {
     strengths.push(
       `Average energy efficiency score of ${avgEfficiencyScore}/5 — the home consistently achieves high efficiency ratings across its energy assessments.`,
     );
-  } else if (avgEfficiencyScore >= 3.5 && totalEfficiencyRecords > 0) {
+  } else if ((avgEfficiencyScore ?? 0) >= 3.5 && totalEfficiencyRecords > 0) {
     strengths.push(
       `Average energy efficiency score of ${avgEfficiencyScore}/5 — the home generally achieves reasonable efficiency across assessed areas.`,
     );
@@ -744,11 +744,11 @@ export function computeUtilityBillsCostManagement(
     );
   }
 
-  if (avgEfficiencyScore < 2.5 && totalEfficiencyRecords > 0) {
+  if ((avgEfficiencyScore ?? 0) < 2.5 && totalEfficiencyRecords > 0) {
     concerns.push(
       `Average energy efficiency score at only ${avgEfficiencyScore}/5 — the home is consistently underperforming on energy efficiency, leading to waste and higher operating costs.`,
     );
-  } else if (avgEfficiencyScore < 3.0 && avgEfficiencyScore >= 2.5 && totalEfficiencyRecords > 0) {
+  } else if ((avgEfficiencyScore ?? 0) < 3.0 && (avgEfficiencyScore ?? 0) >= 2.5 && totalEfficiencyRecords > 0) {
     concerns.push(
       `Average energy efficiency score at ${avgEfficiencyScore}/5 — efficiency across the home is below acceptable standards, indicating systematic issues requiring investment.`,
     );

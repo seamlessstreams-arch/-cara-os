@@ -46,28 +46,28 @@ export interface CompletionProfile {
   total_handovers: number;
   completed_count: number;
   incomplete_count: number;
-  completion_rate: number;
+  completion_rate: number | null;
 }
 
 export interface SignOffProfile {
   signed_off_count: number;         // handovers with manager sign-off
-  sign_off_rate: number;            // % of handovers with manager sign-off
-  avg_staff_sign_off_rate: number;  // avg % of incoming staff who signed per handover
+  sign_off_rate: number | null;            // % of handovers with manager sign-off
+  avg_staff_sign_off_rate: number | null;  // avg % of incoming staff who signed per handover
   fully_signed_count: number;       // handovers where all incoming staff signed
 }
 
 export interface ChildCoverageProfile {
-  avg_child_coverage: number;       // avg % of children covered per handover
+  avg_child_coverage: number | null;       // avg % of children covered per handover
   full_coverage_count: number;      // handovers covering all children
-  mood_recording_rate: number;      // % of child updates with mood score
-  alert_recording_rate: number;     // % of child updates with alerts (where alerts exist)
+  mood_recording_rate: number | null;      // % of child updates with mood score
+  alert_recording_rate: number | null;     // % of child updates with alerts (where alerts exist)
 }
 
 export interface ContinuityProfile {
-  avg_flags_per_handover: number;
+  avg_flags_per_handover: number | null;
   handovers_with_flags: number;
   handovers_with_incidents: number;
-  notes_recording_rate: number;     // % of handovers with general notes
+  notes_recording_rate: number | null;     // % of handovers with general notes
 }
 
 export interface HandoverInsight {
@@ -84,7 +84,7 @@ export interface HandoverRecommendation {
 
 export interface HomeHandoverResult {
   handover_rating: HandoverRating;
-  handover_score: number;
+  handover_score: number | null;
   headline: string;
   completion_profile: CompletionProfile;
   sign_off_profile: SignOffProfile;
@@ -165,7 +165,7 @@ export function computeHomeHandoverContinuity(
   );
   const avgStaffSignOffRate = staffSignOffRates.length > 0
     ? Math.round(staffSignOffRates.reduce((a, b) => a + b, 0) / staffSignOffRates.length)
-    : 0;
+    : null;
 
   const fullySignedCount = handovers.filter(h =>
     h.incoming_staff_count > 0 && h.sign_off_count >= h.incoming_staff_count
@@ -184,7 +184,7 @@ export function computeHomeHandoverContinuity(
   );
   const avgChildCoverage = coverageRates.length > 0
     ? Math.round(coverageRates.reduce((a, b) => a + b, 0) / coverageRates.length)
-    : 0;
+    : null;
 
   const fullCoverageCount = handovers.filter(h =>
     h.total_children > 0 && h.child_update_count >= h.total_children
@@ -207,7 +207,7 @@ export function computeHomeHandoverContinuity(
   const totalFlags = handovers.reduce((s, h) => s + h.flag_count, 0);
   const avgFlags = handovers.length > 0
     ? Math.round((totalFlags / handovers.length) * 10) / 10
-    : 0;
+    : null;
 
   const handoversWithFlags = handovers.filter(h => h.flag_count > 0).length;
   const handoversWithIncidents = handovers.filter(h => h.linked_incident_count > 0).length;
@@ -240,14 +240,14 @@ export function computeHomeHandoverContinuity(
   else score -= 3;
 
   // 3. Staff sign-off coverage (±3)
-  if (avgStaffSignOffRate >= 80) score += 3;
-  else if (avgStaffSignOffRate >= 50) score += 1;
+  if ((avgStaffSignOffRate ?? 0) >= 80) score += 3;
+  else if ((avgStaffSignOffRate ?? 0) >= 50) score += 1;
   else score -= 2;
 
   // 4. Child coverage (±4)
-  if (avgChildCoverage >= 90) score += 4;
-  else if (avgChildCoverage >= 70) score += 2;
-  else if (avgChildCoverage >= 50) score -= 1;
+  if ((avgChildCoverage ?? 0) >= 90) score += 4;
+  else if ((avgChildCoverage ?? 0) >= 70) score += 2;
+  else if ((avgChildCoverage ?? 0) >= 50) score -= 1;
   else score -= 3;
 
   // 5. Mood recording (±3)
@@ -284,7 +284,7 @@ export function computeHomeHandoverContinuity(
   if (completionRate === 100) strengths.push("100% handover completion — every shift change has a documented handover.");
   else if (completionRate >= 90) strengths.push(`${completionRate}% handover completion rate — consistent documentation at shift changes.`);
   if (signOffRate >= 80) strengths.push(`${signOffRate}% manager sign-off rate — leadership oversight of handover quality.`);
-  if (avgChildCoverage >= 90) strengths.push(`${avgChildCoverage}% average child coverage — all young people discussed at handovers.`);
+  if ((avgChildCoverage ?? 0) >= 90) strengths.push(`${(avgChildCoverage ?? 0)}% average child coverage — all young people discussed at handovers.`);
   if (moodRecordingRate >= 80 && totalChildUpdates > 0) strengths.push(`${moodRecordingRate}% mood score recording — emotional wellbeing tracked at every transition.`);
   if (fullySignedCount === handovers.length && handovers.length > 0) strengths.push("All incoming staff signed off on every handover — full team acknowledgement.");
   if (notesRate >= 80) strengths.push("General notes recorded on most handovers — good contextual information sharing.");
@@ -294,8 +294,8 @@ export function computeHomeHandoverContinuity(
   const concerns: string[] = [];
   if (incompleteCount > 0) concerns.push(`${incompleteCount} handover${incompleteCount > 1 ? "s" : ""} incomplete — critical information may not have been communicated.`);
   if (signOffRate < 50) concerns.push(`Only ${signOffRate}% of handovers have manager sign-off — insufficient leadership oversight.`);
-  if (avgStaffSignOffRate < 50) concerns.push(`Average staff sign-off rate is ${avgStaffSignOffRate}% — incoming staff not consistently acknowledging handover information.`);
-  if (avgChildCoverage < 70) concerns.push(`Only ${avgChildCoverage}% average child coverage — some young people not discussed at handovers.`);
+  if ((avgStaffSignOffRate ?? 0) < 50) concerns.push(`Average staff sign-off rate is ${(avgStaffSignOffRate ?? 0)}% — incoming staff not consistently acknowledging handover information.`);
+  if ((avgChildCoverage ?? 0) < 70) concerns.push(`Only ${(avgChildCoverage ?? 0)}% average child coverage — some young people not discussed at handovers.`);
   if (moodRecordingRate < 50 && totalChildUpdates > 0) concerns.push(`Only ${moodRecordingRate}% of child updates include mood scores — emotional wellbeing not consistently tracked.`);
   if (notesRate < 50) concerns.push(`Only ${notesRate}% of handovers have general notes — limited contextual information sharing.`);
   if (completionRate < 50) concerns.push("Fewer than half of handovers are completed — serious gap in shift communication.");
@@ -310,13 +310,13 @@ export function computeHomeHandoverContinuity(
   if (signOffRate < 50) {
     recs.push({ rank: rank++, recommendation: "Implement manager sign-off as mandatory — leadership must evidence oversight of every handover.", urgency: "immediate", regulatory_ref: "Reg 13" });
   }
-  if (avgChildCoverage < 70) {
+  if ((avgChildCoverage ?? 0) < 70) {
     recs.push({ rank: rank++, recommendation: "Ensure every child is covered in every handover — use a template that lists all current young people.", urgency: "soon", regulatory_ref: "Reg 13" });
   }
   if (moodRecordingRate < 50 && totalChildUpdates > 0) {
     recs.push({ rank: rank++, recommendation: "Record a mood score for each child at every handover — this provides a real-time emotional wellbeing tracker.", urgency: "soon", regulatory_ref: "Reg 13" });
   }
-  if (avgStaffSignOffRate < 50) {
+  if ((avgStaffSignOffRate ?? 0) < 50) {
     recs.push({ rank: rank++, recommendation: "Require all incoming staff to sign off on the handover before starting their shift — ensures information receipt.", urgency: "soon", regulatory_ref: "Reg 13" });
   }
   if (notesRate < 50) {
@@ -326,7 +326,7 @@ export function computeHomeHandoverContinuity(
   // ── Insights ──────────────────────────────────────────────────────
   const insights: HandoverInsight[] = [];
 
-  if (completionRate >= 90 && signOffRate >= 80 && avgChildCoverage >= 90) {
+  if (completionRate >= 90 && signOffRate >= 80 && (avgChildCoverage ?? 0) >= 90) {
     insights.push({ text: `Handover practice is exemplary — ${completionRate}% completion, ${signOffRate}% manager sign-off, and ${avgChildCoverage}% child coverage. Ofsted will see strong evidence that the home ensures continuity of care across shift changes, with every young person's needs communicated consistently.`, severity: "positive" });
   }
   if (incompleteCount > 0 && completionRate < 70) {
@@ -335,10 +335,10 @@ export function computeHomeHandoverContinuity(
   if (signOffRate < 30) {
     insights.push({ text: `Only ${signOffRate}% of handovers have manager sign-off. Without leadership oversight of handovers, there is no assurance that the quality and accuracy of information shared is monitored. This weakens the home's evidence of effective management oversight.`, severity: "critical" });
   }
-  if (avgChildCoverage < 50) {
+  if ((avgChildCoverage ?? 0) < 50) {
     insights.push({ text: `Average child coverage is only ${avgChildCoverage}%. When young people are not discussed at handovers, incoming staff lack essential context about mood, behaviour, and risk. This compromises individualised care and may contribute to incidents.`, severity: "critical" });
   }
-  if (moodRecordingRate >= 80 && avgChildCoverage >= 80 && totalChildUpdates > 0) {
+  if (moodRecordingRate >= 80 && (avgChildCoverage ?? 0) >= 80 && totalChildUpdates > 0) {
     insights.push({ text: `Strong child-centred handover practice — ${moodRecordingRate}% mood recording and ${avgChildCoverage}% child coverage. This means incoming staff arrive informed about each young person's emotional state, enabling proactive, trauma-informed responses.`, severity: "positive" });
   }
   if (handoversWithFlags > 0 && handoversWithIncidents > 0) {

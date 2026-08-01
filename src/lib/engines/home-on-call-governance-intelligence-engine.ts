@@ -51,7 +51,7 @@ export interface CoverageProfile {
   shifts_last_14_days: number;
   shifts_last_30_days: number;
   unique_on_call_staff: number;
-  has_backup_rate: number;             // % of shifts with backup assigned
+  has_backup_rate: number | null;             // % of shifts with backup assigned
   role_distribution: Record<string, number>;
 }
 
@@ -62,20 +62,20 @@ export interface ResponseProfile {
   advisory_calls: number;
   escalated_calls: number;
   avg_call_duration: number;
-  calls_per_shift: number;
+  calls_per_shift: number | null;
 }
 
 export interface QualityProfile {
   shifts_with_feedback: number;
   shifts_with_review_notes: number;
-  feedback_rate: number;               // % of completed shifts with feedback
+  feedback_rate: number | null;               // % of completed shifts with feedback
 }
 
 export interface WorkloadProfile {
   critical_incidents_total: number;
   routine_total: number;
   advisory_total: number;
-  busiest_shift_calls: number;
+  busiest_shift_calls: number | null;
   quiet_shifts: number;                // 0 calls
 }
 
@@ -93,7 +93,7 @@ export interface Recommendation {
 
 export interface HomeOnCallGovernanceResult {
   on_call_rating: OnCallRating;
-  on_call_score: number;
+  on_call_score: number | null;
   headline: string;
   coverage: CoverageProfile;
   response: ResponseProfile;
@@ -210,7 +210,7 @@ export function computeHomeOnCallGovernance(
     avg_call_duration: avg(durations),
     calls_per_shift: on_call_shifts.length > 0
       ? Math.round((allCalls.length / on_call_shifts.length) * 10) / 10
-      : 0,
+      : null,
   };
 
   // ── Quality Profile ───────────────────────────────────────────────────
@@ -238,7 +238,7 @@ export function computeHomeOnCallGovernance(
     critical_incidents_total: on_call_shifts.reduce((s, sh) => s + sh.critical_incidents_handled, 0),
     routine_total: on_call_shifts.reduce((s, sh) => s + sh.routine_calls_handled, 0),
     advisory_total: on_call_shifts.reduce((s, sh) => s + sh.advisory_calls_handled, 0),
-    busiest_shift_calls: shiftCallCounts.length > 0 ? Math.max(...shiftCallCounts) : 0,
+    busiest_shift_calls: shiftCallCounts.length > 0 ? Math.max(...shiftCallCounts) : null,
     quiet_shifts: shiftCallCounts.filter((c) => c === 0).length,
   };
 
@@ -256,9 +256,9 @@ export function computeHomeOnCallGovernance(
 
   // mod2: Backup designation (±4)
   const mod2 =
-    coverage.has_backup_rate >= 90 ? 4 :
-    coverage.has_backup_rate >= 70 ? 2 :
-    coverage.has_backup_rate >= 50 ? 0 : -3;
+    (coverage.has_backup_rate ?? 0) >= 90 ? 4 :
+    (coverage.has_backup_rate ?? 0) >= 70 ? 2 :
+    (coverage.has_backup_rate ?? 0) >= 50 ? 0 : -3;
   score += mod2;
 
   // mod3: Staff diversity (±3)
@@ -284,9 +284,9 @@ export function computeHomeOnCallGovernance(
   // mod5: Feedback quality (±3)
   const mod5 =
     completedShifts.length === 0 ? 0 :
-    quality.feedback_rate >= 80 ? 3 :
-    quality.feedback_rate >= 50 ? 1 :
-    quality.feedback_rate >= 25 ? 0 : -2;
+    (quality.feedback_rate ?? 0) >= 80 ? 3 :
+    (quality.feedback_rate ?? 0) >= 50 ? 1 :
+    (quality.feedback_rate ?? 0) >= 25 ? 0 : -2;
   score += mod5;
 
   // mod6: Escalation appropriateness (±3)
@@ -328,10 +328,10 @@ export function computeHomeOnCallGovernance(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (coverage.has_backup_rate >= 90) strengths.push(`${coverage.has_backup_rate}% of on-call shifts have designated backup — excellent resilience.`);
+  if ((coverage.has_backup_rate ?? 0) >= 90) strengths.push(`${(coverage.has_backup_rate ?? 0)}% of on-call shifts have designated backup — excellent resilience.`);
   if (coverage.unique_on_call_staff >= 2) strengths.push(`${coverage.unique_on_call_staff} different staff members share on-call duties — good distribution.`);
   if (outcomeRate >= 90 && allCalls.length > 0) strengths.push("All on-call responses are documented with clear outcomes.");
-  if (quality.feedback_rate >= 80 && completedShifts.length > 0) strengths.push(`${quality.feedback_rate}% of shifts have post-shift feedback — reflective practice.`);
+  if ((quality.feedback_rate ?? 0) >= 80 && completedShifts.length > 0) strengths.push(`${(quality.feedback_rate ?? 0)}% of shifts have post-shift feedback — reflective practice.`);
   if (response.critical_calls > 0 && criticalNotEscalated === 0) strengths.push("All critical incidents were appropriately escalated.");
   if (rolesUsed >= 2) strengths.push("Both first-line and second-line on-call roles are covered.");
   if (coverage.shifts_last_14_days >= 4) strengths.push("Strong on-call coverage with 4+ shifts in the last 14 days.");
@@ -340,10 +340,10 @@ export function computeHomeOnCallGovernance(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (coverage.shifts_last_14_days === 0) concerns.push("No on-call shifts recorded in the last 14 days — potential coverage gap.");
-  if (coverage.has_backup_rate < 50) concerns.push(`Only ${coverage.has_backup_rate}% of shifts have backup — single point of failure risk.`);
+  if ((coverage.has_backup_rate ?? 0) < 50) concerns.push(`Only ${(coverage.has_backup_rate ?? 0)}% of shifts have backup — single point of failure risk.`);
   if (coverage.unique_on_call_staff === 1) concerns.push("Only one person is covering all on-call duties — burnout risk.");
   if (criticalNotEscalated > 0) concerns.push(`${criticalNotEscalated} critical incident(s) were not escalated — governance gap.`);
-  if (quality.feedback_rate < 25 && completedShifts.length >= 2) concerns.push("Very few on-call shifts have post-shift feedback — limited learning.");
+  if ((quality.feedback_rate ?? 0) < 25 && completedShifts.length >= 2) concerns.push("Very few on-call shifts have post-shift feedback — limited learning.");
   if (response.calls_per_shift > 3) concerns.push(`Average ${response.calls_per_shift} calls per shift — high out-of-hours demand.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
@@ -374,7 +374,7 @@ export function computeHomeOnCallGovernance(
       regulatory_ref: "Reg 33(4)(b)",
     });
   }
-  if (coverage.has_backup_rate < 70) {
+  if ((coverage.has_backup_rate ?? 0) < 70) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure all on-call shifts have a designated backup contact.",
@@ -382,7 +382,7 @@ export function computeHomeOnCallGovernance(
       regulatory_ref: null,
     });
   }
-  if (quality.feedback_rate < 50 && completedShifts.length >= 2) {
+  if ((quality.feedback_rate ?? 0) < 50 && completedShifts.length >= 2) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Introduce mandatory post-shift feedback to capture learning and improve arrangements.",

@@ -76,17 +76,17 @@ export interface SIRProfile {
   total_actions: number;
   actions_completed: number;
   actions_overdue: number;
-  action_completion_rate: number;
+  action_completion_rate: number | null;
   practice_changes_total: number;
 }
 
 export interface DebriefProfile {
   total_debriefs_90d: number;
-  completed_rate: number;
+  completed_rate: number | null;
   high_impact_count: number;
-  avg_root_causes: number;
+  avg_root_causes: number | null;
   total_training_needs: number;
-  action_completion_rate: number;
+  action_completion_rate: number | null;
 }
 
 export interface ImprovementProfile {
@@ -96,13 +96,13 @@ export interface ImprovementProfile {
   embedded_count: number;
   overdue_count: number;
   red_rag_count: number;
-  milestone_achievement_rate: number;
+  milestone_achievement_rate: number | null;
   by_source: Record<string, number>;
 }
 
 export interface HomeOrganizationalLearningResult {
   org_learning_rating: OrgLearningRating;
-  org_learning_score: number;
+  org_learning_score: number | null;
   headline: string;
   sir: SIRProfile;
   debriefs: DebriefProfile;
@@ -183,7 +183,7 @@ export function computeHomeOrganizationalLearning(
   const highImpactDebriefs = debriefs90d.filter(d => d.impact_level === "high").length;
   const avgRootCauses = debriefs90d.length > 0
     ? Math.round((debriefs90d.reduce((sum, d) => sum + d.root_causes_count, 0) / debriefs90d.length) * 10) / 10
-    : 0;
+    : null;
   const totalTrainingNeeds = debriefs90d.reduce((sum, d) => sum + d.training_needs_count, 0);
   const totalDebriefActions = debriefs90d.reduce((sum, d) => sum + d.actions_agreed_count, 0);
   const completedDebriefActions = debriefs90d.reduce((sum, d) => sum + d.actions_completed, 0);
@@ -294,8 +294,8 @@ export function computeHomeOrganizationalLearning(
   if (debriefs90d.length === 0) {
     score += 0;
   } else {
-    if (avgRootCauses >= 2) score += 2;
-    else if (avgRootCauses >= 1) score += 1;
+    if ((avgRootCauses ?? 0) >= 2) score += 2;
+    else if ((avgRootCauses ?? 0) >= 1) score += 1;
     else score -= 2;
   }
 

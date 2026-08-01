@@ -62,18 +62,18 @@ export interface RestraintRecommendation {
 
 export interface RestraintPhysicalInterventionResult {
   restraint_rating: RestraintPhysicalInterventionRating;
-  restraint_score: number;
+  restraint_score: number | null;
   headline: string;
   total_restraints: number;
   unique_children_restrained: number;
-  average_duration_minutes: number;
-  de_escalation_rate: number;
-  team_teach_compliance_rate: number;
-  child_debrief_rate: number;
-  review_completion_rate: number;
-  body_map_rate: number;
-  notification_rate: number;
-  injury_rate: number;
+  average_duration_minutes: number | null;
+  de_escalation_rate: number | null;
+  team_teach_compliance_rate: number | null;
+  child_debrief_rate: number | null;
+  review_completion_rate: number | null;
+  body_map_rate: number | null;
+  notification_rate: number | null;
+  injury_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: RestraintRecommendation[];
@@ -217,7 +217,7 @@ export function computeRestraintPhysicalIntervention(
 
   // Duration
   const totalDuration = r90d.reduce((sum, r) => sum + r.duration_minutes, 0);
-  const averageDuration = total > 0 ? Math.round((totalDuration / total) * 10) / 10 : 0;
+  const averageDuration = total > 0 ? Math.round((totalDuration / total) * 10) / 10 : null;
 
   // De-escalation rate: restraints where de_escalation_attempt_count > 0
   const withDeEscalation = r90d.filter(r => r.de_escalation_attempt_count > 0).length;
@@ -313,9 +313,9 @@ export function computeRestraintPhysicalIntervention(
   if (bodyMapRate === 0 && notificationRate === 0 && total > 0) score -= 1;
 
   // Modifier 6: Duration + injury monitoring (+5 / +2 / -3)
-  if (averageDuration <= 5 && injuryRate === 0) score += 5;
-  else if (averageDuration <= 10 || injuryRate <= 10) score += 2;
-  else if (averageDuration > 15 || injuryRate > 30) score -= 3;
+  if ((averageDuration ?? 0) <= 5 && injuryRate === 0) score += 5;
+  else if ((averageDuration ?? 0) <= 10 || injuryRate <= 10) score += 2;
+  else if ((averageDuration ?? 0) > 15 || injuryRate > 30) score -= 3;
   if (averageDuration === 0 && injuryRate === 0 && total === 0) score -= 2;
 
   // Additional penalty: high frequency
@@ -384,7 +384,7 @@ export function computeRestraintPhysicalIntervention(
     );
   }
 
-  if (averageDuration <= 5 && total > 0) {
+  if ((averageDuration ?? 0) <= 5 && total > 0) {
     strengths.push(
       `Average intervention duration of ${averageDuration} minutes — restraints are brief and proportionate.`,
     );
@@ -462,7 +462,7 @@ export function computeRestraintPhysicalIntervention(
     );
   }
 
-  if (averageDuration > 15) {
+  if ((averageDuration ?? 0) > 15) {
     concerns.push(
       `Average restraint duration of ${averageDuration} minutes — extended interventions carry elevated risk and require robust justification.`,
     );
@@ -574,7 +574,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (averageDuration > 15) {
+  if ((averageDuration ?? 0) > 15) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Investigate extended restraint durations (avg ${averageDuration} min) — consider whether transition techniques or environmental changes could reduce hold times.`,
@@ -664,7 +664,7 @@ export function computeRestraintPhysicalIntervention(
     });
   }
 
-  if (averageDuration > 10 && averageDuration <= 15) {
+  if ((averageDuration ?? 0) > 10 && (averageDuration ?? 0) <= 15) {
     insights.push({
       text: `Average restraint duration of ${averageDuration} minutes is elevated. Longer holds increase physical risk and Ofsted will expect clear justification for extended interventions.`,
       severity: "warning",

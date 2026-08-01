@@ -866,7 +866,7 @@ describe("hygiene rating metrics", () => {
     const r = computeFoodStorageRefrigerationSafety(baseInput({
       hygiene_rating_records: [],
     }));
-    expect(r.hygiene_rating_rate).toBe(0);
+    expect(r.hygiene_rating_rate).toBeNull();;
   });
 });
 

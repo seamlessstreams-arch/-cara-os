@@ -48,21 +48,21 @@ export type SleepNightCareRating =
 
 export interface SleepNightCareResult {
   sleep_rating: SleepNightCareRating;
-  sleep_score: number;
+  sleep_score: number | null;
   headline: string;
 
   total_logs: number;
   waking_night_count: number;
   sleep_in_count: number;
 
-  check_compliance_rate: number;
-  building_security_rate: number;
-  alarm_compliance_rate: number;
-  disturbance_response_rate: number;
-  quiet_night_rate: number;
+  check_compliance_rate: number | null;
+  building_security_rate: number | null;
+  alarm_compliance_rate: number | null;
+  disturbance_response_rate: number | null;
+  quiet_night_rate: number | null;
   significant_disturbance_count: number;
-  handover_quality_rate: number;
-  average_disturbance_duration: number;
+  handover_quality_rate: number | null;
+  average_disturbance_duration: number | null;
 
   strengths: string[];
   concerns: string[];
@@ -147,7 +147,7 @@ export function computeSleepNightCare(
   const totalDisturbanceCount = logs.reduce((s, l) => s + l.disturbance_count, 0);
   const averageDisturbanceDuration = totalDisturbanceCount > 0
     ? Math.round((totalDisturbanceDuration / totalDisturbanceCount) * 10) / 10
-    : 0;
+    : null;
 
   // ══════════════════════════════════════════════════════════════════════
   // SCORING — base 52 + 6 modifiers
@@ -359,7 +359,7 @@ export function computeSleepNightCare(
     });
   }
 
-  if (averageDisturbanceDuration > 30 && totalDisturbanceCount > 0) {
+  if ((averageDisturbanceDuration ?? 0) > 30 && totalDisturbanceCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Average disturbance duration is ${averageDisturbanceDuration} minutes. Review de-escalation and settling strategies with night staff to reduce disturbance duration and support children back to sleep more effectively.`,
@@ -407,7 +407,7 @@ export function computeSleepNightCare(
     });
   }
 
-  if (averageDisturbanceDuration > 30 && totalDisturbanceCount > 0) {
+  if ((averageDisturbanceDuration ?? 0) > 30 && totalDisturbanceCount > 0) {
     insights.push({
       text: `Average disturbance duration of ${averageDisturbanceDuration} minutes suggests children are taking a long time to settle after disruption. Review night staff de-escalation skills and consider whether environmental adjustments could help.`,
       severity: "warning",

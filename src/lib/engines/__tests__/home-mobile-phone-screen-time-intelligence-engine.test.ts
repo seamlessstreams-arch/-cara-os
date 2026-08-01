@@ -869,7 +869,7 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
       const r = computeMobilePhoneScreenTime(baseInput({
         usage_agreement_records: [],
       }));
-      expect(r.usage_agreement_rate).toBe(0);
+      expect(r.usage_agreement_rate).toBeNull();;
     });
 
     it("computes agreement coverage based on unique children with active agreements", () => {
@@ -939,7 +939,7 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
       const r = computeMobilePhoneScreenTime(baseInput({
         digital_wellbeing_records: [],
       }));
-      expect(r.digital_wellbeing_rate).toBe(0);
+      expect(r.digital_wellbeing_rate).toBeNull();;
     });
 
     it("handles follow_up_planned false correctly in denominator", () => {
@@ -2359,7 +2359,7 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
         digital_wellbeing_records: [],
       }));
       expect(r.child_satisfaction_rate).toBe(0);
-      expect(r.digital_wellbeing_rate).toBe(0);
+      expect(r.digital_wellbeing_rate).toBeNull();;
     });
 
     it("handles agreement with no total_children (coverage = 0)", () => {

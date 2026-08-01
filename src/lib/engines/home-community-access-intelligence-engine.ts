@@ -87,53 +87,53 @@ export type CommunityAccessRating =
 
 export interface TransportSafetySummary {
   total_logs: number;
-  licence_checked_rate: number;
-  vehicle_checked_rate: number;
-  incident_rate: number;
-  excellent_behaviour_rate: number;
+  licence_checked_rate: number | null;
+  vehicle_checked_rate: number | null;
+  incident_rate: number | null;
+  excellent_behaviour_rate: number | null;
 }
 
 export interface TransportRASummary {
   total_ras: number;
   active_ras: number;
-  signed_off_rate: number;
-  avg_hazards_documented: number;
-  emergency_procedure_rate: number;
-  breakdown_procedure_rate: number;
+  signed_off_rate: number | null;
+  avg_hazards_documented: number | null;
+  emergency_procedure_rate: number | null;
+  breakdown_procedure_rate: number | null;
   overdue_reviews: number;
 }
 
 export interface IndependentTravelSummary {
   total_records: number;
   child_coverage: number;
-  solo_or_independent_rate: number;
-  avg_routes_mastered: number;
-  confident_or_highly_rate: number;
+  solo_or_independent_rate: number | null;
+  avg_routes_mastered: number | null;
+  confident_or_highly_rate: number | null;
   overdue_reviews: number;
 }
 
 export interface TripPlanningSummary {
   total_trips: number;
   completed_trips: number;
-  manager_approval_rate: number;
-  sw_approval_rate: number;
-  risk_assessment_rate: number;
-  children_views_rate: number;
-  post_trip_evaluation_rate: number;
+  manager_approval_rate: number | null;
+  sw_approval_rate: number | null;
+  risk_assessment_rate: number | null;
+  children_views_rate: number | null;
+  post_trip_evaluation_rate: number | null;
 }
 
 export interface CommunityEngagementSummary {
   total_engagements_90d: number;
   unique_children_90d: number;
   child_coverage_90d: number;
-  builds_connections_rate: number;
-  ongoing_commitment_rate: number;
+  builds_connections_rate: number | null;
+  ongoing_commitment_rate: number | null;
   unique_activity_types: number;
 }
 
 export interface HomeCommunityAccessResult {
   community_access_rating: CommunityAccessRating;
-  community_access_score: number;
+  community_access_score: number | null;
   headline: string;
   transport_safety: TransportSafetySummary;
   transport_ra: TransportRASummary;
@@ -222,7 +222,7 @@ export function computeHomeCommunityAccess(
   const raSignedOffRate = pct(raSignedOff, transport_ras.length);
   const raAvgHazards = transport_ras.length > 0
     ? Math.round((transport_ras.reduce((s, ra) => s + ra.hazards.length, 0) / transport_ras.length) * 10) / 10
-    : 0;
+    : null;
   const raEmergency = transport_ras.filter(ra => ra.emergencyProcedure && ra.emergencyProcedure.trim().length > 0).length;
   const raEmergencyRate = pct(raEmergency, transport_ras.length);
   const raBreakdown = transport_ras.filter(ra => ra.breakdownProcedure && ra.breakdownProcedure.trim().length > 0).length;
@@ -247,7 +247,7 @@ export function computeHomeCommunityAccess(
   const itSoloIndepRate = pct(itSoloIndep, independent_travel_records.length);
   const itAvgRoutes = independent_travel_records.length > 0
     ? Math.round((independent_travel_records.reduce((s, r) => s + r.routes_mastered.length, 0) / independent_travel_records.length) * 10) / 10
-    : 0;
+    : null;
   const confidentStages = ["confident", "highly_confident"];
   const itConfident = independent_travel_records.filter(r => confidentStages.includes(r.child_confidence)).length;
   const itConfidentRate = pct(itConfident, independent_travel_records.length);
@@ -353,8 +353,8 @@ export function computeHomeCommunityAccess(
       else if (raSignedOffRate < 40) m -= 1;
 
       // Hazard documentation
-      if (raAvgHazards >= 2) m += 1;
-      else if (raAvgHazards < 1 && transport_ras.length > 0) m -= 1;
+      if ((raAvgHazards ?? 0) >= 2) m += 1;
+      else if ((raAvgHazards ?? 0) < 1 && transport_ras.length > 0) m -= 1;
 
       // Emergency + breakdown procedures
       if (raEmergencyRate >= 90 && raBreakdownRate >= 90) m += 1;
@@ -623,7 +623,7 @@ export function computeHomeCommunityAccess(
   if (transport_logs.length > 0 && tlIncidentRate === 0 && tlLicenceRate >= 90 && tlVehicleRate >= 90) {
     insights.push({ text: "Transport operations demonstrate exemplary safety practice — zero incidents with consistent compliance checks. This would be viewed very favourably at inspection.", severity: "positive" });
   }
-  if (independent_travel_records.length > 0 && itSoloIndepRate >= 60 && itAvgRoutes >= 3) {
+  if (independent_travel_records.length > 0 && itSoloIndepRate >= 60 && (itAvgRoutes ?? 0) >= 3) {
     insights.push({ text: `Children are developing strong independent travel skills — ${itSoloIndepRate}% at solo/independent stage with an average of ${itAvgRoutes} routes mastered. This demonstrates effective independence promotion under Reg 12.`, severity: "positive" });
   }
   if (ce90d.length > 0 && ceOngoingRate >= 50 && ceBuildsConnRate >= 70) {

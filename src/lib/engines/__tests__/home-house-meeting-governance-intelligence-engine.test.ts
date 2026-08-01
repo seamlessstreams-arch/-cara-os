@@ -89,8 +89,8 @@ describe("Zero meetings", () => {
     expect(r.child_attendance_rate).toBe(0);
     expect(r.action_completion_rate).toBe(0);
     expect(r.child_feedback_rate).toBe(0);
-    expect(r.average_agenda_items).toBe(0);
-    expect(r.average_duration).toBe(0);
+    expect(r.average_agenda_items).toBeNull();;
+    expect(r.average_duration).toBeNull();;
   });
 });
 

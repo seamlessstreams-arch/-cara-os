@@ -3556,7 +3556,7 @@ describe("Home Emergency Preparedness & Continuity Intelligence Engine", () => {
           fire_drill_records: [makeDrill()],
         }),
       );
-      expect(r.business_continuity_score).toBe(0);
+      expect(r.business_continuity_score).toBeNull();;
     });
   });
 

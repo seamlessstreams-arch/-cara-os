@@ -146,17 +146,17 @@ export interface ConsentCapacityRecommendation {
 
 export interface ConsentCapacityResult {
   consent_rating: ConsentCapacityRating;
-  consent_score: number;
+  consent_score: number | null;
   headline: string;
   total_consent_forms: number;
-  consent_coverage_rate: number;
-  gillick_assessment_rate: number;
-  capacity_review_rate: number;
-  informed_consent_rate: number;
-  withdrawal_handling_rate: number;
-  child_understanding_rate: number;
-  consent_review_compliance_rate: number;
-  gillick_evidence_rate: number;
+  consent_coverage_rate: number | null;
+  gillick_assessment_rate: number | null;
+  capacity_review_rate: number | null;
+  informed_consent_rate: number | null;
+  withdrawal_handling_rate: number | null;
+  child_understanding_rate: number | null;
+  consent_review_compliance_rate: number | null;
+  gillick_evidence_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: ConsentCapacityRecommendation[];
@@ -316,7 +316,7 @@ export function computeConsentCapacityManagement(
   const consentReviewComplianceRate =
     totalConsentForms > 0
       ? pct(totalConsentForms - overdueConsentReviews, totalConsentForms)
-      : 0;
+      : null;
 
   const expiredConsents = consent_form_records.filter(
     (f) => f.expired && !f.reviewed,
@@ -534,7 +534,7 @@ export function computeConsentCapacityManagement(
             withdrawalChildViewsRate +
             withdrawalDocRate) / 5,
         )
-      : 0;
+      : null;
 
   // --- Child understanding rate (composite across Gillick + informed consent) ---
   const totalUnderstandingOpportunities = totalGillickAssessments + totalInformedConsents;
@@ -563,16 +563,16 @@ export function computeConsentCapacityManagement(
   else if (informedConsentRate >= 60) score += 1;
 
   // --- Bonus 5: withdrawalHandlingRate (>=90: +3, >=70: +2) ---
-  if (withdrawalHandlingRate >= 90) score += 3;
-  else if (withdrawalHandlingRate >= 70) score += 2;
+  if ((withdrawalHandlingRate ?? 0) >= 90) score += 3;
+  else if ((withdrawalHandlingRate ?? 0) >= 70) score += 2;
 
   // --- Bonus 6: childUnderstandingRate (>=90: +3, >=70: +1) ---
   if (childUnderstandingRate >= 90) score += 3;
   else if (childUnderstandingRate >= 70) score += 1;
 
   // --- Bonus 7: consentReviewComplianceRate (>=100: +3, >=80: +1) ---
-  if (consentReviewComplianceRate >= 100) score += 3;
-  else if (consentReviewComplianceRate >= 80) score += 1;
+  if ((consentReviewComplianceRate ?? 0) >= 100) score += 3;
+  else if ((consentReviewComplianceRate ?? 0) >= 80) score += 1;
 
   // --- Bonus 8: gillickEvidenceRate (>=90: +3, >=70: +1) ---
   if (gillickEvidenceRate >= 90) score += 3;
@@ -602,7 +602,7 @@ export function computeConsentCapacityManagement(
   }
 
   // Penalty 4: withdrawalHandlingRate < 50 → -4 (guarded by records)
-  if (withdrawalHandlingRate < 50 && consent_withdrawal_records.length > 0) {
+  if ((withdrawalHandlingRate ?? 0) < 50 && consent_withdrawal_records.length > 0) {
     score -= 4;
   }
 
@@ -684,21 +684,21 @@ export function computeConsentCapacityManagement(
     );
   }
 
-  if (withdrawalHandlingRate >= 90 && totalWithdrawals > 0) {
+  if ((withdrawalHandlingRate ?? 0) >= 90 && totalWithdrawals > 0) {
     strengths.push(
       `Consent withdrawal handling at ${withdrawalHandlingRate}% — the home demonstrates excellent practice in respecting and processing children's decisions to withdraw consent, reinforcing children's agency and rights.`,
     );
-  } else if (withdrawalHandlingRate >= 70 && totalWithdrawals > 0) {
+  } else if ((withdrawalHandlingRate ?? 0) >= 70 && totalWithdrawals > 0) {
     strengths.push(
       `${withdrawalHandlingRate}% withdrawal handling compliance — the home responds appropriately when consent is withdrawn.`,
     );
   }
 
-  if (consentReviewComplianceRate >= 100 && totalConsentForms > 0) {
+  if ((consentReviewComplianceRate ?? 0) >= 100 && totalConsentForms > 0) {
     strengths.push(
       "All consent reviews are up to date — the home ensures consent remains current and reflective of children's evolving wishes and circumstances.",
     );
-  } else if (consentReviewComplianceRate >= 80 && totalConsentForms > 0) {
+  } else if ((consentReviewComplianceRate ?? 0) >= 80 && totalConsentForms > 0) {
     strengths.push(
       `${consentReviewComplianceRate}% consent review compliance — strong adherence to consent review timescales.`,
     );
@@ -784,11 +784,11 @@ export function computeConsentCapacityManagement(
     );
   }
 
-  if (withdrawalHandlingRate < 50 && totalWithdrawals > 0) {
+  if ((withdrawalHandlingRate ?? 0) < 50 && totalWithdrawals > 0) {
     concerns.push(
       `Consent withdrawal handling at ${withdrawalHandlingRate}% — when children or their representatives withdraw consent, the process is not consistently followed, potentially meaning withdrawn consent is not being respected or appropriate action is not being taken.`,
     );
-  } else if (withdrawalHandlingRate < 70 && withdrawalHandlingRate >= 50 && totalWithdrawals > 0) {
+  } else if ((withdrawalHandlingRate ?? 0) < 70 && (withdrawalHandlingRate ?? 0) >= 50 && totalWithdrawals > 0) {
     concerns.push(
       `Withdrawal handling at ${withdrawalHandlingRate}% — some consent withdrawals are not being fully processed, which may undermine children's trust in the consent process.`,
     );
@@ -908,24 +908,24 @@ export function computeConsentCapacityManagement(
     });
   }
 
-  if (withdrawalHandlingRate < 70 && totalWithdrawals > 0) {
+  if ((withdrawalHandlingRate ?? 0) < 70 && totalWithdrawals > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
-        withdrawalHandlingRate < 50
+        (withdrawalHandlingRate ?? 0) < 50
           ? "Overhaul consent withdrawal procedures — when consent is withdrawn, the home must ensure the withdrawal is respected immediately, the reason is recorded, the child's views are sought, relevant parties are notified, and documentation is updated promptly."
           : "Improve consent withdrawal handling to ensure all withdrawal steps are consistently completed — particularly notification of relevant parties and impact assessment.",
-      urgency: withdrawalHandlingRate < 50 ? "immediate" : "soon",
+      urgency: (withdrawalHandlingRate ?? 0) < 50 ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 7 — Children's views",
     });
   }
 
-  if (consentReviewComplianceRate < 80 && totalConsentForms > 0) {
+  if ((consentReviewComplianceRate ?? 0) < 80 && totalConsentForms > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
         "Establish a rolling consent review schedule to ensure all consent forms are reviewed within their scheduled timescales — expired or overdue consents should be prioritised to maintain the validity of the home's consent framework.",
-      urgency: consentReviewComplianceRate < 60 ? "immediate" : "planned",
+      urgency: (consentReviewComplianceRate ?? 0) < 60 ? "immediate" : "planned",
       regulatory_ref: "CHR 2015 Reg 5 — Quality of care",
     });
   }
@@ -1016,7 +1016,7 @@ export function computeConsentCapacityManagement(
     });
   }
 
-  if (withdrawalHandlingRate < 50 && totalWithdrawals > 0) {
+  if ((withdrawalHandlingRate ?? 0) < 50 && totalWithdrawals > 0) {
     insights.push({
       text: `Consent withdrawal handling falls below acceptable standards at ${withdrawalHandlingRate}%. When a child or their representative withdraws consent, the failure to process this properly and promptly could mean that care activities continue without valid consent — a serious safeguarding concern and potential regulatory breach.`,
       severity: "critical",
@@ -1081,7 +1081,7 @@ export function computeConsentCapacityManagement(
     });
   }
 
-  if (withdrawalHandlingRate >= 90 && totalWithdrawals > 0) {
+  if ((withdrawalHandlingRate ?? 0) >= 90 && totalWithdrawals > 0) {
     insights.push({
       text: `The home handles consent withdrawals at ${withdrawalHandlingRate}% compliance — demonstrating that children's right to change their minds is genuinely respected and properly actioned. This builds trust and reinforces that consent is an ongoing, dynamic process rather than a one-off event.`,
       severity: "positive",
@@ -1095,7 +1095,7 @@ export function computeConsentCapacityManagement(
     });
   }
 
-  if (consentReviewComplianceRate >= 95 && totalConsentForms > 0) {
+  if ((consentReviewComplianceRate ?? 0) >= 95 && totalConsentForms > 0) {
     insights.push({
       text: `Consent review compliance at ${consentReviewComplianceRate}% demonstrates the home treats consent as a living process — regularly reviewing and updating consent to ensure it remains current, valid, and reflective of children's evolving wishes and circumstances.`,
       severity: "positive",

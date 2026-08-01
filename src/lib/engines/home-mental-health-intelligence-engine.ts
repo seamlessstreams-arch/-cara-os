@@ -75,18 +75,18 @@ export type MentalHealthRating =
 export interface CheckInProfile {
   total_check_ins_30d: number;
   children_with_check_ins: number;
-  check_in_coverage_rate: number;
-  avg_mood_rating: number;
+  check_in_coverage_rate: number | null;
+  avg_mood_rating: number | null;
   low_mood_count: number;           // mood_rating <= 2
   high_mood_count: number;          // mood_rating >= 4
   flagged_check_ins: number;
-  follow_up_rate: number;
+  follow_up_rate: number | null;
 }
 
 export interface TherapyProfile {
   total_sessions_90d: number;
-  attendance_rate: number;
-  avg_mood_improvement: number;     // post - pre average
+  attendance_rate: number | null;
+  avg_mood_improvement: number | null;     // post - pre average
   sessions_with_escalation: number;
   children_in_therapy: number;
 }
@@ -94,22 +94,22 @@ export interface TherapyProfile {
 export interface SafetyPlanProfile {
   active_plans: number;
   recent_incident_plans: number;
-  child_signed_rate: number;
+  child_signed_rate: number | null;
   overdue_reviews: number;
-  co_production_rate: number;
+  co_production_rate: number | null;
 }
 
 export interface ReferralProfile {
   active_referrals: number;
   pending_referrals: number;
-  avg_waiting_weeks: number;
+  avg_waiting_weeks: number | null;
   children_with_therapy: number;
-  therapy_coverage_rate: number;
+  therapy_coverage_rate: number | null;
 }
 
 export interface HomeMentalHealthResult {
   mental_health_rating: MentalHealthRating;
-  mental_health_score: number;
+  mental_health_score: number | null;
   headline: string;
   check_ins: CheckInProfile;
   therapy: TherapyProfile;
@@ -169,7 +169,7 @@ export function computeHomeMentalHealth(
   const moodRatings = checkIns30d.map(c => c.mood_rating).filter(m => m > 0);
   const avgMood = moodRatings.length > 0
     ? Math.round((moodRatings.reduce((sum, m) => sum + m, 0) / moodRatings.length) * 10) / 10
-    : 0;
+    : null;
   const lowMood = moodRatings.filter(m => m <= 2).length;
   const highMood = moodRatings.filter(m => m >= 4).length;
   const flaggedCheckIns = checkIns30d.filter(c => c.flags_concerns.length > 0).length;
@@ -200,7 +200,7 @@ export function computeHomeMentalHealth(
     .map(s => s.post_session_mood_rating - s.pre_session_mood_rating);
   const avgMoodImprovement = moodImprovements.length > 0
     ? Math.round((moodImprovements.reduce((sum, d) => sum + d, 0) / moodImprovements.length) * 10) / 10
-    : 0;
+    : null;
   const sessionsWithEscalation = sessions90d.filter(s => s.escalation_flags.length > 0).length;
   const childrenInTherapy = new Set(sessions90d.map(s => s.child_id)).size;
 
@@ -239,7 +239,7 @@ export function computeHomeMentalHealth(
   const withWaiting = therapeutic_referrals.filter(r => r.waiting_weeks !== null && r.status === "pending");
   const avgWaiting = withWaiting.length > 0
     ? Math.round(withWaiting.reduce((sum, r) => sum + (r.waiting_weeks ?? 0), 0) / withWaiting.length)
-    : 0;
+    : null;
   const childrenWithTherapy = new Set(
     therapeutic_referrals
       .filter(r => r.status === "active" || r.status === "accepted")
@@ -269,10 +269,10 @@ export function computeHomeMentalHealth(
   // mod2: Check-in frequency (±4) — sufficient volume of check-ins
   const checkInsPerChild = total_children > 0
     ? Math.round((checkIns30d.length / total_children) * 10) / 10
-    : 0;
-  if (checkInsPerChild >= 4) score += 4;
-  else if (checkInsPerChild >= 2) score += 2;
-  else if (checkInsPerChild >= 1) score += 0;
+    : null;
+  if ((checkInsPerChild ?? 0) >= 4) score += 4;
+  else if ((checkInsPerChild ?? 0) >= 2) score += 2;
+  else if ((checkInsPerChild ?? 0) >= 1) score += 0;
   else score -= 4;
 
   // mod3: Therapy engagement (±4) — attendance and outcomes
@@ -281,7 +281,7 @@ export function computeHomeMentalHealth(
     if (pendingReferrals > 0) score -= 2;
     else score += 2;
   } else {
-    if (attendanceRate >= 90 && avgMoodImprovement > 0) score += 4;
+    if (attendanceRate >= 90 && (avgMoodImprovement ?? 0) > 0) score += 4;
     else if (attendanceRate >= 75) score += 2;
     else if (attendanceRate >= 50) score += 0;
     else score -= 4;
@@ -312,7 +312,7 @@ export function computeHomeMentalHealth(
     score -= 2;
   } else {
     const lowMoodRate = pct(lowMood, moodRatings.length);
-    if (lowMoodRate === 0 && avgMood >= 3.5) score += 3;
+    if (lowMoodRate === 0 && (avgMood ?? 0) >= 3.5) score += 3;
     else if (lowMoodRate <= 15) score += 1;
     else if (lowMoodRate <= 30) score += 0;
     else score -= 3;
@@ -357,9 +357,9 @@ export function computeHomeMentalHealth(
 
   // Strengths
   if (checkInCoverageRate >= 100) strengths.push("Every child has mental health check-ins — emotional monitoring is embedded in daily practice.");
-  if (checkInsPerChild >= 4) strengths.push(`Averaging ${checkInsPerChild} check-ins per child in 30 days — regular emotional pulse-taking.`);
+  if ((checkInsPerChild ?? 0) >= 4) strengths.push(`Averaging ${(checkInsPerChild ?? 0)} check-ins per child in 30 days — regular emotional pulse-taking.`);
   if (attendanceRate >= 90 && sessions90d.length > 0) strengths.push(`${attendanceRate}% therapy attendance rate — children are engaging with therapeutic support.`);
-  if (avgMoodImprovement > 0 && sessions90d.length > 0) strengths.push(`Positive mood improvement trend (+${avgMoodImprovement}) after therapy sessions — therapeutic input is making a difference.`);
+  if ((avgMoodImprovement ?? 0) > 0 && sessions90d.length > 0) strengths.push(`Positive mood improvement trend (+${(avgMoodImprovement ?? 0)}) after therapy sessions — therapeutic input is making a difference.`);
   if (activePlans.length > 0 && childSignedRate >= 100 && overdueReviews === 0) strengths.push("All safety plans co-signed by children with reviews on schedule — young people have ownership of their safety.");
   if (flaggedCheckIns > 0 && followUpRate >= 100) strengths.push("100% follow-up rate on flagged check-ins — concerns are acted on promptly.");
 
@@ -376,7 +376,7 @@ export function computeHomeMentalHealth(
   if (overdueReviews > 0) {
     concerns.push(`${overdueReviews} safety plan review${overdueReviews > 1 ? "s" : ""} overdue — plans must be kept current to be effective.`);
   }
-  if (pendingReferrals > 0 && avgWaiting > 8) {
+  if (pendingReferrals > 0 && (avgWaiting ?? 0) > 8) {
     concerns.push(`${pendingReferrals} pending therapeutic referral${pendingReferrals > 1 ? "s" : ""} with average ${avgWaiting}-week wait — long waits increase risk.`);
   }
   if (attendanceRate < 60 && sessions90d.length > 0) {
@@ -397,14 +397,14 @@ export function computeHomeMentalHealth(
     recommendations.push({ rank: ++rank, recommendation: "Follow up on all flagged mental health check-ins within 24 hours — document actions taken.", urgency: "soon", regulatory_ref: "Reg 7" });
   }
   if (pendingReferrals > 0) {
-    recommendations.push({ rank: ++rank, recommendation: `Chase pending therapeutic referrals (${pendingReferrals} waiting) — consider interim support while waiting.`, urgency: avgWaiting > 8 ? "immediate" : "soon", regulatory_ref: "Reg 10" });
+    recommendations.push({ rank: ++rank, recommendation: `Chase pending therapeutic referrals (${pendingReferrals} waiting) — consider interim support while waiting.`, urgency: (avgWaiting ?? 0) > 8 ? "immediate" : "soon", regulatory_ref: "Reg 10" });
   }
   if (attendanceRate < 75 && sessions90d.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Address barriers to therapy attendance — transport, timing, and emotional readiness should be reviewed.", urgency: "soon", regulatory_ref: "Reg 10" });
   }
 
   // Cara Insights
-  if (checkInCoverageRate >= 100 && checkInsPerChild >= 4 && (flaggedCheckIns === 0 || followUpRate >= 100)) {
+  if (checkInCoverageRate >= 100 && (checkInsPerChild ?? 0) >= 4 && (flaggedCheckIns === 0 || followUpRate >= 100)) {
     insights.push({ text: "Mental health monitoring is exemplary. Every child receives regular check-ins with prompt follow-up on any concerns. This proactive emotional awareness will be recognised by Ofsted as outstanding practice.", severity: "positive" });
   }
   if (lowMood >= 5 && moodRatings.length > 0 && pct(lowMood, moodRatings.length) >= 30) {

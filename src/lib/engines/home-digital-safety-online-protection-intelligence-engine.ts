@@ -155,24 +155,24 @@ export interface DigitalSafetyRecommendation {
 
 export interface DigitalSafetyOnlineProtectionResult {
   digital_safety_rating: DigitalSafetyRating;
-  digital_safety_score: number;
+  digital_safety_score: number | null;
   headline: string;
   total_training_records: number;
   total_usage_logs: number;
   total_social_media_assessments: number;
   total_access_agreements: number;
   total_digital_literacy_records: number;
-  esafety_training_compliance_rate: number;
-  usage_monitoring_rate: number;
-  social_media_risk_assessment_rate: number;
-  access_agreement_coverage_rate: number;
-  digital_literacy_engagement_rate: number;
-  incident_response_rate: number;
-  training_pass_rate: number;
+  esafety_training_compliance_rate: number | null;
+  usage_monitoring_rate: number | null;
+  social_media_risk_assessment_rate: number | null;
+  access_agreement_coverage_rate: number | null;
+  digital_literacy_engagement_rate: number | null;
+  incident_response_rate: number | null;
+  training_pass_rate: number | null;
   overdue_training_count: number;
   high_risk_usage_count: number;
   flagged_content_count: number;
-  privacy_settings_compliance_rate: number;
+  privacy_settings_compliance_rate: number | null;
   agreement_breach_count: number;
   children_with_training: number;
   children_with_agreements: number;
@@ -505,7 +505,7 @@ export function computeDigitalSafetyOnlineProtection(
             totalDigitalLiteracyRecords) *
             100,
         ) / 100
-      : 0;
+      : null;
 
   const onlineSafetyLiteracy = digital_literacy_records.filter(
     (r) => r.skill_area === "online_safety" && r.completed,
@@ -524,7 +524,7 @@ export function computeDigitalSafetyOnlineProtection(
           incidentResponseComponents.reduce((s, v) => s + v, 0) /
             incidentResponseComponents.length,
         )
-      : 0;
+      : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
   // 9 bonus categories summing to exactly 28 (max possible = 52 + 28 = 80 = outstanding)
@@ -552,8 +552,8 @@ export function computeDigitalSafetyOnlineProtection(
   else if (digitalLiteracyEngagementRate >= 70) score += 1;
 
   // --- Bonus 6: incidentResponseRate (>=90: +3, >=70: +1) --- max 3
-  if (incidentResponseRate >= 90) score += 3;
-  else if (incidentResponseRate >= 70) score += 1;
+  if ((incidentResponseRate ?? 0) >= 90) score += 3;
+  else if ((incidentResponseRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 7: privacySettingsComplianceRate (>=90: +3, >=70: +1) --- max 3
   if (privacySettingsComplianceRate >= 90) score += 3;
@@ -578,7 +578,7 @@ export function computeDigitalSafetyOnlineProtection(
   if (accessAgreementCoverageRate < 50 && total_children > 0) score -= 5;
 
   // Penalty 3: incidentResponseRate < 40 with incidents existing → -4
-  if (incidentResponseRate < 40 && incidentResponseComponents.length > 0) score -= 4;
+  if ((incidentResponseRate ?? 0) < 40 && incidentResponseComponents.length > 0) score -= 4;
 
   // Penalty 4: usageMonitoringRate < 50 → -4 (guard: totalUsageLogs > 0)
   if (usageMonitoringRate < 50 && totalUsageLogs > 0) score -= 4;
@@ -687,11 +687,11 @@ export function computeDigitalSafetyOnlineProtection(
     );
   }
 
-  if (incidentResponseRate >= 90 && incidentResponseComponents.length > 0) {
+  if ((incidentResponseRate ?? 0) >= 90 && incidentResponseComponents.length > 0) {
     strengths.push(
       `${incidentResponseRate}% incident response rate — the home responds promptly and effectively to online safety incidents, flagged content, and agreement breaches.`,
     );
-  } else if (incidentResponseRate >= 80 && incidentResponseComponents.length > 0) {
+  } else if ((incidentResponseRate ?? 0) >= 80 && incidentResponseComponents.length > 0) {
     strengths.push(
       `${incidentResponseRate}% incident response rate — strong response to online safety concerns and incidents.`,
     );
@@ -742,7 +742,7 @@ export function computeDigitalSafetyOnlineProtection(
     }
   }
 
-  if (avgProgressRating >= 4.0 && totalDigitalLiteracyRecords > 0) {
+  if ((avgProgressRating ?? 0) >= 4.0 && totalDigitalLiteracyRecords > 0) {
     strengths.push(
       `Average digital literacy progress rating of ${avgProgressRating}/5 — children are making strong progress in developing digital competencies.`,
     );
@@ -862,11 +862,11 @@ export function computeDigitalSafetyOnlineProtection(
     );
   }
 
-  if (incidentResponseRate < 40 && incidentResponseComponents.length > 0) {
+  if ((incidentResponseRate ?? 0) < 40 && incidentResponseComponents.length > 0) {
     concerns.push(
       `Incident response rate at only ${incidentResponseRate}% — online safety incidents, flagged content, and agreement breaches are not being consistently addressed, creating ongoing safeguarding risks.`,
     );
-  } else if (incidentResponseRate < 70 && incidentResponseRate >= 40 && incidentResponseComponents.length > 0) {
+  } else if ((incidentResponseRate ?? 0) < 70 && (incidentResponseRate ?? 0) >= 40 && incidentResponseComponents.length > 0) {
     concerns.push(
       `Incident response rate at ${incidentResponseRate}% — some online safety incidents are not being fully addressed, which may allow harmful patterns to persist.`,
     );
@@ -989,7 +989,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (incidentResponseRate < 40 && incidentResponseComponents.length > 0) {
+  if ((incidentResponseRate ?? 0) < 40 && incidentResponseComponents.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1189,7 +1189,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (incidentResponseRate >= 40 && incidentResponseRate < 70 && incidentResponseComponents.length > 0) {
+  if ((incidentResponseRate ?? 0) >= 40 && (incidentResponseRate ?? 0) < 70 && incidentResponseComponents.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1233,7 +1233,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (incidentResponseRate < 40 && incidentResponseComponents.length > 0) {
+  if ((incidentResponseRate ?? 0) < 40 && incidentResponseComponents.length > 0) {
     insights.push({
       text: `Incident response rate at only ${incidentResponseRate}%. When online safety incidents are not addressed, children remain exposed to ongoing risks. Each unaddressed incident — whether flagged content, a social media concern, or an agreement breach — represents a failure to protect.`,
       severity: "critical",
@@ -1319,7 +1319,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (incidentResponseRate >= 40 && incidentResponseRate < 70 && incidentResponseComponents.length > 0) {
+  if ((incidentResponseRate ?? 0) >= 40 && (incidentResponseRate ?? 0) < 70 && incidentResponseComponents.length > 0) {
     insights.push({
       text: `Incident response rate at ${incidentResponseRate}% — some online safety incidents are not receiving a full response. Each unaddressed incident may allow harmful patterns to continue or escalate.`,
       severity: "warning",
@@ -1466,7 +1466,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (incidentResponseRate >= 90 && incidentResponseComponents.length > 0) {
+  if ((incidentResponseRate ?? 0) >= 90 && incidentResponseComponents.length > 0) {
     insights.push({
       text: `${incidentResponseRate}% incident response rate — the home demonstrates a robust, responsive approach to online safety incidents. Prompt, documented responses to flagged content, concerns, and breaches ensure children are protected and supported.`,
       severity: "positive",

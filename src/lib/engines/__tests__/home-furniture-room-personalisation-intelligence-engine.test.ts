@@ -520,7 +520,7 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput({
         comfort_assessment_records: [makeComfort()],
       }));
-      expect(r.furniture_condition_avg).toBe(0);
+      expect(r.furniture_condition_avg).toBeNull();;
     });
   });
 

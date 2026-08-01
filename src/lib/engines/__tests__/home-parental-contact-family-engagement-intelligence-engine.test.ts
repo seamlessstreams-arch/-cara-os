@@ -251,7 +251,7 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
       expect(r.contact_compliance_rate).toBe(0);
       expect(r.family_visit_quality_rate).toBe(0);
       expect(r.parental_engagement_rate).toBe(0);
-      expect(r.supervised_contact_adherence_rate).toBe(0);
+      expect(r.supervised_contact_adherence_rate).toBeNull();;
     });
   });
 
@@ -2630,7 +2630,7 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
           contact_schedule_records: [makeContact({ occurred: true })],
         }),
       );
-      expect(r.supervised_contact_adherence_rate).toBe(0);
+      expect(r.supervised_contact_adherence_rate).toBeNull();;
     });
 
     it("parent views incorporation rate is 0 when no parent participated", () => {

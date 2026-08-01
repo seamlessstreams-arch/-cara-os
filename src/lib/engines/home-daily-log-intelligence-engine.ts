@@ -44,8 +44,8 @@ export type DailyLogRating =
 
 export interface RecordingFrequencyProfile {
   total_entries_14d: number;
-  entries_per_day_avg: number;
-  entries_per_child_per_day_avg: number;
+  entries_per_day_avg: number | null;
+  entries_per_child_per_day_avg: number | null;
   days_with_entries_14d: number;
   days_with_no_entries: number;
 }
@@ -54,41 +54,41 @@ export interface EntryTypeProfile {
   by_type: Record<string, number>;
   types_used: string[];
   types_missing: string[];
-  type_diversity_rate: number;        // types used / total types
+  type_diversity_rate: number | null;        // types used / total types
 }
 
 export interface MoodTrackingProfile {
   entries_with_mood: number;
-  mood_tracking_rate: number;
-  avg_mood_score: number;
+  mood_tracking_rate: number | null;
+  avg_mood_score: number | null;
   low_mood_count: number;             // mood_score <= 4
   high_mood_count: number;            // mood_score >= 8
 }
 
 export interface StaffParticipationProfile {
   unique_staff_14d: number;
-  staff_participation_rate: number;   // staff who logged / total_staff
-  most_active_staff_entries: number;
-  least_active_staff_entries: number;
+  staff_participation_rate: number | null;   // staff who logged / total_staff
+  most_active_staff_entries: number | null;
+  least_active_staff_entries: number | null;
 }
 
 export interface ChildCoverageProfile {
   children_with_entries_14d: number;
   children_without: number;
-  child_coverage_rate: number;
+  child_coverage_rate: number | null;
   entries_per_child: Record<string, number>;
 }
 
 export interface ContentQualityProfile {
   significant_entries: number;
-  significant_rate: number;
-  avg_content_length: number;
+  significant_rate: number | null;
+  avg_content_length: number | null;
   incident_linked_count: number;
 }
 
 export interface HomeDailyLogResult {
   log_rating: DailyLogRating;
-  log_score: number;
+  log_score: number | null;
   headline: string;
   frequency: RecordingFrequencyProfile;
   entry_types: EntryTypeProfile;
@@ -157,10 +157,10 @@ export function computeHomeDailyLog(
   const daysSet = new Set(logs14d.map(l => l.date));
   const daysWithEntries = daysSet.size;
   const daysWithNoEntries = Math.max(0, WINDOW_DAYS - daysWithEntries);
-  const entriesPerDay = logs14d.length > 0 ? Math.round((logs14d.length / Math.max(daysWithEntries, 1)) * 10) / 10 : 0;
+  const entriesPerDay = logs14d.length > 0 ? Math.round((logs14d.length / Math.max(daysWithEntries, 1)) * 10) / 10 : null;
   const entriesPerChildPerDay = total_children > 0 && daysWithEntries > 0
     ? Math.round((logs14d.length / (total_children * daysWithEntries)) * 10) / 10
-    : 0;
+    : null;
 
   const frequency: RecordingFrequencyProfile = {
     total_entries_14d: logs14d.length,
@@ -191,7 +191,7 @@ export function computeHomeDailyLog(
   const moodTrackingRate = pct(withMood.length, logs14d.length);
   const avgMood = withMood.length > 0
     ? Math.round((withMood.reduce((sum, l) => sum + (l.mood_score ?? 0), 0) / withMood.length) * 10) / 10
-    : 0;
+    : null;
   const lowMood = withMood.filter(l => (l.mood_score ?? 0) <= 4).length;
   const highMood = withMood.filter(l => (l.mood_score ?? 0) >= 8).length;
 
@@ -211,8 +211,8 @@ export function computeHomeDailyLog(
   const uniqueStaff = Object.keys(staffEntries).length;
   const staffParticipationRate = pct(uniqueStaff, total_staff);
   const entryCounts = Object.values(staffEntries);
-  const mostActive = entryCounts.length > 0 ? Math.max(...entryCounts) : 0;
-  const leastActive = entryCounts.length > 0 ? Math.min(...entryCounts) : 0;
+  const mostActive = entryCounts.length > 0 ? Math.max(...entryCounts) : null;
+  const leastActive = entryCounts.length > 0 ? Math.min(...entryCounts) : null;
 
   const staff: StaffParticipationProfile = {
     unique_staff_14d: uniqueStaff,
@@ -241,7 +241,7 @@ export function computeHomeDailyLog(
   const significantRate = pct(significantEntries, logs14d.length);
   const avgContentLength = logs14d.length > 0
     ? Math.round(logs14d.reduce((sum, l) => sum + l.content.length, 0) / logs14d.length)
-    : 0;
+    : null;
   const incidentLinked = logs14d.filter(l => l.linked_incident_id !== null && l.linked_incident_id !== "").length;
 
   const quality: ContentQualityProfile = {
@@ -289,15 +289,15 @@ export function computeHomeDailyLog(
   else score -= 4;
 
   // mod6: Content quality (±3) — average content length
-  if (avgContentLength >= 100) score += 3;
-  else if (avgContentLength >= 60) score += 1;
-  else if (avgContentLength >= 30) score += 0;
+  if ((avgContentLength ?? 0) >= 100) score += 3;
+  else if ((avgContentLength ?? 0) >= 60) score += 1;
+  else if ((avgContentLength ?? 0) >= 30) score += 0;
   else score -= 3;
 
   // mod7: Entries per child per day (±3) — sufficient recording volume
-  if (entriesPerChildPerDay >= 1.5) score += 3;
-  else if (entriesPerChildPerDay >= 1.0) score += 1;
-  else if (entriesPerChildPerDay >= 0.5) score += 0;
+  if ((entriesPerChildPerDay ?? 0) >= 1.5) score += 3;
+  else if ((entriesPerChildPerDay ?? 0) >= 1.0) score += 1;
+  else if ((entriesPerChildPerDay ?? 0) >= 0.5) score += 0;
   else score -= 3;
 
   // mod8: Significant event flagging (±2) — appropriate use of significance
@@ -328,7 +328,7 @@ export function computeHomeDailyLog(
   if (typeDiversityRate >= 70) strengths.push(`${typesUsed.length} of ${ALL_ENTRY_TYPES.length} entry types used — holistic recording across all life domains.`);
   if (moodTrackingRate >= 80) strengths.push(`Mood tracked in ${moodTrackingRate}% of entries — strong emotional monitoring.`);
   if (staffParticipationRate >= 70) strengths.push(`${uniqueStaff} staff contributing — shared recording responsibility across the team.`);
-  if (avgContentLength >= 100) strengths.push("Detailed entries averaging " + avgContentLength + " characters — rich, meaningful recording.");
+  if ((avgContentLength ?? 0) >= 100) strengths.push("Detailed entries averaging " + (avgContentLength ?? 0) + " characters — rich, meaningful recording.");
 
   // Concerns
   if (daysWithNoEntries >= 5) concerns.push(`${daysWithNoEntries} days with no entries in the last 14 days — recording gaps could hide safeguarding concerns.`);
@@ -336,7 +336,7 @@ export function computeHomeDailyLog(
     concerns.push(`${total_children - childrenWithEntries} child${(total_children - childrenWithEntries) > 1 ? "ren" : ""} with no daily log entries in 14 days.`);
   }
   if (moodTrackingRate < 40) concerns.push(`Mood tracking at only ${moodTrackingRate}% — emotional wellbeing may not be monitored effectively.`);
-  if (avgContentLength < 30) concerns.push("Very brief log entries — insufficient detail for safeguarding oversight.");
+  if ((avgContentLength ?? 0) < 30) concerns.push("Very brief log entries — insufficient detail for safeguarding oversight.");
   if (staffParticipationRate < 30) concerns.push(`Only ${uniqueStaff} of ${total_staff} staff contributing to daily logs — recording may not reflect all shifts.`);
   if (lowMood >= 5) concerns.push(`${lowMood} entries with low mood scores (≤4) in 14 days — patterns of distress should be explored.`);
 
@@ -367,7 +367,7 @@ export function computeHomeDailyLog(
   if (daysWithNoEntries >= 7) {
     insights.push({ text: `${daysWithNoEntries} days without any recording in the last 14 days. This is a significant governance concern — Ofsted will view recording gaps as a leadership and management failure.`, severity: "critical" });
   }
-  if (entryCounts.length >= 2 && mostActive > leastActive * 3) {
+  if (entryCounts.length >= 2 && (mostActive ?? 0) > (leastActive ?? 0) * 3) {
     insights.push({ text: `Recording workload is unevenly distributed — one staff member logged ${mostActive} entries while another logged only ${leastActive}. Consider redistributing recording responsibilities.`, severity: "warning" });
   }
 

@@ -103,7 +103,7 @@ export interface SafetyWalkRecordInput {
   actions_completed: number;
   follow_up_walk_scheduled: boolean;
   follow_up_walk_date: string | null;
-  overall_compliance_score: number; // 1-5
+  overall_compliance_score: number | null; // 1-5
   notes: string | null;
   created_at: string;
 }
@@ -170,19 +170,19 @@ export interface HazardNearMissRecommendation {
 
 export interface HazardNearMissResult {
   hazard_rating: HazardNearMissRating;
-  hazard_score: number;
+  hazard_score: number | null;
   headline: string;
   total_hazard_reports: number;
   total_near_misses: number;
   total_corrective_actions: number;
   total_safety_walks: number;
   total_incident_learnings: number;
-  hazard_reporting_rate: number;
-  near_miss_tracking_rate: number;
-  corrective_action_rate: number;
-  safety_walk_rate: number;
-  incident_learning_rate: number;
-  staff_engagement_rate: number;
+  hazard_reporting_rate: number | null;
+  near_miss_tracking_rate: number | null;
+  corrective_action_rate: number | null;
+  safety_walk_rate: number | null;
+  incident_learning_rate: number | null;
+  staff_engagement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: HazardNearMissRecommendation[];
@@ -535,13 +535,13 @@ export function computeHazardNearMissReporting(
 
   // Walk compliance score average
   const walkComplianceSum = safety_walk_records.reduce(
-    (sum, w) => sum + w.overall_compliance_score,
+    (sum, w) => sum + (w.overall_compliance_score ?? 0),
     0,
   );
   const avgWalkComplianceScore =
     totalSafetyWalks > 0
       ? Math.round((walkComplianceSum / totalSafetyWalks) * 100) / 100
-      : 0;
+      : null;
 
   // Total hazards found on walks
   const totalWalkHazards = safety_walk_records.reduce(
@@ -868,11 +868,11 @@ export function computeHazardNearMissReporting(
     );
   }
 
-  if (avgWalkComplianceScore >= 4.0 && totalSafetyWalks > 0) {
+  if ((avgWalkComplianceScore ?? 0) >= 4.0 && totalSafetyWalks > 0) {
     strengths.push(
       `Average safety walk compliance score of ${avgWalkComplianceScore}/5 — premises consistently meet high safety standards during formal inspections.`,
     );
-  } else if (avgWalkComplianceScore >= 3.5 && totalSafetyWalks > 0) {
+  } else if ((avgWalkComplianceScore ?? 0) >= 3.5 && totalSafetyWalks > 0) {
     strengths.push(
       `Average safety walk compliance score of ${avgWalkComplianceScore}/5 — premises generally meet acceptable safety standards during inspections.`,
     );
@@ -1739,7 +1739,7 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    avgWalkComplianceScore >= 4.0 &&
+    (avgWalkComplianceScore ?? 0) >= 4.0 &&
     totalSafetyWalks > 0
   ) {
     insights.push({

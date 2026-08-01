@@ -809,7 +809,7 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
         contact_plans: [], parent_partnership_records: [],
         social_worker_contacts: [], sibling_contact_protocols: [],
       });
-      expect(r.sessions_per_child).toBe(0);
+      expect(r.sessions_per_child).toBeNull();;
     });
 
     it("session_quality_avg rounds to 1 decimal", () => {
@@ -825,7 +825,7 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
 
     it("session_quality_avg = 0 when no sessions", () => {
       const r = computeFamilySocialConnectivity(baseInput({ family_time_sessions: [] }));
-      expect(r.session_quality_avg).toBe(0);
+      expect(r.session_quality_avg).toBeNull();;
     });
 
     it("contact_plan_coverage uses unique children from active plans", () => {
@@ -2014,7 +2014,7 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
       const r = computeFamilySocialConnectivity(baseInput({ family_time_sessions: [] }));
       expect(r.child_voice_capture_rate).toBe(0);
       expect(r.post_contact_distress_rate).toBe(0);
-      expect(r.session_quality_avg).toBe(0);
+      expect(r.session_quality_avg).toBeNull();;
     });
 
     it("score clamped to max 100", () => {

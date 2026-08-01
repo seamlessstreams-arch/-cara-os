@@ -104,7 +104,7 @@ export type EducationHealth = "outstanding" | "good" | "requires_improvement" | 
 export type AttendanceBand = "excellent" | "good" | "concern" | "persistent_absence" | "severe_absence" | "insufficient_data";
 
 export interface AttendanceAnalysis {
-  overall_pct: number;
+  overall_pct: number | null;
   band: AttendanceBand;
   present_count: number;
   absent_count: number;
@@ -113,8 +113,8 @@ export interface AttendanceAnalysis {
   excluded_count: number;
   total_sessions: number;
   trend: "improving" | "stable" | "declining" | "insufficient_data";
-  sessions_30d_pct: number;
-  sessions_60d_pct: number;
+  sessions_30d_pct: number | null;
+  sessions_60d_pct: number | null;
 }
 
 export interface ExclusionAnalysis {
@@ -134,10 +134,10 @@ export interface PepCompliance {
   pep_current: boolean;          // had a PEP within last 6 months
   targets_set: number;
   targets_achieved: number;
-  target_achievement_rate: number;
-  virtual_school_involved_rate: number;
-  child_participation_rate: number;
-  pupil_premium_discussed_rate: number;
+  target_achievement_rate: number | null;
+  virtual_school_involved_rate: number | null;
+  child_participation_rate: number | null;
+  pupil_premium_discussed_rate: number | null;
 }
 
 export interface EhcpStatus {
@@ -151,24 +151,24 @@ export interface EhcpStatus {
 
 export interface HomeworkAnalysis {
   total_sessions_30d: number;
-  completion_rate: number;       // 0-100
-  engagement_rate: number;       // 0-100 (enthusiastic + willing)
-  avg_duration_minutes: number;
+  completion_rate: number | null;       // 0-100
+  engagement_rate: number | null;       // 0-100 (enthusiastic + willing)
+  avg_duration_minutes: number | null;
   support_level: string;         // none, minimal, moderate, significant
   subjects: string[];
 }
 
 export interface TutoringAnalysis {
   total_sessions_90d: number;
-  avg_progress_rating: number;   // 1-5
+  avg_progress_rating: number | null;   // 1-5
   subjects: string[];
   total_hours: number;
 }
 
 export interface EngagementAnalysis {
   total_events_90d: number;
-  attendance_rate: number;       // 0-100
-  staff_attendance_rate: number; // 0-100
+  attendance_rate: number | null;       // 0-100
+  staff_attendance_rate: number | null; // 0-100
   event_types: string[];
 }
 
@@ -198,7 +198,7 @@ export interface ChildEducationIntelligenceResult {
   child_name: string;
   school_name: string | null;
   education_health: EducationHealth;
-  education_score: number;         // 0-100
+  education_score: number | null;         // 0-100
   headline: string;
   attendance: AttendanceAnalysis;
   exclusions: ExclusionAnalysis;
@@ -448,7 +448,7 @@ export function computeChildEducationIntelligence(
     total_sessions_30d: hw30d.length,
     completion_rate: pct(hwCompleted.length, hw30d.length),
     engagement_rate: pct(hwEngaged.length, hw30d.length),
-    avg_duration_minutes: hwDurations.length > 0 ? Math.round(avg(hwDurations)) : 0,
+    avg_duration_minutes: hwDurations.length > 0 ? Math.round(avg(hwDurations)) : null,
     support_level: supportLevel,
     subjects: hwSubjects,
   };
@@ -461,7 +461,7 @@ export function computeChildEducationIntelligence(
 
   const tutoring: TutoringAnalysis = {
     total_sessions_90d: tutor90d.length,
-    avg_progress_rating: tutorRatings.length > 0 ? Math.round(avg(tutorRatings) * 10) / 10 : 0,
+    avg_progress_rating: tutorRatings.length > 0 ? Math.round(avg(tutorRatings) * 10) / 10 : null,
     subjects: tutorSubjects,
     total_hours: tutorHours,
   };
@@ -515,15 +515,15 @@ export function computeChildEducationIntelligence(
   else if (pepData.total === 0) score -= 10;
   else score -= 5;
 
-  if (pep_compliance.target_achievement_rate >= 75) score += 5;
-  else if (pep_compliance.target_achievement_rate < 50 && pepData.targetsSet > 0) score -= 3;
+  if ((pep_compliance.target_achievement_rate ?? 0) >= 75) score += 5;
+  else if ((pep_compliance.target_achievement_rate ?? 0) < 50 && pepData.targetsSet > 0) score -= 3;
 
   // EHCP
   if (ehcpStatus.has_ehcp && ehcpStatus.review_overdue) score -= 5;
   if (ehcpStatus.has_ehcp && ehcpStatus.provision_in_place) score += 3;
 
   // Homework
-  if (homework.total_sessions_30d >= 10 && homework.completion_rate >= 80) score += 5;
+  if (homework.total_sessions_30d >= 10 && (homework.completion_rate ?? 0) >= 80) score += 5;
   else if (homework.total_sessions_30d === 0) score -= 3;
 
   // Tutoring
@@ -534,7 +534,7 @@ export function computeChildEducationIntelligence(
   else if (achievements.length === 1) score += 2;
 
   // Engagement
-  if (engagement.attendance_rate >= 80 && engagement90d.length >= 2) score += 3;
+  if ((engagement.attendance_rate ?? 0) >= 80 && engagement90d.length >= 2) score += 3;
 
   // Concerns
   const openConcerns = education_records.filter((r) => r.record_type === "concern" && r.status !== "resolved");
@@ -580,7 +580,7 @@ export function computeChildEducationIntelligence(
     strengths.push(`${child_name} participates in all PEP meetings — voice is central to education planning.`);
   }
 
-  if (pep_compliance.target_achievement_rate >= 75 && pepData.targetsSet > 0) {
+  if ((pep_compliance.target_achievement_rate ?? 0) >= 75 && pepData.targetsSet > 0) {
     strengths.push(`${pep_compliance.target_achievement_rate}% of PEP targets achieved — strong progress against education plan.`);
   }
 
@@ -588,7 +588,7 @@ export function computeChildEducationIntelligence(
     strengths.push(`${achievements.length} achievements recorded — ${child_name} is being recognised for educational progress.`);
   }
 
-  if (homework.completion_rate >= 80 && homework.total_sessions_30d >= 5) {
+  if ((homework.completion_rate ?? 0) >= 80 && homework.total_sessions_30d >= 5) {
     strengths.push(`Homework completion rate at ${homework.completion_rate}% — consistent academic engagement at home.`);
   }
 
@@ -639,11 +639,11 @@ export function computeChildEducationIntelligence(
     concerns.push(`${openConcerns.length} open education concern(s) requiring follow-up — ensure actions are tracked and resolved.`);
   }
 
-  if (homework.total_sessions_30d >= 5 && homework.completion_rate < 50) {
+  if (homework.total_sessions_30d >= 5 && (homework.completion_rate ?? 0) < 50) {
     concerns.push(`Homework completion rate at ${homework.completion_rate}% — consider additional support or adapted homework approach.`);
   }
 
-  if (homework.total_sessions_30d >= 5 && homework.engagement_rate < 50) {
+  if (homework.total_sessions_30d >= 5 && (homework.engagement_rate ?? 0) < 50) {
     concerns.push("Low homework engagement — explore barriers with child and consider if current approach is meeting their needs.");
   }
 
@@ -701,7 +701,7 @@ export function computeChildEducationIntelligence(
     });
   }
 
-  if (pep_compliance.virtual_school_involved_rate < 100 && pepData.total > 0) {
+  if ((pep_compliance.virtual_school_involved_rate ?? 0) < 100 && pepData.total > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure Virtual School Head attends all future PEP meetings. VSH oversight is a statutory requirement for LAC education planning.",
@@ -711,7 +711,7 @@ export function computeChildEducationIntelligence(
     });
   }
 
-  if (pep_compliance.child_participation_rate < 100 && pepData.total > 0) {
+  if ((pep_compliance.child_participation_rate ?? 0) < 100 && pepData.total > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: `Improve child participation in PEP meetings (currently ${pep_compliance.child_participation_rate}%). Prepare the child beforehand and ensure their views shape targets.`,
@@ -721,7 +721,7 @@ export function computeChildEducationIntelligence(
     });
   }
 
-  if (homework.total_sessions_30d >= 5 && homework.completion_rate < 50) {
+  if (homework.total_sessions_30d >= 5 && (homework.completion_rate ?? 0) < 50) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Review homework approach — consider adapted tasks, reduced volume, or different support arrangements. Discuss with school and child.",
@@ -776,7 +776,7 @@ export function computeChildEducationIntelligence(
     });
   }
 
-  if (pepCurrent && pep_compliance.target_achievement_rate >= 75) {
+  if (pepCurrent && (pep_compliance.target_achievement_rate ?? 0) >= 75) {
     insights.push({
       severity: "positive",
       text: `PEP is current with ${pep_compliance.target_achievement_rate}% target achievement rate. This evidences effective education planning with measurable outcomes — exactly what inspectors want to see.`,

@@ -783,7 +783,7 @@ describe("computeNotificationResponsiveness", () => {
         const r = computeNotificationResponsiveness(baseInput({
           notifications: [makeNotification({ id: "arh0-1", read: true, read_at: null })],
         }));
-        expect(r.average_response_hours).toBe(0);
+        expect(r.average_response_hours).toBeNull();;
       });
 
       it("excludes unread from average", () => {
@@ -820,7 +820,7 @@ describe("computeNotificationResponsiveness", () => {
         const r = computeNotificationResponsiveness(baseInput({
           notifications: [makeNotification({ id: "urgh0-1", priority: "urgent", read: false, read_at: null, created_at: "2025-03-15T08:00:00Z" })],
         }));
-        expect(r.urgent_response_hours).toBe(0);
+        expect(r.urgent_response_hours).toBeNull();;
       });
 
       it("averages across multiple urgent read", () => {
@@ -1543,7 +1543,7 @@ describe("computeNotificationResponsiveness", () => {
       }));
       expect(r.urgent_read_rate).toBe(0);
       expect(r.urgent_unread_count).toBe(0);
-      expect(r.urgent_response_hours).toBe(0);
+      expect(r.urgent_response_hours).toBeNull();;
     });
 
     it("score clamps to 0 (never negative)", () => {
@@ -1603,7 +1603,7 @@ describe("computeNotificationResponsiveness", () => {
       const r = computeNotificationResponsiveness(baseInput({
         notifications: [makeNotification({ id: "ec12-1", read: true, read_at: null })],
       }));
-      expect(r.average_response_hours).toBe(0);
+      expect(r.average_response_hours).toBeNull();;
     });
 
     it("all notifications same recipient still counts as 1 for coverage", () => {

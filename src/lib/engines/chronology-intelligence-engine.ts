@@ -57,9 +57,9 @@ export interface ChronologyOverview {
   critical_events_total: number;
   significant_events_total: number;
   children_with_chronology: number;
-  avg_events_per_child: number;
+  avg_events_per_child: number | null;
   category_coverage: number; // number of distinct categories used
-  recording_frequency_30d: number; // events per child per 30 days
+  recording_frequency_30d: number | null; // events per child per 30 days
 }
 
 export interface ChildChronologyProfile {
@@ -72,7 +72,7 @@ export interface ChildChronologyProfile {
   categories_covered: string[];
   days_since_last_entry: number;
   placement_duration_days: number;
-  recording_rate: number; // events per 30d
+  recording_rate: number | null; // events per 30d
   has_gap: boolean; // > 14 days since last entry
 }
 
@@ -170,11 +170,11 @@ export function computeChronologyIntelligence(
 
   const avgEventsPerChild = children.length > 0
     ? Math.round((events.length / children.length) * 10) / 10
-    : 0;
+    : null;
 
   const recordingFrequency30d = children.length > 0
     ? Math.round((events30d.length / children.length) * 10) / 10
-    : 0;
+    : null;
 
   const overview: ChronologyOverview = {
     total_events: events.length,
@@ -237,7 +237,7 @@ export function computeChronologyIntelligence(
       critical: items.filter((e) => e.significance === "critical").length,
       significant: items.filter((e) => e.significance === "significant").length,
       routine: items.filter((e) => e.significance === "routine").length,
-      pct_of_total: events.length > 0 ? Math.round((items.length / events.length) * 100) : 0,
+      pct_of_total: events.length > 0 ? Math.round((items.length / events.length) * 100) : null,
     }))
     .sort((a, b) => b.count - a.count);
 
@@ -320,7 +320,7 @@ export function computeChronologyIntelligence(
   }
 
   // Warning: low recording frequency
-  const lowRecording = child_profiles.filter((p) => p.recording_rate < 2 && p.placement_duration_days > 30);
+  const lowRecording = child_profiles.filter((p) => (p.recording_rate ?? 0) < 2 && p.placement_duration_days > 30);
   if (lowRecording.length > 0 && children.length > 0) {
     insights.push({
       severity: "warning",
@@ -345,7 +345,7 @@ export function computeChronologyIntelligence(
   }
 
   // Positive: frequent recording
-  if (recordingFrequency30d >= 3 && children.length > 0) {
+  if ((recordingFrequency30d ?? 0) >= 3 && children.length > 0) {
     insights.push({
       severity: "positive",
       text: `Recording frequency of ${recordingFrequency30d} events per child in the last 30 days shows active, engaged chronology management. This level of recording captures the child's daily narrative effectively.`,

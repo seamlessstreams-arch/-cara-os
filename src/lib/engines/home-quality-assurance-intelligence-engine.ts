@@ -41,7 +41,7 @@ export type QARating =
 export interface AuditCoverageProfile {
   total_audits_12m: number;
   unique_scopes: number;
-  avg_score: number;
+  avg_score: number | null;
   excellent_count: number;
   good_count: number;
   ri_count: number;
@@ -51,15 +51,15 @@ export interface AuditCoverageProfile {
 export interface ActionPlanProfile {
   total_actions: number;
   completed_count: number;
-  completion_rate: number;
+  completion_rate: number | null;
   overdue_count: number;
   in_progress_count: number;
 }
 
 export interface ImprovementProfile {
-  avg_findings_per_audit: number;
-  avg_strengths_per_audit: number;
-  avg_improvement_areas: number;
+  avg_findings_per_audit: number | null;
+  avg_strengths_per_audit: number | null;
+  avg_improvement_areas: number | null;
   audit_frequency_months: number;
 }
 
@@ -77,7 +77,7 @@ export interface QARecommendation {
 
 export interface HomeQAResult {
   qa_rating: QARating;
-  qa_score: number;
+  qa_score: number | null;
   headline: string;
   audit_coverage: AuditCoverageProfile;
   action_plan: ActionPlanProfile;
@@ -170,13 +170,13 @@ export function computeHomeQA(
   // ── Improvement Profile ────────────────────────────────────────────
   const avgFindings = recent.length > 0
     ? Math.round((recent.reduce((a, r) => a + r.findings_count, 0) / recent.length) * 10) / 10
-    : 0;
+    : null;
   const avgStrengths = recent.length > 0
     ? Math.round((recent.reduce((a, r) => a + r.strengths_count, 0) / recent.length) * 10) / 10
-    : 0;
+    : null;
   const avgImprovementAreas = recent.length > 0
     ? Math.round((recent.reduce((a, r) => a + r.improvement_areas_count, 0) / recent.length) * 10) / 10
-    : 0;
+    : null;
   const auditFreqMonths = recent.length > 1
     ? Math.round(12 / recent.length * 10) / 10
     : 12;
@@ -234,8 +234,8 @@ export function computeHomeQA(
   else score += 0;
 
   // 8. Strengths identified (±3)
-  if (avgStrengths >= 2) score += 3;
-  else if (avgStrengths >= 1) score += 1;
+  if ((avgStrengths ?? 0) >= 2) score += 3;
+  else if ((avgStrengths ?? 0) >= 1) score += 1;
   else score += 0;
 
   score = clamp(score, 0, 100);

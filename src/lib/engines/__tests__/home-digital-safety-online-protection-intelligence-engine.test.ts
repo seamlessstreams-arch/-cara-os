@@ -966,7 +966,7 @@ describe("Home Digital Safety & Online Protection Intelligence Engine", () => {
       const r = computeDigitalSafetyOnlineProtection(
         baseInput({ total_children: 1, internet_usage_logs: logs }),
       );
-      expect(r.incident_response_rate).toBe(0);
+      expect(r.incident_response_rate).toBeNull();;
       // No penalty3 (no incident components)
       // bonus2: monitoring 100% → +3
       // penalty2 (access<50): -5
@@ -1540,7 +1540,7 @@ describe("Home Digital Safety & Online Protection Intelligence Engine", () => {
           esafety_training_records: [makeTraining()],
         }),
       );
-      expect(r.incident_response_rate).toBe(0);
+      expect(r.incident_response_rate).toBeNull();;
     });
 
     it("averages flaggedContentResponseRate and escalationRate when both present", () => {

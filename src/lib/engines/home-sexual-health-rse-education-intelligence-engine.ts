@@ -108,7 +108,7 @@ export interface SafeguardingAwarenessRecordInput {
   child_understands_online_risks: boolean;
   child_understands_grooming: boolean;
   child_can_identify_unsafe_situations: boolean;
-  child_confidence_score: number; // 1-10
+  child_confidence_score: number | null; // 1-10
   child_willingness_to_disclose: boolean;
   staff_confidence_in_child: number; // 1-5
   areas_for_development: string[];
@@ -151,17 +151,17 @@ export interface SexualHealthRseRecommendation {
 
 export interface SexualHealthRseResult {
   rse_rating: SexualHealthRseRating;
-  rse_score: number;
+  rse_score: number | null;
   headline: string;
   total_rse_sessions: number;
-  rse_delivery_rate: number;
-  health_screening_rate: number;
-  age_appropriate_rate: number;
-  consent_education_rate: number;
-  safeguarding_awareness_rate: number;
-  child_confidence_rate: number;
-  screening_compliance_avg: number;
-  consent_understanding_avg: number;
+  rse_delivery_rate: number | null;
+  health_screening_rate: number | null;
+  age_appropriate_rate: number | null;
+  consent_education_rate: number | null;
+  safeguarding_awareness_rate: number | null;
+  child_confidence_rate: number | null;
+  screening_compliance_avg: number | null;
+  consent_understanding_avg: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SexualHealthRseRecommendation[];
@@ -396,7 +396,7 @@ export function computeSexualHealthRseEducation(
       ? Math.round(
           (screeningCompletionRate + screeningConsentRate + confidentialityExplainedRate) / 3,
         )
-      : 0;
+      : null;
 
   // --- Age-appropriate guidance ---
   const totalGuidance = age_guidance_records.length;
@@ -519,7 +519,7 @@ export function computeSexualHealthRseEducation(
       ? Math.round(
           (consentUnderstandingRate + consentArticulationRate + pressureIdentificationRate + knowsWhoToTellRate) / 4,
         )
-      : 0;
+      : null;
 
   // --- Safeguarding awareness ---
   const totalSafeguardingAssessments = safeguarding_awareness_records.length;
@@ -575,13 +575,13 @@ export function computeSexualHealthRseEducation(
 
   // Child confidence scores
   const confidenceScoreSum = safeguarding_awareness_records.reduce(
-    (sum, s) => sum + s.child_confidence_score,
+    (sum, s) => sum + (s.child_confidence_score ?? 0),
     0,
   );
   const childConfidenceAvg =
     totalSafeguardingAssessments > 0
       ? Math.round((confidenceScoreSum / totalSafeguardingAssessments) * 100) / 100
-      : 0;
+      : null;
 
   // Staff confidence in child
   const staffConfidenceSum = safeguarding_awareness_records.reduce(
@@ -591,12 +591,12 @@ export function computeSexualHealthRseEducation(
   const staffConfidenceAvg =
     totalSafeguardingAssessments > 0
       ? Math.round((staffConfidenceSum / totalSafeguardingAssessments) * 100) / 100
-      : 0;
+      : null;
 
   // --- Child confidence rate (composite across consent ed + safeguarding awareness) ---
   // Based on child confidence scores >= 7/10 in safeguarding + consent demonstrated understanding
   const childrenConfidentSafeguarding = safeguarding_awareness_records.filter(
-    (s) => s.child_confidence_score >= 7,
+    (s) => (s.child_confidence_score ?? 0) >= 7,
   ).length;
   const totalConfidenceOpportunities = totalSafeguardingAssessments + totalConsentSessions;
   const totalConfidencePositive = childrenConfidentSafeguarding + consentDemonstratedUnderstanding;
@@ -631,15 +631,15 @@ export function computeSexualHealthRseEducation(
   else if (childConfidenceRate >= 70) score += 1;
 
   // --- Bonus 7: consentUnderstandingAvg (>=80: +3, >=60: +1) ---
-  if (consentUnderstandingAvg >= 80) score += 3;
-  else if (consentUnderstandingAvg >= 60) score += 1;
+  if ((consentUnderstandingAvg ?? 0) >= 80) score += 3;
+  else if ((consentUnderstandingAvg ?? 0) >= 60) score += 1;
 
   // --- Bonus 8: rseObjectivesMetRate (>=90: +2, >=70: +1) ---
   if (rseObjectivesMetRate >= 90) score += 2;
   else if (rseObjectivesMetRate >= 70) score += 1;
 
   // --- Bonus 9: screeningComplianceAvg (>=90: +1) ---
-  if (screeningComplianceAvg >= 90) score += 1;
+  if ((screeningComplianceAvg ?? 0) >= 90) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
@@ -723,11 +723,11 @@ export function computeSexualHealthRseEducation(
     );
   }
 
-  if (consentUnderstandingAvg >= 80 && totalConsentSessions > 0) {
+  if ((consentUnderstandingAvg ?? 0) >= 80 && totalConsentSessions > 0) {
     strengths.push(
       `Consent understanding composite at ${consentUnderstandingAvg}% — children demonstrate strong grasp of consent principles, can articulate boundaries, identify pressure, and know who to tell when they feel unsafe.`,
     );
-  } else if (consentUnderstandingAvg >= 60 && totalConsentSessions > 0) {
+  } else if ((consentUnderstandingAvg ?? 0) >= 60 && totalConsentSessions > 0) {
     strengths.push(
       `Consent understanding at ${consentUnderstandingAvg}% — most children demonstrate adequate understanding of consent and boundaries.`,
     );
@@ -877,11 +877,11 @@ export function computeSexualHealthRseEducation(
     );
   }
 
-  if (consentUnderstandingAvg < 40 && totalConsentSessions > 0) {
+  if ((consentUnderstandingAvg ?? 0) < 40 && totalConsentSessions > 0) {
     concerns.push(
       `Consent understanding composite at only ${consentUnderstandingAvg}% — children are not demonstrating adequate understanding of consent principles. This suggests consent education is not achieving its aims and children may remain vulnerable.`,
     );
-  } else if (consentUnderstandingAvg < 60 && consentUnderstandingAvg >= 40 && totalConsentSessions > 0) {
+  } else if ((consentUnderstandingAvg ?? 0) < 60 && (consentUnderstandingAvg ?? 0) >= 40 && totalConsentSessions > 0) {
     concerns.push(
       `Consent understanding at ${consentUnderstandingAvg}% — while some progress is evident, many children are not yet demonstrating the level of consent understanding needed to protect themselves.`,
     );
@@ -1135,8 +1135,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    consentUnderstandingAvg >= 40 &&
-    consentUnderstandingAvg < 60 &&
+    (consentUnderstandingAvg ?? 0) >= 40 &&
+    (consentUnderstandingAvg ?? 0) < 60 &&
     totalConsentSessions > 0
   ) {
     recommendations.push({
@@ -1288,7 +1288,7 @@ export function computeSexualHealthRseEducation(
     });
   }
 
-  if (consentUnderstandingAvg < 40 && totalConsentSessions > 0) {
+  if ((consentUnderstandingAvg ?? 0) < 40 && totalConsentSessions > 0) {
     insights.push({
       text: `Consent understanding composite at only ${consentUnderstandingAvg}%. Despite consent education being delivered, children are not demonstrating adequate understanding of consent principles, the ability to articulate boundaries, recognition of pressure, or knowledge of who to tell. The education approach requires fundamental review and likely needs more practical, scenario-based methods.`,
       severity: "critical",
@@ -1353,8 +1353,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    consentUnderstandingAvg >= 40 &&
-    consentUnderstandingAvg < 60 &&
+    (consentUnderstandingAvg ?? 0) >= 40 &&
+    (consentUnderstandingAvg ?? 0) < 60 &&
     totalConsentSessions > 0
   ) {
     insights.push({
@@ -1475,7 +1475,7 @@ export function computeSexualHealthRseEducation(
 
   if (
     consentEducationRate >= 100 &&
-    consentUnderstandingAvg >= 80 &&
+    (consentUnderstandingAvg ?? 0) >= 80 &&
     total_children > 0 &&
     totalConsentSessions > 0
   ) {
@@ -1555,8 +1555,8 @@ export function computeSexualHealthRseEducation(
   }
 
   if (
-    staffConfidenceAvg >= 4.0 &&
-    childConfidenceAvg >= 7.0 &&
+    (staffConfidenceAvg ?? 0) >= 4.0 &&
+    (childConfidenceAvg ?? 0) >= 7.0 &&
     totalSafeguardingAssessments > 0
   ) {
     insights.push({

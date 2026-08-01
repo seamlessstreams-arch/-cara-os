@@ -54,8 +54,8 @@ export interface RecordingFrequency {
   entries_7d: number;
   entries_30d: number;
   days_with_entries_30d: number;  // out of ~30
-  avg_entries_per_day_30d: number;
-  recording_coverage_rate: number; // % of days with at least 1 entry
+  avg_entries_per_day_30d: number | null;
+  recording_coverage_rate: number | null; // % of days with at least 1 entry
   trend: "increasing" | "stable" | "decreasing" | "insufficient_data";
 }
 
@@ -93,7 +93,7 @@ export interface ChildDailyLifeResult {
   child_id: string;
   child_name: string;
   daily_life_rating: DailyLifeRating;
-  daily_life_score: number;        // 0-100
+  daily_life_score: number | null;        // 0-100
   headline: string;
   mood_profile: MoodProfile;
   recording_frequency: RecordingFrequency;
@@ -107,7 +107,7 @@ export interface ChildDailyLifeResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function daysAgo(today: string, date: string): number {
+function daysAgo(today: string, date: string): number | null {
   return Math.round(
     (new Date(today).getTime() - new Date(date).getTime()) / 86_400_000,
   );
@@ -118,7 +118,7 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 0;
+  return d > 0  ? Math.round((n / d) * 100)  : null;
 }
 
 function avg(nums: number[]): number {
@@ -147,11 +147,11 @@ export function computeChildDailyLife(
 
   const entries7d = sorted.filter((e) => {
     const da = daysAgo(today, e.date);
-    return da >= 0 && da <= 7;
+    return (da ?? 0) >= 0 && (da ?? 0) <= 7;
   });
   const entries30d = sorted.filter((e) => {
     const da = daysAgo(today, e.date);
-    return da >= 0 && da <= 30;
+    return (da ?? 0) >= 0 && (da ?? 0) <= 30;
   });
 
   // ── Mood Profile ──────────────────────────────────────────────────────
@@ -186,7 +186,7 @@ export function computeChildDailyLife(
   // ── Recording Frequency ───────────────────────────────────────────────
   const uniqueDays30d = new Set(entries30d.map((e) => e.date));
   const coverageRate = pct(uniqueDays30d.size, 30);
-  const avgPerDay = entries30d.length > 0 ? Math.round((entries30d.length / Math.max(uniqueDays30d.size, 1)) * 10) / 10 : 0;
+  const avgPerDay = entries30d.length > 0 ? Math.round((entries30d.length / Math.max(uniqueDays30d.size, 1)) * 10) / 10 : null;
 
   // Trend: compare entries in first 15d vs last 15d of 30d window
   let recTrend: "increasing" | "stable" | "decreasing" | "insufficient_data" = "insufficient_data";
@@ -249,8 +249,8 @@ export function computeChildDailyLife(
     else if (coverageRate < 70) score -= 5;
 
     // Entry frequency
-    if (avgPerDay >= 3) score += 5;
-    else if (avgPerDay >= 2) score += 2;
+    if ((avgPerDay ?? 0) >= 3) score += 5;
+    else if ((avgPerDay ?? 0) >= 2) score += 2;
 
     // Mood recording
     const moodRate = pct(moods30d.length, entries30d.length);

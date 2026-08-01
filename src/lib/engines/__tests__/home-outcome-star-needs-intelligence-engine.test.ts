@@ -701,7 +701,7 @@ describe("computeOutcomeStarNeeds", () => {
     it("handles no outcome stars with children present", () => {
       const r = computeOutcomeStarNeeds(baseInput({ outcome_stars: [] }));
       expect(r.children_assessed).toBe(0);
-      expect(r.average_outcome_score).toBe(0);
+      expect(r.average_outcome_score).toBeNull();;
       expect(r.children_improving).toBe(0);
       expect(r.outcome_score).toBeGreaterThan(0);
     });

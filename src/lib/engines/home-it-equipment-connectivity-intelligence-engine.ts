@@ -152,19 +152,19 @@ export interface ItEquipmentRecommendation {
 
 export interface ItEquipmentConnectivityResult {
   it_rating: ItEquipmentRating;
-  it_score: number;
+  it_score: number | null;
   headline: string;
   total_wifi_records: number;
   total_device_records: number;
   total_printer_records: number;
   total_software_records: number;
   total_digital_access_records: number;
-  wifi_reliability_rate: number;
-  device_availability_rate: number;
-  printer_access_rate: number;
-  software_currency_rate: number;
-  digital_access_rate: number;
-  child_satisfaction_rate: number;
+  wifi_reliability_rate: number | null;
+  device_availability_rate: number | null;
+  printer_access_rate: number | null;
+  software_currency_rate: number | null;
+  digital_access_rate: number | null;
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: ItEquipmentRecommendation[];
@@ -306,7 +306,7 @@ export function computeItEquipmentConnectivity(
   const backupRate = pct(backupAvailable, totalWifiRecords);
 
   const totalOutageMinutes = wifi_records.reduce((sum, w) => sum + w.outage_minutes, 0);
-  const avgOutageMinutes = totalWifiRecords > 0 ? Math.round(totalOutageMinutes / totalWifiRecords) : 0;
+  const avgOutageMinutes = totalWifiRecords > 0 ? Math.round(totalOutageMinutes / totalWifiRecords) : null;
 
   const outagesReported = wifi_records.filter((w) => w.outage_minutes > 0 && w.outage_reported).length;
   const outagesTotal = wifi_records.filter((w) => w.outage_minutes > 0).length;
@@ -484,12 +484,12 @@ export function computeItEquipmentConnectivity(
   const avgSatisfaction =
     satisfactionRatings.length > 0
       ? Math.round((totalSatisfactionSum / satisfactionRatings.length) * 100) / 100
-      : 0;
+      : null;
   // Convert 1-5 scale to percentage: (avg - 1) / 4 * 100
   const childSatisfactionRate =
     satisfactionRatings.length > 0
-      ? Math.round(((avgSatisfaction - 1) / 4) * 100)
-      : 0;
+      ? Math.round((((avgSatisfaction ?? 0) - 1) / 4) * 100)
+      : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
@@ -512,8 +512,8 @@ export function computeItEquipmentConnectivity(
   else if (digitalAccessRate >= 80) score += 2;
 
   // --- Bonus 5: childSatisfactionRate (>=80: +3, >=60: +1) ---
-  if (childSatisfactionRate >= 80) score += 3;
-  else if (childSatisfactionRate >= 60) score += 1;
+  if ((childSatisfactionRate ?? 0) >= 80) score += 3;
+  else if ((childSatisfactionRate ?? 0) >= 60) score += 1;
 
   // --- Bonus 6: printerAccessRate (>=90: +3, >=70: +1) ---
   if (printerAccessRate >= 90) score += 3;
@@ -599,11 +599,11 @@ export function computeItEquipmentConnectivity(
     );
   }
 
-  if (childSatisfactionRate >= 80 && satisfactionRatings.length > 0) {
+  if ((childSatisfactionRate ?? 0) >= 80 && satisfactionRatings.length > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction with IT provision — children express high levels of satisfaction with the technology available to them.`,
     );
-  } else if (childSatisfactionRate >= 60 && satisfactionRatings.length > 0) {
+  } else if ((childSatisfactionRate ?? 0) >= 60 && satisfactionRatings.length > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction rate — children are generally positive about the IT equipment and digital access available in the home.`,
     );
@@ -747,11 +747,11 @@ export function computeItEquipmentConnectivity(
     );
   }
 
-  if (childSatisfactionRate < 40 && satisfactionRatings.length > 0) {
+  if ((childSatisfactionRate ?? 0) < 40 && satisfactionRatings.length > 0) {
     concerns.push(
       `Child satisfaction with IT provision at only ${childSatisfactionRate}% — children are significantly dissatisfied with the technology available to them, suggesting IT equipment is not meeting their needs.`,
     );
-  } else if (childSatisfactionRate < 60 && childSatisfactionRate >= 40 && satisfactionRatings.length > 0) {
+  } else if ((childSatisfactionRate ?? 0) < 60 && (childSatisfactionRate ?? 0) >= 40 && satisfactionRatings.length > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — children express mixed views about IT provision, indicating areas where equipment or access could be improved.`,
     );
@@ -825,7 +825,7 @@ export function computeItEquipmentConnectivity(
     );
   }
 
-  if (avgOutageMinutes >= 30 && totalWifiRecords > 0) {
+  if ((avgOutageMinutes ?? 0) >= 30 && totalWifiRecords > 0) {
     concerns.push(
       `Average WiFi outage of ${avgOutageMinutes} minutes per test period — frequent or prolonged internet outages disrupt children's education and connectivity.`,
     );
@@ -932,7 +932,7 @@ export function computeItEquipmentConnectivity(
     });
   }
 
-  if (childSatisfactionRate < 40 && satisfactionRatings.length > 0) {
+  if ((childSatisfactionRate ?? 0) < 40 && satisfactionRatings.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1064,8 +1064,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    childSatisfactionRate >= 40 &&
-    childSatisfactionRate < 60 &&
+    (childSatisfactionRate ?? 0) >= 40 &&
+    (childSatisfactionRate ?? 0) < 60 &&
     satisfactionRatings.length > 0
   ) {
     recommendations.push({
@@ -1193,8 +1193,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    childSatisfactionRate >= 40 &&
-    childSatisfactionRate < 60 &&
+    (childSatisfactionRate ?? 0) >= 40 &&
+    (childSatisfactionRate ?? 0) < 60 &&
     satisfactionRatings.length > 0
   ) {
     insights.push({
@@ -1317,7 +1317,7 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    childSatisfactionRate >= 80 &&
+    (childSatisfactionRate ?? 0) >= 80 &&
     satisfactionRatings.length > 0
   ) {
     insights.push({

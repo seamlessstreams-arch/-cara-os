@@ -59,7 +59,7 @@ export interface FrequencyProfile {
   restraints_7d: number;
   restraints_90d: number;
   frequency_trend: "increasing" | "stable" | "decreasing" | "insufficient_data";
-  avg_per_month_90d: number;
+  avg_per_month_90d: number | null;
   days_since_last: number | null;
 }
 
@@ -72,16 +72,16 @@ export interface DurationProfile {
 }
 
 export interface ComplianceProfile {
-  child_debrief_rate: number;
-  staff_debrief_rate: number;
-  body_map_rate: number;
-  medical_check_rate: number;
-  review_completion_rate: number;
+  child_debrief_rate: number | null;
+  staff_debrief_rate: number | null;
+  body_map_rate: number | null;
+  medical_check_rate: number | null;
+  review_completion_rate: number | null;
   pending_reviews: number;
-  notification_rate: number;
-  antecedent_recorded_rate: number;
-  justification_recorded_rate: number;
-  de_escalation_documented_rate: number;
+  notification_rate: number | null;
+  antecedent_recorded_rate: number | null;
+  justification_recorded_rate: number | null;
+  de_escalation_documented_rate: number | null;
 }
 
 export interface PatternProfile {
@@ -98,7 +98,7 @@ export interface ChildRestrictivePracticeResult {
   child_id: string;
   child_name: string;
   restrictive_practice_rating: RestrictivePracticeRating;
-  restrictive_practice_score: number;
+  restrictive_practice_score: number | null;
   headline: string;
   frequency: FrequencyProfile;
   duration: DurationProfile;
@@ -194,7 +194,7 @@ export function computeChildRestrictivePractice(input: ChildRestrictivePracticeI
     else frequencyTrend = "stable";
   }
 
-  const avgPerMonth90d = r90d.length > 0 ? Math.round((r90d.length / 3) * 10) / 10 : 0;
+  const avgPerMonth90d = r90d.length > 0 ? Math.round((r90d.length / 3) * 10) / 10 : null;
 
   const frequency: FrequencyProfile = {
     total_restraints: restraints.length,
@@ -304,15 +304,15 @@ export function computeChildRestrictivePractice(input: ChildRestrictivePracticeI
   if (longRestraints.length > 0) score -= 3 * longRestraints.length;
 
   // Compliance bonuses
-  if (compliance.child_debrief_rate >= 90) score += 5;
-  else if (compliance.child_debrief_rate < 50 && r90d.length > 0) score -= 8;
-  if (compliance.staff_debrief_rate >= 90) score += 3;
-  if (compliance.body_map_rate >= 90) score += 3;
-  if (compliance.review_completion_rate >= 80) score += 5;
+  if ((compliance.child_debrief_rate ?? 0) >= 90) score += 5;
+  else if ((compliance.child_debrief_rate ?? 0) < 50 && r90d.length > 0) score -= 8;
+  if ((compliance.staff_debrief_rate ?? 0) >= 90) score += 3;
+  if ((compliance.body_map_rate ?? 0) >= 90) score += 3;
+  if ((compliance.review_completion_rate ?? 0) >= 80) score += 5;
   else if (pendingReviews >= 2) score -= 5;
-  if (compliance.de_escalation_documented_rate >= 90) score += 5;
-  else if (compliance.de_escalation_documented_rate < 50 && r90d.length > 0) score -= 5;
-  if (compliance.notification_rate >= 90) score += 3;
+  if ((compliance.de_escalation_documented_rate ?? 0) >= 90) score += 5;
+  else if ((compliance.de_escalation_documented_rate ?? 0) < 50 && r90d.length > 0) score -= 5;
+  if ((compliance.notification_rate ?? 0) >= 90) score += 3;
 
   // Injuries (heavy penalty)
   if (childInjuryCount > 0) score -= 10 * childInjuryCount;
@@ -331,10 +331,10 @@ export function computeChildRestrictivePractice(input: ChildRestrictivePracticeI
   const strengths: string[] = [];
   if (r30d.length === 0 && r90d.length > 0) strengths.push("No restraint episodes in the last 30 days — positive trajectory.");
   if (frequencyTrend === "decreasing") strengths.push("Restraint frequency is decreasing — behaviour support strategies appear effective.");
-  if (compliance.child_debrief_rate >= 90 && r90d.length >= 2) strengths.push(`${compliance.child_debrief_rate}% child debrief rate — excellent post-incident support.`);
-  if (compliance.staff_debrief_rate >= 90 && r90d.length >= 2) strengths.push(`${compliance.staff_debrief_rate}% staff debrief rate — supporting reflective practice.`);
+  if ((compliance.child_debrief_rate ?? 0) >= 90 && r90d.length >= 2) strengths.push(`${(compliance.child_debrief_rate ?? 0)}% child debrief rate — excellent post-incident support.`);
+  if ((compliance.staff_debrief_rate ?? 0) >= 90 && r90d.length >= 2) strengths.push(`${(compliance.staff_debrief_rate ?? 0)}% staff debrief rate — supporting reflective practice.`);
   if (compliance.de_escalation_documented_rate === 100 && r90d.length >= 2) strengths.push("De-escalation attempts documented in every episode — evidence of least-restrictive approach.");
-  if (compliance.body_map_rate >= 90 && r90d.length >= 2) strengths.push("Body maps completed consistently — strong safeguarding documentation.");
+  if ((compliance.body_map_rate ?? 0) >= 90 && r90d.length >= 2) strengths.push("Body maps completed consistently — strong safeguarding documentation.");
   if (duration.avg_duration_minutes !== null && duration.avg_duration_minutes <= 3) strengths.push(`Average restraint duration only ${duration.avg_duration_minutes} minutes — minimum force principle upheld.`);
   if (injuryCount === 0 && r90d.length >= 2) strengths.push("No injuries recorded across all episodes — safe practice.");
 
@@ -344,10 +344,10 @@ export function computeChildRestrictivePractice(input: ChildRestrictivePracticeI
   if (frequencyTrend === "increasing") concerns.push("Restraint frequency is increasing — current behaviour support plan may need review.");
   if (longRestraints.length > 0) concerns.push(`${longRestraints.length} restraint(s) exceeded 10 minutes — proportionality review needed.`);
   if (childInjuryCount > 0) concerns.push(`${childInjuryCount} injury/injuries to ${child_name} during restraint — safeguarding concern (Reg 19).`);
-  if (compliance.child_debrief_rate < 80 && r90d.length >= 2) concerns.push(`Child debrief rate only ${compliance.child_debrief_rate}% — post-incident recovery process incomplete.`);
+  if ((compliance.child_debrief_rate ?? 0) < 80 && r90d.length >= 2) concerns.push(`Child debrief rate only ${(compliance.child_debrief_rate ?? 0)}% — post-incident recovery process incomplete.`);
   if (pendingReviews >= 2) concerns.push(`${pendingReviews} restraint episode(s) pending review — management oversight gap.`);
-  if (compliance.de_escalation_documented_rate < 80 && r90d.length >= 2) concerns.push(`De-escalation documentation only ${compliance.de_escalation_documented_rate}% — must evidence least-restrictive approach.`);
-  if (compliance.notification_rate < 80 && r90d.length >= 2) concerns.push(`Notification compliance only ${compliance.notification_rate}% — Reg 35 requires timely notification.`);
+  if ((compliance.de_escalation_documented_rate ?? 0) < 80 && r90d.length >= 2) concerns.push(`De-escalation documentation only ${(compliance.de_escalation_documented_rate ?? 0)}% — must evidence least-restrictive approach.`);
+  if ((compliance.notification_rate ?? 0) < 80 && r90d.length >= 2) concerns.push(`Notification compliance only ${(compliance.notification_rate ?? 0)}% — Reg 35 requires timely notification.`);
   if (durationTrend === "increasing") concerns.push("Average restraint duration is increasing — risk of disproportionate practice.");
 
   // ── Recommendations ───────────────────────────────────────────────────
@@ -358,10 +358,10 @@ export function computeChildRestrictivePractice(input: ChildRestrictivePracticeI
   if (r30d.length >= 3) recs.push({ rank: ++rank, recommendation: "Convene multi-disciplinary meeting to review behaviour support plan — frequency warrants urgent review.", urgency: "immediate", regulatory_ref: "Reg 20" });
   if (frequencyTrend === "increasing") recs.push({ rank: ++rank, recommendation: "Escalating restraint pattern requires therapeutic assessment and updated behaviour support plan.", urgency: "immediate", regulatory_ref: "Reg 20" });
   if (pendingReviews >= 2) recs.push({ rank: ++rank, recommendation: `Complete ${pendingReviews} outstanding restraint reviews — RM must sign off all episodes.`, urgency: "soon", regulatory_ref: "Reg 35" });
-  if (compliance.child_debrief_rate < 80 && r90d.length >= 2) recs.push({ rank: ++rank, recommendation: "Ensure post-incident debrief with child within 24 hours of every restraint episode.", urgency: "soon", regulatory_ref: "Reg 19" });
-  if (compliance.de_escalation_documented_rate < 80 && r90d.length >= 2) recs.push({ rank: ++rank, recommendation: "Document de-escalation strategies attempted before every restraint — essential evidence for Ofsted.", urgency: "soon", regulatory_ref: "Reg 19" });
+  if ((compliance.child_debrief_rate ?? 0) < 80 && r90d.length >= 2) recs.push({ rank: ++rank, recommendation: "Ensure post-incident debrief with child within 24 hours of every restraint episode.", urgency: "soon", regulatory_ref: "Reg 19" });
+  if ((compliance.de_escalation_documented_rate ?? 0) < 80 && r90d.length >= 2) recs.push({ rank: ++rank, recommendation: "Document de-escalation strategies attempted before every restraint — essential evidence for Ofsted.", urgency: "soon", regulatory_ref: "Reg 19" });
   if (longRestraints.length > 0) recs.push({ rank: ++rank, recommendation: "Review extended-duration restraints with Team Teach lead — consider technique refresher.", urgency: "planned", regulatory_ref: "Reg 20" });
-  if (compliance.body_map_rate < 90 && r90d.length >= 2) recs.push({ rank: ++rank, recommendation: "Body map must be completed after every restraint — currently incomplete.", urgency: "soon", regulatory_ref: "Reg 19" });
+  if ((compliance.body_map_rate ?? 0) < 90 && r90d.length >= 2) recs.push({ rank: ++rank, recommendation: "Body map must be completed after every restraint — currently incomplete.", urgency: "soon", regulatory_ref: "Reg 19" });
 
   // ── Insights ──────────────────────────────────────────────────────────
   const insights: ChildRestrictivePracticeResult["insights"] = [];
@@ -375,10 +375,10 @@ export function computeChildRestrictivePractice(input: ChildRestrictivePracticeI
   if (pendingReviews >= 2) {
     insights.push({ severity: "warning", text: `${pendingReviews} restraint episodes awaiting management review. Delays in review suggest insufficient oversight — a likely finding under SCCIF "Leadership and management."` });
   }
-  if (compliance.child_debrief_rate < 80 && r90d.length >= 2) {
+  if ((compliance.child_debrief_rate ?? 0) < 80 && r90d.length >= 2) {
     insights.push({ severity: "warning", text: `Child debrief rate is ${compliance.child_debrief_rate}%. Post-incident recovery is therapeutic and regulatory — ${child_name} must have the opportunity to process the experience.` });
   }
-  if (rating === "outstanding" || (r30d.length === 0 && r90d.length > 0 && compliance.child_debrief_rate >= 90)) {
+  if (rating === "outstanding" || (r30d.length === 0 && r90d.length > 0 && (compliance.child_debrief_rate ?? 0) >= 90)) {
     insights.push({ severity: "positive", text: `${r30d.length === 0 ? "No recent restraints" : "Low restraint frequency"} with strong compliance practices for ${child_name}. Evidence of effective de-escalation, therapeutic response, and regulatory compliance.` });
   }
   if (frequencyTrend === "decreasing" && r90d.length >= 3) {

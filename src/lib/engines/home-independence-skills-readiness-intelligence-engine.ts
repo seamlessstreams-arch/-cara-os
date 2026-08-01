@@ -70,18 +70,18 @@ export type IndependenceReadinessRating =
 
 export interface IndependenceSkillsReadinessResult {
   readiness_rating: IndependenceReadinessRating;
-  readiness_score: number; // 0-100
+  readiness_score: number | null; // 0-100
   headline: string;
   total_records: number;
   children_assessed: number; // unique child_ids with records
   average_readiness: number; // avg overall_readiness across records
-  child_view_rate: number; // % of records with child view
-  evidence_rate: number; // % of skills with evidence
-  next_step_rate: number; // % of skills with next_step
-  skill_progression_rate: number; // % of skills at developing or above
-  pathway_plan_rate: number; // % of children with active pathway plan
-  pathway_child_voice_rate: number; // % of pathway plans with child voice
-  review_currency_rate: number; // % of records reviewed within 90 days
+  child_view_rate: number | null; // % of records with child view
+  evidence_rate: number | null; // % of skills with evidence
+  next_step_rate: number | null; // % of skills with next_step
+  skill_progression_rate: number | null; // % of skills at developing or above
+  pathway_plan_rate: number | null; // % of children with active pathway plan
+  pathway_child_voice_rate: number | null; // % of pathway plans with child voice
+  review_currency_rate: number | null; // % of records reviewed within 90 days
   category_coverage: number; // avg distinct categories per child
   strengths: string[];
   concerns: string[];
@@ -212,7 +212,7 @@ export function computeIndependenceSkillsReadiness(
 
   // Average readiness
   const sumReadiness = records.reduce((acc, r) => acc + r.overall_readiness, 0);
-  const average_readiness = total_records > 0 ? Math.round(sumReadiness / total_records) : 0;
+  const average_readiness = total_records > 0 ? Math.round(sumReadiness / total_records) : null;
 
   // Child view rate
   const recordsWithChildView = records.filter((r) => r.has_child_view).length;
@@ -270,15 +270,15 @@ export function computeIndependenceSkillsReadiness(
   const childrenWithSkills = categoriesByChild.size;
   const category_coverage = childrenWithSkills > 0
     ? Math.round(totalCategories / childrenWithSkills)
-    : 0;
+    : null;
 
   // ── Score calculation ─────────────────────────────────────────────────
 
   let score = 52; // base
 
   // Bonus: average_readiness
-  if (average_readiness >= 70) score += 4;
-  else if (average_readiness >= 50) score += 2;
+  if ((average_readiness ?? 0) >= 70) score += 4;
+  else if ((average_readiness ?? 0) >= 50) score += 2;
 
   // Bonus: child_view_rate
   if (child_view_rate >= 90) score += 4;
@@ -305,8 +305,8 @@ export function computeIndependenceSkillsReadiness(
   else if (review_currency_rate >= 70) score += 1;
 
   // Bonus: category_coverage
-  if (category_coverage >= 5) score += 2;
-  else if (category_coverage >= 3) score += 1;
+  if ((category_coverage ?? 0) >= 5) score += 2;
+  else if ((category_coverage ?? 0) >= 3) score += 1;
 
   // Penalty: child_view_rate < 30%
   if (child_view_rate < 30) score -= 5;
@@ -315,7 +315,7 @@ export function computeIndependenceSkillsReadiness(
   if (evidence_rate < 40) score -= 5;
 
   // Penalty: average_readiness < 30
-  if (average_readiness < 30) score -= 5;
+  if ((average_readiness ?? 0) < 30) score -= 5;
 
   // Penalty: review_currency_rate < 50%
   if (review_currency_rate < 50) score -= 3;
@@ -328,7 +328,7 @@ export function computeIndependenceSkillsReadiness(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (average_readiness >= 70)
+  if ((average_readiness ?? 0) >= 70)
     strengths.push(
       `Average independence readiness is ${average_readiness}% — children are demonstrating strong preparation for adulthood.`,
     );
@@ -367,7 +367,7 @@ export function computeIndependenceSkillsReadiness(
       `${next_step_rate}% of skills have next steps defined — clear progression planning is in place.`,
     );
 
-  if (category_coverage >= 5)
+  if ((category_coverage ?? 0) >= 5)
     strengths.push(
       `Children are assessed across an average of ${category_coverage} skill categories — broad coverage of independence domains.`,
     );
@@ -390,7 +390,7 @@ export function computeIndependenceSkillsReadiness(
       `Only ${evidence_rate}% of skills have evidence recorded — assessments lack the documentation needed for Ofsted scrutiny.`,
     );
 
-  if (average_readiness < 30)
+  if ((average_readiness ?? 0) < 30)
     concerns.push(
       `Average independence readiness is only ${average_readiness}% — children are significantly underprepared for independence.`,
     );
@@ -420,7 +420,7 @@ export function computeIndependenceSkillsReadiness(
       `Only ${pathway_child_voice_rate}% of pathway plans include the child's voice — Reg 5 requires children to participate in their own planning.`,
     );
 
-  if (category_coverage < 3 && childrenWithSkills > 0)
+  if ((category_coverage ?? 0) < 3 && childrenWithSkills > 0)
     concerns.push(
       `Children are assessed across only ${category_coverage} skill categories on average — independence assessment is too narrow.`,
     );
@@ -480,18 +480,18 @@ export function computeIndependenceSkillsReadiness(
       urgency: "planned",
     });
 
-  if (category_coverage < 5 && childrenWithSkills > 0)
+  if ((category_coverage ?? 0) < 5 && childrenWithSkills > 0)
     recommendations.push({
       rank: rank++,
       recommendation: `Broaden independence skills assessment to cover more categories — currently averaging ${category_coverage} per child.`,
       urgency: "planned",
     });
 
-  if (average_readiness < 50 && total_records > 0)
+  if ((average_readiness ?? 0) < 50 && total_records > 0)
     recommendations.push({
       rank: rank++,
       recommendation: `Address low overall readiness scores — average is ${average_readiness}%, indicating children need more intensive independence support.`,
-      urgency: average_readiness < 30 ? "immediate" : "soon",
+      urgency: (average_readiness ?? 0) < 30 ? "immediate" : "soon",
     });
 
   if (pathway_child_voice_rate < 70 && pathway_plans.length > 0)
@@ -516,7 +516,7 @@ export function computeIndependenceSkillsReadiness(
       severity: "critical",
     });
 
-  if (average_readiness < 30)
+  if ((average_readiness ?? 0) < 30)
     insights.push({
       text: `Average readiness is ${average_readiness}%. Children are significantly underprepared for independence — Ofsted will view this as a systemic failure in the home's approach to life skills development under Reg 12.`,
       severity: "critical",
@@ -546,7 +546,7 @@ export function computeIndependenceSkillsReadiness(
       severity: "warning",
     });
 
-  if (average_readiness >= 70)
+  if ((average_readiness ?? 0) >= 70)
     insights.push({
       text: `Average readiness of ${average_readiness}% demonstrates that independence skills development is a genuine strength of this home — children are being effectively prepared for adulthood.`,
       severity: "positive",
