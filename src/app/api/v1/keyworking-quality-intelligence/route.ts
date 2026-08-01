@@ -45,9 +45,9 @@ export interface ChildKeyworkProfile {
   childName: string;
   sessionCount: number;
   daysSinceLastSession: number | null;
-  avgMoodBefore: number;
-  avgMoodAfter: number;
-  avgMoodImprovement: number;
+  avgMoodBefore: number | null;
+  avgMoodAfter: number | null;
+  avgMoodImprovement: number | null;
   childVoicePresent: boolean;
   overdueFollowUpCount: number;
   sessionTypes: string[];
@@ -60,8 +60,8 @@ export interface ChildKeyworkProfile {
 export interface KeyworkSummary {
   totalSessions: number;
   totalChildren: number;
-  avgMoodImprovement: number;
-  childVoiceRate: number;
+  avgMoodImprovement: number | null;
+  childVoiceRate: number | null;
   overdueFollowUpCount: number;
   overallSignal: OverallSignal;
 }
@@ -86,13 +86,13 @@ const SESSION_TYPE_LABELS: Record<string, string> = {
 
 function keyworkSignal(
   daysSinceLastSession: number | null,
-  avgMoodImprovement: number,
+  avgMoodImprovement: number | null,
   childVoicePresent: boolean,
   overdueFollowUpCount: number
 ): KeyworkSignal {
   if (daysSinceLastSession !== null && daysSinceLastSession > 21) return "concern";
   if (overdueFollowUpCount > 0 || !childVoicePresent) return "attention";
-  if (avgMoodImprovement >= 1.5) return "strong";
+  if (avgMoodImprovement !== null && avgMoodImprovement >= 1.5) return "strong";
   return "positive";
 }
 
@@ -165,19 +165,19 @@ export async function GET() {
     const avgMoodImprovement =
       moodImprovements.length > 0
         ? Math.round((moodImprovements.reduce((a, b) => a + b, 0) / moodImprovements.length) * 10) / 10
-        : 0;
+        : null;
 
     const moodBefores = sessionSummaries.map((s) => s.moodBefore).filter((m) => m > 0);
     const avgMoodBefore =
       moodBefores.length > 0
         ? Math.round((moodBefores.reduce((a, b) => a + b, 0) / moodBefores.length) * 10) / 10
-        : 0;
+        : null;
 
     const moodAfters = sessionSummaries.map((s) => s.moodAfter).filter((m) => m > 0);
     const avgMoodAfter =
       moodAfters.length > 0
         ? Math.round((moodAfters.reduce((a, b) => a + b, 0) / moodAfters.length) * 10) / 10
-        : 0;
+        : null;
 
     const childVoicePresent = sessionSummaries.some((s) => s.childVoice.length > 0);
     const overdueFollowUpCount = sessionSummaries.filter((s) => s.overdueFollowUp).length;
@@ -217,12 +217,12 @@ export async function GET() {
   const avgMoodImprovement =
     totalSessions > 0
       ? Math.round(
-          (profiles.reduce((sum, p) => sum + p.avgMoodImprovement, 0) / profiles.length) * 10
+          (profiles.reduce((sum, p) => sum + (p.avgMoodImprovement ?? 0), 0) / profiles.length) * 10
         ) / 10
-      : 0;
+      : null;
 
   const sessionsWithVoice = rawSessions.filter((s: any) => (s.child_voice ?? "").length > 0).length;
-  const childVoiceRate = totalSessions > 0 ? Math.round((sessionsWithVoice / totalSessions) * 100) : 0;
+  const childVoiceRate: number | null = totalSessions > 0 ? Math.round((sessionsWithVoice / totalSessions) * 100) : null;
   const overdueFollowUpCount = profiles.reduce((sum, p) => sum + p.overdueFollowUpCount, 0);
 
   let overallSignal: OverallSignal = "positive";
