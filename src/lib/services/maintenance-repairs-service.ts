@@ -139,15 +139,15 @@ export function computeMaintenanceMetrics(
   pat_testing_count: number;
   completed_count: number;
   open_count: number;
-  completion_rate: number;
+  completion_rate: number | null;
   emergency_count: number;
   urgent_count: number;
-  average_days_to_completion: number;
+  average_days_to_completion: number | null;
   total_cost: number;
-  contractor_used_rate: number;
-  children_impact_assessed_rate: number;
-  safeguarding_check_rate: number;
-  certificate_obtained_rate: number;
+  contractor_used_rate: number | null;
+  children_impact_assessed_rate: number | null;
+  safeguarding_check_rate: number | null;
+  certificate_obtained_rate: number | null;
   overdue_count: number;
   by_maintenance_type: Record<string, number>;
   by_priority: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeMaintenanceMetrics(
   const completionRate =
     records.length > 0
       ? Math.round((completed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const emergency = records.filter((r) => r.priority === "emergency").length;
   const urgent = records.filter((r) => r.priority === "urgent").length;
@@ -176,7 +176,7 @@ export function computeMaintenanceMetrics(
       ? Math.round(
           (daysRecords.reduce((sum, r) => sum + r.days_to_completion!, 0) / daysRecords.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   const totalCost = Math.round(
     records.filter((r) => r.cost !== null).reduce((sum, r) => sum + r.cost!, 0) * 100,
@@ -186,25 +186,25 @@ export function computeMaintenanceMetrics(
   const contractorRate =
     records.length > 0
       ? Math.round((contractorUsed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childImpact = records.filter((r) => r.children_impact_assessed).length;
   const childImpactRate =
     records.length > 0
       ? Math.round((childImpact / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const sgCheck = records.filter((r) => r.safeguarding_check_completed).length;
   const sgRate =
     records.length > 0
       ? Math.round((sgCheck / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const cert = records.filter((r) => r.certificate_obtained).length;
   const certRate =
     records.length > 0
       ? Math.round((cert / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const now = new Date();
   const overdue = records.filter((r) => {

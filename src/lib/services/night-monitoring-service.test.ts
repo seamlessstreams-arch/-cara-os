@@ -60,10 +60,10 @@ describe("computeNightMonitoringMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeNightMonitoringMetrics([], []);
     expect(m.total_checks_last_7d).toBe(0);
-    expect(m.avg_checks_per_night).toBe(0);
-    expect(m.all_children_checked_rate).toBe(0);
+    expect(m.avg_checks_per_night).toBeNull();;
+    expect(m.all_children_checked_rate).toBeNull();;
     expect(m.disturbance_count).toBe(0);
-    expect(m.premises_secure_rate).toBe(0);
+    expect(m.premises_secure_rate).toBeNull();;
     expect(m.unreviewed_logs_count).toBe(0);
   });
 

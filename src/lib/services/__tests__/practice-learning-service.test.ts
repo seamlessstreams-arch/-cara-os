@@ -292,9 +292,9 @@ describe("computeLearningMetrics", () => {
       expect(m.actions_completed).toBe(0);
       expect(m.actions_overdue).toBe(0);
       expect(m.actions_in_progress).toBe(0);
-      expect(m.completion_rate).toBe(0);
-      expect(m.shared_with_team_rate).toBe(0);
-      expect(m.avg_learning_points).toBe(0);
+      expect(m.completion_rate).toBeNull();;
+      expect(m.shared_with_team_rate).toBeNull();;
+      expect(m.avg_learning_points).toBeNull();;
       expect(m.impact_positive).toBe(0);
       expect(m.impact_not_assessed).toBe(0);
     });
@@ -501,7 +501,7 @@ describe("computeLearningMetrics", () => {
       const actions = [makeLearningAction({ status: "cancelled" })];
       const m = computeLearningMetrics([], actions, NOW);
       // active = 0, so completion_rate = 0
-      expect(m.completion_rate).toBe(0);
+      expect(m.completion_rate).toBeNull();;
     });
 
     it("rounds to one decimal place", () => {
@@ -558,7 +558,7 @@ describe("computeLearningMetrics", () => {
 
     it("returns 0 with no events", () => {
       const m = computeLearningMetrics([], [], NOW);
-      expect(m.shared_with_team_rate).toBe(0);
+      expect(m.shared_with_team_rate).toBeNull();;
     });
   });
 
@@ -602,7 +602,7 @@ describe("computeLearningMetrics", () => {
 
     it("returns 0 with no events", () => {
       const m = computeLearningMetrics([], [], NOW);
-      expect(m.avg_learning_points).toBe(0);
+      expect(m.avg_learning_points).toBeNull();;
     });
   });
 

@@ -42,9 +42,9 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_sessions).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.engagement_rate).toBe(0);
-    expect(m.mood_improvement_rate).toBe(0);
-    expect(m.average_sessions_per_child).toBe(0);
+    expect(m.engagement_rate).toBeNull();;
+    expect(m.mood_improvement_rate).toBeNull();;
+    expect(m.average_sessions_per_child).toBeNull();;
   });
 
   it("counts sessions, unique children, and activity breakdown", () => {

@@ -42,7 +42,7 @@ describe("computePrMetrics", () => {
     const m = computePrMetrics([], 0);
     expect(m.total_records).toBe(0);
     expect(m.children_covered).toBe(0);
-    expect(m.coverage_rate).toBe(0);
+    expect(m.coverage_rate).toBeNull();;
     expect(m.active_pr_count).toBe(0);
     expect(m.conflict_count).toBe(0);
     expect(m.review_overdue_count).toBe(0);

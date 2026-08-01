@@ -45,10 +45,10 @@ describe("computeGrievanceMetrics", () => {
     expect(m.open_grievances).toBe(0);
     expect(m.resolved_grievances).toBe(0);
     expect(m.upheld_count).toBe(0);
-    expect(m.acknowledged_rate).toBe(0);
-    expect(m.hearing_within_28_days_rate).toBe(0);
-    expect(m.average_days_to_resolution).toBe(0);
-    expect(m.acas_code_followed_rate).toBe(0);
+    expect(m.acknowledged_rate).toBeNull();;
+    expect(m.hearing_within_28_days_rate).toBeNull();;
+    expect(m.average_days_to_resolution).toBeNull();;
+    expect(m.acas_code_followed_rate).toBeNull();;
   });
 
   it("counts open and resolved grievances correctly", () => {

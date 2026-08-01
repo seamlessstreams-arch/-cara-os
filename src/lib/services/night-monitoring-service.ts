@@ -139,14 +139,14 @@ export function computeNightMonitoringMetrics(
   now: Date = new Date(),
 ): {
   total_checks_last_7d: number;
-  avg_checks_per_night: number;
-  all_children_checked_rate: number;
+  avg_checks_per_night: number | null;
+  all_children_checked_rate: number | null;
   disturbance_count: number;
   incidents_count: number;
   by_child_status: Record<string, number>;
   by_check_type: Record<string, number>;
-  premises_secure_rate: number;
-  handover_completion_rate: number;
+  premises_secure_rate: number | null;
+  handover_completion_rate: number | null;
   unreviewed_logs_count: number;
 } {
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -167,7 +167,7 @@ export function computeNightMonitoringMetrics(
   const avgChecksPerNight =
     logsWithChecks > 0
       ? Math.round((totalChecksFromLogs / logsWithChecks) * 10) / 10
-      : 0;
+      : null;
 
   // All children checked rate
   let allChildrenCheckedCount = 0;
@@ -179,7 +179,7 @@ export function computeNightMonitoringMetrics(
   const allChildrenCheckedRate =
     logs.length > 0
       ? Math.round((allChildrenCheckedCount / logs.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Disturbance and incident counts from logs
   let disturbanceCount = 0;
@@ -211,7 +211,7 @@ export function computeNightMonitoringMetrics(
   const premisesSecureRate =
     logs.length > 0
       ? Math.round((premisesSecureCount / logs.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Handover completion rate (both received and given)
   let handoverCompleteCount = 0;
@@ -223,7 +223,7 @@ export function computeNightMonitoringMetrics(
   const handoverCompletionRate =
     logs.length > 0
       ? Math.round((handoverCompleteCount / logs.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Unreviewed logs
   let unreviewedLogsCount = 0;

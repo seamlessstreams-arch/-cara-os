@@ -158,9 +158,9 @@ export function computeLearningMetrics(
   actions_completed: number;
   actions_overdue: number;
   actions_in_progress: number;
-  completion_rate: number;
-  shared_with_team_rate: number;
-  avg_learning_points: number;
+  completion_rate: number | null;
+  shared_with_team_rate: number | null;
+  avg_learning_points: number | null;
   impact_positive: number;
   impact_not_assessed: number;
   by_source: Record<string, number>;
@@ -196,13 +196,13 @@ export function computeLearningMetrics(
   const completionRate =
     activeActions > 0
       ? Math.round((completed / activeActions) * 1000) / 10
-      : 0;
+      : null;
 
   // Shared with team
   const sharedRate =
     events.length > 0
       ? Math.round((events.filter((e) => e.shared_with_team).length / events.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Avg learning points
   const avgLearningPoints =
@@ -210,7 +210,7 @@ export function computeLearningMetrics(
       ? Math.round(
           (events.reduce((sum, e) => sum + e.learning_points.length, 0) / events.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   // Impact
   const impactPositive = actions.filter(

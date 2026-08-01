@@ -169,11 +169,11 @@ export function computeStaffConflictMetrics(
   critical_risk_count: number;
   escalated_count: number;
   mitigation_failed_count: number;
-  annual_review_rate: number;
-  manager_aware_rate: number;
-  documented_rate: number;
-  no_impact_confirmed_rate: number;
-  mitigation_in_place_rate: number;
+  annual_review_rate: number | null;
+  manager_aware_rate: number | null;
+  documented_rate: number | null;
+  no_impact_confirmed_rate: number | null;
+  mitigation_in_place_rate: number | null;
   conflict_type_breakdown: Record<string, number>;
   risk_breakdown: Record<string, number>;
   unique_staff: number;
@@ -189,7 +189,7 @@ export function computeStaffConflictMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   // Mitigation in place rate: only count rows where mitigation is needed (risk != none_identified)
@@ -198,7 +198,7 @@ export function computeStaffConflictMetrics(
   const mitigationInPlaceRate =
     mitigationNeeded.length > 0
       ? Math.round((mitigationInPlace / mitigationNeeded.length) * 1000) / 10
-      : 0;
+      : null;
 
   const conflictTypeBreakdown: Record<string, number> = {};
   for (const r of rows) conflictTypeBreakdown[r.conflict_type] = (conflictTypeBreakdown[r.conflict_type] ?? 0) + 1;
@@ -314,7 +314,7 @@ export function generateStaffConflictCaraInsights(
         `What systemic factors might be contributing to these conflicts, and how can the home strengthen its ` +
         `conflict management processes to better protect children and maintain professional integrity?`,
     );
-  } else if (metrics.annual_review_rate < 100) {
+  } else if ((metrics.annual_review_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Annual review completion stands at ${metrics.annual_review_rate}%. ` +
         `How can the home ensure every staff member completes their annual conflict of interest declaration on time, ` +

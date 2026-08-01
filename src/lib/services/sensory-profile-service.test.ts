@@ -46,9 +46,9 @@ describe("computeSensoryMetrics", () => {
     expect(m.hyper_sensitive_count).toBe(0);
     expect(m.hypo_sensitive_count).toBe(0);
     expect(m.seeking_count).toBe(0);
-    expect(m.staff_trained_rate).toBe(0);
-    expect(m.ot_input_rate).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.staff_trained_rate).toBeNull();;
+    expect(m.ot_input_rate).toBeNull();;
+    expect(m.child_views_rate).toBeNull();;
     expect(m.adaptations_in_place).toBe(0);
   });
 

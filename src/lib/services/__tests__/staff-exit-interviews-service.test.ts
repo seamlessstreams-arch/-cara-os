@@ -328,7 +328,7 @@ describe("computeExitInterviewMetrics", () => {
     });
 
     it("returns very_satisfied_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).very_satisfied_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).very_satisfied_rate).toBeNull();;
     });
 
     it("returns dissatisfied_count 0 for empty array", () => {
@@ -340,7 +340,7 @@ describe("computeExitInterviewMetrics", () => {
     });
 
     it("returns handover_completed_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).handover_completed_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).handover_completed_rate).toBeNull();;
     });
 
     it("returns handover_not_started_count 0 for empty array", () => {
@@ -348,47 +348,47 @@ describe("computeExitInterviewMetrics", () => {
     });
 
     it("returns would_recommend_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).would_recommend_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).would_recommend_rate).toBeNull();;
     });
 
     it("returns felt_supported_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).felt_supported_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).felt_supported_rate).toBeNull();;
     });
 
     it("returns adequate_training_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).adequate_training_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).adequate_training_rate).toBeNull();;
     });
 
     it("returns safeguarding_debrief_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).safeguarding_debrief_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).safeguarding_debrief_rate).toBeNull();;
     });
 
     it("returns keys_returned_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).keys_returned_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).keys_returned_rate).toBeNull();;
     });
 
     it("returns access_revoked_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).access_revoked_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).access_revoked_rate).toBeNull();;
     });
 
     it("returns dbs_notification_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).dbs_notification_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).dbs_notification_rate).toBeNull();;
     });
 
     it("returns children_informed_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).children_informed_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).children_informed_rate).toBeNull();;
     });
 
     it("returns children_supported_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).children_supported_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).children_supported_rate).toBeNull();;
     });
 
     it("returns average_service_months 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).average_service_months).toBe(0);
+      expect(computeExitInterviewMetrics([]).average_service_months).toBeNull();;
     });
 
     it("returns rehire_yes_rate 0 for empty array", () => {
-      expect(computeExitInterviewMetrics([]).rehire_yes_rate).toBe(0);
+      expect(computeExitInterviewMetrics([]).rehire_yes_rate).toBeNull();;
     });
 
     it("returns rehire_no_count 0 for empty array", () => {

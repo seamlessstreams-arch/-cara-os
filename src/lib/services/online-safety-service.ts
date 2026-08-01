@@ -159,9 +159,9 @@ export function computeOnlineSafetyMetrics(
   police_involved_count: number;
   total_agreements: number;
   active_agreements: number;
-  agreement_coverage: number;
-  filtering_enabled_rate: number;
-  monitoring_enabled_rate: number;
+  agreement_coverage: number | null;
+  filtering_enabled_rate: number | null;
+  monitoring_enabled_rate: number | null;
   checks_overdue: number;
   issues_found: number;
   by_risk_category: Record<string, number>;
@@ -185,15 +185,15 @@ export function computeOnlineSafetyMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const filteringEnabled = agreements.filter((a) => a.status === "active" && a.filtering_enabled).length;
   const filteringRate =
-    active > 0 ? Math.round((filteringEnabled / active) * 1000) / 10 : 0;
+    active > 0 ? Math.round((filteringEnabled / active) * 1000) / 10 : null;
 
   const monitoringEnabled = agreements.filter((a) => a.status === "active" && a.monitoring_enabled).length;
   const monitoringRate =
-    active > 0 ? Math.round((monitoringEnabled / active) * 1000) / 10 : 0;
+    active > 0 ? Math.round((monitoringEnabled / active) * 1000) / 10 : null;
 
   // Check overdue (review_date past + active)
   const checksOverdue = agreements.filter(

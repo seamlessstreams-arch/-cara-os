@@ -140,7 +140,7 @@ export function computePrMetrics(
 ): {
   total_records: number;
   children_covered: number;
-  coverage_rate: number;
+  coverage_rate: number | null;
   active_pr_count: number;
   shared_pr_count: number;
   restricted_pr_count: number;
@@ -148,9 +148,9 @@ export function computePrMetrics(
   section_20_count: number;
   full_care_order_count: number;
   interim_care_order_count: number;
-  contact_with_pr_holder_rate: number;
-  pr_holder_involved_rate: number;
-  pr_holder_informed_rate: number;
+  contact_with_pr_holder_rate: number | null;
+  pr_holder_involved_rate: number | null;
+  pr_holder_informed_rate: number | null;
   conflict_count: number;
   review_overdue_count: number;
   by_care_order_type: Record<string, number>;
@@ -162,7 +162,7 @@ export function computePrMetrics(
   const coverageRate =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const active = records.filter((r) => r.pr_status === "active").length;
   const shared = records.filter((r) => r.pr_status === "shared").length;
@@ -176,17 +176,17 @@ export function computePrMetrics(
   const contactRate =
     records.length > 0
       ? Math.round((records.filter((r) => r.contact_with_pr_holder).length / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const involvedRate =
     records.length > 0
       ? Math.round((records.filter((r) => r.pr_holder_involved_in_decisions).length / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const informedRate =
     records.length > 0
       ? Math.round((records.filter((r) => r.pr_holder_informed_of_placement).length / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const conflicts = records.filter((r) => r.conflict_between_pr_holders).length;
 

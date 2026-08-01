@@ -42,7 +42,7 @@ describe("computeLegalMetrics", () => {
     expect(m.children_with_records).toBe(0);
     expect(m.legal_coverage).toBe(0);
     expect(m.section_20_count).toBe(0);
-    expect(m.staff_briefed_rate).toBe(0);
+    expect(m.staff_briefed_rate).toBeNull();;
     expect(m.upcoming_hearings).toBe(0);
   });
 

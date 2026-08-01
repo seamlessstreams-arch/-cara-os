@@ -160,12 +160,12 @@ export function computeLegalMetrics(
 ): {
   total_records: number;
   children_with_records: number;
-  legal_coverage: number;
+  legal_coverage: number | null;
   section_20_count: number;
   full_care_order_count: number;
   interim_care_order_count: number;
   placement_order_count: number;
-  staff_briefed_rate: number;
+  staff_briefed_rate: number | null;
   upcoming_hearings: number;
   orders_expiring_soon: number;
   with_conditions: number;
@@ -178,7 +178,7 @@ export function computeLegalMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const s20 = records.filter((r) => r.legal_status === "section_20").length;
   const fullCare = records.filter((r) => r.legal_status === "section_31_full").length;
@@ -191,7 +191,7 @@ export function computeLegalMetrics(
   const briefedRate =
     records.length > 0
       ? Math.round((staffBriefed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Upcoming hearings (within 30 days)
   const thirtyDaysAhead = new Date(now);

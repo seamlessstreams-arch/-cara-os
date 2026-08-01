@@ -150,8 +150,8 @@ export function computeAbsenceMetrics(
   current_absences: number;
   sickness_absences: number;
   total_days_lost: number;
-  avg_days_per_absence: number;
-  absence_rate: number;
+  avg_days_per_absence: number | null;
+  absence_rate: number | null;
   agency_cover_count: number;
   return_to_work_pending: number;
   return_to_work_overdue: number;
@@ -173,13 +173,13 @@ export function computeAbsenceMetrics(
   const avgDays =
     activeAbsences > 0
       ? Math.round((totalDaysLost / activeAbsences) * 10) / 10
-      : 0;
+      : null;
 
   // Absence rate = (total sickness days / (total staff * 365)) * 100 — annualised
   const absenceRate =
     totalStaff > 0
       ? Math.round((totalDaysLost / (totalStaff * 365)) * 1000) / 10
-      : 0;
+      : null;
 
   const agencyCover = absences.filter((a) => a.agency_cover_used).length;
   const rtwPending = absences.filter((a) => a.return_to_work_status === "pending").length;

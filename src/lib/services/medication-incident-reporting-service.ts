@@ -106,11 +106,11 @@ export function computeMedicationIncidentMetrics(
   moderate_harm_count: number;
   near_miss_count: number;
   open_investigation_count: number;
-  gp_notified_rate: number;
-  parent_notified_rate: number;
-  social_worker_notified_rate: number;
-  root_cause_rate: number;
-  learning_shared_rate: number;
+  gp_notified_rate: number | null;
+  parent_notified_rate: number | null;
+  social_worker_notified_rate: number | null;
+  root_cause_rate: number | null;
+  learning_shared_rate: number | null;
   type_breakdown: Record<string, number>;
   severity_breakdown: Record<string, number>;
   unique_children: number;
@@ -131,7 +131,7 @@ export function computeMedicationIncidentMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const typeBreakdown: Record<string, number> = {};
@@ -244,7 +244,7 @@ export function generateMedicationIncidentCaraInsights(
   const seriousPct =
     metrics.total_incidents > 0
       ? Math.round((metrics.serious_harm_count / metrics.total_incidents) * 1000) / 10
-      : 0;
+      : null;
   insights.push(
     `[pink] ${metrics.total_incidents} medication incidents across ${metrics.unique_children} ${metrics.unique_children === 1 ? "child" : "children"}. ` +
       `${metrics.serious_harm_count} (${seriousPct}%) resulted in serious harm or death. ` +

@@ -98,11 +98,11 @@ export function computeStaffAnnualLeaveMetrics(
   pending_count: number;
   critical_understaffing_count: number;
   no_cover_count: number;
-  cover_confirmed_rate: number;
-  handover_completed_rate: number;
-  children_informed_rate: number;
-  minimum_staffing_rate: number;
-  approved_rate: number;
+  cover_confirmed_rate: number | null;
+  handover_completed_rate: number | null;
+  children_informed_rate: number | null;
+  minimum_staffing_rate: number | null;
+  approved_rate: number | null;
   leave_type_breakdown: Record<string, number>;
   impact_breakdown: Record<string, number>;
   unique_staff: number;
@@ -124,13 +124,13 @@ export function computeStaffAnnualLeaveMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const approvedRate =
     nonCancelled.length > 0
       ? Math.round((approvedCount / nonCancelled.length) * 1000) / 10
-      : 0;
+      : null;
 
   const leaveTypeBreakdown: Record<string, number> = {};
   for (const r of rows) leaveTypeBreakdown[r.leave_type] = (leaveTypeBreakdown[r.leave_type] ?? 0) + 1;

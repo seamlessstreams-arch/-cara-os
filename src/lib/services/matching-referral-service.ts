@@ -157,11 +157,11 @@ export function computeReferralMetrics(
   declined_count: number;
   withdrawn_count: number;
   admitted_count: number;
-  acceptance_rate: number;
+  acceptance_rate: number | null;
   impact_assessments_completed: number;
-  impact_assessment_rate: number;
-  existing_children_consulted_rate: number;
-  staff_views_sought_rate: number;
+  impact_assessment_rate: number | null;
+  existing_children_consulted_rate: number | null;
+  staff_views_sought_rate: number | null;
   trial_visits_completed: number;
   matching_concerns_count: number;
   by_status: Record<string, number>;
@@ -180,25 +180,25 @@ export function computeReferralMetrics(
   const acceptanceRate =
     decided > 0
       ? Math.round((accepted / decided) * 1000) / 10
-      : 0;
+      : null;
 
   const impactCompleted = referrals.filter((r) => r.impact_assessment_completed).length;
   const impactRate =
     referrals.length > 0
       ? Math.round((impactCompleted / referrals.length) * 1000) / 10
-      : 0;
+      : null;
 
   const consulted = referrals.filter((r) => r.existing_children_consulted).length;
   const consultedRate =
     referrals.length > 0
       ? Math.round((consulted / referrals.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffViews = referrals.filter((r) => r.staff_views_sought).length;
   const staffRate =
     referrals.length > 0
       ? Math.round((staffViews / referrals.length) * 1000) / 10
-      : 0;
+      : null;
 
   const trialVisits = referrals.filter((r) => r.trial_visit_completed).length;
 

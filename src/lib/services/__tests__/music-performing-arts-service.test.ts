@@ -223,9 +223,9 @@ describe("music-performing-arts-service", () => {
       const metrics = computeMetrics([]);
       expect(metrics.total_sessions).toBe(0);
       expect(metrics.unique_children).toBe(0);
-      expect(metrics.engagement_rate).toBe(0);
-      expect(metrics.mood_improvement_rate).toBe(0);
-      expect(metrics.average_sessions_per_child).toBe(0);
+      expect(metrics.engagement_rate).toBeNull();;
+      expect(metrics.mood_improvement_rate).toBeNull();;
+      expect(metrics.average_sessions_per_child).toBeNull();;
     });
 
     it("calculates mood improvement rate correctly", () => {

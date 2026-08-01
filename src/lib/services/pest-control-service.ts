@@ -149,18 +149,18 @@ export function computePestControlMetrics(
   reactive_count: number;
   emergency_count: number;
   follow_up_count: number;
-  resolved_rate: number;
+  resolved_rate: number | null;
   ongoing_count: number;
-  no_pest_found_rate: number;
+  no_pest_found_rate: number | null;
   high_risk_count: number;
   critical_risk_count: number;
-  contractor_certified_rate: number;
-  children_informed_rate: number;
+  contractor_certified_rate: number | null;
+  children_informed_rate: number | null;
   chemicals_used_count: number;
-  safety_sheet_obtained_rate: number;
+  safety_sheet_obtained_rate: number | null;
   food_areas_affected_count: number;
-  entry_points_sealed_rate: number;
-  prevention_implemented_rate: number;
+  entry_points_sealed_rate: number | null;
+  prevention_implemented_rate: number | null;
   follow_up_required_count: number;
   follow_up_overdue_count: number;
   env_health_notified_count: number;
@@ -178,7 +178,7 @@ export function computePestControlMetrics(
   const resolvedRate =
     records.length > 0
       ? Math.round((resolved / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const ongoing = records.filter((r) => r.treatment_outcome === "ongoing").length;
 
@@ -186,7 +186,7 @@ export function computePestControlMetrics(
   const noPestRate =
     records.length > 0
       ? Math.round((noPest / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const highRisk = records.filter((r) => r.risk_level === "high").length;
   const criticalRisk = records.filter((r) => r.risk_level === "critical").length;
@@ -195,7 +195,7 @@ export function computePestControlMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const chemUsed = records.filter((r) => r.chemicals_used).length;
@@ -208,7 +208,7 @@ export function computePestControlMetrics(
             chemRecords.length) *
             1000,
         ) / 10
-      : 0;
+      : null;
 
   const foodAffected = records.filter((r) => r.food_areas_affected).length;
 

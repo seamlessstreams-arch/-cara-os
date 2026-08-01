@@ -423,9 +423,9 @@ describe("computePolicyMetrics", () => {
     expect(result.upcoming_reviews_30d).toBe(0);
     expect(result.by_category).toEqual({});
     expect(result.by_status).toEqual({});
-    expect(result.acknowledgement_rate).toBe(0);
+    expect(result.acknowledgement_rate).toBeNull();;
     expect(result.missing_required_policies).toHaveLength(12);
-    expect(result.avg_days_since_review).toBe(0);
+    expect(result.avg_days_since_review).toBeNull();;
   });
 
   it("counts total policies correctly", () => {
@@ -597,7 +597,7 @@ describe("computePolicyMetrics", () => {
       makePolicy({ id: "p1", status: "active", staff_acknowledgement_required: false }),
     ];
     const result = computePolicyMetrics(policies, []);
-    expect(result.acknowledgement_rate).toBe(0);
+    expect(result.acknowledgement_rate).toBeNull();;
   });
 
   it("only considers active policies for acknowledgement rate", () => {
@@ -686,7 +686,7 @@ describe("computePolicyMetrics", () => {
       makePolicy({ id: "p2", last_reviewed_date: null }),
     ];
     const result = computePolicyMetrics(policies, []);
-    expect(result.avg_days_since_review).toBe(0);
+    expect(result.avg_days_since_review).toBeNull();;
   });
 
   it("computes avg days since review for a single reviewed policy", () => {

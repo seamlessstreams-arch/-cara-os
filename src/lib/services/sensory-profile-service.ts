@@ -138,16 +138,16 @@ export function computeSensoryMetrics(
 ): {
   total_profiles: number;
   children_assessed: number;
-  assessment_coverage: number;
+  assessment_coverage: number | null;
   current_profiles: number;
   outdated_profiles: number;
   under_review_count: number;
   hyper_sensitive_count: number;
   hypo_sensitive_count: number;
   seeking_count: number;
-  staff_trained_rate: number;
-  ot_input_rate: number;
-  child_views_rate: number;
+  staff_trained_rate: number | null;
+  ot_input_rate: number | null;
+  child_views_rate: number | null;
   adaptations_in_place: number;
   by_sensory_domain: Record<string, number>;
   by_sensitivity_level: Record<string, number>;
@@ -157,7 +157,7 @@ export function computeSensoryMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const current = profiles.filter((p) => p.profile_status === "current").length;
   const outdated = profiles.filter((p) => p.profile_status === "outdated").length;
@@ -171,19 +171,19 @@ export function computeSensoryMetrics(
   const staffRate =
     profiles.length > 0
       ? Math.round((staffTrained / profiles.length) * 1000) / 10
-      : 0;
+      : null;
 
   const otInput = profiles.filter((p) => p.occupational_therapist_input).length;
   const otRate =
     profiles.length > 0
       ? Math.round((otInput / profiles.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childViews = profiles.filter((p) => p.child_views !== null).length;
   const childRate =
     profiles.length > 0
       ? Math.round((childViews / profiles.length) * 1000) / 10
-      : 0;
+      : null;
 
   const adaptationsInPlace = profiles.filter((p) => p.adaptations.length > 0).length;
 

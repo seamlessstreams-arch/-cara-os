@@ -40,8 +40,8 @@ describe("computeMealMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeMealMetrics([]);
     expect(m.total_meals).toBe(0);
-    expect(m.children_ate_rate).toBe(0);
-    expect(m.balanced_meal_rate).toBe(0);
+    expect(m.children_ate_rate).toBeNull();;
+    expect(m.balanced_meal_rate).toBeNull();;
     expect(m.poor_meal_count).toBe(0);
   });
 

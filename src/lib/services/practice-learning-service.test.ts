@@ -62,9 +62,9 @@ describe("computeLearningMetrics", () => {
     expect(m.total_actions).toBe(0);
     expect(m.actions_completed).toBe(0);
     expect(m.actions_overdue).toBe(0);
-    expect(m.completion_rate).toBe(0);
-    expect(m.shared_with_team_rate).toBe(0);
-    expect(m.avg_learning_points).toBe(0);
+    expect(m.completion_rate).toBeNull();;
+    expect(m.shared_with_team_rate).toBeNull();;
+    expect(m.avg_learning_points).toBeNull();;
     expect(m.impact_positive).toBe(0);
     expect(m.impact_not_assessed).toBe(0);
   });

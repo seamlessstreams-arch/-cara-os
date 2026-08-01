@@ -91,19 +91,19 @@ describe("computeReferralMetrics", () => {
     });
 
     it("returns 0 acceptance_rate for empty array", () => {
-      expect(computeReferralMetrics([]).acceptance_rate).toBe(0);
+      expect(computeReferralMetrics([]).acceptance_rate).toBeNull();;
     });
 
     it("returns 0 impact_assessment_rate for empty array", () => {
-      expect(computeReferralMetrics([]).impact_assessment_rate).toBe(0);
+      expect(computeReferralMetrics([]).impact_assessment_rate).toBeNull();;
     });
 
     it("returns 0 existing_children_consulted_rate for empty array", () => {
-      expect(computeReferralMetrics([]).existing_children_consulted_rate).toBe(0);
+      expect(computeReferralMetrics([]).existing_children_consulted_rate).toBeNull();;
     });
 
     it("returns 0 staff_views_sought_rate for empty array", () => {
-      expect(computeReferralMetrics([]).staff_views_sought_rate).toBe(0);
+      expect(computeReferralMetrics([]).staff_views_sought_rate).toBeNull();;
     });
 
     it("returns 0 trial_visits_completed for empty array", () => {
@@ -266,7 +266,7 @@ describe("computeReferralMetrics", () => {
         makeReferral({ status: "received" }),
         makeReferral({ status: "withdrawn" }),
       ];
-      expect(computeReferralMetrics(refs).acceptance_rate).toBe(0);
+      expect(computeReferralMetrics(refs).acceptance_rate).toBeNull();;
     });
 
     it("returns 100 when all decided referrals are accepted", () => {
@@ -758,11 +758,11 @@ describe("computeReferralMetrics", () => {
       expect(typeof m.declined_count).toBe("number");
       expect(typeof m.withdrawn_count).toBe("number");
       expect(typeof m.admitted_count).toBe("number");
-      expect(typeof m.acceptance_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof m.acceptance_rate); // number | null
       expect(typeof m.impact_assessments_completed).toBe("number");
-      expect(typeof m.impact_assessment_rate).toBe("number");
-      expect(typeof m.existing_children_consulted_rate).toBe("number");
-      expect(typeof m.staff_views_sought_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof m.impact_assessment_rate); // number | null
+      expect(["number", "object"]).toContain(typeof m.existing_children_consulted_rate); // number | null
+      expect(["number", "object"]).toContain(typeof m.staff_views_sought_rate); // number | null
       expect(typeof m.trial_visits_completed).toBe("number");
       expect(typeof m.matching_concerns_count).toBe("number");
     });

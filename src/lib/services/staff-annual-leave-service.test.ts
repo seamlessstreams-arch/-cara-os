@@ -44,11 +44,11 @@ describe("computeStaffAnnualLeaveMetrics", () => {
     expect(m.pending_count).toBe(0);
     expect(m.critical_understaffing_count).toBe(0);
     expect(m.no_cover_count).toBe(0);
-    expect(m.cover_confirmed_rate).toBe(0);
-    expect(m.handover_completed_rate).toBe(0);
-    expect(m.children_informed_rate).toBe(0);
-    expect(m.minimum_staffing_rate).toBe(0);
-    expect(m.approved_rate).toBe(0);
+    expect(m.cover_confirmed_rate).toBeNull();;
+    expect(m.handover_completed_rate).toBeNull();;
+    expect(m.children_informed_rate).toBeNull();;
+    expect(m.minimum_staffing_rate).toBeNull();;
+    expect(m.approved_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

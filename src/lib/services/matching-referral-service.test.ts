@@ -39,8 +39,8 @@ describe("computeReferralMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeReferralMetrics([]);
     expect(m.total_referrals).toBe(0);
-    expect(m.acceptance_rate).toBe(0);
-    expect(m.impact_assessment_rate).toBe(0);
+    expect(m.acceptance_rate).toBeNull();;
+    expect(m.impact_assessment_rate).toBeNull();;
   });
 
   it("computes correct counts for populated data", () => {

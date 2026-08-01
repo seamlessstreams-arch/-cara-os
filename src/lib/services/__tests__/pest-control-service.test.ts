@@ -319,7 +319,7 @@ describe("computePestControlMetrics", () => {
     });
 
     it("returns zero resolved_rate", () => {
-      expect(computePestControlMetrics([]).resolved_rate).toBe(0);
+      expect(computePestControlMetrics([]).resolved_rate).toBeNull();;
     });
 
     it("returns zero ongoing_count", () => {
@@ -327,7 +327,7 @@ describe("computePestControlMetrics", () => {
     });
 
     it("returns zero no_pest_found_rate", () => {
-      expect(computePestControlMetrics([]).no_pest_found_rate).toBe(0);
+      expect(computePestControlMetrics([]).no_pest_found_rate).toBeNull();;
     });
 
     it("returns zero high_risk_count", () => {
@@ -339,11 +339,11 @@ describe("computePestControlMetrics", () => {
     });
 
     it("returns zero contractor_certified_rate", () => {
-      expect(computePestControlMetrics([]).contractor_certified_rate).toBe(0);
+      expect(computePestControlMetrics([]).contractor_certified_rate).toBeNull();;
     });
 
     it("returns zero children_informed_rate", () => {
-      expect(computePestControlMetrics([]).children_informed_rate).toBe(0);
+      expect(computePestControlMetrics([]).children_informed_rate).toBeNull();;
     });
 
     it("returns zero chemicals_used_count", () => {
@@ -351,7 +351,7 @@ describe("computePestControlMetrics", () => {
     });
 
     it("returns zero safety_sheet_obtained_rate", () => {
-      expect(computePestControlMetrics([]).safety_sheet_obtained_rate).toBe(0);
+      expect(computePestControlMetrics([]).safety_sheet_obtained_rate).toBeNull();;
     });
 
     it("returns zero food_areas_affected_count", () => {
@@ -359,11 +359,11 @@ describe("computePestControlMetrics", () => {
     });
 
     it("returns zero entry_points_sealed_rate", () => {
-      expect(computePestControlMetrics([]).entry_points_sealed_rate).toBe(0);
+      expect(computePestControlMetrics([]).entry_points_sealed_rate).toBeNull();;
     });
 
     it("returns zero prevention_implemented_rate", () => {
-      expect(computePestControlMetrics([]).prevention_implemented_rate).toBe(0);
+      expect(computePestControlMetrics([]).prevention_implemented_rate).toBeNull();;
     });
 
     it("returns zero follow_up_required_count", () => {
@@ -452,7 +452,7 @@ describe("computePestControlMetrics", () => {
     });
 
     it("safety_sheet_obtained_rate is 0 when no chemicals used", () => {
-      expect(computePestControlMetrics(single).safety_sheet_obtained_rate).toBe(0);
+      expect(computePestControlMetrics(single).safety_sheet_obtained_rate).toBeNull();;
     });
 
     it("food_areas_affected_count is 0 when food_areas_affected is false", () => {
@@ -682,7 +682,7 @@ describe("computePestControlMetrics", () => {
 
     it("safety_sheet_obtained_rate is 0 when no chemicals used at all", () => {
       const r = [makeRecord({ chemicals_used: false })];
-      expect(computePestControlMetrics(r).safety_sheet_obtained_rate).toBe(0);
+      expect(computePestControlMetrics(r).safety_sheet_obtained_rate).toBeNull();;
     });
   });
 

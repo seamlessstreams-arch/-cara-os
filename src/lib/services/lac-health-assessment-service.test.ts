@@ -39,7 +39,7 @@ describe("computeLacHealthAssessmentMetrics", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.overdue_count).toBe(0);
     expect(m.urgent_concern_count).toBe(0);
-    expect(m.child_attended_rate).toBe(0);
+    expect(m.child_attended_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

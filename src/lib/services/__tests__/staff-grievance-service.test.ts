@@ -340,31 +340,31 @@ describe("computeGrievanceMetrics", () => {
     });
 
     it("returns zero acknowledged_rate", () => {
-      expect(computeGrievanceMetrics([]).acknowledged_rate).toBe(0);
+      expect(computeGrievanceMetrics([]).acknowledged_rate).toBeNull();;
     });
 
     it("returns zero hearing_within_28_days_rate", () => {
-      expect(computeGrievanceMetrics([]).hearing_within_28_days_rate).toBe(0);
+      expect(computeGrievanceMetrics([]).hearing_within_28_days_rate).toBeNull();;
     });
 
     it("returns zero average_days_to_resolution", () => {
-      expect(computeGrievanceMetrics([]).average_days_to_resolution).toBe(0);
+      expect(computeGrievanceMetrics([]).average_days_to_resolution).toBeNull();;
     });
 
     it("returns zero acas_code_followed_rate", () => {
-      expect(computeGrievanceMetrics([]).acas_code_followed_rate).toBe(0);
+      expect(computeGrievanceMetrics([]).acas_code_followed_rate).toBeNull();;
     });
 
     it("returns zero learning_identified_rate", () => {
-      expect(computeGrievanceMetrics([]).learning_identified_rate).toBe(0);
+      expect(computeGrievanceMetrics([]).learning_identified_rate).toBeNull();;
     });
 
     it("returns zero impact_assessed_rate", () => {
-      expect(computeGrievanceMetrics([]).impact_assessed_rate).toBe(0);
+      expect(computeGrievanceMetrics([]).impact_assessed_rate).toBeNull();;
     });
 
     it("returns zero union_representation_rate", () => {
-      expect(computeGrievanceMetrics([]).union_representation_rate).toBe(0);
+      expect(computeGrievanceMetrics([]).union_representation_rate).toBeNull();;
     });
 
     it("returns empty by_category", () => {
@@ -714,7 +714,7 @@ describe("computeGrievanceMetrics", () => {
         makeGrievance({ id: "1", hearing_within_28_days: null }),
         makeGrievance({ id: "2", hearing_within_28_days: null }),
       ];
-      expect(computeGrievanceMetrics(g).hearing_within_28_days_rate).toBe(0);
+      expect(computeGrievanceMetrics(g).hearing_within_28_days_rate).toBeNull();;
     });
 
     it("is 100 when all non-null are true", () => {
@@ -777,7 +777,7 @@ describe("computeGrievanceMetrics", () => {
         makeGrievance({ id: "1", days_to_resolution: null }),
         makeGrievance({ id: "2", days_to_resolution: null }),
       ];
-      expect(computeGrievanceMetrics(g).average_days_to_resolution).toBe(0);
+      expect(computeGrievanceMetrics(g).average_days_to_resolution).toBeNull();;
     });
 
     it("returns the single value when only one record has days", () => {

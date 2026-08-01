@@ -266,19 +266,19 @@ export function computeMetrics(
   unique_children: number;
   by_session_type: Record<string, number>;
   by_delivery_method: Record<string, number>;
-  engagement_rate: number;
-  skill_demonstration_rate: number;
-  generalisation_rate: number;
-  peer_interaction_rate: number;
-  staff_relationship_rate: number;
-  confidence_rate: number;
-  attachment_rate: number;
-  trauma_informed_rate: number;
-  key_worker_rate: number;
-  therapeutic_rate: number;
-  care_plan_link_rate: number;
-  social_worker_informed_rate: number;
-  average_sessions_per_child: number;
+  engagement_rate: number | null;
+  skill_demonstration_rate: number | null;
+  generalisation_rate: number | null;
+  peer_interaction_rate: number | null;
+  staff_relationship_rate: number | null;
+  confidence_rate: number | null;
+  attachment_rate: number | null;
+  trauma_informed_rate: number | null;
+  key_worker_rate: number | null;
+  therapeutic_rate: number | null;
+  care_plan_link_rate: number | null;
+  social_worker_informed_rate: number | null;
+  average_sessions_per_child: number | null;
   emotional_session_count: number;
   interpersonal_session_count: number;
   group_dynamic_session_count: number;
@@ -302,56 +302,56 @@ export function computeMetrics(
   // Boolean rates
   const engagementRate = total > 0
     ? Math.round((rows.filter((r) => r.child_engaged).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const skillDemoRate = total > 0
     ? Math.round((rows.filter((r) => r.skill_demonstrated).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const generalisationRate = total > 0
     ? Math.round((rows.filter((r) => r.generalised_to_other_settings).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const peerInteractionRate = total > 0
     ? Math.round((rows.filter((r) => r.positive_peer_interaction_observed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const staffRelationshipRate = total > 0
     ? Math.round((rows.filter((r) => r.staff_relationship_improved).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const confidenceRate = total > 0
     ? Math.round((rows.filter((r) => r.confidence_improved).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const attachmentRate = total > 0
     ? Math.round((rows.filter((r) => r.attachment_style_considered).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const traumaRate = total > 0
     ? Math.round((rows.filter((r) => r.trauma_informed_approach).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const keyWorkerRate = total > 0
     ? Math.round((rows.filter((r) => r.key_worker_involved).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const therapeuticRate = total > 0
     ? Math.round((rows.filter((r) => r.therapeutic_input).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const carePlanRate = total > 0
     ? Math.round((rows.filter((r) => r.care_plan_linked).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const socialWorkerRate = total > 0
     ? Math.round((rows.filter((r) => r.social_worker_informed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Average sessions per child
   const avgPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   // Category counts
   const emotionalCount = rows.filter(
@@ -653,7 +653,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.generalisation_rate < 25 && metrics.skill_demonstration_rate > 40 && metrics.total_sessions > 5) {
+  if ((metrics.generalisation_rate ?? 0) < 25 && (metrics.skill_demonstration_rate ?? 0) > 40 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Skills are demonstrated in ${metrics.skill_demonstration_rate}% of sessions ` +
         `but generalised to other settings in only ${metrics.generalisation_rate}%. This is ` +
@@ -667,7 +667,7 @@ export function generateCaraInsights(
         `attachment, generalisation is particularly difficult because new social ` +
         `situations trigger familiar defensive patterns.`,
     );
-  } else if (metrics.trauma_informed_rate < 50 && metrics.total_sessions > 5) {
+  } else if ((metrics.trauma_informed_rate ?? 0) < 50 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Only ${metrics.trauma_informed_rate}% of sessions use a trauma-informed ` +
         `approach. The evidence is clear: looked-after children's relationship ` +
@@ -681,7 +681,7 @@ export function generateCaraInsights(
         `SCCIF inspectors increasingly expect homes to demonstrate trauma-informed ` +
         `practice across all aspects of care.`,
     );
-  } else if (metrics.engagement_rate < 60 && metrics.total_sessions > 5) {
+  } else if ((metrics.engagement_rate ?? 0) < 60 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Engagement rate is ${metrics.engagement_rate}% across relationship sessions. ` +
         `For looked-after children, engagement in relationship work is itself a ` +

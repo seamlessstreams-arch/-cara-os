@@ -142,16 +142,16 @@ export function computeMealMetrics(
   records: MealRecord[],
 ): {
   total_meals: number;
-  children_ate_rate: number;
-  balanced_meal_rate: number;
-  fresh_ingredients_rate: number;
-  allergies_checked_rate: number;
-  cultural_needs_rate: number;
-  children_involved_preparation_rate: number;
-  children_involved_choice_rate: number;
-  positive_atmosphere_rate: number;
-  staff_ate_with_children_rate: number;
-  food_waste_minimal_rate: number;
+  children_ate_rate: number | null;
+  balanced_meal_rate: number | null;
+  fresh_ingredients_rate: number | null;
+  allergies_checked_rate: number | null;
+  cultural_needs_rate: number | null;
+  children_involved_preparation_rate: number | null;
+  children_involved_choice_rate: number | null;
+  positive_atmosphere_rate: number | null;
+  staff_ate_with_children_rate: number | null;
+  food_waste_minimal_rate: number | null;
   poor_meal_count: number;
   excellent_meal_count: number;
   by_meal_type: Record<string, number>;
@@ -163,61 +163,61 @@ export function computeMealMetrics(
   const ateRate =
     totalPresent > 0
       ? Math.round((totalAte / totalPresent) * 1000) / 10
-      : 0;
+      : null;
 
   const balanced = records.filter((r) => r.balanced_meal).length;
   const balancedRate =
     records.length > 0
       ? Math.round((balanced / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const fresh = records.filter((r) => r.fresh_ingredients_used).length;
   const freshRate =
     records.length > 0
       ? Math.round((fresh / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const allergies = records.filter((r) => r.allergies_checked).length;
   const allergiesRate =
     records.length > 0
       ? Math.round((allergies / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const cultural = records.filter((r) => r.cultural_needs_considered).length;
   const culturalRate =
     records.length > 0
       ? Math.round((cultural / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const involvedPrep = records.filter((r) => r.children_involved_in_preparation).length;
   const prepRate =
     records.length > 0
       ? Math.round((involvedPrep / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const involvedChoice = records.filter((r) => r.children_involved_in_choice).length;
   const choiceRate =
     records.length > 0
       ? Math.round((involvedChoice / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const positiveAtmosphere = records.filter((r) => r.mealtime_atmosphere_positive).length;
   const atmosphereRate =
     records.length > 0
       ? Math.round((positiveAtmosphere / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffAte = records.filter((r) => r.staff_ate_with_children).length;
   const staffAteRate =
     records.length > 0
       ? Math.round((staffAte / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const wasteMinimal = records.filter((r) => r.food_waste_minimal).length;
   const wasteRate =
     records.length > 0
       ? Math.round((wasteMinimal / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const poorMeal = records.filter((r) => r.meal_quality === "poor").length;
   const excellentMeal = records.filter((r) => r.meal_quality === "excellent").length;

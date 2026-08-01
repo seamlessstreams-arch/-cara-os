@@ -301,14 +301,14 @@ describe("computeNightMonitoringMetrics", () => {
   it("returns zeroed metrics for empty inputs", () => {
     const result = computeNightMonitoringMetrics([], []);
     expect(result.total_checks_last_7d).toBe(0);
-    expect(result.avg_checks_per_night).toBe(0);
-    expect(result.all_children_checked_rate).toBe(0);
+    expect(result.avg_checks_per_night).toBeNull();;
+    expect(result.all_children_checked_rate).toBeNull();;
     expect(result.disturbance_count).toBe(0);
     expect(result.incidents_count).toBe(0);
     expect(result.by_child_status).toEqual({});
     expect(result.by_check_type).toEqual({});
-    expect(result.premises_secure_rate).toBe(0);
-    expect(result.handover_completion_rate).toBe(0);
+    expect(result.premises_secure_rate).toBeNull();;
+    expect(result.handover_completion_rate).toBeNull();;
     expect(result.unreviewed_logs_count).toBe(0);
   });
 
@@ -368,7 +368,7 @@ describe("computeNightMonitoringMetrics", () => {
 
   it("returns 0 avg_checks_per_night for no logs", () => {
     const result = computeNightMonitoringMetrics([], []);
-    expect(result.avg_checks_per_night).toBe(0);
+    expect(result.avg_checks_per_night).toBeNull();;
   });
 
   it("rounds avg_checks_per_night to one decimal place", () => {
@@ -430,7 +430,7 @@ describe("computeNightMonitoringMetrics", () => {
 
   it("returns 0 all_children_checked_rate for no logs", () => {
     const result = computeNightMonitoringMetrics([], []);
-    expect(result.all_children_checked_rate).toBe(0);
+    expect(result.all_children_checked_rate).toBeNull();;
   });
 
   // ── disturbance_count ─────────────────────────────────────────────────
@@ -612,7 +612,7 @@ describe("computeNightMonitoringMetrics", () => {
 
   it("returns 0 premises_secure_rate for no logs", () => {
     const result = computeNightMonitoringMetrics([], []);
-    expect(result.premises_secure_rate).toBe(0);
+    expect(result.premises_secure_rate).toBeNull();;
   });
 
   // ── handover_completion_rate ──────────────────────────────────────────
@@ -654,7 +654,7 @@ describe("computeNightMonitoringMetrics", () => {
 
   it("returns 0 handover_completion_rate for no logs", () => {
     const result = computeNightMonitoringMetrics([], []);
-    expect(result.handover_completion_rate).toBe(0);
+    expect(result.handover_completion_rate).toBeNull();;
   });
 
   // ── unreviewed_logs_count ─────────────────────────────────────────────

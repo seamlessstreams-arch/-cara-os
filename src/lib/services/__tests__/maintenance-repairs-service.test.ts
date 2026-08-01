@@ -304,7 +304,7 @@ describe("computeMaintenanceMetrics", () => {
 
     it("returns zero completion_rate", () => {
       const m = computeMaintenanceMetrics([]);
-      expect(m.completion_rate).toBe(0);
+      expect(m.completion_rate).toBeNull();;
     });
 
     it("returns zero emergency_count", () => {
@@ -319,7 +319,7 @@ describe("computeMaintenanceMetrics", () => {
 
     it("returns zero average_days_to_completion", () => {
       const m = computeMaintenanceMetrics([]);
-      expect(m.average_days_to_completion).toBe(0);
+      expect(m.average_days_to_completion).toBeNull();;
     });
 
     it("returns zero total_cost", () => {
@@ -329,22 +329,22 @@ describe("computeMaintenanceMetrics", () => {
 
     it("returns zero contractor_used_rate", () => {
       const m = computeMaintenanceMetrics([]);
-      expect(m.contractor_used_rate).toBe(0);
+      expect(m.contractor_used_rate).toBeNull();;
     });
 
     it("returns zero children_impact_assessed_rate", () => {
       const m = computeMaintenanceMetrics([]);
-      expect(m.children_impact_assessed_rate).toBe(0);
+      expect(m.children_impact_assessed_rate).toBeNull();;
     });
 
     it("returns zero safeguarding_check_rate", () => {
       const m = computeMaintenanceMetrics([]);
-      expect(m.safeguarding_check_rate).toBe(0);
+      expect(m.safeguarding_check_rate).toBeNull();;
     });
 
     it("returns zero certificate_obtained_rate", () => {
       const m = computeMaintenanceMetrics([]);
-      expect(m.certificate_obtained_rate).toBe(0);
+      expect(m.certificate_obtained_rate).toBeNull();;
     });
 
     it("returns zero overdue_count", () => {
@@ -800,7 +800,7 @@ describe("computeMaintenanceMetrics", () => {
         makeRecord({ days_to_completion: null }),
       ];
       const m = computeMaintenanceMetrics(records);
-      expect(m.average_days_to_completion).toBe(0);
+      expect(m.average_days_to_completion).toBeNull();;
     });
 
     it("calculates average from single record", () => {

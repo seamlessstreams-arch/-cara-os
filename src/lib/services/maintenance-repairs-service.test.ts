@@ -45,8 +45,8 @@ describe("computeMaintenanceMetrics", () => {
     expect(m.repair_request_count).toBe(0);
     expect(m.completed_count).toBe(0);
     expect(m.open_count).toBe(0);
-    expect(m.completion_rate).toBe(0);
-    expect(m.average_days_to_completion).toBe(0);
+    expect(m.completion_rate).toBeNull();;
+    expect(m.average_days_to_completion).toBeNull();;
     expect(m.total_cost).toBe(0);
   });
 

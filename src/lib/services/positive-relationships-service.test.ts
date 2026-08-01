@@ -45,10 +45,10 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_sessions).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.engagement_rate).toBe(0);
-    expect(m.skill_demonstration_rate).toBe(0);
-    expect(m.generalisation_rate).toBe(0);
-    expect(m.average_sessions_per_child).toBe(0);
+    expect(m.engagement_rate).toBeNull();;
+    expect(m.skill_demonstration_rate).toBeNull();;
+    expect(m.generalisation_rate).toBeNull();;
+    expect(m.average_sessions_per_child).toBeNull();;
     expect(m.emotional_session_count).toBe(0);
     expect(m.interpersonal_session_count).toBe(0);
     expect(m.group_dynamic_session_count).toBe(0);

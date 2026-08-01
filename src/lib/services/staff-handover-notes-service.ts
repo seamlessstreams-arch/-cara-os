@@ -151,19 +151,19 @@ export function computeStaffHandoverNotesMetrics(
   high_count: number;
   escalated_count: number;
   pending_count: number;
-  child_specific_rate: number;
-  medication_related_rate: number;
-  safeguarding_related_rate: number;
-  task_completed_rate: number;
+  child_specific_rate: number | null;
+  medication_related_rate: number | null;
+  safeguarding_related_rate: number | null;
+  task_completed_rate: number | null;
   follow_up_required_count: number;
-  follow_up_completed_rate: number;
-  acknowledged_rate: number;
-  manager_informed_rate: number;
-  time_sensitive_rate: number;
-  verbal_handover_rate: number;
-  written_record_rate: number;
-  risk_related_rate: number;
-  social_worker_update_rate: number;
+  follow_up_completed_rate: number | null;
+  acknowledged_rate: number | null;
+  manager_informed_rate: number | null;
+  time_sensitive_rate: number | null;
+  verbal_handover_rate: number | null;
+  written_record_rate: number | null;
+  risk_related_rate: number | null;
+  social_worker_update_rate: number | null;
   by_note_category: Record<string, number>;
   by_note_priority: Record<string, number>;
   by_note_status: Record<string, number>;
@@ -178,14 +178,14 @@ export function computeStaffHandoverNotesMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const followUpRequired = records.filter((r) => r.follow_up_required).length;
   const followUpRecords = records.filter((r) => r.follow_up_required);
   const followUpCompletedRate = followUpRecords.length > 0
     ? Math.round((followUpRecords.filter((r) => r.follow_up_completed).length / followUpRecords.length) * 1000) / 10
-    : 0;
+    : null;
 
   const byCategory: Record<string, number> = {};
   for (const r of records) byCategory[r.note_category] = (byCategory[r.note_category] ?? 0) + 1;

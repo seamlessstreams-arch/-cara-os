@@ -44,7 +44,7 @@ describe("computeAbsenceMetrics", () => {
     expect(m.current_absences).toBe(0);
     expect(m.sickness_absences).toBe(0);
     expect(m.total_days_lost).toBe(0);
-    expect(m.avg_days_per_absence).toBe(0);
+    expect(m.avg_days_per_absence).toBeNull();;
     expect(m.absence_rate).toBe(0);
     expect(m.agency_cover_count).toBe(0);
     expect(m.return_to_work_pending).toBe(0);

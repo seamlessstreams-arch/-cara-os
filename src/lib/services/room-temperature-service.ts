@@ -143,20 +143,20 @@ export function computeTemperatureMetrics(
   records: TemperatureRecord[],
 ): {
   total_checks: number;
-  comfortable_rate: number;
+  comfortable_rate: number | null;
   too_cold_count: number;
   too_hot_count: number;
   borderline_count: number;
-  average_temperature: number;
-  min_temperature: number;
-  max_temperature: number;
-  heating_working_rate: number;
-  thermostat_correct_rate: number;
-  windows_appropriate_rate: number;
-  draught_free_rate: number;
-  child_comfortable_rate: number;
-  child_consulted_rate: number;
-  bedding_appropriate_rate: number;
+  average_temperature: number | null;
+  min_temperature: number | null;
+  max_temperature: number | null;
+  heating_working_rate: number | null;
+  thermostat_correct_rate: number | null;
+  windows_appropriate_rate: number | null;
+  draught_free_rate: number | null;
+  child_comfortable_rate: number | null;
+  child_consulted_rate: number | null;
+  bedding_appropriate_rate: number | null;
   cold_protocol_active_count: number;
   hot_protocol_active_count: number;
   unique_rooms: number;
@@ -169,7 +169,7 @@ export function computeTemperatureMetrics(
   const comfortableRate =
     records.length > 0
       ? Math.round((comfortable / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const tooCold = records.filter((r) => r.temperature_status === "too_cold").length;
   const tooHot = records.filter((r) => r.temperature_status === "too_hot").length;
@@ -181,15 +181,15 @@ export function computeTemperatureMetrics(
   const avgTemp =
     temps.length > 0
       ? Math.round((temps.reduce((a, b) => a + b, 0) / temps.length) * 10) / 10
-      : 0;
-  const minTemp = temps.length > 0 ? Math.min(...temps) : 0;
-  const maxTemp = temps.length > 0 ? Math.max(...temps) : 0;
+      : null;
+  const minTemp = temps.length > 0 ? Math.min(...temps) : null;
+  const maxTemp = temps.length > 0 ? Math.max(...temps) : null;
 
   const boolRate = (field: keyof TemperatureRecord) => {
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const coldProtocol = records.filter((r) => r.cold_weather_protocol_active).length;

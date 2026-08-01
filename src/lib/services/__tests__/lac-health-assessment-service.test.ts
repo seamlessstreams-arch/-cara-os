@@ -38,11 +38,11 @@ describe("lac-health-assessment-service", () => {
       expect(m.urgent_concern_count).toBe(0);
       expect(m.not_completed_count).toBe(0);
       expect(m.referral_required_count).toBe(0);
-      expect(m.child_attended_rate).toBe(0);
-      expect(m.child_views_rate).toBe(0);
-      expect(m.action_plan_rate).toBe(0);
-      expect(m.actions_completed_rate).toBe(0);
-      expect(m.shared_with_sw_rate).toBe(0);
+      expect(m.child_attended_rate).toBeNull();;
+      expect(m.child_views_rate).toBeNull();;
+      expect(m.action_plan_rate).toBeNull();;
+      expect(m.actions_completed_rate).toBeNull();;
+      expect(m.shared_with_sw_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
 

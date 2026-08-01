@@ -43,11 +43,11 @@ describe("computeEventMetrics", () => {
     expect(m.events_this_month).toBe(0);
     expect(m.positive_events).toBe(0);
     expect(m.negative_events).toBe(0);
-    expect(m.positive_ratio).toBe(0);
+    expect(m.positive_ratio).toBeNull();;
     expect(m.achievements).toBe(0);
     expect(m.children_with_events).toBe(0);
     expect(m.event_coverage).toBe(0);
-    expect(m.child_views_recorded_rate).toBe(0);
+    expect(m.child_views_recorded_rate).toBeNull();;
   });
 
   it("counts positive and negative events", () => {

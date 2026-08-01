@@ -47,10 +47,10 @@ describe("computeExitInterviewMetrics", () => {
     expect(m.total_exits).toBe(0);
     expect(m.career_progression_count).toBe(0);
     expect(m.burnout_count).toBe(0);
-    expect(m.very_satisfied_rate).toBe(0);
-    expect(m.handover_completed_rate).toBe(0);
-    expect(m.average_service_months).toBe(0);
-    expect(m.rehire_yes_rate).toBe(0);
+    expect(m.very_satisfied_rate).toBeNull();;
+    expect(m.handover_completed_rate).toBeNull();;
+    expect(m.average_service_months).toBeNull();;
+    expect(m.rehire_yes_rate).toBeNull();;
   });
 
   it("counts leaving reasons correctly", () => {

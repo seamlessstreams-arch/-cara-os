@@ -42,11 +42,11 @@ describe("medication-incident-reporting-service", () => {
       expect(m.moderate_harm_count).toBe(0);
       expect(m.near_miss_count).toBe(0);
       expect(m.open_investigation_count).toBe(0);
-      expect(m.gp_notified_rate).toBe(0);
-      expect(m.parent_notified_rate).toBe(0);
-      expect(m.social_worker_notified_rate).toBe(0);
-      expect(m.root_cause_rate).toBe(0);
-      expect(m.learning_shared_rate).toBe(0);
+      expect(m.gp_notified_rate).toBeNull();;
+      expect(m.parent_notified_rate).toBeNull();;
+      expect(m.social_worker_notified_rate).toBeNull();;
+      expect(m.root_cause_rate).toBeNull();;
+      expect(m.learning_shared_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
 

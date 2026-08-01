@@ -235,18 +235,18 @@ describe("computeReviewMetrics", () => {
       expect(m.completed_reviews).toBe(0);
       expect(m.overdue_reviews).toBe(0);
       expect(m.scheduled_reviews).toBe(0);
-      expect(m.within_timescale_rate).toBe(0);
-      expect(m.child_participation_rate).toBe(0);
-      expect(m.child_views_recorded_rate).toBe(0);
-      expect(m.parent_attendance_rate).toBe(0);
+      expect(m.within_timescale_rate).toBeNull();;
+      expect(m.child_participation_rate).toBeNull();;
+      expect(m.child_views_recorded_rate).toBeNull();;
+      expect(m.parent_attendance_rate).toBeNull();;
       expect(m.plan_endorsed_count).toBe(0);
       expect(m.plan_amended_count).toBe(0);
       expect(m.escalation_count).toBe(0);
       expect(m.children_reviewed).toBe(0);
       expect(m.review_coverage).toBe(0);
-      expect(m.placement_stability_rate).toBe(0);
-      expect(m.health_reviewed_rate).toBe(0);
-      expect(m.education_reviewed_rate).toBe(0);
+      expect(m.placement_stability_rate).toBeNull();;
+      expect(m.health_reviewed_rate).toBeNull();;
+      expect(m.education_reviewed_rate).toBeNull();;
     });
 
     it("returns empty objects for by_type, by_outcome, by_participation, by_status", () => {
@@ -356,7 +356,7 @@ describe("computeReviewMetrics", () => {
 
     it("returns 0 when there are no completed reviews", () => {
       const reviews = [makeLacReview({ status: "scheduled" })];
-      expect(computeReviewMetrics(reviews, 5, NOW).within_timescale_rate).toBe(0);
+      expect(computeReviewMetrics(reviews, 5, NOW).within_timescale_rate).toBeNull();;
     });
   });
 
@@ -411,7 +411,7 @@ describe("computeReviewMetrics", () => {
 
     it("returns 0 when no completed reviews exist", () => {
       const reviews = [makeLacReview({ status: "scheduled" })];
-      expect(computeReviewMetrics(reviews, 5, NOW).child_participation_rate).toBe(0);
+      expect(computeReviewMetrics(reviews, 5, NOW).child_participation_rate).toBeNull();;
     });
   });
 
@@ -433,7 +433,7 @@ describe("computeReviewMetrics", () => {
 
     it("returns 0 when no completed reviews exist", () => {
       const reviews = [makeLacReview({ status: "overdue" })];
-      expect(computeReviewMetrics(reviews, 5, NOW).child_views_recorded_rate).toBe(0);
+      expect(computeReviewMetrics(reviews, 5, NOW).child_views_recorded_rate).toBeNull();;
     });
   });
 
@@ -560,7 +560,7 @@ describe("computeReviewMetrics", () => {
       const reviews = [
         makeLacReview({ status: "completed", child_id: "child-1" }),
       ];
-      expect(computeReviewMetrics(reviews, 0, NOW).review_coverage).toBe(0);
+      expect(computeReviewMetrics(reviews, 0, NOW).review_coverage).toBeNull();;
     });
 
     it("returns 0 when there are no completed reviews", () => {
@@ -586,7 +586,7 @@ describe("computeReviewMetrics", () => {
 
     it("returns 0 when there are no completed reviews", () => {
       const reviews = [makeLacReview({ status: "scheduled" })];
-      expect(computeReviewMetrics(reviews, 5, NOW).placement_stability_rate).toBe(0);
+      expect(computeReviewMetrics(reviews, 5, NOW).placement_stability_rate).toBeNull();;
     });
   });
 
@@ -633,7 +633,7 @@ describe("computeReviewMetrics", () => {
 
     it("returns 0 when no completed reviews exist", () => {
       const reviews = [makeLacReview({ status: "overdue" })];
-      expect(computeReviewMetrics(reviews, 5, NOW).education_reviewed_rate).toBe(0);
+      expect(computeReviewMetrics(reviews, 5, NOW).education_reviewed_rate).toBeNull();;
     });
   });
 
@@ -1312,7 +1312,7 @@ describe("Edge cases", () => {
         makeLacReview({ status: "completed", child_id: "child-1" }),
       ];
       const m = computeReviewMetrics(reviews, 0, NOW);
-      expect(m.review_coverage).toBe(0);
+      expect(m.review_coverage).toBeNull();;
     });
 
     it("does not throw with totalChildren = 0", () => {
@@ -1472,8 +1472,8 @@ describe("Edge cases", () => {
       ];
       const m = computeReviewMetrics(reviews, 5, NOW);
       expect(m.completed_reviews).toBe(0);
-      expect(m.within_timescale_rate).toBe(0);
-      expect(m.child_participation_rate).toBe(0);
+      expect(m.within_timescale_rate).toBeNull();;
+      expect(m.child_participation_rate).toBeNull();;
     });
   });
 

@@ -135,22 +135,22 @@ export function computeExitInterviewMetrics(
   burnout_count: number;
   management_issues_count: number;
   dismissal_count: number;
-  very_satisfied_rate: number;
+  very_satisfied_rate: number | null;
   dissatisfied_count: number;
   very_dissatisfied_count: number;
-  handover_completed_rate: number;
+  handover_completed_rate: number | null;
   handover_not_started_count: number;
-  would_recommend_rate: number;
-  felt_supported_rate: number;
-  adequate_training_rate: number;
-  safeguarding_debrief_rate: number;
-  keys_returned_rate: number;
-  access_revoked_rate: number;
-  dbs_notification_rate: number;
-  children_informed_rate: number;
-  children_supported_rate: number;
-  average_service_months: number;
-  rehire_yes_rate: number;
+  would_recommend_rate: number | null;
+  felt_supported_rate: number | null;
+  adequate_training_rate: number | null;
+  safeguarding_debrief_rate: number | null;
+  keys_returned_rate: number | null;
+  access_revoked_rate: number | null;
+  dbs_notification_rate: number | null;
+  children_informed_rate: number | null;
+  children_supported_rate: number | null;
+  average_service_months: number | null;
+  rehire_yes_rate: number | null;
   rehire_no_count: number;
   by_leaving_reason: Record<string, number>;
   by_satisfaction_rating: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeExitInterviewMetrics(
   const verySatisfiedRate =
     records.length > 0
       ? Math.round((verySatisfied / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const dissatisfied = records.filter((r) => r.satisfaction_rating === "dissatisfied").length;
   const veryDissatisfied = records.filter((r) => r.satisfaction_rating === "very_dissatisfied").length;
@@ -175,7 +175,7 @@ export function computeExitInterviewMetrics(
   const handoverRate =
     records.length > 0
       ? Math.round((handoverCompleted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const handoverNotStarted = records.filter((r) => r.handover_status === "not_started").length;
 
@@ -183,20 +183,20 @@ export function computeExitInterviewMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const serviceTimes = records.map((r) => r.length_of_service_months);
   const avgService =
     serviceTimes.length > 0
       ? Math.round((serviceTimes.reduce((a, b) => a + b, 0) / serviceTimes.length) * 10) / 10
-      : 0;
+      : null;
 
   const rehireYes = records.filter((r) => r.rehire_recommendation === "yes").length;
   const rehireYesRate =
     records.length > 0
       ? Math.round((rehireYes / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const rehireNo = records.filter((r) => r.rehire_recommendation === "no").length;
 

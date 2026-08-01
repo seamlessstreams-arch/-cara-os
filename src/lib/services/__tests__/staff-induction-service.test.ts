@@ -371,12 +371,12 @@ describe("computeInductionMetrics", () => {
 
     it("returns zero completion_rate for no tasks", () => {
       const m = computeInductionMetrics([], [], NOW);
-      expect(m.completion_rate).toBe(0);
+      expect(m.completion_rate).toBeNull();;
     });
 
     it("returns zero dbs_verified_rate for no records", () => {
       const m = computeInductionMetrics([], [], NOW);
-      expect(m.dbs_verified_rate).toBe(0);
+      expect(m.dbs_verified_rate).toBeNull();;
     });
 
     it("returns zero avg_completion for no records", () => {
@@ -548,7 +548,7 @@ describe("computeInductionMetrics", () => {
     it("returns 0 when all tasks are not_applicable", () => {
       const tasks = [makeTask({ status: "not_applicable" })];
       const m = computeInductionMetrics([], tasks, NOW);
-      expect(m.completion_rate).toBe(0);
+      expect(m.completion_rate).toBeNull();;
     });
 
     it("rounds to one decimal place", () => {

@@ -41,7 +41,7 @@ describe("computeMedicationIncidentMetrics", () => {
     expect(m.moderate_harm_count).toBe(0);
     expect(m.near_miss_count).toBe(0);
     expect(m.open_investigation_count).toBe(0);
-    expect(m.gp_notified_rate).toBe(0);
+    expect(m.gp_notified_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

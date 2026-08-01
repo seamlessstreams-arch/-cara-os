@@ -51,9 +51,9 @@ describe("computeStaffHandoverNotesMetrics", () => {
     expect(m.high_count).toBe(0);
     expect(m.escalated_count).toBe(0);
     expect(m.pending_count).toBe(0);
-    expect(m.child_specific_rate).toBe(0);
+    expect(m.child_specific_rate).toBeNull();;
     expect(m.follow_up_required_count).toBe(0);
-    expect(m.follow_up_completed_rate).toBe(0);
+    expect(m.follow_up_completed_rate).toBeNull();;
   });
 
   it("counts priority and status correctly", () => {
@@ -93,7 +93,7 @@ describe("computeStaffHandoverNotesMetrics", () => {
   it("returns 0 follow_up_completed_rate when no follow-ups required", () => {
     const records = [makeRecord({ id: "1", follow_up_required: false })];
     const m = computeStaffHandoverNotesMetrics(records);
-    expect(m.follow_up_completed_rate).toBe(0);
+    expect(m.follow_up_completed_rate).toBeNull();;
   });
 
   it("builds breakdown maps", () => {

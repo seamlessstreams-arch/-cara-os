@@ -44,11 +44,11 @@ describe("computeStaffConflictMetrics", () => {
     expect(m.critical_risk_count).toBe(0);
     expect(m.escalated_count).toBe(0);
     expect(m.mitigation_failed_count).toBe(0);
-    expect(m.annual_review_rate).toBe(0);
-    expect(m.manager_aware_rate).toBe(0);
-    expect(m.documented_rate).toBe(0);
-    expect(m.no_impact_confirmed_rate).toBe(0);
-    expect(m.mitigation_in_place_rate).toBe(0);
+    expect(m.annual_review_rate).toBeNull();;
+    expect(m.manager_aware_rate).toBeNull();;
+    expect(m.documented_rate).toBeNull();;
+    expect(m.no_impact_confirmed_rate).toBeNull();;
+    expect(m.mitigation_in_place_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

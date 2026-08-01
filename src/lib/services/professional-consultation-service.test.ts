@@ -53,10 +53,10 @@ describe("computeProfessionalConsultationMetrics", () => {
     expect(m.further_referral_count).toBe(0);
     expect(m.escalated_count).toBe(0);
     expect(m.emergency_count).toBe(0);
-    expect(m.recommendations_documented_rate).toBe(0);
-    expect(m.actions_completed_rate).toBe(0);
+    expect(m.recommendations_documented_rate).toBeNull();;
+    expect(m.actions_completed_rate).toBeNull();;
     expect(m.follow_up_required_count).toBe(0);
-    expect(m.follow_up_completed_rate).toBe(0);
+    expect(m.follow_up_completed_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

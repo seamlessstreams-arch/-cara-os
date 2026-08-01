@@ -66,7 +66,7 @@ describe("computeOnlineSafetyMetrics", () => {
     expect(m.total_agreements).toBe(0);
     expect(m.active_agreements).toBe(0);
     expect(m.agreement_coverage).toBe(0);
-    expect(m.filtering_enabled_rate).toBe(0);
+    expect(m.filtering_enabled_rate).toBeNull();;
   });
 
   it("computes incident metrics", () => {

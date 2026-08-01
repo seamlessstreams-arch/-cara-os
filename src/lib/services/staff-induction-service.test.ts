@@ -63,8 +63,8 @@ describe("computeInductionMetrics", () => {
     expect(m.total_tasks).toBe(0);
     expect(m.tasks_completed).toBe(0);
     expect(m.tasks_overdue).toBe(0);
-    expect(m.completion_rate).toBe(0);
-    expect(m.dbs_verified_rate).toBe(0);
+    expect(m.completion_rate).toBeNull();;
+    expect(m.dbs_verified_rate).toBeNull();;
     expect(m.avg_completion).toBe(0);
   });
 

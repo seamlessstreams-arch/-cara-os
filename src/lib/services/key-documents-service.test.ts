@@ -40,8 +40,8 @@ describe("key-documents-service", () => {
       expect(m.total_documents).toBe(0);
       expect(m.current_count).toBe(0);
       expect(m.document_coverage).toBe(0);
-      expect(m.social_worker_approved_rate).toBe(0);
-      expect(m.child_contributed_rate).toBe(0);
+      expect(m.social_worker_approved_rate).toBeNull();;
+      expect(m.child_contributed_rate).toBeNull();;
     });
 
     it("computes status counts and coverage", () => {

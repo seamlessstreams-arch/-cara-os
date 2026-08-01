@@ -128,13 +128,13 @@ export function computeEventMetrics(
   events_this_month: number;
   positive_events: number;
   negative_events: number;
-  positive_ratio: number;
+  positive_ratio: number | null;
   achievements: number;
   children_with_events: number;
-  event_coverage: number;
-  child_views_recorded_rate: number;
-  shared_with_family_rate: number;
-  added_to_life_story_rate: number;
+  event_coverage: number | null;
+  child_views_recorded_rate: number | null;
+  shared_with_family_rate: number | null;
+  added_to_life_story_rate: number | null;
   follow_ups_pending: number;
   high_impact_count: number;
   by_category: Record<string, number>;
@@ -158,7 +158,7 @@ export function computeEventMetrics(
   const positiveRatio =
     events.length > 0
       ? Math.round((positiveEvents / events.length) * 1000) / 10
-      : 0;
+      : null;
 
   const achievements = events.filter((e) => e.category === "achievement").length;
 
@@ -166,25 +166,25 @@ export function computeEventMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const viewsRecorded = events.filter((e) => e.child_views !== null).length;
   const viewsRate =
     events.length > 0
       ? Math.round((viewsRecorded / events.length) * 1000) / 10
-      : 0;
+      : null;
 
   const sharedWithFamily = events.filter((e) => e.shared_with_family).length;
   const sharedRate =
     events.length > 0
       ? Math.round((sharedWithFamily / events.length) * 1000) / 10
-      : 0;
+      : null;
 
   const addedToLifeStory = events.filter((e) => e.added_to_life_story).length;
   const lifeStoryRate =
     events.length > 0
       ? Math.round((addedToLifeStory / events.length) * 1000) / 10
-      : 0;
+      : null;
 
   const followUpsPending = events.filter(
     (e) => e.follow_up_actions.length > 0,

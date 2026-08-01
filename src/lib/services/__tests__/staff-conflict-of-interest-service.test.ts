@@ -90,27 +90,27 @@ describe("computeStaffConflictMetrics", () => {
 
     it("returns zero annual_review_rate", () => {
       const m = computeStaffConflictMetrics([]);
-      expect(m.annual_review_rate).toBe(0);
+      expect(m.annual_review_rate).toBeNull();;
     });
 
     it("returns zero manager_aware_rate", () => {
       const m = computeStaffConflictMetrics([]);
-      expect(m.manager_aware_rate).toBe(0);
+      expect(m.manager_aware_rate).toBeNull();;
     });
 
     it("returns zero documented_rate", () => {
       const m = computeStaffConflictMetrics([]);
-      expect(m.documented_rate).toBe(0);
+      expect(m.documented_rate).toBeNull();;
     });
 
     it("returns zero no_impact_confirmed_rate", () => {
       const m = computeStaffConflictMetrics([]);
-      expect(m.no_impact_confirmed_rate).toBe(0);
+      expect(m.no_impact_confirmed_rate).toBeNull();;
     });
 
     it("returns zero mitigation_in_place_rate", () => {
       const m = computeStaffConflictMetrics([]);
-      expect(m.mitigation_in_place_rate).toBe(0);
+      expect(m.mitigation_in_place_rate).toBeNull();;
     });
 
     it("returns empty conflict_type_breakdown", () => {
@@ -291,7 +291,7 @@ describe("computeStaffConflictMetrics", () => {
         makeRow({ risk_level: "none_identified", mitigation_status: "not_required" }),
       ];
       const m = computeStaffConflictMetrics(rows);
-      expect(m.mitigation_in_place_rate).toBe(0);
+      expect(m.mitigation_in_place_rate).toBeNull();;
     });
 
     it("calculates correctly for mixed mitigation statuses", () => {

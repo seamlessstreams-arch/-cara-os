@@ -104,11 +104,11 @@ export function computeLacHealthAssessmentMetrics(
   urgent_concern_count: number;
   not_completed_count: number;
   referral_required_count: number;
-  child_attended_rate: number;
-  child_views_rate: number;
-  action_plan_rate: number;
-  actions_completed_rate: number;
-  shared_with_sw_rate: number;
+  child_attended_rate: number | null;
+  child_views_rate: number | null;
+  action_plan_rate: number | null;
+  actions_completed_rate: number | null;
+  shared_with_sw_rate: number | null;
   type_breakdown: Record<string, number>;
   outcome_breakdown: Record<string, number>;
   unique_children: number;
@@ -132,7 +132,7 @@ export function computeLacHealthAssessmentMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const typeBreakdown: Record<string, number> = {};
@@ -241,7 +241,7 @@ export function generateLacHealthAssessmentCaraInsights(
       ? Math.round(
           (metrics.overdue_count / metrics.total_assessments) * 1000,
         ) / 10
-      : 0;
+      : null;
   insights.push(
     `[pink] ${metrics.total_assessments} LAC health assessments recorded across ${metrics.unique_children} ${metrics.unique_children === 1 ? "child" : "children"}. ` +
       `${metrics.overdue_count} (${overduePct}%) overdue. ` +

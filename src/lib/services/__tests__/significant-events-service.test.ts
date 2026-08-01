@@ -226,7 +226,7 @@ describe("computeEventMetrics", () => {
 
     it("returns zero for positive_ratio", () => {
       const m = computeEventMetrics([], 3, now);
-      expect(m.positive_ratio).toBe(0);
+      expect(m.positive_ratio).toBeNull();;
     });
 
     it("returns zero for achievements", () => {
@@ -246,17 +246,17 @@ describe("computeEventMetrics", () => {
 
     it("returns zero for child_views_recorded_rate", () => {
       const m = computeEventMetrics([], 3, now);
-      expect(m.child_views_recorded_rate).toBe(0);
+      expect(m.child_views_recorded_rate).toBeNull();;
     });
 
     it("returns zero for shared_with_family_rate", () => {
       const m = computeEventMetrics([], 3, now);
-      expect(m.shared_with_family_rate).toBe(0);
+      expect(m.shared_with_family_rate).toBeNull();;
     });
 
     it("returns zero for added_to_life_story_rate", () => {
       const m = computeEventMetrics([], 3, now);
-      expect(m.added_to_life_story_rate).toBe(0);
+      expect(m.added_to_life_story_rate).toBeNull();;
     });
 
     it("returns zero for follow_ups_pending", () => {
@@ -532,7 +532,7 @@ describe("computeEventMetrics", () => {
     it("returns zero coverage when totalChildren is zero", () => {
       const events = [makeEvent()];
       const m = computeEventMetrics(events, 0, now);
-      expect(m.event_coverage).toBe(0);
+      expect(m.event_coverage).toBeNull();;
     });
 
     it("computes fractional coverage correctly", () => {
@@ -1501,7 +1501,7 @@ describe("Edge cases", () => {
     it("computeEventMetrics returns 0 coverage with zero children", () => {
       const events = [makeEvent()];
       const m = computeEventMetrics(events, 0, now);
-      expect(m.event_coverage).toBe(0);
+      expect(m.event_coverage).toBeNull();;
     });
 
     it("identifyEventAlerts does not fire no_events_recorded for zero children", () => {

@@ -50,10 +50,10 @@ describe("computePestControlMetrics", () => {
     expect(m.routine_count).toBe(0);
     expect(m.reactive_count).toBe(0);
     expect(m.emergency_count).toBe(0);
-    expect(m.resolved_rate).toBe(0);
-    expect(m.no_pest_found_rate).toBe(0);
-    expect(m.contractor_certified_rate).toBe(0);
-    expect(m.safety_sheet_obtained_rate).toBe(0);
+    expect(m.resolved_rate).toBeNull();;
+    expect(m.no_pest_found_rate).toBeNull();;
+    expect(m.contractor_certified_rate).toBeNull();;
+    expect(m.safety_sheet_obtained_rate).toBeNull();;
   });
 
   it("counts inspection types correctly", () => {

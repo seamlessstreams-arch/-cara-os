@@ -269,16 +269,16 @@ describe("computeSensoryMetrics", () => {
     const m = computeSensoryMetrics([], 0);
     expect(m.total_profiles).toBe(0);
     expect(m.children_assessed).toBe(0);
-    expect(m.assessment_coverage).toBe(0);
+    expect(m.assessment_coverage).toBeNull();;
     expect(m.current_profiles).toBe(0);
     expect(m.outdated_profiles).toBe(0);
     expect(m.under_review_count).toBe(0);
     expect(m.hyper_sensitive_count).toBe(0);
     expect(m.hypo_sensitive_count).toBe(0);
     expect(m.seeking_count).toBe(0);
-    expect(m.staff_trained_rate).toBe(0);
-    expect(m.ot_input_rate).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.staff_trained_rate).toBeNull();;
+    expect(m.ot_input_rate).toBeNull();;
+    expect(m.child_views_rate).toBeNull();;
     expect(m.adaptations_in_place).toBe(0);
     expect(Object.keys(m.by_sensory_domain)).toHaveLength(0);
     expect(Object.keys(m.by_sensitivity_level)).toHaveLength(0);
@@ -354,7 +354,7 @@ describe("computeSensoryMetrics", () => {
 
   it("assessment_coverage is 0 when totalChildren is 0", () => {
     const m = computeSensoryMetrics([], 0);
-    expect(m.assessment_coverage).toBe(0);
+    expect(m.assessment_coverage).toBeNull();;
   });
 
   it("assessment_coverage rounds to one decimal place", () => {
@@ -525,7 +525,7 @@ describe("computeSensoryMetrics", () => {
 
   it("staff_trained_rate is 0 for empty profiles", () => {
     const m = computeSensoryMetrics([], 0);
-    expect(m.staff_trained_rate).toBe(0);
+    expect(m.staff_trained_rate).toBeNull();;
   });
 
   // ── ot_input_rate ───────────────────────────────────────────────────
@@ -569,7 +569,7 @@ describe("computeSensoryMetrics", () => {
 
   it("ot_input_rate is 0 for empty profiles", () => {
     const m = computeSensoryMetrics([], 0);
-    expect(m.ot_input_rate).toBe(0);
+    expect(m.ot_input_rate).toBeNull();;
   });
 
   // ── child_views_rate ────────────────────────────────────────────────
@@ -613,7 +613,7 @@ describe("computeSensoryMetrics", () => {
 
   it("child_views_rate is 0 for empty profiles", () => {
     const m = computeSensoryMetrics([], 0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
   });
 
   it("child_views_rate counts non-null values including empty string", () => {

@@ -153,18 +153,18 @@ export function computeProfessionalConsultationMetrics(
   further_referral_count: number;
   escalated_count: number;
   emergency_count: number;
-  recommendations_documented_rate: number;
-  actions_agreed_rate: number;
-  actions_completed_rate: number;
-  staff_informed_rate: number;
-  care_plan_updated_rate: number;
-  parent_carer_informed_rate: number;
-  social_worker_informed_rate: number;
+  recommendations_documented_rate: number | null;
+  actions_agreed_rate: number | null;
+  actions_completed_rate: number | null;
+  staff_informed_rate: number | null;
+  care_plan_updated_rate: number | null;
+  parent_carer_informed_rate: number | null;
+  social_worker_informed_rate: number | null;
   follow_up_required_count: number;
-  follow_up_completed_rate: number;
-  child_participated_rate: number;
-  child_views_recorded_rate: number;
-  consent_obtained_rate: number;
+  follow_up_completed_rate: number | null;
+  child_participated_rate: number | null;
+  child_views_recorded_rate: number | null;
+  consent_obtained_rate: number | null;
   unique_children: number;
   by_professional_type: Record<string, number>;
   by_consultation_type: Record<string, number>;
@@ -180,7 +180,7 @@ export function computeProfessionalConsultationMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const followUpRequired = records.filter((r) => r.follow_up_required).length;
@@ -190,7 +190,7 @@ export function computeProfessionalConsultationMetrics(
   const followUpDone = records.filter((r) => r.follow_up_required && r.follow_up_completed).length;
   const followUpCompletedRate = followUpDenom > 0
     ? Math.round((followUpDone / followUpDenom) * 1000) / 10
-    : 0;
+    : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

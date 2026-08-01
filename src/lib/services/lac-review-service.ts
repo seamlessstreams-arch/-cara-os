@@ -139,18 +139,18 @@ export function computeReviewMetrics(
   completed_reviews: number;
   overdue_reviews: number;
   scheduled_reviews: number;
-  within_timescale_rate: number;
-  child_participation_rate: number;
-  child_views_recorded_rate: number;
-  parent_attendance_rate: number;
+  within_timescale_rate: number | null;
+  child_participation_rate: number | null;
+  child_views_recorded_rate: number | null;
+  parent_attendance_rate: number | null;
   plan_endorsed_count: number;
   plan_amended_count: number;
   escalation_count: number;
   children_reviewed: number;
-  review_coverage: number;
-  placement_stability_rate: number;
-  health_reviewed_rate: number;
-  education_reviewed_rate: number;
+  review_coverage: number | null;
+  placement_stability_rate: number | null;
+  health_reviewed_rate: number | null;
+  education_reviewed_rate: number | null;
   by_type: Record<string, number>;
   by_outcome: Record<string, number>;
   by_participation: Record<string, number>;
@@ -173,7 +173,7 @@ export function computeReviewMetrics(
   const withinRate =
     completedReviews.length > 0
       ? Math.round((withinTimescale / completedReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Child participation (attended_spoke + attended_advocate + written_views + views_via_worker)
   const participated = completedReviews.filter(
@@ -186,19 +186,19 @@ export function computeReviewMetrics(
   const participationRate =
     completedReviews.length > 0
       ? Math.round((participated / completedReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const viewsRecorded = completedReviews.filter((r) => r.child_views_recorded).length;
   const viewsRate =
     completedReviews.length > 0
       ? Math.round((viewsRecorded / completedReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const parentAttended = completedReviews.filter((r) => r.parent_attended).length;
   const parentRate =
     completedReviews.length > 0
       ? Math.round((parentAttended / completedReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const planEndorsed = completedReviews.filter((r) => r.outcome === "plan_endorsed").length;
   const planAmended = completedReviews.filter((r) => r.outcome === "plan_amended").length;
@@ -209,27 +209,27 @@ export function computeReviewMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   // Placement stability discussed
   const stabilityDiscussed = completedReviews.filter((r) => r.placement_stability_discussed).length;
   const stabilityRate =
     completedReviews.length > 0
       ? Math.round((stabilityDiscussed / completedReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Health/education reviewed
   const healthReviewed = completedReviews.filter((r) => r.health_reviewed).length;
   const healthRate =
     completedReviews.length > 0
       ? Math.round((healthReviewed / completedReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const educationReviewed = completedReviews.filter((r) => r.education_reviewed).length;
   const educationRate =
     completedReviews.length > 0
       ? Math.round((educationReviewed / completedReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   // By type
   const byType: Record<string, number> = {};

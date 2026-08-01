@@ -279,17 +279,17 @@ export function computeMetrics(
   by_engagement_level: Record<string, number>;
   by_group_type: Record<string, number>;
   therapeutic_intent_count: number;
-  therapist_qualified_rate: number;
-  instrument_provided_rate: number;
-  child_choice_rate: number;
-  engagement_rate: number;
-  emotional_expression_rate: number;
-  confidence_building_rate: number;
-  social_interaction_rate: number;
-  performance_opportunity_rate: number;
-  care_plan_link_rate: number;
-  mood_improvement_rate: number;
-  average_sessions_per_child: number;
+  therapist_qualified_rate: number | null;
+  instrument_provided_rate: number | null;
+  child_choice_rate: number | null;
+  engagement_rate: number | null;
+  emotional_expression_rate: number | null;
+  confidence_building_rate: number | null;
+  social_interaction_rate: number | null;
+  performance_opportunity_rate: number | null;
+  care_plan_link_rate: number | null;
+  mood_improvement_rate: number | null;
+  average_sessions_per_child: number | null;
   performance_activity_count: number;
   instrument_activity_count: number;
   creative_activity_count: number;
@@ -320,15 +320,15 @@ export function computeMetrics(
   // Boolean rates
   const therapistQualifiedRate = total > 0
     ? Math.round((rows.filter((r) => r.therapist_qualified === true).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const instrumentProvidedRate = total > 0
     ? Math.round((rows.filter((r) => r.instrument_provided === true).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const childChoiceRate = total > 0
     ? Math.round((rows.filter((r) => r.child_choice).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const engagementRate = total > 0
     ? Math.round(
@@ -336,27 +336,27 @@ export function computeMetrics(
           total) *
           1000,
       ) / 10
-    : 0;
+    : null;
 
   const emotionalExpressionRate = total > 0
     ? Math.round((rows.filter((r) => r.emotional_expression).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const confidenceBuildingRate = total > 0
     ? Math.round((rows.filter((r) => r.confidence_building).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const socialInteractionRate = total > 0
     ? Math.round((rows.filter((r) => r.social_interaction).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const performanceOpportunityRate = total > 0
     ? Math.round((rows.filter((r) => r.performance_opportunity).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const carePlanLinkRate = total > 0
     ? Math.round((rows.filter((r) => r.linked_to_care_plan).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Mood improvement: mood_after is higher than mood_before
   const moodIndex = (m: MoodLevel) => MOOD_LEVELS.indexOf(m);
@@ -365,7 +365,7 @@ export function computeMetrics(
   ).length;
   const moodImprovementRate = total > 0
     ? Math.round((moodImprovedCount / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Category counts
   const performanceActivityCount = rows.filter(
@@ -383,7 +383,7 @@ export function computeMetrics(
   // Average sessions per child
   const avgPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   return {
     total_sessions: total,
@@ -618,7 +618,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.mood_improvement_rate < 30 && metrics.total_sessions > 5) {
+  if ((metrics.mood_improvement_rate ?? 0) < 30 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Mood improvement is observed in only ${metrics.mood_improvement_rate}% of sessions. ` +
         `Music and performing arts are powerful tools for emotional regulation ` +
@@ -631,7 +631,7 @@ export function generateCaraInsights(
         `achievement — are music and performing arts sessions genuinely ` +
         `enjoyable for the children, or do they feel like obligations?`,
     );
-  } else if (metrics.child_choice_rate < 40 && metrics.total_sessions > 5) {
+  } else if ((metrics.child_choice_rate ?? 0) < 40 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Child choice is recorded in only ${metrics.child_choice_rate}% of sessions. ` +
         `Creative activities are most meaningful when freely chosen. Many ` +
@@ -644,7 +644,7 @@ export function generateCaraInsights(
         `asking? For children with performance anxiety or trauma histories, ` +
         `the ability to decline — and be respected — is essential.`,
     );
-  } else if (metrics.care_plan_link_rate < 30 && metrics.total_sessions > 5) {
+  } else if ((metrics.care_plan_link_rate ?? 0) < 30 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Only ${metrics.care_plan_link_rate}% of sessions are linked to care plans. ` +
         `SCCIF: Experiences & progress expects that activities contribute to ` +

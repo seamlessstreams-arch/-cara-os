@@ -44,8 +44,8 @@ describe("computeReviewMetrics", () => {
     expect(m.total_reviews).toBe(0);
     expect(m.completed_reviews).toBe(0);
     expect(m.overdue_reviews).toBe(0);
-    expect(m.within_timescale_rate).toBe(0);
-    expect(m.child_participation_rate).toBe(0);
+    expect(m.within_timescale_rate).toBeNull();;
+    expect(m.child_participation_rate).toBeNull();;
     expect(m.review_coverage).toBe(0);
   });
 

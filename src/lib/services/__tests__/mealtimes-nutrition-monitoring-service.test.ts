@@ -282,52 +282,52 @@ describe("computeMealMetrics", () => {
 
     it("returns zero children_ate_rate", () => {
       const m = computeMealMetrics([]);
-      expect(m.children_ate_rate).toBe(0);
+      expect(m.children_ate_rate).toBeNull();;
     });
 
     it("returns zero balanced_meal_rate", () => {
       const m = computeMealMetrics([]);
-      expect(m.balanced_meal_rate).toBe(0);
+      expect(m.balanced_meal_rate).toBeNull();;
     });
 
     it("returns zero fresh_ingredients_rate", () => {
       const m = computeMealMetrics([]);
-      expect(m.fresh_ingredients_rate).toBe(0);
+      expect(m.fresh_ingredients_rate).toBeNull();;
     });
 
     it("returns zero allergies_checked_rate", () => {
       const m = computeMealMetrics([]);
-      expect(m.allergies_checked_rate).toBe(0);
+      expect(m.allergies_checked_rate).toBeNull();;
     });
 
     it("returns zero cultural_needs_rate", () => {
       const m = computeMealMetrics([]);
-      expect(m.cultural_needs_rate).toBe(0);
+      expect(m.cultural_needs_rate).toBeNull();;
     });
 
     it("returns zero children_involved_preparation_rate", () => {
       const m = computeMealMetrics([]);
-      expect(m.children_involved_preparation_rate).toBe(0);
+      expect(m.children_involved_preparation_rate).toBeNull();;
     });
 
     it("returns zero children_involved_choice_rate", () => {
       const m = computeMealMetrics([]);
-      expect(m.children_involved_choice_rate).toBe(0);
+      expect(m.children_involved_choice_rate).toBeNull();;
     });
 
     it("returns zero positive_atmosphere_rate", () => {
       const m = computeMealMetrics([]);
-      expect(m.positive_atmosphere_rate).toBe(0);
+      expect(m.positive_atmosphere_rate).toBeNull();;
     });
 
     it("returns zero staff_ate_with_children_rate", () => {
       const m = computeMealMetrics([]);
-      expect(m.staff_ate_with_children_rate).toBe(0);
+      expect(m.staff_ate_with_children_rate).toBeNull();;
     });
 
     it("returns zero food_waste_minimal_rate", () => {
       const m = computeMealMetrics([]);
-      expect(m.food_waste_minimal_rate).toBe(0);
+      expect(m.food_waste_minimal_rate).toBeNull();;
     });
 
     it("returns zero poor_meal_count", () => {
@@ -634,7 +634,7 @@ describe("computeMealMetrics", () => {
     it("returns 0 when totalPresent is 0", () => {
       const records = [makeRecord({ children_present: 0, children_ate: 0 })];
       const m = computeMealMetrics(records);
-      expect(m.children_ate_rate).toBe(0);
+      expect(m.children_ate_rate).toBeNull();;
     });
 
     it("handles partial eating (1/3 = 33.3%)", () => {

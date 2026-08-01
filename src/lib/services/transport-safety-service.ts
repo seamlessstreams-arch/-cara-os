@@ -137,15 +137,15 @@ export function computeTransportMetrics(
   journey_count: number;
   inspection_count: number;
   incident_count: number;
-  roadworthy_rate: number;
+  roadworthy_rate: number | null;
   major_defects_count: number;
-  driver_compliant_rate: number;
+  driver_compliant_rate: number | null;
   non_compliant_driver_count: number;
-  seatbelts_checked_rate: number;
-  child_locks_rate: number;
-  risk_assessment_rate: number;
-  insurance_valid_rate: number;
-  mot_valid_rate: number;
+  seatbelts_checked_rate: number | null;
+  child_locks_rate: number | null;
+  risk_assessment_rate: number | null;
+  insurance_valid_rate: number | null;
+  mot_valid_rate: number | null;
   children_transported_count: number;
   check_overdue_count: number;
   by_event_type: Record<string, number>;
@@ -161,7 +161,7 @@ export function computeTransportMetrics(
   const roadworthyRate =
     records.length > 0
       ? Math.round((roadworthy / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const majorDefects = records.filter((r) => r.vehicle_status === "major_defects").length;
 
@@ -169,7 +169,7 @@ export function computeTransportMetrics(
   const driverRate =
     records.length > 0
       ? Math.round((driverCompliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const nonCompliantDriver = records.filter((r) => r.driver_compliance === "non_compliant").length;
 
@@ -178,31 +178,31 @@ export function computeTransportMetrics(
   const seatbeltRate =
     journeyRecords.length > 0
       ? Math.round((seatbelts / journeyRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childLocks = journeyRecords.filter((r) => r.child_locks_engaged).length;
   const childLockRate =
     journeyRecords.length > 0
       ? Math.round((childLocks / journeyRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   const riskDone = records.filter((r) => r.risk_assessment_completed).length;
   const riskRate =
     records.length > 0
       ? Math.round((riskDone / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const insValid = records.filter((r) => r.insurance_valid).length;
   const insRate =
     records.length > 0
       ? Math.round((insValid / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const motValid = records.filter((r) => r.mot_valid).length;
   const motRate =
     records.length > 0
       ? Math.round((motValid / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childrenCount = records.reduce((sum, r) => sum + r.children_transported.length, 0);
 

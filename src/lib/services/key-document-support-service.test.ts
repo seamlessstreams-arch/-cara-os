@@ -38,7 +38,7 @@ describe("key-document-support-service", () => {
     it("returns zeroes for empty data", () => {
       const m = computeMetrics([]);
       expect(m.total_records).toBe(0);
-      expect(m.completion_rate).toBe(0);
+      expect(m.completion_rate).toBeNull();;
       expect(m.lost_missing_count).toBe(0);
       expect(m.unique_young_people).toBe(0);
       expect(m.essential_documents_coverage).toBe(0);

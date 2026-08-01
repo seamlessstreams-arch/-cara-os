@@ -299,7 +299,7 @@ describe("computeAbsenceMetrics", () => {
       expect(result.current_absences).toBe(0);
       expect(result.sickness_absences).toBe(0);
       expect(result.total_days_lost).toBe(0);
-      expect(result.avg_days_per_absence).toBe(0);
+      expect(result.avg_days_per_absence).toBeNull();;
       expect(result.absence_rate).toBe(0);
       expect(result.agency_cover_count).toBe(0);
       expect(result.return_to_work_pending).toBe(0);
@@ -435,7 +435,7 @@ describe("computeAbsenceMetrics", () => {
         makeStaffAbsence({ days_lost: 10, status: "cancelled" }),
         makeStaffAbsence({ days_lost: 5, status: "cancelled" }),
       ];
-      expect(computeAbsenceMetrics(absences, 10, NOW).avg_days_per_absence).toBe(0);
+      expect(computeAbsenceMetrics(absences, 10, NOW).avg_days_per_absence).toBeNull();;
     });
 
     it("rounds to one decimal place", () => {
@@ -465,7 +465,7 @@ describe("computeAbsenceMetrics", () => {
 
     it("returns 0 when totalStaff is 0", () => {
       const absences = [makeStaffAbsence({ days_lost: 10 })];
-      expect(computeAbsenceMetrics(absences, 0, NOW).absence_rate).toBe(0);
+      expect(computeAbsenceMetrics(absences, 0, NOW).absence_rate).toBeNull();;
     });
 
     it("rounds correctly", () => {
@@ -698,7 +698,7 @@ describe("computeAbsenceMetrics", () => {
     it("handles totalStaff = 0 gracefully", () => {
       const absences = [makeStaffAbsence({ days_lost: 10 })];
       const result = computeAbsenceMetrics(absences, 0, NOW);
-      expect(result.absence_rate).toBe(0);
+      expect(result.absence_rate).toBeNull();;
       expect(result.total_absences).toBe(1);
     });
   });
@@ -710,7 +710,7 @@ describe("computeAbsenceMetrics", () => {
         makeStaffAbsence({ status: "cancelled", days_lost: 20 }),
       ];
       const result = computeAbsenceMetrics(absences, 10, NOW);
-      expect(result.avg_days_per_absence).toBe(0);
+      expect(result.avg_days_per_absence).toBeNull();;
       expect(result.total_absences).toBe(2);
       expect(result.total_days_lost).toBe(30);
     });
@@ -1405,7 +1405,7 @@ describe("Edge cases", () => {
   describe("totalStaff = 0", () => {
     it("absence_rate is 0", () => {
       const absences = [makeStaffAbsence({ days_lost: 100 })];
-      expect(computeAbsenceMetrics(absences, 0, NOW).absence_rate).toBe(0);
+      expect(computeAbsenceMetrics(absences, 0, NOW).absence_rate).toBeNull();;
     });
 
     it("no high_absence_rate alert fires", () => {
@@ -1481,8 +1481,8 @@ describe("Edge cases", () => {
       expect(typeof result.current_absences).toBe("number");
       expect(typeof result.sickness_absences).toBe("number");
       expect(typeof result.total_days_lost).toBe("number");
-      expect(typeof result.avg_days_per_absence).toBe("number");
-      expect(typeof result.absence_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof result.avg_days_per_absence); // number | null
+      expect(["number", "object"]).toContain(typeof result.absence_rate); // number | null
       expect(typeof result.agency_cover_count).toBe("number");
       expect(typeof result.return_to_work_pending).toBe("number");
       expect(typeof result.return_to_work_overdue).toBe("number");

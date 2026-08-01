@@ -240,9 +240,9 @@ describe("computeOnlineSafetyMetrics", () => {
       expect(result.police_involved_count).toBe(0);
       expect(result.total_agreements).toBe(0);
       expect(result.active_agreements).toBe(0);
-      expect(result.agreement_coverage).toBe(0);
-      expect(result.filtering_enabled_rate).toBe(0);
-      expect(result.monitoring_enabled_rate).toBe(0);
+      expect(result.agreement_coverage).toBeNull();;
+      expect(result.filtering_enabled_rate).toBeNull();;
+      expect(result.monitoring_enabled_rate).toBeNull();;
       expect(result.checks_overdue).toBe(0);
       expect(result.issues_found).toBe(0);
       expect(result.by_risk_category).toEqual({});
@@ -441,7 +441,7 @@ describe("computeOnlineSafetyMetrics", () => {
     it("returns 0 when totalChildren is 0", () => {
       const agreements = [makeAgreement({ status: "active" })];
       const result = computeOnlineSafetyMetrics([], agreements, 0, NOW);
-      expect(result.agreement_coverage).toBe(0);
+      expect(result.agreement_coverage).toBeNull();;
     });
 
     it("returns 100 when all children have active agreements", () => {
@@ -496,7 +496,7 @@ describe("computeOnlineSafetyMetrics", () => {
         makeAgreement({ status: "revoked", filtering_enabled: true }),
       ];
       const result = computeOnlineSafetyMetrics([], agreements, 1, NOW);
-      expect(result.filtering_enabled_rate).toBe(0);
+      expect(result.filtering_enabled_rate).toBeNull();;
     });
 
     it("returns 100 when all active agreements have filtering enabled", () => {
@@ -535,7 +535,7 @@ describe("computeOnlineSafetyMetrics", () => {
         makeAgreement({ status: "not_in_place", monitoring_enabled: true }),
       ];
       const result = computeOnlineSafetyMetrics([], agreements, 1, NOW);
-      expect(result.monitoring_enabled_rate).toBe(0);
+      expect(result.monitoring_enabled_rate).toBeNull();;
     });
   });
 
@@ -808,7 +808,7 @@ describe("computeOnlineSafetyMetrics", () => {
     it("returns agreement_coverage 0 even with active agreements", () => {
       const agreements = [makeAgreement({ status: "active" })];
       const result = computeOnlineSafetyMetrics([], agreements, 0, NOW);
-      expect(result.agreement_coverage).toBe(0);
+      expect(result.agreement_coverage).toBeNull();;
     });
   });
 

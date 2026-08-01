@@ -171,9 +171,9 @@ function computePolicyMetrics(
   upcoming_reviews_30d: number;
   by_category: Record<string, number>;
   by_status: Record<string, number>;
-  acknowledgement_rate: number;
+  acknowledgement_rate: number | null;
   missing_required_policies: { category: PolicyCategory; name: string; regulation: string }[];
-  avg_days_since_review: number;
+  avg_days_since_review: number | null;
 } {
   const now = new Date();
   const thirtyDaysMs = 30 * 86400000;
@@ -216,7 +216,7 @@ function computePolicyMetrics(
   }
   const acknowledgementRate = totalExpected > 0
     ? Math.round((totalAcknowledged / totalExpected) * 100)
-    : 0;
+    : null;
 
   // Missing required policies: compare REQUIRED_POLICIES against active policy categories
   const activeCategories = new Set(active.map((p) => p.category));
@@ -231,7 +231,7 @@ function computePolicyMetrics(
   }
   const avgDaysSinceReview = reviewedPolicies.length > 0
     ? Math.round(totalDaysSinceReview / reviewedPolicies.length)
-    : 0;
+    : null;
 
   return {
     total_policies: policies.length,

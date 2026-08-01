@@ -296,7 +296,7 @@ describe("computeTransportMetrics", () => {
 
     it("returns zero roadworthy_rate", () => {
       const m = computeTransportMetrics([]);
-      expect(m.roadworthy_rate).toBe(0);
+      expect(m.roadworthy_rate).toBeNull();;
     });
 
     it("returns zero major_defects_count", () => {
@@ -306,7 +306,7 @@ describe("computeTransportMetrics", () => {
 
     it("returns zero driver_compliant_rate", () => {
       const m = computeTransportMetrics([]);
-      expect(m.driver_compliant_rate).toBe(0);
+      expect(m.driver_compliant_rate).toBeNull();;
     });
 
     it("returns zero non_compliant_driver_count", () => {
@@ -316,27 +316,27 @@ describe("computeTransportMetrics", () => {
 
     it("returns zero seatbelts_checked_rate", () => {
       const m = computeTransportMetrics([]);
-      expect(m.seatbelts_checked_rate).toBe(0);
+      expect(m.seatbelts_checked_rate).toBeNull();;
     });
 
     it("returns zero child_locks_rate", () => {
       const m = computeTransportMetrics([]);
-      expect(m.child_locks_rate).toBe(0);
+      expect(m.child_locks_rate).toBeNull();;
     });
 
     it("returns zero risk_assessment_rate", () => {
       const m = computeTransportMetrics([]);
-      expect(m.risk_assessment_rate).toBe(0);
+      expect(m.risk_assessment_rate).toBeNull();;
     });
 
     it("returns zero insurance_valid_rate", () => {
       const m = computeTransportMetrics([]);
-      expect(m.insurance_valid_rate).toBe(0);
+      expect(m.insurance_valid_rate).toBeNull();;
     });
 
     it("returns zero mot_valid_rate", () => {
       const m = computeTransportMetrics([]);
-      expect(m.mot_valid_rate).toBe(0);
+      expect(m.mot_valid_rate).toBeNull();;
     });
 
     it("returns zero children_transported_count", () => {
@@ -704,7 +704,7 @@ describe("computeTransportMetrics", () => {
     it("returns 0 when no journey_log records exist", () => {
       const records = [makeRecord({ event_type: "vehicle_inspection", seatbelts_checked: true })];
       const m = computeTransportMetrics(records);
-      expect(m.seatbelts_checked_rate).toBe(0);
+      expect(m.seatbelts_checked_rate).toBeNull();;
     });
 
     it("returns 0 when no seatbelts checked in journey records", () => {
@@ -737,7 +737,7 @@ describe("computeTransportMetrics", () => {
     it("returns 0 when no journey_log records exist", () => {
       const records = [makeRecord({ event_type: "vehicle_inspection", child_locks_engaged: true })];
       const m = computeTransportMetrics(records);
-      expect(m.child_locks_rate).toBe(0);
+      expect(m.child_locks_rate).toBeNull();;
     });
 
     it("returns 0 when no child locks engaged in journey records", () => {

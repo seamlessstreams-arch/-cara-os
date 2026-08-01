@@ -152,13 +152,13 @@ export function computeGrievanceMetrics(
   partially_upheld_count: number;
   not_upheld_count: number;
   appeal_count: number;
-  acknowledged_rate: number;
-  hearing_within_28_days_rate: number;
-  average_days_to_resolution: number;
-  acas_code_followed_rate: number;
-  learning_identified_rate: number;
-  impact_assessed_rate: number;
-  union_representation_rate: number;
+  acknowledged_rate: number | null;
+  hearing_within_28_days_rate: number | null;
+  average_days_to_resolution: number | null;
+  acas_code_followed_rate: number | null;
+  learning_identified_rate: number | null;
+  impact_assessed_rate: number | null;
+  union_representation_rate: number | null;
   by_category: Record<string, number>;
   by_stage: Record<string, number>;
   by_outcome: Record<string, number>;
@@ -177,44 +177,44 @@ export function computeGrievanceMetrics(
   const ackRate =
     grievances.length > 0
       ? Math.round((grievances.filter((g) => g.acknowledged_within_5_days).length / grievances.length) * 1000) / 10
-      : 0;
+      : null;
 
   const withHearing = grievances.filter((g) => g.hearing_within_28_days !== null);
   const hearingIn28 = withHearing.filter((g) => g.hearing_within_28_days === true).length;
   const hearingRate =
     withHearing.length > 0
       ? Math.round((hearingIn28 / withHearing.length) * 1000) / 10
-      : 0;
+      : null;
 
   const withDays = grievances.filter((g) => g.days_to_resolution !== null);
   const avgDays =
     withDays.length > 0
       ? Math.round((withDays.reduce((sum, g) => sum + (g.days_to_resolution ?? 0), 0) / withDays.length) * 10) / 10
-      : 0;
+      : null;
 
   const acasFollowed = grievances.filter((g) => g.acas_code_followed).length;
   const acasRate =
     grievances.length > 0
       ? Math.round((acasFollowed / grievances.length) * 1000) / 10
-      : 0;
+      : null;
 
   const learningFound = grievances.filter((g) => g.learning_identified).length;
   const learningRate =
     grievances.length > 0
       ? Math.round((learningFound / grievances.length) * 1000) / 10
-      : 0;
+      : null;
 
   const impactAssessed = grievances.filter((g) => g.impact_on_children_assessed).length;
   const impactRate =
     grievances.length > 0
       ? Math.round((impactAssessed / grievances.length) * 1000) / 10
-      : 0;
+      : null;
 
   const unionRep = grievances.filter((g) => g.union_representative_present).length;
   const unionRate =
     grievances.length > 0
       ? Math.round((unionRep / grievances.length) * 1000) / 10
-      : 0;
+      : null;
 
   const byCategory: Record<string, number> = {};
   for (const g of grievances) byCategory[g.grievance_category] = (byCategory[g.grievance_category] ?? 0) + 1;

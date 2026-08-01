@@ -45,13 +45,13 @@ describe("computeTemperatureMetrics", () => {
   it("returns zeroes for empty array", () => {
     const m = computeTemperatureMetrics([]);
     expect(m.total_checks).toBe(0);
-    expect(m.comfortable_rate).toBe(0);
+    expect(m.comfortable_rate).toBeNull();;
     expect(m.too_cold_count).toBe(0);
     expect(m.too_hot_count).toBe(0);
     expect(m.borderline_count).toBe(0);
-    expect(m.average_temperature).toBe(0);
-    expect(m.min_temperature).toBe(0);
-    expect(m.max_temperature).toBe(0);
+    expect(m.average_temperature).toBeNull();;
+    expect(m.min_temperature).toBeNull();;
+    expect(m.max_temperature).toBeNull();;
     expect(m.unique_rooms).toBe(0);
   });
 

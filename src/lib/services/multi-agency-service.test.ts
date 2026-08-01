@@ -95,10 +95,10 @@ describe("computeMultiAgencyMetrics", () => {
     expect(m.active_contacts).toBe(0);
     expect(m.children_with_social_worker).toBe(0);
     expect(m.overdue_contacts).toBe(0);
-    expect(m.child_participation_rate).toBe(0);
-    expect(m.care_plan_agreement_rate).toBe(0);
-    expect(m.home_report_submission_rate).toBe(0);
-    expect(m.follow_up_completion_rate).toBe(0);
+    expect(m.child_participation_rate).toBeNull();;
+    expect(m.care_plan_agreement_rate).toBeNull();;
+    expect(m.home_report_submission_rate).toBeNull();;
+    expect(m.follow_up_completion_rate).toBeNull();;
     expect(m.by_meeting_type).toEqual({});
   });
 

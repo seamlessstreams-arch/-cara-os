@@ -347,12 +347,12 @@ describe("computeLegalMetrics", () => {
     const result = computeLegalMetrics([], 0, now);
     expect(result.total_records).toBe(0);
     expect(result.children_with_records).toBe(0);
-    expect(result.legal_coverage).toBe(0);
+    expect(result.legal_coverage).toBeNull();;
     expect(result.section_20_count).toBe(0);
     expect(result.full_care_order_count).toBe(0);
     expect(result.interim_care_order_count).toBe(0);
     expect(result.placement_order_count).toBe(0);
-    expect(result.staff_briefed_rate).toBe(0);
+    expect(result.staff_briefed_rate).toBeNull();;
     expect(result.upcoming_hearings).toBe(0);
     expect(result.orders_expiring_soon).toBe(0);
     expect(result.with_conditions).toBe(0);
@@ -364,7 +364,7 @@ describe("computeLegalMetrics", () => {
 
   it("returns zero coverage when totalChildren is 0", () => {
     const result = computeLegalMetrics([makeRecord()], 0, now);
-    expect(result.legal_coverage).toBe(0);
+    expect(result.legal_coverage).toBeNull();;
   });
 
   it("counts a single record correctly", () => {
@@ -576,7 +576,7 @@ describe("computeLegalMetrics", () => {
 
   it("returns 0 staff_briefed_rate for empty records", () => {
     const result = computeLegalMetrics([], 0, now);
-    expect(result.staff_briefed_rate).toBe(0);
+    expect(result.staff_briefed_rate).toBeNull();;
   });
 
   it("rounds staff_briefed_rate to one decimal place", () => {

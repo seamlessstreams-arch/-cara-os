@@ -321,12 +321,12 @@ export function computeMetrics(
   by_document_type: Record<string, number>;
   by_support_stage: Record<string, number>;
   by_document_held_by: Record<string, number>;
-  completion_rate: number;
+  completion_rate: number | null;
   lost_missing_count: number;
-  young_person_engagement_rate: number;
-  personal_adviser_rate: number;
-  social_worker_informed_rate: number;
-  pathway_plan_rate: number;
+  young_person_engagement_rate: number | null;
+  personal_adviser_rate: number | null;
+  social_worker_informed_rate: number | null;
+  pathway_plan_rate: number | null;
   deadline_approaching_count: number;
   total_cost: number;
   unique_young_people: number;
@@ -336,8 +336,8 @@ export function computeMetrics(
   education_document_count: number;
   financial_document_count: number;
   active_applications_count: number;
-  average_documents_per_yp: number;
-  secure_storage_rate: number;
+  average_documents_per_yp: number | null;
+  secure_storage_rate: number | null;
   not_yet_obtained_count: number;
 } {
   const total = rows.length;
@@ -366,7 +366,7 @@ export function computeMetrics(
   ).length;
   const completionRate = total > 0
     ? Math.round((completedCount / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Lost/missing count
   const lostMissing = rows.filter((r) => r.document_held_by === "Lost/Missing").length;
@@ -374,19 +374,19 @@ export function computeMetrics(
   // Boolean rates
   const engagementRate = total > 0
     ? Math.round((rows.filter((r) => r.young_person_engaged).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const paRate = total > 0
     ? Math.round((rows.filter((r) => r.personal_adviser_involved).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const swRate = total > 0
     ? Math.round((rows.filter((r) => r.social_worker_informed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const pathwayRate = total > 0
     ? Math.round((rows.filter((r) => r.pathway_plan_linked).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Deadline approaching count (within 30 days)
   const now = new Date();
@@ -445,7 +445,7 @@ export function computeMetrics(
   // Average documents per young person
   const avgDocsPerYP = uniqueYP.size > 0
     ? Math.round((total / uniqueYP.size) * 10) / 10
-    : 0;
+    : null;
 
   // Secure storage rate
   const secureCount = rows.filter(
@@ -453,7 +453,7 @@ export function computeMetrics(
   ).length;
   const secureRate = total > 0
     ? Math.round((secureCount / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Not yet obtained count
   const notObtained = rows.filter((r) => r.document_held_by === "Not Yet Obtained").length;
@@ -780,7 +780,7 @@ export function generateCaraInsights(
         `DfE guidance expects that the home holds essential documents securely and ` +
         `supports young people to access them when needed.`,
     );
-  } else if (metrics.young_person_engagement_rate < 60 && metrics.total_records > 5) {
+  } else if ((metrics.young_person_engagement_rate ?? 0) < 60 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Engagement rate is ${metrics.young_person_engagement_rate}% for document ` +
         `support. Many care leavers do not understand the bureaucratic importance of ` +

@@ -242,12 +242,12 @@ export function computeMultiAgencyMetrics(
   children_with_social_worker: number;
   overdue_contacts: number;
   lac_reviews_this_year: number;
-  child_participation_rate: number;
-  care_plan_agreement_rate: number;
-  home_report_submission_rate: number;
+  child_participation_rate: number | null;
+  care_plan_agreement_rate: number | null;
+  home_report_submission_rate: number | null;
   meetings_this_quarter: number;
   by_meeting_type: Record<string, number>;
-  follow_up_completion_rate: number;
+  follow_up_completion_rate: number | null;
 } {
   const now = new Date();
   const yearStart = new Date(now.getFullYear(), 0, 1);
@@ -295,7 +295,7 @@ export function computeMultiAgencyMetrics(
   const childParticipationRate =
     completedReviews.length > 0
       ? Math.round((childParticipated / completedReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Care plan agreement rate
   let carePlanAgreed = 0;
@@ -305,7 +305,7 @@ export function computeMultiAgencyMetrics(
   const carePlanAgreementRate =
     completedReviews.length > 0
       ? Math.round((carePlanAgreed / completedReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Home report submission rate
   let homeReportSubmitted = 0;
@@ -315,7 +315,7 @@ export function computeMultiAgencyMetrics(
   const homeReportSubmissionRate =
     completedReviews.length > 0
       ? Math.round((homeReportSubmitted / completedReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   // ── Meeting metrics ──────────────────────────────────────────────────
 
@@ -340,7 +340,7 @@ export function computeMultiAgencyMetrics(
   const followUpCompletionRate =
     meetingsWithFollowUp.length > 0
       ? Math.round((followUpCompleted / meetingsWithFollowUp.length) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     total_contacts: contacts.length,

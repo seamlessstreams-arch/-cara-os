@@ -168,11 +168,11 @@ export function computeInductionMetrics(
   total_tasks: number;
   tasks_completed: number;
   tasks_overdue: number;
-  completion_rate: number;
-  dbs_verified_rate: number;
-  references_verified_rate: number;
+  completion_rate: number | null;
+  dbs_verified_rate: number | null;
+  references_verified_rate: number | null;
   can_work_unsupervised_count: number;
-  right_to_work_verified_rate: number;
+  right_to_work_verified_rate: number | null;
   avg_completion: number;
   by_category: Record<string, number>;
   by_task_status: Record<string, number>;
@@ -194,7 +194,7 @@ export function computeInductionMetrics(
   const completionRate =
     activeTasks > 0
       ? Math.round((completed / activeTasks) * 1000) / 10
-      : 0;
+      : null;
 
   const activeRecords = records.filter(
     (r) => r.probation_status === "in_probation" || r.probation_status === "extended",
@@ -202,15 +202,15 @@ export function computeInductionMetrics(
 
   const dbsVerified = records.filter((r) => r.dbs_verified).length;
   const dbsRate =
-    records.length > 0 ? Math.round((dbsVerified / records.length) * 1000) / 10 : 0;
+    records.length > 0 ? Math.round((dbsVerified / records.length) * 1000) / 10 : null;
 
   const refsVerified = records.filter((r) => r.references_verified).length;
   const refsRate =
-    records.length > 0 ? Math.round((refsVerified / records.length) * 1000) / 10 : 0;
+    records.length > 0 ? Math.round((refsVerified / records.length) * 1000) / 10 : null;
 
   const rtwVerified = records.filter((r) => r.right_to_work_verified).length;
   const rtwRate =
-    records.length > 0 ? Math.round((rtwVerified / records.length) * 1000) / 10 : 0;
+    records.length > 0 ? Math.round((rtwVerified / records.length) * 1000) / 10 : null;
 
   const unsupervised = records.filter((r) => r.can_work_unsupervised).length;
 

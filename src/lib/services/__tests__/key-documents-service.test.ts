@@ -217,9 +217,9 @@ describe("computeDocumentMetrics", () => {
     expect(r.draft_count).toBe(0);
     expect(r.not_created_count).toBe(0);
     expect(r.children_with_documents).toBe(0);
-    expect(r.document_coverage).toBe(0);
-    expect(r.social_worker_approved_rate).toBe(0);
-    expect(r.child_contributed_rate).toBe(0);
+    expect(r.document_coverage).toBeNull();;
+    expect(r.social_worker_approved_rate).toBeNull();;
+    expect(r.child_contributed_rate).toBeNull();;
     expect(r.care_plans_current).toBe(0);
     expect(r.placement_plans_current).toBe(0);
     expect(r.risk_assessments_current).toBe(0);
@@ -235,7 +235,7 @@ describe("computeDocumentMetrics", () => {
   it("returns 0 coverage when totalChildren is 0 and documents exist", () => {
     const docs = [makeDoc()];
     const r = computeDocumentMetrics(docs, 0, now);
-    expect(r.document_coverage).toBe(0);
+    expect(r.document_coverage).toBeNull();;
   });
 
   // ── Single document ───────────────────────────────────────────────────
@@ -724,8 +724,8 @@ describe("computeDocumentMetrics", () => {
 
   it("returns 0 rates when documents array is empty even with positive totalChildren", () => {
     const r = computeDocumentMetrics([], 5, now);
-    expect(r.social_worker_approved_rate).toBe(0);
-    expect(r.child_contributed_rate).toBe(0);
+    expect(r.social_worker_approved_rate).toBeNull();;
+    expect(r.child_contributed_rate).toBeNull();;
   });
 
   it("does not count overdue-by-date for due_review status", () => {

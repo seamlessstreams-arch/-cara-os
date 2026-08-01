@@ -45,9 +45,9 @@ describe("computeTransportMetrics", () => {
     expect(m.journey_count).toBe(0);
     expect(m.inspection_count).toBe(0);
     expect(m.incident_count).toBe(0);
-    expect(m.roadworthy_rate).toBe(0);
-    expect(m.driver_compliant_rate).toBe(0);
-    expect(m.seatbelts_checked_rate).toBe(0);
+    expect(m.roadworthy_rate).toBeNull();;
+    expect(m.driver_compliant_rate).toBeNull();;
+    expect(m.seatbelts_checked_rate).toBeNull();;
     expect(m.children_transported_count).toBe(0);
     expect(m.check_overdue_count).toBe(0);
   });

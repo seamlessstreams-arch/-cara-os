@@ -304,7 +304,7 @@ describe("computePrMetrics", () => {
 
     it("returns zero coverage_rate when totalChildren is 0", () => {
       const m = computePrMetrics([], 0);
-      expect(m.coverage_rate).toBe(0);
+      expect(m.coverage_rate).toBeNull();;
     });
 
     it("returns zero coverage_rate when totalChildren > 0 but no records", () => {
@@ -341,15 +341,15 @@ describe("computePrMetrics", () => {
     });
 
     it("returns zero contact_with_pr_holder_rate", () => {
-      expect(computePrMetrics([], 0).contact_with_pr_holder_rate).toBe(0);
+      expect(computePrMetrics([], 0).contact_with_pr_holder_rate).toBeNull();;
     });
 
     it("returns zero pr_holder_involved_rate", () => {
-      expect(computePrMetrics([], 0).pr_holder_involved_rate).toBe(0);
+      expect(computePrMetrics([], 0).pr_holder_involved_rate).toBeNull();;
     });
 
     it("returns zero pr_holder_informed_rate", () => {
-      expect(computePrMetrics([], 0).pr_holder_informed_rate).toBe(0);
+      expect(computePrMetrics([], 0).pr_holder_informed_rate).toBeNull();;
     });
 
     it("returns zero conflict_count", () => {
@@ -548,7 +548,7 @@ describe("computePrMetrics", () => {
   describe("coverage_rate edge cases", () => {
     it("returns 0 when totalChildren is 0 and there are records", () => {
       const m = computePrMetrics([makeRecord()], 0);
-      expect(m.coverage_rate).toBe(0);
+      expect(m.coverage_rate).toBeNull();;
     });
 
     it("returns 100 when all children covered", () => {

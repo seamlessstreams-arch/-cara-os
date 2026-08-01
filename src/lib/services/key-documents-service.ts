@@ -134,9 +134,9 @@ export function computeDocumentMetrics(
   draft_count: number;
   not_created_count: number;
   children_with_documents: number;
-  document_coverage: number;
-  social_worker_approved_rate: number;
-  child_contributed_rate: number;
+  document_coverage: number | null;
+  social_worker_approved_rate: number | null;
+  child_contributed_rate: number | null;
   care_plans_current: number;
   placement_plans_current: number;
   risk_assessments_current: number;
@@ -162,19 +162,19 @@ export function computeDocumentMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const swApproved = documents.filter((d) => d.social_worker_approved).length;
   const swRate =
     documents.length > 0
       ? Math.round((swApproved / documents.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childContributed = documents.filter((d) => d.child_contributed).length;
   const childRate =
     documents.length > 0
       ? Math.round((childContributed / documents.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Specific document type checks
   const carePlansCurrent = documents.filter(

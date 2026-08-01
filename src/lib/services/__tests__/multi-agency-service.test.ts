@@ -522,12 +522,12 @@ describe("computeMultiAgencyMetrics", () => {
     expect(result.children_with_social_worker).toBe(0);
     expect(result.overdue_contacts).toBe(0);
     expect(result.lac_reviews_this_year).toBe(0);
-    expect(result.child_participation_rate).toBe(0);
-    expect(result.care_plan_agreement_rate).toBe(0);
-    expect(result.home_report_submission_rate).toBe(0);
+    expect(result.child_participation_rate).toBeNull();;
+    expect(result.care_plan_agreement_rate).toBeNull();;
+    expect(result.home_report_submission_rate).toBeNull();;
     expect(result.meetings_this_quarter).toBe(0);
     expect(result.by_meeting_type).toEqual({});
-    expect(result.follow_up_completion_rate).toBe(0);
+    expect(result.follow_up_completion_rate).toBeNull();;
   });
 
   // ── Contact metrics ────────────────────────────────────────────────────
@@ -697,7 +697,7 @@ describe("computeMultiAgencyMetrics", () => {
       makeReview({ id: "r1", status: "scheduled", child_contributed: true }),
     ];
     const result = computeMultiAgencyMetrics([], reviews, []);
-    expect(result.child_participation_rate).toBe(0);
+    expect(result.child_participation_rate).toBeNull();;
   });
 
   it("ignores non-completed reviews for participation rate", () => {
@@ -730,7 +730,7 @@ describe("computeMultiAgencyMetrics", () => {
 
   it("returns 0 care plan agreement rate with no completed reviews", () => {
     const result = computeMultiAgencyMetrics([], [], []);
-    expect(result.care_plan_agreement_rate).toBe(0);
+    expect(result.care_plan_agreement_rate).toBeNull();;
   });
 
   it("computes home report submission rate", () => {
@@ -762,7 +762,7 @@ describe("computeMultiAgencyMetrics", () => {
 
   it("returns 0 home report submission rate with no completed reviews", () => {
     const result = computeMultiAgencyMetrics([], [], []);
-    expect(result.home_report_submission_rate).toBe(0);
+    expect(result.home_report_submission_rate).toBeNull();;
   });
 
   // ── Meeting metrics ────────────────────────────────────────────────────
@@ -844,7 +844,7 @@ describe("computeMultiAgencyMetrics", () => {
       makeMeeting({ id: "m1", status: "completed", follow_up_date: null }),
     ];
     const result = computeMultiAgencyMetrics([], [], meetings);
-    expect(result.follow_up_completion_rate).toBe(0);
+    expect(result.follow_up_completion_rate).toBeNull();;
   });
 
   it("excludes non-completed meetings from follow-up rate", () => {
