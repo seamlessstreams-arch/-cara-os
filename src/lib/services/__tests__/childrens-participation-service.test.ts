@@ -538,10 +538,10 @@ describe("computeParticipationMetrics", () => {
       expect(result.actions_implemented_rate).toBe(33.3);
     });
 
-    it("returns 0 when there are no actions", () => {
+    it("returns null when there are no actions", () => {
       const m = makeMeeting({ actions: [] });
       const result = computeParticipationMetrics([m], [], 3);
-      expect(result.actions_implemented_rate).toBe(0); // records exist → real 0.
+      expect(result.actions_implemented_rate).toBeNull(); // fab-0.
     });
 
     it("excludes actions from non-completed meetings", () => {
@@ -552,7 +552,7 @@ describe("computeParticipationMetrics", () => {
         ],
       });
       const result = computeParticipationMetrics([m], [], 3);
-      expect(result.actions_implemented_rate).toBe(0); // records exist → real 0.
+      expect(result.actions_implemented_rate).toBeNull(); // fab-0 (cancelled meeting has no counted actions).
     });
   });
 
