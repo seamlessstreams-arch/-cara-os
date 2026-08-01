@@ -332,7 +332,7 @@ export function evaluateInterviewCompliance(
   // Independent interviewer: 0-5
   const independentScore = relevantInterviews.length > 0
     ? Math.round((independentRate / 100) * 5)
-    : 0;
+    : null;
   // Quality average: thorough=3, adequate=2, superficial=1, not_completed=0 -> average -> scale 0-6
   let qualityScore = 0;
   if (relevantInterviews.length > 0) {
@@ -350,7 +350,7 @@ export function evaluateInterviewCompliance(
     qualityScore = Math.round((avgQuality / 3) * 6);
   }
 
-  const score = Math.min(25, Math.max(0, completedScore + timelyScore + independentScore + qualityScore));
+  const score = Math.min(25, Math.max(0, completedScore + timelyScore + (independentScore ?? 0) + qualityScore));
 
   return {
     overallScore: score,
@@ -428,11 +428,11 @@ export function evaluateInterviewDepth(
   // Referrals made: 0-4 (bonus: any referrals made scores proportionally)
   const referralsScore = totalReferrals > 0
     ? Math.min(4, Math.round((totalReferrals / interviews.length) * 2))
-    : 0;
+    : null;
 
   const score = Math.min(
     25,
-    Math.max(0, childViewsScore + factorsScore + safetyPlanScore + policeScore + referralsScore),
+    Math.max(0, childViewsScore + factorsScore + safetyPlanScore + policeScore + (referralsScore ?? 0)),
   );
 
   return {
@@ -497,7 +497,7 @@ export function evaluateStrategyResponse(
   // Action reviewed: 0-4
   const actionReviewedScore = reviewable.length > 0
     ? Math.round((actionReviewedRate / 100) * 4)
-    : 0;
+    : null;
   // Average attendees bonus: 0-3 (>=5 attendees = 3, 3-4 = 2, 2 = 1, <2 = 0)
   let attendeesBonus = 0;
   if (averageAttendees >= 5) attendeesBonus = 3;
@@ -506,7 +506,7 @@ export function evaluateStrategyResponse(
 
   const score = Math.min(
     25,
-    Math.max(0, multiAgencyScore + actionPlanScore + triggerPatternScore + actionReviewedScore + attendeesBonus),
+    Math.max(0, multiAgencyScore + actionPlanScore + triggerPatternScore + (actionReviewedScore ?? 0) + attendeesBonus),
   );
 
   return {
@@ -553,7 +553,7 @@ export function evaluatePreventionEffectiveness(
   // Effective rate: 0-8
   const effectiveScore = withEffectiveness.length > 0
     ? Math.round((effectiveRate / 100) * 8)
-    : 0;
+    : null;
   // Reviewed rate: 0-7
   const reviewedScore = Math.round((reviewedRate / 100) * 7);
   // Coverage: 0-5 (based on unique children covered)
@@ -563,7 +563,7 @@ export function evaluatePreventionEffectiveness(
 
   const score = Math.min(
     25,
-    Math.max(0, effectiveScore + reviewedScore + coverageScore + frequencyBonus),
+    Math.max(0, (effectiveScore ?? 0) + reviewedScore + coverageScore + frequencyBonus),
   );
 
   return {
