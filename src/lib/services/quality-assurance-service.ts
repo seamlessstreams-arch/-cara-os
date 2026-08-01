@@ -123,15 +123,15 @@ function computeQAMetrics(
   total_audits: number;
   completed: number;
   overdue: number;
-  avg_rating: number;
-  by_type: Record<string, { count: number; avg_rating: number }>;
+  avg_rating: number | null;
+  by_type: Record<string, { count: number; avg_rating: number | null }>;
   total_recommendations: number;
   recommendations_completed: number;
   recommendations_overdue: number;
-  recommendation_completion_rate: number;
+  recommendation_completion_rate: number | null;
   improvement_plans_active: number;
   improvement_plans_completed: number;
-  avg_plan_progress: number;
+  avg_plan_progress: number | null;
 } {
   const completed = audits.filter((a) => a.status === "completed");
   const overdue = audits.filter((a) => a.status === "overdue");
@@ -146,13 +146,13 @@ function computeQAMetrics(
       ratingCount++;
     }
   }
-  const avgRating = ratingCount > 0 ? Math.round((ratingSum / ratingCount) * 100) / 100 : 0;
+  const avgRating = ratingCount > 0 ? Math.round((ratingSum / ratingCount) * 100) / 100 : null;
 
   // By type
-  const byType: Record<string, { count: number; avg_rating: number }> = {};
+  const byType: Record<string, { count: number; avg_rating: number | null }> = {};
   for (const a of audits) {
     if (!byType[a.audit_type]) {
-      byType[a.audit_type] = { count: 0, avg_rating: 0 };
+      byType[a.audit_type] = { count: 0, avg_rating: null };
     }
     byType[a.audit_type].count++;
   }
@@ -165,7 +165,7 @@ function computeQAMetrics(
       const scale = AUDIT_RATINGS.find((r) => r.rating === a.overall_rating);
       if (scale) { sum += scale.value; cnt++; }
     }
-    byType[type].avg_rating = cnt > 0 ? Math.round((sum / cnt) * 100) / 100 : 0;
+    byType[type].avg_rating = cnt > 0 ? Math.round((sum / cnt) * 100) / 100 : null;
   }
 
   // Recommendations
@@ -174,14 +174,14 @@ function computeQAMetrics(
   const recsOverdue = allRecs.filter((r) => r.status === "overdue").length;
   const recCompletionRate = allRecs.length > 0
     ? Math.round((recsCompleted / allRecs.length) * 100)
-    : 0;
+    : null;
 
   // Improvement plans
   const activePlans = plans.filter((p) => p.status === "active");
   const completedPlans = plans.filter((p) => p.status === "completed");
   const avgProgress = activePlans.length > 0
     ? Math.round(activePlans.reduce((s, p) => s + p.progress_percentage, 0) / activePlans.length)
-    : 0;
+    : null;
 
   return {
     total_audits: audits.length,

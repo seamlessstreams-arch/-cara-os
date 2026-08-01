@@ -347,7 +347,7 @@ describe("computeLanguageMetrics", () => {
 
     it("returns zero passport_in_place_rate", () => {
       const m = computeLanguageMetrics([], 10);
-      expect(m.passport_in_place_rate).toBe(0);
+      expect(m.passport_in_place_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero interpreter_required_count", () => {
@@ -357,27 +357,27 @@ describe("computeLanguageMetrics", () => {
 
     it("returns zero interpreter_arranged_rate", () => {
       const m = computeLanguageMetrics([], 10);
-      expect(m.interpreter_arranged_rate).toBe(0);
+      expect(m.interpreter_arranged_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero specialist_involved_rate", () => {
       const m = computeLanguageMetrics([], 10);
-      expect(m.specialist_involved_rate).toBe(0);
+      expect(m.specialist_involved_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero staff_aware_rate", () => {
       const m = computeLanguageMetrics([], 10);
-      expect(m.staff_aware_rate).toBe(0);
+      expect(m.staff_aware_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero staff_trained_rate", () => {
       const m = computeLanguageMetrics([], 10);
-      expect(m.staff_trained_rate).toBe(0);
+      expect(m.staff_trained_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero child_views_rate", () => {
       const m = computeLanguageMetrics([], 10);
-      expect(m.child_views_rate).toBe(0);
+      expect(m.child_views_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero excellent_progress_count", () => {
@@ -397,7 +397,7 @@ describe("computeLanguageMetrics", () => {
 
     it("returns zero average_adjustments_per_child", () => {
       const m = computeLanguageMetrics([], 10);
-      expect(m.average_adjustments_per_child).toBe(0);
+      expect(m.average_adjustments_per_child).toBeNull(); // fab-0.
     });
 
     it("returns empty by_communication_need", () => {
@@ -757,7 +757,7 @@ describe("computeLanguageMetrics", () => {
   describe("needs_coverage", () => {
     it("returns 0 when totalChildren is 0", () => {
       const m = computeLanguageMetrics([makeRecord()], 0);
-      expect(m.needs_coverage).toBe(0);
+      expect(m.needs_coverage).toBeNull(); // fab-0.
     });
 
     it("returns 100 when all children have records", () => {
@@ -802,7 +802,7 @@ describe("computeLanguageMetrics", () => {
     it("returns 0 when no interpreter required", () => {
       const r = makeRecord({ interpreter_required: false });
       const m = computeLanguageMetrics([r], 5);
-      expect(m.interpreter_arranged_rate).toBe(0);
+      expect(m.interpreter_arranged_rate).toBeNull(); // fab-0.
     });
 
     it("returns 0 when interpreter required but none arranged", () => {
@@ -931,7 +931,7 @@ describe("computeLanguageMetrics", () => {
   describe("average_adjustments_per_child", () => {
     it("returns 0 when no adjustments and no children", () => {
       const m = computeLanguageMetrics([], 5);
-      expect(m.average_adjustments_per_child).toBe(0);
+      expect(m.average_adjustments_per_child).toBeNull(); // fab-0.
     });
 
     it("sums adjustments across all records for same child", () => {
@@ -1142,7 +1142,7 @@ describe("computeLanguageMetrics", () => {
   describe("totalChildren zero", () => {
     it("returns needs_coverage 0 even with records", () => {
       const m = computeLanguageMetrics([makeRecord()], 0);
-      expect(m.needs_coverage).toBe(0);
+      expect(m.needs_coverage).toBeNull(); // fab-0.
     });
   });
 

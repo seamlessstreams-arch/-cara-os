@@ -335,28 +335,28 @@ export function computeMetrics(
   by_relationship: Record<string, number>;
   by_contact_method: Record<string, number>;
   by_contact_direction: Record<string, number>;
-  content_screening_rate: number;
-  appropriateness_rate: number;
-  concern_rate: number;
-  child_support_rate: number;
-  child_wishes_rate: number;
-  emotional_impact_rate: number;
+  content_screening_rate: number | null;
+  appropriateness_rate: number | null;
+  concern_rate: number | null;
+  child_support_rate: number | null;
+  child_wishes_rate: number | null;
+  emotional_impact_rate: number | null;
   by_mood_after: Record<string, number>;
-  agreement_rate: number;
+  agreement_rate: number | null;
   withheld_count: number;
-  completion_rate: number;
+  completion_rate: number | null;
   unique_children: number;
   unique_contacts: number;
-  social_worker_aware_rate: number;
-  therapeutic_input_rate: number;
+  social_worker_aware_rate: number | null;
+  therapeutic_input_rate: number | null;
   overdue_scheduled_count: number;
 } {
   const total = rows.length;
 
-  const boolRate = (field: keyof LetterboxContactRow, subset?: LetterboxContactRow[]) => {
+  const boolRate = (field: keyof LetterboxContactRow, subset?: LetterboxContactRow[]): number | null => {
     const pool = subset ?? rows;
     const count = pool.filter((r) => r[field] === true).length;
-    return pool.length > 0 ? Math.round((count / pool.length) * 1000) / 10 : 0;
+    return pool.length > 0 ? Math.round((count / pool.length) * 1000) / 10 : null;
   };
 
   // Relationship breakdown
@@ -383,12 +383,12 @@ export function computeMetrics(
   const screenedRows = rows.filter((r) => r.content_screened);
   const appropriatenessRate = screenedRows.length > 0
     ? Math.round((screenedRows.filter((r) => r.content_appropriate).length / screenedRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Concern rate (of total)
   const concernRate = total > 0
     ? Math.round((rows.filter((r) => r.content_concerns && r.content_concerns.trim().length > 0).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Withheld count
   const withheldCount = rows.filter((r) => r.status === "Screened — Withheld").length;
@@ -397,7 +397,7 @@ export function computeMetrics(
   const completedCount = rows.filter((r) => (COMPLETED_STATUSES as string[]).includes(r.status)).length;
   const completionRate = total > 0
     ? Math.round((completedCount / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Unique children and contacts
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
@@ -655,9 +655,9 @@ export function generateCaraInsights(
 
   // Insight 3: Reflective safeguarding question
   const negativeMoodCount = rows.filter((r) => (NEGATIVE_MOODS as string[]).includes(r.child_mood_after)).length;
-  const negativeMoodRate = rows.length > 0 ? Math.round((negativeMoodCount / rows.length) * 1000) / 10 : 0;
+  const negativeMoodRate = rows.length > 0 ? Math.round((negativeMoodCount / rows.length) * 1000) / 10 : null;
 
-  if (negativeMoodRate > 40) {
+  if ((negativeMoodRate ?? 0) > 40) {
     insights.push(
       `[reflect] ${negativeMoodRate}% of contacts result in negative emotional responses ` +
         `(sad, anxious, upset, or confused). Are contact arrangements being regularly ` +
@@ -666,7 +666,7 @@ export function generateCaraInsights(
         `consideration. Where contact consistently causes distress, a multi-agency review ` +
         `should consider whether the current arrangement remains in the child's best interests.`,
     );
-  } else if (metrics.content_screening_rate < 100 && metrics.total_contacts > 0) {
+  } else if ((metrics.content_screening_rate ?? 0) < 100 && metrics.total_contacts > 0) {
     insights.push(
       `[reflect] Content screening rate is ${metrics.content_screening_rate}%, below the ` +
         `required 100% standard. Are all staff aware that every piece of indirect contact ` +
@@ -675,7 +675,7 @@ export function generateCaraInsights(
         `or inappropriate content. CHR 2015 Reg 7 requires that contact arrangements ` +
         `safeguard the child's welfare.`,
     );
-  } else if (metrics.child_wishes_rate < 80) {
+  } else if ((metrics.child_wishes_rate ?? 0) < 80) {
     insights.push(
       `[reflect] Children's wishes and feelings have been considered in only ` +
         `${metrics.child_wishes_rate}% of contacts. Are staff routinely asking children ` +

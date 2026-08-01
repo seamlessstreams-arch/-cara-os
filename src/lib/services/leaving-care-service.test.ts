@@ -89,7 +89,7 @@ describe("computeLeavingCareMetrics", () => {
     expect(m.total_pathway_plans).toBe(0);
     expect(m.active_plans).toBe(0);
     expect(m.plan_coverage_pct).toBe(0);
-    expect(m.avg_readiness_score).toBe(0);
+    expect(m.avg_readiness_score).toBeNull(); // fab-0.
     expect(m.total_entitlements).toBe(0);
     expect(m.total_claimed_amount).toBe(0);
   });

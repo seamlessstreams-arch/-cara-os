@@ -287,10 +287,10 @@ describe("computeQAMetrics", () => {
     expect(result.total_recommendations).toBe(0);
     expect(result.recommendations_completed).toBe(0);
     expect(result.recommendations_overdue).toBe(0);
-    expect(result.recommendation_completion_rate).toBe(0);
+    expect(result.recommendation_completion_rate).toBeNull(); // fab-0.
     expect(result.improvement_plans_active).toBe(0);
     expect(result.improvement_plans_completed).toBe(0);
-    expect(result.avg_plan_progress).toBe(0);
+    expect(result.avg_plan_progress).toBeNull(); // fab-0.
   });
 
   it("counts total audits correctly", () => {
@@ -430,7 +430,7 @@ describe("computeQAMetrics", () => {
   it("returns 0 recommendation_completion_rate when no recommendations exist", () => {
     const audits = [makeAudit({ id: "a1", recommendations: [] })];
     const result = computeQAMetrics(audits, []);
-    expect(result.recommendation_completion_rate).toBe(0);
+    expect(result.recommendation_completion_rate).toBeNull(); // fab-0.
   });
 
   it("counts active and completed improvement plans", () => {
@@ -461,7 +461,7 @@ describe("computeQAMetrics", () => {
       makeImprovementPlan({ id: "p1", status: "completed", progress_percentage: 100 }),
     ];
     const result = computeQAMetrics([], plans);
-    expect(result.avg_plan_progress).toBe(0);
+    expect(result.avg_plan_progress).toBeNull(); // fab-0.
   });
 
   it("rounds avg_plan_progress to nearest integer", () => {

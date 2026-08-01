@@ -335,13 +335,13 @@ describe("computeNutritionMetrics", () => {
     expect(m.profiles_complete).toBe(0);
     expect(m.children_with_allergies).toBe(0);
     expect(m.meals_this_week).toBe(0);
-    expect(m.avg_satisfaction_score).toBe(0);
-    expect(m.food_waste_rate).toBe(0);
-    expect(m.hygiene_pass_rate).toBe(0);
+    expect(m.avg_satisfaction_score).toBeNull(); // fab-0.
+    expect(m.food_waste_rate).toBeNull(); // fab-0.
+    expect(m.hygiene_pass_rate).toBeNull(); // fab-0.
     expect(m.overdue_profile_reviews).toBe(0);
     expect(Object.keys(m.by_meal_type)).toHaveLength(0);
     expect(Object.keys(m.by_dietary_requirement)).toHaveLength(0);
-    expect(m.alternative_meals_rate).toBe(0);
+    expect(m.alternative_meals_rate).toBeNull(); // fab-0.
   });
 
   // ── profiles_complete ───────────────────────────────────────────────
@@ -473,7 +473,7 @@ describe("computeNutritionMetrics", () => {
 
   it("avg_satisfaction_score is 0 when no meals exist", () => {
     const m = computeNutritionMetrics([], [], [], 0);
-    expect(m.avg_satisfaction_score).toBe(0);
+    expect(m.avg_satisfaction_score).toBeNull(); // fab-0.
   });
 
   it("avg_satisfaction_score is 0 when meals have empty satisfaction_ratings", () => {
@@ -481,7 +481,7 @@ describe("computeNutritionMetrics", () => {
       makeMeal({ id: "m1", satisfaction_ratings: [] }),
     ];
     const m = computeNutritionMetrics([], meals, [], 0);
-    expect(m.avg_satisfaction_score).toBe(0);
+    expect(m.avg_satisfaction_score).toBeNull(); // fab-0.
   });
 
   it("avg_satisfaction_score rounds to one decimal", () => {
@@ -569,7 +569,7 @@ describe("computeNutritionMetrics", () => {
       makeMeal({ id: "m1", food_waste_level: null }),
     ];
     const m = computeNutritionMetrics([], meals, [], 0);
-    expect(m.food_waste_rate).toBe(0);
+    expect(m.food_waste_rate).toBeNull(); // fab-0.
   });
 
   it("food_waste_rate is 0 when all meals have none or low waste", () => {
@@ -638,7 +638,7 @@ describe("computeNutritionMetrics", () => {
 
   it("hygiene_pass_rate is 0 when no hygiene checks exist", () => {
     const m = computeNutritionMetrics([], [], [], 0);
-    expect(m.hygiene_pass_rate).toBe(0);
+    expect(m.hygiene_pass_rate).toBeNull(); // fab-0.
   });
 
   it("hygiene_pass_rate is 100 when all checks pass", () => {
@@ -808,7 +808,7 @@ describe("computeNutritionMetrics", () => {
 
   it("alternative_meals_rate is 0 when no meals exist", () => {
     const m = computeNutritionMetrics([], [], [], 0);
-    expect(m.alternative_meals_rate).toBe(0);
+    expect(m.alternative_meals_rate).toBeNull(); // fab-0.
   });
 
   it("alternative_meals_rate is 0 when no alternatives provided", () => {
@@ -1778,7 +1778,7 @@ describe("Edge cases", () => {
       makeMeal({ id: "m2", food_waste_level: null }),
     ];
     const m = computeNutritionMetrics([], meals, [], 0);
-    expect(m.food_waste_rate).toBe(0);
+    expect(m.food_waste_rate).toBeNull(); // fab-0.
   });
 
   it("identifyNutritionAlerts with empty profiles, meals, and checks", () => {

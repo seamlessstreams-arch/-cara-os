@@ -45,8 +45,8 @@ describe("computeMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeMetrics([]);
     expect(m.total_contacts).toBe(0);
-    expect(m.content_screening_rate).toBe(0);
-    expect(m.completion_rate).toBe(0);
+    expect(m.content_screening_rate).toBeNull(); // fab-0.
+    expect(m.completion_rate).toBeNull(); // fab-0.
     expect(m.unique_children).toBe(0);
     expect(m.unique_contacts).toBe(0);
   });

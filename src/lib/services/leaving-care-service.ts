@@ -199,19 +199,19 @@ export function computeLeavingCareMetrics(
   active_plans: number;
   draft_plans: number;
   completed_plans: number;
-  plan_coverage_pct: number;
-  avg_readiness_score: number;
+  plan_coverage_pct: number | null;
+  avg_readiness_score: number | null;
   readiness_above_70_count: number;
   readiness_below_40_count: number;
   total_entitlements: number;
   active_entitlements: number;
   claimed_entitlements: number;
-  entitlement_take_up_pct: number;
+  entitlement_take_up_pct: number | null;
   total_claimed_amount: number;
   yp_with_gp: number;
   yp_with_dentist: number;
   plans_with_personal_advisor: number;
-  avg_plan_version: number;
+  avg_plan_version: number | null;
 } {
   const activePlans = pathwayPlans.filter((p) => p.status === "active");
   const draftPlans = pathwayPlans.filter((p) => p.status === "draft");
@@ -226,7 +226,7 @@ export function computeLeavingCareMetrics(
   const planCoveragePct =
     totalEligibleYP > 0
       ? Math.round((coveredChildren.size / totalEligibleYP) * 1000) / 10
-      : 0;
+      : null;
 
   // Readiness scores from latest assessment per child
   const latestAssessmentByChild = new Map<string, IndependenceAssessment>();
@@ -245,7 +245,7 @@ export function computeLeavingCareMetrics(
       ? Math.round(
           (readinessScores.reduce((sum, s) => sum + s, 0) / readinessScores.length) * 10,
         ) / 10
-      : 0;
+      : null;
   const above70 = readinessScores.filter((s) => s >= 70).length;
   const below40 = readinessScores.filter((s) => s < 40).length;
 
@@ -257,7 +257,7 @@ export function computeLeavingCareMetrics(
       ? Math.round(
           (claimedEntitlements.length / entitlements.length) * 1000,
         ) / 10
-      : 0;
+      : null;
   const totalClaimedAmount = claimedEntitlements.reduce(
     (sum, e) => sum + (e.claimed_amount ?? e.amount),
     0,
@@ -287,7 +287,7 @@ export function computeLeavingCareMetrics(
       ? Math.round(
           (pathwayPlans.reduce((sum, p) => sum + p.version, 0) / pathwayPlans.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   return {
     total_pathway_plans: pathwayPlans.length,

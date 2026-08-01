@@ -87,10 +87,10 @@ describe("computeNutritionMetrics", () => {
     expect(result.profiles_complete).toBe(0);
     expect(result.children_with_allergies).toBe(0);
     expect(result.meals_this_week).toBe(0);
-    expect(result.avg_satisfaction_score).toBe(0);
-    expect(result.food_waste_rate).toBe(0);
-    expect(result.hygiene_pass_rate).toBe(0);
-    expect(result.alternative_meals_rate).toBe(0);
+    expect(result.avg_satisfaction_score).toBeNull(); // fab-0.
+    expect(result.food_waste_rate).toBeNull(); // fab-0.
+    expect(result.hygiene_pass_rate).toBeNull(); // fab-0.
+    expect(result.alternative_meals_rate).toBeNull(); // fab-0.
   });
 
   it("computes satisfaction scores and waste rates", () => {

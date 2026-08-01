@@ -193,13 +193,13 @@ export function computeNutritionMetrics(
   profiles_complete: number;
   children_with_allergies: number;
   meals_this_week: number;
-  avg_satisfaction_score: number;
-  food_waste_rate: number;
-  hygiene_pass_rate: number;
+  avg_satisfaction_score: number | null;
+  food_waste_rate: number | null;
+  hygiene_pass_rate: number | null;
   overdue_profile_reviews: number;
   by_meal_type: Record<string, number>;
   by_dietary_requirement: Record<string, number>;
-  alternative_meals_rate: number;
+  alternative_meals_rate: number | null;
 } {
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 86400000);
@@ -236,7 +236,7 @@ export function computeNutritionMetrics(
     }
   }
   const avgSatisfactionScore =
-    ratingCount > 0 ? Math.round((totalScore / ratingCount) * 10) / 10 : 0;
+    ratingCount > 0 ? Math.round((totalScore / ratingCount) * 10) / 10 : null;
 
   // Food waste rate (meals with moderate or high waste)
   let wasteCount = 0;
@@ -252,7 +252,7 @@ export function computeNutritionMetrics(
   const foodWasteRate =
     mealsWithWaste > 0
       ? Math.round((wasteCount / mealsWithWaste) * 1000) / 10
-      : 0;
+      : null;
 
   // Hygiene pass rate
   let hygienePass = 0;
@@ -262,7 +262,7 @@ export function computeNutritionMetrics(
   const hygienePassRate =
     hygieneChecks.length > 0
       ? Math.round((hygienePass / hygieneChecks.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Overdue profile reviews
   let overdueProfileReviews = 0;
@@ -296,7 +296,7 @@ export function computeNutritionMetrics(
   const alternativeMealsRate =
     meals.length > 0
       ? Math.round((alternativeCount / meals.length) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     profiles_complete: profilesComplete,

@@ -384,19 +384,19 @@ describe("computeLeavingCareMetrics", () => {
     expect(result.active_plans).toBe(0);
     expect(result.draft_plans).toBe(0);
     expect(result.completed_plans).toBe(0);
-    expect(result.plan_coverage_pct).toBe(0);
-    expect(result.avg_readiness_score).toBe(0);
+    expect(result.plan_coverage_pct).toBeNull(); // fab-0.
+    expect(result.avg_readiness_score).toBeNull(); // fab-0.
     expect(result.readiness_above_70_count).toBe(0);
     expect(result.readiness_below_40_count).toBe(0);
     expect(result.total_entitlements).toBe(0);
     expect(result.active_entitlements).toBe(0);
     expect(result.claimed_entitlements).toBe(0);
-    expect(result.entitlement_take_up_pct).toBe(0);
+    expect(result.entitlement_take_up_pct).toBeNull(); // fab-0.
     expect(result.total_claimed_amount).toBe(0);
     expect(result.yp_with_gp).toBe(0);
     expect(result.yp_with_dentist).toBe(0);
     expect(result.plans_with_personal_advisor).toBe(0);
-    expect(result.avg_plan_version).toBe(0);
+    expect(result.avg_plan_version).toBeNull(); // fab-0.
   });
 
   it("counts active, draft, and completed plans correctly", () => {
@@ -429,7 +429,7 @@ describe("computeLeavingCareMetrics", () => {
   it("returns 0 coverage when totalEligibleYP is 0", () => {
     const plans = [makePathwayPlan({ status: "active" })];
     const result = computeLeavingCareMetrics(plans, [], [], 0);
-    expect(result.plan_coverage_pct).toBe(0);
+    expect(result.plan_coverage_pct).toBeNull(); // fab-0.
   });
 
   it("returns 100% coverage when all eligible YP have active plans", () => {
@@ -464,7 +464,7 @@ describe("computeLeavingCareMetrics", () => {
 
   it("returns 0 average readiness when no assessments exist", () => {
     const result = computeLeavingCareMetrics([], [], [], 5);
-    expect(result.avg_readiness_score).toBe(0);
+    expect(result.avg_readiness_score).toBeNull(); // fab-0.
   });
 
   it("counts readiness scores above 70 correctly", () => {
@@ -533,7 +533,7 @@ describe("computeLeavingCareMetrics", () => {
 
   it("returns 0 take-up percentage when no entitlements exist", () => {
     const result = computeLeavingCareMetrics([], [], [], 0);
-    expect(result.entitlement_take_up_pct).toBe(0);
+    expect(result.entitlement_take_up_pct).toBeNull(); // fab-0.
   });
 
   it("calculates total claimed amount using claimed_amount when available", () => {
@@ -625,7 +625,7 @@ describe("computeLeavingCareMetrics", () => {
 
   it("returns 0 average plan version when no plans exist", () => {
     const result = computeLeavingCareMetrics([], [], [], 0);
-    expect(result.avg_plan_version).toBe(0);
+    expect(result.avg_plan_version).toBeNull(); // fab-0.
   });
 
   it("handles a comprehensive mixed scenario", () => {

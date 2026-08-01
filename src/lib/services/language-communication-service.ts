@@ -158,21 +158,21 @@ export function computeLanguageMetrics(
 ): {
   total_records: number;
   children_with_needs: number;
-  needs_coverage: number;
+  needs_coverage: number | null;
   support_in_place_count: number;
   support_requested_count: number;
   awaiting_assessment_count: number;
-  passport_in_place_rate: number;
+  passport_in_place_rate: number | null;
   interpreter_required_count: number;
-  interpreter_arranged_rate: number;
-  specialist_involved_rate: number;
-  staff_aware_rate: number;
-  staff_trained_rate: number;
-  child_views_rate: number;
-  excellent_progress_count: number;
-  needs_improvement_count: number;
-  review_overdue_count: number;
-  average_adjustments_per_child: number;
+  interpreter_arranged_rate: number | null;
+  specialist_involved_rate: number | null;
+  staff_aware_rate: number | null;
+  staff_trained_rate: number | null;
+  child_views_rate: number | null;
+  excellent_progress_count: number | null;
+  needs_improvement_count: number | null;
+  review_overdue_count: number | null;
+  average_adjustments_per_child: number | null;
   by_communication_need: Record<string, number>;
   by_support_type: Record<string, number>;
   by_support_status: Record<string, number>;
@@ -182,7 +182,7 @@ export function computeLanguageMetrics(
   const needsCoverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const inPlace = records.filter((r) => r.support_status === "in_place").length;
   const requested = records.filter((r) => r.support_status === "requested").length;
@@ -192,38 +192,38 @@ export function computeLanguageMetrics(
   const passportRate =
     records.length > 0
       ? Math.round((passportInPlace / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const interpreterRequired = records.filter((r) => r.interpreter_required).length;
   const interpreterArranged = records.filter((r) => r.interpreter_required && r.interpreter_arranged).length;
   const interpreterRate =
     interpreterRequired > 0
       ? Math.round((interpreterArranged / interpreterRequired) * 1000) / 10
-      : 0;
+      : null;
 
   const specialist = records.filter((r) => r.specialist_involved).length;
   const specialistRate =
     records.length > 0
       ? Math.round((specialist / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffAware = records.filter((r) => r.staff_aware).length;
   const awareRate =
     records.length > 0
       ? Math.round((staffAware / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffTrained = records.filter((r) => r.staff_trained).length;
   const trainedRate =
     records.length > 0
       ? Math.round((staffTrained / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childViews = records.filter((r) => r.child_views_captured).length;
   const viewsRate =
     records.length > 0
       ? Math.round((childViews / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const excellent = records.filter((r) => r.progress_rating === "excellent").length;
   const needsImprovement = records.filter((r) => r.progress_rating === "needs_improvement").length;
@@ -237,7 +237,7 @@ export function computeLanguageMetrics(
   const avgAdjustments =
     uniqueChildren > 0
       ? Math.round((totalAdjustments / uniqueChildren) * 10) / 10
-      : 0;
+      : null;
 
   const byNeed: Record<string, number> = {};
   for (const r of records) byNeed[r.communication_need] = (byNeed[r.communication_need] ?? 0) + 1;
