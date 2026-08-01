@@ -297,10 +297,10 @@ export function computeMetrics(
 } {
   const total = rows.length;
 
-  const boolRate = (field: keyof KnifeWeaponSafetyRow, subset?: KnifeWeaponSafetyRow[]) => {
+  const boolRate = (field: keyof KnifeWeaponSafetyRow, subset?: KnifeWeaponSafetyRow[]): number | null => {
     const pool = subset ?? rows;
     const count = pool.filter((r) => r[field] === true).length;
-    return pool.length > 0 ? Math.round((count / pool.length) * 1000) / 10 : 0;
+    return pool.length > 0 ? Math.round((count / pool.length) * 1000) / 10 : null;
   };
 
   // Record type breakdown
