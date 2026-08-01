@@ -68,7 +68,7 @@ export async function getArtifactOutcome(artifactId: string): Promise<OutcomeLoo
     hasLinkedActions: actionsList.length > 0,
     actionsCompleted: completed.length,
     actionsTotal: actionsList.length,
-    completionRate: actionsList.length > 0 ? Math.round((completed.length / actionsList.length) * 100) : 0,
+    completionRate: actionsList.length > 0 ? Math.round((completed.length / actionsList.length) * 100) : null,
     followUpRecorded: artifact.status === "committed",
     outcomeStatus: actionsList.length === 0
       ? "no_actions"
