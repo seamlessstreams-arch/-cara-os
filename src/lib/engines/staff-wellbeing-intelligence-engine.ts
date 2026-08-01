@@ -405,7 +405,7 @@ function computeSicknessAnalysis(input: StaffWellbeingInput): SicknessAnalysis {
   const sick90d = sickness_records.filter((s) => withinDays(s.date_started, today, 90));
 
   const totalDays = sick90d.reduce((sum, s) => sum + s.total_days, 0);
-  const avgPerStaff = active.length > 0 ? Math.round((totalDays / active.length) * 10) / 10 : 0;
+  const avgPerStaff: number | null = active.length > 0 ? Math.round((totalDays / active.length) * 10) / 10 : null;
 
   const staffWithPatterns = new Set(
     sick90d.filter((s) => s.trigger_points.length > 0 || s.total_days > 5).map((s) => s.staff_id),
