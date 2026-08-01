@@ -45,10 +45,10 @@ describe("computeMetrics", () => {
     expect(m.total_savings_deposits).toBe(0);
     expect(m.total_savings_withdrawals).toBe(0);
     expect(m.net_savings).toBe(0);
-    expect(m.average_pocket_money).toBe(0);
-    expect(m.savings_rate).toBe(0);
-    expect(m.child_choice_rate).toBe(0);
-    expect(m.receipt_rate).toBe(0);
+    expect(m.average_pocket_money).toBeNull(); // fab-0.
+    expect(m.savings_rate).toBeNull(); // fab-0.
+    expect(m.child_choice_rate).toBeNull(); // fab-0.
+    expect(m.receipt_rate).toBeNull(); // fab-0.
     expect(m.unique_children).toBe(0);
   });
 

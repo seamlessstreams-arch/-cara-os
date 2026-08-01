@@ -245,19 +245,19 @@ export function computeMetrics(
   total_savings_deposits: number;
   total_savings_withdrawals: number;
   net_savings: number;
-  average_pocket_money: number;
-  savings_rate: number;
+  average_pocket_money: number | null;
+  savings_rate: number | null;
   junior_isa_total: number;
-  child_choice_rate: number;
-  receipt_rate: number;
-  budgeting_discussion_rate: number;
+  child_choice_rate: number | null;
+  receipt_rate: number | null;
+  budgeting_discussion_rate: number | null;
   by_transaction_type: Record<string, number>;
   unique_children: number;
-  average_balance: number;
+  average_balance: number | null;
   earned_income_total: number;
-  age_appropriate_rate: number;
-  consent_recorded_rate: number;
-  social_worker_aware_rate: number;
+  age_appropriate_rate: number | null;
+  consent_recorded_rate: number | null;
+  social_worker_aware_rate: number | null;
 } {
   const total = rows.length;
 
@@ -302,14 +302,14 @@ export function computeMetrics(
   const pocketMoneyRows = rows.filter((r) =>
     (POCKET_MONEY_TYPES as string[]).includes(r.transaction_type),
   );
-  const averagePocketMoney = pocketMoneyRows.length > 0
+  const averagePocketMoney: number | null = pocketMoneyRows.length > 0
     ? Math.round((pocketMoneyRows.reduce((sum, r) => sum + Number(r.amount), 0) / pocketMoneyRows.length) * 100) / 100
-    : 0;
+    : null;
 
   // Savings rate (savings deposits as % of total income)
-  const savingsRate = totalIncome > 0
+  const savingsRate: number | null = totalIncome > 0
     ? Math.round((totalSavingsDeposits / totalIncome) * 1000) / 10
-    : 0;
+    : null;
 
   // Junior ISA total
   const juniorIsaTotal = rows
@@ -317,23 +317,23 @@ export function computeMetrics(
     .reduce((sum, r) => sum + Number(r.amount), 0);
 
   // Boolean rates
-  const childChoiceRate = total > 0
+  const childChoiceRate: number | null = total > 0
     ? Math.round((rows.filter((r) => r.child_choice).length / total) * 1000) / 10
-    : 0;
+    : null;
 
-  const receiptRate = total > 0
+  const receiptRate: number | null = total > 0
     ? Math.round((rows.filter((r) => r.receipt_kept).length / total) * 1000) / 10
-    : 0;
+    : null;
 
-  const budgetingDiscussionRate = total > 0
+  const budgetingDiscussionRate: number | null = total > 0
     ? Math.round((rows.filter((r) => r.budgeting_discussion).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Average balance (from rows with balance_after recorded)
   const balanceRows = rows.filter((r) => r.balance_after !== null);
-  const averageBalance = balanceRows.length > 0
+  const averageBalance: number | null = balanceRows.length > 0
     ? Math.round((balanceRows.reduce((sum, r) => sum + Number(r.balance_after), 0) / balanceRows.length) * 100) / 100
-    : 0;
+    : null;
 
   // Earned income total
   const earnedIncomeTotal = rows
@@ -341,21 +341,21 @@ export function computeMetrics(
     .reduce((sum, r) => sum + Number(r.amount), 0);
 
   // Age-appropriate rate
-  const ageAppropriateRate = total > 0
+  const ageAppropriateRate: number | null = total > 0
     ? Math.round((rows.filter((r) => r.age_appropriate).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Consent recorded rate (only for applicable types)
   const consentApplicableRows = rows.filter((r) => r.parental_consent !== null);
-  const consentRecordedRate = consentApplicableRows.length > 0
+  const consentRecordedRate: number | null = consentApplicableRows.length > 0
     ? Math.round((consentApplicableRows.filter((r) => r.parental_consent === true).length / consentApplicableRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Social worker aware rate (only where applicable)
   const swApplicableRows = rows.filter((r) => r.social_worker_aware !== null);
-  const socialWorkerAwareRate = swApplicableRows.length > 0
+  const socialWorkerAwareRate: number | null = swApplicableRows.length > 0
     ? Math.round((swApplicableRows.filter((r) => r.social_worker_aware === true).length / swApplicableRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   return {
     total_transactions: total,
@@ -585,7 +585,7 @@ export function generateCaraInsights(
       `Total spending: £${metrics.total_spending.toFixed(2)}. ` +
       `Net savings: £${metrics.net_savings.toFixed(2)}. ` +
       `Junior ISA total: £${metrics.junior_isa_total.toFixed(2)}. ` +
-      `Average pocket money: £${metrics.average_pocket_money.toFixed(2)}. ` +
+      `Average pocket money: £${(metrics.average_pocket_money ?? 0).toFixed(2)}. ` +
       `Savings rate: ${metrics.savings_rate}%. ` +
       `Earned income: £${metrics.earned_income_total.toFixed(2)}. ` +
       `Breakdown: ${typeBreakdown || "none recorded"}.`,
@@ -604,7 +604,7 @@ export function generateCaraInsights(
         `Age-appropriate rate: ${metrics.age_appropriate_rate}%. ` +
         `Consent recorded: ${metrics.consent_recorded_rate}%. ` +
         `Social worker aware: ${metrics.social_worker_aware_rate}%. ` +
-        `Average balance: £${metrics.average_balance.toFixed(2)}.`,
+        `Average balance: £${(metrics.average_balance ?? 0).toFixed(2)}.`,
     );
   } else {
     insights.push(
@@ -620,7 +620,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.savings_rate < 5 && metrics.total_transactions > 10) {
+  if ((metrics.savings_rate ?? 0) < 5 && metrics.total_transactions > 10) {
     insights.push(
       `[reflect] The savings rate is only ${metrics.savings_rate}% of total income. Are children ` +
         `being actively encouraged to save? CHR 2015 Reg 5 requires the home to prepare ` +
@@ -631,7 +631,7 @@ export function generateCaraInsights(
         `children understand the value of money and can manage their finances ` +
         `age-appropriately.`,
     );
-  } else if (metrics.budgeting_discussion_rate < 20 && metrics.total_transactions > 5) {
+  } else if ((metrics.budgeting_discussion_rate ?? 0) < 20 && metrics.total_transactions > 5) {
     insights.push(
       `[reflect] Budgeting discussions accompany only ${metrics.budgeting_discussion_rate}% of ` +
         `transactions. Every pocket money payment and spending decision is an opportunity ` +
@@ -641,7 +641,7 @@ export function generateCaraInsights(
         `a standing order, or create a weekly budget? CHR 2015 Reg 5 expects the home ` +
         `to develop these capabilities progressively.`,
     );
-  } else if (metrics.child_choice_rate < 50 && metrics.total_transactions > 5) {
+  } else if ((metrics.child_choice_rate ?? 0) < 50 && metrics.total_transactions > 5) {
     insights.push(
       `[reflect] Children chose how to spend or save in only ${metrics.child_choice_rate}% of ` +
         `transactions. Financial autonomy, within safe and age-appropriate boundaries, is ` +
