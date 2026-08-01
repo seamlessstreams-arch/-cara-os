@@ -208,9 +208,9 @@ export function computeGuideMetrics(
   formats_available: number;
   children_received: number;
   children_total: number;
-  distribution_rate: number;
-  understanding_confirmed_rate: number;
-  avg_feedback_score: number;
+  distribution_rate: number | null;
+  understanding_confirmed_rate: number | null;
+  avg_feedback_score: number | null;
   overdue_reviews: number;
   sections_coverage: Record<string, boolean>;
   by_feedback_rating: Record<string, number>;
@@ -238,7 +238,7 @@ export function computeGuideMetrics(
   const distributionRate =
     totalChildren > 0
       ? Math.round((childrenReceived.size / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   // Understanding confirmed rate
   let confirmedUnderstanding = 0;
@@ -248,7 +248,7 @@ export function computeGuideMetrics(
   const understandingConfirmedRate =
     distributions.length > 0
       ? Math.round((confirmedUnderstanding / distributions.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Average feedback score (very_helpful=5, helpful=4, okay=3, not_helpful=2, confusing=1)
   const ratingValues: Record<string, number> = {
@@ -269,7 +269,7 @@ export function computeGuideMetrics(
   const avgFeedbackScore =
     feedbackCount > 0
       ? Math.round((totalScore / feedbackCount) * 10) / 10
-      : 0;
+      : null;
 
   // Overdue reviews
   let overdueReviews = 0;

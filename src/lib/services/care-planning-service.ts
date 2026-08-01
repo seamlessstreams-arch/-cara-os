@@ -195,13 +195,13 @@ export function computeCarePlanMetrics(
   overdue_reviews: number;
   reviews_due_soon: number;
   children_with_plans: number;
-  plan_coverage_rate: number;
+  plan_coverage_rate: number | null;
   total_objectives: number;
   objectives_completed: number;
   objectives_at_risk: number;
-  objective_completion_rate: number;
+  objective_completion_rate: number | null;
   reviews_this_quarter: number;
-  child_participation_rate: number;
+  child_participation_rate: number | null;
   by_plan_type: Record<string, number>;
   by_plan_status: Record<string, number>;
   by_review_outcome: Record<string, number>;
@@ -236,7 +236,7 @@ export function computeCarePlanMetrics(
   const planCoverageRate =
     totalChildren > 0
       ? Math.round((childrenWithPlans / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   // Objectives
   const activeObjectives = objectives.filter(
@@ -247,7 +247,7 @@ export function computeCarePlanMetrics(
   const objectiveCompletionRate =
     objectives.length > 0
       ? Math.round((completedObjectives / objectives.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Reviews this quarter
   const reviewsThisQuarter = reviews.filter(
@@ -261,7 +261,7 @@ export function computeCarePlanMetrics(
   const childParticipationRate =
     reviews.length > 0
       ? Math.round((reviewsWithParticipation / reviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   // By type
   const byPlanType: Record<string, number> = {};

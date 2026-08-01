@@ -147,15 +147,15 @@ export function computeMetrics(
   pass_count: number;
   fail_count: number;
   partial_count: number;
-  pass_rate: number;
-  battery_good_rate: number;
-  battery_poor_rate: number;
-  escape_route_rate: number;
-  signage_rate: number;
-  illumination_rate: number;
+  pass_rate: number | null;
+  battery_good_rate: number | null;
+  battery_poor_rate: number | null;
+  escape_route_rate: number | null;
+  signage_rate: number | null;
+  illumination_rate: number | null;
   fault_count: number;
-  fault_rectified_rate: number;
-  avg_duration: number;
+  fault_rectified_rate: number | null;
+  avg_duration: number | null;
   non_compliant_count: number;
   remedial_count: number;
   unique_locations: number;
@@ -170,7 +170,7 @@ export function computeMetrics(
   const passRate =
     total > 0
       ? Math.round((passCount / total) * 1000) / 10
-      : 0;
+      : null;
 
   const batteryGood = rows.filter(
     (r) => r.battery_condition === "Good" || r.battery_condition === "Fair",
@@ -178,7 +178,7 @@ export function computeMetrics(
   const batteryGoodRate =
     total > 0
       ? Math.round((batteryGood / total) * 1000) / 10
-      : 0;
+      : null;
 
   const batteryPoor = rows.filter(
     (r) => r.battery_condition === "Poor" || r.battery_condition === "Failed",
@@ -186,25 +186,25 @@ export function computeMetrics(
   const batteryPoorRate =
     total > 0
       ? Math.round((batteryPoor / total) * 1000) / 10
-      : 0;
+      : null;
 
   const escapeRouteCovered = rows.filter((r) => r.escape_route_covered).length;
   const escapeRouteRate =
     total > 0
       ? Math.round((escapeRouteCovered / total) * 1000) / 10
-      : 0;
+      : null;
 
   const signageVisible = rows.filter((r) => r.signage_visible).length;
   const signageRate =
     total > 0
       ? Math.round((signageVisible / total) * 1000) / 10
-      : 0;
+      : null;
 
   const illuminationAdequate = rows.filter((r) => r.illumination_adequate).length;
   const illuminationRate =
     total > 0
       ? Math.round((illuminationAdequate / total) * 1000) / 10
-      : 0;
+      : null;
 
   const faultCount = rows.filter((r) => r.fault_identified).length;
 
@@ -215,7 +215,7 @@ export function computeMetrics(
   const faultRectifiedRate =
     faultIdentifiedRows.length > 0
       ? Math.round((faultRectifiedCount / faultIdentifiedRows.length) * 1000) / 10
-      : 0;
+      : null;
 
   const durationRows = rows.filter((r) => r.duration_minutes !== null);
   const totalDuration = durationRows.reduce(
@@ -225,7 +225,7 @@ export function computeMetrics(
   const avgDuration =
     durationRows.length > 0
       ? Math.round((totalDuration / durationRows.length) * 10) / 10
-      : 0;
+      : null;
 
   const nonCompliantCount = rows.filter(
     (r) => r.compliance_status === "Non-Compliant",

@@ -303,14 +303,14 @@ export function computeMetrics(
   unique_young_people: number;
   by_activity_type: Record<string, number>;
   by_gatsby_benchmark: Record<string, number>;
-  engagement_rate: number;
-  practical_rate: number;
-  cv_rate: number;
-  interview_skills_rate: number;
-  pathway_plan_rate: number;
-  pa_rate: number;
-  confidence_improvement_rate: number;
-  average_sessions_per_person: number;
+  engagement_rate: number | null;
+  practical_rate: number | null;
+  cv_rate: number | null;
+  interview_skills_rate: number | null;
+  pathway_plan_rate: number | null;
+  pa_rate: number | null;
+  confidence_improvement_rate: number | null;
+  average_sessions_per_person: number | null;
   employer_encounter_count: number;
   work_experience_count: number;
   gatsby_coverage: number;
@@ -337,27 +337,27 @@ export function computeMetrics(
   // Boolean rates
   const engagementRate = total > 0
     ? Math.round((rows.filter((r) => r.young_person_engaged).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const practicalRate = total > 0
     ? Math.round((rows.filter((r) => r.practical_component).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const cvRate = total > 0
     ? Math.round((rows.filter((r) => r.cv_created_updated).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const interviewSkillsRate = total > 0
     ? Math.round((rows.filter((r) => r.interview_skills_practised).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const pathwayPlanRate = total > 0
     ? Math.round((rows.filter((r) => r.pathway_plan_linked).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const paRate = total > 0
     ? Math.round((rows.filter((r) => r.personal_adviser_involved).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Confidence improvement rate
   const rowsWithConfidence = rows.filter(
@@ -369,12 +369,12 @@ export function computeMetrics(
   );
   const confidenceImprovementRate = rowsWithConfidence.length > 0
     ? Math.round((improved.length / rowsWithConfidence.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Average sessions per person
   const avgSessions = uniqueYP.size > 0
     ? Math.round((total / uniqueYP.size) * 10) / 10
-    : 0;
+    : null;
 
   // Employer encounter count
   const employerEncounterCount = rows.filter(
@@ -645,7 +645,7 @@ export function generateCaraInsights(
         `opportunities. The Baker Clause also requires that young people hear from a range of ` +
         `education and training providers about the options available to them.`,
     );
-  } else if (metrics.confidence_improvement_rate < 40 && metrics.total_sessions > 5) {
+  } else if ((metrics.confidence_improvement_rate ?? 0) < 40 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Confidence improvement rate is only ${metrics.confidence_improvement_rate}% across ` +
         `${metrics.total_sessions} sessions. Are career guidance activities genuinely building ` +

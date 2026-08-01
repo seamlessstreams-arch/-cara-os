@@ -80,13 +80,13 @@ describe("computeCarePlanMetrics", () => {
     expect(result.overdue_reviews).toBe(0);
     expect(result.reviews_due_soon).toBe(0);
     expect(result.children_with_plans).toBe(0);
-    expect(result.plan_coverage_rate).toBe(0);
+    expect(result.plan_coverage_rate).toBeNull(); // fab-0.;
     expect(result.total_objectives).toBe(0);
     expect(result.objectives_completed).toBe(0);
     expect(result.objectives_at_risk).toBe(0);
-    expect(result.objective_completion_rate).toBe(0);
+    expect(result.objective_completion_rate).toBeNull(); // fab-0.;
     expect(result.reviews_this_quarter).toBe(0);
-    expect(result.child_participation_rate).toBe(0);
+    expect(result.child_participation_rate).toBeNull(); // fab-0.;
   });
 
   it("counts plans and statuses correctly", () => {

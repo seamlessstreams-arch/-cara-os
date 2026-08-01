@@ -141,18 +141,18 @@ export function computeDiversityMetrics(
 ): {
   total_records: number;
   children_with_records: number;
-  children_coverage: number;
+  children_coverage: number | null;
   in_place_count: number;
   partially_met_count: number;
   not_met_count: number;
   under_review_count: number;
   fully_effective_count: number;
   not_effective_count: number;
-  child_satisfied_rate: number;
-  staff_aware_rate: number;
-  staff_trained_rate: number;
-  equality_impact_rate: number;
-  child_views_rate: number;
+  child_satisfied_rate: number | null;
+  staff_aware_rate: number | null;
+  staff_trained_rate: number | null;
+  equality_impact_rate: number | null;
+  child_views_rate: number | null;
   by_characteristic: Record<string, number>;
   by_support_category: Record<string, number>;
   by_support_status: Record<string, number>;
@@ -162,7 +162,7 @@ export function computeDiversityMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const inPlace = records.filter((r) => r.support_status === "in_place").length;
   const partiallyMet = records.filter((r) => r.support_status === "partially_met").length;
@@ -177,31 +177,31 @@ export function computeDiversityMetrics(
   const satisfiedRate =
     withSatisfaction.length > 0
       ? Math.round((satisfied / withSatisfaction.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffAware = records.filter((r) => r.staff_aware).length;
   const awareRate =
     records.length > 0
       ? Math.round((staffAware / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffTrained = records.filter((r) => r.staff_trained).length;
   const trainedRate =
     records.length > 0
       ? Math.round((staffTrained / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const eiaRecords = records.filter((r) => r.equality_impact_assessed).length;
   const eiaRate =
     records.length > 0
       ? Math.round((eiaRecords / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childViews = records.filter((r) => r.child_views !== null).length;
   const childRate =
     records.length > 0
       ? Math.round((childViews / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const byChar: Record<string, number> = {};
   for (const r of records) byChar[r.protected_characteristic] = (byChar[r.protected_characteristic] ?? 0) + 1;

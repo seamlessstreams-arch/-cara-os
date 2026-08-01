@@ -279,18 +279,18 @@ describe("computeDiversityMetrics", () => {
     const m = computeDiversityMetrics([], 0);
     expect(m.total_records).toBe(0);
     expect(m.children_with_records).toBe(0);
-    expect(m.children_coverage).toBe(0);
+    expect(m.children_coverage).toBeNull(); // fab-0.;
     expect(m.in_place_count).toBe(0);
     expect(m.partially_met_count).toBe(0);
     expect(m.not_met_count).toBe(0);
     expect(m.under_review_count).toBe(0);
     expect(m.fully_effective_count).toBe(0);
     expect(m.not_effective_count).toBe(0);
-    expect(m.child_satisfied_rate).toBe(0);
-    expect(m.staff_aware_rate).toBe(0);
-    expect(m.staff_trained_rate).toBe(0);
-    expect(m.equality_impact_rate).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_satisfied_rate).toBeNull(); // fab-0.;
+    expect(m.staff_aware_rate).toBeNull(); // fab-0.;
+    expect(m.staff_trained_rate).toBeNull(); // fab-0.;
+    expect(m.equality_impact_rate).toBeNull(); // fab-0.;
+    expect(m.child_views_rate).toBeNull(); // fab-0.;
     expect(Object.keys(m.by_characteristic)).toHaveLength(0);
     expect(Object.keys(m.by_support_category)).toHaveLength(0);
     expect(Object.keys(m.by_support_status)).toHaveLength(0);
@@ -366,7 +366,7 @@ describe("computeDiversityMetrics", () => {
 
   it("children_coverage is 0 when totalChildren is 0", () => {
     const m = computeDiversityMetrics([], 0);
-    expect(m.children_coverage).toBe(0);
+    expect(m.children_coverage).toBeNull(); // fab-0.;
   });
 
   it("children_coverage rounds to one decimal place", () => {
@@ -549,7 +549,7 @@ describe("computeDiversityMetrics", () => {
       makeRecord({ id: "dr2", child_satisfied: null }),
     ];
     const m = computeDiversityMetrics(records, 2);
-    expect(m.child_satisfied_rate).toBe(0);
+    expect(m.child_satisfied_rate).toBeNull(); // fab-0.;
   });
 
   it("child_satisfied_rate rounds to one decimal place", () => {
@@ -564,7 +564,7 @@ describe("computeDiversityMetrics", () => {
 
   it("child_satisfied_rate is 0 for empty records", () => {
     const m = computeDiversityMetrics([], 0);
-    expect(m.child_satisfied_rate).toBe(0);
+    expect(m.child_satisfied_rate).toBeNull(); // fab-0.;
   });
 
   // ── staff_aware_rate ───────────────────────────────────────────────
@@ -608,7 +608,7 @@ describe("computeDiversityMetrics", () => {
 
   it("staff_aware_rate is 0 for empty records", () => {
     const m = computeDiversityMetrics([], 0);
-    expect(m.staff_aware_rate).toBe(0);
+    expect(m.staff_aware_rate).toBeNull(); // fab-0.;
   });
 
   // ── staff_trained_rate ─────────────────────────────────────────────
@@ -652,7 +652,7 @@ describe("computeDiversityMetrics", () => {
 
   it("staff_trained_rate is 0 for empty records", () => {
     const m = computeDiversityMetrics([], 0);
-    expect(m.staff_trained_rate).toBe(0);
+    expect(m.staff_trained_rate).toBeNull(); // fab-0.;
   });
 
   // ── equality_impact_rate ───────────────────────────────────────────
@@ -696,7 +696,7 @@ describe("computeDiversityMetrics", () => {
 
   it("equality_impact_rate is 0 for empty records", () => {
     const m = computeDiversityMetrics([], 0);
-    expect(m.equality_impact_rate).toBe(0);
+    expect(m.equality_impact_rate).toBeNull(); // fab-0.;
   });
 
   // ── child_views_rate ───────────────────────────────────────────────
@@ -740,7 +740,7 @@ describe("computeDiversityMetrics", () => {
 
   it("child_views_rate is 0 for empty records", () => {
     const m = computeDiversityMetrics([], 0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull(); // fab-0.;
   });
 
   it("child_views_rate counts non-null values including empty string", () => {

@@ -134,7 +134,7 @@ describe("computeContactCompliance", () => {
     expect(result.cancelled_contacts).toBe(0);
     expect(result.refusals).toBe(0);
     expect(result.no_shows).toBe(0);
-    expect(result.completion_rate).toBe(0);
+    expect(result.completion_rate).toBeNull(); // fab-0.;
     expect(result.by_type).toEqual({});
     expect(result.by_role).toEqual({});
     expect(result.family_contact_count).toBe(0);
@@ -199,7 +199,7 @@ describe("computeContactCompliance", () => {
 
   it("returns 0 completion_rate when no records exist", () => {
     const result = computeContactCompliance([], []);
-    expect(result.completion_rate).toBe(0);
+    expect(result.completion_rate).toBeNull(); // fab-0.;
   });
 
   it("groups contacts by type", () => {
@@ -275,7 +275,7 @@ describe("computeChildContactProfile", () => {
     expect(result.total_contacts_30d).toBe(0);
     expect(result.family_contacts_30d).toBe(0);
     expect(result.mood_trend).toBe("stable");
-    expect(result.refusal_rate).toBe(0);
+    expect(result.refusal_rate).toBeNull(); // fab-0.;
     expect(result.no_contact_persons).toEqual([]);
   });
 
@@ -417,7 +417,7 @@ describe("computeChildContactProfile", () => {
 
   it("returns 0 refusal_rate when no records exist", () => {
     const result = computeChildContactProfile("child-1", [], []);
-    expect(result.refusal_rate).toBe(0);
+    expect(result.refusal_rate).toBeNull(); // fab-0.;
   });
 
   it("identifies contact persons with plans but no completed records", () => {
@@ -448,10 +448,10 @@ describe("computeChildContactProfile", () => {
 describe("computeContactQuality", () => {
   it("returns zeros and poor rating for empty records", () => {
     const result = computeContactQuality([]);
-    expect(result.avg_duration_minutes).toBe(0);
-    expect(result.voice_capture_rate).toBe(0);
-    expect(result.mood_recorded_rate).toBe(0);
-    expect(result.observations_rate).toBe(0);
+    expect(result.avg_duration_minutes).toBeNull(); // fab-0.;
+    expect(result.voice_capture_rate).toBeNull(); // fab-0.;
+    expect(result.mood_recorded_rate).toBeNull(); // fab-0.;
+    expect(result.observations_rate).toBeNull(); // fab-0.;
     expect(result.quality_rating).toBe("poor");
     expect(result.safeguarding_flags).toBe(0);
   });
@@ -472,7 +472,7 @@ describe("computeContactQuality", () => {
       record({ id: "r2", duration_minutes: null }),
     ];
     const result = computeContactQuality(records);
-    expect(result.avg_duration_minutes).toBe(0);
+    expect(result.avg_duration_minutes).toBeNull(); // fab-0.;
   });
 
   it("calculates voice_capture_rate correctly", () => {

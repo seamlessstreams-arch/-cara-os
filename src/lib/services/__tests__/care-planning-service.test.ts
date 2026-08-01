@@ -263,13 +263,13 @@ describe("computeCarePlanMetrics", () => {
       expect(m.overdue_reviews).toBe(0);
       expect(m.reviews_due_soon).toBe(0);
       expect(m.children_with_plans).toBe(0);
-      expect(m.plan_coverage_rate).toBe(0);
+      expect(m.plan_coverage_rate).toBeNull(); // fab-0.;
       expect(m.total_objectives).toBe(0);
       expect(m.objectives_completed).toBe(0);
       expect(m.objectives_at_risk).toBe(0);
-      expect(m.objective_completion_rate).toBe(0);
+      expect(m.objective_completion_rate).toBeNull(); // fab-0.;
       expect(m.reviews_this_quarter).toBe(0);
-      expect(m.child_participation_rate).toBe(0);
+      expect(m.child_participation_rate).toBeNull(); // fab-0.;
     });
 
     it("returns empty objects for breakdown fields when inputs are empty", () => {
@@ -281,7 +281,7 @@ describe("computeCarePlanMetrics", () => {
 
     it("returns 0 coverage rate when totalChildren is 0 (avoid division by zero)", () => {
       const m = computeCarePlanMetrics([], [], [], 0, NOW);
-      expect(m.plan_coverage_rate).toBe(0);
+      expect(m.plan_coverage_rate).toBeNull(); // fab-0.;
     });
   });
 
@@ -465,7 +465,7 @@ describe("computeCarePlanMetrics", () => {
 
     it("returns 0 when totalChildren is 0", () => {
       const m = computeCarePlanMetrics([makePlan()], [], [], 0, NOW);
-      expect(m.plan_coverage_rate).toBe(0);
+      expect(m.plan_coverage_rate).toBeNull(); // fab-0.;
     });
 
     it("rounds correctly (1/7 = 14.3)", () => {
@@ -552,7 +552,7 @@ describe("computeCarePlanMetrics", () => {
 
     it("returns 0 when there are no objectives", () => {
       const m = computeCarePlanMetrics([], [], [], 5, NOW);
-      expect(m.objective_completion_rate).toBe(0);
+      expect(m.objective_completion_rate).toBeNull(); // fab-0.;
     });
 
     it("returns 100 when all objectives are completed", () => {
@@ -625,7 +625,7 @@ describe("computeCarePlanMetrics", () => {
 
     it("returns 0 when there are no reviews", () => {
       const m = computeCarePlanMetrics([], [], [], 5, NOW);
-      expect(m.child_participation_rate).toBe(0);
+      expect(m.child_participation_rate).toBeNull(); // fab-0.;
     });
 
     it("returns 100 when all children participated", () => {
@@ -1513,13 +1513,13 @@ describe("Edge cases", () => {
       expect(typeof m.overdue_reviews).toBe("number");
       expect(typeof m.reviews_due_soon).toBe("number");
       expect(typeof m.children_with_plans).toBe("number");
-      expect(typeof m.plan_coverage_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof m.plan_coverage_rate); // number | null
       expect(typeof m.total_objectives).toBe("number");
       expect(typeof m.objectives_completed).toBe("number");
       expect(typeof m.objectives_at_risk).toBe("number");
-      expect(typeof m.objective_completion_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof m.objective_completion_rate); // number | null
       expect(typeof m.reviews_this_quarter).toBe("number");
-      expect(typeof m.child_participation_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof m.child_participation_rate); // number | null
       expect(typeof m.by_plan_type).toBe("object");
       expect(typeof m.by_plan_status).toBe("object");
       expect(typeof m.by_review_outcome).toBe("object");

@@ -38,8 +38,8 @@ describe("computeDelegatedAuthorityMetrics", () => {
     expect(m.children_covered).toBe(0);
     expect(m.coverage_rate).toBe(0);
     expect(m.agreed_count).toBe(0);
-    expect(m.child_views_sought_rate).toBe(0);
-    expect(m.average_per_child).toBe(0);
+    expect(m.child_views_sought_rate).toBeNull(); // fab-0.;
+    expect(m.average_per_child).toBeNull(); // fab-0.;
   });
 
   it("calculates correct metrics for populated data", () => {

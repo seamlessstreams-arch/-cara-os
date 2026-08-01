@@ -37,7 +37,7 @@ describe("computeMetrics", () => {
     expect(m.total_records).toBe(0);
     expect(m.unique_young_people).toBe(0);
     expect(m.total_awarded).toBe(0);
-    expect(m.engagement_rate).toBe(0);
+    expect(m.engagement_rate).toBeNull(); // fab-0.;
   });
 
   it("computes counts and rates for populated data", () => {

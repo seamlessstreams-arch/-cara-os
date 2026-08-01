@@ -141,19 +141,19 @@ export function computeDelegatedAuthorityMetrics(
 ): {
   total_records: number;
   children_covered: number;
-  coverage_rate: number;
+  coverage_rate: number | null;
   agreed_count: number;
   pending_count: number;
   disputed_count: number;
   expired_count: number;
   not_delegated_count: number;
-  child_views_sought_rate: number;
-  social_worker_approved_rate: number;
-  documented_in_care_plan_rate: number;
+  child_views_sought_rate: number | null;
+  social_worker_approved_rate: number | null;
+  documented_in_care_plan_rate: number | null;
   review_overdue_count: number;
   decisions_by_home_staff: number;
   decisions_needing_escalation: number;
-  average_per_child: number;
+  average_per_child: number | null;
   by_decision_area: Record<string, number>;
   by_authority_level: Record<string, number>;
   by_agreement_status: Record<string, number>;
@@ -162,7 +162,7 @@ export function computeDelegatedAuthorityMetrics(
   const coverageRate =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const agreed = records.filter((r) => r.agreement_status === "agreed").length;
   const pending = records.filter((r) => r.agreement_status === "pending").length;
@@ -174,19 +174,19 @@ export function computeDelegatedAuthorityMetrics(
   const viewsRate =
     records.length > 0
       ? Math.round((viewsSought / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const swApproved = records.filter((r) => r.social_worker_approved).length;
   const swRate =
     records.length > 0
       ? Math.round((swApproved / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const documented = records.filter((r) => r.documented_in_care_plan).length;
   const docRate =
     records.length > 0
       ? Math.round((documented / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const now = new Date();
   const reviewOverdue = records.filter(
@@ -201,7 +201,7 @@ export function computeDelegatedAuthorityMetrics(
   const avgPerChild =
     uniqueChildren > 0
       ? Math.round((records.length / uniqueChildren) * 10) / 10
-      : 0;
+      : null;
 
   const byArea: Record<string, number> = {};
   for (const r of records) byArea[r.decision_area] = (byArea[r.decision_area] ?? 0) + 1;

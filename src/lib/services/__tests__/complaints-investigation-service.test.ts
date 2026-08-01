@@ -347,23 +347,23 @@ describe("computeComplaintMetrics", () => {
     });
 
     it("returns zero acknowledged_rate", () => {
-      expect(computeComplaintMetrics([]).acknowledged_rate).toBe(0);
+      expect(computeComplaintMetrics([]).acknowledged_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero investigation_started_rate", () => {
-      expect(computeComplaintMetrics([]).investigation_started_rate).toBe(0);
+      expect(computeComplaintMetrics([]).investigation_started_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero resolved_within_28_days_rate", () => {
-      expect(computeComplaintMetrics([]).resolved_within_28_days_rate).toBe(0);
+      expect(computeComplaintMetrics([]).resolved_within_28_days_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero average_days_to_resolution", () => {
-      expect(computeComplaintMetrics([]).average_days_to_resolution).toBe(0);
+      expect(computeComplaintMetrics([]).average_days_to_resolution).toBeNull(); // fab-0.;
     });
 
     it("returns zero learning_identified_rate", () => {
-      expect(computeComplaintMetrics([]).learning_identified_rate).toBe(0);
+      expect(computeComplaintMetrics([]).learning_identified_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero ofsted_notified_count", () => {
@@ -371,7 +371,7 @@ describe("computeComplaintMetrics", () => {
     });
 
     it("returns zero satisfaction_rate", () => {
-      expect(computeComplaintMetrics([]).satisfaction_rate).toBe(0);
+      expect(computeComplaintMetrics([]).satisfaction_rate).toBeNull(); // fab-0.;
     });
 
     it("returns empty by_source", () => {
@@ -709,7 +709,7 @@ describe("computeComplaintMetrics", () => {
         makeComplaint({ id: "1", resolved_within_28_days: null }),
         makeComplaint({ id: "2", resolved_within_28_days: null }),
       ];
-      expect(computeComplaintMetrics(c).resolved_within_28_days_rate).toBe(0);
+      expect(computeComplaintMetrics(c).resolved_within_28_days_rate).toBeNull(); // fab-0.;
     });
 
     it("is 100 when all non-null are true", () => {
@@ -773,7 +773,7 @@ describe("computeComplaintMetrics", () => {
         makeComplaint({ id: "1", days_to_resolution: null }),
         makeComplaint({ id: "2", days_to_resolution: null }),
       ];
-      expect(computeComplaintMetrics(c).average_days_to_resolution).toBe(0);
+      expect(computeComplaintMetrics(c).average_days_to_resolution).toBeNull(); // fab-0.;
     });
 
     it("returns the single value when only one record has days", () => {
@@ -835,7 +835,7 @@ describe("computeComplaintMetrics", () => {
         makeComplaint({ id: "1", complainant_satisfaction: null }),
         makeComplaint({ id: "2", complainant_satisfaction: null }),
       ];
-      expect(computeComplaintMetrics(c).satisfaction_rate).toBe(0);
+      expect(computeComplaintMetrics(c).satisfaction_rate).toBeNull(); // fab-0.;
     });
 
     it("is 0 when all complainant_satisfaction are not_recorded", () => {
@@ -843,7 +843,7 @@ describe("computeComplaintMetrics", () => {
         makeComplaint({ id: "1", complainant_satisfaction: "not_recorded" }),
         makeComplaint({ id: "2", complainant_satisfaction: "not_recorded" }),
       ];
-      expect(computeComplaintMetrics(c).satisfaction_rate).toBe(0);
+      expect(computeComplaintMetrics(c).satisfaction_rate).toBeNull(); // fab-0.;
     });
 
     it("is 0 when mix of null and not_recorded only", () => {
@@ -851,7 +851,7 @@ describe("computeComplaintMetrics", () => {
         makeComplaint({ id: "1", complainant_satisfaction: null }),
         makeComplaint({ id: "2", complainant_satisfaction: "not_recorded" }),
       ];
-      expect(computeComplaintMetrics(c).satisfaction_rate).toBe(0);
+      expect(computeComplaintMetrics(c).satisfaction_rate).toBeNull(); // fab-0.;
     });
 
     it("is 100 when all valid are satisfied", () => {

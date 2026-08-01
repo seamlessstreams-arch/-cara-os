@@ -260,24 +260,24 @@ export function computeMetrics(
   by_record_type: Record<string, number>;
   by_budget_period: Record<string, number>;
   total_spend: number;
-  average_spend_per_record: number;
-  average_spend_per_child: number;
-  child_choice_rate: number;
-  age_appropriate_rate: number;
-  good_condition_rate: number;
-  sufficient_quantity_rate: number;
-  brand_preference_rate: number;
-  cultural_needs_rate: number;
-  receipt_kept_rate: number;
-  season_appropriate_rate: number;
-  school_requirements_rate: number;
+  average_spend_per_record: number | null;
+  average_spend_per_child: number | null;
+  child_choice_rate: number | null;
+  age_appropriate_rate: number | null;
+  good_condition_rate: number | null;
+  sufficient_quantity_rate: number | null;
+  brand_preference_rate: number | null;
+  cultural_needs_rate: number | null;
+  receipt_kept_rate: number | null;
+  season_appropriate_rate: number | null;
+  school_requirements_rate: number | null;
   essential_purchase_count: number;
   discretionary_purchase_count: number;
   planning_activity_count: number;
   school_related_count: number;
   emergency_purchase_count: number;
-  highest_single_spend: number;
-  average_records_per_child: number;
+  highest_single_spend: number | null;
+  average_records_per_child: number | null;
 } {
   const total = rows.length;
 
@@ -297,15 +297,15 @@ export function computeMetrics(
 
   // Financial metrics
   const totalSpend = rows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
-  const avgPerRecord = total > 0 ? Math.round((totalSpend / total) * 100) / 100 : 0;
+  const avgPerRecord = total > 0 ? Math.round((totalSpend / total) * 100) / 100 : null;
   const avgPerChild = uniqueChildren.size > 0
     ? Math.round((totalSpend / uniqueChildren.size) * 100) / 100
-    : 0;
-  const highestSpend = total > 0 ? Math.max(...rows.map((r) => Number(r.amount) || 0)) : 0;
+    : null;
+  const highestSpend = total > 0 ? Math.max(...rows.map((r) => Number(r.amount) || 0)) : null;
 
   // Boolean rates
   const pct = (filter: (r: ClothingAllowanceRow) => boolean) =>
-    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : 0;
+    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
   const childChoiceRate = pct((r) => r.child_chose);
   const ageAppropriateRate = pct((r) => r.age_appropriate);
@@ -319,7 +319,7 @@ export function computeMetrics(
   const schoolRows = rows.filter((r) => r.school_requirements_met !== null);
   const schoolRequirementsRate = schoolRows.length > 0
     ? Math.round((schoolRows.filter((r) => r.school_requirements_met === true).length / schoolRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Category counts
   const essentialCount = rows.filter((r) => (ESSENTIAL_TYPES as string[]).includes(r.record_type)).length;
@@ -330,7 +330,7 @@ export function computeMetrics(
 
   const avgRecordsPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   return {
     total_records: total,
@@ -592,7 +592,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.child_choice_rate < 40 && metrics.total_records > 5) {
+  if ((metrics.child_choice_rate ?? 0) < 40 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Child choice is recorded in only ${metrics.child_choice_rate}% of clothing ` +
         `records. For looked-after children, clothing is deeply personal — it ` +
@@ -607,7 +607,7 @@ export function generateCaraInsights(
         `them clothes without asking what they like reinforces feelings of ` +
         `powerlessness and institutional care.`,
     );
-  } else if (metrics.brand_preference_rate < 30 && metrics.total_records > 5) {
+  } else if ((metrics.brand_preference_rate ?? 0) < 30 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Brand preferences respected in only ${metrics.brand_preference_rate}% of records. ` +
         `This is a sensitive area. Corporate Parenting Principles require ` +

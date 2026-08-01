@@ -145,13 +145,13 @@ export function computeIdentityMetrics(
 ): {
   children_with_profiles: number;
   total_children: number;
-  profile_review_rate: number;
+  profile_review_rate: number | null;
   actions_this_quarter: number;
   by_action_type: Record<string, number>;
-  satisfaction_rate: number;
+  satisfaction_rate: number | null;
   children_with_community_links: number;
   children_with_language_support: number;
-  avg_actions_per_child: number;
+  avg_actions_per_child: number | null;
 } {
   const now = new Date();
   const quarterStartMs = new Date(
@@ -178,7 +178,7 @@ export function computeIdentityMetrics(
   const profileReviewRate =
     activeProfiles.length > 0
       ? Math.round((reviewedCount / activeProfiles.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Actions this quarter
   let actionsThisQuarter = 0;
@@ -206,7 +206,7 @@ export function computeIdentityMetrics(
   const satisfactionRate =
     totalWithFeedback > 0
       ? Math.round((positiveFeedbackCount / totalWithFeedback) * 1000) / 10
-      : 0;
+      : null;
 
   // Children with community links
   const childrenWithCommunityLinks = activeProfiles.filter(
@@ -225,7 +225,7 @@ export function computeIdentityMetrics(
   const avgActionsPerChild =
     uniqueChildrenWithActions > 0
       ? Math.round((actions.length / uniqueChildrenWithActions) * 10) / 10
-      : 0;
+      : null;
 
   return {
     children_with_profiles: childrenWithProfiles,

@@ -153,13 +153,13 @@ export function computeComplaintMetrics(
   upheld_count: number;
   partially_upheld_count: number;
   not_upheld_count: number;
-  acknowledged_rate: number;
-  investigation_started_rate: number;
-  resolved_within_28_days_rate: number;
-  average_days_to_resolution: number;
-  learning_identified_rate: number;
+  acknowledged_rate: number | null;
+  investigation_started_rate: number | null;
+  resolved_within_28_days_rate: number | null;
+  average_days_to_resolution: number | null;
+  learning_identified_rate: number | null;
   ofsted_notified_count: number;
-  satisfaction_rate: number;
+  satisfaction_rate: number | null;
   by_source: Record<string, number>;
   by_category: Record<string, number>;
   by_stage: Record<string, number>;
@@ -180,32 +180,32 @@ export function computeComplaintMetrics(
   const ackRate =
     complaints.length > 0
       ? Math.round((complaints.filter((c) => c.acknowledged_within_24h).length / complaints.length) * 1000) / 10
-      : 0;
+      : null;
 
   const invStarted = complaints.filter((c) => c.investigation_started_within_5_days).length;
   const invRate =
     complaints.length > 0
       ? Math.round((invStarted / complaints.length) * 1000) / 10
-      : 0;
+      : null;
 
   const resolvedWithTimeline = complaints.filter((c) => c.resolved_within_28_days !== null);
   const resolvedIn28 = resolvedWithTimeline.filter((c) => c.resolved_within_28_days === true).length;
   const res28Rate =
     resolvedWithTimeline.length > 0
       ? Math.round((resolvedIn28 / resolvedWithTimeline.length) * 1000) / 10
-      : 0;
+      : null;
 
   const withDays = complaints.filter((c) => c.days_to_resolution !== null);
   const avgDays =
     withDays.length > 0
       ? Math.round((withDays.reduce((sum, c) => sum + (c.days_to_resolution ?? 0), 0) / withDays.length) * 10) / 10
-      : 0;
+      : null;
 
   const learningFound = complaints.filter((c) => c.learning_identified).length;
   const learningRate =
     complaints.length > 0
       ? Math.round((learningFound / complaints.length) * 1000) / 10
-      : 0;
+      : null;
 
   const ofstedNotified = complaints.filter((c) => c.ofsted_notified).length;
 
@@ -214,7 +214,7 @@ export function computeComplaintMetrics(
   const satRate =
     withSatisfaction.length > 0
       ? Math.round((satisfied / withSatisfaction.length) * 1000) / 10
-      : 0;
+      : null;
 
   const bySource: Record<string, number> = {};
   for (const c of complaints) bySource[c.complaint_source] = (bySource[c.complaint_source] ?? 0) + 1;

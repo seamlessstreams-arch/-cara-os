@@ -121,11 +121,11 @@ export function computeComplaintsSummary(complaints: Complaint[]): {
   escalated: number;
   by_category: Record<string, number>;
   by_source: Record<string, number>;
-  avg_response_days: number;
+  avg_response_days: number | null;
   acknowledged_within_2_days: number;
   acknowledged_total: number;
-  satisfaction_rate: number;
-  advocacy_offered_rate: number;
+  satisfaction_rate: number | null;
+  advocacy_offered_rate: number | null;
 } {
   const byCategory: Record<string, number> = {};
   const bySource: Record<string, number> = {};
@@ -199,17 +199,17 @@ export function computeComplaintsSummary(complaints: Complaint[]): {
   const avgResponseDays =
     responseCount > 0
       ? Math.round((totalResponseDays / responseCount) * 10) / 10
-      : 0;
+      : null;
 
   const satisfactionRate =
     satisfactionDenominator > 0
       ? Math.round((satisfiedCount / satisfactionDenominator) * 1000) / 10
-      : 0;
+      : null;
 
   const advocacyOfferedRate =
     total > 0
       ? Math.round((advocacyOfferedCount / total) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     total,
@@ -238,7 +238,7 @@ export function computeNotificationCompliance(notifications: Reg40Notification[]
   sent_late: number;
   overdue: number;
   by_type: Record<string, number>;
-  compliance_rate: number;
+  compliance_rate: number | null;
 } {
   const byType: Record<string, number> = {};
 

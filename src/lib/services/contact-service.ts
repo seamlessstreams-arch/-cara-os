@@ -122,7 +122,7 @@ export function computeContactCompliance(
   cancelled_contacts: number;
   refusals: number;
   no_shows: number;
-  completion_rate: number;
+  completion_rate: number | null;
   by_type: Record<string, number>;
   by_role: Record<string, number>;
   family_contact_count: number;
@@ -182,7 +182,7 @@ export function computeContactCompliance(
   const completionRate =
     records.length > 0
       ? Math.round((completed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     total_plans: plans.length,
@@ -215,7 +215,7 @@ export function computeChildContactProfile(
   total_contacts_30d: number;
   family_contacts_30d: number;
   mood_trend: "improving" | "stable" | "declining";
-  refusal_rate: number;
+  refusal_rate: number | null;
   no_contact_persons: string[];
 } {
   const childPlans = plans.filter((p) => p.child_id === childId);
@@ -292,7 +292,7 @@ export function computeChildContactProfile(
   const refusalRate =
     childRecords.length > 0
       ? Math.round((refusedCount / childRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   // People with plans but zero completed records
   const noContactPersons = activePlans
@@ -322,19 +322,19 @@ export function computeChildContactProfile(
  * mood tracking, observations, and duration logging.
  */
 export function computeContactQuality(records: ContactRecord[]): {
-  avg_duration_minutes: number;
-  voice_capture_rate: number;
-  mood_recorded_rate: number;
-  observations_rate: number;
+  avg_duration_minutes: number | null;
+  voice_capture_rate: number | null;
+  mood_recorded_rate: number | null;
+  observations_rate: number | null;
   quality_rating: "excellent" | "good" | "adequate" | "poor";
   safeguarding_flags: number;
 } {
   if (records.length === 0) {
     return {
-      avg_duration_minutes: 0,
-      voice_capture_rate: 0,
-      mood_recorded_rate: 0,
-      observations_rate: 0,
+      avg_duration_minutes: null,
+      voice_capture_rate: null,
+      mood_recorded_rate: null,
+      observations_rate: null,
       quality_rating: "poor",
       safeguarding_flags: 0,
     };
@@ -348,8 +348,7 @@ export function computeContactQuality(records: ContactRecord[]): {
     .map((r) => r.duration_minutes as number);
   const avgDuration =
     durations.length > 0
-      ? Math.round(durations.reduce((sum, d) => sum + d, 0) / durations.length)
-      : 0;
+      ? Math.round(durations.reduce((sum, d) => sum + d, 0) / durations.length) : null;
 
   // Voice capture rate
   const withVoice = records.filter(

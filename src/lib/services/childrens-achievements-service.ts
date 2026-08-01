@@ -126,18 +126,18 @@ export function computeAchievementMetrics(
 ): {
   total_achievements: number;
   children_with_achievements: number;
-  achievement_coverage: number;
+  achievement_coverage: number | null;
   exceptional_count: number;
   significant_count: number;
   notable_count: number;
   everyday_count: number;
-  shared_with_family_rate: number;
-  shared_with_sw_rate: number;
-  added_to_life_story_rate: number;
-  photograph_rate: number;
-  child_views_rate: number;
-  child_proud_rate: number;
-  average_per_child: number;
+  shared_with_family_rate: number | null;
+  shared_with_sw_rate: number | null;
+  added_to_life_story_rate: number | null;
+  photograph_rate: number | null;
+  child_views_rate: number | null;
+  child_proud_rate: number | null;
+  average_per_child: number | null;
   by_category: Record<string, number>;
   by_significance: Record<string, number>;
   by_celebration: Record<string, number>;
@@ -147,7 +147,7 @@ export function computeAchievementMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const exceptional = achievements.filter((a) => a.significance === "exceptional").length;
   const significant = achievements.filter((a) => a.significance === "significant").length;
@@ -158,42 +158,42 @@ export function computeAchievementMetrics(
   const familyRate =
     achievements.length > 0
       ? Math.round((sharedFamily / achievements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const sharedSW = achievements.filter((a) => a.shared_with_social_worker).length;
   const swRate =
     achievements.length > 0
       ? Math.round((sharedSW / achievements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const lifeStory = achievements.filter((a) => a.added_to_life_story).length;
   const lifeStoryRate =
     achievements.length > 0
       ? Math.round((lifeStory / achievements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const photograph = achievements.filter((a) => a.photograph_taken).length;
   const photoRate =
     achievements.length > 0
       ? Math.round((photograph / achievements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childViews = achievements.filter((a) => a.child_views !== null).length;
   const viewsRate =
     achievements.length > 0
       ? Math.round((childViews / achievements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childProud = achievements.filter((a) => a.child_proud).length;
   const proudRate =
     achievements.length > 0
       ? Math.round((childProud / achievements.length) * 1000) / 10
-      : 0;
+      : null;
 
   const avgPerChild =
     uniqueChildren > 0
       ? Math.round((achievements.length / uniqueChildren) * 10) / 10
-      : 0;
+      : null;
 
   const byCat: Record<string, number> = {};
   for (const a of achievements) byCat[a.category] = (byCat[a.category] ?? 0) + 1;

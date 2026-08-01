@@ -286,7 +286,7 @@ describe("computeHealthCompliance", () => {
     expect(result.health_assessment_current).toBe(0);
     expect(result.camhs_active).toBe(0);
     expect(result.overdue_appointments).toEqual([]);
-    expect(result.dna_rate).toBe(0);
+    expect(result.dna_rate).toBeNull(); // fab-0.;
   });
 
   it("counts total_children from profiles", () => {
@@ -407,7 +407,7 @@ describe("computeHealthCompliance", () => {
 
   it("returns dna_rate of 0 when no appointments exist", () => {
     const result = computeHealthCompliance([], []);
-    expect(result.dna_rate).toBe(0);
+    expect(result.dna_rate).toBeNull(); // fab-0.;
   });
 
   it("flags overdue dentist when no dentist record exists", () => {
@@ -603,7 +603,7 @@ describe("computeWellbeingTrend", () => {
       assessment({ id: "a1", sleep_quality: null }),
       assessment({ id: "a2", sleep_quality: null }),
     ]);
-    expect(result.avg_sleep).toBe(0);
+    expect(result.avg_sleep).toBeNull(); // fab-0.;
   });
 
   it("computes avg_appetite from non-null appetite values (1 decimal)", () => {

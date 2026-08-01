@@ -186,7 +186,7 @@ export function computeHealthCompliance(
   health_assessment_current: number;
   camhs_active: number;
   overdue_appointments: { child_id: string; type: string; last_date: string | null; days_overdue: number }[];
-  dna_rate: number;
+  dna_rate: number | null;
 } {
   const now = new Date();
   const totalChildren = profiles.length;
@@ -299,7 +299,7 @@ export function computeHealthCompliance(
   const dnaCount = appointments.filter((a) => a.outcome === "dna").length;
   const dnaRate = totalAppointments > 0
     ? Math.round((dnaCount / totalAppointments) * 1000) / 10
-    : 0;
+    : null;
 
   return {
     total_children: totalChildren,
@@ -320,8 +320,8 @@ export function computeWellbeingTrend(assessments: WellbeingAssessment[]): {
   latest_wellbeing: number;
   trend: "improving" | "stable" | "declining";
   sdq_band: "normal" | "borderline" | "abnormal" | null;
-  avg_sleep: number;
-  avg_appetite: number;
+  avg_sleep: number | null;
+  avg_appetite: number | null;
   assessment_count: number;
 } {
   if (assessments.length === 0) {
@@ -346,17 +346,17 @@ export function computeWellbeingTrend(assessments: WellbeingAssessment[]): {
 
   const firstAvg = firstHalf.length > 0
     ? firstHalf.reduce((sum, a) => sum + a.overall_wellbeing, 0) / firstHalf.length
-    : 0;
+    : null;
   const secondAvg = secondHalf.length > 0
     ? secondHalf.reduce((sum, a) => sum + a.overall_wellbeing, 0) / secondHalf.length
-    : 0;
+    : null;
 
   let trend: "improving" | "stable" | "declining";
   if (assessments.length < 2) {
     trend = "stable";
-  } else if (secondAvg > firstAvg) {
+  } else if ((secondAvg ?? 0) > (firstAvg ?? 0)) {
     trend = "improving";
-  } else if (secondAvg < firstAvg) {
+  } else if ((secondAvg ?? 0) < (firstAvg ?? 0)) {
     trend = "declining";
   } else {
     trend = "stable";
@@ -378,7 +378,7 @@ export function computeWellbeingTrend(assessments: WellbeingAssessment[]): {
     .filter((v): v is number => v != null);
   const avgSleep = sleepValues.length > 0
     ? Math.round((sleepValues.reduce((s, v) => s + v, 0) / sleepValues.length) * 10) / 10
-    : 0;
+    : null;
 
   // Average appetite (non-null values, 1 decimal)
   const appetiteValues = assessments
@@ -386,7 +386,7 @@ export function computeWellbeingTrend(assessments: WellbeingAssessment[]): {
     .filter((v): v is number => v != null);
   const avgAppetite = appetiteValues.length > 0
     ? Math.round((appetiteValues.reduce((s, v) => s + v, 0) / appetiteValues.length) * 10) / 10
-    : 0;
+    : null;
 
   return {
     latest_wellbeing: latestWellbeing,
@@ -416,7 +416,7 @@ export function computeChildHealthSummary(
   last_optician_visit: string | null;
   appointments_30d: number;
   dna_count: number;
-  latest_wellbeing_score: number;
+  latest_wellbeing_score: number | null;
   health_flags: string[];
 } {
   const now = new Date();

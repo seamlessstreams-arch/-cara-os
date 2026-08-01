@@ -259,22 +259,22 @@ export function computeMetrics(
   by_occasion_type: Record<string, number>;
   by_gift_type: Record<string, number>;
   total_gift_value: number;
-  average_gift_value: number;
-  within_budget_rate: number;
-  child_choice_rate: number;
-  age_appropriate_rate: number;
-  receipt_kept_rate: number;
-  cultural_consideration_rate: number;
-  celebration_activity_rate: number;
-  peers_included_rate: number;
-  social_worker_aware_rate: number;
+  average_gift_value: number | null;
+  within_budget_rate: number | null;
+  child_choice_rate: number | null;
+  age_appropriate_rate: number | null;
+  receipt_kept_rate: number | null;
+  cultural_consideration_rate: number | null;
+  celebration_activity_rate: number | null;
+  peers_included_rate: number | null;
+  social_worker_aware_rate: number | null;
   cultural_occasion_count: number;
   religious_occasion_count: number;
   milestone_occasion_count: number;
-  average_per_child: number;
+  average_per_child: number | null;
   over_budget_count: number;
-  feedback_provided_rate: number;
-  highest_gift_value: number;
+  feedback_provided_rate: number | null;
+  highest_gift_value: number | null;
 } {
   const total = rows.length;
 
@@ -292,12 +292,12 @@ export function computeMetrics(
 
   // Financial metrics
   const totalValue = rows.reduce((sum, r) => sum + (Number(r.gift_value) || 0), 0);
-  const avgValue = total > 0 ? Math.round((totalValue / total) * 100) / 100 : 0;
-  const highestValue = total > 0 ? Math.max(...rows.map((r) => Number(r.gift_value) || 0)) : 0;
+  const avgValue = total > 0 ? Math.round((totalValue / total) * 100) / 100 : null;
+  const highestValue = total > 0 ? Math.max(...rows.map((r) => Number(r.gift_value) || 0)) : null;
 
   // Boolean rates
   const pct = (filter: (r: CelebrationGiftRow) => boolean) =>
-    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : 0;
+    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
   const withinBudgetRate = pct((r) => r.within_budget);
   const childChoiceRate = pct((r) => r.child_chose);
@@ -310,7 +310,7 @@ export function computeMetrics(
   const swAwareRows = rows.filter((r) => r.social_worker_aware !== null);
   const socialWorkerAwareRate = swAwareRows.length > 0
     ? Math.round((swAwareRows.filter((r) => r.social_worker_aware === true).length / swAwareRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Category counts
   const culturalCount = rows.filter((r) => (CULTURAL_OCCASIONS as string[]).includes(r.occasion_type)).length;
@@ -319,7 +319,7 @@ export function computeMetrics(
 
   const avgPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   const overBudgetCount = rows.filter(
     (r) => r.budget_limit !== null && Number(r.gift_value) > Number(r.budget_limit),
@@ -577,7 +577,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.child_choice_rate < 40 && metrics.total_records > 5) {
+  if ((metrics.child_choice_rate ?? 0) < 40 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Child choice is recorded in only ${metrics.child_choice_rate}% of celebrations. ` +
         `Corporate Parenting Principles emphasise that looked-after children ` +
@@ -591,7 +591,7 @@ export function generateCaraInsights(
         `choice? Or are staff selecting gifts on behalf of children without ` +
         `meaningful consultation?`,
     );
-  } else if (metrics.cultural_consideration_rate < 50 && metrics.cultural_occasion_count > 0) {
+  } else if ((metrics.cultural_consideration_rate ?? 0) < 50 && metrics.cultural_occasion_count > 0) {
     insights.push(
       `[reflect] Cultural preference considered in only ${metrics.cultural_consideration_rate}% of ` +
         `celebrations, yet there are ${metrics.cultural_occasion_count} cultural occasions recorded. ` +
@@ -604,7 +604,7 @@ export function generateCaraInsights(
         `guidance from families, cultural communities, and the children themselves ` +
         `about how to celebrate these occasions meaningfully?`,
     );
-  } else if (metrics.celebration_activity_rate < 50 && metrics.total_records > 5) {
+  } else if ((metrics.celebration_activity_rate ?? 0) < 50 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Celebration activities planned for only ${metrics.celebration_activity_rate}% of ` +
         `occasions. SCCIF inspectors look for evidence that children enjoy ` +

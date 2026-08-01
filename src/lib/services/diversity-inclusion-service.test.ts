@@ -43,8 +43,8 @@ describe("computeDiversityMetrics", () => {
     expect(m.children_with_records).toBe(0);
     expect(m.children_coverage).toBe(0);
     expect(m.in_place_count).toBe(0);
-    expect(m.staff_aware_rate).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.staff_aware_rate).toBeNull(); // fab-0.;
+    expect(m.child_views_rate).toBeNull(); // fab-0.;
   });
 
   it("calculates correct metrics for populated data", () => {

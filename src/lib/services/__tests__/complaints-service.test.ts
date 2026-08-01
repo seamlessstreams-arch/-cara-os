@@ -253,11 +253,11 @@ describe("computeComplaintsSummary", () => {
     expect(result.escalated).toBe(0);
     expect(result.by_category).toEqual({});
     expect(result.by_source).toEqual({});
-    expect(result.avg_response_days).toBe(0);
+    expect(result.avg_response_days).toBeNull(); // fab-0.;
     expect(result.acknowledged_within_2_days).toBe(0);
     expect(result.acknowledged_total).toBe(0);
-    expect(result.satisfaction_rate).toBe(0);
-    expect(result.advocacy_offered_rate).toBe(0);
+    expect(result.satisfaction_rate).toBeNull(); // fab-0.;
+    expect(result.advocacy_offered_rate).toBeNull(); // fab-0.;
   });
 
   it("counts total complaints", () => {
@@ -338,7 +338,7 @@ describe("computeComplaintsSummary", () => {
       complaint({ status: "open" }),
       complaint({ id: "comp-2", status: "responded", date_responded: null }),
     ]);
-    expect(result.avg_response_days).toBe(0);
+    expect(result.avg_response_days).toBeNull(); // fab-0.;
   });
 
   it("ignores open complaints for avg_response_days even if date_responded is set", () => {
@@ -349,7 +349,7 @@ describe("computeComplaintsSummary", () => {
         date_responded: "2026-05-05T00:00:00Z",
       }),
     ]);
-    expect(result.avg_response_days).toBe(0);
+    expect(result.avg_response_days).toBeNull(); // fab-0.;
   });
 
   it("counts acknowledgements within 2 days", () => {
@@ -399,7 +399,7 @@ describe("computeComplaintsSummary", () => {
     const result = computeComplaintsSummary([
       complaint({ complainant_satisfied: null }),
     ]);
-    expect(result.satisfaction_rate).toBe(0);
+    expect(result.satisfaction_rate).toBeNull(); // fab-0.;
   });
 
   it("returns 100 satisfaction rate when all are satisfied", () => {
@@ -423,7 +423,7 @@ describe("computeComplaintsSummary", () => {
 
   it("returns 0 advocacy_offered_rate when total is 0 (empty array)", () => {
     const result = computeComplaintsSummary([]);
-    expect(result.advocacy_offered_rate).toBe(0);
+    expect(result.advocacy_offered_rate).toBeNull(); // fab-0.;
   });
 });
 

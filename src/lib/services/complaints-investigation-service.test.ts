@@ -40,9 +40,9 @@ describe("computeComplaintMetrics", () => {
     expect(m.total_complaints).toBe(0);
     expect(m.child_complaints).toBe(0);
     expect(m.open_complaints).toBe(0);
-    expect(m.acknowledged_rate).toBe(0);
-    expect(m.average_days_to_resolution).toBe(0);
-    expect(m.satisfaction_rate).toBe(0);
+    expect(m.acknowledged_rate).toBeNull(); // fab-0.;
+    expect(m.average_days_to_resolution).toBeNull(); // fab-0.;
+    expect(m.satisfaction_rate).toBeNull(); // fab-0.;
   });
 
   it("counts statuses and outcomes correctly", () => {

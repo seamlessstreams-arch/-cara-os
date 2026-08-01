@@ -330,21 +330,21 @@ export function computeMetrics(
   by_entitlement_type: Record<string, number>;
   by_support_stage: Record<string, number>;
   total_awarded: number;
-  application_success_rate: number;
-  appeal_rate: number;
-  engagement_rate: number;
-  pa_involvement_rate: number;
-  pathway_plan_rate: number;
+  application_success_rate: number | null;
+  appeal_rate: number | null;
+  engagement_rate: number | null;
+  pa_involvement_rate: number | null;
+  pathway_plan_rate: number | null;
   unique_young_people: number;
   active_awards_count: number;
   pending_applications_count: number;
-  social_worker_informed_rate: number;
+  social_worker_informed_rate: number | null;
   care_leaver_entitlements_count: number;
   education_benefits_count: number;
   utility_support_count: number;
   overdue_reviews_count: number;
   refused_count: number;
-  average_award_amount: number;
+  average_award_amount: number | null;
 } {
   const total = rows.length;
 
@@ -372,7 +372,7 @@ export function computeMetrics(
   // Average award amount
   const averageAwardAmount = awardedRows.length > 0
     ? Math.round((totalAwarded / awardedRows.length) * 100) / 100
-    : 0;
+    : null;
 
   // Application success rate
   const decidedRows = rows.filter(
@@ -381,7 +381,7 @@ export function computeMetrics(
   const successfulRows = decidedRows.filter((r) => r.application_successful === true);
   const applicationSuccessRate = decidedRows.length > 0
     ? Math.round((successfulRows.length / decidedRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Appeal rate
   const appealRows = rows.filter(
@@ -389,27 +389,27 @@ export function computeMetrics(
   );
   const appealRate = total > 0
     ? Math.round((appealRows.length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Engagement rate
   const engagementRate = total > 0
     ? Math.round((rows.filter((r) => r.young_person_engaged).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // PA involvement rate
   const paInvolvementRate = total > 0
     ? Math.round((rows.filter((r) => r.personal_adviser_involved).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Pathway plan rate
   const pathwayPlanRate = total > 0
     ? Math.round((rows.filter((r) => r.pathway_plan_linked).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Social worker informed rate
   const socialWorkerInformedRate = total > 0
     ? Math.round((rows.filter((r) => r.social_worker_informed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Active awards (Decision — Awarded and not Closed)
   const activeAwardsCount = rows.filter(
@@ -740,7 +740,7 @@ export function generateCaraInsights(
         `supporting young people to attend DWP appointments and provide required evidence ` +
         `on time?`,
     );
-  } else if (metrics.engagement_rate < 60 && metrics.total_records > 5) {
+  } else if ((metrics.engagement_rate ?? 0) < 60 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Young person engagement is only ${metrics.engagement_rate}% — are young people ` +
         `genuinely understanding their entitlements, or are staff managing benefits on ` +
@@ -750,7 +750,7 @@ export function generateCaraInsights(
         `independently. Is the home using real-life benefit interactions as teaching ` +
         `moments? Can young people explain what Universal Credit is and how to apply?`,
     );
-  } else if (metrics.pa_involvement_rate < 40 && metrics.total_records > 5) {
+  } else if ((metrics.pa_involvement_rate ?? 0) < 40 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Personal adviser involvement is only ${metrics.pa_involvement_rate}%. Personal ` +
         `advisers have a statutory duty under the Children (Leaving Care) Act 2000 to ` +

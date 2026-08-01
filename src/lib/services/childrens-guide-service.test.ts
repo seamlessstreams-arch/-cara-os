@@ -98,8 +98,8 @@ describe("computeGuideMetrics", () => {
     expect(m.children_received).toBe(0);
     expect(m.children_total).toBe(4);
     expect(m.distribution_rate).toBe(0);
-    expect(m.understanding_confirmed_rate).toBe(0);
-    expect(m.avg_feedback_score).toBe(0);
+    expect(m.understanding_confirmed_rate).toBeNull(); // fab-0.;
+    expect(m.avg_feedback_score).toBeNull(); // fab-0.;
     expect(m.overdue_reviews).toBe(0);
   });
 

@@ -43,10 +43,10 @@ describe("computeMetrics", () => {
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
     expect(m.total_spend).toBe(0);
-    expect(m.average_spend_per_record).toBe(0);
-    expect(m.average_spend_per_child).toBe(0);
-    expect(m.child_choice_rate).toBe(0);
-    expect(m.highest_single_spend).toBe(0);
+    expect(m.average_spend_per_record).toBeNull(); // fab-0.;
+    expect(m.average_spend_per_child).toBeNull(); // fab-0.;
+    expect(m.child_choice_rate).toBeNull(); // fab-0.;
+    expect(m.highest_single_spend).toBeNull(); // fab-0.;
   });
 
   it("computes populated metrics correctly", () => {

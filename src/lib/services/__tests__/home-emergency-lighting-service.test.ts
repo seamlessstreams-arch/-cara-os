@@ -427,32 +427,32 @@ describe("computeMetrics", () => {
 
     it("returns zero pass_rate", () => {
       const m = computeMetrics([]);
-      expect(m.pass_rate).toBe(0);
+      expect(m.pass_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero battery_good_rate", () => {
       const m = computeMetrics([]);
-      expect(m.battery_good_rate).toBe(0);
+      expect(m.battery_good_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero battery_poor_rate", () => {
       const m = computeMetrics([]);
-      expect(m.battery_poor_rate).toBe(0);
+      expect(m.battery_poor_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero escape_route_rate", () => {
       const m = computeMetrics([]);
-      expect(m.escape_route_rate).toBe(0);
+      expect(m.escape_route_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero signage_rate", () => {
       const m = computeMetrics([]);
-      expect(m.signage_rate).toBe(0);
+      expect(m.signage_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero illumination_rate", () => {
       const m = computeMetrics([]);
-      expect(m.illumination_rate).toBe(0);
+      expect(m.illumination_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero fault_count", () => {
@@ -462,12 +462,12 @@ describe("computeMetrics", () => {
 
     it("returns zero fault_rectified_rate", () => {
       const m = computeMetrics([]);
-      expect(m.fault_rectified_rate).toBe(0);
+      expect(m.fault_rectified_rate).toBeNull(); // fab-0.;
     });
 
     it("returns zero avg_duration", () => {
       const m = computeMetrics([]);
-      expect(m.avg_duration).toBe(0);
+      expect(m.avg_duration).toBeNull(); // fab-0.;
     });
 
     it("returns zero non_compliant_count", () => {
@@ -564,7 +564,7 @@ describe("computeMetrics", () => {
 
     it("returns fault_rectified_rate = 0 (no faults)", () => {
       const m = computeMetrics([record]);
-      expect(m.fault_rectified_rate).toBe(0);
+      expect(m.fault_rectified_rate).toBeNull(); // fab-0.;
     });
 
     it("returns avg_duration = 60", () => {
@@ -1026,7 +1026,7 @@ describe("computeMetrics", () => {
         makeRow({ fault_identified: false }),
       ];
       const m = computeMetrics(records);
-      expect(m.fault_rectified_rate).toBe(0);
+      expect(m.fault_rectified_rate).toBeNull(); // fab-0.;
     });
 
     it("calculates mixed rate (1/2 = 50%)", () => {
@@ -1108,7 +1108,7 @@ describe("computeMetrics", () => {
 
     it("returns 0 for empty array", () => {
       const m = computeMetrics([]);
-      expect(m.avg_duration).toBe(0);
+      expect(m.avg_duration).toBeNull(); // fab-0.;
     });
 
     it("excludes null duration_minutes", () => {
@@ -1126,7 +1126,7 @@ describe("computeMetrics", () => {
         makeRow({ duration_minutes: null }),
       ];
       const m = computeMetrics(records);
-      expect(m.avg_duration).toBe(0);
+      expect(m.avg_duration).toBeNull(); // fab-0.;
     });
 
     it("handles all same values", () => {

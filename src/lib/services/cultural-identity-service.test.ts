@@ -76,10 +76,10 @@ describe("cultural-identity-service", () => {
       const m = computeIdentityMetrics([], []);
       expect(m.children_with_profiles).toBe(0);
       expect(m.total_children).toBe(0);
-      expect(m.profile_review_rate).toBe(0);
+      expect(m.profile_review_rate).toBeNull(); // fab-0.;
       expect(m.actions_this_quarter).toBe(0);
-      expect(m.satisfaction_rate).toBe(0);
-      expect(m.avg_actions_per_child).toBe(0);
+      expect(m.satisfaction_rate).toBeNull(); // fab-0.;
+      expect(m.avg_actions_per_child).toBeNull(); // fab-0.;
     });
 
     it("computes populated metrics", () => {

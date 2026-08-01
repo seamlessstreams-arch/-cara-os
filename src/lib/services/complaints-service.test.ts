@@ -62,9 +62,9 @@ describe("computeComplaintsSummary", () => {
     const m = computeComplaintsSummary([]);
     expect(m.total).toBe(0);
     expect(m.open).toBe(0);
-    expect(m.avg_response_days).toBe(0);
-    expect(m.satisfaction_rate).toBe(0);
-    expect(m.advocacy_offered_rate).toBe(0);
+    expect(m.avg_response_days).toBeNull(); // fab-0.;
+    expect(m.satisfaction_rate).toBeNull(); // fab-0.;
+    expect(m.advocacy_offered_rate).toBeNull(); // fab-0.;
   });
 
   it("counts statuses correctly", () => {

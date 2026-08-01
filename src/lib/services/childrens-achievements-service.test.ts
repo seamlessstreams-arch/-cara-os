@@ -41,7 +41,7 @@ describe("computeAchievementMetrics", () => {
     expect(m.total_achievements).toBe(0);
     expect(m.children_with_achievements).toBe(0);
     expect(m.achievement_coverage).toBe(0);
-    expect(m.average_per_child).toBe(0);
+    expect(m.average_per_child).toBeNull(); // fab-0.;
   });
 
   it("counts significance levels", () => {

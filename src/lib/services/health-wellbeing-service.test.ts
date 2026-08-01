@@ -138,7 +138,7 @@ describe("computeHealthCompliance", () => {
     expect(result.health_assessment_current).toBe(0);
     expect(result.camhs_active).toBe(0);
     expect(result.overdue_appointments).toEqual([]);
-    expect(result.dna_rate).toBe(0);
+    expect(result.dna_rate).toBeNull(); // fab-0.;
   });
 
   it("computes correct counts with populated data", () => {
