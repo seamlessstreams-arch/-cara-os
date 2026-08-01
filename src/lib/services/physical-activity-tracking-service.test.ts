@@ -51,7 +51,7 @@ describe("computePhysicalActivityMetrics", () => {
     expect(m.unable_count).toBe(0);
     expect(m.disliked_count).toBe(0);
     expect(m.below_average_count).toBe(0);
-    expect(m.child_choice_rate).toBe(0);
+    expect(m.child_choice_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -142,18 +142,18 @@ export function computeHomeDecorationMetrics(
   dissatisfied_count: number;
   over_budget_count: number;
   within_budget_count: number;
-  child_chose_rate: number;
-  child_involved_rate: number;
-  reflects_identity_rate: number;
-  culturally_appropriate_rate: number;
-  sensory_needs_rate: number;
-  age_appropriate_rate: number;
-  safety_checked_rate: number;
-  photographs_taken_rate: number;
-  social_worker_informed_rate: number;
-  budget_discussed_rate: number;
-  child_satisfied_rate: number;
-  regularly_updated_rate: number;
+  child_chose_rate: number | null;
+  child_involved_rate: number | null;
+  reflects_identity_rate: number | null;
+  culturally_appropriate_rate: number | null;
+  sensory_needs_rate: number | null;
+  age_appropriate_rate: number | null;
+  safety_checked_rate: number | null;
+  photographs_taken_rate: number | null;
+  social_worker_informed_rate: number | null;
+  budget_discussed_rate: number | null;
+  child_satisfied_rate: number | null;
+  regularly_updated_rate: number | null;
   unique_children: number;
   by_personalisation_type: Record<string, number>;
   by_satisfaction_level: Record<string, number>;
@@ -169,7 +169,7 @@ export function computeHomeDecorationMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

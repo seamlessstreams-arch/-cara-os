@@ -47,7 +47,7 @@ describe("computeChildDigitalWellbeingMetrics", () => {
     expect(m.unsafe_safety_count).toBe(0);
     expect(m.excessive_screen_count).toBe(0);
     expect(m.not_monitored_count).toBe(0);
-    expect(m.parental_controls_rate).toBe(0);
+    expect(m.parental_controls_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

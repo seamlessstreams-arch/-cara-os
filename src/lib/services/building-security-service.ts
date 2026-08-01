@@ -129,18 +129,18 @@ export function computeSecurityMetrics(
   total_records: number;
   routine_check_count: number;
   security_incident_count: number;
-  secure_rate: number;
+  secure_rate: number | null;
   breach_count: number;
   major_issue_count: number;
-  alarm_operational_rate: number;
+  alarm_operational_rate: number | null;
   alarm_fault_count: number;
-  keys_accounted_rate: number;
+  keys_accounted_rate: number | null;
   key_missing_count: number;
-  doors_secure_rate: number;
-  windows_secure_rate: number;
-  lighting_working_rate: number;
-  perimeter_secure_rate: number;
-  children_accounted_rate: number;
+  doors_secure_rate: number | null;
+  windows_secure_rate: number | null;
+  lighting_working_rate: number | null;
+  perimeter_secure_rate: number | null;
+  children_accounted_rate: number | null;
   check_overdue_count: number;
   by_event_type: Record<string, number>;
   by_security_status: Record<string, number>;
@@ -154,7 +154,7 @@ export function computeSecurityMetrics(
   const secureRate =
     records.length > 0
       ? Math.round((secure / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const breach = records.filter((r) => r.security_status === "breach").length;
   const majorIssue = records.filter((r) => r.security_status === "major_issue").length;
@@ -163,7 +163,7 @@ export function computeSecurityMetrics(
   const alarmRate =
     records.length > 0
       ? Math.round((alarmOp / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const alarmFault = records.filter((r) => r.alarm_status === "fault_detected").length;
 
@@ -171,7 +171,7 @@ export function computeSecurityMetrics(
   const keysRate =
     records.length > 0
       ? Math.round((keysOk / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const keyMissing = records.filter((r) => r.key_management === "key_missing").length;
 
@@ -179,31 +179,31 @@ export function computeSecurityMetrics(
   const doorsRate =
     records.length > 0
       ? Math.round((doorsSec / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const windowsSec = records.filter((r) => r.all_windows_secure).length;
   const windowsRate =
     records.length > 0
       ? Math.round((windowsSec / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const lightingOk = records.filter((r) => r.external_lighting_working).length;
   const lightingRate =
     records.length > 0
       ? Math.round((lightingOk / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const perimeterOk = records.filter((r) => r.perimeter_secure).length;
   const perimeterRate =
     records.length > 0
       ? Math.round((perimeterOk / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childrenOk = records.filter((r) => r.children_accounted_for).length;
   const childrenRate =
     records.length > 0
       ? Math.round((childrenOk / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const now = new Date();
   const checkOverdue = records.filter((r) => {

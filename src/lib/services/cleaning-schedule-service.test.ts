@@ -47,8 +47,8 @@ describe("computeCleaningMetrics", () => {
     expect(m.total_cleans).toBe(0);
     expect(m.excellent_count).toBe(0);
     expect(m.below_standard_count).toBe(0);
-    expect(m.acceptable_rate).toBe(0);
-    expect(m.coshh_compliant_rate).toBe(0);
+    expect(m.acceptable_rate).toBeNull();;
+    expect(m.coshh_compliant_rate).toBeNull();;
     expect(m.high_risk_count).toBe(0);
   });
 

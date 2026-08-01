@@ -128,14 +128,14 @@ describe("child-nutrition-weight-monitoring-service", () => {
       expect(m.overweight_count).toBe(0);
       expect(m.obese_count).toBe(0);
       expect(m.concern_count).toBe(0);
-      expect(m.weight_recorded_rate).toBe(0);
-      expect(m.height_recorded_rate).toBe(0);
-      expect(m.bmi_calculated_rate).toBe(0);
-      expect(m.dietary_needs_met_rate).toBe(0);
-      expect(m.portion_sizes_appropriate_rate).toBe(0);
-      expect(m.hydration_adequate_rate).toBe(0);
-      expect(m.clinical_referral_made_rate).toBe(0);
-      expect(m.weight_management_plan_rate).toBe(0);
+      expect(m.weight_recorded_rate).toBeNull();;
+      expect(m.height_recorded_rate).toBeNull();;
+      expect(m.bmi_calculated_rate).toBeNull();;
+      expect(m.dietary_needs_met_rate).toBeNull();;
+      expect(m.portion_sizes_appropriate_rate).toBeNull();;
+      expect(m.hydration_adequate_rate).toBeNull();;
+      expect(m.clinical_referral_made_rate).toBeNull();;
+      expect(m.weight_management_plan_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
     it("returns empty breakdowns for empty array", () => {

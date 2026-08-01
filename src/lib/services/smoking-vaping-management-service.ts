@@ -359,22 +359,22 @@ export function computeMetrics(
   by_substance: Record<string, number>;
   by_usage_frequency: Record<string, number>;
   by_motivation_stage: Record<string, number>;
-  nrt_rate: number;
-  gp_rate: number;
-  engagement_rate: number;
-  education_rate: number;
-  compliance_rate: number;
+  nrt_rate: number | null;
+  gp_rate: number | null;
+  engagement_rate: number | null;
+  education_rate: number | null;
+  compliance_rate: number | null;
   active_quitters_count: number;
   former_user_count: number;
   unique_children: number;
   relapse_count: number;
-  harm_reduction_rate: number;
-  peer_influence_rate: number;
-  social_worker_informed_rate: number;
+  harm_reduction_rate: number | null;
+  peer_influence_rate: number | null;
+  social_worker_informed_rate: number | null;
   daily_user_count: number;
   vape_user_count: number;
   tobacco_user_count: number;
-  average_motivation_score: number;
+  average_motivation_score: number | null;
   clinical_referral_count: number;
 } {
   const total = rows.length;
@@ -409,35 +409,35 @@ export function computeMetrics(
   // Boolean rates
   const nrtRate = total > 0
     ? Math.round((rows.filter((r) => r.nrt_provided).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const gpRate = total > 0
     ? Math.round((rows.filter((r) => r.gp_consulted).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const engagementRate = total > 0
     ? Math.round((rows.filter((r) => r.young_person_engaged).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const educationRate = total > 0
     ? Math.round((rows.filter((r) => r.education_provided).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const complianceRate = total > 0
     ? Math.round((rows.filter((r) => r.smoke_free_premises_compliant).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const harmReductionRate = total > 0
     ? Math.round((rows.filter((r) => r.harm_reduction_approach).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const peerInfluenceRate = total > 0
     ? Math.round((rows.filter((r) => r.peer_influence_addressed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const socialWorkerInformedRate = total > 0
     ? Math.round((rows.filter((r) => r.social_worker_informed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Active quitters count
   const activeQuittersCount = rows.filter(
@@ -795,7 +795,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.compliance_rate < 100 && metrics.total_records > 0) {
+  if ((metrics.compliance_rate ?? 0) < 100 && metrics.total_records > 0) {
     insights.push(
       `[reflect] Smoke-free premises compliance is ${metrics.compliance_rate}%, which is below ` +
         `the required 100%. The Health Act 2006 makes it a criminal offence to smoke in ` +
@@ -805,7 +805,7 @@ export function generateCaraInsights(
         `premises and out of sight of children? Ofsted inspectors will check smoke-free ` +
         `compliance as part of the physical environment assessment.`,
     );
-  } else if (metrics.daily_user_count > 0 && metrics.gp_rate < 30) {
+  } else if (metrics.daily_user_count > 0 && (metrics.gp_rate ?? 0) < 30) {
     insights.push(
       `[reflect] There are ${metrics.daily_user_count} daily user records but GP consultation ` +
         `rate is only ${metrics.gp_rate}%. NICE PH23 and NG209 recommend professional ` +

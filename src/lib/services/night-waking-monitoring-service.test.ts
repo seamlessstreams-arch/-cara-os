@@ -49,9 +49,9 @@ describe("computeNightWakingMetrics", () => {
     expect(m.total_wakings).toBe(0);
     expect(m.distressed_count).toBe(0);
     expect(m.nightmare_count).toBe(0);
-    expect(m.average_duration).toBe(0);
+    expect(m.average_duration).toBeNull();;
     expect(m.unique_children).toBe(0);
-    expect(m.child_comforted_rate).toBe(0);
+    expect(m.child_comforted_rate).toBeNull();;
   });
 
   it("computes counts and rates for populated data", () => {

@@ -37,15 +37,44 @@ function makeRecord(overrides?: Partial<ChildDevelopmentMilestoneRecord>): Child
 
 describe("child-development-milestone-service", () => {
   describe("computeChildDevelopmentMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeChildDevelopmentMetrics([]); expect(m.total_milestones).toBe(0); expect(m.not_met_count).toBe(0); expect(m.regressed_count).toBe(0); expect(m.intensive_support_count).toBe(0); expect(m.no_progress_count).toBe(0); expect(m.child_views_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeChildDevelopmentMetrics([]); expect(m.by_developmental_domain).toEqual({}); expect(m.by_achievement_status).toEqual({}); expect(m.by_support_level).toEqual({}); expect(m.by_progress_rating).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeChildDevelopmentMetrics([]);
+      expect(m.total_milestones).toBe(0);;
+      expect(m.not_met_count).toBe(0);
+      expect(m.regressed_count).toBe(0);
+      expect(m.intensive_support_count).toBe(0);
+      expect(m.no_progress_count).toBe(0);
+      expect(m.child_views_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeChildDevelopmentMetrics([]);
+      expect(m.by_developmental_domain).toEqual({});
+      expect(m.by_achievement_status).toEqual({});
+      expect(m.by_support_level).toEqual({});
+      expect(m.by_progress_rating).toEqual({});
+    });
     it("total_milestones counts records", () => { expect(computeChildDevelopmentMetrics([makeRecord(), makeRecord()]).total_milestones).toBe(2); });
     it("counts not_met", () => { expect(computeChildDevelopmentMetrics([makeRecord({ achievement_status: "not_met" })]).not_met_count).toBe(1); });
     it("counts regressed", () => { expect(computeChildDevelopmentMetrics([makeRecord({ achievement_status: "regressed" })]).regressed_count).toBe(1); });
     it("does not count progressing as not_met", () => { expect(computeChildDevelopmentMetrics([makeRecord({ achievement_status: "progressing" })]).not_met_count).toBe(0); });
     it("counts intensive_support", () => { expect(computeChildDevelopmentMetrics([makeRecord({ support_level: "intensive_support" })]).intensive_support_count).toBe(1); });
     it("counts no_progress", () => { expect(computeChildDevelopmentMetrics([makeRecord({ progress_rating: "no_progress" })]).no_progress_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeChildDevelopmentMetrics([makeRecord()]); expect(m.child_views_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.care_plan_linked_rate).toBe(100); expect(m.school_input_rate).toBe(100); expect(m.specialist_input_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.celebration_rate).toBe(100); expect(m.next_steps_rate).toBe(100); expect(m.resources_rate).toBe(100); expect(m.multi_agency_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeChildDevelopmentMetrics([makeRecord()]);
+      expect(m.child_views_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.care_plan_linked_rate).toBe(100);
+      expect(m.school_input_rate).toBe(100);
+      expect(m.specialist_input_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.celebration_rate).toBe(100);
+      expect(m.next_steps_rate).toBe(100);
+      expect(m.resources_rate).toBe(100);
+      expect(m.multi_agency_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_views_rate 0 when false", () => { expect(computeChildDevelopmentMetrics([makeRecord({ child_views_included: false })]).child_views_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeChildDevelopmentMetrics([makeRecord({ celebration_of_achievement: true }), makeRecord({ celebration_of_achievement: false }), makeRecord({ celebration_of_achievement: true })]); expect(m.celebration_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeChildDevelopmentMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -58,18 +87,44 @@ describe("child-development-milestone-service", () => {
   describe("identifyChildDevelopmentAlerts", () => {
     it("returns empty for clean", () => { expect(identifyChildDevelopmentAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyChildDevelopmentAlerts([])).toEqual([]); });
-    it("fires regressed_no_specialist", () => { const a = identifyChildDevelopmentAlerts([makeRecord({ achievement_status: "regressed", specialist_input_obtained: false, child_name: "Jo", developmental_domain: "cognitive" })]); expect(a[0].type).toBe("regressed_no_specialist"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("cognitive"); });
+    it("fires regressed_no_specialist", () => { 
+      const a = identifyChildDevelopmentAlerts([makeRecord({ achievement_status: "regressed", specialist_input_obtained: false, child_name: "Jo", developmental_domain: "cognitive" })]);
+      expect(a[0].type).toBe("regressed_no_specialist");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("cognitive");
+    });
     it("regressed_no_specialist per-record", () => { const a = identifyChildDevelopmentAlerts([makeRecord({ id: "a-1", achievement_status: "regressed", specialist_input_obtained: false }), makeRecord({ id: "a-2", achievement_status: "regressed", specialist_input_obtained: false })]); expect(a.filter(x => x.type === "regressed_no_specialist")).toHaveLength(2); });
     it("regressed with specialist no critical alert", () => { expect(identifyChildDevelopmentAlerts([makeRecord({ achievement_status: "regressed", specialist_input_obtained: true })]).find(x => x.type === "regressed_no_specialist")).toBeUndefined(); });
     it("not_met without specialist no critical alert", () => { expect(identifyChildDevelopmentAlerts([makeRecord({ achievement_status: "not_met", specialist_input_obtained: false })]).find(x => x.type === "regressed_no_specialist")).toBeUndefined(); });
-    it("fires no_progress singular", () => { const a = identifyChildDevelopmentAlerts([makeRecord({ progress_rating: "no_progress" })]); const f = a.find(x => x.type === "no_progress"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 milestone shows"); });
+    it("fires no_progress singular", () => { 
+      const a = identifyChildDevelopmentAlerts([makeRecord({ progress_rating: "no_progress" })]);
+      const f = a.find(x => x.type === "no_progress");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 milestone shows");
+    });
     it("no_progress plural", () => { const a = identifyChildDevelopmentAlerts([makeRecord({ progress_rating: "no_progress" }), makeRecord({ progress_rating: "no_progress" })]); const f = a.find(x => x.type === "no_progress"); expect(f!.message).toContain("2 milestones show"); });
-    it("fires no_next_steps singular", () => { const a = identifyChildDevelopmentAlerts([makeRecord({ next_steps_identified: false })]); const f = a.find(x => x.type === "no_next_steps"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 milestone has"); });
+    it("fires no_next_steps singular", () => { 
+      const a = identifyChildDevelopmentAlerts([makeRecord({ next_steps_identified: false })]);
+      const f = a.find(x => x.type === "no_next_steps");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 milestone has");
+    });
     it("no_next_steps plural", () => { const a = identifyChildDevelopmentAlerts([makeRecord({ next_steps_identified: false }), makeRecord({ next_steps_identified: false })]); const f = a.find(x => x.type === "no_next_steps"); expect(f!.message).toContain("2 milestones have"); });
     it("achievement_not_celebrated not for 1", () => { expect(identifyChildDevelopmentAlerts([makeRecord({ celebration_of_achievement: false })]).find(x => x.type === "achievement_not_celebrated")).toBeUndefined(); });
     it("achievement_not_celebrated fires for 2", () => { const a = identifyChildDevelopmentAlerts([makeRecord({ celebration_of_achievement: false }), makeRecord({ celebration_of_achievement: false })]); expect(a.find(x => x.type === "achievement_not_celebrated")).toBeDefined(); expect(a.find(x => x.type === "achievement_not_celebrated")!.severity).toBe("medium"); });
     it("resources_not_in_place not for 1", () => { expect(identifyChildDevelopmentAlerts([makeRecord({ resources_in_place: false })]).find(x => x.type === "resources_not_in_place")).toBeUndefined(); });
     it("resources_not_in_place fires for 2", () => { const a = identifyChildDevelopmentAlerts([makeRecord({ resources_in_place: false }), makeRecord({ resources_in_place: false })]); expect(a.find(x => x.type === "resources_not_in_place")).toBeDefined(); expect(a.find(x => x.type === "resources_not_in_place")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyChildDevelopmentAlerts([makeRecord({ achievement_status: "regressed", specialist_input_obtained: false, progress_rating: "no_progress", next_steps_identified: false, celebration_of_achievement: false, resources_in_place: false }), makeRecord({ next_steps_identified: false, celebration_of_achievement: false, resources_in_place: false })]); const types = a.map(x => x.type); expect(types).toContain("regressed_no_specialist"); expect(types).toContain("no_progress"); expect(types).toContain("no_next_steps"); expect(types).toContain("achievement_not_celebrated"); expect(types).toContain("resources_not_in_place"); });
+    it("fires all applicable", () => { 
+      const a = identifyChildDevelopmentAlerts([makeRecord({ achievement_status: "regressed", specialist_input_obtained: false, progress_rating: "no_progress", next_steps_identified: false, celebration_of_achievement: false, resources_in_place: false }), makeRecord({ next_steps_identified: false, celebration_of_achievement: false, resources_in_place: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("regressed_no_specialist");
+      expect(types).toContain("no_progress");
+      expect(types).toContain("no_next_steps");
+      expect(types).toContain("achievement_not_celebrated");
+      expect(types).toContain("resources_not_in_place");
+    });
   });
 });

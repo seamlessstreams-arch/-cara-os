@@ -153,19 +153,19 @@ export function computeNightWakingMetrics(
   angry_count: number;
   nightmare_count: number;
   did_not_return_count: number;
-  child_comforted_rate: number;
-  environment_checked_rate: number;
-  temperature_appropriate_rate: number;
-  drink_offered_rate: number;
-  night_light_rate: number;
-  door_preference_rate: number;
-  gp_referral_rate: number;
-  sleep_plan_rate: number;
-  pattern_identified_rate: number;
-  parent_informed_rate: number;
-  social_worker_informed_rate: number;
-  recorded_promptly_rate: number;
-  average_duration: number;
+  child_comforted_rate: number | null;
+  environment_checked_rate: number | null;
+  temperature_appropriate_rate: number | null;
+  drink_offered_rate: number | null;
+  night_light_rate: number | null;
+  door_preference_rate: number | null;
+  gp_referral_rate: number | null;
+  sleep_plan_rate: number | null;
+  pattern_identified_rate: number | null;
+  parent_informed_rate: number | null;
+  social_worker_informed_rate: number | null;
+  recorded_promptly_rate: number | null;
+  average_duration: number | null;
   unique_children: number;
   by_waking_reason: Record<string, number>;
   by_emotional_state: Record<string, number>;
@@ -181,12 +181,12 @@ export function computeNightWakingMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDuration = records.length > 0
     ? Math.round((records.reduce((sum, r) => sum + r.waking_duration_minutes, 0) / records.length) * 10) / 10
-    : 0;
+    : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

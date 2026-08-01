@@ -302,12 +302,12 @@ describe("computeDiversityMetrics", () => {
 
     it("returns diversity_coverage = 0 when totalStaff = 0", () => {
       const m = computeDiversityMetrics([], 0);
-      expect(m.diversity_coverage).toBe(0);
+      expect(m.diversity_coverage).toBeNull();;
     });
 
     it("returns disclosure_rate = 0", () => {
       const m = computeDiversityMetrics([], 5);
-      expect(m.disclosure_rate).toBe(0);
+      expect(m.disclosure_rate).toBeNull();;
     });
 
     it("returns training_completed_count = 0", () => {
@@ -317,7 +317,7 @@ describe("computeDiversityMetrics", () => {
 
     it("returns training_completed_rate = 0", () => {
       const m = computeDiversityMetrics([], 5);
-      expect(m.training_completed_rate).toBe(0);
+      expect(m.training_completed_rate).toBeNull();;
     });
 
     it("returns training_overdue_count = 0", () => {
@@ -342,12 +342,12 @@ describe("computeDiversityMetrics", () => {
 
     it("returns average_inclusive_practice = 0", () => {
       const m = computeDiversityMetrics([], 5);
-      expect(m.average_inclusive_practice).toBe(0);
+      expect(m.average_inclusive_practice).toBeNull();;
     });
 
     it("returns average_satisfaction = 0", () => {
       const m = computeDiversityMetrics([], 5);
-      expect(m.average_satisfaction).toBe(0);
+      expect(m.average_satisfaction).toBeNull();;
     });
 
     it("returns eia_not_assessed_count = 0", () => {
@@ -636,7 +636,7 @@ describe("computeDiversityMetrics", () => {
     it("returns 0 when totalStaff = 0", () => {
       const recs = [makeRecord()];
       const m = computeDiversityMetrics(recs, 0);
-      expect(m.diversity_coverage).toBe(0);
+      expect(m.diversity_coverage).toBeNull();;
     });
 
     it("returns 100 when all staff have records", () => {
@@ -690,7 +690,7 @@ describe("computeDiversityMetrics", () => {
   describe("disclosure_rate", () => {
     it("returns 0 when no records", () => {
       const m = computeDiversityMetrics([], 5);
-      expect(m.disclosure_rate).toBe(0);
+      expect(m.disclosure_rate).toBeNull();;
     });
 
     it("returns 100 when all disclosed", () => {
@@ -737,7 +737,7 @@ describe("computeDiversityMetrics", () => {
   describe("training_completed_rate", () => {
     it("returns 0 when no records", () => {
       const m = computeDiversityMetrics([], 5);
-      expect(m.training_completed_rate).toBe(0);
+      expect(m.training_completed_rate).toBeNull();;
     });
 
     it("returns 100 when all completed", () => {
@@ -785,7 +785,7 @@ describe("computeDiversityMetrics", () => {
   describe("average_inclusive_practice", () => {
     it("returns 0 when no records", () => {
       const m = computeDiversityMetrics([], 5);
-      expect(m.average_inclusive_practice).toBe(0);
+      expect(m.average_inclusive_practice).toBeNull();;
     });
 
     it("returns the value itself for a single record", () => {
@@ -841,7 +841,7 @@ describe("computeDiversityMetrics", () => {
   describe("average_satisfaction", () => {
     it("returns 0 when no records", () => {
       const m = computeDiversityMetrics([], 5);
-      expect(m.average_satisfaction).toBe(0);
+      expect(m.average_satisfaction).toBeNull();;
     });
 
     it("returns 0 when all satisfaction values are null", () => {
@@ -850,7 +850,7 @@ describe("computeDiversityMetrics", () => {
         makeRecord({ staff_satisfaction_with_inclusion: null }),
       ];
       const m = computeDiversityMetrics(recs, 2);
-      expect(m.average_satisfaction).toBe(0);
+      expect(m.average_satisfaction).toBeNull();;
     });
 
     it("only considers non-null values", () => {

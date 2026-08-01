@@ -121,14 +121,14 @@ describe("child-radicalisation-prevention-service", () => {
       expect(m.significant_risk_count).toBe(0);
       expect(m.channel_active_count).toBe(0);
       expect(m.monitoring_count).toBe(0);
-      expect(m.prevent_training_rate).toBe(0);
-      expect(m.online_monitoring_rate).toBe(0);
-      expect(m.channel_referral_rate).toBe(0);
-      expect(m.multi_agency_rate).toBe(0);
-      expect(m.child_views_rate).toBe(0);
-      expect(m.family_engaged_rate).toBe(0);
-      expect(m.safety_plan_rate).toBe(0);
-      expect(m.ideology_challenged_rate).toBe(0);
+      expect(m.prevent_training_rate).toBeNull();;
+      expect(m.online_monitoring_rate).toBeNull();;
+      expect(m.channel_referral_rate).toBeNull();;
+      expect(m.multi_agency_rate).toBeNull();;
+      expect(m.child_views_rate).toBeNull();;
+      expect(m.family_engaged_rate).toBeNull();;
+      expect(m.safety_plan_rate).toBeNull();;
+      expect(m.ideology_challenged_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
     it("returns empty breakdowns for empty array", () => {

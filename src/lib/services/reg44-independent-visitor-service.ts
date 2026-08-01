@@ -156,11 +156,11 @@ export function computeReg44IndependentVisitorMetrics(
   concern_count: number;
   overdue_action_count: number;
   not_started_count: number;
-  children_spoken_to_rate: number;
-  records_reviewed_rate: number;
-  previous_actions_rate: number;
-  child_views_rate: number;
-  manager_responded_rate: number;
+  children_spoken_to_rate: number | null;
+  records_reviewed_rate: number | null;
+  previous_actions_rate: number | null;
+  child_views_rate: number | null;
+  manager_responded_rate: number | null;
   severity_breakdown: Record<string, number>;
   status_breakdown: Record<string, number>;
   unique_visitors: number;
@@ -189,14 +189,14 @@ export function computeReg44IndependentVisitorMetrics(
       ? Math.round(
           (rows.filter((r) => r.children_spoken_to > 0).length / total) * 1000,
         ) / 10
-      : 0;
+      : null;
 
   const recordsReviewedRate =
     total > 0
       ? Math.round(
           (rows.filter((r) => r.records_reviewed).length / total) * 1000,
         ) / 10
-      : 0;
+      : null;
 
   const previousActionsRate =
     total > 0
@@ -204,14 +204,14 @@ export function computeReg44IndependentVisitorMetrics(
           (rows.filter((r) => r.previous_actions_followed_up).length / total) *
             1000,
         ) / 10
-      : 0;
+      : null;
 
   const childViewsRate =
     total > 0
       ? Math.round(
           (rows.filter((r) => r.child_views_captured).length / total) * 1000,
         ) / 10
-      : 0;
+      : null;
 
   const managerRespondedRate =
     total > 0
@@ -223,7 +223,7 @@ export function computeReg44IndependentVisitorMetrics(
             total) *
             1000,
         ) / 10
-      : 0;
+      : null;
 
   // Severity breakdown
   const severityBreakdown: Record<string, number> = {};
@@ -370,13 +370,13 @@ export function generateReg44IndependentVisitorCaraInsights(
   }
 
   // Insight 3: Reflective question about independent oversight quality
-  if (metrics.child_views_rate < 100) {
+  if ((metrics.child_views_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Child views were captured in ${metrics.child_views_rate}% of independent visits. ` +
         `Are there barriers preventing the independent visitor from hearing directly from every child, ` +
         `and how can the home better facilitate meaningful engagement during Reg 44 visits?`,
     );
-  } else if (metrics.previous_actions_rate < 100) {
+  } else if ((metrics.previous_actions_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Previous actions were followed up in ${metrics.previous_actions_rate}% of visits. ` +
         `Is the independent visitor consistently reviewing whether prior recommendations have been ` +

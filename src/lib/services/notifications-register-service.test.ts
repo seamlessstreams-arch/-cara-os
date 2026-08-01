@@ -46,9 +46,9 @@ describe("computeNotificationMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeNotificationMetrics([]);
     expect(m.total_notifications).toBe(0);
-    expect(m.submitted_rate).toBe(0);
-    expect(m.within_24_hours_rate).toBe(0);
-    expect(m.evidence_attached_rate).toBe(0);
+    expect(m.submitted_rate).toBeNull();;
+    expect(m.within_24_hours_rate).toBeNull();;
+    expect(m.evidence_attached_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

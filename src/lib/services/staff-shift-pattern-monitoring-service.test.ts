@@ -51,8 +51,8 @@ describe("computeStaffShiftPatternMetrics", () => {
     expect(m.critical_fatigue_count).toBe(0);
     expect(m.understaffed_count).toBe(0);
     expect(m.critically_understaffed_count).toBe(0);
-    expect(m.rest_period_rate).toBe(0);
-    expect(m.average_shift_duration).toBe(0);
+    expect(m.rest_period_rate).toBeNull();;
+    expect(m.average_shift_duration).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

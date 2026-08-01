@@ -50,8 +50,8 @@ describe("contact-supervision-service", () => {
       expect(m.distressed_count).toBe(0);
       expect(m.refused_count).toBe(0);
       expect(m.cancelled_count).toBe(0);
-      expect(m.risk_assessment_rate).toBe(0);
-      expect(m.average_duration).toBe(0);
+      expect(m.risk_assessment_rate).toBeNull();;
+      expect(m.average_duration).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
 

@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<PositiveBehaviourReinforcementRecord>): 
 
 describe("positive-behaviour-reinforcement-service", () => {
   describe("computePositiveBehaviourMetrics", () => {
-    it("returns zeros for empty", () => { const m = computePositiveBehaviourMetrics([]); expect(m.total_sessions).toBe(0); expect(m.absent_praise_count).toBe(0); expect(m.negative_response_count).toBe(0); expect(m.inconsistent_count).toBe(0); expect(m.indifferent_count).toBe(0); expect(m.behaviour_specific_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computePositiveBehaviourMetrics([]); expect(m.by_reinforcement_type).toEqual({}); expect(m.by_praise_quality).toEqual({}); expect(m.by_child_response).toEqual({}); expect(m.by_consistency_level).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computePositiveBehaviourMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.absent_praise_count).toBe(0);
+      expect(m.negative_response_count).toBe(0);
+      expect(m.inconsistent_count).toBe(0);
+      expect(m.indifferent_count).toBe(0);
+      expect(m.behaviour_specific_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computePositiveBehaviourMetrics([]);
+      expect(m.by_reinforcement_type).toEqual({});
+      expect(m.by_praise_quality).toEqual({});
+      expect(m.by_child_response).toEqual({});
+      expect(m.by_consistency_level).toEqual({});
+    });
     it("total_sessions counts records", () => { expect(computePositiveBehaviourMetrics([makeRecord(), makeRecord()]).total_sessions).toBe(2); });
     it("counts absent_praise", () => { expect(computePositiveBehaviourMetrics([makeRecord({ praise_quality: "absent" })]).absent_praise_count).toBe(1); });
     it("does not count inconsistent as absent", () => { expect(computePositiveBehaviourMetrics([makeRecord({ praise_quality: "inconsistent" })]).absent_praise_count).toBe(0); });
@@ -49,7 +64,21 @@ describe("positive-behaviour-reinforcement-service", () => {
     it("does not count variable as inconsistent", () => { expect(computePositiveBehaviourMetrics([makeRecord({ consistency_level: "variable" })]).inconsistent_count).toBe(0); });
     it("counts indifferent", () => { expect(computePositiveBehaviourMetrics([makeRecord({ child_response: "indifferent" })]).indifferent_count).toBe(1); });
     it("counts negative as indifferent", () => { expect(computePositiveBehaviourMetrics([makeRecord({ child_response: "negative" })]).indifferent_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computePositiveBehaviourMetrics([makeRecord()]); expect(m.behaviour_specific_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.culturally_sensitive_rate).toBe(100); expect(m.timely_delivery_rate).toBe(100); expect(m.proportionate_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.peers_included_rate).toBe(100); expect(m.child_input_rate).toBe(100); expect(m.progress_tracked_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computePositiveBehaviourMetrics([makeRecord()]);
+      expect(m.behaviour_specific_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.culturally_sensitive_rate).toBe(100);
+      expect(m.timely_delivery_rate).toBe(100);
+      expect(m.proportionate_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.peers_included_rate).toBe(100);
+      expect(m.child_input_rate).toBe(100);
+      expect(m.progress_tracked_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("behaviour_specific_rate 0 when false", () => { expect(computePositiveBehaviourMetrics([makeRecord({ behaviour_specific: false })]).behaviour_specific_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computePositiveBehaviourMetrics([makeRecord({ timely_delivery: true }), makeRecord({ timely_delivery: false }), makeRecord({ timely_delivery: true })]); expect(m.timely_delivery_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computePositiveBehaviourMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -62,17 +91,42 @@ describe("positive-behaviour-reinforcement-service", () => {
   describe("identifyPositiveBehaviourAlerts", () => {
     it("returns empty for clean", () => { expect(identifyPositiveBehaviourAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyPositiveBehaviourAlerts([])).toEqual([]); });
-    it("fires absent_negative", () => { const a = identifyPositiveBehaviourAlerts([makeRecord({ praise_quality: "absent", child_response: "negative", child_name: "Jo" })]); expect(a[0].type).toBe("absent_negative"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires absent_negative", () => { 
+      const a = identifyPositiveBehaviourAlerts([makeRecord({ praise_quality: "absent", child_response: "negative", child_name: "Jo" })]);
+      expect(a[0].type).toBe("absent_negative");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("absent_negative per-record", () => { const a = identifyPositiveBehaviourAlerts([makeRecord({ id: "a-1", praise_quality: "absent", child_response: "negative" }), makeRecord({ id: "a-2", praise_quality: "absent", child_response: "negative" })]); expect(a.filter(x => x.type === "absent_negative")).toHaveLength(2); });
     it("absent without negative no critical", () => { expect(identifyPositiveBehaviourAlerts([makeRecord({ praise_quality: "absent", child_response: "positive" })]).find(x => x.type === "absent_negative")).toBeUndefined(); });
     it("negative without absent no critical", () => { expect(identifyPositiveBehaviourAlerts([makeRecord({ child_response: "negative", praise_quality: "appropriate" })]).find(x => x.type === "absent_negative")).toBeUndefined(); });
-    it("fires not_behaviour_specific singular", () => { const a = identifyPositiveBehaviourAlerts([makeRecord({ behaviour_specific: false })]); const f = a.find(x => x.type === "not_behaviour_specific"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires not_behaviour_specific singular", () => { 
+      const a = identifyPositiveBehaviourAlerts([makeRecord({ behaviour_specific: false })]);
+      const f = a.find(x => x.type === "not_behaviour_specific");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("not_behaviour_specific plural", () => { const a = identifyPositiveBehaviourAlerts([makeRecord({ behaviour_specific: false }), makeRecord({ behaviour_specific: false })]); const f = a.find(x => x.type === "not_behaviour_specific"); expect(f!.message).toContain("2 sessions have"); });
-    it("fires not_timely singular", () => { const a = identifyPositiveBehaviourAlerts([makeRecord({ timely_delivery: false })]); const f = a.find(x => x.type === "not_timely"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires not_timely singular", () => { 
+      const a = identifyPositiveBehaviourAlerts([makeRecord({ timely_delivery: false })]);
+      const f = a.find(x => x.type === "not_timely");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_child_input not for 1", () => { expect(identifyPositiveBehaviourAlerts([makeRecord({ child_input_sought: false })]).find(x => x.type === "no_child_input")).toBeUndefined(); });
     it("no_child_input fires for 2", () => { const a = identifyPositiveBehaviourAlerts([makeRecord({ child_input_sought: false }), makeRecord({ child_input_sought: false })]); expect(a.find(x => x.type === "no_child_input")).toBeDefined(); expect(a.find(x => x.type === "no_child_input")!.severity).toBe("medium"); });
     it("not_culturally_sensitive not for 1", () => { expect(identifyPositiveBehaviourAlerts([makeRecord({ culturally_sensitive: false })]).find(x => x.type === "not_culturally_sensitive")).toBeUndefined(); });
     it("not_culturally_sensitive fires for 2", () => { const a = identifyPositiveBehaviourAlerts([makeRecord({ culturally_sensitive: false }), makeRecord({ culturally_sensitive: false })]); expect(a.find(x => x.type === "not_culturally_sensitive")).toBeDefined(); expect(a.find(x => x.type === "not_culturally_sensitive")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyPositiveBehaviourAlerts([makeRecord({ praise_quality: "absent", child_response: "negative", behaviour_specific: false, timely_delivery: false, child_input_sought: false, culturally_sensitive: false }), makeRecord({ behaviour_specific: false, timely_delivery: false, child_input_sought: false, culturally_sensitive: false })]); const types = a.map(x => x.type); expect(types).toContain("absent_negative"); expect(types).toContain("not_behaviour_specific"); expect(types).toContain("not_timely"); expect(types).toContain("no_child_input"); expect(types).toContain("not_culturally_sensitive"); });
+    it("fires all applicable", () => { 
+      const a = identifyPositiveBehaviourAlerts([makeRecord({ praise_quality: "absent", child_response: "negative", behaviour_specific: false, timely_delivery: false, child_input_sought: false, culturally_sensitive: false }), makeRecord({ behaviour_specific: false, timely_delivery: false, child_input_sought: false, culturally_sensitive: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("absent_negative");
+      expect(types).toContain("not_behaviour_specific");
+      expect(types).toContain("not_timely");
+      expect(types).toContain("no_child_input");
+      expect(types).toContain("not_culturally_sensitive");
+    });
   });
 });

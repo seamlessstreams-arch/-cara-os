@@ -29,7 +29,19 @@ function makeRow(overrides?: Partial<EmotionalWellbeingOutcomeRow>): EmotionalWe
 
 describe("emotional-wellbeing-outcome-service", () => {
   describe("computeEmotionalWellbeingMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeEmotionalWellbeingMetrics([]); expect(m.total_assessments).toBe(0); expect(m.clinical_count).toBe(0); expect(m.crisis_count).toBe(0); expect(m.declining_count).toBe(0); expect(m.improving_count).toBe(0); expect(m.child_self_reported_rate).toBeNull(); expect(m.discussed_with_child_rate).toBeNull(); expect(m.informed_care_plan_rate).toBeNull(); expect(m.referral_made_rate).toBeNull(); expect(m.unique_children).toBe(0); });
+    it("returns zeros for empty", () => { 
+      const m = computeEmotionalWellbeingMetrics([]);
+      expect(m.total_assessments).toBe(0);
+      expect(m.clinical_count).toBe(0);
+      expect(m.crisis_count).toBe(0);
+      expect(m.declining_count).toBe(0);
+      expect(m.improving_count).toBe(0);
+      expect(m.child_self_reported_rate).toBeNull();
+      expect(m.discussed_with_child_rate).toBeNull();
+      expect(m.informed_care_plan_rate).toBeNull();
+      expect(m.referral_made_rate).toBeNull();
+      expect(m.unique_children).toBe(0);
+    });
     it("returns empty breakdowns for empty", () => { const m = computeEmotionalWellbeingMetrics([]); expect(m.clinical_band_breakdown).toEqual({}); expect(m.measure_breakdown).toEqual({}); });
     it("total_assessments counts rows", () => { expect(computeEmotionalWellbeingMetrics([makeRow(), makeRow(), makeRow()]).total_assessments).toBe(3); });
     it("counts clinical band as clinical_count", () => { expect(computeEmotionalWellbeingMetrics([makeRow({ clinical_band: "clinical" })]).clinical_count).toBe(1); });
@@ -58,20 +70,52 @@ describe("emotional-wellbeing-outcome-service", () => {
   describe("computeEmotionalWellbeingAlerts", () => {
     it("returns empty for empty", () => { expect(computeEmotionalWellbeingAlerts([])).toEqual([]); });
     it("returns empty for clean rows", () => { expect(computeEmotionalWellbeingAlerts([makeRow()])).toEqual([]); });
-    it("fires crisis_no_referral", () => { const a = computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "crisis", referral_made: false, child_name: "Jo", outcome_measure: "sdq_total" })]); expect(a[0].type).toBe("crisis_no_referral"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("sdq total"); expect(a[0].record_id).toBe("a-1"); });
+    it("fires crisis_no_referral", () => { 
+      const a = computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "crisis", referral_made: false, child_name: "Jo", outcome_measure: "sdq_total" })]);
+      expect(a[0].type).toBe("crisis_no_referral");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("sdq total");
+      expect(a[0].record_id).toBe("a-1");
+    });
     it("crisis_no_referral per-record", () => { const a = computeEmotionalWellbeingAlerts([makeRow({ id: "a-1", clinical_band: "crisis", referral_made: false }), makeRow({ id: "a-2", clinical_band: "crisis", referral_made: false })]); expect(a.filter(x => x.type === "crisis_no_referral")).toHaveLength(2); });
     it("no crisis alert if referral made", () => { expect(computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "crisis", referral_made: true })]).filter(x => x.type === "crisis_no_referral")).toHaveLength(0); });
     it("no crisis alert for clinical band without crisis", () => { expect(computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "clinical", referral_made: false })]).filter(x => x.type === "crisis_no_referral")).toHaveLength(0); });
-    it("fires clinical_declining singular", () => { const a = computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "clinical", trend_direction: "declining" })]); const f = a.find(x => x.type === "clinical_declining"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 assessment shows"); });
+    it("fires clinical_declining singular", () => { 
+      const a = computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "clinical", trend_direction: "declining" })]);
+      const f = a.find(x => x.type === "clinical_declining");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 assessment shows");
+    });
     it("fires clinical_declining for high_clinical", () => { const a = computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "high_clinical", trend_direction: "declining" })]); expect(a.find(x => x.type === "clinical_declining")).toBeDefined(); });
     it("clinical_declining plural", () => { const a = computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "clinical", trend_direction: "declining" }), makeRow({ clinical_band: "high_clinical", trend_direction: "declining" })]); const f = a.find(x => x.type === "clinical_declining"); expect(f!.message).toContain("2 assessments show"); });
     it("no clinical_declining for stable trend", () => { expect(computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "clinical", trend_direction: "stable" })]).find(x => x.type === "clinical_declining")).toBeUndefined(); });
     it("no clinical_declining for normal band declining", () => { expect(computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "normal", trend_direction: "declining" })]).find(x => x.type === "clinical_declining")).toBeUndefined(); });
     it("child_views_not_discussed not for 1", () => { expect(computeEmotionalWellbeingAlerts([makeRow({ discussed_with_child: false })]).find(x => x.type === "child_views_not_discussed")).toBeUndefined(); });
-    it("child_views_not_discussed fires for 2", () => { const a = computeEmotionalWellbeingAlerts([makeRow({ discussed_with_child: false }), makeRow({ discussed_with_child: false })]); const f = a.find(x => x.type === "child_views_not_discussed"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("2 assessments"); });
+    it("child_views_not_discussed fires for 2", () => { 
+      const a = computeEmotionalWellbeingAlerts([makeRow({ discussed_with_child: false }), makeRow({ discussed_with_child: false })]);
+      const f = a.find(x => x.type === "child_views_not_discussed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("2 assessments");
+    });
     it("care_plan_not_informed not for 1", () => { expect(computeEmotionalWellbeingAlerts([makeRow({ informed_care_plan: false })]).find(x => x.type === "care_plan_not_informed")).toBeUndefined(); });
-    it("care_plan_not_informed fires for 2", () => { const a = computeEmotionalWellbeingAlerts([makeRow({ informed_care_plan: false }), makeRow({ informed_care_plan: false })]); const f = a.find(x => x.type === "care_plan_not_informed"); expect(f).toBeDefined(); expect(f!.severity).toBe("medium"); expect(f!.message).toContain("2 assessments"); });
-    it("fires all applicable alerts", () => { const a = computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "crisis", referral_made: false, trend_direction: "declining", discussed_with_child: false, informed_care_plan: false }), makeRow({ clinical_band: "clinical", trend_direction: "declining", discussed_with_child: false, informed_care_plan: false })]); const types = a.map(x => x.type); expect(types).toContain("crisis_no_referral"); expect(types).toContain("clinical_declining"); expect(types).toContain("child_views_not_discussed"); expect(types).toContain("care_plan_not_informed"); });
+    it("care_plan_not_informed fires for 2", () => { 
+      const a = computeEmotionalWellbeingAlerts([makeRow({ informed_care_plan: false }), makeRow({ informed_care_plan: false })]);
+      const f = a.find(x => x.type === "care_plan_not_informed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("medium");
+      expect(f!.message).toContain("2 assessments");
+    });
+    it("fires all applicable alerts", () => { 
+      const a = computeEmotionalWellbeingAlerts([makeRow({ clinical_band: "crisis", referral_made: false, trend_direction: "declining", discussed_with_child: false, informed_care_plan: false }), makeRow({ clinical_band: "clinical", trend_direction: "declining", discussed_with_child: false, informed_care_plan: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("crisis_no_referral");
+      expect(types).toContain("clinical_declining");
+      expect(types).toContain("child_views_not_discussed");
+      expect(types).toContain("care_plan_not_informed");
+    });
   });
 
   describe("generateEmotionalWellbeingCaraInsights", () => {

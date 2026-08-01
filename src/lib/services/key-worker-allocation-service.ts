@@ -139,18 +139,18 @@ export function computeKeyWorkerAllocationMetrics(
   broken_down_count: number;
   overloaded_count: number;
   no_continuity_count: number;
-  child_views_rate: number;
-  child_choice_rate: number;
-  regular_sessions_rate: number;
-  care_plan_rate: number;
-  advocacy_rate: number;
-  training_rate: number;
-  supervision_rate: number;
-  handover_rate: number;
-  backup_worker_rate: number;
-  social_worker_rate: number;
-  relationship_supported_rate: number;
-  recorded_promptly_rate: number;
+  child_views_rate: number | null;
+  child_choice_rate: number | null;
+  regular_sessions_rate: number | null;
+  care_plan_rate: number | null;
+  advocacy_rate: number | null;
+  training_rate: number | null;
+  supervision_rate: number | null;
+  handover_rate: number | null;
+  backup_worker_rate: number | null;
+  social_worker_rate: number | null;
+  relationship_supported_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_allocation_status: Record<string, number>;
   by_relationship_quality: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeKeyWorkerAllocationMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byStatus: Record<string, number> = {};

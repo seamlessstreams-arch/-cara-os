@@ -45,7 +45,7 @@ describe("computeSleepDisturbanceMetrics", () => {
     expect(m.crisis_count).toBe(0);
     expect(m.trauma_linked_count).toBe(0);
     expect(m.ongoing_count).toBe(0);
-    expect(m.settled_within_hour_rate).toBe(0);
+    expect(m.settled_within_hour_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

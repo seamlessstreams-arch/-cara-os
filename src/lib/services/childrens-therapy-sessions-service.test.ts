@@ -51,8 +51,8 @@ describe("computeChildrensTherapyMetrics", () => {
     expect(m.positive_progress_count).toBe(0);
     expect(m.declined_count).toBe(0);
     expect(m.refused_count).toBe(0);
-    expect(m.child_prepared_rate).toBe(0);
-    expect(m.average_duration).toBe(0);
+    expect(m.child_prepared_rate).toBeNull();;
+    expect(m.average_duration).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

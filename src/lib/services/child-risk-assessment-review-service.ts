@@ -142,18 +142,18 @@ export function computeChildRiskReviewMetrics(
   new_risk_count: number;
   risk_reduced_count: number;
   very_high_count: number;
-  child_participated_rate: number;
-  social_worker_consulted_rate: number;
-  multi_agency_rate: number;
-  triggers_updated_rate: number;
-  protective_factors_rate: number;
-  safety_plan_updated_rate: number;
-  staff_briefed_rate: number;
-  management_oversight_rate: number;
-  evidence_documented_rate: number;
-  dynamic_factors_rate: number;
-  historical_factors_rate: number;
-  contingency_plan_rate: number;
+  child_participated_rate: number | null;
+  social_worker_consulted_rate: number | null;
+  multi_agency_rate: number | null;
+  triggers_updated_rate: number | null;
+  protective_factors_rate: number | null;
+  safety_plan_updated_rate: number | null;
+  staff_briefed_rate: number | null;
+  management_oversight_rate: number | null;
+  evidence_documented_rate: number | null;
+  dynamic_factors_rate: number | null;
+  historical_factors_rate: number | null;
+  contingency_plan_rate: number | null;
   unique_children: number;
   by_risk_domain: Record<string, number>;
   by_review_outcome: Record<string, number>;
@@ -169,7 +169,7 @@ export function computeChildRiskReviewMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

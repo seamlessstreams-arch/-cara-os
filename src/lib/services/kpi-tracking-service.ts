@@ -154,7 +154,7 @@ export function computeKpiMetrics(
   below_target: number;
   at_risk: number;
   not_measured: number;
-  on_target_rate: number;
+  on_target_rate: number | null;
   improving_count: number;
   declining_count: number;
   by_domain: Record<string, { total: number; on_target: number }>;
@@ -213,7 +213,7 @@ export function computeKpiMetrics(
   const onTargetRate =
     measuredCount > 0
       ? Math.round(((onTarget + aboveTarget) / measuredCount) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     total_kpis: definitions.length,

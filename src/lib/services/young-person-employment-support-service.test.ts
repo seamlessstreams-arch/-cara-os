@@ -45,7 +45,7 @@ describe("computeEmploymentSupportMetrics", () => {
     expect(m.employed_count).toBe(0);
     expect(m.apprenticeship_count).toBe(0);
     expect(m.not_ready_count).toBe(0);
-    expect(m.cv_completed_rate).toBe(0);
+    expect(m.cv_completed_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

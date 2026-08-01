@@ -106,16 +106,16 @@ export function computeSicknessMetrics(rows: StaffSicknessManagementRow[]): {
   mental_health_count: number;
   work_related_count: number;
   ongoing_count: number;
-  return_to_work_rate: number;
-  occupational_health_rate: number;
-  reasonable_adjustments_rate: number;
-  cover_arranged_rate: number;
-  impact_assessed_rate: number;
-  wellbeing_check_rate: number;
-  manager_informed_rate: number;
-  phased_return_rate: number;
+  return_to_work_rate: number | null;
+  occupational_health_rate: number | null;
+  reasonable_adjustments_rate: number | null;
+  cover_arranged_rate: number | null;
+  impact_assessed_rate: number | null;
+  wellbeing_check_rate: number | null;
+  manager_informed_rate: number | null;
+  phased_return_rate: number | null;
   total_days_absent: number;
-  average_days_absent: number;
+  average_days_absent: number | null;
   absence_type_breakdown: Record<string, number>;
   trigger_breakdown: Record<string, number>;
   unique_staff: number;
@@ -127,14 +127,14 @@ export function computeSicknessMetrics(rows: StaffSicknessManagementRow[]): {
 
   const boolRate = (field: keyof StaffSicknessManagementRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : 0;
+    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : null;
   };
 
   const totalDaysAbsent = rows.reduce((sum, r) => sum + r.days_absent, 0);
   const averageDaysAbsent =
     rows.length > 0
       ? Math.round((totalDaysAbsent / rows.length) * 10) / 10
-      : 0;
+      : null;
 
   const absenceTypeBreakdown: Record<string, number> = {};
   for (const r of rows)
@@ -287,12 +287,12 @@ export function generateSicknessCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.mental_health_count > 0 && metrics.wellbeing_check_rate < 100) {
+  if (metrics.mental_health_count > 0 && (metrics.wellbeing_check_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.mental_health_count} mental health ${metrics.mental_health_count === 1 ? "absence has" : "absences have"} been recorded with a wellbeing check rate of ${metrics.wellbeing_check_rate}%. ` +
         `How is the home supporting staff mental health and ensuring early intervention prevents prolonged absence?`,
     );
-  } else if (metrics.total_absences > 0 && metrics.return_to_work_rate < 100) {
+  } else if (metrics.total_absences > 0 && (metrics.return_to_work_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Return-to-work completion stands at ${metrics.return_to_work_rate}%. ` +
         `Are return-to-work interviews being used effectively to identify underlying causes and ` +

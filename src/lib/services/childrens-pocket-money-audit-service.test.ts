@@ -42,7 +42,7 @@ describe("computePocketMoneyAuditMetrics", () => {
     expect(m.total_audits).toBe(0);
     expect(m.significant_discrepancy_count).toBe(0);
     expect(m.fraud_suspected_count).toBe(0);
-    expect(m.receipt_rate).toBe(0);
+    expect(m.receipt_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -36,8 +36,8 @@ describe("computeSecurityMetrics", () => {
     const m = computeSecurityMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.routine_check_count).toBe(0);
-    expect(m.secure_rate).toBe(0);
-    expect(m.doors_secure_rate).toBe(0);
+    expect(m.secure_rate).toBeNull();;
+    expect(m.doors_secure_rate).toBeNull();;
   });
 
   it("counts event types and security statuses", () => {

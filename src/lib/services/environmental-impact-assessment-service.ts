@@ -171,11 +171,11 @@ export function computeEnvironmentalImpactMetrics(
   below_standard_count: number;
   not_started_count: number;
   no_action_plan_count: number;
-  children_involved_rate: number;
-  staff_trained_rate: number;
-  cost_saving_rate: number;
-  action_plan_rate: number;
-  progress_monitored_rate: number;
+  children_involved_rate: number | null;
+  staff_trained_rate: number | null;
+  cost_saving_rate: number | null;
+  action_plan_rate: number | null;
+  progress_monitored_rate: number | null;
   area_breakdown: Record<string, number>;
   rating_breakdown: Record<string, number>;
   unique_assessors: number;
@@ -191,7 +191,7 @@ export function computeEnvironmentalImpactMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const areaBreakdown: Record<string, number> = {};
@@ -308,7 +308,7 @@ export function generateEnvironmentalImpactCaraInsights(
         `What underlying factors might be contributing to this, and how can the home team work together ` +
         `to develop sustainable practices that also teach children about environmental responsibility?`,
     );
-  } else if (metrics.children_involved_rate < 100) {
+  } else if ((metrics.children_involved_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Children are involved in ${metrics.children_involved_rate}% of environmental impact assessments. ` +
         `How can the home ensure every child has the opportunity to participate in sustainability efforts, ` +

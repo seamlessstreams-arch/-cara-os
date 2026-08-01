@@ -112,7 +112,7 @@ describe("computeRecordingCompliance", () => {
     expect(result.total_submitted).toBe(0);
     expect(result.missing).toBe(0);
     expect(result.compliance_percentage).toBe(100);
-    expect(result.average_quality_score).toBe(0);
+    expect(result.average_quality_score).toBeNull();;
   });
 
   it("calculates compliance for populated data", () => {

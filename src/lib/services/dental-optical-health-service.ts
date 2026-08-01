@@ -136,18 +136,18 @@ export function computeDentalOpticalMetrics(records: DentalOpticalHealthRecord[]
   refused_count: number;
   treatment_refused_count: number;
   emergency_count: number;
-  appointment_attended_rate: number;
-  consent_rate: number;
-  child_prepared_rate: number;
-  anxiety_managed_rate: number;
-  treatment_explained_rate: number;
-  follow_up_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  prescription_rate: number;
-  pain_managed_rate: number;
-  recorded_promptly_rate: number;
+  appointment_attended_rate: number | null;
+  consent_rate: number | null;
+  child_prepared_rate: number | null;
+  anxiety_managed_rate: number | null;
+  treatment_explained_rate: number | null;
+  follow_up_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  prescription_rate: number | null;
+  pain_managed_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_appointment_type: Record<string, number>;
   by_compliance_level: Record<string, number>;
@@ -163,7 +163,7 @@ export function computeDentalOpticalMetrics(records: DentalOpticalHealthRecord[]
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

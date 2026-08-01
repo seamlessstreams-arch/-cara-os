@@ -46,7 +46,7 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.stranger_contact_rate).toBe(0);
+    expect(m.stranger_contact_rate).toBeNull();;
     expect(m.average_screen_time).toBe(0);
     expect(m.average_risk_score).toBe(0);
   });

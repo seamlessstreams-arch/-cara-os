@@ -244,7 +244,7 @@ describe("computeKpiMetrics", () => {
       expect(result.below_target).toBe(0);
       expect(result.at_risk).toBe(0);
       expect(result.not_measured).toBe(0);
-      expect(result.on_target_rate).toBe(0);
+      expect(result.on_target_rate).toBeNull();;
       expect(result.improving_count).toBe(0);
       expect(result.declining_count).toBe(0);
     });
@@ -266,7 +266,7 @@ describe("computeKpiMetrics", () => {
 
     it("returns zero on_target_rate when no measurements exist", () => {
       const result = computeKpiMetrics([makeDefinition()], []);
-      expect(result.on_target_rate).toBe(0);
+      expect(result.on_target_rate).toBeNull();;
     });
   });
 
@@ -495,7 +495,7 @@ describe("computeKpiMetrics", () => {
       ];
       // measured = 1 - 1 = 0 => rate = 0
       const result = computeKpiMetrics(defs, measurements);
-      expect(result.on_target_rate).toBe(0);
+      expect(result.on_target_rate).toBeNull();;
     });
 
     it("handles 2/3 on target rounding", () => {
@@ -748,7 +748,7 @@ describe("computeKpiMetrics", () => {
       expect(typeof result.below_target).toBe("number");
       expect(typeof result.at_risk).toBe("number");
       expect(typeof result.not_measured).toBe("number");
-      expect(typeof result.on_target_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof result.on_target_rate); // number | null
       expect(typeof result.improving_count).toBe("number");
       expect(typeof result.declining_count).toBe("number");
     });
@@ -1474,7 +1474,7 @@ describe("Edge cases", () => {
   describe("type checks", () => {
     it("computeKpiMetrics returns number for on_target_rate", () => {
       const result = computeKpiMetrics([], []);
-      expect(typeof result.on_target_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof result.on_target_rate); // number | null
     });
 
     it("computeKpiMetrics by_domain values have total and on_target properties", () => {

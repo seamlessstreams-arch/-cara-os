@@ -44,7 +44,7 @@ describe("computeBehaviourPatternMetrics", () => {
     const m = computeBehaviourPatternMetrics([]);
     expect(m.total_incidents).toBe(0);
     expect(m.severe_count).toBe(0);
-    expect(m.trigger_identified_rate).toBe(0);
+    expect(m.trigger_identified_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

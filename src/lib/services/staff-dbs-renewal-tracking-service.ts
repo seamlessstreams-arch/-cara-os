@@ -81,14 +81,14 @@ export function computeDbsMetrics(rows: StaffDbsRenewalTrackingRow[]): {
   renewal_due_count: number;
   pending_count: number;
   disclosed_count: number;
-  enhanced_check_rate: number;
-  barred_list_rate: number;
-  update_service_rate: number;
-  identity_verified_rate: number;
-  right_to_work_rate: number;
-  risk_assessment_rate: number;
-  overseas_check_rate: number;
-  references_verified_rate: number;
+  enhanced_check_rate: number | null;
+  barred_list_rate: number | null;
+  update_service_rate: number | null;
+  identity_verified_rate: number | null;
+  right_to_work_rate: number | null;
+  risk_assessment_rate: number | null;
+  overseas_check_rate: number | null;
+  references_verified_rate: number | null;
   dbs_type_breakdown: Record<string, number>;
   status_breakdown: Record<string, number>;
   unique_staff: number;
@@ -100,7 +100,7 @@ export function computeDbsMetrics(rows: StaffDbsRenewalTrackingRow[]): {
 
   const boolRate = (field: keyof StaffDbsRenewalTrackingRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : 0;
+    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : null;
   };
 
   const dbsTypeBreakdown: Record<string, number> = {};
@@ -249,7 +249,7 @@ export function generateDbsCaraInsights(rows: StaffDbsRenewalTrackingRow[]): str
         `What processes are in place to ensure timely renewal, and are staff with expired checks ` +
         `being appropriately supervised pending renewal under Reg 32?`,
     );
-  } else if (metrics.update_service_rate < 100) {
+  } else if ((metrics.update_service_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.update_service_rate}% of staff are registered with the DBS Update Service. ` +
         `Would increasing Update Service registration improve portability and reduce ` +

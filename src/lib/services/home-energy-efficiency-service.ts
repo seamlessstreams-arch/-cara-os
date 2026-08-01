@@ -176,14 +176,14 @@ export function computeEnergyEfficiencyMetrics(
   improvement_identified_count: number;
   completed_count: number;
   deferred_count: number;
-  epc_valid_rate: number;
-  smart_meter_rate: number;
-  led_lighting_rate: number;
-  insulation_rate: number;
-  draught_proofing_rate: number;
-  renewable_rate: number;
-  energy_saving_rate: number;
-  children_involved_rate: number;
+  epc_valid_rate: number | null;
+  smart_meter_rate: number | null;
+  led_lighting_rate: number | null;
+  insulation_rate: number | null;
+  draught_proofing_rate: number | null;
+  renewable_rate: number | null;
+  energy_saving_rate: number | null;
+  children_involved_rate: number | null;
   total_monthly_cost: number;
   total_carbon: number;
   energy_area_breakdown: Record<string, number>;
@@ -207,7 +207,7 @@ export function computeEnergyEfficiencyMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const totalMonthlyCost = rows
@@ -359,7 +359,7 @@ export function generateEnergyEfficiencyCaraInsights(
         `What steps can the home take to improve energy performance in these areas, ` +
         `and how can children be involved in understanding and reducing the home's energy consumption?`,
     );
-  } else if (metrics.children_involved_rate < 100) {
+  } else if ((metrics.children_involved_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Children are involved in energy saving in ${metrics.children_involved_rate}% of assessments. ` +
         `How can the home ensure every child has the opportunity to participate in energy-saving activities, ` +

@@ -194,22 +194,22 @@ describe("child-substance-misuse-screening-service", () => {
         expect(computeMetrics([]).no_concern_count).toBe(0);
       });
       it("returns zero referral_rate", () => {
-        expect(computeMetrics([]).referral_rate).toBe(0);
+        expect(computeMetrics([]).referral_rate).toBeNull();;
       });
       it("returns zero risk_assessment_rate", () => {
-        expect(computeMetrics([]).risk_assessment_rate).toBe(0);
+        expect(computeMetrics([]).risk_assessment_rate).toBeNull();;
       });
       it("returns zero safety_plan_rate", () => {
-        expect(computeMetrics([]).safety_plan_rate).toBe(0);
+        expect(computeMetrics([]).safety_plan_rate).toBeNull();;
       });
       it("returns zero parental_notification_rate", () => {
-        expect(computeMetrics([]).parental_notification_rate).toBe(0);
+        expect(computeMetrics([]).parental_notification_rate).toBeNull();;
       });
       it("returns zero social_worker_rate", () => {
-        expect(computeMetrics([]).social_worker_rate).toBe(0);
+        expect(computeMetrics([]).social_worker_rate).toBeNull();;
       });
       it("returns zero follow_up_rate", () => {
-        expect(computeMetrics([]).follow_up_rate).toBe(0);
+        expect(computeMetrics([]).follow_up_rate).toBeNull();;
       });
       it("returns zero unique_children", () => {
         expect(computeMetrics([]).unique_children).toBe(0);

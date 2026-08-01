@@ -65,11 +65,11 @@ describe("computeSanctionRewardMetrics", () => {
     const r = computeSanctionRewardMetrics([], []);
     expect(r.total_sanctions).toBe(0);
     expect(r.total_rewards).toBe(0);
-    expect(r.reward_to_sanction_ratio).toBe(0);
-    expect(r.proportionality_rate).toBe(0);
-    expect(r.age_appropriate_rate).toBe(0);
-    expect(r.consistent_with_plan_rate).toBe(0);
-    expect(r.manager_review_rate).toBe(0);
+    expect(r.reward_to_sanction_ratio).toBeNull();;
+    expect(r.proportionality_rate).toBeNull();;
+    expect(r.age_appropriate_rate).toBeNull();;
+    expect(r.consistent_with_plan_rate).toBeNull();;
+    expect(r.manager_review_rate).toBeNull();;
     expect(r.overturned_count).toBe(0);
     expect(r.active_sanctions).toBe(0);
     expect(r.children_with_highest_sanctions).toEqual([]);

@@ -63,8 +63,8 @@ describe("computeConfidenceIndicatorMetrics", () => {
     expect(m.declining_count).toBe(0);
     expect(m.no_confidence_count).toBe(0);
     expect(m.improving_count).toBe(0);
-    expect(m.evidence_based_rate).toBe(0);
-    expect(m.self_assessed_rate).toBe(0);
+    expect(m.evidence_based_rate).toBeNull();;
+    expect(m.self_assessed_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

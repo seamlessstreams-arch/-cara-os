@@ -47,7 +47,7 @@ describe("key-holding-service", () => {
       expect(m.keys_issued_count).toBe(0);
       expect(m.keys_lost_count).toBe(0);
       expect(m.keys_stolen_count).toBe(0);
-      expect(m.all_accounted_rate).toBe(0);
+      expect(m.all_accounted_rate).toBeNull();;
       expect(m.total_keys_checked).toBe(0);
       expect(m.total_keys_missing).toBe(0);
     });

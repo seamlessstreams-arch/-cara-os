@@ -240,7 +240,7 @@ export async function getOversightStats(
   total_notes: number;
   by_record_type: Record<string, number>;
   avg_quality_score: number | null;
-  cara_prompted_percentage: number;
+  cara_prompted_percentage: number | null;
   records_needing_oversight: number;
 }>> {
   const s = sb();
@@ -273,7 +273,7 @@ export async function getOversightStats(
       total_notes: allNotes.length,
       by_record_type: byType,
       avg_quality_score: qualityCount > 0 ? Math.round((qualitySum / qualityCount) * 10) / 10 : null,
-      cara_prompted_percentage: allNotes.length > 0 ? Math.round((caraCount / allNotes.length) * 100) : 0,
+      cara_prompted_percentage: allNotes.length > 0 ? Math.round((caraCount / allNotes.length) * 100) : null,
       records_needing_oversight: 0, // would need to query each record type
     },
   };

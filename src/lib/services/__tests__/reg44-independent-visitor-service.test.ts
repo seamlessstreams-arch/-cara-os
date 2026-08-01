@@ -135,11 +135,11 @@ describe("computeReg44IndependentVisitorMetrics", () => {
     expect(m.concern_count).toBe(0);
     expect(m.overdue_action_count).toBe(0);
     expect(m.not_started_count).toBe(0);
-    expect(m.children_spoken_to_rate).toBe(0);
-    expect(m.records_reviewed_rate).toBe(0);
-    expect(m.previous_actions_rate).toBe(0);
-    expect(m.child_views_rate).toBe(0);
-    expect(m.manager_responded_rate).toBe(0);
+    expect(m.children_spoken_to_rate).toBeNull();;
+    expect(m.records_reviewed_rate).toBeNull();;
+    expect(m.previous_actions_rate).toBeNull();;
+    expect(m.child_views_rate).toBeNull();;
+    expect(m.manager_responded_rate).toBeNull();;
     expect(m.unique_visitors).toBe(0);
     expect(Object.keys(m.severity_breakdown)).toHaveLength(0);
     expect(Object.keys(m.status_breakdown)).toHaveLength(0);

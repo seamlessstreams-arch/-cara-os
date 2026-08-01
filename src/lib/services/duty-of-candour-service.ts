@@ -130,8 +130,8 @@ export function computeCandourMetrics(
   closed_cases: number;
   verbal_apology_given: number;
   written_apology_sent: number;
-  family_informed_rate: number;
-  ofsted_notified_rate: number;
+  family_informed_rate: number | null;
+  ofsted_notified_rate: number | null;
   investigation_complete: number;
   investigation_upheld: number;
   avg_days_to_verbal: number;
@@ -150,11 +150,11 @@ export function computeCandourMetrics(
 
   const familyInformed = records.filter((r) => r.family_informed).length;
   const familyRate =
-    records.length > 0 ? Math.round((familyInformed / records.length) * 1000) / 10 : 0;
+    records.length > 0 ? Math.round((familyInformed / records.length) * 1000) / 10 : null;
 
   const ofstedNotified = records.filter((r) => r.ofsted_notified).length;
   const ofstedRate =
-    records.length > 0 ? Math.round((ofstedNotified / records.length) * 1000) / 10 : 0;
+    records.length > 0 ? Math.round((ofstedNotified / records.length) * 1000) / 10 : null;
 
   const investigationComplete = records.filter(
     (r) => r.investigation_completed_date !== null,

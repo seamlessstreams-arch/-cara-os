@@ -152,18 +152,18 @@ export function computeAdmissionAssessmentMetrics(
   pending_count: number;
   excellent_match_count: number;
   poor_match_count: number;
-  impact_risk_rate: number;
-  matching_criteria_rate: number;
-  existing_children_consulted_rate: number;
-  pre_admission_visit_rate: number;
-  care_plan_received_rate: number;
-  health_assessment_rate: number;
-  education_info_rate: number;
-  risk_assessments_rate: number;
-  safeguarding_shared_rate: number;
-  placement_plan_rate: number;
-  key_worker_rate: number;
-  bedroom_prepared_rate: number;
+  impact_risk_rate: number | null;
+  matching_criteria_rate: number | null;
+  existing_children_consulted_rate: number | null;
+  pre_admission_visit_rate: number | null;
+  care_plan_received_rate: number | null;
+  health_assessment_rate: number | null;
+  education_info_rate: number | null;
+  risk_assessments_rate: number | null;
+  safeguarding_shared_rate: number | null;
+  placement_plan_rate: number | null;
+  key_worker_rate: number | null;
+  bedroom_prepared_rate: number | null;
   unique_children: number;
   by_assessment_stage: Record<string, number>;
   by_suitability_decision: Record<string, number>;
@@ -180,7 +180,7 @@ export function computeAdmissionAssessmentMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

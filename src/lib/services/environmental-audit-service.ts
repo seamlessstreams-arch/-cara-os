@@ -149,17 +149,17 @@ export function computeEnvironmentalAuditMetrics(
   good_count: number;
   requires_improvement_count: number;
   inadequate_count: number;
-  homely_feel_rate: number;
-  child_friendly_rate: number;
-  personalised_rate: number;
-  clean_and_tidy_rate: number;
-  well_maintained_rate: number;
-  safe_environment_rate: number;
-  accessible_rate: number;
-  adequate_lighting_rate: number;
-  temperature_comfortable_rate: number;
-  privacy_maintained_rate: number;
-  children_consulted_rate: number;
+  homely_feel_rate: number | null;
+  child_friendly_rate: number | null;
+  personalised_rate: number | null;
+  clean_and_tidy_rate: number | null;
+  well_maintained_rate: number | null;
+  safe_environment_rate: number | null;
+  accessible_rate: number | null;
+  adequate_lighting_rate: number | null;
+  temperature_comfortable_rate: number | null;
+  privacy_maintained_rate: number | null;
+  children_consulted_rate: number | null;
   immediate_priority_count: number;
   by_audit_area: Record<string, number>;
   by_audit_rating: Record<string, number>;
@@ -175,7 +175,7 @@ export function computeEnvironmentalAuditMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const immediatePriority = records.filter((r) => r.priority_level === "immediate").length;

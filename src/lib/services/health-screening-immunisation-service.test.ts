@@ -49,7 +49,7 @@ describe("computeHealthScreeningMetrics", () => {
     expect(result.referral_needed_count).toBe(0);
     expect(result.behind_immunisation_count).toBe(0);
     expect(result.high_risk_count).toBe(0);
-    expect(result.child_consented_rate).toBe(0);
+    expect(result.child_consented_rate).toBeNull();;
     expect(result.unique_children).toBe(0);
   });
 

@@ -50,7 +50,7 @@ describe("computeStaffMedicationCompetencyMetrics", () => {
     expect(m.not_yet_competent_count).toBe(0);
     expect(m.requires_retraining_count).toBe(0);
     expect(m.suspended_count).toBe(0);
-    expect(m.theory_passed_rate).toBe(0);
+    expect(m.theory_passed_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

@@ -62,7 +62,7 @@ describe("computeSupportActionMetrics", () => {
     expect(m.urgent_count).toBe(0);
     expect(m.completed_count).toBe(0);
     expect(m.no_change_count).toBe(0);
-    expect(m.evidence_based_rate).toBe(0);
+    expect(m.evidence_based_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

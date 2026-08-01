@@ -134,25 +134,25 @@ export function computeBedroomAuditMetrics(
   total_audits: number;
   routine_inspection_count: number;
   safety_check_count: number;
-  excellent_condition_rate: number;
+  excellent_condition_rate: number | null;
   poor_condition_count: number;
   unacceptable_condition_count: number;
-  highly_personalised_rate: number;
+  highly_personalised_rate: number | null;
   not_personalised_count: number;
-  safe_rating_rate: number;
+  safe_rating_rate: number | null;
   unsafe_count: number;
   significant_concern_count: number;
-  furniture_adequate_rate: number;
-  furniture_good_condition_rate: number;
-  bedding_clean_rate: number;
-  window_restrictors_rate: number;
-  lock_working_rate: number;
-  lighting_adequate_rate: number;
-  heating_adequate_rate: number;
-  ventilation_adequate_rate: number;
-  decoration_acceptable_rate: number;
-  child_consulted_rate: number;
-  privacy_respected_rate: number;
+  furniture_adequate_rate: number | null;
+  furniture_good_condition_rate: number | null;
+  bedding_clean_rate: number | null;
+  window_restrictors_rate: number | null;
+  lock_working_rate: number | null;
+  lighting_adequate_rate: number | null;
+  heating_adequate_rate: number | null;
+  ventilation_adequate_rate: number | null;
+  decoration_acceptable_rate: number | null;
+  child_consulted_rate: number | null;
+  privacy_respected_rate: number | null;
   audit_overdue_count: number;
   by_audit_type: Record<string, number>;
   by_room_condition: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeBedroomAuditMetrics(
   const excellentRate =
     records.length > 0
       ? Math.round((excellent / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const poor = records.filter((r) => r.room_condition === "poor").length;
   const unacceptable = records.filter((r) => r.room_condition === "unacceptable").length;
@@ -175,7 +175,7 @@ export function computeBedroomAuditMetrics(
   const highlyPersRate =
     records.length > 0
       ? Math.round((highlyPers / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const notPers = records.filter((r) => r.personalisation_level === "not_personalised").length;
 
@@ -183,7 +183,7 @@ export function computeBedroomAuditMetrics(
   const safeRate =
     records.length > 0
       ? Math.round((safeRating / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const unsafe = records.filter((r) => r.safety_rating === "unsafe").length;
   const sigConcern = records.filter((r) => r.safety_rating === "significant_concern").length;
@@ -192,7 +192,7 @@ export function computeBedroomAuditMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const now = new Date();

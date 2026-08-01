@@ -49,17 +49,17 @@ describe("utility-management-service", () => {
         expect(m.water_count).toBe(0);
         expect(m.meter_reading_count).toBe(0);
         expect(m.bill_count).toBe(0);
-        expect(m.within_budget_rate).toBe(0);
+        expect(m.within_budget_rate).toBeNull();;
         expect(m.over_budget_count).toBe(0);
         expect(m.disputed_count).toBe(0);
         expect(m.total_cost).toBe(0);
-        expect(m.average_cost).toBe(0);
-        expect(m.smart_meter_rate).toBe(0);
-        expect(m.heating_adequate_rate).toBe(0);
-        expect(m.hot_water_rate).toBe(0);
-        expect(m.children_comfortable_rate).toBe(0);
-        expect(m.energy_saving_rate).toBe(0);
-        expect(m.renewable_rate).toBe(0);
+        expect(m.average_cost).toBeNull();;
+        expect(m.smart_meter_rate).toBeNull();;
+        expect(m.heating_adequate_rate).toBeNull();;
+        expect(m.hot_water_rate).toBeNull();;
+        expect(m.children_comfortable_rate).toBeNull();;
+        expect(m.energy_saving_rate).toBeNull();;
+        expect(m.renewable_rate).toBeNull();;
         expect(m.fault_count).toBe(0);
       });
 
@@ -249,7 +249,7 @@ describe("utility-management-service", () => {
           makeRecord({ id: "1", cost_amount: null }),
         ]);
         expect(m.total_cost).toBe(0);
-        expect(m.average_cost).toBe(0);
+        expect(m.average_cost).toBeNull();;
       });
 
       it("rounds total_cost to 2 decimals", () => {

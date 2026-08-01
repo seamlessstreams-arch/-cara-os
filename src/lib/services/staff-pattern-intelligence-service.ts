@@ -153,18 +153,18 @@ export function computePatternInsightMetrics(records: StaffPatternInsightRecord[
   unreviewed_count: number;
   concern_count: number;
   strength_count: number;
-  evidence_verified_rate: number;
-  context_provided_rate: number;
-  alternatives_considered_rate: number;
-  manager_reviewed_rate: number;
-  staff_notified_rate: number;
-  staff_commented_rate: number;
-  action_plan_rate: number;
-  support_offered_rate: number;
-  training_identified_rate: number;
-  supervision_discussed_rate: number;
-  wellbeing_checked_rate: number;
-  recorded_promptly_rate: number;
+  evidence_verified_rate: number | null;
+  context_provided_rate: number | null;
+  alternatives_considered_rate: number | null;
+  manager_reviewed_rate: number | null;
+  staff_notified_rate: number | null;
+  staff_commented_rate: number | null;
+  action_plan_rate: number | null;
+  support_offered_rate: number | null;
+  training_identified_rate: number | null;
+  supervision_discussed_rate: number | null;
+  wellbeing_checked_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_staff: number;
   by_insight_type: Record<string, number>;
   by_insight_severity: Record<string, number>;
@@ -182,7 +182,7 @@ export function computePatternInsightMetrics(records: StaffPatternInsightRecord[
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

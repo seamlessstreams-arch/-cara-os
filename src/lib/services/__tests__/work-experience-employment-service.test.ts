@@ -37,15 +37,44 @@ function makeRecord(overrides?: Partial<WorkExperienceEmploymentRecord>): WorkEx
 
 describe("work-experience-employment-service", () => {
   describe("computeWorkExperienceMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeWorkExperienceMetrics([]); expect(m.total_placements).toBe(0); expect(m.not_ready_count).toBe(0); expect(m.not_suitable_count).toBe(0); expect(m.no_gain_count).toBe(0); expect(m.decline_count).toBe(0); expect(m.child_consented_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeWorkExperienceMetrics([]); expect(m.by_placement_type).toEqual({}); expect(m.by_readiness_level).toEqual({}); expect(m.by_employer_feedback).toEqual({}); expect(m.by_skill_acquisition).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeWorkExperienceMetrics([]);
+      expect(m.total_placements).toBe(0);;
+      expect(m.not_ready_count).toBe(0);
+      expect(m.not_suitable_count).toBe(0);
+      expect(m.no_gain_count).toBe(0);
+      expect(m.decline_count).toBe(0);
+      expect(m.child_consented_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeWorkExperienceMetrics([]);
+      expect(m.by_placement_type).toEqual({});
+      expect(m.by_readiness_level).toEqual({});
+      expect(m.by_employer_feedback).toEqual({});
+      expect(m.by_skill_acquisition).toEqual({});
+    });
     it("total_placements counts records", () => { expect(computeWorkExperienceMetrics([makeRecord(), makeRecord()]).total_placements).toBe(2); });
     it("counts not_ready", () => { expect(computeWorkExperienceMetrics([makeRecord({ readiness_level: "not_ready" })]).not_ready_count).toBe(1); });
     it("counts not_suitable", () => { expect(computeWorkExperienceMetrics([makeRecord({ employer_feedback: "not_suitable" })]).not_suitable_count).toBe(1); });
     it("does not count needs_improvement as not_suitable", () => { expect(computeWorkExperienceMetrics([makeRecord({ employer_feedback: "needs_improvement" })]).not_suitable_count).toBe(0); });
     it("counts no_gain", () => { expect(computeWorkExperienceMetrics([makeRecord({ skill_acquisition: "no_gain" })]).no_gain_count).toBe(1); });
     it("counts decline", () => { expect(computeWorkExperienceMetrics([makeRecord({ skill_acquisition: "decline" })]).decline_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeWorkExperienceMetrics([makeRecord()]); expect(m.child_consented_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.risk_assessed_rate).toBe(100); expect(m.safeguarding_rate).toBe(100); expect(m.dbs_verified_rate).toBe(100); expect(m.insurance_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.pathway_plan_rate).toBe(100); expect(m.transport_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeWorkExperienceMetrics([makeRecord()]);
+      expect(m.child_consented_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.risk_assessed_rate).toBe(100);
+      expect(m.safeguarding_rate).toBe(100);
+      expect(m.dbs_verified_rate).toBe(100);
+      expect(m.insurance_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.pathway_plan_rate).toBe(100);
+      expect(m.transport_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_consented_rate 0 when false", () => { expect(computeWorkExperienceMetrics([makeRecord({ child_consented: false })]).child_consented_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeWorkExperienceMetrics([makeRecord({ dbs_verified: true }), makeRecord({ dbs_verified: false }), makeRecord({ dbs_verified: true })]); expect(m.dbs_verified_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeWorkExperienceMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -58,16 +87,41 @@ describe("work-experience-employment-service", () => {
   describe("identifyWorkExperienceAlerts", () => {
     it("returns empty for clean", () => { expect(identifyWorkExperienceAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyWorkExperienceAlerts([])).toEqual([]); });
-    it("fires not_suitable_declining", () => { const a = identifyWorkExperienceAlerts([makeRecord({ employer_feedback: "not_suitable", skill_acquisition: "decline", child_name: "Jo" })]); expect(a[0].type).toBe("not_suitable_declining"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires not_suitable_declining", () => { 
+      const a = identifyWorkExperienceAlerts([makeRecord({ employer_feedback: "not_suitable", skill_acquisition: "decline", child_name: "Jo" })]);
+      expect(a[0].type).toBe("not_suitable_declining");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("not_suitable_declining per-record", () => { const a = identifyWorkExperienceAlerts([makeRecord({ id: "a-1", employer_feedback: "not_suitable", skill_acquisition: "decline" }), makeRecord({ id: "a-2", employer_feedback: "not_suitable", skill_acquisition: "decline" })]); expect(a.filter(x => x.type === "not_suitable_declining")).toHaveLength(2); });
     it("not_suitable without decline no critical", () => { expect(identifyWorkExperienceAlerts([makeRecord({ employer_feedback: "not_suitable", skill_acquisition: "good_gain" })]).find(x => x.type === "not_suitable_declining")).toBeUndefined(); });
     it("decline without not_suitable no critical", () => { expect(identifyWorkExperienceAlerts([makeRecord({ employer_feedback: "good", skill_acquisition: "decline" })]).find(x => x.type === "not_suitable_declining")).toBeUndefined(); });
-    it("fires no_safeguarding_check singular", () => { const a = identifyWorkExperienceAlerts([makeRecord({ safeguarding_checked: false })]); const f = a.find(x => x.type === "no_safeguarding_check"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 placement has"); });
-    it("fires no_dbs_verified singular", () => { const a = identifyWorkExperienceAlerts([makeRecord({ dbs_verified: false })]); const f = a.find(x => x.type === "no_dbs_verified"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 placement has"); });
+    it("fires no_safeguarding_check singular", () => { 
+      const a = identifyWorkExperienceAlerts([makeRecord({ safeguarding_checked: false })]);
+      const f = a.find(x => x.type === "no_safeguarding_check");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 placement has");
+    });
+    it("fires no_dbs_verified singular", () => { 
+      const a = identifyWorkExperienceAlerts([makeRecord({ dbs_verified: false })]);
+      const f = a.find(x => x.type === "no_dbs_verified");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 placement has");
+    });
     it("no_risk_assessment not for 1", () => { expect(identifyWorkExperienceAlerts([makeRecord({ risk_assessed: false })]).find(x => x.type === "no_risk_assessment")).toBeUndefined(); });
     it("no_risk_assessment fires for 2", () => { const a = identifyWorkExperienceAlerts([makeRecord({ risk_assessed: false }), makeRecord({ risk_assessed: false })]); expect(a.find(x => x.type === "no_risk_assessment")).toBeDefined(); expect(a.find(x => x.type === "no_risk_assessment")!.severity).toBe("medium"); });
     it("no_pathway_plan not for 1", () => { expect(identifyWorkExperienceAlerts([makeRecord({ pathway_plan_updated: false })]).find(x => x.type === "no_pathway_plan")).toBeUndefined(); });
     it("no_pathway_plan fires for 2", () => { const a = identifyWorkExperienceAlerts([makeRecord({ pathway_plan_updated: false }), makeRecord({ pathway_plan_updated: false })]); expect(a.find(x => x.type === "no_pathway_plan")).toBeDefined(); expect(a.find(x => x.type === "no_pathway_plan")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyWorkExperienceAlerts([makeRecord({ employer_feedback: "not_suitable", skill_acquisition: "decline", safeguarding_checked: false, dbs_verified: false, risk_assessed: false, pathway_plan_updated: false }), makeRecord({ safeguarding_checked: false, dbs_verified: false, risk_assessed: false, pathway_plan_updated: false })]); const types = a.map(x => x.type); expect(types).toContain("not_suitable_declining"); expect(types).toContain("no_safeguarding_check"); expect(types).toContain("no_dbs_verified"); expect(types).toContain("no_risk_assessment"); expect(types).toContain("no_pathway_plan"); });
+    it("fires all applicable", () => { 
+      const a = identifyWorkExperienceAlerts([makeRecord({ employer_feedback: "not_suitable", skill_acquisition: "decline", safeguarding_checked: false, dbs_verified: false, risk_assessed: false, pathway_plan_updated: false }), makeRecord({ safeguarding_checked: false, dbs_verified: false, risk_assessed: false, pathway_plan_updated: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("not_suitable_declining");
+      expect(types).toContain("no_safeguarding_check");
+      expect(types).toContain("no_dbs_verified");
+      expect(types).toContain("no_risk_assessment");
+      expect(types).toContain("no_pathway_plan");
+    });
   });
 });

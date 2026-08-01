@@ -47,7 +47,7 @@ describe("computeMedicationSideEffectsMetrics", () => {
     expect(m.life_threatening_count).toBe(0);
     expect(m.gp_not_contacted_count).toBe(0);
     expect(m.awaiting_review_count).toBe(0);
-    expect(m.child_informed_rate).toBe(0);
+    expect(m.child_informed_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

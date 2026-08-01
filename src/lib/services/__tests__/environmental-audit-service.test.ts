@@ -36,13 +36,41 @@ function makeRecord(overrides?: Partial<EnvironmentalAuditRecord>): Environmenta
 
 describe("environmental-audit-service", () => {
   describe("computeEnvironmentalAuditMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeEnvironmentalAuditMetrics([]); expect(m.total_audits).toBe(0); expect(m.outstanding_count).toBe(0); expect(m.good_count).toBe(0); expect(m.requires_improvement_count).toBe(0); expect(m.inadequate_count).toBe(0); expect(m.homely_feel_rate).toBe(0); expect(m.immediate_priority_count).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeEnvironmentalAuditMetrics([]); expect(m.by_audit_area).toEqual({}); expect(m.by_audit_rating).toEqual({}); expect(m.by_audit_type).toEqual({}); expect(m.by_priority_level).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeEnvironmentalAuditMetrics([]);
+      expect(m.total_audits).toBe(0);;
+      expect(m.outstanding_count).toBe(0);
+      expect(m.good_count).toBe(0);
+      expect(m.requires_improvement_count).toBe(0);
+      expect(m.inadequate_count).toBe(0);
+      expect(m.homely_feel_rate).toBeNull();;
+      expect(m.immediate_priority_count).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeEnvironmentalAuditMetrics([]);
+      expect(m.by_audit_area).toEqual({});
+      expect(m.by_audit_rating).toEqual({});
+      expect(m.by_audit_type).toEqual({});
+      expect(m.by_priority_level).toEqual({});
+    });
     it("counts outstanding", () => { expect(computeEnvironmentalAuditMetrics([makeRecord({ audit_rating: "outstanding" })]).outstanding_count).toBe(1); });
     it("counts good", () => { expect(computeEnvironmentalAuditMetrics([makeRecord()]).good_count).toBe(1); });
     it("counts requires_improvement", () => { expect(computeEnvironmentalAuditMetrics([makeRecord({ audit_rating: "requires_improvement" })]).requires_improvement_count).toBe(1); });
     it("counts inadequate", () => { expect(computeEnvironmentalAuditMetrics([makeRecord({ audit_rating: "inadequate" })]).inadequate_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeEnvironmentalAuditMetrics([makeRecord()]); expect(m.homely_feel_rate).toBe(100); expect(m.child_friendly_rate).toBe(100); expect(m.personalised_rate).toBe(100); expect(m.clean_and_tidy_rate).toBe(100); expect(m.well_maintained_rate).toBe(100); expect(m.safe_environment_rate).toBe(100); expect(m.accessible_rate).toBe(100); expect(m.adequate_lighting_rate).toBe(100); expect(m.temperature_comfortable_rate).toBe(100); expect(m.privacy_maintained_rate).toBe(100); expect(m.children_consulted_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeEnvironmentalAuditMetrics([makeRecord()]);
+      expect(m.homely_feel_rate).toBe(100);
+      expect(m.child_friendly_rate).toBe(100);
+      expect(m.personalised_rate).toBe(100);
+      expect(m.clean_and_tidy_rate).toBe(100);
+      expect(m.well_maintained_rate).toBe(100);
+      expect(m.safe_environment_rate).toBe(100);
+      expect(m.accessible_rate).toBe(100);
+      expect(m.adequate_lighting_rate).toBe(100);
+      expect(m.temperature_comfortable_rate).toBe(100);
+      expect(m.privacy_maintained_rate).toBe(100);
+      expect(m.children_consulted_rate).toBe(100);
+    });
     it("homely_feel_rate 0 when false", () => { expect(computeEnvironmentalAuditMetrics([makeRecord({ homely_feel: false })]).homely_feel_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeEnvironmentalAuditMetrics([makeRecord({ homely_feel: true }), makeRecord({ homely_feel: false }), makeRecord({ homely_feel: true })]); expect(m.homely_feel_rate).toBe(66.7); });
     it("immediate_priority_count", () => { const m = computeEnvironmentalAuditMetrics([makeRecord({ priority_level: "immediate" }), makeRecord({ priority_level: "immediate" }), makeRecord({ priority_level: "high" })]); expect(m.immediate_priority_count).toBe(2); });
@@ -55,10 +83,21 @@ describe("environmental-audit-service", () => {
   describe("identifyEnvironmentalAuditAlerts", () => {
     it("returns empty for clean", () => { expect(identifyEnvironmentalAuditAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyEnvironmentalAuditAlerts([])).toEqual([]); });
-    it("fires inadequate_unsafe", () => { const a = identifyEnvironmentalAuditAlerts([makeRecord({ audit_rating: "inadequate", safe_environment: false, area_name: "Bathroom", audit_date: "2026-05-14" })]); expect(a[0].type).toBe("inadequate_unsafe"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Bathroom"); });
+    it("fires inadequate_unsafe", () => { 
+      const a = identifyEnvironmentalAuditAlerts([makeRecord({ audit_rating: "inadequate", safe_environment: false, area_name: "Bathroom", audit_date: "2026-05-14" })]);
+      expect(a[0].type).toBe("inadequate_unsafe");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Bathroom");
+    });
     it("inadequate_unsafe per-record", () => { const a = identifyEnvironmentalAuditAlerts([makeRecord({ id: "a-1", audit_rating: "inadequate", safe_environment: false }), makeRecord({ id: "a-2", audit_rating: "inadequate", safe_environment: false })]); expect(a.filter(x => x.type === "inadequate_unsafe")).toHaveLength(2); });
     it("no inadequate_unsafe if safe", () => { const a = identifyEnvironmentalAuditAlerts([makeRecord({ audit_rating: "inadequate", safe_environment: true })]); expect(a.filter(x => x.type === "inadequate_unsafe")).toHaveLength(0); });
-    it("fires immediate_priority singular", () => { const a = identifyEnvironmentalAuditAlerts([makeRecord({ priority_level: "immediate" })]); const f = a.find(x => x.type === "immediate_priority"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 area has"); });
+    it("fires immediate_priority singular", () => { 
+      const a = identifyEnvironmentalAuditAlerts([makeRecord({ priority_level: "immediate" })]);
+      const f = a.find(x => x.type === "immediate_priority");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 area has");
+    });
     it("immediate_priority plural", () => { const a = identifyEnvironmentalAuditAlerts([makeRecord({ priority_level: "immediate" }), makeRecord({ priority_level: "immediate" })]); const f = a.find(x => x.type === "immediate_priority"); expect(f!.message).toContain("2 areas have"); });
     it("not_child_friendly not for 1", () => { expect(identifyEnvironmentalAuditAlerts([makeRecord({ child_friendly: false })]).find(x => x.type === "not_child_friendly")).toBeUndefined(); });
     it("not_child_friendly fires for 2", () => { const a = identifyEnvironmentalAuditAlerts([makeRecord({ child_friendly: false }), makeRecord({ child_friendly: false })]); expect(a.find(x => x.type === "not_child_friendly")).toBeDefined(); });
@@ -66,6 +105,14 @@ describe("environmental-audit-service", () => {
     it("not_personalised fires for 3", () => { const a = identifyEnvironmentalAuditAlerts([makeRecord({ personalised: false }), makeRecord({ personalised: false }), makeRecord({ personalised: false })]); expect(a.find(x => x.type === "not_personalised")).toBeDefined(); });
     it("children_not_consulted not for 2", () => { expect(identifyEnvironmentalAuditAlerts([makeRecord({ children_consulted: false }), makeRecord({ children_consulted: false })]).find(x => x.type === "children_not_consulted")).toBeUndefined(); });
     it("children_not_consulted fires for 3", () => { const a = identifyEnvironmentalAuditAlerts([makeRecord({ children_consulted: false }), makeRecord({ children_consulted: false }), makeRecord({ children_consulted: false })]); expect(a.find(x => x.type === "children_not_consulted")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyEnvironmentalAuditAlerts([makeRecord({ audit_rating: "inadequate", safe_environment: false, priority_level: "immediate", child_friendly: false, personalised: false, children_consulted: false }), makeRecord({ child_friendly: false, personalised: false, children_consulted: false }), makeRecord({ personalised: false, children_consulted: false })]); const types = a.map(x => x.type); expect(types).toContain("inadequate_unsafe"); expect(types).toContain("immediate_priority"); expect(types).toContain("not_child_friendly"); expect(types).toContain("not_personalised"); expect(types).toContain("children_not_consulted"); });
+    it("fires all applicable", () => { 
+      const a = identifyEnvironmentalAuditAlerts([makeRecord({ audit_rating: "inadequate", safe_environment: false, priority_level: "immediate", child_friendly: false, personalised: false, children_consulted: false }), makeRecord({ child_friendly: false, personalised: false, children_consulted: false }), makeRecord({ personalised: false, children_consulted: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("inadequate_unsafe");
+      expect(types).toContain("immediate_priority");
+      expect(types).toContain("not_child_friendly");
+      expect(types).toContain("not_personalised");
+      expect(types).toContain("children_not_consulted");
+    });
   });
 });

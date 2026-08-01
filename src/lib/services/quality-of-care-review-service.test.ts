@@ -43,11 +43,11 @@ describe("computeQualityOfCareMetrics", () => {
     expect(m.requires_improvement_count).toBe(0);
     expect(m.immediate_priority_count).toBe(0);
     expect(m.actions_not_assigned_count).toBe(0);
-    expect(m.children_consulted_rate).toBe(0);
-    expect(m.staff_consulted_rate).toBe(0);
-    expect(m.external_feedback_rate).toBe(0);
-    expect(m.reg44_reviewed_rate).toBe(0);
-    expect(m.shared_with_ofsted_rate).toBe(0);
+    expect(m.children_consulted_rate).toBeNull();;
+    expect(m.staff_consulted_rate).toBeNull();;
+    expect(m.external_feedback_rate).toBeNull();;
+    expect(m.reg44_reviewed_rate).toBeNull();;
+    expect(m.shared_with_ofsted_rate).toBeNull();;
     expect(m.unique_reviewers).toBe(0);
   });
 

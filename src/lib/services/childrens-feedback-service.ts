@@ -146,20 +146,20 @@ export function computeFeedbackMetrics(
   survey_count: number;
   session_count: number;
   suggestion_count: number;
-  positive_rate: number;
-  negative_rate: number;
+  positive_rate: number | null;
+  negative_rate: number | null;
   neutral_count: number;
-  completed_rate: number;
+  completed_rate: number | null;
   pending_count: number;
   not_actioned_count: number;
-  child_chose_method_rate: number;
-  child_comfortable_rate: number;
-  anonymous_offered_rate: number;
-  feedback_discussed_rate: number;
-  changes_implemented_rate: number;
-  child_informed_rate: number;
-  child_satisfied_rate: number;
-  staff_responsive_rate: number;
+  child_chose_method_rate: number | null;
+  child_comfortable_rate: number | null;
+  anonymous_offered_rate: number | null;
+  feedback_discussed_rate: number | null;
+  changes_implemented_rate: number | null;
+  child_informed_rate: number | null;
+  child_satisfied_rate: number | null;
+  staff_responsive_rate: number | null;
   unique_children: number;
   by_feedback_type: Record<string, number>;
   by_satisfaction_rating: Record<string, number>;
@@ -176,7 +176,7 @@ export function computeFeedbackMetrics(
   const positiveRate =
     records.length > 0
       ? Math.round((positive / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const negative = records.filter(
     (r) => r.satisfaction_rating === "unhappy" || r.satisfaction_rating === "very_unhappy",
@@ -184,7 +184,7 @@ export function computeFeedbackMetrics(
   const negativeRate =
     records.length > 0
       ? Math.round((negative / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const neutralCount = records.filter((r) => r.satisfaction_rating === "neutral").length;
 
@@ -192,7 +192,7 @@ export function computeFeedbackMetrics(
   const completedRate =
     records.length > 0
       ? Math.round((completed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const pending = records.filter((r) => r.response_status === "pending").length;
   const notActioned = records.filter((r) => r.response_status === "not_actioned").length;
@@ -201,7 +201,7 @@ export function computeFeedbackMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

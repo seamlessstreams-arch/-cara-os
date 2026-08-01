@@ -38,11 +38,11 @@ describe("computeGiftMetrics", () => {
     expect(result.received_count).toBe(0);
     expect(result.given_count).toBe(0);
     expect(result.total_value).toBe(0);
-    expect(result.average_value).toBe(0);
-    expect(result.approved_rate).toBe(0);
-    expect(result.declared_rate).toBe(0);
-    expect(result.receipt_kept_rate).toBe(0);
-    expect(result.policy_compliant_rate).toBe(0);
+    expect(result.average_value).toBeNull();;
+    expect(result.approved_rate).toBeNull();;
+    expect(result.declared_rate).toBeNull();;
+    expect(result.receipt_kept_rate).toBeNull();;
+    expect(result.policy_compliant_rate).toBeNull();;
   });
 
   it("computes counts and rates correctly", () => {

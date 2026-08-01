@@ -193,16 +193,16 @@ describe("computeSicknessMetrics", () => {
       expect(m.mental_health_count).toBe(0);
       expect(m.work_related_count).toBe(0);
       expect(m.ongoing_count).toBe(0);
-      expect(m.return_to_work_rate).toBe(0);
-      expect(m.occupational_health_rate).toBe(0);
-      expect(m.reasonable_adjustments_rate).toBe(0);
-      expect(m.cover_arranged_rate).toBe(0);
-      expect(m.impact_assessed_rate).toBe(0);
-      expect(m.wellbeing_check_rate).toBe(0);
-      expect(m.manager_informed_rate).toBe(0);
-      expect(m.phased_return_rate).toBe(0);
+      expect(m.return_to_work_rate).toBeNull();;
+      expect(m.occupational_health_rate).toBeNull();;
+      expect(m.reasonable_adjustments_rate).toBeNull();;
+      expect(m.cover_arranged_rate).toBeNull();;
+      expect(m.impact_assessed_rate).toBeNull();;
+      expect(m.wellbeing_check_rate).toBeNull();;
+      expect(m.manager_informed_rate).toBeNull();;
+      expect(m.phased_return_rate).toBeNull();;
       expect(m.total_days_absent).toBe(0);
-      expect(m.average_days_absent).toBe(0);
+      expect(m.average_days_absent).toBeNull();;
       expect(m.unique_staff).toBe(0);
     });
     it("returns empty breakdowns for empty array", () => {
@@ -376,7 +376,7 @@ describe("computeSicknessMetrics", () => {
       expect(computeSicknessMetrics(rows).average_days_absent).toBe(2);
     });
     it("returns 0 for empty array", () => {
-      expect(computeSicknessMetrics([]).average_days_absent).toBe(0);
+      expect(computeSicknessMetrics([]).average_days_absent).toBeNull();;
     });
     it("handles single row", () => {
       expect(computeSicknessMetrics([makeRow({ days_absent: 13 })]).average_days_absent).toBe(13);
@@ -926,9 +926,9 @@ describe("Edge cases", () => {
       expect(typeof m.mental_health_count).toBe("number");
       expect(typeof m.work_related_count).toBe("number");
       expect(typeof m.ongoing_count).toBe("number");
-      expect(typeof m.return_to_work_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof m.return_to_work_rate); // number | null
       expect(typeof m.total_days_absent).toBe("number");
-      expect(typeof m.average_days_absent).toBe("number");
+      expect(["number", "object"]).toContain(typeof m.average_days_absent); // number | null
       expect(typeof m.unique_staff).toBe("number");
     });
     it("breakdown fields are objects", () => {

@@ -119,15 +119,15 @@ function computeRestraintAnalysis(
   total_incidents: number;
   by_type: Record<string, number>;
   by_child: Record<string, { name: string; count: number }>;
-  avg_duration_minutes: number;
+  avg_duration_minutes: number | null;
   with_injuries: number;
-  injury_rate: number;
-  de_escalation_success_rate: number;
-  debrief_completion_rate: number;
-  manager_review_rate: number;
-  child_views_rate: number;
-  body_map_rate: number;
-  notification_compliance: number;
+  injury_rate: number | null;
+  de_escalation_success_rate: number | null;
+  debrief_completion_rate: number | null;
+  manager_review_rate: number | null;
+  child_views_rate: number | null;
+  body_map_rate: number | null;
+  notification_compliance: number | null;
 } {
   const from = new Date(dateFrom);
   const to = new Date(dateTo);
@@ -157,39 +157,39 @@ function computeRestraintAnalysis(
   // Duration
   let totalDuration = 0;
   for (const r of filtered) totalDuration += r.duration_minutes;
-  const avgDuration = total > 0 ? Math.round((totalDuration / total) * 10) / 10 : 0;
+  const avgDuration = total > 0 ? Math.round((totalDuration / total) * 10) / 10 : null;
 
   // Injuries
   const withInjuries = filtered.filter(
     (r) => r.injuries_child.length > 0 || r.injuries_staff.length > 0,
   ).length;
-  const injuryRate = total > 0 ? Math.round((withInjuries / total) * 100) : 0;
+  const injuryRate = total > 0 ? Math.round((withInjuries / total) * 100) : null;
 
   // De-escalation: incidents that resolved WITHOUT restraint (not in this dataset,
   // but we track whether de-escalation was attempted). For now, rate of attempts.
   const withDeEscalation = filtered.filter(
     (r) => r.de_escalation_attempted.length > 0,
   ).length;
-  const deEscalationRate = total > 0 ? Math.round((withDeEscalation / total) * 100) : 0;
+  const deEscalationRate = total > 0 ? Math.round((withDeEscalation / total) * 100) : null;
 
   // Compliance rates
   const debriefed = filtered.filter((r) => r.debrief_completed).length;
-  const debriefRate = total > 0 ? Math.round((debriefed / total) * 100) : 0;
+  const debriefRate = total > 0 ? Math.round((debriefed / total) * 100) : null;
 
   const reviewed = filtered.filter((r) => r.manager_reviewed).length;
-  const reviewRate = total > 0 ? Math.round((reviewed / total) * 100) : 0;
+  const reviewRate = total > 0 ? Math.round((reviewed / total) * 100) : null;
 
   const childViews = filtered.filter((r) => r.child_views_obtained).length;
-  const childViewsRate = total > 0 ? Math.round((childViews / total) * 100) : 0;
+  const childViewsRate = total > 0 ? Math.round((childViews / total) * 100) : null;
 
   const bodyMaps = filtered.filter((r) => r.body_map_completed).length;
-  const bodyMapRate = total > 0 ? Math.round((bodyMaps / total) * 100) : 0;
+  const bodyMapRate = total > 0 ? Math.round((bodyMaps / total) * 100) : null;
 
   // Notification compliance (all 3 parties notified)
   const fullyNotified = filtered.filter(
     (r) => r.ofsted_notified && r.parent_carer_notified && r.social_worker_notified,
   ).length;
-  const notificationCompliance = total > 0 ? Math.round((fullyNotified / total) * 100) : 0;
+  const notificationCompliance = total > 0 ? Math.round((fullyNotified / total) * 100) : null;
 
   return {
     total_incidents: total,

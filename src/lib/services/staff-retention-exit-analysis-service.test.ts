@@ -45,12 +45,12 @@ describe("computeStaffRetentionMetrics", () => {
     expect(m.burnout_count).toBe(0);
     expect(m.pay_dissatisfaction_count).toBe(0);
     expect(m.critical_risk_count).toBe(0);
-    expect(m.exit_interview_rate).toBe(0);
-    expect(m.notice_served_rate).toBe(0);
-    expect(m.knowledge_transfer_rate).toBe(0);
-    expect(m.counter_offer_rate).toBe(0);
-    expect(m.replacement_rate).toBe(0);
-    expect(m.stay_interview_rate).toBe(0);
+    expect(m.exit_interview_rate).toBeNull();;
+    expect(m.notice_served_rate).toBeNull();;
+    expect(m.knowledge_transfer_rate).toBeNull();;
+    expect(m.counter_offer_rate).toBeNull();;
+    expect(m.replacement_rate).toBeNull();;
+    expect(m.stay_interview_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<RestorativeJusticePracticeRecord>): Rest
 
 describe("restorative-justice-practice-service", () => {
   describe("computeRestorativeJusticeMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeRestorativeJusticeMetrics([]); expect(m.total_sessions).toBe(0); expect(m.escalated_count).toBe(0); expect(m.unresolved_count).toBe(0); expect(m.coerced_count).toBe(0); expect(m.worsened_count).toBe(0); expect(m.child_voice_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeRestorativeJusticeMetrics([]); expect(m.by_practice_type).toEqual({}); expect(m.by_outcome_level).toEqual({}); expect(m.by_participation_willingness).toEqual({}); expect(m.by_relationship_impact).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeRestorativeJusticeMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.escalated_count).toBe(0);
+      expect(m.unresolved_count).toBe(0);
+      expect(m.coerced_count).toBe(0);
+      expect(m.worsened_count).toBe(0);
+      expect(m.child_voice_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeRestorativeJusticeMetrics([]);
+      expect(m.by_practice_type).toEqual({});
+      expect(m.by_outcome_level).toEqual({});
+      expect(m.by_participation_willingness).toEqual({});
+      expect(m.by_relationship_impact).toEqual({});
+    });
     it("total_sessions counts records", () => { expect(computeRestorativeJusticeMetrics([makeRecord(), makeRecord()]).total_sessions).toBe(2); });
     it("counts escalated", () => { expect(computeRestorativeJusticeMetrics([makeRecord({ outcome_level: "escalated" })]).escalated_count).toBe(1); });
     it("counts unresolved", () => { expect(computeRestorativeJusticeMetrics([makeRecord({ outcome_level: "unresolved" })]).unresolved_count).toBe(1); });
@@ -48,7 +63,21 @@ describe("restorative-justice-practice-service", () => {
     it("counts worsened for worsened", () => { expect(computeRestorativeJusticeMetrics([makeRecord({ relationship_impact: "worsened" })]).worsened_count).toBe(1); });
     it("counts worsened for significantly_worsened", () => { expect(computeRestorativeJusticeMetrics([makeRecord({ relationship_impact: "significantly_worsened" })]).worsened_count).toBe(1); });
     it("does not count no_change as worsened", () => { expect(computeRestorativeJusticeMetrics([makeRecord({ relationship_impact: "no_change" })]).worsened_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeRestorativeJusticeMetrics([makeRecord()]); expect(m.child_voice_rate).toBe(100); expect(m.victim_supported_rate).toBe(100); expect(m.voluntary_rate).toBe(100); expect(m.agreement_rate).toBe(100); expect(m.follow_up_rate).toBe(100); expect(m.empathy_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.staff_trained_rate).toBe(100); expect(m.safeguarding_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeRestorativeJusticeMetrics([makeRecord()]);
+      expect(m.child_voice_rate).toBe(100);
+      expect(m.victim_supported_rate).toBe(100);
+      expect(m.voluntary_rate).toBe(100);
+      expect(m.agreement_rate).toBe(100);
+      expect(m.follow_up_rate).toBe(100);
+      expect(m.empathy_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.staff_trained_rate).toBe(100);
+      expect(m.safeguarding_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_voice_rate 0 when false", () => { expect(computeRestorativeJusticeMetrics([makeRecord({ child_voice_heard: false })]).child_voice_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeRestorativeJusticeMetrics([makeRecord({ staff_trained: true }), makeRecord({ staff_trained: false }), makeRecord({ staff_trained: true })]); expect(m.staff_trained_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeRestorativeJusticeMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -61,18 +90,43 @@ describe("restorative-justice-practice-service", () => {
   describe("identifyRestorativeJusticeAlerts", () => {
     it("returns empty for clean", () => { expect(identifyRestorativeJusticeAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyRestorativeJusticeAlerts([])).toEqual([]); });
-    it("fires coerced_worsened", () => { const a = identifyRestorativeJusticeAlerts([makeRecord({ participation_willingness: "coerced", relationship_impact: "worsened", child_name: "Jo" })]); expect(a[0].type).toBe("coerced_worsened"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires coerced_worsened", () => { 
+      const a = identifyRestorativeJusticeAlerts([makeRecord({ participation_willingness: "coerced", relationship_impact: "worsened", child_name: "Jo" })]);
+      expect(a[0].type).toBe("coerced_worsened");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("coerced_worsened for significantly_worsened too", () => { const a = identifyRestorativeJusticeAlerts([makeRecord({ participation_willingness: "coerced", relationship_impact: "significantly_worsened" })]); expect(a.filter(x => x.type === "coerced_worsened")).toHaveLength(1); });
     it("coerced_worsened per-record", () => { const a = identifyRestorativeJusticeAlerts([makeRecord({ id: "a-1", participation_willingness: "coerced", relationship_impact: "worsened" }), makeRecord({ id: "a-2", participation_willingness: "coerced", relationship_impact: "significantly_worsened" })]); expect(a.filter(x => x.type === "coerced_worsened")).toHaveLength(2); });
     it("coerced with improved no critical", () => { expect(identifyRestorativeJusticeAlerts([makeRecord({ participation_willingness: "coerced", relationship_impact: "improved" })]).find(x => x.type === "coerced_worsened")).toBeUndefined(); });
     it("willing with worsened no critical", () => { expect(identifyRestorativeJusticeAlerts([makeRecord({ participation_willingness: "fully_willing", relationship_impact: "worsened" })]).find(x => x.type === "coerced_worsened")).toBeUndefined(); });
-    it("fires child_voice_not_heard singular", () => { const a = identifyRestorativeJusticeAlerts([makeRecord({ child_voice_heard: false })]); const f = a.find(x => x.type === "child_voice_not_heard"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires child_voice_not_heard singular", () => { 
+      const a = identifyRestorativeJusticeAlerts([makeRecord({ child_voice_heard: false })]);
+      const f = a.find(x => x.type === "child_voice_not_heard");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("child_voice_not_heard plural", () => { const a = identifyRestorativeJusticeAlerts([makeRecord({ child_voice_heard: false }), makeRecord({ child_voice_heard: false })]); const f = a.find(x => x.type === "child_voice_not_heard"); expect(f!.message).toContain("2 sessions have"); });
-    it("fires victim_not_supported singular", () => { const a = identifyRestorativeJusticeAlerts([makeRecord({ victim_supported: false })]); const f = a.find(x => x.type === "victim_not_supported"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires victim_not_supported singular", () => { 
+      const a = identifyRestorativeJusticeAlerts([makeRecord({ victim_supported: false })]);
+      const f = a.find(x => x.type === "victim_not_supported");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("staff_not_trained not for 1", () => { expect(identifyRestorativeJusticeAlerts([makeRecord({ staff_trained: false })]).find(x => x.type === "staff_not_trained")).toBeUndefined(); });
     it("staff_not_trained fires for 2", () => { const a = identifyRestorativeJusticeAlerts([makeRecord({ staff_trained: false }), makeRecord({ staff_trained: false })]); expect(a.find(x => x.type === "staff_not_trained")).toBeDefined(); expect(a.find(x => x.type === "staff_not_trained")!.severity).toBe("medium"); });
     it("no_follow_up not for 1", () => { expect(identifyRestorativeJusticeAlerts([makeRecord({ follow_up_planned: false })]).find(x => x.type === "no_follow_up")).toBeUndefined(); });
     it("no_follow_up fires for 2", () => { const a = identifyRestorativeJusticeAlerts([makeRecord({ follow_up_planned: false }), makeRecord({ follow_up_planned: false })]); expect(a.find(x => x.type === "no_follow_up")).toBeDefined(); expect(a.find(x => x.type === "no_follow_up")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyRestorativeJusticeAlerts([makeRecord({ participation_willingness: "coerced", relationship_impact: "worsened", child_voice_heard: false, victim_supported: false, staff_trained: false, follow_up_planned: false }), makeRecord({ child_voice_heard: false, victim_supported: false, staff_trained: false, follow_up_planned: false })]); const types = a.map(x => x.type); expect(types).toContain("coerced_worsened"); expect(types).toContain("child_voice_not_heard"); expect(types).toContain("victim_not_supported"); expect(types).toContain("staff_not_trained"); expect(types).toContain("no_follow_up"); });
+    it("fires all applicable", () => { 
+      const a = identifyRestorativeJusticeAlerts([makeRecord({ participation_willingness: "coerced", relationship_impact: "worsened", child_voice_heard: false, victim_supported: false, staff_trained: false, follow_up_planned: false }), makeRecord({ child_voice_heard: false, victim_supported: false, staff_trained: false, follow_up_planned: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("coerced_worsened");
+      expect(types).toContain("child_voice_not_heard");
+      expect(types).toContain("victim_not_supported");
+      expect(types).toContain("staff_not_trained");
+      expect(types).toContain("no_follow_up");
+    });
   });
 });

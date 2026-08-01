@@ -164,14 +164,14 @@ describe("computeDbsMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeDbsMetrics([]);
-    expect(m.enhanced_check_rate).toBe(0);
-    expect(m.barred_list_rate).toBe(0);
-    expect(m.update_service_rate).toBe(0);
-    expect(m.identity_verified_rate).toBe(0);
-    expect(m.right_to_work_rate).toBe(0);
-    expect(m.risk_assessment_rate).toBe(0);
-    expect(m.overseas_check_rate).toBe(0);
-    expect(m.references_verified_rate).toBe(0);
+    expect(m.enhanced_check_rate).toBeNull();;
+    expect(m.barred_list_rate).toBeNull();;
+    expect(m.update_service_rate).toBeNull();;
+    expect(m.identity_verified_rate).toBeNull();;
+    expect(m.right_to_work_rate).toBeNull();;
+    expect(m.risk_assessment_rate).toBeNull();;
+    expect(m.overseas_check_rate).toBeNull();;
+    expect(m.references_verified_rate).toBeNull();;
   });
 
   // ── total_checks ───────────────────────────────────────────────────────

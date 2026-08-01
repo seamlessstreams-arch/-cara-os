@@ -148,18 +148,18 @@ export function computePrivacyDignityMetrics(
   unacceptable_count: number;
   intrusion_count: number;
   no_response_count: number;
-  child_views_rate: number;
-  knock_rate: number;
-  personal_space_rate: number;
-  confidentiality_rate: number;
-  complaints_process_rate: number;
-  staff_awareness_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  intimate_care_rate: number;
-  cctv_rate: number;
-  dignity_language_rate: number;
-  recorded_promptly_rate: number;
+  child_views_rate: number | null;
+  knock_rate: number | null;
+  personal_space_rate: number | null;
+  confidentiality_rate: number | null;
+  complaints_process_rate: number | null;
+  staff_awareness_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  intimate_care_rate: number | null;
+  cctv_rate: number | null;
+  dignity_language_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_privacy_area: Record<string, number>;
   by_dignity_rating: Record<string, number>;
@@ -175,7 +175,7 @@ export function computePrivacyDignityMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byArea: Record<string, number> = {};

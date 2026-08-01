@@ -96,57 +96,57 @@ describe("computeOfstedReadinessMetrics", () => {
 
     it("returns zero evidence_documented_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.evidence_documented_rate).toBe(0);
+      expect(m.evidence_documented_rate).toBeNull();;
     });
 
     it("returns zero staff_prepared_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.staff_prepared_rate).toBe(0);
+      expect(m.staff_prepared_rate).toBeNull();;
     });
 
     it("returns zero children_consulted_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.children_consulted_rate).toBe(0);
+      expect(m.children_consulted_rate).toBeNull();;
     });
 
     it("returns zero environment_ready_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.environment_ready_rate).toBe(0);
+      expect(m.environment_ready_rate).toBeNull();;
     });
 
     it("returns zero policies_current_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.policies_current_rate).toBe(0);
+      expect(m.policies_current_rate).toBeNull();;
     });
 
     it("returns zero records_accessible_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.records_accessible_rate).toBe(0);
+      expect(m.records_accessible_rate).toBeNull();;
     });
 
     it("returns zero improvement_completed_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.improvement_completed_rate).toBe(0);
+      expect(m.improvement_completed_rate).toBeNull();;
     });
 
     it("returns zero self_evaluation_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.self_evaluation_rate).toBe(0);
+      expect(m.self_evaluation_rate).toBeNull();;
     });
 
     it("returns zero mock_inspection_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.mock_inspection_rate).toBe(0);
+      expect(m.mock_inspection_rate).toBeNull();;
     });
 
     it("returns zero regulatory_met_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.regulatory_met_rate).toBe(0);
+      expect(m.regulatory_met_rate).toBeNull();;
     });
 
     it("returns zero previous_recommendations_rate", () => {
       const m = computeOfstedReadinessMetrics([]);
-      expect(m.previous_recommendations_rate).toBe(0);
+      expect(m.previous_recommendations_rate).toBeNull();;
     });
 
     it("returns empty area_breakdown", () => {

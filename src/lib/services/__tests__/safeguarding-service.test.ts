@@ -184,7 +184,7 @@ describe("computeSafeguardingCompliance", () => {
     expect(result.ofsted_notifications_required).toBe(0);
     expect(result.ofsted_notifications_sent).toBe(0);
     expect(result.notification_compliance_percentage).toBe(100);
-    expect(result.average_resolution_days).toBe(0);
+    expect(result.average_resolution_days).toBeNull();;
     expect(result.by_type).toEqual({});
     expect(result.by_status).toEqual({});
   });
@@ -329,7 +329,7 @@ describe("computeSafeguardingCompliance", () => {
   it("returns 0 average resolution days when no closed referrals", () => {
     const refs = [referral({ status: "pending" })];
     const result = computeSafeguardingCompliance(refs, NOW);
-    expect(result.average_resolution_days).toBe(0);
+    expect(result.average_resolution_days).toBeNull();;
   });
 
   it("ignores closed referrals without outcome_date for resolution average", () => {
@@ -342,7 +342,7 @@ describe("computeSafeguardingCompliance", () => {
       }),
     ];
     const result = computeSafeguardingCompliance(refs, NOW);
-    expect(result.average_resolution_days).toBe(0);
+    expect(result.average_resolution_days).toBeNull();;
   });
 });
 

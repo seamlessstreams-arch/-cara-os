@@ -147,15 +147,15 @@ export function computeStabilityMetrics(
   children_with_moves: number;
   planned_moves: number;
   unplanned_moves: number;
-  planned_rate: number;
+  planned_rate: number | null;
   breakdowns: number;
   safeguarding_moves: number;
-  average_placement_duration: number;
+  average_placement_duration: number | null;
   disruption_meetings_held: number;
-  disruption_meeting_rate: number;
-  child_views_sought_rate: number;
-  social_worker_consulted_rate: number;
-  irp_updated_rate: number;
+  disruption_meeting_rate: number | null;
+  child_views_sought_rate: number | null;
+  social_worker_consulted_rate: number | null;
+  irp_updated_rate: number | null;
   children_with_multiple_moves: number;
   by_placement_type: Record<string, number>;
   by_move_reason: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeStabilityMetrics(
   const plannedRate =
     moves.length > 0
       ? Math.round((planned / moves.length) * 1000) / 10
-      : 0;
+      : null;
 
   const breakdowns = moves.filter((m) => m.move_reason === "placement_breakdown").length;
   const safeguardingMoves = moves.filter((m) => m.move_reason === "safeguarding").length;
@@ -175,31 +175,31 @@ export function computeStabilityMetrics(
   const avgDuration =
     moves.length > 0
       ? Math.round(totalDuration / moves.length)
-      : 0;
+      : null;
 
   const disruptionHeld = moves.filter((m) => m.disruption_meeting_held).length;
   const disruptionRate =
     moves.length > 0
       ? Math.round((disruptionHeld / moves.length) * 1000) / 10
-      : 0;
+      : null;
 
   const viewsSought = moves.filter((m) => m.child_views_sought).length;
   const viewsRate =
     moves.length > 0
       ? Math.round((viewsSought / moves.length) * 1000) / 10
-      : 0;
+      : null;
 
   const swConsulted = moves.filter((m) => m.social_worker_consulted).length;
   const swRate =
     moves.length > 0
       ? Math.round((swConsulted / moves.length) * 1000) / 10
-      : 0;
+      : null;
 
   const irpUpdated = moves.filter((m) => m.irp_updated).length;
   const irpRate =
     moves.length > 0
       ? Math.round((irpUpdated / moves.length) * 1000) / 10
-      : 0;
+      : null;
 
   const uniqueChildren = new Set(moves.map((m) => m.child_id)).size;
 

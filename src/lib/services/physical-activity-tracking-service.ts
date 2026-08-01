@@ -137,19 +137,19 @@ export function computePhysicalActivityMetrics(
   refused_count: number;
   unable_count: number;
   disliked_count: number;
-  below_average_count: number;
-  child_choice_rate: number;
-  age_appropriate_rate: number;
-  health_needs_rate: number;
-  risk_assessed_rate: number;
-  inclusive_rate: number;
-  peer_interaction_rate: number;
-  equipment_rate: number;
-  safeguarding_rate: number;
-  achievement_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  recorded_promptly_rate: number;
+  below_average_count: number | null;
+  child_choice_rate: number | null;
+  age_appropriate_rate: number | null;
+  health_needs_rate: number | null;
+  risk_assessed_rate: number | null;
+  inclusive_rate: number | null;
+  peer_interaction_rate: number | null;
+  equipment_rate: number | null;
+  safeguarding_rate: number | null;
+  achievement_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_activity_type: Record<string, number>;
   by_participation_level: Record<string, number>;
@@ -165,7 +165,7 @@ export function computePhysicalActivityMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

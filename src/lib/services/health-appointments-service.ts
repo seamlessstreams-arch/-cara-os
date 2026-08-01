@@ -136,16 +136,16 @@ export function computeHealthAppointmentMetrics(
   dental_count: number;
   optician_count: number;
   camhs_count: number;
-  attended_rate: number;
+  attended_rate: number | null;
   missed_count: number;
   cancelled_count: number;
   pending_count: number;
-  child_accompanied_rate: number;
-  child_views_captured_rate: number;
+  child_accompanied_rate: number | null;
+  child_views_captured_rate: number | null;
   child_anxious_count: number;
-  health_plan_updated_rate: number;
-  social_worker_informed_rate: number;
-  parent_carer_informed_rate: number;
+  health_plan_updated_rate: number | null;
+  social_worker_informed_rate: number | null;
+  parent_carer_informed_rate: number | null;
   follow_up_needed_count: number;
   follow_up_overdue_count: number;
   unique_children: number;
@@ -163,7 +163,7 @@ export function computeHealthAppointmentMetrics(
   const attendedRate =
     records.length > 0
       ? Math.round((attended / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const missed = records.filter((r) => r.appointment_status === "missed").length;
   const cancelled = records.filter(
@@ -175,13 +175,13 @@ export function computeHealthAppointmentMetrics(
   const accompaniedRate =
     records.length > 0
       ? Math.round((accompanied / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const viewsCaptured = records.filter((r) => r.child_views_captured).length;
   const viewsRate =
     records.length > 0
       ? Math.round((viewsCaptured / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const anxious = records.filter((r) => r.child_anxious).length;
 
@@ -189,19 +189,19 @@ export function computeHealthAppointmentMetrics(
   const healthRate =
     records.length > 0
       ? Math.round((healthUpdated / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const swInformed = records.filter((r) => r.social_worker_informed).length;
   const swRate =
     records.length > 0
       ? Math.round((swInformed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const parentInformed = records.filter((r) => r.parent_carer_informed).length;
   const parentRate =
     records.length > 0
       ? Math.round((parentInformed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const followUp = records.filter((r) => r.appointment_outcome === "follow_up_needed").length;
 

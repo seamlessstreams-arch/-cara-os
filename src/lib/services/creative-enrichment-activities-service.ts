@@ -138,18 +138,18 @@ export function computeCreativeEnrichmentMetrics(
   reluctant_count: number;
   no_progress_count: number;
   no_output_count: number;
-  child_choice_rate: number;
-  age_appropriate_rate: number;
-  therapeutic_value_rate: number;
-  peer_interaction_rate: number;
-  self_expression_rate: number;
-  achievement_rate: number;
-  resources_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  family_updated_rate: number;
-  continuation_rate: number;
-  recorded_promptly_rate: number;
+  child_choice_rate: number | null;
+  age_appropriate_rate: number | null;
+  therapeutic_value_rate: number | null;
+  peer_interaction_rate: number | null;
+  self_expression_rate: number | null;
+  achievement_rate: number | null;
+  resources_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  family_updated_rate: number | null;
+  continuation_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_activity_type: Record<string, number>;
   by_engagement_level: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeCreativeEnrichmentMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

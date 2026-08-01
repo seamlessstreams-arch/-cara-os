@@ -152,62 +152,62 @@ describe("computeFireRiskMetrics", () => {
 
     it("returns zero escape_routes_clear_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.escape_routes_clear_rate).toBe(0);
+      expect(m.escape_routes_clear_rate).toBeNull();;
     });
 
     it("returns zero fire_doors_functional_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.fire_doors_functional_rate).toBe(0);
+      expect(m.fire_doors_functional_rate).toBeNull();;
     });
 
     it("returns zero detection_system_tested_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.detection_system_tested_rate).toBe(0);
+      expect(m.detection_system_tested_rate).toBeNull();;
     });
 
     it("returns zero extinguishers_serviced_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.extinguishers_serviced_rate).toBe(0);
+      expect(m.extinguishers_serviced_rate).toBeNull();;
     });
 
     it("returns zero evacuation_plan_current_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.evacuation_plan_current_rate).toBe(0);
+      expect(m.evacuation_plan_current_rate).toBeNull();;
     });
 
     it("returns zero staff_fire_trained_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.staff_fire_trained_rate).toBe(0);
+      expect(m.staff_fire_trained_rate).toBeNull();;
     });
 
     it("returns zero fire_drills_completed_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.fire_drills_completed_rate).toBe(0);
+      expect(m.fire_drills_completed_rate).toBeNull();;
     });
 
     it("returns zero compartmentation_intact_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.compartmentation_intact_rate).toBe(0);
+      expect(m.compartmentation_intact_rate).toBeNull();;
     });
 
     it("returns zero emergency_lighting_tested_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.emergency_lighting_tested_rate).toBe(0);
+      expect(m.emergency_lighting_tested_rate).toBeNull();;
     });
 
     it("returns zero signage_adequate_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.signage_adequate_rate).toBe(0);
+      expect(m.signage_adequate_rate).toBeNull();;
     });
 
     it("returns zero electrical_safety_tested_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.electrical_safety_tested_rate).toBe(0);
+      expect(m.electrical_safety_tested_rate).toBeNull();;
     });
 
     it("returns zero peep_in_place_rate", () => {
       const m = computeFireRiskMetrics([]);
-      expect(m.peep_in_place_rate).toBe(0);
+      expect(m.peep_in_place_rate).toBeNull();;
     });
 
     it("returns empty risk_breakdown", () => {

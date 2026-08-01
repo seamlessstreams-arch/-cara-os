@@ -158,18 +158,18 @@ export function computeEhcpSendMetrics(records: EhcpSendMonitoringRecord[]): {
   below_expected_count: number;
   review_due_count: number;
   no_ehcp_count: number;
-  ehcp_in_place_rate: number;
-  annual_review_rate: number;
-  provision_monitored_rate: number;
-  outcomes_tracked_rate: number;
-  child_views_rate: number;
-  parent_views_rate: number;
-  professional_advice_rate: number;
-  la_engaged_rate: number;
-  school_liaison_rate: number;
-  transport_rate: number;
-  transition_planned_rate: number;
-  recorded_promptly_rate: number;
+  ehcp_in_place_rate: number | null;
+  annual_review_rate: number | null;
+  provision_monitored_rate: number | null;
+  outcomes_tracked_rate: number | null;
+  child_views_rate: number | null;
+  parent_views_rate: number | null;
+  professional_advice_rate: number | null;
+  la_engaged_rate: number | null;
+  school_liaison_rate: number | null;
+  transport_rate: number | null;
+  transition_planned_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_send_category: Record<string, number>;
   by_ehcp_status: Record<string, number>;
@@ -183,7 +183,7 @@ export function computeEhcpSendMetrics(records: EhcpSendMonitoringRecord[]): {
 
   const boolRate = (field: keyof EhcpSendMonitoringRecord) => {
     const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0 ? Math.round((count / records.length) * 1000) / 10 : 0;
+    return records.length > 0 ? Math.round((count / records.length) * 1000) / 10 : null;
   };
 
   const bySendCategory: Record<string, number> = {};

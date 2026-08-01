@@ -162,18 +162,18 @@ export function computeMedicationConsentMetrics(
   expired_count: number;
   withdrawn_count: number;
   refused_count: number;
-  consent_documented_rate: number;
-  capacity_assessed_rate: number;
-  child_informed_rate: number;
-  side_effects_explained_rate: number;
-  alternatives_discussed_rate: number;
-  review_date_set_rate: number;
-  social_worker_notified_rate: number;
-  gp_consulted_rate: number;
-  restrictions_noted_rate: number;
-  self_admin_assessed_rate: number;
-  storage_confirmed_rate: number;
-  disposal_arranged_rate: number;
+  consent_documented_rate: number | null;
+  capacity_assessed_rate: number | null;
+  child_informed_rate: number | null;
+  side_effects_explained_rate: number | null;
+  alternatives_discussed_rate: number | null;
+  review_date_set_rate: number | null;
+  social_worker_notified_rate: number | null;
+  gp_consulted_rate: number | null;
+  restrictions_noted_rate: number | null;
+  self_admin_assessed_rate: number | null;
+  storage_confirmed_rate: number | null;
+  disposal_arranged_rate: number | null;
   unique_children: number;
   by_consent_type: Record<string, number>;
   by_consent_status: Record<string, number>;
@@ -189,7 +189,7 @@ export function computeMedicationConsentMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

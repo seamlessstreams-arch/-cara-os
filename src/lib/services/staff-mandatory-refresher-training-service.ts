@@ -83,10 +83,10 @@ export function computeMetrics(rows: StaffMandatoryRefresherTrainingRow[]): {
   expired_count: number;
   due_soon_count: number;
   booked_count: number;
-  certificate_rate: number;
-  competency_rate: number;
-  refresher_booked_rate: number;
-  avg_training_hours: number;
+  certificate_rate: number | null;
+  competency_rate: number | null;
+  refresher_booked_rate: number | null;
+  avg_training_hours: number | null;
   unique_staff: number;
   training_type_breakdown: Record<string, number>;
 } {
@@ -98,11 +98,11 @@ export function computeMetrics(rows: StaffMandatoryRefresherTrainingRow[]): {
 
   const boolRate = (field: keyof StaffMandatoryRefresherTrainingRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : 0;
+    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : null;
   };
 
   const totalHours = rows.reduce((sum, r) => sum + r.training_hours, 0);
-  const avgHours = rows.length > 0 ? Math.round((totalHours / rows.length) * 10) / 10 : 0;
+  const avgHours = rows.length > 0 ? Math.round((totalHours / rows.length) * 10) / 10 : null;
 
   const typeBreakdown: Record<string, number> = {};
   for (const r of rows) typeBreakdown[r.training_type] = (typeBreakdown[r.training_type] ?? 0) + 1;
@@ -219,7 +219,7 @@ export function computeCaraInsights(rows: StaffMandatoryRefresherTrainingRow[]):
         `What barriers exist to timely refresher completion, and how can the home ensure ` +
         `all staff maintain current mandatory training under Reg 35?`,
     );
-  } else if (metrics.refresher_booked_rate < 100) {
+  } else if ((metrics.refresher_booked_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.refresher_booked_rate}% of training records have a refresher booked. ` +
         `Would proactive refresher scheduling reduce the risk of training gaps and support ` +

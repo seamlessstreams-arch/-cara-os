@@ -59,7 +59,7 @@ describe("computeNotificationCompliance", () => {
     expect(m.total_notifications_sent).toBe(0);
     expect(m.compliance_rate).toBe(100); // 0 required => 100%
     expect(m.overdue).toHaveLength(0);
-    expect(m.avg_response_hours).toBe(0);
+    expect(m.avg_response_hours).toBeNull();;
   });
 
   it("computes compliance for events with sent notifications", () => {

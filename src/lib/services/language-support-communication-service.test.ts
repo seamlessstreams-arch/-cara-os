@@ -41,7 +41,7 @@ describe("computeMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
-    expect(m.specialist_rate).toBe(0);
+    expect(m.specialist_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
     expect(m.active_needs_count).toBe(0);
   });

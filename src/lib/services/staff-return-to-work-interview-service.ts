@@ -73,10 +73,10 @@ export function computeMetrics(rows: StaffReturnToWorkInterviewRow[]): {
   adjustments_count: number;
   oh_referral_count: number;
   trigger_level_count: number;
-  support_plan_rate: number;
-  welfare_check_rate: number;
-  follow_up_rate: number;
-  avg_absence_days: number;
+  support_plan_rate: number | null;
+  welfare_check_rate: number | null;
+  follow_up_rate: number | null;
+  avg_absence_days: number | null;
   unique_staff: number;
   absence_type_breakdown: Record<string, number>;
 } {
@@ -92,7 +92,7 @@ export function computeMetrics(rows: StaffReturnToWorkInterviewRow[]): {
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const followUpRate =
@@ -101,11 +101,11 @@ export function computeMetrics(rows: StaffReturnToWorkInterviewRow[]): {
           (rows.filter((r) => r.follow_up_date !== null).length / rows.length) *
             1000,
         ) / 10
-      : 0;
+      : null;
 
   const totalDays = rows.reduce((sum, r) => sum + r.absence_duration_days, 0);
   const avgAbsenceDays =
-    rows.length > 0 ? Math.round((totalDays / rows.length) * 10) / 10 : 0;
+    rows.length > 0 ? Math.round((totalDays / rows.length) * 10) / 10 : null;
 
   const uniqueStaff = new Set(rows.map((r) => r.staff_name)).size;
 
@@ -243,7 +243,7 @@ export function computeCaraInsights(
   }
 
   // Insight 3: Reflective question about staff welfare
-  if (metrics.not_fit_count > 0 && metrics.support_plan_rate < 100) {
+  if (metrics.not_fit_count > 0 && (metrics.support_plan_rate ?? 0) < 100) {
     insights.push(
       `With ${metrics.not_fit_count} ${metrics.not_fit_count === 1 ? "staff member" : "staff members"} not fit to return and a support plan rate of ${metrics.support_plan_rate}%, how is the home ensuring returning staff receive the adjustments and support they need to sustain their return?`,
     );

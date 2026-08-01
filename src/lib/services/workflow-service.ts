@@ -358,7 +358,7 @@ export interface WorkflowProgress {
   in_progress: number;
   pending: number;
   blocked: number;
-  percentage: number;
+  percentage: number | null;
 }
 
 export function computeWorkflowProgress(steps: CsWorkflowStep[]): WorkflowProgress {
@@ -372,7 +372,7 @@ export function computeWorkflowProgress(steps: CsWorkflowStep[]): WorkflowProgre
   return {
     total_steps: total,
     ...counts,
-    percentage: total > 0 ? Math.round((done / total) * 100) : 0,
+    percentage: total > 0 ? Math.round((done / total) * 100) : null,
   };
 }
 

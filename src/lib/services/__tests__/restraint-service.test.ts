@@ -98,15 +98,15 @@ describe("computeRestraintAnalysis", () => {
     expect(result.total_incidents).toBe(0);
     expect(result.by_type).toEqual({});
     expect(result.by_child).toEqual({});
-    expect(result.avg_duration_minutes).toBe(0);
+    expect(result.avg_duration_minutes).toBeNull();;
     expect(result.with_injuries).toBe(0);
-    expect(result.injury_rate).toBe(0);
-    expect(result.de_escalation_success_rate).toBe(0);
-    expect(result.debrief_completion_rate).toBe(0);
-    expect(result.manager_review_rate).toBe(0);
-    expect(result.child_views_rate).toBe(0);
-    expect(result.body_map_rate).toBe(0);
-    expect(result.notification_compliance).toBe(0);
+    expect(result.injury_rate).toBeNull();;
+    expect(result.de_escalation_success_rate).toBeNull();;
+    expect(result.debrief_completion_rate).toBeNull();;
+    expect(result.manager_review_rate).toBeNull();;
+    expect(result.child_views_rate).toBeNull();;
+    expect(result.body_map_rate).toBeNull();;
+    expect(result.notification_compliance).toBeNull();;
   });
 
   it("aggregates a single record correctly", () => {
@@ -306,7 +306,7 @@ describe("computeRestraintAnalysis", () => {
     const result = computeRestraintAnalysis(records, DATE_FROM, DATE_TO);
     expect(result.total_incidents).toBe(0);
     expect(result.by_type).toEqual({});
-    expect(result.avg_duration_minutes).toBe(0);
+    expect(result.avg_duration_minutes).toBeNull();;
   });
 
   it("includes records on the exact boundary dates", () => {

@@ -158,18 +158,18 @@ export function computeMedicationSideEffectsMetrics(
   life_threatening_count: number;
   gp_not_contacted_count: number;
   awaiting_review_count: number;
-  child_informed_rate: number;
-  parent_informed_rate: number;
-  social_worker_informed_rate: number;
-  gp_contacted_promptly_rate: number;
-  pharmacy_consulted_rate: number;
-  medication_review_rate: number;
-  daily_functioning_rate: number;
-  wellbeing_monitored_rate: number;
-  care_plan_updated_rate: number;
-  yellow_card_rate: number;
-  staff_aware_rate: number;
-  recorded_promptly_rate: number;
+  child_informed_rate: number | null;
+  parent_informed_rate: number | null;
+  social_worker_informed_rate: number | null;
+  gp_contacted_promptly_rate: number | null;
+  pharmacy_consulted_rate: number | null;
+  medication_review_rate: number | null;
+  daily_functioning_rate: number | null;
+  wellbeing_monitored_rate: number | null;
+  care_plan_updated_rate: number | null;
+  yellow_card_rate: number | null;
+  staff_aware_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_side_effect_type: Record<string, number>;
   by_severity: Record<string, number>;
@@ -185,7 +185,7 @@ export function computeMedicationSideEffectsMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

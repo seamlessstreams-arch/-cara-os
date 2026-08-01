@@ -51,8 +51,8 @@ describe("computeSelfEsteemMetrics", () => {
     expect(m.decline_count).toBe(0);
     expect(m.negative_image_count).toBe(0);
     expect(m.significant_decline_count).toBe(0);
-    expect(m.child_led_rate).toBe(0);
-    expect(m.strengths_identified_rate).toBe(0);
+    expect(m.child_led_rate).toBeNull();;
+    expect(m.strengths_identified_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -139,20 +139,20 @@ export function computeComplaintResolutionMetrics(
   escalated_count: number;
   overdue_count: number;
   pending_count: number;
-  acknowledged_rate: number;
-  investigation_rate: number;
-  child_views_rate: number;
-  complainant_updated_rate: number;
-  ofsted_notified_rate: number;
-  learning_identified_rate: number;
-  action_plan_rate: number;
-  outcome_communicated_rate: number;
-  satisfaction_rate: number;
-  appeal_offered_rate: number;
-  records_updated_rate: number;
-  manager_oversight_rate: number;
-  recorded_promptly_rate: number;
-  average_resolution_days: number;
+  acknowledged_rate: number | null;
+  investigation_rate: number | null;
+  child_views_rate: number | null;
+  complainant_updated_rate: number | null;
+  ofsted_notified_rate: number | null;
+  learning_identified_rate: number | null;
+  action_plan_rate: number | null;
+  outcome_communicated_rate: number | null;
+  satisfaction_rate: number | null;
+  appeal_offered_rate: number | null;
+  records_updated_rate: number | null;
+  manager_oversight_rate: number | null;
+  recorded_promptly_rate: number | null;
+  average_resolution_days: number | null;
   by_complaint_category: Record<string, number>;
   by_resolution_status: Record<string, number>;
   by_outcome_type: Record<string, number>;
@@ -167,7 +167,7 @@ export function computeComplaintResolutionMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDays =
@@ -175,7 +175,7 @@ export function computeComplaintResolutionMetrics(
       ? Math.round(
           (records.reduce((sum, r) => sum + r.resolution_days, 0) / records.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   const byCategory: Record<string, number> = {};
   for (const r of records) byCategory[r.complaint_category] = (byCategory[r.complaint_category] ?? 0) + 1;

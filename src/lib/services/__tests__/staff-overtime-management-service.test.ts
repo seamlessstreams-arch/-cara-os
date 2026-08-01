@@ -128,10 +128,10 @@ describe("computeMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeMetrics([]);
-    expect(m.opt_out_rate).toBe(0);
-    expect(m.rest_break_compliant_rate).toBe(0);
-    expect(m.overtime_authorised_rate).toBe(0);
-    expect(m.overtime_paid_rate).toBe(0);
+    expect(m.opt_out_rate).toBeNull();;
+    expect(m.rest_break_compliant_rate).toBeNull();;
+    expect(m.overtime_authorised_rate).toBeNull();;
+    expect(m.overtime_paid_rate).toBeNull();;
   });
 
   it("returns 0 averages for empty array", () => {

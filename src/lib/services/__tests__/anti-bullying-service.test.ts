@@ -296,10 +296,10 @@ describe("computeBullyingMetrics", () => {
       expect(result.escalated_count).toBe(0);
       expect(result.safeguarding_referrals).toBe(0);
       expect(result.follow_ups_pending).toBe(0);
-      expect(result.parent_informed_rate).toBe(0);
+      expect(result.parent_informed_rate).toBeNull();;
       expect(result.unique_victims).toBe(0);
       expect(result.repeat_victims).toBe(0);
-      expect(result.resident_perpetrator_rate).toBe(0);
+      expect(result.resident_perpetrator_rate).toBeNull();;
       expect(result.cyber_incidents).toBe(0);
       expect(result.by_type).toEqual({});
       expect(result.by_severity).toEqual({});
@@ -504,7 +504,7 @@ describe("computeBullyingMetrics", () => {
   describe("parent_informed_rate", () => {
     it("returns 0 for empty inputs", () => {
       const result = computeBullyingMetrics([], 5, NOW);
-      expect(result.parent_informed_rate).toBe(0);
+      expect(result.parent_informed_rate).toBeNull();;
     });
 
     it("returns 100 when all parents informed", () => {
@@ -631,7 +631,7 @@ describe("computeBullyingMetrics", () => {
 
     it("returns 0 for empty inputs", () => {
       const result = computeBullyingMetrics([], 5, NOW);
-      expect(result.resident_perpetrator_rate).toBe(0);
+      expect(result.resident_perpetrator_rate).toBeNull();;
     });
 
     it("computes percentage correctly for mixed", () => {

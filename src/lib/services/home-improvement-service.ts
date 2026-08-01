@@ -148,18 +148,18 @@ export function computeHomeImprovementMetrics(
   in_progress_count: number;
   proposed_count: number;
   on_hold_count: number;
-  completion_rate: number;
+  completion_rate: number | null;
   urgent_count: number;
   overdue_count: number;
   total_estimated_cost: number;
   total_actual_cost: number;
-  children_consulted_rate: number;
-  children_involved_rate: number;
+  children_consulted_rate: number | null;
+  children_involved_rate: number | null;
   personalisation_count: number;
   accessibility_count: number;
-  safety_improvement_rate: number;
-  fire_safety_maintained_rate: number;
-  building_regs_compliant_rate: number;
+  safety_improvement_rate: number | null;
+  fire_safety_maintained_rate: number | null;
+  building_regs_compliant_rate: number | null;
   by_project_type: Record<string, number>;
   by_project_status: Record<string, number>;
   by_priority_level: Record<string, number>;
@@ -173,7 +173,7 @@ export function computeHomeImprovementMetrics(
   const completionRate =
     records.length > 0
       ? Math.round((completed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const urgent = records.filter((r) => r.priority_level === "urgent").length;
 
@@ -200,7 +200,7 @@ export function computeHomeImprovementMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const personalisation = records.filter((r) => r.child_room_personalisation).length;

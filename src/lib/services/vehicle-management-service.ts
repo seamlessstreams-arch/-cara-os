@@ -142,25 +142,25 @@ export function computeVehicleMetrics(
   weekly_count: number;
   mot_count: number;
   service_count: number;
-  pass_rate: number;
+  pass_rate: number | null;
   fail_count: number;
   advisory_count: number;
-  excellent_condition_rate: number;
+  excellent_condition_rate: number | null;
   poor_condition_count: number;
   unroadworthy_count: number;
-  fully_authorised_rate: number;
+  fully_authorised_rate: number | null;
   unauthorised_driver_count: number;
-  tyres_adequate_rate: number;
-  brakes_working_rate: number;
-  lights_working_rate: number;
-  seatbelts_rate: number;
-  child_locks_rate: number;
-  first_aid_rate: number;
-  fire_extinguisher_rate: number;
-  breakdown_cover_rate: number;
+  tyres_adequate_rate: number | null;
+  brakes_working_rate: number | null;
+  lights_working_rate: number | null;
+  seatbelts_rate: number | null;
+  child_locks_rate: number | null;
+  first_aid_rate: number | null;
+  fire_extinguisher_rate: number | null;
+  breakdown_cover_rate: number | null;
   incident_count: number;
   total_children_transported: number;
-  average_mileage: number;
+  average_mileage: number | null;
   unique_vehicles: number;
   by_check_type: Record<string, number>;
   by_check_outcome: Record<string, number>;
@@ -178,7 +178,7 @@ export function computeVehicleMetrics(
   const passRate =
     records.length > 0
       ? Math.round((pass / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const fail = records.filter((r) => r.check_outcome === "fail").length;
   const advisory = records.filter((r) => r.check_outcome === "pass_with_advisory").length;
@@ -187,7 +187,7 @@ export function computeVehicleMetrics(
   const excellentRate =
     records.length > 0
       ? Math.round((excellent / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const poor = records.filter((r) => r.vehicle_condition === "poor").length;
   const unroadworthy = records.filter((r) => r.vehicle_condition === "unroadworthy").length;
@@ -196,7 +196,7 @@ export function computeVehicleMetrics(
   const fullyAuthRate =
     records.length > 0
       ? Math.round((fullyAuth / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const unauthorised = records.filter((r) => r.driver_authorisation === "not_authorised").length;
 
@@ -204,7 +204,7 @@ export function computeVehicleMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const incident = records.filter((r) => r.incident_during_journey).length;
@@ -215,7 +215,7 @@ export function computeVehicleMetrics(
   const avgMileage =
     mileages.length > 0
       ? Math.round((mileages.reduce((a, b) => a + b, 0) / mileages.length) * 10) / 10
-      : 0;
+      : null;
 
   const uniqueVehicles = new Set(records.map((r) => r.vehicle_registration)).size;
 

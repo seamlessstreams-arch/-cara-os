@@ -158,18 +158,18 @@ export function computeProfessionalNetworkMetrics(
   pending_allocation_count: number;
   ended_count: number;
   active_count: number;
-  contact_current_rate: number;
-  consent_rate: number;
-  communication_rate: number;
-  attends_reviews_rate: number;
-  responsive_rate: number;
-  child_aware_rate: number;
-  child_views_rate: number;
-  info_sharing_rate: number;
-  emergency_contact_rate: number;
-  statutory_met_rate: number;
-  quality_reviewed_rate: number;
-  recorded_promptly_rate: number;
+  contact_current_rate: number | null;
+  consent_rate: number | null;
+  communication_rate: number | null;
+  attends_reviews_rate: number | null;
+  responsive_rate: number | null;
+  child_aware_rate: number | null;
+  child_views_rate: number | null;
+  info_sharing_rate: number | null;
+  emergency_contact_rate: number | null;
+  statutory_met_rate: number | null;
+  quality_reviewed_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_professional_role: Record<string, number>;
   by_contact_frequency: Record<string, number>;
@@ -189,7 +189,7 @@ export function computeProfessionalNetworkMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

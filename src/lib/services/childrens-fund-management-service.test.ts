@@ -47,7 +47,7 @@ describe("computeFundMetrics", () => {
     expect(m.total_debit_amount).toBe(0);
     expect(m.net_balance).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.receipt_attached_rate).toBe(0);
+    expect(m.receipt_attached_rate).toBeNull();;
   });
 
   it("counts credits and debits and calculates amounts", () => {

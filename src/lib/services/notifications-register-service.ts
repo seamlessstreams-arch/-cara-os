@@ -153,14 +153,14 @@ export function computeNotificationMetrics(
   restraint_count: number;
   allegation_count: number;
   police_involvement_count: number;
-  submitted_rate: number;
+  submitted_rate: number | null;
   draft_count: number;
   acknowledged_count: number;
   follow_up_pending_count: number;
-  within_24_hours_rate: number;
+  within_24_hours_rate: number | null;
   late_count: number;
   significantly_late_count: number;
-  evidence_attached_rate: number;
+  evidence_attached_rate: number | null;
   reg40_count: number;
   reg41_count: number;
   follow_up_overdue_count: number;
@@ -180,7 +180,7 @@ export function computeNotificationMetrics(
   const submittedRate =
     records.length > 0
       ? Math.round((submitted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const draft = records.filter((r) => r.notification_status === "draft").length;
   const acknowledged = records.filter((r) => r.notification_status === "acknowledged").length;
@@ -193,7 +193,7 @@ export function computeNotificationMetrics(
   const within24Rate =
     records.length > 0
       ? Math.round((within24 / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const late = records.filter((r) => r.timeliness_met === "late").length;
   const sigLate = records.filter((r) => r.timeliness_met === "significantly_late").length;
@@ -202,7 +202,7 @@ export function computeNotificationMetrics(
   const evidenceRate =
     records.length > 0
       ? Math.round((evidenceAttached / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const reg40 = records.filter((r) => r.reg40_applicable).length;
   const reg41 = records.filter((r) => r.reg41_applicable).length;

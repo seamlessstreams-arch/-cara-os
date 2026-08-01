@@ -348,7 +348,7 @@ describe("computeNotificationMetrics", () => {
   });
 
   it("returns zero submitted_rate for empty array", () => {
-    expect(computeNotificationMetrics([]).submitted_rate).toBe(0);
+    expect(computeNotificationMetrics([]).submitted_rate).toBeNull();;
   });
 
   it("returns zero draft_count for empty array", () => {
@@ -364,7 +364,7 @@ describe("computeNotificationMetrics", () => {
   });
 
   it("returns zero within_24_hours_rate for empty array", () => {
-    expect(computeNotificationMetrics([]).within_24_hours_rate).toBe(0);
+    expect(computeNotificationMetrics([]).within_24_hours_rate).toBeNull();;
   });
 
   it("returns zero late_count for empty array", () => {
@@ -376,7 +376,7 @@ describe("computeNotificationMetrics", () => {
   });
 
   it("returns zero evidence_attached_rate for empty array", () => {
-    expect(computeNotificationMetrics([]).evidence_attached_rate).toBe(0);
+    expect(computeNotificationMetrics([]).evidence_attached_rate).toBeNull();;
   });
 
   it("returns zero reg40_count for empty array", () => {

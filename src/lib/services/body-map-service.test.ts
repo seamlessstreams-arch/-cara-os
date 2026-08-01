@@ -44,7 +44,7 @@ describe("computeBodyMapMetrics", () => {
     expect(m.total_records).toBe(0);
     expect(m.records_this_month).toBe(0);
     expect(m.children_with_records).toBe(0);
-    expect(m.manager_informed_rate).toBe(0);
+    expect(m.manager_informed_rate).toBeNull();;
   });
 
   it("computes counts and rates for populated data", () => {

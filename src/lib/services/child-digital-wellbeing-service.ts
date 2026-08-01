@@ -138,18 +138,18 @@ export function computeChildDigitalWellbeingMetrics(
   unsafe_safety_count: number;
   excessive_screen_count: number;
   not_monitored_count: number;
-  parental_controls_rate: number;
-  age_appropriate_rate: number;
-  online_safety_educated_rate: number;
-  cyberbullying_screened_rate: number;
-  social_media_rate: number;
-  gaming_monitored_rate: number;
-  privacy_settings_rate: number;
-  digital_agreement_rate: number;
-  care_plan_rate: number;
-  screen_time_discussed_rate: number;
-  sleep_impact_rate: number;
-  recorded_promptly_rate: number;
+  parental_controls_rate: number | null;
+  age_appropriate_rate: number | null;
+  online_safety_educated_rate: number | null;
+  cyberbullying_screened_rate: number | null;
+  social_media_rate: number | null;
+  gaming_monitored_rate: number | null;
+  privacy_settings_rate: number | null;
+  digital_agreement_rate: number | null;
+  care_plan_rate: number | null;
+  screen_time_discussed_rate: number | null;
+  sleep_impact_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_device_type: Record<string, number>;
   by_online_safety_rating: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeChildDigitalWellbeingMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byDevice: Record<string, number> = {};

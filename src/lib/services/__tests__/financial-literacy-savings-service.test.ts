@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<FinancialLiteracySavingsRecord>): Financ
 
 describe("financial-literacy-savings-service", () => {
   describe("computeFinancialLiteracyMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeFinancialLiteracyMetrics([]); expect(m.total_sessions).toBe(0); expect(m.not_understood_count).toBe(0); expect(m.disengaged_count).toBe(0); expect(m.no_savings_count).toBe(0); expect(m.in_debt_count).toBe(0); expect(m.age_appropriate_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeFinancialLiteracyMetrics([]); expect(m.by_topic_area).toEqual({}); expect(m.by_understanding_level).toEqual({}); expect(m.by_engagement_quality).toEqual({}); expect(m.by_saving_progress).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeFinancialLiteracyMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.not_understood_count).toBe(0);
+      expect(m.disengaged_count).toBe(0);
+      expect(m.no_savings_count).toBe(0);
+      expect(m.in_debt_count).toBe(0);
+      expect(m.age_appropriate_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeFinancialLiteracyMetrics([]);
+      expect(m.by_topic_area).toEqual({});
+      expect(m.by_understanding_level).toEqual({});
+      expect(m.by_engagement_quality).toEqual({});
+      expect(m.by_saving_progress).toEqual({});
+    });
     it("total_sessions counts records", () => { expect(computeFinancialLiteracyMetrics([makeRecord(), makeRecord()]).total_sessions).toBe(2); });
     it("counts not_understood", () => { expect(computeFinancialLiteracyMetrics([makeRecord({ understanding_level: "not_understood" })]).not_understood_count).toBe(1); });
     it("does not count limited as not_understood", () => { expect(computeFinancialLiteracyMetrics([makeRecord({ understanding_level: "limited" })]).not_understood_count).toBe(0); });
@@ -47,7 +62,21 @@ describe("financial-literacy-savings-service", () => {
     it("does not count partially_engaged as disengaged", () => { expect(computeFinancialLiteracyMetrics([makeRecord({ engagement_quality: "partially_engaged" })]).disengaged_count).toBe(0); });
     it("counts no_savings", () => { expect(computeFinancialLiteracyMetrics([makeRecord({ saving_progress: "no_savings" })]).no_savings_count).toBe(1); });
     it("counts in_debt", () => { expect(computeFinancialLiteracyMetrics([makeRecord({ saving_progress: "in_debt" })]).in_debt_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeFinancialLiteracyMetrics([makeRecord()]); expect(m.age_appropriate_rate).toBe(100); expect(m.practical_exercise_rate).toBe(100); expect(m.real_money_rate).toBe(100); expect(m.savings_account_rate).toBe(100); expect(m.budget_created_rate).toBe(100); expect(m.targets_set_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.pathway_plan_rate).toBe(100); expect(m.resources_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeFinancialLiteracyMetrics([makeRecord()]);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.practical_exercise_rate).toBe(100);
+      expect(m.real_money_rate).toBe(100);
+      expect(m.savings_account_rate).toBe(100);
+      expect(m.budget_created_rate).toBe(100);
+      expect(m.targets_set_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.pathway_plan_rate).toBe(100);
+      expect(m.resources_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("age_appropriate_rate 0 when false", () => { expect(computeFinancialLiteracyMetrics([makeRecord({ age_appropriate: false })]).age_appropriate_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeFinancialLiteracyMetrics([makeRecord({ budget_created: true }), makeRecord({ budget_created: false }), makeRecord({ budget_created: true })]); expect(m.budget_created_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeFinancialLiteracyMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -60,17 +89,42 @@ describe("financial-literacy-savings-service", () => {
   describe("identifyFinancialLiteracyAlerts", () => {
     it("returns empty for clean", () => { expect(identifyFinancialLiteracyAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyFinancialLiteracyAlerts([])).toEqual([]); });
-    it("fires in_debt_not_understood", () => { const a = identifyFinancialLiteracyAlerts([makeRecord({ saving_progress: "in_debt", understanding_level: "not_understood", child_name: "Jo" })]); expect(a[0].type).toBe("in_debt_not_understood"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires in_debt_not_understood", () => { 
+      const a = identifyFinancialLiteracyAlerts([makeRecord({ saving_progress: "in_debt", understanding_level: "not_understood", child_name: "Jo" })]);
+      expect(a[0].type).toBe("in_debt_not_understood");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("in_debt_not_understood per-record", () => { const a = identifyFinancialLiteracyAlerts([makeRecord({ id: "a-1", saving_progress: "in_debt", understanding_level: "not_understood" }), makeRecord({ id: "a-2", saving_progress: "in_debt", understanding_level: "not_understood" })]); expect(a.filter(x => x.type === "in_debt_not_understood")).toHaveLength(2); });
     it("in_debt without not_understood no critical", () => { expect(identifyFinancialLiteracyAlerts([makeRecord({ saving_progress: "in_debt", understanding_level: "good_understanding" })]).find(x => x.type === "in_debt_not_understood")).toBeUndefined(); });
     it("not_understood without in_debt no critical", () => { expect(identifyFinancialLiteracyAlerts([makeRecord({ understanding_level: "not_understood", saving_progress: "on_target" })]).find(x => x.type === "in_debt_not_understood")).toBeUndefined(); });
-    it("fires no_savings_account singular", () => { const a = identifyFinancialLiteracyAlerts([makeRecord({ savings_account_active: false })]); const f = a.find(x => x.type === "no_savings_account"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires no_savings_account singular", () => { 
+      const a = identifyFinancialLiteracyAlerts([makeRecord({ savings_account_active: false })]);
+      const f = a.find(x => x.type === "no_savings_account");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_savings_account plural", () => { const a = identifyFinancialLiteracyAlerts([makeRecord({ savings_account_active: false }), makeRecord({ savings_account_active: false })]); const f = a.find(x => x.type === "no_savings_account"); expect(f!.message).toContain("2 sessions have"); });
-    it("fires no_pathway_plan singular", () => { const a = identifyFinancialLiteracyAlerts([makeRecord({ pathway_plan_updated: false })]); const f = a.find(x => x.type === "no_pathway_plan"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires no_pathway_plan singular", () => { 
+      const a = identifyFinancialLiteracyAlerts([makeRecord({ pathway_plan_updated: false })]);
+      const f = a.find(x => x.type === "no_pathway_plan");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_practical_exercise not for 1", () => { expect(identifyFinancialLiteracyAlerts([makeRecord({ practical_exercise: false })]).find(x => x.type === "no_practical_exercise")).toBeUndefined(); });
     it("no_practical_exercise fires for 2", () => { const a = identifyFinancialLiteracyAlerts([makeRecord({ practical_exercise: false }), makeRecord({ practical_exercise: false })]); expect(a.find(x => x.type === "no_practical_exercise")).toBeDefined(); expect(a.find(x => x.type === "no_practical_exercise")!.severity).toBe("medium"); });
     it("no_budget_created not for 1", () => { expect(identifyFinancialLiteracyAlerts([makeRecord({ budget_created: false })]).find(x => x.type === "no_budget_created")).toBeUndefined(); });
     it("no_budget_created fires for 2", () => { const a = identifyFinancialLiteracyAlerts([makeRecord({ budget_created: false }), makeRecord({ budget_created: false })]); expect(a.find(x => x.type === "no_budget_created")).toBeDefined(); expect(a.find(x => x.type === "no_budget_created")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyFinancialLiteracyAlerts([makeRecord({ saving_progress: "in_debt", understanding_level: "not_understood", savings_account_active: false, pathway_plan_updated: false, practical_exercise: false, budget_created: false }), makeRecord({ savings_account_active: false, pathway_plan_updated: false, practical_exercise: false, budget_created: false })]); const types = a.map(x => x.type); expect(types).toContain("in_debt_not_understood"); expect(types).toContain("no_savings_account"); expect(types).toContain("no_pathway_plan"); expect(types).toContain("no_practical_exercise"); expect(types).toContain("no_budget_created"); });
+    it("fires all applicable", () => { 
+      const a = identifyFinancialLiteracyAlerts([makeRecord({ saving_progress: "in_debt", understanding_level: "not_understood", savings_account_active: false, pathway_plan_updated: false, practical_exercise: false, budget_created: false }), makeRecord({ savings_account_active: false, pathway_plan_updated: false, practical_exercise: false, budget_created: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("in_debt_not_understood");
+      expect(types).toContain("no_savings_account");
+      expect(types).toContain("no_pathway_plan");
+      expect(types).toContain("no_practical_exercise");
+      expect(types).toContain("no_budget_created");
+    });
   });
 });

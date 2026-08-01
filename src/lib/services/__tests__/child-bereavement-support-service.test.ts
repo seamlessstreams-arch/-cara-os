@@ -210,16 +210,16 @@ describe("child-bereavement-support-service", () => {
         expect(computeMetrics([]).camhs_involvement_count).toBe(0);
       });
       it("returns zero school_notification_rate", () => {
-        expect(computeMetrics([]).school_notification_rate).toBe(0);
+        expect(computeMetrics([]).school_notification_rate).toBeNull();;
       });
       it("returns zero social_worker_rate", () => {
-        expect(computeMetrics([]).social_worker_rate).toBe(0);
+        expect(computeMetrics([]).social_worker_rate).toBeNull();;
       });
       it("returns zero memorial_activity_rate", () => {
-        expect(computeMetrics([]).memorial_activity_rate).toBe(0);
+        expect(computeMetrics([]).memorial_activity_rate).toBeNull();;
       });
       it("returns zero review_scheduled_rate", () => {
-        expect(computeMetrics([]).review_scheduled_rate).toBe(0);
+        expect(computeMetrics([]).review_scheduled_rate).toBeNull();;
       });
       it("returns zero unique_children", () => {
         expect(computeMetrics([]).unique_children).toBe(0);

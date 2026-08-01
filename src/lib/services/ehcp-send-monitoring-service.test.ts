@@ -63,7 +63,7 @@ describe("ehcp-send-monitoring-service", () => {
       expect(m.below_expected_count).toBe(0);
       expect(m.review_due_count).toBe(0);
       expect(m.no_ehcp_count).toBe(0);
-      expect(m.ehcp_in_place_rate).toBe(0);
+      expect(m.ehcp_in_place_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
 

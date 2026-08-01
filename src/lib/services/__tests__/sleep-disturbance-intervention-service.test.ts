@@ -176,28 +176,28 @@ describe("sleep-disturbance-intervention-service", () => {
         expect(computeSleepDisturbanceMetrics([]).ongoing_count).toBe(0);
       });
       it("returns zero settled_within_hour_rate", () => {
-        expect(computeSleepDisturbanceMetrics([]).settled_within_hour_rate).toBe(0);
+        expect(computeSleepDisturbanceMetrics([]).settled_within_hour_rate).toBeNull();;
       });
       it("returns zero sleep_plan_rate", () => {
-        expect(computeSleepDisturbanceMetrics([]).sleep_plan_rate).toBe(0);
+        expect(computeSleepDisturbanceMetrics([]).sleep_plan_rate).toBeNull();;
       });
       it("returns zero clinical_referral_rate", () => {
-        expect(computeSleepDisturbanceMetrics([]).clinical_referral_rate).toBe(0);
+        expect(computeSleepDisturbanceMetrics([]).clinical_referral_rate).toBeNull();;
       });
       it("returns zero pattern_identified_rate", () => {
-        expect(computeSleepDisturbanceMetrics([]).pattern_identified_rate).toBe(0);
+        expect(computeSleepDisturbanceMetrics([]).pattern_identified_rate).toBeNull();;
       });
       it("returns zero environment_adapted_rate", () => {
-        expect(computeSleepDisturbanceMetrics([]).environment_adapted_rate).toBe(0);
+        expect(computeSleepDisturbanceMetrics([]).environment_adapted_rate).toBeNull();;
       });
       it("returns zero staff_debriefed_rate", () => {
-        expect(computeSleepDisturbanceMetrics([]).staff_debriefed_rate).toBe(0);
+        expect(computeSleepDisturbanceMetrics([]).staff_debriefed_rate).toBeNull();;
       });
       it("returns zero parent_informed_rate", () => {
-        expect(computeSleepDisturbanceMetrics([]).parent_informed_rate).toBe(0);
+        expect(computeSleepDisturbanceMetrics([]).parent_informed_rate).toBeNull();;
       });
       it("returns zero trauma_link_rate", () => {
-        expect(computeSleepDisturbanceMetrics([]).trauma_link_rate).toBe(0);
+        expect(computeSleepDisturbanceMetrics([]).trauma_link_rate).toBeNull();;
       });
       it("returns zero unique_children", () => {
         expect(computeSleepDisturbanceMetrics([]).unique_children).toBe(0);

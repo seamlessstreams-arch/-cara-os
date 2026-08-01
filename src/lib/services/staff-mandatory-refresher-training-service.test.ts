@@ -41,8 +41,8 @@ describe("computeMetrics (mandatory refresher training)", () => {
     expect(m.expired_count).toBe(0);
     expect(m.due_soon_count).toBe(0);
     expect(m.booked_count).toBe(0);
-    expect(m.certificate_rate).toBe(0);
-    expect(m.avg_training_hours).toBe(0);
+    expect(m.certificate_rate).toBeNull();;
+    expect(m.avg_training_hours).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

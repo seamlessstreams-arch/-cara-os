@@ -167,11 +167,11 @@ export function computeHomeAtmosphereMetrics(
   requires_improvement_count: number;
   urgent_action_count: number;
   actions_not_implemented_count: number;
-  child_views_rate: number;
-  staff_views_rate: number;
-  visitor_views_rate: number;
-  actions_implemented_rate: number;
-  shared_with_children_rate: number;
+  child_views_rate: number | null;
+  staff_views_rate: number | null;
+  visitor_views_rate: number | null;
+  actions_implemented_rate: number | null;
+  shared_with_children_rate: number | null;
   dimension_breakdown: Record<string, number>;
   rating_breakdown: Record<string, number>;
   unique_assessors: number;
@@ -187,7 +187,7 @@ export function computeHomeAtmosphereMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const dimensionBreakdown: Record<string, number> = {};
@@ -304,7 +304,7 @@ export function generateHomeAtmosphereCaraInsights(
         `What underlying factors might be contributing to this, and how can the home team work together ` +
         `to create a warmer, more welcoming environment where every child feels they belong?`,
     );
-  } else if (metrics.child_views_rate < 100) {
+  } else if ((metrics.child_views_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Child views are included in ${metrics.child_views_rate}% of atmosphere assessments. ` +
         `How can the home ensure every child has the opportunity to share their experience of the home atmosphere, ` +

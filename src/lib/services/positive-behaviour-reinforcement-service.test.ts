@@ -51,7 +51,7 @@ describe("computePositiveBehaviourMetrics", () => {
     expect(m.negative_response_count).toBe(0);
     expect(m.inconsistent_count).toBe(0);
     expect(m.indifferent_count).toBe(0);
-    expect(m.behaviour_specific_rate).toBe(0);
+    expect(m.behaviour_specific_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

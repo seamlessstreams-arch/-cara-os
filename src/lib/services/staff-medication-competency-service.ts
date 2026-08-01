@@ -150,18 +150,18 @@ export function computeStaffMedicationCompetencyMetrics(
   not_yet_competent_count: number;
   requires_retraining_count: number;
   suspended_count: number;
-  theory_passed_rate: number;
-  practical_observed_rate: number;
-  error_procedure_rate: number;
-  storage_knowledge_rate: number;
-  controlled_drug_rate: number;
-  side_effects_rate: number;
-  consent_understanding_rate: number;
-  record_keeping_rate: number;
-  emergency_response_rate: number;
-  disposal_knowledge_rate: number;
-  child_specific_rate: number;
-  refresher_scheduled_rate: number;
+  theory_passed_rate: number | null;
+  practical_observed_rate: number | null;
+  error_procedure_rate: number | null;
+  storage_knowledge_rate: number | null;
+  controlled_drug_rate: number | null;
+  side_effects_rate: number | null;
+  consent_understanding_rate: number | null;
+  record_keeping_rate: number | null;
+  emergency_response_rate: number | null;
+  disposal_knowledge_rate: number | null;
+  child_specific_rate: number | null;
+  refresher_scheduled_rate: number | null;
   unique_staff: number;
   by_competency_type: Record<string, number>;
   by_assessment_outcome: Record<string, number>;
@@ -177,7 +177,7 @@ export function computeStaffMedicationCompetencyMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;

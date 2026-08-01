@@ -149,18 +149,18 @@ export function computeSiblingContactMetrics(
   harmful_count: number;
   estranged_count: number;
   barrier_count: number;
-  child_views_rate: number;
-  sibling_views_rate: number;
-  preparation_rate: number;
-  debrief_rate: number;
-  emotional_support_rate: number;
-  social_worker_rate: number;
-  care_plan_rate: number;
-  frequency_rate: number;
-  venue_rate: number;
-  safeguarding_rate: number;
-  life_story_rate: number;
-  recorded_promptly_rate: number;
+  child_views_rate: number | null;
+  sibling_views_rate: number | null;
+  preparation_rate: number | null;
+  debrief_rate: number | null;
+  emotional_support_rate: number | null;
+  social_worker_rate: number | null;
+  care_plan_rate: number | null;
+  frequency_rate: number | null;
+  venue_rate: number | null;
+  safeguarding_rate: number | null;
+  life_story_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_contact_type: Record<string, number>;
   by_contact_quality: Record<string, number>;
@@ -176,7 +176,7 @@ export function computeSiblingContactMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

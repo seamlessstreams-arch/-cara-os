@@ -148,17 +148,17 @@ export function computeVisitorFeedbackMetrics(
   very_poor_rating_count: number;
   dissatisfied_count: number;
   concerns_raised_count: number;
-  feedback_sought_rate: number;
-  child_views_rate: number;
-  environment_commented_rate: number;
-  staff_interaction_rate: number;
-  action_plan_rate: number;
-  feedback_shared_rate: number;
-  improvement_rate: number;
-  follow_up_rate: number;
-  anonymity_rate: number;
-  manager_reviewed_rate: number;
-  recorded_promptly_rate: number;
+  feedback_sought_rate: number | null;
+  child_views_rate: number | null;
+  environment_commented_rate: number | null;
+  staff_interaction_rate: number | null;
+  action_plan_rate: number | null;
+  feedback_shared_rate: number | null;
+  improvement_rate: number | null;
+  follow_up_rate: number | null;
+  anonymity_rate: number | null;
+  manager_reviewed_rate: number | null;
+  recorded_promptly_rate: number | null;
   by_visitor_type: Record<string, number>;
   by_feedback_rating: Record<string, number>;
   by_visit_purpose: Record<string, number>;
@@ -173,7 +173,7 @@ export function computeVisitorFeedbackMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

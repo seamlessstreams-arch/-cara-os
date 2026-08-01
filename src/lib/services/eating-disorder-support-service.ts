@@ -258,24 +258,24 @@ export function computeMetrics(
   by_risk_level: Record<string, number>;
   by_body_weight_status: Record<string, number>;
   by_status: Record<string, number>;
-  specialist_referral_rate: number;
-  camhs_engagement_rate: number;
-  gp_consulted_rate: number;
-  dietitian_rate: number;
-  meal_plan_rate: number;
-  supervised_meals_rate: number;
-  weight_monitoring_rate: number;
-  bathroom_supervision_rate: number;
-  exercise_monitoring_rate: number;
-  engagement_rate: number;
-  family_involvement_rate: number;
-  school_aware_rate: number;
-  social_worker_informed_rate: number;
-  purging_rate: number;
-  restriction_rate: number;
-  binge_rate: number;
-  self_induced_vomiting_rate: number;
-  laxative_misuse_rate: number;
+  specialist_referral_rate: number | null;
+  camhs_engagement_rate: number | null;
+  gp_consulted_rate: number | null;
+  dietitian_rate: number | null;
+  meal_plan_rate: number | null;
+  supervised_meals_rate: number | null;
+  weight_monitoring_rate: number | null;
+  bathroom_supervision_rate: number | null;
+  exercise_monitoring_rate: number | null;
+  engagement_rate: number | null;
+  family_involvement_rate: number | null;
+  school_aware_rate: number | null;
+  social_worker_informed_rate: number | null;
+  purging_rate: number | null;
+  restriction_rate: number | null;
+  binge_rate: number | null;
+  self_induced_vomiting_rate: number | null;
+  laxative_misuse_rate: number | null;
   recovery_count: number;
   relapse_count: number;
   high_risk_count: number;
@@ -285,7 +285,7 @@ export function computeMetrics(
 
   const boolRate = (field: keyof EatingDisorderSupportRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
@@ -563,7 +563,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective safeguarding question
-  if (metrics.critical_count > 0 && metrics.gp_consulted_rate < 100) {
+  if (metrics.critical_count > 0 && (metrics.gp_consulted_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.critical_count} critical ${metrics.critical_count === 1 ? "case" : "cases"} with GP consultation at ${metrics.gp_consulted_rate}%. ` +
         `Are all critical cases receiving timely medical assessment including physical ` +
@@ -577,7 +577,7 @@ export function generateCaraInsights(
         `and is the home creating a supportive, non-judgemental environment around food ` +
         `and body image as recommended by BEAT charity guidance and NICE QS175?`,
     );
-  } else if (metrics.engagement_rate < 70) {
+  } else if ((metrics.engagement_rate ?? 0) < 70) {
     insights.push(
       `[reflect] Young person engagement rate is ${metrics.engagement_rate}%. ` +
         `Are staff using motivational and person-centred approaches to support ` +

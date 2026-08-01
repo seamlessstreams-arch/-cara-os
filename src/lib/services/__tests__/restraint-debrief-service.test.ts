@@ -39,13 +39,43 @@ function makeRecord(overrides?: Partial<RestraintDebriefRecord>): RestraintDebri
 
 describe("restraint-debrief-service", () => {
   describe("computeRestraintDebriefMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeRestraintDebriefMetrics([]); expect(m.total_debriefs).toBe(0); expect(m.no_concerns_count).toBe(0); expect(m.learning_identified_count).toBe(0); expect(m.investigation_count).toBe(0); expect(m.distressed_count).toBe(0); expect(m.child_debrief_rate).toBe(0); expect(m.average_restraint_duration).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeRestraintDebriefMetrics([]); expect(m.by_debrief_type).toEqual({}); expect(m.by_restraint_type).toEqual({}); expect(m.by_debrief_outcome).toEqual({}); expect(m.by_emotional_state).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeRestraintDebriefMetrics([]);
+      expect(m.total_debriefs).toBe(0);;
+      expect(m.no_concerns_count).toBe(0);
+      expect(m.learning_identified_count).toBe(0);
+      expect(m.investigation_count).toBe(0);
+      expect(m.distressed_count).toBe(0);
+      expect(m.child_debrief_rate).toBeNull();;
+      expect(m.average_restraint_duration).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeRestraintDebriefMetrics([]);
+      expect(m.by_debrief_type).toEqual({});
+      expect(m.by_restraint_type).toEqual({});
+      expect(m.by_debrief_outcome).toEqual({});
+      expect(m.by_emotional_state).toEqual({});
+    });
     it("counts no_concerns", () => { expect(computeRestraintDebriefMetrics([makeRecord()]).no_concerns_count).toBe(1); });
     it("counts learning_identified", () => { expect(computeRestraintDebriefMetrics([makeRecord({ debrief_outcome: "learning_identified" })]).learning_identified_count).toBe(1); });
     it("counts investigation", () => { expect(computeRestraintDebriefMetrics([makeRecord({ debrief_outcome: "investigation_required" })]).investigation_count).toBe(1); });
     it("counts distressed", () => { expect(computeRestraintDebriefMetrics([makeRecord({ child_emotional_state: "distressed" })]).distressed_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeRestraintDebriefMetrics([makeRecord()]); expect(m.child_debrief_rate).toBe(100); expect(m.staff_debrief_rate).toBe(100); expect(m.medical_check_rate).toBe(100); expect(m.body_map_rate).toBe(100); expect(m.ofsted_notified_rate).toBe(100); expect(m.social_worker_notified_rate).toBe(100); expect(m.parent_notified_rate).toBe(100); expect(m.witness_statements_rate).toBe(100); expect(m.cctv_reviewed_rate).toBe(100); expect(m.proportionate_rate).toBe(100); expect(m.learning_documented_rate).toBe(100); expect(m.plan_updated_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeRestraintDebriefMetrics([makeRecord()]);
+      expect(m.child_debrief_rate).toBe(100);
+      expect(m.staff_debrief_rate).toBe(100);
+      expect(m.medical_check_rate).toBe(100);
+      expect(m.body_map_rate).toBe(100);
+      expect(m.ofsted_notified_rate).toBe(100);
+      expect(m.social_worker_notified_rate).toBe(100);
+      expect(m.parent_notified_rate).toBe(100);
+      expect(m.witness_statements_rate).toBe(100);
+      expect(m.cctv_reviewed_rate).toBe(100);
+      expect(m.proportionate_rate).toBe(100);
+      expect(m.learning_documented_rate).toBe(100);
+      expect(m.plan_updated_rate).toBe(100);
+    });
     it("child_debrief_rate 0 when false", () => { expect(computeRestraintDebriefMetrics([makeRecord({ child_debrief_completed: false })]).child_debrief_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeRestraintDebriefMetrics([makeRecord({ child_debrief_completed: true }), makeRecord({ child_debrief_completed: false }), makeRecord({ child_debrief_completed: true })]); expect(m.child_debrief_rate).toBe(66.7); });
     it("average_restraint_duration single", () => { expect(computeRestraintDebriefMetrics([makeRecord({ restraint_duration_minutes: 10 })]).average_restraint_duration).toBe(10); });
@@ -60,9 +90,20 @@ describe("restraint-debrief-service", () => {
   describe("identifyRestraintDebriefAlerts", () => {
     it("returns empty for clean", () => { expect(identifyRestraintDebriefAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyRestraintDebriefAlerts([])).toEqual([]); });
-    it("fires disproportionate_response", () => { const a = identifyRestraintDebriefAlerts([makeRecord({ proportionate_response: false, child_name: "Jo", debrief_date: "2026-05-14" })]); expect(a[0].type).toBe("disproportionate_response"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires disproportionate_response", () => { 
+      const a = identifyRestraintDebriefAlerts([makeRecord({ proportionate_response: false, child_name: "Jo", debrief_date: "2026-05-14" })]);
+      expect(a[0].type).toBe("disproportionate_response");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("disproportionate_response per-record", () => { const a = identifyRestraintDebriefAlerts([makeRecord({ id: "a-1", proportionate_response: false }), makeRecord({ id: "a-2", proportionate_response: false })]); expect(a.filter(x => x.type === "disproportionate_response")).toHaveLength(2); });
-    it("fires no_child_debrief singular", () => { const a = identifyRestraintDebriefAlerts([makeRecord({ child_debrief_completed: false })]); const f = a.find(x => x.type === "no_child_debrief"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 restraint has"); });
+    it("fires no_child_debrief singular", () => { 
+      const a = identifyRestraintDebriefAlerts([makeRecord({ child_debrief_completed: false })]);
+      const f = a.find(x => x.type === "no_child_debrief");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 restraint has");
+    });
     it("no_child_debrief plural", () => { const a = identifyRestraintDebriefAlerts([makeRecord({ child_debrief_completed: false }), makeRecord({ child_debrief_completed: false })]); const f = a.find(x => x.type === "no_child_debrief"); expect(f!.message).toContain("2 restraints have"); });
     it("fires no_medical_check singular", () => { const a = identifyRestraintDebriefAlerts([makeRecord({ medical_check_done: false })]); expect(a.find(x => x.type === "no_medical_check")).toBeDefined(); });
     it("no_medical_check plural", () => { const a = identifyRestraintDebriefAlerts([makeRecord({ medical_check_done: false }), makeRecord({ medical_check_done: false })]); const f = a.find(x => x.type === "no_medical_check"); expect(f!.message).toContain("2 restraints have"); });
@@ -70,6 +111,14 @@ describe("restraint-debrief-service", () => {
     it("ofsted_not_notified fires for 2", () => { const a = identifyRestraintDebriefAlerts([makeRecord({ ofsted_notified: false }), makeRecord({ ofsted_notified: false })]); expect(a.find(x => x.type === "ofsted_not_notified")).toBeDefined(); });
     it("learning_not_documented not for 1", () => { expect(identifyRestraintDebriefAlerts([makeRecord({ learning_documented: false })]).find(x => x.type === "learning_not_documented")).toBeUndefined(); });
     it("learning_not_documented fires for 2", () => { const a = identifyRestraintDebriefAlerts([makeRecord({ learning_documented: false }), makeRecord({ learning_documented: false })]); expect(a.find(x => x.type === "learning_not_documented")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyRestraintDebriefAlerts([makeRecord({ proportionate_response: false, child_debrief_completed: false, medical_check_done: false, ofsted_notified: false, learning_documented: false }), makeRecord({ ofsted_notified: false, learning_documented: false })]); const types = a.map(x => x.type); expect(types).toContain("disproportionate_response"); expect(types).toContain("no_child_debrief"); expect(types).toContain("no_medical_check"); expect(types).toContain("ofsted_not_notified"); expect(types).toContain("learning_not_documented"); });
+    it("fires all applicable", () => { 
+      const a = identifyRestraintDebriefAlerts([makeRecord({ proportionate_response: false, child_debrief_completed: false, medical_check_done: false, ofsted_notified: false, learning_documented: false }), makeRecord({ ofsted_notified: false, learning_documented: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("disproportionate_response");
+      expect(types).toContain("no_child_debrief");
+      expect(types).toContain("no_medical_check");
+      expect(types).toContain("ofsted_not_notified");
+      expect(types).toContain("learning_not_documented");
+    });
   });
 });

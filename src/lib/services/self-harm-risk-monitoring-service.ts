@@ -148,18 +148,18 @@ export function computeSelfHarmRiskMetrics(
   high_count: number;
   no_safety_plan_count: number;
   needs_review_count: number;
-  child_engaged_rate: number;
-  safety_plan_shared_rate: number;
-  camhs_involved_rate: number;
-  gp_informed_rate: number;
-  social_worker_informed_rate: number;
-  parent_informed_rate: number;
-  environment_checked_rate: number;
-  means_restriction_rate: number;
-  observation_level_rate: number;
-  staff_trained_rate: number;
-  care_plan_updated_rate: number;
-  recorded_promptly_rate: number;
+  child_engaged_rate: number | null;
+  safety_plan_shared_rate: number | null;
+  camhs_involved_rate: number | null;
+  gp_informed_rate: number | null;
+  social_worker_informed_rate: number | null;
+  parent_informed_rate: number | null;
+  environment_checked_rate: number | null;
+  means_restriction_rate: number | null;
+  observation_level_rate: number | null;
+  staff_trained_rate: number | null;
+  care_plan_updated_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_risk_level: Record<string, number>;
   by_intervention_type: Record<string, number>;
@@ -175,7 +175,7 @@ export function computeSelfHarmRiskMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

@@ -138,19 +138,19 @@ export function computeStaffDebriefMetrics(
   significantly_affected_count: number;
   further_support_count: number;
   declined_support_count: number;
-  timely_debrief_rate: number;
-  safe_space_rate: number;
-  confidentiality_rate: number;
-  emotional_support_rate: number;
-  learning_captured_rate: number;
-  action_plan_rate: number;
-  follow_up_rate: number;
-  supervision_linked_rate: number;
-  occupational_health_rate: number;
-  eap_signposted_rate: number;
-  peer_support_rate: number;
-  recorded_promptly_rate: number;
-  average_duration: number;
+  timely_debrief_rate: number | null;
+  safe_space_rate: number | null;
+  confidentiality_rate: number | null;
+  emotional_support_rate: number | null;
+  learning_captured_rate: number | null;
+  action_plan_rate: number | null;
+  follow_up_rate: number | null;
+  supervision_linked_rate: number | null;
+  occupational_health_rate: number | null;
+  eap_signposted_rate: number | null;
+  peer_support_rate: number | null;
+  recorded_promptly_rate: number | null;
+  average_duration: number | null;
   unique_staff: number;
   by_debrief_type: Record<string, number>;
   by_incident_severity: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeStaffDebriefMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDuration =
@@ -174,7 +174,7 @@ export function computeStaffDebriefMetrics(
       ? Math.round(
           (records.reduce((sum, r) => sum + r.debrief_duration_minutes, 0) / records.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;
 

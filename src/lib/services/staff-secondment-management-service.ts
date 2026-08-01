@@ -68,12 +68,12 @@ export function computeMetrics(rows: StaffSecondmentManagementRow[]): {
   active_count: number;
   completed_count: number;
   pending_count: number;
-  agreement_rate: number;
-  dbs_transfer_rate: number;
-  induction_rate: number;
-  supervision_rate: number;
-  objectives_rate: number;
-  review_scheduled_rate: number;
+  agreement_rate: number | null;
+  dbs_transfer_rate: number | null;
+  induction_rate: number | null;
+  supervision_rate: number | null;
+  objectives_rate: number | null;
+  review_scheduled_rate: number | null;
   extension_count: number;
   unique_staff: number;
 } {
@@ -85,11 +85,11 @@ export function computeMetrics(rows: StaffSecondmentManagementRow[]): {
 
   const boolRate = (field: keyof StaffSecondmentManagementRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const reviewScheduledCount = rows.filter((r) => r.review_date !== null).length;
-  const reviewScheduledRate = total > 0 ? Math.round((reviewScheduledCount / total) * 1000) / 10 : 0;
+  const reviewScheduledRate = total > 0 ? Math.round((reviewScheduledCount / total) * 1000) / 10 : null;
 
   const extensionCount = rows.filter((r) => r.extension_requested === true).length;
 
@@ -207,7 +207,7 @@ export function computeCaraInsights(rows: StaffSecondmentManagementRow[]): strin
         `What steps are being taken to ensure all secondment arrangements are properly formalised ` +
         `and that seconded staff meet the same safeguarding standards as permanent staff under Reg 32?`,
     );
-  } else if (metrics.supervision_rate < 100) {
+  } else if ((metrics.supervision_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.supervision_rate}% of seconded staff have supervision arrangements in place. ` +
         `How can the home strengthen oversight of seconded staff to ensure children receive ` +

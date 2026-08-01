@@ -45,8 +45,8 @@ describe("computeFeedbackMetrics", () => {
   it("returns zeroed metrics for empty data", () => {
     const m = computeFeedbackMetrics([]);
     expect(m.total_feedback).toBe(0);
-    expect(m.positive_rate).toBe(0);
-    expect(m.negative_rate).toBe(0);
+    expect(m.positive_rate).toBeNull();;
+    expect(m.negative_rate).toBeNull();;
     expect(m.neutral_count).toBe(0);
     expect(m.pending_count).toBe(0);
     expect(m.unique_children).toBe(0);

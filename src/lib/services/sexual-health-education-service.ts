@@ -245,16 +245,16 @@ export function computeMetrics(
   total_sessions: number;
   unique_children: number;
   by_session_type: Record<string, number>;
-  engagement_rate: number;
-  referral_rate: number;
-  safeguarding_concern_rate: number;
-  consent_rate: number;
-  confidentiality_rate: number;
-  age_appropriate_rate: number;
-  follow_up_rate: number;
-  resources_rate: number;
-  school_aware_rate: number;
-  social_worker_informed_rate: number;
+  engagement_rate: number | null;
+  referral_rate: number | null;
+  safeguarding_concern_rate: number | null;
+  consent_rate: number | null;
+  confidentiality_rate: number | null;
+  age_appropriate_rate: number | null;
+  follow_up_rate: number | null;
+  resources_rate: number | null;
+  school_aware_rate: number | null;
+  social_worker_informed_rate: number | null;
   clinical_session_count: number;
   education_session_count: number;
   identity_session_count: number;
@@ -272,43 +272,43 @@ export function computeMetrics(
   // Boolean rates
   const engagementRate = total > 0
     ? Math.round((rows.filter((r) => r.young_person_engaged).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const referralRate = total > 0
     ? Math.round((rows.filter((r) => r.referral_made).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const safeguardingConcernRate = total > 0
     ? Math.round((rows.filter((r) => r.safeguarding_concerns).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const consentRate = total > 0
     ? Math.round((rows.filter((r) => r.consent_given).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const confidentialityRate = total > 0
     ? Math.round((rows.filter((r) => r.confidentiality_explained).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const ageAppropriateRate = total > 0
     ? Math.round((rows.filter((r) => r.age_appropriate).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const followUpRate = total > 0
     ? Math.round((rows.filter((r) => r.follow_up_required).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const resourcesRate = total > 0
     ? Math.round((rows.filter((r) => r.resources_provided).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const schoolAwareRate = total > 0
     ? Math.round((rows.filter((r) => r.school_aware).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const socialWorkerInformedRate = total > 0
     ? Math.round((rows.filter((r) => r.social_worker_informed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Category counts
   const clinicalSessionCount = rows.filter(
@@ -563,7 +563,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.safeguarding_concern_rate > 20 && metrics.total_sessions > 0) {
+  if ((metrics.safeguarding_concern_rate ?? 0) > 20 && metrics.total_sessions > 0) {
     insights.push(
       `[reflect] ${metrics.safeguarding_concern_rate}% of sexual health sessions have raised ` +
         `safeguarding concerns. Is the home adequately identifying and responding to sexual health ` +
@@ -573,7 +573,7 @@ export function generateCaraInsights(
         `necessary, to MASH or police? Are staff confident in applying Gillick competency and ` +
         `Fraser guidelines when making decisions about confidentiality and disclosure?`,
     );
-  } else if (metrics.confidentiality_rate < 100 && metrics.total_sessions > 0) {
+  } else if ((metrics.confidentiality_rate ?? 0) < 100 && metrics.total_sessions > 0) {
     insights.push(
       `[reflect] Confidentiality was not explained in all sessions (${metrics.confidentiality_rate}%). ` +
         `Fraser guidelines are explicit that young people must understand the limits of ` +
@@ -582,7 +582,7 @@ export function generateCaraInsights(
         `in an age-appropriate way? Do young people understand that confidentiality may be ` +
         `breached if there is a safeguarding concern? Is this being documented consistently?`,
     );
-  } else if (metrics.engagement_rate < 70 && metrics.total_sessions > 3) {
+  } else if ((metrics.engagement_rate ?? 0) < 70 && metrics.total_sessions > 3) {
     insights.push(
       `[reflect] Engagement rate of ${metrics.engagement_rate}% suggests that some young people ` +
         `may not be connecting with the RSE provision. Are sessions being tailored to individual ` +

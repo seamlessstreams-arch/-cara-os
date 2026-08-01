@@ -46,7 +46,7 @@ describe("computeCelebrationMilestonesMetrics", () => {
     expect(m.missed_count).toBe(0);
     expect(m.poor_quality_count).toBe(0);
     expect(m.uncomfortable_count).toBe(0);
-    expect(m.child_chose_rate).toBe(0);
+    expect(m.child_chose_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -48,7 +48,7 @@ describe("computeNvqMetrics", () => {
     expect(m.in_progress_count).toBe(0);
     expect(m.not_started_count).toBe(0);
     expect(m.expired_count).toBe(0);
-    expect(m.reg32_compliant_rate).toBe(0);
+    expect(m.reg32_compliant_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

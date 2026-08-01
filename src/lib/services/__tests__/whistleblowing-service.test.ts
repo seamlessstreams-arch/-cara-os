@@ -368,13 +368,13 @@ describe("computeWhistleblowingMetrics", () => {
     const result = computeWhistleblowingMetrics([], []);
     expect(result.total_reports).toBe(0);
     expect(result.open_reports).toBe(0);
-    expect(result.avg_resolution_days).toBe(0);
+    expect(result.avg_resolution_days).toBeNull();;
     expect(result.by_category).toEqual({});
     expect(result.by_risk_level).toEqual({});
     expect(result.by_outcome).toEqual({});
     expect(result.external_referrals_count).toBe(0);
     expect(result.detriment_reported_count).toBe(0);
-    expect(result.policy_compliance_rate).toBe(0);
+    expect(result.policy_compliance_rate).toBeNull();;
     expect(result.staff_training_rate).toBe(0);
   });
 
@@ -595,7 +595,7 @@ describe("computeWhistleblowingMetrics", () => {
       makeReport({ id: "r1", status: "resolved", investigation_start_date: null, investigation_end_date: null }),
     ];
     const result = computeWhistleblowingMetrics(reports, []);
-    expect(result.avg_resolution_days).toBe(0);
+    expect(result.avg_resolution_days).toBeNull();;
   });
 
   it("ignores non-resolved/closed reports for avg_resolution_days", () => {
@@ -608,7 +608,7 @@ describe("computeWhistleblowingMetrics", () => {
       }),
     ];
     const result = computeWhistleblowingMetrics(reports, []);
-    expect(result.avg_resolution_days).toBe(0);
+    expect(result.avg_resolution_days).toBeNull();;
   });
 
   it("rounds avg_resolution_days to one decimal place", () => {
@@ -724,7 +724,7 @@ describe("computeWhistleblowingMetrics", () => {
 
   it("returns 0 policy compliance rate with no reviews", () => {
     const result = computeWhistleblowingMetrics([], []);
-    expect(result.policy_compliance_rate).toBe(0);
+    expect(result.policy_compliance_rate).toBeNull();;
   });
 
   // ── Staff training rate ───────────────────────────────────────────────

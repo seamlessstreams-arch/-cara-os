@@ -103,14 +103,14 @@ export function computeMetrics(rows: StaffWhistleblowingDisclosureRow[]): {
   under_investigation_count: number;
   closed_count: number;
   escalated_count: number;
-  investigation_opened_rate: number;
+  investigation_opened_rate: number | null;
   substantiated_count: number;
-  whistleblower_protected_rate: number;
-  anonymity_rate: number;
+  whistleblower_protected_rate: number | null;
+  anonymity_rate: number | null;
   detriment_count: number;
-  feedback_rate: number;
-  regulator_notified_rate: number;
-  action_taken_rate: number;
+  feedback_rate: number | null;
+  regulator_notified_rate: number | null;
+  action_taken_rate: number | null;
   unique_disclosers: number;
   unique_handlers: number;
 } {
@@ -123,7 +123,7 @@ export function computeMetrics(rows: StaffWhistleblowingDisclosureRow[]): {
 
   const boolRate = (field: keyof StaffWhistleblowingDisclosureRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const substantiatedCount = rows.filter((r) => r.investigation_outcome === "Substantiated").length;
@@ -267,7 +267,7 @@ export function computeCaraInsights(rows: StaffWhistleblowingDisclosureRow[]): s
         `How is the home ensuring whistleblowers are protected from detriment ` +
         `and that all safeguarding concerns are investigated promptly to protect children and young people?`,
     );
-  } else if (metrics.investigation_opened_rate < 100) {
+  } else if ((metrics.investigation_opened_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.investigation_opened_rate}% of disclosures have had investigations opened. ` +
         `How is the home ensuring all whistleblowing disclosures are properly examined, ` +

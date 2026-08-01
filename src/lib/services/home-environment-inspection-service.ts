@@ -136,18 +136,18 @@ export function computeHomeEnvironmentMetrics(
   unacceptable_condition_count: number;
   high_hazard_count: number;
   immediate_hazard_count: number;
-  cleanliness_rate: number;
-  fire_safety_rate: number;
-  electrical_safety_rate: number;
-  water_safety_rate: number;
-  ventilation_rate: number;
-  lighting_rate: number;
-  maintenance_rate: number;
-  child_friendly_rate: number;
-  accessibility_rate: number;
-  security_rate: number;
-  pest_free_rate: number;
-  recorded_promptly_rate: number;
+  cleanliness_rate: number | null;
+  fire_safety_rate: number | null;
+  electrical_safety_rate: number | null;
+  water_safety_rate: number | null;
+  ventilation_rate: number | null;
+  lighting_rate: number | null;
+  maintenance_rate: number | null;
+  child_friendly_rate: number | null;
+  accessibility_rate: number | null;
+  security_rate: number | null;
+  pest_free_rate: number | null;
+  recorded_promptly_rate: number | null;
   by_inspection_area: Record<string, number>;
   by_condition_rating: Record<string, number>;
   by_hazard_level: Record<string, number>;
@@ -162,7 +162,7 @@ export function computeHomeEnvironmentMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byArea: Record<string, number> = {};

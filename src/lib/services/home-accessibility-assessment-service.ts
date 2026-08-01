@@ -178,14 +178,14 @@ export function computeAccessibilityMetrics(
   adjustments_needed_count: number;
   completed_count: number;
   deferred_count: number;
-  wheelchair_accessible_rate: number;
-  ramp_installed_rate: number;
-  grab_rails_fitted_rate: number;
-  visual_aids_provided_rate: number;
-  hearing_loop_available_rate: number;
-  signage_accessible_rate: number;
-  lighting_adequate_rate: number;
-  emergency_egress_accessible_rate: number;
+  wheelchair_accessible_rate: number | null;
+  ramp_installed_rate: number | null;
+  grab_rails_fitted_rate: number | null;
+  visual_aids_provided_rate: number | null;
+  hearing_loop_available_rate: number | null;
+  signage_accessible_rate: number | null;
+  lighting_adequate_rate: number | null;
+  emergency_egress_accessible_rate: number | null;
   total_cost: number;
   area_breakdown: Record<string, number>;
   compliance_breakdown: Record<string, number>;
@@ -202,7 +202,7 @@ export function computeAccessibilityMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const totalCost = rows.reduce((sum, r) => sum + (r.cost_estimate ?? 0), 0);

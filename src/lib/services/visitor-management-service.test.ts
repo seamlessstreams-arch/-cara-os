@@ -42,12 +42,12 @@ describe("computeVisitorMetrics", () => {
     expect(m.unique_visitors).toBe(0);
     expect(m.family_visits).toBe(0);
     expect(m.professional_visits).toBe(0);
-    expect(m.dbs_verified_rate).toBe(0);
-    expect(m.id_verified_rate).toBe(0);
-    expect(m.safeguarding_check_rate).toBe(0);
-    expect(m.signed_in_rate).toBe(0);
-    expect(m.signed_out_rate).toBe(0);
-    expect(m.child_informed_rate).toBe(0);
+    expect(m.dbs_verified_rate).toBeNull();;
+    expect(m.id_verified_rate).toBeNull();;
+    expect(m.safeguarding_check_rate).toBeNull();;
+    expect(m.signed_in_rate).toBeNull();;
+    expect(m.signed_out_rate).toBeNull();;
+    expect(m.child_informed_rate).toBeNull();;
     expect(m.unsupervised_count).toBe(0);
     expect(m.dbs_expired_count).toBe(0);
     expect(m.dbs_not_checked_count).toBe(0);

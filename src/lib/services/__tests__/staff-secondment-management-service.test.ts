@@ -136,12 +136,12 @@ describe("computeMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeMetrics([]);
-    expect(m.agreement_rate).toBe(0);
-    expect(m.dbs_transfer_rate).toBe(0);
-    expect(m.induction_rate).toBe(0);
-    expect(m.supervision_rate).toBe(0);
-    expect(m.objectives_rate).toBe(0);
-    expect(m.review_scheduled_rate).toBe(0);
+    expect(m.agreement_rate).toBeNull();;
+    expect(m.dbs_transfer_rate).toBeNull();;
+    expect(m.induction_rate).toBeNull();;
+    expect(m.supervision_rate).toBeNull();;
+    expect(m.objectives_rate).toBeNull();;
+    expect(m.review_scheduled_rate).toBeNull();;
   });
 
   it("returns 0 extension_count for empty array", () => {

@@ -22,7 +22,7 @@ describe("computeAdmissionAssessmentMetrics", () => {
     const result = computeAdmissionAssessmentMetrics([]);
     expect(result.total_assessments).toBe(0);
     expect(result.suitable_count).toBe(0);
-    expect(result.impact_risk_rate).toBe(0);
+    expect(result.impact_risk_rate).toBeNull();;
   });
 
   it("counts records and computes boolean rates", () => {

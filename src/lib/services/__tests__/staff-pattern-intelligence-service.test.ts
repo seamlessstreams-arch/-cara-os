@@ -46,8 +46,25 @@ function makeRecord(overrides?: Partial<StaffPatternInsightRecord>): StaffPatter
 
 describe("staff-pattern-intelligence-service", () => {
   describe("computePatternInsightMetrics", () => {
-    it("returns zeros for empty", () => { const m = computePatternInsightMetrics([]); expect(m.total_insights).toBe(0); expect(m.manager_review_count).toBe(0); expect(m.support_recommended_count).toBe(0); expect(m.low_confidence_count).toBe(0); expect(m.unreviewed_count).toBe(0); expect(m.concern_count).toBe(0); expect(m.strength_count).toBe(0); expect(m.evidence_verified_rate).toBe(0); expect(m.unique_staff).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computePatternInsightMetrics([]); expect(m.by_insight_type).toEqual({}); expect(m.by_insight_severity).toEqual({}); expect(m.by_confidence_level).toEqual({}); expect(m.by_insight_status).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computePatternInsightMetrics([]);
+      expect(m.total_insights).toBe(0);;
+      expect(m.manager_review_count).toBe(0);
+      expect(m.support_recommended_count).toBe(0);
+      expect(m.low_confidence_count).toBe(0);
+      expect(m.unreviewed_count).toBe(0);
+      expect(m.concern_count).toBe(0);
+      expect(m.strength_count).toBe(0);
+      expect(m.evidence_verified_rate).toBeNull();;
+      expect(m.unique_staff).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computePatternInsightMetrics([]);
+      expect(m.by_insight_type).toEqual({});
+      expect(m.by_insight_severity).toEqual({});
+      expect(m.by_confidence_level).toEqual({});
+      expect(m.by_insight_status).toEqual({});
+    });
     it("total_insights counts records", () => { expect(computePatternInsightMetrics([makeRecord(), makeRecord()]).total_insights).toBe(2); });
     it("counts manager_review_required", () => { expect(computePatternInsightMetrics([makeRecord({ insight_severity: "manager_review_required" })]).manager_review_count).toBe(1); });
     it("does not count support_recommended as manager_review", () => { expect(computePatternInsightMetrics([makeRecord({ insight_severity: "support_recommended" })]).manager_review_count).toBe(0); });
@@ -61,7 +78,21 @@ describe("staff-pattern-intelligence-service", () => {
     it("counts repeated_concern as concern", () => { expect(computePatternInsightMetrics([makeRecord({ insight_type: "repeated_concern" })]).concern_count).toBe(1); });
     it("counts performance_dip as concern", () => { expect(computePatternInsightMetrics([makeRecord({ insight_type: "performance_dip" })]).concern_count).toBe(1); });
     it("counts repeated_strength as strength", () => { expect(computePatternInsightMetrics([makeRecord({ insight_type: "repeated_strength" })]).strength_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computePatternInsightMetrics([makeRecord()]); expect(m.evidence_verified_rate).toBe(100); expect(m.context_provided_rate).toBe(100); expect(m.alternatives_considered_rate).toBe(100); expect(m.manager_reviewed_rate).toBe(100); expect(m.staff_notified_rate).toBe(100); expect(m.staff_commented_rate).toBe(100); expect(m.action_plan_rate).toBe(100); expect(m.support_offered_rate).toBe(100); expect(m.training_identified_rate).toBe(100); expect(m.supervision_discussed_rate).toBe(100); expect(m.wellbeing_checked_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computePatternInsightMetrics([makeRecord()]);
+      expect(m.evidence_verified_rate).toBe(100);
+      expect(m.context_provided_rate).toBe(100);
+      expect(m.alternatives_considered_rate).toBe(100);
+      expect(m.manager_reviewed_rate).toBe(100);
+      expect(m.staff_notified_rate).toBe(100);
+      expect(m.staff_commented_rate).toBe(100);
+      expect(m.action_plan_rate).toBe(100);
+      expect(m.support_offered_rate).toBe(100);
+      expect(m.training_identified_rate).toBe(100);
+      expect(m.supervision_discussed_rate).toBe(100);
+      expect(m.wellbeing_checked_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("evidence_verified_rate 0 when false", () => { expect(computePatternInsightMetrics([makeRecord({ evidence_verified: false })]).evidence_verified_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computePatternInsightMetrics([makeRecord({ wellbeing_checked: true }), makeRecord({ wellbeing_checked: false }), makeRecord({ wellbeing_checked: true })]); expect(m.wellbeing_checked_rate).toBe(66.7); });
     it("unique_staff distinct", () => { const m = computePatternInsightMetrics([makeRecord({ staff_name: "A" }), makeRecord({ staff_name: "B" }), makeRecord({ staff_name: "A" })]); expect(m.unique_staff).toBe(2); });
@@ -74,18 +105,43 @@ describe("staff-pattern-intelligence-service", () => {
   describe("identifyPatternInsightAlerts", () => {
     it("returns empty for clean", () => { expect(identifyPatternInsightAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyPatternInsightAlerts([])).toEqual([]); });
-    it("fires unreviewed_serious for support_recommended + draft", () => { const a = identifyPatternInsightAlerts([makeRecord({ insight_severity: "support_recommended", insight_status: "draft", staff_name: "Jo" })]); expect(a[0].type).toBe("unreviewed_serious"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires unreviewed_serious for support_recommended + draft", () => { 
+      const a = identifyPatternInsightAlerts([makeRecord({ insight_severity: "support_recommended", insight_status: "draft", staff_name: "Jo" })]);
+      expect(a[0].type).toBe("unreviewed_serious");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("fires unreviewed_serious for manager_review_required + pending_review", () => { const a = identifyPatternInsightAlerts([makeRecord({ insight_severity: "manager_review_required", insight_status: "pending_review" })]); expect(a[0].type).toBe("unreviewed_serious"); expect(a[0].severity).toBe("critical"); });
     it("unreviewed_serious per-record", () => { const a = identifyPatternInsightAlerts([makeRecord({ id: "a-1", insight_severity: "manager_review_required", insight_status: "draft" }), makeRecord({ id: "a-2", insight_severity: "support_recommended", insight_status: "pending_review" })]); expect(a.filter(x => x.type === "unreviewed_serious")).toHaveLength(2); });
     it("no critical when reviewed", () => { expect(identifyPatternInsightAlerts([makeRecord({ insight_severity: "manager_review_required", insight_status: "reviewed" })]).find(x => x.type === "unreviewed_serious")).toBeUndefined(); });
     it("no critical for informational", () => { expect(identifyPatternInsightAlerts([makeRecord({ insight_severity: "informational", insight_status: "draft" })]).find(x => x.type === "unreviewed_serious")).toBeUndefined(); });
-    it("fires no_evidence_verified singular", () => { const a = identifyPatternInsightAlerts([makeRecord({ evidence_verified: false })]); const f = a.find(x => x.type === "no_evidence_verified"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 insight has"); });
+    it("fires no_evidence_verified singular", () => { 
+      const a = identifyPatternInsightAlerts([makeRecord({ evidence_verified: false })]);
+      const f = a.find(x => x.type === "no_evidence_verified");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 insight has");
+    });
     it("no_evidence_verified plural", () => { const a = identifyPatternInsightAlerts([makeRecord({ evidence_verified: false }), makeRecord({ evidence_verified: false })]); const f = a.find(x => x.type === "no_evidence_verified"); expect(f!.message).toContain("2 insights have"); });
-    it("fires staff_not_notified singular", () => { const a = identifyPatternInsightAlerts([makeRecord({ staff_notified: false })]); const f = a.find(x => x.type === "staff_not_notified"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 insight has"); });
+    it("fires staff_not_notified singular", () => { 
+      const a = identifyPatternInsightAlerts([makeRecord({ staff_notified: false })]);
+      const f = a.find(x => x.type === "staff_not_notified");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 insight has");
+    });
     it("no_alternatives_considered not for 1", () => { expect(identifyPatternInsightAlerts([makeRecord({ alternative_explanations_considered: false })]).find(x => x.type === "no_alternatives_considered")).toBeUndefined(); });
     it("no_alternatives_considered fires for 2", () => { const a = identifyPatternInsightAlerts([makeRecord({ alternative_explanations_considered: false }), makeRecord({ alternative_explanations_considered: false })]); expect(a.find(x => x.type === "no_alternatives_considered")).toBeDefined(); expect(a.find(x => x.type === "no_alternatives_considered")!.severity).toBe("medium"); });
     it("no_wellbeing_check not for 1", () => { expect(identifyPatternInsightAlerts([makeRecord({ wellbeing_checked: false })]).find(x => x.type === "no_wellbeing_check")).toBeUndefined(); });
     it("no_wellbeing_check fires for 2", () => { const a = identifyPatternInsightAlerts([makeRecord({ wellbeing_checked: false }), makeRecord({ wellbeing_checked: false })]); expect(a.find(x => x.type === "no_wellbeing_check")).toBeDefined(); expect(a.find(x => x.type === "no_wellbeing_check")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyPatternInsightAlerts([makeRecord({ insight_severity: "manager_review_required", insight_status: "draft", evidence_verified: false, staff_notified: false, alternative_explanations_considered: false, wellbeing_checked: false }), makeRecord({ evidence_verified: false, staff_notified: false, alternative_explanations_considered: false, wellbeing_checked: false })]); const types = a.map(x => x.type); expect(types).toContain("unreviewed_serious"); expect(types).toContain("no_evidence_verified"); expect(types).toContain("staff_not_notified"); expect(types).toContain("no_alternatives_considered"); expect(types).toContain("no_wellbeing_check"); });
+    it("fires all applicable", () => { 
+      const a = identifyPatternInsightAlerts([makeRecord({ insight_severity: "manager_review_required", insight_status: "draft", evidence_verified: false, staff_notified: false, alternative_explanations_considered: false, wellbeing_checked: false }), makeRecord({ evidence_verified: false, staff_notified: false, alternative_explanations_considered: false, wellbeing_checked: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("unreviewed_serious");
+      expect(types).toContain("no_evidence_verified");
+      expect(types).toContain("staff_not_notified");
+      expect(types).toContain("no_alternatives_considered");
+      expect(types).toContain("no_wellbeing_check");
+    });
   });
 });

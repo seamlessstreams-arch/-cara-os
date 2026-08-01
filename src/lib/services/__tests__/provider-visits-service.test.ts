@@ -125,7 +125,7 @@ describe("computeVisitMetrics", () => {
 
     it("returns zero satisfactory_rate for empty array", () => {
       const m = computeVisitMetrics([], now);
-      expect(m.satisfactory_rate).toBe(0);
+      expect(m.satisfactory_rate).toBeNull();;
     });
 
     it("returns zero concerns_raised_count for empty array", () => {
@@ -145,17 +145,17 @@ describe("computeVisitMetrics", () => {
 
     it("returns zero children_seen_rate for empty array", () => {
       const m = computeVisitMetrics([], now);
-      expect(m.children_seen_rate).toBe(0);
+      expect(m.children_seen_rate).toBeNull();;
     });
 
     it("returns zero premises_inspected_rate for empty array", () => {
       const m = computeVisitMetrics([], now);
-      expect(m.premises_inspected_rate).toBe(0);
+      expect(m.premises_inspected_rate).toBeNull();;
     });
 
     it("returns zero records_reviewed_rate for empty array", () => {
       const m = computeVisitMetrics([], now);
-      expect(m.records_reviewed_rate).toBe(0);
+      expect(m.records_reviewed_rate).toBeNull();;
     });
 
     it("returns zero reg_44_completed for empty array", () => {
@@ -283,7 +283,7 @@ describe("computeVisitMetrics", () => {
   describe("satisfactory_rate", () => {
     it("returns 0 when no completed visits", () => {
       const visits = [makeVisit({ visit_status: "scheduled", visit_date: daysAhead(5) })];
-      expect(computeVisitMetrics(visits, now).satisfactory_rate).toBe(0);
+      expect(computeVisitMetrics(visits, now).satisfactory_rate).toBeNull();;
     });
 
     it("returns 50% when half of completed visits are satisfactory", () => {
@@ -418,7 +418,7 @@ describe("computeVisitMetrics", () => {
   describe("children_seen_rate", () => {
     it("returns 0 when no completed visits", () => {
       const visits = [makeVisit({ visit_status: "scheduled", visit_date: daysAhead(5) })];
-      expect(computeVisitMetrics(visits, now).children_seen_rate).toBe(0);
+      expect(computeVisitMetrics(visits, now).children_seen_rate).toBeNull();;
     });
 
     it("returns 100% when all completed visits have private discussions", () => {
@@ -450,7 +450,7 @@ describe("computeVisitMetrics", () => {
   describe("premises_inspected_rate", () => {
     it("returns 0 when no completed visits", () => {
       const visits = [makeVisit({ visit_status: "scheduled", visit_date: daysAhead(5) })];
-      expect(computeVisitMetrics(visits, now).premises_inspected_rate).toBe(0);
+      expect(computeVisitMetrics(visits, now).premises_inspected_rate).toBeNull();;
     });
 
     it("returns 100% when all completed visits inspected premises", () => {
@@ -482,7 +482,7 @@ describe("computeVisitMetrics", () => {
   describe("records_reviewed_rate", () => {
     it("returns 0 when no completed visits", () => {
       const visits = [makeVisit({ visit_status: "scheduled", visit_date: daysAhead(5) })];
-      expect(computeVisitMetrics(visits, now).records_reviewed_rate).toBe(0);
+      expect(computeVisitMetrics(visits, now).records_reviewed_rate).toBeNull();;
     });
 
     it("returns 100% when all completed visits reviewed records", () => {

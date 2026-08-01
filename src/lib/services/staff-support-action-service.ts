@@ -155,18 +155,18 @@ export function computeSupportActionMetrics(
   urgent_count: number;
   completed_count: number;
   no_change_count: number;
-  evidence_based_rate: number;
-  staff_consulted_rate: number;
-  staff_agreed_rate: number;
-  proportionate_rate: number;
-  cost_considered_rate: number;
-  timeline_rate: number;
-  success_criteria_rate: number;
-  follow_up_rate: number;
-  manager_approved_rate: number;
-  impact_assessed_rate: number;
-  linked_to_plan_rate: number;
-  recorded_promptly_rate: number;
+  evidence_based_rate: number | null;
+  staff_consulted_rate: number | null;
+  staff_agreed_rate: number | null;
+  proportionate_rate: number | null;
+  cost_considered_rate: number | null;
+  timeline_rate: number | null;
+  success_criteria_rate: number | null;
+  follow_up_rate: number | null;
+  manager_approved_rate: number | null;
+  impact_assessed_rate: number | null;
+  linked_to_plan_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_staff: number;
   by_action_type: Record<string, number>;
   by_action_outcome: Record<string, number>;
@@ -182,7 +182,7 @@ export function computeSupportActionMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;

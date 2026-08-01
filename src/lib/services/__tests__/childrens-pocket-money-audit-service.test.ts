@@ -90,27 +90,27 @@ describe("computePocketMoneyAuditMetrics", () => {
 
     it("returns zero receipt_rate", () => {
       const m = computePocketMoneyAuditMetrics([]);
-      expect(m.receipt_rate).toBe(0);
+      expect(m.receipt_rate).toBeNull();;
     });
 
     it("returns zero child_signed_rate", () => {
       const m = computePocketMoneyAuditMetrics([]);
-      expect(m.child_signed_rate).toBe(0);
+      expect(m.child_signed_rate).toBeNull();;
     });
 
     it("returns zero staff_witnessed_rate", () => {
       const m = computePocketMoneyAuditMetrics([]);
-      expect(m.staff_witnessed_rate).toBe(0);
+      expect(m.staff_witnessed_rate).toBeNull();;
     });
 
     it("returns zero two_signatures_rate", () => {
       const m = computePocketMoneyAuditMetrics([]);
-      expect(m.two_signatures_rate).toBe(0);
+      expect(m.two_signatures_rate).toBeNull();;
     });
 
     it("returns zero balance_matches_rate", () => {
       const m = computePocketMoneyAuditMetrics([]);
-      expect(m.balance_matches_rate).toBe(0);
+      expect(m.balance_matches_rate).toBeNull();;
     });
 
     it("returns empty transaction_type_breakdown", () => {

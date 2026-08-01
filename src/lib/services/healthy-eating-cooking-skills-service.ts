@@ -136,18 +136,18 @@ export function computeHealthyEatingMetrics(records: HealthyEatingCookingSkillsR
   disengaged_count: number;
   declined_count: number;
   refused_count: number;
-  age_appropriate_rate: number;
-  food_hygiene_rate: number;
-  child_chose_recipe_rate: number;
-  dietary_needs_rate: number;
-  allergy_awareness_rate: number;
-  kitchen_safety_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  healthy_options_rate: number;
-  skills_transferable_rate: number;
-  recorded_promptly_rate: number;
+  age_appropriate_rate: number | null;
+  food_hygiene_rate: number | null;
+  child_chose_recipe_rate: number | null;
+  dietary_needs_rate: number | null;
+  allergy_awareness_rate: number | null;
+  kitchen_safety_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  healthy_options_rate: number | null;
+  skills_transferable_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_session_type: Record<string, number>;
   by_skill_level: Record<string, number>;
@@ -163,7 +163,7 @@ export function computeHealthyEatingMetrics(records: HealthyEatingCookingSkillsR
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const bySessionType: Record<string, number> = {};

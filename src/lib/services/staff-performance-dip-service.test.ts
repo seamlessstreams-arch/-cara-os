@@ -57,7 +57,7 @@ describe("computePerformanceDipMetrics", () => {
     expect(m.support_recommended_count).toBe(0);
     expect(m.unresolved_count).toBe(0);
     expect(m.escalated_count).toBe(0);
-    expect(m.evidence_documented_rate).toBe(0);
+    expect(m.evidence_documented_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

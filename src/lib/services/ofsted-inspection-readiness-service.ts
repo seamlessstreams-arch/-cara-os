@@ -186,17 +186,17 @@ export function computeOfstedReadinessMetrics(
   requires_improvement_count: number;
   outstanding_count: number;
   evidence_missing_count: number;
-  evidence_documented_rate: number;
-  staff_prepared_rate: number;
-  children_consulted_rate: number;
-  environment_ready_rate: number;
-  policies_current_rate: number;
-  records_accessible_rate: number;
-  improvement_completed_rate: number;
-  self_evaluation_rate: number;
-  mock_inspection_rate: number;
-  regulatory_met_rate: number;
-  previous_recommendations_rate: number;
+  evidence_documented_rate: number | null;
+  staff_prepared_rate: number | null;
+  children_consulted_rate: number | null;
+  environment_ready_rate: number | null;
+  policies_current_rate: number | null;
+  records_accessible_rate: number | null;
+  improvement_completed_rate: number | null;
+  self_evaluation_rate: number | null;
+  mock_inspection_rate: number | null;
+  regulatory_met_rate: number | null;
+  previous_recommendations_rate: number | null;
   area_breakdown: Record<string, number>;
   rating_breakdown: Record<string, number>;
   unique_assessors: number;
@@ -212,7 +212,7 @@ export function computeOfstedReadinessMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const areaBreakdown: Record<string, number> = {};

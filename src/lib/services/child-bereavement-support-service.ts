@@ -91,10 +91,10 @@ export function computeMetrics(
   ongoing_support_count: number;
   specialist_referral_count: number;
   camhs_involvement_count: number;
-  school_notification_rate: number;
-  social_worker_rate: number;
-  memorial_activity_rate: number;
-  review_scheduled_rate: number;
+  school_notification_rate: number | null;
+  social_worker_rate: number | null;
+  memorial_activity_rate: number | null;
+  review_scheduled_rate: number | null;
   unique_children: number;
   unique_key_workers: number;
   deceased_relationship_breakdown: Record<string, number>;
@@ -109,7 +109,7 @@ export function computeMetrics(
     const count = rows.filter(fn).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const schoolNotificationRate = boolRate((r) => r.school_notified);

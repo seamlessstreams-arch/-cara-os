@@ -96,12 +96,12 @@ export function computeMetrics(
   total_assessments: number;
   high_risk_count: number;
   immediate_count: number;
-  safety_plan_rate: number;
-  multi_agency_rate: number;
-  police_notification_rate: number;
-  specialist_rate: number;
-  safe_accommodation_rate: number;
-  one_chance_rule_rate: number;
+  safety_plan_rate: number | null;
+  multi_agency_rate: number | null;
+  police_notification_rate: number | null;
+  specialist_rate: number | null;
+  safe_accommodation_rate: number | null;
+  one_chance_rule_rate: number | null;
   unique_children: number;
   unique_assessors: number;
 } {
@@ -116,7 +116,7 @@ export function computeMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;

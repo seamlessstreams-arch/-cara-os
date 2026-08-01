@@ -292,7 +292,7 @@ describe("computeInfectionControlMetrics", () => {
     });
 
     it("returns zero excellent_hygiene_rate", () => {
-      expect(computeInfectionControlMetrics([]).excellent_hygiene_rate).toBe(0);
+      expect(computeInfectionControlMetrics([]).excellent_hygiene_rate).toBeNull();;
     });
 
     it("returns zero poor_hygiene_count", () => {
@@ -300,27 +300,27 @@ describe("computeInfectionControlMetrics", () => {
     });
 
     it("returns zero hand_washing_observed_rate", () => {
-      expect(computeInfectionControlMetrics([]).hand_washing_observed_rate).toBe(0);
+      expect(computeInfectionControlMetrics([]).hand_washing_observed_rate).toBeNull();;
     });
 
     it("returns zero sanitiser_available_rate", () => {
-      expect(computeInfectionControlMetrics([]).sanitiser_available_rate).toBe(0);
+      expect(computeInfectionControlMetrics([]).sanitiser_available_rate).toBeNull();;
     });
 
     it("returns zero cleaning_schedule_followed_rate", () => {
-      expect(computeInfectionControlMetrics([]).cleaning_schedule_followed_rate).toBe(0);
+      expect(computeInfectionControlMetrics([]).cleaning_schedule_followed_rate).toBeNull();;
     });
 
     it("returns zero laundry_procedures_rate", () => {
-      expect(computeInfectionControlMetrics([]).laundry_procedures_rate).toBe(0);
+      expect(computeInfectionControlMetrics([]).laundry_procedures_rate).toBeNull();;
     });
 
     it("returns zero food_hygiene_rate", () => {
-      expect(computeInfectionControlMetrics([]).food_hygiene_rate).toBe(0);
+      expect(computeInfectionControlMetrics([]).food_hygiene_rate).toBeNull();;
     });
 
     it("returns zero ppe_fully_compliant_rate", () => {
-      expect(computeInfectionControlMetrics([]).ppe_fully_compliant_rate).toBe(0);
+      expect(computeInfectionControlMetrics([]).ppe_fully_compliant_rate).toBeNull();;
     });
 
     it("returns zero ppe_non_compliant_count", () => {
@@ -1286,13 +1286,13 @@ describe("computeInfectionControlMetrics", () => {
 
     it("all rates are 0 for empty array", () => {
       const m = computeInfectionControlMetrics([]);
-      expect(m.excellent_hygiene_rate).toBe(0);
-      expect(m.hand_washing_observed_rate).toBe(0);
-      expect(m.sanitiser_available_rate).toBe(0);
-      expect(m.cleaning_schedule_followed_rate).toBe(0);
-      expect(m.laundry_procedures_rate).toBe(0);
-      expect(m.food_hygiene_rate).toBe(0);
-      expect(m.ppe_fully_compliant_rate).toBe(0);
+      expect(m.excellent_hygiene_rate).toBeNull();;
+      expect(m.hand_washing_observed_rate).toBeNull();;
+      expect(m.sanitiser_available_rate).toBeNull();;
+      expect(m.cleaning_schedule_followed_rate).toBeNull();;
+      expect(m.laundry_procedures_rate).toBeNull();;
+      expect(m.food_hygiene_rate).toBeNull();;
+      expect(m.ppe_fully_compliant_rate).toBeNull();;
     });
 
     it("rates are 100 when all true", () => {

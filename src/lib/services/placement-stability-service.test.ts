@@ -41,11 +41,11 @@ describe("computeStabilityMetrics", () => {
     expect(m.children_with_moves).toBe(0);
     expect(m.planned_moves).toBe(0);
     expect(m.unplanned_moves).toBe(0);
-    expect(m.planned_rate).toBe(0);
+    expect(m.planned_rate).toBeNull();;
     expect(m.breakdowns).toBe(0);
-    expect(m.average_placement_duration).toBe(0);
-    expect(m.disruption_meeting_rate).toBe(0);
-    expect(m.child_views_sought_rate).toBe(0);
+    expect(m.average_placement_duration).toBeNull();;
+    expect(m.disruption_meeting_rate).toBeNull();;
+    expect(m.child_views_sought_rate).toBeNull();;
     expect(m.children_with_multiple_moves).toBe(0);
   });
 

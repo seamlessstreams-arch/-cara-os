@@ -149,16 +149,16 @@ export function computeStaffCompetencyMetrics(
   developing_count: number;
   below_count: number;
   not_competent_count: number;
-  competency_maintained_rate: number;
-  theory_demonstrated_rate: number;
-  practical_demonstrated_rate: number;
-  reflective_practice_rate: number;
-  values_aligned_rate: number;
-  child_centred_rate: number;
-  evidence_documented_rate: number;
-  development_plan_rate: number;
-  staff_agreed_rate: number;
-  follow_up_set_rate: number;
+  competency_maintained_rate: number | null;
+  theory_demonstrated_rate: number | null;
+  practical_demonstrated_rate: number | null;
+  reflective_practice_rate: number | null;
+  values_aligned_rate: number | null;
+  child_centred_rate: number | null;
+  evidence_documented_rate: number | null;
+  development_plan_rate: number | null;
+  staff_agreed_rate: number | null;
+  follow_up_set_rate: number | null;
   action_required_count: number;
   unique_staff: number;
   by_competency_area: Record<string, number>;
@@ -176,7 +176,7 @@ export function computeStaffCompetencyMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const actionRequired = records.filter((r) => r.action_required !== "none").length;

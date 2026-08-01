@@ -136,18 +136,18 @@ export function computePersonalHygieneMetrics(
   total_assessments: number;
   independent_count: number;
   full_support_count: number;
-  independence_rate: number;
+  independence_rate: number | null;
   excellent_progress_count: number;
   needs_improvement_count: number;
-  child_consulted_rate: number;
-  child_comfortable_rate: number;
-  dignity_maintained_rate: number;
-  age_appropriate_rate: number;
-  culturally_sensitive_rate: number;
-  products_available_rate: number;
-  independence_encouraged_rate: number;
-  routine_established_rate: number;
-  care_plan_updated_rate: number;
+  child_consulted_rate: number | null;
+  child_comfortable_rate: number | null;
+  dignity_maintained_rate: number | null;
+  age_appropriate_rate: number | null;
+  culturally_sensitive_rate: number | null;
+  products_available_rate: number | null;
+  independence_encouraged_rate: number | null;
+  routine_established_rate: number | null;
+  care_plan_updated_rate: number | null;
   unique_children: number;
   by_hygiene_area: Record<string, number>;
   by_support_level: Record<string, number>;
@@ -159,7 +159,7 @@ export function computePersonalHygieneMetrics(
   const independenceRate =
     records.length > 0
       ? Math.round((independent / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const excellentProgress = records.filter((r) => r.progress_rating === "excellent").length;
   const needsImprovement = records.filter((r) => r.progress_rating === "needs_improvement").length;
@@ -168,7 +168,7 @@ export function computePersonalHygieneMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

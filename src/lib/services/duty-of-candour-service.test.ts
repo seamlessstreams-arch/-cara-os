@@ -47,8 +47,8 @@ describe("duty-of-candour-service", () => {
       expect(m.closed_cases).toBe(0);
       expect(m.verbal_apology_given).toBe(0);
       expect(m.written_apology_sent).toBe(0);
-      expect(m.family_informed_rate).toBe(0);
-      expect(m.ofsted_notified_rate).toBe(0);
+      expect(m.family_informed_rate).toBeNull();;
+      expect(m.ofsted_notified_rate).toBeNull();;
       expect(m.avg_days_to_verbal).toBe(0);
       expect(m.avg_days_to_written).toBe(0);
       expect(m.lessons_captured).toBe(0);

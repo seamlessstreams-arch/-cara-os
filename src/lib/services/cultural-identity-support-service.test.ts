@@ -48,7 +48,7 @@ describe("cultural-identity-support-service", () => {
       expect(m.total_supports).toBe(0);
       expect(m.enthusiastic_count).toBe(0);
       expect(m.declined_count).toBe(0);
-      expect(m.child_views_sought_rate).toBe(0);
+      expect(m.child_views_sought_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
 

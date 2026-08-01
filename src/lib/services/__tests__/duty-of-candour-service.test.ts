@@ -293,8 +293,8 @@ describe("computeCandourMetrics", () => {
       expect(result.closed_cases).toBe(0);
       expect(result.verbal_apology_given).toBe(0);
       expect(result.written_apology_sent).toBe(0);
-      expect(result.family_informed_rate).toBe(0);
-      expect(result.ofsted_notified_rate).toBe(0);
+      expect(result.family_informed_rate).toBeNull();;
+      expect(result.ofsted_notified_rate).toBeNull();;
       expect(result.investigation_complete).toBe(0);
       expect(result.investigation_upheld).toBe(0);
       expect(result.avg_days_to_verbal).toBe(0);

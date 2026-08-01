@@ -289,13 +289,13 @@ export function computeMetrics(
   by_support_type: Record<string, number>;
   by_english_proficiency: Record<string, number>;
   by_communication_needs_level: Record<string, number>;
-  specialist_rate: number;
-  speech_therapist_rate: number;
-  interpreter_rate: number;
-  communication_tools_rate: number;
-  staff_training_rate: number;
-  individual_plan_rate: number;
-  child_views_accessible_rate: number;
+  specialist_rate: number | null;
+  speech_therapist_rate: number | null;
+  interpreter_rate: number | null;
+  communication_tools_rate: number | null;
+  staff_training_rate: number | null;
+  individual_plan_rate: number | null;
+  child_views_accessible_rate: number | null;
   unique_children: number;
   active_needs_count: number;
 } {
@@ -303,7 +303,7 @@ export function computeMetrics(
 
   const boolRate = (field: keyof LanguageSupportRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   // Support type breakdown
@@ -573,16 +573,16 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective safeguarding question
-  if (metrics.child_views_accessible_rate < 100 && metrics.active_needs_count > 0) {
+  if ((metrics.child_views_accessible_rate ?? 0) < 100 && metrics.active_needs_count > 0) {
     insights.push(
-      `[reflect] ${Math.round(100 - metrics.child_views_accessible_rate)}% of children with active communication needs ` +
+      `[reflect] ${Math.round(100 - (metrics.child_views_accessible_rate ?? 0))}% of children with active communication needs ` +
         `cannot effectively express their views. Are the right communication methods being used for ` +
         `each child? UNCRC Article 12 guarantees every child the right to express views freely in ` +
         `all matters affecting them. Article 13 supports the right to seek and receive information ` +
         `through any medium of the child's choice. Is the home doing enough to ensure every child's ` +
         `voice is genuinely heard, regardless of their communication needs?`,
     );
-  } else if (metrics.staff_training_rate < 80 && metrics.active_needs_count > 0) {
+  } else if ((metrics.staff_training_rate ?? 0) < 80 && metrics.active_needs_count > 0) {
     insights.push(
       `[reflect] Only ${metrics.staff_training_rate}% of communication support records show staff trained ` +
         `in the relevant communication method. Are all team members confident in using the communication ` +
@@ -590,7 +590,7 @@ export function generateCaraInsights(
         `individual linguistic needs are met, and this depends on every member of staff being able ` +
         `to communicate effectively with every child in their care.`,
     );
-  } else if (metrics.individual_plan_rate < 100 && metrics.active_needs_count > 0) {
+  } else if ((metrics.individual_plan_rate ?? 0) < 100 && metrics.active_needs_count > 0) {
     insights.push(
       `[reflect] Not all children with active communication needs have an individual communication ` +
         `plan. How are communication strategies being documented and shared across the team? ` +

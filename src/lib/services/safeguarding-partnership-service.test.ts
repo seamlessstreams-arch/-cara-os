@@ -43,7 +43,7 @@ describe("computeSafeguardingPartnershipMetrics", () => {
     expect(m.ongoing_count).toBe(0);
     expect(m.emergency_count).toBe(0);
     expect(m.escalated_count).toBe(0);
-    expect(m.child_seen_alone_rate).toBe(0);
+    expect(m.child_seen_alone_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

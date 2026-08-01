@@ -155,13 +155,13 @@ export function computeTraumaMetrics(
 ): {
   total_records: number;
   children_assessed: number;
-  assessment_coverage: number;
-  average_aces_score: number;
-  therapist_involved_rate: number;
-  child_engaged_rate: number;
-  plan_in_place_rate: number;
-  staff_aware_rate: number;
-  average_staff_trained: number;
+  assessment_coverage: number | null;
+  average_aces_score: number | null;
+  therapist_involved_rate: number | null;
+  child_engaged_rate: number | null;
+  plan_in_place_rate: number | null;
+  staff_aware_rate: number | null;
+  average_staff_trained: number | null;
   significant_improvement_count: number;
   some_improvement_count: number;
   stable_count: number;
@@ -176,42 +176,42 @@ export function computeTraumaMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const acesRecords = records.filter((r) => r.aces_score !== null);
   const avgAces =
     acesRecords.length > 0
       ? Math.round((acesRecords.reduce((sum, r) => sum + (r.aces_score ?? 0), 0) / acesRecords.length) * 10) / 10
-      : 0;
+      : null;
 
   const therapistInvolved = records.filter((r) => r.therapist_involved).length;
   const therapistRate =
     records.length > 0
       ? Math.round((therapistInvolved / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childEngaged = records.filter((r) => r.child_engaged_in_therapy).length;
   const engagedRate =
     records.length > 0
       ? Math.round((childEngaged / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const planInPlace = records.filter((r) => r.trauma_informed_plan_in_place).length;
   const planRate =
     records.length > 0
       ? Math.round((planInPlace / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffAware = records.filter((r) => r.staff_aware_of_triggers).length;
   const awareRate =
     records.length > 0
       ? Math.round((staffAware / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const avgStaffTrained =
     records.length > 0
       ? Math.round((records.reduce((sum, r) => sum + r.staff_trained_percentage, 0) / records.length) * 10) / 10
-      : 0;
+      : null;
 
   const sigImprove = records.filter((r) => r.recovery_progress === "significant_improvement").length;
   const someImprove = records.filter((r) => r.recovery_progress === "some_improvement").length;

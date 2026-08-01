@@ -47,7 +47,7 @@ describe("computeChildDevelopmentMetrics", () => {
     expect(m.regressed_count).toBe(0);
     expect(m.intensive_support_count).toBe(0);
     expect(m.no_progress_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

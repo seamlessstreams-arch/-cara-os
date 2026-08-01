@@ -37,15 +37,44 @@ function makeRecord(overrides?: Partial<ChildDigitalWellbeingRecord>): ChildDigi
 
 describe("child-digital-wellbeing-service", () => {
   describe("computeChildDigitalWellbeingMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeChildDigitalWellbeingMetrics([]); expect(m.total_assessments).toBe(0); expect(m.poor_safety_count).toBe(0); expect(m.unsafe_safety_count).toBe(0); expect(m.excessive_screen_count).toBe(0); expect(m.not_monitored_count).toBe(0); expect(m.parental_controls_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeChildDigitalWellbeingMetrics([]); expect(m.by_device_type).toEqual({}); expect(m.by_online_safety_rating).toEqual({}); expect(m.by_screen_time_compliance).toEqual({}); expect(m.by_digital_literacy_level).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeChildDigitalWellbeingMetrics([]);
+      expect(m.total_assessments).toBe(0);;
+      expect(m.poor_safety_count).toBe(0);
+      expect(m.unsafe_safety_count).toBe(0);
+      expect(m.excessive_screen_count).toBe(0);
+      expect(m.not_monitored_count).toBe(0);
+      expect(m.parental_controls_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeChildDigitalWellbeingMetrics([]);
+      expect(m.by_device_type).toEqual({});
+      expect(m.by_online_safety_rating).toEqual({});
+      expect(m.by_screen_time_compliance).toEqual({});
+      expect(m.by_digital_literacy_level).toEqual({});
+    });
     it("total_assessments counts records", () => { expect(computeChildDigitalWellbeingMetrics([makeRecord(), makeRecord()]).total_assessments).toBe(2); });
     it("counts poor_safety", () => { expect(computeChildDigitalWellbeingMetrics([makeRecord({ online_safety_rating: "poor" })]).poor_safety_count).toBe(1); });
     it("counts unsafe_safety", () => { expect(computeChildDigitalWellbeingMetrics([makeRecord({ online_safety_rating: "unsafe" })]).unsafe_safety_count).toBe(1); });
     it("does not count adequate as poor", () => { expect(computeChildDigitalWellbeingMetrics([makeRecord({ online_safety_rating: "adequate" })]).poor_safety_count).toBe(0); });
     it("counts excessive_screen", () => { expect(computeChildDigitalWellbeingMetrics([makeRecord({ screen_time_compliance: "excessive" })]).excessive_screen_count).toBe(1); });
     it("counts not_monitored", () => { expect(computeChildDigitalWellbeingMetrics([makeRecord({ screen_time_compliance: "not_monitored" })]).not_monitored_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeChildDigitalWellbeingMetrics([makeRecord()]); expect(m.parental_controls_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.online_safety_educated_rate).toBe(100); expect(m.cyberbullying_screened_rate).toBe(100); expect(m.social_media_rate).toBe(100); expect(m.gaming_monitored_rate).toBe(100); expect(m.privacy_settings_rate).toBe(100); expect(m.digital_agreement_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.screen_time_discussed_rate).toBe(100); expect(m.sleep_impact_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeChildDigitalWellbeingMetrics([makeRecord()]);
+      expect(m.parental_controls_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.online_safety_educated_rate).toBe(100);
+      expect(m.cyberbullying_screened_rate).toBe(100);
+      expect(m.social_media_rate).toBe(100);
+      expect(m.gaming_monitored_rate).toBe(100);
+      expect(m.privacy_settings_rate).toBe(100);
+      expect(m.digital_agreement_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.screen_time_discussed_rate).toBe(100);
+      expect(m.sleep_impact_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("parental_controls_rate 0 when false", () => { expect(computeChildDigitalWellbeingMetrics([makeRecord({ parental_controls_active: false })]).parental_controls_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeChildDigitalWellbeingMetrics([makeRecord({ cyberbullying_screened: true }), makeRecord({ cyberbullying_screened: false }), makeRecord({ cyberbullying_screened: true })]); expect(m.cyberbullying_screened_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeChildDigitalWellbeingMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -58,18 +87,44 @@ describe("child-digital-wellbeing-service", () => {
   describe("identifyChildDigitalWellbeingAlerts", () => {
     it("returns empty for clean", () => { expect(identifyChildDigitalWellbeingAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyChildDigitalWellbeingAlerts([])).toEqual([]); });
-    it("fires unsafe_no_controls", () => { const a = identifyChildDigitalWellbeingAlerts([makeRecord({ online_safety_rating: "unsafe", parental_controls_active: false, child_name: "Jo", device_type: "tablet" })]); expect(a[0].type).toBe("unsafe_no_controls"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("tablet"); });
+    it("fires unsafe_no_controls", () => { 
+      const a = identifyChildDigitalWellbeingAlerts([makeRecord({ online_safety_rating: "unsafe", parental_controls_active: false, child_name: "Jo", device_type: "tablet" })]);
+      expect(a[0].type).toBe("unsafe_no_controls");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("tablet");
+    });
     it("unsafe_no_controls per-record", () => { const a = identifyChildDigitalWellbeingAlerts([makeRecord({ id: "a-1", online_safety_rating: "unsafe", parental_controls_active: false }), makeRecord({ id: "a-2", online_safety_rating: "unsafe", parental_controls_active: false })]); expect(a.filter(x => x.type === "unsafe_no_controls")).toHaveLength(2); });
     it("unsafe with controls no critical alert", () => { expect(identifyChildDigitalWellbeingAlerts([makeRecord({ online_safety_rating: "unsafe", parental_controls_active: true })]).find(x => x.type === "unsafe_no_controls")).toBeUndefined(); });
     it("poor without controls no critical alert", () => { expect(identifyChildDigitalWellbeingAlerts([makeRecord({ online_safety_rating: "poor", parental_controls_active: false })]).find(x => x.type === "unsafe_no_controls")).toBeUndefined(); });
-    it("fires cyberbullying_not_screened singular", () => { const a = identifyChildDigitalWellbeingAlerts([makeRecord({ cyberbullying_screened: false })]); const f = a.find(x => x.type === "cyberbullying_not_screened"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 assessment has"); });
+    it("fires cyberbullying_not_screened singular", () => { 
+      const a = identifyChildDigitalWellbeingAlerts([makeRecord({ cyberbullying_screened: false })]);
+      const f = a.find(x => x.type === "cyberbullying_not_screened");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 assessment has");
+    });
     it("cyberbullying_not_screened plural", () => { const a = identifyChildDigitalWellbeingAlerts([makeRecord({ cyberbullying_screened: false }), makeRecord({ cyberbullying_screened: false })]); const f = a.find(x => x.type === "cyberbullying_not_screened"); expect(f!.message).toContain("2 assessments have"); });
-    it("fires online_safety_not_educated singular", () => { const a = identifyChildDigitalWellbeingAlerts([makeRecord({ online_safety_educated: false })]); const f = a.find(x => x.type === "online_safety_not_educated"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 assessment shows"); });
+    it("fires online_safety_not_educated singular", () => { 
+      const a = identifyChildDigitalWellbeingAlerts([makeRecord({ online_safety_educated: false })]);
+      const f = a.find(x => x.type === "online_safety_not_educated");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 assessment shows");
+    });
     it("online_safety_not_educated plural", () => { const a = identifyChildDigitalWellbeingAlerts([makeRecord({ online_safety_educated: false }), makeRecord({ online_safety_educated: false })]); const f = a.find(x => x.type === "online_safety_not_educated"); expect(f!.message).toContain("2 assessments show"); });
     it("social_media_not_monitored not for 1", () => { expect(identifyChildDigitalWellbeingAlerts([makeRecord({ social_media_monitored: false })]).find(x => x.type === "social_media_not_monitored")).toBeUndefined(); });
     it("social_media_not_monitored fires for 2", () => { const a = identifyChildDigitalWellbeingAlerts([makeRecord({ social_media_monitored: false }), makeRecord({ social_media_monitored: false })]); expect(a.find(x => x.type === "social_media_not_monitored")).toBeDefined(); expect(a.find(x => x.type === "social_media_not_monitored")!.severity).toBe("medium"); });
     it("sleep_impact_not_assessed not for 1", () => { expect(identifyChildDigitalWellbeingAlerts([makeRecord({ sleep_impact_assessed: false })]).find(x => x.type === "sleep_impact_not_assessed")).toBeUndefined(); });
     it("sleep_impact_not_assessed fires for 2", () => { const a = identifyChildDigitalWellbeingAlerts([makeRecord({ sleep_impact_assessed: false }), makeRecord({ sleep_impact_assessed: false })]); expect(a.find(x => x.type === "sleep_impact_not_assessed")).toBeDefined(); expect(a.find(x => x.type === "sleep_impact_not_assessed")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyChildDigitalWellbeingAlerts([makeRecord({ online_safety_rating: "unsafe", parental_controls_active: false, cyberbullying_screened: false, online_safety_educated: false, social_media_monitored: false, sleep_impact_assessed: false }), makeRecord({ cyberbullying_screened: false, online_safety_educated: false, social_media_monitored: false, sleep_impact_assessed: false })]); const types = a.map(x => x.type); expect(types).toContain("unsafe_no_controls"); expect(types).toContain("cyberbullying_not_screened"); expect(types).toContain("online_safety_not_educated"); expect(types).toContain("social_media_not_monitored"); expect(types).toContain("sleep_impact_not_assessed"); });
+    it("fires all applicable", () => { 
+      const a = identifyChildDigitalWellbeingAlerts([makeRecord({ online_safety_rating: "unsafe", parental_controls_active: false, cyberbullying_screened: false, online_safety_educated: false, social_media_monitored: false, sleep_impact_assessed: false }), makeRecord({ cyberbullying_screened: false, online_safety_educated: false, social_media_monitored: false, sleep_impact_assessed: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("unsafe_no_controls");
+      expect(types).toContain("cyberbullying_not_screened");
+      expect(types).toContain("online_safety_not_educated");
+      expect(types).toContain("social_media_not_monitored");
+      expect(types).toContain("sleep_impact_not_assessed");
+    });
   });
 });

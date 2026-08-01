@@ -174,11 +174,11 @@ export function computeSafeguardingPartnershipMetrics(
   ongoing_count: number;
   emergency_count: number;
   escalated_count: number;
-  child_seen_alone_rate: number;
-  child_views_rate: number;
-  home_contributed_rate: number;
-  outcome_shared_rate: number;
-  follow_up_agreed_rate: number;
+  child_seen_alone_rate: number | null;
+  child_views_rate: number | null;
+  home_contributed_rate: number | null;
+  outcome_shared_rate: number | null;
+  follow_up_agreed_rate: number | null;
   referral_type_breakdown: Record<string, number>;
   outcome_breakdown: Record<string, number>;
   unique_children: number;
@@ -194,7 +194,7 @@ export function computeSafeguardingPartnershipMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const referralTypeBreakdown: Record<string, number> = {};
@@ -312,7 +312,7 @@ export function generateSafeguardingPartnershipCaraInsights(
         `Are the home's emergency safeguarding protocols robust enough to ensure children are seen promptly ` +
         `and their views captured during high-risk multi-agency processes?`,
     );
-  } else if (metrics.outcome_shared_rate < 100) {
+  } else if ((metrics.outcome_shared_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Outcomes have been shared with the home in ${metrics.outcome_shared_rate}% of referrals. ` +
         `Could gaps in information sharing between safeguarding partners and the home ` +

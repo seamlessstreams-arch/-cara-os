@@ -38,13 +38,41 @@ function makeRecord(overrides?: Partial<ChildWellbeingCheckinRecord>): ChildWell
 
 describe("child-wellbeing-checkin-service", () => {
   describe("computeWellbeingCheckinMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeWellbeingCheckinMetrics([]); expect(m.total_checkins).toBe(0); expect(m.unhappy_count).toBe(0); expect(m.very_unhappy_count).toBe(0); expect(m.concerns_identified_count).toBe(0); expect(m.follow_up_needed_count).toBe(0); expect(m.child_engaged_rate).toBe(0); expect(m.average_wellbeing_score).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeWellbeingCheckinMetrics([]); expect(m.by_mood_rating).toEqual({}); expect(m.by_emotional_state).toEqual({}); expect(m.by_wellbeing_domain).toEqual({}); expect(m.by_check_in_type).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeWellbeingCheckinMetrics([]);
+      expect(m.total_checkins).toBe(0);;
+      expect(m.unhappy_count).toBe(0);
+      expect(m.very_unhappy_count).toBe(0);
+      expect(m.concerns_identified_count).toBe(0);
+      expect(m.follow_up_needed_count).toBe(0);
+      expect(m.child_engaged_rate).toBeNull();;
+      expect(m.average_wellbeing_score).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeWellbeingCheckinMetrics([]);
+      expect(m.by_mood_rating).toEqual({});
+      expect(m.by_emotional_state).toEqual({});
+      expect(m.by_wellbeing_domain).toEqual({});
+      expect(m.by_check_in_type).toEqual({});
+    });
     it("counts unhappy", () => { expect(computeWellbeingCheckinMetrics([makeRecord({ mood_rating: "unhappy" })]).unhappy_count).toBe(1); });
     it("counts very_unhappy", () => { expect(computeWellbeingCheckinMetrics([makeRecord({ mood_rating: "very_unhappy" })]).very_unhappy_count).toBe(1); });
     it("counts concerns_identified", () => { expect(computeWellbeingCheckinMetrics([makeRecord({ concerns_identified: true })]).concerns_identified_count).toBe(1); });
     it("counts follow_up_needed", () => { expect(computeWellbeingCheckinMetrics([makeRecord({ follow_up_needed: true })]).follow_up_needed_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeWellbeingCheckinMetrics([makeRecord()]); expect(m.child_engaged_rate).toBe(100); expect(m.child_voice_rate).toBe(100); expect(m.care_plan_reviewed_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.private_time_rate).toBe(100); expect(m.physical_health_rate).toBe(100); expect(m.eating_well_rate).toBe(100); expect(m.sleeping_well_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeWellbeingCheckinMetrics([makeRecord()]);
+      expect(m.child_engaged_rate).toBe(100);
+      expect(m.child_voice_rate).toBe(100);
+      expect(m.care_plan_reviewed_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.private_time_rate).toBe(100);
+      expect(m.physical_health_rate).toBe(100);
+      expect(m.eating_well_rate).toBe(100);
+      expect(m.sleeping_well_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_engaged_rate 0 when false", () => { expect(computeWellbeingCheckinMetrics([makeRecord({ child_engaged: false })]).child_engaged_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeWellbeingCheckinMetrics([makeRecord({ child_engaged: true }), makeRecord({ child_engaged: false }), makeRecord({ child_engaged: true })]); expect(m.child_engaged_rate).toBe(66.7); });
     it("average_wellbeing_score single", () => { expect(computeWellbeingCheckinMetrics([makeRecord({ wellbeing_score: 8 })]).average_wellbeing_score).toBe(8); });
@@ -59,16 +87,36 @@ describe("child-wellbeing-checkin-service", () => {
   describe("identifyWellbeingCheckinAlerts", () => {
     it("returns empty for clean", () => { expect(identifyWellbeingCheckinAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyWellbeingCheckinAlerts([])).toEqual([]); });
-    it("fires very_unhappy_no_followup", () => { const a = identifyWellbeingCheckinAlerts([makeRecord({ mood_rating: "very_unhappy", follow_up_needed: false, child_name: "Jo", check_in_type: "evening" })]); expect(a[0].type).toBe("very_unhappy_no_followup"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("evening"); });
+    it("fires very_unhappy_no_followup", () => { 
+      const a = identifyWellbeingCheckinAlerts([makeRecord({ mood_rating: "very_unhappy", follow_up_needed: false, child_name: "Jo", check_in_type: "evening" })]);
+      expect(a[0].type).toBe("very_unhappy_no_followup");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("evening");
+    });
     it("very_unhappy_no_followup per-record", () => { const a = identifyWellbeingCheckinAlerts([makeRecord({ id: "a-1", mood_rating: "very_unhappy", follow_up_needed: false }), makeRecord({ id: "a-2", mood_rating: "very_unhappy", follow_up_needed: false })]); expect(a.filter(x => x.type === "very_unhappy_no_followup")).toHaveLength(2); });
     it("no alert if very_unhappy with follow-up", () => { expect(identifyWellbeingCheckinAlerts([makeRecord({ mood_rating: "very_unhappy", follow_up_needed: true })]).filter(x => x.type === "very_unhappy_no_followup")).toHaveLength(0); });
-    it("fires concerns_sw_not_informed singular", () => { const a = identifyWellbeingCheckinAlerts([makeRecord({ concerns_identified: true, social_worker_informed: false })]); const f = a.find(x => x.type === "concerns_sw_not_informed"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 check-in has"); });
+    it("fires concerns_sw_not_informed singular", () => { 
+      const a = identifyWellbeingCheckinAlerts([makeRecord({ concerns_identified: true, social_worker_informed: false })]);
+      const f = a.find(x => x.type === "concerns_sw_not_informed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 check-in has");
+    });
     it("concerns_sw_not_informed plural", () => { const a = identifyWellbeingCheckinAlerts([makeRecord({ concerns_identified: true, social_worker_informed: false }), makeRecord({ concerns_identified: true, social_worker_informed: false })]); const f = a.find(x => x.type === "concerns_sw_not_informed"); expect(f!.message).toContain("2 check-ins have"); });
     it("fires voice_not_captured singular", () => { const a = identifyWellbeingCheckinAlerts([makeRecord({ child_voice_captured: false })]); const f = a.find(x => x.type === "voice_not_captured"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); });
     it("not_eating_well not for 1", () => { expect(identifyWellbeingCheckinAlerts([makeRecord({ eating_well: false })]).find(x => x.type === "not_eating_well")).toBeUndefined(); });
     it("not_eating_well fires for 2", () => { const a = identifyWellbeingCheckinAlerts([makeRecord({ eating_well: false }), makeRecord({ eating_well: false })]); expect(a.find(x => x.type === "not_eating_well")).toBeDefined(); });
     it("not_sleeping_well not for 1", () => { expect(identifyWellbeingCheckinAlerts([makeRecord({ sleeping_well: false })]).find(x => x.type === "not_sleeping_well")).toBeUndefined(); });
     it("not_sleeping_well fires for 2", () => { const a = identifyWellbeingCheckinAlerts([makeRecord({ sleeping_well: false }), makeRecord({ sleeping_well: false })]); expect(a.find(x => x.type === "not_sleeping_well")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyWellbeingCheckinAlerts([makeRecord({ mood_rating: "very_unhappy", follow_up_needed: false, concerns_identified: true, social_worker_informed: false, child_voice_captured: false, eating_well: false, sleeping_well: false }), makeRecord({ eating_well: false, sleeping_well: false })]); const types = a.map(x => x.type); expect(types).toContain("very_unhappy_no_followup"); expect(types).toContain("concerns_sw_not_informed"); expect(types).toContain("voice_not_captured"); expect(types).toContain("not_eating_well"); expect(types).toContain("not_sleeping_well"); });
+    it("fires all applicable", () => { 
+      const a = identifyWellbeingCheckinAlerts([makeRecord({ mood_rating: "very_unhappy", follow_up_needed: false, concerns_identified: true, social_worker_informed: false, child_voice_captured: false, eating_well: false, sleeping_well: false }), makeRecord({ eating_well: false, sleeping_well: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("very_unhappy_no_followup");
+      expect(types).toContain("concerns_sw_not_informed");
+      expect(types).toContain("voice_not_captured");
+      expect(types).toContain("not_eating_well");
+      expect(types).toContain("not_sleeping_well");
+    });
   });
 });

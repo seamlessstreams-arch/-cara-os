@@ -47,7 +47,7 @@ describe("computeRestorativeJusticeMetrics", () => {
     expect(m.unresolved_count).toBe(0);
     expect(m.coerced_count).toBe(0);
     expect(m.worsened_count).toBe(0);
-    expect(m.child_voice_rate).toBe(0);
+    expect(m.child_voice_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

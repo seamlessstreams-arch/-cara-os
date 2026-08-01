@@ -138,18 +138,18 @@ export function computeWorkExperienceMetrics(
   not_suitable_count: number;
   no_gain_count: number;
   decline_count: number;
-  child_consented_rate: number;
-  age_appropriate_rate: number;
-  risk_assessed_rate: number;
-  safeguarding_rate: number;
-  dbs_verified_rate: number;
-  insurance_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  pathway_plan_rate: number;
-  transport_rate: number;
-  recorded_promptly_rate: number;
+  child_consented_rate: number | null;
+  age_appropriate_rate: number | null;
+  risk_assessed_rate: number | null;
+  safeguarding_rate: number | null;
+  dbs_verified_rate: number | null;
+  insurance_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  pathway_plan_rate: number | null;
+  transport_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_placement_type: Record<string, number>;
   by_readiness_level: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeWorkExperienceMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

@@ -138,18 +138,18 @@ export function computeAspirationsGoalsMetrics(
   not_started_count: number;
   disengaged_count: number;
   no_support_count: number;
-  child_led_rate: number;
-  realistic_timeframe_rate: number;
-  resources_rate: number;
-  mentor_rate: number;
-  progress_celebrated_rate: number;
-  barriers_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  family_aware_rate: number;
-  school_linked_rate: number;
-  review_scheduled_rate: number;
-  recorded_promptly_rate: number;
+  child_led_rate: number | null;
+  realistic_timeframe_rate: number | null;
+  resources_rate: number | null;
+  mentor_rate: number | null;
+  progress_celebrated_rate: number | null;
+  barriers_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  family_aware_rate: number | null;
+  school_linked_rate: number | null;
+  review_scheduled_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_aspiration_category: Record<string, number>;
   by_goal_status: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeAspirationsGoalsMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byCategory: Record<string, number> = {};

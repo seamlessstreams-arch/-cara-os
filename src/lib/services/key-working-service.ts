@@ -152,7 +152,7 @@ export interface KeyWorkComplianceResult {
   total_children: number;
   children_on_track: number;
   children_behind: number;
-  compliance_percentage: number;
+  compliance_percentage: number | null;
   by_child: {
     child_id: string;
     required_per_week: number;
@@ -214,7 +214,7 @@ export function computeKeyWorkCompliance(
     total_children: totalChildren,
     children_on_track: onTrack,
     children_behind: behind,
-    compliance_percentage: totalChildren > 0 ? Math.round((onTrack / totalChildren) * 100) : 0,
+    compliance_percentage: totalChildren > 0 ? Math.round((onTrack / totalChildren) * 100) : null,
     by_child: byChild,
   };
 }
@@ -226,8 +226,8 @@ export interface SessionQualityResult {
   avg_mood: number;
   avg_engagement: number;
   avg_topics_per_session: number;
-  voice_capture_rate: number;
-  positive_observation_rate: number;
+  voice_capture_rate: number | null;
+  positive_observation_rate: number | null;
   quality_rating: SessionQualityRating;
 }
 
@@ -305,7 +305,7 @@ export interface ChildProgressResult {
   engagement_trend: TrendDirection;
   favourite_topics: string[];
   therapeutic_frameworks_used: string[];
-  cancellation_rate: number;
+  cancellation_rate: number | null;
 }
 
 /**

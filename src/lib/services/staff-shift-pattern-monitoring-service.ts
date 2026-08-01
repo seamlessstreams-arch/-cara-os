@@ -138,19 +138,19 @@ export function computeStaffShiftPatternMetrics(
   critical_fatigue_count: number;
   understaffed_count: number;
   critically_understaffed_count: number;
-  rest_period_rate: number;
-  working_time_rate: number;
-  lone_working_rate: number;
-  handover_rate: number;
-  break_taken_rate: number;
-  training_current_rate: number;
-  dbs_current_rate: number;
-  first_aid_rate: number;
-  medication_trained_rate: number;
-  supervision_rate: number;
-  wellbeing_rate: number;
-  recorded_promptly_rate: number;
-  average_shift_duration: number;
+  rest_period_rate: number | null;
+  working_time_rate: number | null;
+  lone_working_rate: number | null;
+  handover_rate: number | null;
+  break_taken_rate: number | null;
+  training_current_rate: number | null;
+  dbs_current_rate: number | null;
+  first_aid_rate: number | null;
+  medication_trained_rate: number | null;
+  supervision_rate: number | null;
+  wellbeing_rate: number | null;
+  recorded_promptly_rate: number | null;
+  average_shift_duration: number | null;
   unique_staff: number;
   by_shift_type: Record<string, number>;
   by_fatigue_risk: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeStaffShiftPatternMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDuration =
@@ -174,7 +174,7 @@ export function computeStaffShiftPatternMetrics(
       ? Math.round(
           (records.reduce((s, r) => s + r.shift_duration_hours, 0) / records.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   const byType: Record<string, number> = {};
   for (const r of records) byType[r.shift_type] = (byType[r.shift_type] ?? 0) + 1;

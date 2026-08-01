@@ -128,13 +128,13 @@ export function computeVisitMetrics(
   scheduled_visits: number;
   overdue_visits: number;
   cancelled_visits: number;
-  satisfactory_rate: number;
+  satisfactory_rate: number | null;
   concerns_raised_count: number;
   actions_outstanding: number;
   reports_pending: number;
-  children_seen_rate: number;
-  premises_inspected_rate: number;
-  records_reviewed_rate: number;
+  children_seen_rate: number | null;
+  premises_inspected_rate: number | null;
+  records_reviewed_rate: number | null;
   reg_44_completed: number;
   reg_44_overdue: number;
   sw_visits_completed: number;
@@ -157,7 +157,7 @@ export function computeVisitMetrics(
   const satisfactoryRate =
     completedVisits.length > 0
       ? Math.round((satisfactory / completedVisits.length) * 1000) / 10
-      : 0;
+      : null;
 
   const concernsRaised = visits.filter((v) => v.outcome === "concerns_raised").length;
 
@@ -175,19 +175,19 @@ export function computeVisitMetrics(
   const childrenSeenRate =
     completedVisits.length > 0
       ? Math.round((withChildren / completedVisits.length) * 1000) / 10
-      : 0;
+      : null;
 
   const premisesInspected = completedVisits.filter((v) => v.premises_inspected).length;
   const premisesRate =
     completedVisits.length > 0
       ? Math.round((premisesInspected / completedVisits.length) * 1000) / 10
-      : 0;
+      : null;
 
   const recordsReviewed = completedVisits.filter((v) => v.records_reviewed).length;
   const recordsRate =
     completedVisits.length > 0
       ? Math.round((recordsReviewed / completedVisits.length) * 1000) / 10
-      : 0;
+      : null;
 
   const reg44Completed = visits.filter(
     (v) => v.visit_type === "reg_44" && v.visit_status === "completed",

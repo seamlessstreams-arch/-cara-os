@@ -47,7 +47,7 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.ehcp_rate).toBe(0);
+    expect(m.ehcp_rate).toBeNull();;
     expect(m.active_records).toBe(0);
     expect(m.overdue_reviews).toBe(0);
   });

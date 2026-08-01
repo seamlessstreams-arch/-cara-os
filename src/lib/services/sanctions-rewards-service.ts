@@ -137,13 +137,13 @@ export function computeSanctionRewardMetrics(
 ): {
   total_sanctions: number;
   total_rewards: number;
-  reward_to_sanction_ratio: number;
+  reward_to_sanction_ratio: number | null;
   sanctions_by_type: Record<string, number>;
   rewards_by_type: Record<string, number>;
-  proportionality_rate: number;
-  age_appropriate_rate: number;
-  consistent_with_plan_rate: number;
-  manager_review_rate: number;
+  proportionality_rate: number | null;
+  age_appropriate_rate: number | null;
+  consistent_with_plan_rate: number | null;
+  manager_review_rate: number | null;
   children_with_highest_sanctions: { child_id: string; child_name: string; count: number }[];
   children_with_highest_rewards: { child_id: string; child_name: string; count: number }[];
   overturned_count: number;
@@ -158,7 +158,7 @@ export function computeSanctionRewardMetrics(
       ? Math.round((totalRewards / totalSanctions) * 100) / 100
       : totalRewards > 0
         ? totalRewards
-        : 0;
+        : null;
 
   // Sanctions by type
   const sanctionsByType: Record<string, number> = {};
@@ -192,22 +192,22 @@ export function computeSanctionRewardMetrics(
   const proportionalityRate =
     totalSanctions > 0
       ? Math.round((proportionateCount / totalSanctions) * 1000) / 10
-      : 0;
+      : null;
 
   const ageAppropriateRate =
     totalSanctions > 0
       ? Math.round((ageAppropriateCount / totalSanctions) * 1000) / 10
-      : 0;
+      : null;
 
   const consistentWithPlanRate =
     totalSanctions > 0
       ? Math.round((consistentWithPlanCount / totalSanctions) * 1000) / 10
-      : 0;
+      : null;
 
   const managerReviewRate =
     totalSanctions > 0
       ? Math.round((managerReviewedCount / totalSanctions) * 1000) / 10
-      : 0;
+      : null;
 
   // Children with highest sanctions (sorted desc)
   const childSanctionCounts: Record<string, { child_name: string; count: number }> = {};

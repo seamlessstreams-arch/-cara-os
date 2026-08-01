@@ -111,10 +111,10 @@ export function computeNotificationCompliance(
   total_events: number;
   total_notifications_required: number;
   total_notifications_sent: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
   overdue: EventNotification[];
   by_event_type: Record<string, { count: number; notified: number }>;
-  avg_response_hours: number;
+  avg_response_hours: number | null;
 } {
   const now = new Date();
 
@@ -186,7 +186,7 @@ export function computeNotificationCompliance(
   const avgResponseHours =
     hourCount > 0
       ? Math.round((totalHours / hourCount) * 10) / 10
-      : 0;
+      : null;
 
   // ── compliance rate ─────────────────────────────────────────────────
   const complianceRate =

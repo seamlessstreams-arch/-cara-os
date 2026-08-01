@@ -39,13 +39,42 @@ function makeRecord(overrides?: Partial<ProfessionalConsultationRecord>): Profes
 
 describe("professional-consultation-service", () => {
   describe("computeProfessionalConsultationMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeProfessionalConsultationMetrics([]); expect(m.total_consultations).toBe(0); expect(m.recommendations_made_count).toBe(0); expect(m.further_referral_count).toBe(0); expect(m.escalated_count).toBe(0); expect(m.emergency_count).toBe(0); expect(m.recommendations_documented_rate).toBeNull(); expect(m.follow_up_required_count).toBe(0); expect(m.follow_up_completed_rate).toBeNull(); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeProfessionalConsultationMetrics([]); expect(m.by_professional_type).toEqual({}); expect(m.by_consultation_type).toEqual({}); expect(m.by_consultation_outcome).toEqual({}); expect(m.by_consultation_urgency).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeProfessionalConsultationMetrics([]);
+      expect(m.total_consultations).toBe(0);
+      expect(m.recommendations_made_count).toBe(0);
+      expect(m.further_referral_count).toBe(0);
+      expect(m.escalated_count).toBe(0);
+      expect(m.emergency_count).toBe(0);
+      expect(m.recommendations_documented_rate).toBeNull();
+      expect(m.follow_up_required_count).toBe(0);
+      expect(m.follow_up_completed_rate).toBeNull();
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeProfessionalConsultationMetrics([]);
+      expect(m.by_professional_type).toEqual({});
+      expect(m.by_consultation_type).toEqual({});
+      expect(m.by_consultation_outcome).toEqual({});
+      expect(m.by_consultation_urgency).toEqual({});
+    });
     it("counts recommendations_made", () => { expect(computeProfessionalConsultationMetrics([makeRecord()]).recommendations_made_count).toBe(1); });
     it("counts further_referral", () => { expect(computeProfessionalConsultationMetrics([makeRecord({ consultation_outcome: "further_referral" })]).further_referral_count).toBe(1); });
     it("counts escalated", () => { expect(computeProfessionalConsultationMetrics([makeRecord({ consultation_outcome: "escalated" })]).escalated_count).toBe(1); });
     it("counts emergency", () => { expect(computeProfessionalConsultationMetrics([makeRecord({ consultation_urgency: "emergency" })]).emergency_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeProfessionalConsultationMetrics([makeRecord()]); expect(m.recommendations_documented_rate).toBe(100); expect(m.actions_agreed_rate).toBe(100); expect(m.actions_completed_rate).toBe(100); expect(m.staff_informed_rate).toBe(100); expect(m.care_plan_updated_rate).toBe(100); expect(m.parent_carer_informed_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.child_participated_rate).toBe(100); expect(m.child_views_recorded_rate).toBe(100); expect(m.consent_obtained_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeProfessionalConsultationMetrics([makeRecord()]);
+      expect(m.recommendations_documented_rate).toBe(100);
+      expect(m.actions_agreed_rate).toBe(100);
+      expect(m.actions_completed_rate).toBe(100);
+      expect(m.staff_informed_rate).toBe(100);
+      expect(m.care_plan_updated_rate).toBe(100);
+      expect(m.parent_carer_informed_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.child_participated_rate).toBe(100);
+      expect(m.child_views_recorded_rate).toBe(100);
+      expect(m.consent_obtained_rate).toBe(100);
+    });
     it("recommendations_documented_rate 0 when false", () => { expect(computeProfessionalConsultationMetrics([makeRecord({ recommendations_documented: false })]).recommendations_documented_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeProfessionalConsultationMetrics([makeRecord({ recommendations_documented: true }), makeRecord({ recommendations_documented: false }), makeRecord({ recommendations_documented: true })]); expect(m.recommendations_documented_rate).toBe(66.7); });
     it("follow_up_required_count", () => { const m = computeProfessionalConsultationMetrics([makeRecord({ follow_up_required: true }), makeRecord({ follow_up_required: true }), makeRecord()]); expect(m.follow_up_required_count).toBe(2); });
@@ -61,18 +90,43 @@ describe("professional-consultation-service", () => {
   describe("identifyProfessionalConsultationAlerts", () => {
     it("returns empty for clean", () => { expect(identifyProfessionalConsultationAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyProfessionalConsultationAlerts([])).toEqual([]); });
-    it("fires emergency_actions_incomplete", () => { const a = identifyProfessionalConsultationAlerts([makeRecord({ consultation_urgency: "emergency", actions_completed: false, child_name: "Jo", consultation_date: "2026-05-14" })]); expect(a[0].type).toBe("emergency_actions_incomplete"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires emergency_actions_incomplete", () => { 
+      const a = identifyProfessionalConsultationAlerts([makeRecord({ consultation_urgency: "emergency", actions_completed: false, child_name: "Jo", consultation_date: "2026-05-14" })]);
+      expect(a[0].type).toBe("emergency_actions_incomplete");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("emergency_actions_incomplete per-record", () => { const a = identifyProfessionalConsultationAlerts([makeRecord({ id: "a-1", consultation_urgency: "emergency", actions_completed: false }), makeRecord({ id: "a-2", consultation_urgency: "emergency", actions_completed: false })]); expect(a.filter(x => x.type === "emergency_actions_incomplete")).toHaveLength(2); });
     it("no emergency alert if actions completed", () => { const a = identifyProfessionalConsultationAlerts([makeRecord({ consultation_urgency: "emergency", actions_completed: true })]); expect(a.filter(x => x.type === "emergency_actions_incomplete")).toHaveLength(0); });
-    it("fires recommendations_not_documented singular", () => { const a = identifyProfessionalConsultationAlerts([makeRecord({ recommendations_documented: false })]); const f = a.find(x => x.type === "recommendations_not_documented"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 consultation has"); });
+    it("fires recommendations_not_documented singular", () => { 
+      const a = identifyProfessionalConsultationAlerts([makeRecord({ recommendations_documented: false })]);
+      const f = a.find(x => x.type === "recommendations_not_documented");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 consultation has");
+    });
     it("recommendations_not_documented plural", () => { const a = identifyProfessionalConsultationAlerts([makeRecord({ recommendations_documented: false }), makeRecord({ recommendations_documented: false })]); const f = a.find(x => x.type === "recommendations_not_documented"); expect(f!.message).toContain("2 consultations have"); });
-    it("fires follow_up_overdue singular", () => { const a = identifyProfessionalConsultationAlerts([makeRecord({ follow_up_required: true, follow_up_completed: false })]); const f = a.find(x => x.type === "follow_up_overdue"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 consultation has"); });
+    it("fires follow_up_overdue singular", () => { 
+      const a = identifyProfessionalConsultationAlerts([makeRecord({ follow_up_required: true, follow_up_completed: false })]);
+      const f = a.find(x => x.type === "follow_up_overdue");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 consultation has");
+    });
     it("follow_up_overdue plural", () => { const a = identifyProfessionalConsultationAlerts([makeRecord({ follow_up_required: true, follow_up_completed: false }), makeRecord({ follow_up_required: true, follow_up_completed: false })]); const f = a.find(x => x.type === "follow_up_overdue"); expect(f!.message).toContain("2 consultations have"); });
     it("no follow_up if completed", () => { expect(identifyProfessionalConsultationAlerts([makeRecord({ follow_up_required: true, follow_up_completed: true })]).find(x => x.type === "follow_up_overdue")).toBeUndefined(); });
     it("care_plan_not_updated not for 1", () => { expect(identifyProfessionalConsultationAlerts([makeRecord({ care_plan_updated: false })]).find(x => x.type === "care_plan_not_updated")).toBeUndefined(); });
     it("care_plan_not_updated fires for 2", () => { const a = identifyProfessionalConsultationAlerts([makeRecord({ care_plan_updated: false }), makeRecord({ care_plan_updated: false })]); expect(a.find(x => x.type === "care_plan_not_updated")).toBeDefined(); });
     it("consent_not_obtained not for 1", () => { expect(identifyProfessionalConsultationAlerts([makeRecord({ consent_obtained: false })]).find(x => x.type === "consent_not_obtained")).toBeUndefined(); });
     it("consent_not_obtained fires for 2", () => { const a = identifyProfessionalConsultationAlerts([makeRecord({ consent_obtained: false }), makeRecord({ consent_obtained: false })]); expect(a.find(x => x.type === "consent_not_obtained")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyProfessionalConsultationAlerts([makeRecord({ consultation_urgency: "emergency", actions_completed: false, recommendations_documented: false, follow_up_required: true, follow_up_completed: false, care_plan_updated: false, consent_obtained: false }), makeRecord({ care_plan_updated: false, consent_obtained: false })]); const types = a.map(x => x.type); expect(types).toContain("emergency_actions_incomplete"); expect(types).toContain("recommendations_not_documented"); expect(types).toContain("follow_up_overdue"); expect(types).toContain("care_plan_not_updated"); expect(types).toContain("consent_not_obtained"); });
+    it("fires all applicable", () => { 
+      const a = identifyProfessionalConsultationAlerts([makeRecord({ consultation_urgency: "emergency", actions_completed: false, recommendations_documented: false, follow_up_required: true, follow_up_completed: false, care_plan_updated: false, consent_obtained: false }), makeRecord({ care_plan_updated: false, consent_obtained: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("emergency_actions_incomplete");
+      expect(types).toContain("recommendations_not_documented");
+      expect(types).toContain("follow_up_overdue");
+      expect(types).toContain("care_plan_not_updated");
+      expect(types).toContain("consent_not_obtained");
+    });
   });
 });

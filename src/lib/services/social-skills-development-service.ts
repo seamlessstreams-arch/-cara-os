@@ -138,18 +138,18 @@ export function computeSocialSkillsMetrics(
   no_progress_count: number;
   disruptive_count: number;
   withdrawn_count: number;
-  child_engaged_rate: number;
-  age_appropriate_rate: number;
-  strengths_rate: number;
-  targets_rate: number;
-  positive_reinforcement_rate: number;
-  peer_modelling_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  family_updated_rate: number;
-  school_linked_rate: number;
-  therapeutic_input_rate: number;
-  recorded_promptly_rate: number;
+  child_engaged_rate: number | null;
+  age_appropriate_rate: number | null;
+  strengths_rate: number | null;
+  targets_rate: number | null;
+  positive_reinforcement_rate: number | null;
+  peer_modelling_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  family_updated_rate: number | null;
+  school_linked_rate: number | null;
+  therapeutic_input_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_skill_area: Record<string, number>;
   by_competence_level: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeSocialSkillsMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byArea: Record<string, number> = {};

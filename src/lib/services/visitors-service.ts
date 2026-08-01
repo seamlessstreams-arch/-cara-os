@@ -82,7 +82,7 @@ export function computeVisitorSummary(
   by_purpose: Record<string, number>;
   professional_visits: number;
   family_visits: number;
-  avg_duration_minutes: number;
+  avg_duration_minutes: number | null;
   busiest_day: string | null;
   children_visited: Record<string, number>;
 } {
@@ -157,7 +157,7 @@ export function computeVisitorSummary(
   const avgDuration =
     durationCount > 0
       ? Math.round((totalDuration / durationCount) * 10) / 10
-      : 0;
+      : null;
 
   return {
     total_visits: filtered.length,

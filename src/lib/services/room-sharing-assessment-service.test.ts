@@ -51,7 +51,7 @@ describe("computeRoomSharingMetrics", () => {
     expect(m.high_risk_count).toBe(0);
     expect(m.unacceptable_risk_count).toBe(0);
     expect(m.emergency_sharing_count).toBe(0);
-    expect(m.child_consent_rate).toBe(0);
+    expect(m.child_consent_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

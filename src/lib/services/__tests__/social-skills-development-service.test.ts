@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<SocialSkillsDevelopmentRecord>): SocialS
 
 describe("social-skills-development-service", () => {
   describe("computeSocialSkillsMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeSocialSkillsMetrics([]); expect(m.total_sessions).toBe(0); expect(m.regression_count).toBe(0); expect(m.no_progress_count).toBe(0); expect(m.disruptive_count).toBe(0); expect(m.withdrawn_count).toBe(0); expect(m.child_engaged_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeSocialSkillsMetrics([]); expect(m.by_skill_area).toEqual({}); expect(m.by_competence_level).toEqual({}); expect(m.by_progress_assessment).toEqual({}); expect(m.by_group_dynamic).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeSocialSkillsMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.regression_count).toBe(0);
+      expect(m.no_progress_count).toBe(0);
+      expect(m.disruptive_count).toBe(0);
+      expect(m.withdrawn_count).toBe(0);
+      expect(m.child_engaged_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeSocialSkillsMetrics([]);
+      expect(m.by_skill_area).toEqual({});
+      expect(m.by_competence_level).toEqual({});
+      expect(m.by_progress_assessment).toEqual({});
+      expect(m.by_group_dynamic).toEqual({});
+    });
     it("total_sessions counts records", () => { expect(computeSocialSkillsMetrics([makeRecord(), makeRecord()]).total_sessions).toBe(2); });
     it("counts regression", () => { expect(computeSocialSkillsMetrics([makeRecord({ progress_assessment: "regression" })]).regression_count).toBe(1); });
     it("counts no_progress", () => { expect(computeSocialSkillsMetrics([makeRecord({ progress_assessment: "no_progress" })]).no_progress_count).toBe(1); });
@@ -46,7 +61,21 @@ describe("social-skills-development-service", () => {
     it("counts disruptive", () => { expect(computeSocialSkillsMetrics([makeRecord({ group_dynamic: "disruptive" })]).disruptive_count).toBe(1); });
     it("counts withdrawn", () => { expect(computeSocialSkillsMetrics([makeRecord({ group_dynamic: "withdrawn" })]).withdrawn_count).toBe(1); });
     it("does not count passive as disruptive", () => { expect(computeSocialSkillsMetrics([makeRecord({ group_dynamic: "passive_participant" })]).disruptive_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeSocialSkillsMetrics([makeRecord()]); expect(m.child_engaged_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.strengths_rate).toBe(100); expect(m.targets_rate).toBe(100); expect(m.positive_reinforcement_rate).toBe(100); expect(m.peer_modelling_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.family_updated_rate).toBe(100); expect(m.school_linked_rate).toBe(100); expect(m.therapeutic_input_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeSocialSkillsMetrics([makeRecord()]);
+      expect(m.child_engaged_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.strengths_rate).toBe(100);
+      expect(m.targets_rate).toBe(100);
+      expect(m.positive_reinforcement_rate).toBe(100);
+      expect(m.peer_modelling_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.family_updated_rate).toBe(100);
+      expect(m.school_linked_rate).toBe(100);
+      expect(m.therapeutic_input_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_engaged_rate 0 when false", () => { expect(computeSocialSkillsMetrics([makeRecord({ child_engaged: false })]).child_engaged_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeSocialSkillsMetrics([makeRecord({ targets_set: true }), makeRecord({ targets_set: false }), makeRecord({ targets_set: true })]); expect(m.targets_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeSocialSkillsMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -59,17 +88,42 @@ describe("social-skills-development-service", () => {
   describe("identifySocialSkillsAlerts", () => {
     it("returns empty for clean", () => { expect(identifySocialSkillsAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifySocialSkillsAlerts([])).toEqual([]); });
-    it("fires regression_disruptive", () => { const a = identifySocialSkillsAlerts([makeRecord({ progress_assessment: "regression", group_dynamic: "disruptive", child_name: "Jo" })]); expect(a[0].type).toBe("regression_disruptive"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires regression_disruptive", () => { 
+      const a = identifySocialSkillsAlerts([makeRecord({ progress_assessment: "regression", group_dynamic: "disruptive", child_name: "Jo" })]);
+      expect(a[0].type).toBe("regression_disruptive");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("regression_disruptive per-record", () => { const a = identifySocialSkillsAlerts([makeRecord({ id: "a-1", progress_assessment: "regression", group_dynamic: "disruptive" }), makeRecord({ id: "a-2", progress_assessment: "regression", group_dynamic: "disruptive" })]); expect(a.filter(x => x.type === "regression_disruptive")).toHaveLength(2); });
     it("regression without disruptive no critical", () => { expect(identifySocialSkillsAlerts([makeRecord({ progress_assessment: "regression", group_dynamic: "withdrawn" })]).find(x => x.type === "regression_disruptive")).toBeUndefined(); });
     it("disruptive without regression no critical", () => { expect(identifySocialSkillsAlerts([makeRecord({ progress_assessment: "good_progress", group_dynamic: "disruptive" })]).find(x => x.type === "regression_disruptive")).toBeUndefined(); });
-    it("fires no_targets_set singular", () => { const a = identifySocialSkillsAlerts([makeRecord({ targets_set: false })]); const f = a.find(x => x.type === "no_targets_set"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires no_targets_set singular", () => { 
+      const a = identifySocialSkillsAlerts([makeRecord({ targets_set: false })]);
+      const f = a.find(x => x.type === "no_targets_set");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_targets_set plural", () => { const a = identifySocialSkillsAlerts([makeRecord({ targets_set: false }), makeRecord({ targets_set: false })]); const f = a.find(x => x.type === "no_targets_set"); expect(f!.message).toContain("2 sessions have"); });
-    it("fires strengths_not_identified singular", () => { const a = identifySocialSkillsAlerts([makeRecord({ strengths_identified: false })]); const f = a.find(x => x.type === "strengths_not_identified"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires strengths_not_identified singular", () => { 
+      const a = identifySocialSkillsAlerts([makeRecord({ strengths_identified: false })]);
+      const f = a.find(x => x.type === "strengths_not_identified");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_positive_reinforcement not for 1", () => { expect(identifySocialSkillsAlerts([makeRecord({ positive_reinforcement: false })]).find(x => x.type === "no_positive_reinforcement")).toBeUndefined(); });
     it("no_positive_reinforcement fires for 2", () => { const a = identifySocialSkillsAlerts([makeRecord({ positive_reinforcement: false }), makeRecord({ positive_reinforcement: false })]); expect(a.find(x => x.type === "no_positive_reinforcement")).toBeDefined(); expect(a.find(x => x.type === "no_positive_reinforcement")!.severity).toBe("medium"); });
     it("no_therapeutic_input not for 1", () => { expect(identifySocialSkillsAlerts([makeRecord({ therapeutic_input: false })]).find(x => x.type === "no_therapeutic_input")).toBeUndefined(); });
     it("no_therapeutic_input fires for 2", () => { const a = identifySocialSkillsAlerts([makeRecord({ therapeutic_input: false }), makeRecord({ therapeutic_input: false })]); expect(a.find(x => x.type === "no_therapeutic_input")).toBeDefined(); expect(a.find(x => x.type === "no_therapeutic_input")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifySocialSkillsAlerts([makeRecord({ progress_assessment: "regression", group_dynamic: "disruptive", targets_set: false, strengths_identified: false, positive_reinforcement: false, therapeutic_input: false }), makeRecord({ targets_set: false, strengths_identified: false, positive_reinforcement: false, therapeutic_input: false })]); const types = a.map(x => x.type); expect(types).toContain("regression_disruptive"); expect(types).toContain("no_targets_set"); expect(types).toContain("strengths_not_identified"); expect(types).toContain("no_positive_reinforcement"); expect(types).toContain("no_therapeutic_input"); });
+    it("fires all applicable", () => { 
+      const a = identifySocialSkillsAlerts([makeRecord({ progress_assessment: "regression", group_dynamic: "disruptive", targets_set: false, strengths_identified: false, positive_reinforcement: false, therapeutic_input: false }), makeRecord({ targets_set: false, strengths_identified: false, positive_reinforcement: false, therapeutic_input: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("regression_disruptive");
+      expect(types).toContain("no_targets_set");
+      expect(types).toContain("strengths_not_identified");
+      expect(types).toContain("no_positive_reinforcement");
+      expect(types).toContain("no_therapeutic_input");
+    });
   });
 });

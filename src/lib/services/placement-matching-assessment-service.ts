@@ -159,18 +159,18 @@ export function computePlacementMatchingMetrics(
   negative_impact_count: number;
   unsuitable_count: number;
   pre_admission_count: number;
-  child_views_rate: number;
-  existing_children_rate: number;
-  staff_consulted_rate: number;
-  risk_assessment_rate: number;
-  impact_assessed_rate: number;
-  cultural_needs_rate: number;
-  education_access_rate: number;
-  health_access_rate: number;
-  family_contact_rate: number;
-  matching_panel_rate: number;
-  contingency_rate: number;
-  recorded_promptly_rate: number;
+  child_views_rate: number | null;
+  existing_children_rate: number | null;
+  staff_consulted_rate: number | null;
+  risk_assessment_rate: number | null;
+  impact_assessed_rate: number | null;
+  cultural_needs_rate: number | null;
+  education_access_rate: number | null;
+  health_access_rate: number | null;
+  family_contact_rate: number | null;
+  matching_panel_rate: number | null;
+  contingency_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_matching_domain: Record<string, number>;
   by_match_quality: Record<string, number>;
@@ -194,7 +194,7 @@ export function computePlacementMatchingMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

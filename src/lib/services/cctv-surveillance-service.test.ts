@@ -26,7 +26,7 @@ function makeRecord(overrides: Partial<CctvRecord> = {}): CctvRecord {
     issues_found: [],
     actions_taken: [],
     reviewed_by: "Manager Smith",
-    next_review_date: "2026-08-01",
+    next_review_date: "2027-08-01",
     notes: null,
     created_at: "2026-05-01T00:00:00Z",
     updated_at: "2026-05-01T00:00:00Z",
@@ -40,8 +40,8 @@ describe("computeCctvMetrics", () => {
     expect(m.total_records).toBe(0);
     expect(m.system_check_count).toBe(0);
     expect(m.data_breach_count).toBe(0);
-    expect(m.compliant_rate).toBe(0);
-    expect(m.gdpr_compliant_rate).toBe(0);
+    expect(m.compliant_rate).toBeNull();;
+    expect(m.gdpr_compliant_rate).toBeNull();;
     expect(m.overdue_deletion_count).toBe(0);
   });
 

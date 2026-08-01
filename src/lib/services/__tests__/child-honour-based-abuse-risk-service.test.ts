@@ -89,12 +89,12 @@ describe("child-honour-based-abuse-risk-service", () => {
       expect(m.total_assessments).toBe(0);
       expect(m.high_risk_count).toBe(0);
       expect(m.immediate_count).toBe(0);
-      expect(m.safety_plan_rate).toBe(0);
-      expect(m.multi_agency_rate).toBe(0);
-      expect(m.police_notification_rate).toBe(0);
-      expect(m.specialist_rate).toBe(0);
-      expect(m.safe_accommodation_rate).toBe(0);
-      expect(m.one_chance_rule_rate).toBe(0);
+      expect(m.safety_plan_rate).toBeNull();;
+      expect(m.multi_agency_rate).toBeNull();;
+      expect(m.police_notification_rate).toBeNull();;
+      expect(m.specialist_rate).toBeNull();;
+      expect(m.safe_accommodation_rate).toBeNull();;
+      expect(m.one_chance_rule_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
       expect(m.unique_assessors).toBe(0);
     });

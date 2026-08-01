@@ -63,9 +63,24 @@ function makeRecord(overrides?: Partial<StaffDevelopmentPlanRecord>): StaffDevel
 // ── computeDevelopmentPlanMetrics ─────────────────────────────────────────────
 
 describe("computeDevelopmentPlanMetrics", () => {
-  it("returns zeros for empty", () => { const m = computeDevelopmentPlanMetrics([]); expect(m.total_plans).toBe(0); expect(m.urgent_count).toBe(0); expect(m.active_count).toBe(0); expect(m.pending_approval_count).toBe(0); expect(m.completed_count).toBe(0); expect(m.evidence_based_rate).toBe(0); expect(m.unique_staff).toBe(0); });
+  it("returns zeros for empty", () => { 
+    const m = computeDevelopmentPlanMetrics([]);
+    expect(m.total_plans).toBe(0);;
+    expect(m.urgent_count).toBe(0);
+    expect(m.active_count).toBe(0);
+    expect(m.pending_approval_count).toBe(0);
+    expect(m.completed_count).toBe(0);
+    expect(m.evidence_based_rate).toBeNull();;
+    expect(m.unique_staff).toBe(0);
+  });
 
-  it("returns empty breakdowns", () => { const m = computeDevelopmentPlanMetrics([]); expect(m.by_development_area).toEqual({}); expect(m.by_plan_status).toEqual({}); expect(m.by_approval_status).toEqual({}); expect(m.by_priority_level).toEqual({}); });
+  it("returns empty breakdowns", () => { 
+    const m = computeDevelopmentPlanMetrics([]);
+    expect(m.by_development_area).toEqual({});
+    expect(m.by_plan_status).toEqual({});
+    expect(m.by_approval_status).toEqual({});
+    expect(m.by_priority_level).toEqual({});
+  });
 
   it("total_plans counts records", () => { const m = computeDevelopmentPlanMetrics([makeRecord(), makeRecord({ id: "a-2" })]); expect(m.total_plans).toBe(2); });
 
@@ -81,7 +96,21 @@ describe("computeDevelopmentPlanMetrics", () => {
 
   it("counts completed", () => { const m = computeDevelopmentPlanMetrics([makeRecord({ plan_status: "completed" })]); expect(m.completed_count).toBe(1); });
 
-  it("returns 100% boolean rates with defaults", () => { const m = computeDevelopmentPlanMetrics([makeRecord()]); expect(m.evidence_based_rate).toBe(100); expect(m.strengths_identified_rate).toBe(100); expect(m.staff_consulted_rate).toBe(100); expect(m.manager_actions_rate).toBe(100); expect(m.staff_actions_rate).toBe(100); expect(m.training_identified_rate).toBe(100); expect(m.mentoring_arranged_rate).toBe(100); expect(m.success_measures_rate).toBe(100); expect(m.review_date_rate).toBe(100); expect(m.staff_agreed_rate).toBe(100); expect(m.approved_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+  it("returns 100% boolean rates with defaults", () => { 
+    const m = computeDevelopmentPlanMetrics([makeRecord()]);
+    expect(m.evidence_based_rate).toBe(100);
+    expect(m.strengths_identified_rate).toBe(100);
+    expect(m.staff_consulted_rate).toBe(100);
+    expect(m.manager_actions_rate).toBe(100);
+    expect(m.staff_actions_rate).toBe(100);
+    expect(m.training_identified_rate).toBe(100);
+    expect(m.mentoring_arranged_rate).toBe(100);
+    expect(m.success_measures_rate).toBe(100);
+    expect(m.review_date_rate).toBe(100);
+    expect(m.staff_agreed_rate).toBe(100);
+    expect(m.approved_rate).toBe(100);
+    expect(m.recorded_promptly_rate).toBe(100);
+  });
 
   it("evidence_based_rate 0 when false", () => { const m = computeDevelopmentPlanMetrics([makeRecord({ evidence_based: false })]); expect(m.evidence_based_rate).toBe(0); });
 
@@ -105,7 +134,13 @@ describe("identifyDevelopmentPlanAlerts", () => {
 
   it("returns empty for empty", () => { const alerts = identifyDevelopmentPlanAlerts([]); expect(alerts).toEqual([]); });
 
-  it("fires urgent_unapproved for urgent + pending", () => { const alerts = identifyDevelopmentPlanAlerts([makeRecord({ priority_level: "urgent", approval_status: "pending", staff_name: "Jo" })]); expect(alerts.length).toBe(1); expect(alerts[0].type).toBe("urgent_unapproved"); expect(alerts[0].severity).toBe("critical"); expect(alerts[0].message).toContain("Jo"); });
+  it("fires urgent_unapproved for urgent + pending", () => { 
+    const alerts = identifyDevelopmentPlanAlerts([makeRecord({ priority_level: "urgent", approval_status: "pending", staff_name: "Jo" })]);
+    expect(alerts.length).toBe(1);
+    expect(alerts[0].type).toBe("urgent_unapproved");
+    expect(alerts[0].severity).toBe("critical");
+    expect(alerts[0].message).toContain("Jo");
+  });
 
   it("urgent_unapproved per-record", () => { const alerts = identifyDevelopmentPlanAlerts([makeRecord({ priority_level: "urgent", approval_status: "pending" }), makeRecord({ id: "a-2", priority_level: "urgent", approval_status: "pending" })]); const matched = alerts.filter((a) => a.type === "urgent_unapproved"); expect(matched.length).toBe(2); });
 
@@ -113,11 +148,23 @@ describe("identifyDevelopmentPlanAlerts", () => {
 
   it("no critical for medium priority", () => { const alerts = identifyDevelopmentPlanAlerts([makeRecord({ priority_level: "medium", approval_status: "pending" })]); const matched = alerts.filter((a) => a.type === "urgent_unapproved"); expect(matched.length).toBe(0); });
 
-  it("fires no_staff_consulted singular", () => { const alerts = identifyDevelopmentPlanAlerts([makeRecord({ staff_consulted: false })]); const matched = alerts.filter((a) => a.type === "no_staff_consulted"); expect(matched.length).toBe(1); expect(matched[0].severity).toBe("high"); expect(matched[0].message).toContain("1 plan has"); });
+  it("fires no_staff_consulted singular", () => { 
+    const alerts = identifyDevelopmentPlanAlerts([makeRecord({ staff_consulted: false })]);
+    const matched = alerts.filter((a) => a.type === "no_staff_consulted");
+    expect(matched.length).toBe(1);
+    expect(matched[0].severity).toBe("high");
+    expect(matched[0].message).toContain("1 plan has");
+  });
 
   it("no_staff_consulted plural", () => { const alerts = identifyDevelopmentPlanAlerts([makeRecord({ staff_consulted: false }), makeRecord({ id: "a-2", staff_consulted: false })]); const matched = alerts.filter((a) => a.type === "no_staff_consulted"); expect(matched.length).toBe(1); expect(matched[0].message).toContain("2 plans have"); });
 
-  it("fires no_strengths_identified singular", () => { const alerts = identifyDevelopmentPlanAlerts([makeRecord({ strengths_identified: false })]); const matched = alerts.filter((a) => a.type === "no_strengths_identified"); expect(matched.length).toBe(1); expect(matched[0].severity).toBe("high"); expect(matched[0].message).toContain("1 plan has"); });
+  it("fires no_strengths_identified singular", () => { 
+    const alerts = identifyDevelopmentPlanAlerts([makeRecord({ strengths_identified: false })]);
+    const matched = alerts.filter((a) => a.type === "no_strengths_identified");
+    expect(matched.length).toBe(1);
+    expect(matched[0].severity).toBe("high");
+    expect(matched[0].message).toContain("1 plan has");
+  });
 
   it("no_success_measures not for 1", () => { const alerts = identifyDevelopmentPlanAlerts([makeRecord({ success_measures_set: false })]); const matched = alerts.filter((a) => a.type === "no_success_measures"); expect(matched.length).toBe(0); });
 
@@ -127,5 +174,14 @@ describe("identifyDevelopmentPlanAlerts", () => {
 
   it("no_mentoring fires for 2", () => { const alerts = identifyDevelopmentPlanAlerts([makeRecord({ mentoring_arranged: false }), makeRecord({ id: "a-2", mentoring_arranged: false })]); const matched = alerts.filter((a) => a.type === "no_mentoring"); expect(matched.length).toBe(1); expect(matched[0].severity).toBe("medium"); });
 
-  it("fires all applicable", () => { const shared = { staff_consulted: false, strengths_identified: false, success_measures_set: false, mentoring_arranged: false } as const; const alerts = identifyDevelopmentPlanAlerts([makeRecord({ priority_level: "urgent", approval_status: "pending", ...shared }), makeRecord({ id: "a-2", ...shared })]); const types = alerts.map((a) => a.type); expect(types).toContain("urgent_unapproved"); expect(types).toContain("no_staff_consulted"); expect(types).toContain("no_strengths_identified"); expect(types).toContain("no_success_measures"); expect(types).toContain("no_mentoring"); });
+  it("fires all applicable", () => { 
+    const shared = { staff_consulted: false, strengths_identified: false, success_measures_set: false, mentoring_arranged: false } as const;
+    const alerts = identifyDevelopmentPlanAlerts([makeRecord({ priority_level: "urgent", approval_status: "pending", ...shared }), makeRecord({ id: "a-2", ...shared })]);
+    const types = alerts.map((a) => a.type);
+    expect(types).toContain("urgent_unapproved");
+    expect(types).toContain("no_staff_consulted");
+    expect(types).toContain("no_strengths_identified");
+    expect(types).toContain("no_success_measures");
+    expect(types).toContain("no_mentoring");
+  });
 });

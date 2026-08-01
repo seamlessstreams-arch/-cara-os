@@ -47,7 +47,7 @@ describe("computeMedicationEffectivenessMetrics", () => {
     expect(m.adverse_effects_count).toBe(0);
     expect(m.non_adherent_count).toBe(0);
     expect(m.overdue_review_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

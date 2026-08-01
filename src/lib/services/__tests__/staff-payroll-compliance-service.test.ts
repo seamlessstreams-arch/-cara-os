@@ -143,13 +143,13 @@ describe("computeMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeMetrics([]);
-    expect(m.right_to_work_rate).toBe(0);
-    expect(m.pension_enrolled_rate).toBe(0);
-    expect(m.tax_code_rate).toBe(0);
-    expect(m.ni_verified_rate).toBe(0);
-    expect(m.contract_rate).toBe(0);
-    expect(m.pay_rate_confirmed_rate).toBe(0);
-    expect(m.review_scheduled_rate).toBe(0);
+    expect(m.right_to_work_rate).toBeNull();;
+    expect(m.pension_enrolled_rate).toBeNull();;
+    expect(m.tax_code_rate).toBeNull();;
+    expect(m.ni_verified_rate).toBeNull();;
+    expect(m.contract_rate).toBeNull();;
+    expect(m.pay_rate_confirmed_rate).toBeNull();;
+    expect(m.review_scheduled_rate).toBeNull();;
   });
 
   // ── total_checks ───────────────────────────────────────────────────────
@@ -1164,7 +1164,7 @@ describe("edge cases", () => {
 
   it("metrics review_scheduled_rate with 0 for empty", () => {
     const m = computeMetrics([]);
-    expect(m.review_scheduled_rate).toBe(0);
+    expect(m.review_scheduled_rate).toBeNull();;
   });
 
   it("insights with mixed critical and high alerts", () => {

@@ -209,7 +209,7 @@ export function computeDevelopmentMetrics(
 ): {
   total_cpd_records: number;
   total_cpd_hours: number;
-  avg_cpd_hours_per_staff: number;
+  avg_cpd_hours_per_staff: number | null;
   cpd_this_quarter: number;
   cpd_hours_this_quarter: number;
   staff_with_cpd: number;
@@ -290,7 +290,7 @@ export function computeDevelopmentMetrics(
   return {
     total_cpd_records: cpdRecords.length,
     total_cpd_hours: totalHours,
-    avg_cpd_hours_per_staff: totalStaff > 0 ? Math.round((totalHours / totalStaff) * 10) / 10 : 0,
+    avg_cpd_hours_per_staff: totalStaff > 0 ? Math.round((totalHours / totalStaff) * 10) / 10 : null,
     cpd_this_quarter: cpdThisQuarter.length,
     cpd_hours_this_quarter: hoursThisQuarter,
     staff_with_cpd: staffWithCpd,

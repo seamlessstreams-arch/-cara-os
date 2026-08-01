@@ -190,7 +190,7 @@ export function computeContextualSafeguardingMetrics(
   by_screening_type: Record<string, number>;
   high_risk_locations: number;
   overdue_screenings: number;
-  referral_rate_percentage: number;
+  referral_rate_percentage: number | null;
   total_screenings: number;
   screenings_with_safety_plan: number;
   active_locality_risks: number;
@@ -238,7 +238,7 @@ export function computeContextualSafeguardingMetrics(
   const referralRatePercentage =
     screenings.length > 0
       ? Math.round((referralsMade / screenings.length) * 100)
-      : 0;
+      : null;
 
   return {
     children_screened: uniqueChildren.size,

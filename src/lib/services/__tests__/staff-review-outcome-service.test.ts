@@ -61,9 +61,24 @@ function makeRecord(overrides?: Partial<StaffReviewOutcomeRecord>): StaffReviewO
 // ── computeReviewOutcomeMetrics ──────────────────────────────────────────────
 
 describe("computeReviewOutcomeMetrics", () => {
-  it("returns zeros for empty", () => { const m = computeReviewOutcomeMetrics([]); expect(m.total_reviews).toBe(0); expect(m.needs_improvement_count).toBe(0); expect(m.immediate_followup_count).toBe(0); expect(m.disputed_count).toBe(0); expect(m.finalised_count).toBe(0); expect(m.strengths_acknowledged_rate).toBe(0); expect(m.unique_staff).toBe(0); });
+  it("returns zeros for empty", () => { 
+    const m = computeReviewOutcomeMetrics([]);
+    expect(m.total_reviews).toBe(0);;
+    expect(m.needs_improvement_count).toBe(0);
+    expect(m.immediate_followup_count).toBe(0);
+    expect(m.disputed_count).toBe(0);
+    expect(m.finalised_count).toBe(0);
+    expect(m.strengths_acknowledged_rate).toBeNull();;
+    expect(m.unique_staff).toBe(0);
+  });
 
-  it("returns empty breakdowns", () => { const m = computeReviewOutcomeMetrics([]); expect(m.by_review_type).toEqual({}); expect(m.by_review_outcome).toEqual({}); expect(m.by_outcome_status).toEqual({}); expect(m.by_follow_up_urgency).toEqual({}); });
+  it("returns empty breakdowns", () => { 
+    const m = computeReviewOutcomeMetrics([]);
+    expect(m.by_review_type).toEqual({});
+    expect(m.by_review_outcome).toEqual({});
+    expect(m.by_outcome_status).toEqual({});
+    expect(m.by_follow_up_urgency).toEqual({});
+  });
 
   it("total_reviews counts records", () => { expect(computeReviewOutcomeMetrics([makeRecord(), makeRecord({ id: "a-2" })]).total_reviews).toBe(2); });
 
@@ -83,7 +98,21 @@ describe("computeReviewOutcomeMetrics", () => {
 
   it("counts finalised", () => { expect(computeReviewOutcomeMetrics([makeRecord({ outcome_status: "finalised" })]).finalised_count).toBe(1); });
 
-  it("returns 100% boolean rates with defaults", () => { const m = computeReviewOutcomeMetrics([makeRecord()]); expect(m.strengths_acknowledged_rate).toBe(100); expect(m.development_discussed_rate).toBe(100); expect(m.actions_agreed_rate).toBe(100); expect(m.staff_views_rate).toBe(100); expect(m.wellbeing_discussed_rate).toBe(100); expect(m.training_needs_rate).toBe(100); expect(m.previous_actions_rate).toBe(100); expect(m.support_offered_rate).toBe(100); expect(m.safeguarding_discussed_rate).toBe(100); expect(m.record_shared_rate).toBe(100); expect(m.approved_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+  it("returns 100% boolean rates with defaults", () => { 
+    const m = computeReviewOutcomeMetrics([makeRecord()]);
+    expect(m.strengths_acknowledged_rate).toBe(100);
+    expect(m.development_discussed_rate).toBe(100);
+    expect(m.actions_agreed_rate).toBe(100);
+    expect(m.staff_views_rate).toBe(100);
+    expect(m.wellbeing_discussed_rate).toBe(100);
+    expect(m.training_needs_rate).toBe(100);
+    expect(m.previous_actions_rate).toBe(100);
+    expect(m.support_offered_rate).toBe(100);
+    expect(m.safeguarding_discussed_rate).toBe(100);
+    expect(m.record_shared_rate).toBe(100);
+    expect(m.approved_rate).toBe(100);
+    expect(m.recorded_promptly_rate).toBe(100);
+  });
 
   it("strengths_acknowledged_rate 0 when false", () => { expect(computeReviewOutcomeMetrics([makeRecord({ strengths_acknowledged: false })]).strengths_acknowledged_rate).toBe(0); });
 
@@ -117,7 +146,13 @@ describe("identifyReviewOutcomeAlerts", () => {
 
   it("per-record", () => { const a = identifyReviewOutcomeAlerts([makeRecord({ id: "a-1", follow_up_urgency: "immediate", review_outcome: "unsatisfactory" }), makeRecord({ id: "a-2", follow_up_urgency: "immediate", review_outcome: "needs_improvement" })]); expect(a.filter((x) => x.type === "immediate_unsatisfactory")).toHaveLength(2); });
 
-  it("fires staff_views_not_recorded", () => { const a = identifyReviewOutcomeAlerts([makeRecord({ staff_views_recorded: false })]); const hit = a.find((x) => x.type === "staff_views_not_recorded"); expect(hit).toBeDefined(); expect(hit!.severity).toBe("high"); expect(hit!.message).toContain("1 review has"); });
+  it("fires staff_views_not_recorded", () => { 
+    const a = identifyReviewOutcomeAlerts([makeRecord({ staff_views_recorded: false })]);
+    const hit = a.find((x) => x.type === "staff_views_not_recorded");
+    expect(hit).toBeDefined();
+    expect(hit!.severity).toBe("high");
+    expect(hit!.message).toContain("1 review has");
+  });
 
   it("staff_views_not_recorded plural", () => { const a = identifyReviewOutcomeAlerts([makeRecord({ id: "a-1", staff_views_recorded: false }), makeRecord({ id: "a-2", staff_views_recorded: false })]); expect(a.find((x) => x.type === "staff_views_not_recorded")!.message).toContain("2 reviews have"); });
 
@@ -131,5 +166,14 @@ describe("identifyReviewOutcomeAlerts", () => {
 
   it("no_safeguarding_discussed fires for 2", () => { const a = identifyReviewOutcomeAlerts([makeRecord({ id: "a-1", safeguarding_discussed: false }), makeRecord({ id: "a-2", safeguarding_discussed: false })]); const hit = a.find((x) => x.type === "no_safeguarding_discussed"); expect(hit).toBeDefined(); expect(hit!.severity).toBe("medium"); });
 
-  it("fires all applicable", () => { const rec = makeRecord({ follow_up_urgency: "immediate", review_outcome: "unsatisfactory", staff_views_recorded: false, strengths_acknowledged: false, wellbeing_discussed: false, safeguarding_discussed: false }); const a = identifyReviewOutcomeAlerts([rec, makeRecord({ id: "a-2", wellbeing_discussed: false, safeguarding_discussed: false })]); const types = a.map((x) => x.type); expect(types).toContain("immediate_unsatisfactory"); expect(types).toContain("staff_views_not_recorded"); expect(types).toContain("no_strengths_acknowledged"); expect(types).toContain("no_wellbeing_discussed"); expect(types).toContain("no_safeguarding_discussed"); });
+  it("fires all applicable", () => { 
+    const rec = makeRecord({ follow_up_urgency: "immediate", review_outcome: "unsatisfactory", staff_views_recorded: false, strengths_acknowledged: false, wellbeing_discussed: false, safeguarding_discussed: false });
+    const a = identifyReviewOutcomeAlerts([rec, makeRecord({ id: "a-2", wellbeing_discussed: false, safeguarding_discussed: false })]);
+    const types = a.map((x) => x.type);
+    expect(types).toContain("immediate_unsatisfactory");
+    expect(types).toContain("staff_views_not_recorded");
+    expect(types).toContain("no_strengths_acknowledged");
+    expect(types).toContain("no_wellbeing_discussed");
+    expect(types).toContain("no_safeguarding_discussed");
+  });
 });

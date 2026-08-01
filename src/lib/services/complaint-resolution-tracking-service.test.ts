@@ -45,8 +45,8 @@ describe("computeComplaintResolutionMetrics", () => {
     const m = computeComplaintResolutionMetrics([]);
     expect(m.total_complaints).toBe(0);
     expect(m.upheld_count).toBe(0);
-    expect(m.average_resolution_days).toBe(0);
-    expect(m.acknowledged_rate).toBe(0);
+    expect(m.average_resolution_days).toBeNull();;
+    expect(m.acknowledged_rate).toBeNull();;
   });
 
   it("counts statuses and outcomes correctly", () => {

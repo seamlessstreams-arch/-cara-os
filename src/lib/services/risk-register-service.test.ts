@@ -79,8 +79,8 @@ describe("computeRiskMetrics", () => {
     expect(m.total_risks).toBe(0);
     expect(m.open_risks).toBe(0);
     expect(m.critical_risks).toBe(0);
-    expect(m.average_risk_score).toBe(0);
-    expect(m.highest_risk_score).toBe(0);
+    expect(m.average_risk_score).toBeNull();;
+    expect(m.highest_risk_score).toBeNull();;
     expect(m.risks_without_mitigations).toBe(0);
     expect(m.review_overdue_count).toBe(0);
     expect(m.child_specific_risks).toBe(0);

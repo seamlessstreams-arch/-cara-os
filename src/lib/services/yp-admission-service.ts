@@ -579,7 +579,7 @@ export async function addChecklistItem(
 
 export function computeChecklistProgress(
   items: PreAdmissionItem[],
-): { total: number; completed: number; mandatory_total: number; mandatory_completed: number; percentage: number; ready: boolean } {
+): { total: number; completed: number; mandatory_total: number; mandatory_completed: number; percentage: number | null; ready: boolean } {
   const total = items.length;
   const completed = items.filter((i) => i.is_completed).length;
   const mandatory = items.filter((i) => i.is_mandatory);
@@ -590,7 +590,7 @@ export function computeChecklistProgress(
     completed,
     mandatory_total: mandatory.length,
     mandatory_completed: mandatoryCompleted,
-    percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+    percentage: total > 0 ? Math.round((completed / total) * 100) : null,
     ready: mandatoryCompleted === mandatory.length,
   };
 }
@@ -852,7 +852,7 @@ export async function getAdmissionStats(
   active: number;
   completed: number;
   withdrawn: number;
-  avg_days_to_placement: number;
+  avg_days_to_placement: number | null;
 }>> {
   const s = sb();
   if (!s) return { ok: false, error: "Supabase not configured" };
@@ -883,7 +883,7 @@ export async function getAdmissionStats(
       active: all.filter((w: any) => !["completed", "withdrawn"].includes(w.current_phase)).length,
       completed: all.filter((w: any) => w.current_phase === "completed").length,
       withdrawn: all.filter((w: any) => w.current_phase === "withdrawn").length,
-      avg_days_to_placement: completedDays.length > 0 ? Math.round(completedDays.reduce((a, b) => a + b, 0) / completedDays.length) : 0,
+      avg_days_to_placement: completedDays.length > 0 ? Math.round(completedDays.reduce((a, b) => a + b, 0) / completedDays.length) : null,
     },
   };
 }

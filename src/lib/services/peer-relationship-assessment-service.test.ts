@@ -51,7 +51,7 @@ describe("computePeerRelationshipMetrics", () => {
     expect(m.concerning_quality_count).toBe(0);
     expect(m.no_friendships_count).toBe(0);
     expect(m.aggressive_conflict_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

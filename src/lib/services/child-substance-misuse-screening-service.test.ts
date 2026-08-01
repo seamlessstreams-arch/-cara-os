@@ -41,7 +41,7 @@ describe("computeMetrics (substance misuse)", () => {
     expect(m.high_risk_count).toBe(0);
     expect(m.immediate_intervention_count).toBe(0);
     expect(m.no_concern_count).toBe(0);
-    expect(m.referral_rate).toBe(0);
+    expect(m.referral_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
     expect(m.unique_assessors).toBe(0);
   });

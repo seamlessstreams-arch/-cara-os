@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<ArrivalSettlingExperienceRecord>): Arriv
 
 describe("arrival-settling-experience-service", () => {
   describe("computeArrivalSettlingMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeArrivalSettlingMetrics([]); expect(m.total_reviews).toBe(0); expect(m.distressed_count).toBe(0); expect(m.poor_welcome_count).toBe(0); expect(m.uncomfortable_count).toBe(0); expect(m.unsettled_count).toBe(0); expect(m.room_prepared_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeArrivalSettlingMetrics([]); expect(m.by_arrival_stage).toEqual({}); expect(m.by_settling_quality).toEqual({}); expect(m.by_welcome_assessment).toEqual({}); expect(m.by_comfort_level).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeArrivalSettlingMetrics([]);
+      expect(m.total_reviews).toBe(0);;
+      expect(m.distressed_count).toBe(0);
+      expect(m.poor_welcome_count).toBe(0);
+      expect(m.uncomfortable_count).toBe(0);
+      expect(m.unsettled_count).toBe(0);
+      expect(m.room_prepared_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeArrivalSettlingMetrics([]);
+      expect(m.by_arrival_stage).toEqual({});
+      expect(m.by_settling_quality).toEqual({});
+      expect(m.by_welcome_assessment).toEqual({});
+      expect(m.by_comfort_level).toEqual({});
+    });
     it("total_reviews counts records", () => { expect(computeArrivalSettlingMetrics([makeRecord(), makeRecord()]).total_reviews).toBe(2); });
     it("counts very_distressed", () => { expect(computeArrivalSettlingMetrics([makeRecord({ settling_quality: "very_distressed" })]).distressed_count).toBe(1); });
     it("does not count unsettled as distressed", () => { expect(computeArrivalSettlingMetrics([makeRecord({ settling_quality: "unsettled" })]).distressed_count).toBe(0); });
@@ -50,7 +65,21 @@ describe("arrival-settling-experience-service", () => {
     it("does not count neutral as uncomfortable", () => { expect(computeArrivalSettlingMetrics([makeRecord({ comfort_level: "neutral" })]).uncomfortable_count).toBe(0); });
     it("counts unsettled as unsettled", () => { expect(computeArrivalSettlingMetrics([makeRecord({ settling_quality: "unsettled" })]).unsettled_count).toBe(1); });
     it("counts very_distressed as unsettled", () => { expect(computeArrivalSettlingMetrics([makeRecord({ settling_quality: "very_distressed" })]).unsettled_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeArrivalSettlingMetrics([makeRecord()]); expect(m.room_prepared_rate).toBe(100); expect(m.personal_items_rate).toBe(100); expect(m.preferences_asked_rate).toBe(100); expect(m.tour_rate).toBe(100); expect(m.peer_introductions_rate).toBe(100); expect(m.key_worker_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.emergency_contacts_rate).toBe(100); expect(m.dietary_needs_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeArrivalSettlingMetrics([makeRecord()]);
+      expect(m.room_prepared_rate).toBe(100);
+      expect(m.personal_items_rate).toBe(100);
+      expect(m.preferences_asked_rate).toBe(100);
+      expect(m.tour_rate).toBe(100);
+      expect(m.peer_introductions_rate).toBe(100);
+      expect(m.key_worker_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.emergency_contacts_rate).toBe(100);
+      expect(m.dietary_needs_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("room_prepared_rate 0 when false", () => { expect(computeArrivalSettlingMetrics([makeRecord({ room_prepared: false })]).room_prepared_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeArrivalSettlingMetrics([makeRecord({ tour_provided: true }), makeRecord({ tour_provided: false }), makeRecord({ tour_provided: true })]); expect(m.tour_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeArrivalSettlingMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -63,18 +92,43 @@ describe("arrival-settling-experience-service", () => {
   describe("identifyArrivalSettlingAlerts", () => {
     it("returns empty for clean", () => { expect(identifyArrivalSettlingAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyArrivalSettlingAlerts([])).toEqual([]); });
-    it("fires distressed_poor_welcome", () => { const a = identifyArrivalSettlingAlerts([makeRecord({ settling_quality: "very_distressed", welcome_assessment: "poor", child_name: "Jo" })]); expect(a[0].type).toBe("distressed_poor_welcome"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires distressed_poor_welcome", () => { 
+      const a = identifyArrivalSettlingAlerts([makeRecord({ settling_quality: "very_distressed", welcome_assessment: "poor", child_name: "Jo" })]);
+      expect(a[0].type).toBe("distressed_poor_welcome");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("distressed with not_provided also critical", () => { const a = identifyArrivalSettlingAlerts([makeRecord({ settling_quality: "very_distressed", welcome_assessment: "not_provided" })]); expect(a[0].type).toBe("distressed_poor_welcome"); expect(a[0].severity).toBe("critical"); });
     it("distressed_poor_welcome per-record", () => { const a = identifyArrivalSettlingAlerts([makeRecord({ id: "a-1", settling_quality: "very_distressed", welcome_assessment: "poor" }), makeRecord({ id: "a-2", settling_quality: "very_distressed", welcome_assessment: "not_provided" })]); expect(a.filter(x => x.type === "distressed_poor_welcome")).toHaveLength(2); });
     it("distressed without poor no critical", () => { expect(identifyArrivalSettlingAlerts([makeRecord({ settling_quality: "very_distressed", welcome_assessment: "good" })]).find(x => x.type === "distressed_poor_welcome")).toBeUndefined(); });
     it("poor without distressed no critical", () => { expect(identifyArrivalSettlingAlerts([makeRecord({ welcome_assessment: "poor", settling_quality: "settled_well" })]).find(x => x.type === "distressed_poor_welcome")).toBeUndefined(); });
-    it("fires no_room_prepared singular", () => { const a = identifyArrivalSettlingAlerts([makeRecord({ room_prepared: false })]); const f = a.find(x => x.type === "no_room_prepared"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 review has"); });
+    it("fires no_room_prepared singular", () => { 
+      const a = identifyArrivalSettlingAlerts([makeRecord({ room_prepared: false })]);
+      const f = a.find(x => x.type === "no_room_prepared");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 review has");
+    });
     it("no_room_prepared plural", () => { const a = identifyArrivalSettlingAlerts([makeRecord({ room_prepared: false }), makeRecord({ room_prepared: false })]); const f = a.find(x => x.type === "no_room_prepared"); expect(f!.message).toContain("2 reviews have"); });
-    it("fires no_key_worker singular", () => { const a = identifyArrivalSettlingAlerts([makeRecord({ key_worker_assigned: false })]); const f = a.find(x => x.type === "no_key_worker"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 review has"); });
+    it("fires no_key_worker singular", () => { 
+      const a = identifyArrivalSettlingAlerts([makeRecord({ key_worker_assigned: false })]);
+      const f = a.find(x => x.type === "no_key_worker");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 review has");
+    });
     it("no_preferences_asked not for 1", () => { expect(identifyArrivalSettlingAlerts([makeRecord({ child_preferences_asked: false })]).find(x => x.type === "no_preferences_asked")).toBeUndefined(); });
     it("no_preferences_asked fires for 2", () => { const a = identifyArrivalSettlingAlerts([makeRecord({ child_preferences_asked: false }), makeRecord({ child_preferences_asked: false })]); expect(a.find(x => x.type === "no_preferences_asked")).toBeDefined(); expect(a.find(x => x.type === "no_preferences_asked")!.severity).toBe("medium"); });
     it("no_peer_introductions not for 1", () => { expect(identifyArrivalSettlingAlerts([makeRecord({ peer_introductions_made: false })]).find(x => x.type === "no_peer_introductions")).toBeUndefined(); });
     it("no_peer_introductions fires for 2", () => { const a = identifyArrivalSettlingAlerts([makeRecord({ peer_introductions_made: false }), makeRecord({ peer_introductions_made: false })]); expect(a.find(x => x.type === "no_peer_introductions")).toBeDefined(); expect(a.find(x => x.type === "no_peer_introductions")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyArrivalSettlingAlerts([makeRecord({ settling_quality: "very_distressed", welcome_assessment: "poor", room_prepared: false, key_worker_assigned: false, child_preferences_asked: false, peer_introductions_made: false }), makeRecord({ room_prepared: false, key_worker_assigned: false, child_preferences_asked: false, peer_introductions_made: false })]); const types = a.map(x => x.type); expect(types).toContain("distressed_poor_welcome"); expect(types).toContain("no_room_prepared"); expect(types).toContain("no_key_worker"); expect(types).toContain("no_preferences_asked"); expect(types).toContain("no_peer_introductions"); });
+    it("fires all applicable", () => { 
+      const a = identifyArrivalSettlingAlerts([makeRecord({ settling_quality: "very_distressed", welcome_assessment: "poor", room_prepared: false, key_worker_assigned: false, child_preferences_asked: false, peer_introductions_made: false }), makeRecord({ room_prepared: false, key_worker_assigned: false, child_preferences_asked: false, peer_introductions_made: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("distressed_poor_welcome");
+      expect(types).toContain("no_room_prepared");
+      expect(types).toContain("no_key_worker");
+      expect(types).toContain("no_preferences_asked");
+      expect(types).toContain("no_peer_introductions");
+    });
   });
 });

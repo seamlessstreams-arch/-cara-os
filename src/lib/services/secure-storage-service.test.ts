@@ -42,11 +42,11 @@ describe("computeSecureStorageMetrics", () => {
     expect(m.access_logs).toBe(0);
     expect(m.subject_access_requests).toBe(0);
     expect(m.data_breaches).toBe(0);
-    expect(m.fully_compliant_rate).toBe(0);
+    expect(m.fully_compliant_rate).toBeNull();;
     expect(m.non_compliant_count).toBe(0);
-    expect(m.gdpr_compliant_rate).toBe(0);
-    expect(m.encryption_verified_rate).toBe(0);
-    expect(m.retention_followed_rate).toBe(0);
+    expect(m.gdpr_compliant_rate).toBeNull();;
+    expect(m.encryption_verified_rate).toBeNull();;
+    expect(m.retention_followed_rate).toBeNull();;
     expect(m.access_granted_count).toBe(0);
     expect(m.access_denied_count).toBe(0);
     expect(m.total_records_affected).toBe(0);

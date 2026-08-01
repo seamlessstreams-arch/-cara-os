@@ -26,7 +26,7 @@ describe("computeArrivalSettlingMetrics", () => {
     expect(result.total_reviews).toBe(0);
     expect(result.distressed_count).toBe(0);
     expect(result.poor_welcome_count).toBe(0);
-    expect(result.room_prepared_rate).toBe(0);
+    expect(result.room_prepared_rate).toBeNull();;
     expect(result.unique_children).toBe(0);
   });
 

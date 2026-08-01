@@ -49,7 +49,7 @@ describe("environmental-audit-service", () => {
       expect(m.good_count).toBe(0);
       expect(m.requires_improvement_count).toBe(0);
       expect(m.inadequate_count).toBe(0);
-      expect(m.homely_feel_rate).toBe(0);
+      expect(m.homely_feel_rate).toBeNull();;
       expect(m.immediate_priority_count).toBe(0);
     });
 

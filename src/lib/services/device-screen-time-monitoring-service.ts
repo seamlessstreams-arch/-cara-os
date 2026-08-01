@@ -148,18 +148,18 @@ export function computeDeviceScreenTimeMetrics(
   refused_count: number;
   inappropriate_count: number;
   significant_concern_count: number;
-  limits_agreed_rate: number;
-  age_appropriate_rate: number;
-  parental_controls_rate: number;
-  night_time_limits_rate: number;
-  social_media_supervised_rate: number;
-  privacy_settings_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  online_safety_rate: number;
-  healthy_alternatives_rate: number;
-  recorded_promptly_rate: number;
+  limits_agreed_rate: number | null;
+  age_appropriate_rate: number | null;
+  parental_controls_rate: number | null;
+  night_time_limits_rate: number | null;
+  social_media_supervised_rate: number | null;
+  privacy_settings_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  online_safety_rate: number | null;
+  healthy_alternatives_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_device_type: Record<string, number>;
   by_usage_category: Record<string, number>;
@@ -175,7 +175,7 @@ export function computeDeviceScreenTimeMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byDevice: Record<string, number> = {};

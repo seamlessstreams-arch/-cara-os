@@ -154,19 +154,19 @@ export function computeOfstedActionPlanMetrics(
   completed_count: number;
   evidenced_count: number;
   overdue_count: number;
-  evidence_gathered_rate: number;
-  progress_documented_rate: number;
-  staff_briefed_rate: number;
-  training_provided_rate: number;
-  policy_updated_rate: number;
-  practice_changed_rate: number;
-  monitored_by_ri_rate: number;
-  children_informed_rate: number;
-  social_worker_notified_rate: number;
-  board_informed_rate: number;
-  follow_up_ready_rate: number;
-  regulation_referenced_rate: number;
-  completion_rate: number;
+  evidence_gathered_rate: number | null;
+  progress_documented_rate: number | null;
+  staff_briefed_rate: number | null;
+  training_provided_rate: number | null;
+  policy_updated_rate: number | null;
+  practice_changed_rate: number | null;
+  monitored_by_ri_rate: number | null;
+  children_informed_rate: number | null;
+  social_worker_notified_rate: number | null;
+  board_informed_rate: number | null;
+  follow_up_ready_rate: number | null;
+  regulation_referenced_rate: number | null;
+  completion_rate: number | null;
   by_finding_type: Record<string, number>;
   by_action_status: Record<string, number>;
   by_finding_priority: Record<string, number>;
@@ -182,12 +182,12 @@ export function computeOfstedActionPlanMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const completionRate = records.length > 0
     ? Math.round(((completed + evidenced) / records.length) * 1000) / 10
-    : 0;
+    : null;
 
   const byFinding: Record<string, number> = {};
   for (const r of records) byFinding[r.finding_type] = (byFinding[r.finding_type] ?? 0) + 1;

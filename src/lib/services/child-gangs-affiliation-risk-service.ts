@@ -78,12 +78,12 @@ export function computeMetrics(
   high_risk_count: number;
   county_lines_count: number;
   nrm_referral_count: number;
-  safety_plan_rate: number;
-  exploitation_screening_rate: number;
-  multi_agency_rate: number;
-  police_notification_rate: number;
-  avg_indicators: number;
-  avg_missing_episodes: number;
+  safety_plan_rate: number | null;
+  exploitation_screening_rate: number | null;
+  multi_agency_rate: number | null;
+  police_notification_rate: number | null;
+  avg_indicators: number | null;
+  avg_missing_episodes: number | null;
   unique_children: number;
   unique_assessors: number;
 } {
@@ -98,7 +98,7 @@ export function computeMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgIndicators =
@@ -108,7 +108,7 @@ export function computeMetrics(
             rows.length) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   const avgMissing =
     rows.length > 0
@@ -117,7 +117,7 @@ export function computeMetrics(
             rows.length) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
   const uniqueAssessors = new Set(rows.map((r) => r.assessor_name)).size;

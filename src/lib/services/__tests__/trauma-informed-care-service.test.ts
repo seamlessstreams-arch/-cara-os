@@ -332,37 +332,37 @@ describe("computeTraumaMetrics", () => {
 
     it("returns assessment_coverage = 0 when totalChildren = 0", () => {
       const m = computeTraumaMetrics([], 0);
-      expect(m.assessment_coverage).toBe(0);
+      expect(m.assessment_coverage).toBeNull();;
     });
 
     it("returns average_aces_score = 0", () => {
       const m = computeTraumaMetrics([], 5);
-      expect(m.average_aces_score).toBe(0);
+      expect(m.average_aces_score).toBeNull();;
     });
 
     it("returns therapist_involved_rate = 0", () => {
       const m = computeTraumaMetrics([], 5);
-      expect(m.therapist_involved_rate).toBe(0);
+      expect(m.therapist_involved_rate).toBeNull();;
     });
 
     it("returns child_engaged_rate = 0", () => {
       const m = computeTraumaMetrics([], 5);
-      expect(m.child_engaged_rate).toBe(0);
+      expect(m.child_engaged_rate).toBeNull();;
     });
 
     it("returns plan_in_place_rate = 0", () => {
       const m = computeTraumaMetrics([], 5);
-      expect(m.plan_in_place_rate).toBe(0);
+      expect(m.plan_in_place_rate).toBeNull();;
     });
 
     it("returns staff_aware_rate = 0", () => {
       const m = computeTraumaMetrics([], 5);
-      expect(m.staff_aware_rate).toBe(0);
+      expect(m.staff_aware_rate).toBeNull();;
     });
 
     it("returns average_staff_trained = 0", () => {
       const m = computeTraumaMetrics([], 5);
-      expect(m.average_staff_trained).toBe(0);
+      expect(m.average_staff_trained).toBeNull();;
     });
 
     it("returns significant_improvement_count = 0", () => {
@@ -689,7 +689,7 @@ describe("computeTraumaMetrics", () => {
     it("returns 0 when totalChildren = 0", () => {
       const recs = [makeRecord()];
       const m = computeTraumaMetrics(recs, 0);
-      expect(m.assessment_coverage).toBe(0);
+      expect(m.assessment_coverage).toBeNull();;
     });
 
     it("returns 100 when all children assessed", () => {
@@ -748,7 +748,7 @@ describe("computeTraumaMetrics", () => {
         makeRecord({ aces_score: null }),
       ];
       const m = computeTraumaMetrics(recs, 2);
-      expect(m.average_aces_score).toBe(0);
+      expect(m.average_aces_score).toBeNull();;
     });
 
     it("rounds to 1 decimal place", () => {
@@ -918,7 +918,7 @@ describe("computeTraumaMetrics", () => {
   describe("average_staff_trained", () => {
     it("returns 0 when no records", () => {
       const m = computeTraumaMetrics([], 0);
-      expect(m.average_staff_trained).toBe(0);
+      expect(m.average_staff_trained).toBeNull();;
     });
 
     it("returns the value itself for a single record", () => {

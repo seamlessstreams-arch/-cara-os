@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<CelebrationMilestonesRecord>): Celebrati
 
 describe("celebration-milestones-service", () => {
   describe("computeCelebrationMilestonesMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeCelebrationMilestonesMetrics([]); expect(m.total_events).toBe(0); expect(m.missed_count).toBe(0); expect(m.poor_quality_count).toBe(0); expect(m.uncomfortable_count).toBe(0); expect(m.no_family_count).toBe(0); expect(m.child_chose_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeCelebrationMilestonesMetrics([]); expect(m.by_celebration_type).toEqual({}); expect(m.by_recognition_quality).toEqual({}); expect(m.by_child_response).toEqual({}); expect(m.by_participation_breadth).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeCelebrationMilestonesMetrics([]);
+      expect(m.total_events).toBe(0);;
+      expect(m.missed_count).toBe(0);
+      expect(m.poor_quality_count).toBe(0);
+      expect(m.uncomfortable_count).toBe(0);
+      expect(m.no_family_count).toBe(0);
+      expect(m.child_chose_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeCelebrationMilestonesMetrics([]);
+      expect(m.by_celebration_type).toEqual({});
+      expect(m.by_recognition_quality).toEqual({});
+      expect(m.by_child_response).toEqual({});
+      expect(m.by_participation_breadth).toEqual({});
+    });
     it("total_events counts records", () => { expect(computeCelebrationMilestonesMetrics([makeRecord(), makeRecord()]).total_events).toBe(2); });
     it("counts missed", () => { expect(computeCelebrationMilestonesMetrics([makeRecord({ recognition_quality: "missed" })]).missed_count).toBe(1); });
     it("counts poor_quality for poor", () => { expect(computeCelebrationMilestonesMetrics([makeRecord({ recognition_quality: "poor" })]).poor_quality_count).toBe(1); });
@@ -48,7 +63,21 @@ describe("celebration-milestones-service", () => {
     it("counts uncomfortable for upset", () => { expect(computeCelebrationMilestonesMetrics([makeRecord({ child_response: "upset" })]).uncomfortable_count).toBe(1); });
     it("does not count neutral as uncomfortable", () => { expect(computeCelebrationMilestonesMetrics([makeRecord({ child_response: "neutral" })]).uncomfortable_count).toBe(0); });
     it("counts no_family", () => { expect(computeCelebrationMilestonesMetrics([makeRecord({ family_included: false })]).no_family_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeCelebrationMilestonesMetrics([makeRecord()]); expect(m.child_chose_rate).toBe(100); expect(m.culturally_sensitive_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.photos_consent_rate).toBe(100); expect(m.family_included_rate).toBe(100); expect(m.peers_involved_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.budget_approved_rate).toBe(100); expect(m.memories_preserved_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeCelebrationMilestonesMetrics([makeRecord()]);
+      expect(m.child_chose_rate).toBe(100);
+      expect(m.culturally_sensitive_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.photos_consent_rate).toBe(100);
+      expect(m.family_included_rate).toBe(100);
+      expect(m.peers_involved_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.budget_approved_rate).toBe(100);
+      expect(m.memories_preserved_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_chose_rate 0 when false", () => { expect(computeCelebrationMilestonesMetrics([makeRecord({ child_chose_celebration: false })]).child_chose_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeCelebrationMilestonesMetrics([makeRecord({ memories_preserved: true }), makeRecord({ memories_preserved: false }), makeRecord({ memories_preserved: true })]); expect(m.memories_preserved_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeCelebrationMilestonesMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -61,17 +90,42 @@ describe("celebration-milestones-service", () => {
   describe("identifyCelebrationMilestonesAlerts", () => {
     it("returns empty for clean", () => { expect(identifyCelebrationMilestonesAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyCelebrationMilestonesAlerts([])).toEqual([]); });
-    it("fires missed_upset", () => { const a = identifyCelebrationMilestonesAlerts([makeRecord({ recognition_quality: "missed", child_response: "upset", child_name: "Jo" })]); expect(a[0].type).toBe("missed_upset"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires missed_upset", () => { 
+      const a = identifyCelebrationMilestonesAlerts([makeRecord({ recognition_quality: "missed", child_response: "upset", child_name: "Jo" })]);
+      expect(a[0].type).toBe("missed_upset");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("missed_upset for uncomfortable too", () => { const a = identifyCelebrationMilestonesAlerts([makeRecord({ recognition_quality: "missed", child_response: "uncomfortable" })]); expect(a.filter(x => x.type === "missed_upset")).toHaveLength(1); });
     it("missed_upset per-record", () => { const a = identifyCelebrationMilestonesAlerts([makeRecord({ id: "a-1", recognition_quality: "missed", child_response: "upset" }), makeRecord({ id: "a-2", recognition_quality: "missed", child_response: "uncomfortable" })]); expect(a.filter(x => x.type === "missed_upset")).toHaveLength(2); });
     it("missed with happy no critical", () => { expect(identifyCelebrationMilestonesAlerts([makeRecord({ recognition_quality: "missed", child_response: "happy" })]).find(x => x.type === "missed_upset")).toBeUndefined(); });
     it("poor with upset no critical", () => { expect(identifyCelebrationMilestonesAlerts([makeRecord({ recognition_quality: "poor", child_response: "upset" })]).find(x => x.type === "missed_upset")).toBeUndefined(); });
-    it("fires no_child_choice singular", () => { const a = identifyCelebrationMilestonesAlerts([makeRecord({ child_chose_celebration: false })]); const f = a.find(x => x.type === "no_child_choice"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 celebration has"); });
-    it("fires not_culturally_sensitive singular", () => { const a = identifyCelebrationMilestonesAlerts([makeRecord({ culturally_sensitive: false })]); const f = a.find(x => x.type === "not_culturally_sensitive"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 event is"); });
+    it("fires no_child_choice singular", () => { 
+      const a = identifyCelebrationMilestonesAlerts([makeRecord({ child_chose_celebration: false })]);
+      const f = a.find(x => x.type === "no_child_choice");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 celebration has");
+    });
+    it("fires not_culturally_sensitive singular", () => { 
+      const a = identifyCelebrationMilestonesAlerts([makeRecord({ culturally_sensitive: false })]);
+      const f = a.find(x => x.type === "not_culturally_sensitive");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 event is");
+    });
     it("no_memories_preserved not for 1", () => { expect(identifyCelebrationMilestonesAlerts([makeRecord({ memories_preserved: false })]).find(x => x.type === "no_memories_preserved")).toBeUndefined(); });
     it("no_memories_preserved fires for 2", () => { const a = identifyCelebrationMilestonesAlerts([makeRecord({ memories_preserved: false }), makeRecord({ memories_preserved: false })]); expect(a.find(x => x.type === "no_memories_preserved")).toBeDefined(); expect(a.find(x => x.type === "no_memories_preserved")!.severity).toBe("medium"); });
     it("no_family_included not for 1", () => { expect(identifyCelebrationMilestonesAlerts([makeRecord({ family_included: false })]).find(x => x.type === "no_family_included")).toBeUndefined(); });
     it("no_family_included fires for 2", () => { const a = identifyCelebrationMilestonesAlerts([makeRecord({ family_included: false }), makeRecord({ family_included: false })]); expect(a.find(x => x.type === "no_family_included")).toBeDefined(); expect(a.find(x => x.type === "no_family_included")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyCelebrationMilestonesAlerts([makeRecord({ recognition_quality: "missed", child_response: "upset", child_chose_celebration: false, culturally_sensitive: false, memories_preserved: false, family_included: false }), makeRecord({ child_chose_celebration: false, culturally_sensitive: false, memories_preserved: false, family_included: false })]); const types = a.map(x => x.type); expect(types).toContain("missed_upset"); expect(types).toContain("no_child_choice"); expect(types).toContain("not_culturally_sensitive"); expect(types).toContain("no_memories_preserved"); expect(types).toContain("no_family_included"); });
+    it("fires all applicable", () => { 
+      const a = identifyCelebrationMilestonesAlerts([makeRecord({ recognition_quality: "missed", child_response: "upset", child_chose_celebration: false, culturally_sensitive: false, memories_preserved: false, family_included: false }), makeRecord({ child_chose_celebration: false, culturally_sensitive: false, memories_preserved: false, family_included: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("missed_upset");
+      expect(types).toContain("no_child_choice");
+      expect(types).toContain("not_culturally_sensitive");
+      expect(types).toContain("no_memories_preserved");
+      expect(types).toContain("no_family_included");
+    });
   });
 });

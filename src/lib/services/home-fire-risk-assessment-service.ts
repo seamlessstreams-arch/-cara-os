@@ -197,18 +197,18 @@ export function computeFireRiskMetrics(
   intolerable_count: number;
   non_compliant_count: number;
   major_deficiency_count: number;
-  escape_routes_clear_rate: number;
-  fire_doors_functional_rate: number;
-  detection_system_tested_rate: number;
-  extinguishers_serviced_rate: number;
-  evacuation_plan_current_rate: number;
-  staff_fire_trained_rate: number;
-  fire_drills_completed_rate: number;
-  compartmentation_intact_rate: number;
-  emergency_lighting_tested_rate: number;
-  signage_adequate_rate: number;
-  electrical_safety_tested_rate: number;
-  peep_in_place_rate: number;
+  escape_routes_clear_rate: number | null;
+  fire_doors_functional_rate: number | null;
+  detection_system_tested_rate: number | null;
+  extinguishers_serviced_rate: number | null;
+  evacuation_plan_current_rate: number | null;
+  staff_fire_trained_rate: number | null;
+  fire_drills_completed_rate: number | null;
+  compartmentation_intact_rate: number | null;
+  emergency_lighting_tested_rate: number | null;
+  signage_adequate_rate: number | null;
+  electrical_safety_tested_rate: number | null;
+  peep_in_place_rate: number | null;
   risk_breakdown: Record<string, number>;
   area_breakdown: Record<string, number>;
   unique_assessors: number;
@@ -224,7 +224,7 @@ export function computeFireRiskMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const riskBreakdown: Record<string, number> = {};
@@ -388,7 +388,7 @@ export function generateFireRiskCaraInsights(
         `What immediate steps are being taken to reduce fire risk to an acceptable level, ` +
         `and are all children and staff aware of the current evacuation procedures?`,
     );
-  } else if (metrics.fire_drills_completed_rate < 100) {
+  } else if ((metrics.fire_drills_completed_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Fire drills are completed in ${metrics.fire_drills_completed_rate}% of assessments. ` +
         `How can the home ensure all staff and children regularly practise evacuation, ` +

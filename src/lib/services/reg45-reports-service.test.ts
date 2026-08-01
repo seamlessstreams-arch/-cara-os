@@ -68,7 +68,7 @@ describe("computeReg45Metrics", () => {
     expect(m.open_actions).toBe(0);
     expect(m.overdue_actions).toBe(0);
     expect(m.completed_actions).toBe(0);
-    expect(m.avg_days_to_distribute).toBe(0);
+    expect(m.avg_days_to_distribute).toBeNull();;
     expect(m.next_report_due).toBeNull();
   });
 

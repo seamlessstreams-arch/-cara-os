@@ -43,9 +43,9 @@ describe("computeMetrics (smoking-vaping)", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.nrt_rate).toBe(0);
-    expect(m.gp_rate).toBe(0);
-    expect(m.engagement_rate).toBe(0);
+    expect(m.nrt_rate).toBeNull();;
+    expect(m.gp_rate).toBeNull();;
+    expect(m.engagement_rate).toBeNull();;
     expect(m.daily_user_count).toBe(0);
     expect(m.vape_user_count).toBe(0);
     expect(m.tobacco_user_count).toBe(0);

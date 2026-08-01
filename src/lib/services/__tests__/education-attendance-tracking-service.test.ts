@@ -39,8 +39,24 @@ function makeRecord(overrides?: Partial<EducationAttendanceTrackingRecord>): Edu
 
 describe("education-attendance-tracking-service", () => {
   describe("computeEducationAttendanceMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeEducationAttendanceMetrics([]); expect(m.total_records).toBe(0); expect(m.present_count).toBe(0); expect(m.unauthorised_count).toBe(0); expect(m.exclusion_count).toBe(0); expect(m.refused_count).toBe(0); expect(m.school_contacted_rate).toBeNull(); expect(m.attendance_percentage).toBeNull(); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeEducationAttendanceMetrics([]); expect(m.by_attendance_status).toEqual({}); expect(m.by_absence_reason).toEqual({}); expect(m.by_school_engagement).toEqual({}); expect(m.by_education_setting).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeEducationAttendanceMetrics([]);
+      expect(m.total_records).toBe(0);
+      expect(m.present_count).toBe(0);
+      expect(m.unauthorised_count).toBe(0);
+      expect(m.exclusion_count).toBe(0);
+      expect(m.refused_count).toBe(0);
+      expect(m.school_contacted_rate).toBeNull();
+      expect(m.attendance_percentage).toBeNull();
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeEducationAttendanceMetrics([]);
+      expect(m.by_attendance_status).toEqual({});
+      expect(m.by_absence_reason).toEqual({});
+      expect(m.by_school_engagement).toEqual({});
+      expect(m.by_education_setting).toEqual({});
+    });
     it("counts present", () => { expect(computeEducationAttendanceMetrics([makeRecord()]).present_count).toBe(1); });
     it("counts unauthorised", () => { expect(computeEducationAttendanceMetrics([makeRecord({ attendance_status: "unauthorised_absence" })]).unauthorised_count).toBe(1); });
     it("counts exclusion fixed_term", () => { expect(computeEducationAttendanceMetrics([makeRecord({ attendance_status: "fixed_term_exclusion" })]).exclusion_count).toBe(1); });
@@ -48,7 +64,21 @@ describe("education-attendance-tracking-service", () => {
     it("counts exclusion internal", () => { expect(computeEducationAttendanceMetrics([makeRecord({ attendance_status: "internal_exclusion" })]).exclusion_count).toBe(1); });
     it("exclusion_count combines all types", () => { const m = computeEducationAttendanceMetrics([makeRecord({ attendance_status: "fixed_term_exclusion" }), makeRecord({ attendance_status: "permanent_exclusion" }), makeRecord({ attendance_status: "internal_exclusion" })]); expect(m.exclusion_count).toBe(3); });
     it("counts refused", () => { expect(computeEducationAttendanceMetrics([makeRecord({ absence_reason: "refused_to_attend" })]).refused_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeEducationAttendanceMetrics([makeRecord()]); expect(m.school_contacted_rate).toBe(100); expect(m.reason_documented_rate).toBe(100); expect(m.return_plan_rate).toBe(100); expect(m.pep_up_to_date_rate).toBe(100); expect(m.virtual_school_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.child_views_rate).toBe(100); expect(m.alternative_education_rate).toBe(100); expect(m.homework_supported_rate).toBe(100); expect(m.achievement_celebrated_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeEducationAttendanceMetrics([makeRecord()]);
+      expect(m.school_contacted_rate).toBe(100);
+      expect(m.reason_documented_rate).toBe(100);
+      expect(m.return_plan_rate).toBe(100);
+      expect(m.pep_up_to_date_rate).toBe(100);
+      expect(m.virtual_school_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.child_views_rate).toBe(100);
+      expect(m.alternative_education_rate).toBe(100);
+      expect(m.homework_supported_rate).toBe(100);
+      expect(m.achievement_celebrated_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("school_contacted_rate 0 when false", () => { expect(computeEducationAttendanceMetrics([makeRecord({ school_contacted: false })]).school_contacted_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeEducationAttendanceMetrics([makeRecord({ school_contacted: true }), makeRecord({ school_contacted: false }), makeRecord({ school_contacted: true })]); expect(m.school_contacted_rate).toBe(66.7); });
     it("attendance_percentage correct", () => { const m = computeEducationAttendanceMetrics([makeRecord({ sessions_attended: 1, sessions_possible: 2 }), makeRecord({ sessions_attended: 2, sessions_possible: 2 })]); expect(m.attendance_percentage).toBe(75); });
@@ -63,9 +93,21 @@ describe("education-attendance-tracking-service", () => {
   describe("identifyEducationAttendanceAlerts", () => {
     it("returns empty for clean", () => { expect(identifyEducationAttendanceAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyEducationAttendanceAlerts([])).toEqual([]); });
-    it("fires permanent_exclusion", () => { const a = identifyEducationAttendanceAlerts([makeRecord({ attendance_status: "permanent_exclusion", child_name: "Jo", education_setting: "mainstream_school" })]); expect(a[0].type).toBe("permanent_exclusion"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("mainstream school"); });
+    it("fires permanent_exclusion", () => { 
+      const a = identifyEducationAttendanceAlerts([makeRecord({ attendance_status: "permanent_exclusion", child_name: "Jo", education_setting: "mainstream_school" })]);
+      expect(a[0].type).toBe("permanent_exclusion");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("mainstream school");
+    });
     it("permanent_exclusion per-record", () => { const a = identifyEducationAttendanceAlerts([makeRecord({ id: "a-1", attendance_status: "permanent_exclusion" }), makeRecord({ id: "a-2", attendance_status: "permanent_exclusion" })]); expect(a.filter(x => x.type === "permanent_exclusion")).toHaveLength(2); });
-    it("fires pep_not_current singular", () => { const a = identifyEducationAttendanceAlerts([makeRecord({ pep_up_to_date: false })]); const f = a.find(x => x.type === "pep_not_current"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 record shows"); });
+    it("fires pep_not_current singular", () => { 
+      const a = identifyEducationAttendanceAlerts([makeRecord({ pep_up_to_date: false })]);
+      const f = a.find(x => x.type === "pep_not_current");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 record shows");
+    });
     it("pep_not_current plural", () => { const a = identifyEducationAttendanceAlerts([makeRecord({ pep_up_to_date: false }), makeRecord({ pep_up_to_date: false })]); const f = a.find(x => x.type === "pep_not_current"); expect(f!.message).toContain("2 records show"); });
     it("fires school_not_contacted for absence", () => { const a = identifyEducationAttendanceAlerts([makeRecord({ attendance_status: "authorised_absence", school_contacted: false })]); const f = a.find(x => x.type === "school_not_contacted"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); });
     it("school_not_contacted ignores present", () => { expect(identifyEducationAttendanceAlerts([makeRecord({ attendance_status: "present", school_contacted: false })]).find(x => x.type === "school_not_contacted")).toBeUndefined(); });
@@ -74,6 +116,14 @@ describe("education-attendance-tracking-service", () => {
     it("child_views_not_sought fires for 2", () => { const a = identifyEducationAttendanceAlerts([makeRecord({ child_views_sought: false }), makeRecord({ child_views_sought: false })]); expect(a.find(x => x.type === "child_views_not_sought")).toBeDefined(); });
     it("achievement_not_celebrated not for 2", () => { expect(identifyEducationAttendanceAlerts([makeRecord({ achievement_celebrated: false }), makeRecord({ achievement_celebrated: false })]).find(x => x.type === "achievement_not_celebrated")).toBeUndefined(); });
     it("achievement_not_celebrated fires for 3", () => { const a = identifyEducationAttendanceAlerts([makeRecord({ achievement_celebrated: false }), makeRecord({ achievement_celebrated: false }), makeRecord({ achievement_celebrated: false })]); expect(a.find(x => x.type === "achievement_not_celebrated")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyEducationAttendanceAlerts([makeRecord({ attendance_status: "permanent_exclusion", pep_up_to_date: false, school_contacted: false, child_views_sought: false, achievement_celebrated: false }), makeRecord({ attendance_status: "unauthorised_absence", school_contacted: false, child_views_sought: false, achievement_celebrated: false }), makeRecord({ achievement_celebrated: false })]); const types = a.map(x => x.type); expect(types).toContain("permanent_exclusion"); expect(types).toContain("pep_not_current"); expect(types).toContain("school_not_contacted"); expect(types).toContain("child_views_not_sought"); expect(types).toContain("achievement_not_celebrated"); });
+    it("fires all applicable", () => { 
+      const a = identifyEducationAttendanceAlerts([makeRecord({ attendance_status: "permanent_exclusion", pep_up_to_date: false, school_contacted: false, child_views_sought: false, achievement_celebrated: false }), makeRecord({ attendance_status: "unauthorised_absence", school_contacted: false, child_views_sought: false, achievement_celebrated: false }), makeRecord({ achievement_celebrated: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("permanent_exclusion");
+      expect(types).toContain("pep_not_current");
+      expect(types).toContain("school_not_contacted");
+      expect(types).toContain("child_views_not_sought");
+      expect(types).toContain("achievement_not_celebrated");
+    });
   });
 });

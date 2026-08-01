@@ -59,7 +59,7 @@ describe("computeMenuPlanningMetrics", () => {
     expect(m.refused_count).toBe(0);
     expect(m.allergen_concern_count).toBe(0);
     expect(m.cultural_not_met_count).toBe(0);
-    expect(m.allergens_checked_rate).toBe(0);
+    expect(m.allergens_checked_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

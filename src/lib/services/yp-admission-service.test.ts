@@ -123,7 +123,7 @@ describe("computeChecklistProgress", () => {
     expect(p.completed).toBe(0);
     expect(p.mandatory_total).toBe(0);
     expect(p.mandatory_completed).toBe(0);
-    expect(p.percentage).toBe(0);
+    expect(p.percentage).toBeNull();;
     expect(p.ready).toBe(true); // 0 mandatory = all done
   });
 

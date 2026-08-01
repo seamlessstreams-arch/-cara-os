@@ -35,8 +35,22 @@ function makeRecord(overrides?: Partial<HomeEnvironmentInspectionRecord>): HomeE
 
 describe("home-environment-inspection-service", () => {
   describe("computeHomeEnvironmentMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeHomeEnvironmentMetrics([]); expect(m.total_inspections).toBe(0); expect(m.poor_condition_count).toBe(0); expect(m.unacceptable_condition_count).toBe(0); expect(m.high_hazard_count).toBe(0); expect(m.immediate_hazard_count).toBe(0); expect(m.cleanliness_rate).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeHomeEnvironmentMetrics([]); expect(m.by_inspection_area).toEqual({}); expect(m.by_condition_rating).toEqual({}); expect(m.by_hazard_level).toEqual({}); expect(m.by_compliance_status).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeHomeEnvironmentMetrics([]);
+      expect(m.total_inspections).toBe(0);;
+      expect(m.poor_condition_count).toBe(0);
+      expect(m.unacceptable_condition_count).toBe(0);
+      expect(m.high_hazard_count).toBe(0);
+      expect(m.immediate_hazard_count).toBe(0);
+      expect(m.cleanliness_rate).toBeNull();;
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeHomeEnvironmentMetrics([]);
+      expect(m.by_inspection_area).toEqual({});
+      expect(m.by_condition_rating).toEqual({});
+      expect(m.by_hazard_level).toEqual({});
+      expect(m.by_compliance_status).toEqual({});
+    });
     it("total_inspections counts records", () => { expect(computeHomeEnvironmentMetrics([makeRecord(), makeRecord()]).total_inspections).toBe(2); });
     it("counts poor_condition", () => { expect(computeHomeEnvironmentMetrics([makeRecord({ condition_rating: "poor" })]).poor_condition_count).toBe(1); });
     it("counts unacceptable_condition", () => { expect(computeHomeEnvironmentMetrics([makeRecord({ condition_rating: "unacceptable" })]).unacceptable_condition_count).toBe(1); });
@@ -44,7 +58,21 @@ describe("home-environment-inspection-service", () => {
     it("counts high_hazard", () => { expect(computeHomeEnvironmentMetrics([makeRecord({ hazard_level: "high" })]).high_hazard_count).toBe(1); });
     it("counts immediate_hazard", () => { expect(computeHomeEnvironmentMetrics([makeRecord({ hazard_level: "immediate" })]).immediate_hazard_count).toBe(1); });
     it("does not count medium as high", () => { expect(computeHomeEnvironmentMetrics([makeRecord({ hazard_level: "medium" })]).high_hazard_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeHomeEnvironmentMetrics([makeRecord()]); expect(m.cleanliness_rate).toBe(100); expect(m.fire_safety_rate).toBe(100); expect(m.electrical_safety_rate).toBe(100); expect(m.water_safety_rate).toBe(100); expect(m.ventilation_rate).toBe(100); expect(m.lighting_rate).toBe(100); expect(m.maintenance_rate).toBe(100); expect(m.child_friendly_rate).toBe(100); expect(m.accessibility_rate).toBe(100); expect(m.security_rate).toBe(100); expect(m.pest_free_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeHomeEnvironmentMetrics([makeRecord()]);
+      expect(m.cleanliness_rate).toBe(100);
+      expect(m.fire_safety_rate).toBe(100);
+      expect(m.electrical_safety_rate).toBe(100);
+      expect(m.water_safety_rate).toBe(100);
+      expect(m.ventilation_rate).toBe(100);
+      expect(m.lighting_rate).toBe(100);
+      expect(m.maintenance_rate).toBe(100);
+      expect(m.child_friendly_rate).toBe(100);
+      expect(m.accessibility_rate).toBe(100);
+      expect(m.security_rate).toBe(100);
+      expect(m.pest_free_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("cleanliness_rate 0 when false", () => { expect(computeHomeEnvironmentMetrics([makeRecord({ cleanliness_acceptable: false })]).cleanliness_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeHomeEnvironmentMetrics([makeRecord({ fire_safety_checked: true }), makeRecord({ fire_safety_checked: false }), makeRecord({ fire_safety_checked: true })]); expect(m.fire_safety_rate).toBe(66.7); });
     it("counts all 10 inspection areas", () => { const areas = ["kitchen","bathroom","bedroom","communal_area","garden","entrance","laundry","office","storage","other"] as const; const records = areas.map(a => makeRecord({ inspection_area: a })); const m = computeHomeEnvironmentMetrics(records); for (const a of areas) expect(m.by_inspection_area[a]).toBe(1); });
@@ -56,17 +84,42 @@ describe("home-environment-inspection-service", () => {
   describe("identifyHomeEnvironmentAlerts", () => {
     it("returns empty for clean", () => { expect(identifyHomeEnvironmentAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyHomeEnvironmentAlerts([])).toEqual([]); });
-    it("fires immediate_hazard", () => { const a = identifyHomeEnvironmentAlerts([makeRecord({ hazard_level: "immediate", inspection_area: "kitchen" })]); expect(a[0].type).toBe("immediate_hazard"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("kitchen"); });
+    it("fires immediate_hazard", () => { 
+      const a = identifyHomeEnvironmentAlerts([makeRecord({ hazard_level: "immediate", inspection_area: "kitchen" })]);
+      expect(a[0].type).toBe("immediate_hazard");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("kitchen");
+    });
     it("immediate_hazard per-record", () => { const a = identifyHomeEnvironmentAlerts([makeRecord({ id: "a-1", hazard_level: "immediate" }), makeRecord({ id: "a-2", hazard_level: "immediate" })]); expect(a.filter(x => x.type === "immediate_hazard")).toHaveLength(2); });
     it("high hazard no critical alert", () => { expect(identifyHomeEnvironmentAlerts([makeRecord({ hazard_level: "high" })]).find(x => x.type === "immediate_hazard")).toBeUndefined(); });
-    it("fires fire_safety_not_checked singular", () => { const a = identifyHomeEnvironmentAlerts([makeRecord({ fire_safety_checked: false })]); const f = a.find(x => x.type === "fire_safety_not_checked"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 inspection has"); });
+    it("fires fire_safety_not_checked singular", () => { 
+      const a = identifyHomeEnvironmentAlerts([makeRecord({ fire_safety_checked: false })]);
+      const f = a.find(x => x.type === "fire_safety_not_checked");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 inspection has");
+    });
     it("fire_safety_not_checked plural", () => { const a = identifyHomeEnvironmentAlerts([makeRecord({ fire_safety_checked: false }), makeRecord({ fire_safety_checked: false })]); const f = a.find(x => x.type === "fire_safety_not_checked"); expect(f!.message).toContain("2 inspections have"); });
-    it("fires maintenance_overdue singular", () => { const a = identifyHomeEnvironmentAlerts([makeRecord({ maintenance_up_to_date: false })]); const f = a.find(x => x.type === "maintenance_overdue"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 inspection shows"); });
+    it("fires maintenance_overdue singular", () => { 
+      const a = identifyHomeEnvironmentAlerts([makeRecord({ maintenance_up_to_date: false })]);
+      const f = a.find(x => x.type === "maintenance_overdue");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 inspection shows");
+    });
     it("maintenance_overdue plural", () => { const a = identifyHomeEnvironmentAlerts([makeRecord({ maintenance_up_to_date: false }), makeRecord({ maintenance_up_to_date: false })]); const f = a.find(x => x.type === "maintenance_overdue"); expect(f!.message).toContain("2 inspections show"); });
     it("cleanliness_issues not for 1", () => { expect(identifyHomeEnvironmentAlerts([makeRecord({ cleanliness_acceptable: false })]).find(x => x.type === "cleanliness_issues")).toBeUndefined(); });
     it("cleanliness_issues fires for 2", () => { const a = identifyHomeEnvironmentAlerts([makeRecord({ cleanliness_acceptable: false }), makeRecord({ cleanliness_acceptable: false })]); expect(a.find(x => x.type === "cleanliness_issues")).toBeDefined(); expect(a.find(x => x.type === "cleanliness_issues")!.severity).toBe("medium"); });
     it("security_inadequate not for 1", () => { expect(identifyHomeEnvironmentAlerts([makeRecord({ security_adequate: false })]).find(x => x.type === "security_inadequate")).toBeUndefined(); });
     it("security_inadequate fires for 2", () => { const a = identifyHomeEnvironmentAlerts([makeRecord({ security_adequate: false }), makeRecord({ security_adequate: false })]); expect(a.find(x => x.type === "security_inadequate")).toBeDefined(); expect(a.find(x => x.type === "security_inadequate")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyHomeEnvironmentAlerts([makeRecord({ hazard_level: "immediate", fire_safety_checked: false, maintenance_up_to_date: false, cleanliness_acceptable: false, security_adequate: false }), makeRecord({ fire_safety_checked: false, maintenance_up_to_date: false, cleanliness_acceptable: false, security_adequate: false })]); const types = a.map(x => x.type); expect(types).toContain("immediate_hazard"); expect(types).toContain("fire_safety_not_checked"); expect(types).toContain("maintenance_overdue"); expect(types).toContain("cleanliness_issues"); expect(types).toContain("security_inadequate"); });
+    it("fires all applicable", () => { 
+      const a = identifyHomeEnvironmentAlerts([makeRecord({ hazard_level: "immediate", fire_safety_checked: false, maintenance_up_to_date: false, cleanliness_acceptable: false, security_adequate: false }), makeRecord({ fire_safety_checked: false, maintenance_up_to_date: false, cleanliness_acceptable: false, security_adequate: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("immediate_hazard");
+      expect(types).toContain("fire_safety_not_checked");
+      expect(types).toContain("maintenance_overdue");
+      expect(types).toContain("cleanliness_issues");
+      expect(types).toContain("security_inadequate");
+    });
   });
 });

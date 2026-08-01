@@ -51,19 +51,19 @@ describe("volunteer-management-service", () => {
         expect(m.active_count).toBe(0);
         expect(m.pending_count).toBe(0);
         expect(m.suspended_count).toBe(0);
-        expect(m.dbs_clear_rate).toBe(0);
+        expect(m.dbs_clear_rate).toBeNull();;
         expect(m.dbs_expired_count).toBe(0);
         expect(m.dbs_pending_count).toBe(0);
-        expect(m.training_up_to_date_rate).toBe(0);
+        expect(m.training_up_to_date_rate).toBeNull();;
         expect(m.training_overdue_count).toBe(0);
-        expect(m.safeguarding_trained_rate).toBe(0);
-        expect(m.first_aid_trained_rate).toBe(0);
-        expect(m.references_obtained_rate).toBe(0);
-        expect(m.induction_completed_rate).toBe(0);
-        expect(m.interview_completed_rate).toBe(0);
+        expect(m.safeguarding_trained_rate).toBeNull();;
+        expect(m.first_aid_trained_rate).toBeNull();;
+        expect(m.references_obtained_rate).toBeNull();;
+        expect(m.induction_completed_rate).toBeNull();;
+        expect(m.interview_completed_rate).toBeNull();;
         expect(m.lone_working_count).toBe(0);
         expect(m.total_hours).toBe(0);
-        expect(m.average_hours).toBe(0);
+        expect(m.average_hours).toBeNull();;
         expect(m.unique_children).toBe(0);
       });
 
@@ -303,8 +303,8 @@ describe("volunteer-management-service", () => {
 
       it("returns 0 rates for empty records", () => {
         const m = computeVolunteerMetrics([]);
-        expect(m.safeguarding_trained_rate).toBe(0);
-        expect(m.first_aid_trained_rate).toBe(0);
+        expect(m.safeguarding_trained_rate).toBeNull();;
+        expect(m.first_aid_trained_rate).toBeNull();;
       });
 
       it("calculates lone_working_count", () => {
@@ -396,7 +396,7 @@ describe("volunteer-management-service", () => {
 
       it("returns 0 average for empty", () => {
         const m = computeVolunteerMetrics([]);
-        expect(m.average_hours).toBe(0);
+        expect(m.average_hours).toBeNull();;
       });
     });
 

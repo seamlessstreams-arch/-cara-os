@@ -62,7 +62,7 @@ describe("computeReviewOutcomeMetrics", () => {
     expect(m.immediate_followup_count).toBe(0);
     expect(m.disputed_count).toBe(0);
     expect(m.finalised_count).toBe(0);
-    expect(m.strengths_acknowledged_rate).toBe(0);
+    expect(m.strengths_acknowledged_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

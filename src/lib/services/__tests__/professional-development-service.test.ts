@@ -328,7 +328,7 @@ describe("computeDevelopmentMetrics", () => {
     const m = computeDevelopmentMetrics([], [], [], 0, NOW);
     expect(m.total_cpd_records).toBe(0);
     expect(m.total_cpd_hours).toBe(0);
-    expect(m.avg_cpd_hours_per_staff).toBe(0);
+    expect(m.avg_cpd_hours_per_staff).toBeNull();;
     expect(m.cpd_this_quarter).toBe(0);
     expect(m.cpd_hours_this_quarter).toBe(0);
     expect(m.staff_with_cpd).toBe(0);
@@ -378,7 +378,7 @@ describe("computeDevelopmentMetrics", () => {
   it("returns 0 for avg when totalStaff is 0", () => {
     const records = [makeCpdRecord({ cpd_hours: 10 })];
     const m = computeDevelopmentMetrics(records, [], [], 0, NOW);
-    expect(m.avg_cpd_hours_per_staff).toBe(0);
+    expect(m.avg_cpd_hours_per_staff).toBeNull();;
   });
 
   it("rounds average correctly for 1 decimal place", () => {

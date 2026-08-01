@@ -51,11 +51,11 @@ describe("computeStaffDebriefMetrics", () => {
     expect(m.significantly_affected_count).toBe(0);
     expect(m.further_support_count).toBe(0);
     expect(m.declined_support_count).toBe(0);
-    expect(m.timely_debrief_rate).toBe(0);
-    expect(m.safe_space_rate).toBe(0);
-    expect(m.emotional_support_rate).toBe(0);
-    expect(m.learning_captured_rate).toBe(0);
-    expect(m.average_duration).toBe(0);
+    expect(m.timely_debrief_rate).toBeNull();;
+    expect(m.safe_space_rate).toBeNull();;
+    expect(m.emotional_support_rate).toBeNull();;
+    expect(m.learning_captured_rate).toBeNull();;
+    expect(m.average_duration).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

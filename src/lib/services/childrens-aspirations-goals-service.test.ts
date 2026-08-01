@@ -51,7 +51,7 @@ describe("computeAspirationsGoalsMetrics", () => {
     expect(m.not_started_count).toBe(0);
     expect(m.disengaged_count).toBe(0);
     expect(m.no_support_count).toBe(0);
-    expect(m.child_led_rate).toBe(0);
+    expect(m.child_led_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

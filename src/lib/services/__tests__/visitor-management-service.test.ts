@@ -302,32 +302,32 @@ describe("computeVisitorMetrics", () => {
 
     it("returns zero dbs_verified_rate", () => {
       const m = computeVisitorMetrics([]);
-      expect(m.dbs_verified_rate).toBe(0);
+      expect(m.dbs_verified_rate).toBeNull();;
     });
 
     it("returns zero id_verified_rate", () => {
       const m = computeVisitorMetrics([]);
-      expect(m.id_verified_rate).toBe(0);
+      expect(m.id_verified_rate).toBeNull();;
     });
 
     it("returns zero safeguarding_check_rate", () => {
       const m = computeVisitorMetrics([]);
-      expect(m.safeguarding_check_rate).toBe(0);
+      expect(m.safeguarding_check_rate).toBeNull();;
     });
 
     it("returns zero signed_in_rate", () => {
       const m = computeVisitorMetrics([]);
-      expect(m.signed_in_rate).toBe(0);
+      expect(m.signed_in_rate).toBeNull();;
     });
 
     it("returns zero signed_out_rate", () => {
       const m = computeVisitorMetrics([]);
-      expect(m.signed_out_rate).toBe(0);
+      expect(m.signed_out_rate).toBeNull();;
     });
 
     it("returns zero child_informed_rate", () => {
       const m = computeVisitorMetrics([]);
-      expect(m.child_informed_rate).toBe(0);
+      expect(m.child_informed_rate).toBeNull();;
     });
 
     it("returns zero unsupervised_count", () => {

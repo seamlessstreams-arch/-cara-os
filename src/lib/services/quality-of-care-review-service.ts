@@ -183,11 +183,11 @@ export function computeQualityOfCareMetrics(
   requires_improvement_count: number;
   immediate_priority_count: number;
   actions_not_assigned_count: number;
-  children_consulted_rate: number;
-  staff_consulted_rate: number;
-  external_feedback_rate: number;
-  reg44_reviewed_rate: number;
-  shared_with_ofsted_rate: number;
+  children_consulted_rate: number | null;
+  staff_consulted_rate: number | null;
+  external_feedback_rate: number | null;
+  reg44_reviewed_rate: number | null;
+  shared_with_ofsted_rate: number | null;
   domain_breakdown: Record<string, number>;
   rating_breakdown: Record<string, number>;
   unique_reviewers: number;
@@ -203,31 +203,31 @@ export function computeQualityOfCareMetrics(
   const childrenConsultedRate =
     total > 0
       ? Math.round((childrenConsulted / total) * 1000) / 10
-      : 0;
+      : null;
 
   const staffConsulted = rows.filter((r) => r.staff_consulted).length;
   const staffConsultedRate =
     total > 0
       ? Math.round((staffConsulted / total) * 1000) / 10
-      : 0;
+      : null;
 
   const externalFeedback = rows.filter((r) => r.external_feedback_included).length;
   const externalFeedbackRate =
     total > 0
       ? Math.round((externalFeedback / total) * 1000) / 10
-      : 0;
+      : null;
 
   const reg44Reviewed = rows.filter((r) => r.reg44_reports_reviewed).length;
   const reg44ReviewedRate =
     total > 0
       ? Math.round((reg44Reviewed / total) * 1000) / 10
-      : 0;
+      : null;
 
   const sharedWithOfsted = rows.filter((r) => r.shared_with_ofsted).length;
   const sharedWithOfstedRate =
     total > 0
       ? Math.round((sharedWithOfsted / total) * 1000) / 10
-      : 0;
+      : null;
 
   const domainBreakdown: Record<string, number> = {};
   for (const r of rows) domainBreakdown[r.review_domain] = (domainBreakdown[r.review_domain] ?? 0) + 1;
@@ -343,7 +343,7 @@ export function generateQualityOfCareCaraInsights(
         `What systemic factors are contributing to these ratings, and how can the home mobilise ` +
         `resources to ensure children receive the quality of care they deserve?`,
     );
-  } else if (metrics.children_consulted_rate < 100) {
+  } else if ((metrics.children_consulted_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Children were consulted in ${metrics.children_consulted_rate}% of reviews. ` +
         `Are there barriers to consulting children in every review, and could strengthening ` +

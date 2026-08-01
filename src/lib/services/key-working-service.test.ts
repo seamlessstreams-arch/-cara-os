@@ -19,7 +19,7 @@ describe("key-working-service", () => {
       expect(result.total_children).toBe(0);
       expect(result.children_on_track).toBe(0);
       expect(result.children_behind).toBe(0);
-      expect(result.compliance_percentage).toBe(0);
+      expect(result.compliance_percentage).toBeNull();;
       expect(result.by_child).toHaveLength(0);
     });
 

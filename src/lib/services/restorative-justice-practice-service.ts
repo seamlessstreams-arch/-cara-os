@@ -139,18 +139,18 @@ export function computeRestorativeJusticeMetrics(
   unresolved_count: number;
   coerced_count: number;
   worsened_count: number;
-  child_voice_rate: number;
-  victim_supported_rate: number;
-  voluntary_rate: number;
-  agreement_rate: number;
-  follow_up_rate: number;
-  empathy_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  staff_trained_rate: number;
-  safeguarding_rate: number;
-  recorded_promptly_rate: number;
+  child_voice_rate: number | null;
+  victim_supported_rate: number | null;
+  voluntary_rate: number | null;
+  agreement_rate: number | null;
+  follow_up_rate: number | null;
+  empathy_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  staff_trained_rate: number | null;
+  safeguarding_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_practice_type: Record<string, number>;
   by_outcome_level: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeRestorativeJusticeMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

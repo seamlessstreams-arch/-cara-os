@@ -108,14 +108,14 @@ export function computeSleepDisturbanceMetrics(
   crisis_count: number;
   trauma_linked_count: number;
   ongoing_count: number;
-  settled_within_hour_rate: number;
-  sleep_plan_rate: number;
-  clinical_referral_rate: number;
-  pattern_identified_rate: number;
-  environment_adapted_rate: number;
-  staff_debriefed_rate: number;
-  parent_informed_rate: number;
-  trauma_link_rate: number;
+  settled_within_hour_rate: number | null;
+  sleep_plan_rate: number | null;
+  clinical_referral_rate: number | null;
+  pattern_identified_rate: number | null;
+  environment_adapted_rate: number | null;
+  staff_debriefed_rate: number | null;
+  parent_informed_rate: number | null;
+  trauma_link_rate: number | null;
   disturbance_type_breakdown: Record<string, number>;
   severity_breakdown: Record<string, number>;
   unique_children: number;
@@ -129,7 +129,7 @@ export function computeSleepDisturbanceMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;

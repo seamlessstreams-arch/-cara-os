@@ -50,18 +50,18 @@ describe("missing-person-risk-service", () => {
         expect(m.medium_risk_count).toBe(0);
         expect(m.low_risk_count).toBe(0);
         expect(m.minimal_risk_count).toBe(0);
-        expect(m.trigger_plan_rate).toBe(0);
-        expect(m.return_interview_rate).toBe(0);
-        expect(m.police_informed_rate).toBe(0);
-        expect(m.social_worker_informed_rate).toBe(0);
-        expect(m.push_factors_rate).toBe(0);
-        expect(m.pull_factors_rate).toBe(0);
-        expect(m.peer_mapping_rate).toBe(0);
-        expect(m.safe_places_rate).toBe(0);
-        expect(m.escalation_followed_rate).toBe(0);
+        expect(m.trigger_plan_rate).toBeNull();;
+        expect(m.return_interview_rate).toBeNull();;
+        expect(m.police_informed_rate).toBeNull();;
+        expect(m.social_worker_informed_rate).toBeNull();;
+        expect(m.push_factors_rate).toBeNull();;
+        expect(m.pull_factors_rate).toBeNull();;
+        expect(m.peer_mapping_rate).toBeNull();;
+        expect(m.safe_places_rate).toBeNull();;
+        expect(m.escalation_followed_rate).toBeNull();;
         expect(m.exploitation_risk_count).toBe(0);
         expect(m.total_previous_episodes).toBe(0);
-        expect(m.average_previous_episodes).toBe(0);
+        expect(m.average_previous_episodes).toBeNull();;
         expect(m.unique_children).toBe(0);
       });
 

@@ -46,8 +46,8 @@ describe("computeMedErrorMetrics", () => {
     expect(m.no_harm_count).toBe(0);
     expect(m.harm_caused_count).toBe(0);
     expect(m.severe_harm_count).toBe(0);
-    expect(m.parent_informed_rate).toBe(0);
-    expect(m.duty_of_candour_rate).toBe(0);
+    expect(m.parent_informed_rate).toBeNull();;
+    expect(m.duty_of_candour_rate).toBeNull();;
   });
 
   it("computes correct counts for populated data", () => {

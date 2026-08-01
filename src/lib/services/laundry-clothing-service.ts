@@ -134,18 +134,18 @@ export function computeLaundryClothingMetrics(
   clothing_purchase_count: number;
   clothing_inventory_count: number;
   laundry_check_count: number;
-  child_chose_own_rate: number;
-  adequate_wardrobe_rate: number;
-  school_uniform_adequate_rate: number;
-  seasonal_clothing_rate: number;
-  laundry_done_regularly_rate: number;
-  clothes_returned_promptly_rate: number;
-  dignity_maintained_rate: number;
-  cultural_needs_met_rate: number;
+  child_chose_own_rate: number | null;
+  adequate_wardrobe_rate: number | null;
+  school_uniform_adequate_rate: number | null;
+  seasonal_clothing_rate: number | null;
+  laundry_done_regularly_rate: number | null;
+  clothes_returned_promptly_rate: number | null;
+  dignity_maintained_rate: number | null;
+  cultural_needs_met_rate: number | null;
   poor_laundry_count: number;
   needs_replacing_count: number;
   no_choice_count: number;
-  full_choice_rate: number;
+  full_choice_rate: number | null;
   total_budget: number;
   total_spent: number;
   review_overdue_count: number;
@@ -162,7 +162,7 @@ export function computeLaundryClothingMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const poorLaundry = records.filter((r) => r.laundry_standard === "poor").length;
@@ -173,7 +173,7 @@ export function computeLaundryClothingMetrics(
   const fullChoiceRate =
     records.length > 0
       ? Math.round((fullChoice / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const totalBudget = Math.round(
     records.filter((r) => r.budget_amount !== null).reduce((sum, r) => sum + r.budget_amount!, 0) * 100,

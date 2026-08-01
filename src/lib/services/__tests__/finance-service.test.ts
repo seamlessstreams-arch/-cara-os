@@ -114,7 +114,7 @@ describe("computeChildFinancialSummary", () => {
     expect(result.savings_balance).toBe(0);
     expect(result.by_category).toEqual({});
     expect(result.active_allowances).toEqual([]);
-    expect(result.child_consultation_rate).toBe(0);
+    expect(result.child_consultation_rate).toBeNull();;
     expect(result.monthly_spending).toBe(0);
   });
 
@@ -202,7 +202,7 @@ describe("computeChildFinancialSummary", () => {
       makeTransaction({ id: "t1", transaction_type: "credit", amount: 50 }),
     ];
     const result = computeChildFinancialSummary(txs, [], null, "child-1");
-    expect(result.child_consultation_rate).toBe(0);
+    expect(result.child_consultation_rate).toBeNull();;
   });
 
   it("computes monthly_spending only for current month debits", () => {
@@ -245,8 +245,8 @@ describe("computeHomeFinancialOverview", () => {
     expect(result.total_savings).toBe(0);
     expect(result.total_spending_this_month).toBe(0);
     expect(result.by_child).toEqual({});
-    expect(result.consultation_rate).toBe(0);
-    expect(result.receipt_compliance_rate).toBe(0);
+    expect(result.consultation_rate).toBeNull();;
+    expect(result.receipt_compliance_rate).toBeNull();;
   });
 
   it("counts unique children from transactions", () => {
@@ -369,8 +369,8 @@ describe("computeHomeFinancialOverview", () => {
       makeTransaction({ id: "t1", transaction_type: "credit", amount: 100 }),
     ];
     const result = computeHomeFinancialOverview(txs, [], []);
-    expect(result.consultation_rate).toBe(0);
-    expect(result.receipt_compliance_rate).toBe(0);
+    expect(result.consultation_rate).toBeNull();;
+    expect(result.receipt_compliance_rate).toBeNull();;
   });
 });
 

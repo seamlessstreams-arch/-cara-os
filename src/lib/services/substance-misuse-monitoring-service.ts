@@ -235,22 +235,22 @@ export function computeMetrics(
   total_assessments: number;
   high_risk_count: number;
   critical_count: number;
-  specialist_referral_rate: number;
-  engagement_rate: number;
-  support_plan_rate: number;
-  harm_reduction_rate: number;
-  parental_informed_rate: number;
-  social_worker_informed_rate: number;
+  specialist_referral_rate: number | null;
+  engagement_rate: number | null;
+  support_plan_rate: number | null;
+  harm_reduction_rate: number | null;
+  parental_informed_rate: number | null;
+  social_worker_informed_rate: number | null;
   police_involvement_count: number;
-  drug_testing_consent_rate: number;
+  drug_testing_consent_rate: number | null;
   unique_children: number;
   unique_assessors: number;
   by_substance: Record<string, number>;
   by_outcome: Record<string, number>;
   by_risk_level: Record<string, number>;
   by_frequency: Record<string, number>;
-  positive_outcome_rate: number;
-  disengagement_rate: number;
+  positive_outcome_rate: number | null;
+  disengagement_rate: number | null;
 } {
   const total = rows.length;
 
@@ -259,7 +259,7 @@ export function computeMetrics(
 
   const boolRate = (field: keyof SubstanceMisuseMonitoringRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const policeCount = rows.filter((r) => r.police_involvement).length;
@@ -291,12 +291,12 @@ export function computeMetrics(
     (r) => r.outcome === "Reduced Usage" || r.outcome === "Abstinent",
   ).length;
   const positiveOutcomeRate =
-    total > 0 ? Math.round((positiveOutcomes / total) * 1000) / 10 : 0;
+    total > 0 ? Math.round((positiveOutcomes / total) * 1000) / 10 : null;
 
   // Disengagement rate
   const disengaged = rows.filter((r) => r.outcome === "Disengaged").length;
   const disengagementRate =
-    total > 0 ? Math.round((disengaged / total) * 1000) / 10 : 0;
+    total > 0 ? Math.round((disengaged / total) * 1000) / 10 : null;
 
   return {
     total_assessments: total,
@@ -498,7 +498,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective safeguarding question
-  if (metrics.disengagement_rate > 20) {
+  if ((metrics.disengagement_rate ?? 0) > 20) {
     insights.push(
       `[reflect] ${metrics.disengagement_rate}% of substance misuse cases show disengagement. ` +
         `What alternative engagement strategies are being used, and are motivational interviewing ` +

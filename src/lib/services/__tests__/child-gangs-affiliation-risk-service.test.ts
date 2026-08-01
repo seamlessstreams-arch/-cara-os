@@ -132,22 +132,22 @@ describe("computeMetrics", () => {
       expect(computeMetrics([]).nrm_referral_count).toBe(0);
     });
     it("returns zero safety_plan_rate", () => {
-      expect(computeMetrics([]).safety_plan_rate).toBe(0);
+      expect(computeMetrics([]).safety_plan_rate).toBeNull();;
     });
     it("returns zero exploitation_screening_rate", () => {
-      expect(computeMetrics([]).exploitation_screening_rate).toBe(0);
+      expect(computeMetrics([]).exploitation_screening_rate).toBeNull();;
     });
     it("returns zero multi_agency_rate", () => {
-      expect(computeMetrics([]).multi_agency_rate).toBe(0);
+      expect(computeMetrics([]).multi_agency_rate).toBeNull();;
     });
     it("returns zero police_notification_rate", () => {
-      expect(computeMetrics([]).police_notification_rate).toBe(0);
+      expect(computeMetrics([]).police_notification_rate).toBeNull();;
     });
     it("returns zero avg_indicators", () => {
-      expect(computeMetrics([]).avg_indicators).toBe(0);
+      expect(computeMetrics([]).avg_indicators).toBeNull();;
     });
     it("returns zero avg_missing_episodes", () => {
-      expect(computeMetrics([]).avg_missing_episodes).toBe(0);
+      expect(computeMetrics([]).avg_missing_episodes).toBeNull();;
     });
     it("returns zero unique_children", () => {
       expect(computeMetrics([]).unique_children).toBe(0);

@@ -301,7 +301,7 @@ describe("computeCctvMetrics", () => {
     });
 
     it("returns zero compliant_rate", () => {
-      expect(computeCctvMetrics([]).compliant_rate).toBe(0);
+      expect(computeCctvMetrics([]).compliant_rate).toBeNull();;
     });
 
     it("returns zero non_compliant_count", () => {
@@ -309,23 +309,23 @@ describe("computeCctvMetrics", () => {
     });
 
     it("returns zero gdpr_compliant_rate", () => {
-      expect(computeCctvMetrics([]).gdpr_compliant_rate).toBe(0);
+      expect(computeCctvMetrics([]).gdpr_compliant_rate).toBeNull();;
     });
 
     it("returns zero signage_visible_rate", () => {
-      expect(computeCctvMetrics([]).signage_visible_rate).toBe(0);
+      expect(computeCctvMetrics([]).signage_visible_rate).toBeNull();;
     });
 
     it("returns zero children_informed_rate", () => {
-      expect(computeCctvMetrics([]).children_informed_rate).toBe(0);
+      expect(computeCctvMetrics([]).children_informed_rate).toBeNull();;
     });
 
     it("returns zero staff_informed_rate", () => {
-      expect(computeCctvMetrics([]).staff_informed_rate).toBe(0);
+      expect(computeCctvMetrics([]).staff_informed_rate).toBeNull();;
     });
 
     it("returns zero privacy_impact_completed_rate", () => {
-      expect(computeCctvMetrics([]).privacy_impact_completed_rate).toBe(0);
+      expect(computeCctvMetrics([]).privacy_impact_completed_rate).toBeNull();;
     });
 
     it("returns zero overdue_deletion_count", () => {
@@ -1107,12 +1107,12 @@ describe("computeCctvMetrics", () => {
 
     it("all rates are 0 for empty array", () => {
       const m = computeCctvMetrics([]);
-      expect(m.compliant_rate).toBe(0);
-      expect(m.gdpr_compliant_rate).toBe(0);
-      expect(m.signage_visible_rate).toBe(0);
-      expect(m.children_informed_rate).toBe(0);
-      expect(m.staff_informed_rate).toBe(0);
-      expect(m.privacy_impact_completed_rate).toBe(0);
+      expect(m.compliant_rate).toBeNull();;
+      expect(m.gdpr_compliant_rate).toBeNull();;
+      expect(m.signage_visible_rate).toBeNull();;
+      expect(m.children_informed_rate).toBeNull();;
+      expect(m.staff_informed_rate).toBeNull();;
+      expect(m.privacy_impact_completed_rate).toBeNull();;
     });
 
     it("rates are 100 when all true", () => {

@@ -150,18 +150,18 @@ export function computePocketMoneyMetrics(
   savings_deposit_count: number;
   declined_count: number;
   retrospective_count: number;
-  receipt_obtained_rate: number;
-  child_chose_purchase_rate: number;
-  age_appropriate_rate: number;
-  budget_discussed_rate: number;
-  savings_encouraged_rate: number;
-  value_for_money_rate: number;
-  financial_record_rate: number;
-  balance_reconciled_rate: number;
-  social_worker_informed_rate: number;
-  parent_informed_rate: number;
-  care_plan_linked_rate: number;
-  recorded_promptly_rate: number;
+  receipt_obtained_rate: number | null;
+  child_chose_purchase_rate: number | null;
+  age_appropriate_rate: number | null;
+  budget_discussed_rate: number | null;
+  savings_encouraged_rate: number | null;
+  value_for_money_rate: number | null;
+  financial_record_rate: number | null;
+  balance_reconciled_rate: number | null;
+  social_worker_informed_rate: number | null;
+  parent_informed_rate: number | null;
+  care_plan_linked_rate: number | null;
+  recorded_promptly_rate: number | null;
   total_amount_pence: number;
   unique_children: number;
   by_transaction_type: Record<string, number>;
@@ -178,7 +178,7 @@ export function computePocketMoneyMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const totalAmount = records.reduce((sum, r) => sum + r.amount_pence, 0);

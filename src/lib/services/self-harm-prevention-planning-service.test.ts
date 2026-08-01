@@ -51,8 +51,8 @@ describe("computeMetrics", () => {
     expect(m.active_count).toBe(0);
     expect(m.high_risk_count).toBe(0);
     expect(m.critical_count).toBe(0);
-    expect(m.camhs_engagement_rate).toBe(0);
-    expect(m.child_contribution_rate).toBe(0);
+    expect(m.camhs_engagement_rate).toBeNull();;
+    expect(m.child_contribution_rate).toBeNull();;
     expect(m.overdue_review_count).toBe(0);
     expect(m.unique_children).toBe(0);
     expect(m.enhanced_supervision_count).toBe(0);

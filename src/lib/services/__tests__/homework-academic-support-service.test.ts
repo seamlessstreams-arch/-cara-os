@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<HomeworkAcademicSupportRecord>): Homewor
 
 describe("homework-academic-support-service", () => {
   describe("computeHomeworkAcademicMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeHomeworkAcademicMetrics([]); expect(m.total_sessions).toBe(0); expect(m.disengaged_count).toBe(0); expect(m.refused_count).toBe(0); expect(m.no_progress_count).toBe(0); expect(m.regression_count).toBe(0); expect(m.homework_completed_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeHomeworkAcademicMetrics([]); expect(m.by_subject_area).toEqual({}); expect(m.by_support_type).toEqual({}); expect(m.by_engagement_level).toEqual({}); expect(m.by_progress_outcome).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeHomeworkAcademicMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.disengaged_count).toBe(0);
+      expect(m.refused_count).toBe(0);
+      expect(m.no_progress_count).toBe(0);
+      expect(m.regression_count).toBe(0);
+      expect(m.homework_completed_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeHomeworkAcademicMetrics([]);
+      expect(m.by_subject_area).toEqual({});
+      expect(m.by_support_type).toEqual({});
+      expect(m.by_engagement_level).toEqual({});
+      expect(m.by_progress_outcome).toEqual({});
+    });
     it("total_sessions counts records", () => { expect(computeHomeworkAcademicMetrics([makeRecord(), makeRecord()]).total_sessions).toBe(2); });
     it("counts disengaged", () => { expect(computeHomeworkAcademicMetrics([makeRecord({ engagement_level: "disengaged" })]).disengaged_count).toBe(1); });
     it("counts refused", () => { expect(computeHomeworkAcademicMetrics([makeRecord({ engagement_level: "refused" })]).refused_count).toBe(1); });
@@ -46,7 +61,21 @@ describe("homework-academic-support-service", () => {
     it("counts no_progress", () => { expect(computeHomeworkAcademicMetrics([makeRecord({ progress_outcome: "no_progress" })]).no_progress_count).toBe(1); });
     it("counts regression", () => { expect(computeHomeworkAcademicMetrics([makeRecord({ progress_outcome: "regression" })]).regression_count).toBe(1); });
     it("does not count some_progress as no_progress", () => { expect(computeHomeworkAcademicMetrics([makeRecord({ progress_outcome: "some_progress" })]).no_progress_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeHomeworkAcademicMetrics([makeRecord()]); expect(m.homework_completed_rate).toBe(100); expect(m.quiet_space_rate).toBe(100); expect(m.resources_rate).toBe(100); expect(m.school_liaison_rate).toBe(100); expect(m.learning_needs_rate).toBe(100); expect(m.encouragement_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.pep_updated_rate).toBe(100); expect(m.attendance_checked_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeHomeworkAcademicMetrics([makeRecord()]);
+      expect(m.homework_completed_rate).toBe(100);
+      expect(m.quiet_space_rate).toBe(100);
+      expect(m.resources_rate).toBe(100);
+      expect(m.school_liaison_rate).toBe(100);
+      expect(m.learning_needs_rate).toBe(100);
+      expect(m.encouragement_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.pep_updated_rate).toBe(100);
+      expect(m.attendance_checked_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("homework_completed_rate 0 when false", () => { expect(computeHomeworkAcademicMetrics([makeRecord({ homework_completed: false })]).homework_completed_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeHomeworkAcademicMetrics([makeRecord({ pep_updated: true }), makeRecord({ pep_updated: false }), makeRecord({ pep_updated: true })]); expect(m.pep_updated_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeHomeworkAcademicMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -59,17 +88,42 @@ describe("homework-academic-support-service", () => {
   describe("identifyHomeworkAcademicAlerts", () => {
     it("returns empty for clean", () => { expect(identifyHomeworkAcademicAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyHomeworkAcademicAlerts([])).toEqual([]); });
-    it("fires refused_regressing", () => { const a = identifyHomeworkAcademicAlerts([makeRecord({ engagement_level: "refused", progress_outcome: "regression", child_name: "Jo" })]); expect(a[0].type).toBe("refused_regressing"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires refused_regressing", () => { 
+      const a = identifyHomeworkAcademicAlerts([makeRecord({ engagement_level: "refused", progress_outcome: "regression", child_name: "Jo" })]);
+      expect(a[0].type).toBe("refused_regressing");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("refused_regressing per-record", () => { const a = identifyHomeworkAcademicAlerts([makeRecord({ id: "a-1", engagement_level: "refused", progress_outcome: "regression" }), makeRecord({ id: "a-2", engagement_level: "refused", progress_outcome: "regression" })]); expect(a.filter(x => x.type === "refused_regressing")).toHaveLength(2); });
     it("refused without regression no critical", () => { expect(identifyHomeworkAcademicAlerts([makeRecord({ engagement_level: "refused", progress_outcome: "met_expectations" })]).find(x => x.type === "refused_regressing")).toBeUndefined(); });
     it("regression without refused no critical", () => { expect(identifyHomeworkAcademicAlerts([makeRecord({ engagement_level: "engaged", progress_outcome: "regression" })]).find(x => x.type === "refused_regressing")).toBeUndefined(); });
-    it("fires no_school_liaison singular", () => { const a = identifyHomeworkAcademicAlerts([makeRecord({ school_liaison_made: false })]); const f = a.find(x => x.type === "no_school_liaison"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires no_school_liaison singular", () => { 
+      const a = identifyHomeworkAcademicAlerts([makeRecord({ school_liaison_made: false })]);
+      const f = a.find(x => x.type === "no_school_liaison");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_school_liaison plural", () => { const a = identifyHomeworkAcademicAlerts([makeRecord({ school_liaison_made: false }), makeRecord({ school_liaison_made: false })]); const f = a.find(x => x.type === "no_school_liaison"); expect(f!.message).toContain("2 sessions have"); });
-    it("fires pep_not_updated singular", () => { const a = identifyHomeworkAcademicAlerts([makeRecord({ pep_updated: false })]); const f = a.find(x => x.type === "pep_not_updated"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires pep_not_updated singular", () => { 
+      const a = identifyHomeworkAcademicAlerts([makeRecord({ pep_updated: false })]);
+      const f = a.find(x => x.type === "pep_not_updated");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_quiet_space not for 1", () => { expect(identifyHomeworkAcademicAlerts([makeRecord({ quiet_space_provided: false })]).find(x => x.type === "no_quiet_space")).toBeUndefined(); });
     it("no_quiet_space fires for 2", () => { const a = identifyHomeworkAcademicAlerts([makeRecord({ quiet_space_provided: false }), makeRecord({ quiet_space_provided: false })]); expect(a.find(x => x.type === "no_quiet_space")).toBeDefined(); expect(a.find(x => x.type === "no_quiet_space")!.severity).toBe("medium"); });
     it("no_resources not for 1", () => { expect(identifyHomeworkAcademicAlerts([makeRecord({ resources_available: false })]).find(x => x.type === "no_resources")).toBeUndefined(); });
     it("no_resources fires for 2", () => { const a = identifyHomeworkAcademicAlerts([makeRecord({ resources_available: false }), makeRecord({ resources_available: false })]); expect(a.find(x => x.type === "no_resources")).toBeDefined(); expect(a.find(x => x.type === "no_resources")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyHomeworkAcademicAlerts([makeRecord({ engagement_level: "refused", progress_outcome: "regression", school_liaison_made: false, pep_updated: false, quiet_space_provided: false, resources_available: false }), makeRecord({ school_liaison_made: false, pep_updated: false, quiet_space_provided: false, resources_available: false })]); const types = a.map(x => x.type); expect(types).toContain("refused_regressing"); expect(types).toContain("no_school_liaison"); expect(types).toContain("pep_not_updated"); expect(types).toContain("no_quiet_space"); expect(types).toContain("no_resources"); });
+    it("fires all applicable", () => { 
+      const a = identifyHomeworkAcademicAlerts([makeRecord({ engagement_level: "refused", progress_outcome: "regression", school_liaison_made: false, pep_updated: false, quiet_space_provided: false, resources_available: false }), makeRecord({ school_liaison_made: false, pep_updated: false, quiet_space_provided: false, resources_available: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("refused_regressing");
+      expect(types).toContain("no_school_liaison");
+      expect(types).toContain("pep_not_updated");
+      expect(types).toContain("no_quiet_space");
+      expect(types).toContain("no_resources");
+    });
   });
 });

@@ -50,7 +50,7 @@ describe("key-worker-allocation-service", () => {
       expect(m.unallocated_count).toBe(0);
       expect(m.broken_down_count).toBe(0);
       expect(m.overloaded_count).toBe(0);
-      expect(m.child_views_rate).toBe(0);
+      expect(m.child_views_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
 

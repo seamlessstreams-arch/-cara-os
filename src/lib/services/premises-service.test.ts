@@ -108,7 +108,7 @@ describe("computeMaintenanceSummary", () => {
     expect(m.open).toBe(0);
     expect(m.in_progress).toBe(0);
     expect(m.completed).toBe(0);
-    expect(m.avg_resolution_days).toBe(0);
+    expect(m.avg_resolution_days).toBeNull();;
     expect(m.safety_risks_open).toBe(0);
     expect(m.total_cost).toBe(0);
     expect(m.overdue_urgent).toBe(0);

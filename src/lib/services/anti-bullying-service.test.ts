@@ -28,7 +28,7 @@ describe("computeBullyingMetrics", () => {
     expect(result.incidents_this_month).toBe(0);
     expect(result.resolved_count).toBe(0);
     expect(result.unique_victims).toBe(0);
-    expect(result.parent_informed_rate).toBe(0);
+    expect(result.parent_informed_rate).toBeNull();;
   });
 
   it("counts total incidents and resolved/pending/escalated", () => {

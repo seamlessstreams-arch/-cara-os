@@ -223,12 +223,12 @@ describe("computeMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeMetrics([]);
-    expect(m.investigation_opened_rate).toBe(0);
-    expect(m.whistleblower_protected_rate).toBe(0);
-    expect(m.anonymity_rate).toBe(0);
-    expect(m.feedback_rate).toBe(0);
-    expect(m.regulator_notified_rate).toBe(0);
-    expect(m.action_taken_rate).toBe(0);
+    expect(m.investigation_opened_rate).toBeNull();;
+    expect(m.whistleblower_protected_rate).toBeNull();;
+    expect(m.anonymity_rate).toBeNull();;
+    expect(m.feedback_rate).toBeNull();;
+    expect(m.regulator_notified_rate).toBeNull();;
+    expect(m.action_taken_rate).toBeNull();;
   });
 
   it("returns 0 counts for empty array", () => {

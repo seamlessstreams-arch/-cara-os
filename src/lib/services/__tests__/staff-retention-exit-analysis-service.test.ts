@@ -88,32 +88,32 @@ describe("computeStaffRetentionMetrics", () => {
 
     it("returns zero exit_interview_rate", () => {
       const m = computeStaffRetentionMetrics([]);
-      expect(m.exit_interview_rate).toBe(0);
+      expect(m.exit_interview_rate).toBeNull();;
     });
 
     it("returns zero notice_served_rate", () => {
       const m = computeStaffRetentionMetrics([]);
-      expect(m.notice_served_rate).toBe(0);
+      expect(m.notice_served_rate).toBeNull();;
     });
 
     it("returns zero knowledge_transfer_rate", () => {
       const m = computeStaffRetentionMetrics([]);
-      expect(m.knowledge_transfer_rate).toBe(0);
+      expect(m.knowledge_transfer_rate).toBeNull();;
     });
 
     it("returns zero counter_offer_rate", () => {
       const m = computeStaffRetentionMetrics([]);
-      expect(m.counter_offer_rate).toBe(0);
+      expect(m.counter_offer_rate).toBeNull();;
     });
 
     it("returns zero replacement_rate", () => {
       const m = computeStaffRetentionMetrics([]);
-      expect(m.replacement_rate).toBe(0);
+      expect(m.replacement_rate).toBeNull();;
     });
 
     it("returns zero stay_interview_rate", () => {
       const m = computeStaffRetentionMetrics([]);
-      expect(m.stay_interview_rate).toBe(0);
+      expect(m.stay_interview_rate).toBeNull();;
     });
 
     it("returns empty exit_reason_breakdown", () => {

@@ -79,13 +79,13 @@ export function computeMetrics(rows: StaffPayrollComplianceRow[]): {
   total_checks: number;
   non_compliant_count: number;
   action_required_count: number;
-  right_to_work_rate: number;
-  pension_enrolled_rate: number;
-  tax_code_rate: number;
-  ni_verified_rate: number;
-  contract_rate: number;
-  pay_rate_confirmed_rate: number;
-  review_scheduled_rate: number;
+  right_to_work_rate: number | null;
+  pension_enrolled_rate: number | null;
+  tax_code_rate: number | null;
+  ni_verified_rate: number | null;
+  contract_rate: number | null;
+  pay_rate_confirmed_rate: number | null;
+  review_scheduled_rate: number | null;
   unique_staff: number;
   unique_reviewers: number;
 } {
@@ -96,11 +96,11 @@ export function computeMetrics(rows: StaffPayrollComplianceRow[]): {
 
   const boolRate = (field: keyof StaffPayrollComplianceRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const reviewScheduledCount = rows.filter((r) => r.next_review_date !== null).length;
-  const reviewScheduledRate = total > 0 ? Math.round((reviewScheduledCount / total) * 1000) / 10 : 0;
+  const reviewScheduledRate = total > 0 ? Math.round((reviewScheduledCount / total) * 1000) / 10 : null;
 
   return {
     total_checks: total,
@@ -213,7 +213,7 @@ export function computeCaraInsights(rows: StaffPayrollComplianceRow[]): string[]
         `How is the home ensuring all staff have verified right to work documentation ` +
         `and that HMRC obligations are being met in a timely manner?`,
     );
-  } else if (metrics.pension_enrolled_rate < 100) {
+  } else if ((metrics.pension_enrolled_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.pension_enrolled_rate}% of staff are enrolled in a workplace pension. ` +
         `How is the home meeting its auto-enrolment duties under the Pensions Act 2008, ` +

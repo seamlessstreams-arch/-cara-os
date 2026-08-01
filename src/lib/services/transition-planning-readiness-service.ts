@@ -138,18 +138,18 @@ export function computeTransitionPlanningMetrics(
   not_assessed_count: number;
   overdue_pathway_count: number;
   not_started_pathway_count: number;
-  child_views_rate: number;
-  life_skills_rate: number;
-  budgeting_rate: number;
-  cooking_rate: number;
-  housing_rate: number;
-  education_employment_rate: number;
-  health_needs_rate: number;
-  social_network_rate: number;
-  personal_advisor_rate: number;
-  social_worker_rate: number;
-  care_plan_rate: number;
-  recorded_promptly_rate: number;
+  child_views_rate: number | null;
+  life_skills_rate: number | null;
+  budgeting_rate: number | null;
+  cooking_rate: number | null;
+  housing_rate: number | null;
+  education_employment_rate: number | null;
+  health_needs_rate: number | null;
+  social_network_rate: number | null;
+  personal_advisor_rate: number | null;
+  social_worker_rate: number | null;
+  care_plan_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_transition_type: Record<string, number>;
   by_readiness_level: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeTransitionPlanningMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

@@ -37,15 +37,44 @@ function makeRecord(overrides?: Partial<SelfHarmRiskMonitoringRecord>): SelfHarm
 
 describe("self-harm-risk-monitoring-service", () => {
   describe("computeSelfHarmRiskMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeSelfHarmRiskMetrics([]); expect(m.total_records).toBe(0); expect(m.critical_count).toBe(0); expect(m.high_count).toBe(0); expect(m.no_safety_plan_count).toBe(0); expect(m.needs_review_count).toBe(0); expect(m.child_engaged_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeSelfHarmRiskMetrics([]); expect(m.by_risk_level).toEqual({}); expect(m.by_intervention_type).toEqual({}); expect(m.by_safety_plan_status).toEqual({}); expect(m.by_trigger_type).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeSelfHarmRiskMetrics([]);
+      expect(m.total_records).toBe(0);;
+      expect(m.critical_count).toBe(0);
+      expect(m.high_count).toBe(0);
+      expect(m.no_safety_plan_count).toBe(0);
+      expect(m.needs_review_count).toBe(0);
+      expect(m.child_engaged_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeSelfHarmRiskMetrics([]);
+      expect(m.by_risk_level).toEqual({});
+      expect(m.by_intervention_type).toEqual({});
+      expect(m.by_safety_plan_status).toEqual({});
+      expect(m.by_trigger_type).toEqual({});
+    });
     it("total_records counts records", () => { expect(computeSelfHarmRiskMetrics([makeRecord(), makeRecord()]).total_records).toBe(2); });
     it("counts critical", () => { expect(computeSelfHarmRiskMetrics([makeRecord({ risk_level: "critical" })]).critical_count).toBe(1); });
     it("counts high", () => { expect(computeSelfHarmRiskMetrics([makeRecord({ risk_level: "high" })]).high_count).toBe(1); });
     it("does not count medium as high", () => { expect(computeSelfHarmRiskMetrics([makeRecord({ risk_level: "medium" })]).high_count).toBe(0); });
     it("counts no_safety_plan", () => { expect(computeSelfHarmRiskMetrics([makeRecord({ safety_plan_status: "not_in_place" })]).no_safety_plan_count).toBe(1); });
     it("counts needs_review", () => { expect(computeSelfHarmRiskMetrics([makeRecord({ safety_plan_status: "active_needs_review" })]).needs_review_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeSelfHarmRiskMetrics([makeRecord()]); expect(m.child_engaged_rate).toBe(100); expect(m.safety_plan_shared_rate).toBe(100); expect(m.camhs_involved_rate).toBe(100); expect(m.gp_informed_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.environment_checked_rate).toBe(100); expect(m.means_restriction_rate).toBe(100); expect(m.observation_level_rate).toBe(100); expect(m.staff_trained_rate).toBe(100); expect(m.care_plan_updated_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeSelfHarmRiskMetrics([makeRecord()]);
+      expect(m.child_engaged_rate).toBe(100);
+      expect(m.safety_plan_shared_rate).toBe(100);
+      expect(m.camhs_involved_rate).toBe(100);
+      expect(m.gp_informed_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.environment_checked_rate).toBe(100);
+      expect(m.means_restriction_rate).toBe(100);
+      expect(m.observation_level_rate).toBe(100);
+      expect(m.staff_trained_rate).toBe(100);
+      expect(m.care_plan_updated_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_engaged_rate 0 when false", () => { expect(computeSelfHarmRiskMetrics([makeRecord({ child_engaged: false })]).child_engaged_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeSelfHarmRiskMetrics([makeRecord({ camhs_involved: true }), makeRecord({ camhs_involved: false }), makeRecord({ camhs_involved: true })]); expect(m.camhs_involved_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeSelfHarmRiskMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -58,20 +87,45 @@ describe("self-harm-risk-monitoring-service", () => {
   describe("identifySelfHarmRiskAlerts", () => {
     it("returns empty for clean", () => { expect(identifySelfHarmRiskAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifySelfHarmRiskAlerts([])).toEqual([]); });
-    it("fires critical_no_safety_plan", () => { const a = identifySelfHarmRiskAlerts([makeRecord({ risk_level: "critical", safety_plan_status: "not_in_place", child_name: "Jo" })]); expect(a[0].type).toBe("critical_no_safety_plan"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires critical_no_safety_plan", () => { 
+      const a = identifySelfHarmRiskAlerts([makeRecord({ risk_level: "critical", safety_plan_status: "not_in_place", child_name: "Jo" })]);
+      expect(a[0].type).toBe("critical_no_safety_plan");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("critical_no_safety_plan per-record", () => { const a = identifySelfHarmRiskAlerts([makeRecord({ id: "a-1", risk_level: "critical", safety_plan_status: "not_in_place" }), makeRecord({ id: "a-2", risk_level: "critical", safety_plan_status: "not_in_place" })]); expect(a.filter(x => x.type === "critical_no_safety_plan")).toHaveLength(2); });
     it("critical with active plan no alert", () => { expect(identifySelfHarmRiskAlerts([makeRecord({ risk_level: "critical", safety_plan_status: "active_reviewed" })]).find(x => x.type === "critical_no_safety_plan")).toBeUndefined(); });
     it("high with not_in_place no critical alert", () => { expect(identifySelfHarmRiskAlerts([makeRecord({ risk_level: "high", safety_plan_status: "not_in_place" })]).find(x => x.type === "critical_no_safety_plan")).toBeUndefined(); });
-    it("fires camhs_not_involved for critical", () => { const a = identifySelfHarmRiskAlerts([makeRecord({ risk_level: "critical", camhs_involved: false })]); const f = a.find(x => x.type === "camhs_not_involved"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 high/critical risk record has"); });
+    it("fires camhs_not_involved for critical", () => { 
+      const a = identifySelfHarmRiskAlerts([makeRecord({ risk_level: "critical", camhs_involved: false })]);
+      const f = a.find(x => x.type === "camhs_not_involved");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 high/critical risk record has");
+    });
     it("fires camhs_not_involved for high", () => { const a = identifySelfHarmRiskAlerts([makeRecord({ risk_level: "high", camhs_involved: false })]); expect(a.find(x => x.type === "camhs_not_involved")).toBeDefined(); });
     it("camhs_not_involved plural", () => { const a = identifySelfHarmRiskAlerts([makeRecord({ risk_level: "critical", camhs_involved: false }), makeRecord({ risk_level: "high", camhs_involved: false })]); const f = a.find(x => x.type === "camhs_not_involved"); expect(f!.message).toContain("2 high/critical risk records have"); });
     it("camhs not involved for medium no alert", () => { expect(identifySelfHarmRiskAlerts([makeRecord({ risk_level: "medium", camhs_involved: false })]).find(x => x.type === "camhs_not_involved")).toBeUndefined(); });
-    it("fires staff_not_trained singular", () => { const a = identifySelfHarmRiskAlerts([makeRecord({ staff_trained: false })]); const f = a.find(x => x.type === "staff_not_trained"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 monitoring record shows"); });
+    it("fires staff_not_trained singular", () => { 
+      const a = identifySelfHarmRiskAlerts([makeRecord({ staff_trained: false })]);
+      const f = a.find(x => x.type === "staff_not_trained");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 monitoring record shows");
+    });
     it("staff_not_trained plural", () => { const a = identifySelfHarmRiskAlerts([makeRecord({ staff_trained: false }), makeRecord({ staff_trained: false })]); const f = a.find(x => x.type === "staff_not_trained"); expect(f!.message).toContain("2 monitoring records show"); });
     it("environment_not_checked not for 1", () => { expect(identifySelfHarmRiskAlerts([makeRecord({ environment_checked: false })]).find(x => x.type === "environment_not_checked")).toBeUndefined(); });
     it("environment_not_checked fires for 2", () => { const a = identifySelfHarmRiskAlerts([makeRecord({ environment_checked: false }), makeRecord({ environment_checked: false })]); expect(a.find(x => x.type === "environment_not_checked")).toBeDefined(); expect(a.find(x => x.type === "environment_not_checked")!.severity).toBe("medium"); });
     it("no_means_restriction not for 1", () => { expect(identifySelfHarmRiskAlerts([makeRecord({ means_restriction_applied: false })]).find(x => x.type === "no_means_restriction")).toBeUndefined(); });
     it("no_means_restriction fires for 2", () => { const a = identifySelfHarmRiskAlerts([makeRecord({ means_restriction_applied: false }), makeRecord({ means_restriction_applied: false })]); expect(a.find(x => x.type === "no_means_restriction")).toBeDefined(); expect(a.find(x => x.type === "no_means_restriction")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifySelfHarmRiskAlerts([makeRecord({ risk_level: "critical", safety_plan_status: "not_in_place", camhs_involved: false, staff_trained: false, environment_checked: false, means_restriction_applied: false }), makeRecord({ risk_level: "high", camhs_involved: false, staff_trained: false, environment_checked: false, means_restriction_applied: false })]); const types = a.map(x => x.type); expect(types).toContain("critical_no_safety_plan"); expect(types).toContain("camhs_not_involved"); expect(types).toContain("staff_not_trained"); expect(types).toContain("environment_not_checked"); expect(types).toContain("no_means_restriction"); });
+    it("fires all applicable", () => { 
+      const a = identifySelfHarmRiskAlerts([makeRecord({ risk_level: "critical", safety_plan_status: "not_in_place", camhs_involved: false, staff_trained: false, environment_checked: false, means_restriction_applied: false }), makeRecord({ risk_level: "high", camhs_involved: false, staff_trained: false, environment_checked: false, means_restriction_applied: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("critical_no_safety_plan");
+      expect(types).toContain("camhs_not_involved");
+      expect(types).toContain("staff_not_trained");
+      expect(types).toContain("environment_not_checked");
+      expect(types).toContain("no_means_restriction");
+    });
   });
 });

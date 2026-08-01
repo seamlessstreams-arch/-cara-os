@@ -136,19 +136,19 @@ export function computePanelMetrics(
   matching_panel_count: number;
   disruption_meeting_count: number;
   discharge_panel_count: number;
-  approved_rate: number;
+  approved_rate: number | null;
   approved_with_conditions_count: number;
   declined_count: number;
   deferred_count: number;
-  full_quorum_rate: number;
+  full_quorum_rate: number | null;
   quorum_not_met_count: number;
-  child_views_considered_rate: number;
-  risk_assessment_reviewed_rate: number;
-  matching_criteria_rate: number;
-  impact_assessed_rate: number;
-  safeguarding_discussed_rate: number;
-  minutes_recorded_rate: number;
-  all_follow_up_completed_rate: number;
+  child_views_considered_rate: number | null;
+  risk_assessment_reviewed_rate: number | null;
+  matching_criteria_rate: number | null;
+  impact_assessed_rate: number | null;
+  safeguarding_discussed_rate: number | null;
+  minutes_recorded_rate: number | null;
+  all_follow_up_completed_rate: number | null;
   follow_up_overdue_count: number;
   follow_up_not_started_count: number;
   unique_children: number;
@@ -166,7 +166,7 @@ export function computePanelMetrics(
   const approvedRate =
     records.length > 0
       ? Math.round((approved / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const approvedConditions = records.filter((r) => r.panel_decision === "approved_with_conditions").length;
   const declined = records.filter((r) => r.panel_decision === "declined").length;
@@ -176,7 +176,7 @@ export function computePanelMetrics(
   const fullQuorumRate =
     records.length > 0
       ? Math.round((fullQuorum / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const quorumNotMet = records.filter((r) => r.panel_quorum === "quorum_not_met").length;
 
@@ -184,14 +184,14 @@ export function computePanelMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const allCompleted = records.filter((r) => r.follow_up_status === "all_completed").length;
   const allCompletedRate =
     records.length > 0
       ? Math.round((allCompleted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const followUpOverdue = records.filter((r) => r.follow_up_status === "overdue").length;
   const followUpNotStarted = records.filter((r) => r.follow_up_status === "not_started").length;

@@ -261,12 +261,12 @@ describe("computeMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeMetrics([]);
-    expect(m.risk_assessment_rate).toBe(0);
-    expect(m.check_in_rate).toBe(0);
-    expect(m.personal_alarm_rate).toBe(0);
-    expect(m.mobile_phone_rate).toBe(0);
-    expect(m.emergency_procedures_rate).toBe(0);
-    expect(m.training_rate).toBe(0);
+    expect(m.risk_assessment_rate).toBeNull();;
+    expect(m.check_in_rate).toBeNull();;
+    expect(m.personal_alarm_rate).toBeNull();;
+    expect(m.mobile_phone_rate).toBeNull();;
+    expect(m.emergency_procedures_rate).toBeNull();;
+    expect(m.training_rate).toBeNull();;
   });
 
   // ── total_assessments ─────────────────────────────────────────────────

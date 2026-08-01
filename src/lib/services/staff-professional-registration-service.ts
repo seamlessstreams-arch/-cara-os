@@ -84,11 +84,11 @@ export function computeRegistrationMetrics(rows: StaffProfessionalRegistrationRo
   expired_count: number;
   lapsed_count: number;
   suspended_count: number;
-  pin_verified_rate: number;
-  cpd_compliance_rate: number;
-  fitness_to_practise_rate: number;
+  pin_verified_rate: number | null;
+  cpd_compliance_rate: number | null;
+  fitness_to_practise_rate: number | null;
   conditions_count: number;
-  renewal_submitted_rate: number;
+  renewal_submitted_rate: number | null;
   unique_staff: number;
   unique_bodies: number;
 } {
@@ -100,12 +100,12 @@ export function computeRegistrationMetrics(rows: StaffProfessionalRegistrationRo
 
   const boolRate = (field: keyof StaffProfessionalRegistrationRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : 0;
+    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : null;
   };
 
   const cpdComplianceRate = (() => {
     const count = rows.filter((r) => r.cpd_hours_completed >= r.cpd_hours_required).length;
-    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : 0;
+    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : null;
   })();
 
   return {
@@ -254,7 +254,7 @@ export function generateRegistrationCaraInsights(rows: StaffProfessionalRegistra
         `What processes are in place to ensure timely renewal, and are staff with expired registrations ` +
         `being appropriately supervised pending renewal under Reg 32?`,
     );
-  } else if (metrics.cpd_compliance_rate < 100) {
+  } else if ((metrics.cpd_compliance_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.cpd_compliance_rate}% of staff meet their CPD hour requirements. ` +
         `Would implementing structured CPD planning improve compliance rates ` +

@@ -45,7 +45,7 @@ describe("computeBoundaryManagementMetrics", () => {
     const m = computeBoundaryManagementMetrics([]);
     expect(m.total_incidents).toBe(0);
     expect(m.accepted_count).toBe(0);
-    expect(m.boundary_explained_rate).toBe(0);
+    expect(m.boundary_explained_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

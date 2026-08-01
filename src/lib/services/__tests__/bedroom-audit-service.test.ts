@@ -283,7 +283,7 @@ describe("computeBedroomAuditMetrics", () => {
 
     it("returns zero excellent_condition_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.excellent_condition_rate).toBe(0);
+      expect(m.excellent_condition_rate).toBeNull();;
     });
 
     it("returns zero poor_condition_count", () => {
@@ -298,7 +298,7 @@ describe("computeBedroomAuditMetrics", () => {
 
     it("returns zero highly_personalised_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.highly_personalised_rate).toBe(0);
+      expect(m.highly_personalised_rate).toBeNull();;
     });
 
     it("returns zero not_personalised_count", () => {
@@ -308,7 +308,7 @@ describe("computeBedroomAuditMetrics", () => {
 
     it("returns zero safe_rating_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.safe_rating_rate).toBe(0);
+      expect(m.safe_rating_rate).toBeNull();;
     });
 
     it("returns zero unsafe_count", () => {
@@ -323,57 +323,57 @@ describe("computeBedroomAuditMetrics", () => {
 
     it("returns zero furniture_adequate_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.furniture_adequate_rate).toBe(0);
+      expect(m.furniture_adequate_rate).toBeNull();;
     });
 
     it("returns zero furniture_good_condition_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.furniture_good_condition_rate).toBe(0);
+      expect(m.furniture_good_condition_rate).toBeNull();;
     });
 
     it("returns zero bedding_clean_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.bedding_clean_rate).toBe(0);
+      expect(m.bedding_clean_rate).toBeNull();;
     });
 
     it("returns zero window_restrictors_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.window_restrictors_rate).toBe(0);
+      expect(m.window_restrictors_rate).toBeNull();;
     });
 
     it("returns zero lock_working_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.lock_working_rate).toBe(0);
+      expect(m.lock_working_rate).toBeNull();;
     });
 
     it("returns zero lighting_adequate_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.lighting_adequate_rate).toBe(0);
+      expect(m.lighting_adequate_rate).toBeNull();;
     });
 
     it("returns zero heating_adequate_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.heating_adequate_rate).toBe(0);
+      expect(m.heating_adequate_rate).toBeNull();;
     });
 
     it("returns zero ventilation_adequate_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.ventilation_adequate_rate).toBe(0);
+      expect(m.ventilation_adequate_rate).toBeNull();;
     });
 
     it("returns zero decoration_acceptable_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.decoration_acceptable_rate).toBe(0);
+      expect(m.decoration_acceptable_rate).toBeNull();;
     });
 
     it("returns zero child_consulted_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.child_consulted_rate).toBe(0);
+      expect(m.child_consulted_rate).toBeNull();;
     });
 
     it("returns zero privacy_respected_rate", () => {
       const m = computeBedroomAuditMetrics([]);
-      expect(m.privacy_respected_rate).toBe(0);
+      expect(m.privacy_respected_rate).toBeNull();;
     });
 
     it("returns zero audit_overdue_count", () => {

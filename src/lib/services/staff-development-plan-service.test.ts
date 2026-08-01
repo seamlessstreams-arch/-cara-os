@@ -64,9 +64,9 @@ describe("computeDevelopmentPlanMetrics", () => {
     expect(m.active_count).toBe(0);
     expect(m.pending_approval_count).toBe(0);
     expect(m.completed_count).toBe(0);
-    expect(m.evidence_based_rate).toBe(0);
-    expect(m.strengths_identified_rate).toBe(0);
-    expect(m.staff_consulted_rate).toBe(0);
+    expect(m.evidence_based_rate).toBeNull();;
+    expect(m.strengths_identified_rate).toBeNull();;
+    expect(m.staff_consulted_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

@@ -50,8 +50,8 @@ describe("computeStaffCompetencyMetrics", () => {
     expect(m.developing_count).toBe(0);
     expect(m.below_count).toBe(0);
     expect(m.not_competent_count).toBe(0);
-    expect(m.competency_maintained_rate).toBe(0);
-    expect(m.theory_demonstrated_rate).toBe(0);
+    expect(m.competency_maintained_rate).toBeNull();;
+    expect(m.theory_demonstrated_rate).toBeNull();;
     expect(m.action_required_count).toBe(0);
     expect(m.unique_staff).toBe(0);
   });

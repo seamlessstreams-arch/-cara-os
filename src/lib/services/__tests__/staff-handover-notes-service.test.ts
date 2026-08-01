@@ -37,13 +37,42 @@ function makeRecord(overrides?: Partial<StaffHandoverNotesRecord>): StaffHandove
 
 describe("staff-handover-notes-service", () => {
   describe("computeStaffHandoverNotesMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeStaffHandoverNotesMetrics([]); expect(m.total_notes).toBe(0); expect(m.critical_count).toBe(0); expect(m.high_count).toBe(0); expect(m.escalated_count).toBe(0); expect(m.pending_count).toBe(0); expect(m.child_specific_rate).toBeNull(); expect(m.follow_up_required_count).toBe(0); expect(m.follow_up_completed_rate).toBeNull(); });
-    it("returns empty breakdowns", () => { const m = computeStaffHandoverNotesMetrics([]); expect(m.by_note_category).toEqual({}); expect(m.by_note_priority).toEqual({}); expect(m.by_note_status).toEqual({}); expect(m.by_shift_type).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeStaffHandoverNotesMetrics([]);
+      expect(m.total_notes).toBe(0);
+      expect(m.critical_count).toBe(0);
+      expect(m.high_count).toBe(0);
+      expect(m.escalated_count).toBe(0);
+      expect(m.pending_count).toBe(0);
+      expect(m.child_specific_rate).toBeNull();
+      expect(m.follow_up_required_count).toBe(0);
+      expect(m.follow_up_completed_rate).toBeNull();
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeStaffHandoverNotesMetrics([]);
+      expect(m.by_note_category).toEqual({});
+      expect(m.by_note_priority).toEqual({});
+      expect(m.by_note_status).toEqual({});
+      expect(m.by_shift_type).toEqual({});
+    });
     it("counts critical", () => { expect(computeStaffHandoverNotesMetrics([makeRecord({ note_priority: "critical" })]).critical_count).toBe(1); });
     it("counts high", () => { expect(computeStaffHandoverNotesMetrics([makeRecord({ note_priority: "high" })]).high_count).toBe(1); });
     it("counts escalated", () => { expect(computeStaffHandoverNotesMetrics([makeRecord({ note_status: "escalated" })]).escalated_count).toBe(1); });
     it("counts pending", () => { expect(computeStaffHandoverNotesMetrics([makeRecord({ note_status: "pending" })]).pending_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeStaffHandoverNotesMetrics([makeRecord()]); expect(m.child_specific_rate).toBe(100); expect(m.medication_related_rate).toBe(100); expect(m.safeguarding_related_rate).toBe(100); expect(m.task_completed_rate).toBe(100); expect(m.acknowledged_rate).toBe(100); expect(m.manager_informed_rate).toBe(100); expect(m.time_sensitive_rate).toBe(100); expect(m.verbal_handover_rate).toBe(100); expect(m.written_record_rate).toBe(100); expect(m.risk_related_rate).toBe(100); expect(m.social_worker_update_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeStaffHandoverNotesMetrics([makeRecord()]);
+      expect(m.child_specific_rate).toBe(100);
+      expect(m.medication_related_rate).toBe(100);
+      expect(m.safeguarding_related_rate).toBe(100);
+      expect(m.task_completed_rate).toBe(100);
+      expect(m.acknowledged_rate).toBe(100);
+      expect(m.manager_informed_rate).toBe(100);
+      expect(m.time_sensitive_rate).toBe(100);
+      expect(m.verbal_handover_rate).toBe(100);
+      expect(m.written_record_rate).toBe(100);
+      expect(m.risk_related_rate).toBe(100);
+      expect(m.social_worker_update_rate).toBe(100);
+    });
     it("child_specific_rate 0 when false", () => { expect(computeStaffHandoverNotesMetrics([makeRecord({ child_specific: false })]).child_specific_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeStaffHandoverNotesMetrics([makeRecord({ child_specific: true }), makeRecord({ child_specific: false }), makeRecord({ child_specific: true })]); expect(m.child_specific_rate).toBe(66.7); });
     it("follow_up_required_count", () => { expect(computeStaffHandoverNotesMetrics([makeRecord({ follow_up_required: true }), makeRecord({ follow_up_required: false })]).follow_up_required_count).toBe(1); });
@@ -58,18 +87,43 @@ describe("staff-handover-notes-service", () => {
   describe("identifyStaffHandoverNotesAlerts", () => {
     it("returns empty for clean", () => { expect(identifyStaffHandoverNotesAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyStaffHandoverNotesAlerts([])).toEqual([]); });
-    it("fires critical_safeguarding_pending", () => { const a = identifyStaffHandoverNotesAlerts([makeRecord({ note_priority: "critical", safeguarding_related: true, note_status: "pending", outgoing_staff: "Jo", handover_date: "2026-05-14" })]); expect(a[0].type).toBe("critical_safeguarding_pending"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires critical_safeguarding_pending", () => { 
+      const a = identifyStaffHandoverNotesAlerts([makeRecord({ note_priority: "critical", safeguarding_related: true, note_status: "pending", outgoing_staff: "Jo", handover_date: "2026-05-14" })]);
+      expect(a[0].type).toBe("critical_safeguarding_pending");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("critical_safeguarding_pending per-record", () => { const a = identifyStaffHandoverNotesAlerts([makeRecord({ id: "a-1", note_priority: "critical", safeguarding_related: true, note_status: "pending" }), makeRecord({ id: "a-2", note_priority: "critical", safeguarding_related: true, note_status: "pending" })]); expect(a.filter(x => x.type === "critical_safeguarding_pending")).toHaveLength(2); });
     it("no critical alert if not safeguarding", () => { expect(identifyStaffHandoverNotesAlerts([makeRecord({ note_priority: "critical", safeguarding_related: false, note_status: "pending" })]).filter(x => x.type === "critical_safeguarding_pending")).toHaveLength(0); });
     it("no critical alert if not pending", () => { expect(identifyStaffHandoverNotesAlerts([makeRecord({ note_priority: "critical", safeguarding_related: true, note_status: "acknowledged" })]).filter(x => x.type === "critical_safeguarding_pending")).toHaveLength(0); });
-    it("fires not_acknowledged singular", () => { const a = identifyStaffHandoverNotesAlerts([makeRecord({ acknowledged_by_incoming: false })]); const f = a.find(x => x.type === "not_acknowledged"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 note has"); });
+    it("fires not_acknowledged singular", () => { 
+      const a = identifyStaffHandoverNotesAlerts([makeRecord({ acknowledged_by_incoming: false })]);
+      const f = a.find(x => x.type === "not_acknowledged");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 note has");
+    });
     it("not_acknowledged plural", () => { const a = identifyStaffHandoverNotesAlerts([makeRecord({ acknowledged_by_incoming: false }), makeRecord({ acknowledged_by_incoming: false })]); const f = a.find(x => x.type === "not_acknowledged"); expect(f!.message).toContain("2 notes have"); });
-    it("fires follow_up_overdue singular", () => { const a = identifyStaffHandoverNotesAlerts([makeRecord({ follow_up_required: true, follow_up_completed: false })]); const f = a.find(x => x.type === "follow_up_overdue"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 note has"); });
+    it("fires follow_up_overdue singular", () => { 
+      const a = identifyStaffHandoverNotesAlerts([makeRecord({ follow_up_required: true, follow_up_completed: false })]);
+      const f = a.find(x => x.type === "follow_up_overdue");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 note has");
+    });
     it("follow_up_overdue not when completed", () => { expect(identifyStaffHandoverNotesAlerts([makeRecord({ follow_up_required: true, follow_up_completed: true })]).find(x => x.type === "follow_up_overdue")).toBeUndefined(); });
     it("no_written_record not for 1", () => { expect(identifyStaffHandoverNotesAlerts([makeRecord({ written_record_complete: false })]).find(x => x.type === "no_written_record")).toBeUndefined(); });
     it("no_written_record fires for 2", () => { const a = identifyStaffHandoverNotesAlerts([makeRecord({ written_record_complete: false }), makeRecord({ written_record_complete: false })]); expect(a.find(x => x.type === "no_written_record")).toBeDefined(); });
     it("no_verbal_handover not for 2", () => { expect(identifyStaffHandoverNotesAlerts([makeRecord({ verbal_handover_given: false }), makeRecord({ verbal_handover_given: false })]).find(x => x.type === "no_verbal_handover")).toBeUndefined(); });
     it("no_verbal_handover fires for 3", () => { const a = identifyStaffHandoverNotesAlerts([makeRecord({ verbal_handover_given: false }), makeRecord({ verbal_handover_given: false }), makeRecord({ verbal_handover_given: false })]); expect(a.find(x => x.type === "no_verbal_handover")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyStaffHandoverNotesAlerts([makeRecord({ note_priority: "critical", safeguarding_related: true, note_status: "pending", acknowledged_by_incoming: false, follow_up_required: true, follow_up_completed: false, written_record_complete: false, verbal_handover_given: false }), makeRecord({ written_record_complete: false, verbal_handover_given: false }), makeRecord({ verbal_handover_given: false })]); const types = a.map(x => x.type); expect(types).toContain("critical_safeguarding_pending"); expect(types).toContain("not_acknowledged"); expect(types).toContain("follow_up_overdue"); expect(types).toContain("no_written_record"); expect(types).toContain("no_verbal_handover"); });
+    it("fires all applicable", () => { 
+      const a = identifyStaffHandoverNotesAlerts([makeRecord({ note_priority: "critical", safeguarding_related: true, note_status: "pending", acknowledged_by_incoming: false, follow_up_required: true, follow_up_completed: false, written_record_complete: false, verbal_handover_given: false }), makeRecord({ written_record_complete: false, verbal_handover_given: false }), makeRecord({ verbal_handover_given: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("critical_safeguarding_pending");
+      expect(types).toContain("not_acknowledged");
+      expect(types).toContain("follow_up_overdue");
+      expect(types).toContain("no_written_record");
+      expect(types).toContain("no_verbal_handover");
+    });
   });
 });

@@ -94,19 +94,19 @@ describe("computeMetrics", () => {
   });
 
   it("returns 0 support_plan_rate for empty array", () => {
-    expect(computeMetrics([]).support_plan_rate).toBe(0);
+    expect(computeMetrics([]).support_plan_rate).toBeNull();;
   });
 
   it("returns 0 welfare_check_rate for empty array", () => {
-    expect(computeMetrics([]).welfare_check_rate).toBe(0);
+    expect(computeMetrics([]).welfare_check_rate).toBeNull();;
   });
 
   it("returns 0 follow_up_rate for empty array", () => {
-    expect(computeMetrics([]).follow_up_rate).toBe(0);
+    expect(computeMetrics([]).follow_up_rate).toBeNull();;
   });
 
   it("returns 0 avg_absence_days for empty array", () => {
-    expect(computeMetrics([]).avg_absence_days).toBe(0);
+    expect(computeMetrics([]).avg_absence_days).toBeNull();;
   });
 
   it("returns 0 unique_staff for empty array", () => {

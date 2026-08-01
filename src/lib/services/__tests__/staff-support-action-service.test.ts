@@ -53,9 +53,24 @@ function makeRecord(overrides?: Partial<StaffSupportActionRecord>): StaffSupport
 // ── computeSupportActionMetrics ──────────────────────────────────────────
 
 describe("computeSupportActionMetrics", () => {
-  it("returns zeros for empty", () => { const m = computeSupportActionMetrics([]); expect(m.total_actions).toBe(0); expect(m.overdue_count).toBe(0); expect(m.urgent_count).toBe(0); expect(m.completed_count).toBe(0); expect(m.no_change_count).toBe(0); expect(m.evidence_based_rate).toBe(0); expect(m.unique_staff).toBe(0); });
+  it("returns zeros for empty", () => { 
+    const m = computeSupportActionMetrics([]);
+    expect(m.total_actions).toBe(0);;
+    expect(m.overdue_count).toBe(0);
+    expect(m.urgent_count).toBe(0);
+    expect(m.completed_count).toBe(0);
+    expect(m.no_change_count).toBe(0);
+    expect(m.evidence_based_rate).toBeNull();;
+    expect(m.unique_staff).toBe(0);
+  });
 
-  it("returns empty breakdowns", () => { const m = computeSupportActionMetrics([]); expect(m.by_action_type).toEqual({}); expect(m.by_action_outcome).toEqual({}); expect(m.by_completion_status).toEqual({}); expect(m.by_action_priority).toEqual({}); });
+  it("returns empty breakdowns", () => { 
+    const m = computeSupportActionMetrics([]);
+    expect(m.by_action_type).toEqual({});
+    expect(m.by_action_outcome).toEqual({});
+    expect(m.by_completion_status).toEqual({});
+    expect(m.by_action_priority).toEqual({});
+  });
 
   it("total_actions counts records", () => { expect(computeSupportActionMetrics([makeRecord(), makeRecord({ id: "a-2" })]).total_actions).toBe(2); });
 
@@ -129,7 +144,13 @@ describe("identifySupportActionAlerts", () => {
 
   it("returns empty for empty", () => { expect(identifySupportActionAlerts([])).toEqual([]); });
 
-  it("fires overdue_urgent", () => { const a = identifySupportActionAlerts([makeRecord({ completion_status: "overdue", action_priority: "urgent", staff_name: "Jo" })]); expect(a).toHaveLength(1); expect(a[0].type).toBe("overdue_urgent"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+  it("fires overdue_urgent", () => { 
+    const a = identifySupportActionAlerts([makeRecord({ completion_status: "overdue", action_priority: "urgent", staff_name: "Jo" })]);
+    expect(a).toHaveLength(1);
+    expect(a[0].type).toBe("overdue_urgent");
+    expect(a[0].severity).toBe("critical");
+    expect(a[0].message).toContain("Jo");
+  });
 
   it("no critical when overdue + medium", () => { expect(identifySupportActionAlerts([makeRecord({ completion_status: "overdue", action_priority: "medium" })]).filter((a) => a.severity === "critical")).toHaveLength(0); });
 
@@ -137,7 +158,13 @@ describe("identifySupportActionAlerts", () => {
 
   it("per-record overdue_urgent", () => { const a = identifySupportActionAlerts([makeRecord({ id: "a-1", completion_status: "overdue", action_priority: "urgent" }), makeRecord({ id: "a-2", completion_status: "overdue", action_priority: "urgent" })]); expect(a.filter((x) => x.type === "overdue_urgent")).toHaveLength(2); });
 
-  it("fires staff_not_consulted singular", () => { const a = identifySupportActionAlerts([makeRecord({ staff_consulted: false })]); const f = a.find((x) => x.type === "staff_not_consulted"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 action has"); });
+  it("fires staff_not_consulted singular", () => { 
+    const a = identifySupportActionAlerts([makeRecord({ staff_consulted: false })]);
+    const f = a.find((x) => x.type === "staff_not_consulted");
+    expect(f).toBeDefined();
+    expect(f!.severity).toBe("high");
+    expect(f!.message).toContain("1 action has");
+  });
 
   it("staff_not_consulted plural", () => { const a = identifySupportActionAlerts([makeRecord({ id: "a-1", staff_consulted: false }), makeRecord({ id: "a-2", staff_consulted: false })]); expect(a.find((x) => x.type === "staff_not_consulted")!.message).toContain("2 actions have"); });
 

@@ -152,13 +152,13 @@ export function computeDischargeMetrics(
   not_assessed_count: number;
   completed_reviews: number;
   overdue_reviews: number;
-  child_views_rate: number;
-  social_worker_involved_rate: number;
-  family_consulted_rate: number;
-  education_plan_rate: number;
-  health_transferred_rate: number;
-  life_story_rate: number;
-  goodbye_event_rate: number;
+  child_views_rate: number | null;
+  social_worker_involved_rate: number | null;
+  family_consulted_rate: number | null;
+  education_plan_rate: number | null;
+  health_transferred_rate: number | null;
+  life_story_rate: number | null;
+  goodbye_event_rate: number | null;
   unplanned_breakdowns: number;
   by_discharge_reason: Record<string, number>;
   by_readiness_level: Record<string, number>;
@@ -176,43 +176,43 @@ export function computeDischargeMetrics(
   const childRate =
     reviews.length > 0
       ? Math.round((childViews / reviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const swInvolved = reviews.filter((r) => r.social_worker_involved).length;
   const swRate =
     reviews.length > 0
       ? Math.round((swInvolved / reviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const familyConsulted = reviews.filter((r) => r.family_consulted).length;
   const familyRate =
     reviews.length > 0
       ? Math.round((familyConsulted / reviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const educationPlan = reviews.filter((r) => r.education_plan_in_place).length;
   const eduRate =
     reviews.length > 0
       ? Math.round((educationPlan / reviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const healthTransferred = reviews.filter((r) => r.health_needs_transferred).length;
   const healthRate =
     reviews.length > 0
       ? Math.round((healthTransferred / reviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const lifeStory = reviews.filter((r) => r.life_story_work_complete).length;
   const lifeStoryRate =
     reviews.length > 0
       ? Math.round((lifeStory / reviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const goodbye = reviews.filter((r) => r.goodbye_event_planned).length;
   const goodbyeRate =
     reviews.length > 0
       ? Math.round((goodbye / reviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   const breakdowns = reviews.filter((r) => r.discharge_reason === "unplanned_breakdown").length;
 

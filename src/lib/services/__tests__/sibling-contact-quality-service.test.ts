@@ -38,8 +38,23 @@ function makeRecord(overrides?: Partial<SiblingContactQualityRecord>): SiblingCo
 
 describe("sibling-contact-quality-service", () => {
   describe("computeSiblingContactMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeSiblingContactMetrics([]); expect(m.total_contacts).toBe(0); expect(m.poor_quality_count).toBe(0); expect(m.harmful_count).toBe(0); expect(m.estranged_count).toBe(0); expect(m.barrier_count).toBe(0); expect(m.child_views_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeSiblingContactMetrics([]); expect(m.by_contact_type).toEqual({}); expect(m.by_contact_quality).toEqual({}); expect(m.by_sibling_relationship).toEqual({}); expect(m.by_barrier_type).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeSiblingContactMetrics([]);
+      expect(m.total_contacts).toBe(0);;
+      expect(m.poor_quality_count).toBe(0);
+      expect(m.harmful_count).toBe(0);
+      expect(m.estranged_count).toBe(0);
+      expect(m.barrier_count).toBe(0);
+      expect(m.child_views_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeSiblingContactMetrics([]);
+      expect(m.by_contact_type).toEqual({});
+      expect(m.by_contact_quality).toEqual({});
+      expect(m.by_sibling_relationship).toEqual({});
+      expect(m.by_barrier_type).toEqual({});
+    });
     it("total_contacts counts records", () => { expect(computeSiblingContactMetrics([makeRecord(), makeRecord()]).total_contacts).toBe(2); });
     it("counts poor_quality", () => { expect(computeSiblingContactMetrics([makeRecord({ contact_quality: "poor" })]).poor_quality_count).toBe(1); });
     it("counts harmful", () => { expect(computeSiblingContactMetrics([makeRecord({ contact_quality: "harmful" })]).harmful_count).toBe(1); });
@@ -47,7 +62,21 @@ describe("sibling-contact-quality-service", () => {
     it("counts estranged", () => { expect(computeSiblingContactMetrics([makeRecord({ sibling_relationship: "estranged" })]).estranged_count).toBe(1); });
     it("counts barriers (not none)", () => { expect(computeSiblingContactMetrics([makeRecord({ barrier_type: "geographical_distance" })]).barrier_count).toBe(1); });
     it("no barrier when none", () => { expect(computeSiblingContactMetrics([makeRecord({ barrier_type: "none" })]).barrier_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeSiblingContactMetrics([makeRecord()]); expect(m.child_views_rate).toBe(100); expect(m.sibling_views_rate).toBe(100); expect(m.preparation_rate).toBe(100); expect(m.debrief_rate).toBe(100); expect(m.emotional_support_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.frequency_rate).toBe(100); expect(m.venue_rate).toBe(100); expect(m.safeguarding_rate).toBe(100); expect(m.life_story_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeSiblingContactMetrics([makeRecord()]);
+      expect(m.child_views_rate).toBe(100);
+      expect(m.sibling_views_rate).toBe(100);
+      expect(m.preparation_rate).toBe(100);
+      expect(m.debrief_rate).toBe(100);
+      expect(m.emotional_support_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.frequency_rate).toBe(100);
+      expect(m.venue_rate).toBe(100);
+      expect(m.safeguarding_rate).toBe(100);
+      expect(m.life_story_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_views_rate 0 when false", () => { expect(computeSiblingContactMetrics([makeRecord({ child_views_sought: false })]).child_views_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeSiblingContactMetrics([makeRecord({ debrief_completed: true }), makeRecord({ debrief_completed: false }), makeRecord({ debrief_completed: true })]); expect(m.debrief_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeSiblingContactMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -60,17 +89,43 @@ describe("sibling-contact-quality-service", () => {
   describe("identifySiblingContactAlerts", () => {
     it("returns empty for clean", () => { expect(identifySiblingContactAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifySiblingContactAlerts([])).toEqual([]); });
-    it("fires harmful_estranged", () => { const a = identifySiblingContactAlerts([makeRecord({ contact_quality: "harmful", sibling_relationship: "estranged", child_name: "Jo", sibling_name: "Sam" })]); expect(a[0].type).toBe("harmful_estranged"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("Sam"); });
+    it("fires harmful_estranged", () => { 
+      const a = identifySiblingContactAlerts([makeRecord({ contact_quality: "harmful", sibling_relationship: "estranged", child_name: "Jo", sibling_name: "Sam" })]);
+      expect(a[0].type).toBe("harmful_estranged");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("Sam");
+    });
     it("harmful_estranged per-record", () => { const a = identifySiblingContactAlerts([makeRecord({ id: "a-1", contact_quality: "harmful", sibling_relationship: "estranged" }), makeRecord({ id: "a-2", contact_quality: "harmful", sibling_relationship: "estranged" })]); expect(a.filter(x => x.type === "harmful_estranged")).toHaveLength(2); });
     it("harmful with close no critical", () => { expect(identifySiblingContactAlerts([makeRecord({ contact_quality: "harmful", sibling_relationship: "close" })]).find(x => x.type === "harmful_estranged")).toBeUndefined(); });
     it("good with estranged no critical", () => { expect(identifySiblingContactAlerts([makeRecord({ contact_quality: "good", sibling_relationship: "estranged" })]).find(x => x.type === "harmful_estranged")).toBeUndefined(); });
-    it("fires debrief_not_completed singular", () => { const a = identifySiblingContactAlerts([makeRecord({ debrief_completed: false })]); const f = a.find(x => x.type === "debrief_not_completed"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 contact has"); });
+    it("fires debrief_not_completed singular", () => { 
+      const a = identifySiblingContactAlerts([makeRecord({ debrief_completed: false })]);
+      const f = a.find(x => x.type === "debrief_not_completed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 contact has");
+    });
     it("debrief_not_completed plural", () => { const a = identifySiblingContactAlerts([makeRecord({ debrief_completed: false }), makeRecord({ debrief_completed: false })]); const f = a.find(x => x.type === "debrief_not_completed"); expect(f!.message).toContain("2 contacts have"); });
-    it("fires preparation_not_completed singular", () => { const a = identifySiblingContactAlerts([makeRecord({ preparation_completed: false })]); const f = a.find(x => x.type === "preparation_not_completed"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 contact has"); });
+    it("fires preparation_not_completed singular", () => { 
+      const a = identifySiblingContactAlerts([makeRecord({ preparation_completed: false })]);
+      const f = a.find(x => x.type === "preparation_not_completed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 contact has");
+    });
     it("no_emotional_support not for 1", () => { expect(identifySiblingContactAlerts([makeRecord({ emotional_support_given: false })]).find(x => x.type === "no_emotional_support")).toBeUndefined(); });
     it("no_emotional_support fires for 2", () => { const a = identifySiblingContactAlerts([makeRecord({ emotional_support_given: false }), makeRecord({ emotional_support_given: false })]); expect(a.find(x => x.type === "no_emotional_support")).toBeDefined(); expect(a.find(x => x.type === "no_emotional_support")!.severity).toBe("medium"); });
     it("life_story_not_linked not for 1", () => { expect(identifySiblingContactAlerts([makeRecord({ life_story_linked: false })]).find(x => x.type === "life_story_not_linked")).toBeUndefined(); });
     it("life_story_not_linked fires for 2", () => { const a = identifySiblingContactAlerts([makeRecord({ life_story_linked: false }), makeRecord({ life_story_linked: false })]); expect(a.find(x => x.type === "life_story_not_linked")).toBeDefined(); expect(a.find(x => x.type === "life_story_not_linked")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifySiblingContactAlerts([makeRecord({ contact_quality: "harmful", sibling_relationship: "estranged", debrief_completed: false, preparation_completed: false, emotional_support_given: false, life_story_linked: false }), makeRecord({ debrief_completed: false, preparation_completed: false, emotional_support_given: false, life_story_linked: false })]); const types = a.map(x => x.type); expect(types).toContain("harmful_estranged"); expect(types).toContain("debrief_not_completed"); expect(types).toContain("preparation_not_completed"); expect(types).toContain("no_emotional_support"); expect(types).toContain("life_story_not_linked"); });
+    it("fires all applicable", () => { 
+      const a = identifySiblingContactAlerts([makeRecord({ contact_quality: "harmful", sibling_relationship: "estranged", debrief_completed: false, preparation_completed: false, emotional_support_given: false, life_story_linked: false }), makeRecord({ debrief_completed: false, preparation_completed: false, emotional_support_given: false, life_story_linked: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("harmful_estranged");
+      expect(types).toContain("debrief_not_completed");
+      expect(types).toContain("preparation_not_completed");
+      expect(types).toContain("no_emotional_support");
+      expect(types).toContain("life_story_not_linked");
+    });
   });
 });

@@ -46,18 +46,18 @@ describe("personal-hygiene-service", () => {
         expect(m.total_assessments).toBe(0);
         expect(m.independent_count).toBe(0);
         expect(m.full_support_count).toBe(0);
-        expect(m.independence_rate).toBe(0);
+        expect(m.independence_rate).toBeNull();;
         expect(m.excellent_progress_count).toBe(0);
         expect(m.needs_improvement_count).toBe(0);
-        expect(m.child_consulted_rate).toBe(0);
-        expect(m.child_comfortable_rate).toBe(0);
-        expect(m.dignity_maintained_rate).toBe(0);
-        expect(m.age_appropriate_rate).toBe(0);
-        expect(m.culturally_sensitive_rate).toBe(0);
-        expect(m.products_available_rate).toBe(0);
-        expect(m.independence_encouraged_rate).toBe(0);
-        expect(m.routine_established_rate).toBe(0);
-        expect(m.care_plan_updated_rate).toBe(0);
+        expect(m.child_consulted_rate).toBeNull();;
+        expect(m.child_comfortable_rate).toBeNull();;
+        expect(m.dignity_maintained_rate).toBeNull();;
+        expect(m.age_appropriate_rate).toBeNull();;
+        expect(m.culturally_sensitive_rate).toBeNull();;
+        expect(m.products_available_rate).toBeNull();;
+        expect(m.independence_encouraged_rate).toBeNull();;
+        expect(m.routine_established_rate).toBeNull();;
+        expect(m.care_plan_updated_rate).toBeNull();;
         expect(m.unique_children).toBe(0);
       });
 

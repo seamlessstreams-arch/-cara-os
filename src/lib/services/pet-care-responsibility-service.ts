@@ -136,18 +136,18 @@ export function computePetCareMetrics(records: PetCareResponsibilityRecord[]): {
   not_involved_count: number;
   negative_impact_count: number;
   poor_care_count: number;
-  animal_welfare_rate: number;
-  veterinary_care_rate: number;
-  child_chose_rate: number;
-  supervision_rate: number;
-  hygiene_rate: number;
-  allergy_checked_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  risk_assessment_rate: number;
-  empathy_development_rate: number;
-  recorded_promptly_rate: number;
+  animal_welfare_rate: number | null;
+  veterinary_care_rate: number | null;
+  child_chose_rate: number | null;
+  supervision_rate: number | null;
+  hygiene_rate: number | null;
+  allergy_checked_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  risk_assessment_rate: number | null;
+  empathy_development_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_pet_type: Record<string, number>;
   by_care_quality: Record<string, number>;
@@ -163,7 +163,7 @@ export function computePetCareMetrics(records: PetCareResponsibilityRecord[]): {
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byPetType: Record<string, number> = {};

@@ -138,18 +138,18 @@ export function computePeerRelationshipMetrics(
   concerning_quality_count: number;
   no_friendships_count: number;
   aggressive_conflict_count: number;
-  child_views_rate: number;
-  positive_interactions_rate: number;
-  bullying_screened_rate: number;
-  social_skills_rate: number;
-  group_activities_rate: number;
-  conflict_resolution_rate: number;
-  peer_mentoring_rate: number;
-  care_plan_reflects_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  school_liaison_rate: number;
-  recorded_promptly_rate: number;
+  child_views_rate: number | null;
+  positive_interactions_rate: number | null;
+  bullying_screened_rate: number | null;
+  social_skills_rate: number | null;
+  group_activities_rate: number | null;
+  conflict_resolution_rate: number | null;
+  peer_mentoring_rate: number | null;
+  care_plan_reflects_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  school_liaison_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_relationship_quality: Record<string, number>;
   by_social_skill_level: Record<string, number>;
@@ -165,7 +165,7 @@ export function computePeerRelationshipMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

@@ -39,11 +39,11 @@ describe("computeEnvironmentalImpactMetrics", () => {
     expect(m.below_standard_count).toBe(0);
     expect(m.not_started_count).toBe(0);
     expect(m.no_action_plan_count).toBe(0);
-    expect(m.children_involved_rate).toBe(0);
-    expect(m.staff_trained_rate).toBe(0);
-    expect(m.cost_saving_rate).toBe(0);
-    expect(m.action_plan_rate).toBe(0);
-    expect(m.progress_monitored_rate).toBe(0);
+    expect(m.children_involved_rate).toBeNull();;
+    expect(m.staff_trained_rate).toBeNull();;
+    expect(m.cost_saving_rate).toBeNull();;
+    expect(m.action_plan_rate).toBeNull();;
+    expect(m.progress_monitored_rate).toBeNull();;
     expect(m.unique_assessors).toBe(0);
   });
 

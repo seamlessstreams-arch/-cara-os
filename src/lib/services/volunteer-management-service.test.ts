@@ -51,10 +51,10 @@ describe("computeVolunteerMetrics", () => {
     expect(m.active_count).toBe(0);
     expect(m.pending_count).toBe(0);
     expect(m.suspended_count).toBe(0);
-    expect(m.dbs_clear_rate).toBe(0);
-    expect(m.training_up_to_date_rate).toBe(0);
+    expect(m.dbs_clear_rate).toBeNull();;
+    expect(m.training_up_to_date_rate).toBeNull();;
     expect(m.total_hours).toBe(0);
-    expect(m.average_hours).toBe(0);
+    expect(m.average_hours).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

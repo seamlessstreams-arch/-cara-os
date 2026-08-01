@@ -44,7 +44,7 @@ describe("computeConsentCapacityMetrics", () => {
     const m = computeConsentCapacityMetrics([]);
     expect(m.total_assessments).toBe(0);
     expect(m.lacks_capacity_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

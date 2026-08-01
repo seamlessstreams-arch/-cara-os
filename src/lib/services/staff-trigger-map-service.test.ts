@@ -63,8 +63,8 @@ describe("computeTriggerMapMetrics", () => {
     expect(r.ineffective_coping_count).toBe(0);
     expect(r.active_count).toBe(0);
     expect(r.unreviewed_count).toBe(0);
-    expect(r.evidence_documented_rate).toBe(0);
-    expect(r.staff_involved_rate).toBe(0);
+    expect(r.evidence_documented_rate).toBeNull();;
+    expect(r.staff_involved_rate).toBeNull();;
     expect(r.unique_staff).toBe(0);
   });
 

@@ -54,8 +54,8 @@ describe("computeSleepQualityMetrics", () => {
     expect(m.no_routine_count).toBe(0);
     expect(m.unsuitable_environment_count).toBe(0);
     expect(m.continuous_disturbance_count).toBe(0);
-    expect(m.bedtime_consistent_rate).toBe(0);
-    expect(m.average_sleep_hours).toBe(0);
+    expect(m.bedtime_consistent_rate).toBeNull();;
+    expect(m.average_sleep_hours).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

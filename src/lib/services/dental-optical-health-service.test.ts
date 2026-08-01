@@ -46,7 +46,7 @@ describe("computeDentalOpticalMetrics", () => {
     const m = computeDentalOpticalMetrics([]);
     expect(m.total_appointments).toBe(0);
     expect(m.non_compliant_count).toBe(0);
-    expect(m.appointment_attended_rate).toBe(0);
+    expect(m.appointment_attended_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

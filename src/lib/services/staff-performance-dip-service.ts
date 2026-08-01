@@ -152,18 +152,18 @@ export function computePerformanceDipMetrics(
   support_recommended_count: number;
   unresolved_count: number;
   escalated_count: number;
-  evidence_documented_rate: number;
-  manager_aware_rate: number;
-  staff_informed_rate: number;
-  support_offered_rate: number;
-  triggers_explored_rate: number;
-  supervision_discussed_rate: number;
-  training_considered_rate: number;
-  wellbeing_assessed_rate: number;
-  action_plan_rate: number;
-  staff_responded_rate: number;
-  follow_up_scheduled_rate: number;
-  recorded_promptly_rate: number;
+  evidence_documented_rate: number | null;
+  manager_aware_rate: number | null;
+  staff_informed_rate: number | null;
+  support_offered_rate: number | null;
+  triggers_explored_rate: number | null;
+  supervision_discussed_rate: number | null;
+  training_considered_rate: number | null;
+  wellbeing_assessed_rate: number | null;
+  action_plan_rate: number | null;
+  staff_responded_rate: number | null;
+  follow_up_scheduled_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_staff: number;
   by_dip_category: Record<string, number>;
   by_dip_severity: Record<string, number>;
@@ -180,7 +180,7 @@ export function computePerformanceDipMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;

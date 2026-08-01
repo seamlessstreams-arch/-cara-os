@@ -52,7 +52,7 @@ describe("computeSiblingContactMetrics", () => {
     expect(m.harmful_count).toBe(0);
     expect(m.estranged_count).toBe(0);
     expect(m.barrier_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -124,16 +124,16 @@ export function computeGiftMetrics(
   declined_count: number;
   hospitality_count: number;
   total_value: number;
-  average_value: number;
-  approved_rate: number;
+  average_value: number | null;
+  approved_rate: number | null;
   pending_count: number;
-  declared_rate: number;
+  declared_rate: number | null;
   not_declared_count: number;
   late_declaration_count: number;
   conflict_of_interest_count: number;
   child_involved_count: number;
-  receipt_kept_rate: number;
-  policy_compliant_rate: number;
+  receipt_kept_rate: number | null;
+  policy_compliant_rate: number | null;
   by_direction: Record<string, number>;
   by_source: Record<string, number>;
   by_approval_status: Record<string, number>;
@@ -153,13 +153,13 @@ export function computeGiftMetrics(
   const avgValue =
     records.length > 0
       ? Math.round((totalValue / records.length) * 100) / 100
-      : 0;
+      : null;
 
   const approved = records.filter((r) => r.approval_status === "approved").length;
   const approvedRate =
     records.length > 0
       ? Math.round((approved / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const pending = records.filter((r) => r.approval_status === "pending").length;
 
@@ -167,7 +167,7 @@ export function computeGiftMetrics(
   const declaredRate =
     records.length > 0
       ? Math.round((declared / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const notDeclared = records.filter((r) => r.declaration_status === "not_declared").length;
   const lateDec = records.filter((r) => r.declaration_status === "late_declaration").length;
@@ -179,13 +179,13 @@ export function computeGiftMetrics(
   const receiptRate =
     records.length > 0
       ? Math.round((receiptKept / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const compliant = records.filter((r) => r.policy_compliant).length;
   const compliantRate =
     records.length > 0
       ? Math.round((compliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const byDirection: Record<string, number> = {};
   for (const r of records) byDirection[r.direction] = (byDirection[r.direction] ?? 0) + 1;

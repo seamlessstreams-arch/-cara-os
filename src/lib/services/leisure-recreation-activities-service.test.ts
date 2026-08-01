@@ -49,7 +49,7 @@ describe("computeLeisureRecreationMetrics", () => {
     expect(m.disliked_count).toBe(0);
     expect(m.decline_count).toBe(0);
     expect(m.no_choice_count).toBe(0);
-    expect(m.child_chose_rate).toBe(0);
+    expect(m.child_chose_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -169,7 +169,7 @@ export function computeRecordingCompliance(
   late_submissions: number;
   compliance_percentage: number;
   quality_breakdown: Record<RecordQuality, number>;
-  average_quality_score: number;
+  average_quality_score: number | null;
 } {
   const total_expected = expectedRecords.length;
   const total_submitted = records.length;
@@ -230,7 +230,7 @@ export function computeRecordingCompliance(
   }
 
   const average_quality_score =
-    qualityScoreCount > 0 ? Math.round((qualityScoreSum / qualityScoreCount) * 10) / 10 : 0;
+    qualityScoreCount > 0 ? Math.round((qualityScoreSum / qualityScoreCount) * 10) / 10 : null;
 
   const compliance_percentage =
     total_expected > 0 ? Math.round((total_submitted / total_expected) * 100) : 100;
@@ -249,7 +249,7 @@ export function computeRecordingCompliance(
 export function computeStaffRecordingProfile(records: DailyRecord[]): {
   total_records: number;
   average_word_count: number;
-  average_quality_score: number;
+  average_quality_score: number | null;
   quality_trend: "improving" | "stable" | "declining";
   common_gaps: string[];
   strengths: string[];

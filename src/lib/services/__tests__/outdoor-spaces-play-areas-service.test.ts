@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<OutdoorSpacesPlayAreasRecord>): OutdoorS
 
 describe("outdoor-spaces-play-areas-service", () => {
   describe("computeOutdoorSpacesMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeOutdoorSpacesMetrics([]); expect(m.total_inspections).toBe(0); expect(m.unsafe_count).toBe(0); expect(m.hazard_count).toBe(0); expect(m.poor_condition_count).toBe(0); expect(m.not_accessible_count).toBe(0); expect(m.equipment_checked_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeOutdoorSpacesMetrics([]); expect(m.by_space_type).toEqual({}); expect(m.by_condition_rating).toEqual({}); expect(m.by_safety_assessment).toEqual({}); expect(m.by_accessibility_level).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeOutdoorSpacesMetrics([]);
+      expect(m.total_inspections).toBe(0);;
+      expect(m.unsafe_count).toBe(0);
+      expect(m.hazard_count).toBe(0);
+      expect(m.poor_condition_count).toBe(0);
+      expect(m.not_accessible_count).toBe(0);
+      expect(m.equipment_checked_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeOutdoorSpacesMetrics([]);
+      expect(m.by_space_type).toEqual({});
+      expect(m.by_condition_rating).toEqual({});
+      expect(m.by_safety_assessment).toEqual({});
+      expect(m.by_accessibility_level).toEqual({});
+    });
     it("total_inspections counts records", () => { expect(computeOutdoorSpacesMetrics([makeRecord(), makeRecord()]).total_inspections).toBe(2); });
     it("counts unsafe", () => { expect(computeOutdoorSpacesMetrics([makeRecord({ condition_rating: "unsafe" })]).unsafe_count).toBe(1); });
     it("does not count poor as unsafe", () => { expect(computeOutdoorSpacesMetrics([makeRecord({ condition_rating: "poor" })]).unsafe_count).toBe(0); });
@@ -50,7 +65,21 @@ describe("outdoor-spaces-play-areas-service", () => {
     it("does not count fair as poor_condition", () => { expect(computeOutdoorSpacesMetrics([makeRecord({ condition_rating: "fair" })]).poor_condition_count).toBe(0); });
     it("counts not_accessible", () => { expect(computeOutdoorSpacesMetrics([makeRecord({ accessibility_level: "not_accessible" })]).not_accessible_count).toBe(1); });
     it("does not count limited_access as not_accessible", () => { expect(computeOutdoorSpacesMetrics([makeRecord({ accessibility_level: "limited_access" })]).not_accessible_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeOutdoorSpacesMetrics([makeRecord()]); expect(m.equipment_checked_rate).toBe(100); expect(m.surface_safe_rate).toBe(100); expect(m.fencing_secure_rate).toBe(100); expect(m.lighting_rate).toBe(100); expect(m.clean_tidy_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.maintenance_rate).toBe(100); expect(m.risk_assessed_rate).toBe(100); expect(m.children_consulted_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeOutdoorSpacesMetrics([makeRecord()]);
+      expect(m.equipment_checked_rate).toBe(100);
+      expect(m.surface_safe_rate).toBe(100);
+      expect(m.fencing_secure_rate).toBe(100);
+      expect(m.lighting_rate).toBe(100);
+      expect(m.clean_tidy_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.maintenance_rate).toBe(100);
+      expect(m.risk_assessed_rate).toBe(100);
+      expect(m.children_consulted_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("equipment_checked_rate 0 when false", () => { expect(computeOutdoorSpacesMetrics([makeRecord({ equipment_checked: false })]).equipment_checked_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeOutdoorSpacesMetrics([makeRecord({ fencing_secure: true }), makeRecord({ fencing_secure: false }), makeRecord({ fencing_secure: true })]); expect(m.fencing_secure_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeOutdoorSpacesMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -63,18 +92,43 @@ describe("outdoor-spaces-play-areas-service", () => {
   describe("identifyOutdoorSpacesAlerts", () => {
     it("returns empty for clean", () => { expect(identifyOutdoorSpacesAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyOutdoorSpacesAlerts([])).toEqual([]); });
-    it("fires unsafe_hazard", () => { const a = identifyOutdoorSpacesAlerts([makeRecord({ condition_rating: "unsafe", safety_assessment: "significant_hazards", space_type: "play_area" })]); expect(a[0].type).toBe("unsafe_hazard"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("play area"); });
+    it("fires unsafe_hazard", () => { 
+      const a = identifyOutdoorSpacesAlerts([makeRecord({ condition_rating: "unsafe", safety_assessment: "significant_hazards", space_type: "play_area" })]);
+      expect(a[0].type).toBe("unsafe_hazard");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("play area");
+    });
     it("unsafe with closed also critical", () => { const a = identifyOutdoorSpacesAlerts([makeRecord({ condition_rating: "unsafe", safety_assessment: "closed" })]); expect(a[0].type).toBe("unsafe_hazard"); expect(a[0].severity).toBe("critical"); });
     it("unsafe_hazard per-record", () => { const a = identifyOutdoorSpacesAlerts([makeRecord({ id: "a-1", condition_rating: "unsafe", safety_assessment: "significant_hazards" }), makeRecord({ id: "a-2", condition_rating: "unsafe", safety_assessment: "closed" })]); expect(a.filter(x => x.type === "unsafe_hazard")).toHaveLength(2); });
     it("unsafe without hazard no critical", () => { expect(identifyOutdoorSpacesAlerts([makeRecord({ condition_rating: "unsafe", safety_assessment: "minor_issues" })]).find(x => x.type === "unsafe_hazard")).toBeUndefined(); });
     it("hazard without unsafe no critical", () => { expect(identifyOutdoorSpacesAlerts([makeRecord({ safety_assessment: "significant_hazards", condition_rating: "good" })]).find(x => x.type === "unsafe_hazard")).toBeUndefined(); });
-    it("fires fencing_not_secure singular", () => { const a = identifyOutdoorSpacesAlerts([makeRecord({ fencing_secure: false })]); const f = a.find(x => x.type === "fencing_not_secure"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 inspection has"); });
+    it("fires fencing_not_secure singular", () => { 
+      const a = identifyOutdoorSpacesAlerts([makeRecord({ fencing_secure: false })]);
+      const f = a.find(x => x.type === "fencing_not_secure");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 inspection has");
+    });
     it("fencing_not_secure plural", () => { const a = identifyOutdoorSpacesAlerts([makeRecord({ fencing_secure: false }), makeRecord({ fencing_secure: false })]); const f = a.find(x => x.type === "fencing_not_secure"); expect(f!.message).toContain("2 inspections have"); });
-    it("fires no_risk_assessment singular", () => { const a = identifyOutdoorSpacesAlerts([makeRecord({ risk_assessed: false })]); const f = a.find(x => x.type === "no_risk_assessment"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 space has"); });
+    it("fires no_risk_assessment singular", () => { 
+      const a = identifyOutdoorSpacesAlerts([makeRecord({ risk_assessed: false })]);
+      const f = a.find(x => x.type === "no_risk_assessment");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 space has");
+    });
     it("equipment_not_checked not for 1", () => { expect(identifyOutdoorSpacesAlerts([makeRecord({ equipment_checked: false })]).find(x => x.type === "equipment_not_checked")).toBeUndefined(); });
     it("equipment_not_checked fires for 2", () => { const a = identifyOutdoorSpacesAlerts([makeRecord({ equipment_checked: false }), makeRecord({ equipment_checked: false })]); expect(a.find(x => x.type === "equipment_not_checked")).toBeDefined(); expect(a.find(x => x.type === "equipment_not_checked")!.severity).toBe("medium"); });
     it("children_not_consulted not for 1", () => { expect(identifyOutdoorSpacesAlerts([makeRecord({ children_consulted: false })]).find(x => x.type === "children_not_consulted")).toBeUndefined(); });
     it("children_not_consulted fires for 2", () => { const a = identifyOutdoorSpacesAlerts([makeRecord({ children_consulted: false }), makeRecord({ children_consulted: false })]); expect(a.find(x => x.type === "children_not_consulted")).toBeDefined(); expect(a.find(x => x.type === "children_not_consulted")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyOutdoorSpacesAlerts([makeRecord({ condition_rating: "unsafe", safety_assessment: "significant_hazards", fencing_secure: false, risk_assessed: false, equipment_checked: false, children_consulted: false }), makeRecord({ fencing_secure: false, risk_assessed: false, equipment_checked: false, children_consulted: false })]); const types = a.map(x => x.type); expect(types).toContain("unsafe_hazard"); expect(types).toContain("fencing_not_secure"); expect(types).toContain("no_risk_assessment"); expect(types).toContain("equipment_not_checked"); expect(types).toContain("children_not_consulted"); });
+    it("fires all applicable", () => { 
+      const a = identifyOutdoorSpacesAlerts([makeRecord({ condition_rating: "unsafe", safety_assessment: "significant_hazards", fencing_secure: false, risk_assessed: false, equipment_checked: false, children_consulted: false }), makeRecord({ fencing_secure: false, risk_assessed: false, equipment_checked: false, children_consulted: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("unsafe_hazard");
+      expect(types).toContain("fencing_not_secure");
+      expect(types).toContain("no_risk_assessment");
+      expect(types).toContain("equipment_not_checked");
+      expect(types).toContain("children_not_consulted");
+    });
   });
 });

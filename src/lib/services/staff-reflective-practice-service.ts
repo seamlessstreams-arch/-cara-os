@@ -152,19 +152,19 @@ export function computeStaffReflectiveMetrics(
   further_support_count: number;
   deep_count: number;
   surface_count: number;
-  child_focused_rate: number;
-  values_explored_rate: number;
-  emotions_acknowledged_rate: number;
-  learning_identified_rate: number;
-  action_plan_created_rate: number;
-  practice_changed_rate: number;
-  shared_with_team_rate: number;
-  linked_to_supervision_rate: number;
-  linked_to_training_rate: number;
-  evidence_documented_rate: number;
-  manager_reviewed_rate: number;
-  child_impact_rate: number;
-  average_duration: number;
+  child_focused_rate: number | null;
+  values_explored_rate: number | null;
+  emotions_acknowledged_rate: number | null;
+  learning_identified_rate: number | null;
+  action_plan_created_rate: number | null;
+  practice_changed_rate: number | null;
+  shared_with_team_rate: number | null;
+  linked_to_supervision_rate: number | null;
+  linked_to_training_rate: number | null;
+  evidence_documented_rate: number | null;
+  manager_reviewed_rate: number | null;
+  child_impact_rate: number | null;
+  average_duration: number | null;
   unique_staff: number;
   by_reflection_type: Record<string, number>;
   by_reflection_model: Record<string, number>;
@@ -180,12 +180,12 @@ export function computeStaffReflectiveMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDuration = records.length > 0
     ? Math.round((records.reduce((sum, r) => sum + r.session_duration_minutes, 0) / records.length) * 10) / 10
-    : 0;
+    : null;
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;
 

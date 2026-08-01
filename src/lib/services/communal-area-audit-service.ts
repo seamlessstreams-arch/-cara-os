@@ -132,24 +132,24 @@ export function computeCommunalAreaMetrics(
   records: CommunalAreaRecord[],
 ): {
   total_audits: number;
-  spotless_rate: number;
-  clean_rate: number;
+  spotless_rate: number | null;
+  clean_rate: number | null;
   unacceptable_count: number;
-  very_homely_rate: number;
+  very_homely_rate: number | null;
   institutional_count: number;
-  all_clear_rate: number;
+  all_clear_rate: number | null;
   immediate_risk_count: number;
   significant_hazard_count: number;
-  furniture_good_rate: number;
-  decoration_fresh_rate: number;
-  temperature_comfortable_rate: number;
-  lighting_adequate_rate: number;
-  accessible_rate: number;
-  child_artwork_rate: number;
-  age_appropriate_rate: number;
-  hazards_removed_rate: number;
-  fire_exits_clear_rate: number;
-  children_consulted_rate: number;
+  furniture_good_rate: number | null;
+  decoration_fresh_rate: number | null;
+  temperature_comfortable_rate: number | null;
+  lighting_adequate_rate: number | null;
+  accessible_rate: number | null;
+  child_artwork_rate: number | null;
+  age_appropriate_rate: number | null;
+  hazards_removed_rate: number | null;
+  fire_exits_clear_rate: number | null;
+  children_consulted_rate: number | null;
   audit_overdue_count: number;
   by_area_type: Record<string, number>;
   by_cleanliness_rating: Record<string, number>;
@@ -160,13 +160,13 @@ export function computeCommunalAreaMetrics(
   const spotlessRate =
     records.length > 0
       ? Math.round((spotless / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const clean = records.filter((r) => r.cleanliness_rating === "clean").length;
   const cleanRate =
     records.length > 0
       ? Math.round((clean / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const unacceptable = records.filter((r) => r.cleanliness_rating === "unacceptable").length;
 
@@ -174,7 +174,7 @@ export function computeCommunalAreaMetrics(
   const homelyRate =
     records.length > 0
       ? Math.round((veryHomely / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const institutional = records.filter((r) => r.homeliness_rating === "institutional").length;
 
@@ -182,7 +182,7 @@ export function computeCommunalAreaMetrics(
   const allClearRate =
     records.length > 0
       ? Math.round((allClear / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const immediateRisk = records.filter((r) => r.safety_check === "immediate_risk").length;
   const sigHazard = records.filter((r) => r.safety_check === "significant_hazard").length;
@@ -191,7 +191,7 @@ export function computeCommunalAreaMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const now = new Date();

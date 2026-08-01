@@ -61,9 +61,22 @@ function makeRecord(overrides?: Partial<YoungPersonDailyDiaryRecord>): YoungPers
 // ── computeDailyDiaryMetrics ──────────────────────────────────────────────
 
 describe("computeDailyDiaryMetrics", () => {
-  it("returns zeros for empty", () => { const m = computeDailyDiaryMetrics([]); expect(m.total_entries).toBe(0); expect(m.sad_entries_count).toBe(0); expect(m.difficult_day_count).toBe(0); expect(m.self_written_count).toBe(0); expect(m.concern_count).toBe(0); });
+  it("returns zeros for empty", () => { 
+    const m = computeDailyDiaryMetrics([]);
+    expect(m.total_entries).toBe(0);
+    expect(m.sad_entries_count).toBe(0);
+    expect(m.difficult_day_count).toBe(0);
+    expect(m.self_written_count).toBe(0);
+    expect(m.concern_count).toBe(0);
+  });
 
-  it("returns empty breakdowns", () => { const m = computeDailyDiaryMetrics([]); expect(m.by_mood_rating).toEqual({}); expect(m.by_day_rating).toEqual({}); expect(m.by_entry_type).toEqual({}); expect(m.by_privacy_level).toEqual({}); });
+  it("returns empty breakdowns", () => { 
+    const m = computeDailyDiaryMetrics([]);
+    expect(m.by_mood_rating).toEqual({});
+    expect(m.by_day_rating).toEqual({});
+    expect(m.by_entry_type).toEqual({});
+    expect(m.by_privacy_level).toEqual({});
+  });
 
   it("total_entries counts records", () => { expect(computeDailyDiaryMetrics([makeRecord(), makeRecord({ id: "a-2" })]).total_entries).toBe(2); });
 
@@ -87,7 +100,21 @@ describe("computeDailyDiaryMetrics", () => {
 
   it("counts concern_raised", () => { expect(computeDailyDiaryMetrics([makeRecord({ entry_type: "concern_raised" })]).concern_count).toBe(1); });
 
-  it("returns 100% boolean rates with defaults", () => { const m = computeDailyDiaryMetrics([makeRecord()]); expect(m.child_wrote_rate).toBe(100); expect(m.child_chose_share_rate).toBe(100); expect(m.staff_supported_rate).toBe(100); expect(m.feelings_explored_rate).toBe(100); expect(m.wishes_recorded_rate).toBe(100); expect(m.concerns_addressed_rate).toBe(100); expect(m.keyworker_read_rate).toBe(100); expect(m.responded_to_rate).toBe(100); expect(m.care_plan_linked_rate).toBe(100); expect(m.safeguarding_checked_rate).toBe(100); expect(m.privacy_respected_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+  it("returns 100% boolean rates with defaults", () => { 
+    const m = computeDailyDiaryMetrics([makeRecord()]);
+    expect(m.child_wrote_rate).toBe(100);
+    expect(m.child_chose_share_rate).toBe(100);
+    expect(m.staff_supported_rate).toBe(100);
+    expect(m.feelings_explored_rate).toBe(100);
+    expect(m.wishes_recorded_rate).toBe(100);
+    expect(m.concerns_addressed_rate).toBe(100);
+    expect(m.keyworker_read_rate).toBe(100);
+    expect(m.responded_to_rate).toBe(100);
+    expect(m.care_plan_linked_rate).toBe(100);
+    expect(m.safeguarding_checked_rate).toBe(100);
+    expect(m.privacy_respected_rate).toBe(100);
+    expect(m.recorded_promptly_rate).toBe(100);
+  });
 
   it("child_wrote_rate 0 when false", () => { expect(computeDailyDiaryMetrics([makeRecord({ child_wrote_themselves: false })]).child_wrote_rate).toBe(0); });
 
@@ -107,7 +134,13 @@ describe("identifyDailyDiaryAlerts", () => {
 
   it("returns empty for empty", () => { expect(identifyDailyDiaryAlerts([])).toEqual([]); });
 
-  it("fires concern_not_addressed", () => { const a = identifyDailyDiaryAlerts([makeRecord({ entry_type: "concern_raised", concerns_addressed: false })]); const c = a.find((x) => x.type === "concern_not_addressed"); expect(c).toBeDefined(); expect(c!.severity).toBe("critical"); expect(c!.message).toContain("Child A"); });
+  it("fires concern_not_addressed", () => { 
+    const a = identifyDailyDiaryAlerts([makeRecord({ entry_type: "concern_raised", concerns_addressed: false })]);
+    const c = a.find((x) => x.type === "concern_not_addressed");
+    expect(c).toBeDefined();
+    expect(c!.severity).toBe("critical");
+    expect(c!.message).toContain("Child A");
+  });
 
   it("no critical when concern_raised + addressed", () => { const a = identifyDailyDiaryAlerts([makeRecord({ entry_type: "concern_raised", concerns_addressed: true })]); expect(a.find((x) => x.type === "concern_not_addressed")).toBeUndefined(); });
 
@@ -115,7 +148,13 @@ describe("identifyDailyDiaryAlerts", () => {
 
   it("per-record", () => { const a = identifyDailyDiaryAlerts([makeRecord({ id: "c-1", entry_type: "concern_raised", concerns_addressed: false }), makeRecord({ id: "c-2", entry_type: "concern_raised", concerns_addressed: false })]); expect(a.filter((x) => x.type === "concern_not_addressed")).toHaveLength(2); });
 
-  it("fires not_responded_to singular", () => { const a = identifyDailyDiaryAlerts([makeRecord({ responded_to: false })]); const n = a.find((x) => x.type === "not_responded_to"); expect(n).toBeDefined(); expect(n!.severity).toBe("high"); expect(n!.message).toContain("1 diary entry has"); });
+  it("fires not_responded_to singular", () => { 
+    const a = identifyDailyDiaryAlerts([makeRecord({ responded_to: false })]);
+    const n = a.find((x) => x.type === "not_responded_to");
+    expect(n).toBeDefined();
+    expect(n!.severity).toBe("high");
+    expect(n!.message).toContain("1 diary entry has");
+  });
 
   it("not_responded_to plural", () => { const a = identifyDailyDiaryAlerts([makeRecord({ id: "r-1", responded_to: false }), makeRecord({ id: "r-2", responded_to: false })]); const n = a.find((x) => x.type === "not_responded_to"); expect(n!.message).toContain("2 diary entries have"); });
 
@@ -129,5 +168,14 @@ describe("identifyDailyDiaryAlerts", () => {
 
   it("keyworker_not_read fires for 2", () => { const a = identifyDailyDiaryAlerts([makeRecord({ id: "k-1", keyworker_read: false }), makeRecord({ id: "k-2", keyworker_read: false })]); const k = a.find((x) => x.type === "keyworker_not_read"); expect(k).toBeDefined(); expect(k!.severity).toBe("medium"); });
 
-  it("fires all applicable", () => { const rec = makeRecord({ entry_type: "concern_raised", concerns_addressed: false, responded_to: false, privacy_respected: false, feelings_explored: false, keyworker_read: false }); const a = identifyDailyDiaryAlerts([rec, { ...rec, id: "a-2" }]); const types = a.map((x) => x.type); expect(types).toContain("concern_not_addressed"); expect(types).toContain("not_responded_to"); expect(types).toContain("privacy_not_respected"); expect(types).toContain("no_feelings_explored"); expect(types).toContain("keyworker_not_read"); });
+  it("fires all applicable", () => { 
+    const rec = makeRecord({ entry_type: "concern_raised", concerns_addressed: false, responded_to: false, privacy_respected: false, feelings_explored: false, keyworker_read: false });
+    const a = identifyDailyDiaryAlerts([rec, { ...rec, id: "a-2" }]);
+    const types = a.map((x) => x.type);
+    expect(types).toContain("concern_not_addressed");
+    expect(types).toContain("not_responded_to");
+    expect(types).toContain("privacy_not_respected");
+    expect(types).toContain("no_feelings_explored");
+    expect(types).toContain("keyworker_not_read");
+  });
 });

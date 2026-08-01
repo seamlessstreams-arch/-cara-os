@@ -129,16 +129,16 @@ export function computeDiversityMetrics(
 ): {
   total_records: number;
   staff_with_records: number;
-  diversity_coverage: number;
-  disclosure_rate: number;
+  diversity_coverage: number | null;
+  disclosure_rate: number | null;
   training_completed_count: number;
-  training_completed_rate: number;
+  training_completed_rate: number | null;
   training_overdue_count: number;
   adjustments_in_place: number;
   adjustments_requested: number;
   discrimination_reported_count: number;
-  average_inclusive_practice: number;
-  average_satisfaction: number;
+  average_inclusive_practice: number | null;
+  average_satisfaction: number | null;
   eia_not_assessed_count: number;
   negative_unmitigated_count: number;
   by_diversity_category: Record<string, number>;
@@ -150,19 +150,19 @@ export function computeDiversityMetrics(
   const coverage =
     totalStaff > 0
       ? Math.round((uniqueStaff / totalStaff) * 1000) / 10
-      : 0;
+      : null;
 
   const disclosed = records.filter((r) => r.disclosure_status === "disclosed").length;
   const disclosureRate =
     records.length > 0
       ? Math.round((disclosed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const trainingCompleted = records.filter((r) => r.equality_training_status === "completed").length;
   const trainingRate =
     records.length > 0
       ? Math.round((trainingCompleted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const trainingOverdue = records.filter((r) => r.equality_training_status === "overdue").length;
 
@@ -174,13 +174,13 @@ export function computeDiversityMetrics(
   const avgInclusive =
     records.length > 0
       ? Math.round((records.reduce((sum, r) => sum + r.inclusive_practice_rating, 0) / records.length) * 10) / 10
-      : 0;
+      : null;
 
   const withSatisfaction = records.filter((r) => r.staff_satisfaction_with_inclusion !== null);
   const avgSatisfaction =
     withSatisfaction.length > 0
       ? Math.round((withSatisfaction.reduce((sum, r) => sum + (r.staff_satisfaction_with_inclusion ?? 0), 0) / withSatisfaction.length) * 10) / 10
-      : 0;
+      : null;
 
   const eiaNotAssessed = records.filter((r) => r.eia_outcome === "not_assessed").length;
   const negUnmitigated = records.filter((r) => r.eia_outcome === "negative_impact_unmitigated").length;

@@ -51,7 +51,7 @@ describe("computeSocialSkillsMetrics", () => {
     expect(m.no_progress_count).toBe(0);
     expect(m.disruptive_count).toBe(0);
     expect(m.withdrawn_count).toBe(0);
-    expect(m.child_engaged_rate).toBe(0);
+    expect(m.child_engaged_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

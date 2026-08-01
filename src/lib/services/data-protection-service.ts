@@ -133,16 +133,16 @@ export function computeDataProtectionMetrics(
   data_breach_count: number;
   privacy_impact_count: number;
   retention_review_count: number;
-  compliant_rate: number;
+  compliant_rate: number | null;
   non_compliant_count: number;
   under_review_count: number;
   high_breach_count: number;
   medium_breach_count: number;
-  within_deadline_rate: number;
+  within_deadline_rate: number | null;
   overdue_count: number;
   significantly_overdue_count: number;
   ico_notified_count: number;
-  dpo_consulted_rate: number;
+  dpo_consulted_rate: number | null;
   child_involved_count: number;
   staff_involved_count: number;
   deadline_overdue_count: number;
@@ -161,7 +161,7 @@ export function computeDataProtectionMetrics(
   const compliantRate =
     records.length > 0
       ? Math.round((compliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const nonCompliant = records.filter((r) => r.compliance_status === "non_compliant").length;
   const underReview = records.filter((r) => r.compliance_status === "under_review").length;
@@ -173,7 +173,7 @@ export function computeDataProtectionMetrics(
   const withinRate =
     records.length > 0
       ? Math.round((withinDeadline / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const overdue = records.filter((r) => r.response_timeliness === "overdue").length;
   const sigOverdue = records.filter((r) => r.response_timeliness === "significantly_overdue").length;
@@ -184,7 +184,7 @@ export function computeDataProtectionMetrics(
   const dpoRate =
     records.length > 0
       ? Math.round((dpoConsulted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childInvolved = records.filter((r) => r.child_involved).length;
   const staffInvolved = records.filter((r) => r.staff_involved).length;

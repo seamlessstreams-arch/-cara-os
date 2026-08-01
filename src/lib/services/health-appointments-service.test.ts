@@ -40,7 +40,7 @@ describe("computeHealthAppointmentMetrics", () => {
     expect(result.total_appointments).toBe(0);
     expect(result.gp_count).toBe(0);
     expect(result.dental_count).toBe(0);
-    expect(result.attended_rate).toBe(0);
+    expect(result.attended_rate).toBeNull();;
     expect(result.missed_count).toBe(0);
     expect(result.unique_children).toBe(0);
   });

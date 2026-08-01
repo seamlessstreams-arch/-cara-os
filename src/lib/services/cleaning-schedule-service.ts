@@ -148,15 +148,15 @@ export function computeCleaningMetrics(
   good_count: number;
   below_standard_count: number;
   unacceptable_count: number;
-  acceptable_rate: number;
+  acceptable_rate: number | null;
   daily_routine_count: number;
   deep_clean_count: number;
-  coshh_compliant_rate: number;
-  products_safe_rate: number;
-  surfaces_sanitised_rate: number;
-  waste_disposed_rate: number;
-  hand_washing_rate: number;
-  ventilation_rate: number;
+  coshh_compliant_rate: number | null;
+  products_safe_rate: number | null;
+  surfaces_sanitised_rate: number | null;
+  waste_disposed_rate: number | null;
+  hand_washing_rate: number | null;
+  ventilation_rate: number | null;
   high_risk_count: number;
   children_involved_count: number;
   by_cleaning_type: Record<string, number>;
@@ -178,7 +178,7 @@ export function computeCleaningMetrics(
   const acceptableRate =
     records.length > 0
       ? Math.round((acceptable / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const dailyRoutine = records.filter((r) => r.cleaning_type === "daily_routine").length;
   const deepClean = records.filter(
@@ -189,7 +189,7 @@ export function computeCleaningMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const highRisk = records.filter(

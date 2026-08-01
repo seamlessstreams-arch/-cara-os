@@ -138,18 +138,18 @@ export function computeMedicationEffectivenessMetrics(
   adverse_effects_count: number;
   non_adherent_count: number;
   overdue_review_count: number;
-  child_views_rate: number;
-  side_effects_rate: number;
-  prescriber_rate: number;
-  gp_informed_rate: number;
-  dosage_rate: number;
-  consent_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  school_aware_rate: number;
-  storage_rate: number;
-  administration_rate: number;
-  recorded_promptly_rate: number;
+  child_views_rate: number | null;
+  side_effects_rate: number | null;
+  prescriber_rate: number | null;
+  gp_informed_rate: number | null;
+  dosage_rate: number | null;
+  consent_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  school_aware_rate: number | null;
+  storage_rate: number | null;
+  administration_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_medication_category: Record<string, number>;
   by_effectiveness_rating: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeMedicationEffectivenessMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byCategory: Record<string, number> = {};

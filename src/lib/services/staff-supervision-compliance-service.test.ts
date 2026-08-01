@@ -51,8 +51,8 @@ describe("computeStaffSupervisionComplianceMetrics", () => {
     expect(m.missed_count).toBe(0);
     expect(m.poor_quality_count).toBe(0);
     expect(m.not_started_count).toBe(0);
-    expect(m.agenda_prepared_rate).toBe(0);
-    expect(m.average_duration).toBe(0);
+    expect(m.agenda_prepared_rate).toBeNull();;
+    expect(m.average_duration).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

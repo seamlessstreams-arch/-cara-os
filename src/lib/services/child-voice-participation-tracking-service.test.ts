@@ -46,7 +46,7 @@ describe("computeVoiceParticipationMetrics", () => {
     expect(m.not_involved_count).toBe(0);
     expect(m.declined_count).toBe(0);
     expect(m.decision_changed_count).toBe(0);
-    expect(m.child_felt_heard_rate).toBe(0);
+    expect(m.child_felt_heard_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<DentalOpticalHealthRecord>): DentalOptic
 
 describe("dental-optical-health-service", () => {
   describe("computeDentalOpticalMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeDentalOpticalMetrics([]); expect(m.total_appointments).toBe(0); expect(m.non_compliant_count).toBe(0); expect(m.refused_count).toBe(0); expect(m.treatment_refused_count).toBe(0); expect(m.emergency_count).toBe(0); expect(m.appointment_attended_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeDentalOpticalMetrics([]); expect(m.by_appointment_type).toEqual({}); expect(m.by_compliance_level).toEqual({}); expect(m.by_treatment_outcome).toEqual({}); expect(m.by_urgency_assessment).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeDentalOpticalMetrics([]);
+      expect(m.total_appointments).toBe(0);;
+      expect(m.non_compliant_count).toBe(0);
+      expect(m.refused_count).toBe(0);
+      expect(m.treatment_refused_count).toBe(0);
+      expect(m.emergency_count).toBe(0);
+      expect(m.appointment_attended_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeDentalOpticalMetrics([]);
+      expect(m.by_appointment_type).toEqual({});
+      expect(m.by_compliance_level).toEqual({});
+      expect(m.by_treatment_outcome).toEqual({});
+      expect(m.by_urgency_assessment).toEqual({});
+    });
     it("total_appointments counts records", () => { expect(computeDentalOpticalMetrics([makeRecord(), makeRecord()]).total_appointments).toBe(2); });
     it("counts non_compliant", () => { expect(computeDentalOpticalMetrics([makeRecord({ compliance_level: "non_compliant" })]).non_compliant_count).toBe(1); });
     it("does not count partially as non_compliant", () => { expect(computeDentalOpticalMetrics([makeRecord({ compliance_level: "partially_compliant" })]).non_compliant_count).toBe(0); });
@@ -48,7 +63,21 @@ describe("dental-optical-health-service", () => {
     it("counts emergency", () => { expect(computeDentalOpticalMetrics([makeRecord({ urgency_assessment: "emergency" })]).emergency_count).toBe(1); });
     it("counts urgent as emergency", () => { expect(computeDentalOpticalMetrics([makeRecord({ urgency_assessment: "urgent" })]).emergency_count).toBe(1); });
     it("does not count soon as emergency", () => { expect(computeDentalOpticalMetrics([makeRecord({ urgency_assessment: "soon" })]).emergency_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeDentalOpticalMetrics([makeRecord()]); expect(m.appointment_attended_rate).toBe(100); expect(m.consent_rate).toBe(100); expect(m.child_prepared_rate).toBe(100); expect(m.anxiety_managed_rate).toBe(100); expect(m.treatment_explained_rate).toBe(100); expect(m.follow_up_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.prescription_rate).toBe(100); expect(m.pain_managed_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeDentalOpticalMetrics([makeRecord()]);
+      expect(m.appointment_attended_rate).toBe(100);
+      expect(m.consent_rate).toBe(100);
+      expect(m.child_prepared_rate).toBe(100);
+      expect(m.anxiety_managed_rate).toBe(100);
+      expect(m.treatment_explained_rate).toBe(100);
+      expect(m.follow_up_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.prescription_rate).toBe(100);
+      expect(m.pain_managed_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("appointment_attended_rate 0 when false", () => { expect(computeDentalOpticalMetrics([makeRecord({ appointment_attended: false })]).appointment_attended_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeDentalOpticalMetrics([makeRecord({ anxiety_managed: true }), makeRecord({ anxiety_managed: false }), makeRecord({ anxiety_managed: true })]); expect(m.anxiety_managed_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeDentalOpticalMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -61,18 +90,43 @@ describe("dental-optical-health-service", () => {
   describe("identifyDentalOpticalAlerts", () => {
     it("returns empty for clean", () => { expect(identifyDentalOpticalAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyDentalOpticalAlerts([])).toEqual([]); });
-    it("fires refused_urgent", () => { const a = identifyDentalOpticalAlerts([makeRecord({ treatment_outcome: "treatment_refused", urgency_assessment: "emergency", child_name: "Jo" })]); expect(a[0].type).toBe("refused_urgent"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires refused_urgent", () => { 
+      const a = identifyDentalOpticalAlerts([makeRecord({ treatment_outcome: "treatment_refused", urgency_assessment: "emergency", child_name: "Jo" })]);
+      expect(a[0].type).toBe("refused_urgent");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("refused with urgent also critical", () => { const a = identifyDentalOpticalAlerts([makeRecord({ treatment_outcome: "treatment_refused", urgency_assessment: "urgent" })]); expect(a[0].type).toBe("refused_urgent"); expect(a[0].severity).toBe("critical"); });
     it("refused_urgent per-record", () => { const a = identifyDentalOpticalAlerts([makeRecord({ id: "a-1", treatment_outcome: "treatment_refused", urgency_assessment: "emergency" }), makeRecord({ id: "a-2", treatment_outcome: "treatment_refused", urgency_assessment: "urgent" })]); expect(a.filter(x => x.type === "refused_urgent")).toHaveLength(2); });
     it("refused without urgent no critical", () => { expect(identifyDentalOpticalAlerts([makeRecord({ treatment_outcome: "treatment_refused", urgency_assessment: "routine" })]).find(x => x.type === "refused_urgent")).toBeUndefined(); });
     it("urgent without refused no critical", () => { expect(identifyDentalOpticalAlerts([makeRecord({ urgency_assessment: "emergency", treatment_outcome: "completed_successfully" })]).find(x => x.type === "refused_urgent")).toBeUndefined(); });
-    it("fires not_attended singular", () => { const a = identifyDentalOpticalAlerts([makeRecord({ appointment_attended: false })]); const f = a.find(x => x.type === "not_attended"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 appointment has"); });
+    it("fires not_attended singular", () => { 
+      const a = identifyDentalOpticalAlerts([makeRecord({ appointment_attended: false })]);
+      const f = a.find(x => x.type === "not_attended");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 appointment has");
+    });
     it("not_attended plural", () => { const a = identifyDentalOpticalAlerts([makeRecord({ appointment_attended: false }), makeRecord({ appointment_attended: false })]); const f = a.find(x => x.type === "not_attended"); expect(f!.message).toContain("2 appointments have"); });
-    it("fires no_consent singular", () => { const a = identifyDentalOpticalAlerts([makeRecord({ consent_obtained: false })]); const f = a.find(x => x.type === "no_consent"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 appointment has"); });
+    it("fires no_consent singular", () => { 
+      const a = identifyDentalOpticalAlerts([makeRecord({ consent_obtained: false })]);
+      const f = a.find(x => x.type === "no_consent");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 appointment has");
+    });
     it("no_follow_up not for 1", () => { expect(identifyDentalOpticalAlerts([makeRecord({ follow_up_booked: false })]).find(x => x.type === "no_follow_up")).toBeUndefined(); });
     it("no_follow_up fires for 2", () => { const a = identifyDentalOpticalAlerts([makeRecord({ follow_up_booked: false }), makeRecord({ follow_up_booked: false })]); expect(a.find(x => x.type === "no_follow_up")).toBeDefined(); expect(a.find(x => x.type === "no_follow_up")!.severity).toBe("medium"); });
     it("anxiety_not_managed not for 1", () => { expect(identifyDentalOpticalAlerts([makeRecord({ anxiety_managed: false })]).find(x => x.type === "anxiety_not_managed")).toBeUndefined(); });
     it("anxiety_not_managed fires for 2", () => { const a = identifyDentalOpticalAlerts([makeRecord({ anxiety_managed: false }), makeRecord({ anxiety_managed: false })]); expect(a.find(x => x.type === "anxiety_not_managed")).toBeDefined(); expect(a.find(x => x.type === "anxiety_not_managed")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyDentalOpticalAlerts([makeRecord({ treatment_outcome: "treatment_refused", urgency_assessment: "emergency", appointment_attended: false, consent_obtained: false, follow_up_booked: false, anxiety_managed: false }), makeRecord({ appointment_attended: false, consent_obtained: false, follow_up_booked: false, anxiety_managed: false })]); const types = a.map(x => x.type); expect(types).toContain("refused_urgent"); expect(types).toContain("not_attended"); expect(types).toContain("no_consent"); expect(types).toContain("no_follow_up"); expect(types).toContain("anxiety_not_managed"); });
+    it("fires all applicable", () => { 
+      const a = identifyDentalOpticalAlerts([makeRecord({ treatment_outcome: "treatment_refused", urgency_assessment: "emergency", appointment_attended: false, consent_obtained: false, follow_up_booked: false, anxiety_managed: false }), makeRecord({ appointment_attended: false, consent_obtained: false, follow_up_booked: false, anxiety_managed: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("refused_urgent");
+      expect(types).toContain("not_attended");
+      expect(types).toContain("no_consent");
+      expect(types).toContain("no_follow_up");
+      expect(types).toContain("anxiety_not_managed");
+    });
   });
 });

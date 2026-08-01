@@ -47,7 +47,7 @@ describe("computeRelationshipEducationMetrics", () => {
     expect(m.disengaged_count).toBe(0);
     expect(m.not_appropriate_count).toBe(0);
     expect(m.harmful_count).toBe(0);
-    expect(m.child_consented_rate).toBe(0);
+    expect(m.child_consented_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

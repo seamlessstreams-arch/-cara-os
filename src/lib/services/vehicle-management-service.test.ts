@@ -50,11 +50,11 @@ describe("computeVehicleMetrics", () => {
     const m = computeVehicleMetrics([]);
     expect(m.total_checks).toBe(0);
     expect(m.daily_check_count).toBe(0);
-    expect(m.pass_rate).toBe(0);
+    expect(m.pass_rate).toBeNull();;
     expect(m.fail_count).toBe(0);
     expect(m.incident_count).toBe(0);
     expect(m.total_children_transported).toBe(0);
-    expect(m.average_mileage).toBe(0);
+    expect(m.average_mileage).toBeNull();;
     expect(m.unique_vehicles).toBe(0);
   });
 

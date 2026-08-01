@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<AdvocacyRepresentationRecord>): Advocacy
 
 describe("advocacy-representation-service", () => {
   describe("computeAdvocacyRepresentationMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeAdvocacyRepresentationMetrics([]); expect(m.total_sessions).toBe(0); expect(m.poor_quality_count).toBe(0); expect(m.dissatisfied_count).toBe(0); expect(m.ineffective_count).toBe(0); expect(m.counterproductive_count).toBe(0); expect(m.child_voice_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeAdvocacyRepresentationMetrics([]); expect(m.by_advocacy_type).toEqual({}); expect(m.by_representation_quality).toEqual({}); expect(m.by_child_satisfaction).toEqual({}); expect(m.by_outcome_effectiveness).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeAdvocacyRepresentationMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.poor_quality_count).toBe(0);
+      expect(m.dissatisfied_count).toBe(0);
+      expect(m.ineffective_count).toBe(0);
+      expect(m.counterproductive_count).toBe(0);
+      expect(m.child_voice_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeAdvocacyRepresentationMetrics([]);
+      expect(m.by_advocacy_type).toEqual({});
+      expect(m.by_representation_quality).toEqual({});
+      expect(m.by_child_satisfaction).toEqual({});
+      expect(m.by_outcome_effectiveness).toEqual({});
+    });
     it("total_sessions counts records", () => { expect(computeAdvocacyRepresentationMetrics([makeRecord(), makeRecord()]).total_sessions).toBe(2); });
     it("counts poor_quality for poor", () => { expect(computeAdvocacyRepresentationMetrics([makeRecord({ representation_quality: "poor" })]).poor_quality_count).toBe(1); });
     it("counts poor_quality for not_provided", () => { expect(computeAdvocacyRepresentationMetrics([makeRecord({ representation_quality: "not_provided" })]).poor_quality_count).toBe(1); });
@@ -48,7 +63,21 @@ describe("advocacy-representation-service", () => {
     it("does not count neutral as dissatisfied", () => { expect(computeAdvocacyRepresentationMetrics([makeRecord({ child_satisfaction: "neutral" })]).dissatisfied_count).toBe(0); });
     it("counts ineffective", () => { expect(computeAdvocacyRepresentationMetrics([makeRecord({ outcome_effectiveness: "ineffective" })]).ineffective_count).toBe(1); });
     it("counts counterproductive", () => { expect(computeAdvocacyRepresentationMetrics([makeRecord({ outcome_effectiveness: "counterproductive" })]).counterproductive_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeAdvocacyRepresentationMetrics([makeRecord()]); expect(m.child_voice_rate).toBe(100); expect(m.rights_understood_rate).toBe(100); expect(m.independent_access_rate).toBe(100); expect(m.confidentiality_rate).toBe(100); expect(m.outcome_communicated_rate).toBe(100); expect(m.follow_up_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.irm_notified_rate).toBe(100); expect(m.decision_influenced_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeAdvocacyRepresentationMetrics([makeRecord()]);
+      expect(m.child_voice_rate).toBe(100);
+      expect(m.rights_understood_rate).toBe(100);
+      expect(m.independent_access_rate).toBe(100);
+      expect(m.confidentiality_rate).toBe(100);
+      expect(m.outcome_communicated_rate).toBe(100);
+      expect(m.follow_up_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.irm_notified_rate).toBe(100);
+      expect(m.decision_influenced_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_voice_rate 0 when false", () => { expect(computeAdvocacyRepresentationMetrics([makeRecord({ child_voice_heard: false })]).child_voice_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeAdvocacyRepresentationMetrics([makeRecord({ independent_access: true }), makeRecord({ independent_access: false }), makeRecord({ independent_access: true })]); expect(m.independent_access_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeAdvocacyRepresentationMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -61,18 +90,43 @@ describe("advocacy-representation-service", () => {
   describe("identifyAdvocacyRepresentationAlerts", () => {
     it("returns empty for clean", () => { expect(identifyAdvocacyRepresentationAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyAdvocacyRepresentationAlerts([])).toEqual([]); });
-    it("fires dissatisfied_counterproductive", () => { const a = identifyAdvocacyRepresentationAlerts([makeRecord({ child_satisfaction: "dissatisfied", outcome_effectiveness: "counterproductive", child_name: "Jo" })]); expect(a[0].type).toBe("dissatisfied_counterproductive"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires dissatisfied_counterproductive", () => { 
+      const a = identifyAdvocacyRepresentationAlerts([makeRecord({ child_satisfaction: "dissatisfied", outcome_effectiveness: "counterproductive", child_name: "Jo" })]);
+      expect(a[0].type).toBe("dissatisfied_counterproductive");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("dissatisfied_counterproductive for very_dissatisfied too", () => { const a = identifyAdvocacyRepresentationAlerts([makeRecord({ child_satisfaction: "very_dissatisfied", outcome_effectiveness: "counterproductive" })]); expect(a.filter(x => x.type === "dissatisfied_counterproductive")).toHaveLength(1); });
     it("dissatisfied_counterproductive per-record", () => { const a = identifyAdvocacyRepresentationAlerts([makeRecord({ id: "a-1", child_satisfaction: "dissatisfied", outcome_effectiveness: "counterproductive" }), makeRecord({ id: "a-2", child_satisfaction: "very_dissatisfied", outcome_effectiveness: "counterproductive" })]); expect(a.filter(x => x.type === "dissatisfied_counterproductive")).toHaveLength(2); });
     it("dissatisfied with effective no critical", () => { expect(identifyAdvocacyRepresentationAlerts([makeRecord({ child_satisfaction: "dissatisfied", outcome_effectiveness: "fully_effective" })]).find(x => x.type === "dissatisfied_counterproductive")).toBeUndefined(); });
     it("satisfied with counterproductive no critical", () => { expect(identifyAdvocacyRepresentationAlerts([makeRecord({ child_satisfaction: "satisfied", outcome_effectiveness: "counterproductive" })]).find(x => x.type === "dissatisfied_counterproductive")).toBeUndefined(); });
-    it("fires no_independent_access singular", () => { const a = identifyAdvocacyRepresentationAlerts([makeRecord({ independent_access: false })]); const f = a.find(x => x.type === "no_independent_access"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires no_independent_access singular", () => { 
+      const a = identifyAdvocacyRepresentationAlerts([makeRecord({ independent_access: false })]);
+      const f = a.find(x => x.type === "no_independent_access");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_independent_access plural", () => { const a = identifyAdvocacyRepresentationAlerts([makeRecord({ independent_access: false }), makeRecord({ independent_access: false })]); const f = a.find(x => x.type === "no_independent_access"); expect(f!.message).toContain("2 sessions have"); });
-    it("fires child_voice_not_heard singular", () => { const a = identifyAdvocacyRepresentationAlerts([makeRecord({ child_voice_heard: false })]); const f = a.find(x => x.type === "child_voice_not_heard"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires child_voice_not_heard singular", () => { 
+      const a = identifyAdvocacyRepresentationAlerts([makeRecord({ child_voice_heard: false })]);
+      const f = a.find(x => x.type === "child_voice_not_heard");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("confidentiality_breach not for 1", () => { expect(identifyAdvocacyRepresentationAlerts([makeRecord({ confidentiality_maintained: false })]).find(x => x.type === "confidentiality_breach")).toBeUndefined(); });
     it("confidentiality_breach fires for 2", () => { const a = identifyAdvocacyRepresentationAlerts([makeRecord({ confidentiality_maintained: false }), makeRecord({ confidentiality_maintained: false })]); expect(a.find(x => x.type === "confidentiality_breach")).toBeDefined(); expect(a.find(x => x.type === "confidentiality_breach")!.severity).toBe("medium"); });
     it("rights_not_understood not for 1", () => { expect(identifyAdvocacyRepresentationAlerts([makeRecord({ child_understood_rights: false })]).find(x => x.type === "rights_not_understood")).toBeUndefined(); });
     it("rights_not_understood fires for 2", () => { const a = identifyAdvocacyRepresentationAlerts([makeRecord({ child_understood_rights: false }), makeRecord({ child_understood_rights: false })]); expect(a.find(x => x.type === "rights_not_understood")).toBeDefined(); expect(a.find(x => x.type === "rights_not_understood")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyAdvocacyRepresentationAlerts([makeRecord({ child_satisfaction: "dissatisfied", outcome_effectiveness: "counterproductive", independent_access: false, child_voice_heard: false, confidentiality_maintained: false, child_understood_rights: false }), makeRecord({ independent_access: false, child_voice_heard: false, confidentiality_maintained: false, child_understood_rights: false })]); const types = a.map(x => x.type); expect(types).toContain("dissatisfied_counterproductive"); expect(types).toContain("no_independent_access"); expect(types).toContain("child_voice_not_heard"); expect(types).toContain("confidentiality_breach"); expect(types).toContain("rights_not_understood"); });
+    it("fires all applicable", () => { 
+      const a = identifyAdvocacyRepresentationAlerts([makeRecord({ child_satisfaction: "dissatisfied", outcome_effectiveness: "counterproductive", independent_access: false, child_voice_heard: false, confidentiality_maintained: false, child_understood_rights: false }), makeRecord({ independent_access: false, child_voice_heard: false, confidentiality_maintained: false, child_understood_rights: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("dissatisfied_counterproductive");
+      expect(types).toContain("no_independent_access");
+      expect(types).toContain("child_voice_not_heard");
+      expect(types).toContain("confidentiality_breach");
+      expect(types).toContain("rights_not_understood");
+    });
   });
 });

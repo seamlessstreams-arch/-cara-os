@@ -486,7 +486,7 @@ describe("computeBusinessContinuityMetrics", () => {
       tests_this_year: 0,
       by_plan_type: {},
       by_test_outcome: {},
-      avg_recovery_time_hours: 0,
+      avg_recovery_time_hours: null,
       plans_without_test: 0,
       critical_plans_count: 0,
     });
@@ -739,7 +739,7 @@ describe("computeBusinessContinuityMetrics", () => {
       makePlan({ id: "p2", recovery_time_objective_hours: null }),
     ];
     const result = computeBusinessContinuityMetrics(plans, []);
-    expect(result.avg_recovery_time_hours).toBe(0);
+    expect(result.avg_recovery_time_hours).toBeNull();;
   });
 
   it("excludes null RTO from average calculation", () => {
@@ -773,7 +773,7 @@ describe("computeBusinessContinuityMetrics", () => {
 
   it("returns 0 avg recovery time for empty plans array", () => {
     const result = computeBusinessContinuityMetrics([], []);
-    expect(result.avg_recovery_time_hours).toBe(0);
+    expect(result.avg_recovery_time_hours).toBeNull();;
   });
 
   // -- plans_without_test --

@@ -43,11 +43,11 @@ describe("computeStaffWhistleblowingMetrics", () => {
     expect(r.ongoing_count).toBe(0);
     expect(r.escalated_count).toBe(0);
     expect(r.policy_change_count).toBe(0);
-    expect(r.whistleblower_supported_rate).toBe(0);
-    expect(r.no_detriment_rate).toBe(0);
-    expect(r.regulatory_notified_rate).toBe(0);
-    expect(r.learning_identified_rate).toBe(0);
-    expect(r.learning_shared_rate).toBe(0);
+    expect(r.whistleblower_supported_rate).toBeNull();;
+    expect(r.no_detriment_rate).toBeNull();;
+    expect(r.regulatory_notified_rate).toBeNull();;
+    expect(r.learning_identified_rate).toBeNull();;
+    expect(r.learning_shared_rate).toBeNull();;
     expect(r.unique_staff).toBe(0);
   });
 

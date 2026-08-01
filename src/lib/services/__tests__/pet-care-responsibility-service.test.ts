@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<PetCareResponsibilityRecord>): PetCareRe
 
 describe("pet-care-responsibility-service", () => {
   describe("computePetCareMetrics", () => {
-    it("returns zeros for empty", () => { const m = computePetCareMetrics([]); expect(m.total_sessions).toBe(0); expect(m.neglectful_count).toBe(0); expect(m.not_involved_count).toBe(0); expect(m.negative_impact_count).toBe(0); expect(m.poor_care_count).toBe(0); expect(m.animal_welfare_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computePetCareMetrics([]); expect(m.by_pet_type).toEqual({}); expect(m.by_care_quality).toEqual({}); expect(m.by_responsibility_level).toEqual({}); expect(m.by_therapeutic_impact).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computePetCareMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.neglectful_count).toBe(0);
+      expect(m.not_involved_count).toBe(0);
+      expect(m.negative_impact_count).toBe(0);
+      expect(m.poor_care_count).toBe(0);
+      expect(m.animal_welfare_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computePetCareMetrics([]);
+      expect(m.by_pet_type).toEqual({});
+      expect(m.by_care_quality).toEqual({});
+      expect(m.by_responsibility_level).toEqual({});
+      expect(m.by_therapeutic_impact).toEqual({});
+    });
     it("total_sessions counts records", () => { expect(computePetCareMetrics([makeRecord(), makeRecord()]).total_sessions).toBe(2); });
     it("counts neglectful", () => { expect(computePetCareMetrics([makeRecord({ care_quality: "neglectful" })]).neglectful_count).toBe(1); });
     it("does not count poor as neglectful", () => { expect(computePetCareMetrics([makeRecord({ care_quality: "poor" })]).neglectful_count).toBe(0); });
@@ -49,7 +64,21 @@ describe("pet-care-responsibility-service", () => {
     it("counts poor as poor_care", () => { expect(computePetCareMetrics([makeRecord({ care_quality: "poor" })]).poor_care_count).toBe(1); });
     it("counts neglectful as poor_care", () => { expect(computePetCareMetrics([makeRecord({ care_quality: "neglectful" })]).poor_care_count).toBe(1); });
     it("does not count adequate as poor_care", () => { expect(computePetCareMetrics([makeRecord({ care_quality: "adequate" })]).poor_care_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computePetCareMetrics([makeRecord()]); expect(m.animal_welfare_rate).toBe(100); expect(m.veterinary_care_rate).toBe(100); expect(m.child_chose_rate).toBe(100); expect(m.supervision_rate).toBe(100); expect(m.hygiene_rate).toBe(100); expect(m.allergy_checked_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.risk_assessment_rate).toBe(100); expect(m.empathy_development_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computePetCareMetrics([makeRecord()]);
+      expect(m.animal_welfare_rate).toBe(100);
+      expect(m.veterinary_care_rate).toBe(100);
+      expect(m.child_chose_rate).toBe(100);
+      expect(m.supervision_rate).toBe(100);
+      expect(m.hygiene_rate).toBe(100);
+      expect(m.allergy_checked_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.risk_assessment_rate).toBe(100);
+      expect(m.empathy_development_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("animal_welfare_rate 0 when false", () => { expect(computePetCareMetrics([makeRecord({ animal_welfare_met: false })]).animal_welfare_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computePetCareMetrics([makeRecord({ hygiene_maintained: true }), makeRecord({ hygiene_maintained: false }), makeRecord({ hygiene_maintained: true })]); expect(m.hygiene_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computePetCareMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -62,17 +91,42 @@ describe("pet-care-responsibility-service", () => {
   describe("identifyPetCareAlerts", () => {
     it("returns empty for clean", () => { expect(identifyPetCareAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyPetCareAlerts([])).toEqual([]); });
-    it("fires neglectful_negative", () => { const a = identifyPetCareAlerts([makeRecord({ care_quality: "neglectful", therapeutic_impact: "negative", child_name: "Jo" })]); expect(a[0].type).toBe("neglectful_negative"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires neglectful_negative", () => { 
+      const a = identifyPetCareAlerts([makeRecord({ care_quality: "neglectful", therapeutic_impact: "negative", child_name: "Jo" })]);
+      expect(a[0].type).toBe("neglectful_negative");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("neglectful_negative per-record", () => { const a = identifyPetCareAlerts([makeRecord({ id: "a-1", care_quality: "neglectful", therapeutic_impact: "negative" }), makeRecord({ id: "a-2", care_quality: "neglectful", therapeutic_impact: "negative" })]); expect(a.filter(x => x.type === "neglectful_negative")).toHaveLength(2); });
     it("neglectful without negative no critical", () => { expect(identifyPetCareAlerts([makeRecord({ care_quality: "neglectful", therapeutic_impact: "positive" })]).find(x => x.type === "neglectful_negative")).toBeUndefined(); });
     it("negative without neglectful no critical", () => { expect(identifyPetCareAlerts([makeRecord({ therapeutic_impact: "negative", care_quality: "good" })]).find(x => x.type === "neglectful_negative")).toBeUndefined(); });
-    it("fires no_animal_welfare singular", () => { const a = identifyPetCareAlerts([makeRecord({ animal_welfare_met: false })]); const f = a.find(x => x.type === "no_animal_welfare"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires no_animal_welfare singular", () => { 
+      const a = identifyPetCareAlerts([makeRecord({ animal_welfare_met: false })]);
+      const f = a.find(x => x.type === "no_animal_welfare");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_animal_welfare plural", () => { const a = identifyPetCareAlerts([makeRecord({ animal_welfare_met: false }), makeRecord({ animal_welfare_met: false })]); const f = a.find(x => x.type === "no_animal_welfare"); expect(f!.message).toContain("2 sessions have"); });
-    it("fires no_risk_assessment singular", () => { const a = identifyPetCareAlerts([makeRecord({ risk_assessment_done: false })]); const f = a.find(x => x.type === "no_risk_assessment"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires no_risk_assessment singular", () => { 
+      const a = identifyPetCareAlerts([makeRecord({ risk_assessment_done: false })]);
+      const f = a.find(x => x.type === "no_risk_assessment");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_child_choice not for 1", () => { expect(identifyPetCareAlerts([makeRecord({ child_chose_interaction: false })]).find(x => x.type === "no_child_choice")).toBeUndefined(); });
     it("no_child_choice fires for 2", () => { const a = identifyPetCareAlerts([makeRecord({ child_chose_interaction: false }), makeRecord({ child_chose_interaction: false })]); expect(a.find(x => x.type === "no_child_choice")).toBeDefined(); expect(a.find(x => x.type === "no_child_choice")!.severity).toBe("medium"); });
     it("no_hygiene not for 1", () => { expect(identifyPetCareAlerts([makeRecord({ hygiene_maintained: false })]).find(x => x.type === "no_hygiene")).toBeUndefined(); });
     it("no_hygiene fires for 2", () => { const a = identifyPetCareAlerts([makeRecord({ hygiene_maintained: false }), makeRecord({ hygiene_maintained: false })]); expect(a.find(x => x.type === "no_hygiene")).toBeDefined(); expect(a.find(x => x.type === "no_hygiene")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyPetCareAlerts([makeRecord({ care_quality: "neglectful", therapeutic_impact: "negative", animal_welfare_met: false, risk_assessment_done: false, child_chose_interaction: false, hygiene_maintained: false }), makeRecord({ animal_welfare_met: false, risk_assessment_done: false, child_chose_interaction: false, hygiene_maintained: false })]); const types = a.map(x => x.type); expect(types).toContain("neglectful_negative"); expect(types).toContain("no_animal_welfare"); expect(types).toContain("no_risk_assessment"); expect(types).toContain("no_child_choice"); expect(types).toContain("no_hygiene"); });
+    it("fires all applicable", () => { 
+      const a = identifyPetCareAlerts([makeRecord({ care_quality: "neglectful", therapeutic_impact: "negative", animal_welfare_met: false, risk_assessment_done: false, child_chose_interaction: false, hygiene_maintained: false }), makeRecord({ animal_welfare_met: false, risk_assessment_done: false, child_chose_interaction: false, hygiene_maintained: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("neglectful_negative");
+      expect(types).toContain("no_animal_welfare");
+      expect(types).toContain("no_risk_assessment");
+      expect(types).toContain("no_child_choice");
+      expect(types).toContain("no_hygiene");
+    });
   });
 });

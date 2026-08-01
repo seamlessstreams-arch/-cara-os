@@ -136,13 +136,13 @@ export function computeCctvMetrics(
   footage_review_count: number;
   access_request_count: number;
   data_breach_count: number;
-  compliant_rate: number;
+  compliant_rate: number | null;
   non_compliant_count: number;
-  gdpr_compliant_rate: number;
-  signage_visible_rate: number;
-  children_informed_rate: number;
-  staff_informed_rate: number;
-  privacy_impact_completed_rate: number;
+  gdpr_compliant_rate: number | null;
+  signage_visible_rate: number | null;
+  children_informed_rate: number | null;
+  staff_informed_rate: number | null;
+  privacy_impact_completed_rate: number | null;
   overdue_deletion_count: number;
   review_overdue_count: number;
   by_event_type: Record<string, number>;
@@ -159,7 +159,7 @@ export function computeCctvMetrics(
   const compliantRate =
     records.length > 0
       ? Math.round((compliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const nonCompliant = records.filter((r) => r.compliance_status === "non_compliant").length;
 
@@ -167,31 +167,31 @@ export function computeCctvMetrics(
   const gdprRate =
     records.length > 0
       ? Math.round((gdpr / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const signage = records.filter((r) => r.signage_visible).length;
   const signageRate =
     records.length > 0
       ? Math.round((signage / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childrenInformed = records.filter((r) => r.children_informed).length;
   const childrenRate =
     records.length > 0
       ? Math.round((childrenInformed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffInformed = records.filter((r) => r.staff_informed).length;
   const staffRate =
     records.length > 0
       ? Math.round((staffInformed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const piaCompleted = records.filter((r) => r.privacy_impact_completed).length;
   const piaRate =
     records.length > 0
       ? Math.round((piaCompleted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const overdueDeletion = records.filter((r) => r.retention_status === "overdue_deletion").length;
 

@@ -154,19 +154,19 @@ export function computeChildrensProgressMetrics(
   some_progress_count: number;
   no_change_count: number;
   regression_count: number;
-  positive_progress_rate: number;
-  baseline_established_rate: number;
-  targets_set_rate: number;
-  targets_smart_rate: number;
-  child_involved_rate: number;
-  social_worker_informed_rate: number;
-  parent_informed_rate: number;
-  evidence_documented_rate: number;
-  care_plan_updated_rate: number;
-  celebration_planned_rate: number;
-  barriers_identified_rate: number;
-  support_in_place_rate: number;
-  multi_agency_rate: number;
+  positive_progress_rate: number | null;
+  baseline_established_rate: number | null;
+  targets_set_rate: number | null;
+  targets_smart_rate: number | null;
+  child_involved_rate: number | null;
+  social_worker_informed_rate: number | null;
+  parent_informed_rate: number | null;
+  evidence_documented_rate: number | null;
+  care_plan_updated_rate: number | null;
+  celebration_planned_rate: number | null;
+  barriers_identified_rate: number | null;
+  support_in_place_rate: number | null;
+  multi_agency_rate: number | null;
   unique_children: number;
   by_outcome_domain: Record<string, number>;
   by_progress_rating: Record<string, number>;
@@ -182,13 +182,13 @@ export function computeChildrensProgressMetrics(
   const positiveCount = significant + goodProg + some;
   const positiveRate = records.length > 0
     ? Math.round((positiveCount / records.length) * 1000) / 10
-    : 0;
+    : null;
 
   const boolRate = (field: keyof ChildrensProgressTrackingRecord) => {
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

@@ -108,12 +108,12 @@ describe("child-forced-marriage-risk-service", () => {
       expect(m.high_risk_count).toBe(0);
       expect(m.fmpo_count).toBe(0);
       expect(m.fmu_contacted_count).toBe(0);
-      expect(m.safety_plan_rate).toBe(0);
-      expect(m.multi_agency_rate).toBe(0);
-      expect(m.police_notification_rate).toBe(0);
-      expect(m.passport_secured_rate).toBe(0);
-      expect(m.travel_restriction_rate).toBe(0);
-      expect(m.review_scheduled_rate).toBe(0);
+      expect(m.safety_plan_rate).toBeNull();;
+      expect(m.multi_agency_rate).toBeNull();;
+      expect(m.police_notification_rate).toBeNull();;
+      expect(m.passport_secured_rate).toBeNull();;
+      expect(m.travel_restriction_rate).toBeNull();;
+      expect(m.review_scheduled_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
       expect(m.unique_assessors).toBe(0);
     });
@@ -249,7 +249,7 @@ describe("child-forced-marriage-risk-service", () => {
       expect(m.review_scheduled_rate).toBe(50);
     });
     it("review_scheduled_rate 0 for empty", () => {
-      expect(computeForcedMarriageRiskMetrics([]).review_scheduled_rate).toBe(0);
+      expect(computeForcedMarriageRiskMetrics([]).review_scheduled_rate).toBeNull();;
     });
     it("review_scheduled_rate 100 when all have review dates", () => {
       const m = computeForcedMarriageRiskMetrics([

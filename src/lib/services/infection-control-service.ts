@@ -135,14 +135,14 @@ export function computeInfectionControlMetrics(
   cleaning_check_count: number;
   outbreak_count: number;
   infection_incident_count: number;
-  excellent_hygiene_rate: number;
+  excellent_hygiene_rate: number | null;
   poor_hygiene_count: number;
-  hand_washing_observed_rate: number;
-  sanitiser_available_rate: number;
-  cleaning_schedule_followed_rate: number;
-  laundry_procedures_rate: number;
-  food_hygiene_rate: number;
-  ppe_fully_compliant_rate: number;
+  hand_washing_observed_rate: number | null;
+  sanitiser_available_rate: number | null;
+  cleaning_schedule_followed_rate: number | null;
+  laundry_procedures_rate: number | null;
+  food_hygiene_rate: number | null;
+  ppe_fully_compliant_rate: number | null;
   ppe_non_compliant_count: number;
   total_children_symptomatic: number;
   total_staff_symptomatic: number;
@@ -162,7 +162,7 @@ export function computeInfectionControlMetrics(
   const excellentRate =
     records.length > 0
       ? Math.round((excellent / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const poorHygiene = records.filter((r) => r.hygiene_standard === "poor").length;
 
@@ -170,37 +170,37 @@ export function computeInfectionControlMetrics(
   const handWashRate =
     records.length > 0
       ? Math.round((handWash / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const sanitiser = records.filter((r) => r.sanitiser_available).length;
   const sanitiserRate =
     records.length > 0
       ? Math.round((sanitiser / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const cleanFollowed = records.filter((r) => r.cleaning_schedule_followed).length;
   const cleanRate =
     records.length > 0
       ? Math.round((cleanFollowed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const laundry = records.filter((r) => r.laundry_procedures_followed).length;
   const laundryRate =
     records.length > 0
       ? Math.round((laundry / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const foodHygiene = records.filter((r) => r.food_hygiene_maintained).length;
   const foodRate =
     records.length > 0
       ? Math.round((foodHygiene / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const ppeCompliant = records.filter((r) => r.ppe_compliance === "fully_compliant").length;
   const ppeRate =
     records.length > 0
       ? Math.round((ppeCompliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const ppeNonCompliant = records.filter((r) => r.ppe_compliance === "non_compliant").length;
 

@@ -42,7 +42,7 @@ describe("computeLaundryClothingMetrics", () => {
     const m = computeLaundryClothingMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.clothing_purchase_count).toBe(0);
-    expect(m.child_chose_own_rate).toBe(0);
+    expect(m.child_chose_own_rate).toBeNull();;
     expect(m.total_budget).toBe(0);
     expect(m.total_spent).toBe(0);
   });

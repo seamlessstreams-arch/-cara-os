@@ -63,8 +63,8 @@ describe("computeMandatoryTrainingMetrics", () => {
     expect(m.expiring_soon_count).toBe(0);
     expect(m.not_started_count).toBe(0);
     expect(m.current_count).toBe(0);
-    expect(m.certificate_held_rate).toBe(0);
-    expect(m.competence_assessed_rate).toBe(0);
+    expect(m.certificate_held_rate).toBeNull();;
+    expect(m.competence_assessed_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

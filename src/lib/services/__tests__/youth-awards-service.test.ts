@@ -306,7 +306,7 @@ describe("youth-awards-service", () => {
       const metrics = computeMetrics([]);
       expect(metrics.total_records).toBe(0);
       expect(metrics.unique_young_people).toBe(0);
-      expect(metrics.engagement_rate).toBe(0);
+      expect(metrics.engagement_rate).toBeNull();;
       expect(metrics.total_hours_completed).toBe(0);
     });
   });

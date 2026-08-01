@@ -41,7 +41,7 @@ describe("computeEnergyEfficiencyMetrics", () => {
     const m = computeEnergyEfficiencyMetrics([]);
     expect(m.total_assessments).toBe(0);
     expect(m.poor_rating_count).toBe(0);
-    expect(m.epc_valid_rate).toBe(0);
+    expect(m.epc_valid_rate).toBeNull();;
     expect(m.total_monthly_cost).toBe(0);
     expect(m.total_carbon).toBe(0);
     expect(m.unique_assessors).toBe(0);

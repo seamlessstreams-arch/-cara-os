@@ -466,7 +466,7 @@ describe("computeContextualSafeguardingMetrics", () => {
     expect(result.children_screened).toBe(0);
     expect(result.total_screenings).toBe(0);
     expect(result.overdue_screenings).toBe(0);
-    expect(result.referral_rate_percentage).toBe(0);
+    expect(result.referral_rate_percentage).toBeNull();;
     expect(result.screenings_with_safety_plan).toBe(0);
     expect(result.high_risk_locations).toBe(0);
     expect(result.active_locality_risks).toBe(0);
@@ -581,7 +581,7 @@ describe("computeContextualSafeguardingMetrics", () => {
 
   it("returns 0 referral rate for empty screenings", () => {
     const result = computeContextualSafeguardingMetrics([], []);
-    expect(result.referral_rate_percentage).toBe(0);
+    expect(result.referral_rate_percentage).toBeNull();;
   });
 
   it("returns 100 referral rate when all screenings have referrals", () => {

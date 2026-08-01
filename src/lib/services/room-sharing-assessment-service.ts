@@ -128,18 +128,18 @@ export function computeRoomSharingMetrics(
   high_risk_count: number;
   unacceptable_risk_count: number;
   emergency_sharing_count: number;
-  child_consent_rate: number;
-  child_views_rate: number;
-  safeguarding_check_rate: number;
-  risk_assessment_rate: number;
-  age_appropriate_rate: number;
-  gender_appropriate_rate: number;
-  behaviour_history_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  care_plan_reflects_rate: number;
-  privacy_maintained_rate: number;
-  recorded_promptly_rate: number;
+  child_consent_rate: number | null;
+  child_views_rate: number | null;
+  safeguarding_check_rate: number | null;
+  risk_assessment_rate: number | null;
+  age_appropriate_rate: number | null;
+  gender_appropriate_rate: number | null;
+  behaviour_history_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  care_plan_reflects_rate: number | null;
+  privacy_maintained_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_sharing_arrangement: Record<string, number>;
   by_compatibility_rating: Record<string, number>;
@@ -155,7 +155,7 @@ export function computeRoomSharingMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

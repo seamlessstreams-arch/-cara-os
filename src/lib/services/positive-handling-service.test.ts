@@ -50,9 +50,9 @@ describe("computePositiveHandlingMetrics", () => {
     expect(m.effective_count).toBe(0);
     expect(m.needs_revision_count).toBe(0);
     expect(m.escalation_required_count).toBe(0);
-    expect(m.triggers_identified_rate).toBe(0);
-    expect(m.early_warning_rate).toBe(0);
-    expect(m.de_escalation_rate).toBe(0);
+    expect(m.triggers_identified_rate).toBeNull();;
+    expect(m.early_warning_rate).toBeNull();;
+    expect(m.de_escalation_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

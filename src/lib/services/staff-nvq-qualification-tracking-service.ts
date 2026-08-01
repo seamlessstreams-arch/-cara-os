@@ -82,14 +82,14 @@ export function computeNvqMetrics(rows: StaffNvqQualificationTrackingRow[]): {
   in_progress_count: number;
   not_started_count: number;
   expired_count: number;
-  reg32_compliant_rate: number;
-  within_deadline_rate: number;
-  assessor_assigned_rate: number;
-  portfolio_rate: number;
-  employer_funded_rate: number;
-  study_time_rate: number;
-  mentor_rate: number;
-  registration_current_rate: number;
+  reg32_compliant_rate: number | null;
+  within_deadline_rate: number | null;
+  assessor_assigned_rate: number | null;
+  portfolio_rate: number | null;
+  employer_funded_rate: number | null;
+  study_time_rate: number | null;
+  mentor_rate: number | null;
+  registration_current_rate: number | null;
   level_breakdown: Record<string, number>;
   status_breakdown: Record<string, number>;
   unique_staff: number;
@@ -101,7 +101,7 @@ export function computeNvqMetrics(rows: StaffNvqQualificationTrackingRow[]): {
 
   const boolRate = (field: keyof StaffNvqQualificationTrackingRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : 0;
+    return rows.length > 0 ? Math.round((count / rows.length) * 1000) / 10 : null;
   };
 
   const levelBreakdown: Record<string, number> = {};
@@ -243,7 +243,7 @@ export function generateNvqCaraInsights(rows: StaffNvqQualificationTrackingRow[]
         `What barriers exist to enrolment, and how can the home better support staff to meet the two-year ` +
         `Level 3 requirement under Reg 32?`,
     );
-  } else if (metrics.reg32_compliant_rate < 100) {
+  } else if ((metrics.reg32_compliant_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.reg32_compliant_rate}% of staff are Reg 32 compliant. ` +
         `Are qualification support structures (funding, study time, mentoring) sufficient to ensure all staff ` +

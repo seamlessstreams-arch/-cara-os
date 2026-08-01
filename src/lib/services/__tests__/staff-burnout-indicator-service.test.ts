@@ -42,8 +42,23 @@ function makeRecord(overrides?: Partial<StaffBurnoutIndicatorRecord>): StaffBurn
 
 describe("staff-burnout-indicator-service", () => {
   describe("computeBurnoutMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeBurnoutMetrics([]); expect(m.total_indicators).toBe(0); expect(m.critical_count).toBe(0); expect(m.concerning_count).toBe(0); expect(m.unresolved_count).toBe(0); expect(m.escalated_count).toBe(0); expect(m.staff_aware_rate).toBe(0); expect(m.unique_staff).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeBurnoutMetrics([]); expect(m.by_indicator_type).toEqual({}); expect(m.by_burnout_severity).toEqual({}); expect(m.by_support_status).toEqual({}); expect(m.by_impact_level).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeBurnoutMetrics([]);
+      expect(m.total_indicators).toBe(0);;
+      expect(m.critical_count).toBe(0);
+      expect(m.concerning_count).toBe(0);
+      expect(m.unresolved_count).toBe(0);
+      expect(m.escalated_count).toBe(0);
+      expect(m.staff_aware_rate).toBeNull();;
+      expect(m.unique_staff).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeBurnoutMetrics([]);
+      expect(m.by_indicator_type).toEqual({});
+      expect(m.by_burnout_severity).toEqual({});
+      expect(m.by_support_status).toEqual({});
+      expect(m.by_impact_level).toEqual({});
+    });
     it("total_indicators counts records", () => { expect(computeBurnoutMetrics([makeRecord(), makeRecord()]).total_indicators).toBe(2); });
     it("counts critical", () => { expect(computeBurnoutMetrics([makeRecord({ burnout_severity: "critical" })]).critical_count).toBe(1); });
     it("does not count concerning as critical", () => { expect(computeBurnoutMetrics([makeRecord({ burnout_severity: "concerning" })]).critical_count).toBe(0); });
@@ -55,7 +70,21 @@ describe("staff-burnout-indicator-service", () => {
     it("counts escalated as unresolved", () => { expect(computeBurnoutMetrics([makeRecord({ support_status: "escalated" })]).unresolved_count).toBe(1); });
     it("does not count resolved as unresolved", () => { expect(computeBurnoutMetrics([makeRecord({ support_status: "resolved" })]).unresolved_count).toBe(0); });
     it("counts escalated", () => { expect(computeBurnoutMetrics([makeRecord({ support_status: "escalated" })]).escalated_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeBurnoutMetrics([makeRecord()]); expect(m.staff_aware_rate).toBe(100); expect(m.manager_aware_rate).toBe(100); expect(m.support_offered_rate).toBe(100); expect(m.wellbeing_check_rate).toBe(100); expect(m.supervision_adjusted_rate).toBe(100); expect(m.workload_reviewed_rate).toBe(100); expect(m.leave_offered_rate).toBe(100); expect(m.occupational_health_rate).toBe(100); expect(m.peer_support_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.team_informed_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeBurnoutMetrics([makeRecord()]);
+      expect(m.staff_aware_rate).toBe(100);
+      expect(m.manager_aware_rate).toBe(100);
+      expect(m.support_offered_rate).toBe(100);
+      expect(m.wellbeing_check_rate).toBe(100);
+      expect(m.supervision_adjusted_rate).toBe(100);
+      expect(m.workload_reviewed_rate).toBe(100);
+      expect(m.leave_offered_rate).toBe(100);
+      expect(m.occupational_health_rate).toBe(100);
+      expect(m.peer_support_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.team_informed_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("staff_aware_rate 0 when false", () => { expect(computeBurnoutMetrics([makeRecord({ staff_aware: false })]).staff_aware_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeBurnoutMetrics([makeRecord({ wellbeing_check_done: true }), makeRecord({ wellbeing_check_done: false }), makeRecord({ wellbeing_check_done: true })]); expect(m.wellbeing_check_rate).toBe(66.7); });
     it("unique_staff distinct", () => { const m = computeBurnoutMetrics([makeRecord({ staff_name: "A" }), makeRecord({ staff_name: "B" }), makeRecord({ staff_name: "A" })]); expect(m.unique_staff).toBe(2); });
@@ -68,17 +97,42 @@ describe("staff-burnout-indicator-service", () => {
   describe("identifyBurnoutAlerts", () => {
     it("returns empty for clean", () => { expect(identifyBurnoutAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyBurnoutAlerts([])).toEqual([]); });
-    it("fires critical_unsupported", () => { const a = identifyBurnoutAlerts([makeRecord({ burnout_severity: "critical", support_status: "monitoring", staff_name: "Jo" })]); expect(a[0].type).toBe("critical_unsupported"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires critical_unsupported", () => { 
+      const a = identifyBurnoutAlerts([makeRecord({ burnout_severity: "critical", support_status: "monitoring", staff_name: "Jo" })]);
+      expect(a[0].type).toBe("critical_unsupported");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("critical_unsupported per-record", () => { const a = identifyBurnoutAlerts([makeRecord({ id: "a-1", burnout_severity: "critical", support_status: "monitoring" }), makeRecord({ id: "a-2", burnout_severity: "critical", support_status: "monitoring" })]); expect(a.filter(x => x.type === "critical_unsupported")).toHaveLength(2); });
     it("no critical when supporting", () => { expect(identifyBurnoutAlerts([makeRecord({ burnout_severity: "critical", support_status: "supporting" })]).find(x => x.type === "critical_unsupported")).toBeUndefined(); });
     it("no critical for early_sign", () => { expect(identifyBurnoutAlerts([makeRecord({ burnout_severity: "early_sign", support_status: "monitoring" })]).find(x => x.type === "critical_unsupported")).toBeUndefined(); });
-    it("fires staff_not_aware singular", () => { const a = identifyBurnoutAlerts([makeRecord({ staff_aware: false })]); const f = a.find(x => x.type === "staff_not_aware"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 indicator has"); });
+    it("fires staff_not_aware singular", () => { 
+      const a = identifyBurnoutAlerts([makeRecord({ staff_aware: false })]);
+      const f = a.find(x => x.type === "staff_not_aware");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 indicator has");
+    });
     it("staff_not_aware plural", () => { const a = identifyBurnoutAlerts([makeRecord({ staff_aware: false }), makeRecord({ staff_aware: false })]); const f = a.find(x => x.type === "staff_not_aware"); expect(f!.message).toContain("2 indicators have"); });
-    it("fires no_wellbeing_check singular", () => { const a = identifyBurnoutAlerts([makeRecord({ wellbeing_check_done: false })]); const f = a.find(x => x.type === "no_wellbeing_check"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 indicator has"); });
+    it("fires no_wellbeing_check singular", () => { 
+      const a = identifyBurnoutAlerts([makeRecord({ wellbeing_check_done: false })]);
+      const f = a.find(x => x.type === "no_wellbeing_check");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 indicator has");
+    });
     it("no_workload_review not for 1", () => { expect(identifyBurnoutAlerts([makeRecord({ workload_reviewed: false })]).find(x => x.type === "no_workload_review")).toBeUndefined(); });
     it("no_workload_review fires for 2", () => { const a = identifyBurnoutAlerts([makeRecord({ workload_reviewed: false }), makeRecord({ workload_reviewed: false })]); expect(a.find(x => x.type === "no_workload_review")).toBeDefined(); expect(a.find(x => x.type === "no_workload_review")!.severity).toBe("medium"); });
     it("no_peer_support not for 1", () => { expect(identifyBurnoutAlerts([makeRecord({ peer_support_arranged: false })]).find(x => x.type === "no_peer_support")).toBeUndefined(); });
     it("no_peer_support fires for 2", () => { const a = identifyBurnoutAlerts([makeRecord({ peer_support_arranged: false }), makeRecord({ peer_support_arranged: false })]); expect(a.find(x => x.type === "no_peer_support")).toBeDefined(); expect(a.find(x => x.type === "no_peer_support")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyBurnoutAlerts([makeRecord({ burnout_severity: "critical", support_status: "monitoring", staff_aware: false, wellbeing_check_done: false, workload_reviewed: false, peer_support_arranged: false }), makeRecord({ staff_aware: false, wellbeing_check_done: false, workload_reviewed: false, peer_support_arranged: false })]); const types = a.map(x => x.type); expect(types).toContain("critical_unsupported"); expect(types).toContain("staff_not_aware"); expect(types).toContain("no_wellbeing_check"); expect(types).toContain("no_workload_review"); expect(types).toContain("no_peer_support"); });
+    it("fires all applicable", () => { 
+      const a = identifyBurnoutAlerts([makeRecord({ burnout_severity: "critical", support_status: "monitoring", staff_aware: false, wellbeing_check_done: false, workload_reviewed: false, peer_support_arranged: false }), makeRecord({ staff_aware: false, wellbeing_check_done: false, workload_reviewed: false, peer_support_arranged: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("critical_unsupported");
+      expect(types).toContain("staff_not_aware");
+      expect(types).toContain("no_wellbeing_check");
+      expect(types).toContain("no_workload_review");
+      expect(types).toContain("no_peer_support");
+    });
   });
 });

@@ -43,12 +43,12 @@ describe("computeTraumaMetrics", () => {
     const m = computeTraumaMetrics([], 0);
     expect(m.total_records).toBe(0);
     expect(m.children_assessed).toBe(0);
-    expect(m.assessment_coverage).toBe(0);
-    expect(m.average_aces_score).toBe(0);
-    expect(m.therapist_involved_rate).toBe(0);
-    expect(m.child_engaged_rate).toBe(0);
-    expect(m.plan_in_place_rate).toBe(0);
-    expect(m.staff_aware_rate).toBe(0);
+    expect(m.assessment_coverage).toBeNull();;
+    expect(m.average_aces_score).toBeNull();;
+    expect(m.therapist_involved_rate).toBeNull();;
+    expect(m.child_engaged_rate).toBeNull();;
+    expect(m.plan_in_place_rate).toBeNull();;
+    expect(m.staff_aware_rate).toBeNull();;
     expect(m.significant_improvement_count).toBe(0);
     expect(m.deteriorating_count).toBe(0);
     expect(m.review_overdue_count).toBe(0);

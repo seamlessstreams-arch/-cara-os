@@ -157,18 +157,18 @@ export function computeMenuPlanningMetrics(records: MenuPlanningDietaryRecord[])
   refused_count: number;
   allergen_concern_count: number;
   cultural_not_met_count: number;
-  allergens_checked_rate: number;
-  dietary_needs_met_rate: number;
-  cultural_needs_met_rate: number;
-  child_chose_rate: number;
-  child_helped_rate: number;
-  nutritionally_balanced_rate: number;
-  portion_appropriate_rate: number;
-  hydration_monitored_rate: number;
-  mealtime_positive_rate: number;
-  leftovers_noted_rate: number;
-  medical_diet_rate: number;
-  recorded_promptly_rate: number;
+  allergens_checked_rate: number | null;
+  dietary_needs_met_rate: number | null;
+  cultural_needs_met_rate: number | null;
+  child_chose_rate: number | null;
+  child_helped_rate: number | null;
+  nutritionally_balanced_rate: number | null;
+  portion_appropriate_rate: number | null;
+  hydration_monitored_rate: number | null;
+  mealtime_positive_rate: number | null;
+  leftovers_noted_rate: number | null;
+  medical_diet_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_meal_type: Record<string, number>;
   by_dietary_category: Record<string, number>;
@@ -182,7 +182,7 @@ export function computeMenuPlanningMetrics(records: MenuPlanningDietaryRecord[])
 
   const boolRate = (field: keyof MenuPlanningDietaryRecord) => {
     const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0 ? Math.round((count / records.length) * 1000) / 10 : 0;
+    return records.length > 0 ? Math.round((count / records.length) * 1000) / 10 : null;
   };
 
   const byMealType: Record<string, number> = {};

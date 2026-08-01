@@ -46,7 +46,7 @@ describe("computeAccessibilityMetrics", () => {
     expect(result.adjustments_needed_count).toBe(0);
     expect(result.completed_count).toBe(0);
     expect(result.deferred_count).toBe(0);
-    expect(result.wheelchair_accessible_rate).toBe(0);
+    expect(result.wheelchair_accessible_rate).toBeNull();;
     expect(result.total_cost).toBe(0);
     expect(result.unique_assessors).toBe(0);
   });

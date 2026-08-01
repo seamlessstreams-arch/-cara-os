@@ -267,12 +267,12 @@ describe("computeGiftMetrics", () => {
 
     it("returns zero average_value", () => {
       const m = computeGiftMetrics([]);
-      expect(m.average_value).toBe(0);
+      expect(m.average_value).toBeNull();;
     });
 
     it("returns zero approved_rate", () => {
       const m = computeGiftMetrics([]);
-      expect(m.approved_rate).toBe(0);
+      expect(m.approved_rate).toBeNull();;
     });
 
     it("returns zero pending_count", () => {
@@ -282,7 +282,7 @@ describe("computeGiftMetrics", () => {
 
     it("returns zero declared_rate", () => {
       const m = computeGiftMetrics([]);
-      expect(m.declared_rate).toBe(0);
+      expect(m.declared_rate).toBeNull();;
     });
 
     it("returns zero not_declared_count", () => {
@@ -307,12 +307,12 @@ describe("computeGiftMetrics", () => {
 
     it("returns zero receipt_kept_rate", () => {
       const m = computeGiftMetrics([]);
-      expect(m.receipt_kept_rate).toBe(0);
+      expect(m.receipt_kept_rate).toBeNull();;
     });
 
     it("returns zero policy_compliant_rate", () => {
       const m = computeGiftMetrics([]);
-      expect(m.policy_compliant_rate).toBe(0);
+      expect(m.policy_compliant_rate).toBeNull();;
     });
 
     it("returns empty by_direction", () => {

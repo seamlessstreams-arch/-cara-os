@@ -52,7 +52,7 @@ describe("computeWellbeingCheckinMetrics", () => {
     expect(m.very_unhappy_count).toBe(0);
     expect(m.concerns_identified_count).toBe(0);
     expect(m.follow_up_needed_count).toBe(0);
-    expect(m.average_wellbeing_score).toBe(0);
+    expect(m.average_wellbeing_score).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

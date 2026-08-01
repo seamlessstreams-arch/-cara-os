@@ -285,7 +285,7 @@ describe("computeSecureStorageMetrics", () => {
 
     it("returns zero fully_compliant_rate", () => {
       const m = computeSecureStorageMetrics([]);
-      expect(m.fully_compliant_rate).toBe(0);
+      expect(m.fully_compliant_rate).toBeNull();;
     });
 
     it("returns zero non_compliant_count", () => {
@@ -295,17 +295,17 @@ describe("computeSecureStorageMetrics", () => {
 
     it("returns zero gdpr_compliant_rate", () => {
       const m = computeSecureStorageMetrics([]);
-      expect(m.gdpr_compliant_rate).toBe(0);
+      expect(m.gdpr_compliant_rate).toBeNull();;
     });
 
     it("returns zero encryption_verified_rate", () => {
       const m = computeSecureStorageMetrics([]);
-      expect(m.encryption_verified_rate).toBe(0);
+      expect(m.encryption_verified_rate).toBeNull();;
     });
 
     it("returns zero retention_followed_rate", () => {
       const m = computeSecureStorageMetrics([]);
-      expect(m.retention_followed_rate).toBe(0);
+      expect(m.retention_followed_rate).toBeNull();;
     });
 
     it("returns zero access_granted_count", () => {

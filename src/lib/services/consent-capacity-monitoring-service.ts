@@ -138,18 +138,18 @@ export function computeConsentCapacityMetrics(
   not_assessed_count: number;
   refused_count: number;
   best_interest_count: number;
-  child_views_rate: number;
-  information_provided_rate: number;
-  age_appropriate_rate: number;
-  advocacy_rate: number;
-  parent_consulted_rate: number;
-  social_worker_rate: number;
-  best_interest_documented_rate: number;
-  decision_respected_rate: number;
-  review_date_rate: number;
-  care_plan_rate: number;
-  legal_framework_rate: number;
-  recorded_promptly_rate: number;
+  child_views_rate: number | null;
+  information_provided_rate: number | null;
+  age_appropriate_rate: number | null;
+  advocacy_rate: number | null;
+  parent_consulted_rate: number | null;
+  social_worker_rate: number | null;
+  best_interest_documented_rate: number | null;
+  decision_respected_rate: number | null;
+  review_date_rate: number | null;
+  care_plan_rate: number | null;
+  legal_framework_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_consent_area: Record<string, number>;
   by_capacity_level: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeConsentCapacityMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byArea: Record<string, number> = {};

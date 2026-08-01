@@ -101,7 +101,7 @@ function computePossessionSummary(
   items_with_child: number;
   items_in_safe: number;
   items_lost_damaged: number;
-  signing_compliance: number;
+  signing_compliance: number | null;
   total_estimated_value: number;
   children_with_records: number;
   money_children_count: number;
@@ -133,7 +133,7 @@ function computePossessionSummary(
   ).length;
   const signingCompliance = total > 0
     ? Math.round((bothSigned / total) * 100)
-    : 0;
+    : null;
 
   // Total estimated value
   let totalValue = 0;

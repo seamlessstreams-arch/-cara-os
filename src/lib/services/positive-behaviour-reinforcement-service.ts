@@ -136,18 +136,18 @@ export function computePositiveBehaviourMetrics(records: PositiveBehaviourReinfo
   negative_response_count: number;
   inconsistent_count: number;
   indifferent_count: number;
-  behaviour_specific_rate: number;
-  age_appropriate_rate: number;
-  culturally_sensitive_rate: number;
-  timely_delivery_rate: number;
-  proportionate_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  peers_included_rate: number;
-  child_input_rate: number;
-  progress_tracked_rate: number;
-  recorded_promptly_rate: number;
+  behaviour_specific_rate: number | null;
+  age_appropriate_rate: number | null;
+  culturally_sensitive_rate: number | null;
+  timely_delivery_rate: number | null;
+  proportionate_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  peers_included_rate: number | null;
+  child_input_rate: number | null;
+  progress_tracked_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_reinforcement_type: Record<string, number>;
   by_praise_quality: Record<string, number>;
@@ -163,7 +163,7 @@ export function computePositiveBehaviourMetrics(records: PositiveBehaviourReinfo
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

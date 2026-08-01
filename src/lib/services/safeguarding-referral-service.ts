@@ -151,14 +151,14 @@ export function computeSafeguardingReferralMetrics(
   nfa_count: number;
   pending_count: number;
   immediate_urgency_count: number;
-  timely_rate: number;
-  consent_obtained_rate: number;
-  information_shared_rate: number;
-  manager_informed_rate: number;
-  ofsted_notified_rate: number;
-  lado_consulted_rate: number;
-  strategy_meeting_rate: number;
-  outcome_communicated_rate: number;
+  timely_rate: number | null;
+  consent_obtained_rate: number | null;
+  information_shared_rate: number | null;
+  manager_informed_rate: number | null;
+  ofsted_notified_rate: number | null;
+  lado_consulted_rate: number | null;
+  strategy_meeting_rate: number | null;
+  outcome_communicated_rate: number | null;
   follow_up_required_count: number;
   unique_children: number;
   by_referral_type: Record<string, number>;
@@ -175,7 +175,7 @@ export function computeSafeguardingReferralMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const followUp = records.filter((r) => r.follow_up_required).length;

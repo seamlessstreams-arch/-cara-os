@@ -128,11 +128,11 @@ export function computeSecureStorageMetrics(
   access_logs: number;
   subject_access_requests: number;
   data_breaches: number;
-  fully_compliant_rate: number;
+  fully_compliant_rate: number | null;
   non_compliant_count: number;
-  gdpr_compliant_rate: number;
-  encryption_verified_rate: number;
-  retention_followed_rate: number;
+  gdpr_compliant_rate: number | null;
+  encryption_verified_rate: number | null;
+  retention_followed_rate: number | null;
   access_granted_count: number;
   access_denied_count: number;
   total_records_affected: number;
@@ -151,7 +151,7 @@ export function computeSecureStorageMetrics(
   const fcRate =
     records.length > 0
       ? Math.round((fullyCompliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const nonCompliant = records.filter((r) => r.compliance_rating === "non_compliant").length;
 
@@ -159,19 +159,19 @@ export function computeSecureStorageMetrics(
   const gdprRate =
     records.length > 0
       ? Math.round((gdprCompliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const encryptionVerified = records.filter((r) => r.encryption_verified).length;
   const encRate =
     records.length > 0
       ? Math.round((encryptionVerified / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const retentionFollowed = records.filter((r) => r.retention_schedule_followed).length;
   const retRate =
     records.length > 0
       ? Math.round((retentionFollowed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const granted = records.filter((r) => r.access_decision === "granted").length;
   const denied = records.filter((r) => r.access_decision === "denied").length;

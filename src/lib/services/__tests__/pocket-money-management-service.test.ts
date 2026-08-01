@@ -39,13 +39,43 @@ function makeRecord(overrides?: Partial<PocketMoneyManagementRecord>): PocketMon
 
 describe("pocket-money-management-service", () => {
   describe("computePocketMoneyMetrics", () => {
-    it("returns zeros for empty", () => { const m = computePocketMoneyMetrics([]); expect(m.total_transactions).toBe(0); expect(m.purchase_count).toBe(0); expect(m.savings_deposit_count).toBe(0); expect(m.declined_count).toBe(0); expect(m.retrospective_count).toBe(0); expect(m.receipt_obtained_rate).toBe(0); expect(m.total_amount_pence).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computePocketMoneyMetrics([]); expect(m.by_transaction_type).toEqual({}); expect(m.by_spending_category).toEqual({}); expect(m.by_approval_status).toEqual({}); expect(m.by_financial_literacy_level).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computePocketMoneyMetrics([]);
+      expect(m.total_transactions).toBe(0);;
+      expect(m.purchase_count).toBe(0);
+      expect(m.savings_deposit_count).toBe(0);
+      expect(m.declined_count).toBe(0);
+      expect(m.retrospective_count).toBe(0);
+      expect(m.receipt_obtained_rate).toBeNull();;
+      expect(m.total_amount_pence).toBe(0);
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computePocketMoneyMetrics([]);
+      expect(m.by_transaction_type).toEqual({});
+      expect(m.by_spending_category).toEqual({});
+      expect(m.by_approval_status).toEqual({});
+      expect(m.by_financial_literacy_level).toEqual({});
+    });
     it("counts purchase", () => { expect(computePocketMoneyMetrics([makeRecord({ transaction_type: "purchase" })]).purchase_count).toBe(1); });
     it("counts savings_deposit", () => { expect(computePocketMoneyMetrics([makeRecord({ transaction_type: "savings_deposit" })]).savings_deposit_count).toBe(1); });
     it("counts declined", () => { expect(computePocketMoneyMetrics([makeRecord({ approval_status: "declined" })]).declined_count).toBe(1); });
     it("counts retrospective", () => { expect(computePocketMoneyMetrics([makeRecord({ approval_status: "retrospective" })]).retrospective_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computePocketMoneyMetrics([makeRecord()]); expect(m.receipt_obtained_rate).toBe(100); expect(m.child_chose_purchase_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.budget_discussed_rate).toBe(100); expect(m.savings_encouraged_rate).toBe(100); expect(m.value_for_money_rate).toBe(100); expect(m.financial_record_rate).toBe(100); expect(m.balance_reconciled_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.care_plan_linked_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computePocketMoneyMetrics([makeRecord()]);
+      expect(m.receipt_obtained_rate).toBe(100);
+      expect(m.child_chose_purchase_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.budget_discussed_rate).toBe(100);
+      expect(m.savings_encouraged_rate).toBe(100);
+      expect(m.value_for_money_rate).toBe(100);
+      expect(m.financial_record_rate).toBe(100);
+      expect(m.balance_reconciled_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.care_plan_linked_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("receipt_obtained_rate 0 when false", () => { expect(computePocketMoneyMetrics([makeRecord({ receipt_obtained: false })]).receipt_obtained_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computePocketMoneyMetrics([makeRecord({ receipt_obtained: true }), makeRecord({ receipt_obtained: false }), makeRecord({ receipt_obtained: true })]); expect(m.receipt_obtained_rate).toBe(66.7); });
     it("total_amount_pence sums", () => { expect(computePocketMoneyMetrics([makeRecord({ amount_pence: 500 }), makeRecord({ amount_pence: 750 })]).total_amount_pence).toBe(1250); });
@@ -59,16 +89,36 @@ describe("pocket-money-management-service", () => {
   describe("identifyPocketMoneyAlerts", () => {
     it("returns empty for clean", () => { expect(identifyPocketMoneyAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyPocketMoneyAlerts([])).toEqual([]); });
-    it("fires retrospective_no_receipt", () => { const a = identifyPocketMoneyAlerts([makeRecord({ approval_status: "retrospective", receipt_obtained: false, child_name: "Jo", spending_category: "electronics" })]); expect(a[0].type).toBe("retrospective_no_receipt"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("electronics"); });
+    it("fires retrospective_no_receipt", () => { 
+      const a = identifyPocketMoneyAlerts([makeRecord({ approval_status: "retrospective", receipt_obtained: false, child_name: "Jo", spending_category: "electronics" })]);
+      expect(a[0].type).toBe("retrospective_no_receipt");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("electronics");
+    });
     it("retrospective_no_receipt per-record", () => { const a = identifyPocketMoneyAlerts([makeRecord({ id: "a-1", approval_status: "retrospective", receipt_obtained: false }), makeRecord({ id: "a-2", approval_status: "retrospective", receipt_obtained: false })]); expect(a.filter(x => x.type === "retrospective_no_receipt")).toHaveLength(2); });
     it("no alert if retrospective with receipt", () => { expect(identifyPocketMoneyAlerts([makeRecord({ approval_status: "retrospective", receipt_obtained: true })]).filter(x => x.type === "retrospective_no_receipt")).toHaveLength(0); });
-    it("fires balance_not_reconciled singular", () => { const a = identifyPocketMoneyAlerts([makeRecord({ balance_reconciled: false })]); const f = a.find(x => x.type === "balance_not_reconciled"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 transaction has"); });
+    it("fires balance_not_reconciled singular", () => { 
+      const a = identifyPocketMoneyAlerts([makeRecord({ balance_reconciled: false })]);
+      const f = a.find(x => x.type === "balance_not_reconciled");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 transaction has");
+    });
     it("balance_not_reconciled plural", () => { const a = identifyPocketMoneyAlerts([makeRecord({ balance_reconciled: false }), makeRecord({ balance_reconciled: false })]); const f = a.find(x => x.type === "balance_not_reconciled"); expect(f!.message).toContain("2 transactions have"); });
     it("fires financial_record_not_updated singular", () => { const a = identifyPocketMoneyAlerts([makeRecord({ financial_record_updated: false })]); const f = a.find(x => x.type === "financial_record_not_updated"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); });
     it("budget_not_discussed not for 1", () => { expect(identifyPocketMoneyAlerts([makeRecord({ budget_discussed: false })]).find(x => x.type === "budget_not_discussed")).toBeUndefined(); });
     it("budget_not_discussed fires for 2", () => { const a = identifyPocketMoneyAlerts([makeRecord({ budget_discussed: false }), makeRecord({ budget_discussed: false })]); expect(a.find(x => x.type === "budget_not_discussed")).toBeDefined(); });
     it("receipts_missing not for 2", () => { expect(identifyPocketMoneyAlerts([makeRecord({ receipt_obtained: false }), makeRecord({ receipt_obtained: false })]).find(x => x.type === "receipts_missing")).toBeUndefined(); });
     it("receipts_missing fires for 3", () => { const a = identifyPocketMoneyAlerts([makeRecord({ receipt_obtained: false }), makeRecord({ receipt_obtained: false }), makeRecord({ receipt_obtained: false })]); expect(a.find(x => x.type === "receipts_missing")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyPocketMoneyAlerts([makeRecord({ approval_status: "retrospective", receipt_obtained: false, balance_reconciled: false, financial_record_updated: false, budget_discussed: false }), makeRecord({ budget_discussed: false, receipt_obtained: false }), makeRecord({ receipt_obtained: false })]); const types = a.map(x => x.type); expect(types).toContain("retrospective_no_receipt"); expect(types).toContain("balance_not_reconciled"); expect(types).toContain("financial_record_not_updated"); expect(types).toContain("budget_not_discussed"); expect(types).toContain("receipts_missing"); });
+    it("fires all applicable", () => { 
+      const a = identifyPocketMoneyAlerts([makeRecord({ approval_status: "retrospective", receipt_obtained: false, balance_reconciled: false, financial_record_updated: false, budget_discussed: false }), makeRecord({ budget_discussed: false, receipt_obtained: false }), makeRecord({ receipt_obtained: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("retrospective_no_receipt");
+      expect(types).toContain("balance_not_reconciled");
+      expect(types).toContain("financial_record_not_updated");
+      expect(types).toContain("budget_not_discussed");
+      expect(types).toContain("receipts_missing");
+    });
   });
 });

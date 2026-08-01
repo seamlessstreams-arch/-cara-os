@@ -151,18 +151,18 @@ export function computeTriggerMapMetrics(records: StaffTriggerMapRecord[]): {
   ineffective_coping_count: number;
   active_count: number;
   unreviewed_count: number;
-  evidence_documented_rate: number;
-  staff_involved_rate: number;
-  triggers_explored_rate: number;
-  coping_strategies_rate: number;
-  support_plan_linked_rate: number;
-  environmental_factors_rate: number;
-  supervision_adjusted_rate: number;
-  wellbeing_checked_rate: number;
-  manager_reviewed_rate: number;
-  team_aware_rate: number;
-  follow_up_rate: number;
-  recorded_promptly_rate: number;
+  evidence_documented_rate: number | null;
+  staff_involved_rate: number | null;
+  triggers_explored_rate: number | null;
+  coping_strategies_rate: number | null;
+  support_plan_linked_rate: number | null;
+  environmental_factors_rate: number | null;
+  supervision_adjusted_rate: number | null;
+  wellbeing_checked_rate: number | null;
+  manager_reviewed_rate: number | null;
+  team_aware_rate: number | null;
+  follow_up_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_staff: number;
   by_trigger_category: Record<string, number>;
   by_trigger_severity: Record<string, number>;
@@ -184,7 +184,7 @@ export function computeTriggerMapMetrics(records: StaffTriggerMapRecord[]): {
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byCategory: Record<string, number> = {};

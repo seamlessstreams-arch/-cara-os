@@ -156,19 +156,19 @@ export function computeSleepQualityMetrics(
   no_routine_count: number;
   unsuitable_environment_count: number;
   continuous_disturbance_count: number;
-  bedtime_consistent_rate: number;
-  wake_time_consistent_rate: number;
-  room_comfortable_rate: number;
-  temperature_appropriate_rate: number;
-  noise_minimised_rate: number;
-  screen_free_rate: number;
-  relaxation_supported_rate: number;
-  child_preferences_rate: number;
-  gp_referral_rate: number;
-  sleep_plan_rate: number;
-  care_plan_linked_rate: number;
-  recorded_promptly_rate: number;
-  average_sleep_hours: number;
+  bedtime_consistent_rate: number | null;
+  wake_time_consistent_rate: number | null;
+  room_comfortable_rate: number | null;
+  temperature_appropriate_rate: number | null;
+  noise_minimised_rate: number | null;
+  screen_free_rate: number | null;
+  relaxation_supported_rate: number | null;
+  child_preferences_rate: number | null;
+  gp_referral_rate: number | null;
+  sleep_plan_rate: number | null;
+  care_plan_linked_rate: number | null;
+  recorded_promptly_rate: number | null;
+  average_sleep_hours: number | null;
   unique_children: number;
   by_sleep_quality: Record<string, number>;
   by_bedtime_routine: Record<string, number>;
@@ -186,7 +186,7 @@ export function computeSleepQualityMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgHours =
@@ -194,7 +194,7 @@ export function computeSleepQualityMetrics(
       ? Math.round(
           (records.reduce((sum, r) => sum + r.sleep_hours, 0) / records.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

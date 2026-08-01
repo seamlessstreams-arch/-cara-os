@@ -337,18 +337,18 @@ export function computeMetrics(
   total_records: number;
   by_record_type: Record<string, number>;
   by_immigration_status: Record<string, number>;
-  legal_representation_rate: number;
-  interpreter_rate: number;
-  trafficking_rate: number;
-  nrm_rate: number;
+  legal_representation_rate: number | null;
+  interpreter_rate: number | null;
+  trafficking_rate: number | null;
+  nrm_rate: number | null;
   by_education_provision: Record<string, number>;
-  health_screening_rate: number;
-  camhs_rate: number;
-  cultural_needs_met_rate: number;
-  religious_needs_met_rate: number;
+  health_screening_rate: number | null;
+  camhs_rate: number | null;
+  cultural_needs_met_rate: number | null;
+  religious_needs_met_rate: number | null;
   age_dispute_count: number;
   unique_children: number;
-  social_worker_informed_rate: number;
+  social_worker_informed_rate: number | null;
   active_count: number;
   overdue_review_count: number;
 } {
@@ -357,7 +357,7 @@ export function computeMetrics(
   const boolRate = (field: keyof UascSupportRow, subset?: UascSupportRow[]) => {
     const pool = subset ?? rows;
     const count = pool.filter((r) => r[field] === true).length;
-    return pool.length > 0 ? Math.round((count / pool.length) * 1000) / 10 : 0;
+    return pool.length > 0 ? Math.round((count / pool.length) * 1000) / 10 : null;
   };
 
   // Record type breakdown
@@ -658,7 +658,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective safeguarding question
-  if (metrics.trafficking_rate > 0 && metrics.nrm_rate === 0) {
+  if ((metrics.trafficking_rate ?? 0) > 0 && metrics.nrm_rate === 0) {
     insights.push(
       `[reflect] Trafficking indicators have been identified in ${metrics.trafficking_rate}% of records ` +
         `but no NRM referrals have been made. Are staff confident in the NRM referral process ` +
@@ -667,7 +667,7 @@ export function generateCaraInsights(
         `home should ensure that all staff understand the duty to refer and the indicators ` +
         `of child trafficking, including labour exploitation, domestic servitude, and sexual exploitation.`,
     );
-  } else if (metrics.legal_representation_rate < 100 && metrics.total_records > 0) {
+  } else if ((metrics.legal_representation_rate ?? 0) < 100 && metrics.total_records > 0) {
     insights.push(
       `[reflect] Legal representation is at ${metrics.legal_representation_rate}%, below the expected ` +
         `100% for UASC children. All UASC children are entitled to legal aid for their ` +
@@ -676,7 +676,7 @@ export function generateCaraInsights(
         `being scheduled promptly after arrival? The Immigration Act 2016 and Home Office ` +
         `UASC guidance 2023 require that legal representation is secured as a priority.`,
     );
-  } else if (metrics.cultural_needs_met_rate < 80 || metrics.religious_needs_met_rate < 80) {
+  } else if ((metrics.cultural_needs_met_rate ?? 0) < 80 || (metrics.religious_needs_met_rate ?? 0) < 80) {
     insights.push(
       `[reflect] Cultural needs met: ${metrics.cultural_needs_met_rate}%, Religious needs met: ` +
         `${metrics.religious_needs_met_rate}%. CHR 2015 Reg 5 requires the home to meet each ` +

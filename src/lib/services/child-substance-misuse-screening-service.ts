@@ -87,12 +87,12 @@ export function computeMetrics(
   high_risk_count: number;
   immediate_intervention_count: number;
   no_concern_count: number;
-  referral_rate: number;
-  risk_assessment_rate: number;
-  safety_plan_rate: number;
-  parental_notification_rate: number;
-  social_worker_rate: number;
-  follow_up_rate: number;
+  referral_rate: number | null;
+  risk_assessment_rate: number | null;
+  safety_plan_rate: number | null;
+  parental_notification_rate: number | null;
+  social_worker_rate: number | null;
+  follow_up_rate: number | null;
   unique_children: number;
   unique_assessors: number;
   substance_type_breakdown: Record<string, number>;
@@ -107,7 +107,7 @@ export function computeMetrics(
     const count = rows.filter(fn).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const referralRate = boolRate((r) => r.referral_made);

@@ -48,9 +48,9 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_activities).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.risk_assessment_rate).toBe(0);
-    expect(m.consent_rate).toBe(0);
-    expect(m.injury_rate).toBe(0);
+    expect(m.risk_assessment_rate).toBeNull();;
+    expect(m.consent_rate).toBeNull();;
+    expect(m.injury_rate).toBeNull();;
     expect(m.achievement_count).toBe(0);
     expect(m.average_engagement).toBe(0);
     expect(m.high_risk_activity_count).toBe(0);

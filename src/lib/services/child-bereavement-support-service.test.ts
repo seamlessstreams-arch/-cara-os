@@ -38,8 +38,8 @@ describe("computeMetrics", () => {
     expect(m.ongoing_support_count).toBe(0);
     expect(m.specialist_referral_count).toBe(0);
     expect(m.camhs_involvement_count).toBe(0);
-    expect(m.school_notification_rate).toBe(0);
-    expect(m.social_worker_rate).toBe(0);
+    expect(m.school_notification_rate).toBeNull();;
+    expect(m.social_worker_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
     expect(m.unique_key_workers).toBe(0);
   });

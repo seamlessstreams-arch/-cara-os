@@ -51,9 +51,9 @@ describe("county-lines-intelligence-service", () => {
       expect(m.total_records).toBe(0);
       expect(m.high_risk_count).toBe(0);
       expect(m.critical_count).toBe(0);
-      expect(m.nrm_referral_rate).toBe(0);
+      expect(m.nrm_referral_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
-      expect(m.average_indicators_per_record).toBe(0);
+      expect(m.average_indicators_per_record).toBeNull();;
     });
 
     it("computes populated metrics", () => {

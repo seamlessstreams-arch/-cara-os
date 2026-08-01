@@ -48,8 +48,8 @@ describe("computeKeyworkerSessionMetrics", () => {
     expect(m.good_count).toBe(0);
     expect(m.poor_count).toBe(0);
     expect(m.distressed_count).toBe(0);
-    expect(m.child_led_rate).toBe(0);
-    expect(m.average_duration).toBe(0);
+    expect(m.child_led_rate).toBeNull();;
+    expect(m.average_duration).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -151,18 +151,18 @@ export function computeBoundaryManagementMetrics(
   escalated_count: number;
   refused_count: number;
   inconsistent_count: number;
-  boundary_explained_rate: number;
-  age_appropriate_rate: number;
-  child_voice_rate: number;
-  trauma_informed_rate: number;
-  care_plan_consistent_rate: number;
-  relationship_maintained_rate: number;
-  de_escalation_rate: number;
-  restorative_rate: number;
-  learning_identified_rate: number;
-  parent_informed_rate: number;
-  social_worker_informed_rate: number;
-  recorded_promptly_rate: number;
+  boundary_explained_rate: number | null;
+  age_appropriate_rate: number | null;
+  child_voice_rate: number | null;
+  trauma_informed_rate: number | null;
+  care_plan_consistent_rate: number | null;
+  relationship_maintained_rate: number | null;
+  de_escalation_rate: number | null;
+  restorative_rate: number | null;
+  learning_identified_rate: number | null;
+  parent_informed_rate: number | null;
+  social_worker_informed_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_boundary_type: Record<string, number>;
   by_child_response: Record<string, number>;
@@ -178,7 +178,7 @@ export function computeBoundaryManagementMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

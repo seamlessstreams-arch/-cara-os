@@ -305,19 +305,19 @@ export function computeMetrics(
   unique_children: number;
   by_activity_type: Record<string, number>;
   by_engagement_level: Record<string, number>;
-  risk_assessment_rate: number;
-  consent_rate: number;
-  qualified_instructor_rate: number;
-  first_aid_rate: number;
-  child_choice_rate: number;
-  injury_rate: number;
+  risk_assessment_rate: number | null;
+  consent_rate: number | null;
+  qualified_instructor_rate: number | null;
+  first_aid_rate: number | null;
+  child_choice_rate: number | null;
+  injury_rate: number | null;
   achievement_count: number;
-  physical_benefit_rate: number;
-  emotional_benefit_rate: number;
-  social_benefit_rate: number;
-  confidence_rate: number;
+  physical_benefit_rate: number | null;
+  emotional_benefit_rate: number | null;
+  social_benefit_rate: number | null;
+  confidence_rate: number | null;
   dofe_count: number;
-  care_plan_link_rate: number;
+  care_plan_link_rate: number | null;
   average_engagement: number;
   high_risk_activity_count: number;
   water_activity_count: number;
@@ -340,47 +340,47 @@ export function computeMetrics(
   // Boolean rates
   const riskAssessmentRate = total > 0
     ? Math.round((rows.filter((r) => r.risk_assessment_completed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const consentRate = total > 0
     ? Math.round((rows.filter((r) => r.parental_consent).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const qualifiedInstructorRate = total > 0
     ? Math.round((rows.filter((r) => r.instructor_qualified).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const firstAidRate = total > 0
     ? Math.round((rows.filter((r) => r.first_aider_present).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const childChoiceRate = total > 0
     ? Math.round((rows.filter((r) => r.young_person_choice).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const injuryRate = total > 0
     ? Math.round((rows.filter((r) => r.injury_occurred).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const physicalBenefitRate = total > 0
     ? Math.round((rows.filter((r) => r.physical_benefit).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const emotionalBenefitRate = total > 0
     ? Math.round((rows.filter((r) => r.emotional_benefit).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const socialBenefitRate = total > 0
     ? Math.round((rows.filter((r) => r.social_benefit).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const confidenceRate = total > 0
     ? Math.round((rows.filter((r) => r.confidence_building).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const carePlanLinkRate = total > 0
     ? Math.round((rows.filter((r) => r.linked_to_care_plan).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Achievement count
   const achievementCount = rows.filter(
@@ -717,7 +717,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.injury_rate > 10 && metrics.total_activities > 5) {
+  if ((metrics.injury_rate ?? 0) > 10 && metrics.total_activities > 5) {
     insights.push(
       `[reflect] Injury rate of ${metrics.injury_rate}% is concerning. Is the home's risk ` +
         `assessment process robust enough? OEAP guidance requires that risk assessments are ` +
@@ -728,7 +728,7 @@ export function generateCaraInsights(
         `or risk-taking behaviour linked to their experiences, dynamic risk assessment ` +
         `during activities is especially important.`,
     );
-  } else if (metrics.risk_assessment_rate < 100 && metrics.total_activities > 0) {
+  } else if ((metrics.risk_assessment_rate ?? 0) < 100 && metrics.total_activities > 0) {
     insights.push(
       `[reflect] Risk assessment completion rate is ${metrics.risk_assessment_rate}%, which is ` +
         `below the required 100%. Every outdoor activity must have a documented risk assessment ` +
@@ -738,7 +738,7 @@ export function generateCaraInsights(
         `risk assessment process embedded in activity planning, or is it being treated ` +
         `as an afterthought?`,
     );
-  } else if (metrics.confidence_rate < 30 && metrics.total_activities > 5) {
+  } else if ((metrics.confidence_rate ?? 0) < 30 && metrics.total_activities > 5) {
     insights.push(
       `[reflect] Confidence building is noted in only ${metrics.confidence_rate}% of outdoor ` +
         `activities. Outdoor adventure and physical activity can be transformative for ` +

@@ -75,7 +75,7 @@ export interface HomeAsbestosManagementRow {
   location: string;
   asbestos_type: AsbestosType;
   condition_rating: ConditionRating;
-  risk_score: number;
+  risk_score: number | null;
   management_action: ManagementAction;
   management_plan_in_place: boolean;
   register_updated: boolean;
@@ -198,12 +198,12 @@ export function computeMetrics(
   damaged_count: number;
   removal_required_count: number;
   non_compliant_count: number;
-  management_plan_rate: number;
-  register_update_rate: number;
-  staff_awareness_rate: number;
-  labelling_rate: number;
-  reinspection_scheduled_rate: number;
-  avg_risk_score: number;
+  management_plan_rate: number | null;
+  register_update_rate: number | null;
+  staff_awareness_rate: number | null;
+  labelling_rate: number | null;
+  reinspection_scheduled_rate: number | null;
+  avg_risk_score: number | null;
   unique_surveyors: number;
 } {
   const total = rows.length;
@@ -225,19 +225,19 @@ export function computeMetrics(
 
   const boolRate = (field: keyof HomeAsbestosManagementRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const reinspectionScheduled = rows.filter(
     (r) => r.reinspection_date !== null,
   ).length;
   const reinspectionScheduledRate =
-    total > 0 ? Math.round((reinspectionScheduled / total) * 1000) / 10 : 0;
+    total > 0 ? Math.round((reinspectionScheduled / total) * 1000) / 10 : null;
 
   const avgRiskScore =
     total > 0
-      ? Math.round((rows.reduce((sum, r) => sum + r.risk_score, 0) / total) * 10) / 10
-      : 0;
+      ? Math.round((rows.reduce((sum, r) => sum + (r.risk_score ?? 0), 0) / total) * 10) / 10
+      : null;
 
   const uniqueSurveyors = new Set(rows.map((r) => r.surveyor_name)).size;
 
@@ -358,7 +358,7 @@ export function computeCaraInsights(
         `What immediate steps are being taken to protect children and staff from exposure, ` +
         `and is the home's asbestos management plan under CAR 2012 Regulation 4 up to date?`,
     );
-  } else if (metrics.staff_awareness_rate < 100 || metrics.labelling_rate < 100) {
+  } else if ((metrics.staff_awareness_rate ?? 0) < 100 || (metrics.labelling_rate ?? 0) < 100) {
     insights.push(
       `Staff awareness is at ${metrics.staff_awareness_rate}% and labelling compliance is at ${metrics.labelling_rate}%. ` +
         `How can the home improve asbestos awareness and labelling to ensure full compliance with CAR 2012, ` +

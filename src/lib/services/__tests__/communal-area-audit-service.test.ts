@@ -231,12 +231,12 @@ describe("communal-area-audit-service", () => {
 
       it("returns zero spotless_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.spotless_rate).toBe(0);
+        expect(m.spotless_rate).toBeNull();;
       });
 
       it("returns zero clean_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.clean_rate).toBe(0);
+        expect(m.clean_rate).toBeNull();;
       });
 
       it("returns zero unacceptable_count", () => {
@@ -246,7 +246,7 @@ describe("communal-area-audit-service", () => {
 
       it("returns zero very_homely_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.very_homely_rate).toBe(0);
+        expect(m.very_homely_rate).toBeNull();;
       });
 
       it("returns zero institutional_count", () => {
@@ -256,7 +256,7 @@ describe("communal-area-audit-service", () => {
 
       it("returns zero all_clear_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.all_clear_rate).toBe(0);
+        expect(m.all_clear_rate).toBeNull();;
       });
 
       it("returns zero immediate_risk_count", () => {
@@ -271,52 +271,52 @@ describe("communal-area-audit-service", () => {
 
       it("returns zero furniture_good_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.furniture_good_rate).toBe(0);
+        expect(m.furniture_good_rate).toBeNull();;
       });
 
       it("returns zero decoration_fresh_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.decoration_fresh_rate).toBe(0);
+        expect(m.decoration_fresh_rate).toBeNull();;
       });
 
       it("returns zero temperature_comfortable_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.temperature_comfortable_rate).toBe(0);
+        expect(m.temperature_comfortable_rate).toBeNull();;
       });
 
       it("returns zero lighting_adequate_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.lighting_adequate_rate).toBe(0);
+        expect(m.lighting_adequate_rate).toBeNull();;
       });
 
       it("returns zero accessible_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.accessible_rate).toBe(0);
+        expect(m.accessible_rate).toBeNull();;
       });
 
       it("returns zero child_artwork_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.child_artwork_rate).toBe(0);
+        expect(m.child_artwork_rate).toBeNull();;
       });
 
       it("returns zero age_appropriate_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.age_appropriate_rate).toBe(0);
+        expect(m.age_appropriate_rate).toBeNull();;
       });
 
       it("returns zero hazards_removed_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.hazards_removed_rate).toBe(0);
+        expect(m.hazards_removed_rate).toBeNull();;
       });
 
       it("returns zero fire_exits_clear_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.fire_exits_clear_rate).toBe(0);
+        expect(m.fire_exits_clear_rate).toBeNull();;
       });
 
       it("returns zero children_consulted_rate", () => {
         const m = computeCommunalAreaMetrics([]);
-        expect(m.children_consulted_rate).toBe(0);
+        expect(m.children_consulted_rate).toBeNull();;
       });
 
       it("returns zero audit_overdue_count", () => {

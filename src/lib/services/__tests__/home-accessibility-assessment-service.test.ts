@@ -92,42 +92,42 @@ describe("computeAccessibilityMetrics", () => {
 
     it("returns zero wheelchair_accessible_rate", () => {
       const m = computeAccessibilityMetrics([]);
-      expect(m.wheelchair_accessible_rate).toBe(0);
+      expect(m.wheelchair_accessible_rate).toBeNull();;
     });
 
     it("returns zero ramp_installed_rate", () => {
       const m = computeAccessibilityMetrics([]);
-      expect(m.ramp_installed_rate).toBe(0);
+      expect(m.ramp_installed_rate).toBeNull();;
     });
 
     it("returns zero grab_rails_fitted_rate", () => {
       const m = computeAccessibilityMetrics([]);
-      expect(m.grab_rails_fitted_rate).toBe(0);
+      expect(m.grab_rails_fitted_rate).toBeNull();;
     });
 
     it("returns zero visual_aids_provided_rate", () => {
       const m = computeAccessibilityMetrics([]);
-      expect(m.visual_aids_provided_rate).toBe(0);
+      expect(m.visual_aids_provided_rate).toBeNull();;
     });
 
     it("returns zero hearing_loop_available_rate", () => {
       const m = computeAccessibilityMetrics([]);
-      expect(m.hearing_loop_available_rate).toBe(0);
+      expect(m.hearing_loop_available_rate).toBeNull();;
     });
 
     it("returns zero signage_accessible_rate", () => {
       const m = computeAccessibilityMetrics([]);
-      expect(m.signage_accessible_rate).toBe(0);
+      expect(m.signage_accessible_rate).toBeNull();;
     });
 
     it("returns zero lighting_adequate_rate", () => {
       const m = computeAccessibilityMetrics([]);
-      expect(m.lighting_adequate_rate).toBe(0);
+      expect(m.lighting_adequate_rate).toBeNull();;
     });
 
     it("returns zero emergency_egress_accessible_rate", () => {
       const m = computeAccessibilityMetrics([]);
-      expect(m.emergency_egress_accessible_rate).toBe(0);
+      expect(m.emergency_egress_accessible_rate).toBeNull();;
     });
 
     it("returns zero total_cost", () => {

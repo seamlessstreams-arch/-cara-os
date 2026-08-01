@@ -39,7 +39,7 @@ describe("computeVisitorSummary", () => {
     expect(s.unique_visitors).toBe(0);
     expect(s.professional_visits).toBe(0);
     expect(s.family_visits).toBe(0);
-    expect(s.avg_duration_minutes).toBe(0);
+    expect(s.avg_duration_minutes).toBeNull();;
     expect(s.busiest_day).toBeNull();
   });
 

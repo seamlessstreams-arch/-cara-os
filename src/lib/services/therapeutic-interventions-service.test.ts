@@ -66,7 +66,7 @@ describe("computeTherapyMetrics", () => {
     expect(m.children_waiting).toBe(0);
     expect(m.total_sessions).toBe(0);
     expect(m.sessions_attended).toBe(0);
-    expect(m.attendance_rate).toBe(0);
+    expect(m.attendance_rate).toBeNull();;
     expect(m.avg_engagement).toBe(0);
     expect(m.children_progressing).toBe(0);
     expect(m.children_regressing).toBe(0);

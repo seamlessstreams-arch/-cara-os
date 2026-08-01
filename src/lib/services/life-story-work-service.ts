@@ -141,19 +141,19 @@ export function computeLifeStoryWorkMetrics(
   fully_engaged_count: number;
   declined_count: number;
   distressed_count: number;
-  age_appropriate_rate: number;
-  trauma_informed_rate: number;
-  child_led_rate: number;
-  consent_obtained_rate: number;
-  social_worker_aware_rate: number;
-  therapist_consulted_rate: number;
-  materials_created_rate: number;
-  securely_stored_rate: number;
-  shared_with_child_rate: number;
-  parent_involvement_rate: number;
-  cultural_sensitivity_rate: number;
-  follow_up_planned_rate: number;
-  average_session_duration: number;
+  age_appropriate_rate: number | null;
+  trauma_informed_rate: number | null;
+  child_led_rate: number | null;
+  consent_obtained_rate: number | null;
+  social_worker_aware_rate: number | null;
+  therapist_consulted_rate: number | null;
+  materials_created_rate: number | null;
+  securely_stored_rate: number | null;
+  shared_with_child_rate: number | null;
+  parent_involvement_rate: number | null;
+  cultural_sensitivity_rate: number | null;
+  follow_up_planned_rate: number | null;
+  average_session_duration: number | null;
   unique_children: number;
   by_session_type: Record<string, number>;
   by_child_engagement: Record<string, number>;
@@ -168,12 +168,12 @@ export function computeLifeStoryWorkMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDuration = records.length > 0
     ? Math.round((records.reduce((sum, r) => sum + r.session_duration_minutes, 0) / records.length) * 10) / 10
-    : 0;
+    : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

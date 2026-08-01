@@ -140,18 +140,18 @@ export function computeStaffLoneWorkingMetrics(
   high_count: number;
   emergency_only_count: number;
   not_authorised_count: number;
-  risk_assessed_rate: number;
-  manager_authorised_rate: number;
-  communication_plan_rate: number;
-  emergency_contacts_rate: number;
-  phone_charged_rate: number;
-  check_in_protocol_rate: number;
-  buddy_system_rate: number;
-  panic_alarm_rate: number;
-  first_aid_trained_rate: number;
-  medication_trained_rate: number;
-  safeguarding_trained_rate: number;
-  policy_read_rate: number;
+  risk_assessed_rate: number | null;
+  manager_authorised_rate: number | null;
+  communication_plan_rate: number | null;
+  emergency_contacts_rate: number | null;
+  phone_charged_rate: number | null;
+  check_in_protocol_rate: number | null;
+  buddy_system_rate: number | null;
+  panic_alarm_rate: number | null;
+  first_aid_trained_rate: number | null;
+  medication_trained_rate: number | null;
+  safeguarding_trained_rate: number | null;
+  policy_read_rate: number | null;
   unique_staff: number;
   by_scenario: Record<string, number>;
   by_risk_level: Record<string, number>;
@@ -167,7 +167,7 @@ export function computeStaffLoneWorkingMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;

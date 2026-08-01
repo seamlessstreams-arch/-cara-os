@@ -47,9 +47,9 @@ describe("computeFaithSpiritualMetrics", () => {
     expect(m.disengaged_count).toBe(0);
     expect(m.poor_sensitivity_count).toBe(0);
     expect(m.insensitive_count).toBe(0);
-    expect(m.child_wishes_rate).toBe(0);
-    expect(m.dietary_needs_rate).toBe(0);
-    expect(m.attendance_rate).toBe(0);
+    expect(m.child_wishes_rate).toBeNull();;
+    expect(m.dietary_needs_rate).toBeNull();;
+    expect(m.attendance_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

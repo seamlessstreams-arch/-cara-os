@@ -150,19 +150,19 @@ export function computeInternetUsageMetrics(
   safeguarding_referral_count: number;
   no_monitoring_count: number;
   social_media_count: number;
-  parental_controls_rate: number;
-  age_appropriate_rate: number;
-  screen_time_within_limits_rate: number;
-  privacy_settings_rate: number;
-  social_media_reviewed_rate: number;
-  contact_list_rate: number;
-  online_safety_discussed_rate: number;
-  digital_literacy_rate: number;
-  consent_current_rate: number;
-  care_plan_linked_rate: number;
-  social_worker_informed_rate: number;
-  recorded_promptly_rate: number;
-  average_screen_time: number;
+  parental_controls_rate: number | null;
+  age_appropriate_rate: number | null;
+  screen_time_within_limits_rate: number | null;
+  privacy_settings_rate: number | null;
+  social_media_reviewed_rate: number | null;
+  contact_list_rate: number | null;
+  online_safety_discussed_rate: number | null;
+  digital_literacy_rate: number | null;
+  consent_current_rate: number | null;
+  care_plan_linked_rate: number | null;
+  social_worker_informed_rate: number | null;
+  recorded_promptly_rate: number | null;
+  average_screen_time: number | null;
   unique_children: number;
   by_device_type: Record<string, number>;
   by_usage_purpose: Record<string, number>;
@@ -178,12 +178,12 @@ export function computeInternetUsageMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgScreenTime = records.length > 0
     ? Math.round((records.reduce((sum, r) => sum + r.screen_time_minutes, 0) / records.length) * 10) / 10
-    : 0;
+    : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

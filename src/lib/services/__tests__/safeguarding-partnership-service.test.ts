@@ -86,27 +86,27 @@ describe("computeSafeguardingPartnershipMetrics", () => {
 
     it("returns zero child_seen_alone_rate", () => {
       const m = computeSafeguardingPartnershipMetrics([]);
-      expect(m.child_seen_alone_rate).toBe(0);
+      expect(m.child_seen_alone_rate).toBeNull();;
     });
 
     it("returns zero child_views_rate", () => {
       const m = computeSafeguardingPartnershipMetrics([]);
-      expect(m.child_views_rate).toBe(0);
+      expect(m.child_views_rate).toBeNull();;
     });
 
     it("returns zero home_contributed_rate", () => {
       const m = computeSafeguardingPartnershipMetrics([]);
-      expect(m.home_contributed_rate).toBe(0);
+      expect(m.home_contributed_rate).toBeNull();;
     });
 
     it("returns zero outcome_shared_rate", () => {
       const m = computeSafeguardingPartnershipMetrics([]);
-      expect(m.outcome_shared_rate).toBe(0);
+      expect(m.outcome_shared_rate).toBeNull();;
     });
 
     it("returns zero follow_up_agreed_rate", () => {
       const m = computeSafeguardingPartnershipMetrics([]);
-      expect(m.follow_up_agreed_rate).toBe(0);
+      expect(m.follow_up_agreed_rate).toBeNull();;
     });
 
     it("returns empty referral_type_breakdown", () => {

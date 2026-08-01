@@ -43,8 +43,23 @@ function makeRecord(overrides?: Partial<StaffPerformanceDipRecord>): StaffPerfor
 
 describe("staff-performance-dip-service", () => {
   describe("computePerformanceDipMetrics", () => {
-    it("returns zeros for empty", () => { const m = computePerformanceDipMetrics([]); expect(m.total_dips).toBe(0); expect(m.manager_review_count).toBe(0); expect(m.support_recommended_count).toBe(0); expect(m.unresolved_count).toBe(0); expect(m.escalated_count).toBe(0); expect(m.evidence_documented_rate).toBe(0); expect(m.unique_staff).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computePerformanceDipMetrics([]); expect(m.by_dip_category).toEqual({}); expect(m.by_dip_severity).toEqual({}); expect(m.by_dip_status).toEqual({}); expect(m.by_frequency_pattern).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computePerformanceDipMetrics([]);
+      expect(m.total_dips).toBe(0);;
+      expect(m.manager_review_count).toBe(0);
+      expect(m.support_recommended_count).toBe(0);
+      expect(m.unresolved_count).toBe(0);
+      expect(m.escalated_count).toBe(0);
+      expect(m.evidence_documented_rate).toBeNull();;
+      expect(m.unique_staff).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computePerformanceDipMetrics([]);
+      expect(m.by_dip_category).toEqual({});
+      expect(m.by_dip_severity).toEqual({});
+      expect(m.by_dip_status).toEqual({});
+      expect(m.by_frequency_pattern).toEqual({});
+    });
     it("total_dips counts records", () => { expect(computePerformanceDipMetrics([makeRecord(), makeRecord()]).total_dips).toBe(2); });
     it("counts manager_review_required", () => { expect(computePerformanceDipMetrics([makeRecord({ dip_severity: "manager_review_required" })]).manager_review_count).toBe(1); });
     it("counts support_recommended", () => { expect(computePerformanceDipMetrics([makeRecord({ dip_severity: "support_recommended" })]).support_recommended_count).toBe(1); });
@@ -53,7 +68,21 @@ describe("staff-performance-dip-service", () => {
     it("counts supporting as unresolved", () => { expect(computePerformanceDipMetrics([makeRecord({ dip_status: "supporting" })]).unresolved_count).toBe(1); });
     it("does not count resolved as unresolved", () => { expect(computePerformanceDipMetrics([makeRecord({ dip_status: "resolved" })]).unresolved_count).toBe(0); });
     it("counts escalated", () => { expect(computePerformanceDipMetrics([makeRecord({ dip_status: "escalated" })]).escalated_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computePerformanceDipMetrics([makeRecord()]); expect(m.evidence_documented_rate).toBe(100); expect(m.manager_aware_rate).toBe(100); expect(m.staff_informed_rate).toBe(100); expect(m.support_offered_rate).toBe(100); expect(m.triggers_explored_rate).toBe(100); expect(m.supervision_discussed_rate).toBe(100); expect(m.training_considered_rate).toBe(100); expect(m.wellbeing_assessed_rate).toBe(100); expect(m.action_plan_rate).toBe(100); expect(m.staff_responded_rate).toBe(100); expect(m.follow_up_scheduled_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computePerformanceDipMetrics([makeRecord()]);
+      expect(m.evidence_documented_rate).toBe(100);
+      expect(m.manager_aware_rate).toBe(100);
+      expect(m.staff_informed_rate).toBe(100);
+      expect(m.support_offered_rate).toBe(100);
+      expect(m.triggers_explored_rate).toBe(100);
+      expect(m.supervision_discussed_rate).toBe(100);
+      expect(m.training_considered_rate).toBe(100);
+      expect(m.wellbeing_assessed_rate).toBe(100);
+      expect(m.action_plan_rate).toBe(100);
+      expect(m.staff_responded_rate).toBe(100);
+      expect(m.follow_up_scheduled_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("staff_informed_rate 0 when false", () => { expect(computePerformanceDipMetrics([makeRecord({ staff_informed: false })]).staff_informed_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computePerformanceDipMetrics([makeRecord({ support_offered: true }), makeRecord({ support_offered: false }), makeRecord({ support_offered: true })]); expect(m.support_offered_rate).toBe(66.7); });
     it("unique_staff distinct", () => { const m = computePerformanceDipMetrics([makeRecord({ staff_name: "A" }), makeRecord({ staff_name: "B" }), makeRecord({ staff_name: "A" })]); expect(m.unique_staff).toBe(2); });
@@ -66,17 +95,42 @@ describe("staff-performance-dip-service", () => {
   describe("identifyPerformanceDipAlerts", () => {
     it("returns empty for clean", () => { expect(identifyPerformanceDipAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyPerformanceDipAlerts([])).toEqual([]); });
-    it("fires unreviewed_serious", () => { const a = identifyPerformanceDipAlerts([makeRecord({ dip_severity: "manager_review_required", dip_status: "identified", staff_name: "Jo" })]); expect(a[0].type).toBe("unreviewed_serious"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires unreviewed_serious", () => { 
+      const a = identifyPerformanceDipAlerts([makeRecord({ dip_severity: "manager_review_required", dip_status: "identified", staff_name: "Jo" })]);
+      expect(a[0].type).toBe("unreviewed_serious");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("unreviewed_serious for support_recommended + exploring", () => { const a = identifyPerformanceDipAlerts([makeRecord({ dip_severity: "support_recommended", dip_status: "exploring" })]); expect(a[0].type).toBe("unreviewed_serious"); });
     it("unreviewed_serious per-record", () => { const a = identifyPerformanceDipAlerts([makeRecord({ id: "a-1", dip_severity: "manager_review_required", dip_status: "identified" }), makeRecord({ id: "a-2", dip_severity: "support_recommended", dip_status: "exploring" })]); expect(a.filter(x => x.type === "unreviewed_serious")).toHaveLength(2); });
     it("no critical when resolved", () => { expect(identifyPerformanceDipAlerts([makeRecord({ dip_severity: "manager_review_required", dip_status: "resolved" })]).find(x => x.type === "unreviewed_serious")).toBeUndefined(); });
-    it("fires staff_not_informed singular", () => { const a = identifyPerformanceDipAlerts([makeRecord({ staff_informed: false })]); const f = a.find(x => x.type === "staff_not_informed"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 dip has"); });
+    it("fires staff_not_informed singular", () => { 
+      const a = identifyPerformanceDipAlerts([makeRecord({ staff_informed: false })]);
+      const f = a.find(x => x.type === "staff_not_informed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 dip has");
+    });
     it("staff_not_informed plural", () => { const a = identifyPerformanceDipAlerts([makeRecord({ staff_informed: false }), makeRecord({ staff_informed: false })]); const f = a.find(x => x.type === "staff_not_informed"); expect(f!.message).toContain("2 dips have"); });
-    it("fires no_support_offered singular", () => { const a = identifyPerformanceDipAlerts([makeRecord({ support_offered: false })]); const f = a.find(x => x.type === "no_support_offered"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 dip has"); });
+    it("fires no_support_offered singular", () => { 
+      const a = identifyPerformanceDipAlerts([makeRecord({ support_offered: false })]);
+      const f = a.find(x => x.type === "no_support_offered");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 dip has");
+    });
     it("triggers_not_explored not for 1", () => { expect(identifyPerformanceDipAlerts([makeRecord({ triggers_explored: false })]).find(x => x.type === "triggers_not_explored")).toBeUndefined(); });
     it("triggers_not_explored fires for 2", () => { const a = identifyPerformanceDipAlerts([makeRecord({ triggers_explored: false }), makeRecord({ triggers_explored: false })]); expect(a.find(x => x.type === "triggers_not_explored")).toBeDefined(); expect(a.find(x => x.type === "triggers_not_explored")!.severity).toBe("medium"); });
     it("no_wellbeing_check not for 1", () => { expect(identifyPerformanceDipAlerts([makeRecord({ wellbeing_assessed: false })]).find(x => x.type === "no_wellbeing_check")).toBeUndefined(); });
     it("no_wellbeing_check fires for 2", () => { const a = identifyPerformanceDipAlerts([makeRecord({ wellbeing_assessed: false }), makeRecord({ wellbeing_assessed: false })]); expect(a.find(x => x.type === "no_wellbeing_check")).toBeDefined(); expect(a.find(x => x.type === "no_wellbeing_check")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyPerformanceDipAlerts([makeRecord({ dip_severity: "manager_review_required", dip_status: "identified", staff_informed: false, support_offered: false, triggers_explored: false, wellbeing_assessed: false }), makeRecord({ staff_informed: false, support_offered: false, triggers_explored: false, wellbeing_assessed: false })]); const types = a.map(x => x.type); expect(types).toContain("unreviewed_serious"); expect(types).toContain("staff_not_informed"); expect(types).toContain("no_support_offered"); expect(types).toContain("triggers_not_explored"); expect(types).toContain("no_wellbeing_check"); });
+    it("fires all applicable", () => { 
+      const a = identifyPerformanceDipAlerts([makeRecord({ dip_severity: "manager_review_required", dip_status: "identified", staff_informed: false, support_offered: false, triggers_explored: false, wellbeing_assessed: false }), makeRecord({ staff_informed: false, support_offered: false, triggers_explored: false, wellbeing_assessed: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("unreviewed_serious");
+      expect(types).toContain("staff_not_informed");
+      expect(types).toContain("no_support_offered");
+      expect(types).toContain("triggers_not_explored");
+      expect(types).toContain("no_wellbeing_check");
+    });
   });
 });

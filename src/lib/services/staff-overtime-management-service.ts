@@ -45,7 +45,7 @@ export interface StaffOvertimeManagementRow {
   contracted_hours: number;
   actual_hours: number;
   overtime_hours: number;
-  weekly_average_hours: number;
+  weekly_average_hours: number | null;
   exceeds_48_hours: boolean;
   opt_out_signed: boolean;
   opt_out_date: string | null;
@@ -76,10 +76,10 @@ export function computeMetrics(rows: StaffOvertimeManagementRow[]): {
   exceeds_48_count: number;
   non_compliant_count: number;
   opt_out_count: number;
-  opt_out_rate: number;
-  rest_break_compliant_rate: number;
-  overtime_authorised_rate: number;
-  overtime_paid_rate: number;
+  opt_out_rate: number | null;
+  rest_break_compliant_rate: number | null;
+  overtime_authorised_rate: number | null;
+  overtime_paid_rate: number | null;
   toil_accrued_count: number;
   night_worker_count: number;
   avg_weekly_hours: number;
@@ -98,7 +98,7 @@ export function computeMetrics(rows: StaffOvertimeManagementRow[]): {
 
   const boolRate = (field: keyof StaffOvertimeManagementRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const avg = (field: keyof StaffOvertimeManagementRow) => {
@@ -233,7 +233,7 @@ export function computeCaraInsights(rows: StaffOvertimeManagementRow[]): string[
         `How is the home ensuring staff working hours remain within safe limits ` +
         `and that all opt-out agreements are valid and voluntary under the Working Time Regulations 1998?`,
     );
-  } else if (metrics.overtime_authorised_rate < 100) {
+  } else if ((metrics.overtime_authorised_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.overtime_authorised_rate}% of overtime has been authorised. ` +
         `How is the home ensuring all overtime is properly approved, ` +

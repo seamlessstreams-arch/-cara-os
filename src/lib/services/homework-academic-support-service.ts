@@ -138,18 +138,18 @@ export function computeHomeworkAcademicMetrics(
   refused_count: number;
   no_progress_count: number;
   regression_count: number;
-  homework_completed_rate: number;
-  quiet_space_rate: number;
-  resources_rate: number;
-  school_liaison_rate: number;
-  learning_needs_rate: number;
-  encouragement_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  pep_updated_rate: number;
-  attendance_checked_rate: number;
-  recorded_promptly_rate: number;
+  homework_completed_rate: number | null;
+  quiet_space_rate: number | null;
+  resources_rate: number | null;
+  school_liaison_rate: number | null;
+  learning_needs_rate: number | null;
+  encouragement_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  pep_updated_rate: number | null;
+  attendance_checked_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_subject_area: Record<string, number>;
   by_support_type: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeHomeworkAcademicMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const bySubject: Record<string, number> = {};

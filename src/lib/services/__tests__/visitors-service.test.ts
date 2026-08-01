@@ -164,7 +164,7 @@ describe("computeVisitorSummary", () => {
     expect(result.by_purpose).toEqual({});
     expect(result.professional_visits).toBe(0);
     expect(result.family_visits).toBe(0);
-    expect(result.avg_duration_minutes).toBe(0);
+    expect(result.avg_duration_minutes).toBeNull();;
     expect(result.busiest_day).toBeNull();
     expect(result.children_visited).toEqual({});
   });
@@ -321,7 +321,7 @@ describe("computeVisitorSummary", () => {
       dateFrom,
       dateTo,
     );
-    expect(result.avg_duration_minutes).toBe(0);
+    expect(result.avg_duration_minutes).toBeNull();;
   });
 
   it("rounds avg_duration_minutes to one decimal place", () => {

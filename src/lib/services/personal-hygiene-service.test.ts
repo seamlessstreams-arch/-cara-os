@@ -47,10 +47,10 @@ describe("computePersonalHygieneMetrics", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.independent_count).toBe(0);
     expect(m.full_support_count).toBe(0);
-    expect(m.independence_rate).toBe(0);
+    expect(m.independence_rate).toBeNull();;
     expect(m.excellent_progress_count).toBe(0);
     expect(m.needs_improvement_count).toBe(0);
-    expect(m.child_consulted_rate).toBe(0);
+    expect(m.child_consulted_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

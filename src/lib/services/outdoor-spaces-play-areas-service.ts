@@ -138,18 +138,18 @@ export function computeOutdoorSpacesMetrics(
   hazard_count: number;
   poor_condition_count: number;
   not_accessible_count: number;
-  equipment_checked_rate: number;
-  surface_safe_rate: number;
-  fencing_secure_rate: number;
-  lighting_rate: number;
-  clean_tidy_rate: number;
-  age_appropriate_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  maintenance_rate: number;
-  risk_assessed_rate: number;
-  children_consulted_rate: number;
-  recorded_promptly_rate: number;
+  equipment_checked_rate: number | null;
+  surface_safe_rate: number | null;
+  fencing_secure_rate: number | null;
+  lighting_rate: number | null;
+  clean_tidy_rate: number | null;
+  age_appropriate_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  maintenance_rate: number | null;
+  risk_assessed_rate: number | null;
+  children_consulted_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_space_type: Record<string, number>;
   by_condition_rating: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeOutdoorSpacesMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

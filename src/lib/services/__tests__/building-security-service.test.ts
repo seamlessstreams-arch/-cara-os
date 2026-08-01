@@ -280,7 +280,7 @@ describe("computeSecurityMetrics", () => {
 
     it("returns zero secure_rate", () => {
       const m = computeSecurityMetrics([]);
-      expect(m.secure_rate).toBe(0);
+      expect(m.secure_rate).toBeNull();;
     });
 
     it("returns zero breach_count", () => {
@@ -295,7 +295,7 @@ describe("computeSecurityMetrics", () => {
 
     it("returns zero alarm_operational_rate", () => {
       const m = computeSecurityMetrics([]);
-      expect(m.alarm_operational_rate).toBe(0);
+      expect(m.alarm_operational_rate).toBeNull();;
     });
 
     it("returns zero alarm_fault_count", () => {
@@ -305,7 +305,7 @@ describe("computeSecurityMetrics", () => {
 
     it("returns zero keys_accounted_rate", () => {
       const m = computeSecurityMetrics([]);
-      expect(m.keys_accounted_rate).toBe(0);
+      expect(m.keys_accounted_rate).toBeNull();;
     });
 
     it("returns zero key_missing_count", () => {
@@ -315,27 +315,27 @@ describe("computeSecurityMetrics", () => {
 
     it("returns zero doors_secure_rate", () => {
       const m = computeSecurityMetrics([]);
-      expect(m.doors_secure_rate).toBe(0);
+      expect(m.doors_secure_rate).toBeNull();;
     });
 
     it("returns zero windows_secure_rate", () => {
       const m = computeSecurityMetrics([]);
-      expect(m.windows_secure_rate).toBe(0);
+      expect(m.windows_secure_rate).toBeNull();;
     });
 
     it("returns zero lighting_working_rate", () => {
       const m = computeSecurityMetrics([]);
-      expect(m.lighting_working_rate).toBe(0);
+      expect(m.lighting_working_rate).toBeNull();;
     });
 
     it("returns zero perimeter_secure_rate", () => {
       const m = computeSecurityMetrics([]);
-      expect(m.perimeter_secure_rate).toBe(0);
+      expect(m.perimeter_secure_rate).toBeNull();;
     });
 
     it("returns zero children_accounted_rate", () => {
       const m = computeSecurityMetrics([]);
-      expect(m.children_accounted_rate).toBe(0);
+      expect(m.children_accounted_rate).toBeNull();;
     });
 
     it("returns zero check_overdue_count", () => {

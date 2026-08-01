@@ -90,10 +90,10 @@ export const MAINTENANCE_CATEGORIES: string[] = [
  */
 export function computePremisesCompliance(checks: PremisesCheck[], now: Date = new Date()): {
   total_checks: number;
-  pass_rate: number;
+  pass_rate: number | null;
   fail_count: number;
   overdue_checks: { check_type: string; label: string; last_done: string | null; days_overdue: number }[];
-  statutory_compliance_rate: number;
+  statutory_compliance_rate: number | null;
   follow_ups_pending: number;
   issues_found_count: number;
 } {
@@ -192,7 +192,7 @@ export function computeMaintenanceSummary(requests: MaintenanceRequest[], now: D
   completed: number;
   by_priority: Record<string, number>;
   by_category: Record<string, number>;
-  avg_resolution_days: number;
+  avg_resolution_days: number | null;
   safety_risks_open: number;
   total_cost: number;
   overdue_urgent: number;
@@ -255,7 +255,7 @@ export function computeMaintenanceSummary(requests: MaintenanceRequest[], now: D
   const avgResolutionDays =
     resolvedCount > 0
       ? Math.round((totalResolutionDays / resolvedCount) * 10) / 10
-      : 0;
+      : null;
 
   return {
     total_requests: requests.length,

@@ -44,7 +44,7 @@ describe("computeInsuranceMetrics", () => {
     expect(m.total_policies).toBe(0);
     expect(m.expired_count).toBe(0);
     expect(m.total_premium).toBe(0);
-    expect(m.document_held_rate).toBe(0);
+    expect(m.document_held_rate).toBeNull();;
     expect(m.unique_policies).toBe(0);
     expect(m.insurance_type_breakdown).toEqual({});
   });

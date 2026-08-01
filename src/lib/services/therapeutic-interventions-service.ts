@@ -190,7 +190,7 @@ export function computeTherapyMetrics(
   children_waiting: number;
   total_sessions: number;
   sessions_attended: number;
-  attendance_rate: number;
+  attendance_rate: number | null;
   avg_engagement: number;
   children_progressing: number;
   children_regressing: number;
@@ -218,7 +218,7 @@ export function computeTherapyMetrics(
   const attendanceRate =
     completedSessions > 0
       ? Math.round((attended / completedSessions) * 1000) / 10
-      : 0;
+      : null;
 
   // Engagement (for attended sessions)
   const engagementMap: Record<string, number> = {

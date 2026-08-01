@@ -37,15 +37,44 @@ function makeRecord(overrides?: Partial<MedicationEffectivenessReviewRecord>): M
 
 describe("medication-effectiveness-review-service", () => {
   describe("computeMedicationEffectivenessMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeMedicationEffectivenessMetrics([]); expect(m.total_reviews).toBe(0); expect(m.ineffective_count).toBe(0); expect(m.adverse_effects_count).toBe(0); expect(m.non_adherent_count).toBe(0); expect(m.overdue_review_count).toBe(0); expect(m.child_views_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeMedicationEffectivenessMetrics([]); expect(m.by_medication_category).toEqual({}); expect(m.by_effectiveness_rating).toEqual({}); expect(m.by_adherence_level).toEqual({}); expect(m.by_review_compliance).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeMedicationEffectivenessMetrics([]);
+      expect(m.total_reviews).toBe(0);;
+      expect(m.ineffective_count).toBe(0);
+      expect(m.adverse_effects_count).toBe(0);
+      expect(m.non_adherent_count).toBe(0);
+      expect(m.overdue_review_count).toBe(0);
+      expect(m.child_views_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeMedicationEffectivenessMetrics([]);
+      expect(m.by_medication_category).toEqual({});
+      expect(m.by_effectiveness_rating).toEqual({});
+      expect(m.by_adherence_level).toEqual({});
+      expect(m.by_review_compliance).toEqual({});
+    });
     it("total_reviews counts records", () => { expect(computeMedicationEffectivenessMetrics([makeRecord(), makeRecord()]).total_reviews).toBe(2); });
     it("counts ineffective", () => { expect(computeMedicationEffectivenessMetrics([makeRecord({ effectiveness_rating: "ineffective" })]).ineffective_count).toBe(1); });
     it("counts adverse_effects", () => { expect(computeMedicationEffectivenessMetrics([makeRecord({ effectiveness_rating: "adverse_effects" })]).adverse_effects_count).toBe(1); });
     it("does not count partially_effective as ineffective", () => { expect(computeMedicationEffectivenessMetrics([makeRecord({ effectiveness_rating: "partially_effective" })]).ineffective_count).toBe(0); });
     it("counts non_adherent", () => { expect(computeMedicationEffectivenessMetrics([makeRecord({ adherence_level: "non_adherent" })]).non_adherent_count).toBe(1); });
     it("counts overdue_review", () => { expect(computeMedicationEffectivenessMetrics([makeRecord({ review_compliance: "significantly_overdue" })]).overdue_review_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeMedicationEffectivenessMetrics([makeRecord()]); expect(m.child_views_rate).toBe(100); expect(m.side_effects_rate).toBe(100); expect(m.prescriber_rate).toBe(100); expect(m.gp_informed_rate).toBe(100); expect(m.dosage_rate).toBe(100); expect(m.consent_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.school_aware_rate).toBe(100); expect(m.storage_rate).toBe(100); expect(m.administration_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeMedicationEffectivenessMetrics([makeRecord()]);
+      expect(m.child_views_rate).toBe(100);
+      expect(m.side_effects_rate).toBe(100);
+      expect(m.prescriber_rate).toBe(100);
+      expect(m.gp_informed_rate).toBe(100);
+      expect(m.dosage_rate).toBe(100);
+      expect(m.consent_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.school_aware_rate).toBe(100);
+      expect(m.storage_rate).toBe(100);
+      expect(m.administration_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("side_effects_rate 0 when false", () => { expect(computeMedicationEffectivenessMetrics([makeRecord({ side_effects_monitored: false })]).side_effects_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeMedicationEffectivenessMetrics([makeRecord({ prescriber_consulted: true }), makeRecord({ prescriber_consulted: false }), makeRecord({ prescriber_consulted: true })]); expect(m.prescriber_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeMedicationEffectivenessMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -58,17 +87,42 @@ describe("medication-effectiveness-review-service", () => {
   describe("identifyMedicationEffectivenessAlerts", () => {
     it("returns empty for clean", () => { expect(identifyMedicationEffectivenessAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyMedicationEffectivenessAlerts([])).toEqual([]); });
-    it("fires adverse_no_prescriber", () => { const a = identifyMedicationEffectivenessAlerts([makeRecord({ effectiveness_rating: "adverse_effects", prescriber_consulted: false, child_name: "Jo" })]); expect(a[0].type).toBe("adverse_no_prescriber"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires adverse_no_prescriber", () => { 
+      const a = identifyMedicationEffectivenessAlerts([makeRecord({ effectiveness_rating: "adverse_effects", prescriber_consulted: false, child_name: "Jo" })]);
+      expect(a[0].type).toBe("adverse_no_prescriber");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("adverse_no_prescriber per-record", () => { const a = identifyMedicationEffectivenessAlerts([makeRecord({ id: "a-1", effectiveness_rating: "adverse_effects", prescriber_consulted: false }), makeRecord({ id: "a-2", effectiveness_rating: "adverse_effects", prescriber_consulted: false })]); expect(a.filter(x => x.type === "adverse_no_prescriber")).toHaveLength(2); });
     it("adverse with prescriber no critical", () => { expect(identifyMedicationEffectivenessAlerts([makeRecord({ effectiveness_rating: "adverse_effects", prescriber_consulted: true })]).find(x => x.type === "adverse_no_prescriber")).toBeUndefined(); });
     it("effective no prescriber no critical", () => { expect(identifyMedicationEffectivenessAlerts([makeRecord({ effectiveness_rating: "effective", prescriber_consulted: false })]).find(x => x.type === "adverse_no_prescriber")).toBeUndefined(); });
-    it("fires side_effects_not_monitored singular", () => { const a = identifyMedicationEffectivenessAlerts([makeRecord({ side_effects_monitored: false })]); const f = a.find(x => x.type === "side_effects_not_monitored"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 review has"); });
+    it("fires side_effects_not_monitored singular", () => { 
+      const a = identifyMedicationEffectivenessAlerts([makeRecord({ side_effects_monitored: false })]);
+      const f = a.find(x => x.type === "side_effects_not_monitored");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 review has");
+    });
     it("side_effects_not_monitored plural", () => { const a = identifyMedicationEffectivenessAlerts([makeRecord({ side_effects_monitored: false }), makeRecord({ side_effects_monitored: false })]); const f = a.find(x => x.type === "side_effects_not_monitored"); expect(f!.message).toContain("2 reviews have"); });
-    it("fires consent_not_current singular", () => { const a = identifyMedicationEffectivenessAlerts([makeRecord({ consent_current: false })]); const f = a.find(x => x.type === "consent_not_current"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 review has"); });
+    it("fires consent_not_current singular", () => { 
+      const a = identifyMedicationEffectivenessAlerts([makeRecord({ consent_current: false })]);
+      const f = a.find(x => x.type === "consent_not_current");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 review has");
+    });
     it("storage_not_compliant not for 1", () => { expect(identifyMedicationEffectivenessAlerts([makeRecord({ storage_compliant: false })]).find(x => x.type === "storage_not_compliant")).toBeUndefined(); });
     it("storage_not_compliant fires for 2", () => { const a = identifyMedicationEffectivenessAlerts([makeRecord({ storage_compliant: false }), makeRecord({ storage_compliant: false })]); expect(a.find(x => x.type === "storage_not_compliant")).toBeDefined(); expect(a.find(x => x.type === "storage_not_compliant")!.severity).toBe("medium"); });
     it("administration_issues not for 1", () => { expect(identifyMedicationEffectivenessAlerts([makeRecord({ administration_correct: false })]).find(x => x.type === "administration_issues")).toBeUndefined(); });
     it("administration_issues fires for 2", () => { const a = identifyMedicationEffectivenessAlerts([makeRecord({ administration_correct: false }), makeRecord({ administration_correct: false })]); expect(a.find(x => x.type === "administration_issues")).toBeDefined(); expect(a.find(x => x.type === "administration_issues")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyMedicationEffectivenessAlerts([makeRecord({ effectiveness_rating: "adverse_effects", prescriber_consulted: false, side_effects_monitored: false, consent_current: false, storage_compliant: false, administration_correct: false }), makeRecord({ side_effects_monitored: false, consent_current: false, storage_compliant: false, administration_correct: false })]); const types = a.map(x => x.type); expect(types).toContain("adverse_no_prescriber"); expect(types).toContain("side_effects_not_monitored"); expect(types).toContain("consent_not_current"); expect(types).toContain("storage_not_compliant"); expect(types).toContain("administration_issues"); });
+    it("fires all applicable", () => { 
+      const a = identifyMedicationEffectivenessAlerts([makeRecord({ effectiveness_rating: "adverse_effects", prescriber_consulted: false, side_effects_monitored: false, consent_current: false, storage_compliant: false, administration_correct: false }), makeRecord({ side_effects_monitored: false, consent_current: false, storage_compliant: false, administration_correct: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("adverse_no_prescriber");
+      expect(types).toContain("side_effects_not_monitored");
+      expect(types).toContain("consent_not_current");
+      expect(types).toContain("storage_not_compliant");
+      expect(types).toContain("administration_issues");
+    });
   });
 });

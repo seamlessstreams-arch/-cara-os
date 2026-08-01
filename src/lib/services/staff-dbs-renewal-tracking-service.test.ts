@@ -49,10 +49,10 @@ describe("computeDbsMetrics", () => {
     expect(m.renewal_due_count).toBe(0);
     expect(m.pending_count).toBe(0);
     expect(m.disclosed_count).toBe(0);
-    expect(m.enhanced_check_rate).toBe(0);
-    expect(m.barred_list_rate).toBe(0);
-    expect(m.update_service_rate).toBe(0);
-    expect(m.identity_verified_rate).toBe(0);
+    expect(m.enhanced_check_rate).toBeNull();;
+    expect(m.barred_list_rate).toBeNull();;
+    expect(m.update_service_rate).toBeNull();;
+    expect(m.identity_verified_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

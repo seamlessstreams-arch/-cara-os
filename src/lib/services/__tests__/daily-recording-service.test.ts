@@ -265,7 +265,7 @@ describe("computeRecordingCompliance", () => {
     expect(result.missing).toBe(0);
     expect(result.late_submissions).toBe(0);
     expect(result.compliance_percentage).toBe(100);
-    expect(result.average_quality_score).toBe(0);
+    expect(result.average_quality_score).toBeNull();;
   });
 
   it("returns 100% compliance when all expected records are submitted", () => {
@@ -384,7 +384,7 @@ describe("computeRecordingCompliance", () => {
 
   it("returns average_quality_score of 0 when no records", () => {
     const result = computeRecordingCompliance([], [{ date: "2026-06-01", shift: "early" as const }], NOW);
-    expect(result.average_quality_score).toBe(0);
+    expect(result.average_quality_score).toBeNull();;
   });
 });
 

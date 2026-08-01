@@ -299,22 +299,22 @@ export function computeMetrics(
   by_condition_type: Record<string, number>;
   by_diagnosis_status: Record<string, number>;
   by_status: Record<string, number>;
-  ehcp_rate: number;
-  specialist_rate: number;
-  sensory_profile_rate: number;
-  communication_plan_rate: number;
-  behaviour_support_plan_rate: number;
-  staff_training_rate: number;
-  school_liaison_rate: number;
-  camhs_rate: number;
-  ot_rate: number;
-  salt_rate: number;
-  social_worker_informed_rate: number;
-  medication_rate: number;
-  transition_plan_rate: number;
+  ehcp_rate: number | null;
+  specialist_rate: number | null;
+  sensory_profile_rate: number | null;
+  communication_plan_rate: number | null;
+  behaviour_support_plan_rate: number | null;
+  staff_training_rate: number | null;
+  school_liaison_rate: number | null;
+  camhs_rate: number | null;
+  ot_rate: number | null;
+  salt_rate: number | null;
+  social_worker_informed_rate: number | null;
+  medication_rate: number | null;
+  transition_plan_rate: number | null;
   active_records: number;
   overdue_reviews: number;
-  multi_agency_involvement_rate: number;
+  multi_agency_involvement_rate: number | null;
 } {
   const total = rows.length;
   const activeRows = rows.filter((r) => r.status === "Active");
@@ -338,7 +338,7 @@ export function computeMetrics(
   for (const r of rows) byStatus[r.status] = (byStatus[r.status] || 0) + 1;
 
   // Boolean rates (calculated against total)
-  const pct = (count: number) => total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+  const pct = (count: number) => total > 0 ? Math.round((count / total) * 1000) / 10 : null;
 
   const ehcpRate = pct(rows.filter((r) => r.ehcp_in_place).length);
   const specialistRate = pct(rows.filter((r) => r.specialist_involved).length);
@@ -632,7 +632,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.sensory_profile_rate < 50 && metrics.total_records > 0) {
+  if ((metrics.sensory_profile_rate ?? 0) < 50 && metrics.total_records > 0) {
     insights.push(
       `[reflect] Only ${metrics.sensory_profile_rate}% of SEND records have a completed sensory profile. ` +
         `Has the home considered how each child's sensory needs affect their daily experience? ` +
@@ -642,7 +642,7 @@ export function generateCaraInsights(
         `distress or dysregulation. Are occupational therapy assessments being pursued where needed? ` +
         `Are staff trained to recognise and respond to sensory overload?`,
     );
-  } else if (metrics.staff_training_rate < 60 && metrics.total_records > 0) {
+  } else if ((metrics.staff_training_rate ?? 0) < 60 && metrics.total_records > 0) {
     insights.push(
       `[reflect] Staff training has been completed for only ${metrics.staff_training_rate}% of SEND records. ` +
         `Do all staff understand the specific needs of each child they support? The Autism Act 2009 ` +
@@ -652,7 +652,7 @@ export function generateCaraInsights(
         `have a rolling training programme that covers each child's diagnosis and recommended ` +
         `support strategies?`,
     );
-  } else if (metrics.multi_agency_involvement_rate < 40 && metrics.total_records > 3) {
+  } else if ((metrics.multi_agency_involvement_rate ?? 0) < 40 && metrics.total_records > 3) {
     insights.push(
       `[reflect] Multi-agency involvement is only ${metrics.multi_agency_involvement_rate}% across SEND records. ` +
         `Are children receiving coordinated support from health, education, and social care? ` +

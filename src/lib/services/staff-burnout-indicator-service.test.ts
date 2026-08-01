@@ -56,10 +56,10 @@ describe("computeBurnoutMetrics", () => {
     expect(m.concerning_count).toBe(0);
     expect(m.unresolved_count).toBe(0);
     expect(m.escalated_count).toBe(0);
-    expect(m.staff_aware_rate).toBe(0);
-    expect(m.manager_aware_rate).toBe(0);
-    expect(m.support_offered_rate).toBe(0);
-    expect(m.wellbeing_check_rate).toBe(0);
+    expect(m.staff_aware_rate).toBeNull();;
+    expect(m.manager_aware_rate).toBeNull();;
+    expect(m.support_offered_rate).toBeNull();;
+    expect(m.wellbeing_check_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

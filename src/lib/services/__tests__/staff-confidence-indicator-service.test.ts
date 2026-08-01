@@ -70,9 +70,24 @@ function makeRecord(overrides?: Partial<StaffConfidenceIndicatorRecord>): StaffC
 // ── computeConfidenceIndicatorMetrics ──────────────────────────────────────
 
 describe("computeConfidenceIndicatorMetrics", () => {
-  it("returns zeros for empty", () => { const m = computeConfidenceIndicatorMetrics([]); expect(m.total_indicators).toBe(0); expect(m.low_confidence_count).toBe(0); expect(m.declining_count).toBe(0); expect(m.no_confidence_count).toBe(0); expect(m.improving_count).toBe(0); expect(m.evidence_based_rate).toBe(0); expect(m.unique_staff).toBe(0); });
+  it("returns zeros for empty", () => { 
+    const m = computeConfidenceIndicatorMetrics([]);
+    expect(m.total_indicators).toBe(0);;
+    expect(m.low_confidence_count).toBe(0);
+    expect(m.declining_count).toBe(0);
+    expect(m.no_confidence_count).toBe(0);
+    expect(m.improving_count).toBe(0);
+    expect(m.evidence_based_rate).toBeNull();;
+    expect(m.unique_staff).toBe(0);
+  });
 
-  it("returns empty breakdowns", () => { const m = computeConfidenceIndicatorMetrics([]); expect(m.by_practice_area).toEqual({}); expect(m.by_confidence_level).toEqual({}); expect(m.by_trend_direction).toEqual({}); expect(m.by_assessment_source).toEqual({}); });
+  it("returns empty breakdowns", () => { 
+    const m = computeConfidenceIndicatorMetrics([]);
+    expect(m.by_practice_area).toEqual({});
+    expect(m.by_confidence_level).toEqual({});
+    expect(m.by_trend_direction).toEqual({});
+    expect(m.by_assessment_source).toEqual({});
+  });
 
   it("total_indicators counts records", () => { const m = computeConfidenceIndicatorMetrics([makeRecord({ id: "a-1" }), makeRecord({ id: "a-2" })]); expect(m.total_indicators).toBe(2); });
 
@@ -90,7 +105,21 @@ describe("computeConfidenceIndicatorMetrics", () => {
 
   it("counts improving", () => { const m = computeConfidenceIndicatorMetrics([makeRecord({ trend_direction: "improving" })]); expect(m.improving_count).toBe(1); });
 
-  it("returns 100% boolean rates with defaults", () => { const m = computeConfidenceIndicatorMetrics([makeRecord()]); expect(m.evidence_based_rate).toBe(100); expect(m.self_assessed_rate).toBe(100); expect(m.manager_validated_rate).toBe(100); expect(m.strengths_discussed_rate).toBe(100); expect(m.development_plan_rate).toBe(100); expect(m.training_identified_rate).toBe(100); expect(m.mentoring_offered_rate).toBe(100); expect(m.supervision_discussed_rate).toBe(100); expect(m.wellbeing_considered_rate).toBe(100); expect(m.progress_tracked_rate).toBe(100); expect(m.staff_agreed_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+  it("returns 100% boolean rates with defaults", () => { 
+    const m = computeConfidenceIndicatorMetrics([makeRecord()]);
+    expect(m.evidence_based_rate).toBe(100);
+    expect(m.self_assessed_rate).toBe(100);
+    expect(m.manager_validated_rate).toBe(100);
+    expect(m.strengths_discussed_rate).toBe(100);
+    expect(m.development_plan_rate).toBe(100);
+    expect(m.training_identified_rate).toBe(100);
+    expect(m.mentoring_offered_rate).toBe(100);
+    expect(m.supervision_discussed_rate).toBe(100);
+    expect(m.wellbeing_considered_rate).toBe(100);
+    expect(m.progress_tracked_rate).toBe(100);
+    expect(m.staff_agreed_rate).toBe(100);
+    expect(m.recorded_promptly_rate).toBe(100);
+  });
 
   it("evidence_based_rate 0 when false", () => { const m = computeConfidenceIndicatorMetrics([makeRecord({ evidence_based: false })]); expect(m.evidence_based_rate).toBe(0); });
 
@@ -114,7 +143,14 @@ describe("identifyConfidenceIndicatorAlerts", () => {
 
   it("returns empty for empty", () => { expect(identifyConfidenceIndicatorAlerts([])).toEqual([]); });
 
-  it("fires no_confidence_declining", () => { const alerts = identifyConfidenceIndicatorAlerts([makeRecord({ confidence_level: "no_confidence", trend_direction: "declining", staff_name: "Jo", practice_area: "safeguarding" })]); const a = alerts.find((x) => x.type === "no_confidence_declining"); expect(a).toBeDefined(); expect(a!.severity).toBe("critical"); expect(a!.message).toContain("Jo"); expect(a!.message).toContain("safeguarding"); });
+  it("fires no_confidence_declining", () => { 
+    const alerts = identifyConfidenceIndicatorAlerts([makeRecord({ confidence_level: "no_confidence", trend_direction: "declining", staff_name: "Jo", practice_area: "safeguarding" })]);
+    const a = alerts.find((x) => x.type === "no_confidence_declining");
+    expect(a).toBeDefined();
+    expect(a!.severity).toBe("critical");
+    expect(a!.message).toContain("Jo");
+    expect(a!.message).toContain("safeguarding");
+  });
 
   it("no critical when low_confidence + declining", () => { const alerts = identifyConfidenceIndicatorAlerts([makeRecord({ confidence_level: "low_confidence", trend_direction: "declining" })]); expect(alerts.filter((a) => a.severity === "critical")).toHaveLength(0); });
 
@@ -128,7 +164,13 @@ describe("identifyConfidenceIndicatorAlerts", () => {
 
   it("no high when low_confidence + linked", () => { const alerts = identifyConfidenceIndicatorAlerts([makeRecord({ confidence_level: "low_confidence", development_plan_linked: true })]); expect(alerts.filter((a) => a.type === "low_confidence_no_support")).toHaveLength(0); });
 
-  it("fires no_strengths_discussed", () => { const alerts = identifyConfidenceIndicatorAlerts([makeRecord({ strengths_discussed: false })]); const a = alerts.find((x) => x.type === "no_strengths_discussed"); expect(a).toBeDefined(); expect(a!.severity).toBe("high"); expect(a!.message).toContain("1 indicator has"); });
+  it("fires no_strengths_discussed", () => { 
+    const alerts = identifyConfidenceIndicatorAlerts([makeRecord({ strengths_discussed: false })]);
+    const a = alerts.find((x) => x.type === "no_strengths_discussed");
+    expect(a).toBeDefined();
+    expect(a!.severity).toBe("high");
+    expect(a!.message).toContain("1 indicator has");
+  });
 
   it("no_strengths_discussed plural", () => { const alerts = identifyConfidenceIndicatorAlerts([makeRecord({ id: "a-1", strengths_discussed: false }), makeRecord({ id: "a-2", strengths_discussed: false })]); const a = alerts.find((x) => x.type === "no_strengths_discussed"); expect(a!.message).toContain("2 indicators have"); });
 

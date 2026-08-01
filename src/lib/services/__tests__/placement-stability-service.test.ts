@@ -303,7 +303,7 @@ describe("computeStabilityMetrics", () => {
 
     it("returns planned_rate 0", () => {
       const m = computeStabilityMetrics([], 5);
-      expect(m.planned_rate).toBe(0);
+      expect(m.planned_rate).toBeNull();;
     });
 
     it("returns breakdowns 0", () => {
@@ -318,7 +318,7 @@ describe("computeStabilityMetrics", () => {
 
     it("returns average_placement_duration 0", () => {
       const m = computeStabilityMetrics([], 5);
-      expect(m.average_placement_duration).toBe(0);
+      expect(m.average_placement_duration).toBeNull();;
     });
 
     it("returns disruption_meetings_held 0", () => {
@@ -328,22 +328,22 @@ describe("computeStabilityMetrics", () => {
 
     it("returns disruption_meeting_rate 0", () => {
       const m = computeStabilityMetrics([], 5);
-      expect(m.disruption_meeting_rate).toBe(0);
+      expect(m.disruption_meeting_rate).toBeNull();;
     });
 
     it("returns child_views_sought_rate 0", () => {
       const m = computeStabilityMetrics([], 5);
-      expect(m.child_views_sought_rate).toBe(0);
+      expect(m.child_views_sought_rate).toBeNull();;
     });
 
     it("returns social_worker_consulted_rate 0", () => {
       const m = computeStabilityMetrics([], 5);
-      expect(m.social_worker_consulted_rate).toBe(0);
+      expect(m.social_worker_consulted_rate).toBeNull();;
     });
 
     it("returns irp_updated_rate 0", () => {
       const m = computeStabilityMetrics([], 5);
-      expect(m.irp_updated_rate).toBe(0);
+      expect(m.irp_updated_rate).toBeNull();;
     });
 
     it("returns children_with_multiple_moves 0", () => {

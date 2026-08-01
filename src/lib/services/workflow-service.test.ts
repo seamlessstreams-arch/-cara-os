@@ -45,7 +45,7 @@ describe("computeWorkflowProgress", () => {
       in_progress: 0,
       pending: 0,
       blocked: 0,
-      percentage: 0,
+      percentage: null,
     });
   });
 

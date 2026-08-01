@@ -41,9 +41,9 @@ describe("computeDataProtectionMetrics", () => {
     const m = computeDataProtectionMetrics([]);
     expect(m.total_events).toBe(0);
     expect(m.dsar_received_count).toBe(0);
-    expect(m.compliant_rate).toBe(0);
-    expect(m.within_deadline_rate).toBe(0);
-    expect(m.dpo_consulted_rate).toBe(0);
+    expect(m.compliant_rate).toBeNull();;
+    expect(m.within_deadline_rate).toBeNull();;
+    expect(m.dpo_consulted_rate).toBeNull();;
   });
 
   it("calculates correct counts and rates for populated data", () => {

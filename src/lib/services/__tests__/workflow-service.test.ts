@@ -147,7 +147,7 @@ describe("computeWorkflowProgress", () => {
     expect(result.in_progress).toBe(0);
     expect(result.pending).toBe(0);
     expect(result.blocked).toBe(0);
-    expect(result.percentage).toBe(0);
+    expect(result.percentage).toBeNull();;
   });
 
   it("calculates 100% when all steps are completed", () => {

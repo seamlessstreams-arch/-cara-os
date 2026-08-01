@@ -48,7 +48,7 @@ describe("creative-enrichment-activities-service", () => {
       expect(m.total_activities).toBe(0);
       expect(m.refused_count).toBe(0);
       expect(m.reluctant_count).toBe(0);
-      expect(m.child_choice_rate).toBe(0);
+      expect(m.child_choice_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
 

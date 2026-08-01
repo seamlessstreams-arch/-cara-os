@@ -44,10 +44,10 @@ describe("computeMetrics (return-to-work)", () => {
     expect(m.adjustments_count).toBe(0);
     expect(m.oh_referral_count).toBe(0);
     expect(m.trigger_level_count).toBe(0);
-    expect(m.support_plan_rate).toBe(0);
-    expect(m.welfare_check_rate).toBe(0);
-    expect(m.follow_up_rate).toBe(0);
-    expect(m.avg_absence_days).toBe(0);
+    expect(m.support_plan_rate).toBeNull();;
+    expect(m.welfare_check_rate).toBeNull();;
+    expect(m.follow_up_rate).toBeNull();;
+    expect(m.avg_absence_days).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

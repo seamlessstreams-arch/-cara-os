@@ -156,18 +156,18 @@ export function computeReviewOutcomeMetrics(
   immediate_followup_count: number;
   disputed_count: number;
   finalised_count: number;
-  strengths_acknowledged_rate: number;
-  development_discussed_rate: number;
-  actions_agreed_rate: number;
-  staff_views_rate: number;
-  wellbeing_discussed_rate: number;
-  training_needs_rate: number;
-  previous_actions_rate: number;
-  support_offered_rate: number;
-  safeguarding_discussed_rate: number;
-  record_shared_rate: number;
-  approved_rate: number;
-  recorded_promptly_rate: number;
+  strengths_acknowledged_rate: number | null;
+  development_discussed_rate: number | null;
+  actions_agreed_rate: number | null;
+  staff_views_rate: number | null;
+  wellbeing_discussed_rate: number | null;
+  training_needs_rate: number | null;
+  previous_actions_rate: number | null;
+  support_offered_rate: number | null;
+  safeguarding_discussed_rate: number | null;
+  record_shared_rate: number | null;
+  approved_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_staff: number;
   by_review_type: Record<string, number>;
   by_review_outcome: Record<string, number>;
@@ -194,7 +194,7 @@ export function computeReviewOutcomeMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;

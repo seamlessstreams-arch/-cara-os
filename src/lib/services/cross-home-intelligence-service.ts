@@ -31,13 +31,13 @@ export interface CrossHomeSnapshot {
   total_incidents_30d: number;
   safeguarding_concerns_open: number;
   risk_level_overall: string;
-  recording_compliance_pct: number;
+  recording_compliance_pct: number | null;
   avg_daily_log_quality: number;
   key_work_sessions_due: number;
   key_work_sessions_overdue: number;
-  staff_supervision_compliance_pct: number;
+  staff_supervision_compliance_pct: number | null;
   management_oversight_current: boolean;
-  ofsted_readiness_score: number;
+  ofsted_readiness_score: number | null;
   reg45_due_date: string | null;
   reg44_due_date: string | null;
   cara_alerts: CaraAlert[];
@@ -75,10 +75,10 @@ export interface OrganisationOverview {
   total_incidents_7d: number;
   total_incidents_30d: number;
   safeguarding_concerns_open: number;
-  overall_compliance_pct: number;
+  overall_compliance_pct: number | null;
   homes_at_risk: number;
   homes_compliant: number;
-  avg_ofsted_readiness: number;
+  avg_ofsted_readiness: number | null;
   key_work_overdue_total: number;
 }
 
@@ -276,13 +276,13 @@ export async function getOrganisationOverview(
     total_incidents_30d: homes.reduce((sum, h) => sum + h.total_incidents_30d, 0),
     safeguarding_concerns_open: homes.reduce((sum, h) => sum + h.safeguarding_concerns_open, 0),
     overall_compliance_pct: homes.length > 0
-      ? Math.round(homes.reduce((sum, h) => sum + h.recording_compliance_pct, 0) / homes.length)
-      : 0,
+      ? Math.round(homes.reduce((sum, h) => sum + (h.recording_compliance_pct ?? 0), 0) / homes.length)
+      : null,
     homes_at_risk: homes.filter((h) => h.risk_level_overall === "high" || h.risk_level_overall === "critical").length,
-    homes_compliant: homes.filter((h) => h.recording_compliance_pct >= 80).length,
+    homes_compliant: homes.filter((h) => (h.recording_compliance_pct ?? 0) >= 80).length,
     avg_ofsted_readiness: homes.length > 0
-      ? Math.round(homes.reduce((sum, h) => sum + h.ofsted_readiness_score, 0) / homes.length)
-      : 0,
+      ? Math.round(homes.reduce((sum, h) => sum + (h.ofsted_readiness_score ?? 0), 0) / homes.length)
+      : null,
     key_work_overdue_total: homes.reduce((sum, h) => sum + h.key_work_sessions_overdue, 0),
   };
 
@@ -417,7 +417,7 @@ export async function generateSnapshot(
     const expectedLogs = (childrenCount ?? 0) * 30;
     const recordingCompliance = expectedLogs > 0
       ? Math.min(100, Math.round(((logsCount ?? 0) / expectedLogs) * 100))
-      : 0;
+      : null;
 
     // Key work sessions
     const { count: kwDue } = await (s.from("cs_key_work_sessions") as SB)
@@ -433,7 +433,7 @@ export async function generateSnapshot(
     // Determine risk level
     let riskLevel = "low";
     if ((safeguardingOpen ?? 0) > 0 || (incidents7d ?? 0) >= 5) riskLevel = "high";
-    else if ((incidents7d ?? 0) >= 3 || recordingCompliance < 60) riskLevel = "medium";
+    else if ((incidents7d ?? 0) >= 3 || (recordingCompliance ?? 0) < 60) riskLevel = "medium";
 
     // Upsert snapshot
     const { error: upsertError } = await (s.from("cs_cross_home_snapshots") as SB)
@@ -482,7 +482,7 @@ export async function getAlerts(
     }
 
     // Generate alerts from metrics
-    if (home.recording_compliance_pct < 60) {
+    if ((home.recording_compliance_pct ?? 0) < 60) {
       alerts.push({
         id: `gen-rec-${home.home_id}`,
         severity: "high",

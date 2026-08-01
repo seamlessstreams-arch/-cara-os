@@ -297,7 +297,7 @@ describe("computeDataProtectionMetrics", () => {
     });
 
     it("compliant_rate is 0", () => {
-      expect(m.compliant_rate).toBe(0);
+      expect(m.compliant_rate).toBeNull();;
     });
 
     it("non_compliant_count is 0", () => {
@@ -317,7 +317,7 @@ describe("computeDataProtectionMetrics", () => {
     });
 
     it("within_deadline_rate is 0", () => {
-      expect(m.within_deadline_rate).toBe(0);
+      expect(m.within_deadline_rate).toBeNull();;
     });
 
     it("overdue_count is 0", () => {
@@ -333,7 +333,7 @@ describe("computeDataProtectionMetrics", () => {
     });
 
     it("dpo_consulted_rate is 0", () => {
-      expect(m.dpo_consulted_rate).toBe(0);
+      expect(m.dpo_consulted_rate).toBeNull();;
     });
 
     it("child_involved_count is 0", () => {

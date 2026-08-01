@@ -145,12 +145,12 @@ export function computeVisitorMetrics(
   unique_visitors: number;
   family_visits: number;
   professional_visits: number;
-  dbs_verified_rate: number;
-  id_verified_rate: number;
-  safeguarding_check_rate: number;
-  signed_in_rate: number;
-  signed_out_rate: number;
-  child_informed_rate: number;
+  dbs_verified_rate: number | null;
+  id_verified_rate: number | null;
+  safeguarding_check_rate: number | null;
+  signed_in_rate: number | null;
+  signed_out_rate: number | null;
+  child_informed_rate: number | null;
   unsupervised_count: number;
   dbs_expired_count: number;
   dbs_not_checked_count: number;
@@ -177,37 +177,37 @@ export function computeVisitorMetrics(
   const dbsRate =
     records.length > 0
       ? Math.round((dbsVerified / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const idVerified = records.filter((r) => r.id_verified).length;
   const idRate =
     records.length > 0
       ? Math.round((idVerified / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const sgCheck = records.filter((r) => r.safeguarding_check_completed).length;
   const sgRate =
     records.length > 0
       ? Math.round((sgCheck / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const signedIn = records.filter((r) => r.signed_in).length;
   const siRate =
     records.length > 0
       ? Math.round((signedIn / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const signedOut = records.filter((r) => r.signed_out).length;
   const soRate =
     records.length > 0
       ? Math.round((signedOut / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childInformed = records.filter((r) => r.child_informed).length;
   const ciRate =
     records.length > 0
       ? Math.round((childInformed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const unsupervised = records.filter((r) => r.supervision_level === "unsupervised").length;
   const dbsExpired = records.filter((r) => r.dbs_status === "expired").length;

@@ -97,27 +97,27 @@ describe("computeStaffWhistleblowingMetrics", () => {
 
     it("returns zero whistleblower_supported_rate", () => {
       const m = computeStaffWhistleblowingMetrics([]);
-      expect(m.whistleblower_supported_rate).toBe(0);
+      expect(m.whistleblower_supported_rate).toBeNull();;
     });
 
     it("returns zero no_detriment_rate", () => {
       const m = computeStaffWhistleblowingMetrics([]);
-      expect(m.no_detriment_rate).toBe(0);
+      expect(m.no_detriment_rate).toBeNull();;
     });
 
     it("returns zero regulatory_notified_rate", () => {
       const m = computeStaffWhistleblowingMetrics([]);
-      expect(m.regulatory_notified_rate).toBe(0);
+      expect(m.regulatory_notified_rate).toBeNull();;
     });
 
     it("returns zero learning_identified_rate", () => {
       const m = computeStaffWhistleblowingMetrics([]);
-      expect(m.learning_identified_rate).toBe(0);
+      expect(m.learning_identified_rate).toBeNull();;
     });
 
     it("returns zero learning_shared_rate", () => {
       const m = computeStaffWhistleblowingMetrics([]);
-      expect(m.learning_shared_rate).toBe(0);
+      expect(m.learning_shared_rate).toBeNull();;
     });
 
     it("returns empty category_breakdown", () => {

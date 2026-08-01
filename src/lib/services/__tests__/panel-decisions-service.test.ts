@@ -269,19 +269,19 @@ describe("computePanelMetrics", () => {
     expect(m.matching_panel_count).toBe(0);
     expect(m.disruption_meeting_count).toBe(0);
     expect(m.discharge_panel_count).toBe(0);
-    expect(m.approved_rate).toBe(0);
+    expect(m.approved_rate).toBeNull();;
     expect(m.approved_with_conditions_count).toBe(0);
     expect(m.declined_count).toBe(0);
     expect(m.deferred_count).toBe(0);
-    expect(m.full_quorum_rate).toBe(0);
+    expect(m.full_quorum_rate).toBeNull();;
     expect(m.quorum_not_met_count).toBe(0);
-    expect(m.child_views_considered_rate).toBe(0);
-    expect(m.risk_assessment_reviewed_rate).toBe(0);
-    expect(m.matching_criteria_rate).toBe(0);
-    expect(m.impact_assessed_rate).toBe(0);
-    expect(m.safeguarding_discussed_rate).toBe(0);
-    expect(m.minutes_recorded_rate).toBe(0);
-    expect(m.all_follow_up_completed_rate).toBe(0);
+    expect(m.child_views_considered_rate).toBeNull();;
+    expect(m.risk_assessment_reviewed_rate).toBeNull();;
+    expect(m.matching_criteria_rate).toBeNull();;
+    expect(m.impact_assessed_rate).toBeNull();;
+    expect(m.safeguarding_discussed_rate).toBeNull();;
+    expect(m.minutes_recorded_rate).toBeNull();;
+    expect(m.all_follow_up_completed_rate).toBeNull();;
     expect(m.follow_up_overdue_count).toBe(0);
     expect(m.follow_up_not_started_count).toBe(0);
     expect(m.unique_children).toBe(0);
@@ -418,7 +418,7 @@ describe("computePanelMetrics", () => {
 
   it("returns 0 approved_rate for empty records", () => {
     const m = computePanelMetrics([]);
-    expect(m.approved_rate).toBe(0);
+    expect(m.approved_rate).toBeNull();;
   });
 
   // ── approved_with_conditions_count ───────────────────────────────────
@@ -511,7 +511,7 @@ describe("computePanelMetrics", () => {
 
   it("returns 0 full_quorum_rate for empty records", () => {
     const m = computePanelMetrics([]);
-    expect(m.full_quorum_rate).toBe(0);
+    expect(m.full_quorum_rate).toBeNull();;
   });
 
   // ── quorum_not_met_count ────────────────────────────────────────────
@@ -569,7 +569,7 @@ describe("computePanelMetrics", () => {
 
   it("returns 0 child_views_considered_rate for empty records", () => {
     const m = computePanelMetrics([]);
-    expect(m.child_views_considered_rate).toBe(0);
+    expect(m.child_views_considered_rate).toBeNull();;
   });
 
   // ── risk_assessment_reviewed_rate ───────────────────────────────────
@@ -602,7 +602,7 @@ describe("computePanelMetrics", () => {
 
   it("returns 0 risk_assessment_reviewed_rate for empty records", () => {
     const m = computePanelMetrics([]);
-    expect(m.risk_assessment_reviewed_rate).toBe(0);
+    expect(m.risk_assessment_reviewed_rate).toBeNull();;
   });
 
   // ── matching_criteria_rate ──────────────────────────────────────────
@@ -634,7 +634,7 @@ describe("computePanelMetrics", () => {
 
   it("returns 0 matching_criteria_rate for empty records", () => {
     const m = computePanelMetrics([]);
-    expect(m.matching_criteria_rate).toBe(0);
+    expect(m.matching_criteria_rate).toBeNull();;
   });
 
   // ── impact_assessed_rate ────────────────────────────────────────────
@@ -666,7 +666,7 @@ describe("computePanelMetrics", () => {
 
   it("returns 0 impact_assessed_rate for empty records", () => {
     const m = computePanelMetrics([]);
-    expect(m.impact_assessed_rate).toBe(0);
+    expect(m.impact_assessed_rate).toBeNull();;
   });
 
   // ── safeguarding_discussed_rate ─────────────────────────────────────
@@ -698,7 +698,7 @@ describe("computePanelMetrics", () => {
 
   it("returns 0 safeguarding_discussed_rate for empty records", () => {
     const m = computePanelMetrics([]);
-    expect(m.safeguarding_discussed_rate).toBe(0);
+    expect(m.safeguarding_discussed_rate).toBeNull();;
   });
 
   // ── minutes_recorded_rate ───────────────────────────────────────────
@@ -730,7 +730,7 @@ describe("computePanelMetrics", () => {
 
   it("returns 0 minutes_recorded_rate for empty records", () => {
     const m = computePanelMetrics([]);
-    expect(m.minutes_recorded_rate).toBe(0);
+    expect(m.minutes_recorded_rate).toBeNull();;
   });
 
   // ── all_follow_up_completed_rate ────────────────────────────────────
@@ -771,7 +771,7 @@ describe("computePanelMetrics", () => {
 
   it("returns 0 all_follow_up_completed_rate for empty records", () => {
     const m = computePanelMetrics([]);
-    expect(m.all_follow_up_completed_rate).toBe(0);
+    expect(m.all_follow_up_completed_rate).toBeNull();;
   });
 
   // ── follow_up_overdue_count ─────────────────────────────────────────

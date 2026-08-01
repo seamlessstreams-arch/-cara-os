@@ -149,18 +149,18 @@ export function computeCulturalIdentityMetrics(
   declined_count: number;
   needs_training_count: number;
   not_assessed_count: number;
-  child_views_sought_rate: number;
-  culturally_appropriate_rate: number;
-  family_consulted_rate: number;
-  identity_celebrated_rate: number;
-  resources_available_rate: number;
-  staff_trained_rate: number;
-  care_plan_reflects_rate: number;
-  social_worker_informed_rate: number;
-  community_links_rate: number;
-  dietary_needs_rate: number;
-  language_supported_rate: number;
-  recorded_promptly_rate: number;
+  child_views_sought_rate: number | null;
+  culturally_appropriate_rate: number | null;
+  family_consulted_rate: number | null;
+  identity_celebrated_rate: number | null;
+  resources_available_rate: number | null;
+  staff_trained_rate: number | null;
+  care_plan_reflects_rate: number | null;
+  social_worker_informed_rate: number | null;
+  community_links_rate: number | null;
+  dietary_needs_rate: number | null;
+  language_supported_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_identity_area: Record<string, number>;
   by_support_type: Record<string, number>;
@@ -176,7 +176,7 @@ export function computeCulturalIdentityMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

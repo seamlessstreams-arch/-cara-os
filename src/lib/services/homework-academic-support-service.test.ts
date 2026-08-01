@@ -47,7 +47,7 @@ describe("computeHomeworkAcademicMetrics", () => {
     expect(m.refused_count).toBe(0);
     expect(m.no_progress_count).toBe(0);
     expect(m.regression_count).toBe(0);
-    expect(m.homework_completed_rate).toBe(0);
+    expect(m.homework_completed_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

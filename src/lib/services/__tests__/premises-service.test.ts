@@ -349,7 +349,7 @@ describe("computeMaintenanceSummary", () => {
     expect(result.completed).toBe(0);
     expect(result.by_priority).toEqual({});
     expect(result.by_category).toEqual({});
-    expect(result.avg_resolution_days).toBe(0);
+    expect(result.avg_resolution_days).toBeNull();;
     expect(result.safety_risks_open).toBe(0);
     expect(result.total_cost).toBe(0);
     expect(result.overdue_urgent).toBe(0);
@@ -415,7 +415,7 @@ describe("computeMaintenanceSummary", () => {
   it("returns 0 avg_resolution_days when no completed requests", () => {
     const requests = [makeMaintenanceRequest({ status: "open" })];
     const result = computeMaintenanceSummary(requests);
-    expect(result.avg_resolution_days).toBe(0);
+    expect(result.avg_resolution_days).toBeNull();;
   });
 
   it("counts safety_risks_open for open/in_progress with child_safety_risk", () => {

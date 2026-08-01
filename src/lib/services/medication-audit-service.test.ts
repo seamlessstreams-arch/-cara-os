@@ -47,10 +47,10 @@ describe("computeMedicationAuditMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeMedicationAuditMetrics([]);
     expect(m.total_audits).toBe(0);
-    expect(m.satisfactory_rate).toBe(0);
+    expect(m.satisfactory_rate).toBeNull();;
     expect(m.failed_count).toBe(0);
     expect(m.total_discrepancies).toBe(0);
-    expect(m.average_items_checked).toBe(0);
+    expect(m.average_items_checked).toBeNull();;
   });
 
   it("computes correct counts and rates for populated data", () => {

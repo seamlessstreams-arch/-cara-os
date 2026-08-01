@@ -76,9 +76,23 @@ function makeRecord(overrides?: Partial<StaffMandatoryTrainingRecord>): StaffMan
 // ── computeMandatoryTrainingMetrics ────────────────────────────────────────
 
 describe("computeMandatoryTrainingMetrics", () => {
-  it("returns zeros for empty", () => { const m = computeMandatoryTrainingMetrics([]); expect(m.total_records).toBe(0); expect(m.expired_count).toBe(0); expect(m.expiring_soon_count).toBe(0); expect(m.not_started_count).toBe(0); expect(m.current_count).toBe(0); expect(m.unique_staff).toBe(0); });
+  it("returns zeros for empty", () => { 
+    const m = computeMandatoryTrainingMetrics([]);
+    expect(m.total_records).toBe(0);
+    expect(m.expired_count).toBe(0);
+    expect(m.expiring_soon_count).toBe(0);
+    expect(m.not_started_count).toBe(0);
+    expect(m.current_count).toBe(0);
+    expect(m.unique_staff).toBe(0);
+  });
 
-  it("returns empty breakdowns", () => { const m = computeMandatoryTrainingMetrics([]); expect(m.by_training_category).toEqual({}); expect(m.by_compliance_status).toEqual({}); expect(m.by_training_level).toEqual({}); expect(m.by_delivery_method).toEqual({}); });
+  it("returns empty breakdowns", () => { 
+    const m = computeMandatoryTrainingMetrics([]);
+    expect(m.by_training_category).toEqual({});
+    expect(m.by_compliance_status).toEqual({});
+    expect(m.by_training_level).toEqual({});
+    expect(m.by_delivery_method).toEqual({});
+  });
 
   it("total_records counts records", () => { expect(computeMandatoryTrainingMetrics([makeRecord(), makeRecord({ id: "a-2" }), makeRecord({ id: "a-3" })]).total_records).toBe(3); });
 
@@ -92,7 +106,21 @@ describe("computeMandatoryTrainingMetrics", () => {
 
   it("does not count booked as expired", () => { const m = computeMandatoryTrainingMetrics([makeRecord({ compliance_status: "booked" })]); expect(m.expired_count).toBe(0); expect(m.current_count).toBe(0); });
 
-  it("returns 100% boolean rates with defaults", () => { const m = computeMandatoryTrainingMetrics([makeRecord()]); expect(m.certificate_held_rate).toBe(100); expect(m.competence_assessed_rate).toBe(100); expect(m.staff_attended_rate).toBe(100); expect(m.learning_objectives_rate).toBe(100); expect(m.applied_in_practice_rate).toBe(100); expect(m.refresher_scheduled_rate).toBe(100); expect(m.manager_verified_rate).toBe(100); expect(m.cost_approved_rate).toBe(100); expect(m.development_plan_rate).toBe(100); expect(m.accessible_format_rate).toBe(100); expect(m.evaluation_completed_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+  it("returns 100% boolean rates with defaults", () => { 
+    const m = computeMandatoryTrainingMetrics([makeRecord()]);
+    expect(m.certificate_held_rate).toBe(100);
+    expect(m.competence_assessed_rate).toBe(100);
+    expect(m.staff_attended_rate).toBe(100);
+    expect(m.learning_objectives_rate).toBe(100);
+    expect(m.applied_in_practice_rate).toBe(100);
+    expect(m.refresher_scheduled_rate).toBe(100);
+    expect(m.manager_verified_rate).toBe(100);
+    expect(m.cost_approved_rate).toBe(100);
+    expect(m.development_plan_rate).toBe(100);
+    expect(m.accessible_format_rate).toBe(100);
+    expect(m.evaluation_completed_rate).toBe(100);
+    expect(m.recorded_promptly_rate).toBe(100);
+  });
 
   it("certificate_held_rate 0 when false", () => { expect(computeMandatoryTrainingMetrics([makeRecord({ certificate_held: false })]).certificate_held_rate).toBe(0); });
 
@@ -138,5 +166,14 @@ describe("identifyMandatoryTrainingAlerts", () => {
 
   it("no_evaluation fires for 2", () => { const a = identifyMandatoryTrainingAlerts([makeRecord({ id: "a-1", evaluation_completed: false }), makeRecord({ id: "a-2", evaluation_completed: false })]); expect(a.filter((x) => x.type === "no_evaluation" && x.severity === "medium").length).toBeGreaterThanOrEqual(1); });
 
-  it("fires all applicable", () => { const recs = [makeRecord({ id: "a-1", compliance_status: "expired", training_category: "safeguarding_level_3", competence_assessed: false, refresher_scheduled: false, evaluation_completed: false }), makeRecord({ id: "a-2", compliance_status: "expired", training_category: "first_aid", competence_assessed: false, refresher_scheduled: false, evaluation_completed: false })]; const a = identifyMandatoryTrainingAlerts(recs); const types = new Set(a.map((x) => x.type)); expect(types.has("expired_critical_training")).toBe(true); expect(types.has("expired_training")).toBe(true); expect(types.has("no_competence_assessed")).toBe(true); expect(types.has("no_refresher_scheduled")).toBe(true); expect(types.has("no_evaluation")).toBe(true); });
+  it("fires all applicable", () => { 
+    const recs = [makeRecord({ id: "a-1", compliance_status: "expired", training_category: "safeguarding_level_3", competence_assessed: false, refresher_scheduled: false, evaluation_completed: false }), makeRecord({ id: "a-2", compliance_status: "expired", training_category: "first_aid", competence_assessed: false, refresher_scheduled: false, evaluation_completed: false })];
+    const a = identifyMandatoryTrainingAlerts(recs);
+    const types = new Set(a.map((x) => x.type));
+    expect(types.has("expired_critical_training")).toBe(true);
+    expect(types.has("expired_training")).toBe(true);
+    expect(types.has("no_competence_assessed")).toBe(true);
+    expect(types.has("no_refresher_scheduled")).toBe(true);
+    expect(types.has("no_evaluation")).toBe(true);
+  });
 });

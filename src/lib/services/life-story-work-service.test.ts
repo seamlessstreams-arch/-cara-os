@@ -49,9 +49,9 @@ describe("computeLifeStoryWorkMetrics", () => {
     expect(m.fully_engaged_count).toBe(0);
     expect(m.declined_count).toBe(0);
     expect(m.distressed_count).toBe(0);
-    expect(m.average_session_duration).toBe(0);
+    expect(m.average_session_duration).toBeNull();;
     expect(m.unique_children).toBe(0);
-    expect(m.age_appropriate_rate).toBe(0);
+    expect(m.age_appropriate_rate).toBeNull();;
   });
 
   it("computes correct counts and rates for populated data", () => {

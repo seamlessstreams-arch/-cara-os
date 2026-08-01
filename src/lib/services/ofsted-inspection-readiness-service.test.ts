@@ -46,7 +46,7 @@ describe("computeOfstedReadinessMetrics", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.inadequate_count).toBe(0);
     expect(m.outstanding_count).toBe(0);
-    expect(m.evidence_documented_rate).toBe(0);
+    expect(m.evidence_documented_rate).toBeNull();;
     expect(m.unique_assessors).toBe(0);
   });
 

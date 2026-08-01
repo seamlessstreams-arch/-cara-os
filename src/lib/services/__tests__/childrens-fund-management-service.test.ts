@@ -310,23 +310,23 @@ describe("computeFundMetrics", () => {
     });
 
     it("returns zero receipt_attached_rate", () => {
-      expect(computeFundMetrics([]).receipt_attached_rate).toBe(0);
+      expect(computeFundMetrics([]).receipt_attached_rate).toBeNull();;
     });
 
     it("returns zero child_signed_rate", () => {
-      expect(computeFundMetrics([]).child_signed_rate).toBe(0);
+      expect(computeFundMetrics([]).child_signed_rate).toBeNull();;
     });
 
     it("returns zero staff_signed_rate", () => {
-      expect(computeFundMetrics([]).staff_signed_rate).toBe(0);
+      expect(computeFundMetrics([]).staff_signed_rate).toBeNull();;
     });
 
     it("returns zero second_signatory_rate", () => {
-      expect(computeFundMetrics([]).second_signatory_rate).toBe(0);
+      expect(computeFundMetrics([]).second_signatory_rate).toBeNull();;
     });
 
     it("returns zero authorised_rate", () => {
-      expect(computeFundMetrics([]).authorised_rate).toBe(0);
+      expect(computeFundMetrics([]).authorised_rate).toBeNull();;
     });
 
     it("returns zero pending_authorisation_count", () => {

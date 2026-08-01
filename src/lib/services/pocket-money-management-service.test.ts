@@ -53,7 +53,7 @@ describe("computePocketMoneyMetrics", () => {
     expect(m.savings_deposit_count).toBe(0);
     expect(m.declined_count).toBe(0);
     expect(m.retrospective_count).toBe(0);
-    expect(m.receipt_obtained_rate).toBe(0);
+    expect(m.receipt_obtained_rate).toBeNull();;
     expect(m.total_amount_pence).toBe(0);
     expect(m.unique_children).toBe(0);
   });

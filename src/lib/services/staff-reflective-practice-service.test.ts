@@ -52,8 +52,8 @@ describe("computeStaffReflectiveMetrics", () => {
     expect(m.further_support_count).toBe(0);
     expect(m.deep_count).toBe(0);
     expect(m.surface_count).toBe(0);
-    expect(m.child_focused_rate).toBe(0);
-    expect(m.average_duration).toBe(0);
+    expect(m.child_focused_rate).toBeNull();;
+    expect(m.average_duration).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

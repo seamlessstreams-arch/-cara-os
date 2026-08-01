@@ -138,18 +138,18 @@ export function computeStaffSupervisionComplianceMetrics(
   missed_count: number;
   poor_quality_count: number;
   not_started_count: number;
-  agenda_prepared_rate: number;
-  safeguarding_discussed_rate: number;
-  wellbeing_discussed_rate: number;
-  training_needs_rate: number;
-  actions_agreed_rate: number;
-  previous_actions_rate: number;
-  professional_development_rate: number;
-  confidentiality_rate: number;
-  notes_shared_rate: number;
-  manager_oversight_rate: number;
-  recorded_promptly_rate: number;
-  average_duration: number;
+  agenda_prepared_rate: number | null;
+  safeguarding_discussed_rate: number | null;
+  wellbeing_discussed_rate: number | null;
+  training_needs_rate: number | null;
+  actions_agreed_rate: number | null;
+  previous_actions_rate: number | null;
+  professional_development_rate: number | null;
+  confidentiality_rate: number | null;
+  notes_shared_rate: number | null;
+  manager_oversight_rate: number | null;
+  recorded_promptly_rate: number | null;
+  average_duration: number | null;
   unique_staff: number;
   by_supervision_type: Record<string, number>;
   by_frequency_compliance: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeStaffSupervisionComplianceMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDuration =
@@ -173,7 +173,7 @@ export function computeStaffSupervisionComplianceMetrics(
       ? Math.round(
           (records.reduce((sum, r) => sum + r.supervision_duration_minutes, 0) / records.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;
 

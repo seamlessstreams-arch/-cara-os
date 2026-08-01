@@ -173,14 +173,14 @@ export function computeWhistleblowingMetrics(
 ): {
   total_reports: number;
   open_reports: number;
-  avg_resolution_days: number;
+  avg_resolution_days: number | null;
   by_category: Record<string, number>;
   by_risk_level: Record<string, number>;
   by_outcome: Record<string, number>;
   external_referrals_count: number;
   detriment_reported_count: number;
-  policy_compliance_rate: number;
-  staff_training_rate: number;
+  policy_compliance_rate: number | null;
+  staff_training_rate: number | null;
 } {
   const openStatuses: DisclosureStatus[] = [
     "received",
@@ -243,7 +243,7 @@ export function computeWhistleblowingMetrics(
   const avgResolutionDays =
     resolutionCount > 0
       ? Math.round((totalResolutionDays / resolutionCount) * 10) / 10
-      : 0;
+      : null;
 
   // Policy compliance — percentage of reviews where policy is accessible AND displayed
   let compliantReviews = 0;
@@ -255,7 +255,7 @@ export function computeWhistleblowingMetrics(
   const policyComplianceRate =
     policyReviews.length > 0
       ? Math.round((compliantReviews / policyReviews.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Staff training rate — from the most recent policy review
   let staffTrainingRate = 0;

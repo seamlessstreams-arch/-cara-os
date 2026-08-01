@@ -70,12 +70,12 @@ export function computeForcedMarriageRiskMetrics(
   high_risk_count: number;
   fmpo_count: number;
   fmu_contacted_count: number;
-  safety_plan_rate: number;
-  multi_agency_rate: number;
-  police_notification_rate: number;
-  passport_secured_rate: number;
-  travel_restriction_rate: number;
-  review_scheduled_rate: number;
+  safety_plan_rate: number | null;
+  multi_agency_rate: number | null;
+  police_notification_rate: number | null;
+  passport_secured_rate: number | null;
+  travel_restriction_rate: number | null;
+  review_scheduled_rate: number | null;
   unique_children: number;
   unique_assessors: number;
 } {
@@ -89,7 +89,7 @@ export function computeForcedMarriageRiskMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const reviewScheduledRate =
@@ -97,7 +97,7 @@ export function computeForcedMarriageRiskMetrics(
       ? Math.round(
           (rows.filter((r) => r.review_date !== null).length / rows.length) * 1000,
         ) / 10
-      : 0;
+      : null;
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
   const uniqueAssessors = new Set(rows.map((r) => r.assessor_name)).size;

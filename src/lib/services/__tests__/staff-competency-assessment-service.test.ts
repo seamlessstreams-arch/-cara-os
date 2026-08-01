@@ -35,14 +35,43 @@ function makeRecord(overrides?: Partial<StaffCompetencyAssessmentRecord>): Staff
 
 describe("staff-competency-assessment-service", () => {
   describe("computeStaffCompetencyMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeStaffCompetencyMetrics([]); expect(m.total_assessments).toBe(0); expect(m.exceeds_count).toBe(0); expect(m.meets_count).toBe(0); expect(m.developing_count).toBe(0); expect(m.below_count).toBe(0); expect(m.not_competent_count).toBe(0); expect(m.competency_maintained_rate).toBe(0); expect(m.action_required_count).toBe(0); expect(m.unique_staff).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeStaffCompetencyMetrics([]); expect(m.by_competency_area).toEqual({}); expect(m.by_assessment_method).toEqual({}); expect(m.by_competency_rating).toEqual({}); expect(m.by_action_required).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeStaffCompetencyMetrics([]);
+      expect(m.total_assessments).toBe(0);;
+      expect(m.exceeds_count).toBe(0);
+      expect(m.meets_count).toBe(0);
+      expect(m.developing_count).toBe(0);
+      expect(m.below_count).toBe(0);
+      expect(m.not_competent_count).toBe(0);
+      expect(m.competency_maintained_rate).toBeNull();;
+      expect(m.action_required_count).toBe(0);
+      expect(m.unique_staff).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeStaffCompetencyMetrics([]);
+      expect(m.by_competency_area).toEqual({});
+      expect(m.by_assessment_method).toEqual({});
+      expect(m.by_competency_rating).toEqual({});
+      expect(m.by_action_required).toEqual({});
+    });
     it("counts exceeds", () => { expect(computeStaffCompetencyMetrics([makeRecord({ competency_rating: "exceeds_expectations" })]).exceeds_count).toBe(1); });
     it("counts meets", () => { expect(computeStaffCompetencyMetrics([makeRecord()]).meets_count).toBe(1); });
     it("counts developing", () => { expect(computeStaffCompetencyMetrics([makeRecord({ competency_rating: "developing" })]).developing_count).toBe(1); });
     it("counts below", () => { expect(computeStaffCompetencyMetrics([makeRecord({ competency_rating: "below_expectations" })]).below_count).toBe(1); });
     it("counts not_competent", () => { expect(computeStaffCompetencyMetrics([makeRecord({ competency_rating: "not_yet_competent" })]).not_competent_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeStaffCompetencyMetrics([makeRecord()]); expect(m.competency_maintained_rate).toBe(100); expect(m.theory_demonstrated_rate).toBe(100); expect(m.practical_demonstrated_rate).toBe(100); expect(m.reflective_practice_rate).toBe(100); expect(m.values_aligned_rate).toBe(100); expect(m.child_centred_rate).toBe(100); expect(m.evidence_documented_rate).toBe(100); expect(m.development_plan_rate).toBe(100); expect(m.staff_agreed_rate).toBe(100); expect(m.follow_up_set_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeStaffCompetencyMetrics([makeRecord()]);
+      expect(m.competency_maintained_rate).toBe(100);
+      expect(m.theory_demonstrated_rate).toBe(100);
+      expect(m.practical_demonstrated_rate).toBe(100);
+      expect(m.reflective_practice_rate).toBe(100);
+      expect(m.values_aligned_rate).toBe(100);
+      expect(m.child_centred_rate).toBe(100);
+      expect(m.evidence_documented_rate).toBe(100);
+      expect(m.development_plan_rate).toBe(100);
+      expect(m.staff_agreed_rate).toBe(100);
+      expect(m.follow_up_set_rate).toBe(100);
+    });
     it("competency_maintained_rate 0 when false", () => { expect(computeStaffCompetencyMetrics([makeRecord({ competency_maintained: false })]).competency_maintained_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeStaffCompetencyMetrics([makeRecord({ competency_maintained: true }), makeRecord({ competency_maintained: false }), makeRecord({ competency_maintained: true })]); expect(m.competency_maintained_rate).toBe(66.7); });
     it("action_required_count excludes none", () => { const m = computeStaffCompetencyMetrics([makeRecord(), makeRecord({ action_required: "additional_training" }), makeRecord({ action_required: "mentoring" })]); expect(m.action_required_count).toBe(2); });
@@ -56,10 +85,21 @@ describe("staff-competency-assessment-service", () => {
   describe("identifyStaffCompetencyAlerts", () => {
     it("returns empty for clean", () => { expect(identifyStaffCompetencyAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyStaffCompetencyAlerts([])).toEqual([]); });
-    it("fires medication_not_competent", () => { const a = identifyStaffCompetencyAlerts([makeRecord({ competency_area: "medication_administration", competency_rating: "not_yet_competent", staff_name: "Jo", assessment_date: "2026-05-14" })]); expect(a[0].type).toBe("medication_not_competent"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires medication_not_competent", () => { 
+      const a = identifyStaffCompetencyAlerts([makeRecord({ competency_area: "medication_administration", competency_rating: "not_yet_competent", staff_name: "Jo", assessment_date: "2026-05-14" })]);
+      expect(a[0].type).toBe("medication_not_competent");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("medication_not_competent per-record", () => { const a = identifyStaffCompetencyAlerts([makeRecord({ id: "a-1", competency_area: "medication_administration", competency_rating: "not_yet_competent" }), makeRecord({ id: "a-2", competency_area: "medication_administration", competency_rating: "not_yet_competent" })]); expect(a.filter(x => x.type === "medication_not_competent")).toHaveLength(2); });
     it("no medication alert if other area", () => { const a = identifyStaffCompetencyAlerts([makeRecord({ competency_area: "first_aid", competency_rating: "not_yet_competent" })]); expect(a.filter(x => x.type === "medication_not_competent")).toHaveLength(0); });
-    it("fires below_expectations singular", () => { const a = identifyStaffCompetencyAlerts([makeRecord({ competency_rating: "below_expectations" })]); const f = a.find(x => x.type === "below_expectations"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 assessment is"); });
+    it("fires below_expectations singular", () => { 
+      const a = identifyStaffCompetencyAlerts([makeRecord({ competency_rating: "below_expectations" })]);
+      const f = a.find(x => x.type === "below_expectations");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 assessment is");
+    });
     it("below_expectations counts not_yet_competent too", () => { const a = identifyStaffCompetencyAlerts([makeRecord({ competency_area: "first_aid", competency_rating: "not_yet_competent" })]); expect(a.find(x => x.type === "below_expectations")).toBeDefined(); });
     it("below_expectations plural", () => { const a = identifyStaffCompetencyAlerts([makeRecord({ competency_rating: "below_expectations" }), makeRecord({ competency_rating: "below_expectations" })]); const f = a.find(x => x.type === "below_expectations"); expect(f!.message).toContain("2 assessments are"); });
     it("evidence_not_documented not for 1", () => { expect(identifyStaffCompetencyAlerts([makeRecord({ evidence_documented: false })]).find(x => x.type === "evidence_not_documented")).toBeUndefined(); });
@@ -68,6 +108,14 @@ describe("staff-competency-assessment-service", () => {
     it("development_plan_not_updated fires for 3", () => { const a = identifyStaffCompetencyAlerts([makeRecord({ development_plan_updated: false }), makeRecord({ development_plan_updated: false }), makeRecord({ development_plan_updated: false })]); expect(a.find(x => x.type === "development_plan_not_updated")).toBeDefined(); });
     it("staff_not_agreed not for 1", () => { expect(identifyStaffCompetencyAlerts([makeRecord({ staff_agreed_outcome: false })]).find(x => x.type === "staff_not_agreed")).toBeUndefined(); });
     it("staff_not_agreed fires for 2", () => { const a = identifyStaffCompetencyAlerts([makeRecord({ staff_agreed_outcome: false }), makeRecord({ staff_agreed_outcome: false })]); expect(a.find(x => x.type === "staff_not_agreed")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyStaffCompetencyAlerts([makeRecord({ competency_area: "medication_administration", competency_rating: "not_yet_competent", evidence_documented: false, development_plan_updated: false, staff_agreed_outcome: false }), makeRecord({ evidence_documented: false, development_plan_updated: false, staff_agreed_outcome: false }), makeRecord({ development_plan_updated: false })]); const types = a.map(x => x.type); expect(types).toContain("medication_not_competent"); expect(types).toContain("below_expectations"); expect(types).toContain("evidence_not_documented"); expect(types).toContain("development_plan_not_updated"); expect(types).toContain("staff_not_agreed"); });
+    it("fires all applicable", () => { 
+      const a = identifyStaffCompetencyAlerts([makeRecord({ competency_area: "medication_administration", competency_rating: "not_yet_competent", evidence_documented: false, development_plan_updated: false, staff_agreed_outcome: false }), makeRecord({ evidence_documented: false, development_plan_updated: false, staff_agreed_outcome: false }), makeRecord({ development_plan_updated: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("medication_not_competent");
+      expect(types).toContain("below_expectations");
+      expect(types).toContain("evidence_not_documented");
+      expect(types).toContain("development_plan_not_updated");
+      expect(types).toContain("staff_not_agreed");
+    });
   });
 });

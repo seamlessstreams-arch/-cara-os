@@ -50,8 +50,8 @@ describe("computeWorkExperienceMetrics", () => {
     expect(m.not_suitable_count).toBe(0);
     expect(m.no_gain_count).toBe(0);
     expect(m.decline_count).toBe(0);
-    expect(m.child_consented_rate).toBe(0);
-    expect(m.safeguarding_rate).toBe(0);
+    expect(m.child_consented_rate).toBeNull();;
+    expect(m.safeguarding_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -50,7 +50,7 @@ describe("computeHomeImprovementMetrics", () => {
     const m = computeHomeImprovementMetrics([]);
     expect(m.total_projects).toBe(0);
     expect(m.completed_count).toBe(0);
-    expect(m.completion_rate).toBe(0);
+    expect(m.completion_rate).toBeNull();;
     expect(m.total_estimated_cost).toBe(0);
     expect(m.total_actual_cost).toBe(0);
     expect(m.by_project_type).toEqual({});

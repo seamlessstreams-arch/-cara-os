@@ -158,11 +158,11 @@ export function computeMedErrorMetrics(
   medical_attention_count: number;
   open_investigations: number;
   actions_outstanding: number;
-  parent_informed_rate: number;
-  duty_of_candour_rate: number;
+  parent_informed_rate: number | null;
+  duty_of_candour_rate: number | null;
   ofsted_notified_count: number;
-  policy_reviewed_rate: number;
-  lessons_learned_rate: number;
+  policy_reviewed_rate: number | null;
+  lessons_learned_rate: number | null;
   by_error_type: Record<string, number>;
   by_severity: Record<string, number>;
   by_root_cause: Record<string, number>;
@@ -194,13 +194,13 @@ export function computeMedErrorMetrics(
   const parentRate =
     errors.length > 0
       ? Math.round((parentInformed / errors.length) * 1000) / 10
-      : 0;
+      : null;
 
   const docApplied = errors.filter((e) => e.duty_of_candour_applied).length;
   const docRate =
     errors.length > 0
       ? Math.round((docApplied / errors.length) * 1000) / 10
-      : 0;
+      : null;
 
   const ofstedNotified = errors.filter((e) => e.ofsted_notified).length;
 
@@ -208,13 +208,13 @@ export function computeMedErrorMetrics(
   const policyRate =
     errors.length > 0
       ? Math.round((policyReviewed / errors.length) * 1000) / 10
-      : 0;
+      : null;
 
   const lessonsLearned = errors.filter((e) => e.lessons_learned !== null).length;
   const lessonsRate =
     errors.length > 0
       ? Math.round((lessonsLearned / errors.length) * 1000) / 10
-      : 0;
+      : null;
 
   const byType: Record<string, number> = {};
   for (const e of errors) byType[e.error_type] = (byType[e.error_type] ?? 0) + 1;

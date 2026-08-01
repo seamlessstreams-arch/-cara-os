@@ -59,7 +59,7 @@ describe("computePracticeRiskMetrics", () => {
     expect(m.severe_impact_count).toBe(0);
     expect(m.active_count).toBe(0);
     expect(m.unapproved_count).toBe(0);
-    expect(m.evidence_verified_rate).toBe(0);
+    expect(m.evidence_verified_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

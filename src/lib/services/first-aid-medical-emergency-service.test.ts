@@ -49,7 +49,7 @@ describe("computeFirstAidMetrics", () => {
     expect(result.poor_response_count).toBe(0);
     expect(result.hospitalised_count).toBe(0);
     expect(result.untrained_count).toBe(0);
-    expect(result.first_aid_trained_rate).toBe(0);
+    expect(result.first_aid_trained_rate).toBeNull();;
     expect(result.unique_children).toBe(0);
   });
 

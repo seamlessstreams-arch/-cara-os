@@ -152,10 +152,10 @@ export function computeBullyingMetrics(
   escalated_count: number;
   safeguarding_referrals: number;
   follow_ups_pending: number;
-  parent_informed_rate: number;
+  parent_informed_rate: number | null;
   unique_victims: number;
   repeat_victims: number;
-  resident_perpetrator_rate: number;
+  resident_perpetrator_rate: number | null;
   cyber_incidents: number;
   by_type: Record<string, number>;
   by_severity: Record<string, number>;
@@ -182,7 +182,7 @@ export function computeBullyingMetrics(
 
   const parentInformed = incidents.filter((i) => i.parent_carer_informed).length;
   const parentRate =
-    incidents.length > 0 ? Math.round((parentInformed / incidents.length) * 1000) / 10 : 0;
+    incidents.length > 0 ? Math.round((parentInformed / incidents.length) * 1000) / 10 : null;
 
   // Unique victims and repeat victims
   const victimCounts: Record<string, number> = {};
@@ -195,7 +195,7 @@ export function computeBullyingMetrics(
   // Resident perpetrator rate
   const residentPerp = incidents.filter((i) => i.perpetrator_is_resident).length;
   const residentRate =
-    incidents.length > 0 ? Math.round((residentPerp / incidents.length) * 1000) / 10 : 0;
+    incidents.length > 0 ? Math.round((residentPerp / incidents.length) * 1000) / 10 : null;
 
   const cyberIncidents = incidents.filter((i) => i.bullying_type === "cyber").length;
 

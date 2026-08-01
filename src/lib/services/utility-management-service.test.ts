@@ -47,10 +47,10 @@ describe("computeUtilityMetrics", () => {
     expect(m.electricity_count).toBe(0);
     expect(m.gas_count).toBe(0);
     expect(m.water_count).toBe(0);
-    expect(m.within_budget_rate).toBe(0);
+    expect(m.within_budget_rate).toBeNull();;
     expect(m.total_cost).toBe(0);
-    expect(m.average_cost).toBe(0);
-    expect(m.smart_meter_rate).toBe(0);
+    expect(m.average_cost).toBeNull();;
+    expect(m.smart_meter_rate).toBeNull();;
     expect(m.fault_count).toBe(0);
   });
 

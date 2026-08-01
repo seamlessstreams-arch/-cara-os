@@ -139,18 +139,18 @@ export function computeFamilyEngagementMetrics(
   hostile_count: number;
   no_participation_count: number;
   broken_down_count: number;
-  child_views_rate: number;
-  child_prepared_rate: number;
-  family_supported_rate: number;
-  barriers_identified_rate: number;
-  social_worker_rate: number;
-  care_plan_rate: number;
-  risk_assessment_rate: number;
-  outcome_recorded_rate: number;
-  follow_up_rate: number;
-  safeguarding_rate: number;
-  court_order_rate: number;
-  recorded_promptly_rate: number;
+  child_views_rate: number | null;
+  child_prepared_rate: number | null;
+  family_supported_rate: number | null;
+  barriers_identified_rate: number | null;
+  social_worker_rate: number | null;
+  care_plan_rate: number | null;
+  risk_assessment_rate: number | null;
+  outcome_recorded_rate: number | null;
+  follow_up_rate: number | null;
+  safeguarding_rate: number | null;
+  court_order_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_engagement_type: Record<string, number>;
   by_family_response: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeFamilyEngagementMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

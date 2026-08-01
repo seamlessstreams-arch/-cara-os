@@ -42,7 +42,7 @@ describe("computeDischargeMetrics", () => {
     const m = computeDischargeMetrics([]);
     expect(m.total_reviews).toBe(0);
     expect(m.fully_ready_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
     expect(m.unplanned_breakdowns).toBe(0);
   });
 

@@ -149,7 +149,7 @@ function computeBusinessContinuityMetrics(
   tests_this_year: number;
   by_plan_type: Record<string, number>;
   by_test_outcome: Record<string, number>;
-  avg_recovery_time_hours: number;
+  avg_recovery_time_hours: number | null;
   plans_without_test: number;
   critical_plans_count: number;
 } {
@@ -190,7 +190,7 @@ function computeBusinessContinuityMetrics(
   const plansWithRto = plans.filter((p) => p.recovery_time_objective_hours != null);
   let totalRto = 0;
   for (const p of plansWithRto) totalRto += p.recovery_time_objective_hours!;
-  const avgRecoveryTime = plansWithRto.length > 0 ? Math.round(totalRto / plansWithRto.length) : 0;
+  const avgRecoveryTime = plansWithRto.length > 0 ? Math.round(totalRto / plansWithRto.length) : null;
 
   // Plans without any test
   const testedPlanIds = new Set(tests.map((t) => t.plan_id));

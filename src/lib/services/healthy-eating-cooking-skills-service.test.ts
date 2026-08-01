@@ -51,7 +51,7 @@ describe("computeHealthyEatingMetrics", () => {
     expect(result.disengaged_count).toBe(0);
     expect(result.declined_count).toBe(0);
     expect(result.refused_count).toBe(0);
-    expect(result.age_appropriate_rate).toBe(0);
+    expect(result.age_appropriate_rate).toBeNull();;
     expect(result.unique_children).toBe(0);
   });
 

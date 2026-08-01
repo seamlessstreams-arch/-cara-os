@@ -106,14 +106,14 @@ export function computeNutritionMetrics(
   overweight_count: number;
   obese_count: number;
   concern_count: number;
-  weight_recorded_rate: number;
-  height_recorded_rate: number;
-  bmi_calculated_rate: number;
-  dietary_needs_met_rate: number;
-  portion_sizes_appropriate_rate: number;
-  hydration_adequate_rate: number;
-  clinical_referral_made_rate: number;
-  weight_management_plan_rate: number;
+  weight_recorded_rate: number | null;
+  height_recorded_rate: number | null;
+  bmi_calculated_rate: number | null;
+  dietary_needs_met_rate: number | null;
+  portion_sizes_appropriate_rate: number | null;
+  hydration_adequate_rate: number | null;
+  clinical_referral_made_rate: number | null;
+  weight_management_plan_rate: number | null;
   bmi_breakdown: Record<string, number>;
   dietary_breakdown: Record<string, number>;
   unique_children: number;
@@ -131,7 +131,7 @@ export function computeNutritionMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;

@@ -38,13 +38,43 @@ function makeRecord(overrides?: Partial<KeyworkerSessionRecord>): KeyworkerSessi
 
 describe("keyworker-sessions-service", () => {
   describe("computeKeyworkerSessionMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeKeyworkerSessionMetrics([]); expect(m.total_sessions).toBe(0); expect(m.excellent_count).toBe(0); expect(m.good_count).toBe(0); expect(m.poor_count).toBe(0); expect(m.distressed_count).toBe(0); expect(m.child_led_rate).toBe(0); expect(m.average_duration).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeKeyworkerSessionMetrics([]); expect(m.by_session_focus).toEqual({}); expect(m.by_session_quality).toEqual({}); expect(m.by_child_mood).toEqual({}); expect(m.by_session_location).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeKeyworkerSessionMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.excellent_count).toBe(0);
+      expect(m.good_count).toBe(0);
+      expect(m.poor_count).toBe(0);
+      expect(m.distressed_count).toBe(0);
+      expect(m.child_led_rate).toBeNull();;
+      expect(m.average_duration).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeKeyworkerSessionMetrics([]);
+      expect(m.by_session_focus).toEqual({});
+      expect(m.by_session_quality).toEqual({});
+      expect(m.by_child_mood).toEqual({});
+      expect(m.by_session_location).toEqual({});
+    });
     it("counts excellent", () => { expect(computeKeyworkerSessionMetrics([makeRecord({ session_quality: "excellent" })]).excellent_count).toBe(1); });
     it("counts good", () => { expect(computeKeyworkerSessionMetrics([makeRecord()]).good_count).toBe(1); });
     it("counts poor", () => { expect(computeKeyworkerSessionMetrics([makeRecord({ session_quality: "poor" })]).poor_count).toBe(1); });
     it("counts distressed", () => { expect(computeKeyworkerSessionMetrics([makeRecord({ child_mood: "distressed" })]).distressed_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeKeyworkerSessionMetrics([makeRecord()]); expect(m.child_led_rate).toBe(100); expect(m.targets_reviewed_rate).toBe(100); expect(m.wishes_feelings_rate).toBe(100); expect(m.advocacy_rate).toBe(100); expect(m.care_plan_discussed_rate).toBe(100); expect(m.safety_discussed_rate).toBe(100); expect(m.achievements_celebrated_rate).toBe(100); expect(m.worries_explored_rate).toBe(100); expect(m.next_steps_agreed_rate).toBe(100); expect(m.session_recorded_rate).toBe(100); expect(m.child_signed_rate).toBe(100); expect(m.social_worker_updated_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeKeyworkerSessionMetrics([makeRecord()]);
+      expect(m.child_led_rate).toBe(100);
+      expect(m.targets_reviewed_rate).toBe(100);
+      expect(m.wishes_feelings_rate).toBe(100);
+      expect(m.advocacy_rate).toBe(100);
+      expect(m.care_plan_discussed_rate).toBe(100);
+      expect(m.safety_discussed_rate).toBe(100);
+      expect(m.achievements_celebrated_rate).toBe(100);
+      expect(m.worries_explored_rate).toBe(100);
+      expect(m.next_steps_agreed_rate).toBe(100);
+      expect(m.session_recorded_rate).toBe(100);
+      expect(m.child_signed_rate).toBe(100);
+      expect(m.social_worker_updated_rate).toBe(100);
+    });
     it("child_led_rate 0 when false", () => { expect(computeKeyworkerSessionMetrics([makeRecord({ child_led: false })]).child_led_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeKeyworkerSessionMetrics([makeRecord({ child_led: true }), makeRecord({ child_led: false }), makeRecord({ child_led: true })]); expect(m.child_led_rate).toBe(66.7); });
     it("average_duration single", () => { expect(computeKeyworkerSessionMetrics([makeRecord({ session_duration_minutes: 45 })]).average_duration).toBe(45); });
@@ -59,10 +89,21 @@ describe("keyworker-sessions-service", () => {
   describe("identifyKeyworkerSessionAlerts", () => {
     it("returns empty for clean", () => { expect(identifyKeyworkerSessionAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyKeyworkerSessionAlerts([])).toEqual([]); });
-    it("fires distressed_poor_session", () => { const a = identifyKeyworkerSessionAlerts([makeRecord({ child_mood: "distressed", session_quality: "poor", child_name: "Jo", session_date: "2026-05-14" })]); expect(a[0].type).toBe("distressed_poor_session"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires distressed_poor_session", () => { 
+      const a = identifyKeyworkerSessionAlerts([makeRecord({ child_mood: "distressed", session_quality: "poor", child_name: "Jo", session_date: "2026-05-14" })]);
+      expect(a[0].type).toBe("distressed_poor_session");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("distressed_poor_session per-record", () => { const a = identifyKeyworkerSessionAlerts([makeRecord({ id: "a-1", child_mood: "distressed", session_quality: "poor" }), makeRecord({ id: "a-2", child_mood: "distressed", session_quality: "poor" })]); expect(a.filter(x => x.type === "distressed_poor_session")).toHaveLength(2); });
     it("no alert if distressed but good quality", () => { expect(identifyKeyworkerSessionAlerts([makeRecord({ child_mood: "distressed", session_quality: "good" })]).filter(x => x.type === "distressed_poor_session")).toHaveLength(0); });
-    it("fires not_recorded singular", () => { const a = identifyKeyworkerSessionAlerts([makeRecord({ session_recorded: false })]); const f = a.find(x => x.type === "not_recorded"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires not_recorded singular", () => { 
+      const a = identifyKeyworkerSessionAlerts([makeRecord({ session_recorded: false })]);
+      const f = a.find(x => x.type === "not_recorded");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("not_recorded plural", () => { const a = identifyKeyworkerSessionAlerts([makeRecord({ session_recorded: false }), makeRecord({ session_recorded: false })]); const f = a.find(x => x.type === "not_recorded"); expect(f!.message).toContain("2 sessions have"); });
     it("wishes_not_recorded not for 1", () => { expect(identifyKeyworkerSessionAlerts([makeRecord({ wishes_feelings_recorded: false })]).find(x => x.type === "wishes_not_recorded")).toBeUndefined(); });
     it("wishes_not_recorded fires for 2", () => { const a = identifyKeyworkerSessionAlerts([makeRecord({ wishes_feelings_recorded: false }), makeRecord({ wishes_feelings_recorded: false })]); expect(a.find(x => x.type === "wishes_not_recorded")).toBeDefined(); });
@@ -70,6 +111,14 @@ describe("keyworker-sessions-service", () => {
     it("not_child_led fires for 3", () => { const a = identifyKeyworkerSessionAlerts([makeRecord({ child_led: false }), makeRecord({ child_led: false }), makeRecord({ child_led: false })]); expect(a.find(x => x.type === "not_child_led")).toBeDefined(); });
     it("no_next_steps not for 2", () => { expect(identifyKeyworkerSessionAlerts([makeRecord({ next_steps_agreed: false }), makeRecord({ next_steps_agreed: false })]).find(x => x.type === "no_next_steps")).toBeUndefined(); });
     it("no_next_steps fires for 3", () => { const a = identifyKeyworkerSessionAlerts([makeRecord({ next_steps_agreed: false }), makeRecord({ next_steps_agreed: false }), makeRecord({ next_steps_agreed: false })]); expect(a.find(x => x.type === "no_next_steps")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyKeyworkerSessionAlerts([makeRecord({ child_mood: "distressed", session_quality: "poor", session_recorded: false, wishes_feelings_recorded: false, child_led: false, next_steps_agreed: false }), makeRecord({ wishes_feelings_recorded: false, child_led: false, next_steps_agreed: false }), makeRecord({ child_led: false, next_steps_agreed: false })]); const types = a.map(x => x.type); expect(types).toContain("distressed_poor_session"); expect(types).toContain("not_recorded"); expect(types).toContain("wishes_not_recorded"); expect(types).toContain("not_child_led"); expect(types).toContain("no_next_steps"); });
+    it("fires all applicable", () => { 
+      const a = identifyKeyworkerSessionAlerts([makeRecord({ child_mood: "distressed", session_quality: "poor", session_recorded: false, wishes_feelings_recorded: false, child_led: false, next_steps_agreed: false }), makeRecord({ wishes_feelings_recorded: false, child_led: false, next_steps_agreed: false }), makeRecord({ child_led: false, next_steps_agreed: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("distressed_poor_session");
+      expect(types).toContain("not_recorded");
+      expect(types).toContain("wishes_not_recorded");
+      expect(types).toContain("not_child_led");
+      expect(types).toContain("no_next_steps");
+    });
   });
 });

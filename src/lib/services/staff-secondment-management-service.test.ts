@@ -41,12 +41,12 @@ describe("computeMetrics (secondment)", () => {
     expect(m.active_count).toBe(0);
     expect(m.completed_count).toBe(0);
     expect(m.pending_count).toBe(0);
-    expect(m.agreement_rate).toBe(0);
-    expect(m.dbs_transfer_rate).toBe(0);
-    expect(m.induction_rate).toBe(0);
-    expect(m.supervision_rate).toBe(0);
-    expect(m.objectives_rate).toBe(0);
-    expect(m.review_scheduled_rate).toBe(0);
+    expect(m.agreement_rate).toBeNull();;
+    expect(m.dbs_transfer_rate).toBeNull();;
+    expect(m.induction_rate).toBeNull();;
+    expect(m.supervision_rate).toBeNull();;
+    expect(m.objectives_rate).toBeNull();;
+    expect(m.review_scheduled_rate).toBeNull();;
     expect(m.extension_count).toBe(0);
     expect(m.unique_staff).toBe(0);
   });

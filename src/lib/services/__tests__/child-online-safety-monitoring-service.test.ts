@@ -85,12 +85,12 @@ describe("child-online-safety-monitoring-service", () => {
       expect(m.harmful_content_count).toBe(0);
       expect(m.cyberbullying_count).toBe(0);
       expect(m.online_contact_risk_count).toBe(0);
-      expect(m.filtering_rate).toBe(0);
-      expect(m.age_appropriate_rate).toBe(0);
-      expect(m.parental_controls_rate).toBe(0);
-      expect(m.social_media_reviewed_rate).toBe(0);
-      expect(m.action_taken_rate).toBe(0);
-      expect(m.child_educated_rate).toBe(0);
+      expect(m.filtering_rate).toBeNull();;
+      expect(m.age_appropriate_rate).toBeNull();;
+      expect(m.parental_controls_rate).toBeNull();;
+      expect(m.social_media_reviewed_rate).toBeNull();;
+      expect(m.action_taken_rate).toBeNull();;
+      expect(m.child_educated_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
       expect(m.unique_checkers).toBe(0);
     });

@@ -36,7 +36,7 @@ describe("computeTrainingMatrix", () => {
     const result = computeTrainingMatrix([], []);
     expect(result.stats.total_staff).toBe(0);
     expect(result.stats.fully_compliant).toBe(0);
-    expect(result.stats.compliance_percentage).toBe(0);
+    expect(result.stats.compliance_percentage).toBeNull();;
     expect(Object.keys(result.matrix)).toHaveLength(0);
   });
 

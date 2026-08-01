@@ -49,10 +49,10 @@ describe("computeMissingPersonRiskMetrics", () => {
     expect(m.medium_risk_count).toBe(0);
     expect(m.low_risk_count).toBe(0);
     expect(m.minimal_risk_count).toBe(0);
-    expect(m.trigger_plan_rate).toBe(0);
+    expect(m.trigger_plan_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
     expect(m.total_previous_episodes).toBe(0);
-    expect(m.average_previous_episodes).toBe(0);
+    expect(m.average_previous_episodes).toBeNull();;
   });
 
   it("computes correct counts and rates for populated data", () => {

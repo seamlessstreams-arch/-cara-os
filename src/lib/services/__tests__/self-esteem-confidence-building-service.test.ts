@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<SelfEsteemConfidenceBuildingRecord>): Se
 
 describe("self-esteem-confidence-building-service", () => {
   describe("computeSelfEsteemMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeSelfEsteemMetrics([]); expect(m.total_sessions).toBe(0); expect(m.very_low_count).toBe(0); expect(m.decline_count).toBe(0); expect(m.negative_image_count).toBe(0); expect(m.significant_decline_count).toBe(0); expect(m.child_led_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeSelfEsteemMetrics([]); expect(m.by_intervention_type).toEqual({}); expect(m.by_confidence_level).toEqual({}); expect(m.by_progress_assessment).toEqual({}); expect(m.by_self_image_rating).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeSelfEsteemMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.very_low_count).toBe(0);
+      expect(m.decline_count).toBe(0);
+      expect(m.negative_image_count).toBe(0);
+      expect(m.significant_decline_count).toBe(0);
+      expect(m.child_led_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeSelfEsteemMetrics([]);
+      expect(m.by_intervention_type).toEqual({});
+      expect(m.by_confidence_level).toEqual({});
+      expect(m.by_progress_assessment).toEqual({});
+      expect(m.by_self_image_rating).toEqual({});
+    });
     it("total_sessions counts records", () => { expect(computeSelfEsteemMetrics([makeRecord(), makeRecord()]).total_sessions).toBe(2); });
     it("counts very_low", () => { expect(computeSelfEsteemMetrics([makeRecord({ confidence_level: "very_low" })]).very_low_count).toBe(1); });
     it("does not count low_confidence as very_low", () => { expect(computeSelfEsteemMetrics([makeRecord({ confidence_level: "low_confidence" })]).very_low_count).toBe(0); });
@@ -50,7 +65,21 @@ describe("self-esteem-confidence-building-service", () => {
     it("does not count neutral as negative_image", () => { expect(computeSelfEsteemMetrics([makeRecord({ self_image_rating: "neutral" })]).negative_image_count).toBe(0); });
     it("counts significant_decline", () => { expect(computeSelfEsteemMetrics([makeRecord({ progress_assessment: "significant_decline" })]).significant_decline_count).toBe(1); });
     it("does not count slight as significant_decline", () => { expect(computeSelfEsteemMetrics([makeRecord({ progress_assessment: "slight_decline" })]).significant_decline_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeSelfEsteemMetrics([makeRecord()]); expect(m.child_led_rate).toBe(100); expect(m.strengths_identified_rate).toBe(100); expect(m.goals_set_rate).toBe(100); expect(m.achievements_celebrated_rate).toBe(100); expect(m.safe_space_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.peers_supportive_rate).toBe(100); expect(m.culturally_affirming_rate).toBe(100); expect(m.progress_shared_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeSelfEsteemMetrics([makeRecord()]);
+      expect(m.child_led_rate).toBe(100);
+      expect(m.strengths_identified_rate).toBe(100);
+      expect(m.goals_set_rate).toBe(100);
+      expect(m.achievements_celebrated_rate).toBe(100);
+      expect(m.safe_space_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.peers_supportive_rate).toBe(100);
+      expect(m.culturally_affirming_rate).toBe(100);
+      expect(m.progress_shared_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_led_rate 0 when false", () => { expect(computeSelfEsteemMetrics([makeRecord({ child_led_activity: false })]).child_led_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeSelfEsteemMetrics([makeRecord({ strengths_identified: true }), makeRecord({ strengths_identified: false }), makeRecord({ strengths_identified: true })]); expect(m.strengths_identified_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeSelfEsteemMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -63,18 +92,43 @@ describe("self-esteem-confidence-building-service", () => {
   describe("identifySelfEsteemAlerts", () => {
     it("returns empty for clean", () => { expect(identifySelfEsteemAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifySelfEsteemAlerts([])).toEqual([]); });
-    it("fires very_low_declining", () => { const a = identifySelfEsteemAlerts([makeRecord({ confidence_level: "very_low", progress_assessment: "significant_decline", child_name: "Jo" })]); expect(a[0].type).toBe("very_low_declining"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires very_low_declining", () => { 
+      const a = identifySelfEsteemAlerts([makeRecord({ confidence_level: "very_low", progress_assessment: "significant_decline", child_name: "Jo" })]);
+      expect(a[0].type).toBe("very_low_declining");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("very_low_declining per-record", () => { const a = identifySelfEsteemAlerts([makeRecord({ id: "a-1", confidence_level: "very_low", progress_assessment: "significant_decline" }), makeRecord({ id: "a-2", confidence_level: "very_low", progress_assessment: "significant_decline" })]); expect(a.filter(x => x.type === "very_low_declining")).toHaveLength(2); });
     it("very_low without significant_decline no critical", () => { expect(identifySelfEsteemAlerts([makeRecord({ confidence_level: "very_low", progress_assessment: "some_improvement" })]).find(x => x.type === "very_low_declining")).toBeUndefined(); });
     it("significant_decline without very_low no critical", () => { expect(identifySelfEsteemAlerts([makeRecord({ progress_assessment: "significant_decline", confidence_level: "confident" })]).find(x => x.type === "very_low_declining")).toBeUndefined(); });
-    it("fires no_strengths_identified singular", () => { const a = identifySelfEsteemAlerts([makeRecord({ strengths_identified: false })]); const f = a.find(x => x.type === "no_strengths_identified"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires no_strengths_identified singular", () => { 
+      const a = identifySelfEsteemAlerts([makeRecord({ strengths_identified: false })]);
+      const f = a.find(x => x.type === "no_strengths_identified");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_strengths_identified plural", () => { const a = identifySelfEsteemAlerts([makeRecord({ strengths_identified: false }), makeRecord({ strengths_identified: false })]); const f = a.find(x => x.type === "no_strengths_identified"); expect(f!.message).toContain("2 sessions have"); });
-    it("fires not_child_led singular", () => { const a = identifySelfEsteemAlerts([makeRecord({ child_led_activity: false })]); const f = a.find(x => x.type === "not_child_led"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session is"); });
+    it("fires not_child_led singular", () => { 
+      const a = identifySelfEsteemAlerts([makeRecord({ child_led_activity: false })]);
+      const f = a.find(x => x.type === "not_child_led");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session is");
+    });
     it("not_child_led plural", () => { const a = identifySelfEsteemAlerts([makeRecord({ child_led_activity: false }), makeRecord({ child_led_activity: false })]); const f = a.find(x => x.type === "not_child_led"); expect(f!.message).toContain("2 sessions are"); });
     it("no_safe_space not for 1", () => { expect(identifySelfEsteemAlerts([makeRecord({ safe_space_provided: false })]).find(x => x.type === "no_safe_space")).toBeUndefined(); });
     it("no_safe_space fires for 2", () => { const a = identifySelfEsteemAlerts([makeRecord({ safe_space_provided: false }), makeRecord({ safe_space_provided: false })]); expect(a.find(x => x.type === "no_safe_space")).toBeDefined(); expect(a.find(x => x.type === "no_safe_space")!.severity).toBe("medium"); });
     it("not_culturally_affirming not for 1", () => { expect(identifySelfEsteemAlerts([makeRecord({ culturally_affirming: false })]).find(x => x.type === "not_culturally_affirming")).toBeUndefined(); });
     it("not_culturally_affirming fires for 2", () => { const a = identifySelfEsteemAlerts([makeRecord({ culturally_affirming: false }), makeRecord({ culturally_affirming: false })]); expect(a.find(x => x.type === "not_culturally_affirming")).toBeDefined(); expect(a.find(x => x.type === "not_culturally_affirming")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifySelfEsteemAlerts([makeRecord({ confidence_level: "very_low", progress_assessment: "significant_decline", strengths_identified: false, child_led_activity: false, safe_space_provided: false, culturally_affirming: false }), makeRecord({ strengths_identified: false, child_led_activity: false, safe_space_provided: false, culturally_affirming: false })]); const types = a.map(x => x.type); expect(types).toContain("very_low_declining"); expect(types).toContain("no_strengths_identified"); expect(types).toContain("not_child_led"); expect(types).toContain("no_safe_space"); expect(types).toContain("not_culturally_affirming"); });
+    it("fires all applicable", () => { 
+      const a = identifySelfEsteemAlerts([makeRecord({ confidence_level: "very_low", progress_assessment: "significant_decline", strengths_identified: false, child_led_activity: false, safe_space_provided: false, culturally_affirming: false }), makeRecord({ strengths_identified: false, child_led_activity: false, safe_space_provided: false, culturally_affirming: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("very_low_declining");
+      expect(types).toContain("no_strengths_identified");
+      expect(types).toContain("not_child_led");
+      expect(types).toContain("no_safe_space");
+      expect(types).toContain("not_culturally_affirming");
+    });
   });
 });

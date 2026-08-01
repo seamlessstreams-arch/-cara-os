@@ -67,7 +67,7 @@ describe("contextual-safeguarding-service", () => {
       expect(m.children_screened).toBe(0);
       expect(m.overdue_screenings).toBe(0);
       expect(m.high_risk_locations).toBe(0);
-      expect(m.referral_rate_percentage).toBe(0);
+      expect(m.referral_rate_percentage).toBeNull();;
       expect(m.active_locality_risks).toBe(0);
     });
 

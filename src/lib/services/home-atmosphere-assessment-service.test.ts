@@ -41,7 +41,7 @@ describe("computeHomeAtmosphereMetrics", () => {
     expect(result.requires_improvement_count).toBe(0);
     expect(result.urgent_action_count).toBe(0);
     expect(result.actions_not_implemented_count).toBe(0);
-    expect(result.child_views_rate).toBe(0);
+    expect(result.child_views_rate).toBeNull();;
     expect(result.unique_assessors).toBe(0);
   });
 

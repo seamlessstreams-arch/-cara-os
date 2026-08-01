@@ -138,18 +138,18 @@ export function computeGardenHorticultureMetrics(
   disengaged_count: number;
   no_benefit_count: number;
   refused_count: number;
-  age_appropriate_rate: number;
-  risk_assessment_rate: number;
-  tools_safe_rate: number;
-  supervision_rate: number;
-  child_chose_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  therapeutic_value_rate: number;
-  seasonal_learning_rate: number;
-  organic_methods_rate: number;
-  recorded_promptly_rate: number;
+  age_appropriate_rate: number | null;
+  risk_assessment_rate: number | null;
+  tools_safe_rate: number | null;
+  supervision_rate: number | null;
+  child_chose_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  therapeutic_value_rate: number | null;
+  seasonal_learning_rate: number | null;
+  organic_methods_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_activity_type: Record<string, number>;
   by_skill_level: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeGardenHorticultureMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

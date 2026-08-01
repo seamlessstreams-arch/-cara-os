@@ -46,8 +46,8 @@ describe("computeCodeOfConductMetrics", () => {
     expect(m.non_compliant_count).toBe(0);
     expect(m.investigation_count).toBe(0);
     expect(m.significant_concern_count).toBe(0);
-    expect(m.code_acknowledged_rate).toBe(0);
-    expect(m.training_completed_rate).toBe(0);
+    expect(m.code_acknowledged_rate).toBeNull();;
+    expect(m.training_completed_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

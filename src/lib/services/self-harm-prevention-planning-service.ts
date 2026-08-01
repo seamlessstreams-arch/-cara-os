@@ -285,12 +285,12 @@ export function computeMetrics(
   archived_count: number;
   high_risk_count: number;
   critical_count: number;
-  camhs_engagement_rate: number;
-  child_contribution_rate: number;
-  plan_shared_rate: number;
-  school_aware_rate: number;
-  social_worker_informed_rate: number;
-  method_awareness_rate: number;
+  camhs_engagement_rate: number | null;
+  child_contribution_rate: number | null;
+  plan_shared_rate: number | null;
+  school_aware_rate: number | null;
+  social_worker_informed_rate: number | null;
+  method_awareness_rate: number | null;
   overdue_review_count: number;
   unique_children: number;
   unique_professionals: number;
@@ -313,7 +313,7 @@ export function computeMetrics(
 
   const boolRate = (field: keyof SelfHarmPreventionPlanRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   // Overdue reviews (active plans only)

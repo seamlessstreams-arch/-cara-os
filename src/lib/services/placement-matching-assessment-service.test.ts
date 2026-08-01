@@ -63,7 +63,7 @@ describe("computePlacementMatchingMetrics", () => {
     expect(m.negative_impact_count).toBe(0);
     expect(m.unsuitable_count).toBe(0);
     expect(m.pre_admission_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

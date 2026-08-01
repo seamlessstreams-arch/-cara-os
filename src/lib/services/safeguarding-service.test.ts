@@ -50,7 +50,7 @@ describe("computeSafeguardingCompliance", () => {
     expect(m.pending).toBe(0);
     expect(m.overdue_acknowledgement).toBe(0);
     expect(m.notification_compliance_percentage).toBe(100);
-    expect(m.average_resolution_days).toBe(0);
+    expect(m.average_resolution_days).toBeNull();;
   });
 
   it("counts pending referrals", () => {

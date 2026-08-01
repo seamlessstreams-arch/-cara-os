@@ -37,15 +37,44 @@ function makeRecord(overrides?: Partial<StaffSupervisionComplianceRecord>): Staf
 
 describe("staff-supervision-compliance-service", () => {
   describe("computeStaffSupervisionComplianceMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeStaffSupervisionComplianceMetrics([]); expect(m.total_supervisions).toBe(0); expect(m.overdue_count).toBe(0); expect(m.missed_count).toBe(0); expect(m.poor_quality_count).toBe(0); expect(m.not_started_count).toBe(0); expect(m.agenda_prepared_rate).toBe(0); expect(m.average_duration).toBe(0); expect(m.unique_staff).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeStaffSupervisionComplianceMetrics([]); expect(m.by_supervision_type).toEqual({}); expect(m.by_frequency_compliance).toEqual({}); expect(m.by_quality_rating).toEqual({}); expect(m.by_action_completion).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeStaffSupervisionComplianceMetrics([]);
+      expect(m.total_supervisions).toBe(0);;
+      expect(m.overdue_count).toBe(0);
+      expect(m.missed_count).toBe(0);
+      expect(m.poor_quality_count).toBe(0);
+      expect(m.not_started_count).toBe(0);
+      expect(m.agenda_prepared_rate).toBeNull();;
+      expect(m.average_duration).toBeNull();;
+      expect(m.unique_staff).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeStaffSupervisionComplianceMetrics([]);
+      expect(m.by_supervision_type).toEqual({});
+      expect(m.by_frequency_compliance).toEqual({});
+      expect(m.by_quality_rating).toEqual({});
+      expect(m.by_action_completion).toEqual({});
+    });
     it("total_supervisions counts records", () => { expect(computeStaffSupervisionComplianceMetrics([makeRecord(), makeRecord()]).total_supervisions).toBe(2); });
     it("counts overdue", () => { expect(computeStaffSupervisionComplianceMetrics([makeRecord({ frequency_compliance: "significantly_overdue" })]).overdue_count).toBe(1); });
     it("does not count slightly_overdue as overdue", () => { expect(computeStaffSupervisionComplianceMetrics([makeRecord({ frequency_compliance: "slightly_overdue" })]).overdue_count).toBe(0); });
     it("counts missed", () => { expect(computeStaffSupervisionComplianceMetrics([makeRecord({ frequency_compliance: "missed" })]).missed_count).toBe(1); });
     it("counts poor_quality", () => { expect(computeStaffSupervisionComplianceMetrics([makeRecord({ quality_rating: "poor" })]).poor_quality_count).toBe(1); });
     it("counts not_started", () => { expect(computeStaffSupervisionComplianceMetrics([makeRecord({ action_completion: "not_started" })]).not_started_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeStaffSupervisionComplianceMetrics([makeRecord()]); expect(m.agenda_prepared_rate).toBe(100); expect(m.safeguarding_discussed_rate).toBe(100); expect(m.wellbeing_discussed_rate).toBe(100); expect(m.training_needs_rate).toBe(100); expect(m.actions_agreed_rate).toBe(100); expect(m.previous_actions_rate).toBe(100); expect(m.professional_development_rate).toBe(100); expect(m.confidentiality_rate).toBe(100); expect(m.notes_shared_rate).toBe(100); expect(m.manager_oversight_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeStaffSupervisionComplianceMetrics([makeRecord()]);
+      expect(m.agenda_prepared_rate).toBe(100);
+      expect(m.safeguarding_discussed_rate).toBe(100);
+      expect(m.wellbeing_discussed_rate).toBe(100);
+      expect(m.training_needs_rate).toBe(100);
+      expect(m.actions_agreed_rate).toBe(100);
+      expect(m.previous_actions_rate).toBe(100);
+      expect(m.professional_development_rate).toBe(100);
+      expect(m.confidentiality_rate).toBe(100);
+      expect(m.notes_shared_rate).toBe(100);
+      expect(m.manager_oversight_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("agenda_prepared_rate 0 when false", () => { expect(computeStaffSupervisionComplianceMetrics([makeRecord({ agenda_prepared: false })]).agenda_prepared_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeStaffSupervisionComplianceMetrics([makeRecord({ safeguarding_discussed: true }), makeRecord({ safeguarding_discussed: false }), makeRecord({ safeguarding_discussed: true })]); expect(m.safeguarding_discussed_rate).toBe(66.7); });
     it("average_duration correct", () => { const m = computeStaffSupervisionComplianceMetrics([makeRecord({ supervision_duration_minutes: 30 }), makeRecord({ supervision_duration_minutes: 90 })]); expect(m.average_duration).toBe(60); });
@@ -59,17 +88,36 @@ describe("staff-supervision-compliance-service", () => {
   describe("identifyStaffSupervisionComplianceAlerts", () => {
     it("returns empty for clean", () => { expect(identifyStaffSupervisionComplianceAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyStaffSupervisionComplianceAlerts([])).toEqual([]); });
-    it("fires missed_with_concerns", () => { const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ frequency_compliance: "missed", concerns_raised: true, staff_name: "Jo" })]); expect(a[0].type).toBe("missed_with_concerns"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires missed_with_concerns", () => { 
+      const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ frequency_compliance: "missed", concerns_raised: true, staff_name: "Jo" })]);
+      expect(a[0].type).toBe("missed_with_concerns");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("missed without concerns no critical alert", () => { expect(identifyStaffSupervisionComplianceAlerts([makeRecord({ frequency_compliance: "missed", concerns_raised: false })]).find(x => x.type === "missed_with_concerns")).toBeUndefined(); });
     it("fires supervision_overdue for significantly_overdue", () => { const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ frequency_compliance: "significantly_overdue" })]); const f = a.find(x => x.type === "supervision_overdue"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); });
     it("fires supervision_overdue for missed", () => { const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ frequency_compliance: "missed" })]); expect(a.find(x => x.type === "supervision_overdue")).toBeDefined(); });
     it("supervision_overdue plural", () => { const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ frequency_compliance: "significantly_overdue" }), makeRecord({ frequency_compliance: "missed" })]); const f = a.find(x => x.type === "supervision_overdue"); expect(f!.message).toContain("2 supervisions are"); });
-    it("fires safeguarding_not_discussed singular", () => { const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ safeguarding_discussed: false })]); const f = a.find(x => x.type === "safeguarding_not_discussed"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 supervision has"); });
+    it("fires safeguarding_not_discussed singular", () => { 
+      const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ safeguarding_discussed: false })]);
+      const f = a.find(x => x.type === "safeguarding_not_discussed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 supervision has");
+    });
     it("safeguarding_not_discussed plural", () => { const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ safeguarding_discussed: false }), makeRecord({ safeguarding_discussed: false })]); const f = a.find(x => x.type === "safeguarding_not_discussed"); expect(f!.message).toContain("2 supervisions have"); });
     it("actions_not_reviewed not for 1", () => { expect(identifyStaffSupervisionComplianceAlerts([makeRecord({ previous_actions_reviewed: false })]).find(x => x.type === "actions_not_reviewed")).toBeUndefined(); });
     it("actions_not_reviewed fires for 2", () => { const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ previous_actions_reviewed: false }), makeRecord({ previous_actions_reviewed: false })]); expect(a.find(x => x.type === "actions_not_reviewed")).toBeDefined(); expect(a.find(x => x.type === "actions_not_reviewed")!.severity).toBe("medium"); });
     it("training_not_reviewed not for 1", () => { expect(identifyStaffSupervisionComplianceAlerts([makeRecord({ training_needs_reviewed: false })]).find(x => x.type === "training_not_reviewed")).toBeUndefined(); });
     it("training_not_reviewed fires for 2", () => { const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ training_needs_reviewed: false }), makeRecord({ training_needs_reviewed: false })]); expect(a.find(x => x.type === "training_not_reviewed")).toBeDefined(); expect(a.find(x => x.type === "training_not_reviewed")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ frequency_compliance: "missed", concerns_raised: true, safeguarding_discussed: false, previous_actions_reviewed: false, training_needs_reviewed: false }), makeRecord({ frequency_compliance: "significantly_overdue", safeguarding_discussed: false, previous_actions_reviewed: false, training_needs_reviewed: false })]); const types = a.map(x => x.type); expect(types).toContain("missed_with_concerns"); expect(types).toContain("supervision_overdue"); expect(types).toContain("safeguarding_not_discussed"); expect(types).toContain("actions_not_reviewed"); expect(types).toContain("training_not_reviewed"); });
+    it("fires all applicable", () => { 
+      const a = identifyStaffSupervisionComplianceAlerts([makeRecord({ frequency_compliance: "missed", concerns_raised: true, safeguarding_discussed: false, previous_actions_reviewed: false, training_needs_reviewed: false }), makeRecord({ frequency_compliance: "significantly_overdue", safeguarding_discussed: false, previous_actions_reviewed: false, training_needs_reviewed: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("missed_with_concerns");
+      expect(types).toContain("supervision_overdue");
+      expect(types).toContain("safeguarding_not_discussed");
+      expect(types).toContain("actions_not_reviewed");
+      expect(types).toContain("training_not_reviewed");
+    });
   });
 });

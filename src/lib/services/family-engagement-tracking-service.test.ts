@@ -48,9 +48,9 @@ describe("computeFamilyEngagementMetrics", () => {
     expect(m.hostile_count).toBe(0);
     expect(m.no_participation_count).toBe(0);
     expect(m.broken_down_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
-    expect(m.child_prepared_rate).toBe(0);
-    expect(m.family_supported_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
+    expect(m.child_prepared_rate).toBeNull();;
+    expect(m.family_supported_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

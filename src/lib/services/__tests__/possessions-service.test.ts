@@ -84,7 +84,7 @@ describe("computePossessionSummary", () => {
     expect(result.items_with_child).toBe(0);
     expect(result.items_in_safe).toBe(0);
     expect(result.items_lost_damaged).toBe(0);
-    expect(result.signing_compliance).toBe(0);
+    expect(result.signing_compliance).toBeNull();;
     expect(result.total_estimated_value).toBe(0);
     expect(result.children_with_records).toBe(0);
     expect(result.money_children_count).toBe(0);
@@ -196,7 +196,7 @@ describe("computePossessionSummary", () => {
 
   it("computes signing_compliance as 0 for empty possessions (no division by zero)", () => {
     const result = computePossessionSummary([], []);
-    expect(result.signing_compliance).toBe(0);
+    expect(result.signing_compliance).toBeNull();;
   });
 
   it("sums total_estimated_value correctly, ignoring null and zero", () => {

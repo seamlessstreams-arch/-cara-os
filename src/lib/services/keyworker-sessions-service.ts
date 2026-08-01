@@ -152,19 +152,19 @@ export function computeKeyworkerSessionMetrics(
   good_count: number;
   poor_count: number;
   distressed_count: number;
-  child_led_rate: number;
-  targets_reviewed_rate: number;
-  wishes_feelings_rate: number;
-  advocacy_rate: number;
-  care_plan_discussed_rate: number;
-  safety_discussed_rate: number;
-  achievements_celebrated_rate: number;
-  worries_explored_rate: number;
-  next_steps_agreed_rate: number;
-  session_recorded_rate: number;
-  child_signed_rate: number;
-  social_worker_updated_rate: number;
-  average_duration: number;
+  child_led_rate: number | null;
+  targets_reviewed_rate: number | null;
+  wishes_feelings_rate: number | null;
+  advocacy_rate: number | null;
+  care_plan_discussed_rate: number | null;
+  safety_discussed_rate: number | null;
+  achievements_celebrated_rate: number | null;
+  worries_explored_rate: number | null;
+  next_steps_agreed_rate: number | null;
+  session_recorded_rate: number | null;
+  child_signed_rate: number | null;
+  social_worker_updated_rate: number | null;
+  average_duration: number | null;
   unique_children: number;
   by_session_focus: Record<string, number>;
   by_session_quality: Record<string, number>;
@@ -180,12 +180,12 @@ export function computeKeyworkerSessionMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDuration = records.length > 0
     ? Math.round((records.reduce((sum, r) => sum + r.session_duration_minutes, 0) / records.length) * 10) / 10
-    : 0;
+    : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

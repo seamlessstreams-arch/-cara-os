@@ -23,7 +23,7 @@ describe("computeAdvocacyRepresentationMetrics", () => {
     const result = computeAdvocacyRepresentationMetrics([]);
     expect(result.total_sessions).toBe(0);
     expect(result.poor_quality_count).toBe(0);
-    expect(result.child_voice_rate).toBe(0);
+    expect(result.child_voice_rate).toBeNull();;
     expect(result.unique_children).toBe(0);
   });
 

@@ -46,7 +46,7 @@ describe("computeVisitMetrics", () => {
     expect(m.scheduled_visits).toBe(0);
     expect(m.overdue_visits).toBe(0);
     expect(m.cancelled_visits).toBe(0);
-    expect(m.satisfactory_rate).toBe(0);
+    expect(m.satisfactory_rate).toBeNull();;
     expect(m.concerns_raised_count).toBe(0);
     expect(m.actions_outstanding).toBe(0);
     expect(m.reports_pending).toBe(0);

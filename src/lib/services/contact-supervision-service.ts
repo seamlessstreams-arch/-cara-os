@@ -140,18 +140,18 @@ export function computeContactSupervisionMetrics(
   refused_count: number;
   cancelled_count: number;
   safeguarding_concerns_count: number;
-  risk_assessment_rate: number;
-  child_prepared_rate: number;
-  child_debriefed_rate: number;
-  court_order_rate: number;
-  transport_arranged_rate: number;
-  venue_appropriate_rate: number;
-  social_worker_informed_rate: number;
-  care_plan_linked_rate: number;
-  child_views_rate: number;
-  recorded_within_24h_rate: number;
-  recorded_promptly_rate: number;
-  average_duration: number;
+  risk_assessment_rate: number | null;
+  child_prepared_rate: number | null;
+  child_debriefed_rate: number | null;
+  court_order_rate: number | null;
+  transport_arranged_rate: number | null;
+  venue_appropriate_rate: number | null;
+  social_worker_informed_rate: number | null;
+  care_plan_linked_rate: number | null;
+  child_views_rate: number | null;
+  recorded_within_24h_rate: number | null;
+  recorded_promptly_rate: number | null;
+  average_duration: number | null;
   unique_children: number;
   by_contact_type: Record<string, number>;
   by_supervision_level: Record<string, number>;
@@ -167,7 +167,7 @@ export function computeContactSupervisionMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDuration =
@@ -175,7 +175,7 @@ export function computeContactSupervisionMetrics(
       ? Math.round(
           (records.reduce((sum, r) => sum + r.contact_duration_minutes, 0) / records.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

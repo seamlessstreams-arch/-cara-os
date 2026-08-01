@@ -179,8 +179,8 @@ export function computeBodyMapMetrics(
   children_with_records: number;
   safeguarding_referrals: number;
   photographs_taken: number;
-  manager_informed_rate: number;
-  social_worker_informed_rate: number;
+  manager_informed_rate: number | null;
+  social_worker_informed_rate: number | null;
   follow_ups_pending: number;
   unexplained_marks: number;
   inconsistent_explanations: number;
@@ -205,13 +205,13 @@ export function computeBodyMapMetrics(
   const managerRate =
     records.length > 0
       ? Math.round((managerInformed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const swInformed = records.filter((r) => r.social_worker_informed).length;
   const swRate =
     records.length > 0
       ? Math.round((swInformed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const followUpsPending = records.filter(
     (r) => r.follow_up_required && !r.follow_up_completed,

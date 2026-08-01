@@ -102,7 +102,7 @@ export function computeSafeguardingCompliance(
   notification_compliance_percentage: number;
   by_type: Record<string, number>;
   by_status: Record<string, number>;
-  average_resolution_days: number;
+  average_resolution_days: number | null;
 } {
   const byType: Record<string, number> = {};
   const byStatus: Record<string, number> = {};
@@ -159,7 +159,7 @@ export function computeSafeguardingCompliance(
   const averageResolutionDays =
     resolvedCount > 0
       ? Math.round((totalResolutionDays / resolvedCount) * 10) / 10
-      : 0;
+      : null;
 
   return {
     total_referrals: referrals.length,

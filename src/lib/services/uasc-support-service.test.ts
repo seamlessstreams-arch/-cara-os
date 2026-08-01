@@ -44,19 +44,19 @@ describe("computeMetrics", () => {
   it("returns zeroes for empty array", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
-    expect(m.legal_representation_rate).toBe(0);
-    expect(m.interpreter_rate).toBe(0);
-    expect(m.trafficking_rate).toBe(0);
-    expect(m.nrm_rate).toBe(0);
-    expect(m.health_screening_rate).toBe(0);
-    expect(m.camhs_rate).toBe(0);
-    expect(m.cultural_needs_met_rate).toBe(0);
-    expect(m.religious_needs_met_rate).toBe(0);
+    expect(m.legal_representation_rate).toBeNull();;
+    expect(m.interpreter_rate).toBeNull();;
+    expect(m.trafficking_rate).toBeNull();;
+    expect(m.nrm_rate).toBeNull();;
+    expect(m.health_screening_rate).toBeNull();;
+    expect(m.camhs_rate).toBeNull();;
+    expect(m.cultural_needs_met_rate).toBeNull();;
+    expect(m.religious_needs_met_rate).toBeNull();;
     expect(m.age_dispute_count).toBe(0);
     expect(m.unique_children).toBe(0);
     expect(m.active_count).toBe(0);
     expect(m.overdue_review_count).toBe(0);
-    expect(m.social_worker_informed_rate).toBe(0);
+    expect(m.social_worker_informed_rate).toBeNull();;
   });
 
   it("counts totals, unique children, and active correctly", () => {

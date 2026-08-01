@@ -43,7 +43,7 @@ describe("computeFgmRiskMetrics", () => {
     expect(m.high_risk_count).toBe(0);
     expect(m.mandatory_report_count).toBe(0);
     expect(m.fgm_protection_order_count).toBe(0);
-    expect(m.safety_plan_rate).toBe(0);
+    expect(m.safety_plan_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
     expect(m.unique_assessors).toBe(0);
   });

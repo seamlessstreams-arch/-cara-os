@@ -298,11 +298,11 @@ export function computeMetrics(
   linked_to_pathway_plan_count: number;
   social_workers_informed_count: number;
   evidence_recorded_count: number;
-  engagement_rate: number;
+  engagement_rate: number | null;
   total_hours_completed: number;
-  average_engagement: number;
+  average_engagement: number | null;
   dofe_participants: number;
-  completion_rate: number;
+  completion_rate: number | null;
 } {
   const total = rows.length;
 
@@ -329,7 +329,7 @@ export function computeMetrics(
 
   const engagementRate = total > 0
     ? Math.round((rows.filter((r) => r.young_person_engaged).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const totalHoursCompleted = rows.reduce(
     (sum, r) => sum + (r.hours_completed ?? 0),
@@ -340,7 +340,7 @@ export function computeMetrics(
   const engagedCount = rows.filter((r) => r.young_person_engaged).length;
   const averageEngagement = total > 0
     ? Math.round((engagedCount / total) * 50) / 10
-    : 0;
+    : null;
 
   const dofeParticipants = new Set(
     rows
@@ -350,7 +350,7 @@ export function computeMetrics(
 
   const completionRate = total > 0
     ? Math.round((rows.filter((r) => r.completion_date !== null).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   return {
     total_records: total,
@@ -562,7 +562,7 @@ export function generateCaraInsights(
         `structure, progression, and tangible recognition that can be transformative for ` +
         `young people in care who may have experienced disrupted education.`,
     );
-  } else if (metrics.engagement_rate < 50 && metrics.total_records >= 5) {
+  } else if ((metrics.engagement_rate ?? 0) < 50 && metrics.total_records >= 5) {
     insights.push(
       `[reflect] Engagement rate of ${metrics.engagement_rate}% suggests young people may ` +
         `not be finding award activities motivating. Are the right award schemes being ` +

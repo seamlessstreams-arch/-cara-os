@@ -72,10 +72,10 @@ describe("computeWhistleblowingMetrics", () => {
     const m = computeWhistleblowingMetrics([], []);
     expect(m.total_reports).toBe(0);
     expect(m.open_reports).toBe(0);
-    expect(m.avg_resolution_days).toBe(0);
+    expect(m.avg_resolution_days).toBeNull();;
     expect(m.external_referrals_count).toBe(0);
     expect(m.detriment_reported_count).toBe(0);
-    expect(m.policy_compliance_rate).toBe(0);
+    expect(m.policy_compliance_rate).toBeNull();;
     expect(m.staff_training_rate).toBe(0);
   });
 

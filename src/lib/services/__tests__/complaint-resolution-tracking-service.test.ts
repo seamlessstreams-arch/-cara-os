@@ -38,14 +38,44 @@ function makeRecord(overrides?: Partial<ComplaintResolutionTrackingRecord>): Com
 
 describe("complaint-resolution-tracking-service", () => {
   describe("computeComplaintResolutionMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeComplaintResolutionMetrics([]); expect(m.total_complaints).toBe(0); expect(m.upheld_count).toBe(0); expect(m.escalated_count).toBe(0); expect(m.overdue_count).toBe(0); expect(m.pending_count).toBe(0); expect(m.acknowledged_rate).toBe(0); expect(m.average_resolution_days).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeComplaintResolutionMetrics([]); expect(m.by_complaint_category).toEqual({}); expect(m.by_resolution_status).toEqual({}); expect(m.by_outcome_type).toEqual({}); expect(m.by_response_timeline).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeComplaintResolutionMetrics([]);
+      expect(m.total_complaints).toBe(0);;
+      expect(m.upheld_count).toBe(0);
+      expect(m.escalated_count).toBe(0);
+      expect(m.overdue_count).toBe(0);
+      expect(m.pending_count).toBe(0);
+      expect(m.acknowledged_rate).toBeNull();;
+      expect(m.average_resolution_days).toBeNull();;
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeComplaintResolutionMetrics([]);
+      expect(m.by_complaint_category).toEqual({});
+      expect(m.by_resolution_status).toEqual({});
+      expect(m.by_outcome_type).toEqual({});
+      expect(m.by_response_timeline).toEqual({});
+    });
     it("total_complaints counts records", () => { expect(computeComplaintResolutionMetrics([makeRecord(), makeRecord()]).total_complaints).toBe(2); });
     it("counts upheld", () => { expect(computeComplaintResolutionMetrics([makeRecord({ outcome_type: "upheld" })]).upheld_count).toBe(1); });
     it("counts escalated", () => { expect(computeComplaintResolutionMetrics([makeRecord({ resolution_status: "escalated" })]).escalated_count).toBe(1); });
     it("counts overdue", () => { expect(computeComplaintResolutionMetrics([makeRecord({ response_timeline: "overdue" })]).overdue_count).toBe(1); });
     it("counts pending", () => { expect(computeComplaintResolutionMetrics([makeRecord({ outcome_type: "pending" })]).pending_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeComplaintResolutionMetrics([makeRecord()]); expect(m.acknowledged_rate).toBe(100); expect(m.investigation_rate).toBe(100); expect(m.child_views_rate).toBe(100); expect(m.complainant_updated_rate).toBe(100); expect(m.ofsted_notified_rate).toBe(100); expect(m.learning_identified_rate).toBe(100); expect(m.action_plan_rate).toBe(100); expect(m.outcome_communicated_rate).toBe(100); expect(m.satisfaction_rate).toBe(100); expect(m.appeal_offered_rate).toBe(100); expect(m.records_updated_rate).toBe(100); expect(m.manager_oversight_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeComplaintResolutionMetrics([makeRecord()]);
+      expect(m.acknowledged_rate).toBe(100);
+      expect(m.investigation_rate).toBe(100);
+      expect(m.child_views_rate).toBe(100);
+      expect(m.complainant_updated_rate).toBe(100);
+      expect(m.ofsted_notified_rate).toBe(100);
+      expect(m.learning_identified_rate).toBe(100);
+      expect(m.action_plan_rate).toBe(100);
+      expect(m.outcome_communicated_rate).toBe(100);
+      expect(m.satisfaction_rate).toBe(100);
+      expect(m.appeal_offered_rate).toBe(100);
+      expect(m.records_updated_rate).toBe(100);
+      expect(m.manager_oversight_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("acknowledged_rate 0 when false", () => { expect(computeComplaintResolutionMetrics([makeRecord({ acknowledged_promptly: false })]).acknowledged_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeComplaintResolutionMetrics([makeRecord({ learning_identified: true }), makeRecord({ learning_identified: false }), makeRecord({ learning_identified: true })]); expect(m.learning_identified_rate).toBe(66.7); });
     it("average_resolution_days correct", () => { const m = computeComplaintResolutionMetrics([makeRecord({ resolution_days: 5 }), makeRecord({ resolution_days: 15 })]); expect(m.average_resolution_days).toBe(10); });
@@ -58,16 +88,41 @@ describe("complaint-resolution-tracking-service", () => {
   describe("identifyComplaintResolutionAlerts", () => {
     it("returns empty for clean", () => { expect(identifyComplaintResolutionAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyComplaintResolutionAlerts([])).toEqual([]); });
-    it("fires safeguarding_complaint_open", () => { const a = identifyComplaintResolutionAlerts([makeRecord({ complaint_category: "safeguarding", resolution_status: "investigating", complainant_name: "Parent Jo" })]); expect(a[0].type).toBe("safeguarding_complaint_open"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Parent Jo"); });
+    it("fires safeguarding_complaint_open", () => { 
+      const a = identifyComplaintResolutionAlerts([makeRecord({ complaint_category: "safeguarding", resolution_status: "investigating", complainant_name: "Parent Jo" })]);
+      expect(a[0].type).toBe("safeguarding_complaint_open");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Parent Jo");
+    });
     it("safeguarding resolved no alert", () => { expect(identifyComplaintResolutionAlerts([makeRecord({ complaint_category: "safeguarding", resolution_status: "resolved" })]).find(x => x.type === "safeguarding_complaint_open")).toBeUndefined(); });
     it("safeguarding escalated no alert", () => { expect(identifyComplaintResolutionAlerts([makeRecord({ complaint_category: "safeguarding", resolution_status: "escalated" })]).find(x => x.type === "safeguarding_complaint_open")).toBeUndefined(); });
-    it("fires response_overdue singular", () => { const a = identifyComplaintResolutionAlerts([makeRecord({ response_timeline: "overdue" })]); const f = a.find(x => x.type === "response_overdue"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 complaint has"); });
+    it("fires response_overdue singular", () => { 
+      const a = identifyComplaintResolutionAlerts([makeRecord({ response_timeline: "overdue" })]);
+      const f = a.find(x => x.type === "response_overdue");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 complaint has");
+    });
     it("response_overdue plural", () => { const a = identifyComplaintResolutionAlerts([makeRecord({ response_timeline: "overdue" }), makeRecord({ response_timeline: "overdue" })]); const f = a.find(x => x.type === "response_overdue"); expect(f!.message).toContain("2 complaints have"); });
-    it("fires no_learning_identified singular", () => { const a = identifyComplaintResolutionAlerts([makeRecord({ learning_identified: false })]); const f = a.find(x => x.type === "no_learning_identified"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 complaint has"); });
+    it("fires no_learning_identified singular", () => { 
+      const a = identifyComplaintResolutionAlerts([makeRecord({ learning_identified: false })]);
+      const f = a.find(x => x.type === "no_learning_identified");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 complaint has");
+    });
     it("satisfaction_not_assessed not for 1", () => { expect(identifyComplaintResolutionAlerts([makeRecord({ satisfaction_assessed: false })]).find(x => x.type === "satisfaction_not_assessed")).toBeUndefined(); });
     it("satisfaction_not_assessed fires for 2", () => { const a = identifyComplaintResolutionAlerts([makeRecord({ satisfaction_assessed: false }), makeRecord({ satisfaction_assessed: false })]); expect(a.find(x => x.type === "satisfaction_not_assessed")).toBeDefined(); expect(a.find(x => x.type === "satisfaction_not_assessed")!.severity).toBe("medium"); });
     it("appeal_not_offered not for 1", () => { expect(identifyComplaintResolutionAlerts([makeRecord({ appeal_offered: false })]).find(x => x.type === "appeal_not_offered")).toBeUndefined(); });
     it("appeal_not_offered fires for 2", () => { const a = identifyComplaintResolutionAlerts([makeRecord({ appeal_offered: false }), makeRecord({ appeal_offered: false })]); expect(a.find(x => x.type === "appeal_not_offered")).toBeDefined(); expect(a.find(x => x.type === "appeal_not_offered")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyComplaintResolutionAlerts([makeRecord({ complaint_category: "safeguarding", resolution_status: "received", response_timeline: "overdue", learning_identified: false, satisfaction_assessed: false, appeal_offered: false }), makeRecord({ response_timeline: "overdue", learning_identified: false, satisfaction_assessed: false, appeal_offered: false })]); const types = a.map(x => x.type); expect(types).toContain("safeguarding_complaint_open"); expect(types).toContain("response_overdue"); expect(types).toContain("no_learning_identified"); expect(types).toContain("satisfaction_not_assessed"); expect(types).toContain("appeal_not_offered"); });
+    it("fires all applicable", () => { 
+      const a = identifyComplaintResolutionAlerts([makeRecord({ complaint_category: "safeguarding", resolution_status: "received", response_timeline: "overdue", learning_identified: false, satisfaction_assessed: false, appeal_offered: false }), makeRecord({ response_timeline: "overdue", learning_identified: false, satisfaction_assessed: false, appeal_offered: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("safeguarding_complaint_open");
+      expect(types).toContain("response_overdue");
+      expect(types).toContain("no_learning_identified");
+      expect(types).toContain("satisfaction_not_assessed");
+      expect(types).toContain("appeal_not_offered");
+    });
   });
 });

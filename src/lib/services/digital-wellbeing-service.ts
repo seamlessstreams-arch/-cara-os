@@ -285,22 +285,22 @@ export function computeMetrics(
   unique_children: number;
   by_record_type: Record<string, number>;
   by_risk_level: Record<string, number>;
-  stranger_contact_rate: number;
-  harmful_content_rate: number;
-  cyberbullying_rate: number;
-  image_sharing_concern_rate: number;
-  excessive_use_rate: number;
-  parental_controls_rate: number;
-  education_rate: number;
-  child_views_rate: number;
+  stranger_contact_rate: number | null;
+  harmful_content_rate: number | null;
+  cyberbullying_rate: number | null;
+  image_sharing_concern_rate: number | null;
+  excessive_use_rate: number | null;
+  parental_controls_rate: number | null;
+  education_rate: number | null;
+  child_views_rate: number | null;
   average_screen_time: number;
-  age_appropriate_rate: number;
+  age_appropriate_rate: number | null;
   high_critical_risk_count: number;
-  privacy_reviewed_rate: number;
-  social_worker_informed_rate: number;
+  privacy_reviewed_rate: number | null;
+  social_worker_informed_rate: number | null;
   safeguarding_record_count: number;
   positive_record_count: number;
-  average_risk_score: number;
+  average_risk_score: number | null;
 } {
   const total = rows.length;
 
@@ -320,49 +320,49 @@ export function computeMetrics(
   // Boolean rates
   const strangerContactRate = total > 0
     ? Math.round((rows.filter((r) => r.contact_with_strangers_identified).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const harmfulContentRate = total > 0
     ? Math.round((rows.filter((r) => r.harmful_content_exposure).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const cyberbullyingRate = total > 0
     ? Math.round((rows.filter((r) => r.cyberbullying_identified).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const imageSharingConcernRate = total > 0
     ? Math.round((rows.filter((r) => r.image_sharing_concerns).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const excessiveUseRate = total > 0
     ? Math.round((rows.filter((r) => r.excessive_use_identified).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const parentalControlsRate = total > 0
     ? Math.round((rows.filter((r) => r.parental_controls_active).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const educationRate = total > 0
     ? Math.round((rows.filter((r) => r.education_provided).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const childViewsRate = total > 0
     ? Math.round((rows.filter((r) => r.child_views_obtained).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const ageAppropriateRate = total > 0
     ? Math.round((rows.filter((r) => r.age_appropriate_use).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const privacyReviewedRate = total > 0
     ? Math.round((rows.filter((r) => r.privacy_settings_reviewed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const socialWorkerInformedRate = total > 0
     ? Math.round(
         (rows.filter((r) => r.social_worker_informed === true).length / total) * 1000,
       ) / 10
-    : 0;
+    : null;
 
   // Average screen time (from records that have actual_screen_time_hours)
   const screenTimeRows = rows.filter(
@@ -709,7 +709,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.stranger_contact_rate > 15 || metrics.image_sharing_concern_rate > 10) {
+  if ((metrics.stranger_contact_rate ?? 0) > 15 || (metrics.image_sharing_concern_rate ?? 0) > 10) {
     insights.push(
       `[reflect] Stranger contact rate is ${metrics.stranger_contact_rate}% and image sharing ` +
         `concern rate is ${metrics.image_sharing_concern_rate}%. These are significant safeguarding ` +
@@ -721,7 +721,7 @@ export function generateCaraInsights(
         `exploitation due to their care experiences, proactive monitoring and open conversations ` +
         `about online relationships are essential.`,
     );
-  } else if (metrics.education_rate < 40 && metrics.total_records > 5) {
+  } else if ((metrics.education_rate ?? 0) < 40 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Digital education is provided in only ${metrics.education_rate}% of records. ` +
         `The Online Safety Act 2023 and KCSIE 2023 emphasise that children need to develop ` +
@@ -732,7 +732,7 @@ export function generateCaraInsights(
         `better equipped to protect themselves — this is particularly important for ` +
         `looked-after children who will need these skills in independent living.`,
     );
-  } else if (metrics.child_views_rate < 40 && metrics.total_records > 5) {
+  } else if ((metrics.child_views_rate ?? 0) < 40 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Child views are obtained in only ${metrics.child_views_rate}% of digital ` +
         `wellbeing records. UNCRC Article 12 and CHR 2015 require that children's views ` +

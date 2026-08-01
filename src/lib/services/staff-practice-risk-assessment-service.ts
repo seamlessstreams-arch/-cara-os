@@ -151,18 +151,18 @@ export function computePracticeRiskMetrics(records: StaffPracticeRiskAssessmentR
   severe_impact_count: number;
   active_count: number;
   unapproved_count: number;
-  evidence_verified_rate: number;
-  staff_notified_rate: number;
-  staff_commented_rate: number;
-  protective_factors_rate: number;
-  support_controls_rate: number;
-  management_controls_rate: number;
-  review_date_rate: number;
-  approved_rate: number;
-  children_safeguarded_rate: number;
-  alternatives_considered_rate: number;
-  proportionate_rate: number;
-  recorded_promptly_rate: number;
+  evidence_verified_rate: number | null;
+  staff_notified_rate: number | null;
+  staff_commented_rate: number | null;
+  protective_factors_rate: number | null;
+  support_controls_rate: number | null;
+  management_controls_rate: number | null;
+  review_date_rate: number | null;
+  approved_rate: number | null;
+  children_safeguarded_rate: number | null;
+  alternatives_considered_rate: number | null;
+  proportionate_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_staff: number;
   by_risk_area: Record<string, number>;
   by_likelihood: Record<string, number>;
@@ -178,7 +178,7 @@ export function computePracticeRiskMetrics(records: StaffPracticeRiskAssessmentR
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byArea: Record<string, number> = {};

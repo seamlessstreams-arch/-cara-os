@@ -174,11 +174,11 @@ export function computePocketMoneyAuditMetrics(
   fraud_suspected_count: number;
   discrepancy_found_count: number;
   not_audited_count: number;
-  receipt_rate: number;
-  child_signed_rate: number;
-  staff_witnessed_rate: number;
-  two_signatures_rate: number;
-  balance_matches_rate: number;
+  receipt_rate: number | null;
+  child_signed_rate: number | null;
+  staff_witnessed_rate: number | null;
+  two_signatures_rate: number | null;
+  balance_matches_rate: number | null;
   transaction_type_breakdown: Record<string, number>;
   outcome_breakdown: Record<string, number>;
   unique_children: number;
@@ -194,7 +194,7 @@ export function computePocketMoneyAuditMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const transactionTypeBreakdown: Record<string, number> = {};
@@ -311,7 +311,7 @@ export function generatePocketMoneyAuditCaraInsights(
         `What safeguards can be strengthened to protect children's money, and are reporting procedures ` +
         `being followed to ensure full transparency and accountability?`,
     );
-  } else if (metrics.balance_matches_rate < 100) {
+  } else if ((metrics.balance_matches_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Balance matches record in ${metrics.balance_matches_rate}% of audits. ` +
         `How can the home improve reconciliation processes to ensure every child's pocket money balance ` +

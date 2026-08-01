@@ -92,42 +92,42 @@ describe("computeEmploymentSupportMetrics", () => {
 
     it("returns zero cv_completed_rate", () => {
       const m = computeEmploymentSupportMetrics([]);
-      expect(m.cv_completed_rate).toBe(0);
+      expect(m.cv_completed_rate).toBeNull();;
     });
 
     it("returns zero interview_practice_rate", () => {
       const m = computeEmploymentSupportMetrics([]);
-      expect(m.interview_practice_rate).toBe(0);
+      expect(m.interview_practice_rate).toBeNull();;
     });
 
     it("returns zero work_experience_rate", () => {
       const m = computeEmploymentSupportMetrics([]);
-      expect(m.work_experience_rate).toBe(0);
+      expect(m.work_experience_rate).toBeNull();;
     });
 
     it("returns zero employer_engaged_rate", () => {
       const m = computeEmploymentSupportMetrics([]);
-      expect(m.employer_engaged_rate).toBe(0);
+      expect(m.employer_engaged_rate).toBeNull();;
     });
 
     it("returns zero child_motivated_rate", () => {
       const m = computeEmploymentSupportMetrics([]);
-      expect(m.child_motivated_rate).toBe(0);
+      expect(m.child_motivated_rate).toBeNull();;
     });
 
     it("returns zero financial_literacy_rate", () => {
       const m = computeEmploymentSupportMetrics([]);
-      expect(m.financial_literacy_rate).toBe(0);
+      expect(m.financial_literacy_rate).toBeNull();;
     });
 
     it("returns zero travel_training_rate", () => {
       const m = computeEmploymentSupportMetrics([]);
-      expect(m.travel_training_rate).toBe(0);
+      expect(m.travel_training_rate).toBeNull();;
     });
 
     it("returns zero workplace_rights_rate", () => {
       const m = computeEmploymentSupportMetrics([]);
-      expect(m.workplace_rights_rate).toBe(0);
+      expect(m.workplace_rights_rate).toBeNull();;
     });
 
     it("returns empty support_type_breakdown", () => {

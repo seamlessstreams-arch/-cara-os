@@ -47,7 +47,7 @@ describe("computeReligiousCulturalMetrics", () => {
     expect(m.poorly_accommodated_count).toBe(0);
     expect(m.poor_sensitivity_count).toBe(0);
     expect(m.unaware_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -109,12 +109,12 @@ describe("computeBodyMapMetrics", () => {
 
     it("returns zero manager_informed_rate", () => {
       const m = computeBodyMapMetrics([], 10, now);
-      expect(m.manager_informed_rate).toBe(0);
+      expect(m.manager_informed_rate).toBeNull();;
     });
 
     it("returns zero social_worker_informed_rate", () => {
       const m = computeBodyMapMetrics([], 10, now);
-      expect(m.social_worker_informed_rate).toBe(0);
+      expect(m.social_worker_informed_rate).toBeNull();;
     });
 
     it("returns zero follow_ups_pending", () => {

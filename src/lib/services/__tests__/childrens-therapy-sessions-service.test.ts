@@ -38,14 +38,44 @@ function makeRecord(overrides?: Partial<ChildrensTherapySessionRecord>): Childre
 
 describe("childrens-therapy-sessions-service", () => {
   describe("computeChildrensTherapyMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeChildrensTherapyMetrics([]); expect(m.total_sessions).toBe(0); expect(m.positive_progress_count).toBe(0); expect(m.declined_count).toBe(0); expect(m.cancelled_count).toBe(0); expect(m.refused_count).toBe(0); expect(m.child_prepared_rate).toBe(0); expect(m.average_duration).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeChildrensTherapyMetrics([]); expect(m.by_therapy_type).toEqual({}); expect(m.by_session_outcome).toEqual({}); expect(m.by_child_engagement).toEqual({}); expect(m.by_therapy_frequency).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeChildrensTherapyMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.positive_progress_count).toBe(0);
+      expect(m.declined_count).toBe(0);
+      expect(m.cancelled_count).toBe(0);
+      expect(m.refused_count).toBe(0);
+      expect(m.child_prepared_rate).toBeNull();;
+      expect(m.average_duration).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeChildrensTherapyMetrics([]);
+      expect(m.by_therapy_type).toEqual({});
+      expect(m.by_session_outcome).toEqual({});
+      expect(m.by_child_engagement).toEqual({});
+      expect(m.by_therapy_frequency).toEqual({});
+    });
     it("counts positive_progress", () => { expect(computeChildrensTherapyMetrics([makeRecord()]).positive_progress_count).toBe(1); });
     it("counts declined", () => { expect(computeChildrensTherapyMetrics([makeRecord({ session_outcome: "session_declined" })]).declined_count).toBe(1); });
     it("counts cancelled", () => { expect(computeChildrensTherapyMetrics([makeRecord({ session_outcome: "session_cancelled" })]).cancelled_count).toBe(1); });
     it("counts refused from child_engagement", () => { expect(computeChildrensTherapyMetrics([makeRecord({ child_engagement: "refused" })]).refused_count).toBe(1); });
     it("refused_count 0 when not refused", () => { expect(computeChildrensTherapyMetrics([makeRecord()]).refused_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeChildrensTherapyMetrics([makeRecord()]); expect(m.child_prepared_rate).toBe(100); expect(m.transport_arranged_rate).toBe(100); expect(m.consent_current_rate).toBe(100); expect(m.feedback_obtained_rate).toBe(100); expect(m.care_plan_updated_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.progress_documented_rate).toBe(100); expect(m.goals_reviewed_rate).toBe(100); expect(m.staff_briefed_rate).toBe(100); expect(m.follow_up_actions_rate).toBe(100); expect(m.child_debriefed_rate).toBe(100); expect(m.multi_agency_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeChildrensTherapyMetrics([makeRecord()]);
+      expect(m.child_prepared_rate).toBe(100);
+      expect(m.transport_arranged_rate).toBe(100);
+      expect(m.consent_current_rate).toBe(100);
+      expect(m.feedback_obtained_rate).toBe(100);
+      expect(m.care_plan_updated_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.progress_documented_rate).toBe(100);
+      expect(m.goals_reviewed_rate).toBe(100);
+      expect(m.staff_briefed_rate).toBe(100);
+      expect(m.follow_up_actions_rate).toBe(100);
+      expect(m.child_debriefed_rate).toBe(100);
+      expect(m.multi_agency_rate).toBe(100);
+    });
     it("child_prepared_rate 0 when false", () => { expect(computeChildrensTherapyMetrics([makeRecord({ child_prepared: false })]).child_prepared_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeChildrensTherapyMetrics([makeRecord({ child_prepared: true }), makeRecord({ child_prepared: false }), makeRecord({ child_prepared: true })]); expect(m.child_prepared_rate).toBe(66.7); });
     it("average_duration single", () => { expect(computeChildrensTherapyMetrics([makeRecord({ session_duration_minutes: 60 })]).average_duration).toBe(60); });
@@ -62,17 +92,43 @@ describe("childrens-therapy-sessions-service", () => {
   describe("identifyChildrensTherapyAlerts", () => {
     it("returns empty for clean", () => { expect(identifyChildrensTherapyAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyChildrensTherapyAlerts([])).toEqual([]); });
-    it("fires refused_no_consent", () => { const a = identifyChildrensTherapyAlerts([makeRecord({ child_engagement: "refused", consent_current: false, child_name: "Jo", therapy_type: "art_therapy", session_date: "2026-05-14" })]); expect(a[0].type).toBe("refused_no_consent"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("art therapy"); });
+    it("fires refused_no_consent", () => { 
+      const a = identifyChildrensTherapyAlerts([makeRecord({ child_engagement: "refused", consent_current: false, child_name: "Jo", therapy_type: "art_therapy", session_date: "2026-05-14" })]);
+      expect(a[0].type).toBe("refused_no_consent");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("art therapy");
+    });
     it("refused_no_consent per-record", () => { const a = identifyChildrensTherapyAlerts([makeRecord({ id: "a-1", child_engagement: "refused", consent_current: false }), makeRecord({ id: "a-2", child_engagement: "refused", consent_current: false })]); expect(a.filter(x => x.type === "refused_no_consent")).toHaveLength(2); });
     it("no alert if refused with consent", () => { expect(identifyChildrensTherapyAlerts([makeRecord({ child_engagement: "refused", consent_current: true })]).filter(x => x.type === "refused_no_consent")).toHaveLength(0); });
-    it("fires progress_not_documented singular", () => { const a = identifyChildrensTherapyAlerts([makeRecord({ progress_documented: false })]); const f = a.find(x => x.type === "progress_not_documented"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 therapy session has"); });
+    it("fires progress_not_documented singular", () => { 
+      const a = identifyChildrensTherapyAlerts([makeRecord({ progress_documented: false })]);
+      const f = a.find(x => x.type === "progress_not_documented");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 therapy session has");
+    });
     it("progress_not_documented plural", () => { const a = identifyChildrensTherapyAlerts([makeRecord({ progress_documented: false }), makeRecord({ progress_documented: false })]); const f = a.find(x => x.type === "progress_not_documented"); expect(f!.message).toContain("2 therapy sessions have"); });
-    it("fires child_not_debriefed singular", () => { const a = identifyChildrensTherapyAlerts([makeRecord({ child_debriefed: false })]); const f = a.find(x => x.type === "child_not_debriefed"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires child_not_debriefed singular", () => { 
+      const a = identifyChildrensTherapyAlerts([makeRecord({ child_debriefed: false })]);
+      const f = a.find(x => x.type === "child_not_debriefed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("child_not_debriefed plural", () => { const a = identifyChildrensTherapyAlerts([makeRecord({ child_debriefed: false }), makeRecord({ child_debriefed: false })]); const f = a.find(x => x.type === "child_not_debriefed"); expect(f!.message).toContain("2 sessions have"); });
     it("care_plan_not_updated not for 1", () => { expect(identifyChildrensTherapyAlerts([makeRecord({ care_plan_updated: false })]).find(x => x.type === "care_plan_not_updated")).toBeUndefined(); });
     it("care_plan_not_updated fires for 2", () => { const a = identifyChildrensTherapyAlerts([makeRecord({ care_plan_updated: false }), makeRecord({ care_plan_updated: false })]); expect(a.find(x => x.type === "care_plan_not_updated")).toBeDefined(); });
     it("goals_not_reviewed not for 2", () => { expect(identifyChildrensTherapyAlerts([makeRecord({ goals_reviewed: false }), makeRecord({ goals_reviewed: false })]).find(x => x.type === "goals_not_reviewed")).toBeUndefined(); });
     it("goals_not_reviewed fires for 3", () => { const a = identifyChildrensTherapyAlerts([makeRecord({ goals_reviewed: false }), makeRecord({ goals_reviewed: false }), makeRecord({ goals_reviewed: false })]); expect(a.find(x => x.type === "goals_not_reviewed")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyChildrensTherapyAlerts([makeRecord({ child_engagement: "refused", consent_current: false, progress_documented: false, child_debriefed: false, care_plan_updated: false, goals_reviewed: false }), makeRecord({ care_plan_updated: false, goals_reviewed: false }), makeRecord({ goals_reviewed: false })]); const types = a.map(x => x.type); expect(types).toContain("refused_no_consent"); expect(types).toContain("progress_not_documented"); expect(types).toContain("child_not_debriefed"); expect(types).toContain("care_plan_not_updated"); expect(types).toContain("goals_not_reviewed"); });
+    it("fires all applicable", () => { 
+      const a = identifyChildrensTherapyAlerts([makeRecord({ child_engagement: "refused", consent_current: false, progress_documented: false, child_debriefed: false, care_plan_updated: false, goals_reviewed: false }), makeRecord({ care_plan_updated: false, goals_reviewed: false }), makeRecord({ goals_reviewed: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("refused_no_consent");
+      expect(types).toContain("progress_not_documented");
+      expect(types).toContain("child_not_debriefed");
+      expect(types).toContain("care_plan_not_updated");
+      expect(types).toContain("goals_not_reviewed");
+    });
   });
 });

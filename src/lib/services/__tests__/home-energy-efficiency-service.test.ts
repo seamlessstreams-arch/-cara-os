@@ -92,42 +92,42 @@ describe("computeEnergyEfficiencyMetrics", () => {
 
     it("returns zero epc_valid_rate", () => {
       const m = computeEnergyEfficiencyMetrics([]);
-      expect(m.epc_valid_rate).toBe(0);
+      expect(m.epc_valid_rate).toBeNull();;
     });
 
     it("returns zero smart_meter_rate", () => {
       const m = computeEnergyEfficiencyMetrics([]);
-      expect(m.smart_meter_rate).toBe(0);
+      expect(m.smart_meter_rate).toBeNull();;
     });
 
     it("returns zero led_lighting_rate", () => {
       const m = computeEnergyEfficiencyMetrics([]);
-      expect(m.led_lighting_rate).toBe(0);
+      expect(m.led_lighting_rate).toBeNull();;
     });
 
     it("returns zero insulation_rate", () => {
       const m = computeEnergyEfficiencyMetrics([]);
-      expect(m.insulation_rate).toBe(0);
+      expect(m.insulation_rate).toBeNull();;
     });
 
     it("returns zero draught_proofing_rate", () => {
       const m = computeEnergyEfficiencyMetrics([]);
-      expect(m.draught_proofing_rate).toBe(0);
+      expect(m.draught_proofing_rate).toBeNull();;
     });
 
     it("returns zero renewable_rate", () => {
       const m = computeEnergyEfficiencyMetrics([]);
-      expect(m.renewable_rate).toBe(0);
+      expect(m.renewable_rate).toBeNull();;
     });
 
     it("returns zero energy_saving_rate", () => {
       const m = computeEnergyEfficiencyMetrics([]);
-      expect(m.energy_saving_rate).toBe(0);
+      expect(m.energy_saving_rate).toBeNull();;
     });
 
     it("returns zero children_involved_rate", () => {
       const m = computeEnergyEfficiencyMetrics([]);
-      expect(m.children_involved_rate).toBe(0);
+      expect(m.children_involved_rate).toBeNull();;
     });
 
     it("returns zero total_monthly_cost", () => {

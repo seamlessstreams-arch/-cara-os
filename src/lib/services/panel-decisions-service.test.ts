@@ -45,9 +45,9 @@ describe("computePanelMetrics", () => {
     const m = computePanelMetrics([]);
     expect(m.total_panels).toBe(0);
     expect(m.admission_panel_count).toBe(0);
-    expect(m.approved_rate).toBe(0);
-    expect(m.full_quorum_rate).toBe(0);
-    expect(m.child_views_considered_rate).toBe(0);
+    expect(m.approved_rate).toBeNull();;
+    expect(m.full_quorum_rate).toBeNull();;
+    expect(m.child_views_considered_rate).toBeNull();;
     expect(m.follow_up_overdue_count).toBe(0);
     expect(m.unique_children).toBe(0);
   });

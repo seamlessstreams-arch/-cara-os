@@ -136,18 +136,18 @@ export function computeArrivalSettlingMetrics(records: ArrivalSettlingExperience
   poor_welcome_count: number;
   uncomfortable_count: number;
   unsettled_count: number;
-  room_prepared_rate: number;
-  personal_items_rate: number;
-  preferences_asked_rate: number;
-  tour_rate: number;
-  peer_introductions_rate: number;
-  key_worker_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  emergency_contacts_rate: number;
-  dietary_needs_rate: number;
-  recorded_promptly_rate: number;
+  room_prepared_rate: number | null;
+  personal_items_rate: number | null;
+  preferences_asked_rate: number | null;
+  tour_rate: number | null;
+  peer_introductions_rate: number | null;
+  key_worker_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  emergency_contacts_rate: number | null;
+  dietary_needs_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_arrival_stage: Record<string, number>;
   by_settling_quality: Record<string, number>;
@@ -163,7 +163,7 @@ export function computeArrivalSettlingMetrics(records: ArrivalSettlingExperience
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byStage: Record<string, number> = {};

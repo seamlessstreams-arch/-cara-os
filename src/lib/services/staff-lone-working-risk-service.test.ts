@@ -42,8 +42,8 @@ describe("computeMetrics (lone working risk)", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.high_risk_count).toBe(0);
     expect(m.unacceptable_count).toBe(0);
-    expect(m.risk_assessment_rate).toBe(0);
-    expect(m.training_rate).toBe(0);
+    expect(m.risk_assessment_rate).toBeNull();;
+    expect(m.training_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

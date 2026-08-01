@@ -430,7 +430,7 @@ describe("computeReg45Metrics", () => {
     expect(m.completed_actions).toBe(0);
     expect(m.by_quality_rating).toEqual({});
     expect(m.by_evaluation_area).toEqual({});
-    expect(m.avg_days_to_distribute).toBe(0);
+    expect(m.avg_days_to_distribute).toBeNull();;
     expect(m.next_report_due).toBeNull();
   });
 
@@ -696,7 +696,7 @@ describe("computeReg45Metrics", () => {
     it("returns 0 when no reports have both dates", () => {
       const reports = [makeReport({ approval_date: null, distribution_date: null })];
       const m = computeReg45Metrics(reports, []);
-      expect(m.avg_days_to_distribute).toBe(0);
+      expect(m.avg_days_to_distribute).toBeNull();;
     });
 
     it("computes average for a single distributed report", () => {
@@ -753,7 +753,7 @@ describe("computeReg45Metrics", () => {
         }),
       ];
       const m = computeReg45Metrics(reports, []);
-      expect(m.avg_days_to_distribute).toBe(0);
+      expect(m.avg_days_to_distribute).toBeNull();;
     });
 
     it("rounds to one decimal place", () => {

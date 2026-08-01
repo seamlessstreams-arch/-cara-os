@@ -179,14 +179,14 @@ export function computeEmploymentSupportMetrics(
   employed_count: number;
   apprenticeship_count: number;
   not_ready_count: number;
-  cv_completed_rate: number;
-  interview_practice_rate: number;
-  work_experience_rate: number;
-  employer_engaged_rate: number;
-  child_motivated_rate: number;
-  financial_literacy_rate: number;
-  travel_training_rate: number;
-  workplace_rights_rate: number;
+  cv_completed_rate: number | null;
+  interview_practice_rate: number | null;
+  work_experience_rate: number | null;
+  employer_engaged_rate: number | null;
+  child_motivated_rate: number | null;
+  financial_literacy_rate: number | null;
+  travel_training_rate: number | null;
+  workplace_rights_rate: number | null;
   support_type_breakdown: Record<string, number>;
   employment_status_breakdown: Record<string, number>;
   unique_children: number;
@@ -204,7 +204,7 @@ export function computeEmploymentSupportMetrics(
 
   const boolRate = (field: keyof YoungPersonEmploymentSupportRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const supportTypeBreakdown: Record<string, number> = {};
@@ -365,7 +365,7 @@ export function generateEmploymentSupportCaraInsights(
         `What barriers might be preventing readiness, and how can the team tailor individual support plans ` +
         `to build confidence and skills towards employment under Reg 5 duties?`,
     );
-  } else if (metrics.child_motivated_rate < 100) {
+  } else if ((metrics.child_motivated_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Child motivation is at ${metrics.child_motivated_rate}% across employment support sessions. ` +
         `How can the home better engage young people in their employment journey, ` +

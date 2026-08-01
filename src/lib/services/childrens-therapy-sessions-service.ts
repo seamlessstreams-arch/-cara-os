@@ -142,19 +142,19 @@ export function computeChildrensTherapyMetrics(
   declined_count: number;
   cancelled_count: number;
   refused_count: number;
-  child_prepared_rate: number;
-  transport_arranged_rate: number;
-  consent_current_rate: number;
-  feedback_obtained_rate: number;
-  care_plan_updated_rate: number;
-  social_worker_informed_rate: number;
-  progress_documented_rate: number;
-  goals_reviewed_rate: number;
-  staff_briefed_rate: number;
-  follow_up_actions_rate: number;
-  child_debriefed_rate: number;
-  multi_agency_rate: number;
-  average_duration: number;
+  child_prepared_rate: number | null;
+  transport_arranged_rate: number | null;
+  consent_current_rate: number | null;
+  feedback_obtained_rate: number | null;
+  care_plan_updated_rate: number | null;
+  social_worker_informed_rate: number | null;
+  progress_documented_rate: number | null;
+  goals_reviewed_rate: number | null;
+  staff_briefed_rate: number | null;
+  follow_up_actions_rate: number | null;
+  child_debriefed_rate: number | null;
+  multi_agency_rate: number | null;
+  average_duration: number | null;
   unique_children: number;
   by_therapy_type: Record<string, number>;
   by_session_outcome: Record<string, number>;
@@ -170,12 +170,12 @@ export function computeChildrensTherapyMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDuration = records.length > 0
     ? Math.round((records.reduce((sum, r) => sum + r.session_duration_minutes, 0) / records.length) * 10) / 10
-    : 0;
+    : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

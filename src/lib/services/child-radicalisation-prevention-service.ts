@@ -102,14 +102,14 @@ export function computeRadicalisationMetrics(
   significant_risk_count: number;
   channel_active_count: number;
   monitoring_count: number;
-  prevent_training_rate: number;
-  online_monitoring_rate: number;
-  channel_referral_rate: number;
-  multi_agency_rate: number;
-  child_views_rate: number;
-  family_engaged_rate: number;
-  safety_plan_rate: number;
-  ideology_challenged_rate: number;
+  prevent_training_rate: number | null;
+  online_monitoring_rate: number | null;
+  channel_referral_rate: number | null;
+  multi_agency_rate: number | null;
+  child_views_rate: number | null;
+  family_engaged_rate: number | null;
+  safety_plan_rate: number | null;
+  ideology_challenged_rate: number | null;
   concern_type_breakdown: Record<string, number>;
   vulnerability_breakdown: Record<string, number>;
   unique_children: number;
@@ -123,7 +123,7 @@ export function computeRadicalisationMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;

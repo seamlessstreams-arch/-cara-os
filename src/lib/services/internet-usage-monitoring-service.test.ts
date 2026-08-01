@@ -49,9 +49,9 @@ describe("internet-usage-monitoring-service", () => {
       expect(m.total_records).toBe(0);
       expect(m.high_concern_count).toBe(0);
       expect(m.safeguarding_referral_count).toBe(0);
-      expect(m.average_screen_time).toBe(0);
+      expect(m.average_screen_time).toBeNull();;
       expect(m.unique_children).toBe(0);
-      expect(m.parental_controls_rate).toBe(0);
+      expect(m.parental_controls_rate).toBeNull();;
     });
 
     it("counts concern levels and monitoring", () => {

@@ -234,7 +234,7 @@ describe("computeNotificationCompliance", () => {
     expect(result.compliance_rate).toBe(100);
     expect(result.overdue).toEqual([]);
     expect(result.by_event_type).toEqual({});
-    expect(result.avg_response_hours).toBe(0);
+    expect(result.avg_response_hours).toBeNull();;
   });
 
   it("counts total events", () => {
@@ -389,7 +389,7 @@ describe("computeNotificationCompliance", () => {
       [makeNotifiableEvent()],
       [makeEventNotification({ status: "draft" })],
     );
-    expect(result.avg_response_hours).toBe(0);
+    expect(result.avg_response_hours).toBeNull();;
   });
 
   it("ignores notifications without sent_date for avg_response_hours", () => {
@@ -397,7 +397,7 @@ describe("computeNotificationCompliance", () => {
       [makeNotifiableEvent()],
       [makeEventNotification({ status: "sent", sent_date: null })],
     );
-    expect(result.avg_response_hours).toBe(0);
+    expect(result.avg_response_hours).toBeNull();;
   });
 });
 

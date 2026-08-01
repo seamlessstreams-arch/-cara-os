@@ -46,7 +46,7 @@ describe("computeReligiousSpiritualMetrics", () => {
     expect(m.not_facilitated_count).toBe(0);
     expect(m.satisfied_count).toBe(0);
     expect(m.dissatisfied_count).toBe(0);
-    expect(m.child_views_sought_rate).toBe(0);
+    expect(m.child_views_sought_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

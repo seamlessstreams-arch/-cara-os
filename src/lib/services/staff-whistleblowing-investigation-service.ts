@@ -170,11 +170,11 @@ export function computeStaffWhistleblowingMetrics(
   ongoing_count: number;
   escalated_count: number;
   policy_change_count: number;
-  whistleblower_supported_rate: number;
-  no_detriment_rate: number;
-  regulatory_notified_rate: number;
-  learning_identified_rate: number;
-  learning_shared_rate: number;
+  whistleblower_supported_rate: number | null;
+  no_detriment_rate: number | null;
+  regulatory_notified_rate: number | null;
+  learning_identified_rate: number | null;
+  learning_shared_rate: number | null;
   category_breakdown: Record<string, number>;
   outcome_breakdown: Record<string, number>;
   unique_staff: number;
@@ -190,7 +190,7 @@ export function computeStaffWhistleblowingMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const categoryBreakdown: Record<string, number> = {};
@@ -315,7 +315,7 @@ export function generateStaffWhistleblowingCaraInsights(
         `Are these policy changes being implemented promptly and communicated effectively ` +
         `to ensure that the issues raised through whistleblowing lead to lasting improvements in practice?`,
     );
-  } else if (metrics.learning_shared_rate < 100) {
+  } else if ((metrics.learning_shared_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Organisational learning has been shared with the team in ${metrics.learning_shared_rate}% of investigations. ` +
         `Could gaps in sharing lessons from whistleblowing disclosures ` +

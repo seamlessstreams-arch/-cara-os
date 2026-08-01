@@ -48,10 +48,10 @@ describe("computeMetrics", () => {
     expect(m.milestones_achieved).toBe(0);
     expect(m.certificates_received).toBe(0);
     expect(m.achievements_celebrated).toBe(0);
-    expect(m.engagement_rate).toBe(0);
+    expect(m.engagement_rate).toBeNull();;
     expect(m.total_hours_completed).toBe(0);
     expect(m.dofe_participants).toBe(0);
-    expect(m.completion_rate).toBe(0);
+    expect(m.completion_rate).toBeNull();;
   });
 
   it("counts unique young people case-insensitively", () => {

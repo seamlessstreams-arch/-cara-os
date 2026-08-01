@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<LeisureRecreationActivitiesRecord>): Lei
 
 describe("leisure-recreation-activities-service", () => {
   describe("computeLeisureRecreationMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeLeisureRecreationMetrics([]); expect(m.total_activities).toBe(0); expect(m.refused_count).toBe(0); expect(m.disliked_count).toBe(0); expect(m.decline_count).toBe(0); expect(m.no_choice_count).toBe(0); expect(m.child_chose_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeLeisureRecreationMetrics([]); expect(m.by_activity_type).toEqual({}); expect(m.by_participation_level).toEqual({}); expect(m.by_enjoyment_rating).toEqual({}); expect(m.by_skill_development).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeLeisureRecreationMetrics([]);
+      expect(m.total_activities).toBe(0);;
+      expect(m.refused_count).toBe(0);
+      expect(m.disliked_count).toBe(0);
+      expect(m.decline_count).toBe(0);
+      expect(m.no_choice_count).toBe(0);
+      expect(m.child_chose_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeLeisureRecreationMetrics([]);
+      expect(m.by_activity_type).toEqual({});
+      expect(m.by_participation_level).toEqual({});
+      expect(m.by_enjoyment_rating).toEqual({});
+      expect(m.by_skill_development).toEqual({});
+    });
     it("total_activities counts records", () => { expect(computeLeisureRecreationMetrics([makeRecord(), makeRecord()]).total_activities).toBe(2); });
     it("counts refused", () => { expect(computeLeisureRecreationMetrics([makeRecord({ participation_level: "refused" })]).refused_count).toBe(1); });
     it("does not count reluctant as refused", () => { expect(computeLeisureRecreationMetrics([makeRecord({ participation_level: "reluctant" })]).refused_count).toBe(0); });
@@ -47,7 +62,21 @@ describe("leisure-recreation-activities-service", () => {
     it("does not count neutral as disliked", () => { expect(computeLeisureRecreationMetrics([makeRecord({ enjoyment_rating: "neutral" })]).disliked_count).toBe(0); });
     it("counts decline", () => { expect(computeLeisureRecreationMetrics([makeRecord({ skill_development: "decline" })]).decline_count).toBe(1); });
     it("counts no_choice", () => { expect(computeLeisureRecreationMetrics([makeRecord({ child_chose_activity: false })]).no_choice_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeLeisureRecreationMetrics([makeRecord()]); expect(m.child_chose_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.inclusive_access_rate).toBe(100); expect(m.peer_interaction_rate).toBe(100); expect(m.community_based_rate).toBe(100); expect(m.new_experience_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.risk_assessed_rate).toBe(100); expect(m.transport_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeLeisureRecreationMetrics([makeRecord()]);
+      expect(m.child_chose_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.inclusive_access_rate).toBe(100);
+      expect(m.peer_interaction_rate).toBe(100);
+      expect(m.community_based_rate).toBe(100);
+      expect(m.new_experience_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.risk_assessed_rate).toBe(100);
+      expect(m.transport_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_chose_rate 0 when false", () => { expect(computeLeisureRecreationMetrics([makeRecord({ child_chose_activity: false })]).child_chose_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeLeisureRecreationMetrics([makeRecord({ community_based: true }), makeRecord({ community_based: false }), makeRecord({ community_based: true })]); expect(m.community_based_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeLeisureRecreationMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -60,17 +89,42 @@ describe("leisure-recreation-activities-service", () => {
   describe("identifyLeisureRecreationAlerts", () => {
     it("returns empty for clean", () => { expect(identifyLeisureRecreationAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyLeisureRecreationAlerts([])).toEqual([]); });
-    it("fires refused_declining", () => { const a = identifyLeisureRecreationAlerts([makeRecord({ participation_level: "refused", skill_development: "decline", child_name: "Jo" })]); expect(a[0].type).toBe("refused_declining"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires refused_declining", () => { 
+      const a = identifyLeisureRecreationAlerts([makeRecord({ participation_level: "refused", skill_development: "decline", child_name: "Jo" })]);
+      expect(a[0].type).toBe("refused_declining");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("refused_declining per-record", () => { const a = identifyLeisureRecreationAlerts([makeRecord({ id: "a-1", participation_level: "refused", skill_development: "decline" }), makeRecord({ id: "a-2", participation_level: "refused", skill_development: "decline" })]); expect(a.filter(x => x.type === "refused_declining")).toHaveLength(2); });
     it("refused without decline no critical", () => { expect(identifyLeisureRecreationAlerts([makeRecord({ participation_level: "refused", skill_development: "good_growth" })]).find(x => x.type === "refused_declining")).toBeUndefined(); });
     it("decline without refused no critical", () => { expect(identifyLeisureRecreationAlerts([makeRecord({ participation_level: "willing", skill_development: "decline" })]).find(x => x.type === "refused_declining")).toBeUndefined(); });
-    it("fires no_child_choice singular", () => { const a = identifyLeisureRecreationAlerts([makeRecord({ child_chose_activity: false })]); const f = a.find(x => x.type === "no_child_choice"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 activity has"); });
+    it("fires no_child_choice singular", () => { 
+      const a = identifyLeisureRecreationAlerts([makeRecord({ child_chose_activity: false })]);
+      const f = a.find(x => x.type === "no_child_choice");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 activity has");
+    });
     it("no_child_choice plural", () => { const a = identifyLeisureRecreationAlerts([makeRecord({ child_chose_activity: false }), makeRecord({ child_chose_activity: false })]); const f = a.find(x => x.type === "no_child_choice"); expect(f!.message).toContain("2 activities have"); });
-    it("fires not_inclusive singular", () => { const a = identifyLeisureRecreationAlerts([makeRecord({ inclusive_access: false })]); const f = a.find(x => x.type === "not_inclusive"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 activity has"); });
+    it("fires not_inclusive singular", () => { 
+      const a = identifyLeisureRecreationAlerts([makeRecord({ inclusive_access: false })]);
+      const f = a.find(x => x.type === "not_inclusive");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 activity has");
+    });
     it("not_risk_assessed not for 1", () => { expect(identifyLeisureRecreationAlerts([makeRecord({ risk_assessed: false })]).find(x => x.type === "not_risk_assessed")).toBeUndefined(); });
     it("not_risk_assessed fires for 2", () => { const a = identifyLeisureRecreationAlerts([makeRecord({ risk_assessed: false }), makeRecord({ risk_assessed: false })]); expect(a.find(x => x.type === "not_risk_assessed")).toBeDefined(); expect(a.find(x => x.type === "not_risk_assessed")!.severity).toBe("medium"); });
     it("no_community_activities not for 1", () => { expect(identifyLeisureRecreationAlerts([makeRecord({ community_based: false })]).find(x => x.type === "no_community_activities")).toBeUndefined(); });
     it("no_community_activities fires for 2", () => { const a = identifyLeisureRecreationAlerts([makeRecord({ community_based: false }), makeRecord({ community_based: false })]); expect(a.find(x => x.type === "no_community_activities")).toBeDefined(); expect(a.find(x => x.type === "no_community_activities")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyLeisureRecreationAlerts([makeRecord({ participation_level: "refused", skill_development: "decline", child_chose_activity: false, inclusive_access: false, risk_assessed: false, community_based: false }), makeRecord({ child_chose_activity: false, inclusive_access: false, risk_assessed: false, community_based: false })]); const types = a.map(x => x.type); expect(types).toContain("refused_declining"); expect(types).toContain("no_child_choice"); expect(types).toContain("not_inclusive"); expect(types).toContain("not_risk_assessed"); expect(types).toContain("no_community_activities"); });
+    it("fires all applicable", () => { 
+      const a = identifyLeisureRecreationAlerts([makeRecord({ participation_level: "refused", skill_development: "decline", child_chose_activity: false, inclusive_access: false, risk_assessed: false, community_based: false }), makeRecord({ child_chose_activity: false, inclusive_access: false, risk_assessed: false, community_based: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("refused_declining");
+      expect(types).toContain("no_child_choice");
+      expect(types).toContain("not_inclusive");
+      expect(types).toContain("not_risk_assessed");
+      expect(types).toContain("no_community_activities");
+    });
   });
 });

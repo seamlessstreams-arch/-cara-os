@@ -45,12 +45,12 @@ describe("computeMetrics", () => {
     expect(r.total_assessments).toBe(0);
     expect(r.high_risk_count).toBe(0);
     expect(r.critical_count).toBe(0);
-    expect(r.specialist_referral_rate).toBe(0);
-    expect(r.engagement_rate).toBe(0);
-    expect(r.support_plan_rate).toBe(0);
-    expect(r.harm_reduction_rate).toBe(0);
-    expect(r.positive_outcome_rate).toBe(0);
-    expect(r.disengagement_rate).toBe(0);
+    expect(r.specialist_referral_rate).toBeNull();;
+    expect(r.engagement_rate).toBeNull();;
+    expect(r.support_plan_rate).toBeNull();;
+    expect(r.harm_reduction_rate).toBeNull();;
+    expect(r.positive_outcome_rate).toBeNull();;
+    expect(r.disengagement_rate).toBeNull();;
     expect(r.unique_children).toBe(0);
     expect(r.unique_assessors).toBe(0);
   });

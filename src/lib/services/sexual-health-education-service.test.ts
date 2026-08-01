@@ -44,9 +44,9 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_sessions).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.engagement_rate).toBe(0);
-    expect(m.consent_rate).toBe(0);
-    expect(m.confidentiality_rate).toBe(0);
+    expect(m.engagement_rate).toBeNull();;
+    expect(m.consent_rate).toBeNull();;
+    expect(m.confidentiality_rate).toBeNull();;
     expect(m.clinical_session_count).toBe(0);
     expect(m.education_session_count).toBe(0);
     expect(m.identity_session_count).toBe(0);

@@ -42,7 +42,7 @@ describe("computeModernSlaveryRiskMetrics", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.high_risk_count).toBe(0);
     expect(m.nrm_referral_count).toBe(0);
-    expect(m.avg_missing_episodes).toBe(0);
+    expect(m.avg_missing_episodes).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -51,8 +51,8 @@ describe("computeChildrensProgressMetrics", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.significant_progress_count).toBe(0);
     expect(m.regression_count).toBe(0);
-    expect(m.positive_progress_rate).toBe(0);
-    expect(m.baseline_established_rate).toBe(0);
+    expect(m.positive_progress_rate).toBeNull();;
+    expect(m.baseline_established_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

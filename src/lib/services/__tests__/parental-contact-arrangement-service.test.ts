@@ -31,7 +31,20 @@ function makeRow(overrides?: Partial<ParentalContactArrangementRow>): ParentalCo
 
 describe("parental-contact-arrangement-service", () => {
   describe("computeParentalContactMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeParentalContactMetrics([]); expect(m.total_contacts).toBe(0); expect(m.negative_count).toBe(0); expect(m.cancelled_count).toBe(0); expect(m.court_order_non_compliant_count).toBe(0); expect(m.refused_count).toBe(0); expect(m.child_views_before_rate).toBeNull(); expect(m.child_views_after_rate).toBeNull(); expect(m.social_worker_informed_rate).toBeNull(); expect(m.recorded_in_care_plan_rate).toBeNull(); expect(m.court_compliance_rate).toBeNull(); expect(m.unique_children).toBe(0); });
+    it("returns zeros for empty", () => { 
+      const m = computeParentalContactMetrics([]);
+      expect(m.total_contacts).toBe(0);
+      expect(m.negative_count).toBe(0);
+      expect(m.cancelled_count).toBe(0);
+      expect(m.court_order_non_compliant_count).toBe(0);
+      expect(m.refused_count).toBe(0);
+      expect(m.child_views_before_rate).toBeNull();
+      expect(m.child_views_after_rate).toBeNull();
+      expect(m.social_worker_informed_rate).toBeNull();
+      expect(m.recorded_in_care_plan_rate).toBeNull();
+      expect(m.court_compliance_rate).toBeNull();
+      expect(m.unique_children).toBe(0);
+    });
     it("returns empty breakdowns for empty", () => { const m = computeParentalContactMetrics([]); expect(m.outcome_breakdown).toEqual({}); expect(m.experience_breakdown).toEqual({}); });
     it("total_contacts counts rows", () => { expect(computeParentalContactMetrics([makeRow(), makeRow(), makeRow()]).total_contacts).toBe(3); });
     it("counts negative outcomes", () => { expect(computeParentalContactMetrics([makeRow({ contact_outcome: "negative" })]).negative_count).toBe(1); });
@@ -67,22 +80,55 @@ describe("parental-contact-arrangement-service", () => {
   describe("computeParentalContactAlerts", () => {
     it("returns empty for empty", () => { expect(computeParentalContactAlerts([])).toEqual([]); });
     it("returns empty for clean rows", () => { expect(computeParentalContactAlerts([makeRow()])).toEqual([]); });
-    it("fires court_order_breach_negative", () => { const a = computeParentalContactAlerts([makeRow({ court_order_status: "court_ordered", court_order_complied: false, contact_outcome: "negative", child_name: "Jo", parent_carer_name: "Mum" })]); expect(a[0].type).toBe("court_order_breach_negative"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("Mum"); expect(a[0].record_id).toBe("a-1"); });
+    it("fires court_order_breach_negative", () => { 
+      const a = computeParentalContactAlerts([makeRow({ court_order_status: "court_ordered", court_order_complied: false, contact_outcome: "negative", child_name: "Jo", parent_carer_name: "Mum" })]);
+      expect(a[0].type).toBe("court_order_breach_negative");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("Mum");
+      expect(a[0].record_id).toBe("a-1");
+    });
     it("court_order_breach_negative per-record", () => { const a = computeParentalContactAlerts([makeRow({ id: "a-1", court_order_status: "court_ordered", court_order_complied: false, contact_outcome: "negative" }), makeRow({ id: "a-2", court_order_status: "court_ordered", court_order_complied: false, contact_outcome: "negative" })]); expect(a.filter(x => x.type === "court_order_breach_negative")).toHaveLength(2); });
     it("no court_order_breach if complied", () => { expect(computeParentalContactAlerts([makeRow({ court_order_status: "court_ordered", court_order_complied: true, contact_outcome: "negative" })]).filter(x => x.type === "court_order_breach_negative")).toHaveLength(0); });
     it("no court_order_breach if not negative outcome", () => { expect(computeParentalContactAlerts([makeRow({ court_order_status: "court_ordered", court_order_complied: false, contact_outcome: "positive" })]).filter(x => x.type === "court_order_breach_negative")).toHaveLength(0); });
     it("no court_order_breach if not court_ordered", () => { expect(computeParentalContactAlerts([makeRow({ court_order_status: "agreed_informally", court_order_complied: false, contact_outcome: "negative" })]).filter(x => x.type === "court_order_breach_negative")).toHaveLength(0); });
-    it("fires repeated_cancellations for same child with 2+", () => { const a = computeParentalContactAlerts([makeRow({ child_name: "Jo", contact_outcome: "cancelled_by_parent" }), makeRow({ child_name: "Jo", contact_outcome: "cancelled_by_child" })]); const f = a.find(x => x.type === "repeated_cancellations"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("2 cancelled"); expect(f!.message).toContain("Jo"); });
+    it("fires repeated_cancellations for same child with 2+", () => { 
+      const a = computeParentalContactAlerts([makeRow({ child_name: "Jo", contact_outcome: "cancelled_by_parent" }), makeRow({ child_name: "Jo", contact_outcome: "cancelled_by_child" })]);
+      const f = a.find(x => x.type === "repeated_cancellations");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("2 cancelled");
+      expect(f!.message).toContain("Jo");
+    });
     it("repeated_cancellations not for 1 cancellation", () => { expect(computeParentalContactAlerts([makeRow({ child_name: "Jo", contact_outcome: "cancelled_by_parent" })]).find(x => x.type === "repeated_cancellations")).toBeUndefined(); });
     it("repeated_cancellations separate per child", () => { const a = computeParentalContactAlerts([makeRow({ child_name: "Jo", contact_outcome: "cancelled_by_parent" }), makeRow({ child_name: "Jo", contact_outcome: "cancelled_by_child" }), makeRow({ child_name: "Sam", contact_outcome: "cancelled_by_parent" })]); const f = a.filter(x => x.type === "repeated_cancellations"); expect(f).toHaveLength(1); expect(f[0].message).toContain("Jo"); });
     it("child_views_not_captured not for 1", () => { expect(computeParentalContactAlerts([makeRow({ child_views_before: false })]).find(x => x.type === "child_views_not_captured")).toBeUndefined(); });
-    it("child_views_not_captured fires for 2 missing before", () => { const a = computeParentalContactAlerts([makeRow({ child_views_before: false }), makeRow({ child_views_before: false })]); const f = a.find(x => x.type === "child_views_not_captured"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("2 contacts"); });
+    it("child_views_not_captured fires for 2 missing before", () => { 
+      const a = computeParentalContactAlerts([makeRow({ child_views_before: false }), makeRow({ child_views_before: false })]);
+      const f = a.find(x => x.type === "child_views_not_captured");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("2 contacts");
+    });
     it("child_views_not_captured fires for 2 missing after", () => { const a = computeParentalContactAlerts([makeRow({ child_views_after: false }), makeRow({ child_views_after: false })]); const f = a.find(x => x.type === "child_views_not_captured"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); });
     it("child_views_not_captured counts mixed before/after missing", () => { const a = computeParentalContactAlerts([makeRow({ child_views_before: false, child_views_after: true }), makeRow({ child_views_before: true, child_views_after: false })]); const f = a.find(x => x.type === "child_views_not_captured"); expect(f).toBeDefined(); expect(f!.message).toContain("2 contacts"); });
-    it("sw_not_informed_court_ordered fires singular", () => { const a = computeParentalContactAlerts([makeRow({ court_order_status: "court_ordered", social_worker_informed: false })]); const f = a.find(x => x.type === "sw_not_informed_court_ordered"); expect(f).toBeDefined(); expect(f!.severity).toBe("medium"); expect(f!.message).toContain("1 court-ordered contact has"); });
+    it("sw_not_informed_court_ordered fires singular", () => { 
+      const a = computeParentalContactAlerts([makeRow({ court_order_status: "court_ordered", social_worker_informed: false })]);
+      const f = a.find(x => x.type === "sw_not_informed_court_ordered");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("medium");
+      expect(f!.message).toContain("1 court-ordered contact has");
+    });
     it("sw_not_informed_court_ordered fires plural", () => { const a = computeParentalContactAlerts([makeRow({ court_order_status: "court_ordered", social_worker_informed: false }), makeRow({ court_order_status: "court_ordered", social_worker_informed: false })]); const f = a.find(x => x.type === "sw_not_informed_court_ordered"); expect(f!.message).toContain("2 court-ordered contacts have"); });
     it("sw_not_informed not for non-court-ordered", () => { expect(computeParentalContactAlerts([makeRow({ court_order_status: "agreed_informally", social_worker_informed: false })]).find(x => x.type === "sw_not_informed_court_ordered")).toBeUndefined(); });
-    it("fires all applicable alerts", () => { const a = computeParentalContactAlerts([makeRow({ id: "a-1", court_order_status: "court_ordered", court_order_complied: false, contact_outcome: "negative", child_views_before: false, child_views_after: false, social_worker_informed: false, child_name: "Jo" }), makeRow({ id: "a-2", child_name: "Jo", contact_outcome: "cancelled_by_parent", child_views_before: false, court_order_status: "court_ordered", social_worker_informed: false }), makeRow({ id: "a-3", child_name: "Jo", contact_outcome: "cancelled_by_child", child_views_after: false })]); const types = a.map(x => x.type); expect(types).toContain("court_order_breach_negative"); expect(types).toContain("repeated_cancellations"); expect(types).toContain("child_views_not_captured"); expect(types).toContain("sw_not_informed_court_ordered"); });
+    it("fires all applicable alerts", () => { 
+      const a = computeParentalContactAlerts([makeRow({ id: "a-1", court_order_status: "court_ordered", court_order_complied: false, contact_outcome: "negative", child_views_before: false, child_views_after: false, social_worker_informed: false, child_name: "Jo" }), makeRow({ id: "a-2", child_name: "Jo", contact_outcome: "cancelled_by_parent", child_views_before: false, court_order_status: "court_ordered", social_worker_informed: false }), makeRow({ id: "a-3", child_name: "Jo", contact_outcome: "cancelled_by_child", child_views_after: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("court_order_breach_negative");
+      expect(types).toContain("repeated_cancellations");
+      expect(types).toContain("child_views_not_captured");
+      expect(types).toContain("sw_not_informed_court_ordered");
+    });
   });
 
   describe("generateParentalContactCaraInsights", () => {

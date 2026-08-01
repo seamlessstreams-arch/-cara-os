@@ -47,7 +47,7 @@ describe("computeDeviceScreenTimeMetrics", () => {
     expect(m.total_checks).toBe(0);
     expect(m.non_compliant_count).toBe(0);
     expect(m.refused_count).toBe(0);
-    expect(m.limits_agreed_rate).toBe(0);
+    expect(m.limits_agreed_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

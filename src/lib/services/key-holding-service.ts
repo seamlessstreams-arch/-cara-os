@@ -151,12 +151,12 @@ export function computeKeyHoldingMetrics(
   keys_lost_count: number;
   keys_stolen_count: number;
   audits_count: number;
-  all_accounted_rate: number;
+  all_accounted_rate: number | null;
   discrepancy_count: number;
-  register_updated_rate: number;
-  lock_changed_rate: number;
-  spare_keys_secure_rate: number;
-  medication_keys_separate_rate: number;
+  register_updated_rate: number | null;
+  lock_changed_rate: number | null;
+  spare_keys_secure_rate: number | null;
+  medication_keys_separate_rate: number | null;
   total_keys_checked: number;
   total_keys_missing: number;
   by_key_event_type: Record<string, number>;
@@ -174,7 +174,7 @@ export function computeKeyHoldingMetrics(
   const allAccountedRate =
     records.length > 0
       ? Math.round((allAccounted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const discrepancy = records.filter((r) => r.audit_result === "discrepancy_found").length;
 
@@ -182,7 +182,7 @@ export function computeKeyHoldingMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const totalChecked = records.reduce((a, r) => a + r.keys_checked_count, 0);

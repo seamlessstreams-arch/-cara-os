@@ -161,18 +161,18 @@ export function computeConfidenceIndicatorMetrics(
   declining_count: number;
   no_confidence_count: number;
   improving_count: number;
-  evidence_based_rate: number;
-  self_assessed_rate: number;
-  manager_validated_rate: number;
-  strengths_discussed_rate: number;
-  development_plan_rate: number;
-  training_identified_rate: number;
-  mentoring_offered_rate: number;
-  supervision_discussed_rate: number;
-  wellbeing_considered_rate: number;
-  progress_tracked_rate: number;
-  staff_agreed_rate: number;
-  recorded_promptly_rate: number;
+  evidence_based_rate: number | null;
+  self_assessed_rate: number | null;
+  manager_validated_rate: number | null;
+  strengths_discussed_rate: number | null;
+  development_plan_rate: number | null;
+  training_identified_rate: number | null;
+  mentoring_offered_rate: number | null;
+  supervision_discussed_rate: number | null;
+  wellbeing_considered_rate: number | null;
+  progress_tracked_rate: number | null;
+  staff_agreed_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_staff: number;
   by_practice_area: Record<string, number>;
   by_confidence_level: Record<string, number>;
@@ -190,7 +190,7 @@ export function computeConfidenceIndicatorMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;

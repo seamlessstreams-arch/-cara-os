@@ -151,18 +151,18 @@ export function computeMissingPersonRiskMetrics(
   medium_risk_count: number;
   low_risk_count: number;
   minimal_risk_count: number;
-  trigger_plan_rate: number;
-  return_interview_rate: number;
-  police_informed_rate: number;
-  social_worker_informed_rate: number;
-  push_factors_rate: number;
-  pull_factors_rate: number;
-  peer_mapping_rate: number;
-  safe_places_rate: number;
-  escalation_followed_rate: number;
+  trigger_plan_rate: number | null;
+  return_interview_rate: number | null;
+  police_informed_rate: number | null;
+  social_worker_informed_rate: number | null;
+  push_factors_rate: number | null;
+  pull_factors_rate: number | null;
+  peer_mapping_rate: number | null;
+  safe_places_rate: number | null;
+  escalation_followed_rate: number | null;
   exploitation_risk_count: number;
   total_previous_episodes: number;
-  average_previous_episodes: number;
+  average_previous_episodes: number | null;
   unique_children: number;
   by_risk_level: Record<string, number>;
   by_assessment_type: Record<string, number>;
@@ -179,7 +179,7 @@ export function computeMissingPersonRiskMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const exploitationRisk = records.filter((r) => r.exploitation_risk_identified).length;
@@ -187,7 +187,7 @@ export function computeMissingPersonRiskMetrics(
   const avgEpisodes =
     records.length > 0
       ? Math.round((totalEpisodes / records.length) * 10) / 10
-      : 0;
+      : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

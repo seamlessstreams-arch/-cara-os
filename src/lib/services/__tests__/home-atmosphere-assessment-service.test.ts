@@ -87,27 +87,27 @@ describe("computeHomeAtmosphereMetrics", () => {
 
     it("returns zero child_views_rate", () => {
       const m = computeHomeAtmosphereMetrics([]);
-      expect(m.child_views_rate).toBe(0);
+      expect(m.child_views_rate).toBeNull();;
     });
 
     it("returns zero staff_views_rate", () => {
       const m = computeHomeAtmosphereMetrics([]);
-      expect(m.staff_views_rate).toBe(0);
+      expect(m.staff_views_rate).toBeNull();;
     });
 
     it("returns zero visitor_views_rate", () => {
       const m = computeHomeAtmosphereMetrics([]);
-      expect(m.visitor_views_rate).toBe(0);
+      expect(m.visitor_views_rate).toBeNull();;
     });
 
     it("returns zero actions_implemented_rate", () => {
       const m = computeHomeAtmosphereMetrics([]);
-      expect(m.actions_implemented_rate).toBe(0);
+      expect(m.actions_implemented_rate).toBeNull();;
     });
 
     it("returns zero shared_with_children_rate", () => {
       const m = computeHomeAtmosphereMetrics([]);
-      expect(m.shared_with_children_rate).toBe(0);
+      expect(m.shared_with_children_rate).toBeNull();;
     });
 
     it("returns empty dimension_breakdown", () => {

@@ -86,27 +86,27 @@ describe("computeQualityOfCareMetrics", () => {
 
     it("returns zero children_consulted_rate", () => {
       const m = computeQualityOfCareMetrics([]);
-      expect(m.children_consulted_rate).toBe(0);
+      expect(m.children_consulted_rate).toBeNull();;
     });
 
     it("returns zero staff_consulted_rate", () => {
       const m = computeQualityOfCareMetrics([]);
-      expect(m.staff_consulted_rate).toBe(0);
+      expect(m.staff_consulted_rate).toBeNull();;
     });
 
     it("returns zero external_feedback_rate", () => {
       const m = computeQualityOfCareMetrics([]);
-      expect(m.external_feedback_rate).toBe(0);
+      expect(m.external_feedback_rate).toBeNull();;
     });
 
     it("returns zero reg44_reviewed_rate", () => {
       const m = computeQualityOfCareMetrics([]);
-      expect(m.reg44_reviewed_rate).toBe(0);
+      expect(m.reg44_reviewed_rate).toBeNull();;
     });
 
     it("returns zero shared_with_ofsted_rate", () => {
       const m = computeQualityOfCareMetrics([]);
-      expect(m.shared_with_ofsted_rate).toBe(0);
+      expect(m.shared_with_ofsted_rate).toBeNull();;
     });
 
     it("returns empty domain_breakdown", () => {

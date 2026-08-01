@@ -43,7 +43,7 @@ describe("computeMetrics (trafficking)", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.high_risk_count).toBe(0);
     expect(m.immediate_count).toBe(0);
-    expect(m.nrm_referral_rate).toBe(0);
+    expect(m.nrm_referral_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
     expect(m.unique_assessors).toBe(0);
   });

@@ -325,11 +325,11 @@ describe("computeMedErrorMetrics", () => {
     });
 
     it("returns parent_informed_rate 0", () => {
-      expect(m.parent_informed_rate).toBe(0);
+      expect(m.parent_informed_rate).toBeNull();;
     });
 
     it("returns duty_of_candour_rate 0", () => {
-      expect(m.duty_of_candour_rate).toBe(0);
+      expect(m.duty_of_candour_rate).toBeNull();;
     });
 
     it("returns ofsted_notified_count 0", () => {
@@ -337,11 +337,11 @@ describe("computeMedErrorMetrics", () => {
     });
 
     it("returns policy_reviewed_rate 0", () => {
-      expect(m.policy_reviewed_rate).toBe(0);
+      expect(m.policy_reviewed_rate).toBeNull();;
     });
 
     it("returns lessons_learned_rate 0", () => {
-      expect(m.lessons_learned_rate).toBe(0);
+      expect(m.lessons_learned_rate).toBeNull();;
     });
 
     it("returns empty by_error_type", () => {
@@ -620,7 +620,7 @@ describe("computeMedErrorMetrics", () => {
 
     it("returns 0 for empty array", () => {
       const m = computeMedErrorMetrics([]);
-      expect(m.parent_informed_rate).toBe(0);
+      expect(m.parent_informed_rate).toBeNull();;
     });
   });
 

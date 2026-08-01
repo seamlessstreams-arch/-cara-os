@@ -79,12 +79,12 @@ describe("child-modern-slavery-risk-service", () => {
       expect(m.total_assessments).toBe(0);
       expect(m.high_risk_count).toBe(0);
       expect(m.nrm_referral_count).toBe(0);
-      expect(m.safety_plan_rate).toBe(0);
-      expect(m.multi_agency_rate).toBe(0);
-      expect(m.police_notification_rate).toBe(0);
-      expect(m.specialist_rate).toBe(0);
-      expect(m.advocate_rate).toBe(0);
-      expect(m.avg_missing_episodes).toBe(0);
+      expect(m.safety_plan_rate).toBeNull();;
+      expect(m.multi_agency_rate).toBeNull();;
+      expect(m.police_notification_rate).toBeNull();;
+      expect(m.specialist_rate).toBeNull();;
+      expect(m.advocate_rate).toBeNull();;
+      expect(m.avg_missing_episodes).toBeNull();;
       expect(m.unique_children).toBe(0);
       expect(m.unique_assessors).toBe(0);
     });
@@ -180,7 +180,7 @@ describe("child-modern-slavery-risk-service", () => {
     });
 
     // avg_missing_episodes
-    it("avg_missing_episodes 0 for empty", () => { expect(computeModernSlaveryRiskMetrics([]).avg_missing_episodes).toBe(0); });
+    it("avg_missing_episodes 0 for empty", () => { expect(computeModernSlaveryRiskMetrics([]).avg_missing_episodes).toBeNull();; });
     it("avg_missing_episodes single row", () => { expect(computeModernSlaveryRiskMetrics([makeRow({ missing_episodes_linked: 5 })]).avg_missing_episodes).toBe(5); });
     it("avg_missing_episodes average of two", () => {
       const m = computeModernSlaveryRiskMetrics([

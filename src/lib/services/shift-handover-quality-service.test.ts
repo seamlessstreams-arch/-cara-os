@@ -53,9 +53,9 @@ describe("computeShiftHandoverQualityMetrics", () => {
     expect(m.inadequate_count).toBe(0);
     expect(m.fully_complete_count).toBe(0);
     expect(m.incomplete_count).toBe(0);
-    expect(m.medication_info_rate).toBe(0);
-    expect(m.safeguarding_updates_rate).toBe(0);
-    expect(m.read_and_signed_rate).toBe(0);
+    expect(m.medication_info_rate).toBeNull();;
+    expect(m.safeguarding_updates_rate).toBeNull();;
+    expect(m.read_and_signed_rate).toBeNull();;
   });
 
   it("counts quality ratings correctly", () => {

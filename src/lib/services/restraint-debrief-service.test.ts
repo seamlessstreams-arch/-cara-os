@@ -53,8 +53,8 @@ describe("computeRestraintDebriefMetrics", () => {
     expect(m.learning_identified_count).toBe(0);
     expect(m.investigation_count).toBe(0);
     expect(m.distressed_count).toBe(0);
-    expect(m.child_debrief_rate).toBe(0);
-    expect(m.average_restraint_duration).toBe(0);
+    expect(m.child_debrief_rate).toBeNull();;
+    expect(m.average_restraint_duration).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

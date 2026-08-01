@@ -39,15 +39,45 @@ function makeRecord(overrides?: Partial<ChildrensProgressTrackingRecord>): Child
 
 describe("childrens-progress-tracking-service", () => {
   describe("computeChildrensProgressMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeChildrensProgressMetrics([]); expect(m.total_assessments).toBe(0); expect(m.significant_progress_count).toBe(0); expect(m.good_progress_count).toBe(0); expect(m.some_progress_count).toBe(0); expect(m.no_change_count).toBe(0); expect(m.regression_count).toBe(0); expect(m.positive_progress_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeChildrensProgressMetrics([]); expect(m.by_outcome_domain).toEqual({}); expect(m.by_progress_rating).toEqual({}); expect(m.by_assessment_tool).toEqual({}); expect(m.by_review_period).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeChildrensProgressMetrics([]);
+      expect(m.total_assessments).toBe(0);;
+      expect(m.significant_progress_count).toBe(0);
+      expect(m.good_progress_count).toBe(0);
+      expect(m.some_progress_count).toBe(0);
+      expect(m.no_change_count).toBe(0);
+      expect(m.regression_count).toBe(0);
+      expect(m.positive_progress_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeChildrensProgressMetrics([]);
+      expect(m.by_outcome_domain).toEqual({});
+      expect(m.by_progress_rating).toEqual({});
+      expect(m.by_assessment_tool).toEqual({});
+      expect(m.by_review_period).toEqual({});
+    });
     it("counts significant_progress", () => { expect(computeChildrensProgressMetrics([makeRecord({ progress_rating: "significant_progress" })]).significant_progress_count).toBe(1); });
     it("counts good_progress", () => { expect(computeChildrensProgressMetrics([makeRecord()]).good_progress_count).toBe(1); });
     it("counts some_progress", () => { expect(computeChildrensProgressMetrics([makeRecord({ progress_rating: "some_progress" })]).some_progress_count).toBe(1); });
     it("counts no_change", () => { expect(computeChildrensProgressMetrics([makeRecord({ progress_rating: "no_change" })]).no_change_count).toBe(1); });
     it("counts regression", () => { expect(computeChildrensProgressMetrics([makeRecord({ progress_rating: "regression" })]).regression_count).toBe(1); });
     it("positive_progress_rate includes sig+good+some", () => { const m = computeChildrensProgressMetrics([makeRecord({ progress_rating: "significant_progress" }), makeRecord({ progress_rating: "good_progress" }), makeRecord({ progress_rating: "some_progress" }), makeRecord({ progress_rating: "no_change" })]); expect(m.positive_progress_rate).toBe(75); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeChildrensProgressMetrics([makeRecord()]); expect(m.baseline_established_rate).toBe(100); expect(m.targets_set_rate).toBe(100); expect(m.targets_smart_rate).toBe(100); expect(m.child_involved_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.evidence_documented_rate).toBe(100); expect(m.care_plan_updated_rate).toBe(100); expect(m.celebration_planned_rate).toBe(100); expect(m.barriers_identified_rate).toBe(100); expect(m.support_in_place_rate).toBe(100); expect(m.multi_agency_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeChildrensProgressMetrics([makeRecord()]);
+      expect(m.baseline_established_rate).toBe(100);
+      expect(m.targets_set_rate).toBe(100);
+      expect(m.targets_smart_rate).toBe(100);
+      expect(m.child_involved_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.evidence_documented_rate).toBe(100);
+      expect(m.care_plan_updated_rate).toBe(100);
+      expect(m.celebration_planned_rate).toBe(100);
+      expect(m.barriers_identified_rate).toBe(100);
+      expect(m.support_in_place_rate).toBe(100);
+      expect(m.multi_agency_rate).toBe(100);
+    });
     it("baseline_established_rate 0 when false", () => { expect(computeChildrensProgressMetrics([makeRecord({ baseline_established: false })]).baseline_established_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeChildrensProgressMetrics([makeRecord({ baseline_established: true }), makeRecord({ baseline_established: false }), makeRecord({ baseline_established: true })]); expect(m.baseline_established_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeChildrensProgressMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -60,9 +90,21 @@ describe("childrens-progress-tracking-service", () => {
   describe("identifyChildrensProgressAlerts", () => {
     it("returns empty for clean", () => { expect(identifyChildrensProgressAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyChildrensProgressAlerts([])).toEqual([]); });
-    it("fires regression_detected", () => { const a = identifyChildrensProgressAlerts([makeRecord({ progress_rating: "regression", child_name: "Jo", outcome_domain: "emotional_wellbeing", assessment_date: "2026-05-14" })]); expect(a[0].type).toBe("regression_detected"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("emotional wellbeing"); });
+    it("fires regression_detected", () => { 
+      const a = identifyChildrensProgressAlerts([makeRecord({ progress_rating: "regression", child_name: "Jo", outcome_domain: "emotional_wellbeing", assessment_date: "2026-05-14" })]);
+      expect(a[0].type).toBe("regression_detected");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("emotional wellbeing");
+    });
     it("regression_detected per-record", () => { const a = identifyChildrensProgressAlerts([makeRecord({ id: "a-1", progress_rating: "regression" }), makeRecord({ id: "a-2", progress_rating: "regression" })]); expect(a.filter(x => x.type === "regression_detected")).toHaveLength(2); });
-    it("fires no_baseline singular", () => { const a = identifyChildrensProgressAlerts([makeRecord({ baseline_established: false })]); const f = a.find(x => x.type === "no_baseline"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 assessment has"); });
+    it("fires no_baseline singular", () => { 
+      const a = identifyChildrensProgressAlerts([makeRecord({ baseline_established: false })]);
+      const f = a.find(x => x.type === "no_baseline");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 assessment has");
+    });
     it("no_baseline plural", () => { const a = identifyChildrensProgressAlerts([makeRecord({ baseline_established: false }), makeRecord({ baseline_established: false })]); const f = a.find(x => x.type === "no_baseline"); expect(f!.message).toContain("2 assessments have"); });
     it("child_not_involved not for 1", () => { expect(identifyChildrensProgressAlerts([makeRecord({ child_involved: false })]).find(x => x.type === "child_not_involved")).toBeUndefined(); });
     it("child_not_involved fires for 2", () => { const a = identifyChildrensProgressAlerts([makeRecord({ child_involved: false }), makeRecord({ child_involved: false })]); expect(a.find(x => x.type === "child_not_involved")).toBeDefined(); });
@@ -71,6 +113,14 @@ describe("childrens-progress-tracking-service", () => {
     it("targets_not_smart not for 2", () => { expect(identifyChildrensProgressAlerts([makeRecord({ targets_set: true, targets_smart: false }), makeRecord({ targets_set: true, targets_smart: false })]).find(x => x.type === "targets_not_smart")).toBeUndefined(); });
     it("targets_not_smart fires for 3", () => { const a = identifyChildrensProgressAlerts([makeRecord({ targets_set: true, targets_smart: false }), makeRecord({ targets_set: true, targets_smart: false }), makeRecord({ targets_set: true, targets_smart: false })]); expect(a.find(x => x.type === "targets_not_smart")).toBeDefined(); });
     it("targets_not_smart only when targets_set", () => { expect(identifyChildrensProgressAlerts([makeRecord({ targets_set: false, targets_smart: false }), makeRecord({ targets_set: false, targets_smart: false }), makeRecord({ targets_set: false, targets_smart: false })]).find(x => x.type === "targets_not_smart")).toBeUndefined(); });
-    it("fires all applicable", () => { const a = identifyChildrensProgressAlerts([makeRecord({ progress_rating: "regression", baseline_established: false, child_involved: false, evidence_documented: false, targets_set: true, targets_smart: false }), makeRecord({ child_involved: false, evidence_documented: false, targets_set: true, targets_smart: false }), makeRecord({ targets_set: true, targets_smart: false })]); const types = a.map(x => x.type); expect(types).toContain("regression_detected"); expect(types).toContain("no_baseline"); expect(types).toContain("child_not_involved"); expect(types).toContain("evidence_not_documented"); expect(types).toContain("targets_not_smart"); });
+    it("fires all applicable", () => { 
+      const a = identifyChildrensProgressAlerts([makeRecord({ progress_rating: "regression", baseline_established: false, child_involved: false, evidence_documented: false, targets_set: true, targets_smart: false }), makeRecord({ child_involved: false, evidence_documented: false, targets_set: true, targets_smart: false }), makeRecord({ targets_set: true, targets_smart: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("regression_detected");
+      expect(types).toContain("no_baseline");
+      expect(types).toContain("child_not_involved");
+      expect(types).toContain("evidence_not_documented");
+      expect(types).toContain("targets_not_smart");
+    });
   });
 });

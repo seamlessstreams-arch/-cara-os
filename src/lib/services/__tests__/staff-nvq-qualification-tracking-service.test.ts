@@ -92,14 +92,14 @@ describe("computeNvqMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeNvqMetrics([]);
-    expect(m.reg32_compliant_rate).toBe(0);
-    expect(m.within_deadline_rate).toBe(0);
-    expect(m.assessor_assigned_rate).toBe(0);
-    expect(m.portfolio_rate).toBe(0);
-    expect(m.employer_funded_rate).toBe(0);
-    expect(m.study_time_rate).toBe(0);
-    expect(m.mentor_rate).toBe(0);
-    expect(m.registration_current_rate).toBe(0);
+    expect(m.reg32_compliant_rate).toBeNull();;
+    expect(m.within_deadline_rate).toBeNull();;
+    expect(m.assessor_assigned_rate).toBeNull();;
+    expect(m.portfolio_rate).toBeNull();;
+    expect(m.employer_funded_rate).toBeNull();;
+    expect(m.study_time_rate).toBeNull();;
+    expect(m.mentor_rate).toBeNull();;
+    expect(m.registration_current_rate).toBeNull();;
   });
 
   // ── total_records ───────────────────────────────────────────────────────

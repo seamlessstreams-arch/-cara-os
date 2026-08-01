@@ -51,8 +51,8 @@ describe("computePrivacyDignityMetrics", () => {
     expect(m.unacceptable_count).toBe(0);
     expect(m.intrusion_count).toBe(0);
     expect(m.no_response_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
-    expect(m.knock_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
+    expect(m.knock_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

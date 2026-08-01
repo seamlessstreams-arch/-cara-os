@@ -53,7 +53,7 @@ describe("computeSafeguardingReferralMetrics", () => {
     expect(m.nfa_count).toBe(0);
     expect(m.pending_count).toBe(0);
     expect(m.immediate_urgency_count).toBe(0);
-    expect(m.timely_rate).toBe(0);
+    expect(m.timely_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

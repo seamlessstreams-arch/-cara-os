@@ -135,32 +135,32 @@ describe("computeMetrics", () => {
 
     it("returns zero management_plan_rate", () => {
       const m = computeMetrics([]);
-      expect(m.management_plan_rate).toBe(0);
+      expect(m.management_plan_rate).toBeNull();;
     });
 
     it("returns zero register_update_rate", () => {
       const m = computeMetrics([]);
-      expect(m.register_update_rate).toBe(0);
+      expect(m.register_update_rate).toBeNull();;
     });
 
     it("returns zero staff_awareness_rate", () => {
       const m = computeMetrics([]);
-      expect(m.staff_awareness_rate).toBe(0);
+      expect(m.staff_awareness_rate).toBeNull();;
     });
 
     it("returns zero labelling_rate", () => {
       const m = computeMetrics([]);
-      expect(m.labelling_rate).toBe(0);
+      expect(m.labelling_rate).toBeNull();;
     });
 
     it("returns zero reinspection_scheduled_rate", () => {
       const m = computeMetrics([]);
-      expect(m.reinspection_scheduled_rate).toBe(0);
+      expect(m.reinspection_scheduled_rate).toBeNull();;
     });
 
     it("returns zero avg_risk_score", () => {
       const m = computeMetrics([]);
-      expect(m.avg_risk_score).toBe(0);
+      expect(m.avg_risk_score).toBeNull();;
     });
 
     it("returns zero unique_surveyors", () => {
@@ -565,7 +565,7 @@ describe("computeMetrics", () => {
 
     it("returns 0 for empty array", () => {
       const m = computeMetrics([]);
-      expect(m.avg_risk_score).toBe(0);
+      expect(m.avg_risk_score).toBeNull();;
     });
 
     it("handles zero risk scores", () => {

@@ -148,18 +148,18 @@ export function computeBehaviourPatternMetrics(
   critical_count: number;
   restraint_count: number;
   unknown_trigger_count: number;
-  trigger_identified_rate: number;
-  de_escalation_rate: number;
-  child_views_rate: number;
-  debrief_rate: number;
-  pattern_identified_rate: number;
-  care_plan_rate: number;
-  risk_assessment_rate: number;
-  positive_strategies_rate: number;
-  therapeutic_input_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  recorded_promptly_rate: number;
+  trigger_identified_rate: number | null;
+  de_escalation_rate: number | null;
+  child_views_rate: number | null;
+  debrief_rate: number | null;
+  pattern_identified_rate: number | null;
+  care_plan_rate: number | null;
+  risk_assessment_rate: number | null;
+  positive_strategies_rate: number | null;
+  therapeutic_input_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_behaviour_category: Record<string, number>;
   by_trigger_type: Record<string, number>;
@@ -175,7 +175,7 @@ export function computeBehaviourPatternMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byCategory: Record<string, number> = {};

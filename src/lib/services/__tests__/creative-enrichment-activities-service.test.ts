@@ -37,15 +37,44 @@ function makeRecord(overrides?: Partial<CreativeEnrichmentActivitiesRecord>): Cr
 
 describe("creative-enrichment-activities-service", () => {
   describe("computeCreativeEnrichmentMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeCreativeEnrichmentMetrics([]); expect(m.total_activities).toBe(0); expect(m.refused_count).toBe(0); expect(m.reluctant_count).toBe(0); expect(m.no_progress_count).toBe(0); expect(m.no_output_count).toBe(0); expect(m.child_choice_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeCreativeEnrichmentMetrics([]); expect(m.by_activity_type).toEqual({}); expect(m.by_engagement_level).toEqual({}); expect(m.by_skill_development).toEqual({}); expect(m.by_creative_output).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeCreativeEnrichmentMetrics([]);
+      expect(m.total_activities).toBe(0);;
+      expect(m.refused_count).toBe(0);
+      expect(m.reluctant_count).toBe(0);
+      expect(m.no_progress_count).toBe(0);
+      expect(m.no_output_count).toBe(0);
+      expect(m.child_choice_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeCreativeEnrichmentMetrics([]);
+      expect(m.by_activity_type).toEqual({});
+      expect(m.by_engagement_level).toEqual({});
+      expect(m.by_skill_development).toEqual({});
+      expect(m.by_creative_output).toEqual({});
+    });
     it("total_activities counts records", () => { expect(computeCreativeEnrichmentMetrics([makeRecord(), makeRecord()]).total_activities).toBe(2); });
     it("counts refused", () => { expect(computeCreativeEnrichmentMetrics([makeRecord({ engagement_level: "refused" })]).refused_count).toBe(1); });
     it("counts reluctant", () => { expect(computeCreativeEnrichmentMetrics([makeRecord({ engagement_level: "reluctant" })]).reluctant_count).toBe(1); });
     it("does not count participating as refused", () => { expect(computeCreativeEnrichmentMetrics([makeRecord({ engagement_level: "participating" })]).refused_count).toBe(0); });
     it("counts no_progress", () => { expect(computeCreativeEnrichmentMetrics([makeRecord({ skill_development: "no_progress" })]).no_progress_count).toBe(1); });
     it("counts no_output", () => { expect(computeCreativeEnrichmentMetrics([makeRecord({ creative_output: "no_output" })]).no_output_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeCreativeEnrichmentMetrics([makeRecord()]); expect(m.child_choice_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.therapeutic_value_rate).toBe(100); expect(m.peer_interaction_rate).toBe(100); expect(m.self_expression_rate).toBe(100); expect(m.achievement_rate).toBe(100); expect(m.resources_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.family_updated_rate).toBe(100); expect(m.continuation_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeCreativeEnrichmentMetrics([makeRecord()]);
+      expect(m.child_choice_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.therapeutic_value_rate).toBe(100);
+      expect(m.peer_interaction_rate).toBe(100);
+      expect(m.self_expression_rate).toBe(100);
+      expect(m.achievement_rate).toBe(100);
+      expect(m.resources_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.family_updated_rate).toBe(100);
+      expect(m.continuation_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_choice_rate 0 when false", () => { expect(computeCreativeEnrichmentMetrics([makeRecord({ child_choice_offered: false })]).child_choice_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeCreativeEnrichmentMetrics([makeRecord({ achievement_recognised: true }), makeRecord({ achievement_recognised: false }), makeRecord({ achievement_recognised: true })]); expect(m.achievement_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeCreativeEnrichmentMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -58,17 +87,42 @@ describe("creative-enrichment-activities-service", () => {
   describe("identifyCreativeEnrichmentAlerts", () => {
     it("returns empty for clean", () => { expect(identifyCreativeEnrichmentAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyCreativeEnrichmentAlerts([])).toEqual([]); });
-    it("fires refused_no_expression", () => { const a = identifyCreativeEnrichmentAlerts([makeRecord({ engagement_level: "refused", self_expression_supported: false, child_name: "Jo" })]); expect(a[0].type).toBe("refused_no_expression"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires refused_no_expression", () => { 
+      const a = identifyCreativeEnrichmentAlerts([makeRecord({ engagement_level: "refused", self_expression_supported: false, child_name: "Jo" })]);
+      expect(a[0].type).toBe("refused_no_expression");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("refused_no_expression per-record", () => { const a = identifyCreativeEnrichmentAlerts([makeRecord({ id: "a-1", engagement_level: "refused", self_expression_supported: false }), makeRecord({ id: "a-2", engagement_level: "refused", self_expression_supported: false })]); expect(a.filter(x => x.type === "refused_no_expression")).toHaveLength(2); });
     it("refused with expression no critical", () => { expect(identifyCreativeEnrichmentAlerts([makeRecord({ engagement_level: "refused", self_expression_supported: true })]).find(x => x.type === "refused_no_expression")).toBeUndefined(); });
     it("engaged no expression no critical", () => { expect(identifyCreativeEnrichmentAlerts([makeRecord({ engagement_level: "engaged", self_expression_supported: false })]).find(x => x.type === "refused_no_expression")).toBeUndefined(); });
-    it("fires achievement_not_recognised singular", () => { const a = identifyCreativeEnrichmentAlerts([makeRecord({ achievement_recognised: false })]); const f = a.find(x => x.type === "achievement_not_recognised"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 activity has"); });
+    it("fires achievement_not_recognised singular", () => { 
+      const a = identifyCreativeEnrichmentAlerts([makeRecord({ achievement_recognised: false })]);
+      const f = a.find(x => x.type === "achievement_not_recognised");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 activity has");
+    });
     it("achievement_not_recognised plural", () => { const a = identifyCreativeEnrichmentAlerts([makeRecord({ achievement_recognised: false }), makeRecord({ achievement_recognised: false })]); const f = a.find(x => x.type === "achievement_not_recognised"); expect(f!.message).toContain("2 activities have"); });
-    it("fires no_child_choice singular", () => { const a = identifyCreativeEnrichmentAlerts([makeRecord({ child_choice_offered: false })]); const f = a.find(x => x.type === "no_child_choice"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 activity has"); });
+    it("fires no_child_choice singular", () => { 
+      const a = identifyCreativeEnrichmentAlerts([makeRecord({ child_choice_offered: false })]);
+      const f = a.find(x => x.type === "no_child_choice");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 activity has");
+    });
     it("continuation_not_planned not for 1", () => { expect(identifyCreativeEnrichmentAlerts([makeRecord({ continuation_planned: false })]).find(x => x.type === "continuation_not_planned")).toBeUndefined(); });
     it("continuation_not_planned fires for 2", () => { const a = identifyCreativeEnrichmentAlerts([makeRecord({ continuation_planned: false }), makeRecord({ continuation_planned: false })]); expect(a.find(x => x.type === "continuation_not_planned")).toBeDefined(); expect(a.find(x => x.type === "continuation_not_planned")!.severity).toBe("medium"); });
     it("resources_not_available not for 1", () => { expect(identifyCreativeEnrichmentAlerts([makeRecord({ resources_available: false })]).find(x => x.type === "resources_not_available")).toBeUndefined(); });
     it("resources_not_available fires for 2", () => { const a = identifyCreativeEnrichmentAlerts([makeRecord({ resources_available: false }), makeRecord({ resources_available: false })]); expect(a.find(x => x.type === "resources_not_available")).toBeDefined(); expect(a.find(x => x.type === "resources_not_available")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyCreativeEnrichmentAlerts([makeRecord({ engagement_level: "refused", self_expression_supported: false, achievement_recognised: false, child_choice_offered: false, continuation_planned: false, resources_available: false }), makeRecord({ achievement_recognised: false, child_choice_offered: false, continuation_planned: false, resources_available: false })]); const types = a.map(x => x.type); expect(types).toContain("refused_no_expression"); expect(types).toContain("achievement_not_recognised"); expect(types).toContain("no_child_choice"); expect(types).toContain("continuation_not_planned"); expect(types).toContain("resources_not_available"); });
+    it("fires all applicable", () => { 
+      const a = identifyCreativeEnrichmentAlerts([makeRecord({ engagement_level: "refused", self_expression_supported: false, achievement_recognised: false, child_choice_offered: false, continuation_planned: false, resources_available: false }), makeRecord({ achievement_recognised: false, child_choice_offered: false, continuation_planned: false, resources_available: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("refused_no_expression");
+      expect(types).toContain("achievement_not_recognised");
+      expect(types).toContain("no_child_choice");
+      expect(types).toContain("continuation_not_planned");
+      expect(types).toContain("resources_not_available");
+    });
   });
 });

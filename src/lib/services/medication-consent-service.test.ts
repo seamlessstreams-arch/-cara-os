@@ -48,7 +48,7 @@ describe("computeMedicationConsentMetrics", () => {
     expect(m.expired_count).toBe(0);
     expect(m.withdrawn_count).toBe(0);
     expect(m.refused_count).toBe(0);
-    expect(m.consent_documented_rate).toBe(0);
+    expect(m.consent_documented_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

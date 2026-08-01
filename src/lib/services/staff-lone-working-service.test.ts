@@ -50,7 +50,7 @@ describe("computeStaffLoneWorkingMetrics", () => {
     expect(m.high_count).toBe(0);
     expect(m.emergency_only_count).toBe(0);
     expect(m.not_authorised_count).toBe(0);
-    expect(m.risk_assessed_rate).toBe(0);
+    expect(m.risk_assessed_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

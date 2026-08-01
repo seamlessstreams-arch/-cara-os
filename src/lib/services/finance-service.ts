@@ -99,7 +99,7 @@ export function computeChildFinancialSummary(
   savings_balance: number;
   by_category: Record<string, number>;
   active_allowances: ChildAllowance[];
-  child_consultation_rate: number;
+  child_consultation_rate: number | null;
   monthly_spending: number;
 } {
   const childTx = transactions.filter((t) => t.child_id === childId);
@@ -141,7 +141,7 @@ export function computeChildFinancialSummary(
   const childConsultationRate =
     debitCount > 0
       ? Math.round((consultedCount / debitCount) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     total_credits: totalCredits,
@@ -169,8 +169,8 @@ export function computeHomeFinancialOverview(
   total_savings: number;
   total_spending_this_month: number;
   by_child: Record<string, { name: string; spending: number; savings: number }>;
-  consultation_rate: number;
-  receipt_compliance_rate: number;
+  consultation_rate: number | null;
+  receipt_compliance_rate: number | null;
 } {
   // Unique children from transactions
   const childIds = [...new Set(transactions.map((t) => t.child_id))];
@@ -245,12 +245,12 @@ export function computeHomeFinancialOverview(
   const consultationRate =
     debitCount > 0
       ? Math.round((consultedCount / debitCount) * 1000) / 10
-      : 0;
+      : null;
 
   const receiptComplianceRate =
     debitCount > 0
       ? Math.round((receiptCount / debitCount) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     total_children: totalChildren,
@@ -350,13 +350,13 @@ export function identifyFinancialAlerts(
     const averageMonthly =
       monthlyTotals.length > 0
         ? monthlyTotals.reduce((a, b) => a + b, 0) / monthlyTotals.length
-        : 0;
+        : null;
 
-    if (averageMonthly > 0 && childMonthlyTotal > 2 * averageMonthly) {
+    if ((averageMonthly ?? 0) > 0 && childMonthlyTotal > 2 * (averageMonthly ?? 0)) {
       alerts.push({
         type: "high_spending",
         severity: "medium",
-        message: `${childName} has spent ${childMonthlyTotal.toFixed(2)} this month — more than double the average of ${averageMonthly.toFixed(2)}`,
+        message: `${childName} has spent ${childMonthlyTotal.toFixed(2)} this month — more than double the average of ${(averageMonthly ?? 0).toFixed(2)}`,
         child_name: childName,
       });
     }

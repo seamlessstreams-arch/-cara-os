@@ -176,14 +176,14 @@ export function computeCodeOfConductMetrics(
   non_compliant_count: number;
   investigation_count: number;
   significant_concern_count: number;
-  code_acknowledged_rate: number;
-  training_completed_rate: number;
-  supervision_discussed_rate: number;
-  self_assessment_rate: number;
-  breach_reported_rate: number;
-  investigation_completed_rate: number;
-  improvement_plan_rate: number;
-  improvement_demonstrated_rate: number;
+  code_acknowledged_rate: number | null;
+  training_completed_rate: number | null;
+  supervision_discussed_rate: number | null;
+  self_assessment_rate: number | null;
+  breach_reported_rate: number | null;
+  investigation_completed_rate: number | null;
+  improvement_plan_rate: number | null;
+  improvement_demonstrated_rate: number | null;
   compliance_area_breakdown: Record<string, number>;
   status_breakdown: Record<string, number>;
   unique_staff: number;
@@ -199,7 +199,7 @@ export function computeCodeOfConductMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const complianceAreaBreakdown: Record<string, number> = {};
@@ -351,7 +351,7 @@ export function generateCodeOfConductCaraInsights(
         `Are there systemic factors contributing to breaches, and how can the home strengthen ` +
         `its culture of professional conduct to better safeguard children?`,
     );
-  } else if (metrics.code_acknowledged_rate < 100) {
+  } else if ((metrics.code_acknowledged_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.code_acknowledged_rate}% of staff have acknowledged the code of conduct. ` +
         `Could gaps in acknowledgement indicate misunderstanding of professional expectations, ` +

@@ -139,7 +139,7 @@ describe("computeChecklistProgress", () => {
       completed: 0,
       mandatory_total: 0,
       mandatory_completed: 0,
-      percentage: 0,
+      percentage: null,
       ready: true,
     });
   });

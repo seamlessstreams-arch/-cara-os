@@ -54,7 +54,7 @@ describe("eating-disorder-support-service", () => {
       expect(m.total_records).toBe(0);
       expect(m.unique_children).toBe(0);
       expect(m.active_cases).toBe(0);
-      expect(m.specialist_referral_rate).toBe(0);
+      expect(m.specialist_referral_rate).toBeNull();;
       expect(m.recovery_count).toBe(0);
     });
 

@@ -145,18 +145,18 @@ export function computeBurnoutMetrics(
   concerning_count: number;
   unresolved_count: number;
   escalated_count: number;
-  staff_aware_rate: number;
-  manager_aware_rate: number;
-  support_offered_rate: number;
-  wellbeing_check_rate: number;
-  supervision_adjusted_rate: number;
-  workload_reviewed_rate: number;
-  leave_offered_rate: number;
-  occupational_health_rate: number;
-  peer_support_rate: number;
-  care_plan_rate: number;
-  team_informed_rate: number;
-  recorded_promptly_rate: number;
+  staff_aware_rate: number | null;
+  manager_aware_rate: number | null;
+  support_offered_rate: number | null;
+  wellbeing_check_rate: number | null;
+  supervision_adjusted_rate: number | null;
+  workload_reviewed_rate: number | null;
+  leave_offered_rate: number | null;
+  occupational_health_rate: number | null;
+  peer_support_rate: number | null;
+  care_plan_rate: number | null;
+  team_informed_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_staff: number;
   by_indicator_type: Record<string, number>;
   by_burnout_severity: Record<string, number>;
@@ -179,7 +179,7 @@ export function computeBurnoutMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;

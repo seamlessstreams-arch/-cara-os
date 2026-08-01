@@ -89,12 +89,12 @@ describe("child-radicalisation-risk-service", () => {
       expect(m.total_assessments).toBe(0);
       expect(m.high_risk_count).toBe(0);
       expect(m.immediate_count).toBe(0);
-      expect(m.prevent_referral_rate).toBe(0);
-      expect(m.channel_rate).toBe(0);
-      expect(m.police_notification_rate).toBe(0);
-      expect(m.safety_plan_rate).toBe(0);
-      expect(m.multi_agency_rate).toBe(0);
-      expect(m.internet_monitoring_rate).toBe(0);
+      expect(m.prevent_referral_rate).toBeNull();;
+      expect(m.channel_rate).toBeNull();;
+      expect(m.police_notification_rate).toBeNull();;
+      expect(m.safety_plan_rate).toBeNull();;
+      expect(m.multi_agency_rate).toBeNull();;
+      expect(m.internet_monitoring_rate).toBeNull();;
       expect(m.unique_children).toBe(0);
       expect(m.unique_assessors).toBe(0);
     });

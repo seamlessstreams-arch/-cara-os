@@ -108,14 +108,14 @@ export function computeVoiceParticipationMetrics(
   not_involved_count: number;
   declined_count: number;
   decision_changed_count: number;
-  child_prepared_rate: number;
-  child_understood_rate: number;
-  child_felt_heard_rate: number;
-  outcome_fed_back_rate: number;
-  advocate_present_rate: number;
-  age_appropriate_rate: number;
-  decision_changed_rate: number;
-  child_satisfied_rate: number;
+  child_prepared_rate: number | null;
+  child_understood_rate: number | null;
+  child_felt_heard_rate: number | null;
+  outcome_fed_back_rate: number | null;
+  advocate_present_rate: number | null;
+  age_appropriate_rate: number | null;
+  decision_changed_rate: number | null;
+  child_satisfied_rate: number | null;
   participation_type_breakdown: Record<string, number>;
   outcome_breakdown: Record<string, number>;
   unique_children: number;
@@ -129,7 +129,7 @@ export function computeVoiceParticipationMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const participationTypeBreakdown: Record<string, number> = {};

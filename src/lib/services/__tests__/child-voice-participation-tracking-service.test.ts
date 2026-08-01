@@ -156,14 +156,14 @@ describe("computeVoiceParticipationMetrics", () => {
 
     it("returns all rates as 0", () => {
       const m = computeVoiceParticipationMetrics([]);
-      expect(m.child_prepared_rate).toBe(0);
-      expect(m.child_understood_rate).toBe(0);
-      expect(m.child_felt_heard_rate).toBe(0);
-      expect(m.outcome_fed_back_rate).toBe(0);
-      expect(m.advocate_present_rate).toBe(0);
-      expect(m.age_appropriate_rate).toBe(0);
-      expect(m.decision_changed_rate).toBe(0);
-      expect(m.child_satisfied_rate).toBe(0);
+      expect(m.child_prepared_rate).toBeNull();;
+      expect(m.child_understood_rate).toBeNull();;
+      expect(m.child_felt_heard_rate).toBeNull();;
+      expect(m.outcome_fed_back_rate).toBeNull();;
+      expect(m.advocate_present_rate).toBeNull();;
+      expect(m.age_appropriate_rate).toBeNull();;
+      expect(m.decision_changed_rate).toBeNull();;
+      expect(m.child_satisfied_rate).toBeNull();;
     });
 
     it("returns empty participation_type_breakdown", () => {

@@ -42,8 +42,8 @@ describe("computeMetrics (gangs)", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.high_risk_count).toBe(0);
     expect(m.county_lines_count).toBe(0);
-    expect(m.avg_indicators).toBe(0);
-    expect(m.avg_missing_episodes).toBe(0);
+    expect(m.avg_indicators).toBeNull();;
+    expect(m.avg_missing_episodes).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

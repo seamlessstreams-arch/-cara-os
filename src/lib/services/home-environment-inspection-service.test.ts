@@ -44,7 +44,7 @@ describe("computeHomeEnvironmentMetrics", () => {
     const m = computeHomeEnvironmentMetrics([]);
     expect(m.total_inspections).toBe(0);
     expect(m.poor_condition_count).toBe(0);
-    expect(m.cleanliness_rate).toBe(0);
+    expect(m.cleanliness_rate).toBeNull();;
     expect(m.by_inspection_area).toEqual({});
   });
 

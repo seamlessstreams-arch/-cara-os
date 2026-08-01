@@ -50,8 +50,23 @@ function makeRecord(overrides?: Partial<StaffTriggerMapRecord>): StaffTriggerMap
 }
 
 describe("computeTriggerMapMetrics", () => {
-  it("returns zeros for empty", () => { const m = computeTriggerMapMetrics([]); expect(m.total_maps).toBe(0); expect(m.severe_count).toBe(0); expect(m.ineffective_coping_count).toBe(0); expect(m.active_count).toBe(0); expect(m.unreviewed_count).toBe(0); expect(m.evidence_documented_rate).toBe(0); expect(m.unique_staff).toBe(0); });
-  it("returns empty breakdowns", () => { const m = computeTriggerMapMetrics([]); expect(m.by_trigger_category).toEqual({}); expect(m.by_trigger_severity).toEqual({}); expect(m.by_coping_effectiveness).toEqual({}); expect(m.by_map_status).toEqual({}); });
+  it("returns zeros for empty", () => { 
+    const m = computeTriggerMapMetrics([]);
+    expect(m.total_maps).toBe(0);;
+    expect(m.severe_count).toBe(0);
+    expect(m.ineffective_coping_count).toBe(0);
+    expect(m.active_count).toBe(0);
+    expect(m.unreviewed_count).toBe(0);
+    expect(m.evidence_documented_rate).toBeNull();;
+    expect(m.unique_staff).toBe(0);
+  });
+  it("returns empty breakdowns", () => { 
+    const m = computeTriggerMapMetrics([]);
+    expect(m.by_trigger_category).toEqual({});
+    expect(m.by_trigger_severity).toEqual({});
+    expect(m.by_coping_effectiveness).toEqual({});
+    expect(m.by_map_status).toEqual({});
+  });
   it("total_maps counts records", () => { expect(computeTriggerMapMetrics([makeRecord(), makeRecord({ id: "a-2" })]).total_maps).toBe(2); });
   it("counts severe as severe_count", () => { expect(computeTriggerMapMetrics([makeRecord({ trigger_severity: "severe" })]).severe_count).toBe(1); });
   it("counts overwhelming as severe_count", () => { expect(computeTriggerMapMetrics([makeRecord({ trigger_severity: "overwhelming" })]).severe_count).toBe(1); });
@@ -63,7 +78,21 @@ describe("computeTriggerMapMetrics", () => {
   it("counts draft as unreviewed", () => { expect(computeTriggerMapMetrics([makeRecord({ map_status: "draft" })]).unreviewed_count).toBe(1); });
   it("counts under_review as unreviewed", () => { expect(computeTriggerMapMetrics([makeRecord({ map_status: "under_review" })]).unreviewed_count).toBe(1); });
   it("does not count active as unreviewed", () => { expect(computeTriggerMapMetrics([makeRecord({ map_status: "active" })]).unreviewed_count).toBe(0); });
-  it("returns 100% boolean rates with defaults", () => { const m = computeTriggerMapMetrics([makeRecord()]); expect(m.evidence_documented_rate).toBe(100); expect(m.staff_involved_rate).toBe(100); expect(m.triggers_explored_rate).toBe(100); expect(m.coping_strategies_rate).toBe(100); expect(m.support_plan_linked_rate).toBe(100); expect(m.environmental_factors_rate).toBe(100); expect(m.supervision_adjusted_rate).toBe(100); expect(m.wellbeing_checked_rate).toBe(100); expect(m.manager_reviewed_rate).toBe(100); expect(m.team_aware_rate).toBe(100); expect(m.follow_up_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+  it("returns 100% boolean rates with defaults", () => { 
+    const m = computeTriggerMapMetrics([makeRecord()]);
+    expect(m.evidence_documented_rate).toBe(100);
+    expect(m.staff_involved_rate).toBe(100);
+    expect(m.triggers_explored_rate).toBe(100);
+    expect(m.coping_strategies_rate).toBe(100);
+    expect(m.support_plan_linked_rate).toBe(100);
+    expect(m.environmental_factors_rate).toBe(100);
+    expect(m.supervision_adjusted_rate).toBe(100);
+    expect(m.wellbeing_checked_rate).toBe(100);
+    expect(m.manager_reviewed_rate).toBe(100);
+    expect(m.team_aware_rate).toBe(100);
+    expect(m.follow_up_rate).toBe(100);
+    expect(m.recorded_promptly_rate).toBe(100);
+  });
   it("evidence_documented_rate 0 when false", () => { expect(computeTriggerMapMetrics([makeRecord({ evidence_documented: false })]).evidence_documented_rate).toBe(0); });
   it("mixed boolean rate", () => { expect(computeTriggerMapMetrics([makeRecord({ id: "a-1" }), makeRecord({ id: "a-2" }), makeRecord({ id: "a-3", wellbeing_checked: false })]).wellbeing_checked_rate).toBe(66.7); });
   it("unique_staff distinct", () => { expect(computeTriggerMapMetrics([makeRecord({ staff_name: "A" }), makeRecord({ staff_name: "B" }), makeRecord({ staff_name: "A" })]).unique_staff).toBe(2); });
@@ -74,17 +103,46 @@ describe("computeTriggerMapMetrics", () => {
 describe("identifyTriggerMapAlerts", () => {
   it("returns empty for clean", () => { expect(identifyTriggerMapAlerts([makeRecord()])).toEqual([]); });
   it("returns empty for empty", () => { expect(identifyTriggerMapAlerts([])).toEqual([]); });
-  it("fires severe_ineffective_coping for severe + ineffective", () => { const a = identifyTriggerMapAlerts([makeRecord({ trigger_severity: "severe", coping_effectiveness: "ineffective" })]); expect(a).toHaveLength(1); expect(a[0].type).toBe("severe_ineffective_coping"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Staff A"); expect(a[0].record_id).toBe("a-1"); });
+  it("fires severe_ineffective_coping for severe + ineffective", () => { 
+    const a = identifyTriggerMapAlerts([makeRecord({ trigger_severity: "severe", coping_effectiveness: "ineffective" })]);
+    expect(a).toHaveLength(1);
+    expect(a[0].type).toBe("severe_ineffective_coping");
+    expect(a[0].severity).toBe("critical");
+    expect(a[0].message).toContain("Staff A");
+    expect(a[0].record_id).toBe("a-1");
+  });
   it("fires for overwhelming + counterproductive", () => { const a = identifyTriggerMapAlerts([makeRecord({ trigger_severity: "overwhelming", coping_effectiveness: "counterproductive" })]); expect(a[0].severity).toBe("critical"); });
   it("per-record", () => { const a = identifyTriggerMapAlerts([makeRecord({ id: "a-1", trigger_severity: "severe", coping_effectiveness: "ineffective" }), makeRecord({ id: "a-2", trigger_severity: "overwhelming", coping_effectiveness: "counterproductive" })]); expect(a.filter((x) => x.type === "severe_ineffective_coping")).toHaveLength(2); });
   it("no critical when severe + effective", () => { expect(identifyTriggerMapAlerts([makeRecord({ trigger_severity: "severe", coping_effectiveness: "effective" })])).toEqual([]); });
   it("no critical when moderate + ineffective", () => { expect(identifyTriggerMapAlerts([makeRecord({ trigger_severity: "moderate", coping_effectiveness: "ineffective" })])).toEqual([]); });
-  it("fires staff_not_involved singular", () => { const a = identifyTriggerMapAlerts([makeRecord({ staff_involved: false })]); const f = a.find((x) => x.type === "staff_not_involved"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 trigger map has"); });
+  it("fires staff_not_involved singular", () => { 
+    const a = identifyTriggerMapAlerts([makeRecord({ staff_involved: false })]);
+    const f = a.find((x) => x.type === "staff_not_involved");
+    expect(f).toBeDefined();
+    expect(f!.severity).toBe("high");
+    expect(f!.message).toContain("1 trigger map has");
+  });
   it("staff_not_involved plural", () => { const a = identifyTriggerMapAlerts([makeRecord({ id: "a-1", staff_involved: false }), makeRecord({ id: "a-2", staff_involved: false })]); const f = a.find((x) => x.type === "staff_not_involved"); expect(f!.message).toContain("2 trigger maps have"); });
-  it("fires no_coping_strategies", () => { const a = identifyTriggerMapAlerts([makeRecord({ coping_strategies_identified: false })]); const f = a.find((x) => x.type === "no_coping_strategies"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(a.filter((x) => x.type === "no_coping_strategies").length).toBeGreaterThanOrEqual(1); });
+  it("fires no_coping_strategies", () => { 
+    const a = identifyTriggerMapAlerts([makeRecord({ coping_strategies_identified: false })]);
+    const f = a.find((x) => x.type === "no_coping_strategies");
+    expect(f).toBeDefined();
+    expect(f!.severity).toBe("high");
+    expect(a.filter((x) => x.type === "no_coping_strategies").length).toBeGreaterThanOrEqual(1);
+  });
   it("no_environmental_factors not for 1", () => { expect(identifyTriggerMapAlerts([makeRecord({ environmental_factors_considered: false })]).find((x) => x.type === "no_environmental_factors")).toBeUndefined(); });
   it("no_environmental_factors fires for 2", () => { const a = identifyTriggerMapAlerts([makeRecord({ id: "a-1", environmental_factors_considered: false }), makeRecord({ id: "a-2", environmental_factors_considered: false })]); const f = a.find((x) => x.type === "no_environmental_factors"); expect(f).toBeDefined(); expect(f!.severity).toBe("medium"); });
   it("no_wellbeing_check not for 1", () => { expect(identifyTriggerMapAlerts([makeRecord({ wellbeing_checked: false })]).find((x) => x.type === "no_wellbeing_check")).toBeUndefined(); });
   it("no_wellbeing_check fires for 2", () => { const a = identifyTriggerMapAlerts([makeRecord({ id: "a-1", wellbeing_checked: false }), makeRecord({ id: "a-2", wellbeing_checked: false })]); const f = a.find((x) => x.type === "no_wellbeing_check"); expect(f).toBeDefined(); expect(f!.severity).toBe("medium"); });
-  it("fires all applicable", () => { const recs = [makeRecord({ id: "a-1", trigger_severity: "severe", coping_effectiveness: "ineffective", staff_involved: false, coping_strategies_identified: false, environmental_factors_considered: false, wellbeing_checked: false }), makeRecord({ id: "a-2", trigger_severity: "overwhelming", coping_effectiveness: "counterproductive", staff_involved: false, coping_strategies_identified: false, environmental_factors_considered: false, wellbeing_checked: false })]; const a = identifyTriggerMapAlerts(recs); const types = new Set(a.map((x) => x.type)); expect(types.has("severe_ineffective_coping")).toBe(true); expect(types.has("staff_not_involved")).toBe(true); expect(types.has("no_coping_strategies")).toBe(true); expect(types.has("no_environmental_factors")).toBe(true); expect(types.has("no_wellbeing_check")).toBe(true); expect(types.size).toBe(5); });
+  it("fires all applicable", () => { 
+    const recs = [makeRecord({ id: "a-1", trigger_severity: "severe", coping_effectiveness: "ineffective", staff_involved: false, coping_strategies_identified: false, environmental_factors_considered: false, wellbeing_checked: false }), makeRecord({ id: "a-2", trigger_severity: "overwhelming", coping_effectiveness: "counterproductive", staff_involved: false, coping_strategies_identified: false, environmental_factors_considered: false, wellbeing_checked: false })];
+    const a = identifyTriggerMapAlerts(recs);
+    const types = new Set(a.map((x) => x.type));
+    expect(types.has("severe_ineffective_coping")).toBe(true);
+    expect(types.has("staff_not_involved")).toBe(true);
+    expect(types.has("no_coping_strategies")).toBe(true);
+    expect(types.has("no_environmental_factors")).toBe(true);
+    expect(types.has("no_wellbeing_check")).toBe(true);
+    expect(types.size).toBe(5);
+  });
 });

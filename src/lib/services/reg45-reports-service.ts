@@ -201,7 +201,7 @@ export function computeReg45Metrics(
   completed_actions: number;
   by_quality_rating: Record<string, number>;
   by_evaluation_area: Record<string, number>;
-  avg_days_to_distribute: number;
+  avg_days_to_distribute: number | null;
   next_report_due: string | null;
 } {
   const now = new Date();
@@ -262,7 +262,7 @@ export function computeReg45Metrics(
     }
   }
   const avgDaysToDistribute =
-    distCount > 0 ? Math.round((totalDistDays / distCount) * 10) / 10 : 0;
+    distCount > 0 ? Math.round((totalDistDays / distCount) * 10) / 10 : null;
 
   // Next report due: 6 months after the latest report period end
   let nextReportDue: string | null = null;

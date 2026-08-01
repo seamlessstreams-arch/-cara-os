@@ -136,18 +136,18 @@ export function computeSelfEsteemMetrics(records: SelfEsteemConfidenceBuildingRe
   decline_count: number;
   negative_image_count: number;
   significant_decline_count: number;
-  child_led_rate: number;
-  strengths_identified_rate: number;
-  goals_set_rate: number;
-  achievements_celebrated_rate: number;
-  safe_space_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  peers_supportive_rate: number;
-  culturally_affirming_rate: number;
-  progress_shared_rate: number;
-  recorded_promptly_rate: number;
+  child_led_rate: number | null;
+  strengths_identified_rate: number | null;
+  goals_set_rate: number | null;
+  achievements_celebrated_rate: number | null;
+  safe_space_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  peers_supportive_rate: number | null;
+  culturally_affirming_rate: number | null;
+  progress_shared_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_intervention_type: Record<string, number>;
   by_confidence_level: Record<string, number>;
@@ -163,7 +163,7 @@ export function computeSelfEsteemMetrics(records: SelfEsteemConfidenceBuildingRe
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

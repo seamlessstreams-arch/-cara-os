@@ -67,14 +67,14 @@ export function computeMetrics(rows: StaffAgencyWorkerComplianceRow[]): {
   non_compliant_count: number;
   partially_compliant_count: number;
   pending_count: number;
-  dbs_verified_rate: number;
-  references_rate: number;
-  qualifications_rate: number;
-  induction_rate: number;
-  safeguarding_rate: number;
-  mandatory_training_rate: number;
-  supervision_rate: number;
-  avg_shifts: number;
+  dbs_verified_rate: number | null;
+  references_rate: number | null;
+  qualifications_rate: number | null;
+  induction_rate: number | null;
+  safeguarding_rate: number | null;
+  mandatory_training_rate: number | null;
+  supervision_rate: number | null;
+  avg_shifts: number | null;
   unique_staff: number;
   unique_agencies: number;
 } {
@@ -86,11 +86,11 @@ export function computeMetrics(rows: StaffAgencyWorkerComplianceRow[]): {
 
   const boolRate = (field: keyof StaffAgencyWorkerComplianceRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const totalShifts = rows.reduce((sum, r) => sum + r.shift_count, 0);
-  const avgShifts = total > 0 ? Math.round((totalShifts / total) * 10) / 10 : 0;
+  const avgShifts = total > 0 ? Math.round((totalShifts / total) * 10) / 10 : null;
 
   return {
     total_records: total,
@@ -218,7 +218,7 @@ export function computeCaraInsights(rows: StaffAgencyWorkerComplianceRow[]): str
         `What steps are being taken to address compliance gaps, and how does the home ensure ` +
         `agency workers meet the same standards as permanent staff under Reg 32?`,
     );
-  } else if (metrics.supervision_rate < 100) {
+  } else if ((metrics.supervision_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.supervision_rate}% of agency workers have supervision arrangements in place. ` +
         `How can the home strengthen oversight of agency staff to ensure children receive ` +

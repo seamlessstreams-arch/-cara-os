@@ -287,42 +287,42 @@ describe("computeLaundryClothingMetrics", () => {
 
     it("returns zero child_chose_own_rate", () => {
       const m = computeLaundryClothingMetrics([]);
-      expect(m.child_chose_own_rate).toBe(0);
+      expect(m.child_chose_own_rate).toBeNull();;
     });
 
     it("returns zero adequate_wardrobe_rate", () => {
       const m = computeLaundryClothingMetrics([]);
-      expect(m.adequate_wardrobe_rate).toBe(0);
+      expect(m.adequate_wardrobe_rate).toBeNull();;
     });
 
     it("returns zero school_uniform_adequate_rate", () => {
       const m = computeLaundryClothingMetrics([]);
-      expect(m.school_uniform_adequate_rate).toBe(0);
+      expect(m.school_uniform_adequate_rate).toBeNull();;
     });
 
     it("returns zero seasonal_clothing_rate", () => {
       const m = computeLaundryClothingMetrics([]);
-      expect(m.seasonal_clothing_rate).toBe(0);
+      expect(m.seasonal_clothing_rate).toBeNull();;
     });
 
     it("returns zero laundry_done_regularly_rate", () => {
       const m = computeLaundryClothingMetrics([]);
-      expect(m.laundry_done_regularly_rate).toBe(0);
+      expect(m.laundry_done_regularly_rate).toBeNull();;
     });
 
     it("returns zero clothes_returned_promptly_rate", () => {
       const m = computeLaundryClothingMetrics([]);
-      expect(m.clothes_returned_promptly_rate).toBe(0);
+      expect(m.clothes_returned_promptly_rate).toBeNull();;
     });
 
     it("returns zero dignity_maintained_rate", () => {
       const m = computeLaundryClothingMetrics([]);
-      expect(m.dignity_maintained_rate).toBe(0);
+      expect(m.dignity_maintained_rate).toBeNull();;
     });
 
     it("returns zero cultural_needs_met_rate", () => {
       const m = computeLaundryClothingMetrics([]);
-      expect(m.cultural_needs_met_rate).toBe(0);
+      expect(m.cultural_needs_met_rate).toBeNull();;
     });
 
     it("returns zero poor_laundry_count", () => {
@@ -342,7 +342,7 @@ describe("computeLaundryClothingMetrics", () => {
 
     it("returns zero full_choice_rate", () => {
       const m = computeLaundryClothingMetrics([]);
-      expect(m.full_choice_rate).toBe(0);
+      expect(m.full_choice_rate).toBeNull();;
     });
 
     it("returns zero total_budget", () => {

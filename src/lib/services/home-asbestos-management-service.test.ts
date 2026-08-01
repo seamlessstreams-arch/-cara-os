@@ -41,8 +41,8 @@ describe("computeMetrics", () => {
     expect(result.damaged_count).toBe(0);
     expect(result.removal_required_count).toBe(0);
     expect(result.non_compliant_count).toBe(0);
-    expect(result.management_plan_rate).toBe(0);
-    expect(result.avg_risk_score).toBe(0);
+    expect(result.management_plan_rate).toBeNull();;
+    expect(result.avg_risk_score).toBeNull();;
     expect(result.unique_surveyors).toBe(0);
   });
 

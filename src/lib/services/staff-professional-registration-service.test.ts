@@ -42,11 +42,11 @@ describe("computeRegistrationMetrics", () => {
     expect(m.expired_count).toBe(0);
     expect(m.lapsed_count).toBe(0);
     expect(m.suspended_count).toBe(0);
-    expect(m.pin_verified_rate).toBe(0);
-    expect(m.cpd_compliance_rate).toBe(0);
-    expect(m.fitness_to_practise_rate).toBe(0);
+    expect(m.pin_verified_rate).toBeNull();;
+    expect(m.cpd_compliance_rate).toBeNull();;
+    expect(m.fitness_to_practise_rate).toBeNull();;
     expect(m.conditions_count).toBe(0);
-    expect(m.renewal_submitted_rate).toBe(0);
+    expect(m.renewal_submitted_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
     expect(m.unique_bodies).toBe(0);
   });

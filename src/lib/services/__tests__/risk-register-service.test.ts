@@ -449,11 +449,11 @@ describe("computeRiskMetrics", () => {
     });
 
     it("returns 0 for average_risk_score", () => {
-      expect(computeRiskMetrics([]).average_risk_score).toBe(0);
+      expect(computeRiskMetrics([]).average_risk_score).toBeNull();;
     });
 
     it("returns 0 for highest_risk_score", () => {
-      expect(computeRiskMetrics([]).highest_risk_score).toBe(0);
+      expect(computeRiskMetrics([]).highest_risk_score).toBeNull();;
     });
 
     it("returns 0 for risks_without_mitigations", () => {

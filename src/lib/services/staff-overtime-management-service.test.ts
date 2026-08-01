@@ -46,8 +46,8 @@ describe("computeMetrics (overtime)", () => {
     expect(m.exceeds_48_count).toBe(0);
     expect(m.non_compliant_count).toBe(0);
     expect(m.opt_out_count).toBe(0);
-    expect(m.opt_out_rate).toBe(0);
-    expect(m.rest_break_compliant_rate).toBe(0);
+    expect(m.opt_out_rate).toBeNull();;
+    expect(m.rest_break_compliant_rate).toBeNull();;
     expect(m.avg_weekly_hours).toBe(0);
     expect(m.avg_overtime_hours).toBe(0);
     expect(m.avg_contracted_hours).toBe(0);

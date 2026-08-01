@@ -92,42 +92,42 @@ describe("computeCodeOfConductMetrics", () => {
 
     it("returns zero code_acknowledged_rate", () => {
       const m = computeCodeOfConductMetrics([]);
-      expect(m.code_acknowledged_rate).toBe(0);
+      expect(m.code_acknowledged_rate).toBeNull();;
     });
 
     it("returns zero training_completed_rate", () => {
       const m = computeCodeOfConductMetrics([]);
-      expect(m.training_completed_rate).toBe(0);
+      expect(m.training_completed_rate).toBeNull();;
     });
 
     it("returns zero supervision_discussed_rate", () => {
       const m = computeCodeOfConductMetrics([]);
-      expect(m.supervision_discussed_rate).toBe(0);
+      expect(m.supervision_discussed_rate).toBeNull();;
     });
 
     it("returns zero self_assessment_rate", () => {
       const m = computeCodeOfConductMetrics([]);
-      expect(m.self_assessment_rate).toBe(0);
+      expect(m.self_assessment_rate).toBeNull();;
     });
 
     it("returns zero breach_reported_rate", () => {
       const m = computeCodeOfConductMetrics([]);
-      expect(m.breach_reported_rate).toBe(0);
+      expect(m.breach_reported_rate).toBeNull();;
     });
 
     it("returns zero investigation_completed_rate", () => {
       const m = computeCodeOfConductMetrics([]);
-      expect(m.investigation_completed_rate).toBe(0);
+      expect(m.investigation_completed_rate).toBeNull();;
     });
 
     it("returns zero improvement_plan_rate", () => {
       const m = computeCodeOfConductMetrics([]);
-      expect(m.improvement_plan_rate).toBe(0);
+      expect(m.improvement_plan_rate).toBeNull();;
     });
 
     it("returns zero improvement_demonstrated_rate", () => {
       const m = computeCodeOfConductMetrics([]);
-      expect(m.improvement_demonstrated_rate).toBe(0);
+      expect(m.improvement_demonstrated_rate).toBeNull();;
     });
 
     it("returns empty compliance_area_breakdown", () => {

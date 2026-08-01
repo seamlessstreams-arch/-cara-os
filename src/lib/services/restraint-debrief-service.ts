@@ -153,19 +153,19 @@ export function computeRestraintDebriefMetrics(
   learning_identified_count: number;
   investigation_count: number;
   distressed_count: number;
-  child_debrief_rate: number;
-  staff_debrief_rate: number;
-  medical_check_rate: number;
-  body_map_rate: number;
-  ofsted_notified_rate: number;
-  social_worker_notified_rate: number;
-  parent_notified_rate: number;
-  witness_statements_rate: number;
-  cctv_reviewed_rate: number;
-  proportionate_rate: number;
-  learning_documented_rate: number;
-  plan_updated_rate: number;
-  average_restraint_duration: number;
+  child_debrief_rate: number | null;
+  staff_debrief_rate: number | null;
+  medical_check_rate: number | null;
+  body_map_rate: number | null;
+  ofsted_notified_rate: number | null;
+  social_worker_notified_rate: number | null;
+  parent_notified_rate: number | null;
+  witness_statements_rate: number | null;
+  cctv_reviewed_rate: number | null;
+  proportionate_rate: number | null;
+  learning_documented_rate: number | null;
+  plan_updated_rate: number | null;
+  average_restraint_duration: number | null;
   unique_children: number;
   by_debrief_type: Record<string, number>;
   by_restraint_type: Record<string, number>;
@@ -181,12 +181,12 @@ export function computeRestraintDebriefMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgDuration = records.length > 0
     ? Math.round((records.reduce((sum, r) => sum + r.restraint_duration_minutes, 0) / records.length) * 10) / 10
-    : 0;
+    : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

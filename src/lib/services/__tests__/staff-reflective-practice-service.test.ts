@@ -38,15 +38,45 @@ function makeRecord(overrides?: Partial<StaffReflectivePracticeRecord>): StaffRe
 
 describe("staff-reflective-practice-service", () => {
   describe("computeStaffReflectiveMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeStaffReflectiveMetrics([]); expect(m.total_reflections).toBe(0); expect(m.practice_improved_count).toBe(0); expect(m.further_support_count).toBe(0); expect(m.deep_count).toBe(0); expect(m.surface_count).toBe(0); expect(m.child_focused_rate).toBe(0); expect(m.average_duration).toBe(0); expect(m.unique_staff).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeStaffReflectiveMetrics([]); expect(m.by_reflection_type).toEqual({}); expect(m.by_reflection_model).toEqual({}); expect(m.by_reflection_outcome).toEqual({}); expect(m.by_reflection_depth).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeStaffReflectiveMetrics([]);
+      expect(m.total_reflections).toBe(0);;
+      expect(m.practice_improved_count).toBe(0);
+      expect(m.further_support_count).toBe(0);
+      expect(m.deep_count).toBe(0);
+      expect(m.surface_count).toBe(0);
+      expect(m.child_focused_rate).toBeNull();;
+      expect(m.average_duration).toBeNull();;
+      expect(m.unique_staff).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeStaffReflectiveMetrics([]);
+      expect(m.by_reflection_type).toEqual({});
+      expect(m.by_reflection_model).toEqual({});
+      expect(m.by_reflection_outcome).toEqual({});
+      expect(m.by_reflection_depth).toEqual({});
+    });
     it("counts practice_improved", () => { expect(computeStaffReflectiveMetrics([makeRecord()]).practice_improved_count).toBe(1); });
     it("counts further_support", () => { expect(computeStaffReflectiveMetrics([makeRecord({ reflection_outcome: "further_support_needed" })]).further_support_count).toBe(1); });
     it("counts deep includes deep", () => { expect(computeStaffReflectiveMetrics([makeRecord({ reflection_depth: "deep" })]).deep_count).toBe(1); });
     it("counts deep includes transformative", () => { expect(computeStaffReflectiveMetrics([makeRecord({ reflection_depth: "transformative" })]).deep_count).toBe(1); });
     it("deep_count combines deep and transformative", () => { const m = computeStaffReflectiveMetrics([makeRecord({ reflection_depth: "deep" }), makeRecord({ reflection_depth: "transformative" })]); expect(m.deep_count).toBe(2); });
     it("counts surface", () => { expect(computeStaffReflectiveMetrics([makeRecord({ reflection_depth: "surface" })]).surface_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeStaffReflectiveMetrics([makeRecord()]); expect(m.child_focused_rate).toBe(100); expect(m.values_explored_rate).toBe(100); expect(m.emotions_acknowledged_rate).toBe(100); expect(m.learning_identified_rate).toBe(100); expect(m.action_plan_created_rate).toBe(100); expect(m.practice_changed_rate).toBe(100); expect(m.shared_with_team_rate).toBe(100); expect(m.linked_to_supervision_rate).toBe(100); expect(m.linked_to_training_rate).toBe(100); expect(m.evidence_documented_rate).toBe(100); expect(m.manager_reviewed_rate).toBe(100); expect(m.child_impact_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeStaffReflectiveMetrics([makeRecord()]);
+      expect(m.child_focused_rate).toBe(100);
+      expect(m.values_explored_rate).toBe(100);
+      expect(m.emotions_acknowledged_rate).toBe(100);
+      expect(m.learning_identified_rate).toBe(100);
+      expect(m.action_plan_created_rate).toBe(100);
+      expect(m.practice_changed_rate).toBe(100);
+      expect(m.shared_with_team_rate).toBe(100);
+      expect(m.linked_to_supervision_rate).toBe(100);
+      expect(m.linked_to_training_rate).toBe(100);
+      expect(m.evidence_documented_rate).toBe(100);
+      expect(m.manager_reviewed_rate).toBe(100);
+      expect(m.child_impact_rate).toBe(100);
+    });
     it("child_focused_rate 0 when false", () => { expect(computeStaffReflectiveMetrics([makeRecord({ child_focused: false })]).child_focused_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeStaffReflectiveMetrics([makeRecord({ child_focused: true }), makeRecord({ child_focused: false }), makeRecord({ child_focused: true })]); expect(m.child_focused_rate).toBe(66.7); });
     it("average_duration single", () => { expect(computeStaffReflectiveMetrics([makeRecord({ session_duration_minutes: 60 })]).average_duration).toBe(60); });
@@ -61,10 +91,21 @@ describe("staff-reflective-practice-service", () => {
   describe("identifyStaffReflectiveAlerts", () => {
     it("returns empty for clean", () => { expect(identifyStaffReflectiveAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyStaffReflectiveAlerts([])).toEqual([]); });
-    it("fires critical_incident_no_supervision", () => { const a = identifyStaffReflectiveAlerts([makeRecord({ reflection_type: "critical_incident", linked_to_supervision: false, staff_name: "Jo", reflection_date: "2026-05-14" })]); expect(a[0].type).toBe("critical_incident_no_supervision"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires critical_incident_no_supervision", () => { 
+      const a = identifyStaffReflectiveAlerts([makeRecord({ reflection_type: "critical_incident", linked_to_supervision: false, staff_name: "Jo", reflection_date: "2026-05-14" })]);
+      expect(a[0].type).toBe("critical_incident_no_supervision");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("critical_incident_no_supervision per-record", () => { const a = identifyStaffReflectiveAlerts([makeRecord({ id: "a-1", reflection_type: "critical_incident", linked_to_supervision: false }), makeRecord({ id: "a-2", reflection_type: "critical_incident", linked_to_supervision: false })]); expect(a.filter(x => x.type === "critical_incident_no_supervision")).toHaveLength(2); });
     it("no alert if critical_incident with supervision", () => { expect(identifyStaffReflectiveAlerts([makeRecord({ reflection_type: "critical_incident", linked_to_supervision: true })]).filter(x => x.type === "critical_incident_no_supervision")).toHaveLength(0); });
-    it("fires no_child_impact singular", () => { const a = identifyStaffReflectiveAlerts([makeRecord({ child_impact_considered: false })]); const f = a.find(x => x.type === "no_child_impact"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 reflection has"); });
+    it("fires no_child_impact singular", () => { 
+      const a = identifyStaffReflectiveAlerts([makeRecord({ child_impact_considered: false })]);
+      const f = a.find(x => x.type === "no_child_impact");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 reflection has");
+    });
     it("no_child_impact plural", () => { const a = identifyStaffReflectiveAlerts([makeRecord({ child_impact_considered: false }), makeRecord({ child_impact_considered: false })]); const f = a.find(x => x.type === "no_child_impact"); expect(f!.message).toContain("2 reflections have"); });
     it("no_learning_identified not for 1", () => { expect(identifyStaffReflectiveAlerts([makeRecord({ learning_identified: false })]).find(x => x.type === "no_learning_identified")).toBeUndefined(); });
     it("no_learning_identified fires for 2", () => { const a = identifyStaffReflectiveAlerts([makeRecord({ learning_identified: false }), makeRecord({ learning_identified: false })]); expect(a.find(x => x.type === "no_learning_identified")).toBeDefined(); });
@@ -72,6 +113,14 @@ describe("staff-reflective-practice-service", () => {
     it("evidence_not_documented fires for 2", () => { const a = identifyStaffReflectiveAlerts([makeRecord({ evidence_documented: false }), makeRecord({ evidence_documented: false })]); expect(a.find(x => x.type === "evidence_not_documented")).toBeDefined(); });
     it("not_shared_with_team not for 2", () => { expect(identifyStaffReflectiveAlerts([makeRecord({ shared_with_team: false }), makeRecord({ shared_with_team: false })]).find(x => x.type === "not_shared_with_team")).toBeUndefined(); });
     it("not_shared_with_team fires for 3", () => { const a = identifyStaffReflectiveAlerts([makeRecord({ shared_with_team: false }), makeRecord({ shared_with_team: false }), makeRecord({ shared_with_team: false })]); expect(a.find(x => x.type === "not_shared_with_team")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyStaffReflectiveAlerts([makeRecord({ reflection_type: "critical_incident", linked_to_supervision: false, child_impact_considered: false, learning_identified: false, evidence_documented: false, shared_with_team: false }), makeRecord({ learning_identified: false, evidence_documented: false, shared_with_team: false }), makeRecord({ shared_with_team: false })]); const types = a.map(x => x.type); expect(types).toContain("critical_incident_no_supervision"); expect(types).toContain("no_child_impact"); expect(types).toContain("no_learning_identified"); expect(types).toContain("evidence_not_documented"); expect(types).toContain("not_shared_with_team"); });
+    it("fires all applicable", () => { 
+      const a = identifyStaffReflectiveAlerts([makeRecord({ reflection_type: "critical_incident", linked_to_supervision: false, child_impact_considered: false, learning_identified: false, evidence_documented: false, shared_with_team: false }), makeRecord({ learning_identified: false, evidence_documented: false, shared_with_team: false }), makeRecord({ shared_with_team: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("critical_incident_no_supervision");
+      expect(types).toContain("no_child_impact");
+      expect(types).toContain("no_learning_identified");
+      expect(types).toContain("evidence_not_documented");
+      expect(types).toContain("not_shared_with_team");
+    });
   });
 });

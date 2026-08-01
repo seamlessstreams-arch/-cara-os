@@ -66,7 +66,7 @@ export interface RiskEntry {
   risk_category: RiskCategory;
   likelihood: LikelihoodRating;
   impact: ImpactRating;
-  risk_score: number;
+  risk_score: number | null;
   risk_status: RiskStatus;
   mitigations: string[];
   risk_owner: string;
@@ -142,8 +142,8 @@ export function computeRiskMetrics(
   high_risks: number;
   medium_risks: number;
   low_risks: number;
-  average_risk_score: number;
-  highest_risk_score: number;
+  average_risk_score: number | null;
+  highest_risk_score: number | null;
   risks_without_mitigations: number;
   review_overdue_count: number;
   child_specific_risks: number;
@@ -162,22 +162,22 @@ export function computeRiskMetrics(
   let medium = 0;
   let low = 0;
   for (const e of entries) {
-    const level = getRiskLevel(e.risk_score);
+    const level = getRiskLevel(e.risk_score ?? 0);
     if (level === "critical") critical++;
     else if (level === "high") high++;
     else if (level === "medium") medium++;
     else low++;
   }
 
-  const totalScore = entries.reduce((sum, e) => sum + e.risk_score, 0);
+  const totalScore = entries.reduce((sum, e) => sum + (e.risk_score ?? 0), 0);
   const avgScore =
     entries.length > 0
       ? Math.round((totalScore / entries.length) * 10) / 10
-      : 0;
+      : null;
 
   const highestScore = entries.length > 0
-    ? Math.max(...entries.map((e) => e.risk_score))
-    : 0;
+    ? Math.max(...entries.map((e) => e.risk_score ?? 0))
+    : null;
 
   const noMitigations = entries.filter((e) => e.mitigations.length === 0 && e.risk_status !== "closed").length;
 
@@ -196,7 +196,7 @@ export function computeRiskMetrics(
 
   const byLevel: Record<string, number> = {};
   for (const e of entries) {
-    const level = getRiskLevel(e.risk_score);
+    const level = getRiskLevel(e.risk_score ?? 0);
     byLevel[level] = (byLevel[level] ?? 0) + 1;
   }
 
@@ -243,7 +243,7 @@ export function identifyRiskAlerts(
 
   // Critical risks (score >= 20)
   for (const e of entries) {
-    if (e.risk_score >= 20 && e.risk_status !== "closed") {
+    if ((e.risk_score ?? 0) >= 20 && e.risk_status !== "closed") {
       alerts.push({
         type: "critical_risk",
         severity: "critical",
@@ -291,7 +291,7 @@ export function identifyRiskAlerts(
 
   // High safeguarding risks
   for (const e of entries) {
-    if (e.risk_category === "safeguarding" && e.risk_score >= 12 && e.risk_status !== "closed") {
+    if (e.risk_category === "safeguarding" && (e.risk_score ?? 0) >= 12 && e.risk_status !== "closed") {
       alerts.push({
         type: "safeguarding_risk",
         severity: "high",

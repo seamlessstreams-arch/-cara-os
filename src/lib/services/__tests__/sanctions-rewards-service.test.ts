@@ -263,13 +263,13 @@ describe("computeSanctionRewardMetrics", () => {
     const result = computeSanctionRewardMetrics([], []);
     expect(result.total_sanctions).toBe(0);
     expect(result.total_rewards).toBe(0);
-    expect(result.reward_to_sanction_ratio).toBe(0);
+    expect(result.reward_to_sanction_ratio).toBeNull();;
     expect(result.sanctions_by_type).toEqual({});
     expect(result.rewards_by_type).toEqual({});
-    expect(result.proportionality_rate).toBe(0);
-    expect(result.age_appropriate_rate).toBe(0);
-    expect(result.consistent_with_plan_rate).toBe(0);
-    expect(result.manager_review_rate).toBe(0);
+    expect(result.proportionality_rate).toBeNull();;
+    expect(result.age_appropriate_rate).toBeNull();;
+    expect(result.consistent_with_plan_rate).toBeNull();;
+    expect(result.manager_review_rate).toBeNull();;
     expect(result.children_with_highest_sanctions).toEqual([]);
     expect(result.children_with_highest_rewards).toEqual([]);
     expect(result.overturned_count).toBe(0);
@@ -314,7 +314,7 @@ describe("computeSanctionRewardMetrics", () => {
 
   it("returns 0 ratio when both arrays are empty", () => {
     const result = computeSanctionRewardMetrics([], []);
-    expect(result.reward_to_sanction_ratio).toBe(0);
+    expect(result.reward_to_sanction_ratio).toBeNull();;
   });
 
   it("rounds ratio to two decimal places", () => {
@@ -533,9 +533,9 @@ describe("computeSanctionRewardMetrics", () => {
     expect(result.total_sanctions).toBe(0);
     expect(result.total_rewards).toBe(3);
     expect(result.reward_to_sanction_ratio).toBe(3);
-    expect(result.proportionality_rate).toBe(0);
-    expect(result.age_appropriate_rate).toBe(0);
-    expect(result.manager_review_rate).toBe(0);
+    expect(result.proportionality_rate).toBeNull();;
+    expect(result.age_appropriate_rate).toBeNull();;
+    expect(result.manager_review_rate).toBeNull();;
     expect(result.overturned_count).toBe(0);
     expect(result.active_sanctions).toBe(0);
   });

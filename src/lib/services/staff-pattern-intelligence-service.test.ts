@@ -62,7 +62,7 @@ describe("computePatternInsightMetrics", () => {
     expect(m.unreviewed_count).toBe(0);
     expect(m.concern_count).toBe(0);
     expect(m.strength_count).toBe(0);
-    expect(m.evidence_verified_rate).toBe(0);
+    expect(m.evidence_verified_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

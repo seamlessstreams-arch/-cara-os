@@ -48,7 +48,7 @@ describe("computeHomeDecorationMetrics", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.very_satisfied_count).toBe(0);
     expect(m.dissatisfied_count).toBe(0);
-    expect(m.child_chose_rate).toBe(0);
+    expect(m.child_chose_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
     expect(m.by_personalisation_type).toEqual({});
   });

@@ -138,22 +138,22 @@ export function computeMedicationAuditMetrics(
   records: MedicationAuditRecord[],
 ): {
   total_audits: number;
-  satisfactory_rate: number;
+  satisfactory_rate: number | null;
   failed_count: number;
   major_issues_count: number;
   controlled_drug_count: number;
   storage_audit_count: number;
   fridge_check_count: number;
-  all_drugs_accounted_rate: number;
-  fridge_in_range_rate: number;
-  cabinet_locked_rate: number;
-  keys_secure_rate: number;
-  mar_charts_accurate_rate: number;
-  stock_count_accurate_rate: number;
+  all_drugs_accounted_rate: number | null;
+  fridge_in_range_rate: number | null;
+  cabinet_locked_rate: number | null;
+  keys_secure_rate: number | null;
+  mar_charts_accurate_rate: number | null;
+  stock_count_accurate_rate: number | null;
   expired_items_found_count: number;
   total_discrepancies: number;
-  average_items_checked: number;
-  no_discrepancy_rate: number;
+  average_items_checked: number | null;
+  no_discrepancy_rate: number | null;
   by_audit_type: Record<string, number>;
   by_audit_outcome: Record<string, number>;
   by_storage_condition: Record<string, number>;
@@ -163,7 +163,7 @@ export function computeMedicationAuditMetrics(
   const satisfactoryRate =
     records.length > 0
       ? Math.round((satisfactory / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const failed = records.filter((r) => r.audit_outcome === "failed").length;
   const majorIssues = records.filter((r) => r.audit_outcome === "major_issues").length;
@@ -176,7 +176,7 @@ export function computeMedicationAuditMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const expiredFound = records.filter((r) => r.expired_items_found).length;
@@ -186,13 +186,13 @@ export function computeMedicationAuditMetrics(
   const avgItems =
     records.length > 0
       ? Math.round((totalItems / records.length) * 10) / 10
-      : 0;
+      : null;
 
   const noDiscrepancy = records.filter((r) => r.discrepancy_level === "none").length;
   const noDiscrepancyRate =
     records.length > 0
       ? Math.round((noDiscrepancy / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const byType: Record<string, number> = {};
   for (const r of records) byType[r.audit_type] = (byType[r.audit_type] ?? 0) + 1;

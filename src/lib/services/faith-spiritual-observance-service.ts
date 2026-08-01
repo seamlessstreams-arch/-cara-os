@@ -139,18 +139,18 @@ export function computeFaithSpiritualMetrics(
   disengaged_count: number;
   poor_sensitivity_count: number;
   insensitive_count: number;
-  child_wishes_rate: number;
-  dietary_needs_rate: number;
-  attendance_rate: number;
-  resources_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  cultural_awareness_rate: number;
-  privacy_rate: number;
-  peer_understanding_rate: number;
-  festivals_rate: number;
-  recorded_promptly_rate: number;
+  child_wishes_rate: number | null;
+  dietary_needs_rate: number | null;
+  attendance_rate: number | null;
+  resources_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  cultural_awareness_rate: number | null;
+  privacy_rate: number | null;
+  peer_understanding_rate: number | null;
+  festivals_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_observance_type: Record<string, number>;
   by_support_level: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeFaithSpiritualMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

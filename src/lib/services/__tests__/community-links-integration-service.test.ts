@@ -39,13 +39,42 @@ function makeRecord(overrides?: Partial<CommunityLinksIntegrationRecord>): Commu
 
 describe("community-links-integration-service", () => {
   describe("computeCommunityLinksMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeCommunityLinksMetrics([]); expect(m.total_links).toBe(0); expect(m.active_count).toBe(0); expect(m.ended_count).toBe(0); expect(m.refused_count).toBe(0); expect(m.waiting_list_count).toBe(0); expect(m.safeguarding_checked_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeCommunityLinksMetrics([]); expect(m.by_activity_type).toEqual({}); expect(m.by_engagement_level).toEqual({}); expect(m.by_link_status).toEqual({}); expect(m.by_funding_source).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeCommunityLinksMetrics([]);
+      expect(m.total_links).toBe(0);;
+      expect(m.active_count).toBe(0);
+      expect(m.ended_count).toBe(0);
+      expect(m.refused_count).toBe(0);
+      expect(m.waiting_list_count).toBe(0);
+      expect(m.safeguarding_checked_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeCommunityLinksMetrics([]);
+      expect(m.by_activity_type).toEqual({});
+      expect(m.by_engagement_level).toEqual({});
+      expect(m.by_link_status).toEqual({});
+      expect(m.by_funding_source).toEqual({});
+    });
     it("counts active", () => { expect(computeCommunityLinksMetrics([makeRecord()]).active_count).toBe(1); });
     it("counts ended", () => { expect(computeCommunityLinksMetrics([makeRecord({ link_status: "ended" })]).ended_count).toBe(1); });
     it("counts refused from engagement_level", () => { expect(computeCommunityLinksMetrics([makeRecord({ engagement_level: "refused" })]).refused_count).toBe(1); });
     it("counts waiting_list", () => { expect(computeCommunityLinksMetrics([makeRecord({ link_status: "waiting_list" })]).waiting_list_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeCommunityLinksMetrics([makeRecord()]); expect(m.safeguarding_checked_rate).toBe(100); expect(m.dbs_verified_rate).toBe(100); expect(m.risk_assessed_rate).toBe(100); expect(m.consent_obtained_rate).toBe(100); expect(m.transport_arranged_rate).toBe(100); expect(m.child_chose_rate).toBe(100); expect(m.feedback_obtained_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.care_plan_linked_rate).toBe(100); expect(m.cultural_needs_rate).toBe(100); expect(m.inclusive_access_rate).toBe(100); expect(m.review_scheduled_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeCommunityLinksMetrics([makeRecord()]);
+      expect(m.safeguarding_checked_rate).toBe(100);
+      expect(m.dbs_verified_rate).toBe(100);
+      expect(m.risk_assessed_rate).toBe(100);
+      expect(m.consent_obtained_rate).toBe(100);
+      expect(m.transport_arranged_rate).toBe(100);
+      expect(m.child_chose_rate).toBe(100);
+      expect(m.feedback_obtained_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.care_plan_linked_rate).toBe(100);
+      expect(m.cultural_needs_rate).toBe(100);
+      expect(m.inclusive_access_rate).toBe(100);
+      expect(m.review_scheduled_rate).toBe(100);
+    });
     it("safeguarding_checked_rate 0 when false", () => { expect(computeCommunityLinksMetrics([makeRecord({ safeguarding_checked: false })]).safeguarding_checked_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeCommunityLinksMetrics([makeRecord({ safeguarding_checked: true }), makeRecord({ safeguarding_checked: false }), makeRecord({ safeguarding_checked: true })]); expect(m.safeguarding_checked_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeCommunityLinksMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -59,17 +88,43 @@ describe("community-links-integration-service", () => {
   describe("identifyCommunityLinksAlerts", () => {
     it("returns empty for clean", () => { expect(identifyCommunityLinksAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyCommunityLinksAlerts([])).toEqual([]); });
-    it("fires active_no_safeguarding", () => { const a = identifyCommunityLinksAlerts([makeRecord({ link_status: "active", safeguarding_checked: false, child_name: "Jo", activity_name: "Scouts" })]); expect(a[0].type).toBe("active_no_safeguarding"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("Scouts"); });
+    it("fires active_no_safeguarding", () => { 
+      const a = identifyCommunityLinksAlerts([makeRecord({ link_status: "active", safeguarding_checked: false, child_name: "Jo", activity_name: "Scouts" })]);
+      expect(a[0].type).toBe("active_no_safeguarding");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("Scouts");
+    });
     it("active_no_safeguarding per-record", () => { const a = identifyCommunityLinksAlerts([makeRecord({ id: "a-1", link_status: "active", safeguarding_checked: false }), makeRecord({ id: "a-2", link_status: "active", safeguarding_checked: false })]); expect(a.filter(x => x.type === "active_no_safeguarding")).toHaveLength(2); });
     it("no alert if active with safeguarding", () => { expect(identifyCommunityLinksAlerts([makeRecord({ link_status: "active", safeguarding_checked: true })]).filter(x => x.type === "active_no_safeguarding")).toHaveLength(0); });
-    it("fires no_consent singular", () => { const a = identifyCommunityLinksAlerts([makeRecord({ consent_obtained: false })]); const f = a.find(x => x.type === "no_consent"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 community link has"); });
+    it("fires no_consent singular", () => { 
+      const a = identifyCommunityLinksAlerts([makeRecord({ consent_obtained: false })]);
+      const f = a.find(x => x.type === "no_consent");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 community link has");
+    });
     it("no_consent plural", () => { const a = identifyCommunityLinksAlerts([makeRecord({ consent_obtained: false }), makeRecord({ consent_obtained: false })]); const f = a.find(x => x.type === "no_consent"); expect(f!.message).toContain("2 community links have"); });
-    it("fires dbs_not_verified singular", () => { const a = identifyCommunityLinksAlerts([makeRecord({ dbs_verified: false })]); const f = a.find(x => x.type === "dbs_not_verified"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 community link has"); });
+    it("fires dbs_not_verified singular", () => { 
+      const a = identifyCommunityLinksAlerts([makeRecord({ dbs_verified: false })]);
+      const f = a.find(x => x.type === "dbs_not_verified");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 community link has");
+    });
     it("dbs_not_verified plural", () => { const a = identifyCommunityLinksAlerts([makeRecord({ dbs_verified: false }), makeRecord({ dbs_verified: false })]); const f = a.find(x => x.type === "dbs_not_verified"); expect(f!.message).toContain("2 community links have"); });
     it("not_child_chosen not for 1", () => { expect(identifyCommunityLinksAlerts([makeRecord({ child_chose_activity: false })]).find(x => x.type === "not_child_chosen")).toBeUndefined(); });
     it("not_child_chosen fires for 2", () => { const a = identifyCommunityLinksAlerts([makeRecord({ child_chose_activity: false }), makeRecord({ child_chose_activity: false })]); expect(a.find(x => x.type === "not_child_chosen")).toBeDefined(); });
     it("cultural_needs_not_met not for 1", () => { expect(identifyCommunityLinksAlerts([makeRecord({ cultural_needs_met: false })]).find(x => x.type === "cultural_needs_not_met")).toBeUndefined(); });
     it("cultural_needs_not_met fires for 2", () => { const a = identifyCommunityLinksAlerts([makeRecord({ cultural_needs_met: false }), makeRecord({ cultural_needs_met: false })]); expect(a.find(x => x.type === "cultural_needs_not_met")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyCommunityLinksAlerts([makeRecord({ link_status: "active", safeguarding_checked: false, consent_obtained: false, dbs_verified: false, child_chose_activity: false, cultural_needs_met: false }), makeRecord({ child_chose_activity: false, cultural_needs_met: false })]); const types = a.map(x => x.type); expect(types).toContain("active_no_safeguarding"); expect(types).toContain("no_consent"); expect(types).toContain("dbs_not_verified"); expect(types).toContain("not_child_chosen"); expect(types).toContain("cultural_needs_not_met"); });
+    it("fires all applicable", () => { 
+      const a = identifyCommunityLinksAlerts([makeRecord({ link_status: "active", safeguarding_checked: false, consent_obtained: false, dbs_verified: false, child_chose_activity: false, cultural_needs_met: false }), makeRecord({ child_chose_activity: false, cultural_needs_met: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("active_no_safeguarding");
+      expect(types).toContain("no_consent");
+      expect(types).toContain("dbs_not_verified");
+      expect(types).toContain("not_child_chosen");
+      expect(types).toContain("cultural_needs_not_met");
+    });
   });
 });

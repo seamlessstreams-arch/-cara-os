@@ -51,7 +51,7 @@ describe("computePetCareMetrics", () => {
     expect(m.not_involved_count).toBe(0);
     expect(m.negative_impact_count).toBe(0);
     expect(m.poor_care_count).toBe(0);
-    expect(m.animal_welfare_rate).toBe(0);
+    expect(m.animal_welfare_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

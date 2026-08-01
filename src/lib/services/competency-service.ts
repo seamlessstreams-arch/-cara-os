@@ -129,7 +129,7 @@ export function computeTrainingMatrix(
     fully_compliant: number;
     has_expired: number;
     has_expiring: number;
-    compliance_percentage: number;
+    compliance_percentage: number | null;
   };
 } {
   const mandatoryCategories = MANDATORY_TRAINING.map((t) => t.category);
@@ -168,7 +168,7 @@ export function computeTrainingMatrix(
       fully_compliant: fullyCompliant,
       has_expired: hasExpired,
       has_expiring: hasExpiring,
-      compliance_percentage: staffIds.length > 0 ? Math.round((fullyCompliant / staffIds.length) * 100) : 0,
+      compliance_percentage: staffIds.length > 0 ? Math.round((fullyCompliant / staffIds.length) * 100) : null,
     },
   };
 }
@@ -201,13 +201,13 @@ export function computeCompetencyProfile(
   const assessed = assessments.filter((a) => a.level !== "not_assessed");
   const avgScore = assessed.length > 0
     ? assessed.reduce((sum, a) => sum + LEVEL_SCORES[a.level], 0) / assessed.length
-    : 0;
+    : null;
 
   let overallLevel: CompetencyLevel;
-  if (avgScore >= 3.5) overallLevel = "expert";
-  else if (avgScore >= 2.5) overallLevel = "proficient";
-  else if (avgScore >= 1.5) overallLevel = "competent";
-  else if (avgScore > 0) overallLevel = "developing";
+  if ((avgScore ?? 0) >= 3.5) overallLevel = "expert";
+  else if ((avgScore ?? 0) >= 2.5) overallLevel = "proficient";
+  else if ((avgScore ?? 0) >= 1.5) overallLevel = "competent";
+  else if ((avgScore ?? 0) > 0) overallLevel = "developing";
   else overallLevel = "not_assessed";
 
   return {

@@ -142,18 +142,18 @@ export function computeCommunityLinksMetrics(
   ended_count: number;
   refused_count: number;
   waiting_list_count: number;
-  safeguarding_checked_rate: number;
-  dbs_verified_rate: number;
-  risk_assessed_rate: number;
-  consent_obtained_rate: number;
-  transport_arranged_rate: number;
-  child_chose_rate: number;
-  feedback_obtained_rate: number;
-  social_worker_informed_rate: number;
-  care_plan_linked_rate: number;
-  cultural_needs_rate: number;
-  inclusive_access_rate: number;
-  review_scheduled_rate: number;
+  safeguarding_checked_rate: number | null;
+  dbs_verified_rate: number | null;
+  risk_assessed_rate: number | null;
+  consent_obtained_rate: number | null;
+  transport_arranged_rate: number | null;
+  child_chose_rate: number | null;
+  feedback_obtained_rate: number | null;
+  social_worker_informed_rate: number | null;
+  care_plan_linked_rate: number | null;
+  cultural_needs_rate: number | null;
+  inclusive_access_rate: number | null;
+  review_scheduled_rate: number | null;
   unique_children: number;
   by_activity_type: Record<string, number>;
   by_engagement_level: Record<string, number>;
@@ -169,7 +169,7 @@ export function computeCommunityLinksMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

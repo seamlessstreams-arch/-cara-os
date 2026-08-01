@@ -52,7 +52,7 @@ describe("computeTransitionPlanningMetrics", () => {
     expect(m.not_ready_count).toBe(0);
     expect(m.not_assessed_count).toBe(0);
     expect(m.overdue_pathway_count).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.child_views_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

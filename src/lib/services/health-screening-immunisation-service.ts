@@ -138,18 +138,18 @@ export function computeHealthScreeningMetrics(
   referral_needed_count: number;
   behind_immunisation_count: number;
   high_risk_count: number;
-  child_consented_rate: number;
-  age_appropriate_rate: number;
-  parent_informed_rate: number;
-  gp_notified_rate: number;
-  follow_up_rate: number;
-  referral_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  school_aware_rate: number;
-  records_updated_rate: number;
-  confidentiality_rate: number;
-  recorded_promptly_rate: number;
+  child_consented_rate: number | null;
+  age_appropriate_rate: number | null;
+  parent_informed_rate: number | null;
+  gp_notified_rate: number | null;
+  follow_up_rate: number | null;
+  referral_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  school_aware_rate: number | null;
+  records_updated_rate: number | null;
+  confidentiality_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_screening_type: Record<string, number>;
   by_screening_outcome: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeHealthScreeningMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

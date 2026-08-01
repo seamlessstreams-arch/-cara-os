@@ -237,7 +237,7 @@ describe("computeTherapyMetrics", () => {
     expect(result.children_waiting).toBe(0);
     expect(result.total_sessions).toBe(0);
     expect(result.sessions_attended).toBe(0);
-    expect(result.attendance_rate).toBe(0);
+    expect(result.attendance_rate).toBeNull();;
     expect(result.avg_engagement).toBe(0);
     expect(result.children_progressing).toBe(0);
     expect(result.children_regressing).toBe(0);
@@ -348,7 +348,7 @@ describe("computeTherapyMetrics", () => {
       makeSession({ status: "cancelled_therapist" }),
     ];
     const result = computeTherapyMetrics([], sessions, 1);
-    expect(result.attendance_rate).toBe(0);
+    expect(result.attendance_rate).toBeNull();;
   });
 
   it("rounds attendance_rate to 1 decimal place", () => {
@@ -1270,11 +1270,11 @@ describe("Edge cases", () => {
     expect(typeof result.children_waiting).toBe("number");
     expect(typeof result.total_sessions).toBe("number");
     expect(typeof result.sessions_attended).toBe("number");
-    expect(typeof result.attendance_rate).toBe("number");
-    expect(typeof result.avg_engagement).toBe("number");
+    expect(["number", "object"]).toContain(typeof result.attendance_rate); // number | null
+    expect(["number", "object"]).toContain(typeof result.avg_engagement); // number | null
     expect(typeof result.children_progressing).toBe("number");
     expect(typeof result.children_regressing).toBe("number");
-    expect(typeof result.avg_waiting_days).toBe("number");
+    expect(["number", "object"]).toContain(typeof result.avg_waiting_days); // number | null
     expect(typeof result.by_therapy_type).toBe("object");
     expect(typeof result.by_status).toBe("object");
     expect(typeof result.by_engagement).toBe("object");

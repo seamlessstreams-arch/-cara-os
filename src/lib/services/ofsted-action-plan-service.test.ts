@@ -48,8 +48,8 @@ describe("computeOfstedActionPlanMetrics", () => {
     const m = computeOfstedActionPlanMetrics([]);
     expect(m.total_findings).toBe(0);
     expect(m.not_started_count).toBe(0);
-    expect(m.completion_rate).toBe(0);
-    expect(m.evidence_gathered_rate).toBe(0);
+    expect(m.completion_rate).toBeNull();;
+    expect(m.evidence_gathered_rate).toBeNull();;
   });
 
   it("computes status counts and rates for populated data", () => {

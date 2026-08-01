@@ -136,18 +136,18 @@ export function computeRelationshipEducationMetrics(records: RelationshipEducati
   disengaged_count: number;
   not_appropriate_count: number;
   harmful_count: number;
-  child_consented_rate: number;
-  age_appropriate_content_rate: number;
-  safe_space_rate: number;
-  trigger_warnings_rate: number;
-  child_led_pace_rate: number;
-  resources_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  follow_up_rate: number;
-  confidentiality_rate: number;
-  recorded_promptly_rate: number;
+  child_consented_rate: number | null;
+  age_appropriate_content_rate: number | null;
+  safe_space_rate: number | null;
+  trigger_warnings_rate: number | null;
+  child_led_pace_rate: number | null;
+  resources_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  follow_up_rate: number | null;
+  confidentiality_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_topic_area: Record<string, number>;
   by_understanding_level: Record<string, number>;
@@ -163,7 +163,7 @@ export function computeRelationshipEducationMetrics(records: RelationshipEducati
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byTopic: Record<string, number> = {};

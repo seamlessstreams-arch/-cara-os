@@ -43,9 +43,9 @@ describe("infection-control-service", () => {
       const m = computeInfectionControlMetrics([]);
       expect(m.total_records).toBe(0);
       expect(m.hand_hygiene_audit_count).toBe(0);
-      expect(m.excellent_hygiene_rate).toBe(0);
-      expect(m.hand_washing_observed_rate).toBe(0);
-      expect(m.ppe_fully_compliant_rate).toBe(0);
+      expect(m.excellent_hygiene_rate).toBeNull();;
+      expect(m.hand_washing_observed_rate).toBeNull();;
+      expect(m.ppe_fully_compliant_rate).toBeNull();;
       expect(m.total_children_symptomatic).toBe(0);
       expect(m.active_outbreak_count).toBe(0);
     });

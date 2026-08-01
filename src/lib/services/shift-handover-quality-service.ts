@@ -142,18 +142,18 @@ export function computeShiftHandoverQualityMetrics(
   inadequate_count: number;
   fully_complete_count: number;
   incomplete_count: number;
-  medication_info_rate: number;
-  safeguarding_updates_rate: number;
-  incident_continuity_rate: number;
-  care_plan_updates_rate: number;
-  risk_info_rate: number;
-  appointments_rate: number;
-  behaviour_updates_rate: number;
-  emotional_wellbeing_rate: number;
-  food_dietary_rate: number;
-  contact_updates_rate: number;
-  key_tasks_rate: number;
-  read_and_signed_rate: number;
+  medication_info_rate: number | null;
+  safeguarding_updates_rate: number | null;
+  incident_continuity_rate: number | null;
+  care_plan_updates_rate: number | null;
+  risk_info_rate: number | null;
+  appointments_rate: number | null;
+  behaviour_updates_rate: number | null;
+  emotional_wellbeing_rate: number | null;
+  food_dietary_rate: number | null;
+  contact_updates_rate: number | null;
+  key_tasks_rate: number | null;
+  read_and_signed_rate: number | null;
   by_handover_type: Record<string, number>;
   by_quality_rating: Record<string, number>;
   by_completion_status: Record<string, number>;
@@ -170,7 +170,7 @@ export function computeShiftHandoverQualityMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

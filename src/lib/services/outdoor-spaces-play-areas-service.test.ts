@@ -51,7 +51,7 @@ describe("computeOutdoorSpacesMetrics", () => {
     expect(m.hazard_count).toBe(0);
     expect(m.poor_condition_count).toBe(0);
     expect(m.not_accessible_count).toBe(0);
-    expect(m.equipment_checked_rate).toBe(0);
+    expect(m.equipment_checked_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<PeerRelationshipAssessmentRecord>): Peer
 
 describe("peer-relationship-assessment-service", () => {
   describe("computePeerRelationshipMetrics", () => {
-    it("returns zeros for empty", () => { const m = computePeerRelationshipMetrics([]); expect(m.total_assessments).toBe(0); expect(m.poor_quality_count).toBe(0); expect(m.concerning_quality_count).toBe(0); expect(m.no_friendships_count).toBe(0); expect(m.aggressive_conflict_count).toBe(0); expect(m.child_views_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computePeerRelationshipMetrics([]); expect(m.by_relationship_quality).toEqual({}); expect(m.by_social_skill_level).toEqual({}); expect(m.by_conflict_style).toEqual({}); expect(m.by_friendship_stability).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computePeerRelationshipMetrics([]);
+      expect(m.total_assessments).toBe(0);;
+      expect(m.poor_quality_count).toBe(0);
+      expect(m.concerning_quality_count).toBe(0);
+      expect(m.no_friendships_count).toBe(0);
+      expect(m.aggressive_conflict_count).toBe(0);
+      expect(m.child_views_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computePeerRelationshipMetrics([]);
+      expect(m.by_relationship_quality).toEqual({});
+      expect(m.by_social_skill_level).toEqual({});
+      expect(m.by_conflict_style).toEqual({});
+      expect(m.by_friendship_stability).toEqual({});
+    });
     it("total_assessments counts records", () => { expect(computePeerRelationshipMetrics([makeRecord(), makeRecord()]).total_assessments).toBe(2); });
     it("counts poor_quality", () => { expect(computePeerRelationshipMetrics([makeRecord({ relationship_quality: "poor" })]).poor_quality_count).toBe(1); });
     it("counts concerning_quality", () => { expect(computePeerRelationshipMetrics([makeRecord({ relationship_quality: "concerning" })]).concerning_quality_count).toBe(1); });
@@ -46,7 +61,21 @@ describe("peer-relationship-assessment-service", () => {
     it("counts no_friendships", () => { expect(computePeerRelationshipMetrics([makeRecord({ friendship_stability: "no_friendships" })]).no_friendships_count).toBe(1); });
     it("counts aggressive_conflict", () => { expect(computePeerRelationshipMetrics([makeRecord({ conflict_style: "aggressive" })]).aggressive_conflict_count).toBe(1); });
     it("does not count escalating as aggressive", () => { expect(computePeerRelationshipMetrics([makeRecord({ conflict_style: "escalating" })]).aggressive_conflict_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computePeerRelationshipMetrics([makeRecord()]); expect(m.child_views_rate).toBe(100); expect(m.positive_interactions_rate).toBe(100); expect(m.bullying_screened_rate).toBe(100); expect(m.social_skills_rate).toBe(100); expect(m.group_activities_rate).toBe(100); expect(m.conflict_resolution_rate).toBe(100); expect(m.peer_mentoring_rate).toBe(100); expect(m.care_plan_reflects_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.school_liaison_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computePeerRelationshipMetrics([makeRecord()]);
+      expect(m.child_views_rate).toBe(100);
+      expect(m.positive_interactions_rate).toBe(100);
+      expect(m.bullying_screened_rate).toBe(100);
+      expect(m.social_skills_rate).toBe(100);
+      expect(m.group_activities_rate).toBe(100);
+      expect(m.conflict_resolution_rate).toBe(100);
+      expect(m.peer_mentoring_rate).toBe(100);
+      expect(m.care_plan_reflects_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.school_liaison_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_views_rate 0 when false", () => { expect(computePeerRelationshipMetrics([makeRecord({ child_views_sought: false })]).child_views_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computePeerRelationshipMetrics([makeRecord({ bullying_screened: true }), makeRecord({ bullying_screened: false }), makeRecord({ bullying_screened: true })]); expect(m.bullying_screened_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computePeerRelationshipMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -59,18 +88,43 @@ describe("peer-relationship-assessment-service", () => {
   describe("identifyPeerRelationshipAlerts", () => {
     it("returns empty for clean", () => { expect(identifyPeerRelationshipAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyPeerRelationshipAlerts([])).toEqual([]); });
-    it("fires concerning_no_bullying_screen", () => { const a = identifyPeerRelationshipAlerts([makeRecord({ relationship_quality: "concerning", bullying_screened: false, child_name: "Jo" })]); expect(a[0].type).toBe("concerning_no_bullying_screen"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires concerning_no_bullying_screen", () => { 
+      const a = identifyPeerRelationshipAlerts([makeRecord({ relationship_quality: "concerning", bullying_screened: false, child_name: "Jo" })]);
+      expect(a[0].type).toBe("concerning_no_bullying_screen");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("concerning_no_bullying_screen per-record", () => { const a = identifyPeerRelationshipAlerts([makeRecord({ id: "a-1", relationship_quality: "concerning", bullying_screened: false }), makeRecord({ id: "a-2", relationship_quality: "concerning", bullying_screened: false })]); expect(a.filter(x => x.type === "concerning_no_bullying_screen")).toHaveLength(2); });
     it("concerning with bullying screened no critical alert", () => { expect(identifyPeerRelationshipAlerts([makeRecord({ relationship_quality: "concerning", bullying_screened: true })]).find(x => x.type === "concerning_no_bullying_screen")).toBeUndefined(); });
     it("poor without screening no critical alert", () => { expect(identifyPeerRelationshipAlerts([makeRecord({ relationship_quality: "poor", bullying_screened: false })]).find(x => x.type === "concerning_no_bullying_screen")).toBeUndefined(); });
-    it("fires no_friendships singular", () => { const a = identifyPeerRelationshipAlerts([makeRecord({ friendship_stability: "no_friendships" })]); const f = a.find(x => x.type === "no_friendships"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 assessment shows"); });
+    it("fires no_friendships singular", () => { 
+      const a = identifyPeerRelationshipAlerts([makeRecord({ friendship_stability: "no_friendships" })]);
+      const f = a.find(x => x.type === "no_friendships");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 assessment shows");
+    });
     it("no_friendships plural", () => { const a = identifyPeerRelationshipAlerts([makeRecord({ friendship_stability: "no_friendships" }), makeRecord({ friendship_stability: "no_friendships" })]); const f = a.find(x => x.type === "no_friendships"); expect(f!.message).toContain("2 assessments show"); });
-    it("fires social_skills_not_supported singular", () => { const a = identifyPeerRelationshipAlerts([makeRecord({ social_skills_supported: false })]); const f = a.find(x => x.type === "social_skills_not_supported"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 assessment has"); });
+    it("fires social_skills_not_supported singular", () => { 
+      const a = identifyPeerRelationshipAlerts([makeRecord({ social_skills_supported: false })]);
+      const f = a.find(x => x.type === "social_skills_not_supported");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 assessment has");
+    });
     it("social_skills_not_supported plural", () => { const a = identifyPeerRelationshipAlerts([makeRecord({ social_skills_supported: false }), makeRecord({ social_skills_supported: false })]); const f = a.find(x => x.type === "social_skills_not_supported"); expect(f!.message).toContain("2 assessments have"); });
     it("conflict_resolution_not_taught not for 1", () => { expect(identifyPeerRelationshipAlerts([makeRecord({ conflict_resolution_taught: false })]).find(x => x.type === "conflict_resolution_not_taught")).toBeUndefined(); });
     it("conflict_resolution_not_taught fires for 2", () => { const a = identifyPeerRelationshipAlerts([makeRecord({ conflict_resolution_taught: false }), makeRecord({ conflict_resolution_taught: false })]); expect(a.find(x => x.type === "conflict_resolution_not_taught")).toBeDefined(); expect(a.find(x => x.type === "conflict_resolution_not_taught")!.severity).toBe("medium"); });
     it("group_activities_not_encouraged not for 1", () => { expect(identifyPeerRelationshipAlerts([makeRecord({ group_activities_encouraged: false })]).find(x => x.type === "group_activities_not_encouraged")).toBeUndefined(); });
     it("group_activities_not_encouraged fires for 2", () => { const a = identifyPeerRelationshipAlerts([makeRecord({ group_activities_encouraged: false }), makeRecord({ group_activities_encouraged: false })]); expect(a.find(x => x.type === "group_activities_not_encouraged")).toBeDefined(); expect(a.find(x => x.type === "group_activities_not_encouraged")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyPeerRelationshipAlerts([makeRecord({ relationship_quality: "concerning", bullying_screened: false, friendship_stability: "no_friendships", social_skills_supported: false, conflict_resolution_taught: false, group_activities_encouraged: false }), makeRecord({ social_skills_supported: false, conflict_resolution_taught: false, group_activities_encouraged: false })]); const types = a.map(x => x.type); expect(types).toContain("concerning_no_bullying_screen"); expect(types).toContain("no_friendships"); expect(types).toContain("social_skills_not_supported"); expect(types).toContain("conflict_resolution_not_taught"); expect(types).toContain("group_activities_not_encouraged"); });
+    it("fires all applicable", () => { 
+      const a = identifyPeerRelationshipAlerts([makeRecord({ relationship_quality: "concerning", bullying_screened: false, friendship_stability: "no_friendships", social_skills_supported: false, conflict_resolution_taught: false, group_activities_encouraged: false }), makeRecord({ social_skills_supported: false, conflict_resolution_taught: false, group_activities_encouraged: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("concerning_no_bullying_screen");
+      expect(types).toContain("no_friendships");
+      expect(types).toContain("social_skills_not_supported");
+      expect(types).toContain("conflict_resolution_not_taught");
+      expect(types).toContain("group_activities_not_encouraged");
+    });
   });
 });

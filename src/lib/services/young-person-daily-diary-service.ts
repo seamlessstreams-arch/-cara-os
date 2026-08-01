@@ -157,18 +157,18 @@ export function computeDailyDiaryMetrics(
   difficult_day_count: number;
   self_written_count: number;
   concern_count: number;
-  child_wrote_rate: number;
-  child_chose_share_rate: number;
-  staff_supported_rate: number;
-  feelings_explored_rate: number;
-  wishes_recorded_rate: number;
-  concerns_addressed_rate: number;
-  keyworker_read_rate: number;
-  responded_to_rate: number;
-  care_plan_linked_rate: number;
-  safeguarding_checked_rate: number;
-  privacy_respected_rate: number;
-  recorded_promptly_rate: number;
+  child_wrote_rate: number | null;
+  child_chose_share_rate: number | null;
+  staff_supported_rate: number | null;
+  feelings_explored_rate: number | null;
+  wishes_recorded_rate: number | null;
+  concerns_addressed_rate: number | null;
+  keyworker_read_rate: number | null;
+  responded_to_rate: number | null;
+  care_plan_linked_rate: number | null;
+  safeguarding_checked_rate: number | null;
+  privacy_respected_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_mood_rating: Record<string, number>;
   by_day_rating: Record<string, number>;
@@ -195,7 +195,7 @@ export function computeDailyDiaryMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

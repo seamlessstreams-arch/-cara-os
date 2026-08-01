@@ -50,9 +50,9 @@ describe("computeVisitorFeedbackMetrics", () => {
     expect(m.very_poor_rating_count).toBe(0);
     expect(m.dissatisfied_count).toBe(0);
     expect(m.concerns_raised_count).toBe(0);
-    expect(m.feedback_sought_rate).toBe(0);
-    expect(m.child_views_rate).toBe(0);
-    expect(m.action_plan_rate).toBe(0);
+    expect(m.feedback_sought_rate).toBeNull();;
+    expect(m.child_views_rate).toBeNull();;
+    expect(m.action_plan_rate).toBeNull();;
   });
 
   it("counts poor and very poor ratings", () => {

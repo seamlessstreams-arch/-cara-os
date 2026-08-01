@@ -138,18 +138,18 @@ export function computeFinancialLiteracyMetrics(
   disengaged_count: number;
   no_savings_count: number;
   in_debt_count: number;
-  age_appropriate_rate: number;
-  practical_exercise_rate: number;
-  real_money_rate: number;
-  savings_account_rate: number;
-  budget_created_rate: number;
-  targets_set_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  pathway_plan_rate: number;
-  resources_rate: number;
-  recorded_promptly_rate: number;
+  age_appropriate_rate: number | null;
+  practical_exercise_rate: number | null;
+  real_money_rate: number | null;
+  savings_account_rate: number | null;
+  budget_created_rate: number | null;
+  targets_set_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  pathway_plan_rate: number | null;
+  resources_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_topic_area: Record<string, number>;
   by_understanding_level: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeFinancialLiteracyMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byTopic: Record<string, number> = {};

@@ -110,18 +110,18 @@ describe("computeMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeMetrics([]);
-    expect(m.dbs_verified_rate).toBe(0);
-    expect(m.references_rate).toBe(0);
-    expect(m.qualifications_rate).toBe(0);
-    expect(m.induction_rate).toBe(0);
-    expect(m.safeguarding_rate).toBe(0);
-    expect(m.mandatory_training_rate).toBe(0);
-    expect(m.supervision_rate).toBe(0);
+    expect(m.dbs_verified_rate).toBeNull();;
+    expect(m.references_rate).toBeNull();;
+    expect(m.qualifications_rate).toBeNull();;
+    expect(m.induction_rate).toBeNull();;
+    expect(m.safeguarding_rate).toBeNull();;
+    expect(m.mandatory_training_rate).toBeNull();;
+    expect(m.supervision_rate).toBeNull();;
   });
 
   it("returns 0 avg_shifts for empty array", () => {
     const m = computeMetrics([]);
-    expect(m.avg_shifts).toBe(0);
+    expect(m.avg_shifts).toBeNull();;
   });
 
   // ── total_records ───────────────────────────────────────────────────────

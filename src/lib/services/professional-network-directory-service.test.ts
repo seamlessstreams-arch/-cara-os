@@ -63,8 +63,8 @@ describe("computeProfessionalNetworkMetrics", () => {
     expect(m.pending_allocation_count).toBe(0);
     expect(m.ended_count).toBe(0);
     expect(m.active_count).toBe(0);
-    expect(m.contact_current_rate).toBe(0);
-    expect(m.consent_rate).toBe(0);
+    expect(m.contact_current_rate).toBeNull();;
+    expect(m.consent_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

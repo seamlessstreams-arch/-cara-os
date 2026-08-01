@@ -103,12 +103,12 @@ export function computeMetrics(rows: StaffLoneWorkingRiskRow[]): {
   total_assessments: number;
   high_risk_count: number;
   unacceptable_count: number;
-  risk_assessment_rate: number;
-  check_in_rate: number;
-  personal_alarm_rate: number;
-  mobile_phone_rate: number;
-  emergency_procedures_rate: number;
-  training_rate: number;
+  risk_assessment_rate: number | null;
+  check_in_rate: number | null;
+  personal_alarm_rate: number | null;
+  mobile_phone_rate: number | null;
+  emergency_procedures_rate: number | null;
+  training_rate: number | null;
   incident_count: number;
   near_miss_count: number;
   non_compliant_count: number;
@@ -125,7 +125,7 @@ export function computeMetrics(rows: StaffLoneWorkingRiskRow[]): {
 
   const boolRate = (field: keyof StaffLoneWorkingRiskRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   return {
@@ -265,7 +265,7 @@ export function computeCaraInsights(rows: StaffLoneWorkingRiskRow[]): string[] {
         `How is the home ensuring lone working risk assessments are completed ` +
         `and that all staff working alone are properly equipped and supported under the Health and Safety at Work Act 1974?`,
     );
-  } else if (metrics.training_rate < 100) {
+  } else if ((metrics.training_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.training_rate}% of staff have completed lone working training. ` +
         `How is the home ensuring all lone workers receive appropriate training, ` +

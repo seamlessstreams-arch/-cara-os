@@ -158,18 +158,18 @@ export function computeMandatoryTrainingMetrics(records: StaffMandatoryTrainingR
   expiring_soon_count: number;
   not_started_count: number;
   current_count: number;
-  certificate_held_rate: number;
-  competence_assessed_rate: number;
-  staff_attended_rate: number;
-  learning_objectives_rate: number;
-  applied_in_practice_rate: number;
-  refresher_scheduled_rate: number;
-  manager_verified_rate: number;
-  cost_approved_rate: number;
-  development_plan_rate: number;
-  accessible_format_rate: number;
-  evaluation_completed_rate: number;
-  recorded_promptly_rate: number;
+  certificate_held_rate: number | null;
+  competence_assessed_rate: number | null;
+  staff_attended_rate: number | null;
+  learning_objectives_rate: number | null;
+  applied_in_practice_rate: number | null;
+  refresher_scheduled_rate: number | null;
+  manager_verified_rate: number | null;
+  cost_approved_rate: number | null;
+  development_plan_rate: number | null;
+  accessible_format_rate: number | null;
+  evaluation_completed_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_staff: number;
   by_training_category: Record<string, number>;
   by_compliance_status: Record<string, number>;
@@ -183,7 +183,7 @@ export function computeMandatoryTrainingMetrics(records: StaffMandatoryTrainingR
 
   const boolRate = (field: keyof StaffMandatoryTrainingRecord) => {
     const count = records.filter((r) => r[field] === true).length;
-    return records.length > 0 ? Math.round((count / records.length) * 1000) / 10 : 0;
+    return records.length > 0 ? Math.round((count / records.length) * 1000) / 10 : null;
   };
 
   const byCategory: Record<string, number> = {};

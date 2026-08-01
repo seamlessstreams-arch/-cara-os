@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<RelationshipEducationSafetyRecord>): Rel
 
 describe("relationship-education-safety-service", () => {
   describe("computeRelationshipEducationMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeRelationshipEducationMetrics([]); expect(m.total_sessions).toBe(0); expect(m.not_understood_count).toBe(0); expect(m.disengaged_count).toBe(0); expect(m.not_appropriate_count).toBe(0); expect(m.harmful_count).toBe(0); expect(m.child_consented_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeRelationshipEducationMetrics([]); expect(m.by_topic_area).toEqual({}); expect(m.by_understanding_level).toEqual({}); expect(m.by_engagement_quality).toEqual({}); expect(m.by_age_appropriateness).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeRelationshipEducationMetrics([]);
+      expect(m.total_sessions).toBe(0);;
+      expect(m.not_understood_count).toBe(0);
+      expect(m.disengaged_count).toBe(0);
+      expect(m.not_appropriate_count).toBe(0);
+      expect(m.harmful_count).toBe(0);
+      expect(m.child_consented_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeRelationshipEducationMetrics([]);
+      expect(m.by_topic_area).toEqual({});
+      expect(m.by_understanding_level).toEqual({});
+      expect(m.by_engagement_quality).toEqual({});
+      expect(m.by_age_appropriateness).toEqual({});
+    });
     it("total_sessions counts records", () => { expect(computeRelationshipEducationMetrics([makeRecord(), makeRecord()]).total_sessions).toBe(2); });
     it("counts not_understood", () => { expect(computeRelationshipEducationMetrics([makeRecord({ understanding_level: "not_understood" })]).not_understood_count).toBe(1); });
     it("does not count limited as not_understood", () => { expect(computeRelationshipEducationMetrics([makeRecord({ understanding_level: "limited" })]).not_understood_count).toBe(0); });
@@ -50,7 +65,21 @@ describe("relationship-education-safety-service", () => {
     it("does not count somewhat as not_appropriate", () => { expect(computeRelationshipEducationMetrics([makeRecord({ age_appropriateness: "somewhat_appropriate" })]).not_appropriate_count).toBe(0); });
     it("counts harmful", () => { expect(computeRelationshipEducationMetrics([makeRecord({ age_appropriateness: "harmful" })]).harmful_count).toBe(1); });
     it("does not count not_appropriate as harmful", () => { expect(computeRelationshipEducationMetrics([makeRecord({ age_appropriateness: "not_appropriate" })]).harmful_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeRelationshipEducationMetrics([makeRecord()]); expect(m.child_consented_rate).toBe(100); expect(m.age_appropriate_content_rate).toBe(100); expect(m.safe_space_rate).toBe(100); expect(m.trigger_warnings_rate).toBe(100); expect(m.child_led_pace_rate).toBe(100); expect(m.resources_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.follow_up_rate).toBe(100); expect(m.confidentiality_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeRelationshipEducationMetrics([makeRecord()]);
+      expect(m.child_consented_rate).toBe(100);
+      expect(m.age_appropriate_content_rate).toBe(100);
+      expect(m.safe_space_rate).toBe(100);
+      expect(m.trigger_warnings_rate).toBe(100);
+      expect(m.child_led_pace_rate).toBe(100);
+      expect(m.resources_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.follow_up_rate).toBe(100);
+      expect(m.confidentiality_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_consented_rate 0 when false", () => { expect(computeRelationshipEducationMetrics([makeRecord({ child_consented: false })]).child_consented_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeRelationshipEducationMetrics([makeRecord({ safe_space_provided: true }), makeRecord({ safe_space_provided: false }), makeRecord({ safe_space_provided: true })]); expect(m.safe_space_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeRelationshipEducationMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -63,17 +92,42 @@ describe("relationship-education-safety-service", () => {
   describe("identifyRelationshipEducationAlerts", () => {
     it("returns empty for clean", () => { expect(identifyRelationshipEducationAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyRelationshipEducationAlerts([])).toEqual([]); });
-    it("fires harmful_not_understood", () => { const a = identifyRelationshipEducationAlerts([makeRecord({ age_appropriateness: "harmful", understanding_level: "not_understood", child_name: "Jo" })]); expect(a[0].type).toBe("harmful_not_understood"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires harmful_not_understood", () => { 
+      const a = identifyRelationshipEducationAlerts([makeRecord({ age_appropriateness: "harmful", understanding_level: "not_understood", child_name: "Jo" })]);
+      expect(a[0].type).toBe("harmful_not_understood");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("harmful_not_understood per-record", () => { const a = identifyRelationshipEducationAlerts([makeRecord({ id: "a-1", age_appropriateness: "harmful", understanding_level: "not_understood" }), makeRecord({ id: "a-2", age_appropriateness: "harmful", understanding_level: "not_understood" })]); expect(a.filter(x => x.type === "harmful_not_understood")).toHaveLength(2); });
     it("harmful without not_understood no critical", () => { expect(identifyRelationshipEducationAlerts([makeRecord({ age_appropriateness: "harmful", understanding_level: "confident" })]).find(x => x.type === "harmful_not_understood")).toBeUndefined(); });
     it("not_understood without harmful no critical", () => { expect(identifyRelationshipEducationAlerts([makeRecord({ understanding_level: "not_understood", age_appropriateness: "appropriate" })]).find(x => x.type === "harmful_not_understood")).toBeUndefined(); });
-    it("fires no_safe_space singular", () => { const a = identifyRelationshipEducationAlerts([makeRecord({ safe_space_provided: false })]); const f = a.find(x => x.type === "no_safe_space"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires no_safe_space singular", () => { 
+      const a = identifyRelationshipEducationAlerts([makeRecord({ safe_space_provided: false })]);
+      const f = a.find(x => x.type === "no_safe_space");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_safe_space plural", () => { const a = identifyRelationshipEducationAlerts([makeRecord({ safe_space_provided: false }), makeRecord({ safe_space_provided: false })]); const f = a.find(x => x.type === "no_safe_space"); expect(f!.message).toContain("2 sessions have"); });
-    it("fires no_consent singular", () => { const a = identifyRelationshipEducationAlerts([makeRecord({ child_consented: false })]); const f = a.find(x => x.type === "no_consent"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 session has"); });
+    it("fires no_consent singular", () => { 
+      const a = identifyRelationshipEducationAlerts([makeRecord({ child_consented: false })]);
+      const f = a.find(x => x.type === "no_consent");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 session has");
+    });
     it("no_trigger_warnings not for 1", () => { expect(identifyRelationshipEducationAlerts([makeRecord({ trigger_warnings_given: false })]).find(x => x.type === "no_trigger_warnings")).toBeUndefined(); });
     it("no_trigger_warnings fires for 2", () => { const a = identifyRelationshipEducationAlerts([makeRecord({ trigger_warnings_given: false }), makeRecord({ trigger_warnings_given: false })]); expect(a.find(x => x.type === "no_trigger_warnings")).toBeDefined(); expect(a.find(x => x.type === "no_trigger_warnings")!.severity).toBe("medium"); });
     it("no_confidentiality not for 1", () => { expect(identifyRelationshipEducationAlerts([makeRecord({ confidentiality_maintained: false })]).find(x => x.type === "no_confidentiality")).toBeUndefined(); });
     it("no_confidentiality fires for 2", () => { const a = identifyRelationshipEducationAlerts([makeRecord({ confidentiality_maintained: false }), makeRecord({ confidentiality_maintained: false })]); expect(a.find(x => x.type === "no_confidentiality")).toBeDefined(); expect(a.find(x => x.type === "no_confidentiality")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyRelationshipEducationAlerts([makeRecord({ age_appropriateness: "harmful", understanding_level: "not_understood", safe_space_provided: false, child_consented: false, trigger_warnings_given: false, confidentiality_maintained: false }), makeRecord({ safe_space_provided: false, child_consented: false, trigger_warnings_given: false, confidentiality_maintained: false })]); const types = a.map(x => x.type); expect(types).toContain("harmful_not_understood"); expect(types).toContain("no_safe_space"); expect(types).toContain("no_consent"); expect(types).toContain("no_trigger_warnings"); expect(types).toContain("no_confidentiality"); });
+    it("fires all applicable", () => { 
+      const a = identifyRelationshipEducationAlerts([makeRecord({ age_appropriateness: "harmful", understanding_level: "not_understood", safe_space_provided: false, child_consented: false, trigger_warnings_given: false, confidentiality_maintained: false }), makeRecord({ safe_space_provided: false, child_consented: false, trigger_warnings_given: false, confidentiality_maintained: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("harmful_not_understood");
+      expect(types).toContain("no_safe_space");
+      expect(types).toContain("no_consent");
+      expect(types).toContain("no_trigger_warnings");
+      expect(types).toContain("no_confidentiality");
+    });
   });
 });

@@ -51,8 +51,8 @@ describe("computeSelfHarmRiskMetrics", () => {
     expect(m.high_count).toBe(0);
     expect(m.no_safety_plan_count).toBe(0);
     expect(m.needs_review_count).toBe(0);
-    expect(m.child_engaged_rate).toBe(0);
-    expect(m.camhs_involved_rate).toBe(0);
+    expect(m.child_engaged_rate).toBeNull();;
+    expect(m.camhs_involved_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

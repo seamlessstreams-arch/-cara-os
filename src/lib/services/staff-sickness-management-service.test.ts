@@ -47,9 +47,9 @@ describe("computeSicknessMetrics", () => {
     expect(m.mental_health_count).toBe(0);
     expect(m.work_related_count).toBe(0);
     expect(m.ongoing_count).toBe(0);
-    expect(m.return_to_work_rate).toBe(0);
+    expect(m.return_to_work_rate).toBeNull();;
     expect(m.total_days_absent).toBe(0);
-    expect(m.average_days_absent).toBe(0);
+    expect(m.average_days_absent).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

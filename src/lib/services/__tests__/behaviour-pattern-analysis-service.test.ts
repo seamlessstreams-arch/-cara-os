@@ -37,15 +37,44 @@ function makeRecord(overrides?: Partial<BehaviourPatternAnalysisRecord>): Behavi
 
 describe("behaviour-pattern-analysis-service", () => {
   describe("computeBehaviourPatternMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeBehaviourPatternMetrics([]); expect(m.total_incidents).toBe(0); expect(m.severe_count).toBe(0); expect(m.critical_count).toBe(0); expect(m.restraint_count).toBe(0); expect(m.unknown_trigger_count).toBe(0); expect(m.trigger_identified_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeBehaviourPatternMetrics([]); expect(m.by_behaviour_category).toEqual({}); expect(m.by_trigger_type).toEqual({}); expect(m.by_intervention_outcome).toEqual({}); expect(m.by_behaviour_severity).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeBehaviourPatternMetrics([]);
+      expect(m.total_incidents).toBe(0);;
+      expect(m.severe_count).toBe(0);
+      expect(m.critical_count).toBe(0);
+      expect(m.restraint_count).toBe(0);
+      expect(m.unknown_trigger_count).toBe(0);
+      expect(m.trigger_identified_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeBehaviourPatternMetrics([]);
+      expect(m.by_behaviour_category).toEqual({});
+      expect(m.by_trigger_type).toEqual({});
+      expect(m.by_intervention_outcome).toEqual({});
+      expect(m.by_behaviour_severity).toEqual({});
+    });
     it("total_incidents counts records", () => { expect(computeBehaviourPatternMetrics([makeRecord(), makeRecord()]).total_incidents).toBe(2); });
     it("counts severe", () => { expect(computeBehaviourPatternMetrics([makeRecord({ behaviour_severity: "severe" })]).severe_count).toBe(1); });
     it("counts critical", () => { expect(computeBehaviourPatternMetrics([makeRecord({ behaviour_severity: "critical" })]).critical_count).toBe(1); });
     it("does not count high as severe", () => { expect(computeBehaviourPatternMetrics([makeRecord({ behaviour_severity: "high" })]).severe_count).toBe(0); });
     it("counts restraint", () => { expect(computeBehaviourPatternMetrics([makeRecord({ intervention_outcome: "required_restraint" })]).restraint_count).toBe(1); });
     it("counts unknown_trigger", () => { expect(computeBehaviourPatternMetrics([makeRecord({ trigger_type: "unknown" })]).unknown_trigger_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeBehaviourPatternMetrics([makeRecord()]); expect(m.trigger_identified_rate).toBe(100); expect(m.de_escalation_rate).toBe(100); expect(m.child_views_rate).toBe(100); expect(m.debrief_rate).toBe(100); expect(m.pattern_identified_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.risk_assessment_rate).toBe(100); expect(m.positive_strategies_rate).toBe(100); expect(m.therapeutic_input_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeBehaviourPatternMetrics([makeRecord()]);
+      expect(m.trigger_identified_rate).toBe(100);
+      expect(m.de_escalation_rate).toBe(100);
+      expect(m.child_views_rate).toBe(100);
+      expect(m.debrief_rate).toBe(100);
+      expect(m.pattern_identified_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.risk_assessment_rate).toBe(100);
+      expect(m.positive_strategies_rate).toBe(100);
+      expect(m.therapeutic_input_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("de_escalation_rate 0 when false", () => { expect(computeBehaviourPatternMetrics([makeRecord({ de_escalation_attempted: false })]).de_escalation_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeBehaviourPatternMetrics([makeRecord({ debrief_completed: true }), makeRecord({ debrief_completed: false }), makeRecord({ debrief_completed: true })]); expect(m.debrief_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeBehaviourPatternMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -58,17 +87,42 @@ describe("behaviour-pattern-analysis-service", () => {
   describe("identifyBehaviourPatternAlerts", () => {
     it("returns empty for clean", () => { expect(identifyBehaviourPatternAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyBehaviourPatternAlerts([])).toEqual([]); });
-    it("fires restraint_no_deescalation", () => { const a = identifyBehaviourPatternAlerts([makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: false, child_name: "Jo" })]); expect(a[0].type).toBe("restraint_no_deescalation"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires restraint_no_deescalation", () => { 
+      const a = identifyBehaviourPatternAlerts([makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: false, child_name: "Jo" })]);
+      expect(a[0].type).toBe("restraint_no_deescalation");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("restraint_no_deescalation per-record", () => { const a = identifyBehaviourPatternAlerts([makeRecord({ id: "a-1", intervention_outcome: "required_restraint", de_escalation_attempted: false }), makeRecord({ id: "a-2", intervention_outcome: "required_restraint", de_escalation_attempted: false })]); expect(a.filter(x => x.type === "restraint_no_deescalation")).toHaveLength(2); });
     it("restraint with de-escalation no critical", () => { expect(identifyBehaviourPatternAlerts([makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: true })]).find(x => x.type === "restraint_no_deescalation")).toBeUndefined(); });
     it("non-restraint no de-escalation no critical", () => { expect(identifyBehaviourPatternAlerts([makeRecord({ intervention_outcome: "de_escalated", de_escalation_attempted: false })]).find(x => x.type === "restraint_no_deescalation")).toBeUndefined(); });
-    it("fires debrief_not_completed singular", () => { const a = identifyBehaviourPatternAlerts([makeRecord({ debrief_completed: false })]); const f = a.find(x => x.type === "debrief_not_completed"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 incident has"); });
+    it("fires debrief_not_completed singular", () => { 
+      const a = identifyBehaviourPatternAlerts([makeRecord({ debrief_completed: false })]);
+      const f = a.find(x => x.type === "debrief_not_completed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 incident has");
+    });
     it("debrief_not_completed plural", () => { const a = identifyBehaviourPatternAlerts([makeRecord({ debrief_completed: false }), makeRecord({ debrief_completed: false })]); const f = a.find(x => x.type === "debrief_not_completed"); expect(f!.message).toContain("2 incidents have"); });
-    it("fires positive_strategies_not_used singular", () => { const a = identifyBehaviourPatternAlerts([makeRecord({ positive_strategies_used: false })]); const f = a.find(x => x.type === "positive_strategies_not_used"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 incident has"); });
+    it("fires positive_strategies_not_used singular", () => { 
+      const a = identifyBehaviourPatternAlerts([makeRecord({ positive_strategies_used: false })]);
+      const f = a.find(x => x.type === "positive_strategies_not_used");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 incident has");
+    });
     it("pattern_not_identified not for 1", () => { expect(identifyBehaviourPatternAlerts([makeRecord({ pattern_identified: false })]).find(x => x.type === "pattern_not_identified")).toBeUndefined(); });
     it("pattern_not_identified fires for 2", () => { const a = identifyBehaviourPatternAlerts([makeRecord({ pattern_identified: false }), makeRecord({ pattern_identified: false })]); expect(a.find(x => x.type === "pattern_not_identified")).toBeDefined(); expect(a.find(x => x.type === "pattern_not_identified")!.severity).toBe("medium"); });
     it("risk_not_updated not for 1", () => { expect(identifyBehaviourPatternAlerts([makeRecord({ risk_assessment_updated: false })]).find(x => x.type === "risk_not_updated")).toBeUndefined(); });
     it("risk_not_updated fires for 2", () => { const a = identifyBehaviourPatternAlerts([makeRecord({ risk_assessment_updated: false }), makeRecord({ risk_assessment_updated: false })]); expect(a.find(x => x.type === "risk_not_updated")).toBeDefined(); expect(a.find(x => x.type === "risk_not_updated")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyBehaviourPatternAlerts([makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: false, debrief_completed: false, positive_strategies_used: false, pattern_identified: false, risk_assessment_updated: false }), makeRecord({ debrief_completed: false, positive_strategies_used: false, pattern_identified: false, risk_assessment_updated: false })]); const types = a.map(x => x.type); expect(types).toContain("restraint_no_deescalation"); expect(types).toContain("debrief_not_completed"); expect(types).toContain("positive_strategies_not_used"); expect(types).toContain("pattern_not_identified"); expect(types).toContain("risk_not_updated"); });
+    it("fires all applicable", () => { 
+      const a = identifyBehaviourPatternAlerts([makeRecord({ intervention_outcome: "required_restraint", de_escalation_attempted: false, debrief_completed: false, positive_strategies_used: false, pattern_identified: false, risk_assessment_updated: false }), makeRecord({ debrief_completed: false, positive_strategies_used: false, pattern_identified: false, risk_assessment_updated: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("restraint_no_deescalation");
+      expect(types).toContain("debrief_not_completed");
+      expect(types).toContain("positive_strategies_not_used");
+      expect(types).toContain("pattern_not_identified");
+      expect(types).toContain("risk_not_updated");
+    });
   });
 });

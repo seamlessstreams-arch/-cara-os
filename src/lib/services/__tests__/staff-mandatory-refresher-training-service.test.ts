@@ -142,10 +142,10 @@ describe("computeMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeMetrics([]);
-    expect(m.certificate_rate).toBe(0);
-    expect(m.competency_rate).toBe(0);
-    expect(m.refresher_booked_rate).toBe(0);
-    expect(m.avg_training_hours).toBe(0);
+    expect(m.certificate_rate).toBeNull();;
+    expect(m.competency_rate).toBeNull();;
+    expect(m.refresher_booked_rate).toBeNull();;
+    expect(m.avg_training_hours).toBeNull();;
   });
 
   // ── total_records ───────────────────────────────────────────────────────

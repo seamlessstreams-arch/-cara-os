@@ -38,13 +38,43 @@ function makeRecord(overrides?: Partial<InternetUsageMonitoringRecord>): Interne
 
 describe("internet-usage-monitoring-service", () => {
   describe("computeInternetUsageMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeInternetUsageMetrics([]); expect(m.total_records).toBe(0); expect(m.high_concern_count).toBe(0); expect(m.safeguarding_referral_count).toBe(0); expect(m.no_monitoring_count).toBe(0); expect(m.social_media_count).toBe(0); expect(m.parental_controls_rate).toBe(0); expect(m.average_screen_time).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeInternetUsageMetrics([]); expect(m.by_device_type).toEqual({}); expect(m.by_usage_purpose).toEqual({}); expect(m.by_concern_level).toEqual({}); expect(m.by_monitoring_level).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeInternetUsageMetrics([]);
+      expect(m.total_records).toBe(0);;
+      expect(m.high_concern_count).toBe(0);
+      expect(m.safeguarding_referral_count).toBe(0);
+      expect(m.no_monitoring_count).toBe(0);
+      expect(m.social_media_count).toBe(0);
+      expect(m.parental_controls_rate).toBeNull();;
+      expect(m.average_screen_time).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeInternetUsageMetrics([]);
+      expect(m.by_device_type).toEqual({});
+      expect(m.by_usage_purpose).toEqual({});
+      expect(m.by_concern_level).toEqual({});
+      expect(m.by_monitoring_level).toEqual({});
+    });
     it("counts high_concern", () => { expect(computeInternetUsageMetrics([makeRecord({ concern_level: "high" })]).high_concern_count).toBe(1); });
     it("counts safeguarding_referral", () => { expect(computeInternetUsageMetrics([makeRecord({ concern_level: "safeguarding_referral" })]).safeguarding_referral_count).toBe(1); });
     it("counts no_monitoring", () => { expect(computeInternetUsageMetrics([makeRecord({ monitoring_level: "none" })]).no_monitoring_count).toBe(1); });
     it("counts social_media", () => { expect(computeInternetUsageMetrics([makeRecord({ usage_purpose: "social_media" })]).social_media_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeInternetUsageMetrics([makeRecord()]); expect(m.parental_controls_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.screen_time_within_limits_rate).toBe(100); expect(m.privacy_settings_rate).toBe(100); expect(m.social_media_reviewed_rate).toBe(100); expect(m.contact_list_rate).toBe(100); expect(m.online_safety_discussed_rate).toBe(100); expect(m.digital_literacy_rate).toBe(100); expect(m.consent_current_rate).toBe(100); expect(m.care_plan_linked_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeInternetUsageMetrics([makeRecord()]);
+      expect(m.parental_controls_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.screen_time_within_limits_rate).toBe(100);
+      expect(m.privacy_settings_rate).toBe(100);
+      expect(m.social_media_reviewed_rate).toBe(100);
+      expect(m.contact_list_rate).toBe(100);
+      expect(m.online_safety_discussed_rate).toBe(100);
+      expect(m.digital_literacy_rate).toBe(100);
+      expect(m.consent_current_rate).toBe(100);
+      expect(m.care_plan_linked_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("parental_controls_rate 0 when false", () => { expect(computeInternetUsageMetrics([makeRecord({ parental_controls_active: false })]).parental_controls_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeInternetUsageMetrics([makeRecord({ parental_controls_active: true }), makeRecord({ parental_controls_active: false }), makeRecord({ parental_controls_active: true })]); expect(m.parental_controls_rate).toBe(66.7); });
     it("average_screen_time single", () => { expect(computeInternetUsageMetrics([makeRecord({ screen_time_minutes: 90 })]).average_screen_time).toBe(90); });
@@ -59,16 +89,41 @@ describe("internet-usage-monitoring-service", () => {
   describe("identifyInternetUsageAlerts", () => {
     it("returns empty for clean", () => { expect(identifyInternetUsageAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyInternetUsageAlerts([])).toEqual([]); });
-    it("fires safeguarding_referral", () => { const a = identifyInternetUsageAlerts([makeRecord({ concern_level: "safeguarding_referral", child_name: "Jo" })]); expect(a[0].type).toBe("safeguarding_referral"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires safeguarding_referral", () => { 
+      const a = identifyInternetUsageAlerts([makeRecord({ concern_level: "safeguarding_referral", child_name: "Jo" })]);
+      expect(a[0].type).toBe("safeguarding_referral");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("safeguarding_referral per-record", () => { const a = identifyInternetUsageAlerts([makeRecord({ id: "a-1", concern_level: "safeguarding_referral" }), makeRecord({ id: "a-2", concern_level: "safeguarding_referral" })]); expect(a.filter(x => x.type === "safeguarding_referral")).toHaveLength(2); });
-    it("fires no_parental_controls singular", () => { const a = identifyInternetUsageAlerts([makeRecord({ parental_controls_active: false })]); const f = a.find(x => x.type === "no_parental_controls"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 device has"); });
+    it("fires no_parental_controls singular", () => { 
+      const a = identifyInternetUsageAlerts([makeRecord({ parental_controls_active: false })]);
+      const f = a.find(x => x.type === "no_parental_controls");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 device has");
+    });
     it("no_parental_controls plural", () => { const a = identifyInternetUsageAlerts([makeRecord({ parental_controls_active: false }), makeRecord({ parental_controls_active: false })]); const f = a.find(x => x.type === "no_parental_controls"); expect(f!.message).toContain("2 devices have"); });
-    it("fires safety_not_discussed singular", () => { const a = identifyInternetUsageAlerts([makeRecord({ online_safety_discussed: false })]); const f = a.find(x => x.type === "safety_not_discussed"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 monitoring check has"); });
+    it("fires safety_not_discussed singular", () => { 
+      const a = identifyInternetUsageAlerts([makeRecord({ online_safety_discussed: false })]);
+      const f = a.find(x => x.type === "safety_not_discussed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 monitoring check has");
+    });
     it("safety_not_discussed plural", () => { const a = identifyInternetUsageAlerts([makeRecord({ online_safety_discussed: false }), makeRecord({ online_safety_discussed: false })]); const f = a.find(x => x.type === "safety_not_discussed"); expect(f!.message).toContain("2 monitoring checks have"); });
     it("privacy_not_checked not for 1", () => { expect(identifyInternetUsageAlerts([makeRecord({ privacy_settings_checked: false })]).find(x => x.type === "privacy_not_checked")).toBeUndefined(); });
     it("privacy_not_checked fires for 2", () => { const a = identifyInternetUsageAlerts([makeRecord({ privacy_settings_checked: false }), makeRecord({ privacy_settings_checked: false })]); expect(a.find(x => x.type === "privacy_not_checked")).toBeDefined(); });
     it("screen_time_exceeded not for 1", () => { expect(identifyInternetUsageAlerts([makeRecord({ screen_time_within_limits: false })]).find(x => x.type === "screen_time_exceeded")).toBeUndefined(); });
     it("screen_time_exceeded fires for 2", () => { const a = identifyInternetUsageAlerts([makeRecord({ screen_time_within_limits: false }), makeRecord({ screen_time_within_limits: false })]); expect(a.find(x => x.type === "screen_time_exceeded")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyInternetUsageAlerts([makeRecord({ concern_level: "safeguarding_referral", parental_controls_active: false, online_safety_discussed: false, privacy_settings_checked: false, screen_time_within_limits: false }), makeRecord({ privacy_settings_checked: false, screen_time_within_limits: false })]); const types = a.map(x => x.type); expect(types).toContain("safeguarding_referral"); expect(types).toContain("no_parental_controls"); expect(types).toContain("safety_not_discussed"); expect(types).toContain("privacy_not_checked"); expect(types).toContain("screen_time_exceeded"); });
+    it("fires all applicable", () => { 
+      const a = identifyInternetUsageAlerts([makeRecord({ concern_level: "safeguarding_referral", parental_controls_active: false, online_safety_discussed: false, privacy_settings_checked: false, screen_time_within_limits: false }), makeRecord({ privacy_settings_checked: false, screen_time_within_limits: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("safeguarding_referral");
+      expect(types).toContain("no_parental_controls");
+      expect(types).toContain("safety_not_discussed");
+      expect(types).toContain("privacy_not_checked");
+      expect(types).toContain("screen_time_exceeded");
+    });
   });
 });

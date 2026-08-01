@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<PrivacyDignityMonitoringRecord>): Privac
 
 describe("privacy-dignity-monitoring-service", () => {
   describe("computePrivacyDignityMetrics", () => {
-    it("returns zeros for empty", () => { const m = computePrivacyDignityMetrics([]); expect(m.total_checks).toBe(0); expect(m.poor_dignity_count).toBe(0); expect(m.unacceptable_count).toBe(0); expect(m.intrusion_count).toBe(0); expect(m.no_response_count).toBe(0); expect(m.child_views_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computePrivacyDignityMetrics([]); expect(m.by_privacy_area).toEqual({}); expect(m.by_dignity_rating).toEqual({}); expect(m.by_intrusion_type).toEqual({}); expect(m.by_response_quality).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computePrivacyDignityMetrics([]);
+      expect(m.total_checks).toBe(0);;
+      expect(m.poor_dignity_count).toBe(0);
+      expect(m.unacceptable_count).toBe(0);
+      expect(m.intrusion_count).toBe(0);
+      expect(m.no_response_count).toBe(0);
+      expect(m.child_views_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computePrivacyDignityMetrics([]);
+      expect(m.by_privacy_area).toEqual({});
+      expect(m.by_dignity_rating).toEqual({});
+      expect(m.by_intrusion_type).toEqual({});
+      expect(m.by_response_quality).toEqual({});
+    });
     it("total_checks counts records", () => { expect(computePrivacyDignityMetrics([makeRecord(), makeRecord()]).total_checks).toBe(2); });
     it("counts poor_dignity", () => { expect(computePrivacyDignityMetrics([makeRecord({ dignity_rating: "poor" })]).poor_dignity_count).toBe(1); });
     it("counts unacceptable", () => { expect(computePrivacyDignityMetrics([makeRecord({ dignity_rating: "unacceptable" })]).unacceptable_count).toBe(1); });
@@ -46,7 +61,21 @@ describe("privacy-dignity-monitoring-service", () => {
     it("counts intrusions (not none)", () => { expect(computePrivacyDignityMetrics([makeRecord({ intrusion_type: "room_entry_without_knock" })]).intrusion_count).toBe(1); });
     it("no intrusion when none", () => { expect(computePrivacyDignityMetrics([makeRecord({ intrusion_type: "none" })]).intrusion_count).toBe(0); });
     it("counts no_response", () => { expect(computePrivacyDignityMetrics([makeRecord({ response_quality: "no_response" })]).no_response_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computePrivacyDignityMetrics([makeRecord()]); expect(m.child_views_rate).toBe(100); expect(m.knock_rate).toBe(100); expect(m.personal_space_rate).toBe(100); expect(m.confidentiality_rate).toBe(100); expect(m.complaints_process_rate).toBe(100); expect(m.staff_awareness_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.intimate_care_rate).toBe(100); expect(m.cctv_rate).toBe(100); expect(m.dignity_language_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computePrivacyDignityMetrics([makeRecord()]);
+      expect(m.child_views_rate).toBe(100);
+      expect(m.knock_rate).toBe(100);
+      expect(m.personal_space_rate).toBe(100);
+      expect(m.confidentiality_rate).toBe(100);
+      expect(m.complaints_process_rate).toBe(100);
+      expect(m.staff_awareness_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.intimate_care_rate).toBe(100);
+      expect(m.cctv_rate).toBe(100);
+      expect(m.dignity_language_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("knock_rate 0 when false", () => { expect(computePrivacyDignityMetrics([makeRecord({ knock_before_entry: false })]).knock_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computePrivacyDignityMetrics([makeRecord({ confidentiality_maintained: true }), makeRecord({ confidentiality_maintained: false }), makeRecord({ confidentiality_maintained: true })]); expect(m.confidentiality_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computePrivacyDignityMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -59,17 +88,42 @@ describe("privacy-dignity-monitoring-service", () => {
   describe("identifyPrivacyDignityAlerts", () => {
     it("returns empty for clean", () => { expect(identifyPrivacyDignityAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyPrivacyDignityAlerts([])).toEqual([]); });
-    it("fires unacceptable_with_intrusion", () => { const a = identifyPrivacyDignityAlerts([makeRecord({ dignity_rating: "unacceptable", intrusion_type: "room_entry_without_knock", child_name: "Jo" })]); expect(a[0].type).toBe("unacceptable_with_intrusion"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires unacceptable_with_intrusion", () => { 
+      const a = identifyPrivacyDignityAlerts([makeRecord({ dignity_rating: "unacceptable", intrusion_type: "room_entry_without_knock", child_name: "Jo" })]);
+      expect(a[0].type).toBe("unacceptable_with_intrusion");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("unacceptable_with_intrusion per-record", () => { const a = identifyPrivacyDignityAlerts([makeRecord({ id: "a-1", dignity_rating: "unacceptable", intrusion_type: "belongings_searched" }), makeRecord({ id: "a-2", dignity_rating: "unacceptable", intrusion_type: "mail_opened" })]); expect(a.filter(x => x.type === "unacceptable_with_intrusion")).toHaveLength(2); });
     it("unacceptable with no intrusion no critical", () => { expect(identifyPrivacyDignityAlerts([makeRecord({ dignity_rating: "unacceptable", intrusion_type: "none" })]).find(x => x.type === "unacceptable_with_intrusion")).toBeUndefined(); });
     it("good with intrusion no critical", () => { expect(identifyPrivacyDignityAlerts([makeRecord({ dignity_rating: "good", intrusion_type: "room_entry_without_knock" })]).find(x => x.type === "unacceptable_with_intrusion")).toBeUndefined(); });
-    it("fires confidentiality_breach singular", () => { const a = identifyPrivacyDignityAlerts([makeRecord({ confidentiality_maintained: false })]); const f = a.find(x => x.type === "confidentiality_breach"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 check shows"); });
+    it("fires confidentiality_breach singular", () => { 
+      const a = identifyPrivacyDignityAlerts([makeRecord({ confidentiality_maintained: false })]);
+      const f = a.find(x => x.type === "confidentiality_breach");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 check shows");
+    });
     it("confidentiality_breach plural", () => { const a = identifyPrivacyDignityAlerts([makeRecord({ confidentiality_maintained: false }), makeRecord({ confidentiality_maintained: false })]); const f = a.find(x => x.type === "confidentiality_breach"); expect(f!.message).toContain("2 checks show"); });
-    it("fires no_knock_before_entry singular", () => { const a = identifyPrivacyDignityAlerts([makeRecord({ knock_before_entry: false })]); const f = a.find(x => x.type === "no_knock_before_entry"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 check shows"); });
+    it("fires no_knock_before_entry singular", () => { 
+      const a = identifyPrivacyDignityAlerts([makeRecord({ knock_before_entry: false })]);
+      const f = a.find(x => x.type === "no_knock_before_entry");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 check shows");
+    });
     it("staff_awareness_lacking not for 1", () => { expect(identifyPrivacyDignityAlerts([makeRecord({ staff_awareness_adequate: false })]).find(x => x.type === "staff_awareness_lacking")).toBeUndefined(); });
     it("staff_awareness_lacking fires for 2", () => { const a = identifyPrivacyDignityAlerts([makeRecord({ staff_awareness_adequate: false }), makeRecord({ staff_awareness_adequate: false })]); expect(a.find(x => x.type === "staff_awareness_lacking")).toBeDefined(); expect(a.find(x => x.type === "staff_awareness_lacking")!.severity).toBe("medium"); });
     it("intimate_care_policy_breach not for 1", () => { expect(identifyPrivacyDignityAlerts([makeRecord({ intimate_care_policy_followed: false })]).find(x => x.type === "intimate_care_policy_breach")).toBeUndefined(); });
     it("intimate_care_policy_breach fires for 2", () => { const a = identifyPrivacyDignityAlerts([makeRecord({ intimate_care_policy_followed: false }), makeRecord({ intimate_care_policy_followed: false })]); expect(a.find(x => x.type === "intimate_care_policy_breach")).toBeDefined(); expect(a.find(x => x.type === "intimate_care_policy_breach")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyPrivacyDignityAlerts([makeRecord({ dignity_rating: "unacceptable", intrusion_type: "room_entry_without_knock", confidentiality_maintained: false, knock_before_entry: false, staff_awareness_adequate: false, intimate_care_policy_followed: false }), makeRecord({ confidentiality_maintained: false, knock_before_entry: false, staff_awareness_adequate: false, intimate_care_policy_followed: false })]); const types = a.map(x => x.type); expect(types).toContain("unacceptable_with_intrusion"); expect(types).toContain("confidentiality_breach"); expect(types).toContain("no_knock_before_entry"); expect(types).toContain("staff_awareness_lacking"); expect(types).toContain("intimate_care_policy_breach"); });
+    it("fires all applicable", () => { 
+      const a = identifyPrivacyDignityAlerts([makeRecord({ dignity_rating: "unacceptable", intrusion_type: "room_entry_without_knock", confidentiality_maintained: false, knock_before_entry: false, staff_awareness_adequate: false, intimate_care_policy_followed: false }), makeRecord({ confidentiality_maintained: false, knock_before_entry: false, staff_awareness_adequate: false, intimate_care_policy_followed: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("unacceptable_with_intrusion");
+      expect(types).toContain("confidentiality_breach");
+      expect(types).toContain("no_knock_before_entry");
+      expect(types).toContain("staff_awareness_lacking");
+      expect(types).toContain("intimate_care_policy_breach");
+    });
   });
 });

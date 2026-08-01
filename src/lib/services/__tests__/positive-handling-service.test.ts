@@ -37,12 +37,39 @@ function makeRecord(overrides?: Partial<PositiveHandlingRecord>): PositiveHandli
 
 describe("positive-handling-service", () => {
   describe("computePositiveHandlingMetrics", () => {
-    it("returns zeros for empty", () => { const m = computePositiveHandlingMetrics([]); expect(m.total_reviews).toBe(0); expect(m.effective_count).toBe(0); expect(m.needs_revision_count).toBe(0); expect(m.escalation_required_count).toBe(0); expect(m.triggers_identified_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computePositiveHandlingMetrics([]); expect(m.by_plan_type).toEqual({}); expect(m.by_review_outcome).toEqual({}); expect(m.by_trigger_category).toEqual({}); expect(m.by_intervention_level).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computePositiveHandlingMetrics([]);
+      expect(m.total_reviews).toBe(0);;
+      expect(m.effective_count).toBe(0);
+      expect(m.needs_revision_count).toBe(0);
+      expect(m.escalation_required_count).toBe(0);
+      expect(m.triggers_identified_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computePositiveHandlingMetrics([]);
+      expect(m.by_plan_type).toEqual({});
+      expect(m.by_review_outcome).toEqual({});
+      expect(m.by_trigger_category).toEqual({});
+      expect(m.by_intervention_level).toEqual({});
+    });
     it("counts effective", () => { expect(computePositiveHandlingMetrics([makeRecord()]).effective_count).toBe(1); });
     it("counts needs_revision", () => { expect(computePositiveHandlingMetrics([makeRecord({ review_outcome: "plan_needs_revision" })]).needs_revision_count).toBe(1); });
     it("counts escalation", () => { expect(computePositiveHandlingMetrics([makeRecord({ review_outcome: "escalation_required" })]).escalation_required_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computePositiveHandlingMetrics([makeRecord()]); expect(m.triggers_identified_rate).toBe(100); expect(m.early_warning_rate).toBe(100); expect(m.de_escalation_rate).toBe(100); expect(m.calming_strategies_rate).toBe(100); expect(m.staff_trained_rate).toBe(100); expect(m.child_consulted_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.plan_accessible_rate).toBe(100); expect(m.regularly_reviewed_rate).toBe(100); expect(m.post_incident_support_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computePositiveHandlingMetrics([makeRecord()]);
+      expect(m.triggers_identified_rate).toBe(100);
+      expect(m.early_warning_rate).toBe(100);
+      expect(m.de_escalation_rate).toBe(100);
+      expect(m.calming_strategies_rate).toBe(100);
+      expect(m.staff_trained_rate).toBe(100);
+      expect(m.child_consulted_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.plan_accessible_rate).toBe(100);
+      expect(m.regularly_reviewed_rate).toBe(100);
+      expect(m.post_incident_support_rate).toBe(100);
+    });
     it("de_escalation_rate 0 when false", () => { expect(computePositiveHandlingMetrics([makeRecord({ de_escalation_steps: false })]).de_escalation_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computePositiveHandlingMetrics([makeRecord({ de_escalation_steps: true }), makeRecord({ de_escalation_steps: false }), makeRecord({ de_escalation_steps: true })]); expect(m.de_escalation_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computePositiveHandlingMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -55,16 +82,35 @@ describe("positive-handling-service", () => {
   describe("identifyPositiveHandlingAlerts", () => {
     it("returns empty for clean", () => { expect(identifyPositiveHandlingAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyPositiveHandlingAlerts([])).toEqual([]); });
-    it("fires escalation_untrained", () => { const a = identifyPositiveHandlingAlerts([makeRecord({ review_outcome: "escalation_required", staff_trained: false, child_name: "Jo", review_date: "2026-05-14" })]); expect(a[0].type).toBe("escalation_untrained"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires escalation_untrained", () => { 
+      const a = identifyPositiveHandlingAlerts([makeRecord({ review_outcome: "escalation_required", staff_trained: false, child_name: "Jo", review_date: "2026-05-14" })]);
+      expect(a[0].type).toBe("escalation_untrained");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("escalation_untrained per-record", () => { const a = identifyPositiveHandlingAlerts([makeRecord({ id: "a-1", review_outcome: "escalation_required", staff_trained: false }), makeRecord({ id: "a-2", review_outcome: "escalation_required", staff_trained: false })]); expect(a.filter(x => x.type === "escalation_untrained")).toHaveLength(2); });
     it("no escalation alert if trained", () => { expect(identifyPositiveHandlingAlerts([makeRecord({ review_outcome: "escalation_required", staff_trained: true })]).filter(x => x.type === "escalation_untrained")).toHaveLength(0); });
-    it("fires no_de_escalation singular", () => { const a = identifyPositiveHandlingAlerts([makeRecord({ de_escalation_steps: false })]); const f = a.find(x => x.type === "no_de_escalation"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 plan has"); });
+    it("fires no_de_escalation singular", () => { 
+      const a = identifyPositiveHandlingAlerts([makeRecord({ de_escalation_steps: false })]);
+      const f = a.find(x => x.type === "no_de_escalation");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 plan has");
+    });
     it("no_de_escalation plural", () => { const a = identifyPositiveHandlingAlerts([makeRecord({ de_escalation_steps: false }), makeRecord({ de_escalation_steps: false })]); const f = a.find(x => x.type === "no_de_escalation"); expect(f!.message).toContain("2 plans have"); });
     it("fires child_not_consulted singular", () => { const a = identifyPositiveHandlingAlerts([makeRecord({ child_consulted: false })]); expect(a.find(x => x.type === "child_not_consulted")).toBeDefined(); });
     it("plan_not_accessible not for 1", () => { expect(identifyPositiveHandlingAlerts([makeRecord({ plan_accessible: false })]).find(x => x.type === "plan_not_accessible")).toBeUndefined(); });
     it("plan_not_accessible fires for 2", () => { const a = identifyPositiveHandlingAlerts([makeRecord({ plan_accessible: false }), makeRecord({ plan_accessible: false })]); expect(a.find(x => x.type === "plan_not_accessible")).toBeDefined(); });
     it("not_regularly_reviewed not for 1", () => { expect(identifyPositiveHandlingAlerts([makeRecord({ regularly_reviewed: false })]).find(x => x.type === "not_regularly_reviewed")).toBeUndefined(); });
     it("not_regularly_reviewed fires for 2", () => { const a = identifyPositiveHandlingAlerts([makeRecord({ regularly_reviewed: false }), makeRecord({ regularly_reviewed: false })]); expect(a.find(x => x.type === "not_regularly_reviewed")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyPositiveHandlingAlerts([makeRecord({ review_outcome: "escalation_required", staff_trained: false, de_escalation_steps: false, child_consulted: false, plan_accessible: false, regularly_reviewed: false }), makeRecord({ plan_accessible: false, regularly_reviewed: false })]); const types = a.map(x => x.type); expect(types).toContain("escalation_untrained"); expect(types).toContain("no_de_escalation"); expect(types).toContain("child_not_consulted"); expect(types).toContain("plan_not_accessible"); expect(types).toContain("not_regularly_reviewed"); });
+    it("fires all applicable", () => { 
+      const a = identifyPositiveHandlingAlerts([makeRecord({ review_outcome: "escalation_required", staff_trained: false, de_escalation_steps: false, child_consulted: false, plan_accessible: false, regularly_reviewed: false }), makeRecord({ plan_accessible: false, regularly_reviewed: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("escalation_untrained");
+      expect(types).toContain("no_de_escalation");
+      expect(types).toContain("child_not_consulted");
+      expect(types).toContain("plan_not_accessible");
+      expect(types).toContain("not_regularly_reviewed");
+    });
   });
 });

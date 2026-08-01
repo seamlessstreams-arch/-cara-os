@@ -155,19 +155,19 @@ export function computeVolunteerMetrics(
   active_count: number;
   pending_count: number;
   suspended_count: number;
-  dbs_clear_rate: number;
+  dbs_clear_rate: number | null;
   dbs_expired_count: number;
   dbs_pending_count: number;
-  training_up_to_date_rate: number;
+  training_up_to_date_rate: number | null;
   training_overdue_count: number;
-  safeguarding_trained_rate: number;
-  first_aid_trained_rate: number;
-  references_obtained_rate: number;
-  induction_completed_rate: number;
-  interview_completed_rate: number;
+  safeguarding_trained_rate: number | null;
+  first_aid_trained_rate: number | null;
+  references_obtained_rate: number | null;
+  induction_completed_rate: number | null;
+  interview_completed_rate: number | null;
   lone_working_count: number;
   total_hours: number;
-  average_hours: number;
+  average_hours: number | null;
   unique_children: number;
   by_volunteer_status: Record<string, number>;
   by_dbs_status: Record<string, number>;
@@ -182,7 +182,7 @@ export function computeVolunteerMetrics(
   const dbsClearRate =
     records.length > 0
       ? Math.round((dbsClear / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const dbsExpired = records.filter((r) => r.dbs_status === "expired").length;
   const dbsPending = records.filter((r) => r.dbs_status === "pending").length;
@@ -191,7 +191,7 @@ export function computeVolunteerMetrics(
   const trainingRate =
     records.length > 0
       ? Math.round((trainingUpToDate / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const trainingOverdue = records.filter((r) => r.training_status === "overdue").length;
 
@@ -199,7 +199,7 @@ export function computeVolunteerMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const loneWorking = records.filter((r) => r.lone_working_allowed).length;
@@ -208,7 +208,7 @@ export function computeVolunteerMetrics(
   const avgHours =
     records.length > 0
       ? Math.round((totalHours / records.length) * 10) / 10
-      : 0;
+      : null;
 
   const uniqueChildren = new Set(records.flatMap((r) => r.children_worked_with)).size;
 

@@ -89,27 +89,27 @@ describe("computeEnvironmentalImpactMetrics", () => {
 
     it("returns zero children_involved_rate", () => {
       const m = computeEnvironmentalImpactMetrics([]);
-      expect(m.children_involved_rate).toBe(0);
+      expect(m.children_involved_rate).toBeNull();;
     });
 
     it("returns zero staff_trained_rate", () => {
       const m = computeEnvironmentalImpactMetrics([]);
-      expect(m.staff_trained_rate).toBe(0);
+      expect(m.staff_trained_rate).toBeNull();;
     });
 
     it("returns zero cost_saving_rate", () => {
       const m = computeEnvironmentalImpactMetrics([]);
-      expect(m.cost_saving_rate).toBe(0);
+      expect(m.cost_saving_rate).toBeNull();;
     });
 
     it("returns zero action_plan_rate", () => {
       const m = computeEnvironmentalImpactMetrics([]);
-      expect(m.action_plan_rate).toBe(0);
+      expect(m.action_plan_rate).toBeNull();;
     });
 
     it("returns zero progress_monitored_rate", () => {
       const m = computeEnvironmentalImpactMetrics([]);
-      expect(m.progress_monitored_rate).toBe(0);
+      expect(m.progress_monitored_rate).toBeNull();;
     });
 
     it("returns empty area_breakdown", () => {

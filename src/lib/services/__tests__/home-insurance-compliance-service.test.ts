@@ -148,42 +148,42 @@ describe("computeInsuranceMetrics", () => {
 
     it("returns zero document_held_rate", () => {
       const m = computeInsuranceMetrics([]);
-      expect(m.document_held_rate).toBe(0);
+      expect(m.document_held_rate).toBeNull();;
     });
 
     it("returns zero certificate_displayed_rate", () => {
       const m = computeInsuranceMetrics([]);
-      expect(m.certificate_displayed_rate).toBe(0);
+      expect(m.certificate_displayed_rate).toBeNull();;
     });
 
     it("returns zero cover_adequate_rate", () => {
       const m = computeInsuranceMetrics([]);
-      expect(m.cover_adequate_rate).toBe(0);
+      expect(m.cover_adequate_rate).toBeNull();;
     });
 
     it("returns zero excess_acceptable_rate", () => {
       const m = computeInsuranceMetrics([]);
-      expect(m.excess_acceptable_rate).toBe(0);
+      expect(m.excess_acceptable_rate).toBeNull();;
     });
 
     it("returns zero broker_reviewed_rate", () => {
       const m = computeInsuranceMetrics([]);
-      expect(m.broker_reviewed_rate).toBe(0);
+      expect(m.broker_reviewed_rate).toBeNull();;
     });
 
     it("returns zero claims_clear_rate", () => {
       const m = computeInsuranceMetrics([]);
-      expect(m.claims_clear_rate).toBe(0);
+      expect(m.claims_clear_rate).toBeNull();;
     });
 
     it("returns zero regulatory_met_rate", () => {
       const m = computeInsuranceMetrics([]);
-      expect(m.regulatory_met_rate).toBe(0);
+      expect(m.regulatory_met_rate).toBeNull();;
     });
 
     it("returns zero management_reviewed_rate", () => {
       const m = computeInsuranceMetrics([]);
-      expect(m.management_reviewed_rate).toBe(0);
+      expect(m.management_reviewed_rate).toBeNull();;
     });
 
     it("returns zero total_premium", () => {

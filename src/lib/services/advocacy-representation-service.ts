@@ -138,18 +138,18 @@ export function computeAdvocacyRepresentationMetrics(
   dissatisfied_count: number;
   ineffective_count: number;
   counterproductive_count: number;
-  child_voice_rate: number;
-  rights_understood_rate: number;
-  independent_access_rate: number;
-  confidentiality_rate: number;
-  outcome_communicated_rate: number;
-  follow_up_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  parent_informed_rate: number;
-  irm_notified_rate: number;
-  decision_influenced_rate: number;
-  recorded_promptly_rate: number;
+  child_voice_rate: number | null;
+  rights_understood_rate: number | null;
+  independent_access_rate: number | null;
+  confidentiality_rate: number | null;
+  outcome_communicated_rate: number | null;
+  follow_up_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  parent_informed_rate: number | null;
+  irm_notified_rate: number | null;
+  decision_influenced_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_advocacy_type: Record<string, number>;
   by_representation_quality: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeAdvocacyRepresentationMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

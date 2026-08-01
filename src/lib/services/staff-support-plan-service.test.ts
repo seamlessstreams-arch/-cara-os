@@ -62,7 +62,7 @@ describe("computeSupportPlanMetrics", () => {
     expect(m.escalated_count).toBe(0);
     expect(m.pending_approval_count).toBe(0);
     expect(m.completed_count).toBe(0);
-    expect(m.working_well_rate).toBe(0);
+    expect(m.working_well_rate).toBeNull();;
     expect(m.unique_staff).toBe(0);
   });
 

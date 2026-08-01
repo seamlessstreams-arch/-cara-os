@@ -71,7 +71,7 @@ describe("computeChildFinancialSummary", () => {
     expect(result.balance).toBe(0);
     expect(result.savings_balance).toBe(0);
     expect(result.active_allowances).toEqual([]);
-    expect(result.child_consultation_rate).toBe(0);
+    expect(result.child_consultation_rate).toBeNull();;
     expect(result.monthly_spending).toBe(0);
     expect(Object.keys(result.by_category)).toHaveLength(0);
   });
@@ -115,8 +115,8 @@ describe("computeHomeFinancialOverview", () => {
     expect(result.total_allowances_monthly).toBe(0);
     expect(result.total_savings).toBe(0);
     expect(result.total_spending_this_month).toBe(0);
-    expect(result.consultation_rate).toBe(0);
-    expect(result.receipt_compliance_rate).toBe(0);
+    expect(result.consultation_rate).toBeNull();;
+    expect(result.receipt_compliance_rate).toBeNull();;
   });
 
   it("calculates monthly allowance cost across frequencies", () => {

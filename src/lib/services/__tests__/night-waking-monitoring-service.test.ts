@@ -39,13 +39,43 @@ function makeRecord(overrides?: Partial<NightWakingMonitoringRecord>): NightWaki
 
 describe("night-waking-monitoring-service", () => {
   describe("computeNightWakingMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeNightWakingMetrics([]); expect(m.total_wakings).toBe(0); expect(m.distressed_count).toBe(0); expect(m.angry_count).toBe(0); expect(m.nightmare_count).toBe(0); expect(m.did_not_return_count).toBe(0); expect(m.child_comforted_rate).toBe(0); expect(m.average_duration).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeNightWakingMetrics([]); expect(m.by_waking_reason).toEqual({}); expect(m.by_emotional_state).toEqual({}); expect(m.by_staff_response).toEqual({}); expect(m.by_sleep_return_time).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeNightWakingMetrics([]);
+      expect(m.total_wakings).toBe(0);;
+      expect(m.distressed_count).toBe(0);
+      expect(m.angry_count).toBe(0);
+      expect(m.nightmare_count).toBe(0);
+      expect(m.did_not_return_count).toBe(0);
+      expect(m.child_comforted_rate).toBeNull();;
+      expect(m.average_duration).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeNightWakingMetrics([]);
+      expect(m.by_waking_reason).toEqual({});
+      expect(m.by_emotional_state).toEqual({});
+      expect(m.by_staff_response).toEqual({});
+      expect(m.by_sleep_return_time).toEqual({});
+    });
     it("counts distressed", () => { expect(computeNightWakingMetrics([makeRecord({ child_emotional_state: "distressed" })]).distressed_count).toBe(1); });
     it("counts angry", () => { expect(computeNightWakingMetrics([makeRecord({ child_emotional_state: "angry" })]).angry_count).toBe(1); });
     it("counts nightmare", () => { expect(computeNightWakingMetrics([makeRecord({ waking_reason: "nightmare" })]).nightmare_count).toBe(1); });
     it("counts did_not_return", () => { expect(computeNightWakingMetrics([makeRecord({ sleep_return_time: "did_not_return_to_sleep" })]).did_not_return_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeNightWakingMetrics([makeRecord()]); expect(m.child_comforted_rate).toBe(100); expect(m.environment_checked_rate).toBe(100); expect(m.temperature_appropriate_rate).toBe(100); expect(m.drink_offered_rate).toBe(100); expect(m.night_light_rate).toBe(100); expect(m.door_preference_rate).toBe(100); expect(m.gp_referral_rate).toBe(100); expect(m.sleep_plan_rate).toBe(100); expect(m.pattern_identified_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.social_worker_informed_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeNightWakingMetrics([makeRecord()]);
+      expect(m.child_comforted_rate).toBe(100);
+      expect(m.environment_checked_rate).toBe(100);
+      expect(m.temperature_appropriate_rate).toBe(100);
+      expect(m.drink_offered_rate).toBe(100);
+      expect(m.night_light_rate).toBe(100);
+      expect(m.door_preference_rate).toBe(100);
+      expect(m.gp_referral_rate).toBe(100);
+      expect(m.sleep_plan_rate).toBe(100);
+      expect(m.pattern_identified_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.social_worker_informed_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_comforted_rate 0 when false", () => { expect(computeNightWakingMetrics([makeRecord({ child_comforted: false })]).child_comforted_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeNightWakingMetrics([makeRecord({ child_comforted: true }), makeRecord({ child_comforted: false }), makeRecord({ child_comforted: true })]); expect(m.child_comforted_rate).toBe(66.7); });
     it("average_duration single", () => { expect(computeNightWakingMetrics([makeRecord({ waking_duration_minutes: 30 })]).average_duration).toBe(30); });
@@ -61,18 +91,44 @@ describe("night-waking-monitoring-service", () => {
   describe("identifyNightWakingAlerts", () => {
     it("returns empty for clean", () => { expect(identifyNightWakingAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyNightWakingAlerts([])).toEqual([]); });
-    it("fires distressed_not_comforted for distressed", () => { const a = identifyNightWakingAlerts([makeRecord({ child_emotional_state: "distressed", child_comforted: false, child_name: "Jo" })]); expect(a[0].type).toBe("distressed_not_comforted"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); expect(a[0].message).toContain("distressed"); });
+    it("fires distressed_not_comforted for distressed", () => { 
+      const a = identifyNightWakingAlerts([makeRecord({ child_emotional_state: "distressed", child_comforted: false, child_name: "Jo" })]);
+      expect(a[0].type).toBe("distressed_not_comforted");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+      expect(a[0].message).toContain("distressed");
+    });
     it("fires distressed_not_comforted for angry", () => { const a = identifyNightWakingAlerts([makeRecord({ child_emotional_state: "angry", child_comforted: false })]); expect(a[0].type).toBe("distressed_not_comforted"); });
     it("distressed_not_comforted per-record", () => { const a = identifyNightWakingAlerts([makeRecord({ id: "a-1", child_emotional_state: "distressed", child_comforted: false }), makeRecord({ id: "a-2", child_emotional_state: "angry", child_comforted: false })]); expect(a.filter(x => x.type === "distressed_not_comforted")).toHaveLength(2); });
     it("no alert if distressed but comforted", () => { expect(identifyNightWakingAlerts([makeRecord({ child_emotional_state: "distressed", child_comforted: true })]).filter(x => x.type === "distressed_not_comforted")).toHaveLength(0); });
-    it("fires sleep_plan_not_followed singular", () => { const a = identifyNightWakingAlerts([makeRecord({ sleep_plan_followed: false })]); const f = a.find(x => x.type === "sleep_plan_not_followed"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 night waking has"); });
+    it("fires sleep_plan_not_followed singular", () => { 
+      const a = identifyNightWakingAlerts([makeRecord({ sleep_plan_followed: false })]);
+      const f = a.find(x => x.type === "sleep_plan_not_followed");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 night waking has");
+    });
     it("sleep_plan_not_followed plural", () => { const a = identifyNightWakingAlerts([makeRecord({ sleep_plan_followed: false }), makeRecord({ sleep_plan_followed: false })]); const f = a.find(x => x.type === "sleep_plan_not_followed"); expect(f!.message).toContain("2 night wakings have"); });
-    it("fires not_recorded_promptly singular", () => { const a = identifyNightWakingAlerts([makeRecord({ recorded_promptly: false })]); const f = a.find(x => x.type === "not_recorded_promptly"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 night waking was"); });
+    it("fires not_recorded_promptly singular", () => { 
+      const a = identifyNightWakingAlerts([makeRecord({ recorded_promptly: false })]);
+      const f = a.find(x => x.type === "not_recorded_promptly");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 night waking was");
+    });
     it("not_recorded_promptly plural", () => { const a = identifyNightWakingAlerts([makeRecord({ recorded_promptly: false }), makeRecord({ recorded_promptly: false })]); const f = a.find(x => x.type === "not_recorded_promptly"); expect(f!.message).toContain("2 night wakings were"); });
     it("environment_not_checked not for 1", () => { expect(identifyNightWakingAlerts([makeRecord({ environment_checked: false })]).find(x => x.type === "environment_not_checked")).toBeUndefined(); });
     it("environment_not_checked fires for 2", () => { const a = identifyNightWakingAlerts([makeRecord({ environment_checked: false }), makeRecord({ environment_checked: false })]); expect(a.find(x => x.type === "environment_not_checked")).toBeDefined(); });
     it("pattern_not_identified not for 2", () => { expect(identifyNightWakingAlerts([makeRecord({ pattern_identified: false }), makeRecord({ pattern_identified: false })]).find(x => x.type === "pattern_not_identified")).toBeUndefined(); });
     it("pattern_not_identified fires for 3", () => { const a = identifyNightWakingAlerts([makeRecord({ pattern_identified: false }), makeRecord({ pattern_identified: false }), makeRecord({ pattern_identified: false })]); expect(a.find(x => x.type === "pattern_not_identified")).toBeDefined(); });
-    it("fires all applicable", () => { const a = identifyNightWakingAlerts([makeRecord({ child_emotional_state: "distressed", child_comforted: false, sleep_plan_followed: false, recorded_promptly: false, environment_checked: false, pattern_identified: false }), makeRecord({ environment_checked: false, pattern_identified: false }), makeRecord({ pattern_identified: false })]); const types = a.map(x => x.type); expect(types).toContain("distressed_not_comforted"); expect(types).toContain("sleep_plan_not_followed"); expect(types).toContain("not_recorded_promptly"); expect(types).toContain("environment_not_checked"); expect(types).toContain("pattern_not_identified"); });
+    it("fires all applicable", () => { 
+      const a = identifyNightWakingAlerts([makeRecord({ child_emotional_state: "distressed", child_comforted: false, sleep_plan_followed: false, recorded_promptly: false, environment_checked: false, pattern_identified: false }), makeRecord({ environment_checked: false, pattern_identified: false }), makeRecord({ pattern_identified: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("distressed_not_comforted");
+      expect(types).toContain("sleep_plan_not_followed");
+      expect(types).toContain("not_recorded_promptly");
+      expect(types).toContain("environment_not_checked");
+      expect(types).toContain("pattern_not_identified");
+    });
   });
 });

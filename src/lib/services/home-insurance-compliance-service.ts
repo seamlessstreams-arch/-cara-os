@@ -174,14 +174,14 @@ export function computeInsuranceMetrics(
   renewal_due_count: number;
   gap_count: number;
   claim_pending_count: number;
-  document_held_rate: number;
-  certificate_displayed_rate: number;
-  cover_adequate_rate: number;
-  excess_acceptable_rate: number;
-  broker_reviewed_rate: number;
-  claims_clear_rate: number;
-  regulatory_met_rate: number;
-  management_reviewed_rate: number;
+  document_held_rate: number | null;
+  certificate_displayed_rate: number | null;
+  cover_adequate_rate: number | null;
+  excess_acceptable_rate: number | null;
+  broker_reviewed_rate: number | null;
+  claims_clear_rate: number | null;
+  regulatory_met_rate: number | null;
+  management_reviewed_rate: number | null;
   total_premium: number;
   insurance_type_breakdown: Record<string, number>;
   status_breakdown: Record<string, number>;
@@ -198,7 +198,7 @@ export function computeInsuranceMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return total > 0
       ? Math.round((count / total) * 1000) / 10
-      : 0;
+      : null;
   };
 
   let totalPremium = 0;
@@ -357,7 +357,7 @@ export function generateInsuranceCaraInsights(
         `What steps are being taken to ensure continuous insurance coverage, and are renewal ` +
         `processes robust enough to prevent gaps that could leave the home exposed?`,
     );
-  } else if (metrics.cover_adequate_rate < 100) {
+  } else if ((metrics.cover_adequate_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Cover is assessed as adequate for ${metrics.cover_adequate_rate}% of policies. ` +
         `How can the home ensure all policies provide sufficient protection, and is there a regular ` +

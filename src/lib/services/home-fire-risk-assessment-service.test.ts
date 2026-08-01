@@ -46,7 +46,7 @@ describe("computeFireRiskMetrics", () => {
     expect(m.total_assessments).toBe(0);
     expect(m.high_risk_count).toBe(0);
     expect(m.intolerable_count).toBe(0);
-    expect(m.escape_routes_clear_rate).toBe(0);
+    expect(m.escape_routes_clear_rate).toBeNull();;
     expect(m.unique_assessors).toBe(0);
     expect(m.risk_breakdown).toEqual({});
   });

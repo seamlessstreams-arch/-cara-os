@@ -138,18 +138,18 @@ export function computeFirstAidMetrics(
   poor_response_count: number;
   hospitalised_count: number;
   untrained_count: number;
-  first_aid_trained_rate: number;
-  correct_procedure_rate: number;
-  equipment_rate: number;
-  ambulance_rate: number;
-  parent_notified_rate: number;
-  gp_informed_rate: number;
-  care_plan_rate: number;
-  social_worker_rate: number;
-  incident_recorded_rate: number;
-  ofsted_notified_rate: number;
-  debrief_rate: number;
-  recorded_promptly_rate: number;
+  first_aid_trained_rate: number | null;
+  correct_procedure_rate: number | null;
+  equipment_rate: number | null;
+  ambulance_rate: number | null;
+  parent_notified_rate: number | null;
+  gp_informed_rate: number | null;
+  care_plan_rate: number | null;
+  social_worker_rate: number | null;
+  incident_recorded_rate: number | null;
+  ofsted_notified_rate: number | null;
+  debrief_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_incident_type: Record<string, number>;
   by_severity_level: Record<string, number>;
@@ -165,7 +165,7 @@ export function computeFirstAidMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const byType: Record<string, number> = {};

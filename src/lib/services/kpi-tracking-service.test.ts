@@ -56,7 +56,7 @@ describe("computeKpiMetrics", () => {
     expect(m.total_kpis).toBe(0);
     expect(m.active_kpis).toBe(0);
     expect(m.on_target).toBe(0);
-    expect(m.on_target_rate).toBe(0);
+    expect(m.on_target_rate).toBeNull();;
     expect(m.improving_count).toBe(0);
   });
 

@@ -157,18 +157,18 @@ export function computeSupportPlanMetrics(
   escalated_count: number;
   pending_approval_count: number;
   completed_count: number;
-  working_well_rate: number;
-  concerns_documented_rate: number;
-  improvements_rate: number;
-  support_offered_rate: number;
-  wellbeing_rate: number;
-  adjustments_rate: number;
-  mentor_rate: number;
-  staff_consulted_rate: number;
-  staff_agreed_rate: number;
-  review_date_rate: number;
-  approved_rate: number;
-  recorded_promptly_rate: number;
+  working_well_rate: number | null;
+  concerns_documented_rate: number | null;
+  improvements_rate: number | null;
+  support_offered_rate: number | null;
+  wellbeing_rate: number | null;
+  adjustments_rate: number | null;
+  mentor_rate: number | null;
+  staff_consulted_rate: number | null;
+  staff_agreed_rate: number | null;
+  review_date_rate: number | null;
+  approved_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_staff: number;
   by_concern_area: Record<string, number>;
   by_plan_status: Record<string, number>;
@@ -184,7 +184,7 @@ export function computeSupportPlanMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueStaff = new Set(records.map((r) => r.staff_name)).size;

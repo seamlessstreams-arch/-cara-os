@@ -152,10 +152,10 @@ describe("computeRegistrationMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeRegistrationMetrics([]);
-    expect(m.pin_verified_rate).toBe(0);
-    expect(m.cpd_compliance_rate).toBe(0);
-    expect(m.fitness_to_practise_rate).toBe(0);
-    expect(m.renewal_submitted_rate).toBe(0);
+    expect(m.pin_verified_rate).toBeNull();;
+    expect(m.cpd_compliance_rate).toBeNull();;
+    expect(m.fitness_to_practise_rate).toBeNull();;
+    expect(m.renewal_submitted_rate).toBeNull();;
   });
 
   // ── total_registrations ────────────────────────────────────────────────

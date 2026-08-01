@@ -43,9 +43,9 @@ describe("computeBedroomAuditMetrics", () => {
     const m = computeBedroomAuditMetrics([]);
     expect(m.total_audits).toBe(0);
     expect(m.routine_inspection_count).toBe(0);
-    expect(m.excellent_condition_rate).toBe(0);
-    expect(m.safe_rating_rate).toBe(0);
-    expect(m.furniture_adequate_rate).toBe(0);
+    expect(m.excellent_condition_rate).toBeNull();;
+    expect(m.safe_rating_rate).toBeNull();;
+    expect(m.furniture_adequate_rate).toBeNull();;
   });
 
   it("counts audit types correctly", () => {

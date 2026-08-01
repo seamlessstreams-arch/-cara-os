@@ -150,17 +150,17 @@ export function computePositiveHandlingMetrics(
   effective_count: number;
   needs_revision_count: number;
   escalation_required_count: number;
-  triggers_identified_rate: number;
-  early_warning_rate: number;
-  de_escalation_rate: number;
-  calming_strategies_rate: number;
-  staff_trained_rate: number;
-  child_consulted_rate: number;
-  parent_informed_rate: number;
-  social_worker_informed_rate: number;
-  plan_accessible_rate: number;
-  regularly_reviewed_rate: number;
-  post_incident_support_rate: number;
+  triggers_identified_rate: number | null;
+  early_warning_rate: number | null;
+  de_escalation_rate: number | null;
+  calming_strategies_rate: number | null;
+  staff_trained_rate: number | null;
+  child_consulted_rate: number | null;
+  parent_informed_rate: number | null;
+  social_worker_informed_rate: number | null;
+  plan_accessible_rate: number | null;
+  regularly_reviewed_rate: number | null;
+  post_incident_support_rate: number | null;
   unique_children: number;
   by_plan_type: Record<string, number>;
   by_review_outcome: Record<string, number>;
@@ -175,7 +175,7 @@ export function computePositiveHandlingMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

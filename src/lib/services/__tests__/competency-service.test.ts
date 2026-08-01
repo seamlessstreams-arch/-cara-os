@@ -79,7 +79,7 @@ describe("computeTrainingMatrix", () => {
     expect(matrix).toEqual({});
     expect(stats.total_staff).toBe(0);
     expect(stats.fully_compliant).toBe(0);
-    expect(stats.compliance_percentage).toBe(0);
+    expect(stats.compliance_percentage).toBeNull();;
   });
 
   it("marks all categories as not_started when staff has no records", () => {

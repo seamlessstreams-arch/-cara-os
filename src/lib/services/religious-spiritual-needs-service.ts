@@ -142,16 +142,16 @@ export function computeReligiousSpiritualMetrics(
   not_facilitated_count: number;
   satisfied_count: number;
   dissatisfied_count: number;
-  child_views_sought_rate: number;
-  parent_carer_consulted_rate: number;
-  culturally_appropriate_rate: number;
-  dietary_observance_rate: number;
-  worship_access_rate: number;
-  prayer_space_rate: number;
-  festival_recognised_rate: number;
-  faith_leader_contacted_rate: number;
-  careplan_updated_rate: number;
-  recorded_promptly_rate: number;
+  child_views_sought_rate: number | null;
+  parent_carer_consulted_rate: number | null;
+  culturally_appropriate_rate: number | null;
+  dietary_observance_rate: number | null;
+  worship_access_rate: number | null;
+  prayer_space_rate: number | null;
+  festival_recognised_rate: number | null;
+  faith_leader_contacted_rate: number | null;
+  careplan_updated_rate: number | null;
+  recorded_promptly_rate: number | null;
   unique_children: number;
   by_faith_background: Record<string, number>;
   by_support_type: Record<string, number>;
@@ -169,7 +169,7 @@ export function computeReligiousSpiritualMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;

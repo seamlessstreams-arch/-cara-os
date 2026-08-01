@@ -154,17 +154,17 @@ export function computeUtilityMetrics(
   water_count: number;
   meter_reading_count: number;
   bill_count: number;
-  within_budget_rate: number;
+  within_budget_rate: number | null;
   over_budget_count: number;
   disputed_count: number;
   total_cost: number;
-  average_cost: number;
-  smart_meter_rate: number;
-  heating_adequate_rate: number;
-  hot_water_rate: number;
-  children_comfortable_rate: number;
-  energy_saving_rate: number;
-  renewable_rate: number;
+  average_cost: number | null;
+  smart_meter_rate: number | null;
+  heating_adequate_rate: number | null;
+  hot_water_rate: number | null;
+  children_comfortable_rate: number | null;
+  energy_saving_rate: number | null;
+  renewable_rate: number | null;
   fault_count: number;
   by_utility_type: Record<string, number>;
   by_reading_type: Record<string, number>;
@@ -182,7 +182,7 @@ export function computeUtilityMetrics(
   const withinBudgetRate =
     records.length > 0
       ? Math.round((withinBudget / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const overBudget = records.filter((r) => r.cost_status === "over_budget").length;
   const disputed = records.filter((r) => r.cost_status === "disputed").length;
@@ -192,13 +192,13 @@ export function computeUtilityMetrics(
   const avgCost =
     costs.length > 0
       ? Math.round((totalCost / costs.length) * 100) / 100
-      : 0;
+      : null;
 
   const boolRate = (field: keyof UtilityRecord) => {
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const faults = records.filter((r) => r.reading_type === "fault_report").length;

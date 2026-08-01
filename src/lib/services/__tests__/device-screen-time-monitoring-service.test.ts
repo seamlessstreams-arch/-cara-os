@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<DeviceScreenTimeMonitoringRecord>): Devi
 
 describe("device-screen-time-monitoring-service", () => {
   describe("computeDeviceScreenTimeMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeDeviceScreenTimeMetrics([]); expect(m.total_checks).toBe(0); expect(m.non_compliant_count).toBe(0); expect(m.refused_count).toBe(0); expect(m.inappropriate_count).toBe(0); expect(m.significant_concern_count).toBe(0); expect(m.limits_agreed_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeDeviceScreenTimeMetrics([]); expect(m.by_device_type).toEqual({}); expect(m.by_usage_category).toEqual({}); expect(m.by_compliance_level).toEqual({}); expect(m.by_wellbeing_impact).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeDeviceScreenTimeMetrics([]);
+      expect(m.total_checks).toBe(0);;
+      expect(m.non_compliant_count).toBe(0);
+      expect(m.refused_count).toBe(0);
+      expect(m.inappropriate_count).toBe(0);
+      expect(m.significant_concern_count).toBe(0);
+      expect(m.limits_agreed_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeDeviceScreenTimeMetrics([]);
+      expect(m.by_device_type).toEqual({});
+      expect(m.by_usage_category).toEqual({});
+      expect(m.by_compliance_level).toEqual({});
+      expect(m.by_wellbeing_impact).toEqual({});
+    });
     it("total_checks counts records", () => { expect(computeDeviceScreenTimeMetrics([makeRecord(), makeRecord()]).total_checks).toBe(2); });
     it("counts non_compliant", () => { expect(computeDeviceScreenTimeMetrics([makeRecord({ compliance_level: "non_compliant" })]).non_compliant_count).toBe(1); });
     it("counts refused", () => { expect(computeDeviceScreenTimeMetrics([makeRecord({ compliance_level: "refused_limits" })]).refused_count).toBe(1); });
@@ -46,7 +61,21 @@ describe("device-screen-time-monitoring-service", () => {
     it("counts inappropriate", () => { expect(computeDeviceScreenTimeMetrics([makeRecord({ usage_category: "inappropriate" })]).inappropriate_count).toBe(1); });
     it("counts significant_concern", () => { expect(computeDeviceScreenTimeMetrics([makeRecord({ wellbeing_impact: "significant_concern" })]).significant_concern_count).toBe(1); });
     it("does not count moderate as significant", () => { expect(computeDeviceScreenTimeMetrics([makeRecord({ wellbeing_impact: "moderate_concern" })]).significant_concern_count).toBe(0); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeDeviceScreenTimeMetrics([makeRecord()]); expect(m.limits_agreed_rate).toBe(100); expect(m.age_appropriate_rate).toBe(100); expect(m.parental_controls_rate).toBe(100); expect(m.night_time_limits_rate).toBe(100); expect(m.social_media_supervised_rate).toBe(100); expect(m.privacy_settings_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.parent_informed_rate).toBe(100); expect(m.online_safety_rate).toBe(100); expect(m.healthy_alternatives_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeDeviceScreenTimeMetrics([makeRecord()]);
+      expect(m.limits_agreed_rate).toBe(100);
+      expect(m.age_appropriate_rate).toBe(100);
+      expect(m.parental_controls_rate).toBe(100);
+      expect(m.night_time_limits_rate).toBe(100);
+      expect(m.social_media_supervised_rate).toBe(100);
+      expect(m.privacy_settings_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.parent_informed_rate).toBe(100);
+      expect(m.online_safety_rate).toBe(100);
+      expect(m.healthy_alternatives_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("limits_agreed_rate 0 when false", () => { expect(computeDeviceScreenTimeMetrics([makeRecord({ limits_agreed: false })]).limits_agreed_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeDeviceScreenTimeMetrics([makeRecord({ parental_controls_active: true }), makeRecord({ parental_controls_active: false }), makeRecord({ parental_controls_active: true })]); expect(m.parental_controls_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeDeviceScreenTimeMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -59,17 +88,42 @@ describe("device-screen-time-monitoring-service", () => {
   describe("identifyDeviceScreenTimeAlerts", () => {
     it("returns empty for clean", () => { expect(identifyDeviceScreenTimeAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyDeviceScreenTimeAlerts([])).toEqual([]); });
-    it("fires inappropriate_significant_concern", () => { const a = identifyDeviceScreenTimeAlerts([makeRecord({ usage_category: "inappropriate", wellbeing_impact: "significant_concern", child_name: "Jo" })]); expect(a[0].type).toBe("inappropriate_significant_concern"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires inappropriate_significant_concern", () => { 
+      const a = identifyDeviceScreenTimeAlerts([makeRecord({ usage_category: "inappropriate", wellbeing_impact: "significant_concern", child_name: "Jo" })]);
+      expect(a[0].type).toBe("inappropriate_significant_concern");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("inappropriate_significant_concern per-record", () => { const a = identifyDeviceScreenTimeAlerts([makeRecord({ id: "a-1", usage_category: "inappropriate", wellbeing_impact: "significant_concern" }), makeRecord({ id: "a-2", usage_category: "inappropriate", wellbeing_impact: "significant_concern" })]); expect(a.filter(x => x.type === "inappropriate_significant_concern")).toHaveLength(2); });
     it("inappropriate with neutral no critical", () => { expect(identifyDeviceScreenTimeAlerts([makeRecord({ usage_category: "inappropriate", wellbeing_impact: "neutral" })]).find(x => x.type === "inappropriate_significant_concern")).toBeUndefined(); });
     it("educational with concern no critical", () => { expect(identifyDeviceScreenTimeAlerts([makeRecord({ usage_category: "educational", wellbeing_impact: "significant_concern" })]).find(x => x.type === "inappropriate_significant_concern")).toBeUndefined(); });
-    it("fires no_parental_controls singular", () => { const a = identifyDeviceScreenTimeAlerts([makeRecord({ parental_controls_active: false })]); const f = a.find(x => x.type === "no_parental_controls"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 device has"); });
+    it("fires no_parental_controls singular", () => { 
+      const a = identifyDeviceScreenTimeAlerts([makeRecord({ parental_controls_active: false })]);
+      const f = a.find(x => x.type === "no_parental_controls");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 device has");
+    });
     it("no_parental_controls plural", () => { const a = identifyDeviceScreenTimeAlerts([makeRecord({ parental_controls_active: false }), makeRecord({ parental_controls_active: false })]); const f = a.find(x => x.type === "no_parental_controls"); expect(f!.message).toContain("2 devices have"); });
-    it("fires no_night_limits singular", () => { const a = identifyDeviceScreenTimeAlerts([makeRecord({ night_time_limits: false })]); const f = a.find(x => x.type === "no_night_limits"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 check has"); });
+    it("fires no_night_limits singular", () => { 
+      const a = identifyDeviceScreenTimeAlerts([makeRecord({ night_time_limits: false })]);
+      const f = a.find(x => x.type === "no_night_limits");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 check has");
+    });
     it("no_online_safety_discussion not for 1", () => { expect(identifyDeviceScreenTimeAlerts([makeRecord({ online_safety_discussed: false })]).find(x => x.type === "no_online_safety_discussion")).toBeUndefined(); });
     it("no_online_safety_discussion fires for 2", () => { const a = identifyDeviceScreenTimeAlerts([makeRecord({ online_safety_discussed: false }), makeRecord({ online_safety_discussed: false })]); expect(a.find(x => x.type === "no_online_safety_discussion")).toBeDefined(); expect(a.find(x => x.type === "no_online_safety_discussion")!.severity).toBe("medium"); });
     it("no_privacy_settings not for 1", () => { expect(identifyDeviceScreenTimeAlerts([makeRecord({ privacy_settings_checked: false })]).find(x => x.type === "no_privacy_settings")).toBeUndefined(); });
     it("no_privacy_settings fires for 2", () => { const a = identifyDeviceScreenTimeAlerts([makeRecord({ privacy_settings_checked: false }), makeRecord({ privacy_settings_checked: false })]); expect(a.find(x => x.type === "no_privacy_settings")).toBeDefined(); expect(a.find(x => x.type === "no_privacy_settings")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyDeviceScreenTimeAlerts([makeRecord({ usage_category: "inappropriate", wellbeing_impact: "significant_concern", parental_controls_active: false, night_time_limits: false, online_safety_discussed: false, privacy_settings_checked: false }), makeRecord({ parental_controls_active: false, night_time_limits: false, online_safety_discussed: false, privacy_settings_checked: false })]); const types = a.map(x => x.type); expect(types).toContain("inappropriate_significant_concern"); expect(types).toContain("no_parental_controls"); expect(types).toContain("no_night_limits"); expect(types).toContain("no_online_safety_discussion"); expect(types).toContain("no_privacy_settings"); });
+    it("fires all applicable", () => { 
+      const a = identifyDeviceScreenTimeAlerts([makeRecord({ usage_category: "inappropriate", wellbeing_impact: "significant_concern", parental_controls_active: false, night_time_limits: false, online_safety_discussed: false, privacy_settings_checked: false }), makeRecord({ parental_controls_active: false, night_time_limits: false, online_safety_discussed: false, privacy_settings_checked: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("inappropriate_significant_concern");
+      expect(types).toContain("no_parental_controls");
+      expect(types).toContain("no_night_limits");
+      expect(types).toContain("no_online_safety_discussion");
+      expect(types).toContain("no_privacy_settings");
+    });
   });
 });

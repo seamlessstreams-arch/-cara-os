@@ -37,15 +37,44 @@ function makeRecord(overrides?: Partial<TransitionPlanningReadinessRecord>): Tra
 
 describe("transition-planning-readiness-service", () => {
   describe("computeTransitionPlanningMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeTransitionPlanningMetrics([]); expect(m.total_assessments).toBe(0); expect(m.not_ready_count).toBe(0); expect(m.not_assessed_count).toBe(0); expect(m.overdue_pathway_count).toBe(0); expect(m.not_started_pathway_count).toBe(0); expect(m.child_views_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeTransitionPlanningMetrics([]); expect(m.by_transition_type).toEqual({}); expect(m.by_readiness_level).toEqual({}); expect(m.by_independence_skill).toEqual({}); expect(m.by_pathway_plan_status).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeTransitionPlanningMetrics([]);
+      expect(m.total_assessments).toBe(0);;
+      expect(m.not_ready_count).toBe(0);
+      expect(m.not_assessed_count).toBe(0);
+      expect(m.overdue_pathway_count).toBe(0);
+      expect(m.not_started_pathway_count).toBe(0);
+      expect(m.child_views_rate).toBeNull();;
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeTransitionPlanningMetrics([]);
+      expect(m.by_transition_type).toEqual({});
+      expect(m.by_readiness_level).toEqual({});
+      expect(m.by_independence_skill).toEqual({});
+      expect(m.by_pathway_plan_status).toEqual({});
+    });
     it("total_assessments counts records", () => { expect(computeTransitionPlanningMetrics([makeRecord(), makeRecord()]).total_assessments).toBe(2); });
     it("counts not_ready", () => { expect(computeTransitionPlanningMetrics([makeRecord({ readiness_level: "not_ready" })]).not_ready_count).toBe(1); });
     it("counts not_assessed", () => { expect(computeTransitionPlanningMetrics([makeRecord({ readiness_level: "not_assessed" })]).not_assessed_count).toBe(1); });
     it("does not count partially_ready as not_ready", () => { expect(computeTransitionPlanningMetrics([makeRecord({ readiness_level: "partially_ready" })]).not_ready_count).toBe(0); });
     it("counts overdue_pathway", () => { expect(computeTransitionPlanningMetrics([makeRecord({ pathway_plan_status: "overdue" })]).overdue_pathway_count).toBe(1); });
     it("counts not_started_pathway", () => { expect(computeTransitionPlanningMetrics([makeRecord({ pathway_plan_status: "not_started" })]).not_started_pathway_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeTransitionPlanningMetrics([makeRecord()]); expect(m.child_views_rate).toBe(100); expect(m.life_skills_rate).toBe(100); expect(m.budgeting_rate).toBe(100); expect(m.cooking_rate).toBe(100); expect(m.housing_rate).toBe(100); expect(m.education_employment_rate).toBe(100); expect(m.health_needs_rate).toBe(100); expect(m.social_network_rate).toBe(100); expect(m.personal_advisor_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeTransitionPlanningMetrics([makeRecord()]);
+      expect(m.child_views_rate).toBe(100);
+      expect(m.life_skills_rate).toBe(100);
+      expect(m.budgeting_rate).toBe(100);
+      expect(m.cooking_rate).toBe(100);
+      expect(m.housing_rate).toBe(100);
+      expect(m.education_employment_rate).toBe(100);
+      expect(m.health_needs_rate).toBe(100);
+      expect(m.social_network_rate).toBe(100);
+      expect(m.personal_advisor_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("child_views_rate 0 when false", () => { expect(computeTransitionPlanningMetrics([makeRecord({ child_views_included: false })]).child_views_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeTransitionPlanningMetrics([makeRecord({ budgeting_skills: true }), makeRecord({ budgeting_skills: false }), makeRecord({ budgeting_skills: true })]); expect(m.budgeting_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeTransitionPlanningMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -58,17 +87,42 @@ describe("transition-planning-readiness-service", () => {
   describe("identifyTransitionPlanningAlerts", () => {
     it("returns empty for clean", () => { expect(identifyTransitionPlanningAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyTransitionPlanningAlerts([])).toEqual([]); });
-    it("fires leaving_care_not_ready with overdue pathway", () => { const a = identifyTransitionPlanningAlerts([makeRecord({ transition_type: "leaving_care", readiness_level: "not_ready", pathway_plan_status: "overdue", child_name: "Jo" })]); expect(a[0].type).toBe("leaving_care_not_ready"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires leaving_care_not_ready with overdue pathway", () => { 
+      const a = identifyTransitionPlanningAlerts([makeRecord({ transition_type: "leaving_care", readiness_level: "not_ready", pathway_plan_status: "overdue", child_name: "Jo" })]);
+      expect(a[0].type).toBe("leaving_care_not_ready");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("fires leaving_care_not_ready with not_started pathway", () => { const a = identifyTransitionPlanningAlerts([makeRecord({ transition_type: "leaving_care", readiness_level: "not_ready", pathway_plan_status: "not_started" })]); expect(a.find(x => x.type === "leaving_care_not_ready")).toBeDefined(); });
     it("leaving_care not_ready with in_place no critical", () => { expect(identifyTransitionPlanningAlerts([makeRecord({ transition_type: "leaving_care", readiness_level: "not_ready", pathway_plan_status: "in_place" })]).find(x => x.type === "leaving_care_not_ready")).toBeUndefined(); });
     it("non-leaving_care not_ready with overdue no critical", () => { expect(identifyTransitionPlanningAlerts([makeRecord({ transition_type: "school_transition", readiness_level: "not_ready", pathway_plan_status: "overdue" })]).find(x => x.type === "leaving_care_not_ready")).toBeUndefined(); });
-    it("fires pathway_overdue singular", () => { const a = identifyTransitionPlanningAlerts([makeRecord({ pathway_plan_status: "overdue" })]); const f = a.find(x => x.type === "pathway_overdue"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 assessment has"); });
+    it("fires pathway_overdue singular", () => { 
+      const a = identifyTransitionPlanningAlerts([makeRecord({ pathway_plan_status: "overdue" })]);
+      const f = a.find(x => x.type === "pathway_overdue");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 assessment has");
+    });
     it("pathway_overdue plural", () => { const a = identifyTransitionPlanningAlerts([makeRecord({ pathway_plan_status: "overdue" }), makeRecord({ pathway_plan_status: "overdue" })]); const f = a.find(x => x.type === "pathway_overdue"); expect(f!.message).toContain("2 assessments have"); });
-    it("fires housing_not_identified singular", () => { const a = identifyTransitionPlanningAlerts([makeRecord({ housing_identified: false })]); const f = a.find(x => x.type === "housing_not_identified"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 assessment has"); });
+    it("fires housing_not_identified singular", () => { 
+      const a = identifyTransitionPlanningAlerts([makeRecord({ housing_identified: false })]);
+      const f = a.find(x => x.type === "housing_not_identified");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 assessment has");
+    });
     it("life_skills_not_assessed not for 1", () => { expect(identifyTransitionPlanningAlerts([makeRecord({ life_skills_assessed: false })]).find(x => x.type === "life_skills_not_assessed")).toBeUndefined(); });
     it("life_skills_not_assessed fires for 2", () => { const a = identifyTransitionPlanningAlerts([makeRecord({ life_skills_assessed: false }), makeRecord({ life_skills_assessed: false })]); expect(a.find(x => x.type === "life_skills_not_assessed")).toBeDefined(); expect(a.find(x => x.type === "life_skills_not_assessed")!.severity).toBe("medium"); });
     it("no_personal_advisor not for 1", () => { expect(identifyTransitionPlanningAlerts([makeRecord({ personal_advisor_allocated: false })]).find(x => x.type === "no_personal_advisor")).toBeUndefined(); });
     it("no_personal_advisor fires for 2", () => { const a = identifyTransitionPlanningAlerts([makeRecord({ personal_advisor_allocated: false }), makeRecord({ personal_advisor_allocated: false })]); expect(a.find(x => x.type === "no_personal_advisor")).toBeDefined(); expect(a.find(x => x.type === "no_personal_advisor")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyTransitionPlanningAlerts([makeRecord({ transition_type: "leaving_care", readiness_level: "not_ready", pathway_plan_status: "overdue", housing_identified: false, life_skills_assessed: false, personal_advisor_allocated: false }), makeRecord({ pathway_plan_status: "overdue", housing_identified: false, life_skills_assessed: false, personal_advisor_allocated: false })]); const types = a.map(x => x.type); expect(types).toContain("leaving_care_not_ready"); expect(types).toContain("pathway_overdue"); expect(types).toContain("housing_not_identified"); expect(types).toContain("life_skills_not_assessed"); expect(types).toContain("no_personal_advisor"); });
+    it("fires all applicable", () => { 
+      const a = identifyTransitionPlanningAlerts([makeRecord({ transition_type: "leaving_care", readiness_level: "not_ready", pathway_plan_status: "overdue", housing_identified: false, life_skills_assessed: false, personal_advisor_allocated: false }), makeRecord({ pathway_plan_status: "overdue", housing_identified: false, life_skills_assessed: false, personal_advisor_allocated: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("leaving_care_not_ready");
+      expect(types).toContain("pathway_overdue");
+      expect(types).toContain("housing_not_identified");
+      expect(types).toContain("life_skills_not_assessed");
+      expect(types).toContain("no_personal_advisor");
+    });
   });
 });

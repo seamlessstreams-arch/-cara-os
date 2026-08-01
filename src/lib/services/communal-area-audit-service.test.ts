@@ -40,11 +40,11 @@ describe("computeCommunalAreaMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeCommunalAreaMetrics([]);
     expect(m.total_audits).toBe(0);
-    expect(m.spotless_rate).toBe(0);
-    expect(m.clean_rate).toBe(0);
+    expect(m.spotless_rate).toBeNull();;
+    expect(m.clean_rate).toBeNull();;
     expect(m.unacceptable_count).toBe(0);
-    expect(m.very_homely_rate).toBe(0);
-    expect(m.all_clear_rate).toBe(0);
+    expect(m.very_homely_rate).toBeNull();;
+    expect(m.all_clear_rate).toBeNull();;
     expect(m.immediate_risk_count).toBe(0);
   });
 

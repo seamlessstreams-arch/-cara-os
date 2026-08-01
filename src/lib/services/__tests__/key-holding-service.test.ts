@@ -49,12 +49,12 @@ describe("key-holding-service", () => {
         expect(m.keys_lost_count).toBe(0);
         expect(m.keys_stolen_count).toBe(0);
         expect(m.audits_count).toBe(0);
-        expect(m.all_accounted_rate).toBe(0);
+        expect(m.all_accounted_rate).toBeNull();;
         expect(m.discrepancy_count).toBe(0);
-        expect(m.register_updated_rate).toBe(0);
-        expect(m.lock_changed_rate).toBe(0);
-        expect(m.spare_keys_secure_rate).toBe(0);
-        expect(m.medication_keys_separate_rate).toBe(0);
+        expect(m.register_updated_rate).toBeNull();;
+        expect(m.lock_changed_rate).toBeNull();;
+        expect(m.spare_keys_secure_rate).toBeNull();;
+        expect(m.medication_keys_separate_rate).toBeNull();;
         expect(m.total_keys_checked).toBe(0);
         expect(m.total_keys_missing).toBe(0);
       });

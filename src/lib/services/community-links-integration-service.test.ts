@@ -46,7 +46,7 @@ describe("computeCommunityLinksMetrics", () => {
     const m = computeCommunityLinksMetrics([]);
     expect(m.total_links).toBe(0);
     expect(m.active_count).toBe(0);
-    expect(m.safeguarding_checked_rate).toBe(0);
+    expect(m.safeguarding_checked_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

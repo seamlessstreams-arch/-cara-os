@@ -37,8 +37,23 @@ function makeRecord(overrides?: Partial<FirstAidMedicalEmergencyRecord>): FirstA
 
 describe("first-aid-medical-emergency-service", () => {
   describe("computeFirstAidMetrics", () => {
-    it("returns zeros for empty", () => { const m = computeFirstAidMetrics([]); expect(m.total_incidents).toBe(0); expect(m.serious_count).toBe(0); expect(m.poor_response_count).toBe(0); expect(m.hospitalised_count).toBe(0); expect(m.untrained_count).toBe(0); expect(m.first_aid_trained_rate).toBe(0); expect(m.unique_children).toBe(0); });
-    it("returns empty breakdowns", () => { const m = computeFirstAidMetrics([]); expect(m.by_incident_type).toEqual({}); expect(m.by_severity_level).toEqual({}); expect(m.by_response_quality).toEqual({}); expect(m.by_outcome_assessment).toEqual({}); });
+    it("returns zeros for empty", () => { 
+      const m = computeFirstAidMetrics([]);
+      expect(m.total_incidents).toBe(0);
+      expect(m.serious_count).toBe(0);
+      expect(m.poor_response_count).toBe(0);
+      expect(m.hospitalised_count).toBe(0);
+      expect(m.untrained_count).toBe(0);
+      expect(m.first_aid_trained_rate).toBeNull();
+      expect(m.unique_children).toBe(0);
+    });
+    it("returns empty breakdowns", () => { 
+      const m = computeFirstAidMetrics([]);
+      expect(m.by_incident_type).toEqual({});
+      expect(m.by_severity_level).toEqual({});
+      expect(m.by_response_quality).toEqual({});
+      expect(m.by_outcome_assessment).toEqual({});
+    });
     it("total_incidents counts records", () => { expect(computeFirstAidMetrics([makeRecord(), makeRecord()]).total_incidents).toBe(2); });
     it("counts serious", () => { expect(computeFirstAidMetrics([makeRecord({ severity_level: "serious" })]).serious_count).toBe(1); });
     it("counts life_threatening as serious", () => { expect(computeFirstAidMetrics([makeRecord({ severity_level: "life_threatening" })]).serious_count).toBe(1); });
@@ -49,7 +64,21 @@ describe("first-aid-medical-emergency-service", () => {
     it("counts hospitalised", () => { expect(computeFirstAidMetrics([makeRecord({ outcome_assessment: "hospitalised" })]).hospitalised_count).toBe(1); });
     it("does not count escalated as hospitalised", () => { expect(computeFirstAidMetrics([makeRecord({ outcome_assessment: "escalated" })]).hospitalised_count).toBe(0); });
     it("counts untrained", () => { expect(computeFirstAidMetrics([makeRecord({ first_aid_trained: false })]).untrained_count).toBe(1); });
-    it("returns 100% boolean rates with defaults", () => { const m = computeFirstAidMetrics([makeRecord()]); expect(m.first_aid_trained_rate).toBe(100); expect(m.correct_procedure_rate).toBe(100); expect(m.equipment_rate).toBe(100); expect(m.ambulance_rate).toBe(100); expect(m.parent_notified_rate).toBe(100); expect(m.gp_informed_rate).toBe(100); expect(m.care_plan_rate).toBe(100); expect(m.social_worker_rate).toBe(100); expect(m.incident_recorded_rate).toBe(100); expect(m.ofsted_notified_rate).toBe(100); expect(m.debrief_rate).toBe(100); expect(m.recorded_promptly_rate).toBe(100); });
+    it("returns 100% boolean rates with defaults", () => { 
+      const m = computeFirstAidMetrics([makeRecord()]);
+      expect(m.first_aid_trained_rate).toBe(100);
+      expect(m.correct_procedure_rate).toBe(100);
+      expect(m.equipment_rate).toBe(100);
+      expect(m.ambulance_rate).toBe(100);
+      expect(m.parent_notified_rate).toBe(100);
+      expect(m.gp_informed_rate).toBe(100);
+      expect(m.care_plan_rate).toBe(100);
+      expect(m.social_worker_rate).toBe(100);
+      expect(m.incident_recorded_rate).toBe(100);
+      expect(m.ofsted_notified_rate).toBe(100);
+      expect(m.debrief_rate).toBe(100);
+      expect(m.recorded_promptly_rate).toBe(100);
+    });
     it("first_aid_trained_rate 0 when false", () => { expect(computeFirstAidMetrics([makeRecord({ first_aid_trained: false })]).first_aid_trained_rate).toBe(0); });
     it("mixed boolean rate", () => { const m = computeFirstAidMetrics([makeRecord({ debrief_completed: true }), makeRecord({ debrief_completed: false }), makeRecord({ debrief_completed: true })]); expect(m.debrief_rate).toBe(66.7); });
     it("unique_children distinct", () => { const m = computeFirstAidMetrics([makeRecord({ child_name: "A" }), makeRecord({ child_name: "B" }), makeRecord({ child_name: "A" })]); expect(m.unique_children).toBe(2); });
@@ -62,18 +91,43 @@ describe("first-aid-medical-emergency-service", () => {
   describe("identifyFirstAidAlerts", () => {
     it("returns empty for clean", () => { expect(identifyFirstAidAlerts([makeRecord()])).toEqual([]); });
     it("returns empty for empty", () => { expect(identifyFirstAidAlerts([])).toEqual([]); });
-    it("fires serious_poor_response", () => { const a = identifyFirstAidAlerts([makeRecord({ severity_level: "serious", response_quality: "poor", child_name: "Jo" })]); expect(a[0].type).toBe("serious_poor_response"); expect(a[0].severity).toBe("critical"); expect(a[0].message).toContain("Jo"); });
+    it("fires serious_poor_response", () => { 
+      const a = identifyFirstAidAlerts([makeRecord({ severity_level: "serious", response_quality: "poor", child_name: "Jo" })]);
+      expect(a[0].type).toBe("serious_poor_response");
+      expect(a[0].severity).toBe("critical");
+      expect(a[0].message).toContain("Jo");
+    });
     it("life_threatening with failed also critical", () => { const a = identifyFirstAidAlerts([makeRecord({ severity_level: "life_threatening", response_quality: "failed" })]); expect(a[0].type).toBe("serious_poor_response"); expect(a[0].severity).toBe("critical"); });
     it("serious_poor_response per-record", () => { const a = identifyFirstAidAlerts([makeRecord({ id: "a-1", severity_level: "serious", response_quality: "poor" }), makeRecord({ id: "a-2", severity_level: "life_threatening", response_quality: "failed" })]); expect(a.filter(x => x.type === "serious_poor_response")).toHaveLength(2); });
     it("serious without poor no critical", () => { expect(identifyFirstAidAlerts([makeRecord({ severity_level: "serious", response_quality: "good" })]).find(x => x.type === "serious_poor_response")).toBeUndefined(); });
     it("poor without serious no critical", () => { expect(identifyFirstAidAlerts([makeRecord({ response_quality: "poor", severity_level: "minor" })]).find(x => x.type === "serious_poor_response")).toBeUndefined(); });
-    it("fires untrained_responder singular", () => { const a = identifyFirstAidAlerts([makeRecord({ first_aid_trained: false })]); const f = a.find(x => x.type === "untrained_responder"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 incident has"); });
+    it("fires untrained_responder singular", () => { 
+      const a = identifyFirstAidAlerts([makeRecord({ first_aid_trained: false })]);
+      const f = a.find(x => x.type === "untrained_responder");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 incident has");
+    });
     it("untrained_responder plural", () => { const a = identifyFirstAidAlerts([makeRecord({ first_aid_trained: false }), makeRecord({ first_aid_trained: false })]); const f = a.find(x => x.type === "untrained_responder"); expect(f!.message).toContain("2 incidents have"); });
-    it("fires incorrect_procedure singular", () => { const a = identifyFirstAidAlerts([makeRecord({ correct_procedure_followed: false })]); const f = a.find(x => x.type === "incorrect_procedure"); expect(f).toBeDefined(); expect(f!.severity).toBe("high"); expect(f!.message).toContain("1 incident has"); });
+    it("fires incorrect_procedure singular", () => { 
+      const a = identifyFirstAidAlerts([makeRecord({ correct_procedure_followed: false })]);
+      const f = a.find(x => x.type === "incorrect_procedure");
+      expect(f).toBeDefined();
+      expect(f!.severity).toBe("high");
+      expect(f!.message).toContain("1 incident has");
+    });
     it("no_debrief not for 1", () => { expect(identifyFirstAidAlerts([makeRecord({ debrief_completed: false })]).find(x => x.type === "no_debrief")).toBeUndefined(); });
     it("no_debrief fires for 2", () => { const a = identifyFirstAidAlerts([makeRecord({ debrief_completed: false }), makeRecord({ debrief_completed: false })]); expect(a.find(x => x.type === "no_debrief")).toBeDefined(); expect(a.find(x => x.type === "no_debrief")!.severity).toBe("medium"); });
     it("no_equipment not for 1", () => { expect(identifyFirstAidAlerts([makeRecord({ equipment_available: false })]).find(x => x.type === "no_equipment")).toBeUndefined(); });
     it("no_equipment fires for 2", () => { const a = identifyFirstAidAlerts([makeRecord({ equipment_available: false }), makeRecord({ equipment_available: false })]); expect(a.find(x => x.type === "no_equipment")).toBeDefined(); expect(a.find(x => x.type === "no_equipment")!.severity).toBe("medium"); });
-    it("fires all applicable", () => { const a = identifyFirstAidAlerts([makeRecord({ severity_level: "serious", response_quality: "poor", first_aid_trained: false, correct_procedure_followed: false, debrief_completed: false, equipment_available: false }), makeRecord({ first_aid_trained: false, correct_procedure_followed: false, debrief_completed: false, equipment_available: false })]); const types = a.map(x => x.type); expect(types).toContain("serious_poor_response"); expect(types).toContain("untrained_responder"); expect(types).toContain("incorrect_procedure"); expect(types).toContain("no_debrief"); expect(types).toContain("no_equipment"); });
+    it("fires all applicable", () => { 
+      const a = identifyFirstAidAlerts([makeRecord({ severity_level: "serious", response_quality: "poor", first_aid_trained: false, correct_procedure_followed: false, debrief_completed: false, equipment_available: false }), makeRecord({ first_aid_trained: false, correct_procedure_followed: false, debrief_completed: false, equipment_available: false })]);
+      const types = a.map(x => x.type);
+      expect(types).toContain("serious_poor_response");
+      expect(types).toContain("untrained_responder");
+      expect(types).toContain("incorrect_procedure");
+      expect(types).toContain("no_debrief");
+      expect(types).toContain("no_equipment");
+    });
   });
 });

@@ -103,12 +103,12 @@ export function computeStaffRetentionMetrics(
   burnout_count: number;
   pay_dissatisfaction_count: number;
   critical_risk_count: number;
-  exit_interview_rate: number;
-  notice_served_rate: number;
-  knowledge_transfer_rate: number;
-  counter_offer_rate: number;
-  replacement_rate: number;
-  stay_interview_rate: number;
+  exit_interview_rate: number | null;
+  notice_served_rate: number | null;
+  knowledge_transfer_rate: number | null;
+  counter_offer_rate: number | null;
+  replacement_rate: number | null;
+  stay_interview_rate: number | null;
   exit_reason_breakdown: Record<string, number>;
   service_band_breakdown: Record<string, number>;
   unique_staff: number;
@@ -122,7 +122,7 @@ export function computeStaffRetentionMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueStaff = new Set(rows.map((r) => r.staff_name)).size;

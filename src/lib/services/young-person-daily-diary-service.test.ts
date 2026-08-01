@@ -62,7 +62,7 @@ describe("computeDailyDiaryMetrics", () => {
     expect(m.difficult_day_count).toBe(0);
     expect(m.self_written_count).toBe(0);
     expect(m.concern_count).toBe(0);
-    expect(m.child_wrote_rate).toBe(0);
+    expect(m.child_wrote_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

@@ -83,7 +83,7 @@ export interface ChildWellbeingCheckinRecord {
   recorded_promptly: boolean;
   issues_found: string[];
   actions_taken: string[];
-  wellbeing_score: number;
+  wellbeing_score: number | null;
   next_review_date: string | null;
   notes: string | null;
   created_at: string;
@@ -139,17 +139,17 @@ export function computeWellbeingCheckinMetrics(
   very_unhappy_count: number;
   concerns_identified_count: number;
   follow_up_needed_count: number;
-  child_engaged_rate: number;
-  child_voice_rate: number;
-  care_plan_reviewed_rate: number;
-  parent_informed_rate: number;
-  social_worker_informed_rate: number;
-  private_time_rate: number;
-  physical_health_rate: number;
-  eating_well_rate: number;
-  sleeping_well_rate: number;
-  recorded_promptly_rate: number;
-  average_wellbeing_score: number;
+  child_engaged_rate: number | null;
+  child_voice_rate: number | null;
+  care_plan_reviewed_rate: number | null;
+  parent_informed_rate: number | null;
+  social_worker_informed_rate: number | null;
+  private_time_rate: number | null;
+  physical_health_rate: number | null;
+  eating_well_rate: number | null;
+  sleeping_well_rate: number | null;
+  recorded_promptly_rate: number | null;
+  average_wellbeing_score: number | null;
   unique_children: number;
   by_mood_rating: Record<string, number>;
   by_emotional_state: Record<string, number>;
@@ -165,15 +165,15 @@ export function computeWellbeingCheckinMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const avgScore =
     records.length > 0
       ? Math.round(
-          (records.reduce((sum, r) => sum + r.wellbeing_score, 0) / records.length) * 10,
+          (records.reduce((sum, r) => sum + (r.wellbeing_score ?? 0), 0) / records.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

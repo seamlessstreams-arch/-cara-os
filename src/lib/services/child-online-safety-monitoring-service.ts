@@ -93,12 +93,12 @@ export function computeMetrics(
   harmful_content_count: number;
   cyberbullying_count: number;
   online_contact_risk_count: number;
-  filtering_rate: number;
-  age_appropriate_rate: number;
-  parental_controls_rate: number;
-  social_media_reviewed_rate: number;
-  action_taken_rate: number;
-  child_educated_rate: number;
+  filtering_rate: number | null;
+  age_appropriate_rate: number | null;
+  parental_controls_rate: number | null;
+  social_media_reviewed_rate: number | null;
+  action_taken_rate: number | null;
+  child_educated_rate: number | null;
   unique_children: number;
   unique_checkers: number;
 } {
@@ -122,7 +122,7 @@ export function computeMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;

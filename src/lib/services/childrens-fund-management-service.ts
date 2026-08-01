@@ -143,11 +143,11 @@ export function computeFundMetrics(
   total_debit_amount: number;
   net_balance: number;
   unique_children: number;
-  receipt_attached_rate: number;
-  child_signed_rate: number;
-  staff_signed_rate: number;
-  second_signatory_rate: number;
-  authorised_rate: number;
+  receipt_attached_rate: number | null;
+  child_signed_rate: number | null;
+  staff_signed_rate: number | null;
+  second_signatory_rate: number | null;
+  authorised_rate: number | null;
   pending_authorisation_count: number;
   discrepancy_count: number;
   not_audited_count: number;
@@ -169,31 +169,31 @@ export function computeFundMetrics(
   const receiptRate =
     transactions.length > 0
       ? Math.round((receiptAttached / transactions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childSigned = transactions.filter((t) => t.child_signed).length;
   const childRate =
     transactions.length > 0
       ? Math.round((childSigned / transactions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffSigned = transactions.filter((t) => t.staff_signed).length;
   const staffRate =
     transactions.length > 0
       ? Math.round((staffSigned / transactions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const secondSig = transactions.filter((t) => t.second_signatory).length;
   const secondRate =
     transactions.length > 0
       ? Math.round((secondSig / transactions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const authorised = transactions.filter((t) => t.authorisation_status === "authorised" || t.authorisation_status === "auto_approved").length;
   const authorisedRate =
     transactions.length > 0
       ? Math.round((authorised / transactions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const pendingAuth = transactions.filter((t) => t.authorisation_status === "pending_authorisation").length;
   const discrepancy = transactions.filter((t) => t.audit_result === "discrepancy_found").length;

@@ -247,30 +247,30 @@ export function computeMetrics(
   high_risk_count: number;
   critical_count: number;
   high_critical_count: number;
-  nrm_referral_rate: number;
-  safety_plan_rate: number;
-  police_notification_rate: number;
-  multi_agency_rate: number;
-  social_worker_informed_rate: number;
-  child_views_rate: number;
+  nrm_referral_rate: number | null;
+  safety_plan_rate: number | null;
+  police_notification_rate: number | null;
+  multi_agency_rate: number | null;
+  social_worker_informed_rate: number | null;
+  child_views_rate: number | null;
   unique_children: number;
   unique_assessors: number;
   active_cases: number;
   by_intelligence_type: Record<string, number>;
   by_outcome: Record<string, number>;
   by_risk_level: Record<string, number>;
-  travel_patterns_rate: number;
-  new_possessions_rate: number;
-  phone_activity_rate: number;
-  missing_episodes_rate: number;
-  peer_association_rate: number;
-  drug_related_rate: number;
-  debt_bondage_rate: number;
-  violence_intimidation_rate: number;
-  average_indicators_per_record: number;
-  disruption_activity_rate: number;
+  travel_patterns_rate: number | null;
+  new_possessions_rate: number | null;
+  phone_activity_rate: number | null;
+  missing_episodes_rate: number | null;
+  peer_association_rate: number | null;
+  drug_related_rate: number | null;
+  debt_bondage_rate: number | null;
+  violence_intimidation_rate: number | null;
+  average_indicators_per_record: number | null;
+  disruption_activity_rate: number | null;
   nrm_accepted_count: number;
-  escalation_rate: number;
+  escalation_rate: number | null;
 } {
   const total = rows.length;
 
@@ -279,7 +279,7 @@ export function computeMetrics(
 
   const boolRate = (field: keyof CountyLinesIntelligenceRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
@@ -313,18 +313,18 @@ export function computeMetrics(
       if (r[f] === true) totalIndicators++;
     }
   }
-  const avgIndicators = total > 0 ? Math.round((totalIndicators / total) * 10) / 10 : 0;
+  const avgIndicators = total > 0 ? Math.round((totalIndicators / total) * 10) / 10 : null;
 
   // Disruption activity rate
   const disrupted = rows.filter((r) => r.disruption_activity && r.disruption_activity.trim().length > 0).length;
-  const disruptionRate = total > 0 ? Math.round((disrupted / total) * 1000) / 10 : 0;
+  const disruptionRate = total > 0 ? Math.round((disrupted / total) * 1000) / 10 : null;
 
   // NRM accepted count
   const nrmAccepted = rows.filter((r) => r.outcome === "NRM Accepted").length;
 
   // Escalation rate
   const escalated = rows.filter((r) => r.outcome === "Escalated").length;
-  const escalationRate = total > 0 ? Math.round((escalated / total) * 1000) / 10 : 0;
+  const escalationRate = total > 0 ? Math.round((escalated / total) * 1000) / 10 : null;
 
   return {
     total_records: total,
@@ -533,7 +533,7 @@ export function generateCaraInsights(
       { name: "drug-related", rate: metrics.drug_related_rate },
       { name: "debt bondage", rate: metrics.debt_bondage_rate },
       { name: "violence/intimidation", rate: metrics.violence_intimidation_rate },
-    ].sort((a, b) => b.rate - a.rate);
+    ].sort((a, b) => (b.rate ?? 0) - (a.rate ?? 0));
     const topIndicator = indicatorRates[0];
 
     insights.push(
@@ -553,7 +553,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective safeguarding question
-  if (metrics.critical_count > 0 && metrics.child_views_rate < 80) {
+  if (metrics.critical_count > 0 && (metrics.child_views_rate ?? 0) < 80) {
     insights.push(
       `[reflect] ${metrics.child_views_rate}% of records include the child's voice. ` +
         `With ${metrics.critical_count} critical ${metrics.critical_count === 1 ? "case" : "cases"}, ` +
@@ -561,7 +561,7 @@ export function generateCaraInsights(
         `perspective on their exploitation, and is this informing safety planning ` +
         `as required by the SCCIF inspection framework?`,
     );
-  } else if (metrics.nrm_referral_rate < 50 && metrics.high_critical_count > 0) {
+  } else if ((metrics.nrm_referral_rate ?? 0) < 50 && metrics.high_critical_count > 0) {
     insights.push(
       `[reflect] NRM referral rate is ${metrics.nrm_referral_rate}% with ${metrics.high_critical_count} ` +
         `high/critical risk ${metrics.high_critical_count === 1 ? "case" : "cases"}. ` +
@@ -569,7 +569,7 @@ export function generateCaraInsights(
         `consistently, and are all staff trained in recognising when an NRM referral ` +
         `is appropriate for criminally exploited children?`,
     );
-  } else if (metrics.average_indicators_per_record > 3) {
+  } else if ((metrics.average_indicators_per_record ?? 0) > 3) {
     insights.push(
       `[reflect] Average of ${metrics.average_indicators_per_record} exploitation indicators per record suggests ` +
         `children may be deeply embedded in county lines networks. Are disruption strategies ` +
