@@ -14,7 +14,7 @@
  * ══════════════════════════════════════════════════════════════════════════════
  */
 
-import { db } from "./store";
+import { db, getStore } from "./store";
 import { facilityStore } from "./facility-store";
 import { createServerClient } from "@/lib/supabase/server";
 import * as sq from "@/lib/supabase/queries";
@@ -769,6 +769,201 @@ export const dal = {
       if (c) return sq.getLatestHomeClimateSnapshot(c, homeId());
       return null;
     },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // DEMO-ONLY extensions — collections routed through DAL for uniform access
+  // but currently ALWAYS in-memory (no Supabase table yet). When a table
+  // lands for one of these, wire the query in queries.ts and swap the
+  // `if (sb())` branch here — routes stay unchanged.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  keyWorkingSessions: {
+    async findAll(filters?: { child_id?: string; staff_id?: string }) {
+      let list = db.keyWorkingSessions.findAll();
+      if (filters?.child_id) list = list.filter((s) => s.child_id === filters.child_id);
+      if (filters?.staff_id) list = list.filter((s) => s.staff_id === filters.staff_id);
+      return list;
+    },
+    async findById(id: string) { return db.keyWorkingSessions.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.keyWorkingSessions.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.keyWorkingSessions.create(data); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any) { return db.keyWorkingSessions.update(id, data); },
+  },
+
+  behaviourLog: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.behaviourLog.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.behaviourLog.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.behaviourLog.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.behaviourLog.create(data); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any) { return db.behaviourLog.update(id, data); },
+  },
+
+  riskAssessments: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.riskAssessments.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.riskAssessments.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.riskAssessments.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.riskAssessments.create(data); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any) { return db.riskAssessments.update(id, data); },
+  },
+
+  lacReviews: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.lacReviews.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.lacReviews.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.lacReviews.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.lacReviews.create(data); },
+  },
+
+  educationRecords: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.educationRecords.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.educationRecords.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.educationRecords.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.educationRecords.create(data); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any) { return db.educationRecords.update(id, data); },
+  },
+
+  trainingRecords: {
+    async findAll(filters?: { staff_id?: string }) {
+      let list = getStore().trainingRecords;
+      if (filters?.staff_id) list = list.filter((r) => r.staff_id === filters.staff_id);
+      return list;
+    },
+    async findById(id: string) { return getStore().trainingRecords.find((r) => r.id === id) ?? null; },
+    async findByStaff(staffId: string) { return getStore().trainingRecords.filter((r) => r.staff_id === staffId); },
+  },
+
+  restraints: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.restraints.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.restraints.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.restraints.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.restraints.create(data); },
+  },
+
+  reflectiveSupervisions: {
+    async findAll(filters?: { staff_id?: string }) {
+      let list = getStore().reflectiveSupervisions;
+      if (filters?.staff_id) list = list.filter((r) => r.staff_id === filters.staff_id);
+      return list;
+    },
+    async findById(id: string) { return getStore().reflectiveSupervisions.find((r) => r.id === id) ?? null; },
+    async findByStaff(staffId: string) { return getStore().reflectiveSupervisions.filter((r) => r.staff_id === staffId); },
+  },
+
+  outcomeTargets: {
+    async findAll(filters?: { child_id?: string; status?: string; domain?: string }) {
+      let list = db.outcomeTargets.findAll();
+      if (filters?.child_id) list = list.filter((t) => t.child_id === filters.child_id);
+      if (filters?.status) list = list.filter((t) => t.status === filters.status);
+      if (filters?.domain) list = list.filter((t) => t.domain === filters.domain);
+      return list;
+    },
+    async findById(id: string) { return db.outcomeTargets.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.outcomeTargets.findByChild(childId); },
+    async findActive() { return db.outcomeTargets.findActive(); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.outcomeTargets.create(data); },
+  },
+
+  debriefRecords: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.debriefRecords.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.debriefRecords.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.debriefRecords.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.debriefRecords.create(data); },
+  },
+
+  familyTimeSessions: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.familyTimeSessions.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.familyTimeSessions.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.familyTimeSessions.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.familyTimeSessions.create(data); },
+  },
+
+  sanctionRewards: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.sanctionRewards.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.sanctionRewards.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.sanctionRewards.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.sanctionRewards.create(data); },
+  },
+
+  returnInterviews: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.returnInterviews.findAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.returnInterviews.findById(id) ?? null; },
+    async findByChild(childId: string) { return db.returnInterviews.findByChild(childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.returnInterviews.create(data); },
+  },
+
+  positiveAchievements: {
+    async findAll(filters?: { child_id?: string }) {
+      let list = db.positiveAchievements.getAll();
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return db.positiveAchievements.getAll().find((r) => r.id === id) ?? null; },
+    async findByChild(childId: string) { return db.positiveAchievements.getAll().filter((r) => r.child_id === childId); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(data: any) { return db.positiveAchievements.create(data); },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(id: string, data: any) { return db.positiveAchievements.update(id, data); },
+  },
+
+  caraRecordingReviews: {
+    async findAll(filters?: { user_id?: string; child_id?: string }) {
+      let list = getStore().caraRecordingReviews;
+      if (filters?.user_id) list = list.filter((r) => r.user_id === filters.user_id);
+      if (filters?.child_id) list = list.filter((r) => r.child_id === filters.child_id);
+      return list;
+    },
+    async findById(id: string) { return getStore().caraRecordingReviews.find((r) => r.id === id) ?? null; },
   },
 };
 
