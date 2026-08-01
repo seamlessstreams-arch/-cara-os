@@ -317,7 +317,7 @@ export default function OfstedActionPlanPage() {
             { label: "Requirements Met", value: `${requirementsMet}/${requirementsTotal}`, icon: Flag, colour: requirementsMet === requirementsTotal ? "text-emerald-600" : "text-red-600" },
             { label: "Recommendations Addressed", value: `${recommendationsAddressed}/${recommendationsTotal}`, icon: ClipboardCheck, colour: recommendationsAddressed === recommendationsTotal ? "text-emerald-600" : "text-amber-600" },
             { label: "In Progress", value: inProgressCount, icon: TrendingUp, colour: "text-amber-600" },
-            { label: "Overall Completion", value: `${totalActionable > 0 ? Math.round((completedCount / totalActionable) * 100) : 0}%`, icon: CheckCircle2, colour: completedCount === totalActionable ? "text-emerald-600" : "text-blue-600" },
+            { label: "Overall Completion", value: `${totalActionable > 0 ? Math.round((completedCount / totalActionable) * 100) : null}%`, icon: CheckCircle2, colour: completedCount === totalActionable ? "text-emerald-600" : "text-blue-600" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border bg-white p-4 flex items-center gap-3">
               <s.icon className={cn("h-5 w-5", s.colour)} />

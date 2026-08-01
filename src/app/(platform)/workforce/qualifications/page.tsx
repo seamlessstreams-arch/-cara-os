@@ -151,7 +151,7 @@ function StaffQualPanel({
   const gaps      = quals.filter((q) => q.mandatory && q.status === "not_started").length;
   const expired   = quals.filter((q) => q.status === "expired").length;
   const expiring  = quals.filter((q) => q.expiry_date && daysUntil(q.expiry_date) >= 0 && daysUntil(q.expiry_date) <= 90).length;
-  const pct       = quals.length > 0 ? Math.round((completed / quals.length) * 100) : 0;
+  const pct       = quals.length > 0 ? Math.round((completed / quals.length) * 100) : null;
 
   const hasIssues = gaps > 0 || expired > 0;
 
@@ -184,7 +184,7 @@ function StaffQualPanel({
               <div
                 className={cn(
                   "h-full rounded-full",
-                  pct === 100 ? "bg-emerald-500" : pct >= 60 ? "bg-amber-400" : "bg-red-400",
+                  (pct ?? 0) === 100 ? "bg-emerald-500" : (pct ?? 0) >= 60 ? "bg-amber-400" : "bg-red-400",
                 )}
                 style={{ width: `${pct}%` }}
               />
@@ -492,7 +492,7 @@ export default function QualificationsPage() {
   const expiring  = allQuals.filter((q) => q.expiry_date && new Date(q.expiry_date) < new Date(Date.now() + 90 * 86400000) && q.status !== "expired").length;
   const completed = allQuals.filter((q) => q.status === "completed").length;
   const expired   = allQuals.filter((q) => q.status === "expired").length;
-  const teamPct   = allQuals.length > 0 ? Math.round(((completed + allQuals.filter((q) => q.status === "exempt").length) / allQuals.length) * 100) : 0;
+  const teamPct   = allQuals.length > 0 ? Math.round(((completed + allQuals.filter((q) => q.status === "exempt").length) / allQuals.length) * 100) : null;
 
   // Group by staff for staff view
   const activeStaff = staff.filter((s) => s.is_active);
@@ -527,7 +527,7 @@ export default function QualificationsPage() {
         {/* ── KPI Row ── */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
-            { label: "Team Compliance", value: `${teamPct}%`, colour: teamPct >= 80 ? "text-emerald-600" : teamPct >= 60 ? "text-amber-600" : "text-red-600", bg: teamPct >= 80 ? "bg-emerald-50 border-emerald-100" : teamPct >= 60 ? "bg-amber-50 border-amber-100" : "bg-red-50 border-red-100" },
+            { label: "Team Compliance", value: `${(teamPct ?? 0)}%`, colour: (teamPct ?? 0) >= 80 ? "text-emerald-600" : (teamPct ?? 0) >= 60 ? "text-amber-600" : "text-red-600", bg: (teamPct ?? 0) >= 80 ? "bg-emerald-50 border-emerald-100" : (teamPct ?? 0) >= 60 ? "bg-amber-50 border-amber-100" : "bg-red-50 border-red-100" },
             { label: "Mandatory Gaps", value: gaps, colour: gaps > 0 ? "text-red-600" : "text-emerald-600", bg: gaps > 0 ? "bg-red-50 border-red-100" : "bg-emerald-50 border-emerald-100" },
             { label: "Expired", value: expired, colour: expired > 0 ? "text-red-600" : "text-emerald-600", bg: expired > 0 ? "bg-red-50 border-red-100" : "bg-emerald-50 border-emerald-100" },
             { label: "Expiring (90d)", value: expiring, colour: expiring > 0 ? "text-amber-600" : "text-[var(--cs-text-muted)]", bg: expiring > 0 ? "bg-amber-50 border-amber-100" : "bg-slate-50 border-[var(--cs-border-subtle)]" },
@@ -546,7 +546,7 @@ export default function QualificationsPage() {
             <span className="text-xs font-semibold text-[var(--cs-text-secondary)]">Overall Team Compliance</span>
             <span className={cn(
               "text-sm font-bold",
-              teamPct >= 80 ? "text-emerald-600" : teamPct >= 60 ? "text-amber-600" : "text-red-600",
+              (teamPct ?? 0) >= 80 ? "text-emerald-600" : (teamPct ?? 0) >= 60 ? "text-amber-600" : "text-red-600",
             )}>
               {teamPct}%
             </span>

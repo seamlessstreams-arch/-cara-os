@@ -63,7 +63,7 @@ export default function ComplaintsTrendAnalysisPage() {
   const prev = data[1];
   const totalAcrossPeriods = data.reduce((sum, r) => sum + r.total_complaints, 0);
   const totalFromChildren = data.reduce((sum, r) => sum + r.child_complaints_count, 0);
-  const avgResolution = data.length > 0 ? Math.round(data.reduce((sum, r) => sum + r.avg_resolution_days, 0) / data.length) : 0;
+  const avgResolution = data.length > 0 ? Math.round(data.reduce((sum, r) => sum + r.avg_resolution_days, 0) / data.length) : null;
 
   const exportCols: ExportColumn<ComplaintTrend>[] = [
     { header: "Period", accessor: (r: ComplaintTrend) => r.period },

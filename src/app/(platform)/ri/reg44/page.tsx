@@ -433,7 +433,7 @@ export default function Reg44Page() {
       (n, v) => n + (v.findings?.length ?? 0), 0,
     );
     const avgFindings = allCompletedVisits.length > 0
-      ? Math.round((totalFindings / allCompletedVisits.length) * 10) / 10 : 0;
+      ? Math.round((totalFindings / allCompletedVisits.length) * 10) / 10 : null;
 
     return {
       totalOpenActions, totalConcerns, resolvedConcerns,

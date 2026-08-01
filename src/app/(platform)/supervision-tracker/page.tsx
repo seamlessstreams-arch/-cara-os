@@ -149,7 +149,7 @@ export default function SupervisionTrackerPage() {
   const overdue = withCompliance.filter((r) => r.compliance === "overdue" || r.compliance === "significantly_overdue").length;
   const totalSessions = records.reduce((sum, r) => sum + r.sessions_this_year, 0);
   const totalExpected = records.reduce((sum, r) => sum + r.sessions_expected_this_year, 0);
-  const overallRate = totalExpected > 0 ? Math.round((totalSessions / totalExpected) * 100) : 0;
+  const overallRate = totalExpected > 0 ? Math.round((totalSessions / totalExpected) * 100) : null;
 
   const exportCols: ExportColumn<SupervisionTrackerRecord>[] = [
     { header: "Staff", accessor: (r: SupervisionTrackerRecord) => getStaffName(r.staff_id) },

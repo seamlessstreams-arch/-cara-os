@@ -62,7 +62,7 @@ export default function SupervisionMatrixPage() {
     const currentCount = internalRecords.filter((r) => r.status === "current").length;
     const dueSoonCount = internalRecords.filter((r) => r.status === "due_soon").length;
     const overdueCount = internalRecords.filter((r) => r.status === "overdue").length;
-    const compliancePct = totalStaff > 0 ? Math.round((currentCount / totalStaff) * 100) : 0;
+    const compliancePct = totalStaff > 0 ? Math.round((currentCount / totalStaff) * 100) : null;
 
     const nextDueRecord = [...internalRecords].sort(
       (a, b) => a.next_supervision_date.localeCompare(b.next_supervision_date)

@@ -118,7 +118,7 @@ export default function EmergencyProtocolDrillsPage() {
             thisYear.length) *
             100
         )
-      : 0;
+      : null;
   const scenarios = new Set(records.map((r) => r.scenario_type));
   const stats = {
     totalThisYear: thisYear.length,

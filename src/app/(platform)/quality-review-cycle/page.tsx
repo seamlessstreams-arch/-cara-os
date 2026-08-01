@@ -99,7 +99,7 @@ export default function QualityReviewCyclePage() {
   const completedOnTime = records.filter((r) => r.status === "completed").length;
   const totalActions = records.reduce((s, r) => s + r.actions_arising.length, 0);
   const completedActions = records.reduce((s, r) => s + r.actions_arising.filter((a: Reg46ActionArising) => a.status === "completed").length, 0);
-  const actionsCompletedPct = totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : 0;
+  const actionsCompletedPct = totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : null;
   const latestCompleted = records.filter((r) => r.status === "completed").sort((a, b) => (b.completed_date ?? "").localeCompare(a.completed_date ?? ""))[0];
 
   const exportCols: ExportColumn<Reg46Review>[] = [

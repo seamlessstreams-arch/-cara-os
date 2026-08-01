@@ -213,7 +213,7 @@ export default function SocialWorkerContactPage() {
             { label: "Contacts This Month", value: thisMonth, icon: Phone, colour: "text-blue-600" },
             { label: "Statutory Visits", value: statVisits, icon: CheckCircle2, colour: "text-emerald-600" },
             { label: "Overdue Follow-Ups", value: overdueFollowUps.length, icon: AlertTriangle, colour: "text-red-600" },
-            { label: "Avg Contacts / Week", value: records.length > 0 ? Math.round(records.length / 4 * 10) / 10 : 0, icon: Clock, colour: "text-gray-600" },
+            { label: "Avg Contacts / Week", value: records.length > 0 ? Math.round(records.length / 4 * 10) / 10 : null, icon: Clock, colour: "text-gray-600" },
           ].map(s => (
             <Card key={s.label}>
               <CardContent className="pt-4 flex items-center gap-3">

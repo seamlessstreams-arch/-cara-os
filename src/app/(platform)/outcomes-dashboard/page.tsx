@@ -122,7 +122,7 @@ export default function OutcomesDashboardPage() {
   /* ── summary stats ── */
   const totalMetrics = metrics.length;
   const strongOrImproving = metrics.filter((r) => r.trend === "strong_improvement" || r.trend === "improving").length;
-  const strongPct = totalMetrics > 0 ? Math.round((strongOrImproving / totalMetrics) * 100) : 0;
+  const strongPct = totalMetrics > 0 ? Math.round((strongOrImproving / totalMetrics) * 100) : null;
   const decliningOrConcerning = metrics.filter((r) => r.trend === "declining" || r.trend === "concerning").length;
   const greenRag = metrics.filter((r) => r.risk_rating === "green").length;
 

@@ -198,7 +198,7 @@ export default function CaraDevPlannerPage() {
             const statusCfg = STATUS_CONFIG[plan.status];
             const completedActions = plan.actions.filter((a) => a.completed).length;
             const totalActions = plan.actions.length;
-            const pct = totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : 0;
+            const pct = totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : null;
 
             return (
               <div key={plan.id} className="rounded-2xl border border-slate-200 bg-white overflow-hidden">

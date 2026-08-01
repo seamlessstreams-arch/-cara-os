@@ -110,7 +110,7 @@ export default function StaffSaferCaringPage() {
 
   const totalPlans = records.length;
   const currentCount = records.filter((r) => r.status === "current").length;
-  const currentPct = totalPlans > 0 ? Math.round((currentCount / totalPlans) * 100) : 0;
+  const currentPct = totalPlans > 0 ? Math.round((currentCount / totalPlans) * 100) : null;
   const reviewDueCount = records.filter((r) => r.status === "review_due").length;
 
   const exportCols: ExportColumn<StaffSaferCaringRecord>[] = [

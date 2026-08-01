@@ -177,7 +177,7 @@ export default function ChildVoicePage() {
                 {Object.entries(summary.sentimentBreakdown).map(([sentiment, count]) => {
                   const config = SENTIMENT_CONFIG[sentiment] ?? SENTIMENT_CONFIG.unknown;
                   const Icon = config.icon;
-                  const pct = totalSentiment > 0 ? Math.round((count / totalSentiment) * 100) : 0;
+                  const pct = totalSentiment > 0 ? Math.round((count / totalSentiment) * 100) : null;
                   return (
                     <button
                       key={sentiment}

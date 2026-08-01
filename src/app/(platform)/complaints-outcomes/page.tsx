@@ -166,7 +166,7 @@ export default function ComplaintsOutcomesPage() {
   ).length;
   const avgResponse = entries.length > 0
     ? Math.round(entries.reduce((sum, e) => sum + e.response_time_days, 0) / entries.length)
-    : 0;
+    : null;
   const lessonsCount = entries.filter((e) => e.lessons_learned.trim().length > 0).length;
 
   /* ── export columns ─────────────────────────────────────────────── */
@@ -213,7 +213,7 @@ export default function ComplaintsOutcomesPage() {
           {[
             { label: "Total Complaints", value: total, icon: ClipboardCheck, colour: "text-indigo-600" },
             { label: "Upheld / Partial", value: upheldOrPartial, icon: AlertTriangle, colour: upheldOrPartial > 0 ? "text-amber-600" : "text-emerald-600" },
-            { label: "Avg Response (Days)", value: `${avgResponse}`, icon: Clock, colour: avgResponse > 28 ? "text-red-600" : "text-emerald-600" },
+            { label: "Avg Response (Days)", value: `${(avgResponse ?? 0)}`, icon: Clock, colour: (avgResponse ?? 0) > 28 ? "text-red-600" : "text-emerald-600" },
             { label: "Lessons Documented", value: lessonsCount, icon: BookOpen, colour: "text-teal-600" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border bg-white p-4 flex items-center gap-3">

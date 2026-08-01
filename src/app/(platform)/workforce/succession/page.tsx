@@ -103,7 +103,7 @@ function ReadinessChart({
   plans,
   getStaffName,
 }: {
-  plans: Array<{ role_title: string; candidates: Array<{ staff_id: string; readiness_score: number; ready_now: boolean }> }>;
+  plans: Array<{ role_title: string; candidates: Array<{ staff_id: string; readiness_score: number | null; ready_now: boolean }> }>;
   getStaffName: (id: string) => string;
 }) {
   const allCandidates = plans.flatMap((p) =>
@@ -112,7 +112,7 @@ function ReadinessChart({
       role: p.role_title,
       name: getStaffName(c.staff_id),
     })),
-  ).sort((a, b) => b.readiness_score - a.readiness_score);
+  ).sort((a, b) => (b.readiness_score ?? 0) - (a.readiness_score ?? 0));
 
   return (
     <Card>
@@ -130,11 +130,11 @@ function ReadinessChart({
             </p>
             <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
               <div
-                className={cn("h-full rounded-full transition-all", READINESS_BG(c.readiness_score))}
+                className={cn("h-full rounded-full transition-all", READINESS_BG(c.readiness_score ?? 0))}
                 style={{ width: `${c.readiness_score}%` }}
               />
             </div>
-            <span className={cn("text-[10px] font-bold tabular-nums w-8 text-right", READINESS_COLOUR(c.readiness_score))}>
+            <span className={cn("text-[10px] font-bold tabular-nums w-8 text-right", READINESS_COLOUR(c.readiness_score ?? 0))}>
               {c.readiness_score}%
             </span>
           </div>
@@ -149,7 +149,7 @@ function ReadinessChart({
 function CoverageRisk({
   plans,
 }: {
-  plans: Array<{ role_title: string; urgency: string; candidates: Array<{ readiness_score: number; ready_now: boolean }> }>;
+  plans: Array<{ role_title: string; urgency: string; candidates: Array<{ readiness_score: number | null; ready_now: boolean }> }>;
 }) {
   return (
     <Card>
@@ -162,7 +162,7 @@ function CoverageRisk({
       <CardContent className="pt-0 space-y-2">
         {plans.map((plan) => {
           const readyNow = plan.candidates.filter((c) => c.ready_now).length;
-          const bestScore = Math.max(...plan.candidates.map((c) => c.readiness_score), 0);
+          const bestScore = Math.max(...plan.candidates.map((c) => c.readiness_score ?? 0), 0);
           const urgencyCfg = URGENCY_CONFIG[plan.urgency];
           const riskLevel = readyNow > 0 ? "covered" : bestScore >= 70 ? "developing" : "at risk";
           const riskColour = riskLevel === "covered" ? "text-emerald-600" : riskLevel === "developing" ? "text-amber-600" : "text-red-600";
@@ -257,7 +257,7 @@ export default function SuccessionBoardPage() {
   const rolesAtRisk     = plans.filter((p) => !p.candidates.some((c) => c.ready_now) && !p.candidates.some((c) => c.readiness_score >= 70)).length;
   const avgReadiness    = totalCandidates > 0
     ? Math.round(plans.flatMap((p) => p.candidates).reduce((s, c) => s + c.readiness_score, 0) / totalCandidates)
-    : 0;
+    : null;
 
   return (
     <PageShell

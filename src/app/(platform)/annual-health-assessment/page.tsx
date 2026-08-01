@@ -69,7 +69,7 @@ export default function AnnualHealthAssessmentPage() {
   const total = data.length;
   const withinDeadlinePct = total > 0
     ? Math.round((data.filter((r) => r.completed_within_deadline).length / total) * 100)
-    : 0;
+    : null;
   const fullHealthPack = data.filter((r) =>
     r.immunisations_up_to_date && r.dental_check_up_to_date && r.optical_check_up_to_date,
   ).length;

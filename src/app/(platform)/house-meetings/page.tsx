@@ -122,7 +122,7 @@ export default function HouseMeetingsPage() {
     const totalAgendaItems = meetings.reduce((a, m) => a + m.agenda.length, 0);
     const totalFeedback = meetings.reduce((a, m) => a + m.child_feedback.length, 0);
     const nextMeeting = meetings.map((m) => m.next_meeting_date).filter((d) => d >= new Date().toISOString().slice(0, 10)).sort()[0] || "—";
-    const avgDuration = total > 0 ? Math.round(meetings.reduce((a, m) => a + m.duration, 0) / total) : 0;
+    const avgDuration = total > 0 ? Math.round(meetings.reduce((a, m) => a + m.duration, 0) / total) : null;
     return { total, totalAgendaItems, totalFeedback, nextMeeting, avgDuration };
   }, [meetings]);
 

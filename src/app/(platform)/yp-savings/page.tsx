@@ -118,7 +118,7 @@ export default function YPSavingsPage() {
       totalBalance,
       totalDeposits,
       selfManaged: records.filter((a) => a.child_manages).length,
-      avgBalance: records.length > 0 ? Math.round(totalBalance / records.length) : 0,
+      avgBalance: records.length > 0 ? Math.round(totalBalance / records.length) : null,
     };
   }, [records]);
 

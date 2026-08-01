@@ -405,7 +405,7 @@ export default function MaintenancePage() {
                     if (!data) return null;
                     const Icon = CAT_ICONS[cat] || Wrench;
                     const colors = CAT_COLORS[cat] || CAT_COLORS.general;
-                    const pct = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
+                    const pct = data.total > 0 ? Math.round((data.completed / data.total) * 100) : null;
                     return (
                       <div key={cat} className={cn("rounded-xl border p-3 space-y-2", colors.border)}>
                         <div className="flex items-center gap-2">

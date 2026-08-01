@@ -105,7 +105,7 @@ export default function ChildFeedbackLoopsPage() {
   const total = items.length;
   const actedOn = items.filter((f) => f.decision_made === "acted_on_in_full" || f.decision_made === "acted_on_in_part").length;
   const childAccepts = items.filter((f) => f.child_accepts).length;
-  const avgDays = total > 0 ? Math.round(items.reduce((sum, f) => sum + f.duration_days_to_close, 0) / total) : 0;
+  const avgDays = total > 0 ? Math.round(items.reduce((sum, f) => sum + f.duration_days_to_close, 0) / total) : null;
 
   return (
     <PageShell
@@ -126,7 +126,7 @@ export default function ChildFeedbackLoopsPage() {
           <p className="text-xs text-muted-foreground">Feedback Loops</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{total > 0 ? Math.round((actedOn / total) * 100) : 0}%</p>
+          <p className="text-2xl font-bold text-green-600">{total > 0 ? Math.round((actedOn / total) * 100) : null}%</p>
           <p className="text-xs text-muted-foreground">Acted On</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">

@@ -1138,7 +1138,7 @@ export default function SupervisionPage() {
               const appraisal = APPRAISALS.find((a) => a.staffId === staff.id);
               const isDueSoon = appraisal?.nextDue && appraisal.nextDue <= daysFromNow(30);
               const isOverdue = appraisal?.nextDue && appraisal.nextDue < todayStr();
-              const objectivePct = appraisal && appraisal.objectives > 0 ? Math.round((appraisal.achieved / appraisal.objectives) * 100) : 0;
+              const objectivePct = appraisal && appraisal.objectives > 0 ? Math.round((appraisal.achieved / appraisal.objectives) * 100) : null;
 
               return (
                 <div key={staff.id} className={cn(

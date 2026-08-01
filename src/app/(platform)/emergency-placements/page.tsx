@@ -116,8 +116,8 @@ export default function EmergencyPlacementsPage() {
   const stats = useMemo(() => {
     const total = referrals.length;
     const accepted = referrals.filter((r) => r.status === "accepted_emergency").length;
-    const acceptedPct = total > 0 ? Math.round((accepted / total) * 100) : 0;
-    const avgResponse = total > 0 ? Math.round(referrals.reduce((sum, r) => sum + r.response_time, 0) / total) : 0;
+    const acceptedPct = total > 0 ? Math.round((accepted / total) * 100) : null;
+    const avgResponse = total > 0 ? Math.round(referrals.reduce((sum, r) => sum + r.response_time, 0) / total) : null;
     const ooh = referrals.filter((r) => r.out_of_hours).length;
     return { total, accepted, acceptedPct, avgResponse, ooh };
   }, [referrals]);

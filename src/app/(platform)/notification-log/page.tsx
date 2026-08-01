@@ -93,7 +93,7 @@ export default function NotificationLogPage() {
   /* ── stats ───────────────────────────────────────────────────────── */
   const total = records.length;
   const onTime = records.filter((r) => r.within_timeframe).length;
-  const onTimePct = total > 0 ? Math.round((onTime / total) * 100) : 0;
+  const onTimePct = total > 0 ? Math.round((onTime / total) * 100) : null;
   const ofstedCount = records.filter((r) => r.notified_to === "Ofsted").length;
   const lateCount = records.filter((r) => !r.within_timeframe).length;
 

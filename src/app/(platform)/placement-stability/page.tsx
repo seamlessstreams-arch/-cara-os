@@ -85,7 +85,7 @@ export default function PlacementStabilityPage() {
     );
   }
 
-  const avgDays = entries.length > 0 ? Math.round(entries.reduce((s, r) => s + r.days_in_placement, 0) / entries.length) : 0;
+  const avgDays = entries.length > 0 ? Math.round(entries.reduce((s, r) => s + r.days_in_placement, 0) / entries.length) : null;
   const atRisk = entries.filter((r) => r.stability_risk === "high" || r.stability_risk === "critical").length;
   const improving = entries.filter((r) => r.trend === "improving").length;
 

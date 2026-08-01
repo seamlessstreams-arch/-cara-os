@@ -171,7 +171,7 @@ export default function MissingAbscondingPage() {
                 <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                   <div
                     className="h-2 rounded-full bg-slate-400"
-                    style={{ width: `${data.totalEpisodes > 0 ? Math.max(4, Math.round((r.count / data.totalEpisodes) * 100)) : 0}%` }}
+                    style={{ width: `${data.totalEpisodes > 0 ? Math.max(4, Math.round((r.count / data.totalEpisodes) * 100)) : null}%` }}
                   />
                 </div>
                 <span className="text-xs font-semibold text-slate-700 w-5 shrink-0">{r.count}</span>

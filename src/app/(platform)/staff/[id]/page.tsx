@@ -412,12 +412,12 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                 <div>
                   <div className="flex justify-between text-xs mb-1">
                     <span className="text-[var(--cs-text-muted)]">Training Compliance</span>
-                    <span className="font-medium text-[var(--cs-navy)]">{training.length > 0 ? Math.round((completedTraining / training.length) * 100) : 0}%</span>
+                    <span className="font-medium text-[var(--cs-navy)]">{training.length > 0 ? Math.round((completedTraining / training.length) * 100) : null}%</span>
                   </div>
                   <div className="h-2 rounded-full bg-slate-100">
                     <div
                       className={cn("h-2 rounded-full transition-all", expiredTraining > 0 ? "bg-red-500" : expiringSoon > 0 ? "bg-amber-400" : "bg-emerald-500")}
-                      style={{ width: `${training.length > 0 ? Math.round((completedTraining / training.length) * 100) : 0}%` }}
+                      style={{ width: `${training.length > 0 ? Math.round((completedTraining / training.length) * 100) : null}%` }}
                     />
                   </div>
                 </div>
@@ -798,11 +798,11 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                     const total = domainRecords.length;
                     const compliant = domainRecords.filter((t) => t.status === "compliant").length;
                     const expired = domainRecords.filter((t) => t.status === "expired").length;
-                    const pct = total > 0 ? Math.round((compliant / total) * 100) : 0;
+                    const pct = total > 0 ? Math.round((compliant / total) * 100) : null;
                     const radius = 28;
                     const circ = 2 * Math.PI * radius;
-                    const dash = (pct / 100) * circ;
-                    const ringColour = pct === 100 ? "stroke-emerald-500" : pct >= 60 ? "stroke-amber-400" : expired > 0 ? "stroke-red-500" : "stroke-slate-300";
+                    const dash = ((pct ?? 0) / 100) * circ;
+                    const ringColour = (pct ?? 0) === 100 ? "stroke-emerald-500" : (pct ?? 0) >= 60 ? "stroke-amber-400" : expired > 0 ? "stroke-red-500" : "stroke-slate-300";
 
                     return (
                       <div

@@ -130,7 +130,7 @@ export default function ChildParticipationLogPage() {
   const stats = useMemo(() => {
     const total = entries.length;
     const influenced = entries.filter((e) => e.child_influenced).length;
-    const pct = total > 0 ? Math.round((influenced / total) * 100) : 0;
+    const pct = total > 0 ? Math.round((influenced / total) * 100) : null;
     const categories = [...new Set(entries.map((e) => e.category))].length;
     return { total, influenced, pct, categories };
   }, [entries]);

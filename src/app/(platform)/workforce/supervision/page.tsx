@@ -101,7 +101,7 @@ export default function WorkforceSupervisionPage() {
     const dueSoon = allStaff.filter((s) => getSupervisionStatus(s.next_supervision_due) === "due_soon").length;
     const onTrack = allStaff.filter((s) => getSupervisionStatus(s.next_supervision_due) === "on_track").length;
     const noDate  = allStaff.filter((s) => getSupervisionStatus(s.next_supervision_due) === "unknown").length;
-    const compliant = allStaff.length > 0 ? Math.round(((onTrack + dueSoon) / allStaff.length) * 100) : 0;
+    const compliant = allStaff.length > 0 ? Math.round(((onTrack + dueSoon) / allStaff.length) * 100) : null;
 
     // Next upcoming supervision
     const upcoming = allStaff
@@ -188,8 +188,8 @@ export default function WorkforceSupervisionPage() {
           <div className="text-[10px] text-[var(--cs-text-muted)]">On Track</div>
         </div>
         <div className="rounded-xl border border-[var(--cs-border)] bg-white p-3 text-center">
-          <TrendingUp className={cn("h-4 w-4 mx-auto mb-1", stats.compliant >= 80 ? "text-emerald-500" : stats.compliant >= 60 ? "text-amber-500" : "text-red-500")} />
-          <div className={cn("text-lg font-bold tabular-nums", stats.compliant >= 80 ? "text-emerald-700" : stats.compliant >= 60 ? "text-amber-700" : "text-red-700")}>
+          <TrendingUp className={cn("h-4 w-4 mx-auto mb-1", (stats.compliant ?? 0) >= 80 ? "text-emerald-500" : (stats.compliant ?? 0) >= 60 ? "text-amber-500" : "text-red-500")} />
+          <div className={cn("text-lg font-bold tabular-nums", (stats.compliant ?? 0) >= 80 ? "text-emerald-700" : (stats.compliant ?? 0) >= 60 ? "text-amber-700" : "text-red-700")}>
             {stats.compliant}%
           </div>
           <div className="text-[10px] text-[var(--cs-text-muted)]">Compliance</div>
@@ -234,7 +234,7 @@ export default function WorkforceSupervisionPage() {
         </div>
         <span className={cn(
           "text-[10px] font-bold tabular-nums",
-          stats.compliant >= 80 ? "text-emerald-600" : stats.compliant >= 60 ? "text-amber-600" : "text-red-600",
+          (stats.compliant ?? 0) >= 80 ? "text-emerald-600" : (stats.compliant ?? 0) >= 60 ? "text-amber-600" : "text-red-600",
         )}>
           {stats.onTrack + stats.dueSoon}/{stats.total}
         </span>

@@ -176,7 +176,7 @@ export default function TransitionPlanningPage() {
     const total = goals.length;
     const achieved = goals.filter((g) => g.status === "achieved").length;
     const atRisk = goals.filter((g) => g.status === "at_risk").length;
-    const avgProgress = total > 0 ? Math.round(goals.reduce((s, g) => s + g.percent_complete, 0) / total) : 0;
+    const avgProgress = total > 0 ? Math.round(goals.reduce((s, g) => s + g.percent_complete, 0) / total) : null;
     const overdue = goals.filter((g) => g.target_date < d(0) && g.status !== "achieved").length;
     return { total, achieved, atRisk, avgProgress, overdue };
   }, [goals]);
@@ -185,7 +185,7 @@ export default function TransitionPlanningPage() {
   const childProgress = useMemo(() => {
     return children.map((c) => {
       const cg = goals.filter((g) => g.child_id === c.id);
-      const avg = cg.length > 0 ? Math.round(cg.reduce((s, g) => s + g.percent_complete, 0) / cg.length) : 0;
+      const avg = cg.length > 0 ? Math.round(cg.reduce((s, g) => s + g.percent_complete, 0) / cg.length) : null;
       const achieved = cg.filter((g) => g.status === "achieved").length;
       const atRisk = cg.filter((g) => g.status === "at_risk").length;
       return { ...c, total: cg.length, avg, achieved, atRisk };
@@ -258,7 +258,7 @@ export default function TransitionPlanningPage() {
                   <Badge variant="outline">{c.total} goals</Badge>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                  <div className={cn("h-2 rounded-full", c.avg >= 60 ? "bg-green-500" : c.avg >= 30 ? "bg-amber-500" : "bg-red-400")} style={{ width: `${c.avg}%` }} />
+                  <div className={cn("h-2 rounded-full", (c.avg ?? 0) >= 60 ? "bg-green-500" : (c.avg ?? 0) >= 30 ? "bg-amber-500" : "bg-red-400")} style={{ width: `${(c.avg ?? 0)}%` }} />
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>{c.avg}% avg progress</span>

@@ -324,7 +324,7 @@ function AppraisalRow({
   const competencyEntries = Object.entries(appraisal.competency_scores) as [CompetencyDomain, CompetencyLevel][];
   const avgScore = competencyEntries.length > 0
     ? Math.round((competencyEntries.reduce((s, [, v]) => s + v, 0) / competencyEntries.length) * 10) / 10
-    : 0;
+    : null;
 
   return (
     <div className={cn(
@@ -354,12 +354,12 @@ function AppraisalRow({
               <span>{TYPE_LABELS[appraisal.appraisal_type]}</span>
               <span className="text-[var(--cs-text-gentle)]">·</span>
               <span>{appraisal.appraisal_date}</span>
-              {avgScore > 0 && (
+              {(avgScore ?? 0) > 0 && (
                 <>
                   <span className="text-[var(--cs-text-gentle)]">·</span>
                   <span className={cn(
                     "font-semibold",
-                    avgScore >= 4 ? "text-emerald-600" : avgScore >= 3 ? "text-blue-600" : "text-amber-600",
+                    (avgScore ?? 0) >= 4 ? "text-emerald-600" : (avgScore ?? 0) >= 3 ? "text-blue-600" : "text-amber-600",
                   )}>
                     Avg {avgScore}
                   </span>

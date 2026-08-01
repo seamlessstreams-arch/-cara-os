@@ -126,7 +126,7 @@ export default function StaffHandbookAcknowledgementsPage() {
   const stats = useMemo(() => {
     const totalDocs = documents.length;
     const fullyAcknowledged = documents.filter(doc => isComplete(doc)).length;
-    const fullyAcknowledgedPct = totalDocs > 0 ? Math.round((fullyAcknowledged / totalDocs) * 100) : 0;
+    const fullyAcknowledgedPct = totalDocs > 0 ? Math.round((fullyAcknowledged / totalDocs) * 100) : null;
     const overdueCount = documents.filter(doc => hasOverdue(doc)).length;
 
     // Staff with outstanding reads

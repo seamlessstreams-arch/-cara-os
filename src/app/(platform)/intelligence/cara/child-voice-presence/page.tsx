@@ -104,7 +104,7 @@ const TYPE_COLOURS: Record<RecordType, string> = {
 
 function RecordTypeCard({ stat, maxTotal }: { stat: RecordTypeStats; maxTotal: number }) {
   const [expanded, setExpanded] = useState(false);
-  const barWidth = maxTotal > 0 ? Math.round((stat.total / maxTotal) * 100) : 0;
+  const barWidth = maxTotal > 0 ? Math.round((stat.total / maxTotal) * 100) : null;
   const fillWidth = stat.presenceRate ?? 0;
 
   return (

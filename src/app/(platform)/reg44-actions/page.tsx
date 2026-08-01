@@ -173,7 +173,7 @@ export default function Reg44ActionsPage() {
   const completed = records.filter((r) => r.status === "completed").length;
   const openActions = records.filter((r) => r.status === "open" || r.status === "in_progress").length;
   const overdue = records.filter((r) => r.status === "overdue" || r.status === "carried_forward").length;
-  const completionRate = totalActions > 0 ? Math.round((completed / totalActions) * 100) : 0;
+  const completionRate = totalActions > 0 ? Math.round((completed / totalActions) * 100) : null;
 
   const exportCols: ExportColumn<Reg44ActionRecord>[] = [
     { header: "Visit Date", accessor: (r) => r.visit_date },

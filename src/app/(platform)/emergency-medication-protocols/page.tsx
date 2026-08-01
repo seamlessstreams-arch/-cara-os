@@ -95,7 +95,7 @@ export default function EmergencyMedicationProtocolsPage() {
             records.reduce((acc, r) => acc + r.staff_trained_to_administer.length, 0) /
               records.length
           )
-        : 0;
+        : null;
     const fourteenDaysFromNow = new Date();
     fourteenDaysFromNow.setDate(fourteenDaysFromNow.getDate() + 14);
     const cutoff = fourteenDaysFromNow.toISOString().slice(0, 10);

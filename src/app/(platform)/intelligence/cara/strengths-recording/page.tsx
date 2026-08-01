@@ -101,7 +101,7 @@ function RateBadge({ rate }: { rate: number | null }) {
 
 function CategoryBar({ cat, maxCount }: { cat: CategoryResult; maxCount: number }) {
   const cfg = CAT_CONFIG[cat.category];
-  const w = maxCount > 0 ? Math.round((cat.totalCount / maxCount) * 100) : 0;
+  const w = maxCount > 0 ? Math.round((cat.totalCount / maxCount) * 100) : null;
   return (
     <div className="flex items-center gap-3">
       <div className="flex w-40 shrink-0 items-center gap-1.5">

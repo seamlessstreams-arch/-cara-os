@@ -101,7 +101,7 @@ export default function MaintenanceSchedulePage() {
 
   const total = data.length;
   const inDateCount = data.filter((m) => m.compliance_status === "in_date" || m.compliance_status === "booked").length;
-  const inDatePct = total > 0 ? Math.round((inDateCount / total) * 100) : 0;
+  const inDatePct = total > 0 ? Math.round((inDateCount / total) * 100) : null;
   const due30 = data.filter((m) => {
     const due = new Date(m.next_due);
     const days = Math.floor((due.getTime() - today.getTime()) / 86400000);
@@ -147,7 +147,7 @@ export default function MaintenanceSchedulePage() {
           <p className="text-xs text-muted-foreground">Scheduled items</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className={cn("text-2xl font-bold", inDatePct >= 90 ? "text-green-600" : inDatePct >= 75 ? "text-amber-600" : "text-red-600")}>
+          <p className={cn("text-2xl font-bold", (inDatePct ?? 0) >= 90 ? "text-green-600" : (inDatePct ?? 0) >= 75 ? "text-amber-600" : "text-red-600")}>
             {inDatePct}%
           </p>
           <p className="text-xs text-muted-foreground">In date / booked</p>

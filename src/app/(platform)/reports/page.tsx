@@ -205,7 +205,7 @@ export default function ReportsPage() {
   const activeTasks = useMemo(() => allTasks.filter((t) => t.status !== "completed" && t.status !== "cancelled"), [allTasks]);
   const completedTasks = useMemo(() => allTasks.filter((t) => t.status === "completed"), [allTasks]);
   const overdueTasks = useMemo(() => activeTasks.filter((t) => t.due_date && t.due_date < today), [activeTasks, today]);
-  const taskCompletionRate = allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 0;
+  const taskCompletionRate = allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : null;
 
   // Incidents derived stats
   const allIncidents = incidentsQuery.data?.data ?? [];
@@ -330,7 +330,7 @@ export default function ReportsPage() {
                         <div className="text-[10px] text-[var(--cs-text-muted)]">Overdue</div>
                       </div>
                     </div>
-                    <Progress value={taskCompletionRate} color={taskCompletionRate > 70 ? "bg-emerald-500" : "bg-amber-500"} />
+                    <Progress value={(taskCompletionRate ?? 0)} color={(taskCompletionRate ?? 0) > 70 ? "bg-emerald-500" : "bg-amber-500"} />
                     <div className="text-xs text-center text-[var(--cs-text-muted)]">{taskCompletionRate}% overall completion rate</div>
                   </div>
                 </CardContent>
@@ -413,7 +413,7 @@ export default function ReportsPage() {
                     {(["registered_manager", "deputy_manager", "team_leader", "residential_care_worker", "bank_staff"] as const).map((role) => {
                       const count = allStaff.filter((s) => s.role === role && s.is_active).length;
                       if (count === 0) return null;
-                      const pct = activeStaff.length > 0 ? Math.round((count / activeStaff.length) * 100) : 0;
+                      const pct = activeStaff.length > 0 ? Math.round((count / activeStaff.length) * 100) : null;
                       const labels: Record<string, string> = {
                         registered_manager: "Registered Manager",
                         deputy_manager: "Deputy Manager",
@@ -506,7 +506,7 @@ export default function ReportsPage() {
                     const expiring = staff.training_expiring_count;
                     const pct = staff.training_total_count > 0
                       ? Math.round((Math.max(0, compliant) / staff.training_total_count) * 100)
-                      : 0;
+                      : null;
                     return (
                       <div key={staff.id} className="space-y-1.5">
                         <div className="flex items-center gap-3">
@@ -518,7 +518,7 @@ export default function ReportsPage() {
                             {expiring > 0 && <span className="text-[10px] text-amber-600 font-medium">{expiring} expiring</span>}
                           </div>
                         </div>
-                        <Progress value={pct} color={pct > 80 ? "bg-emerald-500" : pct > 60 ? "bg-amber-500" : "bg-red-500"} className="h-1.5" />
+                        <Progress value={(pct ?? 0)} color={(pct ?? 0) > 80 ? "bg-emerald-500" : (pct ?? 0) > 60 ? "bg-amber-500" : "bg-red-500"} className="h-1.5" />
                       </div>
                     );
                   })}

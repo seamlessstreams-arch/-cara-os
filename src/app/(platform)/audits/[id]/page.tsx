@@ -247,7 +247,7 @@ export default function AuditDetailPage({
     );
   }
 
-  const scorePct = audit.max_score > 0 ? Math.round((audit.score / audit.max_score) * 100) : 0;
+  const scorePct = audit.max_score > 0 ? Math.round((audit.score / audit.max_score) * 100) : null;
   const openFindings = audit.findings_detail.filter((f) => f.status !== "resolved").length;
   const resolvedFindings = audit.findings_detail.filter((f) => f.status === "resolved").length;
 
@@ -310,14 +310,14 @@ export default function AuditDetailPage({
                   <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#f1f5f9" strokeWidth="3" />
                   <circle
                     cx="18" cy="18" r="15.9155" fill="none"
-                    stroke={scorePct >= 80 ? "#10b981" : scorePct >= 60 ? "#f59e0b" : "#ef4444"}
+                    stroke={(scorePct ?? 0) >= 80 ? "#10b981" : (scorePct ?? 0) >= 60 ? "#f59e0b" : "#ef4444"}
                     strokeWidth="3"
-                    strokeDasharray={`${scorePct} ${100 - scorePct}`}
+                    strokeDasharray={`${(scorePct ?? 0)} ${100 - (scorePct ?? 0)}`}
                     strokeLinecap="round"
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className={cn("text-xl font-bold", scoreColour(scorePct))}>{scorePct}%</span>
+                  <span className={cn("text-xl font-bold", scoreColour(scorePct ?? 0))}>{scorePct}%</span>
                 </div>
               </div>
               <span className="text-[11px] text-[var(--cs-text-muted)]">{audit.score}/{audit.max_score}</span>
@@ -507,7 +507,7 @@ export default function AuditDetailPage({
                   key={label}
                   className={cn(
                     "flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs",
-                    scorePct >= min && (min === 90 || scorePct < [90, 75, 60, 0][["Outstanding", "Good", "Requires improvement", "Inadequate"].indexOf(label) - 1] || min === 90 ? true : false)
+                    (scorePct ?? 0) >= min && (min === 90 || (scorePct ?? 0) < [90, 75, 60, 0][["Outstanding", "Good", "Requires improvement", "Inadequate"].indexOf(label) - 1] || min === 90 ? true : false)
                       ? "bg-slate-100 font-semibold text-[var(--cs-navy)] ring-1 ring-slate-300"
                       : "text-[var(--cs-text-muted)]"
                   )}
@@ -520,7 +520,7 @@ export default function AuditDetailPage({
               <div className="mt-2 pt-2 border-t border-[var(--cs-border-subtle)]">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-[var(--cs-text-muted)]">This audit</span>
-                  <span className={cn("font-bold", scoreColour(scorePct))}>{scorePct}%</span>
+                  <span className={cn("font-bold", scoreColour(scorePct ?? 0))}>{scorePct}%</span>
                 </div>
                 <Progress value={scorePct} className="h-1.5 mt-1" />
               </div>

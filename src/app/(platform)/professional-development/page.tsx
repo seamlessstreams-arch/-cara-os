@@ -98,7 +98,7 @@ export default function ProfessionalDevelopmentPage() {
 
   /* ── summary stats ── */
   const totalHours = useMemo(() => records.reduce((sum, r) => sum + r.cpd_hours, 0), [records]);
-  const avgPerStaff = useMemo(() => staffIds.length > 0 ? Math.round(totalHours / staffIds.length) : 0, [totalHours, staffIds.length]);
+  const avgPerStaff = useMemo(() => staffIds.length > 0 ? Math.round(totalHours / staffIds.length) : null, [totalHours, staffIds.length]);
   const qualificationsInProgress = useMemo(() => records.filter(r => r.type === "qualification" && r.status === "in_progress").length, [records]);
   const completedThisQuarter = useMemo(() => records.filter(r => r.completed_date && r.completed_date >= d(-90)).length, [records]);
 

@@ -100,8 +100,8 @@ export default function ReferralTrackerPage() {
     const total = records.length;
     const accepted = records.filter((r) => r.status === "accepted").length;
     const declined = records.filter((r) => r.status === "declined").length;
-    const acceptedPct = total > 0 ? Math.round((accepted / total) * 100) : 0;
-    const declinedPct = total > 0 ? Math.round((declined / total) * 100) : 0;
+    const acceptedPct = total > 0 ? Math.round((accepted / total) * 100) : null;
+    const declinedPct = total > 0 ? Math.round((declined / total) * 100) : null;
 
     const withDecision = records.filter((r) => r.decision_date && r.referral_date);
     const avgDays =

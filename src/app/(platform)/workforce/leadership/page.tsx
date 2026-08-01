@@ -130,7 +130,7 @@ export default function LeadershipReadinessPage() {
     ).length;
     const avgReadiness = leadershipProfiles.length > 0
       ? Math.round(leadershipProfiles.reduce((s, p) => s + p.overall_readiness_score, 0) / leadershipProfiles.length)
-      : 0;
+      : null;
     const withPlans = leadershipProfiles.filter((p) => plans.some((pl) => pl.staff_id === p.staff_id)).length;
 
     return {
@@ -213,8 +213,8 @@ export default function LeadershipReadinessPage() {
           <div className="text-[10px] text-slate-500">In Development</div>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-3 text-center">
-          <TrendingUp className={cn("h-4 w-4 mx-auto mb-1", stats.avgReadiness >= 70 ? "text-emerald-500" : stats.avgReadiness >= 50 ? "text-amber-500" : "text-red-500")} />
-          <div className={cn("text-lg font-bold tabular-nums", stats.avgReadiness >= 70 ? "text-emerald-700" : stats.avgReadiness >= 50 ? "text-amber-700" : "text-red-700")}>
+          <TrendingUp className={cn("h-4 w-4 mx-auto mb-1", (stats.avgReadiness ?? 0) >= 70 ? "text-emerald-500" : (stats.avgReadiness ?? 0) >= 50 ? "text-amber-500" : "text-red-500")} />
+          <div className={cn("text-lg font-bold tabular-nums", (stats.avgReadiness ?? 0) >= 70 ? "text-emerald-700" : (stats.avgReadiness ?? 0) >= 50 ? "text-amber-700" : "text-red-700")}>
             {stats.avgReadiness}%
           </div>
           <div className="text-[10px] text-slate-500">Avg Readiness</div>

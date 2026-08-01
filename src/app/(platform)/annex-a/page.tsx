@@ -353,7 +353,7 @@ function SectionBar({
   isSelected: boolean;
   onClick: () => void;
 }) {
-  const pct = evidenceCount > 0 ? Math.round((approvedCount / evidenceCount) * 100) : 0;
+  const pct = evidenceCount > 0 ? Math.round((approvedCount / evidenceCount) * 100) : null;
 
   return (
     <button
@@ -381,7 +381,7 @@ function SectionBar({
         <div
           className={cn(
             "h-full rounded-full transition-all",
-            pct >= 80 ? "bg-emerald-500" : pct >= 50 ? "bg-amber-500" : "bg-red-400"
+            (pct ?? 0) >= 80 ? "bg-emerald-500" : (pct ?? 0) >= 50 ? "bg-amber-500" : "bg-red-400"
           )}
           style={{ width: `${pct}%` }}
         />
@@ -1036,7 +1036,7 @@ export default function AnnexAReadinessPage() {
               </p>
               <div className="space-y-1.5">
                 {sections.map((s) => {
-                  const pct = s.evidence_count > 0 ? Math.round((s.approved_count / s.evidence_count) * 100) : 0;
+                  const pct = s.evidence_count > 0 ? Math.round((s.approved_count / s.evidence_count) * 100) : null;
                   return (
                     <div key={s.key} className="flex items-center gap-3 text-xs">
                       <span className="flex-1 text-slate-700 truncate">{s.label}</span>
@@ -1044,7 +1044,7 @@ export default function AnnexAReadinessPage() {
                         <div
                           className={cn(
                             "h-full rounded-full",
-                            pct >= 80 ? "bg-emerald-500" : pct >= 50 ? "bg-amber-500" : s.has_gap ? "bg-red-400" : "bg-slate-300"
+                            (pct ?? 0) >= 80 ? "bg-emerald-500" : (pct ?? 0) >= 50 ? "bg-amber-500" : s.has_gap ? "bg-red-400" : "bg-slate-300"
                           )}
                           style={{ width: `${pct}%` }}
                         />

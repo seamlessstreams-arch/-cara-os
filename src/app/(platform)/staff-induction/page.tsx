@@ -246,7 +246,7 @@ export default function StaffInductionPage() {
         {filtered.map((rec) => {
           const total = rec.tasks.length;
           const done = rec.tasks.filter((t) => t.status === "completed").length;
-          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+          const pct = total > 0 ? Math.round((done / total) * 100) : null;
           return (
             <div key={rec.id} className="rounded-lg border bg-white overflow-hidden">
               <button onClick={() => setExpanded(expanded === rec.id ? null : rec.id)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50">

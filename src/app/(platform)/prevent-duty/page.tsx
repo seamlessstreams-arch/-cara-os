@@ -141,7 +141,7 @@ export default function PreventDutyPage() {
   const trainingCompliance =
     trainingRecords.length > 0
       ? Math.round((trainingCompleted / trainingRecords.length) * 100)
-      : 0;
+      : null;
 
   /* ── filter & sort ────────────────────────────────────────────────── */
   const filtered = useMemo(() => {

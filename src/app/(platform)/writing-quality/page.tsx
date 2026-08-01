@@ -233,7 +233,7 @@ export default function WritingQualityPage() {
                 {issueRows.length === 0 ? (
                   <p className="text-sm text-[var(--cs-text-muted)]">No activity in this period.</p>
                 ) : issueRows.map((row) => {
-                  const pct = row.total > 0 ? Math.round((row.accepted / row.total) * 100) : 0;
+                  const pct = row.total > 0 ? Math.round((row.accepted / row.total) * 100) : null;
                   return (
                     <div key={row.type}>
                       <div className="mb-1 flex items-center justify-between gap-2">

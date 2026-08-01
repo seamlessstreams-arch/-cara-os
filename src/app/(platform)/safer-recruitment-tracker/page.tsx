@@ -251,7 +251,7 @@ export default function SaferRecruitmentTrackerPage() {
         {filtered.map((rec) => {
           const total = rec.checklist_items.length;
           const done = rec.checklist_items.filter((c) => c.completed).length;
-          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+          const pct = total > 0 ? Math.round((done / total) * 100) : null;
           const StatusIcon = STATUS_META[rec.status].icon;
           const hasFlags = rec.red_flags_raised.length > 0 || rec.references.some((ref) => ref.status === "concerns_raised");
 
@@ -297,7 +297,7 @@ export default function SaferRecruitmentTrackerPage() {
                     <div
                       className={cn(
                         "h-full rounded-full",
-                        pct === 100 ? "bg-green-400" : pct >= 50 ? "bg-blue-400" : "bg-amber-400",
+                        (pct ?? 0) === 100 ? "bg-green-400" : (pct ?? 0) >= 50 ? "bg-blue-400" : "bg-amber-400",
                       )}
                       style={{ width: `${pct}%` }}
                     />

@@ -485,7 +485,7 @@ export default function ExpensesPage() {
                 <div className="space-y-3">
                   {byCategory.map(({ cat, total }) => {
                     const Icon = CAT_ICONS[cat] || Receipt;
-                    const pct = grandTotal > 0 ? Math.round((total / grandTotal) * 100) : 0;
+                    const pct = grandTotal > 0 ? Math.round((total / grandTotal) * 100) : null;
                     return (
                       <div key={cat} className="space-y-1.5">
                         <div className="flex items-center gap-2">

@@ -80,7 +80,7 @@ function useCompetencyProfiles(params?: { homeId?: string }) {
 
 const STAGE_CONFIG: Record<PathwayStage, {
   colour: string; bgColour: string; borderColour: string; dotColour: string;
-  min_score: number; description: string; requirements: string[];
+  min_score: number | null; description: string; requirements: string[];
 }> = {
   inductee: {
     colour: "text-[var(--cs-text-secondary)]", bgColour: "bg-slate-100", borderColour: "border-[var(--cs-border)]", dotColour: "bg-slate-400",
@@ -322,7 +322,7 @@ function ReadinessOverview({ profiles, getStaffName }: { profiles: StaffCompeten
   const sorted = [...profiles].sort((a, b) => b.overall_readiness_score - a.overall_readiness_score);
   const teamAvg = profiles.length > 0
     ? Math.round(profiles.reduce((s, p) => s + p.overall_readiness_score, 0) / profiles.length)
-    : 0;
+    : null;
 
   return (
     <Card>
@@ -398,7 +398,7 @@ export default function CareerPathwayPage() {
   // Team metrics
   const teamAvg = profiles.length > 0
     ? Math.round(profiles.reduce((s, p) => s + p.overall_readiness_score, 0) / profiles.length)
-    : 0;
+    : null;
   const progressingCount = profiles.filter((p) => p.target_stage).length;
 
   return (
@@ -433,7 +433,7 @@ export default function CareerPathwayPage() {
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
           {[
             { label: "Team Members", value: profiles.length, colour: "text-indigo-700", icon: <Users className="h-4 w-4 text-indigo-500" /> },
-            { label: "Team Avg Readiness", value: `${teamAvg}%`, colour: teamAvg >= 70 ? "text-emerald-700" : "text-amber-700", icon: <BarChart3 className="h-4 w-4 text-indigo-500" /> },
+            { label: "Team Avg Readiness", value: `${(teamAvg ?? 0)}%`, colour: (teamAvg ?? 0) >= 70 ? "text-emerald-700" : "text-amber-700", icon: <BarChart3 className="h-4 w-4 text-indigo-500" /> },
             { label: "Actively Progressing", value: progressingCount, colour: "text-blue-700", icon: <TrendingUp className="h-4 w-4 text-blue-500" /> },
             { label: "Stages Covered", value: `${new Set(profiles.map((p) => p.current_stage)).size}/7`, colour: "text-[var(--cs-cara-gold)]", icon: <Milestone className="h-4 w-4 text-[var(--cs-cara-gold)]" /> },
           ].map(({ label, value, colour, icon }) => (

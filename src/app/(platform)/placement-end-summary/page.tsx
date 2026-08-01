@@ -118,7 +118,7 @@ export default function PlacementEndSummaryPage() {
   // ── stats ─────────────────────────────────────────────────────────────────
   const totalEndings = entries.length;
   const planned = entries.filter((s) => s.end_reason !== "placement_disruption").length;
-  const avgDuration = totalEndings > 0 ? Math.round(entries.reduce((sum, s) => sum + s.duration_months, 0) / totalEndings) : 0;
+  const avgDuration = totalEndings > 0 ? Math.round(entries.reduce((sum, s) => sum + s.duration_months, 0) / totalEndings) : null;
   const avgRating = totalEndings > 0 ? (
     entries.reduce((sum, s) => {
       const ratings = [s.outcomes.health.rating, s.outcomes.education.rating, s.outcomes.relationships.rating, s.outcomes.emotional.rating, s.outcomes.independence.rating];

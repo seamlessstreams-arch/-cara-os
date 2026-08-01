@@ -125,7 +125,7 @@ export default function HomeworkSupportLogPage() {
           <p className="text-xs text-muted-foreground">Recent Sessions</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{total > 0 ? Math.round((completed / total) * 100) : 0}%</p>
+          <p className="text-2xl font-bold text-green-600">{total > 0 ? Math.round((completed / total) * 100) : null}%</p>
           <p className="text-xs text-muted-foreground">Completed</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">

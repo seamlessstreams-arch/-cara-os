@@ -539,7 +539,7 @@ export default function LeavePage() {
                       <div className="space-y-3">
                         {activeStaff.map((staff) => {
                           const ent = ENTITLEMENTS[staff.id] || { total: 25, taken: 0, pending: 0, remaining: 25 };
-                          const pct = ent.total > 0 ? Math.round((ent.taken / ent.total) * 100) : 0;
+                          const pct = ent.total > 0 ? Math.round((ent.taken / ent.total) * 100) : null;
                           return (
                             <div key={staff.id} className="space-y-1.5">
                               <div className="flex items-center gap-3">
@@ -550,7 +550,7 @@ export default function LeavePage() {
                                   {ent.pending > 0 && <span className="text-amber-600 ml-1">+{ent.pending} pending</span>}
                                 </div>
                               </div>
-                              <Progress value={pct} color={pct > 80 ? "bg-amber-500" : "bg-blue-500"} className="h-1.5" />
+                              <Progress value={(pct ?? 0)} color={(pct ?? 0) > 80 ? "bg-amber-500" : "bg-blue-500"} className="h-1.5" />
                             </div>
                           );
                         })}

@@ -109,7 +109,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
   const successRate =
     allInterventions.length > 0
       ? Math.round((successfulInterventions / allInterventions.length) * 100)
-      : 0;
+      : null;
 
   const exportCols: ExportColumn<DisruptionPreventionPlan>[] = [
     { header: "Young Person", accessor: (r: DisruptionPreventionPlan) => getYPName(r.child_id) },

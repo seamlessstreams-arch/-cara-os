@@ -133,7 +133,7 @@ export default function EndOfShiftChecklistPage() {
       0,
     );
     const completionRate =
-      totalChecks > 0 ? Math.round((completed / totalChecks) * 100) : 0;
+      totalChecks > 0 ? Math.round((completed / totalChecks) * 100) : null;
     const escalations = recent.reduce(
       (s, r) => s + r.any_escalations.length,
       0,
@@ -310,9 +310,9 @@ export default function EndOfShiftChecklistPage() {
           <div
             className={cn(
               "mt-2 text-3xl font-semibold",
-              summary.completionRate >= 95
+              (summary.completionRate ?? 0) >= 95
                 ? "text-[--cs-success]"
-                : summary.completionRate >= 85
+                : (summary.completionRate ?? 0) >= 85
                   ? "text-[--cs-warning]"
                   : "text-[--cs-risk]",
             )}

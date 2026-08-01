@@ -154,7 +154,7 @@ export default function RestraintLogPage() {
     const total = records.length;
     const cutoff = (() => { const dt = new Date(); dt.setDate(dt.getDate() - 90); return dt.toISOString().slice(0, 10); })();
     const last90Days = records.filter((r) => r.date >= cutoff).length;
-    const avgDuration = total > 0 ? Math.round(records.reduce((a, r) => a + r.duration, 0) / total) : 0;
+    const avgDuration = total > 0 ? Math.round(records.reduce((a, r) => a + r.duration, 0) / total) : null;
     const pendingReview = records.filter((r) => r.review_status === "pending_rm" || r.review_status === "pending_ri").length;
     return { total, last90Days, avgDuration, pendingReview };
   }, [records]);

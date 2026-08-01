@@ -230,7 +230,7 @@ export default function KeyWorkingPage() {
   const stats = useMemo(() => {
     const total = sessions.length;
     const thisWeek = sessions.filter((s) => s.date >= d(-7)).length;
-    const avgDuration = total > 0 ? Math.round(sessions.reduce((a, s) => a + s.duration, 0) / total) : 0;
+    const avgDuration = total > 0 ? Math.round(sessions.reduce((a, s) => a + s.duration, 0) / total) : null;
     const pendingFollowUp = sessions.filter((s) => s.followUp && !s.followUpCompleted).length;
     const avgMoodImprovement = total > 0 ? (sessions.reduce((a, s) => a + (s.moodAfter - s.moodBefore), 0) / total).toFixed(1) : "0";
     return { total, thisWeek, avgDuration, pendingFollowUp, avgMoodImprovement };

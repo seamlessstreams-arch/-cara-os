@@ -832,7 +832,7 @@ function ChildSummaryCard({
   const declining = active.filter((t) => t.direction === "declining").length;
   const avgRating = active.length > 0
     ? Math.round((active.reduce((s, t) => s + t.current_rating, 0) / active.length) * 10) / 10
-    : 0;
+    : null;
 
   return (
     <div className={cn(
@@ -852,7 +852,7 @@ function ChildSummaryCard({
         <div className="text-right">
           <p className={cn(
             "text-lg font-bold",
-            avgRating >= 3.5 ? "text-[--cs-success]" : avgRating >= 2.5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+            (avgRating ?? 0) >= 3.5 ? "text-[--cs-success]" : (avgRating ?? 0) >= 2.5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
           )}>
             {avgRating}
           </p>

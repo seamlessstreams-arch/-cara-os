@@ -203,7 +203,7 @@ function ProfileCard({ profile }: { profile: StaffRecordingProfile }) {
               </p>
               <div className="space-y-1.5">
                 {profile.issueBreakdown.map((stat) => {
-                  const pct = stat.total > 0 ? Math.round((stat.accepted / stat.total) * 100) : 0;
+                  const pct = stat.total > 0 ? Math.round((stat.accepted / stat.total) * 100) : null;
                   return (
                     <div key={stat.type} className="flex items-center gap-2">
                       <span className="w-40 shrink-0 text-xs text-slate-600 truncate">
@@ -211,7 +211,7 @@ function ProfileCard({ profile }: { profile: StaffRecordingProfile }) {
                       </span>
                       <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                         <div
-                          className={cn("h-full rounded-full", pct >= 70 ? "bg-emerald-400" : pct >= 40 ? "bg-amber-400" : "bg-red-400")}
+                          className={cn("h-full rounded-full", (pct ?? 0) >= 70 ? "bg-emerald-400" : (pct ?? 0) >= 40 ? "bg-amber-400" : "bg-red-400")}
                           style={{ width: `${pct}%` }}
                         />
                       </div>

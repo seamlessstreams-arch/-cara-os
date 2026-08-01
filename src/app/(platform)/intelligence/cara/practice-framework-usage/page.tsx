@@ -109,7 +109,7 @@ function FrameworkCard({ fw, maxEngagements }: { fw: FrameworkUsage; maxEngageme
   const [expanded, setExpanded] = useState(false);
   const IconComp = ICON_MAP[fw.icon] ?? BookOpen;
   const sc = SIGNAL_CONFIG[fw.signal];
-  const barWidth = maxEngagements > 0 ? Math.round((fw.totalEngagements / maxEngagements) * 100) : 0;
+  const barWidth = maxEngagements > 0 ? Math.round((fw.totalEngagements / maxEngagements) * 100) : null;
 
   return (
     <Card className="overflow-hidden">

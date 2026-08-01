@@ -91,7 +91,7 @@ export default function EvidencePage() {
   const typeCounts: Record<string, number> = {};
   for (const s of sources) typeCounts[s.sourceType] = (typeCounts[s.sourceType] ?? 0) + 1;
 
-  const avgConfidence = sources.length > 0 ? Math.round(sources.reduce((sum, s) => sum + s.confidence, 0) / sources.length) : 0;
+  const avgConfidence = sources.length > 0 ? Math.round(sources.reduce((sum, s) => sum + s.confidence, 0) / sources.length) : null;
   const approvedCount = sources.filter((s) => s.approved).length;
 
   return (
@@ -129,12 +129,12 @@ export default function EvidencePage() {
             </div>
             <p className="text-2xl font-bold text-emerald-700">{approvedCount}</p>
           </div>
-          <div className={cn("rounded-xl border p-4", avgConfidence >= 75 ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50")}>
+          <div className={cn("rounded-xl border p-4", (avgConfidence ?? 0) >= 75 ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50")}>
             <div className="flex items-center gap-1.5 mb-2">
               <BarChart3 className="h-3.5 w-3.5" />
               <span className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide">Avg Confidence</span>
             </div>
-            <p className={cn("text-2xl font-bold", avgConfidence >= 75 ? "text-emerald-700" : "text-amber-700")}>{avgConfidence}%</p>
+            <p className={cn("text-2xl font-bold", (avgConfidence ?? 0) >= 75 ? "text-emerald-700" : "text-amber-700")}>{(avgConfidence ?? 0)}%</p>
           </div>
           <div className="rounded-xl border border-[var(--cs-border)] bg-white p-4">
             <div className="flex items-center gap-1.5 mb-2">

@@ -121,7 +121,7 @@ export default function MenuPlanningPage() {
     const weekBudget = meals.filter((m) => m.date >= d(-7)).reduce((a, m) => a + m.budget, 0);
     const allRatings = meals.flatMap((m) => m.child_preferences);
     const liked = allRatings.filter((r: MealChildPreference) => r.rating === "liked").length;
-    const satisfaction = allRatings.length > 0 ? Math.round((liked / allRatings.length) * 100) : 0;
+    const satisfaction = allRatings.length > 0 ? Math.round((liked / allRatings.length) * 100) : null;
     const upcoming = meals.filter((m) => m.date >= d(0)).length;
     return { total, weekBudget, satisfaction, upcoming };
   }, [meals]);

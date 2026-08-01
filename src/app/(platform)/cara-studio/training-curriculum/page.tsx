@@ -117,7 +117,7 @@ export default function TrainingCurriculumPage() {
 
   const totalOverdue = staff.reduce((sum, s) => sum + s.overdueItems, 0);
   const totalCritical = staff.reduce((sum, s) => sum + s.criticalGaps, 0);
-  const avgProgress = staff.length > 0 ? Math.round(staff.reduce((sum, s) => sum + s.overallProgress, 0) / staff.length) : 0;
+  const avgProgress = staff.length > 0 ? Math.round(staff.reduce((sum, s) => sum + s.overallProgress, 0) / staff.length) : null;
 
   return (
     <PageShell title="Training Curriculum" subtitle="Staff competency & learning pathways">

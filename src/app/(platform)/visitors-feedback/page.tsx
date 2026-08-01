@@ -135,7 +135,7 @@ export default function VisitorsFeedbackPage() {
     : "0.0";
   const positivePercent = entries.length > 0
     ? Math.round((entries.filter((e) => e.rating >= 4).length / entries.length) * 100)
-    : 0;
+    : null;
   const concernsRaised = entries.filter((e) => (e.concerns?.length ?? 0) > 0).length;
 
   /* ── export columns ─────────────────────────────────────────────────── */

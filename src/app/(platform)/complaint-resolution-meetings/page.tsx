@@ -138,7 +138,7 @@ export default function ComplaintResolutionMeetingsPage() {
           <p className="text-xs text-muted-foreground">Total Meetings</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{total > 0 ? Math.round((resolved / total) * 100) : 0}%</p>
+          <p className="text-2xl font-bold text-green-600">{total > 0 ? Math.round((resolved / total) * 100) : null}%</p>
           <p className="text-xs text-muted-foreground">Resolution Rate</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">

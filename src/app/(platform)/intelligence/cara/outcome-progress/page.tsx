@@ -160,7 +160,7 @@ export default function OutcomeProgressPage() {
   if (error || !data) return <div className="p-8 text-red-600 text-sm">Unable to load outcome progress data.</div>;
 
   const overall = SIGNAL_STYLES[data.overallSignal];
-  const improvePct = data.totalTargets > 0 ? Math.round((data.improvingCount / data.totalTargets) * 100) : 0;
+  const improvePct = data.totalTargets > 0 ? Math.round((data.improvingCount / data.totalTargets) * 100) : null;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
@@ -185,7 +185,7 @@ export default function OutcomeProgressPage() {
             <p className="text-xs text-slate-500">Active targets</p>
           </div>
           <div>
-            <p className={`text-2xl font-bold ${improvePct >= 60 ? "text-green-700" : "text-amber-700"}`}>
+            <p className={`text-2xl font-bold ${(improvePct ?? 0) >= 60 ? "text-green-700" : "text-amber-700"}`}>
               {improvePct}%
             </p>
             <p className="text-xs text-slate-500">Improving</p>
@@ -267,7 +267,7 @@ export default function OutcomeProgressPage() {
           </p>
         </div>
         <div className="text-2xl font-bold text-teal-700">
-          {data.totalChildren > 0 ? Math.round((data.childrenWithVoice / data.totalChildren) * 100) : 0}%
+          {data.totalChildren > 0 ? Math.round((data.childrenWithVoice / data.totalChildren) * 100) : null}%
         </div>
       </div>
 

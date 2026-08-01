@@ -99,7 +99,7 @@ export default function ConsequenceFrameworkPage() {
 
   const repaired = records.filter((r) => r.relationship_repaired).length;
   const restorativeCount = records.filter((r) => r.approach === "restorative_conversation").length;
-  const avgRepairRate = records.length > 0 ? Math.round((repaired / records.length) * 100) : 0;
+  const avgRepairRate = records.length > 0 ? Math.round((repaired / records.length) * 100) : null;
 
   if (isLoading) {
     return (

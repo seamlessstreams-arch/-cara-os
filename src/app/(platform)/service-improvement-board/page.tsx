@@ -205,7 +205,7 @@ export default function ServiceImprovementBoardPage() {
         {filtered.map((init) => {
           const isExpanded = expandedId === init.id;
           const milestonesAchieved = init.key_milestones.filter((m) => m.achieved).length;
-          const milestoneProgress = init.key_milestones.length > 0 ? Math.round((milestonesAchieved / init.key_milestones.length) * 100) : 0;
+          const milestoneProgress = init.key_milestones.length > 0 ? Math.round((milestonesAchieved / init.key_milestones.length) * 100) : null;
 
           return (
             <div key={init.id} className="rounded-xl border bg-white overflow-hidden">

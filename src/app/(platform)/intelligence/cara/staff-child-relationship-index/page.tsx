@@ -96,7 +96,7 @@ function InteractionBar({
   const pct =
     totalRecordings > 0
       ? Math.round((interaction.recordingCount / totalRecordings) * 100)
-      : 0;
+      : null;
 
   const barColour = interaction.isKeyWorker
     ? "bg-indigo-500"

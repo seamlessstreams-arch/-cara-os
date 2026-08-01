@@ -281,7 +281,7 @@ export default function PoliciesPage() {
   const overallReadPct = useMemo(() => {
     const total = enrichedPolicies.reduce((acc, p) => acc + p.total_staff_required, 0);
     const read = enrichedPolicies.reduce((acc, p) => acc + p.read_acknowledgements.filter((a) => a.acknowledged).length, 0);
-    return total > 0 ? Math.round((read / total) * 100) : 0;
+    return total > 0 ? Math.round((read / total) * 100) : null;
   }, [enrichedPolicies]);
 
   // Category counts
@@ -370,7 +370,7 @@ export default function PoliciesPage() {
             { label: "Current", value: currentCount, colour: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100", icon: CheckCircle2 },
             { label: "Due Review", value: dueReviewCount, colour: dueReviewCount > 0 ? "text-amber-600" : "text-emerald-600", bg: dueReviewCount > 0 ? "bg-amber-50 border-amber-100" : "bg-emerald-50 border-emerald-100", icon: Clock },
             { label: "Overdue", value: overdueCount, colour: overdueCount > 0 ? "text-red-600" : "text-emerald-600", bg: overdueCount > 0 ? "bg-red-50 border-red-100" : "bg-emerald-50 border-emerald-100", icon: AlertTriangle },
-            { label: "Staff Read %", value: `${overallReadPct}%`, colour: overallReadPct >= 90 ? "text-emerald-600" : overallReadPct >= 70 ? "text-amber-600" : "text-red-600", bg: overallReadPct >= 90 ? "bg-emerald-50 border-emerald-100" : overallReadPct >= 70 ? "bg-amber-50 border-amber-100" : "bg-red-50 border-red-100", icon: Eye },
+            { label: "Staff Read %", value: `${(overallReadPct ?? 0)}%`, colour: (overallReadPct ?? 0) >= 90 ? "text-emerald-600" : (overallReadPct ?? 0) >= 70 ? "text-amber-600" : "text-red-600", bg: (overallReadPct ?? 0) >= 90 ? "bg-emerald-50 border-emerald-100" : (overallReadPct ?? 0) >= 70 ? "bg-amber-50 border-amber-100" : "bg-red-50 border-red-100", icon: Eye },
           ].map(({ label, value, colour, bg, icon: Icon }) => (
             <div key={label} className={cn("rounded-2xl border p-4 text-center", bg)}>
               <Icon className={cn("h-4 w-4 mx-auto mb-1", colour)} />

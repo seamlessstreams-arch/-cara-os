@@ -170,7 +170,7 @@ export default function BehaviourSupportPlansPage() {
     const dueReview = plans.filter((p) => p.review_date <= today).length;
     const allBehaviours = plans.flatMap((p) => p.primary_behaviours);
     const improving = allBehaviours.filter((b) => b.trend === "improving").length;
-    const improvingPct = allBehaviours.length > 0 ? Math.round((improving / allBehaviours.length) * 100) : 0;
+    const improvingPct = allBehaviours.length > 0 ? Math.round((improving / allBehaviours.length) * 100) : null;
     // Incidents this week -- mock count based on worsening/stable behaviours
     const incidentsThisWeek = plans.flatMap((p) => p.primary_behaviours).filter((b) => b.frequency === "daily" || b.frequency === "weekly").length;
     return { active, dueReview, improvingPct, incidentsThisWeek };

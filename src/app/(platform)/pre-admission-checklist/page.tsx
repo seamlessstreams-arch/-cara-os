@@ -174,7 +174,7 @@ export default function PreAdmissionChecklistPage() {
           const isExpanded = expandedId === checklist.id;
           const completedCount = checklist.items.filter((i) => i.completed).length;
           const totalCount = checklist.items.length;
-          const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+          const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : null;
 
           return (
             <div key={checklist.id} className="rounded-xl border bg-white overflow-hidden">

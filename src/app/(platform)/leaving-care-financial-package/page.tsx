@@ -227,7 +227,7 @@ export default function LeavingCareFinancialPackagePage() {
           const totalSavings = rec.junior_isa_balance + rec.savings_balance;
           const sehaPct = rec.setting_up_home_allowance > 0
             ? Math.min(100, Math.round((rec.setting_up_home_allowance_used / rec.setting_up_home_allowance) * 100))
-            : 0;
+            : null;
           const displayName = rec.child_id ? getYPName(rec.child_id) : rec.child_initials;
 
           return (

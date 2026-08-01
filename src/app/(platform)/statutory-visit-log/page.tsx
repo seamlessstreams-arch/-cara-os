@@ -142,10 +142,10 @@ export default function StatutoryVisitLogPage() {
   const visitsThisMonth = records.filter((v) => v.date >= monthStart).length;
 
   const aloneCount = records.filter((v) => v.saw_child_alone).length;
-  const alonePct = records.length > 0 ? Math.round((aloneCount / records.length) * 100) : 0;
+  const alonePct = records.length > 0 ? Math.round((aloneCount / records.length) * 100) : null;
 
   const onTimeCount = records.filter((v) => v.within_timeframe).length;
-  const onTimePct = records.length > 0 ? Math.round((onTimeCount / records.length) * 100) : 0;
+  const onTimePct = records.length > 0 ? Math.round((onTimeCount / records.length) * 100) : null;
 
   // closest next visit due (per young person)
   const uniqueChildren = [...new Set(records.map((v) => v.child_id))];
@@ -218,8 +218,8 @@ export default function StatutoryVisitLogPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Visits This Month", value: visitsThisMonth, icon: Calendar, clr: "text-blue-600" },
-            { label: "Saw Child Alone", value: `${alonePct}%`, icon: UserCheck, clr: alonePct >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]" },
-            { label: "Within Timeframe", value: `${onTimePct}%`, icon: CheckCircle2, clr: onTimePct >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]" },
+            { label: "Saw Child Alone", value: `${(alonePct ?? 0)}%`, icon: UserCheck, clr: (alonePct ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]" },
+            { label: "Within Timeframe", value: `${(onTimePct ?? 0)}%`, icon: CheckCircle2, clr: (onTimePct ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]" },
             {
               label: "Next Visit Due",
               value: closestDue ? fmt(closestDue.due) : "—",

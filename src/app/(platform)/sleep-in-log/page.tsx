@@ -107,7 +107,7 @@ export default function SleepInLogPage() {
   // Null on empty — "0% disturbed" on no records reads as "we had sleep-in shifts and none were disturbed".
   const disturbedPct = records.length > 0 ? Math.round(records.filter(r => r.status !== "completed").length / records.length * 100) : null;
   const compRestOwed = records.filter(r => r.compensatory_rest && !r.compensatory_rest_date).length;
-  const avgDistMins = records.length > 0 ? Math.round(records.reduce((s, r) => s + r.total_disturbance_minutes, 0) / records.length) : 0;
+  const avgDistMins = records.length > 0 ? Math.round(records.reduce((s, r) => s + r.total_disturbance_minutes, 0) / records.length) : null;
 
   /* staff summary */
   const staffIds = useMemo(() => [...new Set(records.map(r => r.staff_member))], [records]);

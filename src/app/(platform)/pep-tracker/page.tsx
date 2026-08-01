@@ -148,7 +148,7 @@ export default function PepTrackerPage() {
   /* summary stats */
   const totalPP = peps.reduce((s, p) => s + p.pupil_premium.annual_allocation, 0);
   const spentPP = peps.reduce((s, p) => s + p.pupil_premium.spent_to_date, 0);
-  const avgAttendance = peps.length ? Math.round(peps.reduce((s, p) => s + p.attendance, 0) / peps.length) : 0;
+  const avgAttendance = peps.length ? Math.round(peps.reduce((s, p) => s + p.attendance, 0) / peps.length) : null;
   const overdueCount = peps.filter((p) => p.status === "overdue" || p.status === "review_due").length;
 
   return (
@@ -229,7 +229,7 @@ export default function PepTrackerPage() {
         <FlatList>
           {sorted.map((p) => {
             const isOpen = expandedId === p.id;
-            const ppPercent = p.pupil_premium.annual_allocation > 0 ? Math.round((p.pupil_premium.spent_to_date / p.pupil_premium.annual_allocation) * 100) : 0;
+            const ppPercent = p.pupil_premium.annual_allocation > 0 ? Math.round((p.pupil_premium.spent_to_date / p.pupil_premium.annual_allocation) * 100) : null;
             return (
               <div key={p.id}>
                 <FlatListRow severity={p.attendance >= 85 ? "success" : p.attendance >= 70 ? "warning" : "risk"} onClick={() => setExpandedId(isOpen ? null : p.id)} aria-expanded={isOpen}>
@@ -337,8 +337,8 @@ export default function PepTrackerPage() {
                         </div>
                         <div className="w-full bg-muted rounded-full h-2">
                           <div
-                            className={cn("rounded-full h-2", ppPercent >= 70 ? "bg-green-500" : ppPercent >= 40 ? "bg-amber-500" : "bg-red-500")}
-                            style={{ width: `${Math.min(ppPercent, 100)}%` }}
+                            className={cn("rounded-full h-2", (ppPercent ?? 0) >= 70 ? "bg-green-500" : (ppPercent ?? 0) >= 40 ? "bg-amber-500" : "bg-red-500")}
+                            style={{ width: `${Math.min(ppPercent ?? 0, 100)}%` }}
                           />
                         </div>
                       </div>

@@ -135,7 +135,7 @@ export default function Reg40StaffingPlanPage() {
     const level3InProgress = records.filter((e) => e.qualifications.some((q) => q.name.includes("Level 3") && q.status === "in_progress"));
     const level3Pct = (level3.length + level3InProgress.length) > 0
       ? Math.round((level3.length / (level3.length + level3InProgress.length)) * 100)
-      : 0;
+      : null;
     const tciCovered = records.filter((e) => e.qualifications.some((q) => q.name === "TCI Certified")).length;
 
     return { totalStaff, totalFTE: totalFTE.toFixed(1), ratio, childCount, level3Complete: level3.length, level3InProgress: level3InProgress.length, level3Pct, tciCovered };
@@ -257,7 +257,7 @@ export default function Reg40StaffingPlanPage() {
             </span>
             <span className={cn(
               "font-bold tabular-nums",
-              stats.level3Pct >= 80 ? "text-[--cs-success]" : stats.level3Pct >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (stats.level3Pct ?? 0) >= 80 ? "text-[--cs-success]" : (stats.level3Pct ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {stats.level3Pct}%
             </span>
@@ -266,7 +266,7 @@ export default function Reg40StaffingPlanPage() {
             <div
               className={cn(
                 "h-full rounded-full transition-all",
-                stats.level3Pct >= 80 ? "bg-green-500" : stats.level3Pct >= 60 ? "bg-amber-500" : "bg-red-500",
+                (stats.level3Pct ?? 0) >= 80 ? "bg-green-500" : (stats.level3Pct ?? 0) >= 60 ? "bg-amber-500" : "bg-red-500",
               )}
               style={{ width: `${stats.level3Pct}%` }}
             />
@@ -440,9 +440,9 @@ export default function Reg40StaffingPlanPage() {
           const name = getStaffName(staff.staff_id);
           const completeCount = staff.qualifications.filter((q) => q.status === "complete" || q.status === "current").length;
           const totalQuals = staff.qualifications.length;
-          const pct = totalQuals > 0 ? Math.round((completeCount / totalQuals) * 100) : 0;
+          const pct = totalQuals > 0 ? Math.round((completeCount / totalQuals) * 100) : null;
           const hasIssues = staff.qualifications.some((q) => q.status === "in_progress" || q.status === "due_renewal");
-          const rowSev: RowSeverity = pct === 100 ? "success" : pct >= 75 ? "warning" : "risk";
+          const rowSev: RowSeverity = (pct ?? 0) === 100 ? "success" : (pct ?? 0) >= 75 ? "warning" : "risk";
 
           return (
             <div key={staff.id}>
@@ -454,7 +454,7 @@ export default function Reg40StaffingPlanPage() {
                       <h3 className="font-semibold">{name}</h3>
                       <span className="text-xs text-muted-foreground">{staff.role}</span>
                       {pct === 100 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">Fully Qualified</span>}
-                      {hasIssues && pct < 100 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Gaps</span>}
+                      {hasIssues && (pct ?? 0) < 100 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Gaps</span>}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {completeCount}/{totalQuals} qualifications complete · {staff.contract_hours}h/week · {staff.shift_pattern}
@@ -463,7 +463,7 @@ export default function Reg40StaffingPlanPage() {
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="w-24 h-2 rounded-full bg-gray-100 overflow-hidden hidden sm:block">
-                    <div className={cn("h-full rounded-full", pct === 100 ? "bg-green-400" : pct >= 75 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${pct}%` }} />
+                    <div className={cn("h-full rounded-full", (pct ?? 0) === 100 ? "bg-green-400" : (pct ?? 0) >= 75 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${(pct ?? 0)}%` }} />
                   </div>
                   {expandedId === staff.id ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
                 </div>

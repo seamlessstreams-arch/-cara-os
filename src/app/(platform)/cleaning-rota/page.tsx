@@ -169,7 +169,7 @@ export default function CleaningRotaPage() {
       <div className="space-y-3">
         {filtered.map((c) => {
           const isExpanded = expandedId === c.id;
-          const taskPct = c.tasks_completed.length > 0 ? Math.round((c.tasks_completed.filter((t) => t.completed).length / c.tasks_completed.length) * 100) : 0;
+          const taskPct = c.tasks_completed.length > 0 ? Math.round((c.tasks_completed.filter((t) => t.completed).length / c.tasks_completed.length) * 100) : null;
 
           return (
             <div key={c.id} className="rounded-xl border bg-white overflow-hidden">

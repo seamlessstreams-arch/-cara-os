@@ -66,7 +66,7 @@ function RouteBar({
   count: number;
   maxMinutes: number;
 }) {
-  const pct = maxMinutes > 0 ? Math.round((minutes / maxMinutes) * 100) : 0;
+  const pct = maxMinutes > 0 ? Math.round((minutes / maxMinutes) * 100) : null;
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">

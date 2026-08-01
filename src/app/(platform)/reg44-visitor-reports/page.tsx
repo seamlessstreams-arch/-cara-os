@@ -215,7 +215,7 @@ function ActionPlanProgress({
   const inProgress = allRecs.filter((r) => r.status === "in_progress").length;
   const outstanding = allRecs.filter((r) => r.status === "outstanding").length;
   const total = allRecs.length;
-  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : null;
 
   const openActions = allRecs.filter((r) => r.status !== "completed");
 

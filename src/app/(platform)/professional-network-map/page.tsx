@@ -84,7 +84,7 @@ export default function ProfessionalNetworkMapPage() {
     const active = records.filter((r) => r.is_active);
     const overdue = active.filter((r) => getContactFreshness(r.last_contact, r.contact_frequency) === "red").length;
     const ypSet = new Set(active.map((r) => r.child_id));
-    const avgNetwork = ypSet.size > 0 ? Math.round(active.length / ypSet.size) : 0;
+    const avgNetwork = ypSet.size > 0 ? Math.round(active.length / ypSet.size) : null;
     const activeReferrals = active.filter((r) => r.role === "Advocate" || r.role === "CAMHS Therapist" || r.role === "YOT Worker").length;
     return { total: active.length, overdue, avgNetwork, activeReferrals };
   }, [records]);

@@ -134,7 +134,7 @@ export default function InspectionReadinessPackPage() {
   /* ── stats ──────────────────────────────────────────────────────── */
   const totalItems = entries.length;
   const readyCount = entries.filter((e) => e.in_pack_status === "ready").length;
-  const readyPct = totalItems > 0 ? Math.round((readyCount / totalItems) * 100) : 0;
+  const readyPct = totalItems > 0 ? Math.round((readyCount / totalItems) * 100) : null;
   const needsRefreshCount = entries.filter((e) => e.in_pack_status === "needs_refresh").length;
   const avgQuality = totalItems > 0
     ? (entries.reduce((sum, e) => sum + e.evidence_quality_rating, 0) / totalItems).toFixed(1)

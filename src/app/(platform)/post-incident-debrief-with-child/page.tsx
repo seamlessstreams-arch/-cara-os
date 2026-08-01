@@ -85,15 +85,15 @@ export default function PostIncidentDebriefWithChildPage() {
   const thisMonth = localMonthKey();
   const debriefsThisMonth = records.filter((r) => r.debrief_date.startsWith(thisMonth)).length;
   const childLedCount = records.filter((r) => r.child_ready_to_debrief).length;
-  const childLedPct = records.length > 0 ? Math.round((childLedCount / records.length) * 100) : 0;
+  const childLedPct = records.length > 0 ? Math.round((childLedCount / records.length) * 100) : null;
   const acceptsOutcomeCount = records.filter((r) => r.child_accepts_outcome).length;
-  const acceptsOutcomePct = records.length > 0 ? Math.round((acceptsOutcomeCount / records.length) * 100) : 0;
+  const acceptsOutcomePct = records.length > 0 ? Math.round((acceptsOutcomeCount / records.length) * 100) : null;
   const avgDays =
     records.length > 0
       ? Math.round(
           records.reduce((sum, r) => sum + daysBetween(r.incident_date, r.debrief_date), 0) / records.length,
         )
-      : 0;
+      : null;
 
   /* export */
   const exportCols: ExportColumn<PostIncidentChildDebrief>[] = [
@@ -147,7 +147,7 @@ export default function PostIncidentDebriefWithChildPage() {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className={cn("text-2xl font-bold", childLedPct >= 80 ? "text-green-600" : "text-amber-600")}>
+              <p className={cn("text-2xl font-bold", (childLedPct ?? 0) >= 80 ? "text-green-600" : "text-amber-600")}>
                 {childLedPct}%
               </p>
               <p className="text-xs text-muted-foreground">Child-Led (Ready)</p>
@@ -155,7 +155,7 @@ export default function PostIncidentDebriefWithChildPage() {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className={cn("text-2xl font-bold", acceptsOutcomePct >= 80 ? "text-green-600" : "text-amber-600")}>
+              <p className={cn("text-2xl font-bold", (acceptsOutcomePct ?? 0) >= 80 ? "text-green-600" : "text-amber-600")}>
                 {acceptsOutcomePct}%
               </p>
               <p className="text-xs text-muted-foreground">Accepts Outcome</p>

@@ -99,7 +99,7 @@ export default function MatchingReferralsPage() {
     active: data.filter((r) => !["declined", "withdrawn", "accepted"].includes(r.status)).length,
     accepted: data.filter((r) => r.status === "accepted").length,
     declined: data.filter((r) => r.status === "declined").length,
-    avgAge: data.length > 0 ? Math.round(data.reduce((s, r) => s + r.age, 0) / data.length) : 0,
+    avgAge: data.length > 0 ? Math.round(data.reduce((s, r) => s + r.age, 0) / data.length) : null,
   }), [data]);
 
   const filtered = useMemo(() => {

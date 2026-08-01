@@ -84,7 +84,7 @@ function ReferralCard({ r }: { r: ReferralProfile }) {
 
 function SourceBar({ s }: { s: SourceAnalysis }) {
   const total = s.accepted + s.declined + (s.count - s.accepted - s.declined);
-  const acceptPct = total > 0 ? Math.round((s.accepted / total) * 100) : 0;
+  const acceptPct = total > 0 ? Math.round((s.accepted / total) * 100) : null;
   return (
     <div className="flex items-center gap-3">
       <p className="w-36 shrink-0 truncate text-xs text-slate-700 capitalize">{s.source.replace(/_/g, " ")}</p>

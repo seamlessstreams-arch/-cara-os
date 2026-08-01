@@ -84,7 +84,7 @@ const CATEGORY_CONFIG: Record<PatternCategory, { label: string; badge: string; d
 
 function CategoryBar({ cat, maxHits }: { cat: CategorySummary; maxHits: number }) {
   const cfg = CATEGORY_CONFIG[cat.category];
-  const width = maxHits > 0 ? Math.round((cat.totalHits / maxHits) * 100) : 0;
+  const width = maxHits > 0 ? Math.round((cat.totalHits / maxHits) * 100) : null;
   return (
     <div className="flex items-center gap-3">
       <div className="flex w-36 shrink-0 items-center gap-1.5">
@@ -105,7 +105,7 @@ function CategoryBar({ cat, maxHits }: { cat: CategorySummary; maxHits: number }
 
 function StaffCard({ profile, maxHits }: { profile: StaffLanguageProfile; maxHits: number }) {
   const [expanded, setExpanded] = useState(false);
-  const barWidth = maxHits > 0 ? Math.round((profile.totalHits / maxHits) * 100) : 0;
+  const barWidth = maxHits > 0 ? Math.round((profile.totalHits / maxHits) * 100) : null;
   const topCat = Object.entries(profile.hitsByCategory).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0] as [PatternCategory, number] | undefined;
   const topCatCfg = topCat ? CATEGORY_CONFIG[topCat[0]] : null;
 

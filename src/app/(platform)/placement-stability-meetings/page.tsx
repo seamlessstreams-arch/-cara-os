@@ -129,7 +129,7 @@ export default function PlacementStabilityMeetingsPage() {
     const total = entries.length;
     const stabilised = entries.filter((m) => m.status === "stabilised" || m.status === "placement_stable").length;
     const ended = entries.filter((m) => m.status === "ended").length;
-    const avgAgreements = total > 0 ? Math.round(entries.reduce((s, m) => s + m.agreements_reached.length, 0) / total) : 0;
+    const avgAgreements = total > 0 ? Math.round(entries.reduce((s, m) => s + m.agreements_reached.length, 0) / total) : null;
     return { total, stabilised, ended, avgAgreements };
   }, [entries]);
 

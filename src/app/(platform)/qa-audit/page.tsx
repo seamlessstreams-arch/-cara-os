@@ -101,7 +101,7 @@ export default function QAAuditPage() {
   }, [records, search, filterRating, sortBy]);
 
   const totalAudits = records.length;
-  const avgScore = records.length > 0 ? Math.round(records.reduce((sum, r) => sum + r.score, 0) / records.length) : 0;
+  const avgScore = records.length > 0 ? Math.round(records.reduce((sum, r) => sum + r.score, 0) / records.length) : null;
   const areasOfConcern = records.filter((r) => r.overall_rating === "requires_improvement" || r.overall_rating === "inadequate").length;
   const excellentCount = records.filter((r) => r.overall_rating === "excellent").length;
 

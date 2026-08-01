@@ -150,7 +150,7 @@ function CategoryCompliance({
             const st = getStatus(s.id, cat.key);
             return st === "completed" || st === "exempt";
           }).length;
-          const pct = staffList.length > 0 ? Math.round((compliant / staffList.length) * 100) : 0;
+          const pct = staffList.length > 0 ? Math.round((compliant / staffList.length) * 100) : null;
           return (
             <div key={cat.key} className="flex items-center gap-2">
               <p className="text-[10px] text-[var(--cs-text-muted)] w-20 truncate shrink-0">{cat.label}</p>
@@ -158,14 +158,14 @@ function CategoryCompliance({
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",
-                    pct === 100 ? "bg-emerald-400" : pct >= 70 ? "bg-amber-400" : "bg-red-400",
+                    (pct ?? 0) === 100 ? "bg-emerald-400" : (pct ?? 0) >= 70 ? "bg-amber-400" : "bg-red-400",
                   )}
                   style={{ width: `${pct}%` }}
                 />
               </div>
               <span className={cn(
                 "text-[11px] font-bold tabular-nums w-10 text-right",
-                pct === 100 ? "text-emerald-600" : pct >= 70 ? "text-amber-600" : "text-red-600",
+                (pct ?? 0) === 100 ? "text-emerald-600" : (pct ?? 0) >= 70 ? "text-amber-600" : "text-red-600",
               )}>
                 {pct}%
               </span>
@@ -196,9 +196,9 @@ function StaffCompliance({
       const st = getStatus(s.id, cat.key);
       return st === "completed" || st === "exempt";
     }).length;
-    const pct = mandatory.length > 0 ? Math.round((compliant / mandatory.length) * 100) : 0;
+    const pct = mandatory.length > 0 ? Math.round((compliant / mandatory.length) * 100) : null;
     return { id: s.id, name: getStaffName(s.id), pct, compliant, total: mandatory.length };
-  }).sort((a, b) => b.pct - a.pct);
+  }).sort((a, b) => (b.pct ?? 0) - (a.pct ?? 0));
 
   return (
     <Card>
@@ -218,14 +218,14 @@ function StaffCompliance({
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
-                  s.pct === 100 ? "bg-emerald-400" : s.pct >= 70 ? "bg-amber-400" : "bg-red-400",
+                  (s.pct ?? 0) === 100 ? "bg-emerald-400" : (s.pct ?? 0) >= 70 ? "bg-amber-400" : "bg-red-400",
                 )}
                 style={{ width: `${s.pct}%` }}
               />
             </div>
             <span className={cn(
               "text-[10px] font-bold tabular-nums w-12 text-right",
-              s.pct === 100 ? "text-emerald-600" : s.pct >= 70 ? "text-amber-600" : "text-red-600",
+              (s.pct ?? 0) === 100 ? "text-emerald-600" : (s.pct ?? 0) >= 70 ? "text-amber-600" : "text-red-600",
             )}>
               {s.compliant}/{s.total}
             </span>
@@ -306,7 +306,7 @@ export default function TrainingMatrixPage() {
   const compliantSlots = totalMandatorySlots - teamGaps;
   const teamCompliancePct = totalMandatorySlots > 0
     ? Math.round((compliantSlots / totalMandatorySlots) * 100)
-    : 0;
+    : null;
 
   const expiringCount = staff.reduce((count, s) => {
     return count + TRAINING_CATEGORIES.filter((cat) => {
@@ -347,7 +347,7 @@ export default function TrainingMatrixPage() {
         const st = getStatusForCategory(s.id, cat.key);
         return st === "completed" || st === "exempt";
       }).length;
-      row._pct = `${mandatoryCategories.length > 0 ? Math.round((compliant / mandatoryCategories.length) * 100) : 0}%`;
+      row._pct = `${mandatoryCategories.length > 0 ? Math.round((compliant / mandatoryCategories.length) * 100) : null}%`;
       return row;
     }),
   [staff, quals]);
@@ -404,9 +404,9 @@ export default function TrainingMatrixPage() {
             {
               label: "Team Compliance",
               value: `${teamCompliancePct}%`,
-              colour: teamCompliancePct === 100 ? "text-emerald-700" : teamCompliancePct >= 80 ? "text-amber-700" : "text-red-700",
-              bg: teamCompliancePct === 100 ? "border-emerald-200 bg-emerald-50" : teamCompliancePct >= 80 ? "" : "border-red-200 bg-red-50",
-              icon: <BarChart3 className={cn("h-4 w-4", teamCompliancePct === 100 ? "text-emerald-500" : teamCompliancePct >= 80 ? "text-amber-500" : "text-red-500")} />,
+              colour: (teamCompliancePct ?? 0) === 100 ? "text-emerald-700" : (teamCompliancePct ?? 0) >= 80 ? "text-amber-700" : "text-red-700",
+              bg: (teamCompliancePct ?? 0) === 100 ? "border-emerald-200 bg-emerald-50" : (teamCompliancePct ?? 0) >= 80 ? "" : "border-red-200 bg-red-50",
+              icon: <BarChart3 className={cn("h-4 w-4", (teamCompliancePct ?? 0) === 100 ? "text-emerald-500" : (teamCompliancePct ?? 0) >= 80 ? "text-amber-500" : "text-red-500")} />,
             },
             {
               label: "Gaps",
@@ -461,7 +461,7 @@ export default function TrainingMatrixPage() {
           </div>
           <div className="h-2 rounded-full bg-white/60 overflow-hidden">
             <div
-              className={cn("h-full rounded-full transition-all", teamCompliancePct === 100 ? "bg-emerald-400" : teamCompliancePct >= 80 ? "bg-amber-400" : "bg-red-400")}
+              className={cn("h-full rounded-full transition-all", (teamCompliancePct ?? 0) === 100 ? "bg-emerald-400" : (teamCompliancePct ?? 0) >= 80 ? "bg-amber-400" : "bg-red-400")}
               style={{ width: `${teamCompliancePct}%` }}
             />
           </div>
@@ -556,7 +556,7 @@ export default function TrainingMatrixPage() {
                   }).length;
                   const pct = mandatoryCategories.length > 0
                     ? Math.round((compliant / mandatoryCategories.length) * 100)
-                    : 0;
+                    : null;
                   return (
                     <tr key={member.id} className="hover:bg-[var(--cs-surface)]/50 transition-colors">
                       <td className="px-4 py-2.5 sticky left-0 bg-white z-10">
@@ -600,7 +600,7 @@ export default function TrainingMatrixPage() {
                       <td className="px-3 py-2.5 text-center">
                         <span className={cn(
                           "text-xs font-bold tabular-nums",
-                          pct === 100 ? "text-emerald-600" : pct >= 70 ? "text-amber-600" : "text-red-600",
+                          (pct ?? 0) === 100 ? "text-emerald-600" : (pct ?? 0) >= 70 ? "text-amber-600" : "text-red-600",
                         )}>
                           {pct}%
                         </span>

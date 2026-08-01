@@ -633,7 +633,7 @@ export default function HolidayPlanningPage() {
   }, [trips]);
 
   const completedTrips = useMemo(() => trips.filter((t) => t.status === "completed"), [trips]);
-  const avgPerTrip = completedTrips.length > 0 ? Math.round(totalSpend / completedTrips.length) : 0;
+  const avgPerTrip = completedTrips.length > 0 ? Math.round(totalSpend / completedTrips.length) : null;
 
   // ── Filter + sort ────────────────────────────────────────────────
   const filtered = useMemo(() => {

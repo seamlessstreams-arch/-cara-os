@@ -133,7 +133,7 @@ export default function StaffCompetencyPage() {
       return days > 0 && days <= 90;
     }).length;
 
-    const compliancePct = total > 0 ? Math.round((competent / total) * 100) : 0;
+    const compliancePct = total > 0 ? Math.round((competent / total) * 100) : null;
     const fullyCompetent = records.filter((s) => s.entries.every((e) => e.level === "competent")).length;
 
     return { total, competent, developing, notAssessed, expired, expiringSoon, compliancePct, fullyCompetent };
@@ -254,7 +254,7 @@ export default function StaffCompetencyPage() {
             { l: "Expired",          v: stats.expired, icon: XCircle, c: stats.expired > 0 ? "text-[--cs-risk]" : "text-gray-400" },
             { l: "Expiring Soon",    v: stats.expiringSoon, icon: AlertTriangle, c: stats.expiringSoon > 0 ? "text-[--cs-warning]" : "text-gray-400" },
             { l: "Fully Competent",  v: `${stats.fullyCompetent}/${records.length}`, icon: Award, c: "text-[--cs-success]" },
-            { l: "Compliance",       v: `${stats.compliancePct}%`, icon: BarChart3, c: stats.compliancePct >= 80 ? "text-[--cs-success]" : stats.compliancePct >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]" },
+            { l: "Compliance",       v: `${(stats.compliancePct ?? 0)}%`, icon: BarChart3, c: (stats.compliancePct ?? 0) >= 80 ? "text-[--cs-success]" : (stats.compliancePct ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
               <s.icon className={cn("mx-auto h-5 w-5 mb-1", s.c)} />
@@ -273,7 +273,7 @@ export default function StaffCompetencyPage() {
             </span>
             <span className={cn(
               "font-bold tabular-nums",
-              stats.compliancePct >= 80 ? "text-[--cs-success]" : stats.compliancePct >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+              (stats.compliancePct ?? 0) >= 80 ? "text-[--cs-success]" : (stats.compliancePct ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {stats.compliancePct}%
             </span>
@@ -282,7 +282,7 @@ export default function StaffCompetencyPage() {
             <div
               className={cn(
                 "h-full rounded-full transition-all",
-                stats.compliancePct >= 80 ? "bg-green-500" : stats.compliancePct >= 60 ? "bg-amber-500" : "bg-red-500",
+                (stats.compliancePct ?? 0) >= 80 ? "bg-green-500" : (stats.compliancePct ?? 0) >= 60 ? "bg-amber-500" : "bg-red-500",
               )}
               style={{ width: `${stats.compliancePct}%` }}
             />
@@ -370,7 +370,7 @@ export default function StaffCompetencyPage() {
                 <tbody>
                   {records.map((staff) => {
                     const comp = staff.entries.filter((e) => e.level === "competent").length;
-                    const pct = staff.entries.length > 0 ? Math.round((comp / staff.entries.length) * 100) : 0;
+                    const pct = staff.entries.length > 0 ? Math.round((comp / staff.entries.length) * 100) : null;
                     return (
                       <tr key={staff.id} className="border-b hover:bg-gray-50/50">
                         <td className="py-2 px-4 sticky left-0 bg-white z-10">
@@ -393,7 +393,7 @@ export default function StaffCompetencyPage() {
                         <td className="py-2 px-3 text-center">
                           <span className={cn(
                             "text-xs font-bold tabular-nums",
-                            pct === 100 ? "text-[--cs-success]" : pct >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
+                            (pct ?? 0) === 100 ? "text-[--cs-success]" : (pct ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
                           )}>{pct}%</span>
                         </td>
                       </tr>
@@ -411,14 +411,14 @@ export default function StaffCompetencyPage() {
         {filtered.map((staff) => {
           const comp = staff.entries.filter((e) => e.level === "competent").length;
           const total = staff.entries.length;
-          const pct = total > 0 ? Math.round((comp / total) * 100) : 0;
+          const pct = total > 0 ? Math.round((comp / total) * 100) : null;
           const hasExpired = staff.entries.some((e) => e.level === "expired");
           const hasDeveloping = staff.entries.some((e) => e.level === "developing");
           const hasNotAssessed = staff.entries.some((e) => e.level === "not_assessed");
 
           return (
             <div key={staff.id}>
-              <FlatListRow severity={hasExpired ? "risk" : pct === 100 ? "success" : pct >= 70 ? "warning" : "risk"} onClick={() => setExpanded(expanded === staff.id ? null : staff.id)} aria-expanded={expanded === staff.id}>
+              <FlatListRow severity={hasExpired ? "risk" : (pct ?? 0) === 100 ? "success" : (pct ?? 0) >= 70 ? "warning" : "risk"} onClick={() => setExpanded(expanded === staff.id ? null : staff.id)} aria-expanded={expanded === staff.id}>
                 <div className="flex items-center justify-between flex-1 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <ShieldCheck className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -436,7 +436,7 @@ export default function StaffCompetencyPage() {
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="w-24 h-2 rounded-full bg-gray-100 overflow-hidden hidden sm:block">
-                    <div className={cn("h-full rounded-full", pct === 100 ? "bg-green-400" : pct >= 70 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${pct}%` }} />
+                    <div className={cn("h-full rounded-full", (pct ?? 0) === 100 ? "bg-green-400" : (pct ?? 0) >= 70 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${(pct ?? 0)}%` }} />
                   </div>
                   {expanded === staff.id ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
                 </div>

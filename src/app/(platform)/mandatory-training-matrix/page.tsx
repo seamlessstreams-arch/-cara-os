@@ -89,7 +89,7 @@ export default function MandatoryTrainingMatrixPage() {
     const totalExpiring = data.reduce((sum, r) => sum + r.expiring_count, 0);
     const totalExpired = data.reduce((sum, r) => sum + r.expired_count, 0);
     const fullyCompliant = data.filter((r) => r.overall_compliance === "fully_compliant").length;
-    const compliancePct = totalCourses > 0 ? Math.round((totalValid / totalCourses) * 100) : 0;
+    const compliancePct = totalCourses > 0 ? Math.round((totalValid / totalCourses) * 100) : null;
     return { totalStaff, totalCourses, totalValid, totalExpiring, totalExpired, fullyCompliant, compliancePct };
   }, [data]);
 
@@ -229,7 +229,7 @@ export default function MandatoryTrainingMatrixPage() {
         <FlatList>
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
-            const compliancePct = r.total_courses > 0 ? Math.round((r.valid_count / r.total_courses) * 100) : 0;
+            const compliancePct = r.total_courses > 0 ? Math.round((r.valid_count / r.total_courses) * 100) : null;
             return (
               <div key={r.id}>
                 <FlatListRow

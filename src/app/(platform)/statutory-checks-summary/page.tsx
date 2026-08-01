@@ -118,7 +118,7 @@ export default function StatutoryChecksSummaryPage() {
 
   const totalChecks = records.length;
   const compliantCount = records.filter(r => r.compliance_status === "compliant").length;
-  const compliantPct = totalChecks > 0 ? Math.round((compliantCount / totalChecks) * 100) : 0;
+  const compliantPct = totalChecks > 0 ? Math.round((compliantCount / totalChecks) * 100) : null;
   const dueSoonCount = records.filter(r => {
     const days = Math.ceil((new Date(r.next_due_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return days >= 0 && days <= 30;

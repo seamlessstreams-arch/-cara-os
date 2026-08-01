@@ -133,7 +133,7 @@ function PhaseTimeline({ items, startDate }: {
       <div className="space-y-6">
         {grouped.map((phase) => {
           const PhaseIcon = phase.icon;
-          const pct = phase.total > 0 ? Math.round((phase.completed / phase.total) * 100) : 0;
+          const pct = phase.total > 0 ? Math.round((phase.completed / phase.total) * 100) : null;
           const isComplete = pct === 100;
 
           return (
@@ -231,7 +231,7 @@ function InductionCard({
 
   const completedItems = (record.items ?? []).filter((i) => i.status === "completed" || i.status === "signed_off").length;
   const totalItems = (record.items?.length ?? 0);
-  const pct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+  const pct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : null;
 
   // Days since start
   const daysSinceStart = Math.ceil((Date.now() - new Date(record.start_date).getTime()) / 86400000);
@@ -295,7 +295,7 @@ function InductionCard({
             <span className="text-xs text-[var(--cs-text-muted)]">Overall Progress</span>
             <span className={cn(
               "text-xs font-bold",
-              pct === 100 ? "text-emerald-600" : pct >= 60 ? "text-blue-600" : "text-amber-600",
+              (pct ?? 0) === 100 ? "text-emerald-600" : (pct ?? 0) >= 60 ? "text-blue-600" : "text-amber-600",
             )}>
               {completedItems}/{totalItems} ({pct}%)
             </span>
@@ -312,7 +312,7 @@ function InductionCard({
             const prevMaxDay = PHASES[PHASES.indexOf(phase) - 1]?.maxDay ?? 0;
             const phaseItems = (record.items ?? []).filter((i) => i.required_by_day > prevMaxDay && i.required_by_day <= phase.maxDay);
             const phaseCompleted = phaseItems.filter((i) => i.status === "completed" || i.status === "signed_off").length;
-            const phasePct = phaseItems.length > 0 ? Math.round((phaseCompleted / phaseItems.length) * 100) : 0;
+            const phasePct = phaseItems.length > 0 ? Math.round((phaseCompleted / phaseItems.length) * 100) : null;
             const PhaseIcon = phase.icon;
 
             return (
@@ -498,7 +498,7 @@ export default function InductionTrackerPage() {
               <div className="space-y-2">
                 {records.map((record) => {
                   const completedItems = (record.items ?? []).filter((i) => i.status === "completed" || i.status === "signed_off").length;
-                  const pct = (record.items?.length ?? 0) > 0 ? Math.round((completedItems / (record.items?.length ?? 0)) * 100) : 0;
+                  const pct = (record.items?.length ?? 0) > 0 ? Math.round((completedItems / (record.items?.length ?? 0)) * 100) : null;
                   const daysSinceStart = Math.ceil((Date.now() - new Date(record.start_date).getTime()) / 86400000);
 
                   return (
@@ -511,7 +511,7 @@ export default function InductionTrackerPage() {
                       </div>
                       <span className={cn(
                         "text-[10px] font-bold tabular-nums w-10 text-right",
-                        pct === 100 ? "text-emerald-600" : pct >= 60 ? "text-blue-600" : "text-amber-600",
+                        (pct ?? 0) === 100 ? "text-emerald-600" : (pct ?? 0) >= 60 ? "text-blue-600" : "text-amber-600",
                       )}>
                         {pct}%
                       </span>
