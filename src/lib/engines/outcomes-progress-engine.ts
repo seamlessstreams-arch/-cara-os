@@ -77,8 +77,8 @@ export interface OutcomesOverview {
   improving_count: number;
   stable_count: number;
   declining_count: number;
-  improving_pct: number;
-  avg_progress_pct: number;
+  improving_pct: number | null;
+  avg_progress_pct: number | null;
   total_children: number;
 }
 
@@ -87,7 +87,7 @@ export interface DomainAnalysis {
   label: string;
   active_targets: number;
   achieved_targets: number;
-  avg_progress_pct: number;
+  avg_progress_pct: number | null;
   improving_count: number;
   declining_count: number;
   stagnant_count: number;
@@ -98,7 +98,7 @@ export interface ChildOutcomeProfile {
   child_name: string;
   active_targets: number;
   achieved_targets: number;
-  avg_progress_pct: number;
+  avg_progress_pct: number | null;
   improving_count: number;
   stable_count: number;
   declining_count: number;
@@ -106,22 +106,22 @@ export interface ChildOutcomeProfile {
   strongest_domain: string | null;
   weakest_domain: string | null;
   reviews_overdue: number;
-  yp_participation_rate: number; // 0-100
+  yp_participation_rate: number | null; // 0-100
 }
 
 export interface ReviewCompliance {
   total_reviews_30d: number;
   total_reviews_90d: number;
-  yp_participation_rate: number; // 0-100
+  yp_participation_rate: number | null; // 0-100
   targets_overdue_review: number;
-  avg_days_between_reviews: number;
+  avg_days_between_reviews: number | null;
 }
 
 export interface ProgressVelocity {
   targets_improved_30d: number;
   targets_declined_30d: number;
   targets_unchanged_30d: number;
-  avg_rating_change_30d: number;
+  avg_rating_change_30d: number | null;
   targets_stagnant_90d: number;
 }
 
@@ -240,8 +240,8 @@ export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesP
     declining_count: decliningTargets.length,
     improving_pct: activeTargets.length > 0
       ? Math.round((improvingTargets.length / activeTargets.length) * 100)
-      : 0,
-    avg_progress_pct: Math.round(average(progressValues)),
+      : null,
+    avg_progress_pct: progressValues.length > 0 ? Math.round(average(progressValues)) : null,
     total_children: children.length,
   };
 
@@ -275,7 +275,7 @@ export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesP
         label: DOMAIN_LABELS[domain],
         active_targets: domainActive.length,
         achieved_targets: domainAchieved.length,
-        avg_progress_pct: Math.round(average(progresses)),
+        avg_progress_pct: progresses.length > 0 ? Math.round(average(progresses)) : null,
         improving_count: domainActive.filter((t) => t.direction === "improving").length,
         declining_count: domainActive.filter((t) => t.direction === "declining").length,
         stagnant_count: stagnant.length,
@@ -321,14 +321,14 @@ export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesP
     // YP participation in reviews for this child
     const ypRate = childReviews.length > 0
       ? Math.round((childReviews.filter((r) => r.yp_participated).length / childReviews.length) * 100)
-      : 0;
+      : null;
 
     return {
       child_id: child.id,
       child_name: child.name,
       active_targets: childActive.length,
       achieved_targets: childAchieved.length,
-      avg_progress_pct: Math.round(average(progresses)),
+      avg_progress_pct: progresses.length > 0 ? Math.round(average(progresses)) : null,
       improving_count: improving,
       stable_count: stable,
       declining_count: declining,
@@ -365,7 +365,7 @@ export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesP
     total_reviews_90d: reviews90d.length,
     yp_participation_rate: reviews.length > 0
       ? Math.round((reviews.filter((r) => r.yp_participated).length / reviews.length) * 100)
-      : 0,
+      : null,
     targets_overdue_review: targetsOverdue,
     avg_days_between_reviews: Math.round(average(reviewIntervals)),
   };
@@ -391,7 +391,7 @@ export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesP
     targets_unchanged_30d: unchanged30d.length,
     avg_rating_change_30d: ratingChanges30d.length > 0
       ? Math.round(average(ratingChanges30d) * 100) / 100
-      : 0,
+      : null,
     targets_stagnant_90d: stagnant90d.length,
   };
 
@@ -433,7 +433,7 @@ export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesP
   }
 
   // Low: YP participation below 80%
-  if (reviews.length >= 3 && review_compliance.yp_participation_rate < 80) {
+  if (reviews.length >= 3 && (review_compliance.yp_participation_rate ?? 0) < 80) {
     alerts.push({
       severity: "low",
       message: `Young person participation rate is ${review_compliance.yp_participation_rate}% — ensure voice of the child is captured`,
@@ -455,7 +455,7 @@ export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesP
 
   // Warning: domain with 0% progress
   for (const da of domain_analysis) {
-    if (da.active_targets >= 2 && da.avg_progress_pct === 0) {
+    if (da.active_targets >= 2 && (da.avg_progress_pct ?? 0) === 0) {
       insights.push({
         severity: "warning",
         text: `${da.label} domain shows 0% progress across ${da.active_targets} active targets. Consider if targets are realistic or if additional support is needed.`,
@@ -473,7 +473,7 @@ export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesP
   }
 
   // Positive: overall improving majority
-  if (overview.improving_pct >= 50 && activeTargets.length >= 3) {
+  if ((overview.improving_pct ?? 0) >= 50 && activeTargets.length >= 3) {
     insights.push({
       severity: "positive",
       text: `${overview.improving_pct}% of active targets are improving. ${achievedTargets.length > 0 ? `${achievedTargets.length} target${achievedTargets.length > 1 ? "s" : ""} achieved. ` : ""}Positive outcomes trajectory — continue current approaches and celebrate progress with young people.`,
@@ -481,7 +481,7 @@ export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesP
   }
 
   // Positive: high YP participation
-  if (reviews.length >= 3 && review_compliance.yp_participation_rate >= 90) {
+  if (reviews.length >= 3 && (review_compliance.yp_participation_rate ?? 0) >= 90) {
     insights.push({
       severity: "positive",
       text: `Young person participation in outcome reviews is ${review_compliance.yp_participation_rate}%. Excellent practice — voices of children are being heard and documented.`,

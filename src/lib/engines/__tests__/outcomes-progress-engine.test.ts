@@ -168,8 +168,8 @@ describe("computeOutcomesProgress", () => {
       });
       expect(result.overview.total_targets).toBe(0);
       expect(result.overview.active_targets).toBe(0);
-      expect(result.overview.improving_pct).toBe(0);
-      expect(result.overview.avg_progress_pct).toBe(0);
+      expect(result.overview.improving_pct).toBeNull();
+      expect(result.overview.avg_progress_pct).toBeNull();
       expect(result.domain_analysis).toHaveLength(0);
       expect(result.child_profiles).toHaveLength(0);
       expect(result.alerts).toHaveLength(0);
