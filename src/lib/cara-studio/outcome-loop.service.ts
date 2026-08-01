@@ -24,7 +24,7 @@ export interface OutcomeLoopRecord {
   hasLinkedActions: boolean;
   actionsCompleted: number;
   actionsTotal: number;
-  completionRate: number;
+  completionRate: number | null;
   followUpRecorded: boolean;
   outcomeStatus: "pending" | "partial" | "completed" | "expired" | "no_actions";
 }
@@ -34,8 +34,8 @@ export interface OutcomeLoopSummary {
   withActions: number;
   actionsCompleted: number;
   actionsTotal: number;
-  completionRate: number;
-  followUpRate: number;
+  completionRate: number | null;
+  followUpRate: number | null;
   byType: { type: string; count: number; completionRate: number }[];
 }
 
