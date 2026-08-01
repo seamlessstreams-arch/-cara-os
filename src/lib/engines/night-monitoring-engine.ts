@@ -188,8 +188,8 @@ export function computeNightMonitoring(input: NightMonitoringInput): NightMonito
     const childConcerns = childChecks7d.filter((c) => c.has_concern);
     const childNotInRoom = childChecks7d.filter((c) => c.status === "not_in_room");
 
-    const asleepRate = totalChecks > 0 ? Math.round((asleepChecks.length / totalChecks) * 100) : 0;
-    const awakeRate = totalChecks > 0 ? Math.round((awakeChecks.length / totalChecks) * 100) : 0;
+    const asleepRate: number | null = totalChecks > 0 ? Math.round((asleepChecks.length / totalChecks) * 100) : null;
+    const awakeRate: number | null = totalChecks > 0 ? Math.round((awakeChecks.length / totalChecks) * 100) : null;
 
     return {
       child_id: child.id,
