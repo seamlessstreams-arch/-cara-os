@@ -167,20 +167,20 @@ export interface StaffWellbeingProfile {
 
 export interface WorkforcePulse {
   total_active_staff: number;
-  average_tenure_months: number;
+  average_tenure_months: number | null;
   staff_in_first_year: number;
-  average_overtime_30d: number;
+  average_overtime_30d: number | null;
   staff_with_no_supervision_60d: number;
-  wellbeing_check_coverage: number;
-  recognition_rate_90d: number;
-  grievance_rate_90d: number;
+  wellbeing_check_coverage: number | null;
+  recognition_rate_90d: number | null;
+  grievance_rate_90d: number | null;
 }
 
 export interface SicknessAnalysis {
   total_days_lost_90d: number;
-  average_per_staff_90d: number;
+  average_per_staff_90d: number | null;
   staff_with_patterns: number;
-  stress_related_pct: number;
+  stress_related_pct: number | null;
   occupational_health_referrals: number;
   top_categories: { category: string; days: number; count: number }[];
 }
@@ -540,7 +540,7 @@ function buildPriorityActions(
     });
   }
 
-  if (sickness.stress_related_pct > 30) {
+  if ((sickness.stress_related_pct ?? 0) > 30) {
     actions.push({
       rank: ++rank,
       action: `${sickness.stress_related_pct}% of sickness is stress-related — review workload and support arrangements`,
@@ -549,7 +549,7 @@ function buildPriorityActions(
     });
   }
 
-  if (pulse.average_overtime_30d > 8) {
+  if ((pulse.average_overtime_30d ?? 0) > 8) {
     actions.push({
       rank: ++rank,
       action: `Average overtime at ${pulse.average_overtime_30d}h/month — review staffing levels and rota planning`,
@@ -558,7 +558,7 @@ function buildPriorityActions(
     });
   }
 
-  if (pulse.wellbeing_check_coverage < 50) {
+  if ((pulse.wellbeing_check_coverage ?? 0) < 50) {
     actions.push({
       rank: ++rank,
       action: `Only ${pulse.wellbeing_check_coverage}% staff have wellbeing checks — implement regular wellbeing check programme`,
@@ -577,7 +577,7 @@ function buildPriorityActions(
     });
   }
 
-  if (pulse.recognition_rate_90d < 0.5 && pulse.total_active_staff > 5) {
+  if ((pulse.recognition_rate_90d ?? 0) < 0.5 && pulse.total_active_staff > 5) {
     actions.push({
       rank: ++rank,
       action: "Low staff recognition rate — implement structured recognition programme",
@@ -612,11 +612,11 @@ function computeHomeResilience(
   let score = 70;
   if (atRisk > 0) score -= atRisk * 8;
   if (pulse.staff_with_no_supervision_60d > 2) score -= 10;
-  if (sickness.average_per_staff_90d > 3) score -= 10;
-  if (sickness.stress_related_pct > 30) score -= 10;
-  if (pulse.average_overtime_30d > 10) score -= 10;
-  if (pulse.wellbeing_check_coverage > 70) score += 10;
-  if (pulse.recognition_rate_90d >= 1) score += 5;
+  if ((sickness.average_per_staff_90d ?? 0) > 3) score -= 10;
+  if ((sickness.stress_related_pct ?? 0) > 30) score -= 10;
+  if ((pulse.average_overtime_30d ?? 0) > 10) score -= 10;
+  if ((pulse.wellbeing_check_coverage ?? 0) > 70) score += 10;
+  if ((pulse.recognition_rate_90d ?? 0) >= 1) score += 5;
   if (pulse.staff_in_first_year > pulse.total_active_staff * 0.4) score -= 10;
   score = Math.max(0, Math.min(100, score));
 
@@ -663,7 +663,7 @@ function generateInsights(
     insights.push({ text: `${atRisk} staff at high or critical burnout risk — this is a workforce stability concern that may impact care quality.`, severity: "critical" });
   }
 
-  if (sickness.stress_related_pct > 40) {
+  if ((sickness.stress_related_pct ?? 0) > 40) {
     insights.push({ text: `${sickness.stress_related_pct}% of sickness is stress-related — indicates systemic wellbeing issues requiring organisational response.`, severity: "critical" });
   }
 
@@ -676,7 +676,7 @@ function generateInsights(
     insights.push({ text: `${decliningWb} staff members have declining wellbeing trends — consider team wellbeing review.`, severity: "warning" });
   }
 
-  if (pulse.recognition_rate_90d >= 1.5) {
+  if ((pulse.recognition_rate_90d ?? 0) >= 1.5) {
     insights.push({ text: "Strong staff recognition culture — positive for morale and retention.", severity: "positive" });
   }
 
@@ -687,7 +687,7 @@ function generateInsights(
     insights.push({ text: `${debriefsNeeded} post-incident debrief(s) flagged severe emotional impact requiring follow-up.`, severity: "warning" });
   }
 
-  if (pulse.average_overtime_30d < 3 && sickness.average_per_staff_90d < 2) {
+  if ((pulse.average_overtime_30d ?? 0) < 3 && (sickness.average_per_staff_90d ?? 0) < 2) {
     insights.push({ text: "Low overtime and sickness levels indicate healthy workload balance.", severity: "positive" });
   }
 
