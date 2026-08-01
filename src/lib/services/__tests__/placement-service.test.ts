@@ -130,8 +130,8 @@ describe("computePlanCompliance", () => {
     expect(result.active_plans).toBe(0);
     expect(result.draft_plans).toBe(0);
     expect(result.overdue_reviews).toBe(0);
-    expect(result.completion_rate).toBe(0);
-    expect(result.objectives_met_rate).toBe(0);
+    expect(result.completion_rate).toBeNull(); // fab-0.
+    expect(result.objectives_met_rate).toBeNull(); // fab-0.
     expect(result.avg_sections_complete).toBe(0);
     expect(result.by_type).toEqual({});
     expect(result.by_status).toEqual({});
@@ -216,7 +216,7 @@ describe("computePlanCompliance", () => {
   it("returns completion_rate 0 when no active plans exist", () => {
     const plans = [makePlan({ status: "draft" })];
     const result = computePlanCompliance(plans);
-    expect(result.completion_rate).toBe(0);
+    expect(result.completion_rate).toBeNull(); // fab-0.
   });
 
   it("treats active plans with empty sections as not fully completed", () => {
@@ -224,7 +224,7 @@ describe("computePlanCompliance", () => {
       makePlan({ id: "p1", status: "active", sections: [] }),
     ];
     const result = computePlanCompliance(plans);
-    // sections.length === 0, so sections.every() would be true but the code checks sections.length > 0 first
+    // 1 active plan exists → real 0 (0/1 fully completed).
     expect(result.completion_rate).toBe(0);
   });
 
@@ -253,7 +253,7 @@ describe("computePlanCompliance", () => {
   it("returns objectives_met_rate 0 when no objectives exist", () => {
     const plans = [makePlan({ objectives: [] })];
     const result = computePlanCompliance(plans);
-    expect(result.objectives_met_rate).toBe(0);
+    expect(result.objectives_met_rate).toBeNull(); // fab-0.
   });
 
   it("computes avg_sections_complete across active plans", () => {
@@ -307,7 +307,7 @@ describe("computeChildPlanProfile", () => {
     expect(result.last_lac_review).toBeNull();
     expect(result.next_lac_review).toBeNull();
     expect(result.lac_reviews_count).toBe(0);
-    expect(result.child_participation_rate).toBe(0);
+    expect(result.child_participation_rate).toBeNull(); // fab-0.
   });
 
   it("lists all statutory plan types as missing when child has no active plans", () => {
@@ -449,7 +449,7 @@ describe("computeChildPlanProfile", () => {
       makeReview({ child_id: "child-1", status: "scheduled", child_participated: true }),
     ];
     const result = computeChildPlanProfile("child-1", [], reviews);
-    expect(result.child_participation_rate).toBe(0);
+    expect(result.child_participation_rate).toBeNull(); // fab-0.
   });
 
   it("identifies missing statutory plans correctly", () => {
@@ -474,12 +474,12 @@ describe("computeLACReviewCompliance", () => {
     expect(result.completed).toBe(0);
     expect(result.scheduled).toBe(0);
     expect(result.cancelled).toBe(0);
-    expect(result.child_participation_rate).toBe(0);
-    expect(result.child_views_rate).toBe(0);
-    expect(result.minutes_recorded_rate).toBe(0);
+    expect(result.child_participation_rate).toBeNull(); // fab-0.
+    expect(result.child_views_rate).toBeNull(); // fab-0.
+    expect(result.minutes_recorded_rate).toBeNull(); // fab-0.
     expect(result.overdue_actions).toBe(0);
     expect(result.total_actions).toBe(0);
-    expect(result.action_completion_rate).toBe(0);
+    expect(result.action_completion_rate).toBeNull(); // fab-0.
   });
 
   it("counts reviews by status correctly", () => {
@@ -532,9 +532,9 @@ describe("computeLACReviewCompliance", () => {
       makeReview({ id: "r1", status: "scheduled", child_participated: true, child_views_recorded: true, minutes_recorded: true }),
     ];
     const result = computeLACReviewCompliance(reviews);
-    expect(result.child_participation_rate).toBe(0);
-    expect(result.child_views_rate).toBe(0);
-    expect(result.minutes_recorded_rate).toBe(0);
+    expect(result.child_participation_rate).toBeNull(); // fab-0.
+    expect(result.child_views_rate).toBeNull(); // fab-0.
+    expect(result.minutes_recorded_rate).toBeNull(); // fab-0.
   });
 
   it("counts overdue actions across all reviews", () => {
@@ -573,7 +573,7 @@ describe("computeLACReviewCompliance", () => {
   it("returns action_completion_rate 0 when there are no actions", () => {
     const reviews = [makeReview({ actions: [] })];
     const result = computeLACReviewCompliance(reviews);
-    expect(result.action_completion_rate).toBe(0);
+    expect(result.action_completion_rate).toBeNull(); // fab-0.
     expect(result.total_actions).toBe(0);
   });
 

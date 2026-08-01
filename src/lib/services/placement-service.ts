@@ -95,8 +95,8 @@ export function computePlanCompliance(plans: PlacementPlan[]): {
   overdue_reviews: number;
   by_type: Record<string, number>;
   by_status: Record<string, number>;
-  completion_rate: number;
-  objectives_met_rate: number;
+  completion_rate: number | null;
+  objectives_met_rate: number | null;
   avg_sections_complete: number;
 } {
   const now = new Date();
@@ -128,14 +128,14 @@ export function computePlanCompliance(plans: PlacementPlan[]): {
   ).length;
   const completionRate = activePlans.length > 0
     ? Math.round((fullyCompleted / activePlans.length) * 100 * 10) / 10
-    : 0;
+    : null;
 
   // Objectives met rate: objectives with status "achieved" / all objectives * 100
   const allObjectives = plans.flatMap((p) => p.objectives);
   const achievedObjectives = allObjectives.filter((o) => o.status === "achieved").length;
   const objectivesMetRate = allObjectives.length > 0
     ? Math.round((achievedObjectives / allObjectives.length) * 100 * 10) / 10
-    : 0;
+    : null;
 
   // Average sections complete per active plan (1 decimal)
   let avgSectionsComplete = 0;
@@ -178,7 +178,7 @@ export function computeChildPlanProfile(
   last_lac_review: string | null;
   next_lac_review: string | null;
   lac_reviews_count: number;
-  child_participation_rate: number;
+  child_participation_rate: number | null;
   missing_plans: string[];
 } {
   const childPlans = plans.filter((p) => p.child_id === childId);
@@ -224,7 +224,7 @@ export function computeChildPlanProfile(
   // Child participation rate
   const participationRate = completedReviews.length > 0
     ? Math.round((completedReviews.filter((r) => r.child_participated).length / completedReviews.length) * 100 * 10) / 10
-    : 0;
+    : null;
 
   // Missing statutory plans: statutory plan types not present as active
   const activePlanTypes = new Set(activePlans.map((p) => p.plan_type));
@@ -254,12 +254,12 @@ export function computeLACReviewCompliance(reviews: LACReview[]): {
   completed: number;
   scheduled: number;
   cancelled: number;
-  child_participation_rate: number;
-  child_views_rate: number;
-  minutes_recorded_rate: number;
+  child_participation_rate: number | null;
+  child_views_rate: number | null;
+  minutes_recorded_rate: number | null;
   overdue_actions: number;
   total_actions: number;
-  action_completion_rate: number;
+  action_completion_rate: number | null;
 } {
   const now = new Date();
 
@@ -272,15 +272,15 @@ export function computeLACReviewCompliance(reviews: LACReview[]): {
   // Participation and views rates — only from completed reviews
   const childParticipationRate = completedCount > 0
     ? Math.round((completed.filter((r) => r.child_participated).length / completedCount) * 100 * 10) / 10
-    : 0;
+    : null;
 
   const childViewsRate = completedCount > 0
     ? Math.round((completed.filter((r) => r.child_views_recorded).length / completedCount) * 100 * 10) / 10
-    : 0;
+    : null;
 
   const minutesRecordedRate = completedCount > 0
     ? Math.round((completed.filter((r) => r.minutes_recorded).length / completedCount) * 100 * 10) / 10
-    : 0;
+    : null;
 
   // Actions across all reviews
   const allActions = reviews.flatMap((r) => r.actions);
@@ -292,7 +292,7 @@ export function computeLACReviewCompliance(reviews: LACReview[]): {
 
   const actionCompletionRate = totalActions > 0
     ? Math.round((completedActions / totalActions) * 100 * 10) / 10
-    : 0;
+    : null;
 
   return {
     total_reviews: reviews.length,

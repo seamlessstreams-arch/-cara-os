@@ -75,8 +75,8 @@ describe("computePlanCompliance", () => {
     expect(m.active_plans).toBe(0);
     expect(m.draft_plans).toBe(0);
     expect(m.overdue_reviews).toBe(0);
-    expect(m.completion_rate).toBe(0);
-    expect(m.objectives_met_rate).toBe(0);
+    expect(m.completion_rate).toBeNull(); // fab-0.
+    expect(m.objectives_met_rate).toBeNull(); // fab-0.
     expect(m.avg_sections_complete).toBe(0);
   });
 
@@ -162,8 +162,8 @@ describe("computeLACReviewCompliance", () => {
     expect(m.completed).toBe(0);
     expect(m.scheduled).toBe(0);
     expect(m.cancelled).toBe(0);
-    expect(m.child_participation_rate).toBe(0);
-    expect(m.action_completion_rate).toBe(0);
+    expect(m.child_participation_rate).toBeNull(); // fab-0.
+    expect(m.action_completion_rate).toBeNull(); // fab-0.
   });
 
   it("counts completed, scheduled, cancelled", () => {
@@ -268,7 +268,7 @@ describe("computeChildPlanProfile", () => {
     expect(p.active_plans).toEqual([]);
     expect(p.total_objectives).toBe(0);
     expect(p.lac_reviews_count).toBe(0);
-    expect(p.child_participation_rate).toBe(0);
+    expect(p.child_participation_rate).toBeNull(); // fab-0.
     // All 3 statutory plan types should be missing
     const statutory = PLAN_TYPES.filter((pt) => pt.statutory).map((pt) => pt.type);
     expect(p.missing_plans).toEqual(statutory);
