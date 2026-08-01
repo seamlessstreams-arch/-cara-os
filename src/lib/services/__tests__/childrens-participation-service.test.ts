@@ -522,7 +522,7 @@ describe("computeParticipationMetrics", () => {
         ],
       });
       const result = computeParticipationMetrics([m], [], 3);
-      expect(result.actions_implemented_rate).toBeNull(); // fab-0.
+      expect(result.actions_implemented_rate).toBe(0); // records exist → real 0.
     });
 
     it("computes mixed rate correctly", () => {
@@ -541,7 +541,7 @@ describe("computeParticipationMetrics", () => {
     it("returns 0 when there are no actions", () => {
       const m = makeMeeting({ actions: [] });
       const result = computeParticipationMetrics([m], [], 3);
-      expect(result.actions_implemented_rate).toBeNull(); // fab-0.
+      expect(result.actions_implemented_rate).toBe(0); // records exist → real 0.
     });
 
     it("excludes actions from non-completed meetings", () => {
@@ -552,7 +552,7 @@ describe("computeParticipationMetrics", () => {
         ],
       });
       const result = computeParticipationMetrics([m], [], 3);
-      expect(result.actions_implemented_rate).toBeNull(); // fab-0.
+      expect(result.actions_implemented_rate).toBe(0); // records exist → real 0.
     });
   });
 
@@ -682,7 +682,8 @@ describe("computeParticipationMetrics", () => {
     it("returns 0% when none satisfied", () => {
       const c1 = makeConsultation({ id: "c-1", child_satisfied_with_response: false });
       const result = computeParticipationMetrics([], [c1], 3);
-      expect(result.satisfaction_rate).toBeNull(); // fab-0.
+      // 1 consultation with satisfied=false → real 0/1.
+      expect(result.satisfaction_rate).toBe(0);
     });
 
     it("computes mixed satisfaction correctly", () => {
