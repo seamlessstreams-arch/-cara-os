@@ -40,8 +40,8 @@ describe("computeFireSafetyMetrics", () => {
     const result = computeFireSafetyMetrics([]);
     expect(result.total_events).toBe(0);
     expect(result.drills_count).toBe(0);
-    expect(result.successful_evacuation_rate).toBe(0);
-    expect(result.average_evacuation_time).toBe(0);
+    expect(result.successful_evacuation_rate).toBeNull(); // fab-0.
+    expect(result.average_evacuation_time).toBeNull(); // fab-0.
     expect(result.drill_overdue).toBe(true); // no drills at all
   });
 

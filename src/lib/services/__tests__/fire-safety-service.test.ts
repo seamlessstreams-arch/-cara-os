@@ -279,22 +279,22 @@ describe("computeFireSafetyMetrics", () => {
 
     it("returns zero successful_evacuation_rate", () => {
       const m = computeFireSafetyMetrics([]);
-      expect(m.successful_evacuation_rate).toBe(0);
+      expect(m.successful_evacuation_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero average_evacuation_time", () => {
       const m = computeFireSafetyMetrics([]);
-      expect(m.average_evacuation_time).toBe(0);
+      expect(m.average_evacuation_time).toBeNull(); // fab-0.
     });
 
     it("returns zero all_accounted_rate", () => {
       const m = computeFireSafetyMetrics([]);
-      expect(m.all_accounted_rate).toBe(0);
+      expect(m.all_accounted_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero compliant_rate", () => {
       const m = computeFireSafetyMetrics([]);
-      expect(m.compliant_rate).toBe(0);
+      expect(m.compliant_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero non_compliant_count", () => {
@@ -304,17 +304,17 @@ describe("computeFireSafetyMetrics", () => {
 
     it("returns zero equipment_operational_rate", () => {
       const m = computeFireSafetyMetrics([]);
-      expect(m.equipment_operational_rate).toBe(0);
+      expect(m.equipment_operational_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero peep_plans_followed_rate", () => {
       const m = computeFireSafetyMetrics([]);
-      expect(m.peep_plans_followed_rate).toBe(0);
+      expect(m.peep_plans_followed_rate).toBeNull(); // fab-0.
     });
 
     it("returns zero night_staff_competent_rate", () => {
       const m = computeFireSafetyMetrics([]);
-      expect(m.night_staff_competent_rate).toBe(0);
+      expect(m.night_staff_competent_rate).toBeNull(); // fab-0.
     });
 
     it("returns drill_overdue = true", () => {
@@ -694,7 +694,7 @@ describe("computeFireSafetyMetrics", () => {
         makeRecord({ evacuation_result: "not_applicable" }),
       ];
       const m = computeFireSafetyMetrics(records);
-      expect(m.successful_evacuation_rate).toBe(0);
+      expect(m.successful_evacuation_rate).toBeNull(); // fab-0.
     });
 
     it("counts only successful as numerator (not partial)", () => {
@@ -703,7 +703,7 @@ describe("computeFireSafetyMetrics", () => {
         makeRecord({ evacuation_result: "partial" }),
       ];
       const m = computeFireSafetyMetrics(records);
-      expect(m.successful_evacuation_rate).toBe(0);
+      expect(m.successful_evacuation_rate).toBe(0); // records exist → real 0.
     });
 
     it("calculates rate with rounding (1/3 = 33.3%)", () => {
@@ -745,7 +745,7 @@ describe("computeFireSafetyMetrics", () => {
         makeRecord({ evacuation_time_seconds: null }),
       ];
       const m = computeFireSafetyMetrics(records);
-      expect(m.average_evacuation_time).toBe(0);
+      expect(m.average_evacuation_time).toBeNull(); // fab-0.
     });
 
     it("returns exact value for single timed record", () => {
@@ -797,7 +797,7 @@ describe("computeFireSafetyMetrics", () => {
         makeRecord({ all_persons_accounted: false }),
       ];
       const m = computeFireSafetyMetrics(records);
-      expect(m.all_accounted_rate).toBe(0);
+      expect(m.all_accounted_rate).toBe(0); // records exist → real 0.
     });
 
     it("calculates with rounding (1/3 = 33.3%)", () => {
@@ -838,7 +838,7 @@ describe("computeFireSafetyMetrics", () => {
         makeRecord({ compliance_status: "minor_issues" }),
       ];
       const m = computeFireSafetyMetrics(records);
-      expect(m.compliant_rate).toBe(0);
+      expect(m.compliant_rate).toBe(0); // records exist → real 0.
     });
 
     it("counts non_compliant records accurately", () => {
@@ -882,7 +882,7 @@ describe("computeFireSafetyMetrics", () => {
         makeRecord({ equipment_status: "not_checked" }),
       ];
       const m = computeFireSafetyMetrics(records);
-      expect(m.equipment_operational_rate).toBe(0);
+      expect(m.equipment_operational_rate).toBeNull(); // fab-0.
     });
 
     it("calculates rate with mixed statuses", () => {
@@ -899,13 +899,13 @@ describe("computeFireSafetyMetrics", () => {
     it("does not count needs_maintenance as operational", () => {
       const records = [makeRecord({ equipment_status: "needs_maintenance" })];
       const m = computeFireSafetyMetrics(records);
-      expect(m.equipment_operational_rate).toBe(0);
+      expect(m.equipment_operational_rate).toBe(0); // records exist → real 0.
     });
 
     it("does not count out_of_service as operational", () => {
       const records = [makeRecord({ equipment_status: "out_of_service" })];
       const m = computeFireSafetyMetrics(records);
-      expect(m.equipment_operational_rate).toBe(0);
+      expect(m.equipment_operational_rate).toBe(0); // records exist → real 0.
     });
   });
 
@@ -925,7 +925,7 @@ describe("computeFireSafetyMetrics", () => {
         makeRecord({ peep_plans_followed: true, evacuation_result: "not_applicable" }),
       ];
       const m = computeFireSafetyMetrics(records);
-      expect(m.peep_plans_followed_rate).toBe(0);
+      expect(m.peep_plans_followed_rate).toBeNull(); // fab-0.
     });
 
     it("calculates mixed rate (1/3 = 33.3%)", () => {
@@ -966,7 +966,7 @@ describe("computeFireSafetyMetrics", () => {
         makeRecord({ night_staff_competent: null }),
       ];
       const m = computeFireSafetyMetrics(records);
-      expect(m.night_staff_competent_rate).toBe(0);
+      expect(m.night_staff_competent_rate).toBeNull(); // fab-0.
     });
 
     it("calculates mixed rate (1/3 = 33.3%)", () => {
@@ -985,7 +985,7 @@ describe("computeFireSafetyMetrics", () => {
         makeRecord({ night_staff_competent: false }),
       ];
       const m = computeFireSafetyMetrics(records);
-      expect(m.night_staff_competent_rate).toBe(0);
+      expect(m.night_staff_competent_rate).toBe(0); // records exist → real 0.
     });
 
     it("calculates (2/3 = 66.7%)", () => {
@@ -1182,7 +1182,7 @@ describe("computeFireSafetyMetrics", () => {
       expect(m.drills_count).toBe(67);
       expect(m.compliant_rate).toBe(100);
       expect(m.equipment_operational_rate).toBe(100);
-      expect(m.night_staff_competent_rate).toBe(0);
+      expect(m.night_staff_competent_rate).toBeNull(); // fab-0.
     });
   });
 });

@@ -127,14 +127,15 @@ export function computeFireSafetyMetrics(
   false_alarms_count: number;
   equipment_checks_count: number;
   risk_assessments_count: number;
-  successful_evacuation_rate: number;
-  average_evacuation_time: number;
-  all_accounted_rate: number;
-  compliant_rate: number;
+  successful_evacuation_rate: number | null;
+  // fab-0: null when no evacuations have timings recorded.
+  average_evacuation_time: number | null;
+  all_accounted_rate: number | null;
+  compliant_rate: number | null;
   non_compliant_count: number;
-  equipment_operational_rate: number;
-  peep_plans_followed_rate: number;
-  night_staff_competent_rate: number;
+  equipment_operational_rate: number | null;
+  peep_plans_followed_rate: number | null;
+  night_staff_competent_rate: number | null;
   drill_overdue: boolean;
   by_event_type: Record<string, number>;
   by_evacuation_result: Record<string, number>;
@@ -155,25 +156,25 @@ export function computeFireSafetyMetrics(
   const successRate =
     evacuationRecords.length > 0
       ? Math.round((successful / evacuationRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   const timedRecords = records.filter((r) => r.evacuation_time_seconds !== null);
   const avgTime =
     timedRecords.length > 0
       ? Math.round((timedRecords.reduce((sum, r) => sum + (r.evacuation_time_seconds ?? 0), 0) / timedRecords.length) * 10) / 10
-      : 0;
+      : null;
 
   const allAccounted = records.filter((r) => r.all_persons_accounted).length;
   const accountedRate =
     records.length > 0
       ? Math.round((allAccounted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const compliant = records.filter((r) => r.compliance_status === "compliant").length;
   const compliantRate =
     records.length > 0
       ? Math.round((compliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const nonCompliant = records.filter((r) => r.compliance_status === "non_compliant").length;
 
@@ -182,7 +183,7 @@ export function computeFireSafetyMetrics(
   const operationalRate =
     equipRecords.length > 0
       ? Math.round((operational / equipRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   const peepApplicable = records.filter(
     (r) => r.evacuation_result !== "not_applicable",
@@ -191,14 +192,14 @@ export function computeFireSafetyMetrics(
   const peepRate =
     peepApplicable.length > 0
       ? Math.round((peepFollowed / peepApplicable.length) * 1000) / 10
-      : 0;
+      : null;
 
   const nightRecords = records.filter((r) => r.night_staff_competent !== null);
   const nightCompetent = nightRecords.filter((r) => r.night_staff_competent === true).length;
   const nightRate =
     nightRecords.length > 0
       ? Math.round((nightCompetent / nightRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Check if drill is overdue — last drill > 30 days ago or no drills at all
   const now = new Date();
