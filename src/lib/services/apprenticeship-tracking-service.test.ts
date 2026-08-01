@@ -25,8 +25,8 @@ describe("computeMetrics", () => {
     const result = computeMetrics([]);
     expect(result.total_records).toBe(0);
     expect(result.unique_young_people).toBe(0);
-    expect(result.application_success_rate).toBe(0);
-    expect(result.completion_rate).toBe(0);
+    expect(result.application_success_rate).toBeNull(); // fab-0.
+    expect(result.completion_rate).toBeNull(); // fab-0.
     expect(result.at_risk_count).toBe(0);
   });
 

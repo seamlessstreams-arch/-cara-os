@@ -265,17 +265,17 @@ export function computeMetrics(
   by_record_type: Record<string, number>;
   by_apprenticeship_level: Record<string, number>;
   by_sector_top5: { sector: string; count: number }[];
-  application_success_rate: number;
-  completion_rate: number;
-  bursary_application_rate: number;
-  bursary_receipt_rate: number;
+  application_success_rate: number | null;
+  completion_rate: number | null;
+  bursary_application_rate: number | null;
+  bursary_receipt_rate: number | null;
   at_risk_count: number;
-  engagement_rate: number;
-  personal_adviser_rate: number;
-  pathway_plan_rate: number;
-  social_worker_informed_rate: number;
+  engagement_rate: number | null;
+  personal_adviser_rate: number | null;
+  pathway_plan_rate: number | null;
+  social_worker_informed_rate: number | null;
   active_apprenticeships: number;
-  average_duration_days: number;
+  average_duration_days: number | null;
   milestone_count: number;
   support_type_count: number;
   application_stage_count: number;
@@ -319,24 +319,24 @@ export function computeMetrics(
   const offersReceived = rows.filter((r) => r.record_type === "Offer Received").length;
   const applicationSuccessRate = applicationsSubmitted > 0
     ? Math.round((offersReceived / applicationsSubmitted) * 1000) / 10
-    : 0;
+    : null;
 
   // Completion rate: completions / enrolments
   const enrolments = rows.filter((r) => r.record_type === "Enrolment").length;
   const completions = rows.filter((r) => r.record_type === "Completion").length;
   const completionRate = enrolments > 0
     ? Math.round((completions / enrolments) * 1000) / 10
-    : 0;
+    : null;
 
   // Bursary rates
   const bursaryAppliedCount = rows.filter((r) => r.bursary_applied).length;
   const bursaryReceivedCount = rows.filter((r) => r.bursary_received).length;
   const bursaryApplicationRate = total > 0
     ? Math.round((bursaryAppliedCount / total) * 1000) / 10
-    : 0;
+    : null;
   const bursaryReceiptRate = bursaryAppliedCount > 0
     ? Math.round((bursaryReceivedCount / bursaryAppliedCount) * 1000) / 10
-    : 0;
+    : null;
 
   // At risk count
   const atRiskCount = rows.filter((r) => r.at_risk_of_dropping_out).length;
@@ -344,22 +344,22 @@ export function computeMetrics(
   // Engagement rate
   const engagementRate = total > 0
     ? Math.round((rows.filter((r) => r.young_person_engaged).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // PA rate
   const paRate = total > 0
     ? Math.round((rows.filter((r) => r.personal_adviser_involved).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Pathway plan rate
   const pathwayRate = total > 0
     ? Math.round((rows.filter((r) => r.pathway_plan_linked).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Social worker informed rate
   const swRate = total > 0
     ? Math.round((rows.filter((r) => r.social_worker_informed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Active apprenticeships: enrolments minus completions (rough proxy)
   const activeApprenticeships = Math.max(0, enrolments - completions);
@@ -682,7 +682,7 @@ export function generateCaraInsights(
         `provides additional protections and funding — is the home maximising ` +
         `these entitlements?`,
     );
-  } else if (metrics.personal_adviser_rate < 40 && metrics.total_records > 5) {
+  } else if ((metrics.personal_adviser_rate ?? 0) < 40 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Personal advisers are involved in only ${metrics.personal_adviser_rate}% ` +
         `of records. For care leavers, the personal adviser is the statutory ` +
@@ -696,7 +696,7 @@ export function generateCaraInsights(
         `in sustaining a vocational placement. SCCIF inspectors will look for ` +
         `evidence that multi-agency coordination supports vocational outcomes.`,
     );
-  } else if (metrics.completion_rate < 50 && metrics.active_apprenticeships > 0) {
+  } else if ((metrics.completion_rate ?? 0) < 50 && metrics.active_apprenticeships > 0) {
     insights.push(
       `[reflect] Completion rate is ${metrics.completion_rate}% against ${metrics.active_apprenticeships} ` +
         `active apprenticeships. National apprenticeship completion rates are ` +
