@@ -47,10 +47,10 @@ describe("computeMetrics", () => {
     const result = computeMetrics([]);
     expect(result.total_trips).toBe(0);
     expect(result.unique_children).toBe(0);
-    expect(result.risk_assessment_rate).toBe(0);
-    expect(result.positive_enjoyment_rate).toBe(0);
+    expect(result.risk_assessment_rate).toBeNull(); // fab-0.
+    expect(result.positive_enjoyment_rate).toBeNull(); // fab-0.
     expect(result.total_budget).toBe(0);
-    expect(result.average_trip_cost).toBe(0);
+    expect(result.average_trip_cost).toBeNull(); // fab-0.
   });
 
   it("computes correct counts with populated data", () => {

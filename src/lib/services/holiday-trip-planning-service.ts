@@ -278,24 +278,25 @@ export function computeMetrics(
   unique_children: number;
   by_trip_type: Record<string, number>;
   by_enjoyment_rating: Record<string, number>;
-  risk_assessment_rate: number;
-  parental_consent_rate: number;
-  insurance_rate: number;
-  emergency_contacts_rate: number;
-  staffing_ratio_rate: number;
-  child_choice_rate: number;
-  dietary_needs_rate: number;
-  positive_enjoyment_rate: number;
-  negative_enjoyment_rate: number;
+  risk_assessment_rate: number | null;
+  parental_consent_rate: number | null;
+  insurance_rate: number | null;
+  emergency_contacts_rate: number | null;
+  staffing_ratio_rate: number | null;
+  child_choice_rate: number | null;
+  dietary_needs_rate: number | null;
+  positive_enjoyment_rate: number | null;
+  negative_enjoyment_rate: number | null;
   overnight_count: number;
   international_count: number;
   educational_count: number;
   leisure_count: number;
   total_budget: number;
   total_actual_cost: number;
-  average_trip_cost: number;
-  average_trips_per_child: number;
-  budget_variance: number;
+  average_trip_cost: number | null;
+  // fab-0: null when there are no children / no budget lines to compute from.
+  average_trips_per_child: number | null;
+  budget_variance: number | null;
 } {
   const total = rows.length;
 
@@ -331,7 +332,7 @@ export function computeMetrics(
           ratedRows.length) *
           1000,
       ) / 10
-    : 0;
+    : null;
 
   const negativeEnjoymentRate = ratedRows.length > 0
     ? Math.round(
@@ -339,7 +340,7 @@ export function computeMetrics(
           ratedRows.length) *
           1000,
       ) / 10
-    : 0;
+    : null;
 
   // Category counts
   const overnightCount = rows.filter((r) => (OVERNIGHT_TRIPS as string[]).includes(r.trip_type)).length;
@@ -353,14 +354,14 @@ export function computeMetrics(
   const costedRows = rows.filter((r) => r.actual_cost !== null);
   const avgCost = costedRows.length > 0
     ? Math.round((totalActualCost / costedRows.length) * 100) / 100
-    : 0;
+    : null;
   const budgetVariance = totalBudget > 0
     ? Math.round(((totalActualCost - totalBudget) / totalBudget) * 1000) / 10
-    : 0;
+    : null;
 
   const avgPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   return {
     total_trips: total,
@@ -613,7 +614,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.child_choice_rate < 40 && metrics.total_trips > 5) {
+  if ((metrics.child_choice_rate ?? 0) < 40 && metrics.total_trips > 5) {
     insights.push(
       `[reflect] Child choice is recorded in only ${metrics.child_choice_rate}% of trips. ` +
         `SCCIF inspectors expect to see that children help choose their ` +
@@ -627,7 +628,7 @@ export function generateCaraInsights(
         `experiences as their peers — and most children in family settings ` +
         `help choose family outings.`,
     );
-  } else if (metrics.negative_enjoyment_rate > 20 && metrics.total_trips > 5) {
+  } else if ((metrics.negative_enjoyment_rate ?? 0) > 20 && metrics.total_trips > 5) {
     insights.push(
       `[reflect] ${metrics.negative_enjoyment_rate}% of rated trips received negative ` +
         `enjoyment ratings. Trips should be positive experiences that ` +
