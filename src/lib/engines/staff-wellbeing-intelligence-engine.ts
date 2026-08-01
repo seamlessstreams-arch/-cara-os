@@ -419,7 +419,7 @@ function computeSicknessAnalysis(input: StaffWellbeingInput): SicknessAnalysis {
       s.category === "mental_health" ||
       mentionsAny(s.reason, ["stress", "stressed", "stress-related", "anxiety", "anxious"]),
   );
-  const stressPct = sick90d.length > 0 ? Math.round((stressRelated.length / sick90d.length) * 100) : 0;
+  const stressPct: number | null = sick90d.length > 0 ? Math.round((stressRelated.length / sick90d.length) * 100) : null;
 
   const ohReferrals = sick90d.filter((s) => s.occupational_health_referral).length;
 
