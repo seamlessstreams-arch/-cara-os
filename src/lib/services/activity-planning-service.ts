@@ -161,17 +161,18 @@ export function computeActivityMetrics(
   total_activities: number;
   completed_activities: number;
   upcoming_activities: number;
-  cancelled_rate: number;
+  // fab-0: null when there are no activities / participations / rated entries / children.
+  cancelled_rate: number | null;
   total_participations: number;
-  full_participation_rate: number;
-  enjoyment_positive_rate: number;
+  full_participation_rate: number | null;
+  enjoyment_positive_rate: number | null;
   children_participating: number;
-  participation_coverage: number;
+  participation_coverage: number | null;
   follow_up_needed: number;
-  risk_assessed_rate: number;
+  risk_assessed_rate: number | null;
   total_cost: number;
   external_provider_count: number;
-  avg_skills_developed: number;
+  avg_skills_developed: number | null;
   by_category: Record<string, number>;
   by_status: Record<string, number>;
   by_participation: Record<string, number>;
@@ -185,7 +186,7 @@ export function computeActivityMetrics(
   const cancelledRate =
     activities.length > 0
       ? Math.round((cancelled / activities.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Participation metrics
   const fullParticipation = participations.filter((p) => p.participation_level === "full").length;
@@ -195,7 +196,7 @@ export function computeActivityMetrics(
   const fullRate =
     participations.length > 0
       ? Math.round((fullParticipation / participations.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Enjoyment
   const enjoyedOrLoved = participations.filter(
@@ -205,7 +206,7 @@ export function computeActivityMetrics(
   const enjoymentRate =
     ratedParticipations > 0
       ? Math.round((enjoyedOrLoved / ratedParticipations) * 1000) / 10
-      : 0;
+      : null;
 
   // Unique children participating
   const uniqueChildren = new Set(participations.filter(
@@ -214,7 +215,7 @@ export function computeActivityMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   // Follow up
   const followUpNeeded = participations.filter((p) => p.follow_up_needed).length;
@@ -224,7 +225,7 @@ export function computeActivityMetrics(
   const riskRate =
     activities.length > 0
       ? Math.round((riskAssessed / activities.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Cost
   const totalCost = activities.reduce((sum, a) => sum + a.cost, 0);
@@ -240,7 +241,7 @@ export function computeActivityMetrics(
             activeParticipations) *
             10,
         ) / 10
-      : 0;
+      : null;
 
   // By category
   const byCategory: Record<string, number> = {};

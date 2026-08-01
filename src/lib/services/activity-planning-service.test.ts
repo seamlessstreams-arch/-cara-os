@@ -63,11 +63,12 @@ describe("computeActivityMetrics", () => {
     expect(result.total_activities).toBe(0);
     expect(result.completed_activities).toBe(0);
     expect(result.upcoming_activities).toBe(0);
-    expect(result.cancelled_rate).toBe(0);
+    expect(result.cancelled_rate).toBeNull(); // fab-0.
     expect(result.total_participations).toBe(0);
-    expect(result.full_participation_rate).toBe(0);
-    expect(result.enjoyment_positive_rate).toBe(0);
+    expect(result.full_participation_rate).toBeNull(); // fab-0.
+    expect(result.enjoyment_positive_rate).toBeNull(); // fab-0.
     expect(result.children_participating).toBe(0);
+    // totalChildren=4 → real 0 (0 of 4 children participating).
     expect(result.participation_coverage).toBe(0);
   });
 

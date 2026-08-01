@@ -364,17 +364,17 @@ describe("computeActivityMetrics", () => {
       expect(m.total_activities).toBe(0);
       expect(m.completed_activities).toBe(0);
       expect(m.upcoming_activities).toBe(0);
-      expect(m.cancelled_rate).toBe(0);
+      expect(m.cancelled_rate).toBeNull(); // fab-0.
       expect(m.total_participations).toBe(0);
-      expect(m.full_participation_rate).toBe(0);
-      expect(m.enjoyment_positive_rate).toBe(0);
+      expect(m.full_participation_rate).toBeNull(); // fab-0.
+      expect(m.enjoyment_positive_rate).toBeNull(); // fab-0.
       expect(m.children_participating).toBe(0);
-      expect(m.participation_coverage).toBe(0);
+      expect(m.participation_coverage).toBeNull(); // fab-0.
       expect(m.follow_up_needed).toBe(0);
-      expect(m.risk_assessed_rate).toBe(0);
+      expect(m.risk_assessed_rate).toBeNull(); // fab-0.
       expect(m.total_cost).toBe(0);
       expect(m.external_provider_count).toBe(0);
-      expect(m.avg_skills_developed).toBe(0);
+      expect(m.avg_skills_developed).toBeNull(); // fab-0.
     });
 
     it("returns empty grouping objects for empty inputs", () => {
@@ -476,7 +476,7 @@ describe("computeActivityMetrics", () => {
 
     it("returns 0 when no activities", () => {
       const m = computeActivityMetrics([], [], 0, NOW);
-      expect(m.cancelled_rate).toBe(0);
+      expect(m.cancelled_rate).toBeNull(); // fab-0.
     });
 
     it("returns 100 when all activities cancelled", () => {
@@ -511,7 +511,7 @@ describe("computeActivityMetrics", () => {
 
     it("returns 0 when no participations", () => {
       const m = computeActivityMetrics([], [], 0, NOW);
-      expect(m.full_participation_rate).toBe(0);
+      expect(m.full_participation_rate).toBeNull(); // fab-0.
     });
   });
 
@@ -543,7 +543,7 @@ describe("computeActivityMetrics", () => {
         makeParticipation({ enjoyment_rating: null }),
       ];
       const m = computeActivityMetrics([], parts, 0, NOW);
-      expect(m.enjoyment_positive_rate).toBe(0);
+      expect(m.enjoyment_positive_rate).toBeNull(); // fab-0.
     });
   });
 
@@ -592,7 +592,7 @@ describe("computeActivityMetrics", () => {
     it("returns 0 when totalChildren is 0", () => {
       const parts = [makeParticipation({ child_id: "c1", participation_level: "full" })];
       const m = computeActivityMetrics([], parts, 0, NOW);
-      expect(m.participation_coverage).toBe(0);
+      expect(m.participation_coverage).toBeNull(); // fab-0.
     });
 
     it("returns 100 when all children participate", () => {
@@ -637,7 +637,7 @@ describe("computeActivityMetrics", () => {
 
     it("returns 0 when no activities exist", () => {
       const m = computeActivityMetrics([], [], 0, NOW);
-      expect(m.risk_assessed_rate).toBe(0);
+      expect(m.risk_assessed_rate).toBeNull(); // fab-0.
     });
   });
 
@@ -690,12 +690,12 @@ describe("computeActivityMetrics", () => {
         makeParticipation({ participation_level: "declined", skills_developed: ["y"] }),
       ];
       const m = computeActivityMetrics([], parts, 0, NOW);
-      expect(m.avg_skills_developed).toBe(0);
+      expect(m.avg_skills_developed).toBeNull(); // fab-0.
     });
 
     it("returns 0 for empty participations", () => {
       const m = computeActivityMetrics([], [], 0, NOW);
-      expect(m.avg_skills_developed).toBe(0);
+      expect(m.avg_skills_developed).toBeNull(); // fab-0.
     });
 
     it("rounds to one decimal place", () => {
@@ -779,6 +779,7 @@ describe("computeActivityMetrics", () => {
       const m = computeActivityMetrics(acts, [], 0, NOW);
       expect(m.total_activities).toBe(1);
       expect(m.completed_activities).toBe(1);
+      // Activity exists → real 0 (0 cancelled of 1).
       expect(m.cancelled_rate).toBe(0);
       expect(m.risk_assessed_rate).toBe(100);
       expect(m.total_cost).toBe(15);
@@ -1310,7 +1311,7 @@ describe("Edge cases", () => {
         makeParticipation({ child_id: "c1", participation_level: "full" }),
       ];
       const m = computeActivityMetrics([], parts, 0, NOW);
-      expect(m.participation_coverage).toBe(0);
+      expect(m.participation_coverage).toBeNull(); // fab-0.
     });
 
     it("does not produce low_participation alert with zero totalChildren", () => {
@@ -1326,6 +1327,7 @@ describe("Edge cases", () => {
         makeParticipation({ participation_level: "full", skills_developed: [] }),
       ];
       const m = computeActivityMetrics([], parts, 0, NOW);
+      // 2 active participations exist, skills arrays empty → real 0.
       expect(m.avg_skills_developed).toBe(0);
     });
   });
