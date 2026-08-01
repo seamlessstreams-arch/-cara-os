@@ -85,16 +85,16 @@ describe("computeAppraisalCompliance", () => {
     expect(result.completed).toBe(0);
     expect(result.overdue).toBe(0);
     expect(result.scheduled).toBe(0);
-    expect(result.compliance_rate).toBe(0);
+    expect(result.compliance_rate).toBeNull(); // fab-0.
     expect(result.staff_without_appraisal).toBe(0);
-    expect(result.avg_rating).toBe(0);
-    expect(result.fitness_confirmed_rate).toBe(0);
+    expect(result.avg_rating).toBeNull(); // fab-0.
+    expect(result.fitness_confirmed_rate).toBeNull(); // fab-0.
     expect(result.by_type).toEqual({});
   });
 
   it("returns zero compliance with staff but no appraisals", () => {
     const result = computeAppraisalCompliance([], 5);
-    expect(result.compliance_rate).toBe(0);
+    expect(result.compliance_rate).toBeNull(); // fab-0.
     expect(result.staff_without_appraisal).toBe(5);
   });
 
@@ -159,7 +159,7 @@ describe("computeAppraisalCompliance", () => {
       makeAppraisal({ id: "a1", staff_id: "s1", status: "scheduled" }),
     ];
     const result = computeAppraisalCompliance(appraisals, 1);
-    expect(result.avg_rating).toBe(0);
+    expect(result.avg_rating).toBeNull(); // fab-0.
   });
 
   it("ignores non-completed appraisals for average rating", () => {
@@ -187,7 +187,7 @@ describe("computeAppraisalCompliance", () => {
       makeAppraisal({ id: "a1", status: "scheduled" }),
     ];
     const result = computeAppraisalCompliance(appraisals, 1);
-    expect(result.fitness_confirmed_rate).toBe(0);
+    expect(result.fitness_confirmed_rate).toBeNull(); // fab-0.
   });
 
   it("groups appraisals by type including all statuses", () => {
@@ -226,7 +226,7 @@ describe("computeGoalProgress", () => {
     expect(result.active).toBe(0);
     expect(result.achieved).toBe(0);
     expect(result.overdue).toBe(0);
-    expect(result.achievement_rate).toBe(0);
+    expect(result.achievement_rate).toBeNull(); // fab-0.
     expect(result.by_category).toEqual({});
   });
 
@@ -271,7 +271,7 @@ describe("computeGoalProgress", () => {
       makePerformanceGoal({ id: "g2", status: "overdue" }),
     ];
     const result = computeGoalProgress(goals);
-    expect(result.achievement_rate).toBe(0);
+    expect(result.achievement_rate).toBeNull(); // fab-0.
   });
 
   it("returns 0% when all goals are cancelled", () => {
@@ -280,7 +280,7 @@ describe("computeGoalProgress", () => {
       makePerformanceGoal({ id: "g2", status: "cancelled" }),
     ];
     const result = computeGoalProgress(goals);
-    expect(result.achievement_rate).toBe(0);
+    expect(result.achievement_rate).toBeNull(); // fab-0.
   });
 
   it("groups goals by category with total and achieved counts", () => {

@@ -106,10 +106,10 @@ function computeAppraisalCompliance(
   completed: number;
   overdue: number;
   scheduled: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
   staff_without_appraisal: number;
-  avg_rating: number;
-  fitness_confirmed_rate: number;
+  avg_rating: number | null;
+  fitness_confirmed_rate: number | null;
   by_type: Record<string, number>;
 } {
   const completed = appraisals.filter((a) => a.status === "completed");
@@ -136,7 +136,7 @@ function computeAppraisalCompliance(
   const fitnessConfirmed = completed.filter((a) => a.fitness_confirmed).length;
   const fitnessRate = completed.length > 0
     ? Math.round((fitnessConfirmed / completed.length) * 100)
-    : 0;
+    : null;
 
   // By type
   const byType: Record<string, number> = {};
@@ -147,7 +147,7 @@ function computeAppraisalCompliance(
   // Compliance rate: % of staff with at least one completed appraisal
   const complianceRate = totalStaff > 0
     ? Math.round((staffWithAppraisal.size / totalStaff) * 100)
-    : 0;
+    : null;
 
   return {
     total_appraisals: appraisals.length,
@@ -170,7 +170,7 @@ function computeGoalProgress(goals: PerformanceGoal[]): {
   active: number;
   achieved: number;
   overdue: number;
-  achievement_rate: number;
+  achievement_rate: number | null;
   by_category: Record<string, { total: number; achieved: number }>;
 } {
   const active = goals.filter((g) => g.status === "active");
@@ -180,7 +180,7 @@ function computeGoalProgress(goals: PerformanceGoal[]): {
   const nonCancelled = goals.filter((g) => g.status !== "cancelled");
   const achievementRate = nonCancelled.length > 0
     ? Math.round((achieved.length / nonCancelled.length) * 100)
-    : 0;
+    : null;
 
   const byCategory: Record<string, { total: number; achieved: number }> = {};
   for (const g of goals) {
