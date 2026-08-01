@@ -314,8 +314,8 @@ export function computeMetrics(
   for (const r of ratedRows) byEnjoyment[r.child_enjoyment_rating!] = (byEnjoyment[r.child_enjoyment_rating!] || 0) + 1;
 
   // Boolean rates
-  const pct = (filter: (r: HolidayTripPlanningRow) => boolean) =>
-    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : 0;
+  const pct = (filter: (r: HolidayTripPlanningRow) => boolean): number | null =>
+    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
   const riskAssessmentRate = pct((r) => r.risk_assessment_completed);
   const parentalConsentRate = pct((r) => r.parental_consent);
