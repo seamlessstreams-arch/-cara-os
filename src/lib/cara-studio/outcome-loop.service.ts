@@ -123,12 +123,12 @@ export async function getOutcomeLoopSummary(childId?: string): Promise<OutcomeLo
     withActions: withActions.length,
     actionsCompleted: completedActions,
     actionsTotal: totalActions,
-    completionRate: totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : 0,
-    followUpRate: records.length > 0 ? Math.round((withFollowUp.length / records.length) * 100) : 0,
+    completionRate: totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : null,
+    followUpRate: records.length > 0 ? Math.round((withFollowUp.length / records.length) * 100) : null,
     byType: Object.entries(typeCounts).map(([type, data]) => ({
       type,
       count: data.count,
-      completionRate: data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
+      completionRate: data.total > 0 ? Math.round((data.completed / data.total) * 100) : null,
     })),
   };
 }
