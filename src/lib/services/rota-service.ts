@@ -98,7 +98,7 @@ function computeRotaSummary(
   by_shift: Record<string, number>;
   by_role: Record<string, number>;
   agency_count: number;
-  agency_percentage: number;
+  agency_percentage: number | null;
   total_hours: number;
   overtime_hours: number;
   gaps: string[];
@@ -128,7 +128,7 @@ function computeRotaSummary(
   const agencyPercentage =
     totalStaff > 0
       ? Math.round((agencyCount / totalStaff) * 1000) / 10
-      : 0;
+      : null;
 
   // Hours
   const totalHours = dayEntries.reduce((sum, e) => sum + e.hours, 0);
@@ -173,8 +173,8 @@ function computeStaffingCompliance(
     night_staff: number;
     shortfall: string;
   }[];
-  agency_reliance_rate: number;
-  avg_staff_per_day: number;
+  agency_reliance_rate: number | null;
+  avg_staff_per_day: number | null;
   lone_working_incidents: number;
 } {
   // Only consider active entries (not cancelled)
@@ -264,13 +264,13 @@ function computeStaffingCompliance(
   const agencyRelianceRate =
     totalEntries > 0
       ? Math.round((agencyEntries / totalEntries) * 1000) / 10
-      : 0;
+      : null;
 
   // Average staff per day (1 decimal)
   const avgStaffPerDay =
     totalDaysChecked > 0
       ? Math.round((totalUniqueStaff / totalDaysChecked) * 10) / 10
-      : 0;
+      : null;
 
   const compliantDays = totalDaysChecked - nonCompliantDays.length;
 
@@ -292,8 +292,8 @@ function computeAbsenceProfile(absences: AbsenceRecord[]): {
   total_days_lost: number;
   by_type: Record<string, number>;
   sick_days: number;
-  avg_absence_duration: number;
-  return_to_work_rate: number;
+  avg_absence_duration: number | null;
+  return_to_work_rate: number | null;
   current_absences: number;
   staff_with_high_absence: { staff_id: string; staff_name: string; days: number }[];
 } {
@@ -347,13 +347,13 @@ function computeAbsenceProfile(absences: AbsenceRecord[]): {
   const avgAbsenceDuration =
     totalAbsences > 0
       ? Math.round((totalDaysLost / totalAbsences) * 10) / 10
-      : 0;
+      : null;
 
   // Return to work rate (percentage of sick absences with RTW completed)
   const returnToWorkRate =
     sickAbsenceCount > 0
       ? Math.round((returnToWorkCompleted / sickAbsenceCount) * 1000) / 10
-      : 0;
+      : null;
 
   // Staff with high absence: 10+ sick days, sorted descending
   const staffWithHighAbsence = Array.from(staffSickDays.entries())

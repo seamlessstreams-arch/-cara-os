@@ -78,7 +78,7 @@ describe("computeRotaSummary", () => {
     expect(result.by_shift).toEqual({});
     expect(result.by_role).toEqual({});
     expect(result.agency_count).toBe(0);
-    expect(result.agency_percentage).toBe(0);
+    expect(result.agency_percentage).toBeNull(); // fab-0.
     expect(result.total_hours).toBe(0);
     expect(result.overtime_hours).toBe(0);
     expect(result.gaps).toEqual(["early", "late", "long_day", "waking_night", "sleep_in"]);
@@ -195,7 +195,7 @@ describe("computeRotaSummary", () => {
 
   it("returns 0 agency percentage when no staff", () => {
     const result = computeRotaSummary([], "2026-05-10");
-    expect(result.agency_percentage).toBe(0);
+    expect(result.agency_percentage).toBeNull(); // fab-0.
   });
 
   it("handles rounding of agency percentage to 1 decimal", () => {
@@ -218,8 +218,8 @@ describe("computeStaffingCompliance", () => {
     expect(result.total_days_checked).toBe(0);
     expect(result.compliant_days).toBe(0);
     expect(result.non_compliant_days).toEqual([]);
-    expect(result.agency_reliance_rate).toBe(0);
-    expect(result.avg_staff_per_day).toBe(0);
+    expect(result.agency_reliance_rate).toBeNull(); // fab-0.
+    expect(result.avg_staff_per_day).toBeNull(); // fab-0.
     expect(result.lone_working_incidents).toBe(0);
   });
 
@@ -360,8 +360,8 @@ describe("computeAbsenceProfile", () => {
     expect(result.total_days_lost).toBe(0);
     expect(result.by_type).toEqual({});
     expect(result.sick_days).toBe(0);
-    expect(result.avg_absence_duration).toBe(0);
-    expect(result.return_to_work_rate).toBe(0);
+    expect(result.avg_absence_duration).toBeNull(); // fab-0.
+    expect(result.return_to_work_rate).toBeNull(); // fab-0.
     expect(result.current_absences).toBe(0);
     expect(result.staff_with_high_absence).toEqual([]);
   });
@@ -432,7 +432,7 @@ describe("computeAbsenceProfile", () => {
       makeAbsenceRecord({ absence_type: "annual_leave" }),
     ];
     const result = computeAbsenceProfile(absences);
-    expect(result.return_to_work_rate).toBe(0);
+    expect(result.return_to_work_rate).toBeNull(); // fab-0.
   });
 
   it("counts current absences (approved and spanning today)", () => {
