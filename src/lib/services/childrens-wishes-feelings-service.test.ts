@@ -41,13 +41,15 @@ describe("computeWishesMetrics", () => {
     const m = computeWishesMetrics([], 4);
     expect(m.total_records).toBe(0);
     expect(m.children_with_records).toBe(0);
+    // totalChildren=4 → 0/4 = real 0 for participation_rate.
     expect(m.participation_rate).toBe(0);
     expect(m.wish_granted_count).toBe(0);
-    expect(m.child_informed_rate).toBe(0);
-    expect(m.child_satisfied_rate).toBe(0);
-    expect(m.positive_feeling_rate).toBe(0);
-    expect(m.negative_feeling_rate).toBe(0);
-    expect(m.average_per_child).toBe(0);
+    // records=[] → null for all rate/mean fields.
+    expect(m.child_informed_rate).toBeNull();
+    expect(m.child_satisfied_rate).toBeNull();
+    expect(m.positive_feeling_rate).toBeNull();
+    expect(m.negative_feeling_rate).toBeNull();
+    expect(m.average_per_child).toBeNull();
   });
 
   it("computes populated metrics correctly", () => {

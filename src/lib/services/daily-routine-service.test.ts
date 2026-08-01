@@ -36,11 +36,13 @@ describe("computeRoutineMetrics", () => {
     const m = computeRoutineMetrics([], 4);
     expect(m.total_records).toBe(0);
     expect(m.children_with_routines).toBe(0);
+    // totalChildren=4 → 0/4 = real 0.
     expect(m.routine_coverage).toBe(0);
-    expect(m.compliance_rate).toBe(0);
-    expect(m.adaptation_rate).toBe(0);
-    expect(m.child_engaged_rate).toBe(0);
-    expect(m.average_per_child).toBe(0);
+    // fab-0: null when records=[] (no data to compute rates over).
+    expect(m.compliance_rate).toBeNull();
+    expect(m.adaptation_rate).toBeNull();
+    expect(m.child_engaged_rate).toBeNull();
+    expect(m.average_per_child).toBeNull();
   });
 
   it("calculates correct metrics for populated data", () => {

@@ -118,8 +118,8 @@ export function computeAttendanceStats(entries: AttendanceEntry[]): {
   unauthorised_absence: number;
   late: number;
   excluded: number;
-  attendance_rate: number;
-  unauthorised_rate: number;
+  attendance_rate: number | null;
+  unauthorised_rate: number | null;
 } {
   const total_sessions = entries.length;
 
@@ -131,11 +131,11 @@ export function computeAttendanceStats(entries: AttendanceEntry[]): {
 
   const attendance_rate = total_sessions > 0
     ? Math.round(((present + late) / total_sessions) * 1000) / 10
-    : 0;
+    : null;
 
   const unauthorised_rate = total_sessions > 0
     ? Math.round((unauthorised_absence / total_sessions) * 1000) / 10
-    : 0;
+    : null;
 
   return {
     total_sessions,
@@ -159,7 +159,7 @@ export function computeEducationProfile(
   excluded_count: number;
   sen_count: number;
   ehcp_count: number;
-  avg_attendance: number;
+  avg_attendance: number | null;
   pep_overdue: number;
   activity_count_30d: number;
   activity_categories: Record<string, number>;
@@ -193,7 +193,7 @@ export function computeEducationProfile(
     .filter((v): v is number => v != null);
   const avg_attendance = attendanceValues.length > 0
     ? Math.round((attendanceValues.reduce((s, v) => s + v, 0) / attendanceValues.length) * 10) / 10
-    : 0;
+    : null;
 
   // PEP overdue: next_pep_date in the past
   const now = new Date();
@@ -228,25 +228,25 @@ export function computeEducationProfile(
 export function computeActivityEngagement(activities: ActivityRecord[]): {
   total_activities: number;
   unique_children: number;
-  enjoyment_rate: number;
-  avg_duration: number;
+  enjoyment_rate: number | null;
+  avg_duration: number | null;
   by_category: Record<string, number>;
   top_skills: { skill: string; count: number }[];
-  feedback_rate: number;
+  feedback_rate: number | null;
 } {
   const total_activities = activities.length;
   const unique_children = new Set(activities.map((a) => a.child_id)).size;
 
   const enjoyment_rate = total_activities > 0
     ? Math.round((activities.filter((a) => a.child_enjoyed).length / total_activities) * 1000) / 10
-    : 0;
+    : null;
 
   const durations = activities
     .map((a) => a.duration_minutes)
     .filter((d): d is number => d != null);
   const avg_duration = durations.length > 0
     ? Math.round(durations.reduce((s, d) => s + d, 0) / durations.length)
-    : 0;
+    : null;
 
   const by_category: Record<string, number> = {};
   for (const a of activities) {
@@ -271,7 +271,7 @@ export function computeActivityEngagement(activities: ActivityRecord[]): {
           total_activities) *
           1000,
       ) / 10
-    : 0;
+    : null;
 
   return {
     total_activities,

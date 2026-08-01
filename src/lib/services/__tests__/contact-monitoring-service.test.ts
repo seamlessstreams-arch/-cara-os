@@ -235,16 +235,18 @@ describe("computeContactMetrics", () => {
     expect(m.cancelled_count).toBe(0);
     expect(m.no_show_count).toBe(0);
     expect(m.refused_count).toBe(0);
-    expect(m.completion_rate).toBe(0);
-    expect(m.positive_outcome_rate).toBe(0);
-    expect(m.negative_outcome_rate).toBe(0);
+    // fab-0: null when sessions=[] (nothing to compute rate over).
+    expect(m.completion_rate).toBeNull();
+    expect(m.positive_outcome_rate).toBeNull();
+    expect(m.negative_outcome_rate).toBeNull();
     expect(m.children_with_contact).toBe(0);
-    expect(m.contact_coverage).toBe(0);
+    // totalChildren=0 → null (no cohort).
+    expect(m.contact_coverage).toBeNull();
     expect(m.concerns_raised_count).toBe(0);
     expect(m.supervised_count).toBe(0);
     expect(m.court_ordered_count).toBe(0);
-    expect(m.average_duration).toBe(0);
-    expect(m.child_views_recorded_rate).toBe(0);
+    expect(m.average_duration).toBeNull(); // fab-0.
+    expect(m.child_views_recorded_rate).toBeNull();
     expect(Object.keys(m.by_contact_type)).toHaveLength(0);
     expect(Object.keys(m.by_outcome)).toHaveLength(0);
     expect(Object.keys(m.by_supervision_level)).toHaveLength(0);
@@ -423,7 +425,7 @@ describe("computeContactMetrics", () => {
 
   it("completion_rate is 0 for empty sessions", () => {
     const m = computeContactMetrics([], 0);
-    expect(m.completion_rate).toBe(0);
+    expect(m.completion_rate).toBeNull();
   });
 
   // ── positive_outcome_rate ───────────────────────────────────────────
@@ -468,7 +470,7 @@ describe("computeContactMetrics", () => {
   it("positive_outcome_rate is 0 when no completed sessions exist", () => {
     const sessions = [makeSession({ id: "s1", outcome: "no_show" })];
     const m = computeContactMetrics(sessions, 1);
-    expect(m.positive_outcome_rate).toBe(0);
+    expect(m.positive_outcome_rate).toBeNull();
   });
 
   it("positive_outcome_rate ignores non-completed sessions", () => {
@@ -514,7 +516,7 @@ describe("computeContactMetrics", () => {
   it("negative_outcome_rate is 0 when no completed sessions exist", () => {
     const sessions = [makeSession({ id: "s1", outcome: "refused_by_child" })];
     const m = computeContactMetrics(sessions, 1);
-    expect(m.negative_outcome_rate).toBe(0);
+    expect(m.negative_outcome_rate).toBeNull();
   });
 
   // ── children_with_contact ───────────────────────────────────────────
@@ -562,7 +564,7 @@ describe("computeContactMetrics", () => {
 
   it("contact_coverage is 0 when totalChildren is 0", () => {
     const m = computeContactMetrics([], 0);
-    expect(m.contact_coverage).toBe(0);
+    expect(m.contact_coverage).toBeNull(); // fab-0.
   });
 
   it("contact_coverage rounds to one decimal place", () => {
@@ -573,7 +575,7 @@ describe("computeContactMetrics", () => {
 
   it("contact_coverage is 0 with empty sessions and positive totalChildren", () => {
     const m = computeContactMetrics([], 5);
-    expect(m.contact_coverage).toBe(0);
+    expect(m.contact_coverage).toBe(0); // fab-0.
   });
 
   // ── concerns_raised_count ───────────────────────────────────────────
@@ -684,12 +686,12 @@ describe("computeContactMetrics", () => {
       makeSession({ id: "s2", outcome: "no_show", duration_minutes: 30 }),
     ];
     const m = computeContactMetrics(sessions, 1);
-    expect(m.average_duration).toBe(0);
+    expect(m.average_duration).toBeNull(); // fab-0.
   });
 
   it("average_duration is 0 for empty sessions", () => {
     const m = computeContactMetrics([], 0);
-    expect(m.average_duration).toBe(0);
+    expect(m.average_duration).toBeNull(); // fab-0.
   });
 
   it("average_duration rounds to nearest integer", () => {
@@ -750,7 +752,7 @@ describe("computeContactMetrics", () => {
 
   it("child_views_recorded_rate is 0 for empty sessions", () => {
     const m = computeContactMetrics([], 0);
-    expect(m.child_views_recorded_rate).toBe(0);
+    expect(m.child_views_recorded_rate).toBeNull();
   });
 
   // ── by_contact_type ─────────────────────────────────────────────────

@@ -155,17 +155,17 @@ export function computeWishesMetrics(
 ): {
   total_records: number;
   children_with_records: number;
-  participation_rate: number;
+  participation_rate: number | null;
   wish_granted_count: number;
   wish_partially_met_count: number;
   wish_not_possible_count: number;
   awaiting_response_count: number;
-  child_informed_rate: number;
-  child_satisfied_rate: number;
-  influenced_care_plan_rate: number;
-  positive_feeling_rate: number;
-  negative_feeling_rate: number;
-  average_per_child: number;
+  child_informed_rate: number | null;
+  child_satisfied_rate: number | null;
+  influenced_care_plan_rate: number | null;
+  positive_feeling_rate: number | null;
+  negative_feeling_rate: number | null;
+  average_per_child: number | null;
   by_category: Record<string, number>;
   by_feeling: Record<string, number>;
   by_capture_method: Record<string, number>;
@@ -176,7 +176,7 @@ export function computeWishesMetrics(
   const participation =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const granted = records.filter((r) => r.response_outcome === "wish_granted").length;
   const partial = records.filter((r) => r.response_outcome === "wish_partially_met").length;
@@ -187,20 +187,20 @@ export function computeWishesMetrics(
   const informedRate =
     records.length > 0
       ? Math.round((informed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const satisfiedRecords = records.filter((r) => r.child_satisfied_with_response !== null);
   const satisfied = satisfiedRecords.filter((r) => r.child_satisfied_with_response === true).length;
   const satisfiedRate =
     satisfiedRecords.length > 0
       ? Math.round((satisfied / satisfiedRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   const influenced = records.filter((r) => r.influenced_care_plan).length;
   const influencedRate =
     records.length > 0
       ? Math.round((influenced / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const positive = records.filter(
     (r) => r.feeling_rating === "very_happy" || r.feeling_rating === "happy",
@@ -208,7 +208,7 @@ export function computeWishesMetrics(
   const positiveRate =
     records.length > 0
       ? Math.round((positive / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const negative = records.filter(
     (r) => r.feeling_rating === "unhappy" || r.feeling_rating === "very_unhappy",
@@ -216,12 +216,12 @@ export function computeWishesMetrics(
   const negativeRate =
     records.length > 0
       ? Math.round((negative / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const avgPerChild =
     uniqueChildren > 0
       ? Math.round((records.length / uniqueChildren) * 10) / 10
-      : 0;
+      : null;
 
   const byCat: Record<string, number> = {};
   for (const r of records) byCat[r.wishes_category] = (byCat[r.wishes_category] ?? 0) + 1;

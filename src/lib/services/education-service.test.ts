@@ -78,8 +78,9 @@ describe("education-service", () => {
       const s = computeAttendanceStats([]);
       expect(s.total_sessions).toBe(0);
       expect(s.present).toBe(0);
-      expect(s.attendance_rate).toBe(0);
-      expect(s.unauthorised_rate).toBe(0);
+      // fab-0: null when no sessions to compute rates over.
+      expect(s.attendance_rate).toBeNull();
+      expect(s.unauthorised_rate).toBeNull();
     });
 
     it("counts marks and computes rates correctly", () => {
@@ -110,9 +111,9 @@ describe("education-service", () => {
       const r = computeActivityEngagement([]);
       expect(r.total_activities).toBe(0);
       expect(r.unique_children).toBe(0);
-      expect(r.enjoyment_rate).toBe(0);
-      expect(r.avg_duration).toBe(0);
-      expect(r.feedback_rate).toBe(0);
+      expect(r.enjoyment_rate).toBeNull();
+      expect(r.avg_duration).toBeNull();
+      expect(r.feedback_rate).toBeNull();
     });
 
     it("computes engagement metrics for populated data", () => {

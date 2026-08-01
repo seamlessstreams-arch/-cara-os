@@ -151,16 +151,16 @@ export function computeRoutineMetrics(
 ): {
   total_records: number;
   children_with_routines: number;
-  routine_coverage: number;
+  routine_coverage: number | null;
   fully_followed_count: number;
   mostly_followed_count: number;
   partially_followed_count: number;
   not_followed_count: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
   adapted_count: number;
-  adaptation_rate: number;
-  child_engaged_rate: number;
-  average_per_child: number;
+  adaptation_rate: number | null;
+  child_engaged_rate: number | null;
+  average_per_child: number | null;
   by_routine_type: Record<string, number>;
   by_routine_slot: Record<string, number>;
   by_compliance: Record<string, number>;
@@ -171,7 +171,7 @@ export function computeRoutineMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const applicable = records.filter((r) => r.compliance_rating !== "not_applicable");
   const fullyFollowed = records.filter((r) => r.compliance_rating === "fully_followed").length;
@@ -185,24 +185,24 @@ export function computeRoutineMetrics(
   const complianceRate =
     applicable.length > 0
       ? Math.round((compliant / applicable.length) * 1000) / 10
-      : 0;
+      : null;
 
   const adapted = records.filter((r) => r.adapted).length;
   const adaptationRate =
     records.length > 0
       ? Math.round((adapted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const engaged = records.filter((r) => r.child_engaged).length;
   const engagedRate =
     records.length > 0
       ? Math.round((engaged / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const avgPerChild =
     uniqueChildren > 0
       ? Math.round((records.length / uniqueChildren) * 10) / 10
-      : 0;
+      : null;
 
   const byType: Record<string, number> = {};
   for (const r of records) byType[r.routine_type] = (byType[r.routine_type] ?? 0) + 1;

@@ -152,8 +152,8 @@ describe("computeAttendanceStats", () => {
     expect(result.unauthorised_absence).toBe(0);
     expect(result.late).toBe(0);
     expect(result.excluded).toBe(0);
-    expect(result.attendance_rate).toBe(0);
-    expect(result.unauthorised_rate).toBe(0);
+    expect(result.attendance_rate).toBeNull();
+    expect(result.unauthorised_rate).toBeNull();
   });
 
   it("counts total_sessions as the number of entries", () => {
@@ -289,7 +289,7 @@ describe("computeEducationProfile", () => {
     expect(result.excluded_count).toBe(0);
     expect(result.sen_count).toBe(0);
     expect(result.ehcp_count).toBe(0);
-    expect(result.avg_attendance).toBe(0);
+    expect(result.avg_attendance).toBeNull(); // fab-0.
     expect(result.pep_overdue).toBe(0);
     expect(result.activity_count_30d).toBe(0);
     expect(result.activity_categories).toEqual({});
@@ -363,7 +363,7 @@ describe("computeEducationProfile", () => {
       eduRecord({ id: "e2", attendance_percentage: null }),
     ];
     const result = computeEducationProfile(records, [], []);
-    expect(result.avg_attendance).toBe(0);
+    expect(result.avg_attendance).toBeNull(); // fab-0.
   });
 
   it("rounds avg_attendance to one decimal place", () => {
@@ -433,11 +433,11 @@ describe("computeActivityEngagement", () => {
     const result = computeActivityEngagement([]);
     expect(result.total_activities).toBe(0);
     expect(result.unique_children).toBe(0);
-    expect(result.enjoyment_rate).toBe(0);
-    expect(result.avg_duration).toBe(0);
+    expect(result.enjoyment_rate).toBeNull();
+    expect(result.avg_duration).toBeNull();
     expect(result.by_category).toEqual({});
     expect(result.top_skills).toEqual([]);
-    expect(result.feedback_rate).toBe(0);
+    expect(result.feedback_rate).toBeNull();
   });
 
   it("counts total activities", () => {
@@ -506,7 +506,7 @@ describe("computeActivityEngagement", () => {
       activity({ id: "a2", duration_minutes: null }),
     ];
     const result = computeActivityEngagement(activities);
-    expect(result.avg_duration).toBe(0);
+    expect(result.avg_duration).toBeNull(); // fab-0.
   });
 
   it("groups activities by category", () => {

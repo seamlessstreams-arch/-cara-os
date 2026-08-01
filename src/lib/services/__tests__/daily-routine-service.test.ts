@@ -221,7 +221,7 @@ describe("computeRoutineMetrics", () => {
 
     it("returns zero routine_coverage", () => {
       const m = computeRoutineMetrics([], 5);
-      expect(m.routine_coverage).toBe(0);
+      expect(m.routine_coverage).toBe(0); // records exist → real 0.
     });
 
     it("returns zero fully_followed_count", () => {
@@ -246,7 +246,7 @@ describe("computeRoutineMetrics", () => {
 
     it("returns zero compliance_rate", () => {
       const m = computeRoutineMetrics([], 5);
-      expect(m.compliance_rate).toBe(0);
+      expect(m.compliance_rate).toBeNull();
     });
 
     it("returns zero adapted_count", () => {
@@ -256,17 +256,17 @@ describe("computeRoutineMetrics", () => {
 
     it("returns zero adaptation_rate", () => {
       const m = computeRoutineMetrics([], 5);
-      expect(m.adaptation_rate).toBe(0);
+      expect(m.adaptation_rate).toBeNull();
     });
 
     it("returns zero child_engaged_rate", () => {
       const m = computeRoutineMetrics([], 5);
-      expect(m.child_engaged_rate).toBe(0);
+      expect(m.child_engaged_rate).toBeNull();
     });
 
     it("returns zero average_per_child", () => {
       const m = computeRoutineMetrics([], 5);
-      expect(m.average_per_child).toBe(0);
+      expect(m.average_per_child).toBeNull(); // fab-0.
     });
 
     it("returns empty by_routine_type", () => {
@@ -296,7 +296,7 @@ describe("computeRoutineMetrics", () => {
 
     it("handles totalChildren = 0 with empty records", () => {
       const m = computeRoutineMetrics([], 0);
-      expect(m.routine_coverage).toBe(0);
+      expect(m.routine_coverage).toBeNull(); // fab-0.
     });
   });
 
@@ -486,7 +486,7 @@ describe("computeRoutineMetrics", () => {
   describe("routine_coverage edge cases", () => {
     it("returns 0 when totalChildren is 0", () => {
       const m = computeRoutineMetrics([makeRecord()], 0);
-      expect(m.routine_coverage).toBe(0);
+      expect(m.routine_coverage).toBeNull(); // fab-0.
     });
 
     it("returns 50 when 1 child covered out of 2", () => {
@@ -575,7 +575,7 @@ describe("computeRoutineMetrics", () => {
         makeRecord({ compliance_rating: "not_applicable" }),
       ];
       const m = computeRoutineMetrics(records, 1);
-      expect(m.compliance_rate).toBe(0);
+      expect(m.compliance_rate).toBeNull();
     });
 
     it("mixes fully and mostly as compliant", () => {
@@ -688,7 +688,7 @@ describe("computeRoutineMetrics", () => {
 
     it("returns 0 when no records and no children", () => {
       const m = computeRoutineMetrics([], 0);
-      expect(m.average_per_child).toBe(0);
+      expect(m.average_per_child).toBeNull(); // fab-0.
     });
 
     it("handles non-trivial rounding (7/3 = 2.3)", () => {

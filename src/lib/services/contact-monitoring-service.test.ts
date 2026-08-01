@@ -45,13 +45,16 @@ describe("contact-monitoring-service", () => {
       expect(m.cancelled_count).toBe(0);
       expect(m.no_show_count).toBe(0);
       expect(m.refused_count).toBe(0);
-      expect(m.completion_rate).toBe(0);
-      expect(m.positive_outcome_rate).toBe(0);
-      expect(m.negative_outcome_rate).toBe(0);
+      // fab-0: null when sessions=[] (no data to compute rate over).
+      expect(m.completion_rate).toBeNull();
+      expect(m.positive_outcome_rate).toBeNull();
+      expect(m.negative_outcome_rate).toBeNull();
       expect(m.children_with_contact).toBe(0);
+      // totalChildren=4 → 0/4 = real 0.
       expect(m.contact_coverage).toBe(0);
-      expect(m.average_duration).toBe(0);
-      expect(m.child_views_recorded_rate).toBe(0);
+      // fab-0: null when no sessions have durations.
+      expect(m.average_duration).toBeNull();
+      expect(m.child_views_recorded_rate).toBeNull();
     });
 
     it("computes populated metrics correctly", () => {

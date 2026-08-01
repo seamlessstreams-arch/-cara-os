@@ -279,20 +279,20 @@ export function computeMetrics(
   by_activity_type: Record<string, number>;
   by_funding_source: Record<string, number>;
   total_spent: number;
-  theory_pass_rate: number;
-  practical_pass_rate: number;
-  average_lessons_to_test: number;
-  engagement_rate: number;
-  personal_adviser_rate: number;
-  pathway_plan_rate: number;
-  social_worker_informed_rate: number;
+  theory_pass_rate: number | null;
+  practical_pass_rate: number | null;
+  average_lessons_to_test: number | null;
+  engagement_rate: number | null;
+  personal_adviser_rate: number | null;
+  pathway_plan_rate: number | null;
+  social_worker_informed_rate: number | null;
   unique_young_people: number;
   licence_achieved_count: number;
   driving_lesson_count: number;
   public_transport_count: number;
   alternative_transport_count: number;
-  average_cost_per_lesson: number;
-  funded_lesson_utilisation_rate: number;
+  average_cost_per_lesson: number | null;
+  funded_lesson_utilisation_rate: number | null;
   cbt_count: number;
   theory_attempts: number;
   practical_attempts: number;
@@ -321,7 +321,7 @@ export function computeMetrics(
   const theoryAttempts = theoryPassed + theoryFailed;
   const theoryPassRate = theoryAttempts > 0
     ? Math.round((theoryPassed / theoryAttempts) * 1000) / 10
-    : 0;
+    : null;
 
   // Practical pass rate
   const practicalPassed = rows.filter((r) => r.activity_type === "Practical Test — Passed").length;
@@ -329,7 +329,7 @@ export function computeMetrics(
   const practicalAttempts = practicalPassed + practicalFailed;
   const practicalPassRate = practicalAttempts > 0
     ? Math.round((practicalPassed / practicalAttempts) * 1000) / 10
-    : 0;
+    : null;
 
   // Average lessons to test — look at young people who have taken a practical test
   const ypWithPracticalTest = new Set(
@@ -346,24 +346,24 @@ export function computeMetrics(
   }
   const avgLessonsToTest = ypWithPracticalTest.size > 0
     ? Math.round((totalLessonsForTesters / ypWithPracticalTest.size) * 10) / 10
-    : 0;
+    : null;
 
   // Boolean rates
   const engagementRate = total > 0
     ? Math.round((rows.filter((r) => r.young_person_engaged).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const paRate = total > 0
     ? Math.round((rows.filter((r) => r.personal_adviser_involved).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const pathwayRate = total > 0
     ? Math.round((rows.filter((r) => r.pathway_plan_linked).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const swRate = total > 0
     ? Math.round((rows.filter((r) => r.social_worker_informed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Licence achieved — count young people with Practical Test — Passed
   const licenceAchieved = new Set(
@@ -391,7 +391,7 @@ export function computeMetrics(
   );
   const avgCostPerLesson = lessonsWithCost.length > 0
     ? Math.round((lessonsWithCost.reduce((sum, r) => sum + (r.cost_per_lesson ?? 0), 0) / lessonsWithCost.length) * 100) / 100
-    : 0;
+    : null;
 
   // Funded lesson utilisation rate
   const lessonsWithFunding = rows.filter(
@@ -403,7 +403,7 @@ export function computeMetrics(
           lessonsWithFunding.length) *
           1000,
       ) / 10
-    : 0;
+    : null;
 
   // CBT count
   const cbtCount = rows.filter((r) => r.activity_type === "CBT — Moped/Scooter").length;
@@ -647,7 +647,7 @@ export function generateCaraInsights(
       `Activities: ${typeBreakdown || "none recorded"}. ` +
       `Funding: ${fundingBreakdown || "none"}. ` +
       `Total spent: £${metrics.total_spent.toFixed(2)}. ` +
-      `Average cost per lesson: £${metrics.average_cost_per_lesson.toFixed(2)}. ` +
+      `Average cost per lesson: £${(metrics.average_cost_per_lesson ?? 0).toFixed(2)}. ` +
       `Driving lessons: ${metrics.driving_lesson_count}. ` +
       `Theory attempts: ${metrics.theory_attempts} (pass rate: ${metrics.theory_pass_rate}%). ` +
       `Practical attempts: ${metrics.practical_attempts} (pass rate: ${metrics.practical_pass_rate}%). ` +
@@ -685,7 +685,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.practical_pass_rate === 0 && metrics.driving_lesson_count > 20 && metrics.total_records > 5) {
+  if ((metrics.practical_pass_rate ?? 0) === 0 && metrics.driving_lesson_count > 20 && metrics.total_records > 5) {
     insights.push(
       `[reflect] ${metrics.driving_lesson_count} driving lessons have been delivered with no ` +
         `practical test pass yet. The national average for care leavers to pass is often ` +
@@ -710,7 +710,7 @@ export function generateCaraInsights(
         `Is the home in a rural area where transport poverty is a real risk for ` +
         `care leavers?`,
     );
-  } else if (metrics.engagement_rate < 60 && metrics.total_records > 5) {
+  } else if ((metrics.engagement_rate ?? 0) < 60 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Engagement rate is ${metrics.engagement_rate}% across transport ` +
         `independence activities. For care leavers, transport can feel overwhelming — ` +

@@ -147,16 +147,16 @@ export function computeContactMetrics(
   cancelled_count: number;
   no_show_count: number;
   refused_count: number;
-  completion_rate: number;
-  positive_outcome_rate: number;
-  negative_outcome_rate: number;
+  completion_rate: number | null;
+  positive_outcome_rate: number | null;
+  negative_outcome_rate: number | null;
   children_with_contact: number;
-  contact_coverage: number;
+  contact_coverage: number | null;
   concerns_raised_count: number;
   supervised_count: number;
   court_ordered_count: number;
-  average_duration: number;
-  child_views_recorded_rate: number;
+  average_duration: number | null;
+  child_views_recorded_rate: number | null;
   by_contact_type: Record<string, number>;
   by_outcome: Record<string, number>;
   by_supervision_level: Record<string, number>;
@@ -174,25 +174,25 @@ export function computeContactMetrics(
   const completionRate =
     sessions.length > 0
       ? Math.round((completed / sessions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const positive = sessions.filter((s) => s.outcome === "completed_positive").length;
   const positiveRate =
     completed > 0
       ? Math.round((positive / completed) * 1000) / 10
-      : 0;
+      : null;
 
   const negative = sessions.filter((s) => s.outcome === "completed_negative").length;
   const negativeRate =
     completed > 0
       ? Math.round((negative / completed) * 1000) / 10
-      : 0;
+      : null;
 
   const uniqueChildren = new Set(sessions.map((s) => s.child_id)).size;
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const concerns = sessions.filter((s) => s.concerns_raised).length;
   const supervised = sessions.filter(
@@ -207,13 +207,13 @@ export function computeContactMetrics(
   const avgDuration =
     completedWithDuration.length > 0
       ? Math.round(totalDuration / completedWithDuration.length)
-      : 0;
+      : null;
 
   const childViews = sessions.filter((s) => s.child_views !== null).length;
   const childRate =
     sessions.length > 0
       ? Math.round((childViews / sessions.length) * 1000) / 10
-      : 0;
+      : null;
 
   const byType: Record<string, number> = {};
   for (const s of sessions) byType[s.contact_type] = (byType[s.contact_type] ?? 0) + 1;

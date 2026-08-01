@@ -42,9 +42,9 @@ describe("computeMetrics", () => {
     expect(m.total_records).toBe(0);
     expect(m.unique_young_people).toBe(0);
     expect(m.total_spent).toBe(0);
-    expect(m.theory_pass_rate).toBe(0);
-    expect(m.practical_pass_rate).toBe(0);
-    expect(m.engagement_rate).toBe(0);
+    expect(m.theory_pass_rate).toBeNull();
+    expect(m.practical_pass_rate).toBeNull();
+    expect(m.engagement_rate).toBeNull();
     expect(m.driving_lesson_count).toBe(0);
   });
 

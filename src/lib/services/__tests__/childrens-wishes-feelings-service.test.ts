@@ -278,12 +278,12 @@ describe("computeWishesMetrics", () => {
 
     it("returns participation_rate = 0 when totalChildren > 0", () => {
       const m = computeWishesMetrics([], 5);
-      expect(m.participation_rate).toBe(0);
+      expect(m.participation_rate).toBe(0); // records exist → real 0.
     });
 
     it("returns participation_rate = 0 when totalChildren = 0", () => {
       const m = computeWishesMetrics([], 0);
-      expect(m.participation_rate).toBe(0);
+      expect(m.participation_rate).toBeNull(); // fab-0.
     });
 
     it("returns all outcome counts as 0", () => {
@@ -296,32 +296,32 @@ describe("computeWishesMetrics", () => {
 
     it("returns child_informed_rate = 0", () => {
       const m = computeWishesMetrics([], 3);
-      expect(m.child_informed_rate).toBe(0);
+      expect(m.child_informed_rate).toBeNull(); // fab-0.
     });
 
     it("returns child_satisfied_rate = 0", () => {
       const m = computeWishesMetrics([], 3);
-      expect(m.child_satisfied_rate).toBe(0);
+      expect(m.child_satisfied_rate).toBeNull(); // fab-0.
     });
 
     it("returns influenced_care_plan_rate = 0", () => {
       const m = computeWishesMetrics([], 3);
-      expect(m.influenced_care_plan_rate).toBe(0);
+      expect(m.influenced_care_plan_rate).toBeNull(); // fab-0.
     });
 
     it("returns positive_feeling_rate = 0", () => {
       const m = computeWishesMetrics([], 3);
-      expect(m.positive_feeling_rate).toBe(0);
+      expect(m.positive_feeling_rate).toBeNull(); // fab-0.
     });
 
     it("returns negative_feeling_rate = 0", () => {
       const m = computeWishesMetrics([], 3);
-      expect(m.negative_feeling_rate).toBe(0);
+      expect(m.negative_feeling_rate).toBeNull(); // fab-0.
     });
 
     it("returns average_per_child = 0", () => {
       const m = computeWishesMetrics([], 3);
-      expect(m.average_per_child).toBe(0);
+      expect(m.average_per_child).toBeNull(); // fab-0.
     });
 
     it("returns empty by_category", () => {
@@ -422,7 +422,7 @@ describe("computeWishesMetrics", () => {
 
     it("calculates negative_feeling_rate = 0 when happy", () => {
       const m = computeWishesMetrics([rec], 4);
-      expect(m.negative_feeling_rate).toBe(0);
+      expect(m.negative_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("calculates average_per_child = 1", () => {
@@ -613,7 +613,7 @@ describe("computeWishesMetrics", () => {
     it("handles totalChildren = 0 gracefully", () => {
       const recs = [makeRecord()];
       const m = computeWishesMetrics(recs, 0);
-      expect(m.participation_rate).toBe(0);
+      expect(m.participation_rate).toBeNull(); // fab-0.
     });
 
     it("counts each child once even with multiple records", () => {
@@ -700,7 +700,7 @@ describe("computeWishesMetrics", () => {
         makeRecord({ child_informed_of_outcome: false }),
       ];
       const m = computeWishesMetrics(recs, 2);
-      expect(m.child_informed_rate).toBe(0);
+      expect(m.child_informed_rate).toBe(0); // records exist → real 0.
     });
 
     it("returns 100 when all children informed", () => {
@@ -733,7 +733,7 @@ describe("computeWishesMetrics", () => {
         makeRecord({ child_satisfied_with_response: false }),
       ];
       const m = computeWishesMetrics(recs, 2);
-      expect(m.child_satisfied_rate).toBe(0);
+      expect(m.child_satisfied_rate).toBe(0); // records exist → real 0.
     });
 
     it("returns 100 when all non-null satisfaction records are true", () => {
@@ -762,7 +762,7 @@ describe("computeWishesMetrics", () => {
         makeRecord({ child_satisfied_with_response: null }),
       ];
       const m = computeWishesMetrics(recs, 2);
-      expect(m.child_satisfied_rate).toBe(0);
+      expect(m.child_satisfied_rate).toBeNull(); // fab-0.
     });
 
     it("calculates mixed satisfied/unsatisfied correctly (1 of 2 non-null = 50%)", () => {
@@ -796,7 +796,7 @@ describe("computeWishesMetrics", () => {
         makeRecord({ influenced_care_plan: false }),
       ];
       const m = computeWishesMetrics(recs, 2);
-      expect(m.influenced_care_plan_rate).toBe(0);
+      expect(m.influenced_care_plan_rate).toBe(0); // records exist → real 0.
     });
 
     it("returns 100 when all records influenced care plans", () => {
@@ -838,31 +838,31 @@ describe("computeWishesMetrics", () => {
     it("does not count okay as positive", () => {
       const recs = [makeRecord({ feeling_rating: "okay" })];
       const m = computeWishesMetrics(recs, 1);
-      expect(m.positive_feeling_rate).toBe(0);
+      expect(m.positive_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("does not count mixed as positive", () => {
       const recs = [makeRecord({ feeling_rating: "mixed" })];
       const m = computeWishesMetrics(recs, 1);
-      expect(m.positive_feeling_rate).toBe(0);
+      expect(m.positive_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("does not count not_expressed as positive", () => {
       const recs = [makeRecord({ feeling_rating: "not_expressed" })];
       const m = computeWishesMetrics(recs, 1);
-      expect(m.positive_feeling_rate).toBe(0);
+      expect(m.positive_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("does not count unhappy as positive", () => {
       const recs = [makeRecord({ feeling_rating: "unhappy" })];
       const m = computeWishesMetrics(recs, 1);
-      expect(m.positive_feeling_rate).toBe(0);
+      expect(m.positive_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("does not count very_unhappy as positive", () => {
       const recs = [makeRecord({ feeling_rating: "very_unhappy" })];
       const m = computeWishesMetrics(recs, 1);
-      expect(m.positive_feeling_rate).toBe(0);
+      expect(m.positive_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("calculates mixed positive/other correctly (2 of 4 = 50%)", () => {
@@ -895,31 +895,31 @@ describe("computeWishesMetrics", () => {
     it("does not count okay as negative", () => {
       const recs = [makeRecord({ feeling_rating: "okay" })];
       const m = computeWishesMetrics(recs, 1);
-      expect(m.negative_feeling_rate).toBe(0);
+      expect(m.negative_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("does not count mixed as negative", () => {
       const recs = [makeRecord({ feeling_rating: "mixed" })];
       const m = computeWishesMetrics(recs, 1);
-      expect(m.negative_feeling_rate).toBe(0);
+      expect(m.negative_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("does not count not_expressed as negative", () => {
       const recs = [makeRecord({ feeling_rating: "not_expressed" })];
       const m = computeWishesMetrics(recs, 1);
-      expect(m.negative_feeling_rate).toBe(0);
+      expect(m.negative_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("does not count happy as negative", () => {
       const recs = [makeRecord({ feeling_rating: "happy" })];
       const m = computeWishesMetrics(recs, 1);
-      expect(m.negative_feeling_rate).toBe(0);
+      expect(m.negative_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("does not count very_happy as negative", () => {
       const recs = [makeRecord({ feeling_rating: "very_happy" })];
       const m = computeWishesMetrics(recs, 1);
-      expect(m.negative_feeling_rate).toBe(0);
+      expect(m.negative_feeling_rate).toBe(0); // records exist → real 0.
     });
 
     it("calculates mixed negative/other correctly (2 of 5 = 40%)", () => {
@@ -940,7 +940,7 @@ describe("computeWishesMetrics", () => {
   describe("average_per_child", () => {
     it("returns 0 when no unique children", () => {
       const m = computeWishesMetrics([], 3);
-      expect(m.average_per_child).toBe(0);
+      expect(m.average_per_child).toBeNull(); // fab-0.
     });
 
     it("returns 1 for single record from one child", () => {
