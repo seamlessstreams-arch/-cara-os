@@ -200,7 +200,7 @@ export function computeNightMonitoring(input: NightMonitoringInput): NightMonito
       concern_count_7d: childConcerns.length,
       not_in_room_count_7d: childNotInRoom.length,
       avg_settled_time: findEarliestAsleepTime(childChecks7d),
-      sleep_pattern: classifySleepPattern(asleepRate, childConcerns.length),
+      sleep_pattern: classifySleepPattern(asleepRate ?? 0, childConcerns.length),
     };
   });
 
