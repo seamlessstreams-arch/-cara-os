@@ -37,9 +37,9 @@ export interface ChildPIProfile {
   prior30d: number;
   trend: "increasing" | "stable" | "decreasing";
   avgDurationMinutes: number | null;
-  deEscalationRate: number;         // 0–100
-  debriefRate: number;              // 0–100
-  staffDebriefRate: number;         // 0–100
+  deEscalationRate: number | null;         // 0–100
+  debriefRate: number | null;              // 0–100
+  staffDebriefRate: number | null;         // 0–100
   injuryCount: number;
   pendingReviewCount: number;
   recentAntecedents: string[];
@@ -55,7 +55,7 @@ export interface StaffPIProfile {
   supportCount: number;
   totalInvolvements: number;
   deEscalationDocumentedOnLeads: number;
-  deEscalationRateOnLeads: number;  // 0–100
+  deEscalationRateOnLeads: number | null;  // 0–100
 }
 
 export interface AntecedentFrequency {
@@ -243,7 +243,7 @@ export async function GET() {
       signal,
       supervisionPrompt: buildChildPrompt(
         `${yp.first_name} ${yp.last_name}`, signal,
-        childRestraints.length, r30d.length, piTrend, deEscalationRate, debriefRate,
+        childRestraints.length, r30d.length, piTrend, (deEscalationRate ?? 0), (debriefRate ?? 0),
         recentAntecedents,
       ),
     };
@@ -319,7 +319,7 @@ export async function GET() {
   const pendingReviews = restraints.filter((r) =>
     r.review_status && r.review_status !== "reviewed" && r.review_status !== "referred_lado"
   ).length;
-  const notDebriefed = childProfiles.filter((c) => c.totalRestraints > 0 && c.debriefRate < 100).length;
+  const notDebriefed = childProfiles.filter((c) => c.totalRestraints > 0 && (c.debriefRate ?? 0) < 100).length;
   const totalInjuries = restraints.reduce((s, r) => s + (r.injuries ?? []).length, 0);
   const avgDuration = restraints.length > 0
     ? Math.round(restraints.reduce((s, r) => s + (r.duration ?? 0), 0) / restraints.length * 10) / 10

@@ -123,7 +123,7 @@ export interface SkillDevelopmentResult {
   engagedRate: number;
   achievedRate: number;
   supportTypeVariety: number;
-  averageSessionsPerChild: number;
+  averageSessionsPerChild: number | null;
 }
 
 export interface PartnershipAccessResult {

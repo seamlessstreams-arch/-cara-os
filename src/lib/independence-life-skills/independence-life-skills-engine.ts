@@ -134,7 +134,7 @@ export interface SkillDevelopmentResult {
   independentMostlyRate: number; // %
   improvementRate: number; // % showing improvement from previousLevel
   domainsAssessed: number;
-  averageDomainsPerChild: number;
+  averageDomainsPerChild: number | null;
   notYetStartedCount: number;
 }
 

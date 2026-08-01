@@ -121,7 +121,7 @@ export interface CategorySummary {
 export interface CareLanguageAuditSummary {
   totalHits: number;
   totalRecordsScanned: number;
-  hitRate: number;
+  hitRate: number | null;
   categoryCounts: Record<string, number>;
   staffWithHits: number;
   childrenAffected: number;

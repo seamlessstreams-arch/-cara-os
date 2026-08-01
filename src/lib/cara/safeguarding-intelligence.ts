@@ -121,7 +121,7 @@ export interface SafeguardingAssessment {
 
   // Key metrics
   missingEpisodeCount: number;
-  missingAvgDurationHours: number;
+  missingAvgDurationHours: number | null;
   returnInterviewRate: number;
   restraintCount: number;
   restraintDebriefRate: number;

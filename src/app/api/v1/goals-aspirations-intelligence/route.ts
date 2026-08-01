@@ -83,7 +83,7 @@ interface GoalsAspirationsHomeSummary {
   totalActiveOutcomes: number;
   totalAchievedOutcomes: number;
   overallProgressingRate: number | null;  // 0–100
-  overallVoiceRate: number;  // 0–100
+  overallVoiceRate: number | null;  // 0–100
   overdueReviews: number;
   ofstedNote: string;
 }
@@ -243,7 +243,7 @@ export async function GET() {
       .slice(0, 3);
 
     const signal = overallSignal(
-      aspirations.length, progressing, stable, regressing, activeOut.length, voiceRate,
+      aspirations.length, progressing, stable, regressing, activeOut.length, (voiceRate ?? 0),
     );
 
     return {
@@ -265,7 +265,7 @@ export async function GET() {
       supervisionPrompt: buildSupervisionPrompt(
         `${yp.first_name} ${yp.last_name}`, signal,
         aspirations.length, childChosenCount,
-        aspirationsWithNoOutcome, voiceRate, overdue,
+        aspirationsWithNoOutcome, (voiceRate ?? 0), overdue,
       ),
     };
   });

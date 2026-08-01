@@ -144,10 +144,10 @@ export interface PartnershipEngagementResult {
 
 export interface MeetingEffectivenessResult {
   score: number; // 0-25
-  attendanceRate: number; // agencies attended / invited
+  attendanceRate: number | null; // agencies attended / invited
   homeAttendanceRate: number; // percentage
   minutesCirculatedRate: number; // percentage
-  actionsCompletionRate: number; // percentage
+  actionsCompletionRate: number | null; // percentage
   childParticipationRate: number; // percentage
   meetingTypeVariety: number; // unique types count
 }
@@ -489,7 +489,7 @@ function generateStrengths(
   if (meetings.homeAttendanceRate >= 95) {
     strengths.push("Excellent home attendance at multi-agency meetings demonstrates commitment to partnership working");
   }
-  if (meetings.actionsCompletionRate >= 80) {
+  if ((meetings.actionsCompletionRate ?? 0) >= 80) {
     strengths.push("Strong action completion rate shows the home follows through on multi-agency commitments");
   }
   if (meetings.childParticipationRate >= 70) {
@@ -532,13 +532,13 @@ function generateConcerns(
     concerns.push(`${disengaged.length} agency relationship(s) rated as disengaged: ${disengaged.map((r) => r.agencyName).join(", ")}`);
   }
 
-  if (meetings.attendanceRate < 60) {
+  if ((meetings.attendanceRate ?? 0) < 60) {
     concerns.push(`Multi-agency meeting attendance at ${meetings.attendanceRate}%: poor attendance undermines collaborative working`);
   }
   if (meetings.homeAttendanceRate < 80) {
     concerns.push(`Home representative attendance at ${meetings.homeAttendanceRate}%: missing meetings risks children's needs not being effectively advocated for`);
   }
-  if (meetings.actionsCompletionRate < 60) {
+  if ((meetings.actionsCompletionRate ?? 0) < 60) {
     concerns.push(`Action completion rate at ${meetings.actionsCompletionRate}%: agreed actions are not being followed through`);
   }
 
@@ -594,7 +594,7 @@ function generateImmediateActions(
     );
   }
 
-  if (meetings.actionsCompletionRate < 60) {
+  if ((meetings.actionsCompletionRate ?? 0) < 60) {
     actions.push(
       "MEDIUM: Action completion rate is critically low. Implement an action tracking system and assign named owners for all multi-agency meeting actions.",
     );

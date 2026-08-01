@@ -221,7 +221,7 @@ export interface HydrationStandardsResult {
   encouragementGivenRate: number;
   averageCupsConsumed: number;
   averageTargetCups: number;
-  averageCupsVsTargetRate: number;
+  averageCupsVsTargetRate: number | null;
   hydrationBreakdown: Record<HydrationLevel, number>;
   score: number; // 0-25
   strengths: string[];
@@ -268,12 +268,12 @@ export interface ChildNutritionProfile {
   childId: string;
   childName: string;
   totalMeals: number;
-  averageNutritionScore: number;
+  averageNutritionScore: number | null;
   portionFullMostRate: number;
   satisfactionRate: number;
   dietaryRequirementsMetRate: number;
   hydrationRecords: number;
-  averageHydrationCups: number;
+  averageHydrationCups: number | null;
   hydrationTargetMetRate: number;
   overallScore: number; // 0-10
 }

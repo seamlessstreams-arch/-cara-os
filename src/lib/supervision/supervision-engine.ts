@@ -89,11 +89,11 @@ export interface StaffSupervisionTraining {
 // ── Output Interfaces ────────────────────────────────────────────────────────
 
 export interface SupervisionQualityResult {
-  overallScore: number;
-  contentRate: number;
-  reflectiveRate: number;
-  safeguardingRate: number;
-  wellbeingRate: number;
+  overallScore: number | null;
+  contentRate: number | null;
+  reflectiveRate: number | null;
+  safeguardingRate: number | null;
+  wellbeingRate: number | null;
   contentWeight: number;
   reflectiveWeight: number;
   safeguardingWeight: number;
@@ -101,11 +101,11 @@ export interface SupervisionQualityResult {
 }
 
 export interface SupervisionComplianceResult {
-  overallScore: number;
-  documentedRate: number;
-  withinTimescaleRate: number;
-  actionsReviewedRate: number;
-  typeDiversityRatio: number;
+  overallScore: number | null;
+  documentedRate: number | null;
+  withinTimescaleRate: number | null;
+  actionsReviewedRate: number | null;
+  typeDiversityRatio: number | null;
   documentedWeight: number;
   withinTimescaleWeight: number;
   actionsReviewedWeight: number;
@@ -113,7 +113,7 @@ export interface SupervisionComplianceResult {
 }
 
 export interface SupervisionPolicyResult {
-  overallScore: number;
+  overallScore: number | null;
   supervisionSchedule: boolean;
   reflectivePracticeRequirement: boolean;
   safeguardingAgenda: boolean;
@@ -124,31 +124,31 @@ export interface SupervisionPolicyResult {
 }
 
 export interface StaffReadinessResult {
-  overallScore: number;
-  supervisorySkillsRate: number;
-  reflectivePracticeRate: number;
-  safeguardingKnowledgeRate: number;
-  wellbeingSupportRate: number;
-  documentationCompetencyRate: number;
-  feedbackDeliveryRate: number;
+  overallScore: number | null;
+  supervisorySkillsRate: number | null;
+  reflectivePracticeRate: number | null;
+  safeguardingKnowledgeRate: number | null;
+  wellbeingSupportRate: number | null;
+  documentationCompetencyRate: number | null;
+  feedbackDeliveryRate: number | null;
 }
 
 export interface StaffSupervisionProfile {
   staffId: string;
   staffName: string;
   sessionCount: number;
-  overallScore: number;
-  frequencyScore: number;
-  contentScore: number;
-  reflectiveScore: number;
-  diversityScore: number;
+  overallScore: number | null;
+  frequencyScore: number | null;
+  contentScore: number | null;
+  reflectiveScore: number | null;
+  diversityScore: number | null;
 }
 
 export interface SupervisionIntelligence {
   homeId: string;
   periodStart: string;
   periodEnd: string;
-  overallScore: number;
+  overallScore: number | null;
   rating: Rating;
   supervisionQuality: SupervisionQualityResult;
   supervisionCompliance: SupervisionComplianceResult;

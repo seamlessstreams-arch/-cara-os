@@ -183,7 +183,7 @@ export interface HomeTherapeuticMetrics {
   overallWellbeingScore: number | null;
   totalActiveInterventions: number;
   interventionAttendanceRate: number | null;
-  averageEffectiveness: number;
+  averageEffectiveness: number | null;
   childrenImproving: number;
   childrenStable: number;
   childrenDeclining: number;
@@ -192,7 +192,7 @@ export interface HomeTherapeuticMetrics {
   averageDeEscalationTime: number | null;
   camhsActiveCount: number;
   camhsWaitingCount: number;
-  sdqAverageScore: number;
+  sdqAverageScore: number | null;
   staffTrainingPercentage: number;
   therapeuticHoursThisWeek: number;
   modelAdherenceRate: number | null;

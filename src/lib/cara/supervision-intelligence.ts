@@ -24,7 +24,7 @@ export interface SupervisionRecord {
   supervisorName: string;
   date: string;               // YYYY-MM-DD
   type: "formal" | "informal" | "group" | "observation" | "annual_review";
-  durationMinutes: number;
+  durationMinutes: number | null;
   themes: string[];
   actionsAgreed: SupervisionAction[];
   wellbeingScore?: number;    // 1-5
@@ -68,7 +68,7 @@ export interface SupervisionIntelligence {
   teamWellbeingAverage: number | null;
   commonThemes: { theme: string; count: number; trend: "increasing" | "stable" | "decreasing" }[];
   trainingNeeds: { area: string; staffCount: number; staffNames: string[] }[];
-  wellbeingConcerns: { staffName: string; score: number; trend: string }[];
+  wellbeingConcerns: { staffName: string; score: number | null; trend: string }[];
   strengths: string[];
   concerns: string[];
   regulatoryStatus: {

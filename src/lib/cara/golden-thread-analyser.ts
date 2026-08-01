@@ -84,8 +84,8 @@ export interface GoldenThreadAnalysis {
   stats: {
     totalRecords: number;
     recordsWithChildVoice: number;
-    childVoicePercent: number;
-    carePlanCoverage: number;
+    childVoicePercent: number | null;
+    carePlanCoverage: number | null;
     viewsLinkedToPlans: number | null;
     uniqueViewsCaptured: number;
   };

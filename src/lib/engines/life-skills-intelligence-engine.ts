@@ -7,7 +7,7 @@
 
 export interface PathwayDomainInput {
   name: string;
-  score: number;
+  score: number | null;
   max_score: number | null;
 }
 

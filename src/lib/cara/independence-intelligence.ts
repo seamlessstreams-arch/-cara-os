@@ -184,10 +184,10 @@ export function analyseIndependence(input: IndependenceInput): IndependenceAsses
   const accommodationStatus = describeAccommodation(input.accommodationPlan);
 
   // ── Concerns ──────────────────────────────────────────────────────────
-  const concerns = identifyConcerns(input, avgSkillLevel, skillsBelowTarget, age);
+  const concerns = identifyConcerns(input, (avgSkillLevel ?? 0), skillsBelowTarget, age);
 
   // ── Strengths ─────────────────────────────────────────────────────────
-  const strengths = identifyStrengths(input, avgSkillLevel, skillsAtTarget, totalSkills);
+  const strengths = identifyStrengths(input, (avgSkillLevel ?? 0), skillsAtTarget, totalSkills);
 
   // ── Regulatory flags ──────────────────────────────────────────────────
   const regulatoryFlags = assessRegulatory(input, age);
@@ -196,7 +196,7 @@ export function analyseIndependence(input: IndependenceInput): IndependenceAsses
   const recommendations = buildRecommendations(input, skillsByCategory, age);
 
   // ── Summary ───────────────────────────────────────────────────────────
-  const summary = buildSummary(childName, overallRating, avgSkillLevel, input.eetStatus, age);
+  const summary = buildSummary(childName, overallRating, (avgSkillLevel ?? 0), input.eetStatus, age);
 
   return {
     childName,

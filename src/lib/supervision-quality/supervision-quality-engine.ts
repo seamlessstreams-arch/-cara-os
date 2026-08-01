@@ -76,7 +76,7 @@ export interface SupervisionSession {
   supervisorId: string;
   supervisorName: string;
   date: string;
-  durationMinutes: number;
+  durationMinutes: number | null;
   supervisionType: SupervisionType;
   quality: SupervisionQuality;
   reflectivePracticeLevel: ReflectivePracticeLevel;
@@ -126,41 +126,41 @@ export interface StaffDevelopmentOutcome {
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
 export interface SessionQualityResult {
-  overallScore: number;
+  overallScore: number | null;
   totalSessions: number;
-  outstandingGoodRate: number;
-  reflectiveRate: number;
-  safeguardingDiscussionRate: number;
-  averageDurationMinutes: number;
-  recordingComplianceRate: number;
-  signOffRate: number;
+  outstandingGoodRate: number | null;
+  reflectiveRate: number | null;
+  safeguardingDiscussionRate: number | null;
+  averageDurationMinutes: number | null;
+  recordingComplianceRate: number | null;
+  signOffRate: number | null;
 }
 
 export interface ScheduleComplianceResult {
-  overallScore: number;
+  overallScore: number | null;
   totalStaff: number;
-  onScheduleRate: number;
+  onScheduleRate: number | null;
   overdueCount: number;
   consecutiveMissedMax: number;
-  averageDaysBetweenSessions: number;
+  averageDaysBetweenSessions: number | null;
 }
 
 export interface ActionTrackingResult {
-  overallScore: number;
+  overallScore: number | null;
   totalActions: number;
-  completedOnTimeRate: number;
+  completedOnTimeRate: number | null;
   overdueCount: number;
-  safeguardingActionCompletionRate: number;
+  safeguardingActionCompletionRate: number | null;
   byCategory: Record<string, number>;
 }
 
 export interface StaffDevelopmentResult {
-  overallScore: number;
+  overallScore: number | null;
   totalOutcomes: number;
-  improvementRate: number;
-  withPlanRate: number;
+  improvementRate: number | null;
+  withPlanRate: number | null;
   averageSkillImprovement: number;
-  wellbeingConcernRate: number;
+  wellbeingConcernRate: number | null;
 }
 
 export interface StaffSupervisionProfile {
@@ -172,14 +172,14 @@ export interface StaffSupervisionProfile {
   overdue: boolean;
   actionsCompleted: number;
   actionsOutstanding: number;
-  overallScore: number;
+  overallScore: number | null;
 }
 
 export interface SupervisionQualityIntelligence {
   homeId: string;
   periodStart: string;
   periodEnd: string;
-  overallScore: number;
+  overallScore: number | null;
   rating: Rating;
   sessionQuality: SessionQualityResult;
   scheduleCompliance: ScheduleComplianceResult;
@@ -343,7 +343,7 @@ export function evaluateSessionQuality(
   const safeguardingDiscussionRate = pct(safeguardingCount, total);
 
   // Average duration
-  const totalDuration = sessions.reduce((sum, s) => sum + s.durationMinutes, 0);
+  const totalDuration = sessions.reduce((sum, s) => sum + (s.durationMinutes ?? 0), 0);
   const averageDurationMinutes = Math.round(totalDuration / total);
 
   // Recording compliance (recorded timely)
@@ -754,10 +754,10 @@ export function generateSupervisionQualityIntelligence(
   const staffDevelopment = evaluateStaffDevelopment(outcomes, sessions);
 
   const overallScore = Math.round(
-    (sessionQuality.overallScore +
-      scheduleCompliance.overallScore +
-      actionTracking.overallScore +
-      staffDevelopment.overallScore) *
+    ((sessionQuality.overallScore ?? 0) +
+      (scheduleCompliance.overallScore ?? 0) +
+      (actionTracking.overallScore ?? 0) +
+      (staffDevelopment.overallScore ?? 0)) *
       10,
   ) / 10;
 
@@ -772,32 +772,32 @@ export function generateSupervisionQualityIntelligence(
   // ── Strengths ──
   const strengths: string[] = [];
 
-  if (sessionQuality.outstandingGoodRate >= 80) {
+  if ((sessionQuality.outstandingGoodRate ?? 0) >= 80) {
     strengths.push(
       "Supervision sessions are consistently rated outstanding or good, reflecting high-quality practice",
     );
   }
-  if (sessionQuality.reflectiveRate >= 80) {
+  if ((sessionQuality.reflectiveRate ?? 0) >= 80) {
     strengths.push(
       "Reflective practice is embedded in supervision with the majority of sessions demonstrating reflective or deeply reflective engagement",
     );
   }
-  if (sessionQuality.safeguardingDiscussionRate >= 90) {
+  if ((sessionQuality.safeguardingDiscussionRate ?? 0) >= 90) {
     strengths.push(
       "Safeguarding is discussed in the vast majority of supervision sessions, ensuring children's safety is consistently prioritised",
     );
   }
-  if (sessionQuality.recordingComplianceRate >= 90) {
+  if ((sessionQuality.recordingComplianceRate ?? 0) >= 90) {
     strengths.push(
       "Supervision records are completed in a timely manner, demonstrating strong administrative compliance",
     );
   }
-  if (sessionQuality.signOffRate >= 90) {
+  if ((sessionQuality.signOffRate ?? 0) >= 90) {
     strengths.push(
       "Both staff and supervisors consistently sign off supervision records, demonstrating shared accountability",
     );
   }
-  if (scheduleCompliance.onScheduleRate >= 90) {
+  if ((scheduleCompliance.onScheduleRate ?? 0) >= 90) {
     strengths.push(
       "Supervision is delivered on schedule for the majority of staff, ensuring consistent support",
     );
@@ -807,25 +807,25 @@ export function generateSupervisionQualityIntelligence(
       "All staff are receiving supervision within required timescales — excellent compliance",
     );
   }
-  if (actionTracking.completedOnTimeRate >= 80) {
+  if ((actionTracking.completedOnTimeRate ?? 0) >= 80) {
     strengths.push(
       "Supervision actions are completed on time at a high rate, demonstrating effective follow-through",
     );
   }
   if (
-    actionTracking.safeguardingActionCompletionRate >= 100 &&
+    (actionTracking.safeguardingActionCompletionRate ?? 0) >= 100 &&
     actionTracking.totalActions > 0
   ) {
     strengths.push(
       "All safeguarding-related supervision actions have been completed, prioritising child protection",
     );
   }
-  if (staffDevelopment.improvementRate >= 70) {
+  if ((staffDevelopment.improvementRate ?? 0) >= 70) {
     strengths.push(
       "Staff are demonstrating measurable skill improvement through supervision-linked development",
     );
   }
-  if (staffDevelopment.wellbeingConcernRate <= 5 && sessions.length > 0) {
+  if ((staffDevelopment.wellbeingConcernRate ?? 0) <= 5 && sessions.length > 0) {
     strengths.push(
       "Low levels of significant wellbeing concerns among staff, suggesting a supportive working environment",
     );
@@ -835,20 +835,20 @@ export function generateSupervisionQualityIntelligence(
   const areasForImprovement: string[] = [];
 
   if (
-    sessionQuality.outstandingGoodRate < 60 &&
+    (sessionQuality.outstandingGoodRate ?? 0) < 60 &&
     sessionQuality.totalSessions > 0
   ) {
     areasForImprovement.push(
       "The quality of supervision sessions needs improvement — less than 60% are rated good or outstanding",
     );
   }
-  if (sessionQuality.reflectiveRate < 50 && sessionQuality.totalSessions > 0) {
+  if ((sessionQuality.reflectiveRate ?? 0) < 50 && sessionQuality.totalSessions > 0) {
     areasForImprovement.push(
       "Reflective practice in supervision is insufficient — supervisors should be trained in reflective supervision techniques",
     );
   }
   if (
-    sessionQuality.safeguardingDiscussionRate < 80 &&
+    (sessionQuality.safeguardingDiscussionRate ?? 0) < 80 &&
     sessionQuality.totalSessions > 0
   ) {
     areasForImprovement.push(
@@ -856,7 +856,7 @@ export function generateSupervisionQualityIntelligence(
     );
   }
   if (
-    sessionQuality.recordingComplianceRate < 80 &&
+    (sessionQuality.recordingComplianceRate ?? 0) < 80 &&
     sessionQuality.totalSessions > 0
   ) {
     areasForImprovement.push(
@@ -879,19 +879,19 @@ export function generateSupervisionQualityIntelligence(
     );
   }
   if (
-    actionTracking.completedOnTimeRate < 60 &&
+    (actionTracking.completedOnTimeRate ?? 0) < 60 &&
     actionTracking.totalActions > 0
   ) {
     areasForImprovement.push(
       "Supervision action completion rate is below 60% — actions agreed in supervision are not being followed through",
     );
   }
-  if (staffDevelopment.improvementRate < 40 && staffDevelopment.totalOutcomes > 0) {
+  if ((staffDevelopment.improvementRate ?? 0) < 40 && staffDevelopment.totalOutcomes > 0) {
     areasForImprovement.push(
       "Staff skill improvement through supervision is below 40% — development outcomes need strengthening",
     );
   }
-  if (staffDevelopment.wellbeingConcernRate > 20 && sessions.length > 0) {
+  if ((staffDevelopment.wellbeingConcernRate ?? 0) > 20 && sessions.length > 0) {
     areasForImprovement.push(
       "Over 20% of supervision sessions identified significant wellbeing concerns — staff support mechanisms need review",
     );
@@ -927,14 +927,14 @@ export function generateSupervisionQualityIntelligence(
 
   // HIGH priority
   if (
-    sessionQuality.safeguardingDiscussionRate < 80 &&
+    (sessionQuality.safeguardingDiscussionRate ?? 0) < 80 &&
     sessionQuality.totalSessions > 0
   ) {
     actionsList.push(
       "HIGH: Make safeguarding discussion a mandatory standing item on all supervision agendas",
     );
   }
-  if (sessionQuality.reflectiveRate < 50 && sessionQuality.totalSessions > 0) {
+  if ((sessionQuality.reflectiveRate ?? 0) < 50 && sessionQuality.totalSessions > 0) {
     actionsList.push(
       "HIGH: Provide training for supervisors in reflective supervision techniques in line with the Munro Review recommendations",
     );
@@ -944,7 +944,7 @@ export function generateSupervisionQualityIntelligence(
       "HIGH: Review all overdue supervision actions and establish a tracking system for completion",
     );
   }
-  if (staffDevelopment.wellbeingConcernRate > 20 && sessions.length > 0) {
+  if ((staffDevelopment.wellbeingConcernRate ?? 0) > 20 && sessions.length > 0) {
     actionsList.push(
       "HIGH: Review staff wellbeing support mechanisms and consider additional pastoral or clinical supervision",
     );
@@ -952,19 +952,19 @@ export function generateSupervisionQualityIntelligence(
 
   // MEDIUM priority
   if (
-    sessionQuality.recordingComplianceRate < 80 &&
+    (sessionQuality.recordingComplianceRate ?? 0) < 80 &&
     sessionQuality.totalSessions > 0
   ) {
     actionsList.push(
       "MEDIUM: Implement a supervision recording template and set expectations for timely completion within 48 hours",
     );
   }
-  if (staffDevelopment.improvementRate < 40 && staffDevelopment.totalOutcomes > 0) {
+  if ((staffDevelopment.improvementRate ?? 0) < 40 && staffDevelopment.totalOutcomes > 0) {
     actionsList.push(
       "MEDIUM: Review staff development outcomes and ensure supervision is effectively supporting skill growth",
     );
   }
-  if (sessionQuality.signOffRate < 80 && sessionQuality.totalSessions > 0) {
+  if ((sessionQuality.signOffRate ?? 0) < 80 && sessionQuality.totalSessions > 0) {
     actionsList.push(
       "MEDIUM: Reinforce the expectation that both parties sign off supervision records at the end of each session",
     );

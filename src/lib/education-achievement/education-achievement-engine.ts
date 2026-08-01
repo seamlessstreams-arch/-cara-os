@@ -116,7 +116,7 @@ export interface ExclusionRecord {
   childId: string;
   childName: string;
   exclusionType: ExclusionType;
-  durationDays: number;
+  durationDays: number | null;
   reason: string;
   alternativeProvisionArranged: boolean;
   reintegrationPlanInPlace: boolean;
@@ -125,63 +125,63 @@ export interface ExclusionRecord {
 // ── Result Interfaces ────────────────────────────────────────────────────────
 
 export interface AttendanceResult {
-  overallScore: number; // 0-25
+  overallScore: number | null; // 0-25
   totalRecords: number;
-  attendanceRate: number;
-  unauthorisedAbsenceRate: number;
+  attendanceRate: number | null;
+  unauthorisedAbsenceRate: number | null;
   persistentAbsenceChildren: number;
-  lateRate: number;
-  exclusionDays: number;
+  lateRate: number | null;
+  exclusionDays: number | null;
 }
 
 export interface PEPQualityResult {
-  overallScore: number; // 0-25
+  overallScore: number | null; // 0-25
   totalPEPs: number;
-  currentRate: number;
+  currentRate: number | null;
   qualityDistribution: Record<PEPQuality, number>;
-  childViewsRate: number;
-  smartTargetsRate: number;
-  virtualSchoolInvolvedRate: number;
-  ppFundingUsedRate: number;
+  childViewsRate: number | null;
+  smartTargetsRate: number | null;
+  virtualSchoolInvolvedRate: number | null;
+  ppFundingUsedRate: number | null;
 }
 
 export interface AcademicProgressResult {
-  overallScore: number; // 0-25
+  overallScore: number | null; // 0-25
   totalOutcomes: number;
-  exceedingExpectedRate: number;
-  belowExpectedRate: number;
-  subjectCoverage: number;
+  exceedingExpectedRate: number | null;
+  belowExpectedRate: number | null;
+  subjectCoverage: number | null;
   uniqueSubjects: string[];
 }
 
 export interface SchoolStabilityResult {
-  overallScore: number; // 0-25
+  overallScore: number | null; // 0-25
   totalChildren: number;
   totalDaysOutOfEducation: number;
   averageDaysOutOfEducation: number;
   totalSchoolChanges: number;
   childrenWithMultipleChanges: number;
-  exclusionImpactDays: number;
+  exclusionImpactDays: number | null;
   notInEducationCount: number;
 }
 
 export interface ChildEducationProfile {
   childId: string;
   childName: string;
-  attendanceRate: number;
+  attendanceRate: number | null;
   pepStatus: PEPStatus | "none";
   academicProgress: AcademicProgress | "none";
   schoolType: SchoolType | "unknown";
   daysOutOfEducation: number;
   exclusionCount: number;
-  overallScore: number; // 0-10
+  overallScore: number | null; // 0-10
 }
 
 export interface EducationAchievementIntelligence {
   homeId: string;
   periodStart: string;
   periodEnd: string;
-  overallScore: number;
+  overallScore: number | null;
   rating: Rating;
   attendance: AttendanceResult;
   pepQuality: PEPQualityResult;

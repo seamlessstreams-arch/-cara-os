@@ -13,7 +13,7 @@ export interface RecruitmentRecordInput {
   id: string;
   candidate_name: string;
   status: string; // "applying" | "interviewing" | "references" | "dbs_pending" | "pre_employment_checks" | "cleared" | "rejected"
-  checklist_complete_rate: number; // 0-100, percentage of checklist items completed
+  checklist_complete_rate: number | null; // 0-100, percentage of checklist items completed
   references_received: number;
   references_required: number; // typically 2
   dbs_result: string; // "clear" | "disclosure_reviewed" | "pending"

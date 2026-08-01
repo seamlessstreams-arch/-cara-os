@@ -32,7 +32,7 @@ export interface RegulationCheck {
 export interface RegulatoryPulse {
   date: string;
   homeId: string;
-  overallScore: number;
+  overallScore: number | null;
   overallStatus: ComplianceStatus;
   checks: RegulationCheck[];
   strengths: string[];

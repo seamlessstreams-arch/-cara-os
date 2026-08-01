@@ -131,7 +131,7 @@ export interface WarmthCultureResult {
   overallScore: number;
   totalObservations: number;
   excellentGoodRate: number;
-  warmthScore: number;
+  warmthScore: number | null;
   calmScore: number;
   respectScore: number;
   funScore: number;
@@ -783,7 +783,7 @@ export function generateHomeAtmosphereEthosIntelligence(
       "The home demonstrates a consistently warm and positive atmosphere with the majority of observations rated excellent or good.",
     );
   }
-  if (warmthCulture.warmthScore >= 80) {
+  if ((warmthCulture.warmthScore ?? 0) >= 80) {
     strengths.push(
       "Warmth is strongly embedded in the culture, with staff creating a genuinely caring environment.",
     );

@@ -171,15 +171,15 @@ export interface OrganisationLearningMetrics {
   totalProjectedMonthlyCost: number;
   totalMonthlySaving: number;
   totalAnnualSaving: number;
-  costReductionRate: number;            // %
+  costReductionRate: number | null;            // %
   // Readiness
   agentsReadyForShadow: number;
   agentsInShadowMode: number;
   agentsPartiallyInternal: number;
   agentsFullyInternal: number;
   // Quality
-  averageShadowAccuracy: number;
-  averageShadowSafety: number;
+  averageShadowAccuracy: number | null;
+  averageShadowSafety: number | null;
   averageSuccessRate: number;
   // Learning
   totalTrainingExamples: number;

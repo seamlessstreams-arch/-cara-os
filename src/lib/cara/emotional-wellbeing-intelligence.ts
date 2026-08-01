@@ -92,7 +92,7 @@ export interface EmotionalWellbeingAssessment {
   supportScore: number;
   latestSDQ?: SDQScore;
   sdqTrend: "improving" | "stable" | "worsening" | "insufficient_data";
-  averageMood: number;
+  averageMood: number | null;
   moodTrend: "improving" | "stable" | "worsening" | "insufficient_data";
   selfHarmRiskLevel: "none" | "low" | "medium" | "high";
   selfHarmIncidentCount: number;
@@ -164,19 +164,19 @@ export function analyseEmotionalWellbeing(input: EmotionalWellbeingInput): Emoti
   const overallRating = scoreToRating(overallScore);
 
   // ── Concerns ──────────────────────────────────────────────────────
-  const concerns = identifyConcerns(input, latestSDQ, sdqTrend, moodTrend, selfHarmRiskLevel, averageMood);
+  const concerns = identifyConcerns(input, latestSDQ, sdqTrend, moodTrend, selfHarmRiskLevel, (averageMood ?? 0));
 
   // ── Strengths ─────────────────────────────────────────────────────
-  const strengths = identifyStrengths(input, latestSDQ, sdqTrend, moodTrend, activeTherapy, averageMood);
+  const strengths = identifyStrengths(input, latestSDQ, sdqTrend, moodTrend, activeTherapy, (averageMood ?? 0));
 
   // ── Regulatory flags ──────────────────────────────────────────────
   const regulatoryFlags = assessRegulatory(input, selfHarmRiskLevel, activeTherapy);
 
   // ── Recommendations ───────────────────────────────────────────────
-  const recommendations = buildRecommendations(input, latestSDQ, sdqTrend, selfHarmRiskLevel, averageMood);
+  const recommendations = buildRecommendations(input, latestSDQ, sdqTrend, selfHarmRiskLevel, (averageMood ?? 0));
 
   // ── Summary ───────────────────────────────────────────────────────
-  const summary = buildSummary(childName, overallRating, latestSDQ, averageMood, selfHarmRiskLevel);
+  const summary = buildSummary(childName, overallRating, latestSDQ, (averageMood ?? 0), selfHarmRiskLevel);
 
   return {
     childName,

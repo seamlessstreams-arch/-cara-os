@@ -134,7 +134,7 @@ export interface CompatibilityResult {
   overallScore: number; // 0-25
   totalReviews: number;
   compatibleRate: number;
-  managementPlanRate: number;
+  managementPlanRate: number | null;
   positiveRelationshipRate: number;
   risksIdentifiedCount: number;
 }
@@ -667,7 +667,7 @@ function generateStrengths(
     );
   }
 
-  if (comp.managementPlanRate >= 90 && comp.risksIdentifiedCount > 0) {
+  if ((comp.managementPlanRate ?? 0) >= 90 && comp.risksIdentifiedCount > 0) {
     strengths.push(
       "Management plans in place for all identified compatibility risks, ensuring proactive risk mitigation",
     );
@@ -758,7 +758,7 @@ function generateAreasForImprovement(
     );
   }
 
-  if (comp.managementPlanRate < 70 && comp.risksIdentifiedCount > 0) {
+  if ((comp.managementPlanRate ?? 0) < 70 && comp.risksIdentifiedCount > 0) {
     areas.push(
       "Management plans not in place for all identified risks: ensure every identified risk has a documented management plan",
     );
@@ -837,7 +837,7 @@ function generateActions(
     );
   }
 
-  if (comp.risksIdentifiedCount > 0 && comp.managementPlanRate < 100) {
+  if (comp.risksIdentifiedCount > 0 && (comp.managementPlanRate ?? 0) < 100) {
     actions.push(
       "Create management plans for all identified compatibility risks between children",
     );

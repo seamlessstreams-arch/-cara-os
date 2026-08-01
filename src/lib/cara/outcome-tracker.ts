@@ -62,7 +62,7 @@ export interface OutcomeAnalysis {
   childName: string;
   analysedAt: string;
   totalObjectives: number;
-  overallProgress: number;        // 0-100
+  overallProgress: number | null;        // 0-100
   progressGrade: "excellent" | "good" | "mixed" | "concerning" | "insufficient_data";
 
   objectives: ObjectiveAnalysis[];
@@ -87,7 +87,7 @@ export interface ObjectiveAnalysis {
 export interface CategoryScore {
   category: OutcomeCategory;
   label: string;
-  score: number;                  // 0-100
+  score: number | null;                  // 0-100
   objectiveCount: number;
   trend: "improving" | "stable" | "declining";
 }
@@ -274,7 +274,7 @@ export function trackOutcomes(
     overallProgress,
     progressGrade,
     objectives: objectiveAnalyses,
-    categoryScores: categoryScores.sort((a, b) => b.score - a.score),
+    categoryScores: categoryScores.sort((a, b) => (b.score ?? 0) - (a.score ?? 0)),
     recentEvidence,
     alerts: alerts.sort((a, b) => severityOrder(a.severity) - severityOrder(b.severity)),
     celebrations: celebrations.slice(0, 3),

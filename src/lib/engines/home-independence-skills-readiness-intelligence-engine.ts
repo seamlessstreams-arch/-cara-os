@@ -74,7 +74,7 @@ export interface IndependenceSkillsReadinessResult {
   headline: string;
   total_records: number;
   children_assessed: number; // unique child_ids with records
-  average_readiness: number; // avg overall_readiness across records
+  average_readiness: number | null; // avg overall_readiness across records
   child_view_rate: number | null; // % of records with child view
   evidence_rate: number | null; // % of skills with evidence
   next_step_rate: number | null; // % of skills with next_step
@@ -82,7 +82,7 @@ export interface IndependenceSkillsReadinessResult {
   pathway_plan_rate: number | null; // % of children with active pathway plan
   pathway_child_voice_rate: number | null; // % of pathway plans with child voice
   review_currency_rate: number | null; // % of records reviewed within 90 days
-  category_coverage: number; // avg distinct categories per child
+  category_coverage: number | null; // avg distinct categories per child
   strengths: string[];
   concerns: string[];
   recommendations: {

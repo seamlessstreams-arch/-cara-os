@@ -124,7 +124,7 @@ export interface TransitionPlanningResult {
   childVoiceRate: number;
   multiAgencyRate: number;
   overduePlans: number;
-  goalAchievementRate: number;
+  goalAchievementRate: number | null;
   totalPlans: number;
   activePlans: number;
   reviewedPlans: number;
@@ -147,7 +147,7 @@ export interface SkillProfile {
 
 export interface IndependenceSkillsResult {
   profiles: SkillProfile[];
-  overallAverageConfidence: number;
+  overallAverageConfidence: number | null;
   skillGaps: SkillCategory[];
   strongestSkills: SkillCategory[];
   categoryAverages: { category: SkillCategory; average: number }[];
@@ -182,7 +182,7 @@ export interface ChildTransitionProfile {
   targetDate: string | null;
   skillReadinessScore: number;
   skillGaps: SkillCategory[];
-  goalAchievementRate: number;
+  goalAchievementRate: number | null;
   placementStability: "stable" | "at_risk" | "high_risk" | "unknown";
   previousPlacements: number;
   childVoiceRecorded: boolean;
@@ -782,7 +782,7 @@ function calculateTransitionScore(
 
   // Independence readiness: max 25
   // Average confidence (max 15) — normalized to 0-4 scale
-  const confidenceNorm = independence.overallAverageConfidence / 4;
+  const confidenceNorm = (independence.overallAverageConfidence ?? 0) / 4;
   score += confidenceNorm * 15;
   // Gap analysis (max 10) — fewer gaps = more points
   if (independence.profiles.length > 0) {

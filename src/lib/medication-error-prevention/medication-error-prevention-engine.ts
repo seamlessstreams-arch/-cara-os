@@ -135,7 +135,7 @@ export interface StaffMedicationTraining {
 // ── Result Interfaces ───────────────────────────────────────────────────────
 
 export interface AdministrationQualityResult {
-  overallScore: number; // 0–25
+  overallScore: number | null; // 0–25
   totalAdministrations: number;
   // Rates are null when nothing was administered — no dose is not every dose on time
   onTimeRate: number | null;
@@ -147,7 +147,7 @@ export interface AdministrationQualityResult {
 }
 
 export interface ErrorManagementResult {
-  overallScore: number; // 0–25
+  overallScore: number | null; // 0–25
   totalErrors: number;
   /** null = no error reached a child, so there is no harm outcome to rate. */
   noHarmRate: number | null;
@@ -159,7 +159,7 @@ export interface ErrorManagementResult {
 }
 
 export interface StorageSafetyResult {
-  overallScore: number; // 0–25
+  overallScore: number | null; // 0–25
   totalAudits: number;
   fullyCompliantRate: number | null;
   temperatureComplianceRate: number | null;
@@ -169,7 +169,7 @@ export interface StorageSafetyResult {
 }
 
 export interface TrainingComplianceResult {
-  overallScore: number; // 0–25
+  overallScore: number | null; // 0–25
   totalStaff: number;
   currentRate: number | null;
   competencyAssessedRate: number | null;
@@ -185,14 +185,14 @@ export interface ChildMedicationProfile {
   onTimeRate: number | null;
   errorCount: number;
   missedCount: number;
-  overallScore: number; // 0–10
+  overallScore: number | null; // 0–10
 }
 
 export interface MedicationErrorPreventionIntelligence {
   homeId: string;
   periodStart: string;
   periodEnd: string;
-  overallScore: number;
+  overallScore: number | null;
   rating: Rating;
   administrationQuality: AdministrationQualityResult;
   errorManagement: ErrorManagementResult;
@@ -615,7 +615,7 @@ export function buildChildMedicationProfiles(
     });
   }
 
-  return profiles.sort((a, b) => a.overallScore - b.overallScore);
+  return profiles.sort((a, b) => (a.overallScore ?? 0) - (b.overallScore ?? 0));
 }
 
 // ── Main Intelligence Function ──────────────────────────────────────────────
@@ -648,9 +648,9 @@ export function generateMedicationErrorPreventionIntelligence(
   ];
   const assessed = pillars.filter((p) => p.assessed);
   const overallScore = assessed.length > 0
-    ? Math.round((assessed.reduce((s, p) => s + p.score, 0) / (assessed.length * 25)) * 1000) / 10
+    ? Math.round((assessed.reduce((s, p) => s + (p.score ?? 0), 0) / (assessed.length * 25)) * 1000) / 10
     : null;
-  const rating = ratingFromScore(overallScore);
+  const rating = ratingFromScore((overallScore ?? 0));
 
   // ── Strengths ──
   const strengths: string[] = [];

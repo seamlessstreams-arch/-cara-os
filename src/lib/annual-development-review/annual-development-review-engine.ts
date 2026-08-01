@@ -155,7 +155,7 @@ export interface GoalAchievementResult {
   onTrackPlusRate: number;
   notMetCount: number;
   notMetRate: number;
-  goalsPerChild: number;
+  goalsPerChild: number | null;
   uniqueChildren: number;
   statusBreakdown: Record<GoalStatus, number>;
   score: number; // 0-25
@@ -960,7 +960,7 @@ function generateActions(
   }
 
   // Low goal breadth
-  if (goals.goalsPerChild < 2 && goals.goalsPerChild > 0) {
+  if ((goals.goalsPerChild ?? 0) < 2 && (goals.goalsPerChild ?? 0) > 0) {
     actions.push("MEDIUM: Only " + goals.goalsPerChild + " goals per child — broaden developmental objectives across health, education, emotional wellbeing");
   }
 

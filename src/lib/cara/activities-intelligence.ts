@@ -74,11 +74,11 @@ export interface ActivityAssessment {
   engagementScore: number;
   integrationScore: number;
   totalActivities: number;
-  activitiesPerWeek: number;
-  categoriesCovered: number;
-  communityRate: number;
-  peerRate: number;
-  childChoiceRate: number;
+  activitiesPerWeek: number | null;
+  categoriesCovered: number | null;
+  communityRate: number | null;
+  peerRate: number | null;
+  childChoiceRate: number | null;
   achievements: string[];
   categoryBreakdown: CategoryBreakdown[];
   concerns: ActivityConcern[];
@@ -149,10 +149,10 @@ export function analyseActivities(input: ActivityInput): ActivityAssessment {
   const categoryBreakdown = analyseCategories(activities);
 
   // ── Scores ────────────────────────────────────────────────────────
-  const participationScore = scoreParticipation(activitiesPerWeek, totalActivities);
-  const varietyScore = scoreVariety(categoriesCovered, categoryBreakdown);
-  const engagementScore = scoreEngagement(activities, childChoiceRate);
-  const integrationScore = scoreIntegration(communityRate, peerRate, input);
+  const participationScore = scoreParticipation(activitiesPerWeek ?? 0, totalActivities ?? 0);
+  const varietyScore = scoreVariety(categoriesCovered ?? 0, categoryBreakdown);
+  const engagementScore = scoreEngagement(activities, childChoiceRate ?? 0);
+  const integrationScore = scoreIntegration(communityRate ?? 0, peerRate ?? 0, input);
 
   // ── Overall ───────────────────────────────────────────────────────
   const overallScore = Math.round(
@@ -164,19 +164,19 @@ export function analyseActivities(input: ActivityInput): ActivityAssessment {
   const overallRating = scoreToRating(overallScore);
 
   // ── Concerns ──────────────────────────────────────────────────────
-  const concerns = identifyConcerns(input, activitiesPerWeek, categoriesCovered, communityRate, peerRate, childChoiceRate);
+  const concerns = identifyConcerns(input, activitiesPerWeek ?? 0, categoriesCovered ?? 0, communityRate ?? 0, peerRate ?? 0, childChoiceRate ?? 0);
 
   // ── Strengths ─────────────────────────────────────────────────────
-  const strengths = identifyStrengths(input, activitiesPerWeek, categoriesCovered, communityRate, peerRate, childChoiceRate, achievements);
+  const strengths = identifyStrengths(input, activitiesPerWeek ?? 0, categoriesCovered ?? 0, communityRate ?? 0, peerRate ?? 0, childChoiceRate ?? 0, achievements);
 
   // ── Regulatory flags ──────────────────────────────────────────────
-  const regulatoryFlags = assessRegulatory(input, activitiesPerWeek, communityRate, categoriesCovered);
+  const regulatoryFlags = assessRegulatory(input, activitiesPerWeek ?? 0, communityRate ?? 0, categoriesCovered ?? 0);
 
   // ── Recommendations ───────────────────────────────────────────────
-  const recommendations = buildRecommendations(input, activitiesPerWeek, categoriesCovered, communityRate, peerRate, childChoiceRate, categoryBreakdown);
+  const recommendations = buildRecommendations(input, activitiesPerWeek ?? 0, categoriesCovered ?? 0, communityRate ?? 0, peerRate ?? 0, childChoiceRate ?? 0, categoryBreakdown);
 
   // ── Summary ───────────────────────────────────────────────────────
-  const summary = buildSummary(childName, overallRating, activitiesPerWeek, categoriesCovered, achievements.length);
+  const summary = buildSummary(childName, overallRating, activitiesPerWeek ?? 0, categoriesCovered ?? 0, achievements.length);
 
   return {
     childName,

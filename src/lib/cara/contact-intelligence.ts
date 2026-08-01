@@ -93,9 +93,9 @@ export interface ContactAssessment {
   totalSessions: number;
   occurredSessions: number;
   missedSessions: number;
-  missedRate: number;
+  missedRate: number | null;
   positiveRate: number | null;
-  distressingRate: number;
+  distressingRate: number | null;
   contactByPerson: PersonContactSummary[];
   cancellationPatterns: CancellationPattern[];
   concerns: ContactConcern[];
@@ -182,7 +182,7 @@ export function analyseContact(input: ContactInput): ContactAssessment {
   // ── Scores ────────────────────────────────────────────────────────
   const frequencyScore = scoreFrequency(contactByPerson, arrangements);
   const qualityScore = scoreQuality(contactSessions);
-  const consistencyScore = scoreConsistency(contactSessions, missedRate);
+  const consistencyScore = scoreConsistency(contactSessions, (missedRate ?? 0));
   const voiceScore = scoreVoice(input);
 
   // ── Overall ───────────────────────────────────────────────────────
@@ -195,16 +195,16 @@ export function analyseContact(input: ContactInput): ContactAssessment {
   const overallRating = scoreToRating(overallScore);
 
   // ── Concerns ──────────────────────────────────────────────────────
-  const concerns = identifyConcerns(input, contactByPerson, missedRate, distressingRate);
+  const concerns = identifyConcerns(input, contactByPerson, (missedRate ?? 0), (distressingRate ?? 0));
 
   // ── Strengths ─────────────────────────────────────────────────────
-  const strengths = identifyStrengths(input, contactByPerson, positiveRate, missedRate);
+  const strengths = identifyStrengths(input, contactByPerson, positiveRate, (missedRate ?? 0));
 
   // ── Regulatory flags ──────────────────────────────────────────────
-  const regulatoryFlags = assessRegulatory(input, contactByPerson, missedRate);
+  const regulatoryFlags = assessRegulatory(input, contactByPerson, (missedRate ?? 0));
 
   // ── Recommendations ───────────────────────────────────────────────
-  const recommendations = buildRecommendations(input, contactByPerson, missedRate, distressingRate);
+  const recommendations = buildRecommendations(input, contactByPerson, (missedRate ?? 0), (distressingRate ?? 0));
 
   // ── Summary ───────────────────────────────────────────────────────
   const summary = buildSummary(childName, overallRating, totalSessions, occurredSessions, positiveRate);

@@ -35,7 +35,7 @@ export interface Reg45ReportInput {
   status: string; // completed, in_progress, draft, not_started
   submitted_date: string | null;
   next_due: string;
-  progress_percentage: number;
+  progress_percentage: number | null;
 }
 
 export interface NotificationInput {
@@ -250,7 +250,7 @@ export function computeRegulatoryReportingIntelligence(
     (r) => r.status === "in_progress" || r.status === "draft" || r.status === "not_started"
   );
   const currentProgress = inProgressReg45.length > 0
-    ? inProgressReg45.reduce((max, r) => Math.max(max, r.progress_percentage), 0)
+    ? inProgressReg45.reduce((max, r) => Math.max(max, (r.progress_percentage ?? 0)), 0)
     : null;
 
   // Reg 45 status logic

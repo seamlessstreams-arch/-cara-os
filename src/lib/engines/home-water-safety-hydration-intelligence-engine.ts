@@ -399,7 +399,7 @@ export function computeWaterSafetyHydration(
   // Average of assessment rate, water safety knowledge pass rate, lesson attendance rate
   const swimmingCompetencyComponents: number[] = [];
   if (totalSwimmingRecords > 0) swimmingCompetencyComponents.push(swimmingAssessmentRate);
-  if (waterSafetyKnowledgeAssessed > 0) swimmingCompetencyComponents.push(waterSafetyKnowledgeRate);
+  if (waterSafetyKnowledgeAssessed > 0) swimmingCompetencyComponents.push((waterSafetyKnowledgeRate ?? 0));
   if (totalLessonsOffered > 0) swimmingCompetencyComponents.push(lessonAttendanceRate);
   const swimmingCompetencyRate = swimmingCompetencyComponents.length > 0
     ? Math.round(swimmingCompetencyComponents.reduce((a, b) => a + b, 0) / swimmingCompetencyComponents.length)

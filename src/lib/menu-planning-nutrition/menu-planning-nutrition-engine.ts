@@ -105,7 +105,7 @@ export interface MenuQualityResult {
 export interface ChildSatisfactionResult {
   overallScore: number; // 0-25
   totalFeedback: number;
-  averageEnjoyment: number;
+  averageEnjoyment: number | null;
   portionSatisfactoryRate: number;
   positiveFeedbackRate: number;
   responseRate: number;
@@ -134,7 +134,7 @@ export interface NutritionComplianceResult {
 export interface ChildNutritionProfile {
   childId: string;
   childName: string;
-  averageEnjoyment: number;
+  averageEnjoyment: number | null;
   feedbackCount: number;
   portionSatisfactoryRate: number;
   participationCount: number;
@@ -672,7 +672,7 @@ function generateStrengths(
     );
   }
 
-  if (satisfaction.averageEnjoyment >= 4.0) {
+  if ((satisfaction.averageEnjoyment ?? 0) >= 4.0) {
     strengths.push(
       "High child satisfaction with meals — average enjoyment rating demonstrates children enjoy the food provided",
     );
@@ -743,7 +743,7 @@ function generateAreasForImprovement(
     );
   }
 
-  if (satisfaction.averageEnjoyment < 3.5 && satisfaction.totalFeedback > 0) {
+  if ((satisfaction.averageEnjoyment ?? 0) < 3.5 && satisfaction.totalFeedback > 0) {
     areas.push(
       `Average meal enjoyment rating of ${satisfaction.averageEnjoyment}/5 — children's preferences need greater consideration`,
     );
@@ -820,7 +820,7 @@ function generateActions(
     );
   }
 
-  if (satisfaction.averageEnjoyment < 3.0 && satisfaction.totalFeedback > 0) {
+  if ((satisfaction.averageEnjoyment ?? 0) < 3.0 && satisfaction.totalFeedback > 0) {
     actions.push(
       "Review menu choices with children who rated meals poorly — adapt menus to better reflect preferences while maintaining nutrition",
     );

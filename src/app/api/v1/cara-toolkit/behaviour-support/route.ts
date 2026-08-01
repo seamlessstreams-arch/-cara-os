@@ -149,7 +149,7 @@ export async function GET() {
       `The most common trigger across all children is "${topTriggers[0].trigger}" (${topTriggers[0].count} instances). Consider whether environmental or structural adjustments can reduce this trigger.`
     );
   }
-  const highEffective = topStrategies.filter((s) => s.effectivenessRate >= 75);
+  const highEffective = topStrategies.filter((s) => (s.effectivenessRate ?? 0) >= 75);
   if (highEffective.length > 0) {
     insights.push(
       `${highEffective.map((s) => `"${s.strategy}"`).join(", ")} ${highEffective.length > 1 ? "are showing" : "is showing"} strong positive outcomes — share learning across the team through reflective supervision.`

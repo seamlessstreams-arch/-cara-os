@@ -116,7 +116,7 @@ export interface ActionPlanItem {
 export interface JudgmentAreaSummary {
   area: JudgmentArea;
   label: string;
-  averageScore: number;
+  averageScore: number | null;
   areaCount: number;
   evidenceCount: number;
   absentEvidenceCount: number;

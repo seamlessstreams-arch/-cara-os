@@ -25,7 +25,7 @@ export interface ActivityStats {
   tasksCreated: number;
   topCommands: Array<{ commandId: string; count: number }>;
   topUsers: Array<{ userId: string; count: number }>;
-  approvalRate: number;
+  approvalRate: number | null;
   avgConfidence: string;
 }
 

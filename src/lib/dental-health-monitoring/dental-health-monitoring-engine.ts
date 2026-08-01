@@ -138,7 +138,7 @@ export interface TreatmentComplianceResult {
   completionRate: number;
   parentConsentRate: number;
   socialWorkerNotifiedRate: number;
-  activeTreatmentProgressRate: number;
+  activeTreatmentProgressRate: number | null;
 }
 
 export interface StaffDentalReadinessResult {

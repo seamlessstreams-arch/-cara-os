@@ -68,7 +68,7 @@ export interface IncidentAnalysis {
 
   // Overview
   totalIncidents: number;
-  incidentsPerWeek: number;
+  incidentsPerWeek: number | null;
   trend: "increasing" | "stable" | "decreasing";
   trendDescription: string;
 
@@ -138,7 +138,7 @@ export interface ChildIncidentSummary {
 export interface TriggerInsight {
   trigger: string;
   count: number;
-  percent: number;
+  percent: number | null;
   associatedChildren: string[];
 }
 

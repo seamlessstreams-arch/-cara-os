@@ -179,7 +179,7 @@ export interface RegulatoryComplianceResult {
     daysSinceLastVisit: number | null;
     nextDueDate: string;
     unannounced: number;          // should be majority
-    announcedPercentage: number;
+    announcedPercentage: number | null;
     openActionPoints: number;
     overdueActionPoints: number;
   };
@@ -505,7 +505,7 @@ export interface ActionPointSummary {
   overdue: number;
   completionRate: number | null;
   byPriority: Record<string, number>;
-  averageResolutionDays: number;
+  averageResolutionDays: number | null;
 }
 
 export function summarizeActionPoints(

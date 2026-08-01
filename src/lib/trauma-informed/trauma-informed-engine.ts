@@ -178,8 +178,8 @@ export interface EnvironmentEvaluation {
 export interface ConsultationEvaluation {
   totalConsultations: number;
   consultationFrequencyPerMonth: number;
-  actionCompletionRate: number;
-  childrenCoverage: number;
+  actionCompletionRate: number | null;
+  childrenCoverage: number | null;
   childrenDiscussedIds: string[];
   childrenNotDiscussed: string[];
   specialistVariety: number;
@@ -193,12 +193,12 @@ export interface TraumaScreeningEvaluation {
   screeningCoverage: number;
   childrenScreened: string[];
   childrenNotScreened: string[];
-  triggerDocumentationRate: number;
-  copingStrategyRate: number;
-  therapeuticNeedsAssessedRate: number;
-  referralRate: number;
-  averageTriggersPerChild: number;
-  averageCopingStrategiesPerChild: number;
+  triggerDocumentationRate: number | null;
+  copingStrategyRate: number | null;
+  therapeuticNeedsAssessedRate: number | null;
+  referralRate: number | null;
+  averageTriggersPerChild: number | null;
+  averageCopingStrategiesPerChild: number | null;
   overdueReviews: number;
   score: number;
 }
@@ -916,7 +916,7 @@ export function generateTraumaInformedIntelligence(
       "Regular clinical consultation supports evidence-based practice"
     );
   }
-  if (consultation.actionCompletionRate >= 80) {
+  if ((consultation.actionCompletionRate ?? 0) >= 80) {
     strengths.push(
       `Strong follow-through on consultation recommendations (${consultation.actionCompletionRate}% actions completed)`
     );
@@ -926,7 +926,7 @@ export function generateTraumaInformedIntelligence(
       `Comprehensive trauma screening: ${traumaScreening.screeningCoverage}% of children screened`
     );
   }
-  if (traumaScreening.copingStrategyRate >= 80) {
+  if ((traumaScreening.copingStrategyRate ?? 0) >= 80) {
     strengths.push(
       "Coping strategies identified for most children supports proactive care planning"
     );
@@ -987,7 +987,7 @@ export function generateTraumaInformedIntelligence(
       `${consultation.childrenNotDiscussed.length} child(ren) not discussed in any consultation during the period`
     );
   }
-  if (consultation.actionCompletionRate < 60) {
+  if ((consultation.actionCompletionRate ?? 0) < 60) {
     areasForImprovement.push(
       `Consultation action completion rate at ${consultation.actionCompletionRate}% — requires improvement`
     );

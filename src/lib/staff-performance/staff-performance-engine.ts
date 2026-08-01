@@ -187,7 +187,7 @@ export interface StaffProfile {
   qualificationComplianceRate: number;
   currentPerformanceRating: PerformanceRating | undefined;
   pdpGoalAchievementRate: number;
-  averageCompetencyLevel: number;
+  averageCompetencyLevel: number | null;
   overallScore: number; // 0-10
 }
 

@@ -143,7 +143,7 @@ export interface ComplaintHandlingResult {
   upheldPartiallyRate: number; // %
   childInformedRate: number; // %
   childSupportedRate: number; // %
-  averageResolutionDays: number;
+  averageResolutionDays: number | null;
   escalationCount: number;
 }
 

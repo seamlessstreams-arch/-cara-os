@@ -141,7 +141,7 @@ export interface ConsentComplianceResult {
   ageAppropriateExplainedRate: number;
   reviewDateCurrentRate: number;
   expiredConsentCount: number;
-  averageTypesPerChild: number;
+  averageTypesPerChild: number | null;
   consentByType: Record<string, { given: number; refused: number; withdrawn: number; notSought: number; expired: number }>;
   overallScore: number; // 0-25
 }
@@ -588,7 +588,7 @@ function generateAreasForImprovement(
   if (consent.expiredConsentCount > 0) {
     areas.push(`${consent.expiredConsentCount} expired consent record(s) require urgent review`);
   }
-  if (consent.averageTypesPerChild < 5) {
+  if ((consent.averageTypesPerChild ?? 0) < 5) {
     areas.push("Consent coverage below 5 types per child — gaps in consent framework");
   }
 

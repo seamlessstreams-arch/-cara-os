@@ -139,7 +139,7 @@ export interface StaffingAlert {
 
 export interface DayPattern {
   dayOfWeek: string;
-  averageStaff: number;
+  averageStaff: number | null;
   shortfallCount: number;
   status: "adequate" | "concerns" | "inadequate";
 }

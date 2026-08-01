@@ -153,7 +153,7 @@ export interface CategoryResult {
 }
 
 export interface StrengthsRecordingSummary {
-  overallRate: number;
+  overallRate: number | null;
   totalRecords: number;
   totalWithStrengths: number;
   topPractitioner: { staffId: string; name: string; rate: number | null } | null;

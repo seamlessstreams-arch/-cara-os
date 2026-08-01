@@ -400,7 +400,7 @@ export function computeUtilityBillsCostManagement(
   const avgVariancePct =
     totalBudgetRecords > 0
       ? Math.round(
-          budget_records.reduce((sum, b) => sum + Math.abs(b.variance_pct), 0) /
+          budget_records.reduce((sum, b) => sum + Math.abs((b.variance_pct ?? 0)), 0) /
             totalBudgetRecords *
             100,
         ) / 100

@@ -176,7 +176,7 @@ export interface HomeEscalationMetrics {
   assessments: ThresholdAssessment[];
 
   // Quality indicators
-  averageResponseTimeHours: number;
+  averageResponseTimeHours: number | null;
   multiAgencyEngagementRate: number | null;
 
   // Actions & regulatory

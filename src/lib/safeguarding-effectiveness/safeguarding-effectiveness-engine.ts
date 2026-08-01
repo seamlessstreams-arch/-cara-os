@@ -194,7 +194,7 @@ export interface SupervisionResult {
   safeguardingDiscussedCount: number;
   safeguardingDiscussionRate: number | null;
   totalCasesReviewed: number;
-  averageCasesPerSession: number;
+  averageCasesPerSession: number | null;
   decisionsRecordedCount: number;
   decisionsRecordedRate: number | null;
   reflectivePracticeCount: number;

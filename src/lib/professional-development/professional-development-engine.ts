@@ -137,7 +137,7 @@ export interface CPDQualityResult {
   overallScore: number;         // 0-25
   totalRecords: number;
   totalHours: number;
-  averageHoursPerStaff: number;
+  averageHoursPerStaff: number | null;
   impactAssessedRate: number;   // pct
   positiveImpactRate: number;   // pct
   sharedWithTeamRate: number;   // pct
@@ -717,7 +717,7 @@ export function generateProfessionalDevelopmentIntelligence(
   if (cpdQuality.sharedWithTeamRate >= 75) {
     strengths.push("Excellent knowledge sharing — staff regularly disseminate learning to colleagues");
   }
-  if (cpdQuality.averageHoursPerStaff >= 30) {
+  if ((cpdQuality.averageHoursPerStaff ?? 0) >= 30) {
     strengths.push("CPD hours exceed target of 30 hours per staff member annually");
   }
   if (qualificationProgress.completedRate >= 70) {
@@ -759,7 +759,7 @@ export function generateProfessionalDevelopmentIntelligence(
       `Only ${cpdQuality.sharedWithTeamRate}% of learning shared with team — introduce team learning sessions`,
     );
   }
-  if (cpdQuality.averageHoursPerStaff < 30 && cpdQuality.totalRecords > 0) {
+  if ((cpdQuality.averageHoursPerStaff ?? 0) < 30 && cpdQuality.totalRecords > 0) {
     areasForImprovement.push(
       `Average CPD hours (${cpdQuality.averageHoursPerStaff}h) below 30-hour annual target`,
     );
@@ -831,7 +831,7 @@ export function generateProfessionalDevelopmentIntelligence(
     actions.push("Review training budget allocation — increase employer funding for staff qualifications");
   }
 
-  if (cpdQuality.averageHoursPerStaff < 20 && cpdQuality.totalRecords > 0) {
+  if ((cpdQuality.averageHoursPerStaff ?? 0) < 20 && cpdQuality.totalRecords > 0) {
     actions.push("Develop annual training plan to ensure staff meet minimum 30 CPD hours target");
   }
 

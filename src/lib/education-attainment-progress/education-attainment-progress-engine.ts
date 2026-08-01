@@ -124,20 +124,20 @@ export interface StaffEducationTraining {
 
 export interface EducationQualityResult {
   totalRecords: number;
-  progressRate: number;
-  pepUpdatedRate: number;
-  attendanceRate: number;
-  childViewsRate: number;
-  score: number; // 0-25
+  progressRate: number | null;
+  pepUpdatedRate: number | null;
+  attendanceRate: number | null;
+  childViewsRate: number | null;
+  score: number | null; // 0-25
 }
 
 export interface EducationComplianceResult {
   totalRecords: number;
-  staffAdvocacyRate: number;
-  documentedRate: number;
-  virtualSchoolRate: number;
+  staffAdvocacyRate: number | null;
+  documentedRate: number | null;
+  virtualSchoolRate: number | null;
   areaDiversity: number;
-  score: number; // 0-25
+  score: number | null; // 0-25
 }
 
 export interface EducationPolicyResult {
@@ -148,28 +148,28 @@ export interface EducationPolicyResult {
   senCoordination: boolean;
   virtualSchoolPartnership: boolean;
   regularReview: boolean;
-  score: number; // 0-25
+  score: number | null; // 0-25
 }
 
 export interface StaffEducationReadinessResult {
   totalStaff: number;
-  educationSupportRate: number;
-  pepProcessRate: number;
-  attendanceImportanceRate: number;
-  senAwarenessRate: number;
-  homeworkStrategiesRate: number;
-  virtualSchoolProtocolRate: number;
-  score: number; // 0-25
+  educationSupportRate: number | null;
+  pepProcessRate: number | null;
+  attendanceImportanceRate: number | null;
+  senAwarenessRate: number | null;
+  homeworkStrategiesRate: number | null;
+  virtualSchoolProtocolRate: number | null;
+  score: number | null; // 0-25
 }
 
 export interface ChildEducationProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  progressRate: number;
-  pepUpdatedRate: number;
+  progressRate: number | null;
+  pepUpdatedRate: number | null;
   uniqueAreas: number;
-  overallScore: number; // 0-10
+  overallScore: number | null; // 0-10
 }
 
 export interface EducationAttainmentProgressIntelligence {
@@ -178,7 +178,7 @@ export interface EducationAttainmentProgressIntelligence {
   periodStart: string;
   periodEnd: string;
 
-  overallScore: number; // 0-100
+  overallScore: number | null; // 0-100
   rating: Rating;
 
   educationQuality: EducationQualityResult;

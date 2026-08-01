@@ -126,8 +126,8 @@ export interface ReviewComplianceResult {
   reviewsPending: number;
   averageReviewDays: number;
   compliancePercentage: number;
-  childVoiceInclusionRate: number;
-  staffReflectionRate: number;
+  childVoiceInclusionRate: number | null;
+  staffReflectionRate: number | null;
 }
 
 export interface LessonImplementationResult {
@@ -137,8 +137,8 @@ export interface LessonImplementationResult {
   actionsEvidenced: number;
   actionsOverdue: number;
   actionsAbandoned: number;
-  implementationRate: number;
-  embeddingRate: number;
+  implementationRate: number | null;
+  embeddingRate: number | null;
 }
 
 export interface LearningOrganisationScore {
@@ -166,7 +166,7 @@ export interface LearningOrganisationScore {
 
   // Trend indicators
   improvementTrend: "improving" | "stable" | "declining";
-  repeatIncidentRate: number;
+  repeatIncidentRate: number | null;
 }
 
 // ── Helper: Days between dates ─────────────────────────────────────────────
@@ -494,12 +494,12 @@ function calculateLearningScore(
 
   // Review compliance (max 30 points)
   score += (reviewCompliance.compliancePercentage / 100) * 20;
-  score += (reviewCompliance.childVoiceInclusionRate / 100) * 5;
-  score += (reviewCompliance.staffReflectionRate / 100) * 5;
+  score += ((reviewCompliance.childVoiceInclusionRate ?? 0) / 100) * 5;
+  score += ((reviewCompliance.staffReflectionRate ?? 0) / 100) * 5;
 
   // Lesson implementation (max 35 points)
-  score += (implementation.implementationRate / 100) * 20;
-  score += (implementation.embeddingRate / 100) * 15;
+  score += ((implementation.implementationRate ?? 0) / 100) * 20;
+  score += ((implementation.embeddingRate ?? 0) / 100) * 15;
 
   // Timeliness (max 15 points)
   if (reviewCompliance.averageReviewDays <= 3) score += 15;
@@ -542,7 +542,7 @@ function determineTrend(
   const notEmbedded = patterns.filter((p) => p.type === "lessons_not_embedded");
 
   if (escalating.length > 0 || notEmbedded.length > 2) return "declining";
-  if (implementation.embeddingRate >= 60 && notEmbedded.length === 0) return "improving";
+  if ((implementation.embeddingRate ?? 0) >= 60 && notEmbedded.length === 0) return "improving";
   return "stable";
 }
 
@@ -558,16 +558,16 @@ function generateStrengths(
   if (rc.compliancePercentage >= 90) {
     strengths.push("Strong review compliance: all incidents receive timely post-incident reviews");
   }
-  if (rc.childVoiceInclusionRate >= 80) {
+  if ((rc.childVoiceInclusionRate ?? 0) >= 80) {
     strengths.push("Excellent child voice inclusion in reviews demonstrates child-centred practice");
   }
-  if (rc.staffReflectionRate >= 80) {
+  if ((rc.staffReflectionRate ?? 0) >= 80) {
     strengths.push("High staff reflection completion rate supports professional development");
   }
-  if (impl.embeddingRate >= 60) {
+  if ((impl.embeddingRate ?? 0) >= 60) {
     strengths.push("Good evidence of lessons being embedded into practice changes");
   }
-  if (impl.implementationRate >= 80) {
+  if ((impl.implementationRate ?? 0) >= 80) {
     strengths.push("High action implementation rate demonstrates organisational follow-through");
   }
   if (rc.averageReviewDays <= 5) {
@@ -590,13 +590,13 @@ function generateAreasForDevelopment(
   if (rc.compliancePercentage < 80) {
     areas.push("Review compliance below 80% — ensure all incidents receive post-incident review");
   }
-  if (rc.childVoiceInclusionRate < 60) {
+  if ((rc.childVoiceInclusionRate ?? 0) < 60) {
     areas.push("Child voice included in fewer than 60% of reviews — develop approach to capture child's perspective");
   }
-  if (rc.staffReflectionRate < 60) {
+  if ((rc.staffReflectionRate ?? 0) < 60) {
     areas.push("Staff reflection completion below 60% — embed reflective practice as standard");
   }
-  if (impl.embeddingRate < 40) {
+  if ((impl.embeddingRate ?? 0) < 40) {
     areas.push("Lesson embedding rate below 40% — strengthen mechanisms to evidence practice change");
   }
   if (impl.actionsOverdue > 0) {
@@ -648,7 +648,7 @@ function generateLearningActions(
     );
   }
 
-  if (rc.childVoiceInclusionRate < 50) {
+  if ((rc.childVoiceInclusionRate ?? 0) < 50) {
     actions.push(
       `MEDIUM: Child voice included in only ${rc.childVoiceInclusionRate}% of reviews. Develop age-appropriate tools for capturing children's perspectives post-incident.`,
     );
@@ -675,7 +675,7 @@ function generateLearningRegulatoryLinks(
   if (rc.reviewsOverdue > 0) {
     links.add("CHR 2015, Reg 40(4)(b) — Review of notifiable events must be timely");
   }
-  if (rc.childVoiceInclusionRate < 100) {
+  if ((rc.childVoiceInclusionRate ?? 0) < 100) {
     links.add("CHR 2015, Reg 7 — Children's wishes and feelings: include in all review processes");
     links.add("UNCRC Article 12 — Right of children to express views in matters affecting them");
   }

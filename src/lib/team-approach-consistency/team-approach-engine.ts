@@ -267,7 +267,7 @@ export function buildTeamApproachConsistency(store: ReturnType<typeof getStore>)
       mostTherapeuticStaff: mostTherapeutic,
       leastTherapeuticStaff: leastTherapeutic,
       supervisionPrompt: buildSupervisionPrompt(
-        `${yp.first_name} ${yp.last_name}`, level, overallRate,
+        `${yp.first_name} ${yp.last_name}`, level, (overallRate ?? 0),
         mostTherapeutic, leastTherapeutic, variance,
       ),
     });

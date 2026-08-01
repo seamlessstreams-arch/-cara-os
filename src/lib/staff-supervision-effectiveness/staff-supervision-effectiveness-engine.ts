@@ -99,24 +99,24 @@ export interface SupervisorTraining {
 // ── Result interfaces ────────────────────────────────────────────────────────
 
 export interface SessionEffectivenessResult {
-  overallScore: number;
+  overallScore: number | null;
   totalSessions: number;
-  effectivenessRate: number;
-  safeguardingRate: number;
-  wellbeingRate: number;
-  actionPointsRate: number;
+  effectivenessRate: number | null;
+  safeguardingRate: number | null;
+  wellbeingRate: number | null;
+  actionPointsRate: number | null;
 }
 
 export interface SupervisionComplianceResult {
-  overallScore: number;
-  previousActionsReviewedRate: number;
-  documentedRate: number;
-  staffSatisfactionRate: number;
-  typeDiversityRatio: number;
+  overallScore: number | null;
+  previousActionsReviewedRate: number | null;
+  documentedRate: number | null;
+  staffSatisfactionRate: number | null;
+  typeDiversityRatio: number | null;
 }
 
 export interface SupervisionPolicyResult {
-  overallScore: number;
+  overallScore: number | null;
   supervisionFramework: boolean;
   frequencyStandards: boolean;
   safeguardingRequirement: boolean;
@@ -127,30 +127,30 @@ export interface SupervisionPolicyResult {
 }
 
 export interface SupervisorReadinessResult {
-  overallScore: number;
+  overallScore: number | null;
   totalSupervisors: number;
-  supervisionSkillsRate: number;
-  reflectivePracticeRate: number;
-  safeguardingOversightRate: number;
-  performanceManagementRate: number;
-  wellbeingSupportRate: number;
-  documentationRate: number;
+  supervisionSkillsRate: number | null;
+  reflectivePracticeRate: number | null;
+  safeguardingOversightRate: number | null;
+  performanceManagementRate: number | null;
+  wellbeingSupportRate: number | null;
+  documentationRate: number | null;
 }
 
 export interface StaffSupervisionProfile {
   staffId: string;
   staffName: string;
   totalSessions: number;
-  effectivenessRate: number;
-  safeguardingRate: number;
-  overallScore: number;
+  effectivenessRate: number | null;
+  safeguardingRate: number | null;
+  overallScore: number | null;
 }
 
 export interface StaffSupervisionEffectivenessIntelligence {
   homeId: string;
   periodStart: string;
   periodEnd: string;
-  overallScore: number;
+  overallScore: number | null;
   rating: Rating;
   sessionEffectiveness: SessionEffectivenessResult;
   supervisionCompliance: SupervisionComplianceResult;

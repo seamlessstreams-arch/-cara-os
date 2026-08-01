@@ -225,7 +225,7 @@ export async function GET() {
     // Follow-up overdue
     const followUpOverdue = !!(latest?.follow_up_date && latest.follow_up_date < todayStr);
 
-    const signal = buildSignal(status, latestWellbeing, latestConfidence, overdueActions.length, paceRate, followUpOverdue);
+    const signal = buildSignal(status, latestWellbeing, latestConfidence, overdueActions.length, (paceRate ?? 0), followUpOverdue);
 
     return {
       staffId: member.id,
@@ -245,7 +245,7 @@ export async function GET() {
       signal,
       supervisionPrompt: buildPrompt(
         member.first_name, signal, status, latestWellbeing,
-        overdueActions.length, paceRate, followUpOverdue, recentNeeds,
+        overdueActions.length, (paceRate ?? 0), followUpOverdue, recentNeeds,
       ),
     };
   });

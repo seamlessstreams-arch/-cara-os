@@ -17,9 +17,9 @@ export interface IndependencePathwayInput {
   status: string;                            // on_track | attention_needed | not_started | completed
   pathway_plan_linked: boolean;
   domain_count: number;
-  domain_avg_score: number;                  // 0–10 scale
-  lowest_domain_score: number;               // 0–10
-  highest_domain_score: number;              // 0–10
+  domain_avg_score: number | null;                  // 0–10 scale
+  lowest_domain_score: number | null;               // 0–10
+  highest_domain_score: number | null;              // 0–10
   low_scoring_domains: number;               // count of domains scoring <= 3
   has_evidence: boolean;                     // all domains have evidence
   has_next_steps: boolean;                   // all domains have next_steps
@@ -48,14 +48,14 @@ export interface IndependenceProfile {
   avg_readiness: number;
   on_track_count: number;
   attention_needed_count: number;
-  pathway_plan_linkage_rate: number;         // % pathways linked
+  pathway_plan_linkage_rate: number | null;         // % pathways linked
   overdue_reviews: number;
-  evidence_rate: number;                     // % with all evidence
-  next_steps_rate: number;                   // % with all next_steps
+  evidence_rate: number | null;                     // % with all evidence
+  next_steps_rate: number | null;                   // % with all next_steps
 }
 
 export interface DomainAnalysis {
-  avg_domain_score: number;                  // average across all children (0–10)
+  avg_domain_score: number | null;                  // average across all children (0–10)
   low_scoring_total: number;                 // total low-scoring domains across all pathways
   lowest_pathway_avg: number;                // lowest domain avg among pathways
   highest_pathway_avg: number;               // highest domain avg among pathways
@@ -76,7 +76,7 @@ export interface IndependenceRecommendation {
 
 export interface HomeIndependenceResult {
   independence_rating: IndependenceRating;
-  independence_score: number;
+  independence_score: number | null;
   headline: string;
   independence_profile: IndependenceProfile;
   domain_analysis: DomainAnalysis;
@@ -158,7 +158,7 @@ export function computeHomeIndependence(
 
   // ── Domain Analysis ───────────────────────────────────────────────────
   const avgDomainScore = Math.round(
-    (pathways.reduce((s, p) => s + p.domain_avg_score, 0) / pathways.length) * 10,
+    (pathways.reduce((s, p) => s + (p.domain_avg_score ?? 0), 0) / pathways.length) * 10,
   ) / 10;
 
   const lowScoringTotal = pathways.reduce((s, p) => s + p.low_scoring_domains, 0);

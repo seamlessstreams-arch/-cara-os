@@ -118,7 +118,7 @@ export interface SelfAssessmentAnalysis {
   regulationsAssessedRate: number;
   averageComplianceLevel: number;
   averageEvidenceSourcesPerAssessment: number;
-  actionCompletionRate: number;
+  actionCompletionRate: number | null;
   externalFeedbackIntegrationRate: number | null; // null when there is no actionable external feedback
   areaBreakdown: AreaBreakdownEntry[];
   strengths: string[];
@@ -132,7 +132,7 @@ export interface AreaBreakdownEntry {
   complianceLevel: ComplianceLevel;
   evidenceCount: number;
   hasActions: boolean;
-  actionCompletionRate: number;
+  actionCompletionRate: number | null;
   feedbackCount: number;
   feedbackAddressedRate: number;
 }

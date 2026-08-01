@@ -187,7 +187,7 @@ export interface HomeMultiAgencyMetrics {
   totalActiveReferrals: number;
   totalWaiting: number;
   totalEscalated: number;
-  longestWaitDays: number;
+  longestWaitDays: number | null;
   // Compliance
   complianceIssues: string[];
   overallScore: number | null;

@@ -49,8 +49,8 @@ export interface TrainingNeedCount {
 
 export interface WellbeingSummary {
   totalSupervisions: number;
-  avgWellbeingScore: number;
-  avgConfidenceLevel: number;
+  avgWellbeingScore: number | null;
+  avgConfidenceLevel: number | null;
   supportNeededCount: number;
   overdueFollowUps: number;
   overdueActionsTotal: number;

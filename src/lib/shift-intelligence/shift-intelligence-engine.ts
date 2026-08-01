@@ -123,7 +123,7 @@ export interface ShiftCoverageResult {
   actualStaff: number;
   seniorPresent: boolean;
   agencyCount: number;
-  agencyPercentage: number;
+  agencyPercentage: number | null;
   isCovered: boolean;
   concerns: DeploymentConcern[];
   staffOnShift: string[];

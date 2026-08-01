@@ -68,7 +68,7 @@ export interface EducationAssessment {
   engagementScore: number;        // 0-100
   stabilityScore: number;         // 0-100
   complianceScore: number;        // 0-100 (PEP, VS, DT etc.)
-  currentAttendance: number;      // % over the period
+  currentAttendance: number | null;      // % over the period
   attendanceCategory: "above_national" | "national_average" | "below_average" | "persistent_absence" | "severe_absence";
   attendanceTrend: "improving" | "stable" | "declining";
   exclusionRisk: "low" | "moderate" | "high" | "critical";
@@ -126,7 +126,7 @@ export function analyseEducationEngagement(input: EducationInput): EducationAsse
   const attendanceTrend = calculateAttendanceTrend(weeks);
 
   // ── Scores ────────────────────────────────────────────────────────────────
-  const attendanceScore = calculateAttendanceScore(currentAttendance, attendanceTrend);
+  const attendanceScore = calculateAttendanceScore((currentAttendance ?? 0), attendanceTrend);
   const engagementScore = calculateEngagementScore(weeks, input);
   const stabilityScore = calculateStabilityScore(input);
   const complianceScore = calculateComplianceScore(input);
@@ -147,19 +147,19 @@ export function analyseEducationEngagement(input: EducationInput): EducationAsse
   else overallRating = "inadequate";
 
   // ── Concerns ──────────────────────────────────────────────────────────────
-  const concerns = identifyConcerns(input, currentAttendance, attendanceTrend, exclusionRisk);
+  const concerns = identifyConcerns(input, (currentAttendance ?? 0), attendanceTrend, exclusionRisk);
 
   // ── Strengths ─────────────────────────────────────────────────────────────
-  const strengths = identifyStrengths(input, currentAttendance, weeks);
+  const strengths = identifyStrengths(input, (currentAttendance ?? 0), weeks);
 
   // ── Regulatory flags ──────────────────────────────────────────────────────
-  const regulatoryFlags = assessRegulatory(input, currentAttendance);
+  const regulatoryFlags = assessRegulatory(input, (currentAttendance ?? 0));
 
   // ── Recommendations ───────────────────────────────────────────────────────
-  const recommendations = generateRecommendations(concerns, input, currentAttendance, exclusionRisk);
+  const recommendations = generateRecommendations(concerns, input, (currentAttendance ?? 0), exclusionRisk);
 
   // ── Summary ───────────────────────────────────────────────────────────────
-  const summary = buildSummary(childName, overallScore, overallRating, currentAttendance, attendanceCategory, concerns);
+  const summary = buildSummary(childName, overallScore, overallRating, (currentAttendance ?? 0), attendanceCategory, concerns);
 
   return {
     childId,

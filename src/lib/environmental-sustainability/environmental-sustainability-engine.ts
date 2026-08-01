@@ -96,7 +96,7 @@ export interface EnvironmentalPracticeResult {
   totalActivities: number;
   activityTypeDiversity: number; // count of distinct types used
   activityTypeDistribution: Record<ActivityType, number>;
-  frequencyScore: number; // activities per child
+  frequencyScore: number | null; // activities per child
   sustainedEngagementRate: number; // pct of highly_engaged or engaged
 }
 

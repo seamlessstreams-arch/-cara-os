@@ -126,7 +126,7 @@ export interface SupportProvisionResult {
   qualityGoodPlusRate: number;
   childEngagedRate: number;
   progressNotedRate: number;
-  averageSessionsPerChild: number;
+  averageSessionsPerChild: number | null;
 }
 
 export interface EnvironmentAccessibilityResult {

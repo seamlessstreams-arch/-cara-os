@@ -53,7 +53,7 @@ interface EducationStabilitySummary {
   engaged: number;
   vulnerable: number;
   crisis: number;
-  homeAttendanceRate: number;
+  homeAttendanceRate: number | null;
   childrenWithCurrentPEP: number;
   childrenWithExclusions: number;
   totalAchievements: number;
@@ -200,7 +200,7 @@ export async function GET() {
     const staffAttendedMeetings = records.some((r) => meetingTypes.has(r.record_type) && r.staff_id);
 
     const signal = educationSignal(
-      attendanceRate, exclusionCount, hasPEPInLast6Months,
+      (attendanceRate ?? 0), exclusionCount, hasPEPInLast6Months,
       achievementCount, openConcernCount, schoolChanges, attendanceRecs.length,
     );
 
@@ -223,7 +223,7 @@ export async function GET() {
       staffAttendedMeetings,
       signal,
       supervisionPrompt: buildPrompt(
-        `${yp.first_name} ${yp.last_name}`, signal, attendanceRate, exclusionCount,
+        `${yp.first_name} ${yp.last_name}`, signal, (attendanceRate ?? 0), exclusionCount,
         hasPEPInLast6Months, lastPEPDate, schoolChanges, achievementCount, openConcernCount,
       ),
     };

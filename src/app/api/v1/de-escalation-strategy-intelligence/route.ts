@@ -40,7 +40,7 @@ export interface StrategyResult {
   usageCount: number;
   resolvedCount: number;
   escalatedCount: number;
-  resolutionRate: number;
+  resolutionRate: number | null;
 }
 
 export interface StaffEngagementProfile {
@@ -48,7 +48,7 @@ export interface StaffEngagementProfile {
   staffName: string;
   totalEntries: number;
   positiveEntries: number;
-  positiveRate: number;
+  positiveRate: number | null;
 }
 
 export interface ChildBehaviourProfile {
@@ -157,7 +157,7 @@ function buildSupervisionPrompt(
   if (concernTrend === "improving") {
     return `${name}'s behaviour is improving. In supervision: what is working? Identify and name the strategies or relational shifts that are making the difference. How can the team consolidate these gains?`;
   }
-  if (topStrategy && topStrategy.resolutionRate < 50) {
+  if (topStrategy && (topStrategy.resolutionRate ?? 0) < 50) {
     return `The most common de-escalation approach for ${name} (${topStrategy.strategy}) resolves the concern only ${topStrategy.resolutionRate}% of the time. In supervision: is this the right approach for ${name.split(" ")[0]}? What does ${name.split(" ")[0]} say helps them most?`;
   }
   if (highRiskSlot && highRiskSlot.concerningCount >= 3) {
@@ -390,7 +390,7 @@ export async function GET() {
       ? "Concerning behaviour frequency is increasing across the home. An inspector will ask whether each child's care plan reflects current presentations and whether staff are supported to understand and respond therapeutically."
       : childProfiles.some((p) => p.signal === "needs_support")
       ? "One or more children have a needs-support behaviour signal. An inspector will ask about the therapeutic response, whether risk management plans are current, and whether staff feel supported."
-      : mostEffectiveStrategies.some((s) => s.resolutionRate < 40)
+      : mostEffectiveStrategies.some((s) => (s.resolutionRate ?? 0) < 40)
       ? "Some de-escalation strategies have low resolution rates. Review whether staff are using the agreed approaches and whether plans reflect what actually helps each child."
       : `Home behaviour picture: ${formatRate(homePositiveRatio)} positive entries. Trend: ${homeConcernTrend}. Demonstrate that the team understands each child's triggers and is applying person-centred, therapeutic responses consistently.`;
 

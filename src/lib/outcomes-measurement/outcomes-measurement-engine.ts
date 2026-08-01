@@ -148,7 +148,7 @@ export interface ProgressFromBaselineResult {
   totalChildren: number;
   domainsAssessed: number;
   domainProgress: DomainProgress[];
-  overallAverageChange: number;
+  overallAverageChange: number | null;
   overallImprovementRate: number;      // % of children improving in at least 1 domain
   regressionAlerts: {
     childId: string;
@@ -204,7 +204,7 @@ export interface OutcomePlanningResult {
   childInvolvementRate: number;
   familyInvolvementRate: number;
   professionalInvolvementRate: number;
-  averageMeasurableIndicators: number;
+  averageMeasurableIndicators: number | null;
   plansWithMeasurableIndicators: number;
   measurabilityRate: number;
   planDetails: {
@@ -225,7 +225,7 @@ export interface MeasurementQualityResult {
   baselineCoverageRate: number;
   methodsUsed: MeasurementMethod[];
   methodDiversityScore: number;    // 0-100
-  measurementRegularity: number;   // average measurements per child per domain
+  measurementRegularity: number | null;   // average measurements per child per domain
   childVoiceInclusion: number;     // % of measurements with childView
   qualityDetails: {
     childId: string;
@@ -908,11 +908,11 @@ export function generateOutcomesMeasurementIntelligence(
   else if (measurementQuality.methodDiversityScore >= 20) qualityScore += 1;
 
   // Regularity (5)
-  if (measurementQuality.measurementRegularity >= 3) qualityScore += 5;
-  else if (measurementQuality.measurementRegularity >= 2) qualityScore += 4;
-  else if (measurementQuality.measurementRegularity >= 1.5) qualityScore += 3;
-  else if (measurementQuality.measurementRegularity >= 1) qualityScore += 2;
-  else if (measurementQuality.measurementRegularity > 0) qualityScore += 1;
+  if ((measurementQuality.measurementRegularity ?? 0) >= 3) qualityScore += 5;
+  else if ((measurementQuality.measurementRegularity ?? 0) >= 2) qualityScore += 4;
+  else if ((measurementQuality.measurementRegularity ?? 0) >= 1.5) qualityScore += 3;
+  else if ((measurementQuality.measurementRegularity ?? 0) >= 1) qualityScore += 2;
+  else if ((measurementQuality.measurementRegularity ?? 0) > 0) qualityScore += 1;
 
   // Child voice (6)
   if (measurementQuality.childVoiceInclusion >= 80) qualityScore += 6;

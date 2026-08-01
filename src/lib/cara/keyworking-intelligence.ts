@@ -84,9 +84,9 @@ export interface KeyworkingAssessment {
   occurredSessions: number;
   missedSessions: number;
   complianceRate: number; // vs expected frequency
-  avgDuration: number;
-  childLedRate: number;
-  wishesRate: number;
+  avgDuration: number | null;
+  childLedRate: number | null;
+  wishesRate: number | null;
   actionCompletionRate: number;
   topicCoverage: TopicCoverage[];
   concerns: KeyworkConcern[];
@@ -162,9 +162,9 @@ export function analyseKeyworking(input: KeyworkingInput): KeyworkingAssessment 
 
   // ── Scores ────────────────────────────────────────────────────────
   const frequencyScore = scoreFrequency(complianceRate, missedSessions, totalSessions);
-  const qualityScore = scoreQuality(occurred, avgDuration, actionCompletionRate);
+  const qualityScore = scoreQuality(occurred, (avgDuration ?? 0), actionCompletionRate);
   const relationshipScore = scoreRelationship(input);
-  const voiceScore = scoreVoice(childLedRate, wishesRate, input);
+  const voiceScore = scoreVoice((childLedRate ?? 0), (wishesRate ?? 0), input);
 
   // ── Overall ───────────────────────────────────────────────────────
   const overallScore = Math.round(
@@ -176,19 +176,19 @@ export function analyseKeyworking(input: KeyworkingInput): KeyworkingAssessment 
   const overallRating = scoreToRating(overallScore);
 
   // ── Concerns ──────────────────────────────────────────────────────
-  const concerns = identifyConcerns(input, complianceRate, childLedRate, occurred);
+  const concerns = identifyConcerns(input, complianceRate, (childLedRate ?? 0), occurred);
 
   // ── Strengths ─────────────────────────────────────────────────────
-  const strengths = identifyStrengths(input, complianceRate, childLedRate, wishesRate, occurred);
+  const strengths = identifyStrengths(input, complianceRate, (childLedRate ?? 0), (wishesRate ?? 0), occurred);
 
   // ── Regulatory flags ──────────────────────────────────────────────
-  const regulatoryFlags = assessRegulatory(input, complianceRate, wishesRate);
+  const regulatoryFlags = assessRegulatory(input, complianceRate, (wishesRate ?? 0));
 
   // ── Recommendations ───────────────────────────────────────────────
-  const recommendations = buildRecommendations(input, complianceRate, childLedRate, topicCoverage, occurred);
+  const recommendations = buildRecommendations(input, complianceRate, (childLedRate ?? 0), topicCoverage, occurred);
 
   // ── Summary ───────────────────────────────────────────────────────
-  const summary = buildSummary(childName, overallRating, complianceRate, childLedRate);
+  const summary = buildSummary(childName, overallRating, complianceRate, (childLedRate ?? 0));
 
   return {
     childName,

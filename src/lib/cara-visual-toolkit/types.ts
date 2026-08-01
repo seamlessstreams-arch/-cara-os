@@ -91,7 +91,7 @@ export type PeriodCount = {
   hours: string;
   count: number;
   severityCounts: Record<string, number>;
-  pct: number;
+  pct: number | null;
 };
 
 export type HourlyBucket = {
@@ -329,7 +329,7 @@ export type BehaviourStrategy = {
   strategy: string;
   count: number;
   positiveOutcomes: number;
-  effectivenessRate: number;
+  effectivenessRate: number | null;
 };
 
 export type ChildBehaviourProfile = {

@@ -135,23 +135,23 @@ export interface StaffEducationTraining {
 
 export interface EducationQualityResult {
   totalRecords: number;
-  attainmentRate: number;
-  attendanceRate: number;
-  noExclusionRate: number;
-  designatedTeacherRate: number;
-  score: number;
+  attainmentRate: number | null;
+  attendanceRate: number | null;
+  noExclusionRate: number | null;
+  designatedTeacherRate: number | null;
+  score: number | null;
   strengths: string[];
   concerns: string[];
 }
 
 export interface EducationComplianceResult {
   totalRecords: number;
-  pepRate: number;
-  pupilPremiumRate: number;
-  virtualSchoolRate: number;
-  placementDiversityRatio: number;
+  pepRate: number | null;
+  pupilPremiumRate: number | null;
+  virtualSchoolRate: number | null;
+  placementDiversityRatio: number | null;
   uniquePlacements: number;
-  score: number;
+  score: number | null;
   strengths: string[];
   concerns: string[];
 }
@@ -164,20 +164,20 @@ export interface EducationPolicyResult {
   pupilPremiumTracking: boolean;
   schoolLiaisonProtocol: boolean;
   regularReview: boolean;
-  score: number;
+  score: number | null;
   strengths: string[];
   concerns: string[];
 }
 
 export interface StaffEducationReadinessResult {
   totalStaff: number;
-  educationRegulationsRate: number;
-  pepProcessRate: number;
-  attendanceSupportRate: number;
-  senAwarenessRate: number;
-  virtualSchoolLiaisonRate: number;
-  educationAdvocacyRate: number;
-  score: number;
+  educationRegulationsRate: number | null;
+  pepProcessRate: number | null;
+  attendanceSupportRate: number | null;
+  senAwarenessRate: number | null;
+  virtualSchoolLiaisonRate: number | null;
+  educationAdvocacyRate: number | null;
+  score: number | null;
   strengths: string[];
   concerns: string[];
 }
@@ -186,10 +186,10 @@ export interface ChildEducationProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  attainmentRate: number;
-  attendanceRate: number;
+  attainmentRate: number | null;
+  attendanceRate: number | null;
   exclusionCount: number;
-  educationScore: number;
+  educationScore: number | null;
 }
 
 export interface EducationIntelligence {
@@ -197,7 +197,7 @@ export interface EducationIntelligence {
   assessedAt: string;
   periodStart: string;
   periodEnd: string;
-  overallScore: number;
+  overallScore: number | null;
   rating: Rating;
   educationQuality: EducationQualityResult;
   educationCompliance: EducationComplianceResult;

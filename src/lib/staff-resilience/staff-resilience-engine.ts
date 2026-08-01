@@ -159,7 +159,7 @@ export interface SupervisionQualityResult {
   wellbeingDiscussedRate: number | null;   // % of supervisions discussing wellbeing
   workloadDiscussedRate: number | null;    // % of supervisions discussing workload
   actionCompletionRate: number | null;     // % of action points completed
-  averageActionPoints: number;
+  averageActionPoints: number | null;
   overdueCount: number;                    // staff with overdue supervision
   staffSupervisionDetails: StaffSupervisionDetail[];
 }

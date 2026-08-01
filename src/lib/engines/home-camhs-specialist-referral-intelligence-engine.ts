@@ -50,7 +50,7 @@ export interface CamhsSpecialistResult {
   headline: string;
   active_referrals: number;
   children_waiting: number;
-  average_wait_days: number;
+  average_wait_days: number | null;
   appointment_attendance_rate: number | null;
   emergency_response_rate: number | null;
   specialist_coverage_rate: number | null;
