@@ -256,19 +256,19 @@ export function computeMetrics(
   health_type_count: number;
   cultural_type_count: number;
   planning_type_count: number;
-  child_choice_offered_rate: number;
-  child_participated_cooking_rate: number;
-  age_appropriate_involvement_rate: number;
-  cultural_needs_met_rate: number;
-  allergy_information_current_rate: number;
-  portion_appropriate_rate: number;
-  mealtimes_social_rate: number;
-  snacks_available_rate: number;
-  hydration_monitored_rate: number;
-  eating_concern_rate: number;
-  excellent_nutrition_rate: number;
-  poor_nutrition_rate: number;
-  average_records_per_child: number;
+  child_choice_offered_rate: number | null;
+  child_participated_cooking_rate: number | null;
+  age_appropriate_involvement_rate: number | null;
+  cultural_needs_met_rate: number | null;
+  allergy_information_current_rate: number | null;
+  portion_appropriate_rate: number | null;
+  mealtimes_social_rate: number | null;
+  snacks_available_rate: number | null;
+  hydration_monitored_rate: number | null;
+  eating_concern_rate: number | null;
+  excellent_nutrition_rate: number | null;
+  poor_nutrition_rate: number | null;
+  average_records_per_child: number | null;
   children_with_dietary_requirements: number;
 } {
   const total = rows.length;
@@ -293,7 +293,7 @@ export function computeMetrics(
 
   // Boolean rates
   const pct = (filter: (r: MealPlanningRow) => boolean) =>
-    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : 0;
+    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
   const choiceOfferedRate = pct((r) => r.child_choice_offered);
   const participatedCookingRate = pct((r) => r.child_participated_cooking);
@@ -309,15 +309,15 @@ export function computeMetrics(
   const hydrationRows = rows.filter((r) => r.hydration_monitored !== null);
   const hydrationRate = hydrationRows.length > 0
     ? Math.round((hydrationRows.filter((r) => r.hydration_monitored === true).length / hydrationRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Nutrition rates
   const excellentRate = total > 0
     ? Math.round((rows.filter((r) => r.nutritional_balance === "Excellent").length / total) * 1000) / 10
-    : 0;
+    : null;
   const poorRate = total > 0
     ? Math.round((rows.filter((r) => r.nutritional_balance === "Poor").length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Children with dietary requirements
   const childrenWithDietary = new Set(
@@ -327,7 +327,7 @@ export function computeMetrics(
 
   const avgRecordsPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   return {
     total_records: total,
@@ -554,7 +554,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.child_choice_offered_rate < 50 && metrics.total_records > 5) {
+  if ((metrics.child_choice_offered_rate ?? 0) < 50 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Child choice offered in only ${metrics.child_choice_offered_rate}% of food records. ` +
         `SCCIF inspectors specifically assess whether children have choice ` +
@@ -566,7 +566,7 @@ export function generateCaraInsights(
         `meal? Can they make themselves something different if they do not ` +
         `like what is offered? Do staff eat the same food alongside them?`,
     );
-  } else if (metrics.mealtimes_social_rate < 60 && metrics.total_records > 5) {
+  } else if ((metrics.mealtimes_social_rate ?? 0) < 60 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Mealtimes recorded as social in only ${metrics.mealtimes_social_rate}% of records. ` +
         `Shared mealtimes are one of the most powerful tools a residential ` +
@@ -578,7 +578,7 @@ export function generateCaraInsights(
         `barriers exist? Shift patterns? Children's choice? Dysregulation? ` +
         `Each barrier requires a different solution.`,
     );
-  } else if (metrics.child_participated_cooking_rate < 30 && metrics.total_records > 5) {
+  } else if ((metrics.child_participated_cooking_rate ?? 0) < 30 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Cooking participation rate is only ${metrics.child_participated_cooking_rate}%. ` +
         `Cooking is both a life skill and a relational activity. CHR 2015 ` +

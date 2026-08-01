@@ -47,14 +47,10 @@ describe("computeAttendanceMetrics", () => {
     expect(m.late_arrival_count).toBe(0);
     expect(m.attendance_rate).toBeNull();
     expect(m.punctuality_rate).toBeNull();
-    expect(m.average_late_minutes).toBeNull(); // fab-0.;
-    expect(m.total_overtime_hours).toBe(0);
+    expect(m.average_late_minutes).toBeNull();; expect(m.total_overtime_hours).toBe(0);
     expect(m.average_hours_worked).toBe(0);
     expect(m.agency_staff_used_count).toBe(0);
-    expect(m.minimum_staffing_met_rate).toBeNull(); // fab-0.;
-    expect(m.handover_completed_rate).toBeNull(); // fab-0.;
-    expect(m.compliance_rate).toBeNull(); // fab-0.;
-    expect(m.non_compliant_count).toBe(0);
+    expect(m.minimum_staffing_met_rate).toBeNull();; expect(m.handover_completed_rate).toBeNull();; expect(m.compliance_rate).toBeNull();; expect(m.non_compliant_count).toBe(0);
     expect(m.staff_coverage).toBe(0);
   });
 

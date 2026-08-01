@@ -57,8 +57,7 @@ describe("computeChildOutcomes", () => {
     const result = computeChildOutcomes([], [], "child-1");
     expect(result.active_targets).toBe(0);
     expect(result.achieved_targets).toBe(0);
-    expect(result.overall_progress).toBe(0);
-    expect(result.improving_count).toBe(0);
+    expect(result.overall_progress).toBeNull();; expect(result.improving_count).toBe(0);
     expect(result.declining_count).toBe(0);
     expect(result.latest_review_date).toBeNull();
   });
@@ -130,8 +129,7 @@ describe("computeHomeOutcomes", () => {
     expect(result.total_children).toBe(0);
     expect(result.total_active_targets).toBe(0);
     expect(result.total_achieved).toBe(0);
-    expect(result.overall_achievement_rate).toBe(0);
-    expect(result.children_improving).toBe(0);
+    expect(result.overall_achievement_rate).toBeNull();; expect(result.children_improving).toBe(0);
     expect(result.children_stable).toBe(0);
     expect(result.children_declining).toBe(0);
   });

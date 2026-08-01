@@ -105,13 +105,13 @@ function computeMeetingCompliance(
 ): {
   total_meetings: number;
   by_type: Record<string, number>;
-  avg_attendance: number;
-  attendance_rate: number;
+  avg_attendance: number | null;
+  attendance_rate: number | null;
   total_actions: number;
   actions_completed: number;
   actions_overdue: number;
-  action_completion_rate: number;
-  minutes_approved_rate: number;
+  action_completion_rate: number | null;
+  minutes_approved_rate: number | null;
 } {
   const total = meetings.length;
 
@@ -128,11 +128,11 @@ function computeMeetingCompliance(
   }
   const avgAttendance = total > 0
     ? Math.round((totalAttendance / total) * 10) / 10
-    : 0;
+    : null;
 
   const attendanceRate = total > 0 && totalChildren > 0
     ? Math.round((totalAttendance / (total * totalChildren)) * 100)
-    : 0;
+    : null;
 
   // Actions
   const allActions = meetings.flatMap((m) => m.actions);
@@ -140,13 +140,13 @@ function computeMeetingCompliance(
   const actionsOverdue = allActions.filter((a) => a.status === "overdue").length;
   const actionCompletionRate = allActions.length > 0
     ? Math.round((actionsCompleted / allActions.length) * 100)
-    : 0;
+    : null;
 
   // Minutes approved
   const approved = meetings.filter((m) => m.minutes_approved).length;
   const minutesApprovedRate = total > 0
     ? Math.round((approved / total) * 100)
-    : 0;
+    : null;
 
   return {
     total_meetings: total,
@@ -170,11 +170,11 @@ function computeConsultationMetrics(
 ): {
   total_consultations: number;
   children_consulted: number;
-  consultation_rate: number;
+  consultation_rate: number | null;
   by_type: Record<string, number>;
-  avg_impact: number;
+  avg_impact: number | null;
   with_action_taken: number;
-  action_rate: number;
+  action_rate: number | null;
 } {
   const total = consultations.length;
 
@@ -182,7 +182,7 @@ function computeConsultationMetrics(
   const childrenConsulted = new Set(consultations.map((c) => c.child_id)).size;
   const consultationRate = totalChildren > 0
     ? Math.round((childrenConsulted / totalChildren) * 100)
-    : 0;
+    : null;
 
   // By type
   const byType: Record<string, number> = {};
@@ -198,7 +198,7 @@ function computeConsultationMetrics(
   }
   const avgImpact = total > 0
     ? Math.round((impactSum / total) * 100) / 100
-    : 0;
+    : null;
 
   // With action taken
   const withAction = consultations.filter(
@@ -206,7 +206,7 @@ function computeConsultationMetrics(
   ).length;
   const actionRate = total > 0
     ? Math.round((withAction / total) * 100)
-    : 0;
+    : null;
 
   return {
     total_consultations: total,

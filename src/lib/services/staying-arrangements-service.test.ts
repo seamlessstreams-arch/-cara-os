@@ -54,9 +54,7 @@ describe("computeMetrics", () => {
     expect(r.satisfaction_rate).toBeNull();
     expect(r.breakdown_risk_count).toBe(0);
     expect(r.neet_count).toBe(0);
-    expect(r.successful_completion_rate).toBeNull(); // fab-0.;
-    expect(r.average_duration_days).toBeNull(); // fab-0.;
-    expect(r.active_arrangements).toBe(0);
+    expect(r.successful_completion_rate).toBeNull();; expect(r.average_duration_days).toBeNull();; expect(r.active_arrangements).toBe(0);
     expect(r.unique_young_people).toBe(0);
     expect(r.extended_count).toBe(0);
   });

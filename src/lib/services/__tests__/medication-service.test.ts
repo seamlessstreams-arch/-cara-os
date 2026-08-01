@@ -105,10 +105,8 @@ describe("computeMedicationCompliance", () => {
     expect(result.total_refused).toBe(0);
     expect(result.total_withheld).toBe(0);
     expect(result.total_missed).toBe(0);
-    expect(result.compliance_rate).toBe(0);
-    expect(result.by_outcome).toEqual({});
-    expect(result.refusal_rate).toBe(0);
-  });
+    expect(result.compliance_rate).toBeNull();; expect(result.by_outcome).toEqual({});
+    expect(result.refusal_rate).toBeNull();; });
 
   it("counts a single given entry as 100% compliance", () => {
     const result = computeMedicationCompliance([entry({ outcome: "given" })]);
@@ -233,8 +231,7 @@ describe("computeControlledDrugAudit", () => {
     const result = computeControlledDrugAudit([], []);
     expect(result.total_controlled).toBe(0);
     expect(result.stock_discrepancies).toEqual([]);
-    expect(result.witness_compliance_rate).toBe(0);
-    expect(result.last_stock_check).toBeNull();
+    expect(result.witness_compliance_rate).toBeNull();; expect(result.last_stock_check).toBeNull();
     expect(result.overdue_stock_checks).toEqual([]);
   });
 
@@ -270,8 +267,7 @@ describe("computeControlledDrugAudit", () => {
       entry({ id: "m1", prescription_id: "rx-1", witnessed_by: "staff-2" }),
     ];
     const result = computeControlledDrugAudit(prescriptions, entries);
-    expect(result.witness_compliance_rate).toBe(0);
-  });
+    expect(result.witness_compliance_rate).toBeNull();; });
 
   it("returns 100% witness compliance when all controlled entries are witnessed", () => {
     const prescriptions = [
@@ -495,8 +491,7 @@ describe("computeMedicationErrorRate", () => {
   it("returns 0 error_rate when totalEntries is 0", () => {
     const result = computeMedicationErrorRate([medError()], 0);
     expect(result.total_errors).toBe(1);
-    expect(result.error_rate).toBe(0);
-  });
+    expect(result.error_rate).toBeNull();; });
 
   it("computes error_rate as percentage with one decimal place", () => {
     const errors = [

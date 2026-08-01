@@ -152,7 +152,7 @@ export function computeIndividualRiskMetrics(
 ): {
   total_assessments: number;
   children_assessed: number;
-  assessment_coverage: number;
+  assessment_coverage: number | null;
   current_count: number;
   expired_count: number;
   under_review_count: number;
@@ -160,13 +160,13 @@ export function computeIndividualRiskMetrics(
   high_count: number;
   medium_count: number;
   low_count: number;
-  staff_aware_rate: number;
-  multi_agency_rate: number;
-  child_involved_rate: number;
-  parent_informed_rate: number;
+  staff_aware_rate: number | null;
+  multi_agency_rate: number | null;
+  child_involved_rate: number | null;
+  parent_informed_rate: number | null;
   review_overdue_count: number;
-  average_per_child: number;
-  average_strategies_per_assessment: number;
+  average_per_child: number | null;
+  average_strategies_per_assessment: number | null;
   by_risk_domain: Record<string, number>;
   by_risk_rating: Record<string, number>;
   by_assessment_status: Record<string, number>;
@@ -176,7 +176,7 @@ export function computeIndividualRiskMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const current = assessments.filter((a) => a.assessment_status === "current").length;
   const expired = assessments.filter((a) => a.assessment_status === "expired").length;
@@ -191,25 +191,25 @@ export function computeIndividualRiskMetrics(
   const staffRate =
     assessments.length > 0
       ? Math.round((staffAware / assessments.length) * 1000) / 10
-      : 0;
+      : null;
 
   const multiAgency = assessments.filter((a) => a.multi_agency_involved).length;
   const maRate =
     assessments.length > 0
       ? Math.round((multiAgency / assessments.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childInvolved = assessments.filter((a) => a.child_involved_in_plan).length;
   const childRate =
     assessments.length > 0
       ? Math.round((childInvolved / assessments.length) * 1000) / 10
-      : 0;
+      : null;
 
   const parentInformed = assessments.filter((a) => a.parent_informed).length;
   const parentRate =
     assessments.length > 0
       ? Math.round((parentInformed / assessments.length) * 1000) / 10
-      : 0;
+      : null;
 
   const now = new Date();
   const reviewOverdue = assessments.filter(
@@ -219,13 +219,13 @@ export function computeIndividualRiskMetrics(
   const avgPerChild =
     uniqueChildren > 0
       ? Math.round((assessments.length / uniqueChildren) * 10) / 10
-      : 0;
+      : null;
 
   const totalStrategies = assessments.reduce((sum, a) => sum + a.management_strategies.length, 0);
   const avgStrategies =
     assessments.length > 0
       ? Math.round((totalStrategies / assessments.length) * 10) / 10
-      : 0;
+      : null;
 
   const byDomain: Record<string, number> = {};
   for (const a of assessments) byDomain[a.risk_domain] = (byDomain[a.risk_domain] ?? 0) + 1;

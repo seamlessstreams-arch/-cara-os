@@ -38,15 +38,10 @@ describe("computeRespiteMetrics", () => {
     const m = computeRespiteMetrics([], 0);
     expect(m.total_breaks).toBe(0);
     expect(m.children_with_breaks).toBe(0);
-    expect(m.break_usage_rate).toBe(0);
-    expect(m.planned_count).toBe(0);
+    expect(m.break_usage_rate).toBeNull();; expect(m.planned_count).toBe(0);
     expect(m.emergency_count).toBe(0);
     expect(m.total_nights).toBe(0);
-    expect(m.average_duration).toBe(0);
-    expect(m.child_views_sought_rate).toBe(0);
-    expect(m.positive_impact_rate).toBe(0);
-    expect(m.negative_impact_rate).toBe(0);
-  });
+    expect(m.average_duration).toBeNull();; expect(m.child_views_sought_rate).toBeNull();; expect(m.positive_impact_rate).toBeNull();; expect(m.negative_impact_rate).toBeNull();; });
 
   it("counts break types", () => {
     const records = [

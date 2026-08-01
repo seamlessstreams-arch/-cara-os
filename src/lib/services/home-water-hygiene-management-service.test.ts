@@ -38,15 +38,9 @@ describe("computeWaterHygieneManagementMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeWaterHygieneManagementMetrics([]);
     expect(m.total_checks).toBe(0);
-    expect(m.hot_temp_compliant_rate).toBe(0);
-    expect(m.cold_temp_compliant_rate).toBe(0);
-    expect(m.flushing_rate).toBe(0);
-    expect(m.sample_taken_rate).toBe(0);
-    expect(m.legionella_detected_count).toBe(0);
+    expect(m.hot_temp_compliant_rate).toBeNull();; expect(m.cold_temp_compliant_rate).toBeNull();; expect(m.flushing_rate).toBeNull();; expect(m.sample_taken_rate).toBeNull();; expect(m.legionella_detected_count).toBe(0);
     expect(m.non_compliant_count).toBe(0);
-    expect(m.avg_hot_temp).toBe(0);
-    expect(m.avg_cold_temp).toBe(0);
-    expect(m.unique_locations).toBe(0);
+    expect(m.avg_hot_temp).toBeNull();; expect(m.avg_cold_temp).toBeNull();; expect(m.unique_locations).toBe(0);
     expect(m.unique_checkers).toBe(0);
   });
 

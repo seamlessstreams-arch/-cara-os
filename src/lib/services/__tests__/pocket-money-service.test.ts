@@ -402,13 +402,10 @@ describe("computeFinancialMetrics", () => {
     expect(m.children_with_profiles).toBe(0);
     expect(m.total_pocket_money_balance).toBe(0);
     expect(m.total_savings_balance).toBe(0);
-    expect(m.avg_weekly_pocket_money).toBe(0);
-    expect(m.transactions_this_month).toBe(0);
+    expect(m.avg_weekly_pocket_money).toBeNull();; expect(m.transactions_this_month).toBe(0);
     expect(Object.keys(m.by_transaction_type)).toHaveLength(0);
     expect(Object.keys(m.by_spending_category)).toHaveLength(0);
-    expect(m.savings_goal_progress).toBe(0);
-    expect(m.audit_compliance_rate).toBe(0);
-    expect(m.overdue_audits).toBe(0);
+    expect(m.savings_goal_progress).toBeNull();; expect(m.audit_compliance_rate).toBeNull();; expect(m.overdue_audits).toBe(0);
     expect(m.children_with_bank_accounts).toBe(0);
     expect(Object.keys(m.financial_literacy_distribution)).toHaveLength(0);
   });
@@ -487,8 +484,7 @@ describe("computeFinancialMetrics", () => {
 
   it("returns 0 avg_weekly_pocket_money for empty profiles", () => {
     const m = computeFinancialMetrics([], [], [], 0);
-    expect(m.avg_weekly_pocket_money).toBe(0);
-  });
+    expect(m.avg_weekly_pocket_money).toBeNull();; });
 
   it("rounds avg_weekly_pocket_money to 2 decimal places", () => {
     const profiles = [
@@ -625,8 +621,7 @@ describe("computeFinancialMetrics", () => {
       makeProfile({ id: "p2", savings_target: 0 }),
     ];
     const m = computeFinancialMetrics(profiles, [], [], 2);
-    expect(m.savings_goal_progress).toBe(0);
-  });
+    expect(m.savings_goal_progress).toBeNull();; });
 
   it("returns 100 savings_goal_progress when all targets reached", () => {
     const profiles = [
@@ -683,8 +678,7 @@ describe("computeFinancialMetrics", () => {
 
   it("returns 0 audit_compliance_rate for no audits", () => {
     const m = computeFinancialMetrics([], [], [], 0);
-    expect(m.audit_compliance_rate).toBe(0);
-  });
+    expect(m.audit_compliance_rate).toBeNull();; });
 
   it("returns 100 audit_compliance_rate when all completed", () => {
     const audits = [

@@ -144,9 +144,9 @@ export function computeMedicationCompliance(entries: MAREntry[]): {
   total_refused: number;
   total_withheld: number;
   total_missed: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
   by_outcome: Record<string, number>;
-  refusal_rate: number;
+  refusal_rate: number | null;
 } {
   const total = entries.length;
 
@@ -164,11 +164,11 @@ export function computeMedicationCompliance(entries: MAREntry[]): {
 
   const complianceRate = total > 0
     ? Math.round(((given + selfAdmin) / total) * 1000) / 10
-    : 0;
+    : null;
 
   const refusalRate = total > 0
     ? Math.round((refused / total) * 1000) / 10
-    : 0;
+    : null;
 
   return {
     total_scheduled: total,
@@ -198,7 +198,7 @@ export function computeControlledDrugAudit(
     actual: number;
     difference: number;
   }[];
-  witness_compliance_rate: number;
+  witness_compliance_rate: number | null;
   last_stock_check: string | null;
   overdue_stock_checks: {
     prescription_id: string;
@@ -227,7 +227,7 @@ export function computeControlledDrugAudit(
   const witnessedCount = controlledEntries.filter((e) => e.witnessed_by).length;
   const witnessComplianceRate = controlledEntries.length > 0
     ? Math.round((witnessedCount / controlledEntries.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Stock discrepancies: compare expected vs actual for each controlled prescription
   const stockDiscrepancies: {
@@ -336,7 +336,7 @@ export function computeMedicationErrorRate(
   totalEntries: number,
 ): {
   total_errors: number;
-  error_rate: number;
+  error_rate: number | null;
   by_category: Record<string, number>;
   by_severity: { critical: number; high: number; medium: number; low: number };
   notifications_required: number;
@@ -366,7 +366,7 @@ export function computeMedicationErrorRate(
 
   const errorRate = totalEntries > 0
     ? Math.round((errors.length / totalEntries) * 1000) / 10
-    : 0;
+    : null;
 
   return {
     total_errors: errors.length,

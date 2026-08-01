@@ -94,8 +94,7 @@ describe("computeHomeReadinessOverview", () => {
   it("returns zeroes for empty data", () => {
     const r = computeHomeReadinessOverview([], []);
     expect(r.total_children).toBe(0);
-    expect(r.avg_readiness).toBe(0);
-    expect(r.children_with_pathway_plans).toBe(0);
+    expect(r.avg_readiness).toBeNull();; expect(r.children_with_pathway_plans).toBe(0);
     expect(r.pathway_plans_active).toBe(0);
   });
 

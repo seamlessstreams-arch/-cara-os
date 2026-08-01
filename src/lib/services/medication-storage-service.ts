@@ -153,22 +153,22 @@ export function computeMedicationStorageMetrics(
   total_checks: number;
   satisfactory_count: number;
   unsatisfactory_count: number;
-  satisfactory_rate: number;
+  satisfactory_rate: number | null;
   in_range_count: number;
   out_of_range_count: number;
-  temperature_in_range_rate: number;
-  cabinet_locked_rate: number;
-  keys_secure_rate: number;
-  all_drugs_accounted_rate: number;
-  items_in_date_rate: number;
-  storage_clean_rate: number;
-  correct_conditions_rate: number;
-  access_restricted_rate: number;
+  temperature_in_range_rate: number | null;
+  cabinet_locked_rate: number | null;
+  keys_secure_rate: number | null;
+  all_drugs_accounted_rate: number | null;
+  items_in_date_rate: number | null;
+  storage_clean_rate: number | null;
+  correct_conditions_rate: number | null;
+  access_restricted_rate: number | null;
   expired_items_count: number;
   disposal_needed_count: number;
   total_items_checked: number;
   total_discrepancies: number;
-  average_temperature: number;
+  average_temperature: number | null;
   by_storage_type: Record<string, number>;
   by_check_type: Record<string, number>;
   by_storage_condition: Record<string, number>;
@@ -179,7 +179,7 @@ export function computeMedicationStorageMetrics(
   const satisfactoryRate =
     records.length > 0
       ? Math.round((satisfactory / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const inRange = records.filter((r) => r.temperature_status === "in_range").length;
   const outOfRange = records.filter(
@@ -191,13 +191,13 @@ export function computeMedicationStorageMetrics(
   const tempInRangeRate =
     tempRecords.length > 0
       ? Math.round((inRange / tempRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   const boolRate = (field: keyof MedicationStorageRecord) => {
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const expiredItems = records.filter((r) => r.expired_items_found).length;
@@ -211,7 +211,7 @@ export function computeMedicationStorageMetrics(
   const avgTemp =
     tempReadings.length > 0
       ? Math.round((tempReadings.reduce((a, t) => a + t, 0) / tempReadings.length) * 10) / 10
-      : 0;
+      : null;
 
   const byStorage: Record<string, number> = {};
   for (const r of records) byStorage[r.storage_type] = (byStorage[r.storage_type] ?? 0) + 1;

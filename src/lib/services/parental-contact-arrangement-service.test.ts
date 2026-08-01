@@ -44,9 +44,7 @@ describe("computeParentalContactMetrics", () => {
     expect(m.cancelled_count).toBe(0);
     expect(m.court_order_non_compliant_count).toBe(0);
     expect(m.refused_count).toBe(0);
-    expect(m.child_views_before_rate).toBe(0);
-    expect(m.court_compliance_rate).toBe(0);
-    expect(m.unique_children).toBe(0);
+    expect(m.child_views_before_rate).toBeNull();; expect(m.court_compliance_rate).toBeNull();; expect(m.unique_children).toBe(0);
   });
 
   it("counts negative, cancelled, refused contacts", () => {

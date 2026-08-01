@@ -236,21 +236,21 @@ export function computeMetrics(
   decoration_count: number;
   functional_count: number;
   assessment_count: number;
-  child_choice_rate: number;
+  child_choice_rate: number | null;
   total_budget: number;
   total_spent: number;
-  within_budget_rate: number;
-  average_spend_per_record: number;
-  average_spend_per_child: number;
-  age_appropriate_rate: number;
-  safety_checked_rate: number;
-  health_safety_compliant_rate: number;
-  cultural_needs_considered_rate: number;
-  sensory_needs_considered_rate: number;
-  child_satisfied_rate: number;
-  photos_taken_rate: number;
-  privacy_maintained_rate: number;
-  average_records_per_child: number;
+  within_budget_rate: number | null;
+  average_spend_per_record: number | null;
+  average_spend_per_child: number | null;
+  age_appropriate_rate: number | null;
+  safety_checked_rate: number | null;
+  health_safety_compliant_rate: number | null;
+  cultural_needs_considered_rate: number | null;
+  sensory_needs_considered_rate: number | null;
+  child_satisfied_rate: number | null;
+  photos_taken_rate: number | null;
+  privacy_maintained_rate: number | null;
+  average_records_per_child: number | null;
   children_with_no_decoration: number;
   seasonal_update_count: number;
 } {
@@ -273,15 +273,15 @@ export function computeMetrics(
   const budgetRows = rows.filter((r) => r.within_budget !== null);
   const withinBudgetRate = budgetRows.length > 0
     ? Math.round((budgetRows.filter((r) => r.within_budget === true).length / budgetRows.length) * 1000) / 10
-    : 0;
-  const avgSpendPerRecord = total > 0 ? Math.round((totalSpent / total) * 100) / 100 : 0;
+    : null;
+  const avgSpendPerRecord = total > 0 ? Math.round((totalSpent / total) * 100) / 100 : null;
   const avgSpendPerChild = uniqueChildren.size > 0
     ? Math.round((totalSpent / uniqueChildren.size) * 100) / 100
-    : 0;
+    : null;
 
   // Boolean rates
   const pct = (filter: (r: RoomPersonalisationRow) => boolean) =>
-    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : 0;
+    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
   const childChoiceRate = pct((r) => r.child_chose);
   const ageAppropriateRate = pct((r) => r.age_appropriate);
@@ -308,7 +308,7 @@ export function computeMetrics(
   const seasonalCount = rows.filter((r) => r.record_type === "Seasonal Update").length;
   const avgRecordsPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   return {
     total_records: total,
@@ -544,7 +544,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.child_choice_rate < 50 && metrics.total_records > 5) {
+  if ((metrics.child_choice_rate ?? 0) < 50 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Child choice recorded in only ${metrics.child_choice_rate}% of room ` +
         `personalisation records. SCCIF inspectors specifically assess whether ` +
@@ -557,7 +557,7 @@ export function generateCaraInsights(
         `shopping for room items? Are they choosing colours, bedding, and ` +
         `decorations? Is there a personalisation budget they can spend freely?`,
     );
-  } else if (metrics.child_satisfied_rate < 60 && metrics.total_records > 5) {
+  } else if ((metrics.child_satisfied_rate ?? 0) < 60 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Child satisfaction rate is only ${metrics.child_satisfied_rate}% for room ` +
         `personalisation. A child's bedroom should be their sanctuary — the ` +

@@ -153,16 +153,7 @@ describe("computeMetrics", () => {
 
   it("returns 0 rates for empty array", () => {
     const m = computeMetrics([]);
-    expect(m.knowledge_transfer_rate).toBe(0);
-    expect(m.handover_rate).toBe(0);
-    expect(m.equipment_return_rate).toBe(0);
-    expect(m.access_revoked_rate).toBe(0);
-    expect(m.final_pay_rate).toBe(0);
-    expect(m.reference_rate).toBe(0);
-    expect(m.notice_period_met_rate).toBe(0);
-    expect(m.avg_satisfaction).toBe(0);
-    expect(m.would_recommend_rate).toBe(0);
-  });
+    expect(m.knowledge_transfer_rate).toBeNull();; expect(m.handover_rate).toBeNull();; expect(m.equipment_return_rate).toBeNull();; expect(m.access_revoked_rate).toBeNull();; expect(m.final_pay_rate).toBeNull();; expect(m.reference_rate).toBeNull();; expect(m.notice_period_met_rate).toBeNull();; expect(m.avg_satisfaction).toBeNull();; expect(m.would_recommend_rate).toBeNull();; });
 
   // ── total_interviews ───────────────────────────────────────────────────
 
@@ -349,13 +340,11 @@ describe("computeMetrics", () => {
   // ── avg_satisfaction ──────────────────────────────────────────────────
 
   it("avg_satisfaction is 0 for empty array", () => {
-    expect(computeMetrics([]).avg_satisfaction).toBe(0);
-  });
+    expect(computeMetrics([]).avg_satisfaction).toBeNull();; });
 
   it("avg_satisfaction is 0 when all ratings are null", () => {
     const rows = [makeRow({ satisfaction_rating: null }), makeRow({ satisfaction_rating: null })];
-    expect(computeMetrics(rows).avg_satisfaction).toBe(0);
-  });
+    expect(computeMetrics(rows).avg_satisfaction).toBeNull();; });
 
   it("avg_satisfaction returns exact value for single rating", () => {
     const rows = [makeRow({ satisfaction_rating: 8 })];
@@ -411,13 +400,11 @@ describe("computeMetrics", () => {
   // ── would_recommend_rate ──────────────────────────────────────────────
 
   it("would_recommend_rate is 0 for empty array", () => {
-    expect(computeMetrics([]).would_recommend_rate).toBe(0);
-  });
+    expect(computeMetrics([]).would_recommend_rate).toBeNull();; });
 
   it("would_recommend_rate is 0 when all null", () => {
     const rows = [makeRow({ would_recommend: null }), makeRow({ would_recommend: null })];
-    expect(computeMetrics(rows).would_recommend_rate).toBe(0);
-  });
+    expect(computeMetrics(rows).would_recommend_rate).toBeNull();; });
 
   it("would_recommend_rate is 100 when all true", () => {
     const rows = [makeRow({ would_recommend: true }), makeRow({ would_recommend: true })];
@@ -1249,14 +1236,12 @@ describe("edge cases", () => {
   it("metrics avg_satisfaction with all null ratings returns 0", () => {
     const rows = Array.from({ length: 5 }, () => makeRow({ satisfaction_rating: null }));
     const m = computeMetrics(rows);
-    expect(m.avg_satisfaction).toBe(0);
-  });
+    expect(m.avg_satisfaction).toBeNull();; });
 
   it("metrics would_recommend_rate with all null returns 0", () => {
     const rows = Array.from({ length: 5 }, () => makeRow({ would_recommend: null }));
     const m = computeMetrics(rows);
-    expect(m.would_recommend_rate).toBe(0);
-  });
+    expect(m.would_recommend_rate).toBeNull();; });
 
   it("insights with mixed critical and high alerts", () => {
     const rows = [

@@ -45,11 +45,9 @@ describe("computeMetrics", () => {
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
     expect(m.decoration_count).toBe(0);
-    expect(m.child_choice_rate).toBe(0);
-    expect(m.total_budget).toBe(0);
+    expect(m.child_choice_rate).toBeNull();; expect(m.total_budget).toBe(0);
     expect(m.total_spent).toBe(0);
-    expect(m.average_spend_per_child).toBe(0);
-  });
+    expect(m.average_spend_per_child).toBeNull();; });
 
   it("counts total and unique children (case insensitive)", () => {
     const rows = [

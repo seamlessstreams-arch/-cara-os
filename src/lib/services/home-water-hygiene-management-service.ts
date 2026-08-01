@@ -111,16 +111,16 @@ export function computeWaterHygieneManagementMetrics(
   rows: HomeWaterHygieneManagementRow[],
 ): {
   total_checks: number;
-  hot_temp_compliant_rate: number;
-  cold_temp_compliant_rate: number;
-  flushing_rate: number;
-  sample_taken_rate: number;
+  hot_temp_compliant_rate: number | null;
+  cold_temp_compliant_rate: number | null;
+  flushing_rate: number | null;
+  sample_taken_rate: number | null;
   legionella_detected_count: number;
   non_compliant_count: number;
   action_required_count: number;
   dead_legs_count: number;
-  avg_hot_temp: number;
-  avg_cold_temp: number;
+  avg_hot_temp: number | null;
+  avg_cold_temp: number | null;
   unique_locations: number;
   unique_checkers: number;
 } {
@@ -130,25 +130,25 @@ export function computeWaterHygieneManagementMetrics(
   const hotCompliantRate =
     total > 0
       ? Math.round((hotCompliant / total) * 1000) / 10
-      : 0;
+      : null;
 
   const coldCompliant = rows.filter((r) => r.cold_temp_compliant).length;
   const coldCompliantRate =
     total > 0
       ? Math.round((coldCompliant / total) * 1000) / 10
-      : 0;
+      : null;
 
   const flushingCompleted = rows.filter((r) => r.flushing_completed).length;
   const flushingRate =
     total > 0
       ? Math.round((flushingCompleted / total) * 1000) / 10
-      : 0;
+      : null;
 
   const samplesTaken = rows.filter((r) => r.sample_taken).length;
   const sampleTakenRate =
     total > 0
       ? Math.round((samplesTaken / total) * 1000) / 10
-      : 0;
+      : null;
 
   const legionellaDetected = rows.filter(
     (r) => r.sample_result === "Legionella Detected",
@@ -170,7 +170,7 @@ export function computeWaterHygieneManagementMetrics(
   const avgHot =
     hotTemps.length > 0
       ? Math.round((hotTemps.reduce((s, t) => s + t, 0) / hotTemps.length) * 10) / 10
-      : 0;
+      : null;
 
   const coldTemps = rows
     .map((r) => r.cold_water_temp)
@@ -178,7 +178,7 @@ export function computeWaterHygieneManagementMetrics(
   const avgCold =
     coldTemps.length > 0
       ? Math.round((coldTemps.reduce((s, t) => s + t, 0) / coldTemps.length) * 10) / 10
-      : 0;
+      : null;
 
   const uniqueLocations = new Set(rows.map((r) => r.location)).size;
   const uniqueCheckers = new Set(rows.map((r) => r.checker_name)).size;

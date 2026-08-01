@@ -131,13 +131,13 @@ export function computePeerMetrics(
   completed_pairings: number;
   ended_early_count: number;
   children_involved: number;
-  participation_rate: number;
+  participation_rate: number | null;
   total_sessions: number;
-  average_sessions_per_pairing: number;
-  positive_outcome_rate: number;
+  average_sessions_per_pairing: number | null;
+  positive_outcome_rate: number | null;
   safeguarding_concerns: number;
-  mentor_feedback_rate: number;
-  mentee_feedback_rate: number;
+  mentor_feedback_rate: number | null;
+  mentee_feedback_rate: number | null;
   by_pairing_type: Record<string, number>;
   by_status: Record<string, number>;
   by_session_outcome: Record<string, number>;
@@ -154,13 +154,13 @@ export function computePeerMetrics(
   const participationRate =
     totalChildren > 0
       ? Math.round((childrenInvolved / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const totalSessions = pairings.reduce((sum, p) => sum + p.sessions_completed, 0);
   const avgSessions =
     pairings.length > 0
       ? Math.round((totalSessions / pairings.length) * 10) / 10
-      : 0;
+      : null;
 
   const withOutcome = pairings.filter((p) => p.last_session_outcome !== null);
   const positiveOutcomes = withOutcome.filter(
@@ -169,7 +169,7 @@ export function computePeerMetrics(
   const positiveRate =
     withOutcome.length > 0
       ? Math.round((positiveOutcomes / withOutcome.length) * 1000) / 10
-      : 0;
+      : null;
 
   const safeguardingConcerns = pairings.filter(
     (p) => p.safeguarding_flag !== "none",
@@ -179,13 +179,13 @@ export function computePeerMetrics(
   const mentorRate =
     pairings.length > 0
       ? Math.round((mentorFeedback / pairings.length) * 1000) / 10
-      : 0;
+      : null;
 
   const menteeFeedback = pairings.filter((p) => p.mentee_feedback !== null).length;
   const menteeRate =
     pairings.length > 0
       ? Math.round((menteeFeedback / pairings.length) * 1000) / 10
-      : 0;
+      : null;
 
   const byType: Record<string, number> = {};
   for (const p of pairings) byType[p.pairing_type] = (byType[p.pairing_type] ?? 0) + 1;

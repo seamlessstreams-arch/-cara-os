@@ -103,9 +103,9 @@ export function computeMissingProfile(episodes: MissingEpisode[]): {
   resolved_this_month: number;
   by_type: Record<string, number>;
   by_trigger: Record<string, number>;
-  avg_duration_minutes: number;
-  police_notification_rate: number;
-  return_interview_completion_rate: number;
+  avg_duration_minutes: number | null;
+  police_notification_rate: number | null;
+  return_interview_completion_rate: number | null;
   repeat_children: { child_id: string; count: number }[];
 } {
   const now = new Date();
@@ -167,15 +167,15 @@ export function computeMissingProfile(episodes: MissingEpisode[]): {
 
   const avgDuration = durationCount > 0
     ? Math.round(totalDuration / durationCount)
-    : 0;
+    : null;
 
   const policeRate = episodes.length > 0
     ? Math.round((policeNotified / episodes.length) * 100)
-    : 0;
+    : null;
 
   const riRate = riRelevant > 0
     ? Math.round((riCompleted / riRelevant) * 100)
-    : 0;
+    : null;
 
   const repeatChildren = Object.entries(childCounts)
     .filter(([, count]) => count >= 2)
@@ -206,7 +206,7 @@ export function computeChildMissingHistory(
   total_episodes: number;
   active: boolean;
   last_episode_date: string | null;
-  avg_duration_minutes: number;
+  avg_duration_minutes: number | null;
   common_triggers: string[];
   risk_trend: "escalating" | "stable" | "de-escalating";
   return_interviews_pending: number;
@@ -235,7 +235,7 @@ export function computeChildMissingHistory(
   }
   const avgDuration = durationCount > 0
     ? Math.round(totalDuration / durationCount)
-    : 0;
+    : null;
 
   // Common triggers — top 3 by frequency
   const triggerCounts: Record<string, number> = {};

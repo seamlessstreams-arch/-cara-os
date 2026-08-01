@@ -269,7 +269,7 @@ describe("computeChildReadiness", () => {
       expect(result.by_domain[domainDef.domain]).toEqual({
         assessed: 0,
         total: domainDef.skills.length,
-        avg_level: 0,
+        avg_level: null,
         competent_count: 0,
       });
     }
@@ -297,8 +297,7 @@ describe("computeHomeReadinessOverview", () => {
   it("returns zeros for empty assessments and pathway plans", () => {
     const result = computeHomeReadinessOverview([], []);
     expect(result.total_children).toBe(0);
-    expect(result.avg_readiness).toBe(0);
-    expect(result.children_with_pathway_plans).toBe(0);
+    expect(result.avg_readiness).toBeNull();; expect(result.children_with_pathway_plans).toBe(0);
     expect(result.pathway_plans_active).toBe(0);
     expect(result.children_needing_attention).toEqual([]);
   });

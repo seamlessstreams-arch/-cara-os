@@ -47,10 +47,7 @@ describe("computeMissingProfile", () => {
     const m = computeMissingProfile([]);
     expect(m.total_episodes).toBe(0);
     expect(m.active_episodes).toBe(0);
-    expect(m.avg_duration_minutes).toBe(0);
-    expect(m.police_notification_rate).toBe(0);
-    expect(m.return_interview_completion_rate).toBe(0);
-    expect(m.repeat_children).toEqual([]);
+    expect(m.avg_duration_minutes).toBeNull();; expect(m.police_notification_rate).toBeNull();; expect(m.return_interview_completion_rate).toBeNull();; expect(m.repeat_children).toEqual([]);
   });
 
   it("computes correct counts for populated data", () => {
@@ -76,8 +73,7 @@ describe("computeChildMissingHistory", () => {
     expect(h.total_episodes).toBe(0);
     expect(h.active).toBe(false);
     expect(h.last_episode_date).toBeNull();
-    expect(h.avg_duration_minutes).toBe(0);
-    expect(h.common_triggers).toEqual([]);
+    expect(h.avg_duration_minutes).toBeNull();; expect(h.common_triggers).toEqual([]);
     expect(h.risk_trend).toBe("stable");
     expect(h.return_interviews_pending).toBe(0);
   });

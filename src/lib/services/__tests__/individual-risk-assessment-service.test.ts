@@ -321,11 +321,7 @@ describe("computeIndividualRiskMetrics", () => {
 
     it("returns zero for all rate fields", () => {
       const m = computeIndividualRiskMetrics([], 5);
-      expect(m.staff_aware_rate).toBe(0);
-      expect(m.multi_agency_rate).toBe(0);
-      expect(m.child_involved_rate).toBe(0);
-      expect(m.parent_informed_rate).toBe(0);
-    });
+      expect(m.staff_aware_rate).toBeNull();; expect(m.multi_agency_rate).toBeNull();; expect(m.child_involved_rate).toBeNull();; expect(m.parent_informed_rate).toBeNull();; });
 
     it("returns zero for review_overdue_count", () => {
       const m = computeIndividualRiskMetrics([], 5);
@@ -334,13 +330,11 @@ describe("computeIndividualRiskMetrics", () => {
 
     it("returns zero for average_per_child", () => {
       const m = computeIndividualRiskMetrics([], 5);
-      expect(m.average_per_child).toBe(0);
-    });
+      expect(m.average_per_child).toBeNull();; });
 
     it("returns zero for average_strategies_per_assessment", () => {
       const m = computeIndividualRiskMetrics([], 5);
-      expect(m.average_strategies_per_assessment).toBe(0);
-    });
+      expect(m.average_strategies_per_assessment).toBeNull();; });
 
     it("returns empty by_risk_domain", () => {
       const m = computeIndividualRiskMetrics([], 5);
@@ -642,13 +636,11 @@ describe("computeIndividualRiskMetrics", () => {
 
     it("returns 0 when totalChildren is 0", () => {
       const m = computeIndividualRiskMetrics([], 0);
-      expect(m.assessment_coverage).toBe(0);
-    });
+      expect(m.assessment_coverage).toBeNull();; });
 
     it("returns 0 when totalChildren is 0 even with assessments", () => {
       const m = computeIndividualRiskMetrics([makeAssessment()], 0);
-      expect(m.assessment_coverage).toBe(0);
-    });
+      expect(m.assessment_coverage).toBeNull();; });
 
     it("rounds coverage to 1 decimal place", () => {
       // 1/3 = 33.333...% => 33.3
@@ -970,8 +962,7 @@ describe("computeIndividualRiskMetrics", () => {
 
   describe("average_per_child", () => {
     it("returns 0 when no children assessed", () => {
-      expect(computeIndividualRiskMetrics([], 5).average_per_child).toBe(0);
-    });
+      expect(computeIndividualRiskMetrics([], 5).average_per_child).toBeNull();; });
 
     it("returns 1 when 1 child has 1 assessment", () => {
       const a = [makeAssessment({ child_id: "c1" })];
@@ -1017,8 +1008,7 @@ describe("computeIndividualRiskMetrics", () => {
 
   describe("average_strategies_per_assessment", () => {
     it("returns 0 for empty array", () => {
-      expect(computeIndividualRiskMetrics([], 5).average_strategies_per_assessment).toBe(0);
-    });
+      expect(computeIndividualRiskMetrics([], 5).average_strategies_per_assessment).toBeNull();; });
 
     it("returns 0 when all assessments have no strategies", () => {
       const a = [
@@ -1182,8 +1172,7 @@ describe("computeIndividualRiskMetrics", () => {
   describe("totalChildren = 0", () => {
     it("returns 0 coverage even with assessments", () => {
       const a = [makeAssessment()];
-      expect(computeIndividualRiskMetrics(a, 0).assessment_coverage).toBe(0);
-    });
+      expect(computeIndividualRiskMetrics(a, 0).assessment_coverage).toBeNull();; });
 
     it("still counts total_assessments", () => {
       const a = [makeAssessment(), makeAssessment({ id: "a2" })];

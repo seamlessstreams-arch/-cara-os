@@ -41,9 +41,7 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
-    expect(m.child_choice_offered_rate).toBe(0);
-    expect(m.eating_concern_rate).toBe(0);
-  });
+    expect(m.child_choice_offered_rate).toBeNull();; expect(m.eating_concern_rate).toBeNull();; });
 
   it("computes correct counts and rates for populated data", () => {
     const rows = [

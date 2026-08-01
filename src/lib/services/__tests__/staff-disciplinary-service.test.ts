@@ -347,13 +347,8 @@ describe("computeDisciplinaryMetrics", () => {
     expect(result.total_grievances).toBe(0);
     expect(result.by_category).toEqual({});
     expect(result.by_outcome_type).toEqual({});
-    expect(result.avg_investigation_days).toBe(0);
-    expect(result.lado_referral_rate).toBe(0);
-    expect(result.dbs_referral_rate).toBe(0);
-    expect(result.ofsted_notification_rate).toBe(0);
-    expect(result.by_grievance_type).toEqual({});
-    expect(result.informal_resolution_rate).toBe(0);
-  });
+    expect(result.avg_investigation_days).toBeNull();; expect(result.lado_referral_rate).toBeNull();; expect(result.dbs_referral_rate).toBeNull();; expect(result.ofsted_notification_rate).toBeNull();; expect(result.by_grievance_type).toEqual({});
+    expect(result.informal_resolution_rate).toBeNull();; });
 
   it("counts total disciplinary records", () => {
     const result = computeDisciplinaryMetrics(
@@ -487,8 +482,7 @@ describe("computeDisciplinaryMetrics", () => {
       [makeDisciplinary({ investigation_started_date: null, investigation_completed_date: null })],
       [],
     );
-    expect(result.avg_investigation_days).toBe(0);
-  });
+    expect(result.avg_investigation_days).toBeNull();; });
 
   it("ignores records without both investigation dates for avg calculation", () => {
     const result = computeDisciplinaryMetrics(
@@ -506,8 +500,7 @@ describe("computeDisciplinaryMetrics", () => {
       ],
       [],
     );
-    expect(result.avg_investigation_days).toBe(0);
-  });
+    expect(result.avg_investigation_days).toBeNull();; });
 
   it("rounds avg_investigation_days to 1 decimal place", () => {
     const result = computeDisciplinaryMetrics(
@@ -570,10 +563,7 @@ describe("computeDisciplinaryMetrics", () => {
 
   it("returns 0 referral rates when no disciplinary records exist", () => {
     const result = computeDisciplinaryMetrics([], []);
-    expect(result.lado_referral_rate).toBe(0);
-    expect(result.dbs_referral_rate).toBe(0);
-    expect(result.ofsted_notification_rate).toBe(0);
-  });
+    expect(result.lado_referral_rate).toBeNull();; expect(result.dbs_referral_rate).toBeNull();; expect(result.ofsted_notification_rate).toBeNull();; });
 
   it("groups grievances by type", () => {
     const result = computeDisciplinaryMetrics(
@@ -617,8 +607,7 @@ describe("computeDisciplinaryMetrics", () => {
       [],
       [makeGrievance({ status: "raised" })],
     );
-    expect(result.informal_resolution_rate).toBe(0);
-  });
+    expect(result.informal_resolution_rate).toBeNull();; });
 
   it("does not count grievances where informal_resolution_attempted is true but informal_outcome is null", () => {
     const result = computeDisciplinaryMetrics(

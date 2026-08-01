@@ -82,9 +82,7 @@ describe("computeMedicationCompliance", () => {
     const m = computeMedicationCompliance([]);
     expect(m.total_scheduled).toBe(0);
     expect(m.total_given).toBe(0);
-    expect(m.compliance_rate).toBe(0);
-    expect(m.refusal_rate).toBe(0);
-  });
+    expect(m.compliance_rate).toBeNull();; expect(m.refusal_rate).toBeNull();; });
 
   it("computes correct counts and rates", () => {
     const entries = [
@@ -111,8 +109,7 @@ describe("computeControlledDrugAudit", () => {
     const m = computeControlledDrugAudit([], []);
     expect(m.total_controlled).toBe(0);
     expect(m.stock_discrepancies).toEqual([]);
-    expect(m.witness_compliance_rate).toBe(0);
-    expect(m.last_stock_check).toBeNull();
+    expect(m.witness_compliance_rate).toBeNull();; expect(m.last_stock_check).toBeNull();
     expect(m.overdue_stock_checks).toEqual([]);
   });
 
@@ -141,8 +138,7 @@ describe("computeMedicationErrorRate", () => {
   it("returns zeroes for empty data", () => {
     const m = computeMedicationErrorRate([], 0);
     expect(m.total_errors).toBe(0);
-    expect(m.error_rate).toBe(0);
-  });
+    expect(m.error_rate).toBeNull();; });
 
   it("computes rate and severity breakdown", () => {
     const errors = [

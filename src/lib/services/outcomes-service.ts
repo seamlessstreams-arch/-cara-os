@@ -99,7 +99,7 @@ export function computeChildOutcomes(
   active_targets: number;
   achieved_targets: number;
   by_domain: Record<string, { targets: number; achieved: number; avg_rating_numeric: number }>;
-  overall_progress: number;
+  overall_progress: number | null;
   improving_count: number;
   declining_count: number;
   latest_review_date: string | null;
@@ -137,7 +137,7 @@ export function computeChildOutcomes(
   const overallProgress =
     activeTargets.length > 0
       ? Math.round((metTargetCount / activeTargets.length) * 100)
-      : 0;
+      : null;
 
   // Improving: current > baseline
   let improvingCount = 0;
@@ -177,8 +177,8 @@ export function computeHomeOutcomes(
   total_children: number;
   total_active_targets: number;
   total_achieved: number;
-  by_domain: Record<string, { avg_progress: number; total_targets: number }>;
-  overall_achievement_rate: number;
+  by_domain: Record<string, { avg_progress: number | null; total_targets: number }>;
+  overall_achievement_rate: number | null;
   children_improving: number;
   children_stable: number;
   children_declining: number;
@@ -190,7 +190,7 @@ export function computeHomeOutcomes(
   const childIds = [...new Set(targets.map((t) => t.child_id))];
 
   // By domain
-  const byDomain: Record<string, { avg_progress: number; total_targets: number }> = {};
+  const byDomain: Record<string, { avg_progress: number | null; total_targets: number }> = {};
   for (const d of OUTCOME_DOMAINS) {
     const domainTargets = activeTargets.filter((t) => t.domain === d.domain);
     let metCount = 0;
@@ -202,7 +202,7 @@ export function computeHomeOutcomes(
     const avgProgress =
       domainTargets.length > 0
         ? Math.round((metCount / domainTargets.length) * 100)
-        : 0;
+        : null;
 
     byDomain[d.domain] = {
       avg_progress: avgProgress,
@@ -215,7 +215,7 @@ export function computeHomeOutcomes(
   const overallAchievementRate =
     totalActiveAndAchieved > 0
       ? Math.round((achievedTargets.length / totalActiveAndAchieved) * 100)
-      : 0;
+      : null;
 
   // Per-child classification
   let childrenImproving = 0;

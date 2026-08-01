@@ -56,8 +56,7 @@ describe("computeSelfEvaluationSummary", () => {
   it("returns zeroes for empty evidence", () => {
     const s = computeSelfEvaluationSummary([]);
     expect(s.total_evidence).toBe(0);
-    expect(s.strength_percentage).toBe(0);
-    expect(s.coverage).toBe(0);
+    expect(s.strength_percentage).toBeNull();; expect(s.coverage).toBe(0);
     expect(s.uncovered_areas).toHaveLength(SCCIF_EVIDENCE_AREAS.length);
   });
 

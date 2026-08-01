@@ -37,9 +37,7 @@ describe("computeGasSafetyMetrics", () => {
     const m = computeGasSafetyMetrics([]);
     expect(m.total_inspections).toBe(0);
     expect(m.immediately_dangerous_count).toBe(0);
-    expect(m.certificate_rate).toBe(0);
-    expect(m.remedial_completion_rate).toBe(0);
-    expect(m.defects_total).toBe(0);
+    expect(m.certificate_rate).toBeNull();; expect(m.remedial_completion_rate).toBeNull();; expect(m.defects_total).toBe(0);
     expect(m.unique_engineers).toBe(0);
   });
 

@@ -104,11 +104,11 @@ export function computeParentalContactMetrics(
   cancelled_count: number;
   court_order_non_compliant_count: number;
   refused_count: number;
-  child_views_before_rate: number;
-  child_views_after_rate: number;
-  social_worker_informed_rate: number;
-  recorded_in_care_plan_rate: number;
-  court_compliance_rate: number;
+  child_views_before_rate: number | null;
+  child_views_after_rate: number | null;
+  social_worker_informed_rate: number | null;
+  recorded_in_care_plan_rate: number | null;
+  court_compliance_rate: number | null;
   outcome_breakdown: Record<string, number>;
   experience_breakdown: Record<string, number>;
   unique_children: number;
@@ -126,7 +126,7 @@ export function computeParentalContactMetrics(
     const count = rows.filter((r) => r[field] === true).length;
     return rows.length > 0
       ? Math.round((count / rows.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const courtOrderedRows = rows.filter((r) => r.court_order_status === "court_ordered");
@@ -135,7 +135,7 @@ export function computeParentalContactMetrics(
       ? Math.round(
           (courtOrderedRows.filter((r) => r.court_order_complied).length / courtOrderedRows.length) * 1000,
         ) / 10
-      : 0;
+      : null;
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
 
@@ -245,7 +245,7 @@ export function generateParentalContactCaraInsights(
   const negativePct =
     metrics.total_contacts > 0
       ? Math.round((metrics.negative_count / metrics.total_contacts) * 1000) / 10
-      : 0;
+      : null;
   insights.push(
     `[pink] ${metrics.total_contacts} parental contact arrangements recorded across ${metrics.unique_children} ${metrics.unique_children === 1 ? "child" : "children"}. ` +
       `${metrics.negative_count} (${negativePct}%) had negative outcomes. ` +

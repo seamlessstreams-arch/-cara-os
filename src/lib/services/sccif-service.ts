@@ -94,8 +94,8 @@ export interface SelfEvaluationSummary {
   total_evidence: number;
   by_judgment: Record<string, { strengths: number; developments: number; neutral: number; total: number }>;
   by_area: Record<string, { strengths: number; developments: number; total: number }>;
-  strength_percentage: number;
-  coverage: number;
+  strength_percentage: number | null;
+  coverage: number | null;
   uncovered_areas: string[];
 }
 
@@ -155,12 +155,12 @@ export function computeSelfEvaluationSummary(
   const uncoveredAreas = allAreas.filter((a) => !coveredAreas.has(a));
   const coverage = allAreas.length > 0
     ? Math.round((((allAreas.length - uncoveredAreas.length) / allAreas.length) * 100) * 10) / 10
-    : 0;
+    : null;
 
   const total = evidenceEntries.length;
   const strengthPercentage = total > 0
     ? Math.round(((strengthCount / total) * 100) * 10) / 10
-    : 0;
+    : null;
 
   return {
     total_evidence: total,
@@ -174,7 +174,7 @@ export function computeSelfEvaluationSummary(
 
 export interface JudgmentGradeSuggestion {
   suggested_grade: string;
-  strength_ratio: number;
+  strength_ratio: number | null;
   evidence_count: number;
   confidence: "high" | "medium" | "low";
 }
@@ -196,14 +196,14 @@ export function suggestJudgmentGrade(
   const strengthCount = relevant.filter((e) => e.grade_indicator === "strength").length;
   const strengthRatio = evidenceCount > 0
     ? Math.round(((strengthCount / evidenceCount) * 100) * 10) / 10
-    : 0;
+    : null;
 
   let suggestedGrade: string;
-  if (strengthRatio >= 80) {
+  if ((strengthRatio ?? 0) >= 80) {
     suggestedGrade = "outstanding";
-  } else if (strengthRatio >= 60) {
+  } else if ((strengthRatio ?? 0) >= 60) {
     suggestedGrade = "good";
-  } else if (strengthRatio >= 40) {
+  } else if ((strengthRatio ?? 0) >= 40) {
     suggestedGrade = "requires_improvement";
   } else {
     suggestedGrade = "inadequate";
@@ -257,7 +257,7 @@ export function identifySCCIFAlerts(
   const summary = computeSelfEvaluationSummary(evidenceEntries);
 
   // 2. low_coverage: evidence coverage below 75%
-  if (summary.coverage < 75) {
+  if ((summary.coverage ?? 0) < 75) {
     alerts.push({
       type: "low_coverage",
       severity: "medium",
@@ -268,7 +268,7 @@ export function identifySCCIFAlerts(
   // 3. weak_judgment: any judgment with strength_ratio below 40%
   for (const j of SCCIF_JUDGMENTS) {
     const grade = suggestJudgmentGrade(evidenceEntries, j.key);
-    if (grade.evidence_count > 0 && grade.strength_ratio < 40) {
+    if (grade.evidence_count > 0 && (grade.strength_ratio ?? 0) < 40) {
       alerts.push({
         type: "weak_judgment",
         severity: "high",

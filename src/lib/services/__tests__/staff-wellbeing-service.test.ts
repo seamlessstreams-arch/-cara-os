@@ -332,10 +332,7 @@ describe("computeWellbeingMetrics", () => {
     expect(m.avg_stress_score).toBeNull();
     expect(m.staff_struggling_or_crisis).toBe(0);
     expect(m.high_stress_count).toBe(0);
-    expect(m.workload_manageable_rate).toBeNull(); // fab-0.;
-    expect(m.feeling_supported_rate).toBeNull(); // fab-0.;
-    expect(m.support_acceptance_rate).toBeNull(); // fab-0.;
-    expect(m.debriefs_this_quarter).toBe(0);
+    expect(m.workload_manageable_rate).toBeNull();; expect(m.feeling_supported_rate).toBeNull();; expect(m.support_acceptance_rate).toBeNull();; expect(m.debriefs_this_quarter).toBe(0);
     expect(Object.keys(m.by_wellbeing_rating)).toHaveLength(0);
     expect(Object.keys(m.by_stress_level)).toHaveLength(0);
     expect(m.overdue_follow_ups).toBe(0);

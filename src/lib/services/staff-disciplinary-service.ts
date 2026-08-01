@@ -205,12 +205,12 @@ export function computeDisciplinaryMetrics(
   total_grievances: number;
   by_category: Record<string, number>;
   by_outcome_type: Record<string, number>;
-  avg_investigation_days: number;
-  lado_referral_rate: number;
-  dbs_referral_rate: number;
-  ofsted_notification_rate: number;
+  avg_investigation_days: number | null;
+  lado_referral_rate: number | null;
+  dbs_referral_rate: number | null;
+  ofsted_notification_rate: number | null;
   by_grievance_type: Record<string, number>;
-  informal_resolution_rate: number;
+  informal_resolution_rate: number | null;
 } {
   const activeDisciplinaryStatuses: DisciplinaryStatus[] = [
     "reported",
@@ -298,27 +298,27 @@ export function computeDisciplinaryMetrics(
   const avgInvestigationDays =
     investigationCount > 0
       ? Math.round((totalInvestigationDays / investigationCount) * 10) / 10
-      : 0;
+      : null;
 
   const ladoReferralRate =
     totalDisciplinary > 0
       ? Math.round((ladoReferralCount / totalDisciplinary) * 1000) / 10
-      : 0;
+      : null;
 
   const dbsReferralRate =
     totalDisciplinary > 0
       ? Math.round((dbsReferralCount / totalDisciplinary) * 1000) / 10
-      : 0;
+      : null;
 
   const ofstedNotificationRate =
     totalDisciplinary > 0
       ? Math.round((ofstedNotificationCount / totalDisciplinary) * 1000) / 10
-      : 0;
+      : null;
 
   const informalResolutionRate =
     resolvedGrievances > 0
       ? Math.round((informalResolutionCount / resolvedGrievances) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     active_disciplinary_cases: activeDisciplinaryCases,

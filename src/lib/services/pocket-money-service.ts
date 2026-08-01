@@ -196,12 +196,12 @@ export function computeFinancialMetrics(
   children_with_profiles: number;
   total_pocket_money_balance: number;
   total_savings_balance: number;
-  avg_weekly_pocket_money: number;
+  avg_weekly_pocket_money: number | null;
   transactions_this_month: number;
   by_transaction_type: Record<string, number>;
   by_spending_category: Record<string, number>;
-  savings_goal_progress: number;
-  audit_compliance_rate: number;
+  savings_goal_progress: number | null;
+  audit_compliance_rate: number | null;
   overdue_audits: number;
   children_with_bank_accounts: number;
   financial_literacy_distribution: Record<string, number>;
@@ -228,7 +228,7 @@ export function computeFinancialMetrics(
   const avgWeeklyPocketMoney =
     profiles.length > 0
       ? Math.round((totalWeekly / profiles.length) * 100) / 100
-      : 0;
+      : null;
 
   // Transactions this month
   const transactionsThisMonth = transactions.filter(
@@ -263,7 +263,7 @@ export function computeFinancialMetrics(
   const savingsGoalProgress =
     withTarget > 0
       ? Math.round((reachedTarget / withTarget) * 1000) / 10
-      : 0;
+      : null;
 
   // Audit compliance
   let completedAudits = 0;
@@ -273,7 +273,7 @@ export function computeFinancialMetrics(
   const auditComplianceRate =
     audits.length > 0
       ? Math.round((completedAudits / audits.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Overdue audits
   let overdueAudits = 0;

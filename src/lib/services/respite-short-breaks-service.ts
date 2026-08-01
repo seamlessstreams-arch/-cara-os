@@ -143,20 +143,20 @@ export function computeRespiteMetrics(
 ): {
   total_breaks: number;
   children_with_breaks: number;
-  break_usage_rate: number;
+  break_usage_rate: number | null;
   planned_count: number;
   emergency_count: number;
   completed_count: number;
   cancelled_count: number;
   cut_short_count: number;
   total_nights: number;
-  average_duration: number;
-  child_views_sought_rate: number;
-  social_worker_approved_rate: number;
-  risk_assessment_rate: number;
-  positive_impact_rate: number;
-  negative_impact_rate: number;
-  return_plan_rate: number;
+  average_duration: number | null;
+  child_views_sought_rate: number | null;
+  social_worker_approved_rate: number | null;
+  risk_assessment_rate: number | null;
+  positive_impact_rate: number | null;
+  negative_impact_rate: number | null;
+  return_plan_rate: number | null;
   by_break_type: Record<string, number>;
   by_break_reason: Record<string, number>;
   by_break_status: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeRespiteMetrics(
   const usageRate =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const planned = records.filter((r) => r.break_type === "planned_respite").length;
   const emergency = records.filter((r) => r.break_type === "emergency_break").length;
@@ -178,25 +178,25 @@ export function computeRespiteMetrics(
   const avgDuration =
     records.length > 0
       ? Math.round((totalNights / records.length) * 10) / 10
-      : 0;
+      : null;
 
   const viewsSought = records.filter((r) => r.child_views_sought).length;
   const viewsRate =
     records.length > 0
       ? Math.round((viewsSought / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const swApproved = records.filter((r) => r.social_worker_approved).length;
   const swRate =
     records.length > 0
       ? Math.round((swApproved / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const riskDone = records.filter((r) => r.risk_assessment_completed).length;
   const riskRate =
     records.length > 0
       ? Math.round((riskDone / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const assessed = records.filter((r) => r.child_impact !== "not_assessed");
   const positiveImpact = assessed.filter(
@@ -205,7 +205,7 @@ export function computeRespiteMetrics(
   const positiveRate =
     assessed.length > 0
       ? Math.round((positiveImpact / assessed.length) * 1000) / 10
-      : 0;
+      : null;
 
   const negativeImpact = assessed.filter(
     (r) => r.child_impact === "negative" || r.child_impact === "very_negative",
@@ -213,13 +213,13 @@ export function computeRespiteMetrics(
   const negativeRate =
     assessed.length > 0
       ? Math.round((negativeImpact / assessed.length) * 1000) / 10
-      : 0;
+      : null;
 
   const returnPlan = records.filter((r) => r.return_plan_in_place).length;
   const returnRate =
     records.length > 0
       ? Math.round((returnPlan / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const byType: Record<string, number> = {};
   for (const r of records) byType[r.break_type] = (byType[r.break_type] ?? 0) + 1;

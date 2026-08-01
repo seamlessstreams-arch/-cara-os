@@ -295,23 +295,19 @@ describe("computeGasSafetyMetrics", () => {
 
     it("returns zero certificate_rate", () => {
       const m = computeGasSafetyMetrics([]);
-      expect(m.certificate_rate).toBe(0);
-    });
+      expect(m.certificate_rate).toBeNull();; });
 
     it("returns zero remedial_completion_rate", () => {
       const m = computeGasSafetyMetrics([]);
-      expect(m.remedial_completion_rate).toBe(0);
-    });
+      expect(m.remedial_completion_rate).toBeNull();; });
 
     it("returns zero co_alarm_rate", () => {
       const m = computeGasSafetyMetrics([]);
-      expect(m.co_alarm_rate).toBe(0);
-    });
+      expect(m.co_alarm_rate).toBeNull();; });
 
     it("returns zero next_inspection_scheduled_rate", () => {
       const m = computeGasSafetyMetrics([]);
-      expect(m.next_inspection_scheduled_rate).toBe(0);
-    });
+      expect(m.next_inspection_scheduled_rate).toBeNull();; });
 
     it("returns zero non_compliant_count", () => {
       const m = computeGasSafetyMetrics([]);
@@ -384,8 +380,7 @@ describe("computeGasSafetyMetrics", () => {
 
     it("returns remedial_completion_rate = 0 (no defects so no applicable records)", () => {
       const m = computeGasSafetyMetrics([record]);
-      expect(m.remedial_completion_rate).toBe(0);
-    });
+      expect(m.remedial_completion_rate).toBeNull();; });
 
     it("returns co_alarm_rate = 100", () => {
       const m = computeGasSafetyMetrics([record]);
@@ -640,8 +635,7 @@ describe("computeGasSafetyMetrics", () => {
         makeRecord({ defects_found: 0, remedial_completed: false }),
       ];
       const m = computeGasSafetyMetrics(records);
-      expect(m.remedial_completion_rate).toBe(0);
-    });
+      expect(m.remedial_completion_rate).toBeNull();; });
 
     it("returns 0 when all defective records are unremediated", () => {
       const records = [

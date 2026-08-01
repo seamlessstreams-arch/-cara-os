@@ -230,18 +230,11 @@ describe("computeAchievementMetrics", () => {
 
     it("returns all rates as 0", () => {
       const m = computeAchievementMetrics([], 5);
-      expect(m.shared_with_family_rate).toBeNull(); // fab-0.;
-      expect(m.shared_with_sw_rate).toBeNull(); // fab-0.;
-      expect(m.added_to_life_story_rate).toBeNull(); // fab-0.;
-      expect(m.photograph_rate).toBeNull(); // fab-0.;
-      expect(m.child_views_rate).toBeNull(); // fab-0.;
-      expect(m.child_proud_rate).toBeNull(); // fab-0.;
-    });
+      expect(m.shared_with_family_rate).toBeNull();; expect(m.shared_with_sw_rate).toBeNull();; expect(m.added_to_life_story_rate).toBeNull();; expect(m.photograph_rate).toBeNull();; expect(m.child_views_rate).toBeNull();; expect(m.child_proud_rate).toBeNull();; });
 
     it("returns average_per_child 0", () => {
       const m = computeAchievementMetrics([], 5);
-      expect(m.average_per_child).toBeNull(); // fab-0.;
-    });
+      expect(m.average_per_child).toBeNull();; });
 
     it("returns empty by_category", () => {
       const m = computeAchievementMetrics([], 5);
@@ -265,9 +258,7 @@ describe("computeAchievementMetrics", () => {
 
     it("handles totalChildren = 0 with empty array without division error", () => {
       const m = computeAchievementMetrics([], 0);
-      expect(m.achievement_coverage).toBeNull(); // fab-0.;
-      expect(m.average_per_child).toBeNull(); // fab-0.;
-    });
+      expect(m.achievement_coverage).toBeNull();; expect(m.average_per_child).toBeNull();; });
   });
 
   // ── Single achievement ────────────────────────────────────────────────
@@ -537,8 +528,7 @@ describe("computeAchievementMetrics", () => {
 
     it("returns 0 when totalChildren is 0", () => {
       const m = computeAchievementMetrics([], 0);
-      expect(m.achievement_coverage).toBeNull(); // fab-0.;
-    });
+      expect(m.achievement_coverage).toBeNull();; });
 
     it("handles fractional coverage with correct rounding (1 of 3 = 33.3%)", () => {
       const achs = [makeAchievement({ child_id: "c1" })];
@@ -572,13 +562,7 @@ describe("computeAchievementMetrics", () => {
   describe("rate calculations", () => {
     it("returns 0 rates for empty achievements (no division by zero)", () => {
       const m = computeAchievementMetrics([], 3);
-      expect(m.shared_with_family_rate).toBeNull(); // fab-0.;
-      expect(m.shared_with_sw_rate).toBeNull(); // fab-0.;
-      expect(m.added_to_life_story_rate).toBeNull(); // fab-0.;
-      expect(m.photograph_rate).toBeNull(); // fab-0.;
-      expect(m.child_views_rate).toBeNull(); // fab-0.;
-      expect(m.child_proud_rate).toBeNull(); // fab-0.;
-    });
+      expect(m.shared_with_family_rate).toBeNull();; expect(m.shared_with_sw_rate).toBeNull();; expect(m.added_to_life_story_rate).toBeNull();; expect(m.photograph_rate).toBeNull();; expect(m.child_views_rate).toBeNull();; expect(m.child_proud_rate).toBeNull();; });
 
     it("returns 0% when none shared with family", () => {
       const achs = [
@@ -669,8 +653,7 @@ describe("computeAchievementMetrics", () => {
   describe("average_per_child", () => {
     it("returns 0 when no achievements", () => {
       const m = computeAchievementMetrics([], 5);
-      expect(m.average_per_child).toBeNull(); // fab-0.;
-    });
+      expect(m.average_per_child).toBeNull();; });
 
     it("returns exact integer when evenly divisible (6 / 3 = 2.0)", () => {
       const achs = [
@@ -935,8 +918,7 @@ describe("computeAchievementMetrics", () => {
     it("returns coverage 0 even with achievements", () => {
       const achs = [makeAchievement({ child_id: "c1" })];
       const m = computeAchievementMetrics(achs, 0);
-      expect(m.achievement_coverage).toBeNull(); // fab-0.;
-    });
+      expect(m.achievement_coverage).toBeNull();; });
 
     it("still computes all other metrics correctly", () => {
       const achs = [

@@ -87,11 +87,8 @@ describe("computeFinancialMetrics", () => {
     expect(m.children_with_profiles).toBe(0);
     expect(m.total_pocket_money_balance).toBe(0);
     expect(m.total_savings_balance).toBe(0);
-    expect(m.avg_weekly_pocket_money).toBe(0);
-    expect(m.transactions_this_month).toBe(0);
-    expect(m.savings_goal_progress).toBe(0);
-    expect(m.audit_compliance_rate).toBe(0);
-    expect(m.overdue_audits).toBe(0);
+    expect(m.avg_weekly_pocket_money).toBeNull();; expect(m.transactions_this_month).toBe(0);
+    expect(m.savings_goal_progress).toBeNull();; expect(m.audit_compliance_rate).toBeNull();; expect(m.overdue_audits).toBe(0);
     expect(m.children_with_bank_accounts).toBe(0);
   });
 

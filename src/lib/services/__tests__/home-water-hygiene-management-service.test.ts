@@ -282,23 +282,19 @@ describe("computeWaterHygieneManagementMetrics", () => {
 
     it("returns zero hot_temp_compliant_rate", () => {
       const m = computeWaterHygieneManagementMetrics([]);
-      expect(m.hot_temp_compliant_rate).toBe(0);
-    });
+      expect(m.hot_temp_compliant_rate).toBeNull();; });
 
     it("returns zero cold_temp_compliant_rate", () => {
       const m = computeWaterHygieneManagementMetrics([]);
-      expect(m.cold_temp_compliant_rate).toBe(0);
-    });
+      expect(m.cold_temp_compliant_rate).toBeNull();; });
 
     it("returns zero flushing_rate", () => {
       const m = computeWaterHygieneManagementMetrics([]);
-      expect(m.flushing_rate).toBe(0);
-    });
+      expect(m.flushing_rate).toBeNull();; });
 
     it("returns zero sample_taken_rate", () => {
       const m = computeWaterHygieneManagementMetrics([]);
-      expect(m.sample_taken_rate).toBe(0);
-    });
+      expect(m.sample_taken_rate).toBeNull();; });
 
     it("returns zero legionella_detected_count", () => {
       const m = computeWaterHygieneManagementMetrics([]);
@@ -322,13 +318,11 @@ describe("computeWaterHygieneManagementMetrics", () => {
 
     it("returns zero avg_hot_temp", () => {
       const m = computeWaterHygieneManagementMetrics([]);
-      expect(m.avg_hot_temp).toBe(0);
-    });
+      expect(m.avg_hot_temp).toBeNull();; });
 
     it("returns zero avg_cold_temp", () => {
       const m = computeWaterHygieneManagementMetrics([]);
-      expect(m.avg_cold_temp).toBe(0);
-    });
+      expect(m.avg_cold_temp).toBeNull();; });
 
     it("returns zero unique_locations", () => {
       const m = computeWaterHygieneManagementMetrics([]);
@@ -812,8 +806,7 @@ describe("computeWaterHygieneManagementMetrics", () => {
         makeRow({ hot_water_temp: null }),
       ];
       const m = computeWaterHygieneManagementMetrics(records);
-      expect(m.avg_hot_temp).toBe(0);
-    });
+      expect(m.avg_hot_temp).toBeNull();; });
 
     it("returns single value when only one non-null", () => {
       const records = [
@@ -862,8 +855,7 @@ describe("computeWaterHygieneManagementMetrics", () => {
         makeRow({ cold_water_temp: null }),
       ];
       const m = computeWaterHygieneManagementMetrics(records);
-      expect(m.avg_cold_temp).toBe(0);
-    });
+      expect(m.avg_cold_temp).toBeNull();; });
 
     it("returns single value when only one non-null", () => {
       const records = [

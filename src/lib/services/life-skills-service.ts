@@ -101,8 +101,8 @@ export function computeChildReadiness(
 ): {
   total_skills_assessed: number;
   total_skills: number;
-  by_domain: Record<string, { assessed: number; total: number; avg_level: number; competent_count: number }>;
-  overall_readiness: number;
+  by_domain: Record<string, { assessed: number; total: number; avg_level: number | null; competent_count: number }>;
+  overall_readiness: number | null;
   strongest_domain: string | null;
   weakest_domain: string | null;
   not_assessed_count: number;
@@ -119,7 +119,7 @@ export function computeChildReadiness(
     }
   }
 
-  const byDomain: Record<string, { assessed: number; total: number; avg_level: number; competent_count: number }> = {};
+  const byDomain: Record<string, { assessed: number; total: number; avg_level: number | null; competent_count: number }> = {};
   let totalAssessed = 0;
   let totalCompetent = 0;
 
@@ -144,7 +144,7 @@ export function computeChildReadiness(
     byDomain[domainDef.domain] = {
       assessed,
       total: domainDef.skills.length,
-      avg_level: assessed > 0 ? Math.round((levelSum / assessed) * 100) / 100 : 0,
+      avg_level: assessed > 0 ? Math.round((levelSum / assessed) * 100) / 100 : null,
       competent_count: competentCount,
     };
 
@@ -155,7 +155,7 @@ export function computeChildReadiness(
   const overallReadiness =
     TOTAL_SKILLS > 0
       ? Math.round((totalCompetent / TOTAL_SKILLS) * 1000) / 10
-      : 0;
+      : null;
 
   // Strongest / weakest domain (by avg_level, only considering domains with assessments)
   let strongestDomain: string | null = null;
@@ -164,7 +164,7 @@ export function computeChildReadiness(
   let lowestAvg = Infinity;
 
   for (const [domain, stats] of Object.entries(byDomain)) {
-    if (stats.assessed > 0) {
+    if (stats.assessed > 0 && stats.avg_level !== null) {
       if (stats.avg_level > highestAvg) {
         highestAvg = stats.avg_level;
         strongestDomain = domain;
@@ -195,11 +195,11 @@ export function computeHomeReadinessOverview(
   pathwayPlans: PathwayPlan[],
 ): {
   total_children: number;
-  avg_readiness: number;
+  avg_readiness: number | null;
   children_with_pathway_plans: number;
   pathway_plans_active: number;
   by_domain_avg: Record<string, number>;
-  children_needing_attention: { child_id: string; child_name: string; readiness: number }[];
+  children_needing_attention: { child_id: string; child_name: string; readiness: number | null }[];
 } {
   // Unique children from assessments
   const childMap = new Map<string, string>();
@@ -219,7 +219,7 @@ export function computeHomeReadinessOverview(
   const totalChildren = childIds.length;
 
   // Per-child readiness
-  const childReadiness: { child_id: string; child_name: string; readiness: number }[] = [];
+  const childReadiness: { child_id: string; child_name: string; readiness: number | null }[] = [];
   const domainSums: Record<string, number> = {};
   const domainCounts: Record<string, number> = {};
 
@@ -229,7 +229,7 @@ export function computeHomeReadinessOverview(
     childReadiness.push({ child_id: childId, child_name: name, readiness: r.overall_readiness });
 
     for (const [domain, stats] of Object.entries(r.by_domain)) {
-      if (stats.assessed > 0) {
+      if (stats.assessed > 0 && stats.avg_level !== null) {
         domainSums[domain] = (domainSums[domain] ?? 0) + stats.avg_level;
         domainCounts[domain] = (domainCounts[domain] ?? 0) + 1;
       }
@@ -238,8 +238,8 @@ export function computeHomeReadinessOverview(
 
   const avgReadiness =
     totalChildren > 0
-      ? Math.round((childReadiness.reduce((s, c) => s + c.readiness, 0) / totalChildren) * 10) / 10
-      : 0;
+      ? Math.round((childReadiness.reduce((s, c) => s + (c.readiness ?? 0), 0) / totalChildren) * 10) / 10
+      : null;
 
   // Pathway plan stats
   const childrenWithPlans = new Set(pathwayPlans.map((p) => p.child_id)).size;
@@ -254,8 +254,8 @@ export function computeHomeReadinessOverview(
 
   // Children needing attention (readiness below 30%)
   const needingAttention = childReadiness
-    .filter((c) => c.readiness < 30)
-    .sort((a, b) => a.readiness - b.readiness);
+    .filter((c) => (c.readiness ?? 0) < 30)
+    .sort((a, b) => (a.readiness ?? 0) - (b.readiness ?? 0));
 
   return {
     total_children: totalChildren,
@@ -324,7 +324,7 @@ export function identifyLifeSkillsAlerts(
     // low_readiness: overall readiness below 30%
     if (childAssessments.length > 0) {
       const readiness = computeChildReadiness(assessments, childId);
-      if (readiness.overall_readiness < 30) {
+      if ((readiness.overall_readiness ?? 0) < 30) {
         alerts.push({
           type: "low_readiness",
           severity: "medium",

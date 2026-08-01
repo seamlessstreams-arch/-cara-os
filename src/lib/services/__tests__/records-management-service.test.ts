@@ -399,13 +399,11 @@ describe("computeRecordsMetrics", () => {
     expect(m.children_with_poor_quality).toBe(0);
     expect(m.total_access_requests).toBe(0);
     expect(m.open_access_requests).toBe(0);
-    expect(m.avg_response_days).toBeNull(); // fab-0.;
-    expect(m.overdue_access_requests).toBe(0);
+    expect(m.avg_response_days).toBeNull();; expect(m.overdue_access_requests).toBe(0);
     expect(m.overdue_audits).toBe(0);
     expect(Object.keys(m.by_quality_rating)).toHaveLength(0);
     expect(Object.keys(m.by_request_type)).toHaveLength(0);
-    expect(m.chronology_compliance).toBeNull(); // fab-0.;
-  });
+    expect(m.chronology_compliance).toBeNull();; });
 
   // ── children_audited ──────────────────────────────────────────────────
 

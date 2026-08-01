@@ -246,18 +246,15 @@ describe("computeDelegatedAuthorityMetrics", () => {
 
     it("should return zero child_views_sought_rate", () => {
       const m = computeDelegatedAuthorityMetrics([], 5);
-      expect(m.child_views_sought_rate).toBeNull(); // fab-0.;
-    });
+      expect(m.child_views_sought_rate).toBeNull();; });
 
     it("should return zero social_worker_approved_rate", () => {
       const m = computeDelegatedAuthorityMetrics([], 5);
-      expect(m.social_worker_approved_rate).toBeNull(); // fab-0.;
-    });
+      expect(m.social_worker_approved_rate).toBeNull();; });
 
     it("should return zero documented_in_care_plan_rate", () => {
       const m = computeDelegatedAuthorityMetrics([], 5);
-      expect(m.documented_in_care_plan_rate).toBeNull(); // fab-0.;
-    });
+      expect(m.documented_in_care_plan_rate).toBeNull();; });
 
     it("should return zero review_overdue_count", () => {
       const m = computeDelegatedAuthorityMetrics([], 5);
@@ -276,8 +273,7 @@ describe("computeDelegatedAuthorityMetrics", () => {
 
     it("should return zero average_per_child", () => {
       const m = computeDelegatedAuthorityMetrics([], 5);
-      expect(m.average_per_child).toBeNull(); // fab-0.;
-    });
+      expect(m.average_per_child).toBeNull();; });
 
     it("should return empty by_decision_area", () => {
       const m = computeDelegatedAuthorityMetrics([], 5);
@@ -443,8 +439,7 @@ describe("computeDelegatedAuthorityMetrics", () => {
 
     it("should return 0 when totalChildren is 0", () => {
       const m = computeDelegatedAuthorityMetrics([], 0);
-      expect(m.coverage_rate).toBeNull(); // fab-0.;
-    });
+      expect(m.coverage_rate).toBeNull();; });
 
     it("should round to one decimal place", () => {
       // 1/3 = 33.333... => 33.3
@@ -880,8 +875,7 @@ describe("computeDelegatedAuthorityMetrics", () => {
   describe("average_per_child", () => {
     it("should return 0 when there are no records", () => {
       const m = computeDelegatedAuthorityMetrics([], 5);
-      expect(m.average_per_child).toBeNull(); // fab-0.;
-    });
+      expect(m.average_per_child).toBeNull();; });
 
     it("should return 1 for one record and one child", () => {
       const records = [makeRecord({ id: "1", child_id: "c1" })];
@@ -1186,15 +1180,13 @@ describe("computeDelegatedAuthorityMetrics", () => {
   describe("edge cases", () => {
     it("should handle totalChildren = 0 with empty records", () => {
       const m = computeDelegatedAuthorityMetrics([], 0);
-      expect(m.coverage_rate).toBeNull(); // fab-0.;
-      expect(m.total_records).toBe(0);
+      expect(m.coverage_rate).toBeNull();; expect(m.total_records).toBe(0);
     });
 
     it("should handle totalChildren = 0 with records present", () => {
       const records = [makeRecord({ id: "1", child_id: "c1" })];
       const m = computeDelegatedAuthorityMetrics(records, 0);
-      expect(m.coverage_rate).toBeNull(); // fab-0.;
-      expect(m.children_covered).toBe(1);
+      expect(m.coverage_rate).toBeNull();; expect(m.children_covered).toBe(1);
     });
 
     it("should handle all records having the same decision_area", () => {

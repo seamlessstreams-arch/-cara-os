@@ -39,9 +39,7 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_tests).toBe(0);
     expect(m.pass_count).toBe(0);
-    expect(m.pass_rate).toBeNull(); // fab-0.;
-    expect(m.avg_duration).toBeNull(); // fab-0.;
-    expect(m.unique_locations).toBe(0);
+    expect(m.pass_rate).toBeNull();; expect(m.avg_duration).toBeNull();; expect(m.unique_locations).toBe(0);
   });
 
   it("computes populated data correctly", () => {

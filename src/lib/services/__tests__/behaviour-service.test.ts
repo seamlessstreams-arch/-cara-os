@@ -414,7 +414,7 @@ describe("computePIAnalysis", () => {
     expect(result.total_pi).toBe(0);
     expect(result.by_technique).toEqual({});
     expect(result.by_level).toEqual({ low: 0, medium: 0, high: 0 });
-    expect(result.avg_duration).toBe(0);
+    expect(result.avg_duration).toBeNull();
     expect(result.injury_incidents).toBe(0);
     expect(result.debrief_rate).toBeNull(); // fab-0: null when the source population is empty.
     expect(result.repeat_children).toEqual([]);
@@ -497,7 +497,7 @@ describe("computePIAnalysis", () => {
       entry({ physical_intervention: true, pi_duration_minutes: null }),
     ];
     const result = computePIAnalysis(entries);
-    expect(result.avg_duration).toBe(0);
+    expect(result.avg_duration).toBeNull();
   });
 
   it("counts injury incidents (child or staff)", () => {

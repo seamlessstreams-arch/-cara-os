@@ -69,8 +69,7 @@ describe("contact-service", () => {
       expect(m.active_plans).toBe(0);
       expect(m.total_contacts).toBe(0);
       expect(m.completed_contacts).toBe(0);
-      expect(m.completion_rate).toBeNull(); // fab-0.;
-      expect(m.family_contact_count).toBe(0);
+      expect(m.completion_rate).toBeNull();; expect(m.family_contact_count).toBe(0);
       expect(m.sibling_contact_count).toBe(0);
     });
 
@@ -121,8 +120,7 @@ describe("contact-service", () => {
       expect(profile.active_contacts[0].last_contact).toBeNull();
       expect(profile.total_contacts_30d).toBe(0);
       expect(profile.mood_trend).toBe("stable");
-      expect(profile.refusal_rate).toBeNull(); // fab-0.;
-      expect(profile.no_contact_persons).toContain("Mum");
+      expect(profile.refusal_rate).toBeNull();; expect(profile.no_contact_persons).toContain("Mum");
     });
 
     it("computes mood trend as improving", () => {
@@ -142,8 +140,7 @@ describe("contact-service", () => {
   describe("computeContactQuality", () => {
     it("returns poor rating for empty records", () => {
       const q = computeContactQuality([]);
-      expect(q.avg_duration_minutes).toBeNull(); // fab-0.;
-      expect(q.quality_rating).toBe("poor");
+      expect(q.avg_duration_minutes).toBeNull();; expect(q.quality_rating).toBe("poor");
       expect(q.safeguarding_flags).toBe(0);
     });
 

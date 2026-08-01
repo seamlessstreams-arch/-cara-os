@@ -44,14 +44,7 @@ describe("independent-travel-service", () => {
       const m = computeMetrics([]);
       expect(m.total_records).toBe(0);
       expect(m.unique_young_people).toBe(0);
-      expect(m.risk_assessment_rate).toBe(0);
-      expect(m.engagement_rate).toBe(0);
-      expect(m.incident_rate).toBe(0);
-      expect(m.competent_or_independent_rate).toBe(0);
-      expect(m.high_confidence_rate).toBe(0);
-      expect(m.average_sessions_per_person).toBe(0);
-      expect(m.gps_tracking_agreed_rate).toBe(0);
-    });
+      expect(m.risk_assessment_rate).toBeNull();; expect(m.engagement_rate).toBeNull();; expect(m.incident_rate).toBeNull();; expect(m.competent_or_independent_rate).toBeNull();; expect(m.high_confidence_rate).toBeNull();; expect(m.average_sessions_per_person).toBeNull();; expect(m.gps_tracking_agreed_rate).toBeNull();; });
 
     it("counts totals and unique young people", () => {
       const rows = [

@@ -51,23 +51,13 @@ describe("medication-storage-service", () => {
         expect(m.total_checks).toBe(0);
         expect(m.satisfactory_count).toBe(0);
         expect(m.unsatisfactory_count).toBe(0);
-        expect(m.satisfactory_rate).toBe(0);
-        expect(m.in_range_count).toBe(0);
+        expect(m.satisfactory_rate).toBeNull();; expect(m.in_range_count).toBe(0);
         expect(m.out_of_range_count).toBe(0);
-        expect(m.temperature_in_range_rate).toBe(0);
-        expect(m.cabinet_locked_rate).toBe(0);
-        expect(m.keys_secure_rate).toBe(0);
-        expect(m.all_drugs_accounted_rate).toBe(0);
-        expect(m.items_in_date_rate).toBe(0);
-        expect(m.storage_clean_rate).toBe(0);
-        expect(m.correct_conditions_rate).toBe(0);
-        expect(m.access_restricted_rate).toBe(0);
-        expect(m.expired_items_count).toBe(0);
+        expect(m.temperature_in_range_rate).toBeNull();; expect(m.cabinet_locked_rate).toBeNull();; expect(m.keys_secure_rate).toBeNull();; expect(m.all_drugs_accounted_rate).toBeNull();; expect(m.items_in_date_rate).toBeNull();; expect(m.storage_clean_rate).toBeNull();; expect(m.correct_conditions_rate).toBeNull();; expect(m.access_restricted_rate).toBeNull();; expect(m.expired_items_count).toBe(0);
         expect(m.disposal_needed_count).toBe(0);
         expect(m.total_items_checked).toBe(0);
         expect(m.total_discrepancies).toBe(0);
-        expect(m.average_temperature).toBe(0);
-      });
+        expect(m.average_temperature).toBeNull();; });
 
       it("returns empty breakdowns", () => {
         const m = computeMedicationStorageMetrics([]);
@@ -198,8 +188,7 @@ describe("medication-storage-service", () => {
       });
       it("returns 0 when all null", () => {
         const m = computeMedicationStorageMetrics([makeRecord({ temperature_reading: null })]);
-        expect(m.average_temperature).toBe(0);
-      });
+        expect(m.average_temperature).toBeNull();; });
     });
 
     describe("item totals", () => {

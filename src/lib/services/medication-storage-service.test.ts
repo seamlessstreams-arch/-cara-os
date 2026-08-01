@@ -50,10 +50,8 @@ describe("computeMedicationStorageMetrics", () => {
     expect(m.total_checks).toBe(0);
     expect(m.satisfactory_count).toBe(0);
     expect(m.unsatisfactory_count).toBe(0);
-    expect(m.satisfactory_rate).toBe(0);
-    expect(m.in_range_count).toBe(0);
-    expect(m.average_temperature).toBe(0);
-    expect(m.total_items_checked).toBe(0);
+    expect(m.satisfactory_rate).toBeNull();; expect(m.in_range_count).toBe(0);
+    expect(m.average_temperature).toBeNull();; expect(m.total_items_checked).toBe(0);
     expect(m.total_discrepancies).toBe(0);
   });
 

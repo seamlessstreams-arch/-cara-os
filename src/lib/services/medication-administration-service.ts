@@ -143,19 +143,19 @@ export function computeAdministrationMetrics(
 ): {
   total_administrations: number;
   children_with_medication: number;
-  medication_coverage: number;
+  medication_coverage: number | null;
   administered_count: number;
   refused_count: number;
   withheld_count: number;
   delayed_count: number;
   self_administered_count: number;
-  administration_rate: number;
-  refusal_rate: number;
+  administration_rate: number | null;
+  refusal_rate: number | null;
   controlled_drug_count: number;
-  controlled_drug_witnessed_rate: number;
-  mar_chart_updated_rate: number;
+  controlled_drug_witnessed_rate: number | null;
+  mar_chart_updated_rate: number | null;
   side_effects_count: number;
-  side_effects_rate: number;
+  side_effects_rate: number | null;
   prn_count: number;
   by_medication_type: Record<string, number>;
   by_administration_route: Record<string, number>;
@@ -166,7 +166,7 @@ export function computeAdministrationMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const administered = records.filter((r) => r.administration_outcome === "administered").length;
   const refused = records.filter((r) => r.administration_outcome === "refused").length;
@@ -177,31 +177,31 @@ export function computeAdministrationMetrics(
   const adminRate =
     records.length > 0
       ? Math.round((administered / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const refusalRate =
     records.length > 0
       ? Math.round((refused / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const controlledDrugs = records.filter((r) => r.controlled_drug);
   const controlledWitnessed = controlledDrugs.filter((r) => r.witness_status === "yes_witnessed").length;
   const cdWitnessedRate =
     controlledDrugs.length > 0
       ? Math.round((controlledWitnessed / controlledDrugs.length) * 1000) / 10
-      : 0;
+      : null;
 
   const marUpdated = records.filter((r) => r.mar_chart_updated).length;
   const marRate =
     records.length > 0
       ? Math.round((marUpdated / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const sideEffects = records.filter((r) => r.side_effects_observed).length;
   const seRate =
     records.length > 0
       ? Math.round((sideEffects / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const prn = records.filter((r) => r.medication_type === "prescribed_prn").length;
 

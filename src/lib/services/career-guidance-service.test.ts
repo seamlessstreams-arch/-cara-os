@@ -40,9 +40,7 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_sessions).toBe(0);
     expect(m.unique_young_people).toBe(0);
-    expect(m.engagement_rate).toBeNull(); // fab-0.;
-    expect(m.confidence_improvement_rate).toBeNull(); // fab-0.;
-    expect(m.employer_encounter_count).toBe(0);
+    expect(m.engagement_rate).toBeNull();; expect(m.confidence_improvement_rate).toBeNull();; expect(m.employer_encounter_count).toBe(0);
     expect(m.gatsby_coverage).toBe(0);
   });
 

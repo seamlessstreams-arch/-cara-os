@@ -44,11 +44,8 @@ describe("computePeerMetrics", () => {
     expect(m.total_pairings).toBe(0);
     expect(m.active_pairings).toBe(0);
     expect(m.children_involved).toBe(0);
-    expect(m.participation_rate).toBe(0);
-    expect(m.total_sessions).toBe(0);
-    expect(m.average_sessions_per_pairing).toBe(0);
-    expect(m.positive_outcome_rate).toBe(0);
-    expect(m.safeguarding_concerns).toBe(0);
+    expect(m.participation_rate).toBeNull();; expect(m.total_sessions).toBe(0);
+    expect(m.average_sessions_per_pairing).toBeNull();; expect(m.positive_outcome_rate).toBeNull();; expect(m.safeguarding_concerns).toBe(0);
   });
 
   it("counts active, completed, and ended_early pairings", () => {

@@ -157,10 +157,7 @@ describe("computeMissingProfile", () => {
     expect(profile.resolved_this_month).toBe(0);
     expect(profile.by_type).toEqual({});
     expect(profile.by_trigger).toEqual({});
-    expect(profile.avg_duration_minutes).toBe(0);
-    expect(profile.police_notification_rate).toBe(0);
-    expect(profile.return_interview_completion_rate).toBe(0);
-    expect(profile.repeat_children).toEqual([]);
+    expect(profile.avg_duration_minutes).toBeNull();; expect(profile.police_notification_rate).toBeNull();; expect(profile.return_interview_completion_rate).toBeNull();; expect(profile.repeat_children).toEqual([]);
   });
 
   it("counts total episodes correctly", () => {
@@ -233,8 +230,7 @@ describe("computeMissingProfile", () => {
       ep({ id: "ep-2", duration_minutes: null }),
     ];
     const profile = computeMissingProfile(episodes);
-    expect(profile.avg_duration_minutes).toBe(0);
-  });
+    expect(profile.avg_duration_minutes).toBeNull();; });
 
   it("rounds avg_duration_minutes to nearest integer", () => {
     const episodes = [
@@ -275,8 +271,7 @@ describe("computeMissingProfile", () => {
       ep({ id: "ep-2", return_interview_status: "not_required" }),
     ];
     const profile = computeMissingProfile(episodes);
-    expect(profile.return_interview_completion_rate).toBe(0);
-  });
+    expect(profile.return_interview_completion_rate).toBeNull();; });
 
   it("identifies repeat_children with 2+ episodes sorted by count desc", () => {
     const episodes = [
@@ -314,8 +309,7 @@ describe("computeChildMissingHistory", () => {
     expect(history.total_episodes).toBe(0);
     expect(history.active).toBe(false);
     expect(history.last_episode_date).toBeNull();
-    expect(history.avg_duration_minutes).toBe(0);
-    expect(history.common_triggers).toEqual([]);
+    expect(history.avg_duration_minutes).toBeNull();; expect(history.common_triggers).toEqual([]);
     expect(history.risk_trend).toBe("stable");
     expect(history.return_interviews_pending).toBe(0);
   });
@@ -373,8 +367,7 @@ describe("computeChildMissingHistory", () => {
       ep({ id: "ep-1", child_id: "child-a", duration_minutes: null }),
     ];
     const history = computeChildMissingHistory("child-a", episodes);
-    expect(history.avg_duration_minutes).toBe(0);
-  });
+    expect(history.avg_duration_minutes).toBeNull();; });
 
   it("returns top 3 common triggers sorted by frequency", () => {
     const episodes = [

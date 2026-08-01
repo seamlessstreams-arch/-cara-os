@@ -303,17 +303,17 @@ export function computeMetrics(
   advanced_skills_count: number;
   practice_session_count: number;
   theory_session_count: number;
-  risk_assessment_rate: number;
-  engagement_rate: number;
-  emergency_plan_rate: number;
-  phone_checked_rate: number;
-  money_available_rate: number;
-  incident_rate: number;
+  risk_assessment_rate: number | null;
+  engagement_rate: number | null;
+  emergency_plan_rate: number | null;
+  phone_checked_rate: number | null;
+  money_available_rate: number | null;
+  incident_rate: number | null;
   independent_competency_count: number;
-  competent_or_independent_rate: number;
-  high_confidence_rate: number;
-  average_sessions_per_person: number;
-  gps_tracking_agreed_rate: number;
+  competent_or_independent_rate: number | null;
+  high_confidence_rate: number | null;
+  average_sessions_per_person: number | null;
+  gps_tracking_agreed_rate: number | null;
 } {
   const total = rows.length;
   const uniquePeople = new Set(rows.map((r) => r.young_person_name.toLowerCase().trim()));
@@ -348,7 +348,7 @@ export function computeMetrics(
 
   // Boolean rates
   const pct = (filter: (r: IndependentTravelRow) => boolean) =>
-    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : 0;
+    total > 0 ? Math.round((rows.filter(filter).length / total) * 1000) / 10 : null;
 
   const riskRate = pct((r) => r.risk_assessment_completed);
   const engagementRate = pct((r) => r.young_person_engaged);
@@ -361,22 +361,22 @@ export function computeMetrics(
   const independentCount = rows.filter((r) => r.competency_level === "Independent").length;
   const competentOrIndependentRate = total > 0
     ? Math.round((rows.filter((r) => r.competency_level === "Competent" || r.competency_level === "Independent").length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Confidence
   const highConfidenceRate = total > 0
     ? Math.round((rows.filter((r) => r.confidence_level === "High" || r.confidence_level === "Very High").length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // GPS tracking
   const gpsRows = rows.filter((r) => r.gps_tracking_agreed !== null);
   const gpsRate = gpsRows.length > 0
     ? Math.round((gpsRows.filter((r) => r.gps_tracking_agreed === true).length / gpsRows.length) * 1000) / 10
-    : 0;
+    : null;
 
   const avgSessionsPerPerson = uniquePeople.size > 0
     ? Math.round((total / uniquePeople.size) * 10) / 10
-    : 0;
+    : null;
 
   return {
     total_records: total,
@@ -609,7 +609,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.incident_rate > 20 && metrics.total_records > 5) {
+  if ((metrics.incident_rate ?? 0) > 20 && metrics.total_records > 5) {
     insights.push(
       `[reflect] Incident rate of ${metrics.incident_rate}% across travel training sessions. ` +
         `While some minor incidents are a normal part of learning (getting ` +
@@ -620,7 +620,7 @@ export function generateCaraInsights(
         `Each incident should inform the next session — is the home ` +
         `adapting its approach based on what goes wrong?`,
     );
-  } else if (metrics.competent_or_independent_rate < 30 && metrics.total_records > 8) {
+  } else if ((metrics.competent_or_independent_rate ?? 0) < 30 && metrics.total_records > 8) {
     insights.push(
       `[reflect] Only ${metrics.competent_or_independent_rate}% of sessions result in competent ` +
         `or independent assessments. Independent travel is a critical ` +

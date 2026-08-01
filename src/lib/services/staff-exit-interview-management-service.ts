@@ -83,15 +83,15 @@ export function computeMetrics(rows: StaffExitInterviewRow[]): {
   complete_count: number;
   incomplete_count: number;
   overdue_count: number;
-  knowledge_transfer_rate: number;
-  handover_rate: number;
-  equipment_return_rate: number;
-  access_revoked_rate: number;
-  final_pay_rate: number;
-  reference_rate: number;
-  avg_satisfaction: number;
-  would_recommend_rate: number;
-  notice_period_met_rate: number;
+  knowledge_transfer_rate: number | null;
+  handover_rate: number | null;
+  equipment_return_rate: number | null;
+  access_revoked_rate: number | null;
+  final_pay_rate: number | null;
+  reference_rate: number | null;
+  avg_satisfaction: number | null;
+  would_recommend_rate: number | null;
+  notice_period_met_rate: number | null;
   unique_staff: number;
   unique_interviewers: number;
 } {
@@ -103,7 +103,7 @@ export function computeMetrics(rows: StaffExitInterviewRow[]): {
 
   const boolRate = (field: keyof StaffExitInterviewRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   // avg_satisfaction: average of non-null ratings, 1 decimal
@@ -111,13 +111,13 @@ export function computeMetrics(rows: StaffExitInterviewRow[]): {
   const avgSatisfaction =
     ratedRows.length > 0
       ? Math.round((ratedRows.reduce((sum, r) => sum + r.satisfaction_rating!, 0) / ratedRows.length) * 10) / 10
-      : 0;
+      : null;
 
   // would_recommend_rate: non-null only
   const recommendRows = rows.filter((r) => r.would_recommend !== null);
   const wouldRecommendCount = recommendRows.filter((r) => r.would_recommend === true).length;
   const wouldRecommendRate =
-    recommendRows.length > 0 ? Math.round((wouldRecommendCount / recommendRows.length) * 1000) / 10 : 0;
+    recommendRows.length > 0 ? Math.round((wouldRecommendCount / recommendRows.length) * 1000) / 10 : null;
 
   return {
     total_interviews: total,
@@ -233,7 +233,7 @@ export function computeCaraInsights(rows: StaffExitInterviewRow[]): string[] {
         `How is the home ensuring all departed staff have their access revoked promptly ` +
         `and that offboarding procedures are completed to safeguard children and young people?`,
     );
-  } else if (metrics.knowledge_transfer_rate < 100) {
+  } else if ((metrics.knowledge_transfer_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.knowledge_transfer_rate}% of departing staff have completed knowledge transfer. ` +
         `How is the home ensuring continuity of care when staff leave, ` +

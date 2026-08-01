@@ -322,38 +322,31 @@ describe("computeRespiteMetrics", () => {
 
     it("returns zero average_duration", () => {
       const m = computeRespiteMetrics([], 5);
-      expect(m.average_duration).toBe(0);
-    });
+      expect(m.average_duration).toBeNull();; });
 
     it("returns zero child_views_sought_rate", () => {
       const m = computeRespiteMetrics([], 5);
-      expect(m.child_views_sought_rate).toBe(0);
-    });
+      expect(m.child_views_sought_rate).toBeNull();; });
 
     it("returns zero social_worker_approved_rate", () => {
       const m = computeRespiteMetrics([], 5);
-      expect(m.social_worker_approved_rate).toBe(0);
-    });
+      expect(m.social_worker_approved_rate).toBeNull();; });
 
     it("returns zero risk_assessment_rate", () => {
       const m = computeRespiteMetrics([], 5);
-      expect(m.risk_assessment_rate).toBe(0);
-    });
+      expect(m.risk_assessment_rate).toBeNull();; });
 
     it("returns zero positive_impact_rate", () => {
       const m = computeRespiteMetrics([], 5);
-      expect(m.positive_impact_rate).toBe(0);
-    });
+      expect(m.positive_impact_rate).toBeNull();; });
 
     it("returns zero negative_impact_rate", () => {
       const m = computeRespiteMetrics([], 5);
-      expect(m.negative_impact_rate).toBe(0);
-    });
+      expect(m.negative_impact_rate).toBeNull();; });
 
     it("returns zero return_plan_rate", () => {
       const m = computeRespiteMetrics([], 5);
-      expect(m.return_plan_rate).toBe(0);
-    });
+      expect(m.return_plan_rate).toBeNull();; });
 
     it("returns empty by_break_type", () => {
       const m = computeRespiteMetrics([], 5);
@@ -377,8 +370,7 @@ describe("computeRespiteMetrics", () => {
 
     it("handles totalChildren = 0 with empty records", () => {
       const m = computeRespiteMetrics([], 0);
-      expect(m.break_usage_rate).toBe(0);
-    });
+      expect(m.break_usage_rate).toBeNull();; });
   });
 
   describe("single record", () => {
@@ -611,8 +603,7 @@ describe("computeRespiteMetrics", () => {
   describe("break_usage_rate edge cases", () => {
     it("returns 0 when totalChildren is 0", () => {
       const m = computeRespiteMetrics([makeRecord()], 0);
-      expect(m.break_usage_rate).toBe(0);
-    });
+      expect(m.break_usage_rate).toBeNull();; });
 
     it("returns 100 when all children have breaks", () => {
       const records = [
@@ -994,8 +985,7 @@ describe("computeRespiteMetrics", () => {
         makeRecord({ child_impact: "not_assessed" }),
       ];
       const m = computeRespiteMetrics(records, 1);
-      expect(m.positive_impact_rate).toBe(0);
-    });
+      expect(m.positive_impact_rate).toBeNull();; });
 
     it("calculates mixed (2/3 = 66.7%)", () => {
       const records = [
@@ -1059,8 +1049,7 @@ describe("computeRespiteMetrics", () => {
         makeRecord({ child_impact: "not_assessed" }),
       ];
       const m = computeRespiteMetrics(records, 1);
-      expect(m.negative_impact_rate).toBe(0);
-    });
+      expect(m.negative_impact_rate).toBeNull();; });
 
     it("calculates mixed (1/3 = 33.3%)", () => {
       const records = [

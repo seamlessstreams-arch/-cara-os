@@ -103,10 +103,10 @@ export function computeGasSafetyMetrics(
   immediately_dangerous_count: number;
   at_risk_count: number;
   safe_count: number;
-  certificate_rate: number;
-  remedial_completion_rate: number;
-  co_alarm_rate: number;
-  next_inspection_scheduled_rate: number;
+  certificate_rate: number | null;
+  remedial_completion_rate: number | null;
+  co_alarm_rate: number | null;
+  next_inspection_scheduled_rate: number | null;
   non_compliant_count: number;
   defects_total: number;
   unique_engineers: number;
@@ -124,26 +124,26 @@ export function computeGasSafetyMetrics(
   const certificateRate =
     total > 0
       ? Math.round((certificateIssued / total) * 1000) / 10
-      : 0;
+      : null;
 
   const remedialApplicable = rows.filter((r) => r.defects_found > 0);
   const remedialCompleted = remedialApplicable.filter((r) => r.remedial_completed).length;
   const remedialRate =
     remedialApplicable.length > 0
       ? Math.round((remedialCompleted / remedialApplicable.length) * 1000) / 10
-      : 0;
+      : null;
 
   const coTested = rows.filter((r) => r.carbon_monoxide_alarm_tested).length;
   const coAlarmRate =
     total > 0
       ? Math.round((coTested / total) * 1000) / 10
-      : 0;
+      : null;
 
   const scheduled = rows.filter((r) => r.next_inspection_date !== null).length;
   const scheduledRate =
     total > 0
       ? Math.round((scheduled / total) * 1000) / 10
-      : 0;
+      : null;
 
   const nonCompliant = rows.filter(
     (r) =>
@@ -280,7 +280,7 @@ export function generateGasSafetyCaraInsights(
   // Insight 1: Summary stats
   insights.push(
     `[red] ${metrics.total_inspections} gas safety inspections recorded across ${metrics.unique_engineers} ${metrics.unique_engineers === 1 ? "engineer" : "engineers"}. ` +
-      `Safe rate is ${metrics.safe_count > 0 && metrics.total_inspections > 0 ? Math.round((metrics.safe_count / metrics.total_inspections) * 1000) / 10 : 0}%, with ${metrics.immediately_dangerous_count} Immediately Dangerous, ${metrics.at_risk_count} At Risk, and ${metrics.defects_total} total defects identified.`,
+      `Safe rate is ${metrics.safe_count > 0 && metrics.total_inspections > 0 ? Math.round((metrics.safe_count / metrics.total_inspections) * 1000) / 10 : null}%, with ${metrics.immediately_dangerous_count} Immediately Dangerous, ${metrics.at_risk_count} At Risk, and ${metrics.defects_total} total defects identified.`,
   );
 
   // Insight 2: Priority concerns
@@ -307,7 +307,7 @@ export function generateGasSafetyCaraInsights(
         `What steps are being taken to ensure all dangerous appliances are isolated or remediated promptly, ` +
         `and is there a clear process for verifying completed remedial work?`,
     );
-  } else if (metrics.defects_total > 0 && metrics.remedial_completion_rate < 100) {
+  } else if (metrics.defects_total > 0 && (metrics.remedial_completion_rate ?? 0) < 100) {
     insights.push(
       `[reflect] Remedial completion stands at ${metrics.remedial_completion_rate}% for inspections with defects. ` +
         `How can the home improve its tracking and completion of gas safety remedial works, ` +

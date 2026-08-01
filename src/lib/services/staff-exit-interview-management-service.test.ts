@@ -42,10 +42,7 @@ describe("computeMetrics", () => {
     expect(m.complete_count).toBe(0);
     expect(m.incomplete_count).toBe(0);
     expect(m.overdue_count).toBe(0);
-    expect(m.knowledge_transfer_rate).toBe(0);
-    expect(m.avg_satisfaction).toBe(0);
-    expect(m.would_recommend_rate).toBe(0);
-    expect(m.unique_staff).toBe(0);
+    expect(m.knowledge_transfer_rate).toBeNull();; expect(m.avg_satisfaction).toBeNull();; expect(m.would_recommend_rate).toBeNull();; expect(m.unique_staff).toBe(0);
     expect(m.unique_interviewers).toBe(0);
   });
 

@@ -288,14 +288,9 @@ describe("computePeerMetrics", () => {
     expect(m.completed_pairings).toBe(0);
     expect(m.ended_early_count).toBe(0);
     expect(m.children_involved).toBe(0);
-    expect(m.participation_rate).toBe(0);
-    expect(m.total_sessions).toBe(0);
-    expect(m.average_sessions_per_pairing).toBe(0);
-    expect(m.positive_outcome_rate).toBe(0);
-    expect(m.safeguarding_concerns).toBe(0);
-    expect(m.mentor_feedback_rate).toBe(0);
-    expect(m.mentee_feedback_rate).toBe(0);
-    expect(Object.keys(m.by_pairing_type)).toHaveLength(0);
+    expect(m.participation_rate).toBeNull();; expect(m.total_sessions).toBe(0);
+    expect(m.average_sessions_per_pairing).toBeNull();; expect(m.positive_outcome_rate).toBeNull();; expect(m.safeguarding_concerns).toBe(0);
+    expect(m.mentor_feedback_rate).toBeNull();; expect(m.mentee_feedback_rate).toBeNull();; expect(Object.keys(m.by_pairing_type)).toHaveLength(0);
     expect(Object.keys(m.by_status)).toHaveLength(0);
     expect(Object.keys(m.by_session_outcome)).toHaveLength(0);
     expect(Object.keys(m.by_safeguarding_flag)).toHaveLength(0);
@@ -442,8 +437,7 @@ describe("computePeerMetrics", () => {
 
   it("participation_rate is 0 when totalChildren is 0", () => {
     const m = computePeerMetrics([], 0);
-    expect(m.participation_rate).toBe(0);
-  });
+    expect(m.participation_rate).toBeNull();; });
 
   it("participation_rate rounds to one decimal place", () => {
     const pairings = [
@@ -513,8 +507,7 @@ describe("computePeerMetrics", () => {
 
   it("average_sessions_per_pairing is 0 for empty pairings", () => {
     const m = computePeerMetrics([], 0);
-    expect(m.average_sessions_per_pairing).toBe(0);
-  });
+    expect(m.average_sessions_per_pairing).toBeNull();; });
 
   it("average_sessions_per_pairing is 0 when all sessions are 0", () => {
     const pairings = [
@@ -570,8 +563,7 @@ describe("computePeerMetrics", () => {
       makePairing({ id: "p2", last_session_outcome: null }),
     ];
     const m = computePeerMetrics(pairings, 10);
-    expect(m.positive_outcome_rate).toBe(0);
-  });
+    expect(m.positive_outcome_rate).toBeNull();; });
 
   it("positive_outcome_rate rounds to one decimal place", () => {
     const pairings = [
@@ -691,8 +683,7 @@ describe("computePeerMetrics", () => {
 
   it("mentor_feedback_rate is 0 for empty pairings", () => {
     const m = computePeerMetrics([], 0);
-    expect(m.mentor_feedback_rate).toBe(0);
-  });
+    expect(m.mentor_feedback_rate).toBeNull();; });
 
   // ── mentee_feedback_rate ───────────────────────────────────────────
 
@@ -735,8 +726,7 @@ describe("computePeerMetrics", () => {
 
   it("mentee_feedback_rate is 0 for empty pairings", () => {
     const m = computePeerMetrics([], 0);
-    expect(m.mentee_feedback_rate).toBe(0);
-  });
+    expect(m.mentee_feedback_rate).toBeNull();; });
 
   // ── by_pairing_type ────────────────────────────────────────────────
 
@@ -1763,8 +1753,7 @@ describe("Edge cases", () => {
       makePairing({ id: "p3", last_session_outcome: null }),
     ];
     const m = computePeerMetrics(pairings, 10);
-    expect(m.positive_outcome_rate).toBe(0);
-    expect(Object.keys(m.by_session_outcome)).toHaveLength(0);
+    expect(m.positive_outcome_rate).toBeNull();; expect(Object.keys(m.by_session_outcome)).toHaveLength(0);
   });
 
   it("computePeerMetrics with all pairings having safeguarding concerns", () => {
@@ -1870,8 +1859,7 @@ describe("Edge cases", () => {
   it("computePeerMetrics with zero totalChildren returns 0 participation rate even with pairings", () => {
     const pairings = [makePairing({ id: "p1" })];
     const m = computePeerMetrics(pairings, 0);
-    expect(m.participation_rate).toBe(0);
-    expect(m.children_involved).toBe(2);
+    expect(m.participation_rate).toBeNull();; expect(m.children_involved).toBe(2);
   });
 
   it("computePeerMetrics by_session_outcome with single session_cancelled", () => {

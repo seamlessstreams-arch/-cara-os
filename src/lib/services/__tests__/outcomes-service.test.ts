@@ -174,8 +174,7 @@ describe("computeChildOutcomes", () => {
     const result = computeChildOutcomes([], [], "child-1");
     expect(result.active_targets).toBe(0);
     expect(result.achieved_targets).toBe(0);
-    expect(result.overall_progress).toBe(0);
-    expect(result.improving_count).toBe(0);
+    expect(result.overall_progress).toBeNull();; expect(result.improving_count).toBe(0);
     expect(result.declining_count).toBe(0);
     expect(result.latest_review_date).toBeNull();
   });
@@ -222,8 +221,7 @@ describe("computeChildOutcomes", () => {
       makeOutcomeTarget({ id: "t1", status: "achieved" }),
     ];
     const result = computeChildOutcomes(targets, [], "child-1");
-    expect(result.overall_progress).toBe(0);
-  });
+    expect(result.overall_progress).toBeNull();; });
 
   it("counts improving when current_rating > baseline_rating", () => {
     const targets = [
@@ -320,8 +318,7 @@ describe("computeHomeOutcomes", () => {
     expect(result.total_children).toBe(0);
     expect(result.total_active_targets).toBe(0);
     expect(result.total_achieved).toBe(0);
-    expect(result.overall_achievement_rate).toBe(0);
-    expect(result.children_improving).toBe(0);
+    expect(result.overall_achievement_rate).toBeNull();; expect(result.children_improving).toBe(0);
     expect(result.children_stable).toBe(0);
     expect(result.children_declining).toBe(0);
   });
@@ -366,8 +363,7 @@ describe("computeHomeOutcomes", () => {
       makeOutcomeTarget({ id: "t2", status: "discontinued" }),
     ];
     const result = computeHomeOutcomes(targets, []);
-    expect(result.overall_achievement_rate).toBe(0);
-  });
+    expect(result.overall_achievement_rate).toBeNull();; });
 
   it("classifies children as improving when improving_count > declining_count", () => {
     const targets = [
@@ -449,8 +445,7 @@ describe("computeHomeOutcomes", () => {
       makeOutcomeTarget({ id: "t1", domain: "be_healthy", status: "achieved" }),
     ];
     const result = computeHomeOutcomes(targets, []);
-    expect(result.by_domain.be_healthy.avg_progress).toBe(0);
-    expect(result.by_domain.be_healthy.total_targets).toBe(0);
+    expect(result.by_domain.be_healthy.avg_progress).toBeNull();; expect(result.by_domain.be_healthy.total_targets).toBe(0);
   });
 
   it("populates all five domains in by_domain", () => {

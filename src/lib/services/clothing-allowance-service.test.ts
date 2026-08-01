@@ -43,11 +43,7 @@ describe("computeMetrics", () => {
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
     expect(m.total_spend).toBe(0);
-    expect(m.average_spend_per_record).toBeNull(); // fab-0.;
-    expect(m.average_spend_per_child).toBeNull(); // fab-0.;
-    expect(m.child_choice_rate).toBeNull(); // fab-0.;
-    expect(m.highest_single_spend).toBeNull(); // fab-0.;
-  });
+    expect(m.average_spend_per_record).toBeNull();; expect(m.average_spend_per_child).toBeNull();; expect(m.child_choice_rate).toBeNull();; expect(m.highest_single_spend).toBeNull();; });
 
   it("computes populated metrics correctly", () => {
     const rows = [

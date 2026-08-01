@@ -92,9 +92,7 @@ describe("computeRecruitmentCompliance", () => {
     expect(r.checks_completed_count).toBe(0);
     expect(r.checks_pending_count).toBe(0);
     expect(r.checks_concern_count).toBe(0);
-    expect(r.check_completion_rate).toBeNull(); // fab-0.;
-    expect(r.overall_compliance_rate).toBeNull(); // fab-0.;
-  });
+    expect(r.check_completion_rate).toBeNull();; expect(r.overall_compliance_rate).toBeNull();; });
 
   it("counts DBS statuses correctly", () => {
     const dbs = [

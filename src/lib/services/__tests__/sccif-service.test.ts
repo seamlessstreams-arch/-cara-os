@@ -227,8 +227,7 @@ describe("computeSelfEvaluationSummary", () => {
   it("returns zeroed metrics for empty array", () => {
     const result = computeSelfEvaluationSummary([]);
     expect(result.total_evidence).toBe(0);
-    expect(result.strength_percentage).toBe(0);
-    expect(result.coverage).toBe(0);
+    expect(result.strength_percentage).toBeNull();; expect(result.coverage).toBe(0);
     expect(result.by_area).toEqual({});
   });
 
@@ -405,8 +404,7 @@ describe("suggestJudgmentGrade", () => {
   it("returns inadequate with 0 ratio and low confidence for empty entries", () => {
     const result = suggestJudgmentGrade([], "overall_experiences");
     expect(result.suggested_grade).toBe("inadequate");
-    expect(result.strength_ratio).toBe(0);
-    expect(result.evidence_count).toBe(0);
+    expect(result.strength_ratio).toBeNull();; expect(result.evidence_count).toBe(0);
     expect(result.confidence).toBe("low");
   });
 

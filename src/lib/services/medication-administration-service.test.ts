@@ -43,9 +43,7 @@ describe("computeAdministrationMetrics", () => {
     expect(m.total_administrations).toBe(0);
     expect(m.children_with_medication).toBe(0);
     expect(m.medication_coverage).toBe(0);
-    expect(m.administration_rate).toBe(0);
-    expect(m.refusal_rate).toBe(0);
-  });
+    expect(m.administration_rate).toBeNull();; expect(m.refusal_rate).toBeNull();; });
 
   it("computes correct counts and rates for populated data", () => {
     const records = [

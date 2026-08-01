@@ -486,10 +486,7 @@ describe("computeGuideMetrics", () => {
     expect(m.formats_available).toBe(0);
     expect(m.children_received).toBe(0);
     expect(m.children_total).toBe(0);
-    expect(m.distribution_rate).toBeNull(); // fab-0.;
-    expect(m.understanding_confirmed_rate).toBeNull(); // fab-0.;
-    expect(m.avg_feedback_score).toBeNull(); // fab-0.;
-    expect(m.overdue_reviews).toBe(0);
+    expect(m.distribution_rate).toBeNull();; expect(m.understanding_confirmed_rate).toBeNull();; expect(m.avg_feedback_score).toBeNull();; expect(m.overdue_reviews).toBe(0);
     expect(Object.keys(m.sections_coverage)).toHaveLength(7);
     expect(Object.keys(m.by_feedback_rating)).toHaveLength(0);
   });
@@ -563,8 +560,7 @@ describe("computeGuideMetrics", () => {
   it("returns 0 distribution rate when totalChildren is 0", () => {
     const dists = [makeDistribution({ id: "d1", child_id: "c1" })];
     const m = computeGuideMetrics([], dists, [], 0);
-    expect(m.distribution_rate).toBeNull(); // fab-0.;
-  });
+    expect(m.distribution_rate).toBeNull();; });
 
   it("returns 100 distribution rate when all children have received", () => {
     const dists = [
@@ -601,8 +597,7 @@ describe("computeGuideMetrics", () => {
 
   it("returns 0 understanding rate when no distributions", () => {
     const m = computeGuideMetrics([], [], [], 5);
-    expect(m.understanding_confirmed_rate).toBeNull(); // fab-0.;
-  });
+    expect(m.understanding_confirmed_rate).toBeNull();; });
 
   it("returns 100 understanding rate when all confirmed", () => {
     const dists = [
@@ -645,8 +640,7 @@ describe("computeGuideMetrics", () => {
 
   it("returns 0 avg feedback score when no feedback", () => {
     const m = computeGuideMetrics([], [], [], 0);
-    expect(m.avg_feedback_score).toBeNull(); // fab-0.;
-  });
+    expect(m.avg_feedback_score).toBeNull();; });
 
   it("calculates avg feedback score with rounding", () => {
     const fbs = [

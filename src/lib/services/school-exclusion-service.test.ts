@@ -53,8 +53,7 @@ describe("computeMetrics", () => {
     expect(m.total_lost_days).toBe(0);
     expect(m.virtual_school_head_notification_rate).toBeNull();
     expect(m.active_exclusion_count).toBe(0);
-    expect(m.repeat_exclusion_rate).toBeNull(); // fab-0.;
-  });
+    expect(m.repeat_exclusion_rate).toBeNull();; });
 
   it("counts formal, unlawful, and alternative exclusion types", () => {
     const rows = [

@@ -39,9 +39,7 @@ describe("computeMetrics", () => {
     expect(m.total_records).toBe(0);
     expect(m.unique_children).toBe(0);
     expect(m.total_gift_value).toBe(0);
-    expect(m.average_gift_value).toBeNull(); // fab-0.;
-    expect(m.highest_gift_value).toBeNull(); // fab-0.;
-    expect(m.over_budget_count).toBe(0);
+    expect(m.average_gift_value).toBeNull();; expect(m.highest_gift_value).toBeNull();; expect(m.over_budget_count).toBe(0);
   });
 
   it("calculates financial metrics correctly", () => {

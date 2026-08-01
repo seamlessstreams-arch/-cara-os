@@ -47,9 +47,7 @@ describe("computeMetrics", () => {
     expect(m.positive_experience_rate).toBeNull();
     expect(m.planned_count).toBe(0);
     expect(m.emergency_count).toBe(0);
-    expect(m.average_per_child).toBeNull(); // fab-0.;
-    expect(m.average_break_duration_days).toBeNull(); // fab-0.;
-  });
+    expect(m.average_per_child).toBeNull();; expect(m.average_break_duration_days).toBeNull();; });
 
   it("counts arrangement and provider type breakdowns", () => {
     const rows = [

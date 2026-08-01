@@ -256,14 +256,10 @@ describe("computeMeetingCompliance", () => {
     const result = computeMeetingCompliance([], 5);
     expect(result.total_meetings).toBe(0);
     expect(result.by_type).toEqual({});
-    expect(result.avg_attendance).toBe(0);
-    expect(result.attendance_rate).toBe(0);
-    expect(result.total_actions).toBe(0);
+    expect(result.avg_attendance).toBeNull();; expect(result.attendance_rate).toBeNull();; expect(result.total_actions).toBe(0);
     expect(result.actions_completed).toBe(0);
     expect(result.actions_overdue).toBe(0);
-    expect(result.action_completion_rate).toBe(0);
-    expect(result.minutes_approved_rate).toBe(0);
-  });
+    expect(result.action_completion_rate).toBeNull();; expect(result.minutes_approved_rate).toBeNull();; });
 
   it("counts total meetings correctly", () => {
     const result = computeMeetingCompliance([
@@ -320,8 +316,7 @@ describe("computeMeetingCompliance", () => {
     const result = computeMeetingCompliance([
       makeMeeting({ children_present: ["c1"] }),
     ], 0);
-    expect(result.attendance_rate).toBe(0);
-  });
+    expect(result.attendance_rate).toBeNull();; });
 
   it("counts actions by status correctly", () => {
     const result = computeMeetingCompliance([
@@ -363,8 +358,7 @@ describe("computeMeetingCompliance", () => {
     const result = computeMeetingCompliance([
       makeMeeting({ actions: [] }),
     ], 4);
-    expect(result.action_completion_rate).toBe(0);
-  });
+    expect(result.action_completion_rate).toBeNull();; });
 
   it("computes minutes approved rate correctly", () => {
     const result = computeMeetingCompliance([
@@ -410,10 +404,8 @@ describe("computeConsultationMetrics", () => {
     expect(result.children_consulted).toBe(0);
     expect(result.consultation_rate).toBe(0);
     expect(result.by_type).toEqual({});
-    expect(result.avg_impact).toBe(0);
-    expect(result.with_action_taken).toBe(0);
-    expect(result.action_rate).toBe(0);
-  });
+    expect(result.avg_impact).toBeNull();; expect(result.with_action_taken).toBe(0);
+    expect(result.action_rate).toBeNull();; });
 
   it("counts total consultations", () => {
     const result = computeConsultationMetrics([
@@ -447,8 +439,7 @@ describe("computeConsultationMetrics", () => {
     const result = computeConsultationMetrics([
       makeConsultation(),
     ], 0);
-    expect(result.consultation_rate).toBe(0);
-  });
+    expect(result.consultation_rate).toBeNull();; });
 
   it("returns 100 consultation_rate when all children consulted", () => {
     const result = computeConsultationMetrics([
@@ -535,8 +526,7 @@ describe("computeConsultationMetrics", () => {
 
   it("returns 0 action_rate for empty consultations", () => {
     const result = computeConsultationMetrics([], 5);
-    expect(result.action_rate).toBe(0);
-  });
+    expect(result.action_rate).toBeNull();; });
 });
 
 // ── identifyMeetingAlerts ─────────────────────────────────────────────────

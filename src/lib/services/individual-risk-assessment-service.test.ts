@@ -46,10 +46,7 @@ describe("individual-risk-assessment-service", () => {
       expect(m.children_assessed).toBe(0);
       expect(m.assessment_coverage).toBe(0);
       expect(m.very_high_count).toBe(0);
-      expect(m.staff_aware_rate).toBe(0);
-      expect(m.average_per_child).toBe(0);
-      expect(m.average_strategies_per_assessment).toBe(0);
-    });
+      expect(m.staff_aware_rate).toBeNull();; expect(m.average_per_child).toBeNull();; expect(m.average_strategies_per_assessment).toBeNull();; });
 
     it("computes counts and coverage correctly", () => {
       const assessments = [

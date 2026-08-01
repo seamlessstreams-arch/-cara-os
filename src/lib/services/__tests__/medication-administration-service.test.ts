@@ -315,8 +315,7 @@ describe("computeAdministrationMetrics", () => {
     });
 
     it("returns zero medication_coverage when totalChildren is 0", () => {
-      expect(computeAdministrationMetrics([], 0).medication_coverage).toBe(0);
-    });
+      expect(computeAdministrationMetrics([], 0).medication_coverage).toBeNull();; });
 
     it("returns zero medication_coverage when totalChildren > 0 but no records", () => {
       expect(computeAdministrationMetrics([], 5).medication_coverage).toBe(0);
@@ -343,32 +342,27 @@ describe("computeAdministrationMetrics", () => {
     });
 
     it("returns zero administration_rate", () => {
-      expect(computeAdministrationMetrics([], 0).administration_rate).toBe(0);
-    });
+      expect(computeAdministrationMetrics([], 0).administration_rate).toBeNull();; });
 
     it("returns zero refusal_rate", () => {
-      expect(computeAdministrationMetrics([], 0).refusal_rate).toBe(0);
-    });
+      expect(computeAdministrationMetrics([], 0).refusal_rate).toBeNull();; });
 
     it("returns zero controlled_drug_count", () => {
       expect(computeAdministrationMetrics([], 0).controlled_drug_count).toBe(0);
     });
 
     it("returns zero controlled_drug_witnessed_rate", () => {
-      expect(computeAdministrationMetrics([], 0).controlled_drug_witnessed_rate).toBe(0);
-    });
+      expect(computeAdministrationMetrics([], 0).controlled_drug_witnessed_rate).toBeNull();; });
 
     it("returns zero mar_chart_updated_rate", () => {
-      expect(computeAdministrationMetrics([], 0).mar_chart_updated_rate).toBe(0);
-    });
+      expect(computeAdministrationMetrics([], 0).mar_chart_updated_rate).toBeNull();; });
 
     it("returns zero side_effects_count", () => {
       expect(computeAdministrationMetrics([], 0).side_effects_count).toBe(0);
     });
 
     it("returns zero side_effects_rate", () => {
-      expect(computeAdministrationMetrics([], 0).side_effects_rate).toBe(0);
-    });
+      expect(computeAdministrationMetrics([], 0).side_effects_rate).toBeNull();; });
 
     it("returns zero prn_count", () => {
       expect(computeAdministrationMetrics([], 0).prn_count).toBe(0);
@@ -444,8 +438,7 @@ describe("computeAdministrationMetrics", () => {
     });
 
     it("controlled_drug_witnessed_rate is 0 when no controlled drugs", () => {
-      expect(computeAdministrationMetrics(single, 1).controlled_drug_witnessed_rate).toBe(0);
-    });
+      expect(computeAdministrationMetrics(single, 1).controlled_drug_witnessed_rate).toBeNull();; });
 
     it("mar_chart_updated_rate is 100 when mar_chart_updated is true", () => {
       expect(computeAdministrationMetrics(single, 1).mar_chart_updated_rate).toBe(100);
@@ -660,8 +653,7 @@ describe("computeAdministrationMetrics", () => {
   describe("medication_coverage edge cases", () => {
     it("returns 0 when totalChildren is 0 and there are records", () => {
       const m = computeAdministrationMetrics([makeRecord()], 0);
-      expect(m.medication_coverage).toBe(0);
-    });
+      expect(m.medication_coverage).toBeNull();; });
 
     it("returns 100 when all children covered", () => {
       const records = [
@@ -835,8 +827,7 @@ describe("computeAdministrationMetrics", () => {
       const records = [
         makeRecord({ id: "1", controlled_drug: false }),
       ];
-      expect(computeAdministrationMetrics(records, 1).controlled_drug_witnessed_rate).toBe(0);
-    });
+      expect(computeAdministrationMetrics(records, 1).controlled_drug_witnessed_rate).toBeNull();; });
 
     it("is 100 when all controlled drugs are witnessed", () => {
       const records = [

@@ -356,14 +356,11 @@ describe("computeIdentityMetrics", () => {
     const result = computeIdentityMetrics([], []);
     expect(result.children_with_profiles).toBe(0);
     expect(result.total_children).toBe(0);
-    expect(result.profile_review_rate).toBeNull(); // fab-0.;
-    expect(result.actions_this_quarter).toBe(0);
+    expect(result.profile_review_rate).toBeNull();; expect(result.actions_this_quarter).toBe(0);
     expect(result.by_action_type).toEqual({});
-    expect(result.satisfaction_rate).toBeNull(); // fab-0.;
-    expect(result.children_with_community_links).toBe(0);
+    expect(result.satisfaction_rate).toBeNull();; expect(result.children_with_community_links).toBe(0);
     expect(result.children_with_language_support).toBe(0);
-    expect(result.avg_actions_per_child).toBeNull(); // fab-0.;
-  });
+    expect(result.avg_actions_per_child).toBeNull();; });
 
   // ── children_with_profiles ──────────────────────────────────────────
 
@@ -474,8 +471,7 @@ describe("computeIdentityMetrics", () => {
       makeProfile({ id: "p1", child_id: "c1", status: "archived" }),
     ];
     const result = computeIdentityMetrics(profiles, []);
-    expect(result.profile_review_rate).toBeNull(); // fab-0.;
-  });
+    expect(result.profile_review_rate).toBeNull();; });
 
   // ── actions_this_quarter ────────────────────────────────────────────
 
@@ -588,8 +584,7 @@ describe("computeIdentityMetrics", () => {
       makeAction({ id: "a2", child_satisfaction: null }),
     ];
     const result = computeIdentityMetrics([], actions);
-    expect(result.satisfaction_rate).toBeNull(); // fab-0.;
-  });
+    expect(result.satisfaction_rate).toBeNull();; });
 
   it("counts very_positive as positive for satisfaction rate", () => {
     const actions = [
@@ -702,8 +697,7 @@ describe("computeIdentityMetrics", () => {
 
   it("returns 0 avg_actions_per_child for no actions", () => {
     const result = computeIdentityMetrics([], []);
-    expect(result.avg_actions_per_child).toBeNull(); // fab-0.;
-  });
+    expect(result.avg_actions_per_child).toBeNull();; });
 
   it("returns correct avg for single child with one action", () => {
     const actions = [

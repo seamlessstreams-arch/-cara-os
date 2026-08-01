@@ -84,10 +84,7 @@ describe("computeDisciplinaryMetrics", () => {
     expect(m.total_grievances).toBe(0);
     expect(m.active_disciplinary_cases).toBe(0);
     expect(m.active_grievance_cases).toBe(0);
-    expect(m.avg_investigation_days).toBe(0);
-    expect(m.lado_referral_rate).toBe(0);
-    expect(m.informal_resolution_rate).toBe(0);
-  });
+    expect(m.avg_investigation_days).toBeNull();; expect(m.lado_referral_rate).toBeNull();; expect(m.informal_resolution_rate).toBeNull();; });
 
   it("counts active disciplinary cases (all statuses except closed)", () => {
     const discs = [
