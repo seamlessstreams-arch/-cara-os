@@ -585,11 +585,11 @@ export function evaluateLegalEngagement(
   // Minutes recorded: 0-5
   const minutesScore = (minutesRecordedRate / 100) * 5;
   // Actions agreed: 0-4 (capped — any positive count is good)
-  const actionsScore = actionsAgreed > 0 ? Math.min(4, (actionsAgreed / (meetings.length * 3)) * 4) : 0;
+  const actionsScore = actionsAgreed > 0 ? Math.min(4, (actionsAgreed / (meetings.length * 3)) * 4) : null;
   // Variety of meetings: 0-3
   const varietyScore = Math.min(3, (meetingTypeCount / 5) * 3);
 
-  let score = attendanceScore + participationScore + minutesScore + actionsScore + varietyScore;
+  let score = attendanceScore + participationScore + minutesScore + (actionsScore ?? 0) + varietyScore;
   score = Math.min(25, Math.max(0, Math.round(score * 10) / 10));
 
   // Insights
@@ -792,11 +792,11 @@ export function buildChildOrderProfiles(
 
     // Score (0-10): compliance rate (0-4) + reviews conducted (0-3) + meetings (0-3)
     const complianceScore = totalConditions > 0 ? (complianceRate / 100) * 4 : 4;
-    const reviewScore = reviewsConducted > 0 ? Math.min(3, reviewsConducted) : 0;
-    const meetingScore = meetingsAttended > 0 ? Math.min(3, meetingsAttended) : 0;
+    const reviewScore = reviewsConducted > 0 ? Math.min(3, reviewsConducted) : null;
+    const meetingScore = meetingsAttended > 0 ? Math.min(3, meetingsAttended) : null;
 
     const overallScore = Math.min(10, Math.max(0,
-      Math.round((complianceScore + reviewScore + meetingScore) * 10) / 10,
+      Math.round((complianceScore + (reviewScore ?? 0) + (meetingScore ?? 0)) * 10) / 10,
     ));
 
     return {

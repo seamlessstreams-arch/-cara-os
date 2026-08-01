@@ -141,15 +141,15 @@ export function analyseKeyworking(input: KeyworkingInput): KeyworkingAssessment 
   // ── Quality metrics ─────────────────────────────────────────────────
   const avgDuration = occurred.length > 0
     ? Math.round(occurred.reduce((sum, s) => sum + s.actualDuration, 0) / occurred.length)
-    : 0;
+    : null;
 
   const childLedRate = occurred.length > 0
     ? Math.round((occurred.filter(s => s.childLed).length / occurred.length) * 100) / 100
-    : 0;
+    : null;
 
   const wishesRate = occurred.length > 0
     ? Math.round((occurred.filter(s => s.wishesAndFeelingsRecorded).length / occurred.length) * 100) / 100
-    : 0;
+    : null;
 
   const totalActions = occurred.reduce((sum, s) => sum + s.actionsAgreed, 0);
   const completedActions = occurred.reduce((sum, s) => sum + s.actionsCompleted, 0);
@@ -583,8 +583,8 @@ function buildRecommendations(
   // Private time
   const privateRate = occurred.length > 0
     ? occurred.filter(s => s.privateTime).length / occurred.length
-    : 0;
-  if (privateRate < 0.5 && occurred.length >= 2) {
+    : null;
+  if ((privateRate ?? 0) < 0.5 && occurred.length >= 2) {
     recs.push("Ensure private 1:1 time in every keywork session");
   }
 

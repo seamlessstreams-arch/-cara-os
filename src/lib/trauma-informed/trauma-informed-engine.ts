@@ -657,7 +657,7 @@ export function evaluateConsultation(
     }
   }
   const actionCompletionRate =
-    totalActions > 0 ? round2((completedActions / totalActions) * 100) : 0;
+    totalActions > 0 ? round2((completedActions / totalActions) * 100) : null;
 
   // Children coverage
   const childrenDiscussedIds = uniqueStrings(
@@ -670,7 +670,7 @@ export function evaluateConsultation(
   const childrenCoverage =
     allChildIds.length > 0
       ? round2((childrenDiscussedIds.length / allChildIds.length) * 100)
-      : 0;
+      : null;
 
   // Specialist variety
   const consultationTypes = uniqueStrings(
@@ -682,9 +682,9 @@ export function evaluateConsultation(
   // Frequency: up to 5 points (1+/month = full)
   const frequencyPts = Math.min(consultationFrequencyPerMonth, 1) * 5;
   // Action completion: up to 4 points
-  const actionPts = (actionCompletionRate / 100) * 4;
+  const actionPts = ((actionCompletionRate ?? 0) / 100) * 4;
   // Children coverage: up to 3 points
-  const coveragePts = (childrenCoverage / 100) * 3;
+  const coveragePts = ((childrenCoverage ?? 0) / 100) * 3;
   // Specialist variety: up to 3 points (3+ types = full)
   const varietyPts = Math.min(specialistVariety / 3, 1) * 3;
 
@@ -756,7 +756,7 @@ export function evaluateTraumaScreening(
   const triggerDocumentationRate =
     latestList.length > 0
       ? round2((withTriggers / latestList.length) * 100)
-      : 0;
+      : null;
 
   // Coping strategies
   const withCoping = latestList.filter(
@@ -765,7 +765,7 @@ export function evaluateTraumaScreening(
   const copingStrategyRate =
     latestList.length > 0
       ? round2((withCoping / latestList.length) * 100)
-      : 0;
+      : null;
 
   // Therapeutic needs assessed
   const needsAssessed = latestList.filter(
@@ -774,14 +774,14 @@ export function evaluateTraumaScreening(
   const therapeuticNeedsAssessedRate =
     latestList.length > 0
       ? round2((needsAssessed / latestList.length) * 100)
-      : 0;
+      : null;
 
   // Referral rate
   const referrals = latestList.filter((s) => s.referralMade).length;
   const referralRate =
     latestList.length > 0
       ? round2((referrals / latestList.length) * 100)
-      : 0;
+      : null;
 
   // Averages
   const totalTriggers = latestList.reduce(
@@ -793,9 +793,9 @@ export function evaluateTraumaScreening(
     0
   );
   const averageTriggersPerChild =
-    latestList.length > 0 ? round2(totalTriggers / latestList.length) : 0;
+    latestList.length > 0 ? round2(totalTriggers / latestList.length) : null;
   const averageCopingStrategiesPerChild =
-    latestList.length > 0 ? round2(totalCoping / latestList.length) : 0;
+    latestList.length > 0 ? round2(totalCoping / latestList.length) : null;
 
   // Overdue reviews
   let overdueReviews = 0;
@@ -809,13 +809,13 @@ export function evaluateTraumaScreening(
   // Screening coverage: up to 8 points
   const coveragePts = (screeningCoverage / 100) * 8;
   // Trigger documentation: up to 4 points
-  const triggerPts = (triggerDocumentationRate / 100) * 4;
+  const triggerPts = ((triggerDocumentationRate ?? 0) / 100) * 4;
   // Coping strategy identification: up to 4 points
-  const copingPts = (copingStrategyRate / 100) * 4;
+  const copingPts = ((copingStrategyRate ?? 0) / 100) * 4;
   // Therapeutic needs + referrals: up to 4 points
-  const needsPts = (therapeuticNeedsAssessedRate / 100) * 2;
+  const needsPts = ((therapeuticNeedsAssessedRate ?? 0) / 100) * 2;
   // Referral is positive: up to 2 points (having made referrals where appropriate)
-  const referralPts = (referralRate / 100) * 2;
+  const referralPts = ((referralRate ?? 0) / 100) * 2;
 
   const score = round2(
     clamp(coveragePts + triggerPts + copingPts + needsPts + referralPts, 0, 20)

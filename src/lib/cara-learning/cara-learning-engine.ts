@@ -255,13 +255,13 @@ export function evaluateAgentReadiness(
   const estimatedInternalCost = profile.averageCostPerRun * 0.3; // assume 70% saving
   const costSavingRate = profile.averageCostPerRun > 0
     ? (profile.averageCostPerRun - estimatedInternalCost) / profile.averageCostPerRun
-    : 0;
-  const costMet = costSavingRate >= COST_SAVING_MINIMUM;
+    : null;
+  const costMet = (costSavingRate ?? 0) >= COST_SAVING_MINIMUM;
   requirements.push({
     criterion: "Lower cost",
     required: false,
     met: costMet,
-    evidence: `Estimated saving: ${Math.round(costSavingRate * 100)}% (minimum: ${COST_SAVING_MINIMUM * 100}%)`,
+    evidence: `Estimated saving: ${Math.round((costSavingRate ?? 0) * 100)}% (minimum: ${COST_SAVING_MINIMUM * 100}%)`,
   });
 
   // Requirement: Human approval
@@ -433,7 +433,7 @@ export function calculateOrganisationLearningMetrics(
   const totalAnnualSaving = totalMonthlySaving * 12;
   const costReductionRate = totalCurrentMonthlyCost > 0
     ? Math.round((totalMonthlySaving / totalCurrentMonthlyCost) * 100)
-    : 0;
+    : null;
 
   // Readiness
   const agentsReadyForShadow = results.filter(
@@ -447,10 +447,10 @@ export function calculateOrganisationLearningMetrics(
   const shadowProfiles = orgProfiles.filter(p => p.shadowModeEnabled);
   const averageShadowAccuracy = shadowProfiles.length > 0
     ? Math.round(shadowProfiles.reduce((s, p) => s + p.shadowAccuracyScore, 0) / shadowProfiles.length)
-    : 0;
+    : null;
   const averageShadowSafety = shadowProfiles.length > 0
     ? Math.round(shadowProfiles.reduce((s, p) => s + p.shadowSafetyScore, 0) / shadowProfiles.length)
-    : 0;
+    : null;
   const averageSuccessRate = Math.round(
     orgProfiles.reduce((s, p) => s + p.successRate, 0) / totalAgents
   );

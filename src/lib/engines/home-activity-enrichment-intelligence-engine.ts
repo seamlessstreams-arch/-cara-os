@@ -120,7 +120,7 @@ function daysAgo(today: string, date: string): number | null {
 
 function isWithin(today: string, date: string, days: number): boolean {
   const da = daysAgo(today, date);
-  return da >= 0 && da <= days;
+  return (da ?? 0) >= 0 && (da ?? 0) <= days;
 }
 
 function clamp(v: number, lo: number, hi: number): number {

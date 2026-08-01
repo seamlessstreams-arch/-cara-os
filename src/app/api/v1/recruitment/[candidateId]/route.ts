@@ -142,7 +142,7 @@ export async function GET(
   );
   const compliance_score = requiredChecks.length > 0
     ? Math.round((verifiedChecks.length / requiredChecks.length) * 100)
-    : 0;
+    : null;
 
   const today = new Date().toISOString().slice(0, 10);
   const days_in_stage = Math.max(0, Math.floor(

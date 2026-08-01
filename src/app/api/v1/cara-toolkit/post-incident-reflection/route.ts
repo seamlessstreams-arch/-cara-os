@@ -67,7 +67,7 @@ export async function GET() {
   const rate =
     incidents.length > 0
       ? Math.round((withDebrief.length / incidents.length) * 100)
-      : 0;
+      : null;
 
   const debriefTimes = withDebrief
     .filter((r) => r.daysToDebrief !== null)
@@ -89,7 +89,7 @@ export async function GET() {
   ).length;
 
   const insights: string[] = [];
-  if (rate < 50 && incidents.length > 0) {
+  if ((rate ?? 0) < 50 && incidents.length > 0) {
     insights.push(
       `Only ${rate}% of incidents have a completed debrief. Reflective practice after incidents is essential for team learning and Reg 34 compliance.`
     );
@@ -109,16 +109,16 @@ export async function GET() {
       `${noChildVoice} debrief${noChildVoice > 1 ? "s do" : " does"} not record the child's perspective. Including the child's voice in post-incident reflection strengthens trauma-informed practice.`
     );
   }
-  if (rate >= 80 && overdueDebriefs === 0 && incidents.length > 0) {
+  if ((rate ?? 0) >= 80 && overdueDebriefs === 0 && incidents.length > 0) {
     insights.push(
       `Strong reflective culture — ${rate}% of incidents have been debriefed with no outstanding overdue reflections. Ensure learning from debriefs is fed back into practice.`
     );
   }
 
   const overallSignal: SignalColour =
-    overdueDebriefs >= 3 || (rate < 30 && incidents.length > 3)
+    overdueDebriefs >= 3 || ((rate ?? 0) < 30 && incidents.length > 3)
       ? "red"
-      : overdueDebriefs > 0 || rate < 60
+      : overdueDebriefs > 0 || (rate ?? 0) < 60
       ? "amber"
       : "green";
 

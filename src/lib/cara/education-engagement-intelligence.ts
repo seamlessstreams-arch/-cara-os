@@ -112,14 +112,14 @@ export function analyseEducationEngagement(input: EducationInput): EducationAsse
   // ── Calculate attendance ───────────────────────────────────────────────────
   const totalExpected = weeks.reduce((s, w) => s + w.sessionsExpected, 0);
   const totalAttended = weeks.reduce((s, w) => s + w.sessionsAttended, 0);
-  const currentAttendance = totalExpected > 0 ? Math.round((totalAttended / totalExpected) * 100) : 0;
+  const currentAttendance = totalExpected > 0 ? Math.round((totalAttended / totalExpected) * 100) : null;
 
   // ── Attendance category ───────────────────────────────────────────────────
   let attendanceCategory: EducationAssessment["attendanceCategory"];
-  if (currentAttendance >= 96) attendanceCategory = "above_national";
-  else if (currentAttendance >= NATIONAL_AVERAGE_ATTENDANCE) attendanceCategory = "national_average";
-  else if (currentAttendance >= PERSISTENT_ABSENCE_THRESHOLD) attendanceCategory = "below_average";
-  else if (currentAttendance >= SEVERE_ABSENCE_THRESHOLD) attendanceCategory = "persistent_absence";
+  if ((currentAttendance ?? 0) >= 96) attendanceCategory = "above_national";
+  else if ((currentAttendance ?? 0) >= NATIONAL_AVERAGE_ATTENDANCE) attendanceCategory = "national_average";
+  else if ((currentAttendance ?? 0) >= PERSISTENT_ABSENCE_THRESHOLD) attendanceCategory = "below_average";
+  else if ((currentAttendance ?? 0) >= SEVERE_ABSENCE_THRESHOLD) attendanceCategory = "persistent_absence";
   else attendanceCategory = "severe_absence";
 
   // ── Attendance trend ──────────────────────────────────────────────────────
@@ -430,15 +430,15 @@ function assessRegulatory(input: EducationInput, attendance: number): EducationR
   const engagementRatings = input.weeks.filter(w => w.engagementRating != null);
   const avgEngagement = engagementRatings.length > 0
     ? engagementRatings.reduce((s, w) => s + (w.engagementRating ?? 0), 0) / engagementRatings.length
-    : 0;
+    : null;
 
   flags.push({
     regulation: "SCCIF",
     area: "Educational progress & achievement",
-    status: avgEngagement >= 3.5 || (attendance >= 90 && input.currentExclusions === 0) ? "met" :
+    status: (avgEngagement ?? 0) >= 3.5 || (attendance >= 90 && input.currentExclusions === 0) ? "met" :
             attendance >= 75 ? "partially_met" : "not_met",
-    detail: avgEngagement > 0
-      ? `Average engagement rating: ${avgEngagement.toFixed(1)}/5`
+    detail: (avgEngagement ?? 0) > 0
+      ? `Average engagement rating: ${(avgEngagement ?? 0).toFixed(1)}/5`
       : `Based on attendance (${attendance}%) and exclusion data`,
   });
 

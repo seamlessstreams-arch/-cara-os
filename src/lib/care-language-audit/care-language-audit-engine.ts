@@ -302,7 +302,7 @@ export function buildCareLanguageAudit(store: ReturnType<typeof getStore>): Care
 
   const totalHits = hits.length;
   const totalRecordsScanned = incidents.length + behaviourLog.length + dailyLog.length;
-  const hitRate = totalRecordsScanned > 0 ? Math.round((totalHits / totalRecordsScanned) * 100) : 0;
+  const hitRate = totalRecordsScanned > 0 ? Math.round((totalHits / totalRecordsScanned) * 100) : null;
 
   return {
     staffProfiles,

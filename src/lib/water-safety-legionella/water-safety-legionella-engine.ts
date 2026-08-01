@@ -221,7 +221,7 @@ export interface WaterSafetyLocationProfile {
   checkCount: number;
   passRate: number;
   withinSafeRangeRate: number;
-  averageTemperature: number;
+  averageTemperature: number | null;
   assessmentCount: number;
   latestRiskLevel: RiskLevel | null;
   score: number;
@@ -704,7 +704,7 @@ export function buildWaterSafetyLocationProfiles(
               checkCount) *
               10
           ) / 10
-        : 0;
+        : null;
 
     const assessmentCount = data.assessments.length;
 

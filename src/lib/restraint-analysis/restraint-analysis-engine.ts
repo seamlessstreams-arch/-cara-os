@@ -166,7 +166,7 @@ export interface ReductionResult {
   reductionPlansInPlace: number;
   reductionPlanRate: number;
   triggerAwarenessRate: number;
-  alternativeStrategiesAverage: number;
+  alternativeStrategiesAverage: number | null;
   sensoryProfileRate: number;
   staffTrainingCompliance: number;
   overallScore: number; // 0–20
@@ -497,7 +497,7 @@ export function evaluateReduction(
   );
   const avgAlternatives = plansForChildren.length > 0
     ? Math.round((totalAlternatives / plansForChildren.length) * 10) / 10
-    : 0;
+    : null;
 
   const sensory = plansForChildren.filter((r) => r.sensoryProfileCompleted).length;
   const sensoryRate = pct(sensory, plansForChildren.length);
@@ -514,9 +514,9 @@ export function evaluateReduction(
   score += (sensoryRate / 100) * 2;          // Sensory profiles: 2 pts
 
   // Alternative strategies: up to 3 pts
-  if (avgAlternatives >= 5) score += 3;
-  else if (avgAlternatives >= 3) score += 2;
-  else if (avgAlternatives >= 1) score += 1;
+  if ((avgAlternatives ?? 0) >= 5) score += 3;
+  else if ((avgAlternatives ?? 0) >= 3) score += 2;
+  else if ((avgAlternatives ?? 0) >= 1) score += 1;
 
   return {
     childrenWithRestraints: childrenWithRestraints.size,

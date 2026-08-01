@@ -502,7 +502,7 @@ export function evaluateHydrationStandards(
   const averageTargetCups = Math.round((totalTargetCups / totalRecords) * 10) / 10;
   const averageCupsVsTargetRate = totalTargetCups > 0
     ? Math.round((totalCupsConsumed / totalTargetCups) * 100)
-    : 0;
+    : null;
 
   // Hydration breakdown
   const hydrationBreakdown: Record<HydrationLevel, number> = {
@@ -521,7 +521,7 @@ export function evaluateHydrationStandards(
   // Encouragement rate: max 6
   score += (encouragementGivenRate / 100) * 6;
   // Average cups vs target: max 6
-  const cupsRatio = Math.min(averageCupsVsTargetRate / 100, 1);
+  const cupsRatio = Math.min((averageCupsVsTargetRate ?? 0) / 100, 1);
   score += cupsRatio * 6;
 
   score = Math.min(Math.round(score * 10) / 10, 25);
@@ -548,9 +548,9 @@ export function evaluateHydrationStandards(
     concerns.push("Hydration encouragement at " + encouragementGivenRate + "% — staff should actively promote fluid intake");
   }
 
-  if (averageCupsVsTargetRate >= 90) {
+  if ((averageCupsVsTargetRate ?? 0) >= 90) {
     strengths.push("Average fluid intake at " + averageCupsVsTargetRate + "% of target — children well-hydrated");
-  } else if (averageCupsVsTargetRate < 70) {
+  } else if ((averageCupsVsTargetRate ?? 0) < 70) {
     concerns.push("Average fluid intake at " + averageCupsVsTargetRate + "% of target — dehydration risk");
   }
 
@@ -841,7 +841,7 @@ export function buildChildNutritionProfiles(
     };
     const averageNutritionScore = totalMeals > 0
       ? Math.round((childMeals.reduce((sum, m) => sum + nutritionScoreMap[m.nutritionQuality], 0) / totalMeals) * 10) / 10
-      : 0;
+      : null;
 
     // Portion full/most rate
     const portionFullMostCount = childMeals.filter(
@@ -861,14 +861,14 @@ export function buildChildNutritionProfiles(
     const hydrationRecordsCount = childHydration.length;
     const averageHydrationCups = hydrationRecordsCount > 0
       ? Math.round((childHydration.reduce((sum, r) => sum + r.cupsConsumed, 0) / hydrationRecordsCount) * 10) / 10
-      : 0;
+      : null;
     const hydrationTargetMetCount = childHydration.filter((r) => r.cupsConsumed >= r.targetCups).length;
     const hydrationTargetMetRate = pct(hydrationTargetMetCount, hydrationRecordsCount);
 
     // Overall score 0-10
     let overallScore = 0;
     // Nutrition quality contribution (0-3): averageNutritionScore out of 4, scaled to 3
-    overallScore += (averageNutritionScore / 4) * 3;
+    overallScore += ((averageNutritionScore ?? 0) / 4) * 3;
     // Portion consumption (0-2)
     overallScore += (portionFullMostRate / 100) * 2;
     // Satisfaction (0-2)

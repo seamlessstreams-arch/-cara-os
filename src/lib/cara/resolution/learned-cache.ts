@@ -116,7 +116,7 @@ export function getLearnedCacheStats(): {
   entries: number;
   lookups: number;
   hits: number;
-  hit_rate: number;
+  hit_rate: number | null;
   claude_calls_saved: number;
 } {
   const entries = db.caraResponseCache.findAll();
@@ -125,7 +125,7 @@ export function getLearnedCacheStats(): {
     entries: entries.length,
     lookups,
     hits,
-    hit_rate: lookups > 0 ? Math.round((hits / lookups) * 100) / 100 : 0,
+    hit_rate: lookups > 0 ? Math.round((hits / lookups) * 100) / 100 : null,
     claude_calls_saved: replays, // each replay is one Claude call that didn't happen
   };
 }

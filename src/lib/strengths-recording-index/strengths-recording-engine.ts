@@ -307,7 +307,7 @@ export function buildStrengthsRecordingIndex(store: ReturnType<typeof getStore>)
 
   const totalRecords = incidents.length + dailyLog.length + behaviourLog.length;
   const totalWithStrengths = [...staffAcc.values()].reduce((s, a) => s + a.withStrengths, 0);
-  const overallRate = totalRecords > 0 ? Math.round((totalWithStrengths / totalRecords) * 100) : 0;
+  const overallRate = totalRecords > 0 ? Math.round((totalWithStrengths / totalRecords) * 100) : null;
   const topPractitioner = staffProfiles[0] ?? null;
   const mostDocumentedChild = childProfiles[0] ?? null;
 

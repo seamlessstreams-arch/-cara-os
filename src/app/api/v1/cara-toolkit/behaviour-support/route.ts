@@ -57,7 +57,7 @@ export async function GET() {
       strategy,
       count: data.count,
       positiveOutcomes: data.positive,
-      effectivenessRate: data.count > 0 ? Math.round((data.positive / data.count) * 100) : 0,
+      effectivenessRate: data.count > 0 ? Math.round((data.positive / data.count) * 100) : null,
     }))
   );
 
@@ -118,7 +118,7 @@ export async function GET() {
           strategy,
           count: data.count,
           positiveOutcomes: data.positive,
-          effectivenessRate: data.count > 0 ? Math.round((data.positive / data.count) * 100) : 0,
+          effectivenessRate: data.count > 0 ? Math.round((data.positive / data.count) * 100) : null,
         })),
         3
       ),

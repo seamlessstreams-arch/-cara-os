@@ -185,8 +185,8 @@ export interface RestraintAnalysis {
   totalRestraints: number;
   restraintsThisMonth: number;
   restraintsThisQuarter: number;
-  averageDurationMinutes: number;
-  longestDurationMinutes: number;
+  averageDurationMinutes: number | null;
+  longestDurationMinutes: number | null;
   childrenRestrained: number;
   staffInvolved: number;
   // Null across the board when no restraint has been recorded: there is
@@ -390,8 +390,8 @@ export function analyzeRestraints(
   const durations = homeIncidents.map(i => i.restraint!.durationMinutes);
   const averageDuration = durations.length > 0
     ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
-    : 0;
-  const longestDuration = durations.length > 0 ? Math.max(...durations) : 0;
+    : null;
+  const longestDuration = durations.length > 0 ? Math.max(...durations) : null;
 
   // People
   const uniqueChildren = new Set(homeIncidents.map(i => i.childId));

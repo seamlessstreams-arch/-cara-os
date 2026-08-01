@@ -345,7 +345,7 @@ export function evaluateSupportProvision(
   const childrenWithSessions = new Set(sessions.map((s) => s.childId)).size;
   const averageSessionsPerChild = profileCount > 0
     ? Math.round((sessions.length / profileCount) * 10) / 10
-    : 0;
+    : null;
 
   // Scoring: quality good+ (0-7), child engaged (0-6), progress noted (0-6), session regularity (0-6)
   let score = 0;
@@ -354,9 +354,9 @@ export function evaluateSupportProvision(
   score += Math.round((progressNotedRate / 100) * 6);
 
   // Session regularity: based on average sessions per child with needs
-  if (averageSessionsPerChild >= 4) score += 6;
-  else if (averageSessionsPerChild >= 2) score += 4;
-  else if (averageSessionsPerChild >= 1) score += 2;
+  if ((averageSessionsPerChild ?? 0) >= 4) score += 6;
+  else if ((averageSessionsPerChild ?? 0) >= 2) score += 4;
+  else if ((averageSessionsPerChild ?? 0) >= 1) score += 2;
   else if (sessions.length > 0) score += 1;
 
   return {

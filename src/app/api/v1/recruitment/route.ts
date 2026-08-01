@@ -48,7 +48,7 @@ function buildCandidateSummary(candidate: CandidateProfile, today: string) {
   );
   const compliance_score = requiredChecks.length > 0
     ? Math.round((verifiedChecks.length / requiredChecks.length) * 100)
-    : 0;
+    : null;
 
   const days_in_stage = daysBetweenDays(candidate.updated_at, today);
 
@@ -122,7 +122,7 @@ export async function GET(_req: NextRequest) {
   const appointed = built.filter((b) => b.isAppointed);
   const avgDaysToAppoint = appointed.length > 0
     ? Math.round(appointed.reduce((s, b) => s + b.daysToAppoint, 0) / appointed.length)
-    : 0;
+    : null;
 
   const stats = {
     total_active: built.filter((b) => b.isActive).length,

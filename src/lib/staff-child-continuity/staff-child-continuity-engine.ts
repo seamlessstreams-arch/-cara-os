@@ -78,7 +78,7 @@ export interface ChildContinuity {
 
 export interface ContinuityOverview {
   children_analysed: number;
-  avg_continuity_index: number;
+  avg_continuity_index: number | null;
   strong_count: number;
   adequate_count: number;
   fragmented_count: number;            // fragmented + critical
@@ -170,7 +170,7 @@ export function computeStaffChildContinuity(input: StaffChildContinuityInput): S
     const key_worker_active = !!kwStaff?.active;
     const kwSessions = kwId ? sessions.filter((s) => s.staff_id === kwId) : [];
     const key_worker_sessions = kwSessions.length;
-    const key_worker_share = sessions_90d > 0 ? Math.round((key_worker_sessions / sessions_90d) * 100) : 0;
+    const key_worker_share = sessions_90d > 0 ? Math.round((key_worker_sessions / sessions_90d) * 100) : null;
 
     const lastSession = sessions
       .map((s) => daysAgo(s.date, today))
@@ -184,7 +184,7 @@ export function computeStaffChildContinuity(input: StaffChildContinuityInput): S
     // Continuity index — weighted blend of key-worker share, recency of the
     // key-worker relationship, concentration of staff, and session frequency.
     let continuity_index = Math.round(
-      0.40 * key_worker_share +
+      0.40 * (key_worker_share ?? 0) +
       0.25 * recencyScore(days_since_last_keyworker_session) +
       0.20 * concentrationScore(distinct_staff) +
       0.15 * frequencyScore(sessions_90d),
@@ -197,7 +197,7 @@ export function computeStaffChildContinuity(input: StaffChildContinuityInput): S
     } else if (!key_worker_active) {
       flags.push("Assigned key worker is no longer active (left or inactive)");
       continuity_index = Math.min(continuity_index, 40);
-    } else if (sessions_90d > 0 && key_worker_share < 40) {
+    } else if (sessions_90d > 0 && (key_worker_share ?? 0) < 40) {
       flags.push("Assigned key worker is delivering few or none of this child's sessions");
     }
     if (sessions_90d === 0) {
@@ -303,7 +303,7 @@ function buildOverview(children: ChildContinuity[]): ContinuityOverview {
     children_analysed: children.length,
     avg_continuity_index: children.length > 0
       ? Math.round(children.reduce((s, c) => s + c.continuity_index, 0) / children.length)
-      : 0,
+      : null,
     strong_count: children.filter((c) => c.band === "strong").length,
     adequate_count: children.filter((c) => c.band === "adequate").length,
     fragmented_count: children.filter((c) => c.band === "fragmented" || c.band === "critical").length,

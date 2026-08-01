@@ -189,7 +189,7 @@ export interface HomeTherapeuticMetrics {
   childrenDeclining: number;
   childrenInCrisis: number;
   crisisEventsThisMonth: number;
-  averageDeEscalationTime: number;
+  averageDeEscalationTime: number | null;
   camhsActiveCount: number;
   camhsWaitingCount: number;
   sdqAverageScore: number;
@@ -437,7 +437,7 @@ export function calculateHomeTherapeuticMetrics(
   const interventionAttendanceRate = rate(totalAttended, totalSessions);
   const averageEffectiveness = allActiveInterventions.length > 0
     ? Math.round(allActiveInterventions.reduce((sum, i) => sum + i.effectiveness, 0) / allActiveInterventions.length)
-    : 0;
+    : null;
 
   if (below(interventionAttendanceRate, 80)) {
     warnings.push(`Intervention attendance rate at ${formatRate(interventionAttendanceRate)} — below 80% target`);
@@ -471,7 +471,7 @@ export function calculateHomeTherapeuticMetrics(
   );
   const avgDeEscalation = crisisEventsThisMonth.length > 0
     ? Math.round(crisisEventsThisMonth.reduce((sum, c) => sum + c.deEscalationTime, 0) / crisisEventsThisMonth.length)
-    : 0;
+    : null;
 
   // CAMHS
   const camhsActiveCount = profiles.filter((p) => p.camhsReferral.status === "active_treatment").length;
@@ -481,7 +481,7 @@ export function calculateHomeTherapeuticMetrics(
   const sdqScores = profiles.filter((p) => p.sdqScore !== undefined).map((p) => p.sdqScore!);
   const sdqAverageScore = sdqScores.length > 0
     ? Math.round(sdqScores.reduce((a, b) => a + b, 0) / sdqScores.length)
-    : 0;
+    : null;
 
   // Therapeutic hours (estimate from active interventions)
   const weeklyHours = allActiveInterventions.reduce((sum, i) => {

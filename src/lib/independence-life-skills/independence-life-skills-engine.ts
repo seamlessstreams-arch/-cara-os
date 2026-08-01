@@ -345,7 +345,7 @@ export function evaluateSkillDevelopment(
   const childIds = new Set(assessments.map((a) => a.childId));
   const averageDomainsPerChild = childIds.size > 0
     ? Math.round((assessments.length / childIds.size) * 10) / 10
-    : 0;
+    : null;
 
   const notYetStartedCount = assessments.filter((a) => a.competenceLevel === "not_yet_started").length;
 
@@ -354,12 +354,12 @@ export function evaluateSkillDevelopment(
   // Independent/mostly rate (0-8)
   score += Math.round((independentMostlyRate / 100) * 8);
   // Improvement rate (0-6)
-  score += withPrevious.length > 0 ? Math.round((improvementRate / 100) * 6) : 0;
+  score += withPrevious.length > 0 ? Math.round((improvementRate / 100) * 6) : null;
   // Domain coverage (0-6): more domains = better
   const domainCoverage = Math.min(domainsAssessed / 8, 1);
   score += Math.round(domainCoverage * 6);
   // Average domains per child (0-5): target ≥6
-  const avgCoverage = Math.min(averageDomainsPerChild / 6, 1);
+  const avgCoverage = Math.min((averageDomainsPerChild ?? 0) / 6, 1);
   score += Math.round(avgCoverage * 5);
 
   // Penalty for not_yet_started

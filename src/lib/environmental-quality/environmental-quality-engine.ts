@@ -566,10 +566,10 @@ export function generateEnvironmentalQualityIntelligence(
   //    - Photographic evidence (5 pts)
   const inspScoreNorm = inspectionQuality.inspectionCount > 0
     ? ((inspectionQuality.averageScore - 1) / 9) * 15
-    : 0;
+    : null;
   const areaCovPts = (inspectionQuality.areaCoverageRate / 100) * 5;
   const photoPts = (inspectionQuality.photographicRate / 100) * 5;
-  const inspScore = Math.min(25, Math.round(inspScoreNorm + areaCovPts + photoPts));
+  const inspScore = Math.min(25, Math.round((inspScoreNorm ?? 0) + areaCovPts + photoPts));
 
   // 2. Maintenance Responsiveness (25 pts)
   //    - Completion rate (10 pts)
@@ -579,14 +579,14 @@ export function generateEnvironmentalQualityIntelligence(
   const completionPts = (maintenanceResponsiveness.completionRate / 100) * 10;
   const noOverduePts = maintenanceResponsiveness.totalRequests > 0
     ? ((100 - maintenanceResponsiveness.overdueRate) / 100) * 5
-    : 0;
+    : null;
   const speedPts = maintenanceResponsiveness.completedCount > 0
     ? Math.min(5, Math.max(0, 5 - (maintenanceResponsiveness.averageDaysToResolve - 3) * 0.5))
-    : 0;
+    : null;
   const emergencyPts = maintenanceResponsiveness.totalRequests > 0
     ? (maintenanceResponsiveness.emergencyCount === 0 ? 5 : Math.max(0, 5 - maintenanceResponsiveness.emergencyCount))
-    : 0;
-  const maintScore = Math.min(25, Math.round(completionPts + noOverduePts + speedPts + emergencyPts));
+    : null;
+  const maintScore = Math.min(25, Math.round(completionPts + (noOverduePts ?? 0) + (speedPts ?? 0) + (emergencyPts ?? 0)));
 
   // 3. Personalisation (25 pts)
   //    - Overall personalisation rate (10 pts)
@@ -606,11 +606,11 @@ export function generateEnvironmentalQualityIntelligence(
   //    - Feels private (5 pts)
   const satNorm = childSatisfaction.totalViews > 0
     ? ((childSatisfaction.averageSatisfaction - 1) / 9) * 10
-    : 0;
+    : null;
   const homelyPts = (childSatisfaction.feelsHomelyRate / 100) * 5;
   const safePts = (childSatisfaction.feelsSafeRate / 100) * 5;
   const privatePts = (childSatisfaction.feelsPrivateRate / 100) * 5;
-  const satScore = Math.min(25, Math.round(satNorm + homelyPts + safePts + privatePts));
+  const satScore = Math.min(25, Math.round((satNorm ?? 0) + homelyPts + safePts + privatePts));
 
   // Overall
   const overallScore = Math.min(

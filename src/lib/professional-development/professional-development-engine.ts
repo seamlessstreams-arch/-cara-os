@@ -349,7 +349,7 @@ export function evaluateCPDQuality(
   const totalHours = records.reduce((sum, r) => sum + r.hours, 0);
   const averageHoursPerStaff = uniqueStaff > 0
     ? Math.round((totalHours / uniqueStaff) * 10) / 10
-    : 0;
+    : null;
 
   const impactAssessedCount = records.filter((r) => r.impactAssessed).length;
   const impactAssessedRate = pct(impactAssessedCount, totalRecords);
@@ -390,7 +390,7 @@ export function evaluateCPDQuality(
   const positiveImpactScore = Math.round((positiveImpactRate / 100) * 5);
   const sharedScore = Math.round((sharedWithTeamRate / 100) * 5);
   const relevantScore = Math.round((relevantToRoleRate / 100) * 4);
-  const hoursBonus = averageHoursPerStaff >= 30 ? 4 : Math.round((averageHoursPerStaff / 30) * 4);
+  const hoursBonus = (averageHoursPerStaff ?? 0) >= 30 ? 4 : Math.round(((averageHoursPerStaff ?? 0) / 30) * 4);
 
   const overallScore = Math.min(25, impactAssessedScore + positiveImpactScore + sharedScore + relevantScore + hoursBonus);
 

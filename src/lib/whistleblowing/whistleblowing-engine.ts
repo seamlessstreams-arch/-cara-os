@@ -264,7 +264,7 @@ export function evaluateConcernHandling(
   const timelinessScore = Math.max(30 - (avgAckDays * 5), 0); // Penalise slow acknowledgement
   const feedbackScore = feedbackRate * 25;
   const protectionScore = protectionRate * 25;
-  const resolutionScore = resCount > 0 ? Math.min((resCount / n) * 20, 20) : 0;
+  const resolutionScore = resCount > 0 ? Math.min((resCount / n) * 20, 20) : null;
 
   return {
     totalConcerns: n,
@@ -276,7 +276,7 @@ export function evaluateConcernHandling(
     protectionRate: Math.round(protectionRate * 100),
     escalationRate: Math.round(escalationRate * 100),
     outcomeBreakdown,
-    overallScore: Math.round(Math.min(timelinessScore + feedbackScore + protectionScore + resolutionScore, 100)),
+    overallScore: Math.round(Math.min(timelinessScore + feedbackScore + protectionScore + (resolutionScore ?? 0), 100)),
   };
 }
 
@@ -298,17 +298,17 @@ export function evaluatePolicyCompliance(
 
   const staffAwarenessRate = policy.totalStaff > 0
     ? policy.staffSignedAwareness / policy.totalStaff
-    : 0;
+    : null;
 
   // Score: current policy (20) + coverage (40) + staff awareness (40)
   const currentScore = isCurrent ? 20 : 0;
   const coverageScore = (coveragePoints / 100) * 40;
-  const awarenessScore = staffAwarenessRate * 40;
+  const awarenessScore = (staffAwarenessRate ?? 0) * 40;
 
   return {
     policyCurrent: isCurrent,
     coverageScore: coveragePoints,
-    staffAwarenessRate: Math.round(staffAwarenessRate * 100),
+    staffAwarenessRate: Math.round((staffAwarenessRate ?? 0) * 100),
     overallScore: Math.round(currentScore + coverageScore + awarenessScore),
   };
 }

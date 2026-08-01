@@ -255,7 +255,7 @@ export async function GET() {
         usageCount: usage,
         resolvedCount: resolved,
         escalatedCount: escalated,
-        resolutionRate: usage > 0 ? Math.round((resolved / usage) * 100) : 0,
+        resolutionRate: usage > 0 ? Math.round((resolved / usage) * 100) : null,
       }))
       .sort((a, b) => b.usageCount - a.usageCount)
       .slice(0, 4);
@@ -345,9 +345,9 @@ export async function GET() {
       usageCount: usage,
       resolvedCount: resolved,
       escalatedCount: escalated,
-      resolutionRate: usage > 0 ? Math.round((resolved / usage) * 100) : 0,
+      resolutionRate: usage > 0 ? Math.round((resolved / usage) * 100) : null,
     }))
-    .sort((a, b) => b.resolutionRate - a.resolutionRate);
+    .sort((a, b) => (b.resolutionRate ?? 0) - (a.resolutionRate ?? 0));
 
   // High-risk time slots (across home)
   const homeSlotMap = new Map<string, { concerning: number; positive: number }>();
@@ -378,7 +378,7 @@ export async function GET() {
       staffName: staffNames.get(staffId) ?? staffId,
       totalEntries: total,
       positiveEntries: positive,
-      positiveRate: total > 0 ? Math.round((positive / total) * 100) : 0,
+      positiveRate: total > 0 ? Math.round((positive / total) * 100) : null,
     }))
     .sort((a, b) => b.totalEntries - a.totalEntries);
 

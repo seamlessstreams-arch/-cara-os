@@ -789,7 +789,7 @@ function buildStaffProfiles(
     );
     const averageCompetencyLevel = staffAssessments.length > 0
       ? Math.round((totalLevelScore / staffAssessments.length) * 100) / 100
-      : 0;
+      : null;
 
     // Overall score: 0-10 based on above metrics
     let overallScore = 0;
@@ -803,7 +803,7 @@ function buildStaffProfiles(
     // PDP goal achievement: up to 2.5 pts
     overallScore += (pdpGoalAchievementRate / 100) * 2.5;
     // Competency level: up to 2.5 pts (avg/4 * 2.5)
-    overallScore += (averageCompetencyLevel / 4) * 2.5;
+    overallScore += ((averageCompetencyLevel ?? 0) / 4) * 2.5;
 
     return {
       staffId: s.id,

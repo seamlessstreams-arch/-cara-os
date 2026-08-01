@@ -318,7 +318,7 @@ export function evaluateSkillDevelopment(
 
   const supportTypes = new Set(sessions.map((s) => s.supportType));
   const childIds = new Set(sessions.map((s) => s.childId));
-  const averageSessionsPerChild = childIds.size > 0 ? Math.round(sessions.length / childIds.size) : 0;
+  const averageSessionsPerChild = childIds.size > 0 ? Math.round(sessions.length / childIds.size) : null;
 
   const engagedRate = pct(engaged, sessions.length);
   const achievedRate = pct(achieved, sessions.length);

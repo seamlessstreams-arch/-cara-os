@@ -163,7 +163,7 @@ export function analyseSafeguarding(input: SafeguardingInput): SafeguardingAsses
   const missingEpisodeCount = input.missingEpisodes.length;
   const missingAvgDurationHours = missingEpisodeCount > 0
     ? Math.round((input.missingEpisodes.reduce((s, e) => s + e.durationHours, 0) / missingEpisodeCount) * 10) / 10
-    : 0;
+    : null;
 
   const returnInterviewsDone = input.missingEpisodes.filter(e => e.returnInterviewCompleted).length;
   const returnInterviewRate = missingEpisodeCount > 0

@@ -440,7 +440,7 @@ export function computeHomeCompetencyLandscape(
     });
 
   if (
-    readiness.lowest_readiness < 50 &&
+    (readiness.lowest_readiness ?? 0) < 50 &&
     profiles.length > 0
   )
     insights.push({
@@ -449,8 +449,8 @@ export function computeHomeCompetencyLandscape(
     });
 
   if (
-    readiness.highest_readiness >= 85 &&
-    readiness.lowest_readiness < 55 &&
+    (readiness.highest_readiness ?? 0) >= 85 &&
+    (readiness.lowest_readiness ?? 0) < 55 &&
     profiles.length > 1
   )
     insights.push({

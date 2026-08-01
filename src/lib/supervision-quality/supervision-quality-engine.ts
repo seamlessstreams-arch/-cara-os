@@ -439,7 +439,7 @@ export function evaluateScheduleCompliance(
     }
   }
   const averageDaysBetweenSessions =
-    validCount > 0 ? Math.round(totalDays / validCount) : 0;
+    validCount > 0 ? Math.round(totalDays / validCount) : null;
 
   // Scoring: 0-25
   let score = 0;

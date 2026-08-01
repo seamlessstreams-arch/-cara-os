@@ -35,7 +35,7 @@ export interface StaffLearningPathway {
   staffName: string;
   role: string;
   objectives: LearningObjective[];
-  overallProgress: number;
+  overallProgress: number | null;
   criticalCount: number;
   overdueCount: number;
   completedCount: number;
@@ -44,7 +44,7 @@ export interface StaffLearningPathway {
 
 export interface LearningPathwaySummary {
   totalStaff: number;
-  averageProgress: number;
+  averageProgress: number | null;
   staffWithOverdue: number;
   criticalObjectives: number;
   topCompetencyGaps: { area: string; staffCount: number }[];
@@ -120,7 +120,7 @@ export async function generateStaffPathway(staffId: string): Promise<StaffLearni
     staffName: staff.full_name,
     role: staff.role,
     objectives,
-    overallProgress: objectives.length > 0 ? Math.round((completed.length / objectives.length) * 100) : 0,
+    overallProgress: objectives.length > 0 ? Math.round((completed.length / objectives.length) * 100) : null,
     criticalCount: critical.length,
     overdueCount: overdue.length,
     completedCount: completed.length,
@@ -148,7 +148,7 @@ export async function getLearningPathwaySummary(): Promise<LearningPathwaySummar
     pathways.push(pathway);
   }
 
-  const totalProgress = pathways.reduce((sum, p) => sum + p.overallProgress, 0);
+  const totalProgress = pathways.reduce((sum, p) => sum + (p.overallProgress ?? 0), 0);
   const staffWithOverdue = pathways.filter((p) => p.overdueCount > 0).length;
   const totalCritical = pathways.reduce((sum, p) => sum + p.criticalCount, 0);
 
@@ -168,7 +168,7 @@ export async function getLearningPathwaySummary(): Promise<LearningPathwaySummar
 
   return {
     totalStaff: pathways.length,
-    averageProgress: pathways.length > 0 ? Math.round(totalProgress / pathways.length) : 0,
+    averageProgress: pathways.length > 0 ? Math.round(totalProgress / pathways.length) : null,
     staffWithOverdue,
     criticalObjectives: totalCritical,
     topCompetencyGaps,

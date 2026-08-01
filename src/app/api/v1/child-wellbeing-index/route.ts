@@ -88,12 +88,12 @@ export async function GET() {
       const scores = [outcomesScore, wellbeingScore, safetyScore, engagementScore, progressScore].filter(
         (s) => s !== null
       ) as number[];
-      const composite = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      const composite = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
 
       let signal: "green" | "amber" | "red" | "grey" = "grey";
       if (scores.length === 0) signal = "grey";
-      else if (composite >= 70) signal = "green";
-      else if (composite >= 50) signal = "amber";
+      else if ((composite ?? 0) >= 70) signal = "green";
+      else if ((composite ?? 0) >= 50) signal = "amber";
       else signal = "red";
 
       // Strength and concern areas
@@ -137,16 +137,16 @@ export async function GET() {
     const scoredChildren = childProfiles.filter((c) => c.signal !== "grey");
     const avgComposite =
       scoredChildren.length > 0
-        ? Math.round(scoredChildren.reduce((s, c) => s + c.compositeScore, 0) / scoredChildren.length)
-        : 0;
+        ? Math.round(scoredChildren.reduce((s, c) => s + (c.compositeScore ?? 0), 0) / scoredChildren.length)
+        : null;
     const greenCount  = childProfiles.filter((c) => c.signal === "green").length;
     const amberCount  = childProfiles.filter((c) => c.signal === "amber").length;
     const redCount    = childProfiles.filter((c) => c.signal === "red").length;
 
     let overallSignal: "green" | "amber" | "red" | "grey" = "grey";
     if (activeYP.length === 0) overallSignal = "grey";
-    else if (redCount >= 2 || avgComposite < 50) overallSignal = "red";
-    else if (redCount > 0 || avgComposite < 70) overallSignal = "amber";
+    else if (redCount >= 2 || (avgComposite ?? 0) < 50) overallSignal = "red";
+    else if (redCount > 0 || (avgComposite ?? 0) < 70) overallSignal = "amber";
     else overallSignal = "green";
 
     // Insights

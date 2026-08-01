@@ -142,7 +142,7 @@ export interface ReviewTimelinessResult {
   reviewsOnTime: number;
   reviewsLate: number;
   timelinessRate: number;             // %
-  averageDelayDays: number;           // For late reviews only
+  averageDelayDays: number | null;           // For late reviews only
   initialReviewTimeliness: number;    // % of initial reviews on time
   subsequentReviewTimeliness: number; // % of subsequent reviews on time
   emergencyReviewsHeld: number;
@@ -177,7 +177,7 @@ export interface RecommendationTrackingResult {
   completionRate: number;             // %
   overdueRate: number;                // %
   urgentCompletionRate: number;       // % of urgent completed on time
-  averageCompletionDays: number;
+  averageCompletionDays: number | null;
   overallScore: number;               // 0–25
 }
 
@@ -321,7 +321,7 @@ export function evaluateReviewTimeliness(
   const totalDelay = lateReviews.reduce((sum, r) => {
     return sum + Math.max(0, daysBetween(r.dueDate, r.actualDate!));
   }, 0);
-  const avgDelay = lateReviews.length > 0 ? Math.round((totalDelay / lateReviews.length) * 10) / 10 : 0;
+  const avgDelay = lateReviews.length > 0 ? Math.round((totalDelay / lateReviews.length) * 10) / 10 : null;
 
   // Initial review timeliness
   const initials = periodReviews.filter((r) => r.reviewType === "initial");
@@ -361,9 +361,9 @@ export function evaluateReviewTimeliness(
   // Low average delay bonus: up to 3 points
   if (lateReviews.length === 0) {
     score += 3;
-  } else if (avgDelay <= 3) {
+  } else if ((avgDelay ?? 0) <= 3) {
     score += 2;
-  } else if (avgDelay <= 7) {
+  } else if ((avgDelay ?? 0) <= 7) {
     score += 1;
   }
 
@@ -514,7 +514,7 @@ export function evaluateRecommendationTracking(
   }, 0);
   const avgCompletionDays = completedWithDates.length > 0
     ? Math.round((totalCompletionDays / completedWithDates.length) * 10) / 10
-    : 0;
+    : null;
 
   // Scoring — 25 points max
   let score = 0;

@@ -61,7 +61,7 @@ interface SupervisionQualitySummary {
   staffDueSoon: number;
   staffOverdue: number;
   staffNeverSupervised: number;
-  currentSupervisionRate: number;
+  currentSupervisionRate: number | null;
   averageWellbeingScore: number | null;
   totalOverdueActions: number;
   staffAtRisk: number;
@@ -166,7 +166,7 @@ export async function GET() {
     staff_id: string;
     staff_name?: string | null;
     date: string;
-    wellbeing_score: number;
+    wellbeing_score: number | null;
     confidence_level: number;
     pace_examples: string;
     training_needs: string[];
@@ -206,7 +206,7 @@ export async function GET() {
 
     // PACE engagement rate
     const supsWithPace = sups.filter((s) => paceEngaged(s.pace_examples));
-    const paceRate = sups.length > 0 ? Math.round((supsWithPace.length / sups.length) * 100) : 0;
+    const paceRate = sups.length > 0 ? Math.round((supsWithPace.length / sups.length) * 100) : null;
 
     // Overdue actions (across all supervisions)
     const overdueActions: OverdueAction[] = sups.flatMap((s) =>
@@ -272,7 +272,7 @@ export async function GET() {
 
   const currentRate = activeStaff.length > 0
     ? Math.round((statusCounts.current / activeStaff.length) * 100)
-    : 0;
+    : null;
 
   const ofstedNote =
     statusCounts.never > 0
@@ -281,7 +281,7 @@ export async function GET() {
       ? `${statusCounts.overdue} staff member${statusCounts.overdue > 1 ? "s are" : " is"} overdue for supervision. Ofsted inspect supervision regularity as evidence of safe management practice.`
       : totalOverdueActions > 0
       ? `${totalOverdueActions} supervision action${totalOverdueActions > 1 ? "s are" : " is"} overdue. Supervision is only as good as the follow-through on agreed actions.`
-      : currentRate >= 90 && avgWellbeing !== null && avgWellbeing >= 4
+      : (currentRate ?? 0) >= 90 && avgWellbeing !== null && avgWellbeing >= 4
       ? `${currentRate}% of staff have current supervision. Average wellbeing score is ${avgWellbeing}/5 — a strong picture of a supportive management culture.`
       : `${currentRate}% of staff have had supervision in the last 28 days. Regular supervision is the foundation of safe, therapeutic residential care.`;
 

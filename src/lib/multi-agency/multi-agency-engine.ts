@@ -394,7 +394,7 @@ export function calculateHomeMultiAgencyMetrics(
   const totalWaiting = results.reduce((s, r) => s + r.waitingReferrals, 0);
   const totalEscalated = results.reduce((s, r) => s + r.escalatedReferrals, 0);
   const allWaitDays = homeProfiles.flatMap(p => p.referrals.filter(r => r.status === "waiting_list").map(r => r.waitingDays));
-  const longestWaitDays = allWaitDays.length > 0 ? Math.max(...allWaitDays) : 0;
+  const longestWaitDays = allWaitDays.length > 0 ? Math.max(...allWaitDays) : null;
 
   const complianceIssues = [...new Set(results.flatMap(r => r.issues))];
 

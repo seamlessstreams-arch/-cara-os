@@ -442,13 +442,13 @@ export function computeHomeFireSafety(
       severity: "positive",
     });
 
-  if (evacuation.avg_evacuation_time > 0 && evacuation.avg_evacuation_time <= EVACUATION_TARGET_SECONDS)
+  if ((evacuation.avg_evacuation_time ?? 0) > 0 && (evacuation.avg_evacuation_time ?? 0) <= EVACUATION_TARGET_SECONDS)
     insights.push({
       text: `Average evacuation time is ${evacuation.avg_evacuation_time} seconds (target: ${EVACUATION_TARGET_SECONDS}s). Children and staff respond effectively to fire alarms.`,
       severity: "positive",
     });
 
-  if (evacuation.slowest_evacuation > EVACUATION_TARGET_SECONDS && evacuation.total_evacuations > 0)
+  if ((evacuation.slowest_evacuation ?? 0) > EVACUATION_TARGET_SECONDS && evacuation.total_evacuations > 0)
     insights.push({
       text: `Slowest evacuation was ${evacuation.slowest_evacuation} seconds — above the ${EVACUATION_TARGET_SECONDS}s target. Review PEEPs and consider whether additional support is needed.`,
       severity: "warning",

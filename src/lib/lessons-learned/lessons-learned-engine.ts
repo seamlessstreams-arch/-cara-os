@@ -215,11 +215,11 @@ export function evaluateReviewCompliance(
 
   const childVoiceIncluded = reviews.filter((r) => r.childVoiceIncluded).length;
   const childVoiceInclusionRate =
-    reviews.length > 0 ? Math.round((childVoiceIncluded / reviews.length) * 100) : 0;
+    reviews.length > 0 ? Math.round((childVoiceIncluded / reviews.length) * 100) : null;
 
   const staffReflectionDone = reviews.filter((r) => r.staffReflectionCompleted).length;
   const staffReflectionRate =
-    reviews.length > 0 ? Math.round((staffReflectionDone / reviews.length) * 100) : 0;
+    reviews.length > 0 ? Math.round((staffReflectionDone / reviews.length) * 100) : null;
 
   return {
     totalIncidents,
@@ -254,13 +254,13 @@ export function evaluateLessonImplementation(
   ).length;
 
   const implementationRate =
-    allActions.length > 0 ? Math.round((actionsCompleted / allActions.length) * 100) : 0;
+    allActions.length > 0 ? Math.round((actionsCompleted / allActions.length) * 100) : null;
 
   const embeddedActions = allActions.filter(
     (a) => a.embeddingStatus === "embedded_evidenced",
   ).length;
   const embeddingRate =
-    allActions.length > 0 ? Math.round((embeddedActions / allActions.length) * 100) : 0;
+    allActions.length > 0 ? Math.round((embeddedActions / allActions.length) * 100) : null;
 
   return {
     totalLessonsIdentified: allLessons.length,
@@ -430,7 +430,7 @@ export function generateLearningOrganisationScore(
           (lessonsNotEmbedded.reduce((s, p) => s + p.frequency, 0) / periodIncidents.length) *
             100,
         )
-      : 0;
+      : null;
 
   // 5. Calculate overall score
   const overallScore = calculateLearningScore(

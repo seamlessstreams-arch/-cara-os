@@ -97,7 +97,7 @@ export interface IndependenceAssessment {
   practicalReadinessScore: number;
   totalSkills: number;
   skillsByCategory: CategorySummary[];
-  averageSkillLevel: number; // 0-4 (not_started=0, independent=4)
+  averageSkillLevel: number | null; // 0-4 (not_started=0, independent=4)
   skillsAtTarget: number;
   skillsBelowTarget: number;
   eetStatus: EETStatus;
@@ -155,7 +155,7 @@ export function analyseIndependence(input: IndependenceInput): IndependenceAsses
   const skillLevels = lifeSkills.map(s => SKILL_LEVEL_VALUES[s.level]);
   const avgSkillLevel = totalSkills > 0
     ? Math.round((skillLevels.reduce((a, b) => a + b, 0) / totalSkills) * 10) / 10
-    : 0;
+    : null;
 
   const skillsAtTarget = lifeSkills.filter(s =>
     SKILL_LEVEL_VALUES[s.level] >= SKILL_LEVEL_VALUES[s.targetLevel]

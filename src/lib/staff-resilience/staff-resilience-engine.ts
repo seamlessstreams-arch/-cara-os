@@ -411,7 +411,7 @@ export function evaluateSupervisionQuality(
 
   const averageActionPoints = periodSupervisions.length > 0
     ? Math.round((totalActions / periodSupervisions.length) * 10) / 10
-    : 0;
+    : null;
 
   // Overdue: last supervision more than 35 days before end of period
   const referenceDate = new Date(periodEnd).getTime();

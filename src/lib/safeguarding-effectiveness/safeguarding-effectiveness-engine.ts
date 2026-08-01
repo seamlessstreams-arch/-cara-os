@@ -717,7 +717,7 @@ export function evaluateAuditFindings(
     const count = areaAudits.length;
     const avgRating = count > 0
       ? Math.round((areaAudits.reduce((sum, a) => sum + RATING_VALUE[a.rating], 0) / count) * 10) / 10
-      : 0;
+      : null;
     areaBreakdown[area] = { count, avgRating };
   }
 
@@ -863,7 +863,7 @@ export function evaluateSafeguardingSupervision(
   );
   const averageCasesPerSession = totalSessions > 0
     ? Math.round((totalCasesReviewed / totalSessions) * 10) / 10
-    : 0;
+    : null;
 
   // Decisions recorded
   const decisionsRecordedCount = periodSupervision.filter(

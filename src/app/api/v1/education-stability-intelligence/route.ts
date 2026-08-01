@@ -176,7 +176,7 @@ export async function GET() {
     ).length;
     const excludedCount = attendanceRecs.filter((r) => r.attendance_status === "excluded").length;
     const attendanceRate = attendanceRecs.length > 0
-      ? Math.round((presentCount / attendanceRecs.length) * 100) : 0;
+      ? Math.round((presentCount / attendanceRecs.length) * 100) : null;
 
     // Exclusions (separate records)
     const exclusionRecords = records.filter((r) => r.record_type === "exclusion");
@@ -243,7 +243,7 @@ export async function GET() {
 
   const allAttendanceRecs = childProfiles.reduce((s, p) => s + p.attendanceRecords, 0);
   const allPresent = childProfiles.reduce((s, p) => s + p.presentCount, 0);
-  const homeAttendanceRate = allAttendanceRecs > 0 ? Math.round((allPresent / allAttendanceRecs) * 100) : 0;
+  const homeAttendanceRate = allAttendanceRecs > 0 ? Math.round((allPresent / allAttendanceRecs) * 100) : null;
 
   const withCurrentPEP = childProfiles.filter((p) => p.hasPEPInLast6Months).length;
   const withExclusions = childProfiles.filter((p) => p.exclusionCount > 0).length;
@@ -254,7 +254,7 @@ export async function GET() {
       ? `${signalCounts.crisis} child${signalCounts.crisis > 1 ? "ren" : ""} in crisis educational position. An inspector will ask what the home is doing to address exclusions and disengagement for these children.`
       : withCurrentPEP < currentChildren.length
       ? `${currentChildren.length - withCurrentPEP} child${currentChildren.length - withCurrentPEP > 1 ? "ren" : ""} without a current PEP recorded. LAC children are entitled to regular PEP reviews — ensure the Virtual School is convening them.`
-      : homeAttendanceRate < 85
+      : (homeAttendanceRate ?? 0) < 85
       ? `Home attendance rate is ${homeAttendanceRate}%. Below 90% for LAC children attracts Ofsted scrutiny. Explore what is preventing consistent school attendance.`
       : `Home attendance rate is ${homeAttendanceRate}%. ${withCurrentPEP} of ${currentChildren.length} children have a current PEP. ${totalAchievements} educational achievement${totalAchievements !== 1 ? "s" : ""} recorded.`;
 

@@ -154,14 +154,14 @@ export async function GET() {
       ? Math.round(
           (profiles.reduce((sum, p) => sum + p.wellbeingScore, 0) / totalSupervisions) * 10
         ) / 10
-      : 0;
+      : null;
 
   const avgConfidenceLevel =
     totalSupervisions > 0
       ? Math.round(
           (profiles.reduce((sum, p) => sum + p.confidenceLevel, 0) / totalSupervisions) * 10
         ) / 10
-      : 0;
+      : null;
 
   const supportNeededCount = profiles.filter((p) => p.signal === "support_needed").length;
   const overdueFollowUps = profiles.filter((p) => p.followUpOverdue).length;
@@ -182,9 +182,9 @@ export async function GET() {
   let teamSignal: TeamSignal = "thriving";
   if (supportNeededCount > 0 && overdueFollowUps > 0) {
     teamSignal = "concern";
-  } else if (supportNeededCount > 0 || overdueActionsTotal > 1 || avgWellbeingScore < 3.5) {
+  } else if (supportNeededCount > 0 || overdueActionsTotal > 1 || (avgWellbeingScore ?? 0) < 3.5) {
     teamSignal = "attention";
-  } else if (avgWellbeingScore >= 4.5) {
+  } else if ((avgWellbeingScore ?? 0) >= 4.5) {
     teamSignal = "thriving";
   } else {
     teamSignal = "positive";

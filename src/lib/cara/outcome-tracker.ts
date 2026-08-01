@@ -215,7 +215,7 @@ export function trackOutcomes(
     const catObjectives = objectiveAnalyses.filter((oa) => oa.objective.category === cat);
     const avgProgress = catObjectives.length > 0
       ? Math.round(catObjectives.reduce((sum, o) => sum + o.progressPercent, 0) / catObjectives.length)
-      : 0;
+      : null;
 
     // Determine trend from indicators
     const allIndicators = catObjectives.flatMap((oa) => oa.objective.indicators);
@@ -238,13 +238,13 @@ export function trackOutcomes(
   // Overall progress
   const overallProgress = objectiveAnalyses.length > 0
     ? Math.round(objectiveAnalyses.reduce((sum, o) => sum + o.progressPercent, 0) / objectiveAnalyses.length)
-    : 0;
+    : null;
 
   let progressGrade: OutcomeAnalysis["progressGrade"];
   if (objectives.length === 0) progressGrade = "insufficient_data";
-  else if (overallProgress >= 80) progressGrade = "excellent";
-  else if (overallProgress >= 60) progressGrade = "good";
-  else if (overallProgress >= 40) progressGrade = "mixed";
+  else if ((overallProgress ?? 0) >= 80) progressGrade = "excellent";
+  else if ((overallProgress ?? 0) >= 60) progressGrade = "good";
+  else if ((overallProgress ?? 0) >= 40) progressGrade = "mixed";
   else progressGrade = "concerning";
 
   // Recommendations

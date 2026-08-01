@@ -362,7 +362,7 @@ export function evaluateWarmthCulture(
           warmthObs.reduce((sum, o) => sum + ratingToNumeric(o.rating), 0) /
             warmthObs.length,
         )
-      : 0;
+      : null;
 
   // Calm score: pct of calm+safety indicator observations rated excellent/good
   const calmSafetyObs = observations.filter(
@@ -398,7 +398,7 @@ export function evaluateWarmthCulture(
   // excellent+good rate (0-8)
   const egPts = Math.min(8, Math.round((excellentGoodRate / 100) * 8));
   // warmth observations (0-5)
-  const warmthPts = Math.min(5, Math.round((warmthScore / 100) * 5));
+  const warmthPts = Math.min(5, Math.round(((warmthScore ?? 0) / 100) * 5));
   // calm/safety (0-4)
   const calmPts = Math.min(4, Math.round((calmScore / 100) * 4));
   // respect (0-4)
@@ -407,8 +407,8 @@ export function evaluateWarmthCulture(
   const funNurtureAvg =
     funObs.length > 0 || nurtureObs.length > 0
       ? (funScore + nurtureScore) / 2
-      : 0;
-  const funNurturePts = Math.min(4, Math.round((funNurtureAvg / 100) * 4));
+      : null;
+  const funNurturePts = Math.min(4, Math.round(((funNurtureAvg ?? 0) / 100) * 4));
 
   const overallScore = Math.min(
     25,

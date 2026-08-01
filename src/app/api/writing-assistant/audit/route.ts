@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   const total = all.length;
   const accepted = all.filter((e) => e.action === "accepted").length;
   const ignored = total - accepted;
-  const acceptanceRate = total > 0 ? Math.round((accepted / total) * 100) : 0;
+  const acceptanceRate = total > 0 ? Math.round((accepted / total) * 100) : null;
 
   // By issue type
   const byIssueType: Record<string, { accepted: number; ignored: number }> = {};
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
       ignored: counts.ignored,
       rate: counts.accepted + counts.ignored > 0
         ? Math.round((counts.accepted / (counts.accepted + counts.ignored)) * 100)
-        : 0,
+        : null,
     }))
     .sort((a, b) => b.total - a.total);
 

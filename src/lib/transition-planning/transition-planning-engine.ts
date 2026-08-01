@@ -331,7 +331,7 @@ export function evaluateTransitionPlanning(
   const achievedGoals = allGoals.filter((g) => g.status === "achieved");
   const goalAchievementRate = allGoals.length > 0
     ? Math.round((achievedGoals.length / allGoals.length) * 100)
-    : 0;
+    : null;
 
   // Status counts
   const activePlans = plans.filter((p) => p.status === "active").length;
@@ -399,7 +399,7 @@ export function evaluateIndependenceSkills(
     const scores = latest.skills.map((s) => confidenceToScore(s.confidence));
     const avgConfidence = scores.length > 0
       ? scores.reduce((sum, s) => sum + s, 0) / scores.length
-      : 0;
+      : null;
 
     const skillGaps = latest.skills
       .filter((s) => s.confidence === "not_started" || s.confidence === "emerging")
@@ -419,7 +419,7 @@ export function evaluateIndependenceSkills(
     profiles.push({
       childId,
       childName: latest.childName,
-      averageConfidence: Math.round(avgConfidence * 100) / 100,
+      averageConfidence: Math.round((avgConfidence ?? 0) * 100) / 100,
       skillGaps,
       strongSkills,
       assessmentCount: childAssessments.length,
@@ -432,7 +432,7 @@ export function evaluateIndependenceSkills(
   const allScores = profiles.map((p) => p.averageConfidence);
   const overallAverageConfidence = allScores.length > 0
     ? Math.round((allScores.reduce((sum, s) => sum + s, 0) / allScores.length) * 100) / 100
-    : 0;
+    : null;
 
   // Category averages
   const categoryAverages = [...allCategoryScores.entries()]
@@ -636,9 +636,9 @@ export function buildChildTransitionProfiles(
       const scores = latest.skills.map((s) => confidenceToScore(s.confidence));
       const avg = scores.length > 0
         ? scores.reduce((sum, s) => sum + s, 0) / scores.length
-        : 0;
+        : null;
       // Normalize to 0-100 (max score is 4 = independent)
-      skillReadinessScore = Math.round((avg / 4) * 100);
+      skillReadinessScore = Math.round(((avg ?? 0) / 4) * 100);
       skillGaps = latest.skills
         .filter((s) => s.confidence === "not_started" || s.confidence === "emerging")
         .map((s) => s.category);
@@ -650,7 +650,7 @@ export function buildChildTransitionProfiles(
       ? Math.round(
           (childGoals.filter((g) => g.status === "achieved").length / childGoals.length) * 100,
         )
-      : 0;
+      : null;
 
     // Placement stability
     let placementStability: "stable" | "at_risk" | "high_risk" | "unknown" = "unknown";
@@ -676,7 +676,7 @@ export function buildChildTransitionProfiles(
       primaryConcern = "High placement disruption risk — stability planning needed";
     } else if (skillGaps.length >= 6) {
       primaryConcern = `${skillGaps.length} independence skill gaps — intensive skills programme needed`;
-    } else if (goalAchievementRate < 20 && childGoals.length > 0) {
+    } else if ((goalAchievementRate ?? 0) < 20 && childGoals.length > 0) {
       primaryConcern = "Very low goal achievement — transition plan may need restructuring";
     }
 

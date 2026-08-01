@@ -42,7 +42,7 @@ interface StaffKeyWorkerProfile {
   keyChildCount: number;
   keyChildren: KeyChildSnapshot[];
   totalSessionsLast30d: number;
-  avgSessionsPerKeyChildLast30d: number;
+  avgSessionsPerKeyChildLast30d: number | null;
   // Each rate is null when its population is empty — no sessions, no follow-ups
   // agreed, no behaviour entries. Nothing recorded is not the same as done well.
   childVoiceScore: number | null;         // 0–100: richness of child_voice across sessions
@@ -268,7 +268,7 @@ export async function GET() {
       totalSessionsLast30d: sessions30d.length,
       avgSessionsPerKeyChildLast30d: keyChildren.length > 0
         ? Math.round((sessions30d.length / keyChildren.length) * 10) / 10
-        : 0,
+        : null,
       childVoiceScore: avgVoiceScore,
       childVoicePresenceRate: voicePresenceRate,
       moodImprovementRate,

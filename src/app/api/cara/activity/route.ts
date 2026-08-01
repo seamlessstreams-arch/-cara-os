@@ -49,7 +49,7 @@ export function computeTopEntries<T extends Record<string, string>>(
 
 export function computeApprovalRate(approved: number, rejected: number): number {
   const decided = approved + rejected;
-  return decided > 0 ? Math.round((approved / decided) * 100) : 0;
+  return decided > 0 ? Math.round((approved / decided) * 100) : null;
 }
 
 export function computeAvgConfidence(
@@ -62,8 +62,8 @@ export function computeAvgConfidence(
   const avgConf =
     confValues.length > 0
       ? confValues.reduce((a, b) => a + b, 0) / confValues.length
-      : 0;
-  return avgConf >= 2.5 ? "high" : avgConf >= 1.5 ? "medium" : "low";
+      : null;
+  return (avgConf ?? 0) >= 2.5 ? "high" : (avgConf ?? 0) >= 1.5 ? "medium" : "low";
 }
 
 export async function GET(req: NextRequest) {
@@ -160,7 +160,7 @@ export async function GET(req: NextRequest) {
 
   // Approval rate
   const decided = approved + rejected;
-  const approvalRate = decided > 0 ? Math.round((approved / decided) * 100) : 0;
+  const approvalRate = decided > 0 ? Math.round((approved / decided) * 100) : null;
 
   // Average confidence
   const confMap = { low: 1, medium: 2, high: 3 };
@@ -170,9 +170,9 @@ export async function GET(req: NextRequest) {
   const avgConf =
     confValues.length > 0
       ? confValues.reduce((a, b) => a + b, 0) / confValues.length
-      : 0;
+      : null;
   const avgConfidence =
-    avgConf >= 2.5 ? "high" : avgConf >= 1.5 ? "medium" : "low";
+    (avgConf ?? 0) >= 2.5 ? "high" : (avgConf ?? 0) >= 1.5 ? "medium" : "low";
 
   const stats: ActivityStats = {
     totalRequests: requests.length,

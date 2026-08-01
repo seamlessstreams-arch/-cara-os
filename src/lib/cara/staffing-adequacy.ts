@@ -361,7 +361,7 @@ export function analyseStaffingAdequacy(
     .sort(([a], [b]) => a - b)
     .map(([dow, bucket]) => ({
       dayOfWeek: DAY_NAMES[dow],
-      averageStaff: bucket.count > 0 ? Math.round((bucket.total / bucket.count) * 10) / 10 : 0,
+      averageStaff: bucket.count > 0 ? Math.round((bucket.total / bucket.count) * 10) / 10 : null,
       shortfallCount: bucket.shortfalls,
       status: bucket.shortfalls === 0 ? "adequate" as const : bucket.shortfalls > 1 ? "inadequate" as const : "concerns" as const,
     }));

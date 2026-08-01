@@ -526,7 +526,7 @@ export function evaluateGoalAchievement(
   const goalsPerChild =
     uniqueChildren > 0
       ? Math.round((totalGoals / uniqueChildren) * 10) / 10
-      : 0;
+      : null;
 
   // Status breakdown
   const statusBreakdown: Record<GoalStatus, number> = {
@@ -546,7 +546,7 @@ export function evaluateGoalAchievement(
   const notMetInversed = 100 - notMetRate;
   score += (notMetInversed / 100) * 6;
   // Goals per child breadth: max 6 (target: 3+ goals per child = full marks)
-  const breadthFactor = Math.min(goalsPerChild / 3, 1);
+  const breadthFactor = Math.min((goalsPerChild ?? 0) / 3, 1);
   score += breadthFactor * 6;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
@@ -571,9 +571,9 @@ export function evaluateGoalAchievement(
     concerns.push(notMetRate + "% of goals not met — systemic barriers to goal achievement may exist");
   }
 
-  if (goalsPerChild >= 3) {
+  if ((goalsPerChild ?? 0) >= 3) {
     strengths.push("Good breadth of goal setting: " + goalsPerChild + " goals per child covering multiple development areas");
-  } else if (goalsPerChild < 2 && goalsPerChild > 0) {
+  } else if ((goalsPerChild ?? 0) < 2 && (goalsPerChild ?? 0) > 0) {
     concerns.push("Only " + goalsPerChild + " goals per child — broader developmental objectives needed");
   }
 

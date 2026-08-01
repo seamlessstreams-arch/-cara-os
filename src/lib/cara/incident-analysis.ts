@@ -109,7 +109,7 @@ export interface IncidentAnalysis {
 export interface RestraintAnalysis {
   totalRestraints: number;
   restraintRate: number | null;        // % of incidents involving restraint
-  averageDuration: number;      // minutes
+  averageDuration: number | null;      // minutes
   physicalCount: number;
   deEscalationBeforeRestraint: number | null;  // % that attempted de-escalation first
   injuryDuringRestraint: number;
@@ -180,7 +180,7 @@ export function analyseIncidents(
   const alerts: IncidentAlert[] = [];
 
   const totalIncidents = records.length;
-  const incidentsPerWeek = windowDays > 0 ? Math.round((totalIncidents / windowDays) * 7 * 10) / 10 : 0;
+  const incidentsPerWeek = windowDays > 0 ? Math.round((totalIncidents / windowDays) * 7 * 10) / 10 : null;
 
   // Trend analysis (first half vs second half of window by date)
   let trend: "increasing" | "stable" | "decreasing" = "stable";
@@ -209,7 +209,7 @@ export function analyseIncidents(
   const severityBreakdown = ["critical", "high", "medium", "low"].map((sev) => ({
     severity: sev,
     count: severityCounts.get(sev) ?? 0,
-    percent: totalIncidents > 0 ? Math.round(((severityCounts.get(sev) ?? 0) / totalIncidents) * 100) : 0,
+    percent: totalIncidents > 0 ? Math.round(((severityCounts.get(sev) ?? 0) / totalIncidents) * 100) : null,
   }));
 
   // Category breakdown
@@ -223,7 +223,7 @@ export function analyseIncidents(
       category: cat,
       label: CATEGORY_LABELS[cat] ?? cat,
       count,
-      percent: totalIncidents > 0 ? Math.round((count / totalIncidents) * 100) : 0,
+      percent: totalIncidents > 0 ? Math.round((count / totalIncidents) * 100) : null,
     }));
 
   // Restraint analysis
@@ -232,7 +232,7 @@ export function analyseIncidents(
   const restraintRateHigh = restraintRate !== null && restraintRate > 30 && restraints.length >= 3;
   const avgDuration = restraints.length > 0
     ? Math.round(restraints.reduce((s, r) => s + (r.restraintDurationMinutes ?? 0), 0) / restraints.length)
-    : 0;
+    : null;
   const deEscBeforeRestraint = restraints.filter((r) => r.deEscalationAttempted).length;
   const injuryDuring = restraints.filter((r) => r.injuryToChild || r.injuryToStaff).length;
   const debriefsDone = restraints.filter((r) => r.debriefCompleted).length;
@@ -337,7 +337,7 @@ export function analyseIncidents(
     .map(([trigger, data]) => ({
       trigger,
       count: data.count,
-      percent: totalIncidents > 0 ? Math.round((data.count / totalIncidents) * 100) : 0,
+      percent: totalIncidents > 0 ? Math.round((data.count / totalIncidents) * 100) : null,
       associatedChildren: [...data.children],
     }));
 

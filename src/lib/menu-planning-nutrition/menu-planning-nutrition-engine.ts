@@ -593,7 +593,7 @@ export function buildChildNutritionProfiles(
     const averageEnjoyment =
       childFeedback.length > 0
         ? Math.round((totalEnjoyment / childFeedback.length) * 10) / 10
-        : 0;
+        : null;
 
     // Portion satisfactory
     const portionOk = childFeedback.filter((f) => f.portionSatisfactory).length;
@@ -603,9 +603,9 @@ export function buildChildNutritionProfiles(
     let profileScore = 2; // base
 
     // Enjoyment (0-3)
-    if (averageEnjoyment >= 4.5) profileScore += 3;
-    else if (averageEnjoyment >= 3.5) profileScore += 2;
-    else if (averageEnjoyment >= 2.5) profileScore += 1;
+    if ((averageEnjoyment ?? 0) >= 4.5) profileScore += 3;
+    else if ((averageEnjoyment ?? 0) >= 3.5) profileScore += 2;
+    else if ((averageEnjoyment ?? 0) >= 2.5) profileScore += 1;
 
     // Portion satisfaction (0-2)
     if (portionSatisfactoryRate >= 90) profileScore += 2;
@@ -622,7 +622,7 @@ export function buildChildNutritionProfiles(
     if (childFeedback.length === 0 && childParticipation.length === 0) {
       profileScore -= 1;
     }
-    if (averageEnjoyment > 0 && averageEnjoyment < 2.0) {
+    if ((averageEnjoyment ?? 0) > 0 && (averageEnjoyment ?? 0) < 2.0) {
       profileScore -= 1;
     }
 

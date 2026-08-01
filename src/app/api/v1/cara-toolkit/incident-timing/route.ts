@@ -125,7 +125,7 @@ export async function GET() {
     hours: PERIOD_MAP[p].hours,
     count: periodData[p].count,
     severityCounts: periodData[p].sev,
-    pct: total > 0 ? Math.round((periodData[p].count / total) * 100) : 0,
+    pct: total > 0 ? Math.round((periodData[p].count / total) * 100) : null,
   }));
 
   // Peak period

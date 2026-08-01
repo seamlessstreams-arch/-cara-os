@@ -3220,8 +3220,8 @@ Yours sincerely,
     output += `| Theme | Mentions | Weight |\n`;
     output += `|-------|----------|--------|\n`;
     for (const t of themeCounts) {
-      const pct = totalMentions > 0 ? Math.round((t.count / totalMentions) * 100) : 0;
-      const bar = t.count > 0 ? "█".repeat(Math.min(Math.ceil(pct / 5), 20)) : "—";
+      const pct = totalMentions > 0 ? Math.round((t.count / totalMentions) * 100) : null;
+      const bar = t.count > 0 ? "█".repeat(Math.min(Math.ceil((pct ?? 0) / 5), 20)) : "—";
       output += `| ${t.theme} | ${t.count} | ${bar} ${pct}% |\n`;
     }
 

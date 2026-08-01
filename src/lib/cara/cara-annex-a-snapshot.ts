@@ -60,7 +60,7 @@ function readinessScore(sections: CaraAnnexASectionReading[]): number {
     const factor = s.readiness === "green" ? 1 : s.readiness === "amber" ? 0.6 : 0.2;
     earned += s.weight * factor;
   }
-  return total > 0 ? Math.round((earned / total) * 100) : 0;
+  return total > 0 ? Math.round((earned / total) * 100) : null;
 }
 
 function overallReadiness(score: number): CaraAnnexAReadiness {
@@ -358,7 +358,7 @@ export function buildAnnexASnapshotData(
   opts: { periodStart?: string; periodEnd?: string } = {},
 ): {
   sections: CaraAnnexASectionReading[];
-  readiness_score: number;
+  readiness_score: number | null;
   overall_readiness: CaraAnnexAReadiness;
   total_gaps: number;
   total_stale: number;

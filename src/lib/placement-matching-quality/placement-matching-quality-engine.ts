@@ -308,7 +308,7 @@ export function evaluateCompatibility(
   const managementPlanRate =
     reviewsWithRisk.length > 0
       ? Math.round((managementPlanCount / reviewsWithRisk.length) * 100)
-      : 0;
+      : null;
 
   const positiveRelationshipCount = reviews.filter(
     (r) => r.positiveRelationship,
@@ -322,7 +322,7 @@ export function evaluateCompatibility(
   // Compatibility rate: 10 pts
   score += (compatibleRate / 100) * 10;
   // Management plans where risks identified: 7 pts
-  score += (managementPlanRate / 100) * 7;
+  score += ((managementPlanRate ?? 0) / 100) * 7;
   // Positive relationships: 8 pts
   score += (positiveRelationshipRate / 100) * 8;
 

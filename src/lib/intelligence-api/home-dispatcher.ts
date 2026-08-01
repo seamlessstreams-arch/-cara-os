@@ -12047,9 +12047,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         const domainScores = domains.map((d: any) => (d.score ?? 0) as number);
         const domainAvg = domainScores.length > 0
           ? Math.round((domainScores.reduce((s: number, v: number) => s + v, 0) / domainScores.length) * 10) / 10
-          : 0;
-        const lowest = domainScores.length > 0 ? Math.min(...domainScores) : 0;
-        const highest = domainScores.length > 0 ? Math.max(...domainScores) : 0;
+          : null;
+        const lowest = domainScores.length > 0 ? Math.min(...domainScores) : null;
+        const highest = domainScores.length > 0 ? Math.max(...domainScores) : null;
         const lowScoring = domainScores.filter((s: number) => s <= 3).length;
         const hasEvidence = domains.length > 0 && domains.every((d: any) => !!(d.evidence));
         const hasNextSteps = domains.length > 0 && domains.every((d: any) => !!(d.next_steps));
@@ -16450,8 +16450,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
         const domainCount = scores.length;
         const avgScore = domainCount > 0 ? scores.reduce((a: number, b: number) => a + b, 0) / domainCount : 0;
-        const lowestScore = domainCount > 0 ? Math.min(...scores) : 0;
-        const highestScore = domainCount > 0 ? Math.max(...scores) : 0;
+        const lowestScore = domainCount > 0 ? Math.min(...scores) : null;
+        const highestScore = domainCount > 0 ? Math.max(...scores) : null;
   
         // Calculate domain improvements if previous scores exist
         let domainsImproved = 0;
@@ -17965,7 +17965,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       ];
       const avg_outcome_rating = ratings.length > 0
         ? Math.round((ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length) * 10) / 10
-        : 0;
+        : null;
   
       return {
         id: e.id,
@@ -21284,7 +21284,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const recruitment_records: RecruitmentRecordInput[] = rawRecruitment.map((r: any) => {
       const checklist = (r.checklist_items ?? []) as any[];
       const completed = checklist.filter((c: any) => c.completed).length;
-      const checklistRate = checklist.length > 0 ? Math.round((completed / checklist.length) * 100) : 0;
+      const checklistRate = checklist.length > 0 ? Math.round((completed / checklist.length) * 100) : null;
       const refs = (r.references ?? []) as any[];
       const refsReceived = refs.filter((ref: any) => ref.status === "received" || ref.status === "verified").length;
       const panel = (r.interviewers ?? []) as any[];
@@ -25534,7 +25534,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         const scoreValues = Object.values(scores).filter((v: any) => typeof v === "number" && v > 0);
         const avgScore = scoreValues.length > 0
           ? Math.round((scoreValues.reduce((sum: number, v: number) => sum + v, 0) / scoreValues.length) * 10) / 10
-          : 0;
+          : null;
   
         return {
           id: a.id,

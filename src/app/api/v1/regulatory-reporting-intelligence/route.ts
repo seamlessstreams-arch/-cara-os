@@ -70,7 +70,7 @@ export async function GET() {
     // Progress — estimate from completed actions if available
     const actions = r.actions ?? [];
     const completedActions = actions.filter((a: any) => a.status === "completed").length;
-    const progress = actions.length > 0 ? Math.round((completedActions / actions.length) * 100) : 0;
+    const progress = actions.length > 0 ? Math.round((completedActions / actions.length) * 100) : null;
 
     return {
       id: r.id,

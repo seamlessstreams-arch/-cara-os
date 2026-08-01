@@ -103,7 +103,7 @@ export interface SeverityBreakdown {
   severe: number;
   death: number;
   harm_events: number;            // moderate + severe + death
-  harm_rate: number;              // % of errors causing harm (moderate+)
+  harm_rate: number | null;              // % of errors causing harm (moderate+)
 }
 
 export interface MedTrendOverview {
@@ -359,7 +359,7 @@ export function computeMedicationErrorTrends(input: MedErrorTrendInput): Medicat
     severe: sev("severe"),
     death: sev("death"),
     harm_events,
-    harm_rate: analysisErrors.length > 0 ? Math.round((harm_events / analysisErrors.length) * 100) : 0,
+    harm_rate: analysisErrors.length > 0 ? Math.round((harm_events / analysisErrors.length) * 100) : null,
   };
 
   // ── Most-involved medication / child ───────────────────────────────────

@@ -354,7 +354,7 @@ export function evaluateEnvironmentalPractice(
   const frequencyScore =
     uniqueChildren.size > 0
       ? Math.round((total / uniqueChildren.size) * 10) / 10
-      : 0;
+      : null;
 
   // Sustained engagement: pct of highly_engaged or engaged
   const sustainedCount = activities.filter(
@@ -374,11 +374,11 @@ export function evaluateEnvironmentalPractice(
   else if (activityTypeDiversity >= 1) score += 2;
 
   // Frequency: activities per child (0-9)
-  if (frequencyScore >= 6) score += 9;
-  else if (frequencyScore >= 4) score += 7;
-  else if (frequencyScore >= 3) score += 5;
-  else if (frequencyScore >= 2) score += 3;
-  else if (frequencyScore >= 1) score += 1;
+  if ((frequencyScore ?? 0) >= 6) score += 9;
+  else if ((frequencyScore ?? 0) >= 4) score += 7;
+  else if ((frequencyScore ?? 0) >= 3) score += 5;
+  else if ((frequencyScore ?? 0) >= 2) score += 3;
+  else if ((frequencyScore ?? 0) >= 1) score += 1;
 
   // Sustained engagement (0-8)
   if (sustainedEngagementRate >= 80) score += 8;

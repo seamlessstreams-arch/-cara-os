@@ -510,7 +510,7 @@ export function generateEscalationMetrics(
   const averageResponseTimeHours =
     responseTimes.length > 0
       ? Math.round((responseTimes.reduce((s, t) => s + t, 0) / responseTimes.length) * 10) / 10
-      : 0;
+      : null;
 
   // Multi-agency engagement
   const multiAgencyTargets: EscalationTarget[] = [

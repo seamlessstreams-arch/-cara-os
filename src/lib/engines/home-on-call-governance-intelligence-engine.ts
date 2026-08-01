@@ -344,7 +344,7 @@ export function computeHomeOnCallGovernance(
   if (coverage.unique_on_call_staff === 1) concerns.push("Only one person is covering all on-call duties — burnout risk.");
   if (criticalNotEscalated > 0) concerns.push(`${criticalNotEscalated} critical incident(s) were not escalated — governance gap.`);
   if ((quality.feedback_rate ?? 0) < 25 && completedShifts.length >= 2) concerns.push("Very few on-call shifts have post-shift feedback — limited learning.");
-  if (response.calls_per_shift > 3) concerns.push(`Average ${response.calls_per_shift} calls per shift — high out-of-hours demand.`);
+  if ((response.calls_per_shift ?? 0) > 3) concerns.push(`Average ${(response.calls_per_shift ?? 0)} calls per shift — high out-of-hours demand.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recommendations: Recommendation[] = [];
@@ -420,7 +420,7 @@ export function computeHomeOnCallGovernance(
       severity: "critical",
     });
   }
-  if (response.calls_per_shift >= 2) {
+  if ((response.calls_per_shift ?? 0) >= 2) {
     insights.push({
       text: `On average ${response.calls_per_shift} calls per shift — out-of-hours demand is significant.`,
       severity: "warning",

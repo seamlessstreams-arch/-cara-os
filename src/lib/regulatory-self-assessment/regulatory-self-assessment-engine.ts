@@ -487,7 +487,7 @@ function buildAreaBreakdown(
               areaActions.length) *
               100,
           )
-        : 0;
+        : null;
 
     const areaFeedback = feedback.filter(
       (f) => f.homeId === homeId && f.regulationArea === area,

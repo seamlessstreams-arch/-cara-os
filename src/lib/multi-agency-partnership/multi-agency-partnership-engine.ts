@@ -296,8 +296,8 @@ export function evaluateMeetingEffectiveness(
   }
   const attendanceRate = totalInvited > 0
     ? Math.round((totalAttended / totalInvited) * 100)
-    : 0;
-  score += attendanceRate >= 80 ? 6 : Math.round((attendanceRate / 80) * 6);
+    : null;
+  score += (attendanceRate ?? 0) >= 80 ? 6 : Math.round(((attendanceRate ?? 0) / 80) * 6);
 
   // Home representative attendance >= 95%
   const homeAttended = meetings.filter((m) => m.homeRepresentativeAttended).length;
@@ -318,8 +318,8 @@ export function evaluateMeetingEffectiveness(
   }
   const actionsCompletionRate = totalActions > 0
     ? Math.round((totalCompleted / totalActions) * 100)
-    : 0;
-  score += actionsCompletionRate >= 80 ? 4 : Math.round((actionsCompletionRate / 80) * 4);
+    : null;
+  score += (actionsCompletionRate ?? 0) >= 80 ? 4 : Math.round(((actionsCompletionRate ?? 0) / 80) * 4);
 
   // Child participation >= 70%
   const childParticipated = meetings.filter((m) => m.childParticipated).length;

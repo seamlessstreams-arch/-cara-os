@@ -438,7 +438,7 @@ export function evaluateProgressFromBaseline(
       ? Math.round(
           (domainProgress.reduce((s, dp) => s + dp.averageChange, 0) / domainProgress.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   // Progress distribution
   const progressDistribution: Record<ProgressStatus, number> = {
@@ -574,7 +574,7 @@ export function evaluateOutcomePlanning(
   const averageMeasurableIndicators =
     latestPlans.length > 0
       ? Math.round((totalIndicators / latestPlans.length) * 10) / 10
-      : 0;
+      : null;
   const plansWithMeasurableIndicators = latestPlans.filter(
     (p) => p.measurableIndicators.length > 0,
   ).length;
@@ -651,7 +651,7 @@ export function evaluateMeasurementQuality(
   const measurementRegularity =
     baselinedPairCount > 0
       ? Math.round((totalMeasurementCount / baselinedPairCount) * 10) / 10
-      : 0;
+      : null;
 
   // Child voice inclusion
   const measurementsWithVoice = relevantMeasurements.filter(

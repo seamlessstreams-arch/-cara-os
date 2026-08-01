@@ -274,10 +274,10 @@ async function generateLivePulse(homeId: string): Promise<RegulatoryPulse> {
   const scores = checks.map((c) => c.score);
   const overallScore = scores.length > 0
     ? Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length)
-    : 0;
+    : null;
   const overallStatus: ComplianceStatus = scores.length === 0
     ? "amber"
-    : overallScore >= 80 ? "green" : overallScore >= 60 ? "amber" : "red";
+    : (overallScore ?? 0) >= 80 ? "green" : (overallScore ?? 0) >= 60 ? "amber" : "red";
 
   return {
     date: today.toISOString().slice(0, 10),

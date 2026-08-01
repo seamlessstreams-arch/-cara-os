@@ -158,7 +158,7 @@ export function analyseContact(input: ContactInput): ContactAssessment {
   const totalSessions = contactSessions.length;
   const occurredSessions = contactSessions.filter(s => s.occurred).length;
   const missedSessions = totalSessions - occurredSessions;
-  const missedRate = totalSessions > 0 ? Math.round((missedSessions / totalSessions) * 100) / 100 : 0;
+  const missedRate = totalSessions > 0 ? Math.round((missedSessions / totalSessions) * 100) / 100 : null;
 
   // ── Quality metrics ─────────────────────────────────────────────────
   const occurredWithOutcome = contactSessions.filter(s => s.occurred && s.outcome !== "not_recorded");
@@ -171,7 +171,7 @@ export function analyseContact(input: ContactInput): ContactAssessment {
     : null;
   const distressingRate = occurredWithOutcome.length > 0
     ? Math.round((distressingCount / occurredWithOutcome.length) * 100) / 100
-    : 0;
+    : null;
 
   // ── Per-person analysis ─────────────────────────────────────────────
   const contactByPerson = analyseByPerson(contactSessions, arrangements);

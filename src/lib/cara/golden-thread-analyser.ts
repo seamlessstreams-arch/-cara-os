@@ -86,7 +86,7 @@ export interface GoldenThreadAnalysis {
     recordsWithChildVoice: number;
     childVoicePercent: number;
     carePlanCoverage: number;
-    viewsLinkedToPlans: number;
+    viewsLinkedToPlans: number | null;
     uniqueViewsCaptured: number;
   };
 }
@@ -134,15 +134,15 @@ export function analyseGoldenThread(input: GoldenThreadInput): GoldenThreadAnaly
 
   const totalRecords = allRecords.length;
   const recordsWithVoice = allRecords.filter((r) => r.hasChildVoice).length;
-  const childVoicePercent = totalRecords > 0 ? Math.round((recordsWithVoice / totalRecords) * 100) : 0;
+  const childVoicePercent = totalRecords > 0 ? Math.round((recordsWithVoice / totalRecords) * 100) : null;
 
   // ─── 1. Child Voice Capture (weight: 30) ──────────────────────────────────
   let voiceScore = 0;
 
-  if (childVoicePercent >= 60) voiceScore = 100;
-  else if (childVoicePercent >= 40) voiceScore = 75;
-  else if (childVoicePercent >= 25) voiceScore = 55;
-  else if (childVoicePercent >= 10) voiceScore = 35;
+  if ((childVoicePercent ?? 0) >= 60) voiceScore = 100;
+  else if ((childVoicePercent ?? 0) >= 40) voiceScore = 75;
+  else if ((childVoicePercent ?? 0) >= 25) voiceScore = 55;
+  else if ((childVoicePercent ?? 0) >= 10) voiceScore = 35;
   else voiceScore = 15;
 
   const kwWithVoice = input.keyWorkSessions.filter((r) => r.hasChildVoice).length;
@@ -153,7 +153,7 @@ export function analyseGoldenThread(input: GoldenThreadInput): GoldenThreadAnaly
     strengths.push("Child's voice consistently captured in key work sessions");
   }
 
-  if (childVoicePercent < 25) {
+  if ((childVoicePercent ?? 0) < 25) {
     gaps.push({
       type: "voice_missing",
       severity: "high",
@@ -175,19 +175,19 @@ export function analyseGoldenThread(input: GoldenThreadInput): GoldenThreadAnaly
   let voiceToPlanScore = 0;
   const viewsLinked = input.childViews.filter((v) => v.linkedToCarePlan).length;
   const viewsLinkedPercent = input.childViews.length > 0
-    ? Math.round((viewsLinked / input.childViews.length) * 100) : 0;
+    ? Math.round((viewsLinked / input.childViews.length) * 100) : null;
 
   const objectivesFromViews = input.carePlanObjectives.filter((o) => o.basedOnChildView).length;
   const objectivesFromViewsPercent = input.carePlanObjectives.length > 0
-    ? Math.round((objectivesFromViews / input.carePlanObjectives.length) * 100) : 0;
+    ? Math.round((objectivesFromViews / input.carePlanObjectives.length) * 100) : null;
 
-  voiceToPlanScore = Math.round((viewsLinkedPercent + objectivesFromViewsPercent) / 2);
+  voiceToPlanScore = Math.round(((viewsLinkedPercent ?? 0) + (objectivesFromViewsPercent ?? 0)) / 2);
 
   if (voiceToPlanScore >= 70) {
     strengths.push("Strong link between child's expressed wishes and care plan objectives");
   }
 
-  if (objectivesFromViewsPercent < 50 && input.carePlanObjectives.length > 0) {
+  if ((objectivesFromViewsPercent ?? 0) < 50 && input.carePlanObjectives.length > 0) {
     gaps.push({
       type: "plan_unlinked",
       severity: "medium",
@@ -223,19 +223,19 @@ export function analyseGoldenThread(input: GoldenThreadInput): GoldenThreadAnaly
   // ─── 3. Care Plan → Daily Practice (weight: 25) ──────────────────────────
   let practiceLinkScore = 0;
   const recordsLinked = allRecords.filter((r) => r.linksToCarePlan).length;
-  const practicePercent = totalRecords > 0 ? Math.round((recordsLinked / totalRecords) * 100) : 0;
+  const practicePercent = totalRecords > 0 ? Math.round((recordsLinked / totalRecords) * 100) : null;
 
   const objectivesWithEvidence = input.carePlanObjectives.filter((o) => o.evidenceCount > 0).length;
   const carePlanCoverage = input.carePlanObjectives.length > 0
-    ? Math.round((objectivesWithEvidence / input.carePlanObjectives.length) * 100) : 0;
+    ? Math.round((objectivesWithEvidence / input.carePlanObjectives.length) * 100) : null;
 
-  practiceLinkScore = Math.round((practicePercent * 0.4 + carePlanCoverage * 0.6));
+  practiceLinkScore = Math.round(((practicePercent ?? 0) * 0.4 + (carePlanCoverage ?? 0) * 0.6));
 
-  if (carePlanCoverage >= 80) {
+  if ((carePlanCoverage ?? 0) >= 80) {
     strengths.push("Daily practice well-evidenced against care plan objectives");
   }
 
-  if (carePlanCoverage < 50 && input.carePlanObjectives.length > 0) {
+  if ((carePlanCoverage ?? 0) < 50 && input.carePlanObjectives.length > 0) {
     gaps.push({
       type: "practice_drift",
       severity: "high",

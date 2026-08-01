@@ -137,7 +137,7 @@ export function analyseEmotionalWellbeing(input: EmotionalWellbeingInput): Emoti
   // ── Mood analysis ───────────────────────────────────────────────────
   const averageMood = input.moodRecords.length > 0
     ? Math.round((input.moodRecords.reduce((sum, m) => sum + m.level, 0) / input.moodRecords.length) * 10) / 10
-    : 0;
+    : null;
   const moodTrend = calculateMoodTrend(input.moodRecords);
 
   // ── Self-harm ───────────────────────────────────────────────────────

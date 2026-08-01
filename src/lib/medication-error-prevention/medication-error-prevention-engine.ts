@@ -649,7 +649,7 @@ export function generateMedicationErrorPreventionIntelligence(
   const assessed = pillars.filter((p) => p.assessed);
   const overallScore = assessed.length > 0
     ? Math.round((assessed.reduce((s, p) => s + p.score, 0) / (assessed.length * 25)) * 1000) / 10
-    : 0;
+    : null;
   const rating = ratingFromScore(overallScore);
 
   // ── Strengths ──

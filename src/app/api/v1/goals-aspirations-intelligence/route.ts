@@ -82,7 +82,7 @@ interface GoalsAspirationsHomeSummary {
   childrenWithChildChosenAspiration: number;
   totalActiveOutcomes: number;
   totalAchievedOutcomes: number;
-  overallProgressingRate: number;  // 0–100
+  overallProgressingRate: number | null;  // 0–100
   overallVoiceRate: number;  // 0–100
   overdueReviews: number;
   ofstedNote: string;
@@ -230,7 +230,7 @@ export async function GET() {
     const stable      = outMapped.filter((o) => o.progressSignal === "stable").length;
     const regressing  = outMapped.filter((o) => o.progressSignal === "regressing").length;
     const withVoice   = outMapped.filter((o) => o.hasChildVoice).length;
-    const voiceRate   = outMapped.length > 0 ? Math.round((withVoice / outMapped.length) * 100) : 0;
+    const voiceRate   = outMapped.length > 0 ? Math.round((withVoice / outMapped.length) * 100) : null;
     const overdue     = [...aspMapped.filter((a) => a.reviewOverdue), ...outMapped.filter((o) => o.reviewOverdue)].length;
 
     const childChosenCount = aspirations.filter((a) => a.child_chose).length;
@@ -284,14 +284,14 @@ export async function GET() {
   const totalOut    = childProfiles.reduce((s, c) => s + c.activeOutcomeCount + c.achievedOutcomeCount, 0);
   const totalOverdue = childProfiles.reduce((s, c) => s + c.overdueReviewCount, 0);
 
-  const overallProgRate = totalOut > 0 ? Math.round((totalProg / totalOut) * 100) : 0;
-  const overallVoiceRate = totalOut > 0 ? Math.round((totalVoice / totalOut) * 100) : 0;
+  const overallProgRate = totalOut > 0 ? Math.round((totalProg / totalOut) * 100) : null;
+  const overallVoiceRate = totalOut > 0 ? Math.round((totalVoice / totalOut) * 100) : null;
 
   const ofstedNote =
     childProfiles.filter((c) => c.aspirationCount === 0).length > 0
       ? `${childProfiles.filter((c) => c.aspirationCount === 0).length} child${childProfiles.filter((c) => c.aspirationCount === 0).length > 1 ? "ren" : ""} have no aspirations documented. An inspector will ask: do you know what each child hopes for their future?`
-      : overallVoiceRate < 30
-      ? `Goals are documented but children's own voices are missing from ${100 - overallVoiceRate}% of outcome targets. Co-production is an inspection focus.`
+      : (overallVoiceRate ?? 0) < 30
+      ? `Goals are documented but children's own voices are missing from ${100 - (overallVoiceRate ?? 0)}% of outcome targets. Co-production is an inspection focus.`
       : `${overallProgRate}% of outcomes are progressing. Aspirations are documented for ${withAsp} of ${currentChildren.length} current residents.`;
 
   const summary: GoalsAspirationsHomeSummary = {

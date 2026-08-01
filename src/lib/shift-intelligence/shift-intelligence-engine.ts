@@ -393,7 +393,7 @@ export function analyseShiftCoverage(
     const [date, shiftType] = key.split("|") as [string, ShiftType];
     const actualStaff = shiftGroup.length;
     const agencyCount = shiftGroup.filter((s) => s.isAgency).length;
-    const agencyPercentage = actualStaff > 0 ? Math.round((agencyCount / actualStaff) * 100) : 0;
+    const agencyPercentage = actualStaff > 0 ? Math.round((agencyCount / actualStaff) * 100) : null;
 
     // Determine required staff based on shift type
     let requiredStaff: number;
@@ -434,7 +434,7 @@ export function analyseShiftCoverage(
     if (requirements.requireSeniorOnShift && !seniorPresent) {
       concerns.push("no_senior_cover");
     }
-    if (agencyPercentage > requirements.maximumAgencyPercentage) {
+    if ((agencyPercentage ?? 0) > requirements.maximumAgencyPercentage) {
       concerns.push("excessive_agency");
     }
 

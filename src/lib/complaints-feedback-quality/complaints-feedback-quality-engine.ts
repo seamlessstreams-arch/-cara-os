@@ -381,7 +381,7 @@ export function evaluateComplaintHandling(
   const averageResolutionDays =
     resolutionDaysCount > 0
       ? Math.round((totalResolutionDays / resolutionDaysCount) * 10) / 10
-      : 0;
+      : null;
 
   // Scoring (0-25 scale)
   // Resolution timeliness: 30% weight

@@ -37,7 +37,7 @@ export interface StaffApproachProfile {
   boundaryCount: number;
   physicalCount: number;
   undocumentedCount: number;
-  therapeuticRate: number;   // 0–100
+  therapeuticRate: number | null;   // 0–100
   dominantApproach: ApproachType;
 }
 
@@ -47,7 +47,7 @@ export interface ChildConsistencyProfile {
   totalEntries: number;
   staffProfiles: StaffApproachProfile[];
   consistencyLevel: ConsistencyLevel;
-  overallTherapeuticRate: number;  // 0–100 across all staff
+  overallTherapeuticRate: number | null;  // 0–100 across all staff
   therapeuticRateVariance: number; // range = max - min across staff (0–100)
   mostTherapeuticStaff: string | null;
   leastTherapeuticStaff: string | null;
@@ -59,7 +59,7 @@ export interface ApproachSummary {
   consistentCount: number;
   mixedCount: number;
   divergentCount: number;
-  overallTherapeuticRate: number;
+  overallTherapeuticRate: number | null;
   mostCommonDivergencePattern: string;
 }
 
@@ -223,7 +223,7 @@ export function buildTeamApproachConsistency(store: ReturnType<typeof getStore>)
         else u++;
       }
       const total = strategies.length;
-      const tRate = total > 0 ? Math.round((t / total) * 100) : 0;
+      const tRate = total > 0 ? Math.round((t / total) * 100) : null;
       totalForChild += total;
       therapeuticForChild += t;
 
@@ -248,11 +248,11 @@ export function buildTeamApproachConsistency(store: ReturnType<typeof getStore>)
     const variance =
       reliableRates.length >= 2 ? Math.max(...reliableRates) - Math.min(...reliableRates) : 0;
 
-    const overallRate = totalForChild > 0 ? Math.round((therapeuticForChild / totalForChild) * 100) : 0;
+    const overallRate = totalForChild > 0 ? Math.round((therapeuticForChild / totalForChild) * 100) : null;
     const level = deriveConsistency(variance, staffProfiles.length);
 
     // Sort staff by therapeutic rate for naming
-    const sorted = [...staffProfiles].sort((a, b) => b.therapeuticRate - a.therapeuticRate);
+    const sorted = [...staffProfiles].sort((a, b) => (b.therapeuticRate ?? 0) - (a.therapeuticRate ?? 0));
     const mostTherapeutic = staffProfiles.length > 1 ? sorted[0].staffName : null;
     const leastTherapeutic = staffProfiles.length > 1 ? sorted[sorted.length - 1].staffName : null;
 
@@ -281,13 +281,13 @@ export function buildTeamApproachConsistency(store: ReturnType<typeof getStore>)
   const consistent = childProfiles.filter((c) => c.consistencyLevel === "consistent").length;
   const mixed      = childProfiles.filter((c) => c.consistencyLevel === "mixed").length;
   const divergent  = childProfiles.filter((c) => c.consistencyLevel === "divergent").length;
-  const overallTherapeuticRate = totalEntries > 0 ? Math.round((totalTherapeutic / totalEntries) * 100) : 0;
+  const overallTherapeuticRate = totalEntries > 0 ? Math.round((totalTherapeutic / totalEntries) * 100) : null;
 
   // Most common divergence pattern
   const lowTherapeuticStaff = childProfiles
     .flatMap((c) =>
       c.staffProfiles
-        .filter((s) => s.therapeuticRate < 30 && s.totalEntries >= MIN_ENTRIES_FOR_SIGNAL)
+        .filter((s) => (s.therapeuticRate ?? 0) < 30 && s.totalEntries >= MIN_ENTRIES_FOR_SIGNAL)
         .map((s) => s.staffName),
     );
   const dominanceCount: Record<string, number> = {};

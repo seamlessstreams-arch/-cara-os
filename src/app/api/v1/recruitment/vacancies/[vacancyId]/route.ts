@@ -36,7 +36,7 @@ export async function GET(
       stage: c.current_stage,
       risk_level: c.risk_level,
       days_total: Math.max(0, Math.floor((Date.now() - new Date(c.created_at).getTime()) / 86400000)),
-      compliance_score: checks.length > 0 ? Math.round((verified / checks.length) * 100) : 0,
+      compliance_score: checks.length > 0 ? Math.round((verified / checks.length) * 100) : null,
     };
   });
 

@@ -138,8 +138,8 @@ export interface ChildGroupProfile {
   childId: string;
   childName: string;
   totalInteractions: number;
-  positiveInteractionRate: number;
-  conflictRate: number;
+  positiveInteractionRate: number | null;
+  conflictRate: number | null;
   isIsolated: boolean;
   isFrequentAggressor: boolean;
   isFrequentVictim: boolean;
@@ -174,8 +174,8 @@ export interface PeerDynamicsIntelligenceResult {
   // Group overview
   totalChildren: number;
   totalInteractions: number;
-  positiveInteractionRate: number;
-  conflictRate: number;
+  positiveInteractionRate: number | null;
+  conflictRate: number | null;
   groupStabilityTrend: GroupStabilityTrend;
 
   // Matching compliance
@@ -457,8 +457,8 @@ export function buildChildGroupProfiles(
       childId: child.id,
       childName: child.name,
       totalInteractions: total,
-      positiveInteractionRate: total > 0 ? Math.round((positive / total) * 100) : 0,
-      conflictRate: total > 0 ? Math.round((negative / total) * 100) : 0,
+      positiveInteractionRate: total > 0 ? Math.round((positive / total) * 100) : null,
+      conflictRate: total > 0 ? Math.round((negative / total) * 100) : null,
       isIsolated,
       isFrequentAggressor,
       isFrequentVictim,
@@ -619,9 +619,9 @@ export function generatePeerDynamicsIntelligence(
     totalChildren: activeChildren.length,
     totalInteractions: periodInteractions.length,
     positiveInteractionRate: periodInteractions.length > 0
-      ? Math.round((positiveInteractions / periodInteractions.length) * 100) : 0,
+      ? Math.round((positiveInteractions / periodInteractions.length) * 100) : null,
     conflictRate: periodInteractions.length > 0
-      ? Math.round((negativeInteractions / periodInteractions.length) * 100) : 0,
+      ? Math.round((negativeInteractions / periodInteractions.length) * 100) : null,
     groupStabilityTrend,
     matching,
     dyadAnalyses,

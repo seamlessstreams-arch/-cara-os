@@ -419,7 +419,7 @@ export function evaluateTreatmentCompliance(
   const socialWorkerNotifiedRate = pct(swNotified, plans.length);
   const activeTreatmentProgressRate = activePlans.length > 0
     ? Math.round(activeProgressSum / activePlans.length)
-    : 0;
+    : null;
 
   // Scoring: completion (0-8), parent consent (0-7), SW notified (0-5),
   // active progress (0-5)
@@ -427,7 +427,7 @@ export function evaluateTreatmentCompliance(
   score += Math.round((completionRate / 100) * 8);
   score += Math.round((parentConsentRate / 100) * 7);
   score += Math.round((socialWorkerNotifiedRate / 100) * 5);
-  score += Math.round((activeTreatmentProgressRate / 100) * 5);
+  score += Math.round(((activeTreatmentProgressRate ?? 0) / 100) * 5);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),

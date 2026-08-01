@@ -142,7 +142,7 @@ export interface IncidentResponseResult {
   deEscalationSuccessRate: number; // %
   childDebriefRate: number; // %
   restraintRate: number; // %
-  averageResponseTimeMins: number;
+  averageResponseTimeMins: number | null;
 }
 
 export interface NotificationComplianceResult {
@@ -354,7 +354,7 @@ export function evaluateIncidentResponse(
       ? Math.round(
           staffResponses.reduce((sum, s) => sum + s.responseTimeMins, 0) / staffResponses.length,
         )
-      : 0;
+      : null;
 
   // Score calculation
   // Response quality contributes up to 8 points

@@ -36,7 +36,7 @@ export interface ChildPIProfile {
   last30d: number;
   prior30d: number;
   trend: "increasing" | "stable" | "decreasing";
-  avgDurationMinutes: number;
+  avgDurationMinutes: number | null;
   deEscalationRate: number;         // 0–100
   debriefRate: number;              // 0–100
   staffDebriefRate: number;         // 0–100
@@ -71,7 +71,7 @@ export interface PhysicalInterventionSummary {
   pendingReviews: number;
   childrenWithPendingDebrief: number;
   totalInjuries: number;
-  avgDurationMinutes: number;
+  avgDurationMinutes: number | null;
   commonAntecedents: AntecedentFrequency[];
   ofstedNote: string;
 }
@@ -196,19 +196,19 @@ export async function GET() {
 
     const avgDuration = childRestraints.length > 0
       ? Math.round(childRestraints.reduce((s, r) => s + (r.duration ?? 0), 0) / childRestraints.length * 10) / 10
-      : 0;
+      : null;
 
     const withDeEscalation = childRestraints.filter((r) => r.de_escalation_attempts && r.de_escalation_attempts.length > 0);
     const deEscalationRate = childRestraints.length > 0
-      ? Math.round((withDeEscalation.length / childRestraints.length) * 100) : 0;
+      ? Math.round((withDeEscalation.length / childRestraints.length) * 100) : null;
 
     const childDebriefed = childRestraints.filter((r) => r.child_debriefed);
     const debriefRate = childRestraints.length > 0
-      ? Math.round((childDebriefed.length / childRestraints.length) * 100) : 0;
+      ? Math.round((childDebriefed.length / childRestraints.length) * 100) : null;
 
     const staffDebriefed = childRestraints.filter((r) => r.staff_debriefed);
     const staffDebriefRate = childRestraints.length > 0
-      ? Math.round((staffDebriefed.length / childRestraints.length) * 100) : 0;
+      ? Math.round((staffDebriefed.length / childRestraints.length) * 100) : null;
 
     const injuryCount = childRestraints.reduce((s, r) => s + (r.injuries ?? []).length, 0);
     const pendingReviewCount = childRestraints.filter((r) =>
@@ -282,7 +282,7 @@ export async function GET() {
       totalInvolvements: counts.leadCount + counts.supportCount,
       deEscalationDocumentedOnLeads: counts.leadWithDeEscalation,
       deEscalationRateOnLeads: counts.leadCount > 0
-        ? Math.round((counts.leadWithDeEscalation / counts.leadCount) * 100) : 0,
+        ? Math.round((counts.leadWithDeEscalation / counts.leadCount) * 100) : null,
     }))
     .sort((a, b) => b.totalInvolvements - a.totalInvolvements);
 
@@ -323,7 +323,7 @@ export async function GET() {
   const totalInjuries = restraints.reduce((s, r) => s + (r.injuries ?? []).length, 0);
   const avgDuration = restraints.length > 0
     ? Math.round(restraints.reduce((s, r) => s + (r.duration ?? 0), 0) / restraints.length * 10) / 10
-    : 0;
+    : null;
 
   const ofstedNote =
     restraints.length === 0

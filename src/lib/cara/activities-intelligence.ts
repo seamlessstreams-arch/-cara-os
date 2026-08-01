@@ -123,24 +123,24 @@ export function analyseActivities(input: ActivityInput): ActivityAssessment {
   // Assume activities span ~12 weeks (3 months)
   const activitiesPerWeek = totalActivities > 0
     ? Math.round((totalActivities / 12) * 10) / 10
-    : 0;
+    : null;
 
   const categoriesCovered = new Set(activities.map(a => a.category)).size;
 
   const communityActivities = activities.filter(a => a.communityBased);
   const communityRate = totalActivities > 0
     ? Math.round((communityActivities.length / totalActivities) * 100) / 100
-    : 0;
+    : null;
 
   const peerActivities = activities.filter(a => a.peerInteraction);
   const peerRate = totalActivities > 0
     ? Math.round((peerActivities.length / totalActivities) * 100) / 100
-    : 0;
+    : null;
 
   const childChoseActivities = activities.filter(a => a.childChose);
   const childChoiceRate = totalActivities > 0
     ? Math.round((childChoseActivities.length / totalActivities) * 100) / 100
-    : 0;
+    : null;
 
   const achievements = activities
     .filter(a => a.achievementNoted)

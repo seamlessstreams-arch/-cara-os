@@ -188,7 +188,7 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 function pct(n: number, d: number): number {
-  return d > 0 ? Math.round((n / d) * 100) : 0;
+  return d > 0 ? Math.round((n / d) * 100) : null;
 }
 
 function recent(today: string, date: string, windowDays: number): boolean {
@@ -1059,17 +1059,17 @@ export function computeChildImpact(input: ChildImpactInput): ChildImpactView {
   const assessedDomains = domains.filter((d) => d.current_status !== "not_assessed");
   const overallScore = assessedDomains.length > 0
     ? Math.round(assessedDomains.reduce((s, d) => s + d.score, 0) / assessedDomains.length)
-    : 0;
+    : null;
 
   // ── Overall progress ────────────────────────────────────────────────────
   let overallProgress: ChildImpactView["overall_progress"];
   if (assessedDomains.length === 0) {
     overallProgress = "not_assessed";
-  } else if (overallScore >= 80) {
+  } else if ((overallScore ?? 0) >= 80) {
     overallProgress = "significant";
-  } else if (overallScore >= 65) {
+  } else if ((overallScore ?? 0) >= 65) {
     overallProgress = "good";
-  } else if (overallScore >= 45) {
+  } else if ((overallScore ?? 0) >= 45) {
     overallProgress = "some";
   } else {
     overallProgress = "limited";

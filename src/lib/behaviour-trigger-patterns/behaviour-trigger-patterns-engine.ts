@@ -69,9 +69,9 @@ export interface ChildBehaviourPattern {
   avg_intensity: number;                // 1-4 over concerning entries (1 d.p.)
   intensity_trajectory: IntensityTrajectory;
   top_triggers: TriggerCount[];
-  strategy_coverage_pct: number;        // % of concerning entries with a strategy recorded
+  strategy_coverage_pct: number | null;        // % of concerning entries with a strategy recorded
   high_intensity_unsupported: number;   // high/critical concerning entries with no strategy
-  concern_score: number;                // 0-100
+  concern_score: number | null;                // 0-100
   concern_level: ConcernLevel;
   flags: string[];
   recommended_actions: RecommendedAction[];
@@ -82,7 +82,7 @@ export interface BehaviourPatternOverview {
   total_concerning_90d: number;
   escalating_count: number;
   high_concern_count: number;
-  avg_reinforcement_ratio: number;
+  avg_reinforcement_ratio: number | null;
   top_home_triggers: TriggerCount[];
   highest_concern_child: string | null;
 }
@@ -259,7 +259,7 @@ export function computeBehaviourTriggerPatterns(input: BehaviourPatternInput): B
     });
   }
 
-  children.sort((a, b) => b.concern_score - a.concern_score);
+  children.sort((a, b) => (b.concern_score ?? 0) - (a.concern_score ?? 0));
 
   const top_home_triggers: TriggerCount[] = [...homeTriggerCounts.values()]
     .sort((a, b) => b.count - a.count)
@@ -334,9 +334,9 @@ function buildOverview(children: ChildBehaviourPattern[], topHomeTriggers: Trigg
     high_concern_count: children.filter((c) => c.concern_level === "high" || c.concern_level === "critical").length,
     avg_reinforcement_ratio: children.length > 0
       ? round1(average(children.map((c) => c.reinforcement_ratio)))
-      : 0,
+      : null,
     top_home_triggers: topHomeTriggers,
-    highest_concern_child: top && top.concern_score > 0 ? top.child_name : null,
+    highest_concern_child: top && (top.concern_score ?? 0) > 0 ? top.child_name : null,
   };
 }
 

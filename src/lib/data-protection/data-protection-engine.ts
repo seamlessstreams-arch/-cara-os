@@ -353,7 +353,7 @@ export function evaluateConsentCompliance(records: ConsentRecord[]): ConsentComp
   const averageTypesPerChild =
     typeCountsPerChild.length > 0
       ? Math.round((typeCountsPerChild.reduce((a, b) => a + b, 0) / typeCountsPerChild.length) * 10) / 10
-      : 0;
+      : null;
 
   // Scoring: +8 consent obtained >=95%, +5 age-appropriate, +4 review current,
   //          +4 no expired, +4 coverage (>=5 types per child)

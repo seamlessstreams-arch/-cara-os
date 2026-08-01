@@ -148,11 +148,11 @@ interface AnalysisContext {
     home_name: string;
     home_id: string;
     risk_level_overall: string;
-    recording_compliance_pct: number;
+    recording_compliance_pct: number | null;
     total_incidents_7d: number;
     safeguarding_concerns_open: number;
-    staff_supervision_compliance_pct: number;
-    ofsted_readiness_score: number;
+    staff_supervision_compliance_pct: number | null;
+    ofsted_readiness_score: number | null;
     management_oversight_current: boolean;
     key_work_sessions_overdue: number;
     cara_risk_factors: Array<{ factor: string; severity: string; trend: string }>;
@@ -197,11 +197,11 @@ function generateCrossHomeAnalysis(ctx: AnalysisContext) {
 
   // Overall assessment
   const avgCompliance = snapshots.length > 0
-    ? Math.round(snapshots.reduce((sum, s) => sum + s.recording_compliance_pct, 0) / snapshots.length)
-    : 0;
+    ? Math.round(snapshots.reduce((sum, s) => sum + (s.recording_compliance_pct ?? 0), 0) / snapshots.length)
+    : null;
   const avgReadiness = snapshots.length > 0
-    ? Math.round(snapshots.reduce((sum, s) => sum + s.ofsted_readiness_score, 0) / snapshots.length)
-    : 0;
+    ? Math.round(snapshots.reduce((sum, s) => sum + (s.ofsted_readiness_score ?? 0), 0) / snapshots.length)
+    : null;
 
   lines.push("**Organisation Summary:**");
   lines.push(`- Average recording compliance: ${avgCompliance}%`);
@@ -213,7 +213,7 @@ function generateCrossHomeAnalysis(ctx: AnalysisContext) {
   if (highRiskHomes.length > 0) {
     recommendations.push(`Prioritise RI visit to ${highRiskHomes[0].home_name} — highest risk home`);
   }
-  if (avgCompliance < 80) {
+  if ((avgCompliance ?? 0) < 80) {
     recommendations.push("Organisation-wide recording compliance is below 80% — consider targeted training");
   }
   const overdueKW = snapshots.reduce((sum, s) => sum + s.key_work_sessions_overdue, 0);

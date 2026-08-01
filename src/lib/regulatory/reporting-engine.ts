@@ -271,7 +271,7 @@ export function evaluateRegulatoryCompliance(
   const announcedCount = completedReports.filter(r => r.announced).length;
   const announcedPercentage = completedReports.length > 0
     ? Math.round((announcedCount / completedReports.length) * 100)
-    : 0;
+    : null;
   const unannouncedCount = completedReports.filter(r => !r.announced).length;
 
   // Action points
@@ -287,7 +287,7 @@ export function evaluateRegulatoryCompliance(
   if (overdueReports.length > 0) {
     issues.push(`${overdueReports.length} Reg 44 report(s) overdue or missed.`);
   }
-  if (announcedPercentage > 50 && completedReports.length >= 3) {
+  if ((announcedPercentage ?? 0) > 50 && completedReports.length >= 3) {
     issues.push("Majority of Reg 44 visits are announced — should be predominantly unannounced.");
   }
 
@@ -542,7 +542,7 @@ export function summarizeActionPoints(
   }
   const averageResolutionDays = resolvedWithDates.length > 0
     ? Math.round(totalDays / resolvedWithDates.length)
-    : 0;
+    : null;
 
   return {
     total: allActions.length,

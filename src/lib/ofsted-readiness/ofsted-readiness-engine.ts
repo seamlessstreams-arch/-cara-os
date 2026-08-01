@@ -887,7 +887,7 @@ function buildJudgmentAreaSummaries(
               mappedScores.length) *
               100,
           ) / 100
-        : 0;
+        : null;
 
     // Get evidence for this judgment area
     const areaEvidence = evidenceItems.filter(
@@ -909,7 +909,7 @@ function buildJudgmentAreaSummaries(
       strongEvidenceCount: areaEvidence.filter(
         (e) => e.evidenceStrength === "strong",
       ).length,
-      readinessContribution: avgScore >= 80 ? 6 : avgScore >= 60 ? 4 : avgScore >= 40 ? 2 : 0,
+      readinessContribution: (avgScore ?? 0) >= 80 ? 6 : (avgScore ?? 0) >= 60 ? 4 : (avgScore ?? 0) >= 40 ? 2 : 0,
     };
   });
 }
