@@ -175,10 +175,10 @@ export interface ExclusionEvaluation {
 
 export interface PEPQualityEvaluation {
   pepCurrencyRate: number | null;
-  virtualSchoolInvolvementRate: number;
-  childAttendanceRate: number;
-  childVoiceRate: number;
-  targetAchievementRate: number;
+  virtualSchoolInvolvementRate: number | null;
+  childAttendanceRate: number | null;
+  childVoiceRate: number | null;
+  targetAchievementRate: number | null;
   totalTargetsSet: number;
   totalTargetsAchieved: number;
   overduePEPs: number;
@@ -202,14 +202,14 @@ export interface SENDSupportEvaluation {
   sendCoverageRate: number | null;
   ehcpCount: number;
   ehcpCurrencyRate: number | null;
-  averageHoursPerWeek: number;
+  averageHoursPerWeek: number | null;
   effectivenessBreakdown: {
     excellent: number;
     good: number;
     adequate: number;
     poor: number;
   };
-  childVoiceCapturedRate: number;
+  childVoiceCapturedRate: number | null;
   perChild: {
     childId: string;
     childName: string;
@@ -225,15 +225,15 @@ export interface SENDSupportEvaluation {
 export interface AchievementEvaluation {
   totalAchievements: number;
   achievementTypeBreakdown: Record<AchievementType, number>;
-  typeVarietyScore: number;
-  celebrationRate: number;
-  evidenceRecordingRate: number;
+  typeVarietyScore: number | null;
+  celebrationRate: number | null;
+  evidenceRecordingRate: number | null;
   perChild: {
     childId: string;
     childName: string;
     achievementCount: number;
     types: AchievementType[];
-    celebrationRate: number;
+    celebrationRate: number | null;
   }[];
 }
 
@@ -473,23 +473,23 @@ export function evaluatePEPQuality(
   const vsInvolved = relevantPEPs.filter(p => p.virtualSchoolInvolved).length;
   const virtualSchoolInvolvementRate = relevantPEPs.length > 0
     ? Math.round((vsInvolved / relevantPEPs.length) * 1000) / 10
-    : 0;
+    : null;
 
   const childAttended = relevantPEPs.filter(p => p.childAttended).length;
   const childAttendanceRate = relevantPEPs.length > 0
     ? Math.round((childAttended / relevantPEPs.length) * 1000) / 10
-    : 0;
+    : null;
 
   const childVoice = relevantPEPs.filter(p => p.childVoiceRecorded).length;
   const childVoiceRate = relevantPEPs.length > 0
     ? Math.round((childVoice / relevantPEPs.length) * 1000) / 10
-    : 0;
+    : null;
 
   const totalTargetsSet = relevantPEPs.reduce((s, p) => s + p.targetsSet, 0);
   const totalTargetsAchieved = relevantPEPs.reduce((s, p) => s + p.targetsAchieved, 0);
   const targetAchievementRate = totalTargetsSet > 0
     ? Math.round((totalTargetsAchieved / totalTargetsSet) * 1000) / 10
-    : 0;
+    : null;
 
   const perChild = childIds.map(childId => {
     const pep = latestPEPs.get(childId);
@@ -563,7 +563,7 @@ export function evaluateSENDSupport(
 
   const averageHoursPerWeek = supports.length > 0
     ? Math.round((supports.reduce((s, r) => s + r.hoursPerWeek, 0) / supports.length) * 10) / 10
-    : 0;
+    : null;
 
   const effectivenessBreakdown = {
     excellent: supports.filter(s => s.effectivenessRating === "excellent").length,
@@ -575,7 +575,7 @@ export function evaluateSENDSupport(
   const withChildView = supports.filter(s => s.childView !== undefined && s.childView !== "").length;
   const childVoiceCapturedRate = supports.length > 0
     ? Math.round((withChildView / supports.length) * 1000) / 10
-    : 0;
+    : null;
 
   // Per-child analysis — aggregate by child
   const childMap = new Map<string, SENDSupportRecord[]>();
@@ -645,17 +645,17 @@ export function evaluateAchievements(
   const typesPresent = allTypes.filter(t => achievementTypeBreakdown[t] > 0).length;
   const typeVarietyScore = allTypes.length > 0
     ? Math.round((typesPresent / allTypes.length) * 1000) / 10
-    : 0;
+    : null;
 
   const celebrated = achievements.filter(a => a.celebrated).length;
   const celebrationRate = totalAchievements > 0
     ? Math.round((celebrated / totalAchievements) * 1000) / 10
-    : 0;
+    : null;
 
   const evidenced = achievements.filter(a => a.evidenceRecorded).length;
   const evidenceRecordingRate = totalAchievements > 0
     ? Math.round((evidenced / totalAchievements) * 1000) / 10
-    : 0;
+    : null;
 
   // Per-child
   const childMap = new Map<string, AchievementRecord[]>();
@@ -671,7 +671,7 @@ export function evaluateAchievements(
     types: [...new Set(recs.map(r => r.achievementType))],
     celebrationRate: recs.length > 0
       ? Math.round((recs.filter(r => r.celebrated).length / recs.length) * 1000) / 10
-      : 0,
+      : null,
   }));
 
   return {
@@ -785,22 +785,22 @@ export function generateEducationOutcomesIntelligence(
   else if (meets(pepEval.pepCurrencyRate, 0.1)) pepScore += 2;
 
   // Child participation — attendance at PEP (up to 5 points)
-  if (pepEval.childAttendanceRate >= 100) pepScore += 5;
-  else if (pepEval.childAttendanceRate >= 80) pepScore += 4;
-  else if (pepEval.childAttendanceRate >= 50) pepScore += 2;
-  else if (pepEval.childAttendanceRate > 0) pepScore += 1;
+  if ((pepEval.childAttendanceRate ?? 0) >= 100) pepScore += 5;
+  else if ((pepEval.childAttendanceRate ?? 0) >= 80) pepScore += 4;
+  else if ((pepEval.childAttendanceRate ?? 0) >= 50) pepScore += 2;
+  else if ((pepEval.childAttendanceRate ?? 0) > 0) pepScore += 1;
 
   // Child voice recorded (up to 5 points)
-  if (pepEval.childVoiceRate >= 100) pepScore += 5;
-  else if (pepEval.childVoiceRate >= 80) pepScore += 4;
-  else if (pepEval.childVoiceRate >= 50) pepScore += 2;
-  else if (pepEval.childVoiceRate > 0) pepScore += 1;
+  if ((pepEval.childVoiceRate ?? 0) >= 100) pepScore += 5;
+  else if ((pepEval.childVoiceRate ?? 0) >= 80) pepScore += 4;
+  else if ((pepEval.childVoiceRate ?? 0) >= 50) pepScore += 2;
+  else if ((pepEval.childVoiceRate ?? 0) > 0) pepScore += 1;
 
   // Target achievement (up to 5 points)
-  if (pepEval.targetAchievementRate >= 70) pepScore += 5;
-  else if (pepEval.targetAchievementRate >= 50) pepScore += 4;
-  else if (pepEval.targetAchievementRate >= 30) pepScore += 2;
-  else if (pepEval.targetAchievementRate > 0) pepScore += 1;
+  if ((pepEval.targetAchievementRate ?? 0) >= 70) pepScore += 5;
+  else if ((pepEval.targetAchievementRate ?? 0) >= 50) pepScore += 4;
+  else if ((pepEval.targetAchievementRate ?? 0) >= 30) pepScore += 2;
+  else if ((pepEval.targetAchievementRate ?? 0) > 0) pepScore += 1;
 
   pepScore = Math.min(pepScore, 25);
 
@@ -850,16 +850,16 @@ export function generateEducationOutcomesIntelligence(
   else if (achievementEval.totalAchievements > 0) achievementScore += 1;
 
   // Variety (up to 5 points)
-  if (achievementEval.typeVarietyScore >= 70) achievementScore += 5;
-  else if (achievementEval.typeVarietyScore >= 50) achievementScore += 4;
-  else if (achievementEval.typeVarietyScore >= 30) achievementScore += 2;
-  else if (achievementEval.typeVarietyScore > 0) achievementScore += 1;
+  if ((achievementEval.typeVarietyScore ?? 0) >= 70) achievementScore += 5;
+  else if ((achievementEval.typeVarietyScore ?? 0) >= 50) achievementScore += 4;
+  else if ((achievementEval.typeVarietyScore ?? 0) >= 30) achievementScore += 2;
+  else if ((achievementEval.typeVarietyScore ?? 0) > 0) achievementScore += 1;
 
   // Celebration rate (up to 5 points)
-  if (achievementEval.celebrationRate >= 90) achievementScore += 5;
-  else if (achievementEval.celebrationRate >= 70) achievementScore += 4;
-  else if (achievementEval.celebrationRate >= 50) achievementScore += 2;
-  else if (achievementEval.celebrationRate > 0) achievementScore += 1;
+  if ((achievementEval.celebrationRate ?? 0) >= 90) achievementScore += 5;
+  else if ((achievementEval.celebrationRate ?? 0) >= 70) achievementScore += 4;
+  else if ((achievementEval.celebrationRate ?? 0) >= 50) achievementScore += 2;
+  else if ((achievementEval.celebrationRate ?? 0) > 0) achievementScore += 1;
 
   achievementScore = Math.min(achievementScore, 15);
 
@@ -944,14 +944,14 @@ export function generateEducationOutcomesIntelligence(
     actions.push("Schedule overdue PEP reviews with Virtual School Head as a matter of urgency.");
   }
 
-  if (pepEval.childVoiceRate >= 80) {
+  if ((pepEval.childVoiceRate ?? 0) >= 80) {
     strengths.push("Strong child voice captured in PEP reviews — children are actively participating in their education planning.");
-  } else if (pepEval.childVoiceRate < 50) {
+  } else if ((pepEval.childVoiceRate ?? 0) < 50) {
     areasForImprovement.push("Child voice is insufficiently represented in PEP reviews.");
     actions.push("Prepare children before PEP meetings to ensure their views and aspirations are captured.");
   }
 
-  if (pepEval.targetAchievementRate >= 50) {
+  if ((pepEval.targetAchievementRate ?? 0) >= 50) {
     strengths.push(`${pepEval.targetAchievementRate}% PEP target achievement rate demonstrates good educational progress.`);
   }
 
@@ -962,22 +962,22 @@ export function generateEducationOutcomesIntelligence(
       areasForImprovement.push(`${poorSupport} SEND support provision(s) rated as poor effectiveness.`);
       actions.push("Review poor-rated SEND provisions and explore alternative support arrangements.");
     }
-    if (sendEval.childVoiceCapturedRate >= 80) {
+    if ((sendEval.childVoiceCapturedRate ?? 0) >= 80) {
       strengths.push("Children's views are well-captured in SEND support assessments.");
     }
   }
 
   // Achievement strengths/areas
-  if (achievementEval.celebrationRate >= 80) {
+  if ((achievementEval.celebrationRate ?? 0) >= 80) {
     strengths.push("Achievements are consistently celebrated — supporting children's self-esteem and motivation.");
-  } else if (achievementEval.celebrationRate < 50) {
+  } else if ((achievementEval.celebrationRate ?? 0) < 50) {
     areasForImprovement.push("Achievement celebration rate is below 50% — children need their successes recognised.");
     actions.push("Implement a structured approach to celebrating all achievements, including non-academic successes.");
   }
 
-  if (achievementEval.typeVarietyScore >= 60) {
+  if ((achievementEval.typeVarietyScore ?? 0) >= 60) {
     strengths.push("Broad range of achievement types recognised, reflecting Reg 9 enjoyment and achievement expectations.");
-  } else if (achievementEval.typeVarietyScore < 30) {
+  } else if ((achievementEval.typeVarietyScore ?? 0) < 30) {
     areasForImprovement.push("Achievement recognition is too narrowly focused — broaden to include vocational, creative, and life skills.");
   }
 
@@ -1047,8 +1047,8 @@ function buildRegulatoryLinks(
 
   // Reg 9 — Enjoyment & Achievement
   const reg9Met = achievements.totalAchievements > 0 &&
-    achievements.typeVarietyScore >= 40 &&
-    achievements.celebrationRate >= 60;
+    (achievements.typeVarietyScore ?? 0) >= 40 &&
+    (achievements.celebrationRate ?? 0) >= 60;
   links.push({
     regulation: "CHR 2015 Reg 9",
     description: "Enjoyment and achievement — ensure children have opportunities to develop talents and pursue interests.",
@@ -1058,7 +1058,7 @@ function buildRegulatoryLinks(
   // SCCIF — Experiences & Progress
   const sccifMet = meets(attendance.overallAttendanceRate, ATTENDANCE_TARGET) &&
     meets(pepQuality.pepCurrencyRate, 100) &&
-    pepQuality.childVoiceRate >= 80;
+    (pepQuality.childVoiceRate ?? 0) >= 80;
   links.push({
     regulation: "SCCIF Experiences & Progress",
     description: "Children make good progress in education from their starting points, with effective support from the home.",
@@ -1072,7 +1072,7 @@ function buildRegulatoryLinks(
   });
 
   // Virtual School Head guidance
-  const vsGuidanceMet = pepQuality.virtualSchoolInvolvementRate >= 80 &&
+  const vsGuidanceMet = (pepQuality.virtualSchoolInvolvementRate ?? 0) >= 80 &&
     meets(pepQuality.pepCurrencyRate, 100);
   links.push({
     regulation: "Virtual School Head Guidance",
@@ -1081,7 +1081,7 @@ function buildRegulatoryLinks(
       ? "not_evidenced"
       : vsGuidanceMet
         ? "met"
-        : pepQuality.virtualSchoolInvolvementRate >= 50
+        : (pepQuality.virtualSchoolInvolvementRate ?? 0) >= 50
           ? "partially_met"
           : "not_met",
   });

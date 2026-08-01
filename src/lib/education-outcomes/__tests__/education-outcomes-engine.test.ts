@@ -731,7 +731,7 @@ describe("evaluatePEPQuality", () => {
   it("calculates 0% target achievement when no targets set", () => {
     const peps = [makePEP({ childId: "child-alex", targetsSet: 0, targetsAchieved: 0 })];
     const result = evaluatePEPQuality(peps, ["child-alex"], REFERENCE_DATE);
-    expect(result.targetAchievementRate).toBe(0);
+    expect(result.targetAchievementRate).toBeNull(); // fab-0.
   });
 
   it("counts not_in_place status correctly", () => {
@@ -796,7 +796,7 @@ describe("evaluateSENDSupport", () => {
     expect(result.childrenWithSEND).toBe(0);
     expect(result.sendCoverageRate).toBeNull();
     expect(result.ehcpCurrencyRate).toBeNull();
-    expect(result.averageHoursPerWeek).toBe(0);
+    expect(result.averageHoursPerWeek).toBeNull(); // fab-0.
   });
 
   it("correctly identifies EHCP currency", () => {
@@ -817,12 +817,14 @@ describe("evaluateSENDSupport", () => {
   it("handles child with no childView", () => {
     const sends = [makeSEND({ childView: undefined })];
     const result = evaluateSENDSupport(sends, ["child-alex"]);
+    // Record exists → real 0 (denominator=1, no child voice on the record).
     expect(result.childVoiceCapturedRate).toBe(0);
   });
 
   it("handles child with empty string childView", () => {
     const sends = [makeSEND({ childView: "" })];
     const result = evaluateSENDSupport(sends, ["child-alex"]);
+    // Record exists → real 0 (denominator=1, no child voice on the record).
     expect(result.childVoiceCapturedRate).toBe(0);
   });
 
@@ -904,9 +906,11 @@ describe("evaluateAchievements", () => {
   it("handles empty achievements", () => {
     const result = evaluateAchievements([]);
     expect(result.totalAchievements).toBe(0);
+    // typeVarietyScore uses constant allTypes divisor (always non-empty) → real 0/N=0.
     expect(result.typeVarietyScore).toBe(0);
-    expect(result.celebrationRate).toBe(0);
-    expect(result.evidenceRecordingRate).toBe(0);
+    // fab-0: null when there are no achievements at all.
+    expect(result.celebrationRate).toBeNull();
+    expect(result.evidenceRecordingRate).toBeNull();
     expect(result.perChild).toHaveLength(0);
   });
 
@@ -1321,6 +1325,7 @@ describe("Edge cases", () => {
       makeAchievement({ celebrated: false, evidenceRecorded: false }),
     ];
     const result = evaluateAchievements(achs);
+    // Records exist → real 0 (2 achievements, 0 celebrated/evidenced).
     expect(result.celebrationRate).toBe(0);
     expect(result.evidenceRecordingRate).toBe(0);
   });
