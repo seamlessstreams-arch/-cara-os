@@ -56,9 +56,9 @@ export interface NightMonitoringInput {
 export interface NightMonitoringOverview {
   total_rounds_7d: number;
   total_rounds_30d: number;
-  avg_rounds_per_night: number;
-  all_children_checked_rate: number; // 0-100
-  building_secure_rate: number;      // 0-100
+  avg_rounds_per_night: number | null;
+  all_children_checked_rate: number | null; // 0-100
+  building_secure_rate: number | null;      // 0-100
   concern_count_7d: number;
   not_in_room_count_7d: number;
   physical_marks_count_7d: number;
@@ -68,8 +68,8 @@ export interface ChildNightProfile {
   child_id: string;
   child_name: string;
   checks_7d: number;
-  asleep_rate: number;     // 0-100
-  awake_rate: number;      // 0-100
+  asleep_rate: number | null;     // 0-100
+  awake_rate: number | null;      // 0-100
   concern_count_7d: number;
   not_in_room_count_7d: number;
   avg_settled_time: string | null; // earliest "asleep" time
@@ -81,7 +81,7 @@ export interface NightStaffingAnalysis {
   waking_night_count: number;
   sleep_in_count: number;
   unique_staff_7d: number;
-  avg_checks_per_shift: number;
+  avg_checks_per_shift: number | null;
 }
 
 export interface SecurityCompliance {
@@ -89,7 +89,8 @@ export interface SecurityCompliance {
   rounds_with_exits_clear: number;
   rounds_with_doors_locked: number;
   total_rounds: number;
-  overall_compliance_rate: number;  // 0-100
+  // fab-0: null when no rounds recorded (no security items to check).
+  overall_compliance_rate: number | null;  // 0-100
 }
 
 export interface NightMonitoringAlert {
@@ -166,13 +167,13 @@ export function computeNightMonitoring(input: NightMonitoringInput): NightMonito
     total_rounds_30d: rounds30d.length,
     avg_rounds_per_night: uniqueNights7d > 0
       ? Math.round((rounds7d.length / uniqueNights7d) * 10) / 10
-      : 0,
+      : null,
     all_children_checked_rate: rounds7d.length > 0
       ? Math.round((allCheckedRounds.length / rounds7d.length) * 100)
-      : 0,
+      : null,
     building_secure_rate: rounds7d.length > 0
       ? Math.round((secureRounds.length / rounds7d.length) * 100)
-      : 0,
+      : null,
     concern_count_7d: concerns7d.length,
     not_in_room_count_7d: notInRoom7d.length,
     physical_marks_count_7d: marks7d.length,
@@ -221,7 +222,7 @@ export function computeNightMonitoring(input: NightMonitoringInput): NightMonito
     unique_staff_7d: uniqueStaff,
     avg_checks_per_shift: uniqueNights7d > 0
       ? Math.round((rounds7d.length / uniqueNights7d) * 10) / 10
-      : 0,
+      : null,
   };
 
   // ── Security Compliance ───────────────────────────────────────────────
@@ -237,7 +238,7 @@ export function computeNightMonitoring(input: NightMonitoringInput): NightMonito
     total_rounds: rounds7d.length,
     overall_compliance_rate: totalSecItems > 0
       ? Math.round(((secureBuilding + exitsClear + doorsLocked) / totalSecItems) * 100)
-      : 0,
+      : null,
   };
 
   // ── Alerts ─────────────────────────────────────────────────────────────
@@ -281,7 +282,7 @@ export function computeNightMonitoring(input: NightMonitoringInput): NightMonito
   }
 
   // Medium: security not maintained
-  if (rounds7d.length >= 3 && security.overall_compliance_rate < 100) {
+  if (rounds7d.length >= 3 && security.overall_compliance_rate !== null && security.overall_compliance_rate < 100) {
     const issues = rounds7d.length - secureBuilding;
     if (issues > 0) {
       alerts.push({
@@ -292,7 +293,7 @@ export function computeNightMonitoring(input: NightMonitoringInput): NightMonito
   }
 
   // Low: fewer than expected rounds per night (expect 4-5 checks per night)
-  if (uniqueNights7d > 0 && overview.avg_rounds_per_night < 4) {
+  if (uniqueNights7d > 0 && (overview.avg_rounds_per_night ?? 0) < 4) {
     alerts.push({
       severity: "low",
       message: `Average ${overview.avg_rounds_per_night} welfare rounds per night — best practice recommends at least 4 (every 2 hours)`,
@@ -321,7 +322,7 @@ export function computeNightMonitoring(input: NightMonitoringInput): NightMonito
   }
 
   // Warning: low check frequency
-  if (uniqueNights7d > 0 && overview.avg_rounds_per_night < 4) {
+  if (uniqueNights7d > 0 && (overview.avg_rounds_per_night ?? 0) < 4) {
     insights.push({
       severity: "warning",
       text: `Welfare check frequency averaging ${overview.avg_rounds_per_night} rounds per night. Reg 25 requires adequate night supervision — ensure minimum 2-hourly checks (5 rounds per night) are maintained.`,
@@ -329,7 +330,7 @@ export function computeNightMonitoring(input: NightMonitoringInput): NightMonito
   }
 
   // Positive: consistent routine
-  if (rounds7d.length >= 10 && overview.all_children_checked_rate === 100 && security.overall_compliance_rate === 100) {
+  if (rounds7d.length >= 10 && (overview.all_children_checked_rate ?? 0) === 100 && security.overall_compliance_rate === 100) {
     insights.push({
       severity: "positive",
       text: `Night monitoring is exemplary: 100% welfare check completion, all children checked every round, and building security maintained throughout. Strong evidence of safe night care.`,

@@ -120,7 +120,7 @@ describe("computeNightMonitoring", () => {
         today: TODAY,
       });
       expect(result.overview.total_rounds_7d).toBe(0);
-      expect(result.overview.avg_rounds_per_night).toBe(0);
+      expect(result.overview.avg_rounds_per_night).toBeNull();
       expect(result.child_profiles).toHaveLength(0);
       expect(result.alerts).toHaveLength(0);
       expect(result.insights).toHaveLength(0);
