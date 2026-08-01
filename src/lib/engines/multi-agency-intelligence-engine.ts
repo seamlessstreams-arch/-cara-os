@@ -251,7 +251,7 @@ export function computeMultiAgencyIntelligence(input: MultiAgencyEngineInput): M
         meeting_type: type,
         type_label: getMeetingTypeLabel(type),
         count: ms.length,
-        actions_completion_rate: totalAct > 0 ? Math.round((completedAct / totalAct) * 100) : 0,
+        actions_completion_rate: totalAct > 0 ? Math.round((completedAct / totalAct) * 100) : null,
       };
     }
   );
