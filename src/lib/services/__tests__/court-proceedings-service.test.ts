@@ -242,13 +242,13 @@ describe("computeCourtMetrics", () => {
     expect(m.adjourned_count).toBe(0);
     expect(m.pending_decision_count).toBe(0);
     expect(m.children_involved).toBe(0);
-    expect(m.guardian_appointed_rate).toBe(0);
-    expect(m.statement_submitted_rate).toBe(0);
+    expect(m.guardian_appointed_rate).toBeNull();;
+    expect(m.statement_submitted_rate).toBeNull();;
     expect(m.statement_late_count).toBe(0);
     expect(m.home_statement_required_count).toBe(0);
-    expect(m.home_statement_submitted_rate).toBe(0);
-    expect(m.child_views_sought_rate).toBe(0);
-    expect(m.child_wishes_communicated_rate).toBe(0);
+    expect(m.home_statement_submitted_rate).toBeNull();;
+    expect(m.child_views_sought_rate).toBeNull();;
+    expect(m.child_wishes_communicated_rate).toBeNull();;
     expect(m.upcoming_hearings).toBe(0);
     expect(Object.keys(m.by_proceeding_type)).toHaveLength(0);
     expect(Object.keys(m.by_proceeding_status)).toHaveLength(0);
@@ -422,7 +422,7 @@ describe("computeCourtMetrics", () => {
 
   it("guardian_appointed_rate is 0 for empty proceedings", () => {
     const m = computeCourtMetrics([]);
-    expect(m.guardian_appointed_rate).toBe(0);
+    expect(m.guardian_appointed_rate).toBeNull();;
   });
 
   // ── statement_submitted_rate ─────────────────────────────────────────
@@ -475,7 +475,7 @@ describe("computeCourtMetrics", () => {
 
   it("statement_submitted_rate is 0 for empty proceedings", () => {
     const m = computeCourtMetrics([]);
-    expect(m.statement_submitted_rate).toBe(0);
+    expect(m.statement_submitted_rate).toBeNull();;
   });
 
   // ── statement_late_count ─────────────────────────────────────────────
@@ -562,7 +562,7 @@ describe("computeCourtMetrics", () => {
       makeProceeding({ id: "cp1", home_statement_required: false, home_statement_submitted: false }),
     ];
     const m = computeCourtMetrics(proceedings);
-    expect(m.home_statement_submitted_rate).toBe(0);
+    expect(m.home_statement_submitted_rate).toBeNull();;
   });
 
   it("home_statement_submitted_rate rounds to one decimal place", () => {
@@ -616,7 +616,7 @@ describe("computeCourtMetrics", () => {
 
   it("child_views_sought_rate is 0 for empty proceedings", () => {
     const m = computeCourtMetrics([]);
-    expect(m.child_views_sought_rate).toBe(0);
+    expect(m.child_views_sought_rate).toBeNull();;
   });
 
   // ── child_wishes_communicated_rate ───────────────────────────────────
@@ -642,7 +642,7 @@ describe("computeCourtMetrics", () => {
 
   it("child_wishes_communicated_rate is 0 for empty proceedings", () => {
     const m = computeCourtMetrics([]);
-    expect(m.child_wishes_communicated_rate).toBe(0);
+    expect(m.child_wishes_communicated_rate).toBeNull();;
   });
 
   // ── upcoming_hearings ────────────────────────────────────────────────
@@ -976,7 +976,7 @@ describe("computeCourtMetrics", () => {
     const m = computeCourtMetrics(proceedings);
     expect(m.guardian_appointed_rate).toBe(0);
     expect(m.statement_submitted_rate).toBe(0);
-    expect(m.home_statement_submitted_rate).toBe(0);
+    expect(m.home_statement_submitted_rate).toBeNull();;
     expect(m.child_views_sought_rate).toBe(0);
     expect(m.child_wishes_communicated_rate).toBe(0);
     expect(m.upcoming_hearings).toBe(0);

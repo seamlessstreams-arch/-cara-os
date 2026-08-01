@@ -76,9 +76,9 @@ describe("computeTransitionMetrics", () => {
     expect(m.active_transitions).toBe(0);
     expect(m.planned_transitions).toBe(0);
     expect(m.completed_this_year).toBe(0);
-    expect(m.avg_readiness_score).toBe(0);
-    expect(m.goals_on_track_rate).toBe(0);
-    expect(m.child_views_sought_rate).toBe(0);
+    expect(m.avg_readiness_score).toBeNull();;
+    expect(m.goals_on_track_rate).toBeNull();;
+    expect(m.child_views_sought_rate).toBeNull();;
     expect(m.overdue_follow_ups).toBe(0);
     expect(m.reviews_this_quarter).toBe(0);
   });

@@ -175,14 +175,14 @@ export function computeWorkforceMetrics(
   latest_established: number;
   latest_filled: number;
   latest_vacancies: number;
-  vacancy_rate: number;
+  vacancy_rate: number | null;
   agency_count: number;
-  agency_rate: number;
+  agency_rate: number | null;
   staff_child_ratio: number;
   meets_ratio: boolean;
   open_vacancies: number;
   avg_time_to_fill: number;
-  succession_coverage: number;
+  succession_coverage: number | null;
   roles_at_risk: number;
   by_role: Record<string, number>;
   by_vacancy_status: Record<string, number>;
@@ -197,8 +197,8 @@ export function computeWorkforceMetrics(
   const filled = latest?.filled_posts ?? 0;
   const vacs = latest?.vacancies ?? 0;
   const agencyCount = latest?.agency_staff ?? 0;
-  const vacancyRate = established > 0 ? Math.round((vacs / established) * 1000) / 10 : 0;
-  const agencyRate = filled > 0 ? Math.round((agencyCount / (filled + agencyCount)) * 1000) / 10 : 0;
+  const vacancyRate = established > 0 ? Math.round((vacs / established) * 1000) / 10 : null;
+  const agencyRate = filled > 0 ? Math.round((agencyCount / (filled + agencyCount)) * 1000) / 10 : null;
 
   // Open vacancies
   const openVacancies = vacancies.filter(
@@ -225,7 +225,7 @@ export function computeWorkforceMetrics(
   const successionCoverage =
     criticalRoles > 0
       ? Math.round((coveredRoles / criticalRoles) * 1000) / 10
-      : 0;
+      : null;
   const rolesAtRisk = successionPlans.filter(
     (s) => s.readiness === "not_identified" || s.readiness === "development_needed",
   ).length;
@@ -351,12 +351,12 @@ export function identifyWorkforceAlerts(
   if (latest && latest.staff_on_sickness > 0) {
     const sicknessRate = latest.established_posts > 0
       ? (latest.staff_on_sickness / latest.established_posts) * 100
-      : 0;
-    if (sicknessRate > 15) {
+      : null;
+    if ((sicknessRate ?? 0) > 15) {
       alerts.push({
         type: "high_sickness",
         severity: "high",
-        message: `${latest.staff_on_sickness} staff on sickness (${Math.round(sicknessRate)}%) — review wellbeing support and coverage arrangements`,
+        message: `${latest.staff_on_sickness} staff on sickness (${Math.round(sicknessRate ?? 0)}%) — review wellbeing support and coverage arrangements`,
         id: latest.id,
       });
     }

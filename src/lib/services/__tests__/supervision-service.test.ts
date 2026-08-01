@@ -53,7 +53,7 @@ describe("computeSupervisionCompliance", () => {
     expect(result.supervised_in_period).toBe(0);
     expect(result.overdue).toBe(0);
     expect(result.never_supervised).toBe(0);
-    expect(result.compliance_percentage).toBe(0);
+    expect(result.compliance_percentage).toBeNull();;
   });
 
   it("marks staff as never_supervised when no records exist", () => {

@@ -78,12 +78,12 @@ describe("computeWorkforceMetrics", () => {
     expect(m.latest_established).toBe(0);
     expect(m.latest_filled).toBe(0);
     expect(m.latest_vacancies).toBe(0);
-    expect(m.vacancy_rate).toBe(0);
+    expect(m.vacancy_rate).toBeNull();;
     expect(m.agency_count).toBe(0);
-    expect(m.agency_rate).toBe(0);
+    expect(m.agency_rate).toBeNull();;
     expect(m.open_vacancies).toBe(0);
     expect(m.avg_time_to_fill).toBe(0);
-    expect(m.succession_coverage).toBe(0);
+    expect(m.succession_coverage).toBeNull();;
     expect(m.roles_at_risk).toBe(0);
   });
 

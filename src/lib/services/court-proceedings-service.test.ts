@@ -48,9 +48,9 @@ describe("court-proceedings-service", () => {
       expect(m.active_count).toBe(0);
       expect(m.concluded_count).toBe(0);
       expect(m.children_involved).toBe(0);
-      expect(m.guardian_appointed_rate).toBe(0);
-      expect(m.statement_submitted_rate).toBe(0);
-      expect(m.child_views_sought_rate).toBe(0);
+      expect(m.guardian_appointed_rate).toBeNull();;
+      expect(m.statement_submitted_rate).toBeNull();;
+      expect(m.child_views_sought_rate).toBeNull();;
     });
 
     it("computes populated metrics correctly", () => {

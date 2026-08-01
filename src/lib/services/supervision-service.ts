@@ -83,7 +83,7 @@ export interface SupervisionComplianceResult {
   supervised_in_period: number;
   overdue: number;
   never_supervised: number;
-  compliance_percentage: number;
+  compliance_percentage: number | null;
   overdue_staff: {
     staff_id: string;
     role: string;
@@ -151,7 +151,7 @@ export function computeSupervisionCompliance(
     supervised_in_period: supervisedInPeriod,
     overdue,
     never_supervised: neverSupervised,
-    compliance_percentage: totalStaff > 0 ? Math.round((supervisedInPeriod / totalStaff) * 100) : 0,
+    compliance_percentage: totalStaff > 0 ? Math.round((supervisedInPeriod / totalStaff) * 100) : null,
     overdue_staff: overdueStaff,
   };
 }
@@ -159,8 +159,8 @@ export function computeSupervisionCompliance(
 export type SupervisionQualityRating = "excellent" | "good" | "requires_improvement" | "inadequate";
 
 export interface SupervisionQualityResult {
-  avg_wellbeing: number;
-  avg_practice: number;
+  avg_wellbeing: number | null;
+  avg_practice: number | null;
   safeguarding_coverage: number;
   total_sessions: number;
   quality_rating: SupervisionQualityRating;
@@ -211,14 +211,14 @@ export function computeSupervisionQuality(
 
   const avgWellbeing = wellbeingCount > 0
     ? Math.round((wellbeingSum / wellbeingCount) * 10) / 10
-    : 0;
+    : null;
   const avgPractice = practiceCount > 0
     ? Math.round((practiceSum / practiceCount) * 10) / 10
-    : 0;
+    : null;
   const safeguardingCoverage = Math.round((safeguardingCount / records.length) * 100);
 
   // Quality rating: average of both score averages
-  const combinedAvg = (avgWellbeing + avgPractice) / 2;
+  const combinedAvg = ((avgWellbeing ?? 0) + (avgPractice ?? 0)) / 2;
   let qualityRating: SupervisionQualityRating;
   if (combinedAvg >= 8) qualityRating = "excellent";
   else if (combinedAvg >= 6) qualityRating = "good";

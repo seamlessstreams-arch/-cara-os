@@ -46,7 +46,7 @@ describe("computeBspMetrics", () => {
     expect(m.total_plans).toBe(0);
     expect(m.active_plans).toBe(0);
     expect(m.bsp_coverage).toBe(0);
-    expect(m.child_involvement_rate).toBe(0);
+    expect(m.child_involvement_rate).toBeNull();;
   });
 
   it("computes active/expired/draft counts and coverage", () => {

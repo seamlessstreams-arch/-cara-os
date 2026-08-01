@@ -40,9 +40,9 @@ describe("computeMetrics", () => {
   it("returns zeroes for empty data", () => {
     const m = computeMetrics([]);
     expect(m.total_records).toBe(0);
-    expect(m.preparation_rate).toBe(0);
+    expect(m.preparation_rate).toBeNull();;
     expect(m.unique_children).toBe(0);
-    expect(m.cancellation_rate).toBe(0);
+    expect(m.cancellation_rate).toBeNull();;
   });
 
   it("computes rates based on completed records", () => {

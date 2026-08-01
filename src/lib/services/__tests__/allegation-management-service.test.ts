@@ -327,19 +327,19 @@ describe("computeAllegationMetrics", () => {
     });
 
     it("returns zero lado_referral_rate", () => {
-      expect(computeAllegationMetrics([]).lado_referral_rate).toBe(0);
+      expect(computeAllegationMetrics([]).lado_referral_rate).toBeNull();;
     });
 
     it("returns zero lado_response_within_1_day_rate", () => {
-      expect(computeAllegationMetrics([]).lado_response_within_1_day_rate).toBe(0);
+      expect(computeAllegationMetrics([]).lado_response_within_1_day_rate).toBeNull();;
     });
 
     it("returns zero police_informed_rate", () => {
-      expect(computeAllegationMetrics([]).police_informed_rate).toBe(0);
+      expect(computeAllegationMetrics([]).police_informed_rate).toBeNull();;
     });
 
     it("returns zero ofsted_notified_rate", () => {
-      expect(computeAllegationMetrics([]).ofsted_notified_rate).toBe(0);
+      expect(computeAllegationMetrics([]).ofsted_notified_rate).toBeNull();;
     });
 
     it("returns zero dbs_referral_count", () => {
@@ -351,23 +351,23 @@ describe("computeAllegationMetrics", () => {
     });
 
     it("returns zero risk_assessment_rate", () => {
-      expect(computeAllegationMetrics([]).risk_assessment_rate).toBe(0);
+      expect(computeAllegationMetrics([]).risk_assessment_rate).toBeNull();;
     });
 
     it("returns zero child_safe_rate", () => {
-      expect(computeAllegationMetrics([]).child_safe_rate).toBe(0);
+      expect(computeAllegationMetrics([]).child_safe_rate).toBeNull();;
     });
 
     it("returns zero subject_support_rate", () => {
-      expect(computeAllegationMetrics([]).subject_support_rate).toBe(0);
+      expect(computeAllegationMetrics([]).subject_support_rate).toBeNull();;
     });
 
     it("returns zero learning_identified_rate", () => {
-      expect(computeAllegationMetrics([]).learning_identified_rate).toBe(0);
+      expect(computeAllegationMetrics([]).learning_identified_rate).toBeNull();;
     });
 
     it("returns zero average_days_to_resolution", () => {
-      expect(computeAllegationMetrics([]).average_days_to_resolution).toBe(0);
+      expect(computeAllegationMetrics([]).average_days_to_resolution).toBeNull();;
     });
 
     it("returns empty by_allegation_type", () => {
@@ -427,7 +427,7 @@ describe("computeAllegationMetrics", () => {
     });
 
     it("lado_response_within_1_day_rate is 0 when lado_response_within_1_day is null", () => {
-      expect(computeAllegationMetrics(single).lado_response_within_1_day_rate).toBe(0);
+      expect(computeAllegationMetrics(single).lado_response_within_1_day_rate).toBeNull();;
     });
 
     it("lado_response_within_1_day_rate is 100 when true", () => {
@@ -767,7 +767,7 @@ describe("computeAllegationMetrics", () => {
         makeRecord({ id: "1", lado_response_within_1_day: null }),
         makeRecord({ id: "2", lado_response_within_1_day: null }),
       ];
-      expect(computeAllegationMetrics(r).lado_response_within_1_day_rate).toBe(0);
+      expect(computeAllegationMetrics(r).lado_response_within_1_day_rate).toBeNull();;
     });
 
     it("is 100 when all non-null are true", () => {
@@ -830,7 +830,7 @@ describe("computeAllegationMetrics", () => {
         makeRecord({ id: "1", days_to_resolution: null }),
         makeRecord({ id: "2", days_to_resolution: null }),
       ];
-      expect(computeAllegationMetrics(r).average_days_to_resolution).toBe(0);
+      expect(computeAllegationMetrics(r).average_days_to_resolution).toBeNull();;
     });
 
     it("returns the single value when only one record has days", () => {

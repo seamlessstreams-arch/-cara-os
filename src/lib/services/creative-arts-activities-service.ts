@@ -295,15 +295,15 @@ export function computeMetrics(
   unique_children: number;
   by_activity_type: Record<string, number>;
   by_engagement_level: Record<string, number>;
-  therapeutic_rate: number;
-  child_choice_rate: number;
-  mood_improvement_rate: number;
-  exhibition_rate: number;
-  care_plan_link_rate: number;
+  therapeutic_rate: number | null;
+  child_choice_rate: number | null;
+  mood_improvement_rate: number | null;
+  exhibition_rate: number | null;
+  care_plan_link_rate: number | null;
   group_vs_individual_ratio: string;
   achievement_count: number;
   average_engagement: number;
-  emotional_expression_rate: number;
+  emotional_expression_rate: number | null;
   music_activity_count: number;
   visual_arts_count: number;
   performative_count: number;
@@ -326,11 +326,11 @@ export function computeMetrics(
   // Boolean rates
   const therapeuticRate = total > 0
     ? Math.round((rows.filter((r) => r.therapeutic_intent).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const childChoiceRate = total > 0
     ? Math.round((rows.filter((r) => r.child_choice).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Mood improvement rate
   const rowsWithMood = rows.filter(
@@ -341,15 +341,15 @@ export function computeMetrics(
   );
   const moodImprovementRate = rowsWithMood.length > 0
     ? Math.round((moodImproved.length / rowsWithMood.length) * 1000) / 10
-    : 0;
+    : null;
 
   const exhibitionRate = total > 0
     ? Math.round((rows.filter((r) => r.exhibited_displayed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const carePlanLinkRate = total > 0
     ? Math.round((rows.filter((r) => r.linked_to_care_plan).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Group vs individual ratio
   const individualCount = rows.filter((r) => r.group_or_individual === "Individual").length;
@@ -373,7 +373,7 @@ export function computeMetrics(
   // Emotional expression rate
   const emotionalExpressionRate = total > 0
     ? Math.round((rows.filter((r) => r.emotional_expression_enabled).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Category counts
   const musicActivityCount = rows.filter(
@@ -632,7 +632,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.mood_improvement_rate < 30 && metrics.total_activities > 5) {
+  if ((metrics.mood_improvement_rate ?? 0) < 30 && metrics.total_activities > 5) {
     insights.push(
       `[reflect] Mood improvement rate is only ${metrics.mood_improvement_rate}% across ` +
         `${metrics.total_activities} activities. Are creative activities genuinely improving ` +
@@ -643,7 +643,7 @@ export function generateCaraInsights(
         `are creating psychologically safe environments, and whether therapeutic activities ` +
         `are being delivered by qualified practitioners.`,
     );
-  } else if (metrics.child_choice_rate < 50 && metrics.total_activities > 3) {
+  } else if ((metrics.child_choice_rate ?? 0) < 50 && metrics.total_activities > 3) {
     insights.push(
       `[reflect] Only ${metrics.child_choice_rate}% of creative activities were chosen by the ` +
         `young person. Is the home genuinely offering choice and agency in creative pursuits? ` +
@@ -653,7 +653,7 @@ export function generateCaraInsights(
         `powerfully restorative. Are young people being consulted about what they would like ` +
         `to try? Are new and diverse options being introduced regularly?`,
     );
-  } else if (metrics.exhibition_rate < 15 && metrics.total_activities > 5) {
+  } else if ((metrics.exhibition_rate ?? 0) < 15 && metrics.total_activities > 5) {
     insights.push(
       `[reflect] Only ${metrics.exhibition_rate}% of creative outputs are being displayed or ` +
         `exhibited. Celebrating young people's creative achievements is a powerful way to ` +

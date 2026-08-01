@@ -309,13 +309,13 @@ export function computeMetrics(
   by_family_role: Record<string, number>;
   by_support_type: Record<string, number>;
   by_emotional_response: Record<string, number>;
-  preparation_rate: number;
-  child_views_rate: number;
-  risk_assessment_currency_rate: number;
-  safeguarding_concern_rate: number;
-  contact_plan_adherence_rate: number;
-  post_contact_support_rate: number;
-  cancellation_rate: number;
+  preparation_rate: number | null;
+  child_views_rate: number | null;
+  risk_assessment_currency_rate: number | null;
+  safeguarding_concern_rate: number | null;
+  contact_plan_adherence_rate: number | null;
+  post_contact_support_rate: number | null;
+  cancellation_rate: number | null;
   cancellation_by_home: number;
   cancellation_by_family: number;
   cancellation_by_child: number;
@@ -347,38 +347,38 @@ export function computeMetrics(
   // Preparation rate (for completed contacts)
   const preparationRate = completedTotal > 0
     ? Math.round((completedRows.filter((r) => r.child_prepared).length / completedTotal) * 1000) / 10
-    : 0;
+    : null;
 
   // Child views rate
   const childViewsRate = completedTotal > 0
     ? Math.round((completedRows.filter((r) => r.child_views_considered).length / completedTotal) * 1000) / 10
-    : 0;
+    : null;
 
   // Risk assessment currency rate
   const riskAssessmentRate = total > 0
     ? Math.round((rows.filter((r) => r.risk_assessment_current).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Safeguarding concern rate
   const safeguardingRate = total > 0
     ? Math.round((rows.filter((r) => r.safeguarding_concerns).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Contact plan adherence rate (for completed contacts)
   const contactPlanRate = completedTotal > 0
     ? Math.round((completedRows.filter((r) => r.contact_plan_followed).length / completedTotal) * 1000) / 10
-    : 0;
+    : null;
 
   // Post-contact support rate (for completed contacts)
   const postContactRate = completedTotal > 0
     ? Math.round((completedRows.filter((r) => r.support_after_contact).length / completedTotal) * 1000) / 10
-    : 0;
+    : null;
 
   // Cancellation rates
   const cancelledRows = rows.filter((r) => (CANCELLED_STATUSES as string[]).includes(r.status));
   const cancellationRate = total > 0
     ? Math.round((cancelledRows.length / total) * 1000) / 10
-    : 0;
+    : null;
   const cancelByHome = rows.filter((r) => r.status === "Cancelled — by Home").length;
   const cancelByFamily = rows.filter((r) => r.status === "Cancelled — by Family").length;
   const cancelByChild = rows.filter((r) => r.status === "Cancelled — by Child").length;
@@ -630,7 +630,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.child_views_rate < 70 && metrics.total_records > 0) {
+  if ((metrics.child_views_rate ?? 0) < 70 && metrics.total_records > 0) {
     insights.push(
       `[reflect] Child views are being considered in only ${metrics.child_views_rate}% of contact ` +
         `records. Are children being routinely asked about their wishes and feelings regarding ` +
@@ -640,7 +640,7 @@ export function generateCaraInsights(
         `not just that contact happens. Every child should feel heard and empowered in decisions ` +
         `about their family relationships.`,
     );
-  } else if (metrics.preparation_rate < 60 && metrics.total_records > 0) {
+  } else if ((metrics.preparation_rate ?? 0) < 60 && metrics.total_records > 0) {
     insights.push(
       `[reflect] Pre-contact preparation rate is only ${metrics.preparation_rate}%. Are children ` +
         `being adequately prepared before family contact? Preparation helps children manage their ` +
@@ -649,7 +649,7 @@ export function generateCaraInsights(
         `Good preparation also supports post-contact debriefing and helps staff understand ` +
         `each child's evolving relationship with their birth family.`,
     );
-  } else if (metrics.safeguarding_concern_rate > 20) {
+  } else if ((metrics.safeguarding_concern_rate ?? 0) > 20) {
     insights.push(
       `[reflect] Safeguarding concerns have been identified in ${metrics.safeguarding_concern_rate}% ` +
         `of contact records. Is the home's risk assessment process robust enough? Are contact ` +

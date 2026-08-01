@@ -140,19 +140,19 @@ export function computeWaterSafetyMetrics(
   legionella_assessment_count: number;
   flushing_count: number;
   tmv_check_count: number;
-  compliant_rate: number;
+  compliant_rate: number | null;
   too_hot_count: number;
   too_cold_count: number;
   tmv_fault_count: number;
-  tmv_fitted_rate: number;
-  tmv_operational_rate: number;
-  flushing_completed_rate: number;
-  legionella_assessment_current_rate: number;
-  scalding_risk_mitigated_rate: number;
+  tmv_fitted_rate: number | null;
+  tmv_operational_rate: number | null;
+  flushing_completed_rate: number | null;
+  legionella_assessment_current_rate: number | null;
+  scalding_risk_mitigated_rate: number | null;
   high_risk_count: number;
   very_high_risk_count: number;
-  average_hot_temp: number;
-  average_cold_temp: number;
+  average_hot_temp: number | null;
+  average_cold_temp: number | null;
   check_overdue_count: number;
   by_check_type: Record<string, number>;
   by_location: Record<string, number>;
@@ -168,7 +168,7 @@ export function computeWaterSafetyMetrics(
   const compliantRate =
     records.length > 0
       ? Math.round((compliant / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const tooHot = records.filter((r) => r.temperature_compliance === "too_hot").length;
   const tooCold = records.filter((r) => r.temperature_compliance === "too_cold").length;
@@ -178,31 +178,31 @@ export function computeWaterSafetyMetrics(
   const tmvFittedRate =
     records.length > 0
       ? Math.round((tmvFitted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const tmvOp = records.filter((r) => r.tmv_operational).length;
   const tmvOpRate =
     records.length > 0
       ? Math.round((tmvOp / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const flushDone = records.filter((r) => r.flushing_completed).length;
   const flushRate =
     records.length > 0
       ? Math.round((flushDone / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const legionellaCurrent = records.filter((r) => r.legionella_assessment_current).length;
   const legionellaRate =
     records.length > 0
       ? Math.round((legionellaCurrent / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const scaldMit = records.filter((r) => r.scalding_risk_mitigated).length;
   const scaldRate =
     records.length > 0
       ? Math.round((scaldMit / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const highRisk = records.filter((r) => r.risk_level === "high").length;
   const veryHighRisk = records.filter((r) => r.risk_level === "very_high").length;
@@ -211,13 +211,13 @@ export function computeWaterSafetyMetrics(
   const avgHot =
     hotTemps.length > 0
       ? Math.round((hotTemps.reduce((a, b) => a + b, 0) / hotTemps.length) * 10) / 10
-      : 0;
+      : null;
 
   const coldTemps = records.filter((r) => r.cold_water_temp !== null).map((r) => r.cold_water_temp!);
   const avgCold =
     coldTemps.length > 0
       ? Math.round((coldTemps.reduce((a, b) => a + b, 0) / coldTemps.length) * 10) / 10
-      : 0;
+      : null;
 
   const now = new Date();
   const checkOverdue = records.filter((r) => {

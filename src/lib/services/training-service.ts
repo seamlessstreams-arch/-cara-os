@@ -105,7 +105,7 @@ const MANDATORY_TYPES: string[] = MANDATORY_TRAINING
 // ── Pure functions (no DB) ────────────────────────────────────────────────
 
 export interface TrainingComplianceResult {
-  overall_compliance_rate: number;
+  overall_compliance_rate: number | null;
   by_training_type: Record<
     string,
     { current: number; expiring: number; expired: number; not_done: number }
@@ -201,7 +201,7 @@ export function computeTrainingCompliance(
 
   const complianceRate = totalSlots > 0
     ? Math.round((currentSlots / totalSlots) * 100)
-    : 0;
+    : null;
 
   return {
     overall_compliance_rate: complianceRate,
@@ -215,7 +215,7 @@ export function computeTrainingCompliance(
 export interface StaffTrainingProfileResult {
   mandatory_complete: number;
   mandatory_total: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
   missing_training: string[];
   expiring_soon: TrainingRecord[];
   has_level_3: boolean;
@@ -253,7 +253,7 @@ export function computeStaffTrainingProfile(
   const mandatoryTotal = MANDATORY_TYPES.length;
   const complianceRate = mandatoryTotal > 0
     ? Math.round((mandatoryComplete / mandatoryTotal) * 100)
-    : 0;
+    : null;
 
   const missingTraining = MANDATORY_TYPES.filter((mt) => !currentMandatory.has(mt));
 
@@ -287,7 +287,7 @@ export interface DBSComplianceResult {
   pending_count: number;
   expired_count: number;
   update_service_count: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
 }
 
 /**
@@ -317,7 +317,7 @@ export function computeDBSCompliance(
     pending_count: pending,
     expired_count: expired,
     update_service_count: updateService,
-    compliance_rate: total > 0 ? Math.round((cleared / total) * 100) : 0,
+    compliance_rate: total > 0 ? Math.round((cleared / total) * 100) : null,
   };
 }
 
@@ -427,7 +427,7 @@ export function identifyTrainingAlerts(
   const staffCount = uniqueStaff.size;
   if (staffCount > 0) {
     const compliance = computeTrainingCompliance(records, staffCount);
-    if (compliance.overall_compliance_rate < 80) {
+    if ((compliance.overall_compliance_rate ?? 0) < 80) {
       alerts.push({
         type: "low_compliance",
         severity: "high",

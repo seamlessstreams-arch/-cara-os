@@ -302,27 +302,27 @@ describe("computeMeetingMetrics", () => {
 
     it("returns attendance_rate = 0", () => {
       const m = computeMeetingMetrics([], 10);
-      expect(m.attendance_rate).toBe(0);
+      expect(m.attendance_rate).toBeNull();;
     });
 
     it("returns average_attendance = 0", () => {
       const m = computeMeetingMetrics([], 10);
-      expect(m.average_attendance).toBe(0);
+      expect(m.average_attendance).toBeNull();;
     });
 
     it("returns average_duration = 0", () => {
       const m = computeMeetingMetrics([], 10);
-      expect(m.average_duration).toBe(0);
+      expect(m.average_duration).toBeNull();;
     });
 
     it("returns safeguarding_discussed_rate = 0", () => {
       const m = computeMeetingMetrics([], 10);
-      expect(m.safeguarding_discussed_rate).toBe(0);
+      expect(m.safeguarding_discussed_rate).toBeNull();;
     });
 
     it("returns minutes_distributed_rate = 0", () => {
       const m = computeMeetingMetrics([], 10);
-      expect(m.minutes_distributed_rate).toBe(0);
+      expect(m.minutes_distributed_rate).toBeNull();;
     });
 
     it("returns minutes_not_taken_count = 0", () => {
@@ -337,7 +337,7 @@ describe("computeMeetingMetrics", () => {
 
     it("returns action_completion_rate = 0", () => {
       const m = computeMeetingMetrics([], 10);
-      expect(m.action_completion_rate).toBe(0);
+      expect(m.action_completion_rate).toBeNull();;
     });
 
     it("returns actions_outstanding = 0", () => {
@@ -372,7 +372,7 @@ describe("computeMeetingMetrics", () => {
 
     it("returns attendance_rate = 0 when totalStaff = 0", () => {
       const m = computeMeetingMetrics([], 0);
-      expect(m.attendance_rate).toBe(0);
+      expect(m.attendance_rate).toBeNull();;
     });
   });
 
@@ -635,7 +635,7 @@ describe("computeMeetingMetrics", () => {
     it("returns 0 when no completed meetings", () => {
       const mtg = [makeMeeting({ meeting_status: "cancelled", attendees_expected: 10, attendees_present: 0 })];
       const m = computeMeetingMetrics(mtg, 10);
-      expect(m.attendance_rate).toBe(0);
+      expect(m.attendance_rate).toBeNull();;
     });
 
     it("returns 100 when all expected attend", () => {
@@ -647,13 +647,13 @@ describe("computeMeetingMetrics", () => {
     it("returns 0 when totalExpected is 0 (no completed)", () => {
       const mtg = [makeMeeting({ meeting_status: "scheduled", attendees_expected: 0, attendees_present: 0 })];
       const m = computeMeetingMetrics(mtg, 10);
-      expect(m.attendance_rate).toBe(0);
+      expect(m.attendance_rate).toBeNull();;
     });
 
     it("handles completed meetings with attendees_expected = 0", () => {
       const mtg = [makeMeeting({ meeting_status: "completed", attendees_expected: 0, attendees_present: 0 })];
       const m = computeMeetingMetrics(mtg, 10);
-      expect(m.attendance_rate).toBe(0);
+      expect(m.attendance_rate).toBeNull();;
     });
 
     it("rounds correctly (7/9)", () => {
@@ -680,7 +680,7 @@ describe("computeMeetingMetrics", () => {
     it("returns 0 when no completed meetings", () => {
       const mtg = [makeMeeting({ meeting_status: "cancelled" })];
       const m = computeMeetingMetrics(mtg, 10);
-      expect(m.average_attendance).toBe(0);
+      expect(m.average_attendance).toBeNull();;
     });
 
     it("returns the value itself for a single completed meeting", () => {
@@ -734,7 +734,7 @@ describe("computeMeetingMetrics", () => {
     it("returns 0 when no completed meetings", () => {
       const mtg = [makeMeeting({ meeting_status: "cancelled", duration_minutes: 60 })];
       const m = computeMeetingMetrics(mtg, 10);
-      expect(m.average_duration).toBe(0);
+      expect(m.average_duration).toBeNull();;
     });
 
     it("returns the value itself for a single completed meeting", () => {
@@ -767,7 +767,7 @@ describe("computeMeetingMetrics", () => {
         makeMeeting({ meeting_status: "completed", duration_minutes: null }),
       ];
       const m = computeMeetingMetrics(mtgs, 10);
-      expect(m.average_duration).toBe(0);
+      expect(m.average_duration).toBeNull();;
     });
 
     it("rounds fractional averages correctly (70/3 = 23.3)", () => {
@@ -797,7 +797,7 @@ describe("computeMeetingMetrics", () => {
     it("returns 0 when no completed meetings", () => {
       const mtg = [makeMeeting({ meeting_status: "cancelled", safeguarding_discussed: true })];
       const m = computeMeetingMetrics(mtg, 10);
-      expect(m.safeguarding_discussed_rate).toBe(0);
+      expect(m.safeguarding_discussed_rate).toBeNull();;
     });
 
     it("returns 100 when all completed discuss safeguarding", () => {
@@ -845,7 +845,7 @@ describe("computeMeetingMetrics", () => {
     it("returns 0 when no completed meetings", () => {
       const mtg = [makeMeeting({ meeting_status: "cancelled", minutes_status: "distributed" })];
       const m = computeMeetingMetrics(mtg, 10);
-      expect(m.minutes_distributed_rate).toBe(0);
+      expect(m.minutes_distributed_rate).toBeNull();;
     });
 
     it("returns 100 when all completed have distributed minutes", () => {
@@ -946,7 +946,7 @@ describe("computeMeetingMetrics", () => {
     it("returns 0 when total_actions_set = 0", () => {
       const mtg = [makeMeeting({ actions_set: 0, actions_completed_from_last: 0 })];
       const m = computeMeetingMetrics(mtg, 10);
-      expect(m.action_completion_rate).toBe(0);
+      expect(m.action_completion_rate).toBeNull();;
     });
 
     it("returns 100 when all actions completed", () => {

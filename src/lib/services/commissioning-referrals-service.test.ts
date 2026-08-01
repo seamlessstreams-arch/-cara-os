@@ -60,7 +60,7 @@ describe("computeReferralMetrics", () => {
     expect(m.active_referrals).toBe(0);
     expect(m.accepted).toBe(0);
     expect(m.declined).toBe(0);
-    expect(m.acceptance_rate).toBe(0);
+    expect(m.acceptance_rate).toBeNull();;
     expect(m.avg_decision_days).toBe(0);
     expect(m.current_occupancy_rate).toBe(0);
     expect(m.available_places).toBe(0);

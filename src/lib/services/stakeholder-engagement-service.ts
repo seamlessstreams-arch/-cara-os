@@ -168,10 +168,10 @@ export function computeEngagementMetrics(
   unique_stakeholders: number;
   by_stakeholder_type: Record<string, number>;
   by_engagement_method: Record<string, number>;
-  home_initiated_rate: number;
-  follow_up_completion_rate: number;
+  home_initiated_rate: number | null;
+  follow_up_completion_rate: number | null;
   overdue_follow_ups: number;
-  avg_satisfaction_score: number;
+  avg_satisfaction_score: number | null;
   relationship_distribution: Record<string, number>;
   feedback_count: number;
 } {
@@ -208,7 +208,7 @@ export function computeEngagementMetrics(
   const homeInitiatedRate =
     contacts.length > 0
       ? Math.round((homeInitiated / contacts.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Follow-up completion
   let followUpsNeeded = 0;
@@ -227,7 +227,7 @@ export function computeEngagementMetrics(
   const followUpCompletionRate =
     followUpsNeeded > 0
       ? Math.round((followUpsCompleted / followUpsNeeded) * 1000) / 10
-      : 0;
+      : null;
 
   // Satisfaction score (very_satisfied=5, satisfied=4, neutral=3, dissatisfied=2, very_dissatisfied=1)
   const ratingScores: Record<string, number> = {
@@ -248,7 +248,7 @@ export function computeEngagementMetrics(
   const avgSatisfactionScore =
     satCount > 0
       ? Math.round((totalSat / satCount) * 10) / 10
-      : 0;
+      : null;
 
   // Relationship distribution
   const relationshipDist: Record<string, number> = {};

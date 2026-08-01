@@ -314,12 +314,12 @@ describe("computeConsentMetrics", () => {
 
   it("returns zero consent_coverage for empty array", () => {
     const m = computeConsentMetrics([], 0, now);
-    expect(m.consent_coverage).toBe(0);
+    expect(m.consent_coverage).toBeNull();;
   });
 
   it("returns zero evidence_on_file_rate for empty array", () => {
     const m = computeConsentMetrics([], 0, now);
-    expect(m.evidence_on_file_rate).toBe(0);
+    expect(m.evidence_on_file_rate).toBeNull();;
   });
 
   it("returns zero expiring_soon for empty array", () => {
@@ -329,12 +329,12 @@ describe("computeConsentMetrics", () => {
 
   it("returns zero medical_consent_rate for empty array", () => {
     const m = computeConsentMetrics([], 0, now);
-    expect(m.medical_consent_rate).toBe(0);
+    expect(m.medical_consent_rate).toBeNull();;
   });
 
   it("returns zero emergency_consent_rate for empty array", () => {
     const m = computeConsentMetrics([], 0, now);
-    expect(m.emergency_consent_rate).toBe(0);
+    expect(m.emergency_consent_rate).toBeNull();;
   });
 
   it("returns zero photo_consent_granted for empty array", () => {
@@ -452,7 +452,7 @@ describe("computeConsentMetrics", () => {
 
   it("handles zero totalChildren for coverage", () => {
     const m = computeConsentMetrics([], 0, now);
-    expect(m.consent_coverage).toBe(0);
+    expect(m.consent_coverage).toBeNull();;
   });
 
   it("does not double-count same child for coverage", () => {
@@ -502,7 +502,7 @@ describe("computeConsentMetrics", () => {
 
   it("returns 0% evidence_on_file_rate for empty array", () => {
     const m = computeConsentMetrics([], 0, now);
-    expect(m.evidence_on_file_rate).toBe(0);
+    expect(m.evidence_on_file_rate).toBeNull();;
   });
 
   // ── Expiring soon (within 30 days) ────────────────────────────────────
@@ -641,7 +641,7 @@ describe("computeConsentMetrics", () => {
 
   it("handles zero totalChildren for medical rate", () => {
     const m = computeConsentMetrics([], 0, now);
-    expect(m.medical_consent_rate).toBe(0);
+    expect(m.medical_consent_rate).toBeNull();;
   });
 
   // ── Emergency consent rate ────────────────────────────────────────────
@@ -673,7 +673,7 @@ describe("computeConsentMetrics", () => {
 
   it("handles zero totalChildren for emergency rate", () => {
     const m = computeConsentMetrics([], 0, now);
-    expect(m.emergency_consent_rate).toBe(0);
+    expect(m.emergency_consent_rate).toBeNull();;
   });
 
   // ── Photo consent count ───────────────────────────────────────────────

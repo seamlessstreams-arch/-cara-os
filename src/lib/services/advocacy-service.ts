@@ -159,12 +159,12 @@ export function computeAdvocacyMetrics(
 ): {
   total_referrals: number;
   active_referrals: number;
-  avg_days_to_allocation: number;
+  avg_days_to_allocation: number | null;
   children_with_advocates: number;
   by_reason: Record<string, number>;
   by_status: Record<string, number>;
-  rights_awareness_rate: number;
-  rights_exercise_rate: number;
+  rights_awareness_rate: number | null;
+  rights_exercise_rate: number | null;
   children_with_rights_records: number;
 } {
   const byReason: Record<string, number> = {};
@@ -205,7 +205,7 @@ export function computeAdvocacyMetrics(
   const avgDaysToAllocation =
     allocationCount > 0
       ? Math.round((totalAllocationDays / allocationCount) * 10) / 10
-      : 0;
+      : null;
 
   // Rights awareness: % of records where child_informed is true
   let informedCount = 0;
@@ -221,12 +221,12 @@ export function computeAdvocacyMetrics(
   const rightsAwarenessRate =
     rightsRecords.length > 0
       ? Math.round((informedCount / rightsRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   const rightsExerciseRate =
     rightsRecords.length > 0
       ? Math.round((exercisedCount / rightsRecords.length) * 1000) / 10
-      : 0;
+      : null;
 
   return {
     total_referrals: referrals.length,

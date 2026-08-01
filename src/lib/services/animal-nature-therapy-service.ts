@@ -328,21 +328,21 @@ export function computeMetrics(
   by_engagement_level: Record<string, number>;
   by_emotional_response: Record<string, number>;
   therapy_vs_activity_ratio: { therapy: number; activity: number; recreational: number; educational: number };
-  qualified_therapist_rate: number;
-  risk_assessment_rate: number;
-  allergy_check_rate: number;
-  animal_welfare_rate: number;
-  child_choice_rate: number;
-  engagement_rate: number;
-  positive_response_rate: number;
-  injury_rate: number;
-  care_plan_link_rate: number;
-  parental_consent_rate: number;
+  qualified_therapist_rate: number | null;
+  risk_assessment_rate: number | null;
+  allergy_check_rate: number | null;
+  animal_welfare_rate: number | null;
+  child_choice_rate: number | null;
+  engagement_rate: number | null;
+  positive_response_rate: number | null;
+  injury_rate: number | null;
+  care_plan_link_rate: number | null;
+  parental_consent_rate: number | null;
   animal_based_count: number;
   nature_based_count: number;
   formal_therapy_count: number;
   outdoor_count: number;
-  average_sessions_per_child: number;
+  average_sessions_per_child: number | null;
 } {
   const total = rows.length;
 
@@ -373,23 +373,23 @@ export function computeMetrics(
   // Boolean rates
   const qualifiedTherapistRate = total > 0
     ? Math.round((rows.filter((r) => r.qualified_therapist).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const riskAssessmentRate = total > 0
     ? Math.round((rows.filter((r) => r.risk_assessment_completed).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const allergyCheckRate = total > 0
     ? Math.round((rows.filter((r) => r.allergy_check).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const animalWelfareRate = total > 0
     ? Math.round((rows.filter((r) => r.animal_welfare_compliant).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const childChoiceRate = total > 0
     ? Math.round((rows.filter((r) => r.child_choice).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const engagementRate = total > 0
     ? Math.round(
@@ -397,7 +397,7 @@ export function computeMetrics(
           total) *
           1000,
       ) / 10
-    : 0;
+    : null;
 
   const positiveResponseRate = total > 0
     ? Math.round(
@@ -405,19 +405,19 @@ export function computeMetrics(
           total) *
           1000,
       ) / 10
-    : 0;
+    : null;
 
   const injuryRate = total > 0
     ? Math.round((rows.filter((r) => r.injury_occurred).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const carePlanLinkRate = total > 0
     ? Math.round((rows.filter((r) => r.linked_to_care_plan).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   const parentalConsentRate = total > 0
     ? Math.round((rows.filter((r) => r.parental_consent).length / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Category counts
   const animalBasedCount = rows.filter(
@@ -439,7 +439,7 @@ export function computeMetrics(
   // Average sessions per child
   const avgPerChild = uniqueChildren.size > 0
     ? Math.round((total / uniqueChildren.size) * 10) / 10
-    : 0;
+    : null;
 
   return {
     total_sessions: total,
@@ -739,7 +739,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective question
-  if (metrics.injury_rate > 5 && metrics.total_sessions > 5) {
+  if ((metrics.injury_rate ?? 0) > 5 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Injury rate is ${metrics.injury_rate}% across animal/nature sessions. ` +
         `While some minor incidents are inevitable in outdoor and animal-contact ` +
@@ -753,7 +753,7 @@ export function generateCaraInsights(
         `and promote the health of each child — this includes physical safety ` +
         `during all activities.`,
     );
-  } else if (metrics.child_choice_rate < 40 && metrics.total_sessions > 5) {
+  } else if ((metrics.child_choice_rate ?? 0) < 40 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Child choice is recorded in only ${metrics.child_choice_rate}% of sessions. ` +
         `Animal-assisted and nature-based therapies are most effective when the ` +
@@ -767,7 +767,7 @@ export function generateCaraInsights(
         `trauma, the ability to say no — and have that respected — is itself ` +
         `therapeutic.`,
     );
-  } else if (metrics.care_plan_link_rate < 30 && metrics.total_sessions > 5) {
+  } else if ((metrics.care_plan_link_rate ?? 0) < 30 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Only ${metrics.care_plan_link_rate}% of sessions are linked to care plans. ` +
         `SCCIF: Experiences & progress expects therapeutic provision to be ` +

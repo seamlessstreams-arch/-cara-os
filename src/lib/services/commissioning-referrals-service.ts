@@ -90,7 +90,7 @@ export interface OccupancyRecord {
   record_date: string;
   registered_places: number;
   children_in_placement: number;
-  occupancy_rate: number;
+  occupancy_rate: number | null;
   referrals_in_progress: number;
   planned_admissions: number;
   planned_departures: number;
@@ -153,10 +153,10 @@ export function computeReferralMetrics(
   declined: number;
   withdrawn: number;
   placed: number;
-  acceptance_rate: number;
+  acceptance_rate: number | null;
   avg_decision_days: number;
   emergency_referrals: number;
-  current_occupancy_rate: number;
+  current_occupancy_rate: number | null;
   available_places: number;
   by_status: Record<string, number>;
   by_urgency: Record<string, number>;
@@ -182,7 +182,7 @@ export function computeReferralMetrics(
   const acceptanceRate =
     resolved > 0
       ? Math.round((accepted / resolved) * 1000) / 10
-      : 0;
+      : null;
 
   // Avg decision time
   const decidedReferrals = referrals.filter(
@@ -492,7 +492,7 @@ export async function createOccupancyRecord(
   const occupancyRate =
     input.registeredPlaces > 0
       ? Math.round((input.childrenInPlacement / input.registeredPlaces) * 1000) / 10
-      : 0;
+      : null;
 
   const { data, error } = await (s.from("cs_occupancy_records") as SB)
     .insert({

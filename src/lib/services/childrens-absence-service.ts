@@ -139,17 +139,17 @@ export function computeAbsenceMetrics(
   total_absences: number;
   authorised_count: number;
   unauthorised_count: number;
-  authorised_rate: number;
+  authorised_rate: number | null;
   exclusion_count: number;
   illness_count: number;
   total_days_missed: number;
-  average_days_missed: number;
-  average_attendance_percentage: number;
-  school_notified_rate: number;
-  social_worker_informed_rate: number;
-  parents_informed_rate: number;
-  pep_reviewed_rate: number;
-  catch_up_plan_rate: number;
+  average_days_missed: number | null;
+  average_attendance_percentage: number | null;
+  school_notified_rate: number | null;
+  social_worker_informed_rate: number | null;
+  parents_informed_rate: number | null;
+  pep_reviewed_rate: number | null;
+  catch_up_plan_rate: number | null;
   pattern_identified_count: number;
   persistent_absence_count: number;
   unique_children: number;
@@ -163,7 +163,7 @@ export function computeAbsenceMetrics(
   const authorisedRate =
     records.length > 0
       ? Math.round((authorised / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const exclusions = records.filter((r) => r.absence_type === "exclusion").length;
   const illness = records.filter((r) => r.absence_type === "illness").length;
@@ -172,7 +172,7 @@ export function computeAbsenceMetrics(
   const avgDays =
     records.length > 0
       ? Math.round((totalDays / records.length) * 10) / 10
-      : 0;
+      : null;
 
   const attendancePercentages = records.map((r) => r.attendance_percentage);
   const avgAttendance =
@@ -180,13 +180,13 @@ export function computeAbsenceMetrics(
       ? Math.round(
           (attendancePercentages.reduce((a, b) => a + b, 0) / attendancePercentages.length) * 10,
         ) / 10
-      : 0;
+      : null;
 
   const boolRate = (field: keyof ChildrensAbsenceRecord) => {
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const patternCount = records.filter((r) => r.pattern_identified).length;

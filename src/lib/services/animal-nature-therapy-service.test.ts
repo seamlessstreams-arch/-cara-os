@@ -24,10 +24,10 @@ describe("computeMetrics", () => {
     const result = computeMetrics([]);
     expect(result.total_sessions).toBe(0);
     expect(result.unique_children).toBe(0);
-    expect(result.qualified_therapist_rate).toBe(0);
-    expect(result.risk_assessment_rate).toBe(0);
-    expect(result.injury_rate).toBe(0);
-    expect(result.average_sessions_per_child).toBe(0);
+    expect(result.qualified_therapist_rate).toBeNull();;
+    expect(result.risk_assessment_rate).toBeNull();;
+    expect(result.injury_rate).toBeNull();;
+    expect(result.average_sessions_per_child).toBeNull();;
   });
 
   it("counts total sessions and unique children", () => {

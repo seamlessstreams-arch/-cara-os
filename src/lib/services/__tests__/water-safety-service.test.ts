@@ -307,7 +307,7 @@ describe("computeWaterSafetyMetrics", () => {
 
     it("returns zero compliant_rate", () => {
       const m = computeWaterSafetyMetrics([]);
-      expect(m.compliant_rate).toBe(0);
+      expect(m.compliant_rate).toBeNull();;
     });
 
     it("returns zero too_hot_count", () => {
@@ -327,27 +327,27 @@ describe("computeWaterSafetyMetrics", () => {
 
     it("returns zero tmv_fitted_rate", () => {
       const m = computeWaterSafetyMetrics([]);
-      expect(m.tmv_fitted_rate).toBe(0);
+      expect(m.tmv_fitted_rate).toBeNull();;
     });
 
     it("returns zero tmv_operational_rate", () => {
       const m = computeWaterSafetyMetrics([]);
-      expect(m.tmv_operational_rate).toBe(0);
+      expect(m.tmv_operational_rate).toBeNull();;
     });
 
     it("returns zero flushing_completed_rate", () => {
       const m = computeWaterSafetyMetrics([]);
-      expect(m.flushing_completed_rate).toBe(0);
+      expect(m.flushing_completed_rate).toBeNull();;
     });
 
     it("returns zero legionella_assessment_current_rate", () => {
       const m = computeWaterSafetyMetrics([]);
-      expect(m.legionella_assessment_current_rate).toBe(0);
+      expect(m.legionella_assessment_current_rate).toBeNull();;
     });
 
     it("returns zero scalding_risk_mitigated_rate", () => {
       const m = computeWaterSafetyMetrics([]);
-      expect(m.scalding_risk_mitigated_rate).toBe(0);
+      expect(m.scalding_risk_mitigated_rate).toBeNull();;
     });
 
     it("returns zero high_risk_count", () => {
@@ -362,12 +362,12 @@ describe("computeWaterSafetyMetrics", () => {
 
     it("returns zero average_hot_temp", () => {
       const m = computeWaterSafetyMetrics([]);
-      expect(m.average_hot_temp).toBe(0);
+      expect(m.average_hot_temp).toBeNull();;
     });
 
     it("returns zero average_cold_temp", () => {
       const m = computeWaterSafetyMetrics([]);
-      expect(m.average_cold_temp).toBe(0);
+      expect(m.average_cold_temp).toBeNull();;
     });
 
     it("returns zero check_overdue_count", () => {
@@ -996,7 +996,7 @@ describe("computeWaterSafetyMetrics", () => {
         makeRecord({ hot_water_temp: null }),
       ];
       const m = computeWaterSafetyMetrics(records);
-      expect(m.average_hot_temp).toBe(0);
+      expect(m.average_hot_temp).toBeNull();;
     });
 
     it("returns the single value when one record has hot_water_temp", () => {
@@ -1043,7 +1043,7 @@ describe("computeWaterSafetyMetrics", () => {
         makeRecord({ cold_water_temp: null }),
       ];
       const m = computeWaterSafetyMetrics(records);
-      expect(m.average_cold_temp).toBe(0);
+      expect(m.average_cold_temp).toBeNull();;
     });
 
     it("returns the single value when one record has cold_water_temp", () => {

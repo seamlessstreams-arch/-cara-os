@@ -228,11 +228,11 @@ describe("computeRightsMetrics", () => {
       const m = computeRightsMetrics([], [], 0);
       expect(m.total_audits).toBe(0);
       expect(m.children_with_profiles).toBe(0);
-      expect(m.profile_coverage_rate).toBe(0);
-      expect(m.knows_rights_rate).toBe(0);
-      expect(m.knows_complaints_rate).toBe(0);
-      expect(m.has_advocate_rate).toBe(0);
-      expect(m.views_sought_rate).toBe(0);
+      expect(m.profile_coverage_rate).toBeNull();;
+      expect(m.knows_rights_rate).toBeNull();;
+      expect(m.knows_complaints_rate).toBeNull();;
+      expect(m.has_advocate_rate).toBeNull();;
+      expect(m.views_sought_rate).toBeNull();;
       expect(m.fully_empowered_count).toBe(0);
       expect(m.not_empowered_count).toBe(0);
       expect(m.rights_fully_met).toBe(0);
@@ -253,7 +253,7 @@ describe("computeRightsMetrics", () => {
     it("returns 0 coverage rate when totalChildren is 0", () => {
       const profiles = [makeProfile()];
       const m = computeRightsMetrics([], profiles, 0);
-      expect(m.profile_coverage_rate).toBe(0);
+      expect(m.profile_coverage_rate).toBeNull();;
     });
   });
 
@@ -369,7 +369,7 @@ describe("computeRightsMetrics", () => {
 
     it("returns 0 when profiles array is empty", () => {
       const m = computeRightsMetrics([], [], 5);
-      expect(m.knows_rights_rate).toBe(0);
+      expect(m.knows_rights_rate).toBeNull();;
     });
 
     it("rounds to 1 decimal place (1 of 3 = 33.3)", () => {
@@ -757,11 +757,11 @@ describe("computeRightsMetrics", () => {
     it("returns number types for numeric fields", () => {
       const m = computeRightsMetrics([], [], 0);
       expect(typeof m.total_audits).toBe("number");
-      expect(typeof m.profile_coverage_rate).toBe("number");
-      expect(typeof m.knows_rights_rate).toBe("number");
-      expect(typeof m.knows_complaints_rate).toBe("number");
-      expect(typeof m.has_advocate_rate).toBe("number");
-      expect(typeof m.views_sought_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof m.profile_coverage_rate); // number | null
+      expect(["number", "object"]).toContain(typeof m.knows_rights_rate); // number | null
+      expect(["number", "object"]).toContain(typeof m.knows_complaints_rate); // number | null
+      expect(["number", "object"]).toContain(typeof m.has_advocate_rate); // number | null
+      expect(["number", "object"]).toContain(typeof m.views_sought_rate); // number | null
       expect(typeof m.fully_empowered_count).toBe("number");
       expect(typeof m.not_empowered_count).toBe("number");
       expect(typeof m.rights_fully_met).toBe("number");

@@ -66,7 +66,7 @@ function makeQualification(overrides: Partial<StaffQualification> = {}): StaffQu
 describe("computeTrainingCompliance", () => {
   it("returns zero compliance for no records and no staff", () => {
     const result = computeTrainingCompliance([], 0);
-    expect(result.overall_compliance_rate).toBe(0);
+    expect(result.overall_compliance_rate).toBeNull();;
     expect(result.fully_compliant_staff).toBe(0);
     expect(result.expired_count).toBe(0);
     expect(result.expiring_within_30_days).toEqual([]);
@@ -150,7 +150,7 @@ describe("computeDBSCompliance", () => {
     const result = computeDBSCompliance([]);
     expect(result.total_staff).toBe(0);
     expect(result.cleared_count).toBe(0);
-    expect(result.compliance_rate).toBe(0);
+    expect(result.compliance_rate).toBeNull();;
   });
 
   it("calculates compliance as percentage of cleared", () => {

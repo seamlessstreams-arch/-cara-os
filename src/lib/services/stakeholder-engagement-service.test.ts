@@ -67,10 +67,10 @@ describe("computeEngagementMetrics", () => {
     expect(r.total_contacts).toBe(0);
     expect(r.contacts_this_month).toBe(0);
     expect(r.unique_stakeholders).toBe(0);
-    expect(r.home_initiated_rate).toBe(0);
-    expect(r.follow_up_completion_rate).toBe(0);
+    expect(r.home_initiated_rate).toBeNull();;
+    expect(r.follow_up_completion_rate).toBeNull();;
     expect(r.overdue_follow_ups).toBe(0);
-    expect(r.avg_satisfaction_score).toBe(0);
+    expect(r.avg_satisfaction_score).toBeNull();;
     expect(r.feedback_count).toBe(0);
   });
 

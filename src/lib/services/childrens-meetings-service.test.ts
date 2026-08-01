@@ -44,9 +44,9 @@ describe("computeMeetingMetrics", () => {
     const m = computeMeetingMetrics([]);
     expect(m.total_meetings).toBe(0);
     expect(m.house_meeting_count).toBe(0);
-    expect(m.attendance_rate).toBe(0);
-    expect(m.all_participated_rate).toBe(0);
-    expect(m.agenda_shared_rate).toBe(0);
+    expect(m.attendance_rate).toBeNull();;
+    expect(m.all_participated_rate).toBeNull();;
+    expect(m.agenda_shared_rate).toBeNull();;
   });
 
   it("computes populated metrics correctly", () => {

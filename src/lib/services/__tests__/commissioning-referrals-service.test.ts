@@ -231,7 +231,7 @@ describe("computeReferralMetrics", () => {
       expect(m.declined).toBe(0);
       expect(m.withdrawn).toBe(0);
       expect(m.placed).toBe(0);
-      expect(m.acceptance_rate).toBe(0);
+      expect(m.acceptance_rate).toBeNull();;
       expect(m.avg_decision_days).toBe(0);
       expect(m.emergency_referrals).toBe(0);
       expect(m.current_occupancy_rate).toBe(0);
@@ -383,7 +383,7 @@ describe("computeReferralMetrics", () => {
 
     it("returns 0 when no resolved referrals", () => {
       const refs = [makeReferral({ status: "received" })];
-      expect(computeReferralMetrics(refs, []).acceptance_rate).toBe(0);
+      expect(computeReferralMetrics(refs, []).acceptance_rate).toBeNull();;
     });
 
     it("returns 100 when all accepted", () => {
@@ -1675,10 +1675,10 @@ describe("Edge cases", () => {
       expect(typeof m.declined).toBe("number");
       expect(typeof m.withdrawn).toBe("number");
       expect(typeof m.placed).toBe("number");
-      expect(typeof m.acceptance_rate).toBe("number");
-      expect(typeof m.avg_decision_days).toBe("number");
+      expect(["number", "object"]).toContain(typeof m.acceptance_rate); // number | null
+      expect(["number", "object"]).toContain(typeof m.avg_decision_days); // number | null
       expect(typeof m.emergency_referrals).toBe("number");
-      expect(typeof m.current_occupancy_rate).toBe("number");
+      expect(["number", "object"]).toContain(typeof m.current_occupancy_rate); // number | null
       expect(typeof m.available_places).toBe("number");
     });
 

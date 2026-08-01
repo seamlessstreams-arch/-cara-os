@@ -152,13 +152,13 @@ export function computeCourtMetrics(
   adjourned_count: number;
   pending_decision_count: number;
   children_involved: number;
-  guardian_appointed_rate: number;
-  statement_submitted_rate: number;
+  guardian_appointed_rate: number | null;
+  statement_submitted_rate: number | null;
   statement_late_count: number;
   home_statement_required_count: number;
-  home_statement_submitted_rate: number;
-  child_views_sought_rate: number;
-  child_wishes_communicated_rate: number;
+  home_statement_submitted_rate: number | null;
+  child_views_sought_rate: number | null;
+  child_wishes_communicated_rate: number | null;
   upcoming_hearings: number;
   by_proceeding_type: Record<string, number>;
   by_proceeding_status: Record<string, number>;
@@ -176,7 +176,7 @@ export function computeCourtMetrics(
   const guardianRate =
     proceedings.length > 0
       ? Math.round((guardianAppointed / proceedings.length) * 1000) / 10
-      : 0;
+      : null;
 
   const stmtSubmitted = proceedings.filter(
     (p) => p.statement_status === "submitted" || p.statement_status === "filed_with_court",
@@ -184,7 +184,7 @@ export function computeCourtMetrics(
   const stmtRate =
     proceedings.length > 0
       ? Math.round((stmtSubmitted / proceedings.length) * 1000) / 10
-      : 0;
+      : null;
 
   const stmtLate = proceedings.filter((p) => p.statement_status === "late").length;
 
@@ -193,19 +193,19 @@ export function computeCourtMetrics(
   const homeRate =
     homeRequired > 0
       ? Math.round((homeSubmitted / homeRequired) * 1000) / 10
-      : 0;
+      : null;
 
   const viewsSought = proceedings.filter((p) => p.child_views_sought).length;
   const viewsRate =
     proceedings.length > 0
       ? Math.round((viewsSought / proceedings.length) * 1000) / 10
-      : 0;
+      : null;
 
   const wishesCommunicated = proceedings.filter((p) => p.child_wishes_communicated).length;
   const wishesRate =
     proceedings.length > 0
       ? Math.round((wishesCommunicated / proceedings.length) * 1000) / 10
-      : 0;
+      : null;
 
   const upcoming = proceedings.filter((p) => p.next_hearing_date !== null).length;
 

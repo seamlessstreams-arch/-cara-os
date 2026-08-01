@@ -150,19 +150,19 @@ export function computeEducationAttendanceMetrics(
   unauthorised_count: number;
   exclusion_count: number;
   refused_count: number;
-  school_contacted_rate: number;
-  reason_documented_rate: number;
-  return_plan_rate: number;
-  pep_up_to_date_rate: number;
-  virtual_school_rate: number;
-  social_worker_informed_rate: number;
-  child_views_rate: number;
-  alternative_education_rate: number;
-  homework_supported_rate: number;
-  achievement_celebrated_rate: number;
-  parent_informed_rate: number;
-  recorded_promptly_rate: number;
-  attendance_percentage: number;
+  school_contacted_rate: number | null;
+  reason_documented_rate: number | null;
+  return_plan_rate: number | null;
+  pep_up_to_date_rate: number | null;
+  virtual_school_rate: number | null;
+  social_worker_informed_rate: number | null;
+  child_views_rate: number | null;
+  alternative_education_rate: number | null;
+  homework_supported_rate: number | null;
+  achievement_celebrated_rate: number | null;
+  parent_informed_rate: number | null;
+  recorded_promptly_rate: number | null;
+  attendance_percentage: number | null;
   unique_children: number;
   by_attendance_status: Record<string, number>;
   by_absence_reason: Record<string, number>;
@@ -178,14 +178,14 @@ export function computeEducationAttendanceMetrics(
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const totalSessions = records.reduce((sum, r) => sum + r.sessions_possible, 0);
   const attendedSessions = records.reduce((sum, r) => sum + r.sessions_attended, 0);
   const attendancePct = totalSessions > 0
     ? Math.round((attendedSessions / totalSessions) * 1000) / 10
-    : 0;
+    : null;
 
   const uniqueChildren = new Set(records.map((r) => r.child_name)).size;
 

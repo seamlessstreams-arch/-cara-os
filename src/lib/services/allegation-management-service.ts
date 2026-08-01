@@ -149,17 +149,17 @@ export function computeAllegationMetrics(
   open_allegations: number;
   substantiated_count: number;
   unsubstantiated_count: number;
-  lado_referral_rate: number;
-  lado_response_within_1_day_rate: number;
-  police_informed_rate: number;
-  ofsted_notified_rate: number;
+  lado_referral_rate: number | null;
+  lado_response_within_1_day_rate: number | null;
+  police_informed_rate: number | null;
+  ofsted_notified_rate: number | null;
   dbs_referral_count: number;
   suspension_count: number;
-  risk_assessment_rate: number;
-  child_safe_rate: number;
-  subject_support_rate: number;
-  learning_identified_rate: number;
-  average_days_to_resolution: number;
+  risk_assessment_rate: number | null;
+  child_safe_rate: number | null;
+  subject_support_rate: number | null;
+  learning_identified_rate: number | null;
+  average_days_to_resolution: number | null;
   by_allegation_type: Record<string, number>;
   by_allegation_source: Record<string, number>;
   by_investigation_stage: Record<string, number>;
@@ -175,26 +175,26 @@ export function computeAllegationMetrics(
   const ladoRate =
     records.length > 0
       ? Math.round((ladoReferred / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const withLadoResponse = records.filter((r) => r.lado_response_within_1_day !== null);
   const ladoWithin1 = withLadoResponse.filter((r) => r.lado_response_within_1_day === true).length;
   const ladoResponseRate =
     withLadoResponse.length > 0
       ? Math.round((ladoWithin1 / withLadoResponse.length) * 1000) / 10
-      : 0;
+      : null;
 
   const policeInformed = records.filter((r) => r.police_informed).length;
   const policeRate =
     records.length > 0
       ? Math.round((policeInformed / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const ofstedNotified = records.filter((r) => r.ofsted_notified).length;
   const ofstedRate =
     records.length > 0
       ? Math.round((ofstedNotified / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const dbsReferral = records.filter((r) => r.dbs_referral_made).length;
   const suspended = records.filter((r) => r.subject_suspended).length;
@@ -203,31 +203,31 @@ export function computeAllegationMetrics(
   const riskRate =
     records.length > 0
       ? Math.round((riskDone / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childSafe = records.filter((r) => r.child_safe_and_supported).length;
   const childSafeRate =
     records.length > 0
       ? Math.round((childSafe / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const subjectSupport = records.filter((r) => r.support_for_subject).length;
   const supportRate =
     records.length > 0
       ? Math.round((subjectSupport / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const learningFound = records.filter((r) => r.learning_identified).length;
   const learningRate =
     records.length > 0
       ? Math.round((learningFound / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const withDays = records.filter((r) => r.days_to_resolution !== null);
   const avgDays =
     withDays.length > 0
       ? Math.round((withDays.reduce((sum, r) => sum + (r.days_to_resolution ?? 0), 0) / withDays.length) * 10) / 10
-      : 0;
+      : null;
 
   const byType: Record<string, number> = {};
   for (const r of records) byType[r.allegation_type] = (byType[r.allegation_type] ?? 0) + 1;

@@ -152,18 +152,18 @@ export function computeBspMetrics(
   expired_plans: number;
   draft_plans: number;
   children_with_bsp: number;
-  bsp_coverage: number;
+  bsp_coverage: number | null;
   highly_effective_count: number;
   effective_count: number;
   not_effective_count: number;
   not_evaluated_count: number;
-  child_involvement_rate: number;
-  social_worker_approved_rate: number;
-  psychologist_input_rate: number;
-  staff_briefed_rate: number;
-  parent_informed_rate: number;
-  child_views_rate: number;
-  average_incidents: number;
+  child_involvement_rate: number | null;
+  social_worker_approved_rate: number | null;
+  psychologist_input_rate: number | null;
+  staff_briefed_rate: number | null;
+  parent_informed_rate: number | null;
+  child_views_rate: number | null;
+  average_incidents: number | null;
   by_bsp_status: Record<string, number>;
   by_strategy: Record<string, number>;
   by_trigger: Record<string, number>;
@@ -177,7 +177,7 @@ export function computeBspMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const highlyEffective = plans.filter((p) => p.effectiveness_rating === "highly_effective").length;
   const effective = plans.filter((p) => p.effectiveness_rating === "effective").length;
@@ -188,43 +188,43 @@ export function computeBspMetrics(
   const childRate =
     plans.length > 0
       ? Math.round((childInvolved / plans.length) * 1000) / 10
-      : 0;
+      : null;
 
   const swApproved = plans.filter((p) => p.social_worker_approved).length;
   const swRate =
     plans.length > 0
       ? Math.round((swApproved / plans.length) * 1000) / 10
-      : 0;
+      : null;
 
   const psychInput = plans.filter((p) => p.psychologist_input).length;
   const psychRate =
     plans.length > 0
       ? Math.round((psychInput / plans.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffBriefed = plans.filter((p) => p.staff_briefed).length;
   const staffRate =
     plans.length > 0
       ? Math.round((staffBriefed / plans.length) * 1000) / 10
-      : 0;
+      : null;
 
   const parentInformed = plans.filter((p) => p.parent_informed).length;
   const parentRate =
     plans.length > 0
       ? Math.round((parentInformed / plans.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childViews = plans.filter((p) => p.child_views !== null).length;
   const viewsRate =
     plans.length > 0
       ? Math.round((childViews / plans.length) * 1000) / 10
-      : 0;
+      : null;
 
   const totalIncidents = plans.reduce((sum, p) => sum + p.incidents_since_last_review, 0);
   const avgIncidents =
     plans.length > 0
       ? Math.round((totalIncidents / plans.length) * 10) / 10
-      : 0;
+      : null;
 
   const byStatus: Record<string, number> = {};
   for (const p of plans) byStatus[p.bsp_status] = (byStatus[p.bsp_status] ?? 0) + 1;

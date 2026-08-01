@@ -35,7 +35,7 @@ describe("computeConsentMetrics", () => {
     expect(m.total_records).toBe(0);
     expect(m.granted_count).toBe(0);
     expect(m.consent_coverage).toBe(0);
-    expect(m.evidence_on_file_rate).toBe(0);
+    expect(m.evidence_on_file_rate).toBeNull();;
     expect(m.medical_consent_rate).toBe(0);
   });
 

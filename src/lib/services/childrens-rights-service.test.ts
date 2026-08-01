@@ -60,7 +60,7 @@ describe("computeRightsMetrics", () => {
     expect(m.total_audits).toBe(0);
     expect(m.children_with_profiles).toBe(0);
     expect(m.profile_coverage_rate).toBe(0);
-    expect(m.knows_rights_rate).toBe(0);
+    expect(m.knows_rights_rate).toBeNull();;
     expect(m.rights_fully_met).toBe(0);
   });
 

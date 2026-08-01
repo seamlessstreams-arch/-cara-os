@@ -249,7 +249,7 @@ describe("computeAttachmentMetrics", () => {
     const m = computeAttachmentMetrics([], 0);
     expect(m.total_records).toBe(0);
     expect(m.children_assessed).toBe(0);
-    expect(m.assessment_coverage).toBe(0);
+    expect(m.assessment_coverage).toBeNull();;
     expect(m.secure_count).toBe(0);
     expect(m.anxious_ambivalent_count).toBe(0);
     expect(m.anxious_avoidant_count).toBe(0);
@@ -259,10 +259,10 @@ describe("computeAttachmentMetrics", () => {
     expect(m.outdated_assessments).toBe(0);
     expect(m.strong_positive_relationships).toBe(0);
     expect(m.strained_or_broken_count).toBe(0);
-    expect(m.therapeutic_approach_rate).toBe(0);
-    expect(m.psychologist_involved_rate).toBe(0);
-    expect(m.staff_trained_rate).toBe(0);
-    expect(m.child_views_rate).toBe(0);
+    expect(m.therapeutic_approach_rate).toBeNull();;
+    expect(m.psychologist_involved_rate).toBeNull();;
+    expect(m.staff_trained_rate).toBeNull();;
+    expect(m.child_views_rate).toBeNull();;
     expect(Object.keys(m.by_attachment_style)).toHaveLength(0);
     expect(Object.keys(m.by_relationship_type)).toHaveLength(0);
     expect(Object.keys(m.by_relationship_quality)).toHaveLength(0);
@@ -338,7 +338,7 @@ describe("computeAttachmentMetrics", () => {
 
   it("assessment_coverage is 0 when totalChildren is 0", () => {
     const m = computeAttachmentMetrics([], 0);
-    expect(m.assessment_coverage).toBe(0);
+    expect(m.assessment_coverage).toBeNull();;
   });
 
   it("assessment_coverage rounds to one decimal place", () => {

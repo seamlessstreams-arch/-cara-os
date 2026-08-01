@@ -354,12 +354,12 @@ describe("computeAdvocacyMetrics", () => {
     const result = computeAdvocacyMetrics([], []);
     expect(result.total_referrals).toBe(0);
     expect(result.active_referrals).toBe(0);
-    expect(result.avg_days_to_allocation).toBe(0);
+    expect(result.avg_days_to_allocation).toBeNull();;
     expect(result.children_with_advocates).toBe(0);
     expect(result.by_reason).toEqual({});
     expect(result.by_status).toEqual({});
-    expect(result.rights_awareness_rate).toBe(0);
-    expect(result.rights_exercise_rate).toBe(0);
+    expect(result.rights_awareness_rate).toBeNull();;
+    expect(result.rights_exercise_rate).toBeNull();;
     expect(result.children_with_rights_records).toBe(0);
   });
 
@@ -568,7 +568,7 @@ describe("computeAdvocacyMetrics", () => {
       makeReferral({ id: "r2", allocated_date: null }),
     ];
     const result = computeAdvocacyMetrics(referrals, []);
-    expect(result.avg_days_to_allocation).toBe(0);
+    expect(result.avg_days_to_allocation).toBeNull();;
   });
 
   it("ignores referrals without allocated_date in average calculation", () => {
@@ -604,7 +604,7 @@ describe("computeAdvocacyMetrics", () => {
 
   it("returns 0 avg_days_to_allocation for empty referrals", () => {
     const result = computeAdvocacyMetrics([], []);
-    expect(result.avg_days_to_allocation).toBe(0);
+    expect(result.avg_days_to_allocation).toBeNull();;
   });
 
   // ── Rights awareness rate ─────────────────────────────────────────────
@@ -638,7 +638,7 @@ describe("computeAdvocacyMetrics", () => {
 
   it("returns 0 rights awareness rate with no records", () => {
     const result = computeAdvocacyMetrics([], []);
-    expect(result.rights_awareness_rate).toBe(0);
+    expect(result.rights_awareness_rate).toBeNull();;
   });
 
   it("rounds rights awareness rate to one decimal place", () => {
@@ -685,7 +685,7 @@ describe("computeAdvocacyMetrics", () => {
 
   it("returns 0 rights exercise rate with no records", () => {
     const result = computeAdvocacyMetrics([], []);
-    expect(result.rights_exercise_rate).toBe(0);
+    expect(result.rights_exercise_rate).toBeNull();;
   });
 
   // ── Children with rights records ──────────────────────────────────────

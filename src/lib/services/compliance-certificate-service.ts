@@ -174,10 +174,10 @@ export function computeComplianceCertificateMetrics(
   expiring_soon_count: number;
   remedial_required_count: number;
   overdue_renewal_count: number;
-  valid_rate: number;
-  digital_copy_rate: number;
-  ofsted_notified_rate: number;
-  remedial_completed_rate: number;
+  valid_rate: number | null;
+  digital_copy_rate: number | null;
+  ofsted_notified_rate: number | null;
+  remedial_completed_rate: number | null;
   certificate_type_breakdown: Record<string, number>;
   status_breakdown: Record<string, number>;
   unique_issuing_bodies: number;
@@ -193,26 +193,26 @@ export function computeComplianceCertificateMetrics(
   const validRate =
     total > 0
       ? Math.round((valid / total) * 1000) / 10
-      : 0;
+      : null;
 
   const digitalCopy = rows.filter((r) => r.digital_copy_stored).length;
   const digitalCopyRate =
     total > 0
       ? Math.round((digitalCopy / total) * 1000) / 10
-      : 0;
+      : null;
 
   const ofstedNotified = rows.filter((r) => r.ofsted_notified).length;
   const ofstedNotifiedRate =
     total > 0
       ? Math.round((ofstedNotified / total) * 1000) / 10
-      : 0;
+      : null;
 
   const remedialRequiredRows = rows.filter((r) => r.remedial_actions_required);
   const remedialCompleted = remedialRequiredRows.filter((r) => r.remedial_actions_completed).length;
   const remedialCompletedRate =
     remedialRequiredRows.length > 0
       ? Math.round((remedialCompleted / remedialRequiredRows.length) * 1000) / 10
-      : 0;
+      : null;
 
   const certTypeBreakdown: Record<string, number> = {};
   for (const r of rows) certTypeBreakdown[r.certificate_type] = (certTypeBreakdown[r.certificate_type] ?? 0) + 1;
@@ -328,7 +328,7 @@ export function generateComplianceCertificateCaraInsights(
         `Are there systemic barriers to timely renewal, and what impact could expired certificates ` +
         `have on the safety and wellbeing of children living in the home?`,
     );
-  } else if (metrics.digital_copy_rate < 100) {
+  } else if ((metrics.digital_copy_rate ?? 0) < 100) {
     insights.push(
       `[reflect] ${metrics.digital_copy_rate}% of certificates have digital copies stored. ` +
         `Could a missing physical certificate during an Ofsted inspection create compliance risk, ` +

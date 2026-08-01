@@ -274,9 +274,9 @@ describe("computeTransitionMetrics", () => {
     expect(m.active_transitions).toBe(0);
     expect(m.planned_transitions).toBe(0);
     expect(m.completed_this_year).toBe(0);
-    expect(m.avg_readiness_score).toBe(0);
-    expect(m.goals_on_track_rate).toBe(0);
-    expect(m.child_views_sought_rate).toBe(0);
+    expect(m.avg_readiness_score).toBeNull();;
+    expect(m.goals_on_track_rate).toBeNull();;
+    expect(m.child_views_sought_rate).toBeNull();;
     expect(m.overdue_follow_ups).toBe(0);
     expect(m.reviews_this_quarter).toBe(0);
     expect(Object.keys(m.by_transition_type)).toHaveLength(0);
@@ -454,7 +454,7 @@ describe("computeTransitionMetrics", () => {
   it("returns 0 when no readiness assessments exist", () => {
     const plans = [makePlan({ status: "planned", readiness_assessment: [] })];
     const m = computeTransitionMetrics(plans, []);
-    expect(m.avg_readiness_score).toBe(0);
+    expect(m.avg_readiness_score).toBeNull();;
   });
 
   it("averages across multiple plans", () => {
@@ -517,7 +517,7 @@ describe("computeTransitionMetrics", () => {
   it("returns 0 when no goals exist", () => {
     const plans = [makePlan({ status: "planned", goals: [] })];
     const m = computeTransitionMetrics(plans, []);
-    expect(m.goals_on_track_rate).toBe(0);
+    expect(m.goals_on_track_rate).toBeNull();;
   });
 
   it("returns 100 when all goals are on track", () => {
@@ -626,7 +626,7 @@ describe("computeTransitionMetrics", () => {
       makePlan({ status: "cancelled", child_views_sought: false }),
     ];
     const m = computeTransitionMetrics(plans, []);
-    expect(m.child_views_sought_rate).toBe(0);
+    expect(m.child_views_sought_rate).toBeNull();;
   });
 
   it("returns 100 when all applicable plans have views sought", () => {
@@ -2418,9 +2418,9 @@ describe("Metrics return shape", () => {
     expect(typeof m.active_transitions).toBe("number");
     expect(typeof m.planned_transitions).toBe("number");
     expect(typeof m.completed_this_year).toBe("number");
-    expect(typeof m.avg_readiness_score).toBe("number");
-    expect(typeof m.goals_on_track_rate).toBe("number");
-    expect(typeof m.child_views_sought_rate).toBe("number");
+    expect(["number", "object"]).toContain(typeof m.avg_readiness_score); // number | null
+    expect(["number", "object"]).toContain(typeof m.goals_on_track_rate); // number | null
+    expect(["number", "object"]).toContain(typeof m.child_views_sought_rate); // number | null
     expect(typeof m.overdue_follow_ups).toBe("number");
     expect(typeof m.reviews_this_quarter).toBe("number");
   });

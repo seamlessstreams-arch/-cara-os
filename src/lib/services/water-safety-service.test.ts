@@ -40,12 +40,12 @@ describe("computeWaterSafetyMetrics", () => {
     const m = computeWaterSafetyMetrics([]);
     expect(m.total_records).toBe(0);
     expect(m.temperature_check_count).toBe(0);
-    expect(m.compliant_rate).toBe(0);
+    expect(m.compliant_rate).toBeNull();;
     expect(m.too_hot_count).toBe(0);
     expect(m.too_cold_count).toBe(0);
     expect(m.tmv_fault_count).toBe(0);
-    expect(m.average_hot_temp).toBe(0);
-    expect(m.average_cold_temp).toBe(0);
+    expect(m.average_hot_temp).toBeNull();;
+    expect(m.average_cold_temp).toBeNull();;
     expect(m.check_overdue_count).toBe(0);
   });
 

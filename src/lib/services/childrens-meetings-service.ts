@@ -135,19 +135,19 @@ export function computeMeetingMetrics(
   childrens_council_count: number;
   menu_planning_count: number;
   activity_planning_count: number;
-  all_participated_rate: number;
+  all_participated_rate: number | null;
   no_participation_count: number;
-  attendance_rate: number;
-  agenda_shared_rate: number;
-  children_set_agenda_rate: number;
-  minutes_recorded_rate: number;
-  previous_actions_reviewed_rate: number;
-  child_chair_rate: number;
-  changes_implemented_rate: number;
-  children_feedback_positive_rate: number;
-  all_actions_completed_rate: number;
+  attendance_rate: number | null;
+  agenda_shared_rate: number | null;
+  children_set_agenda_rate: number | null;
+  minutes_recorded_rate: number | null;
+  previous_actions_reviewed_rate: number | null;
+  child_chair_rate: number | null;
+  changes_implemented_rate: number | null;
+  children_feedback_positive_rate: number | null;
+  all_actions_completed_rate: number | null;
   none_completed_count: number;
-  very_positive_atmosphere_rate: number;
+  very_positive_atmosphere_rate: number | null;
   negative_atmosphere_count: number;
   meeting_overdue_count: number;
   by_meeting_type: Record<string, number>;
@@ -164,7 +164,7 @@ export function computeMeetingMetrics(
   const allParticipatedRate =
     records.length > 0
       ? Math.round((allParticipated / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const noParticipation = records.filter((r) => r.participation_level === "no_participation").length;
 
@@ -173,20 +173,20 @@ export function computeMeetingMetrics(
   const attendanceRate =
     totalInvited > 0
       ? Math.round((totalAttended / totalInvited) * 1000) / 10
-      : 0;
+      : null;
 
   const boolRate = (field: keyof ChildrensMeetingRecord) => {
     const count = records.filter((r) => r[field] === true).length;
     return records.length > 0
       ? Math.round((count / records.length) * 1000) / 10
-      : 0;
+      : null;
   };
 
   const allActionsCompleted = records.filter((r) => r.action_outcome === "all_actions_completed").length;
   const allActionsRate =
     records.length > 0
       ? Math.round((allActionsCompleted / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const noneCompleted = records.filter((r) => r.action_outcome === "none_completed").length;
 
@@ -194,7 +194,7 @@ export function computeMeetingMetrics(
   const veryPositiveRate =
     records.length > 0
       ? Math.round((veryPositive / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const negative = records.filter((r) => r.meeting_atmosphere === "negative").length;
 

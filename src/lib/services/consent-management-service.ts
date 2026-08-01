@@ -138,11 +138,11 @@ export function computeConsentMetrics(
   expired_count: number;
   withdrawn_count: number;
   children_with_consent: number;
-  consent_coverage: number;
-  evidence_on_file_rate: number;
+  consent_coverage: number | null;
+  evidence_on_file_rate: number | null;
   expiring_soon: number;
-  medical_consent_rate: number;
-  emergency_consent_rate: number;
+  medical_consent_rate: number | null;
+  emergency_consent_rate: number | null;
   photo_consent_granted: number;
   by_category: Record<string, number>;
   by_status: Record<string, number>;
@@ -165,13 +165,13 @@ export function computeConsentMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const evidenceOnFile = records.filter((r) => r.evidence_on_file).length;
   const evidenceRate =
     records.length > 0
       ? Math.round((evidenceOnFile / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Expiring within 30 days
   const thirtyDaysAhead = new Date(now);
@@ -193,7 +193,7 @@ export function computeConsentMetrics(
   const medicalRate =
     totalChildren > 0
       ? Math.round((medicalGranted / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   // Emergency medical consent
   const emergencyGranted = new Set(
@@ -204,7 +204,7 @@ export function computeConsentMetrics(
   const emergencyRate =
     totalChildren > 0
       ? Math.round((emergencyGranted / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   // Photo consent granted count
   const photoGranted = records.filter(

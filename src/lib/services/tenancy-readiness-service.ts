@@ -286,17 +286,17 @@ export function computeMetrics(
   by_skill_area: Record<string, number>;
   by_delivery_method: Record<string, number>;
   by_competency_level: Record<string, number>;
-  engagement_rate: number;
-  practical_rate: number;
-  housing_application_rate: number;
-  housing_register_rate: number;
-  deposit_awareness_rate: number;
-  pathway_plan_rate: number;
-  pa_involvement_rate: number;
-  average_sessions_per_person: number;
-  competent_confident_rate: number;
-  guarantee_scheme_rate: number;
-  social_worker_informed_rate: number;
+  engagement_rate: number | null;
+  practical_rate: number | null;
+  housing_application_rate: number | null;
+  housing_register_rate: number | null;
+  deposit_awareness_rate: number | null;
+  pathway_plan_rate: number | null;
+  pa_involvement_rate: number | null;
+  average_sessions_per_person: number | null;
+  competent_confident_rate: number | null;
+  guarantee_scheme_rate: number | null;
+  social_worker_informed_rate: number | null;
   skill_coverage: number;
   overdue_session_count: number;
 } {
@@ -305,7 +305,7 @@ export function computeMetrics(
   const boolRate = (field: keyof TenancyReadinessRow, subset?: TenancyReadinessRow[]) => {
     const pool = subset ?? rows;
     const count = pool.filter((r) => r[field] === true).length;
-    return pool.length > 0 ? Math.round((count / pool.length) * 1000) / 10 : 0;
+    return pool.length > 0 ? Math.round((count / pool.length) * 1000) / 10 : null;
   };
 
   // Skill area breakdown
@@ -329,7 +329,7 @@ export function computeMetrics(
   // Average sessions per person
   const averageSessionsPerPerson = uniqueYoungPeople > 0
     ? Math.round((total / uniqueYoungPeople) * 10) / 10
-    : 0;
+    : null;
 
   // Competent/Confident rate
   const competentConfidentCount = rows.filter(
@@ -337,7 +337,7 @@ export function computeMetrics(
   ).length;
   const competentConfidentRate = total > 0
     ? Math.round((competentConfidentCount / total) * 1000) / 10
-    : 0;
+    : null;
 
   // Skill coverage: how many of the 14 skill areas have been covered
   const coveredSkills = new Set(rows.map((r) => r.skill_area)).size;
@@ -595,7 +595,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective safeguarding question
-  if (metrics.competent_confident_rate < 30 && metrics.total_sessions > 5) {
+  if ((metrics.competent_confident_rate ?? 0) < 30 && metrics.total_sessions > 5) {
     insights.push(
       `[reflect] Only ${metrics.competent_confident_rate}% of sessions show Competent or Confident ` +
         `competency levels. Are tenancy readiness sessions being delivered in a way that ` +
@@ -615,7 +615,7 @@ export function generateCaraInsights(
         `prevention duty makes it essential that young people understand emergency options ` +
         `before they leave care.`,
     );
-  } else if (metrics.engagement_rate < 70 && metrics.total_sessions > 3) {
+  } else if ((metrics.engagement_rate ?? 0) < 70 && metrics.total_sessions > 3) {
     insights.push(
       `[reflect] Engagement rate is ${metrics.engagement_rate}%. Are sessions tailored to each ` +
         `young person's interests, learning style, and readiness? Some young people respond ` +

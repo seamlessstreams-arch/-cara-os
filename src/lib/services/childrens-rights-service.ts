@@ -138,11 +138,11 @@ export function computeRightsMetrics(
 ): {
   total_audits: number;
   children_with_profiles: number;
-  profile_coverage_rate: number;
-  knows_rights_rate: number;
-  knows_complaints_rate: number;
-  has_advocate_rate: number;
-  views_sought_rate: number;
+  profile_coverage_rate: number | null;
+  knows_rights_rate: number | null;
+  knows_complaints_rate: number | null;
+  has_advocate_rate: number | null;
+  views_sought_rate: number | null;
   fully_empowered_count: number;
   not_empowered_count: number;
   rights_fully_met: number;
@@ -156,7 +156,7 @@ export function computeRightsMetrics(
   const profileCoverageRate =
     totalChildren > 0
       ? Math.round((childrenWithProfiles / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   // Rights awareness
   const knowsRights = profiles.filter((p) => p.knows_rights).length;
@@ -167,19 +167,19 @@ export function computeRightsMetrics(
   const knowsRightsRate =
     profiles.length > 0
       ? Math.round((knowsRights / profiles.length) * 1000) / 10
-      : 0;
+      : null;
   const knowsComplaintsRate =
     profiles.length > 0
       ? Math.round((knowsComplaints / profiles.length) * 1000) / 10
-      : 0;
+      : null;
   const hasAdvocateRate =
     profiles.length > 0
       ? Math.round((hasAdvocate / profiles.length) * 1000) / 10
-      : 0;
+      : null;
   const viewsSoughtRate =
     profiles.length > 0
       ? Math.round((viewsSought / profiles.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Empowerment
   let fullyEmpowered = 0;

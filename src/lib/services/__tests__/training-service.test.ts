@@ -105,7 +105,7 @@ function makeFullyCompliantRecords(staffId: string): TrainingRecord[] {
 describe("computeTrainingCompliance", () => {
   it("returns zero compliance for empty records with zero staff", () => {
     const result = computeTrainingCompliance([], 0);
-    expect(result.overall_compliance_rate).toBe(0);
+    expect(result.overall_compliance_rate).toBeNull();;
     expect(result.fully_compliant_staff).toBe(0);
     expect(result.expired_count).toBe(0);
     expect(result.expiring_within_30_days).toEqual([]);
@@ -408,7 +408,7 @@ describe("computeDBSCompliance", () => {
     expect(result.pending_count).toBe(0);
     expect(result.expired_count).toBe(0);
     expect(result.update_service_count).toBe(0);
-    expect(result.compliance_rate).toBe(0);
+    expect(result.compliance_rate).toBeNull();;
   });
 
   it("counts cleared records correctly", () => {

@@ -89,22 +89,22 @@ describe("computeComplianceCertificateMetrics", () => {
 
     it("returns zero valid_rate", () => {
       const m = computeComplianceCertificateMetrics([]);
-      expect(m.valid_rate).toBe(0);
+      expect(m.valid_rate).toBeNull();;
     });
 
     it("returns zero digital_copy_rate", () => {
       const m = computeComplianceCertificateMetrics([]);
-      expect(m.digital_copy_rate).toBe(0);
+      expect(m.digital_copy_rate).toBeNull();;
     });
 
     it("returns zero ofsted_notified_rate", () => {
       const m = computeComplianceCertificateMetrics([]);
-      expect(m.ofsted_notified_rate).toBe(0);
+      expect(m.ofsted_notified_rate).toBeNull();;
     });
 
     it("returns zero remedial_completed_rate", () => {
       const m = computeComplianceCertificateMetrics([]);
-      expect(m.remedial_completed_rate).toBe(0);
+      expect(m.remedial_completed_rate).toBeNull();;
     });
 
     it("returns empty certificate_type_breakdown", () => {
@@ -343,7 +343,7 @@ describe("computeComplianceCertificateMetrics", () => {
         makeRow({ remedial_actions_required: false }),
       ];
       const m = computeComplianceCertificateMetrics(rows);
-      expect(m.remedial_completed_rate).toBe(0);
+      expect(m.remedial_completed_rate).toBeNull();;
     });
 
     it("calculates correctly with mixed completion (1/3 = 33.3%)", () => {

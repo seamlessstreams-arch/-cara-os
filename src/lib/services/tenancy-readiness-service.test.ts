@@ -45,13 +45,13 @@ describe("computeMetrics", () => {
     const m = computeMetrics([]);
     expect(m.total_sessions).toBe(0);
     expect(m.unique_young_people).toBe(0);
-    expect(m.engagement_rate).toBe(0);
-    expect(m.practical_rate).toBe(0);
-    expect(m.housing_application_rate).toBe(0);
-    expect(m.competent_confident_rate).toBe(0);
+    expect(m.engagement_rate).toBeNull();;
+    expect(m.practical_rate).toBeNull();;
+    expect(m.housing_application_rate).toBeNull();;
+    expect(m.competent_confident_rate).toBeNull();;
     expect(m.skill_coverage).toBe(0);
     expect(m.overdue_session_count).toBe(0);
-    expect(m.average_sessions_per_person).toBe(0);
+    expect(m.average_sessions_per_person).toBeNull();;
   });
 
   it("counts total sessions and unique young people", () => {

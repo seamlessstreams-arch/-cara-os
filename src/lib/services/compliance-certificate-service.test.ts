@@ -36,9 +36,9 @@ describe("computeComplianceCertificateMetrics", () => {
     const m = computeComplianceCertificateMetrics([]);
     expect(m.total_certificates).toBe(0);
     expect(m.expired_count).toBe(0);
-    expect(m.valid_rate).toBe(0);
-    expect(m.digital_copy_rate).toBe(0);
-    expect(m.remedial_completed_rate).toBe(0);
+    expect(m.valid_rate).toBeNull();;
+    expect(m.digital_copy_rate).toBeNull();;
+    expect(m.remedial_completed_rate).toBeNull();;
   });
 
   it("counts expired, expiring soon, and overdue renewal", () => {

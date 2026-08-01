@@ -127,14 +127,14 @@ export function computeMeetingMetrics(
   total_meetings: number;
   completed_count: number;
   cancelled_count: number;
-  attendance_rate: number;
-  average_attendance: number;
-  average_duration: number;
-  safeguarding_discussed_rate: number;
-  minutes_distributed_rate: number;
+  attendance_rate: number | null;
+  average_attendance: number | null;
+  average_duration: number | null;
+  safeguarding_discussed_rate: number | null;
+  minutes_distributed_rate: number | null;
   minutes_not_taken_count: number;
   total_actions_set: number;
-  action_completion_rate: number;
+  action_completion_rate: number | null;
   actions_outstanding: number;
   children_discussed_count: number;
   full_team_count: number;
@@ -152,30 +152,30 @@ export function computeMeetingMetrics(
   const attendanceRate =
     totalExpected > 0
       ? Math.round((totalPresent / totalExpected) * 1000) / 10
-      : 0;
+      : null;
 
   const avgAttendance =
     completed.length > 0
       ? Math.round((totalPresent / completed.length) * 10) / 10
-      : 0;
+      : null;
 
   const withDuration = completed.filter((m) => m.duration_minutes !== null);
   const avgDuration =
     withDuration.length > 0
       ? Math.round((withDuration.reduce((sum, m) => sum + (m.duration_minutes ?? 0), 0) / withDuration.length) * 10) / 10
-      : 0;
+      : null;
 
   const sgDiscussed = completed.filter((m) => m.safeguarding_discussed).length;
   const sgRate =
     completed.length > 0
       ? Math.round((sgDiscussed / completed.length) * 1000) / 10
-      : 0;
+      : null;
 
   const minutesDistributed = completed.filter((m) => m.minutes_status === "distributed").length;
   const minutesRate =
     completed.length > 0
       ? Math.round((minutesDistributed / completed.length) * 1000) / 10
-      : 0;
+      : null;
 
   const minutesNotTaken = completed.filter((m) => m.minutes_status === "not_taken").length;
 
@@ -185,7 +185,7 @@ export function computeMeetingMetrics(
   const actionCompletionRate =
     totalActionsSet > 0
       ? Math.round((totalActionsCompletedFromLast / totalActionsSet) * 1000) / 10
-      : 0;
+      : null;
 
   const childrenDiscussed = new Set(completed.flatMap((m) => m.children_discussed)).size;
   const fullTeam = meetings.filter((m) => m.meeting_type === "full_team").length;

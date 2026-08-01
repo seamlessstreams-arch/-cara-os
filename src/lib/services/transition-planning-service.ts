@@ -196,9 +196,9 @@ export function computeTransitionMetrics(
   planned_transitions: number;
   completed_this_year: number;
   by_transition_type: Record<string, number>;
-  avg_readiness_score: number;
-  goals_on_track_rate: number;
-  child_views_sought_rate: number;
+  avg_readiness_score: number | null;
+  goals_on_track_rate: number | null;
+  child_views_sought_rate: number | null;
   overdue_follow_ups: number;
   reviews_this_quarter: number;
 } {
@@ -247,7 +247,7 @@ export function computeTransitionMetrics(
   const avgReadinessScore =
     readinessCount > 0
       ? Math.round((totalReadiness / readinessCount) * 10) / 10
-      : 0;
+      : null;
 
   // Goals on track rate (active/planned plans)
   let totalGoals = 0;
@@ -265,7 +265,7 @@ export function computeTransitionMetrics(
   const goalsOnTrackRate =
     totalGoals > 0
       ? Math.round((onTrackGoals / totalGoals) * 1000) / 10
-      : 0;
+      : null;
 
   // Child views sought rate
   const activeOrPlanned = plans.filter(
@@ -278,7 +278,7 @@ export function computeTransitionMetrics(
   const childViewsSoughtRate =
     activeOrPlanned.length > 0
       ? Math.round((viewsSought / activeOrPlanned.length) * 1000) / 10
-      : 0;
+      : null;
 
   // Overdue follow-ups
   let overdueFollowUps = 0;

@@ -27,8 +27,8 @@ describe("computeAllegationMetrics", () => {
     expect(result.total_allegations).toBe(0);
     expect(result.open_allegations).toBe(0);
     expect(result.substantiated_count).toBe(0);
-    expect(result.lado_referral_rate).toBe(0);
-    expect(result.average_days_to_resolution).toBe(0);
+    expect(result.lado_referral_rate).toBeNull();;
+    expect(result.average_days_to_resolution).toBeNull();;
   });
 
   it("counts total and open allegations", () => {

@@ -250,14 +250,14 @@ describe("computeWorkforceMetrics", () => {
     expect(result.latest_established).toBe(0);
     expect(result.latest_filled).toBe(0);
     expect(result.latest_vacancies).toBe(0);
-    expect(result.vacancy_rate).toBe(0);
+    expect(result.vacancy_rate).toBeNull();;
     expect(result.agency_count).toBe(0);
-    expect(result.agency_rate).toBe(0);
+    expect(result.agency_rate).toBeNull();;
     expect(result.staff_child_ratio).toBe(0);
     expect(result.meets_ratio).toBe(true);
     expect(result.open_vacancies).toBe(0);
     expect(result.avg_time_to_fill).toBe(0);
-    expect(result.succession_coverage).toBe(0);
+    expect(result.succession_coverage).toBeNull();;
     expect(result.roles_at_risk).toBe(0);
     expect(result.by_role).toEqual({});
     expect(result.by_vacancy_status).toEqual({});
@@ -308,7 +308,7 @@ describe("computeWorkforceMetrics", () => {
   it("returns vacancy_rate of 0 when established_posts is 0", () => {
     const snapshots = [makeSnapshot({ established_posts: 0, vacancies: 3 })];
     const result = computeWorkforceMetrics(snapshots, [], []);
-    expect(result.vacancy_rate).toBe(0);
+    expect(result.vacancy_rate).toBeNull();;
   });
 
   it("rounds vacancy_rate to 1 decimal place", () => {
@@ -340,7 +340,7 @@ describe("computeWorkforceMetrics", () => {
   it("returns agency_rate of 0 when filled_posts is 0 and agency_staff is 0", () => {
     const snapshots = [makeSnapshot({ filled_posts: 0, agency_staff: 0 })];
     const result = computeWorkforceMetrics(snapshots, [], []);
-    expect(result.agency_rate).toBe(0);
+    expect(result.agency_rate).toBeNull();;
   });
 
   it("rounds agency_rate to 1 decimal place", () => {
@@ -474,7 +474,7 @@ describe("computeWorkforceMetrics", () => {
 
   it("returns 0 succession_coverage with no plans", () => {
     const result = computeWorkforceMetrics([], [], []);
-    expect(result.succession_coverage).toBe(0);
+    expect(result.succession_coverage).toBeNull();;
   });
 
   it("rounds succession_coverage to 1 decimal place", () => {
@@ -1499,14 +1499,14 @@ describe("Edge cases", () => {
     expect(typeof result.latest_established).toBe("number");
     expect(typeof result.latest_filled).toBe("number");
     expect(typeof result.latest_vacancies).toBe("number");
-    expect(typeof result.vacancy_rate).toBe("number");
+    expect(["number", "object"]).toContain(typeof result.vacancy_rate); // number | null
     expect(typeof result.agency_count).toBe("number");
-    expect(typeof result.agency_rate).toBe("number");
+    expect(["number", "object"]).toContain(typeof result.agency_rate); // number | null
     expect(typeof result.staff_child_ratio).toBe("number");
     expect(typeof result.meets_ratio).toBe("boolean");
     expect(typeof result.open_vacancies).toBe("number");
     expect(typeof result.avg_time_to_fill).toBe("number");
-    expect(typeof result.succession_coverage).toBe("number");
+    expect(["number", "object"]).toContain(typeof result.succession_coverage); // number | null
     expect(typeof result.roles_at_risk).toBe("number");
     expect(typeof result.by_role).toBe("object");
     expect(typeof result.by_vacancy_status).toBe("object");
@@ -1531,7 +1531,7 @@ describe("Edge cases", () => {
     // agency_rate returns 0 regardless of agency_staff count
     const snapshots = [makeSnapshot({ filled_posts: 0, agency_staff: 5 })];
     const result = computeWorkforceMetrics(snapshots, [], []);
-    expect(result.agency_rate).toBe(0);
+    expect(result.agency_rate).toBeNull();;
   });
 
   it("handles vacancy opened and filled on the same day", () => {

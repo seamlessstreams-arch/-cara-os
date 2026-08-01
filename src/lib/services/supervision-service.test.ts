@@ -54,7 +54,7 @@ describe("computeSupervisionCompliance", () => {
     expect(result.supervised_in_period).toBe(0);
     expect(result.overdue).toBe(0);
     expect(result.never_supervised).toBe(0);
-    expect(result.compliance_percentage).toBe(0);
+    expect(result.compliance_percentage).toBeNull();;
     expect(result.overdue_staff).toEqual([]);
   });
 

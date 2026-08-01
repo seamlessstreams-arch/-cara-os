@@ -27,7 +27,7 @@ describe("computeAttachmentMetrics", () => {
     expect(result.children_assessed).toBe(0);
     expect(result.assessment_coverage).toBe(0);
     expect(result.secure_count).toBe(0);
-    expect(result.therapeutic_approach_rate).toBe(0);
+    expect(result.therapeutic_approach_rate).toBeNull();;
   });
 
   it("counts attachment styles", () => {

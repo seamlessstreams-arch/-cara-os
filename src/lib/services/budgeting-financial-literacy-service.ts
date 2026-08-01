@@ -220,17 +220,17 @@ export function computeMetrics(
   by_skill_area: Record<string, number>;
   by_delivery_method: Record<string, number>;
   by_competency_level: Record<string, number>;
-  engagement_rate: number;
-  practical_rate: number;
-  real_money_rate: number;
-  bank_account_rate: number;
-  savings_rate: number;
-  budget_created_rate: number;
-  pathway_plan_link_rate: number;
-  social_worker_informed_rate: number;
-  average_sessions_per_child: number;
+  engagement_rate: number | null;
+  practical_rate: number | null;
+  real_money_rate: number | null;
+  bank_account_rate: number | null;
+  savings_rate: number | null;
+  budget_created_rate: number | null;
+  pathway_plan_link_rate: number | null;
+  social_worker_informed_rate: number | null;
+  average_sessions_per_child: number | null;
   skill_coverage_per_child: Record<string, number>;
-  competent_or_confident_rate: number;
+  competent_or_confident_rate: number | null;
   not_yet_started_count: number;
   children_with_bank_accounts: number;
   children_with_savings: number;
@@ -243,7 +243,7 @@ export function computeMetrics(
 
   const boolRate = (field: keyof BudgetingFinancialLiteracyRow) => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   const uniqueChildren = new Set(rows.map((r) => r.child_name)).size;
@@ -265,7 +265,7 @@ export function computeMetrics(
   for (const r of rows) byCompetencyLevel[r.competency_level] = (byCompetencyLevel[r.competency_level] || 0) + 1;
 
   // Average sessions per child
-  const avgSessions = uniqueChildren > 0 ? Math.round((total / uniqueChildren) * 10) / 10 : 0;
+  const avgSessions = uniqueChildren > 0 ? Math.round((total / uniqueChildren) * 10) / 10 : null;
 
   // Skill coverage per child — how many unique skill areas each child has covered
   const childSkillMap: Record<string, Set<string>> = {};
@@ -282,7 +282,7 @@ export function computeMetrics(
   const competentOrConfident = rows.filter(
     (r) => r.competency_level === "Competent" || r.competency_level === "Confident",
   ).length;
-  const competentOrConfidentRate = total > 0 ? Math.round((competentOrConfident / total) * 1000) / 10 : 0;
+  const competentOrConfidentRate = total > 0 ? Math.round((competentOrConfident / total) * 1000) / 10 : null;
 
   // Not yet started count
   const notYetStarted = rows.filter((r) => r.competency_level === "Not Yet Started").length;
@@ -529,7 +529,7 @@ export function generateCaraInsights(
   }
 
   // Insight 3: Reflective safeguarding question
-  if (metrics.pathway_plan_link_rate < 50 && metrics.unique_children > 0) {
+  if ((metrics.pathway_plan_link_rate ?? 0) < 50 && metrics.unique_children > 0) {
     insights.push(
       `[reflect] Only ${metrics.pathway_plan_link_rate}% of sessions are linked to pathway plans. ` +
         `Is financial literacy development being systematically integrated into each ` +
@@ -537,7 +537,7 @@ export function generateCaraInsights(
         `on competency progression as required by the Children (Leaving Care) Act 2000 ` +
         `and Children and Social Work Act 2017?`,
     );
-  } else if (metrics.practical_rate < 40) {
+  } else if ((metrics.practical_rate ?? 0) < 40) {
     insights.push(
       `[reflect] Practical component rate is ${metrics.practical_rate}%. ` +
         `Are young people getting enough real-world financial experience — managing ` +

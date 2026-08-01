@@ -42,9 +42,9 @@ describe("creative-arts-activities-service", () => {
       const m = computeMetrics([]);
       expect(m.total_activities).toBe(0);
       expect(m.unique_children).toBe(0);
-      expect(m.therapeutic_rate).toBe(0);
-      expect(m.child_choice_rate).toBe(0);
-      expect(m.mood_improvement_rate).toBe(0);
+      expect(m.therapeutic_rate).toBeNull();;
+      expect(m.child_choice_rate).toBeNull();;
+      expect(m.mood_improvement_rate).toBeNull();;
       expect(m.average_engagement).toBe(0);
       expect(m.group_vs_individual_ratio).toBe("0:0");
     });

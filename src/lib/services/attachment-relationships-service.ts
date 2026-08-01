@@ -165,7 +165,7 @@ export function computeAttachmentMetrics(
 ): {
   total_records: number;
   children_assessed: number;
-  assessment_coverage: number;
+  assessment_coverage: number | null;
   secure_count: number;
   anxious_ambivalent_count: number;
   anxious_avoidant_count: number;
@@ -175,10 +175,10 @@ export function computeAttachmentMetrics(
   outdated_assessments: number;
   strong_positive_relationships: number;
   strained_or_broken_count: number;
-  therapeutic_approach_rate: number;
-  psychologist_involved_rate: number;
-  staff_trained_rate: number;
-  child_views_rate: number;
+  therapeutic_approach_rate: number | null;
+  psychologist_involved_rate: number | null;
+  staff_trained_rate: number | null;
+  child_views_rate: number | null;
   by_attachment_style: Record<string, number>;
   by_relationship_type: Record<string, number>;
   by_relationship_quality: Record<string, number>;
@@ -188,7 +188,7 @@ export function computeAttachmentMetrics(
   const coverage =
     totalChildren > 0
       ? Math.round((uniqueChildren / totalChildren) * 1000) / 10
-      : 0;
+      : null;
 
   const secure = records.filter((r) => r.attachment_style === "secure").length;
   const anxAmb = records.filter((r) => r.attachment_style === "anxious_ambivalent").length;
@@ -208,25 +208,25 @@ export function computeAttachmentMetrics(
   const therapeuticRate =
     records.length > 0
       ? Math.round((withTherapeutic / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const psychInvolved = records.filter((r) => r.psychologist_involved).length;
   const psychRate =
     records.length > 0
       ? Math.round((psychInvolved / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const staffTrained = records.filter((r) => r.staff_trained_attachment).length;
   const staffRate =
     records.length > 0
       ? Math.round((staffTrained / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const childViews = records.filter((r) => r.child_views !== null).length;
   const childRate =
     records.length > 0
       ? Math.round((childViews / records.length) * 1000) / 10
-      : 0;
+      : null;
 
   const byStyle: Record<string, number> = {};
   for (const r of records) byStyle[r.attachment_style] = (byStyle[r.attachment_style] ?? 0) + 1;

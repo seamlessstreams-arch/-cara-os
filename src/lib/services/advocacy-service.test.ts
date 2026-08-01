@@ -36,10 +36,10 @@ describe("computeAdvocacyMetrics", () => {
     const result = computeAdvocacyMetrics([], []);
     expect(result.total_referrals).toBe(0);
     expect(result.active_referrals).toBe(0);
-    expect(result.avg_days_to_allocation).toBe(0);
+    expect(result.avg_days_to_allocation).toBeNull();;
     expect(result.children_with_advocates).toBe(0);
-    expect(result.rights_awareness_rate).toBe(0);
-    expect(result.rights_exercise_rate).toBe(0);
+    expect(result.rights_awareness_rate).toBeNull();;
+    expect(result.rights_exercise_rate).toBeNull();;
     expect(result.children_with_rights_records).toBe(0);
   });
 

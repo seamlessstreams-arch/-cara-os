@@ -50,10 +50,10 @@ describe("computeAbsenceMetrics", () => {
     expect(m.total_absences).toBe(0);
     expect(m.authorised_count).toBe(0);
     expect(m.unauthorised_count).toBe(0);
-    expect(m.authorised_rate).toBe(0);
+    expect(m.authorised_rate).toBeNull();;
     expect(m.total_days_missed).toBe(0);
-    expect(m.average_days_missed).toBe(0);
-    expect(m.average_attendance_percentage).toBe(0);
+    expect(m.average_days_missed).toBeNull();;
+    expect(m.average_attendance_percentage).toBeNull();;
     expect(m.unique_children).toBe(0);
   });
 

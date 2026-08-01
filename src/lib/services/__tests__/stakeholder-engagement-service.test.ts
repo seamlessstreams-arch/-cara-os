@@ -339,10 +339,10 @@ describe("computeEngagementMetrics", () => {
     expect(m.total_contacts).toBe(0);
     expect(m.contacts_this_month).toBe(0);
     expect(m.unique_stakeholders).toBe(0);
-    expect(m.home_initiated_rate).toBe(0);
-    expect(m.follow_up_completion_rate).toBe(0);
+    expect(m.home_initiated_rate).toBeNull();;
+    expect(m.follow_up_completion_rate).toBeNull();;
     expect(m.overdue_follow_ups).toBe(0);
-    expect(m.avg_satisfaction_score).toBe(0);
+    expect(m.avg_satisfaction_score).toBeNull();;
     expect(m.feedback_count).toBe(0);
     expect(Object.keys(m.by_stakeholder_type)).toHaveLength(0);
     expect(Object.keys(m.by_engagement_method)).toHaveLength(0);
@@ -533,7 +533,7 @@ describe("computeEngagementMetrics", () => {
 
   it("returns 0 when no contacts", () => {
     const m = computeEngagementMetrics([], []);
-    expect(m.home_initiated_rate).toBe(0);
+    expect(m.home_initiated_rate).toBeNull();;
   });
 
   // ── follow_up_completion_rate ────────────────────────────────────────
@@ -571,7 +571,7 @@ describe("computeEngagementMetrics", () => {
       makeContact({ id: "c2", follow_up_date: null }),
     ];
     const m = computeEngagementMetrics(contacts, []);
-    expect(m.follow_up_completion_rate).toBe(0);
+    expect(m.follow_up_completion_rate).toBeNull();;
   });
 
   it("excludes contacts without follow_up_date from rate", () => {
@@ -709,7 +709,7 @@ describe("computeEngagementMetrics", () => {
 
   it("returns 0 when no feedback", () => {
     const m = computeEngagementMetrics([], []);
-    expect(m.avg_satisfaction_score).toBe(0);
+    expect(m.avg_satisfaction_score).toBeNull();;
   });
 
   // ── relationship_distribution ────────────────────────────────────────
@@ -1770,7 +1770,7 @@ describe("Edge cases", () => {
     const m = computeEngagementMetrics(contacts, []);
     expect(m.total_contacts).toBe(1);
     expect(m.feedback_count).toBe(0);
-    expect(m.avg_satisfaction_score).toBe(0);
+    expect(m.avg_satisfaction_score).toBeNull();;
   });
 
   it("identifyEngagementAlerts handles mixed alert types in single call", () => {

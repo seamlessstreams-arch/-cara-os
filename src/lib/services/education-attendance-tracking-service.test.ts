@@ -52,7 +52,7 @@ describe("education-attendance-tracking-service", () => {
       expect(m.unauthorised_count).toBe(0);
       expect(m.exclusion_count).toBe(0);
       expect(m.refused_count).toBe(0);
-      expect(m.attendance_percentage).toBe(0);
+      expect(m.attendance_percentage).toBeNull();;
       expect(m.unique_children).toBe(0);
     });
 

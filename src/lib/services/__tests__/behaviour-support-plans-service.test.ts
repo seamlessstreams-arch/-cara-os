@@ -271,18 +271,18 @@ describe("computeBspMetrics", () => {
     expect(m.expired_plans).toBe(0);
     expect(m.draft_plans).toBe(0);
     expect(m.children_with_bsp).toBe(0);
-    expect(m.bsp_coverage).toBe(0);
+    expect(m.bsp_coverage).toBeNull();;
     expect(m.highly_effective_count).toBe(0);
     expect(m.effective_count).toBe(0);
     expect(m.not_effective_count).toBe(0);
     expect(m.not_evaluated_count).toBe(0);
-    expect(m.child_involvement_rate).toBe(0);
-    expect(m.social_worker_approved_rate).toBe(0);
-    expect(m.psychologist_input_rate).toBe(0);
-    expect(m.staff_briefed_rate).toBe(0);
-    expect(m.parent_informed_rate).toBe(0);
-    expect(m.child_views_rate).toBe(0);
-    expect(m.average_incidents).toBe(0);
+    expect(m.child_involvement_rate).toBeNull();;
+    expect(m.social_worker_approved_rate).toBeNull();;
+    expect(m.psychologist_input_rate).toBeNull();;
+    expect(m.staff_briefed_rate).toBeNull();;
+    expect(m.parent_informed_rate).toBeNull();;
+    expect(m.child_views_rate).toBeNull();;
+    expect(m.average_incidents).toBeNull();;
     expect(Object.keys(m.by_bsp_status)).toHaveLength(0);
     expect(Object.keys(m.by_strategy)).toHaveLength(0);
     expect(Object.keys(m.by_trigger)).toHaveLength(0);
@@ -427,7 +427,7 @@ describe("computeBspMetrics", () => {
 
   it("bsp_coverage is 0 when totalChildren is 0", () => {
     const m = computeBspMetrics([], 0);
-    expect(m.bsp_coverage).toBe(0);
+    expect(m.bsp_coverage).toBeNull();;
   });
 
   it("bsp_coverage rounds to one decimal place", () => {
@@ -784,7 +784,7 @@ describe("computeBspMetrics", () => {
 
   it("average_incidents is 0 for empty plans", () => {
     const m = computeBspMetrics([], 10);
-    expect(m.average_incidents).toBe(0);
+    expect(m.average_incidents).toBeNull();;
   });
 
   it("average_incidents is 0 when all incidents are 0", () => {

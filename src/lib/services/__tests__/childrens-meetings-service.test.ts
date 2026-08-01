@@ -333,7 +333,7 @@ describe("computeMeetingMetrics", () => {
     });
 
     it("returns all_participated_rate = 0", () => {
-      expect(computeMeetingMetrics([]).all_participated_rate).toBe(0);
+      expect(computeMeetingMetrics([]).all_participated_rate).toBeNull();;
     });
 
     it("returns no_participation_count = 0", () => {
@@ -341,39 +341,39 @@ describe("computeMeetingMetrics", () => {
     });
 
     it("returns attendance_rate = 0", () => {
-      expect(computeMeetingMetrics([]).attendance_rate).toBe(0);
+      expect(computeMeetingMetrics([]).attendance_rate).toBeNull();;
     });
 
     it("returns agenda_shared_rate = 0", () => {
-      expect(computeMeetingMetrics([]).agenda_shared_rate).toBe(0);
+      expect(computeMeetingMetrics([]).agenda_shared_rate).toBeNull();;
     });
 
     it("returns children_set_agenda_rate = 0", () => {
-      expect(computeMeetingMetrics([]).children_set_agenda_rate).toBe(0);
+      expect(computeMeetingMetrics([]).children_set_agenda_rate).toBeNull();;
     });
 
     it("returns minutes_recorded_rate = 0", () => {
-      expect(computeMeetingMetrics([]).minutes_recorded_rate).toBe(0);
+      expect(computeMeetingMetrics([]).minutes_recorded_rate).toBeNull();;
     });
 
     it("returns previous_actions_reviewed_rate = 0", () => {
-      expect(computeMeetingMetrics([]).previous_actions_reviewed_rate).toBe(0);
+      expect(computeMeetingMetrics([]).previous_actions_reviewed_rate).toBeNull();;
     });
 
     it("returns child_chair_rate = 0", () => {
-      expect(computeMeetingMetrics([]).child_chair_rate).toBe(0);
+      expect(computeMeetingMetrics([]).child_chair_rate).toBeNull();;
     });
 
     it("returns changes_implemented_rate = 0", () => {
-      expect(computeMeetingMetrics([]).changes_implemented_rate).toBe(0);
+      expect(computeMeetingMetrics([]).changes_implemented_rate).toBeNull();;
     });
 
     it("returns children_feedback_positive_rate = 0", () => {
-      expect(computeMeetingMetrics([]).children_feedback_positive_rate).toBe(0);
+      expect(computeMeetingMetrics([]).children_feedback_positive_rate).toBeNull();;
     });
 
     it("returns all_actions_completed_rate = 0", () => {
-      expect(computeMeetingMetrics([]).all_actions_completed_rate).toBe(0);
+      expect(computeMeetingMetrics([]).all_actions_completed_rate).toBeNull();;
     });
 
     it("returns none_completed_count = 0", () => {
@@ -381,7 +381,7 @@ describe("computeMeetingMetrics", () => {
     });
 
     it("returns very_positive_atmosphere_rate = 0", () => {
-      expect(computeMeetingMetrics([]).very_positive_atmosphere_rate).toBe(0);
+      expect(computeMeetingMetrics([]).very_positive_atmosphere_rate).toBeNull();;
     });
 
     it("returns negative_atmosphere_count = 0", () => {
@@ -610,7 +610,7 @@ describe("computeMeetingMetrics", () => {
       const records = [
         makeRecord({ children_invited: 0, children_attended: 0 }),
       ];
-      expect(computeMeetingMetrics(records).attendance_rate).toBe(0);
+      expect(computeMeetingMetrics(records).attendance_rate).toBeNull();;
     });
 
     it("handles fractional attendance correctly with rounding", () => {
