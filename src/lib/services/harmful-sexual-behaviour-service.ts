@@ -261,29 +261,29 @@ export function computeMetrics(
   by_risk_level: Record<string, number>;
   by_referral_source: Record<string, number>;
   by_outcome: Record<string, number>;
-  victim_rate: number;
-  aim_assessment_rate: number;
-  brook_traffic_light_rate: number;
-  specialist_referral_rate: number;
-  safety_plan_rate: number;
-  police_notification_rate: number;
-  supervision_adjustment_rate: number;
-  therapeutic_support_rate: number;
+  victim_rate: number | null;
+  aim_assessment_rate: number | null;
+  brook_traffic_light_rate: number | null;
+  specialist_referral_rate: number | null;
+  safety_plan_rate: number | null;
+  police_notification_rate: number | null;
+  supervision_adjustment_rate: number | null;
+  therapeutic_support_rate: number | null;
   active_cases: number;
-  environmental_risk_assessment_rate: number;
-  sleeping_arrangements_review_rate: number;
-  multi_agency_meeting_rate: number;
-  child_views_obtained_rate: number;
-  social_worker_informed_rate: number;
-  parents_carers_informed_rate: number;
+  environmental_risk_assessment_rate: number | null;
+  sleeping_arrangements_review_rate: number | null;
+  multi_agency_meeting_rate: number | null;
+  child_views_obtained_rate: number | null;
+  social_worker_informed_rate: number | null;
+  parents_carers_informed_rate: number | null;
   unique_children: number;
   overdue_reviews: number;
 } {
   const total = rows.length;
 
-  const boolRate = (field: keyof HarmfulSexualBehaviourRow) => {
+  const boolRate = (field: keyof HarmfulSexualBehaviourRow): number | null => {
     const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
   };
 
   // Behaviour category breakdown (Hackett continuum)
@@ -587,21 +587,21 @@ export function generateCaraInsights(
   const abusiveViolent = (metrics.by_behaviour_category["Abusive"] || 0) +
     (metrics.by_behaviour_category["Violent"] || 0);
 
-  if (abusiveViolent > 0 && metrics.aim_assessment_rate < 80) {
+  if (abusiveViolent > 0 && (metrics.aim_assessment_rate ?? 0) < 80) {
     insights.push(
       `[reflect] ${metrics.aim_assessment_rate}% of HSB cases have completed AIM3 assessments, below the ` +
         `expected standard for homes managing HSB. Are all staff trained in recognising the Hackett ` +
         `continuum levels, and is there a clear referral pathway to AIM3-trained assessors? ` +
         `NICE NG55 recommends evidence-based assessment for all Problematic, Abusive, and Violent HSB.`,
     );
-  } else if (metrics.victim_rate > 30 && metrics.therapeutic_support_rate < 60) {
+  } else if ((metrics.victim_rate ?? 0) > 30 && (metrics.therapeutic_support_rate ?? 0) < 60) {
     insights.push(
       `[reflect] ${metrics.victim_rate}% of HSB incidents involve identified victims, but only ` +
         `${metrics.therapeutic_support_rate}% include therapeutic support. Are both the children ` +
         `displaying HSB and the victims receiving appropriate therapeutic intervention? NICE NG55 ` +
         `emphasises the need for trauma-informed responses for all children involved in HSB incidents.`,
     );
-  } else if (metrics.child_views_obtained_rate < 70) {
+  } else if ((metrics.child_views_obtained_rate ?? 0) < 70) {
     insights.push(
       `[reflect] Child views have been obtained in only ${metrics.child_views_obtained_rate}% of HSB cases. ` +
         `Are children being given age-appropriate opportunities to share their understanding of the ` +

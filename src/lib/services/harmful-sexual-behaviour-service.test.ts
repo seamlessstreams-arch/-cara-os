@@ -52,7 +52,7 @@ describe("computeMetrics", () => {
     expect(result.total_records).toBe(0);
     expect(result.active_cases).toBe(0);
     expect(result.unique_children).toBe(0);
-    expect(result.victim_rate).toBe(0);
+    expect(result.victim_rate).toBeNull(); // fab-0.
     expect(result.overdue_reviews).toBe(0);
   });
 
